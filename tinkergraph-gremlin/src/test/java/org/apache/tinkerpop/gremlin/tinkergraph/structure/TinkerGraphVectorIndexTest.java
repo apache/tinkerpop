@@ -26,11 +26,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import com.github.jelmerk.hnswlib.core.hnsw.SizeLimitExceededException;
-
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,9 +45,7 @@ import static org.junit.Assert.fail;
 @RunWith(Parameterized.class)
 public class TinkerGraphVectorIndexTest {
 
-    protected static final Map<String,Object> indexConfig = new HashMap<String,Object>() {{
-        put(TinkerVectorIndex.CONFIG_DIMENSION, 3);
-    }};
+    protected static final Map<String, Object> indexConfig = Map.of(TinkerVectorIndex.CONFIG_DIMENSION, 3);
 
     @Parameterized.Parameter
     public AbstractTinkerGraph graph;
@@ -504,78 +499,6 @@ public class TinkerGraphVectorIndexTest {
         final List<TinkerIndexElement<TinkerEdge>> nearest = graph.findNearestEdges("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
         assertNotNull(nearest);
         assertEquals(0, nearest.size());
-    }
-
-    @Test
-    public void shouldGrowIndexWhenCapacityReached() {
-        final GraphTraversalSource g = traversal().with(graph);
-
-        // Create a small index with only 5 items capacity and 50% growth rate
-        final Map<String, Object> smallIndexConfig = new HashMap<>(indexConfig);
-        smallIndexConfig.put(TinkerVectorIndex.CONFIG_MAX_ITEMS, 5);
-        smallIndexConfig.put(TinkerVectorIndex.CONFIG_GROWTH_RATE, 0.5); // 50% growth
-
-        graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, smallIndexConfig);
-
-        // Add 5 vertices (fills the index to capacity)
-        for (int i = 0; i < 5; i++) {
-            g.addV("person").property("name", "Person" + i)
-                .property("embedding", new float[]{(float)i, 0.0f, 0.0f}).iterate();
-        }
-        tryCommitChanges(graph);
-
-        // Add one more vertex with a very distinctive vector - this should trigger the index growth
-        g.addV("person").property("name", "PersonExtra")
-            .property("embedding", new float[]{10.0f, 0.0f, 0.0f}).iterate();
-        tryCommitChanges(graph);
-
-        // Verify we can find all 6 vertices
-        final List<TinkerVertex> allVertices = graph.findNearestVerticesOnly("embedding", new float[]{0.0f, 0.0f, 0.0f}, 10);
-        assertEquals(6, allVertices.size());
-
-        // Verify the extra vertex exists in the results
-        boolean foundExtra = false;
-        for (TinkerVertex vertex : allVertices) {
-            if ("PersonExtra".equals(vertex.value("name"))) {
-                foundExtra = true;
-                break;
-            }
-        }
-        assertThat("Should find the extra vertex", foundExtra, is(true));
-    }
-
-    @Test
-    public void shouldThrowExceptionWhenGrowthRateIsZero() {
-        final GraphTraversalSource g = traversal().with(graph);
-
-        // Create a small index with only 5 items capacity and 0 growth rate
-        final Map<String, Object> smallIndexConfig = new HashMap<>(indexConfig);
-        smallIndexConfig.put(TinkerVectorIndex.CONFIG_MAX_ITEMS, 5);
-        smallIndexConfig.put(TinkerVectorIndex.CONFIG_GROWTH_RATE, 0.0); // No growth
-
-        graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, smallIndexConfig);
-
-        // Add 5 vertices (fills the index to capacity)
-        for (int i = 0; i < 5; i++) {
-            g.addV("person").property("name", "Person" + i)
-                .property("embedding", new float[]{(float)i, 0.0f, 0.0f}).iterate();
-        }
-        tryCommitChanges(graph);
-
-        try {
-            // Add one more vertex - this should throw SizeLimitExceededException
-            g.addV("person").property("name", "PersonExtra")
-                .property("embedding", new float[]{5.0f, 0.0f, 0.0f}).iterate();
-            tryCommitChanges(graph);
-            fail("Should have thrown SizeLimitExceededException");
-        } catch (Exception e) {
-            // Verify that the exception is caused by SizeLimitExceededException
-            Throwable cause = e;
-            while (cause != null && !(cause instanceof SizeLimitExceededException)) {
-                cause = cause.getCause();
-            }
-            assertNotNull("Expected SizeLimitExceededException", cause);
-        }
     }
 
     private void tryCommitChanges(final Graph graph) {

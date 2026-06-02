@@ -25,7 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* Added vector indexing to TinkerGraph with search services for `tinker.search.vector.topKByElement` and `tinker.search.vector.topKByEmbedding`.
+* Added vector indexing to TinkerGraph with search services for `tinker.search.vector.topK.byElement` and `tinker.search.vector.topK.byEmbedding`.
 * Added vector distance calculation functions for TinkerGraph.
 * Renamed the regex based search service in TinkerGraph to `tinker.search.text`.
 * Added typed numeric wrappers and `preciseNumbers` connection option to `gremlin-javascript` for explicit control over numeric type serialization and deserialization.

@@ -18,16 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.github.jelmerk.hnswlib.core.Item;
-import com.github.jelmerk.hnswlib.core.SearchResult;
-import com.github.jelmerk.hnswlib.core.hnsw.HnswIndex;
-import com.github.jelmerk.hnswlib.core.Index;
-import com.github.jelmerk.hnswlib.core.hnsw.SizeLimitExceededException;
+import io.github.jbellis.jvector.graph.GraphIndexBuilder;
+import io.github.jbellis.jvector.graph.GraphSearcher;
+import io.github.jbellis.jvector.graph.ListRandomAccessVectorValues;
+import io.github.jbellis.jvector.graph.SearchResult;
+import io.github.jbellis.jvector.graph.similarity.SearchScoreProvider;
+import io.github.jbellis.jvector.vector.VectorizationProvider;
+import io.github.jbellis.jvector.vector.VectorSimilarityFunction;
+import io.github.jbellis.jvector.vector.types.VectorFloat;
+import io.github.jbellis.jvector.vector.types.VectorTypeSupport;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -36,38 +41,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- * A vector index implementation for TinkerTransactionGraph using hnswlib.
+ * A vector index implementation for TinkerTransactionGraph using JVector.
  *
  * @param <T> the element type (Vertex or Edge)
  */
 final class TinkerTransactionVectorIndex<T extends TinkerElement> extends AbstractTinkerVectorIndex<T> {
 
-    /**
-     * Map of property key to vector index
-     */
-    protected Map<String, Index<Object, float[], ElementItem, Float>> vectorIndices = new ConcurrentHashMap<>();
+    private static final VectorTypeSupport VTS = VectorizationProvider.getInstance().getVectorTypeSupport();
 
-    /**
-     * Map of property key to growth rate
-     */
-    private final Map<String, Double> growthRates = new ConcurrentHashMap<>();
+    protected Map<String, IndexState<T>> vectorIndices = new ConcurrentHashMap<>();
 
-    /**
-     * Creates a new vector index for the specified graph and element class.
-     *
-     * @param graph      the graph
-     * @param indexClass the element class
-     */
-    public TinkerTransactionVectorIndex(final TinkerTransactionGraph graph, final Class<T> indexClass) {
+    TinkerTransactionVectorIndex(final TinkerTransactionGraph graph, final Class<T> indexClass) {
         super(graph, indexClass);
     }
 
-    /**
-     * Creates a vector index for the specified property key with the given configuration options.
-     *
-     * @param key           the property key
-     * @param configuration the configuration options
-     */
     @Override
     public void createIndex(final String key, final Map<String, Object> configuration) {
         if (null == key)
@@ -75,18 +62,13 @@ final class TinkerTransactionVectorIndex<T extends TinkerElement> extends Abstra
         if (key.isEmpty())
             throw new IllegalArgumentException("The key for the index cannot be an empty string");
 
-        // Get dimension from configuration or throw exception if not provided
         if (!configuration.containsKey(CONFIG_DIMENSION))
             throw new IllegalArgumentException("The dimension must be provided in the configuration");
 
-        final int dimension;
         final Object dimObj = configuration.get(CONFIG_DIMENSION);
-        if (dimObj instanceof Number) {
-            dimension = ((Number) dimObj).intValue();
-        } else {
+        if (!(dimObj instanceof Number))
             throw new IllegalArgumentException("The dimension must be a number");
-        }
-
+        final int dimension = ((Number) dimObj).intValue();
         if (dimension <= 0)
             throw new IllegalArgumentException("The dimension must be greater than 0");
 
@@ -95,317 +77,192 @@ final class TinkerTransactionVectorIndex<T extends TinkerElement> extends Abstra
         this.indexedKeys.add(key);
 
         int m = DEFAULT_M;
-        if (configuration.containsKey(CONFIG_M)) {
-            final Object mObj = configuration.get(CONFIG_M);
-            if (mObj instanceof Number) {
-                m = ((Number) mObj).intValue();
-            }
-        }
+        if (configuration.containsKey(CONFIG_M) && configuration.get(CONFIG_M) instanceof Number)
+            m = ((Number) configuration.get(CONFIG_M)).intValue();
 
         int efConstruction = DEFAULT_EF_CONSTRUCTION;
-        if (configuration.containsKey(CONFIG_EF_CONSTRUCTION)) {
-            final Object efObj = configuration.get(CONFIG_EF_CONSTRUCTION);
-            if (efObj instanceof Number) {
-                efConstruction = ((Number) efObj).intValue();
-            }
-        }
+        if (configuration.containsKey(CONFIG_EF_CONSTRUCTION) && configuration.get(CONFIG_EF_CONSTRUCTION) instanceof Number)
+            efConstruction = ((Number) configuration.get(CONFIG_EF_CONSTRUCTION)).intValue();
 
-        int ef = DEFAULT_EF;
-        if (configuration.containsKey(CONFIG_EF)) {
-            final Object efObj = configuration.get(CONFIG_EF);
-            if (efObj instanceof Number) {
-                ef = ((Number) efObj).intValue();
-            }
-        }
+        TinkerIndexType.Vector distFunc = TinkerIndexType.Vector.COSINE;
+        if (configuration.containsKey(CONFIG_DISTANCE_FUNCTION) && configuration.get(CONFIG_DISTANCE_FUNCTION) instanceof TinkerIndexType.Vector)
+            distFunc = (TinkerIndexType.Vector) configuration.get(CONFIG_DISTANCE_FUNCTION);
 
-        int maxItems = DEFAULT_MAX_ITEMS;
-        if (configuration.containsKey(CONFIG_MAX_ITEMS)) {
-            final Object maxObj = configuration.get(CONFIG_MAX_ITEMS);
-            if (maxObj instanceof Number) {
-                maxItems = ((Number) maxObj).intValue();
-            }
-        }
+        final IndexState<T> state = new IndexState<>(dimension, m, efConstruction, distFunc.toJVectorFunction());
+        this.vectorIndices.put(key, state);
 
-        TinkerIndexType.Vector vector = TinkerIndexType.Vector.COSINE;
-        if (configuration.containsKey(CONFIG_DISTANCE_FUNCTION)) {
-            final Object vec = configuration.get(CONFIG_DISTANCE_FUNCTION);
-            if (vec instanceof TinkerIndexType.Vector) {
-                vector = ((TinkerIndexType.Vector) vec);
-            }
-        }
-
-        double growthRate = DEFAULT_GROWTH_RATE;
-        if (configuration.containsKey(CONFIG_GROWTH_RATE)) {
-            final Object growthObj = configuration.get(CONFIG_GROWTH_RATE);
-            if (growthObj instanceof Number) {
-                growthRate = ((Number) growthObj).doubleValue();
-            }
-        }
-        this.growthRates.put(key, growthRate);
-
-        // Create a new HNSW index for this property key
-        final Index<Object, float[], ElementItem, Float> index = HnswIndex
-                .newBuilder(dimension, vector.getDistanceFunction(), Float::compare, maxItems)
-                .withM(m)
-                .withEfConstruction(efConstruction)
-                .withEf(ef)
-                .withRemoveEnabled()
-                .build();
-
-        this.vectorIndices.put(key, index);
-
-        // Index existing elements
-        final Map elements =
+        final Map<?, ?> elementMap =
                 Vertex.class.isAssignableFrom(indexClass) ?
                         ((TinkerTransactionGraph) graph).getVertices() :
                         ((TinkerTransactionGraph) graph).getEdges();
 
-        for (Object element : elements.values()) {
-            TinkerElementContainer container = (TinkerElementContainer) element;
-            Object e = container.get();
+        for (final Object raw : elementMap.values()) {
+            final TinkerElementContainer container = (TinkerElementContainer) raw;
+            final Object e = container.get();
             if (e != null && indexClass.isInstance(e)) {
-                T tinkerElement = (T) e;
-                Property property = tinkerElement.property(key);
-                if (property.isPresent()) {
-                    Object value = property.value();
-                    if (value instanceof float[] && ((float[]) value).length == dimension) {
-                        this.addToIndex(key, (float[]) value, tinkerElement);
-                    }
+                final T element = (T) e;
+                final Property<?> prop = element.property(key);
+                if (prop.isPresent() && prop.value() instanceof float[]) {
+                    final float[] v = (float[]) prop.value();
+                    if (v.length == dimension)
+                        state.add(element, v);
                 }
             }
         }
     }
 
-    /**
-     * Adds an element with a vector to the index.
-     *
-     * @param key     the property key
-     * @param vector  the vector
-     * @param element the element
-     */
     public void addToIndex(final String key, final float[] vector, final T element) {
-        if (!this.indexedKeys.contains(key) || !this.vectorIndices.containsKey(key))
+        final IndexState<T> state = this.vectorIndices.get(key);
+        if (state == null)
             return;
-
-        final Index<Object, float[], ElementItem, Float> index = this.vectorIndices.get(key);
-        final ElementItem item = new ElementItem(element.id(), vector, element);
-        index.add(item);
+        state.add(element, vector);
     }
 
-    /**
-     * Searches for nearest neighbors in the vector index.
-     *
-     * @param key    the property key
-     * @param vector the query vector
-     * @param k      the number of nearest neighbors to return
-     * @return a list of elements sorted by distance
-     */
+    @Override
     public List<TinkerIndexElement<T>> findNearest(final String key, final float[] vector, final int k) {
-        if (!this.indexedKeys.contains(key) || !this.vectorIndices.containsKey(key))
+        final IndexState<T> state = this.vectorIndices.get(key);
+        if (state == null)
             throw new IllegalArgumentException("The key '" + key + "' is not indexed");
-
-        final Index<Object, float[], ElementItem, Float> index = this.vectorIndices.get(key);
-        final List<SearchResult<ElementItem, Float>> nearest = index.findNearest(vector, k);
-        return nearest.stream().map(sr ->
-                new TinkerIndexElement<>(sr.item().element, sr.distance())).collect(Collectors.toList());
+        return state.search(vector, k);
     }
 
-    /**
-     * Searches for nearest neighbors in the vector index.
-     *
-     * @param key    the property key
-     * @param vector the query vector
-     * @param k      the number of nearest neighbors to return
-     * @return a list of elements sorted by distance
-     */
+    @Override
     public List<T> findNearestElements(final String key, final float[] vector, final int k) {
-        if (!this.indexedKeys.contains(key) || !this.vectorIndices.containsKey(key))
-            throw new IllegalArgumentException("The key '" + key + "' is not indexed");
-
-        final Index<Object, float[], ElementItem, Float> index = this.vectorIndices.get(key);
-        final List<SearchResult<ElementItem, Float>> nearest = index.findNearest(vector, k);
-        return nearest.stream().map(sr -> sr.item().element).collect(Collectors.toList());
+        return findNearest(key, vector, k).stream()
+                .map(TinkerIndexElement::getElement)
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Removes an element from the vector index.
-     *
-     * @param key     the property key
-     * @param element the element
-     */
     public void removeFromIndex(final String key, final T element) {
-        if (!this.indexedKeys.contains(key) || !this.vectorIndices.containsKey(key))
+        final IndexState<T> state = this.vectorIndices.get(key);
+        if (state == null)
             return;
-
-        final Index<Object, float[], ElementItem, Float> index = this.vectorIndices.get(key);
-        try {
-            index.remove(element.id(), 0);
-        } catch (Exception e) {
-            // If the element is not in the index, just ignore the exception
-        }
+        state.remove(element);
     }
 
-    /**
-     * Updates the vector index when an element's property changes.
-     *
-     * @param key      the property key
-     * @param newValue the new vector value
-     * @param element  the element
-     */
     public void updateIndex(final String key, final float[] newValue, final T element) {
-        if (!this.indexedKeys.contains(key) || !this.vectorIndices.containsKey(key))
+        final IndexState<T> state = this.vectorIndices.get(key);
+        if (state == null)
             return;
-
-        final Index<Object, float[], ElementItem, Float> index = this.vectorIndices.get(key);
-        try {
-            index.remove(element.id(), 0);
-        } catch (Exception e) {
-            // If the element is not in the index, just ignore the exception
-        }
-        final ElementItem item = new ElementItem(element.id(), newValue, element);
-        addWithResize(key, index, item);
+        state.remove(element);
+        state.add(element, newValue);
     }
 
-    /**
-     * Drops the vector index for the specified property key.
-     *
-     * @param key the property key
-     */
     @Override
     public void dropIndex(final String key) {
-        if (this.vectorIndices.containsKey(key)) {
-            this.vectorIndices.remove(key);
-        }
-
+        final IndexState<T> state = this.vectorIndices.remove(key);
+        if (state != null)
+            state.close();
         this.indexedKeys.remove(key);
     }
 
-    /**
-     * A class that wraps an element with its vector for use in the HNSW index.
-     */
-    private class ElementItem implements Item<Object, float[]>, Serializable {
-        private final Object id;
-        private final float[] vector;
-        private final T element;
-
-        public ElementItem(final Object id, final float[] vector, final T element) {
-            this.id = id;
-            this.vector = vector;
-            this.element = element;
-        }
-
-        @Override
-        public Object id() {
-            return id;
-        }
-
-        @Override
-        public float[] vector() {
-            return vector;
-        }
-
-        @Override
-        public int dimensions() {
-            return vector.length;
-        }
-    }
-
-    // AbstractTinkerIndex implementation methods
-
     @Override
     public List<T> get(final String key, final Object value) {
-        // This method is for regular indices, not vector indices
         return Collections.emptyList();
     }
 
     @Override
     public long count(final String key, final Object value) {
-        // This method is for regular indices, not vector indices
         return 0;
     }
 
     @Override
     public void remove(final String key, final Object value, final T element) {
-        // only make changes to index tx close
+        // index changes only applied on tx commit
     }
 
     @Override
     public void removeElement(final T element) {
-        // only make changes to index tx close
+        // index changes only applied on tx commit
     }
 
     @Override
     public void autoUpdate(final String key, final Object newValue, final Object oldValue, final T element) {
-        // only make changes to index tx close
+        // index changes only applied on tx commit
     }
 
-    /**
-     * Commit changes to the index.
-     *
-     * @param updatedElements the set of updated elements
-     */
     public void commit(final Set<TinkerElementContainer> updatedElements) {
         for (final TinkerElementContainer container : updatedElements) {
-            Object element = container.get();
+            final Object element = container.get();
             if (element != null && !container.isDeleted() && indexClass.isInstance(element)) {
-                T tinkerElement = (T) element;
-                for (String key : this.indexedKeys) {
-                    Property property = tinkerElement.property(key);
-                    if (property.isPresent() && property.value() instanceof float[]) {
-                        updateIndex(key, (float[]) property.value(), tinkerElement);
-                    }
+                final T tinkerElement = (T) element;
+                for (final String key : this.indexedKeys) {
+                    final Property<?> prop = tinkerElement.property(key);
+                    if (prop.isPresent() && prop.value() instanceof float[])
+                        updateIndex(key, (float[]) prop.value(), tinkerElement);
                 }
             } else if (container.isDeleted()) {
-                Object oldElement = container.getUnmodified();
+                final Object oldElement = container.getUnmodified();
                 if (oldElement != null && indexClass.isInstance(oldElement)) {
-                    T tinkerOldElement = (T) oldElement;
-                    for (String key : this.indexedKeys) {
+                    final T tinkerOldElement = (T) oldElement;
+                    for (final String key : this.indexedKeys)
                         removeFromIndex(key, tinkerOldElement);
-                    }
                 }
             }
         }
     }
 
-    /**
-     * Rollback changes to the index.
-     */
     public void rollback() {
-        // No specific action needed for rollback in the current implementation
+        // no action needed; index changes are deferred to commit
     }
 
     /**
-     * Helper method to add an item to the index with automatic resizing if needed.
-     *
-     * @param key   the property key
-     * @param index the vector index
-     * @param item  the item to add
+     * Per-key index state backed by JVector.
      */
-    private void addWithResize(final String key, final Index<Object, float[], ElementItem, Float> index,
-                               final ElementItem item) {
-        try {
-            index.add(item);
-        } catch (SizeLimitExceededException e) {
-            // Get the growth rate for this index
-            final Double growthRate = this.growthRates.getOrDefault(key, 0.0d);
+    private static final class IndexState<T extends TinkerElement> {
+        private final int dimension;
+        private final VectorSimilarityFunction similarityFunction;
+        private final List<VectorFloat<?>> vectors = new ArrayList<>();
+        private final List<T> elements = new ArrayList<>();
+        private final Map<Object, Integer> idToOrdinal = new ConcurrentHashMap<>();
+        private final GraphIndexBuilder builder;
 
-            // If growth rate is 0 or not set, rethrow the exception
-            if (growthRate <= 0) {
-                throw e;
+        IndexState(final int dimension, final int m, final int efConstruction,
+                   final VectorSimilarityFunction similarityFunction) {
+            this.dimension = dimension;
+            this.similarityFunction = similarityFunction;
+            final ListRandomAccessVectorValues ravv = new ListRandomAccessVectorValues(vectors, dimension);
+            this.builder = new GraphIndexBuilder(ravv, similarityFunction, m, efConstruction, 1.4f, 1.2f);
+        }
+
+        synchronized void add(final T element, final float[] vector) {
+            if (vector.length != dimension)
+                throw new IllegalArgumentException(
+                        "Vector dimension " + vector.length + " does not match index dimension " + dimension);
+            final int ordinal = vectors.size();
+            final VectorFloat<?> vf = VTS.createFloatVector(vector);
+            vectors.add(vf);
+            elements.add(element);
+            idToOrdinal.put(element.id(), ordinal);
+            builder.addGraphNode(ordinal, vf);
+        }
+
+        synchronized void remove(final T element) {
+            final Integer ordinal = idToOrdinal.remove(element.id());
+            if (ordinal != null)
+                builder.markNodeDeleted(ordinal);
+        }
+
+        List<TinkerIndexElement<T>> search(final float[] queryVector, final int k) {
+            if (vectors.isEmpty())
+                return Collections.emptyList();
+            final VectorFloat<?> query = VTS.createFloatVector(queryVector);
+            final ListRandomAccessVectorValues ravv = new ListRandomAccessVectorValues(vectors, dimension);
+            final var ssp = SearchScoreProvider.exact(query, similarityFunction, ravv);
+            try (final GraphSearcher searcher = new GraphSearcher(builder.getGraph())) {
+                final SearchResult result = searcher.search(ssp, k, io.github.jbellis.jvector.util.Bits.ALL);
+                return Arrays.stream(result.getNodes())
+                        .map(ns -> new TinkerIndexElement<>(elements.get(ns.node), 1.0f - ns.score))
+                        .collect(Collectors.toList());
+            } catch (Exception e) {
+                throw new RuntimeException("Vector search failed", e);
             }
+        }
 
-            // Calculate new size based on growth rate
-            final int currentSize = ((HnswIndex<Object, float[], ElementItem, Float>) index).getMaxItemCount();
-            final int newSize = currentSize + (int) Math.ceil(currentSize * growthRate);
-
-            // Resize the index
-            ((HnswIndex<Object, float[], ElementItem, Float>) index).resize(newSize);
-
-            // Try adding the item again
-            index.add(item);
-        } catch (Exception e) {
-            // If it's not a size limit exception, rethrow it
-            throw e;
+        void close() {
+            try {
+                builder.close();
+            } catch (Exception ignored) {}
         }
     }
 }

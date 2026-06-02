@@ -471,9 +471,9 @@ public class TinkerGraphServiceTest {
         final List<Object> list = gv.V(vAlice).call(TinkerVectorSearchByElementFactory.NAME, m).toList();
 
         final List<Map<String,Object>> expected = new ArrayList<>();
-        expected.add(asMap("distance", 0.006116271f, "element", vDave));
-        expected.add(asMap("distance", 0.9500624f, "element", vBob));
-        expected.add(asMap("distance", 1.0f, "element", vCharlie));
+        expected.add(asMap("distance", 0.0030581355f, "element", vDave));
+        expected.add(asMap("distance", 0.4750312f, "element", vBob));
+        expected.add(asMap("distance", 0.5f, "element", vCharlie));
 
         // Use a custom comparison to ensure the lists are equal
         assertEquals(expected.size(), list.size());
@@ -504,8 +504,8 @@ public class TinkerGraphServiceTest {
         final List<Object> list = gv.E(e1).call(TinkerVectorSearchByElementFactory.NAME, m).toList();
 
         final List<Map<String, Object>> expected = new ArrayList<>();
-        expected.add(asMap("distance", 0.29289323f, "element", e3));
-        expected.add(asMap("distance", 1.0f, "element", e2));
+        expected.add(asMap("distance", 0.14644659f, "element", e3));
+        expected.add(asMap("distance", 0.5f, "element", e2));
 
         // Use a custom comparison to ensure the lists are equal
         assertEquals(expected.size(), list.size());
@@ -534,7 +534,7 @@ public class TinkerGraphServiceTest {
         final List<Object> list = gv.V(vAlice).call(TinkerVectorSearchByElementFactory.NAME, m).toList();
 
         final List<Map<String,Object>> expected = new ArrayList<>();
-        expected.add(asMap("distance", 0.006116271f, "element", vDave));
+        expected.add(asMap("distance", 0.0030581355f, "element", vDave));
 
         // Use a custom comparison to ensure the lists are equal
         assertEquals(expected.size(), list.size());
@@ -616,9 +616,9 @@ public class TinkerGraphServiceTest {
 
         final List<Map<String,Object>> expected = new ArrayList<>();
         expected.add(asMap("distance", 0.0f, "element", vAlice));
-        expected.add(asMap("distance", 0.006116271f, "element", vDave));
-        expected.add(asMap("distance", 0.9500624f, "element", vBob));
-        expected.add(asMap("distance", 1.0f, "element", vCharlie));
+        expected.add(asMap("distance", 0.0030581355f, "element", vDave));
+        expected.add(asMap("distance", 0.4750312f, "element", vBob));
+        expected.add(asMap("distance", 0.5f, "element", vCharlie));
 
         // Use a custom comparison to ensure the lists are equal
         assertEquals(expected.size(), list.size());
@@ -655,8 +655,8 @@ public class TinkerGraphServiceTest {
 
         final List<Map<String, Object>> expected = new ArrayList<>();
         expected.add(asMap("distance", 0.0f, "element", e1));
-        expected.add(asMap("distance", 0.29289323f, "element", e3));
-        expected.add(asMap("distance", 1.0f, "element", e2));
+        expected.add(asMap("distance", 0.14644659f, "element", e3));
+        expected.add(asMap("distance", 0.5f, "element", e2));
 
         // Use a custom comparison to ensure the lists are equal
         assertEquals(expected.size(), list.size());

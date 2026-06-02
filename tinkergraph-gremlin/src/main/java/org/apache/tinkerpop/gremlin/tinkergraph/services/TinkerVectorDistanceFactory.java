@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.services;
 
-import com.github.jelmerk.hnswlib.core.DistanceFunction;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -104,21 +103,18 @@ public class TinkerVectorDistanceFactory extends TinkerServiceRegistry.TinkerSer
 
         final TinkerIndexType.Vector vector = TinkerIndexType.Vector.valueOf(
                 params.getOrDefault(Params.DISTANCE_FUNCTION, TinkerIndexType.Vector.COSINE).toString());
-        final DistanceFunction<float[], Float> distanceFunction = vector.getDistanceFunction();
 
         final Path path = in.get();
         final int pathLength = path.size();
         final Element start = path.get(0);
         final Element end = path.get(pathLength - 1);
 
-        // if the elements do not have the specified key, then return no results because there's nothing we can
-        // calculate distance on
         if (!start.keys().contains(key) || !end.keys().contains(key))
             return CloseableIterator.empty();
 
         final float[] startEmbedding = start.value(key);
         final float[] endEmbedding = end.value(key);
-        return CloseableIterator.of(Collections.singleton(distanceFunction.distance(startEmbedding, endEmbedding)).iterator());
+        return CloseableIterator.of(Collections.singleton(vector.distance(startEmbedding, endEmbedding)).iterator());
     }
 
     @Override

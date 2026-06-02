@@ -18,8 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import com.github.jelmerk.hnswlib.core.DistanceFunction;
-import com.github.jelmerk.hnswlib.core.DistanceFunctions;
+import io.github.jbellis.jvector.vector.VectorSimilarityFunction;
 
 /**
  * Enum for the different types of indices supported by TinkerGraph
@@ -38,29 +37,66 @@ public enum TinkerIndexType {
     /**
      * Distance functions for vector index.
      */
-    public enum Vector implements VectorDistance<float[], Float> {
+    public enum Vector {
 
-        COSINE(DistanceFunctions.FLOAT_COSINE_DISTANCE),
-        EUCLIDEAN(DistanceFunctions.FLOAT_EUCLIDEAN_DISTANCE),
-        MANHATTAN(DistanceFunctions.FLOAT_MANHATTAN_DISTANCE),
-        INNER_PRODUCT(DistanceFunctions.FLOAT_INNER_PRODUCT),
-        BRAY_CURTIS(DistanceFunctions.FLOAT_BRAY_CURTIS_DISTANCE),
-        CANBERRA(DistanceFunctions.FLOAT_CANBERRA_DISTANCE),
-        CORRELATION(DistanceFunctions.FLOAT_CORRELATION_DISTANCE);
+        COSINE {
+            @Override
+            public VectorSimilarityFunction toJVectorFunction() {
+                return VectorSimilarityFunction.COSINE;
+            }
 
-        private final DistanceFunction<float[], Float> distanceFunction;
+            @Override
+            public float distance(final float[] a, final float[] b) {
+                float dot = 0, normA = 0, normB = 0;
+                for (int i = 0; i < a.length; i++) {
+                    dot += a[i] * b[i];
+                    normA += a[i] * a[i];
+                    normB += b[i] * b[i];
+                }
+                final float denom = (float) (Math.sqrt(normA) * Math.sqrt(normB));
+                return denom == 0 ? 1.0f : 1.0f - (dot / denom);
+            }
+        },
+        EUCLIDEAN {
+            @Override
+            public VectorSimilarityFunction toJVectorFunction() {
+                return VectorSimilarityFunction.EUCLIDEAN;
+            }
 
-        Vector(final DistanceFunction<float[], Float> distanceFunction) {
-            this.distanceFunction = distanceFunction;
-        }
+            @Override
+            public float distance(final float[] a, final float[] b) {
+                float sum = 0;
+                for (int i = 0; i < a.length; i++) {
+                    final float d = a[i] - b[i];
+                    sum += d * d;
+                }
+                return (float) Math.sqrt(sum);
+            }
+        },
+        INNER_PRODUCT {
+            @Override
+            public VectorSimilarityFunction toJVectorFunction() {
+                return VectorSimilarityFunction.DOT_PRODUCT;
+            }
 
-        @Override
-        public DistanceFunction<float[], Float> getDistanceFunction() {
-            return distanceFunction;
-        }
-    }
+            @Override
+            public float distance(final float[] a, final float[] b) {
+                float dot = 0;
+                for (int i = 0; i < a.length; i++) {
+                    dot += a[i] * b[i];
+                }
+                return 1.0f - dot;
+            }
+        };
 
-    interface VectorDistance<V, T> {
-        DistanceFunction<V, T> getDistanceFunction();
+        /**
+         * Returns the corresponding JVector similarity function for index construction and search.
+         */
+        public abstract VectorSimilarityFunction toJVectorFunction();
+
+        /**
+         * Computes the distance between two vectors. Lower values indicate greater similarity.
+         */
+        public abstract float distance(final float[] a, final float[] b);
     }
 }
