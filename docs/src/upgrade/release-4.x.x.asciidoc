@@ -489,6 +489,18 @@ unwrap(toInt(29));  // 29
 unwrap('hello');    // 'hello'
 ----
 
+==== Subgraph Support in GLVs
+
+All GLVs now support the `subgraph()` step. Previously, calling `subgraph()` from a GLV produced an unknown-type error
+because the variant could not interpret the `Graph` payload that the server returned. Applications can now extract a
+portion of a remote graph as part of a normal traversal and inspect its vertices and edges directly from the client,
+without having to re-issue queries to reconstruct the result. See: <<subgraph-step>>.
+
+In the GLVs, the result is a detached snapshot of the captured vertices and edges, not a traversable `Graph` instance.
+It cannot be passed to `traversal().with(...)`, and mutating its collections has no effect on the source graph. To
+re-query elements against the original graph, extract their ids and call `g.V(id)` or `g.E(id)` against the original
+`GraphTraversalSource`.
+
 === Upgrading for Providers
 
 ==== Graph System Providers

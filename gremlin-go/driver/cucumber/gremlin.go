@@ -991,6 +991,7 @@ var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[
     "g_V_hasLabelXpersonX_valuesXageX_asString": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().HasLabel("person").Values("age").AsString()}}, 
     "g_V_hasLabelXpersonX_valuesXageX_order_fold_asStringXlocalX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().HasLabel("person").Values("age").Order().Fold().AsString(gremlingo.Scope.Local)}}, 
     "g_V_hasLabelXpersonX_valuesXageX_asString_concatX_years_oldX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().HasLabel("person").Values("age").AsString().Concat(" years old")}}, 
+    "g_V_outEXknowsX_subgraphXsgX_capXsgX_asString": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().OutE("knows").Subgraph("sg").Cap("sg").AsString()}}, 
     "g_call": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Call()}}, 
     "g_callXlistX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Call("--list")}}, 
     "g_callXlistX_withXstring_stringX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Call("--list").With("service", "tinker.search")}}, 

@@ -21,6 +21,7 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 from gremlin_python.statics import long
 from gremlin_python.structure.graph import Edge
+from gremlin_python.structure.graph import Graph
 from gremlin_python.structure.graph import Property
 from gremlin_python.structure.graph import Vertex
 from gremlin_python.structure.graph import VertexProperty
@@ -91,6 +92,19 @@ class TestGraph(object):
                 else:
                     assert i == j
                     assert i.__hash__() == hash(i)
+
+    def test_graph_repr(self):
+        # empty graph
+        g = Graph()
+        assert "graph[vertices:0 edges:0]" == repr(g)
+
+        # graph with two vertices and one edge
+        v1 = Vertex(1, "person")
+        v2 = Vertex(2, "person")
+        g.vertices[1] = v1
+        g.vertices[2] = v2
+        g.edges[3] = Edge(3, v1, "knows", v2)
+        assert "graph[vertices:2 edges:1]" == repr(g)
 
     def test_path(self):
         path = Path([set(["a", "b"]), set(["c", "b"]), set([])], [1, Vertex(1), "hello"])

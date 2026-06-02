@@ -56,6 +56,24 @@ func TestGraphStructureFunctions(t *testing.T) {
 		assert.Equal(t, "p[property-Key->[0 1]]", p.String())
 	})
 
+	t.Run("Test Graph.String() empty graph", func(t *testing.T) {
+		g := NewGraph()
+		assert.Equal(t, "graph[vertices:0 edges:0]", g.String())
+	})
+
+	t.Run("Test Graph.String() with vertices and edges", func(t *testing.T) {
+		g := NewGraph()
+		v1 := &Vertex{Element: Element{Id: int32(1), Label: "person"}}
+		v2 := &Vertex{Element: Element{Id: int32(2), Label: "person"}}
+		g.Vertices[v1.Id] = v1
+		g.Vertices[v2.Id] = v2
+		g.Edges[int32(3)] = &Edge{
+			Element: Element{Id: int32(3), Label: "knows"},
+			InV:     *v2, OutV: *v1,
+		}
+		assert.Equal(t, "graph[vertices:2 edges:1]", g.String())
+	})
+
 	s1 := NewSimpleSet("foo")
 	s2 := NewSimpleSet("bar")
 	s3 := NewSimpleSet("baz")

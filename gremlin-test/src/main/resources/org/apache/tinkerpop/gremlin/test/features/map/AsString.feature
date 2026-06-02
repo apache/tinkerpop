@@ -210,3 +210,15 @@ Feature: Step - asString()
       | 27 years old |
       | 32 years old |
       | 35 years old |
+
+  @StepSubgraph
+  Scenario: g_V_outEXknowsX_subgraphXsgX_capXsgX_asString
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().outE("knows").subgraph("sg").cap("sg").asString()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tinkergraph[vertices:3 edges:2] |

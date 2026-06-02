@@ -216,6 +216,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     case object[] arrayResult:
                         _result = arrayResult;
                         return;
+                    case Graph graphResult:
+                        // Graph is a container of vertices/edges but not iterable itself; wrap in a
+                        // single-element array so assertions like AssertSubgraphStructure can find it.
+                        _result = new object?[] { graphResult };
+                        return;
                     case IEnumerable enumerableResult:
                         _result = enumerableResult.Cast<object>().ToArray();
                         return;
@@ -297,7 +302,60 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         [Then("the result should be a subgraph with the following")]
         public void AssertSubgraphStructure(DataTable? table = null)
         {
+            AssertThatNoErrorWasThrown();
 
+            // The Cap step yields a single Graph instance as the only result.
+            Assert.NotNull(_result);
+            var sg = Assert.IsType<Graph>(_result![0]);
+
+            if (table == null)
+            {
+                return;
+            }
+
+            var rows = table.Rows.ToArray();
+            var columnName = rows[0].Cells.First().Value;
+            var assertingVertices = columnName == "vertices";
+
+            if (assertingVertices)
+            {
+                var expectedVertices = rows.Skip(1)
+                    .Select(r => (Vertex)ParseValue(r.Cells.First().Value, _graphName!)!)
+                    .ToList();
+                Assert.Equal(expectedVertices.Count, sg.Vertices.Count);
+
+                foreach (var expected in expectedVertices)
+                {
+                    Assert.NotNull(expected.Id);
+                    Assert.True(sg.Vertices.ContainsKey(expected.Id!),
+                        $"Expected subgraph to contain vertex with id {expected.Id}");
+                    var actual = sg.Vertices[expected.Id!];
+                    Assert.Equal(expected.Label, actual.Label);
+
+                    var variableKey = actual.Label == "person" ? "age" : "lang";
+                    Assert.Equal(expected.Property("name")?.Value, actual.Property("name")?.Value);
+                    Assert.Equal(expected.Property(variableKey)?.Value, actual.Property(variableKey)?.Value);
+                }
+            }
+            else
+            {
+                var expectedEdges = rows.Skip(1)
+                    .Select(r => (Edge)ParseValue(r.Cells.First().Value, _graphName!)!)
+                    .ToList();
+                Assert.Equal(expectedEdges.Count, sg.Edges.Count);
+
+                foreach (var expected in expectedEdges)
+                {
+                    Assert.NotNull(expected.Id);
+                    Assert.True(sg.Edges.ContainsKey(expected.Id!),
+                        $"Expected subgraph to contain edge with id {expected.Id}");
+                    var actual = sg.Edges[expected.Id!];
+                    Assert.Equal(expected.Label, actual.Label);
+                    Assert.Equal(expected.Property("weight")?.Value, actual.Property("weight")?.Value);
+                    Assert.Equal(expected.OutV.Id, actual.OutV.Id);
+                    Assert.Equal(expected.InV.Id, actual.InV.Id);
+                }
+            }
         }
 
         [Then("the result should be (\\w+)\\s*")]

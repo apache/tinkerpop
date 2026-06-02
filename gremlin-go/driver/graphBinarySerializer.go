@@ -51,6 +51,7 @@ const (
 	edgeType           dataType = 0x0d
 	pathType           dataType = 0x0e
 	propertyType       dataType = 0x0f
+	graphType          dataType = 0x10
 	vertexType         dataType = 0x11
 	vertexPropertyType dataType = 0x12
 	directionType      dataType = 0x18
@@ -363,6 +364,146 @@ func pathWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeS
 	return typeSerializer.write(p.Objects, w)
 }
 
+// Format: {vertex_count}{vertices...}{edge_count}{edges...}
+// Per vertex: {id}{labels:list<string>}{vp_count}{vps...}
+// Per vp:     {id}{labels:list<string>}{value}{parent=null}{meta_props:list<property>}
+// Per edge:   {id}{labels:list<string>}{inVId}{inVLabel=null}{outVId}{outVLabel=null}{parent=null}{props:list<property>}
+func graphWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
+	g := value.(*Graph)
+
+	// vertex_count (value-only int32)
+	if err := typeSerializer.writeValue(int32(len(g.Vertices)), w, false); err != nil {
+		return err
+	}
+
+	for _, v := range g.Vertices {
+		// {id} fully-qualified
+		if err := typeSerializer.write(v.Id, w); err != nil {
+			return err
+		}
+		// {labels} list<string> value-only, 1 element
+		if err := typeSerializer.writeValue([1]string{v.Label}, w, false); err != nil {
+			return err
+		}
+
+		// Collect vertex properties as []*VertexProperty regardless of how they are stored.
+		vps := asVertexProperties(v.Properties)
+
+		// {vp_count} value-only int32
+		if err := typeSerializer.writeValue(int32(len(vps)), w, false); err != nil {
+			return err
+		}
+
+		for _, vp := range vps {
+			// {vp_id} fully-qualified
+			if err := typeSerializer.write(vp.Id, w); err != nil {
+				return err
+			}
+			// {vp_label} list<string> value-only, 1 element
+			if err := typeSerializer.writeValue([1]string{vp.Label}, w, false); err != nil {
+				return err
+			}
+			// {vp_value} fully-qualified
+			if err := typeSerializer.write(vp.Value, w); err != nil {
+				return err
+			}
+			// {parent} fully-qualified null placeholder
+			if _, err := w.Write(nullBytes); err != nil {
+				return err
+			}
+			// {meta_props} value-only list<property>
+			if err := typeSerializer.writeValue(asProperties(vp.Properties), w, false); err != nil {
+				return err
+			}
+		}
+	}
+
+	// edge_count (value-only int32)
+	if err := typeSerializer.writeValue(int32(len(g.Edges)), w, false); err != nil {
+		return err
+	}
+
+	for _, e := range g.Edges {
+		// {id} fully-qualified
+		if err := typeSerializer.write(e.Id, w); err != nil {
+			return err
+		}
+		// {labels} list<string> value-only, 1 element
+		if err := typeSerializer.writeValue([1]string{e.Label}, w, false); err != nil {
+			return err
+		}
+		// {inV_id} fully-qualified
+		if err := typeSerializer.write(e.InV.Id, w); err != nil {
+			return err
+		}
+		// {inV_label} fully-qualified null placeholder
+		if _, err := w.Write(nullBytes); err != nil {
+			return err
+		}
+		// {outV_id} fully-qualified
+		if err := typeSerializer.write(e.OutV.Id, w); err != nil {
+			return err
+		}
+		// {outV_label} fully-qualified null placeholder
+		if _, err := w.Write(nullBytes); err != nil {
+			return err
+		}
+		// {parent} fully-qualified null placeholder
+		if _, err := w.Write(nullBytes); err != nil {
+			return err
+		}
+		// {props} value-only list<property>
+		if err := typeSerializer.writeValue(asProperties(e.Properties), w, false); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// asVertexProperties coerces the interface{}-typed Properties field on a Vertex
+// to a slice of *VertexProperty. Returns an empty slice if nothing matches.
+func asVertexProperties(props interface{}) []*VertexProperty {
+	if props == nil {
+		return nil
+	}
+	if vps, ok := props.([]*VertexProperty); ok {
+		return vps
+	}
+	if list, ok := props.([]interface{}); ok {
+		out := make([]*VertexProperty, 0, len(list))
+		for _, p := range list {
+			if vp, ok := p.(*VertexProperty); ok {
+				out = append(out, vp)
+			}
+		}
+		return out
+	}
+	return nil
+}
+
+// asProperties coerces the interface{}-typed Properties field on a Vertex,
+// VertexProperty, or Edge to a slice of *Property. Returns an empty slice if
+// nothing matches.
+func asProperties(props interface{}) []*Property {
+	if props == nil {
+		return nil
+	}
+	if ps, ok := props.([]*Property); ok {
+		return ps
+	}
+	if list, ok := props.([]interface{}); ok {
+		out := make([]*Property, 0, len(list))
+		for _, p := range list {
+			if pp, ok := p.(*Property); ok {
+				out = append(out, pp)
+			}
+		}
+		return out
+	}
+	return nil
+}
+
 // Format: Same as List.
 // Mostly similar to listWriter with small changes
 func setWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
@@ -454,6 +595,8 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return vertexType, nil
 	case *Edge:
 		return edgeType, nil
+	case *Graph:
+		return graphType, nil
 	case *Property:
 		return propertyType, nil
 	case *VertexProperty:
