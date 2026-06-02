@@ -746,6 +746,16 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitTraversalMethod_hasLabel_Traversal(final GremlinParser.TraversalMethod_hasLabel_TraversalContext ctx) {
+        final String step = ctx.getChild(0).getText();
+        sb.append(convertToPascalCase(step));
+        sb.append("(");
+        visit(ctx.nestedTraversal());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
     public Void visitTraversalMethod_hasLabel_String_String(final GremlinParser.TraversalMethod_hasLabel_String_StringContext ctx) {
         // if there is only one argument then cast to string otherwise it's ambiguous with hasLabel(P)
         if (ctx.stringNullableArgumentVarargs() == null || ctx.stringNullableArgumentVarargs().getChildCount() == 0) {

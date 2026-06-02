@@ -775,6 +775,15 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
+    public GraphTraversal visitTraversalMethod_hasLabel_Traversal(final GremlinParser.TraversalMethod_hasLabel_TraversalContext ctx) {
+        final Traversal.Admin<?, ?> traversal = (Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal());
+        return graphTraversal.hasLabel((Traversal<?, ?>) traversal);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public GraphTraversal visitTraversalMethod_hasLabel_String_String(final GremlinParser.TraversalMethod_hasLabel_String_StringContext ctx) {
         if (ctx.getChildCount() == 4) {
             final Object literalOrVar = antlr.argumentVisitor.visitStringNullableArgument(ctx.stringNullableArgument());

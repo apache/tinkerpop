@@ -386,6 +386,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_VXaddVXxX_idX_rejected", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(__.AddV((string) "x").Id())}}, 
                {"g_EXaddVXxX_idX_rejected", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.E(__.AddV((string) "x").Id())}}, 
                {"g_V_propertyXV_mapXdropX_projectXxX_byXnameXX_rejected", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Property((ITraversal) __.V().Map<object>(__.Drop()).Project<object>("x").By("name"))}}, 
+               {"g_V_propertyXaddVXtempX_projectXkX_byXnameXX_rejected", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Property((ITraversal) __.AddV((string) "temp").Project<object>("k").By("name"))}}, 
                {"g_V_hasXname_VXvid1X_valuesXnameXX_passes_verification", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("name", __.V(p["vid1"]).Values<object>("name"))}}, 
                {"g_V_hasXage_gtXVXvid1X_valuesXageXXX_passes_verification", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("age", P.Gt(__.V(p["vid1"]).Values<object>("age")))}}, 
                {"g_V_VXoutXknowsX_idX_valuesXnameX_passes_verification", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).V(__.Out("knows").Id()).Values<object>("name")}}, 

@@ -1213,6 +1213,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#hasLabel(Traversal)
+     */
+    public static <A> GraphTraversal<A, A> hasLabel(final Traversal<?, ?> traversal) {
+        return __.<A>start().hasLabel(traversal);
+    }
+
+    /**
      * @see GraphTraversal#hasId(Object, Object...)
      */
     public static <A> GraphTraversal<A, A> hasId(final Object id, Object... otherIds) {

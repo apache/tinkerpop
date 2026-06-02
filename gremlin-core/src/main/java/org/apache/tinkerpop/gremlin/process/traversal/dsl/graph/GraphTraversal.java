@@ -2895,6 +2895,23 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * Filters vertices, edges and vertex properties based on their label using a child traversal
+     * whose results are resolved at runtime against the current traverser.
+     *
+     * @param traversal the child traversal whose results are used as the label filter value
+     * @return the traversal with an appended {@link HasStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
+     * @since 4.0.0
+     */
+    public default GraphTraversal<S, E> hasLabel(final Traversal<?, ?> traversal) {
+        if (null == traversal) return hasLabel((String) null);
+        ChildTraversalValidator.validateFilterContext(traversal.asAdmin());
+        this.asAdmin().getGremlinLang().addStep(Symbols.hasLabel, traversal);
+        final HasContainer hasContainer = new HasContainer(T.label.getAccessor(), traversal.asAdmin());
+        return this.asAdmin().addStep(new HasStep(this.asAdmin(), hasContainer));
+    }
+
+    /**
      * Filters vertices, edges and vertex properties based on their label.
      *
      * @param label       the label of the {@link Element}

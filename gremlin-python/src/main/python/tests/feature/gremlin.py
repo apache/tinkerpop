@@ -361,6 +361,7 @@ world.gremlins = {
     'g_VXaddVXxX_idX_rejected': [(lambda g:g.V(__.add_v('x').id_()))], 
     'g_EXaddVXxX_idX_rejected': [(lambda g:g.E(__.add_v('x').id_()))], 
     'g_V_propertyXV_mapXdropX_projectXxX_byXnameXX_rejected': [(lambda g:g.V().property(__.V().map(__.drop()).project('x').by('name')))], 
+    'g_V_propertyXaddVXtempX_projectXkX_byXnameXX_rejected': [(lambda g:g.V().property(__.add_v('temp').project('k').by('name')))], 
     'g_V_hasXname_VXvid1X_valuesXnameXX_passes_verification': [(lambda g, vid1=None:g.V().has('name', __.V(vid1).values('name')))], 
     'g_V_hasXage_gtXVXvid1X_valuesXageXXX_passes_verification': [(lambda g, vid1=None:g.V().has('age', P.gt(__.V(vid1).values('age'))))], 
     'g_V_VXoutXknowsX_idX_valuesXnameX_passes_verification': [(lambda g, vid1=None:g.V(vid1).V(__.out('knows').id_()).values('name'))], 

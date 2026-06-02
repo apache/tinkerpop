@@ -573,6 +573,7 @@ traversalMethod_hasKey
 traversalMethod_hasLabel
     : K_HASLABEL LPAREN traversalPredicate RPAREN #traversalMethod_hasLabel_P
     | K_HASLABEL LPAREN stringNullableArgument (COMMA stringNullableArgumentVarargs)? RPAREN #traversalMethod_hasLabel_String_String
+    | K_HASLABEL LPAREN nestedTraversal RPAREN #traversalMethod_hasLabel_Traversal
     ;
 
 traversalMethod_hasNot
