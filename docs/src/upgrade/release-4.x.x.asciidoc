@@ -41,6 +41,51 @@ anonymized form. The original gremlator.com was a prototype built by TinkerPop c
 previous implementation required Java and a running Gremlin Server, whereas the new version runs entirely in the
 browser with no server infrastructure needed.
 
+==== TinkerGraph Vector Index
+
+Vector search enables finding similar items based on their semantic meaning rather than exact keyword matches, which is
+essential for modern applications like recommendation systems, image search, and natural language processing.
+TinkerGraph now supports vector indexing and similarity search through a dedicated vector index implementation and the
+`call()` step, allowing efficient nearest neighbor searches on both vertices and edges.
+
+The vector index in TinkerGraph is implemented using HNSW (Hierarchical Navigable Small World), a state-of-the-art
+algorithm for approximate nearest neighbor search that provides excellent performance for high-dimensional vector data.
+To use this feature, you need to create a vector index, add elements with vector embeddings, and then perform searches
+using the `call()` step.
+
+Here's a basic example using Groovy:
+
+[source,groovy]
+----
+// Create a graph and register the vector search service
+graph = TinkerGraph.open()
+g = traversal().with(graph)
+graph.getServiceRegistry().registerService(new TinkerVectorSearchByElementFactory(graph))
+
+// Create a vector index with dimension 3
+indexConfig = [dimension: 3]
+graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig)
+
+// Add vertices with vector embeddings
+g.addV("person").property("name", "Alice").property("embedding", new float[]{1.0f, 0.0f, 0.0f}).iterate()
+g.addV("person").property("name", "Bob").property("embedding", new float[]{0.0f, 1.0f, 0.0f}).iterate()
+g.addV("person").property("name", "Charlie").property("embedding", new float[]{0.0f, 0.0f, 1.0f}).iterate()
+
+// Perform a vector search using the call() step
+params = [key: "embedding", topK: 2]
+g.V().has("name", "Alice").call("tinker.search.vector.topKByElement", params)
+----
+
+The `call()` step returns a list of maps, each containing the matching element and its distance from the query vector:
+
+[source,text]
+----
+==>[distance:0.9500624, element:v[2]]
+==>[distance:1.0, element:v[3]]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3158[TINKERPOP-3158]
+
 ==== Removed `uuid` Dependency in gremlin-javascript
 
 The `uuid` npm package has been removed from `gremlin-javascript`. UUID generation now uses the built-in
