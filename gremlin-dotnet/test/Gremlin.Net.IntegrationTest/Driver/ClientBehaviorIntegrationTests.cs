@@ -173,17 +173,12 @@ namespace Gremlin.Net.IntegrationTest.Driver
         {
             SkipIfServerUnavailable();
 
-            // NOTE: the driver surfaces a low-level exception (no Gremlin-aware wrapping,).
-            // The exact type is non-deterministic for malformed bytes: either an IOException
-            // at the stream layer or a KeyNotFoundException from the GraphBinary deserializer,
-            // depending on how the chunk is read.
-            var ex = await Assert.ThrowsAnyAsync<Exception>(async () =>
+            var ex = await Assert.ThrowsAsync<ResponseDeserializationException>(async () =>
             {
                 var resultSet = await _client!.SubmitAsync<dynamic>(SocketServerConstants.GremlinMalformedResponse);
                 await resultSet.ToListAsync();
             });
-            Assert.True(ex is System.IO.IOException or KeyNotFoundException,
-                $"Unexpected exception type: {ex.GetType().FullName}");
+            Assert.NotNull(ex.InnerException);
 
             // Recovery
             var resultSet = await _client!.SubmitAsync<dynamic>(SocketServerConstants.GremlinSingleVertex);
@@ -196,12 +191,13 @@ namespace Gremlin.Net.IntegrationTest.Driver
         {
             SkipIfServerUnavailable();
 
-            var ex = await Assert.ThrowsAsync<System.IO.IOException>(async () =>
+            var ex = await Assert.ThrowsAsync<ResponseDeserializationException>(async () =>
             {
                 var resultSet = await _client!.SubmitAsync<dynamic>(SocketServerConstants.GremlinEmptyBody);
                 await resultSet.ToListAsync();
             });
-            Assert.Contains("Unexpected end of stream", ex.Message);
+            Assert.IsType<System.IO.IOException>(ex.InnerException);
+            Assert.Contains("Unexpected end of stream", ex.InnerException!.Message);
 
             // Recovery
             var resultSet = await _client!.SubmitAsync<dynamic>(SocketServerConstants.GremlinSingleVertex);
