@@ -62,6 +62,8 @@ export type ConnectionOptions = {
   enableUserAgentOnConnect?: boolean;
   agent?: Agent;
   interceptors?: RequestInterceptor | RequestInterceptor[];
+  /** Maximum time in milliseconds to wait for a server response before aborting the request. Undefined means no timeout. */
+  requestTimeout?: number;
 };
 
 /**
@@ -257,17 +259,58 @@ export default class Connection extends EventEmitter {
       }
     }
 
-    return fetch(httpRequest.url, {
-      method: httpRequest.method,
-      headers: httpRequest.headers,
-      body: httpRequest.body,
-      signal,
-    });
+    let effectiveSignal = signal;
+    const timeoutMs = this.options.requestTimeout;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let timeoutController: AbortController | undefined;
+
+    if (timeoutMs !== undefined) {
+      timeoutController = new AbortController();
+      timeoutId = setTimeout(() => timeoutController!.abort(new DOMException('TimeoutError', 'TimeoutError')), timeoutMs);
+      effectiveSignal = signal ? AbortSignal.any([signal, timeoutController.signal]) : timeoutController.signal;
+    }
+
+    try {
+      const response = await fetch(httpRequest.url, {
+        method: httpRequest.method,
+        headers: httpRequest.headers,
+        body: httpRequest.body,
+        signal: effectiveSignal,
+      });
+      return response;
+    } catch (err: any) {
+      if (timeoutController?.signal.aborted) {
+        const e = new ResponseError(
+          `Request timed out after ${timeoutMs}ms - the server did not respond in time`,
+          { code: 598, message: `Request timeout: ${timeoutMs}ms exceeded` },
+        );
+        e.cause = err;
+        throw e;
+      }
+      const e = new ResponseError(
+        'Connection to server closed unexpectedly. Ensure that the server is still reachable and the connection has not been closed by the server or a network device.',
+        { code: 599, message: err.message || 'Connection failed' },
+      );
+      e.cause = err;
+      throw e;
+    } finally {
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    }
   }
 
   async #handleResponse(response: Response) {
+    let buffer: Buffer;
+    try {
+      buffer = Buffer.from(await response.arrayBuffer());
+    } catch (err: any) {
+      const e = new ResponseError(
+        'Connection to server closed unexpectedly. Ensure that the server is still reachable and the connection has not been closed by the server or a network device.',
+        { code: 599, message: err.message || 'Connection failed' },
+      );
+      e.cause = err;
+      throw e;
+    }
     const contentType = response.headers.get("Content-Type");
-    const buffer = Buffer.from(await response.arrayBuffer());
     const reader = this.#getReaderForContentType(contentType);
 
     if (!response.ok) {

@@ -67,7 +67,11 @@ describe('Client Behavior', function () {
   });
 
   it('should handle connection close before response and recover', async function () {
-    await assert.rejects(client.submit(GREMLIN_CLOSE_CONNECTION), /fetch failed/);
+    await assert.rejects(client.submit(GREMLIN_CLOSE_CONNECTION), (err) => {
+      assert.strictEqual(err.name, 'ResponseError');
+      assert.match(err.message, /Connection to server closed unexpectedly/);
+      return true;
+    });
     const result = await client.submit(GREMLIN_SINGLE_VERTEX);
     assert.strictEqual(result.length, 1);
   });
@@ -93,7 +97,11 @@ describe('Client Behavior', function () {
   });
 
   it('should handle partial content close and recover', async function () {
-    await assert.rejects(client.submit(GREMLIN_PARTIAL_CONTENT_CLOSE), /terminated/);
+    await assert.rejects(client.submit(GREMLIN_PARTIAL_CONTENT_CLOSE), (err) => {
+      assert.strictEqual(err.name, 'ResponseError');
+      assert.match(err.message, /Connection to server closed unexpectedly/);
+      return true;
+    });
     const result = await client.submit(GREMLIN_SINGLE_VERTEX);
     assert.strictEqual(result.length, 1);
   });
@@ -117,10 +125,18 @@ describe('Client Behavior', function () {
     assert.ok(result.length > 0);
   });
 
-  it.skip('should timeout when server never responds - JS driver lacks client-side idle timeout', async function () {
+  it('should timeout when server never responds', async function () {
+    this.timeout(5000);
     const shortTimeoutClient = createClient({ requestTimeout: 1000 });
     try {
-      await assert.rejects(shortTimeoutClient.submit(GREMLIN_NO_RESPONSE));
+      await assert.rejects(
+        shortTimeoutClient.submit(GREMLIN_NO_RESPONSE),
+        (err) => {
+          assert.match(err.message, /timed out/i);
+          assert.strictEqual(err.name, 'ResponseError');
+          return true;
+        },
+      );
       const result = await shortTimeoutClient.submit(GREMLIN_SINGLE_VERTEX);
       assert.strictEqual(result.length, 1);
     } finally {
