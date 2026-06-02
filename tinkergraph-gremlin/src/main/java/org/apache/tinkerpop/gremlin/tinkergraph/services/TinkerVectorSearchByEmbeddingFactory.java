@@ -33,6 +33,7 @@ import java.util.Set;
 import static org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerVectorSearchByElementFactory.Params.KEY;
 import static org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerVectorSearchByElementFactory.Params.TOP_K;
 import static org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerVectorSearchByEmbeddingFactory.Params.ELEMENT;
+import static org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerVectorSearchByEmbeddingFactory.Params.FILTER;
 import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 
 /**
@@ -55,11 +56,17 @@ public class TinkerVectorSearchByEmbeddingFactory extends TinkerServiceRegistry.
          * Specify whether the search should be for a "vertex" or "edge"
          */
         String ELEMENT = "element";
+        /**
+         * Optional map of property key to required value restricting which candidates are searched.
+         * Use the special key {@code "~label"} to filter by element label.
+         */
+        String FILTER = "filter";
 
         Map DESCRIBE = asMap(
                 KEY, "Specify they key storing the embedding for the vector search",
                 TOP_K, "Number of results to return (optional, defaults to 10)",
-                ELEMENT, "Specify whether the search should be for a \"vertex\" or \"edge\""
+                ELEMENT, "Specify whether the search should be for a \"vertex\" or \"edge\"",
+                FILTER, "Map of property key to required value to restrict candidates (optional); use \"~label\" to filter by label"
         );
     }
 
@@ -103,6 +110,7 @@ public class TinkerVectorSearchByEmbeddingFactory extends TinkerServiceRegistry.
     public CloseableIterator<Map<String,Object>> execute(final ServiceCallContext ctx, final Traverser.Admin<Float[]> in, final Map params) {
         final String key = (String) params.get(KEY);
         final int k = (int) params.getOrDefault(TOP_K, 10);
+        final Map<String, Object> filter = (Map<String, Object>) params.get(FILTER);
         final Object traverserObject = in.get();
 
         final float[] embedding = traverserObject instanceof Float[] ?
@@ -110,10 +118,10 @@ public class TinkerVectorSearchByEmbeddingFactory extends TinkerServiceRegistry.
 
         final String elementType = (String) params.get(ELEMENT);
         if ("vertex".equals(elementType)) {
-            return CloseableIterator.of(graph.findNearestVertices(key, embedding, k).stream()
+            return CloseableIterator.of(graph.findNearestVertices(key, embedding, k, filter, null).stream()
                     .map(TinkerIndexElement::toMap).iterator());
         } else if ("edge".equals(elementType)) {
-            return CloseableIterator.of(graph.findNearestEdges(key, embedding, k).stream()
+            return CloseableIterator.of(graph.findNearestEdges(key, embedding, k, filter, null).stream()
                     .map(TinkerIndexElement::toMap).iterator());
         } else {
             return CloseableIterator.empty();

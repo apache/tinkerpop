@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerVectorSearchByElementFactory.Params.FILTER;
 import static org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerVectorSearchByElementFactory.Params.KEY;
 import static org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerVectorSearchByElementFactory.Params.TOP_K;
 import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
@@ -52,10 +53,16 @@ public class TinkerVectorSearchByElementFactory extends TinkerServiceRegistry.Ti
          * Number of results to return
          */
         String TOP_K = "topK";
+        /**
+         * Optional map of property key to required value restricting which candidates are searched.
+         * Use the special key {@code "~label"} to filter by element label.
+         */
+        String FILTER = "filter";
 
         Map DESCRIBE = asMap(
                 KEY, "Specify they key storing the embedding for the vector search",
-                TOP_K, "Number of results to return (optional, defaults to 10)"
+                TOP_K, "Number of results to return (optional, defaults to 10)",
+                FILTER, "Map of property key to required value to restrict candidates (optional); use \"~label\" to filter by label"
         );
     }
 
@@ -94,23 +101,19 @@ public class TinkerVectorSearchByElementFactory extends TinkerServiceRegistry.Ti
     @Override
     public CloseableIterator<Map<String,Object>> execute(final ServiceCallContext ctx, final Traverser.Admin<Element> in, final Map params) {
         final String key = (String) params.get(KEY);
-
-        // add 1 because we always filter 1 out of the index because it will return a match on itself
-        final int k = (int) params.getOrDefault(TOP_K, 10) + 1;
+        final int k = (int) params.getOrDefault(TOP_K, 10);
+        final Map<String, Object> filter = (Map<String, Object>) params.get(FILTER);
         final Element e = in.get();
 
-        // if the current element does not have the specified key, then return no results
         if (!e.keys().contains(key))
             return CloseableIterator.empty();
 
         final float[] embedding = e.value(key);
         if (e instanceof Vertex) {
-            return CloseableIterator.of(graph.findNearestVertices(key, embedding, k).stream()
-                    .filter(tie -> !tie.getElement().equals(e))
+            return CloseableIterator.of(graph.findNearestVertices(key, embedding, k, filter, e.id()).stream()
                     .map(TinkerIndexElement::toMap).iterator());
         } else if (e instanceof Edge) {
-            return CloseableIterator.of(graph.findNearestEdges(key, embedding, k).stream()
-                    .filter(tie -> !tie.getElement().equals(e))
+            return CloseableIterator.of(graph.findNearestEdges(key, embedding, k, filter, e.id()).stream()
                     .map(TinkerIndexElement::toMap).iterator());
         } else {
             return CloseableIterator.empty();

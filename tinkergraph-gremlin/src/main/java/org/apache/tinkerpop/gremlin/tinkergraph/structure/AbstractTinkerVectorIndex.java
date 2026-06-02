@@ -20,7 +20,9 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Base class for representing a vector index for performing nearest neighbor searches.
@@ -52,7 +54,9 @@ abstract class AbstractTinkerVectorIndex<T extends Element> extends AbstractTink
      * @param k      the number of nearest neighbors to return
      * @return a list of elements sorted by distance
      */
-    public abstract List<TinkerIndexElement<T>> findNearest(final String key, final float[] vector, final int k);
+    public List<TinkerIndexElement<T>> findNearest(final String key, final float[] vector, final int k) {
+        return findNearest(key, vector, k, Collections.emptyMap(), null);
+    }
 
     /**
      * Searches for nearest neighbors in the vector index with the default k.
@@ -62,8 +66,21 @@ abstract class AbstractTinkerVectorIndex<T extends Element> extends AbstractTink
      * @return a list of elements sorted by distance
      */
     public List<TinkerIndexElement<T>> findNearest(final String key, final float[] vector) {
-        return findNearest(key, vector, DEFAULT_K);
+        return findNearest(key, vector, DEFAULT_K, Collections.emptyMap(), null);
     }
+
+    /**
+     * Searches for nearest neighbors in the vector index with optional property/label filtering.
+     *
+     * @param key       the property key
+     * @param vector    the query vector
+     * @param k         the number of nearest neighbors to return
+     * @param filter    map of property key to required value; use {@code "~label"} to filter by element label
+     * @param excludeId element id to exclude from results (used to exclude the source element in byElement searches)
+     * @return a list of elements sorted by distance
+     */
+    public abstract List<TinkerIndexElement<T>> findNearest(final String key, final float[] vector, final int k,
+                                                            final Map<String, Object> filter, final Object excludeId);
 
     /**
      * Searches for nearest neighbors in the vector index.

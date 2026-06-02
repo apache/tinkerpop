@@ -406,6 +406,42 @@ public abstract class AbstractTinkerGraph implements Graph {
         return new ArrayList<>(this.edgeVectorIndex.findNearestElements(key, vector));
     }
 
+    /**
+     * Find the nearest vertices to the given vector, restricting candidates to those matching the filter.
+     *
+     * @param key       the property key
+     * @param vector    the query vector
+     * @param k         the number of nearest neighbors to return
+     * @param filter    map of property key to required value; {@code "~label"} matches element label
+     * @param excludeId element id to exclude from results
+     * @return a list of vertices sorted by distance
+     */
+    public List<TinkerIndexElement<TinkerVertex>> findNearestVertices(final String key, final float[] vector,
+                                                                       final int k, final Map<String, Object> filter,
+                                                                       final Object excludeId) {
+        if (null == this.vertexVectorIndex)
+            throw new IllegalStateException("Vector index not created for vertices on key: '" + key + "'");
+        return this.vertexVectorIndex.findNearest(key, vector, k, filter, excludeId);
+    }
+
+    /**
+     * Find the nearest edges to the given vector, restricting candidates to those matching the filter.
+     *
+     * @param key       the property key
+     * @param vector    the query vector
+     * @param k         the number of nearest neighbors to return
+     * @param filter    map of property key to required value; {@code "~label"} matches element label
+     * @param excludeId element id to exclude from results
+     * @return a list of edges sorted by distance
+     */
+    public List<TinkerIndexElement<TinkerEdge>> findNearestEdges(final String key, final float[] vector,
+                                                                  final int k, final Map<String, Object> filter,
+                                                                  final Object excludeId) {
+        if (null == this.edgeVectorIndex)
+            throw new IllegalStateException("Vector index not created for edges on key: '" + key + "'");
+        return this.edgeVectorIndex.findNearest(key, vector, k, filter, excludeId);
+    }
+
     ///////////// Utility methods ///////////////
     protected abstract void addOutEdge(final TinkerVertex vertex, final String label, final Edge edge);
 

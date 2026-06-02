@@ -119,11 +119,12 @@ final class TinkerTransactionVectorIndex<T extends TinkerElement> extends Abstra
     }
 
     @Override
-    public List<TinkerIndexElement<T>> findNearest(final String key, final float[] vector, final int k) {
+    public List<TinkerIndexElement<T>> findNearest(final String key, final float[] vector, final int k,
+                                                   final Map<String, Object> filter, final Object excludeId) {
         final IndexState<T> state = this.vectorIndices.get(key);
         if (state == null)
             throw new IllegalArgumentException("The key '" + key + "' is not indexed");
-        return state.search(vector, k);
+        return state.search(vector, k, filter, excludeId);
     }
 
     @Override
@@ -243,20 +244,48 @@ final class TinkerTransactionVectorIndex<T extends TinkerElement> extends Abstra
                 builder.markNodeDeleted(ordinal);
         }
 
-        List<TinkerIndexElement<T>> search(final float[] queryVector, final int k) {
+        List<TinkerIndexElement<T>> search(final float[] queryVector, final int k,
+                                           final Map<String, Object> filter, final Object excludeId) {
             if (vectors.isEmpty())
                 return Collections.emptyList();
             final VectorFloat<?> query = VTS.createFloatVector(queryVector);
             final ListRandomAccessVectorValues ravv = new ListRandomAccessVectorValues(vectors, dimension);
             final var ssp = SearchScoreProvider.exact(query, similarityFunction, ravv);
+            final io.github.jbellis.jvector.util.Bits bits = buildBits(filter, excludeId);
             try (final GraphSearcher searcher = new GraphSearcher(builder.getGraph())) {
-                final SearchResult result = searcher.search(ssp, k, io.github.jbellis.jvector.util.Bits.ALL);
+                final SearchResult result = searcher.search(ssp, k, bits);
                 return Arrays.stream(result.getNodes())
                         .map(ns -> new TinkerIndexElement<>(elements.get(ns.node), 1.0f - ns.score))
                         .collect(Collectors.toList());
             } catch (Exception e) {
                 throw new RuntimeException("Vector search failed", e);
             }
+        }
+
+        private io.github.jbellis.jvector.util.Bits buildBits(final Map<String, Object> filter, final Object excludeId) {
+            if ((filter == null || filter.isEmpty()) && excludeId == null)
+                return io.github.jbellis.jvector.util.Bits.ALL;
+            return new io.github.jbellis.jvector.util.Bits() {
+                @Override
+                public boolean get(final int ordinal) {
+                    if (ordinal >= elements.size()) return false;
+                    final T el = elements.get(ordinal);
+                    if (el == null) return false;
+                    if (excludeId != null && el.id().equals(excludeId)) return false;
+                    if (filter != null) {
+                        for (final Map.Entry<String, Object> entry : filter.entrySet()) {
+                            if ("~label".equals(entry.getKey())) {
+                                if (!el.label().equals(entry.getValue())) return false;
+                            } else {
+                                final Property<?> prop = el.property(entry.getKey());
+                                if (!prop.isPresent() || !prop.value().equals(entry.getValue())) return false;
+                            }
+                        }
+                    }
+                    return true;
+                }
+
+            };
         }
 
         void close() {

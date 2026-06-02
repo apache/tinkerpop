@@ -881,6 +881,76 @@ public class TinkerGraphServiceTest {
         gv.V(vAlice).outE().inV().path().call(TinkerVectorDistanceFactory.NAME, params).next();
     }
 
+    @Test
+    public void g_V_callXvector_topK_byElement_filterByLabelX() {
+        final TinkerGraph graf = TinkerGraph.open();
+        graf.getServiceRegistry().registerService(new TinkerVectorSearchByElementFactory(graf));
+        graf.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
+        final GraphTraversalSource gv = graf.traversal();
+
+        final Vertex vAlice = gv.addV("person").property("name", "Alice").property("embedding", new float[]{1.0f, 0.0f, 0.0f}).next();
+        gv.addV("person").property("name", "Bob").property("embedding", new float[]{0.9f, 0.1f, 0.0f}).iterate();
+        gv.addV("robot").property("name", "R2D2").property("embedding", new float[]{0.95f, 0.05f, 0.0f}).iterate();
+
+        final Map<String, Object> params = new HashMap<String, Object>() {{
+            put("key", "embedding");
+            put("topK", 2);
+            put("filter", new HashMap<String, Object>() {{ put("~label", "robot"); }});
+        }};
+        final List<Object> list = gv.V(vAlice).call(TinkerVectorSearchByElementFactory.NAME, params).toList();
+
+        // only the robot should be returned even though Bob is also close
+        assertEquals(1, list.size());
+        assertEquals("R2D2", ((Vertex) ((Map) list.get(0)).get("element")).value("name"));
+    }
+
+    @Test
+    public void g_V_callXvector_topK_byElement_filterByPropertyX() {
+        final TinkerGraph graf = TinkerGraph.open();
+        graf.getServiceRegistry().registerService(new TinkerVectorSearchByElementFactory(graf));
+        graf.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
+        final GraphTraversalSource gv = graf.traversal();
+
+        final Vertex vAlice = gv.addV("person").property("name", "Alice").property("embedding", new float[]{1.0f, 0.0f, 0.0f}).property("active", true).next();
+        gv.addV("person").property("name", "Bob").property("embedding", new float[]{0.9f, 0.1f, 0.0f}).property("active", false).iterate();
+        gv.addV("person").property("name", "Charlie").property("embedding", new float[]{0.8f, 0.2f, 0.0f}).property("active", true).iterate();
+
+        final Map<String, Object> params = new HashMap<String, Object>() {{
+            put("key", "embedding");
+            put("topK", 2);
+            put("filter", new HashMap<String, Object>() {{ put("active", true); }});
+        }};
+        final List<Object> list = gv.V(vAlice).call(TinkerVectorSearchByElementFactory.NAME, params).toList();
+
+        // only active vertices returned (Bob excluded despite being close), self excluded
+        assertEquals(1, list.size());
+        assertEquals("Charlie", ((Vertex) ((Map) list.get(0)).get("element")).value("name"));
+    }
+
+    @Test
+    public void g_inject_callXvector_topK_byEmbedding_filterByLabelX() {
+        final TinkerGraph graf = TinkerGraph.open();
+        graf.getServiceRegistry().registerService(new TinkerVectorSearchByEmbeddingFactory(graf));
+        graf.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
+        final GraphTraversalSource gv = graf.traversal();
+
+        gv.addV("person").property("name", "Alice").property("embedding", new float[]{1.0f, 0.0f, 0.0f}).iterate();
+        gv.addV("robot").property("name", "R2D2").property("embedding", new float[]{0.95f, 0.05f, 0.0f}).iterate();
+
+        final Float[] query = new Float[]{1.0f, 0.0f, 0.0f};
+        final Map<String, Object> params = new HashMap<String, Object>() {{
+            put("key", "embedding");
+            put("element", "vertex");
+            put("topK", 2);
+            put("filter", new HashMap<String, Object>() {{ put("~label", "robot"); }});
+        }};
+        final List<Object> list = gv.inject(0).constant(query)
+                .call(TinkerVectorSearchByEmbeddingFactory.NAME, params).toList();
+
+        assertEquals(1, list.size());
+        assertEquals("R2D2", ((Vertex) ((Map) list.get(0)).get("element")).value("name"));
+    }
+
     private String toResultString(final Traversal traversal) {
         return (String) IteratorUtils.stream(traversal).map(Object::toString).collect(Collectors.joining(",", "[", "]"));
     }

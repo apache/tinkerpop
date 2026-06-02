@@ -327,6 +327,38 @@ The `call()` step returns a list of maps, each containing:
 
 TIP: Vector indices can also be created for edges.
 
+==== Filtering Vector Search
+
+Both `topK.byElement` and `topK.byEmbedding` accept an optional `filter` parameter that restricts
+which candidates are considered during the ANN computation. Filtering happens inside the index
+traversal rather than as a post-filter, so the full `topK` results are returned from the matching
+subset.
+
+The filter is a map of property key to required value. The special key `"~label"` matches element
+label:
+
+[gremlin-groovy]
+----
+graph.getServiceRegistry().registerService(new TinkerVectorSearchByElementFactory(graph))
+graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, [dimension: 3])
+g.addV("person").property("name", "Alice").property("embedding", new float[]{1.0f, 0.0f, 0.0f}).iterate()
+g.addV("person").property("name", "Bob").property("embedding", new float[]{0.9f, 0.1f, 0.0f}).iterate()
+g.addV("robot").property("name", "R2D2").property("embedding", new float[]{0.95f, 0.05f, 0.0f}).iterate()
+
+// only robots, even though Bob (a person) is also nearby
+g.V().has("name","Alice").call("tinker.search.vector.topK.byElement",
+  [key: "embedding", topK: 2, filter: ["~label": "robot"]])
+----
+
+Property value equality can also be used:
+
+[gremlin-groovy]
+----
+// only active vertices
+g.V().has("name","Alice").call("tinker.search.vector.topK.byElement",
+  [key: "embedding", topK: 5, filter: [active: true]])
+----
+
 TinkerGraph supports the following distance functions for vector similarity search:
 
 * `COSINE`: Measures the cosine of the angle between two vectors (default)
