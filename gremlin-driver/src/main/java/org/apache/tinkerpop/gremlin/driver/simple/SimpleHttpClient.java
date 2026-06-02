@@ -23,12 +23,10 @@ import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpContentDecompressionHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseStreamDecoder;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
-import org.apache.tinkerpop.gremlin.driver.interceptor.PayloadSerializingInterceptor;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
@@ -109,9 +107,7 @@ public class SimpleHttpClient extends AbstractClient {
                                     new HttpContentDecompressionHandler(),
                                     new HttpGremlinResponseStreamDecoder(serializer, Integer.MAX_VALUE),
                                     new HttpGremlinRequestEncoder(serializer,
-                                            Collections.singletonList(
-                                                    Pair.of("serializer", new PayloadSerializingInterceptor(
-                                                            new GraphBinaryMessageSerializerV4()))),
+                                            Collections.emptyList(),
                                             false, false, uri),
                                     callbackResponseHandler);
                         }

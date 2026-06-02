@@ -55,7 +55,7 @@ func TestRequest(t *testing.T) {
 	t.Run("Test makeStringRequest() with bulkResults", func(t *testing.T) {
 		r := MakeStringRequest("g.V()", "g",
 			new(RequestOptionsBuilder).SetBulkResults(true).Create())
-		assert.Equal(t, "true", r.Fields["bulkResults"])
+		assert.Equal(t, true, r.Fields["bulkResults"])
 	})
 
 	t.Run("Test makeStringRequest() with string bindings", func(t *testing.T) {

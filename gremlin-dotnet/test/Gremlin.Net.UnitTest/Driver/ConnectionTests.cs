@@ -33,7 +33,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Messages;
-using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure.IO;
 using NSubstitute;
 using Xunit;
@@ -85,12 +84,12 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings();
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
             Assert.NotNull(handler.CapturedRequest);
-            Assert.Equal(SerializationTokens.GraphBinary4MimeType,
+            Assert.Equal("application/json",
                 handler.CapturedRequest!.Content!.Headers.ContentType!.MediaType);
         }
 
@@ -100,7 +99,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings();
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -115,7 +114,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings();
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -129,7 +128,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings();
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -143,7 +142,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings { EnableCompression = true };
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -158,7 +157,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings { EnableCompression = false };
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -173,7 +172,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings { EnableUserAgentOnConnect = true };
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -187,7 +186,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings { EnableUserAgentOnConnect = false };
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -201,7 +200,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings { BulkResults = true };
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -216,7 +215,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings { BulkResults = false };
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -242,7 +241,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient(compressedBytes, "deflate");
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings { EnableCompression = true };
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             // Should not throw — decompression should work
             var result = await connection.SubmitAsync<object>(CreateTestRequest());
@@ -256,7 +255,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, _) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings();
-            var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+            var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             connection.Dispose();
             // Double dispose should not throw
@@ -280,8 +279,6 @@ namespace Gremlin.Net.UnitTest.Driver
         {
             var serializer = Substitute.For<IMessageSerializer>();
             serializer.MimeType.Returns(mimeType);
-            serializer.SerializeMessageAsync(Arg.Any<RequestMessage>(), Arg.Any<CancellationToken>())
-                .Returns(Task.FromResult(new byte[] { 0x84 }));
             serializer.DeserializeMessageAsync(Arg.Any<Stream>(), Arg.Any<CancellationToken>())
                 .Returns(callInfo => ToAsyncEnumerable(results));
             return serializer;
@@ -311,7 +308,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 ctx => { callOrder.Add(3); return Task.CompletedTask; },
             };
 
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient, interceptors);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient, interceptors);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -331,7 +328,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 _ => throw expectedException,
             };
 
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient, interceptors);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient, interceptors);
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => connection.SubmitAsync<object>(CreateTestRequest()));
@@ -357,7 +354,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 },
             };
 
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient, interceptors);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient, interceptors);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -390,7 +387,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 },
             };
 
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient, interceptors);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient, interceptors);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -401,7 +398,7 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
-        public async Task ShouldSerializeBeforeInterceptorsWhenRequestSerializerProvided()
+        public async Task ShouldPassRequestMessageToInterceptorsBeforeSerialization()
         {
             var (httpClient, _) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
@@ -417,35 +414,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 },
             };
 
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
-                interceptors);
-
-            await connection.SubmitAsync<object>(CreateTestRequest());
-
-            Assert.IsType<byte[]>(observedBody);
-        }
-
-        [Fact]
-        public async Task ShouldPassRequestMessageWhenRequestSerializerIsNull()
-        {
-            var (httpClient, _) = CreateMockHttpClient();
-            var serializer = CreateMockSerializer();
-            var settings = new ConnectionSettings();
-            object? observedBody = null;
-
-            var interceptors = new List<Func<HttpRequestContext, Task>>
-            {
-                ctx =>
-                {
-                    observedBody = ctx.Body;
-                    // Serialize the body so the request can proceed
-                    ctx.Body = new byte[] { 0x84 };
-                    ctx.Headers["Content-Type"] = "application/vnd.graphbinary-v4.0";
-                    return Task.CompletedTask;
-                },
-            };
-
-            using var connection = new Connection(TestUri, null, serializer, settings, httpClient,
+            using var connection = new Connection(TestUri, serializer, settings, httpClient,
                 interceptors);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
@@ -454,29 +423,7 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
-        public async Task ShouldThrowWhenBodyIsNotByteArrayAfterInterceptors()
-        {
-            var (httpClient, handler) = CreateMockHttpClient();
-            var serializer = CreateMockSerializer();
-            var settings = new ConnectionSettings();
-
-            // No interceptor serializes the body
-            var interceptors = new List<Func<HttpRequestContext, Task>>();
-
-            using var connection = new Connection(TestUri, null, serializer, settings, httpClient,
-                interceptors);
-
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => connection.SubmitAsync<object>(CreateTestRequest()));
-
-            Assert.Contains("byte[] or HttpContent", ex.Message);
-            Assert.Contains("RequestMessage", ex.Message);
-            // HTTP request should not have been sent
-            Assert.Null(handler.CapturedRequest);
-        }
-
-        [Fact]
-        public async Task ShouldSucceedWhenInterceptorSerializesBodyWithNullRequestSerializer()
+        public async Task ShouldThrowWhenBodyIsUnsupportedTypeAfterInterceptors()
         {
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
@@ -484,17 +431,42 @@ namespace Gremlin.Net.UnitTest.Driver
 
             var interceptors = new List<Func<HttpRequestContext, Task>>
             {
-                async ctx =>
+                ctx =>
                 {
-                    if (ctx.Body is RequestMessage msg)
-                    {
-                        ctx.Body = await serializer.SerializeMessageAsync(msg);
-                        ctx.Headers["Content-Type"] = "application/vnd.graphbinary-v4.0";
-                    }
+                    ctx.Body = "unsupported type";
+                    return Task.CompletedTask;
                 },
             };
 
-            using var connection = new Connection(TestUri, null, serializer, settings, httpClient,
+            using var connection = new Connection(TestUri, serializer, settings, httpClient,
+                interceptors);
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => connection.SubmitAsync<object>(CreateTestRequest()));
+
+            Assert.Contains("String", ex.Message);
+            // HTTP request should not have been sent
+            Assert.Null(handler.CapturedRequest);
+        }
+
+        [Fact]
+        public async Task ShouldSucceedWhenInterceptorPreSerializesBody()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    // Interceptor calls SerializeBody() early (e.g. for signing)
+                    ctx.SerializeBody();
+                    return Task.CompletedTask;
+                },
+            };
+
+            using var connection = new Connection(TestUri, serializer, settings, httpClient,
                 interceptors);
 
             var result = await connection.SubmitAsync<object>(CreateTestRequest());
@@ -504,7 +476,7 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
-        public async Task ShouldNotSetContentTypeWhenRequestSerializerIsNull()
+        public async Task ShouldNotSetContentTypeBeforeInterceptorsRun()
         {
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
@@ -516,21 +488,18 @@ namespace Gremlin.Net.UnitTest.Driver
                 ctx =>
                 {
                     hadContentType = ctx.Headers.ContainsKey("Content-Type");
-                    // Serialize so the request can proceed
-                    ctx.Body = new byte[] { 0x84 };
-                    ctx.Headers["Content-Type"] = "application/vnd.graphbinary-v4.0";
                     return Task.CompletedTask;
                 },
             };
 
-            using var connection = new Connection(TestUri, null, serializer, settings, httpClient,
+            using var connection = new Connection(TestUri, serializer, settings, httpClient,
                 interceptors);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
-            Assert.False(hadContentType, "Content-Type should not be set before interceptors when requestSerializer is null");
+            Assert.False(hadContentType, "Content-Type should not be set before interceptors run");
             Assert.NotNull(handler.CapturedRequest);
-            Assert.Equal("application/vnd.graphbinary-v4.0",
+            Assert.Equal("application/json",
                 handler.CapturedRequest!.Content!.Headers.ContentType!.MediaType);
         }
 
@@ -542,7 +511,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var settings = new ConnectionSettings();
             var interceptors = new List<Func<HttpRequestContext, Task>>();
 
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+            using var connection = new Connection(TestUri, serializer, settings, httpClient,
                 interceptors);
 
             var result = await connection.SubmitAsync<object>(CreateTestRequest());
@@ -558,7 +527,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings();
 
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             var result = await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -583,7 +552,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 },
             };
 
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+            using var connection = new Connection(TestUri, serializer, settings, httpClient,
                 interceptors);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
@@ -609,7 +578,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 },
             };
 
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+            using var connection = new Connection(TestUri, serializer, settings, httpClient,
                 interceptors);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
@@ -637,7 +606,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 },
             };
 
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+            using var connection = new Connection(TestUri, serializer, settings, httpClient,
                 interceptors);
 
             await Assert.ThrowsAsync<InvalidOperationException>(
@@ -666,7 +635,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 },
             };
 
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+            using var connection = new Connection(TestUri, serializer, settings, httpClient,
                 interceptors);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
@@ -678,7 +647,7 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
-        public async Task ShouldAllowInterceptorToReadSerializedBody()
+        public async Task ShouldAllowInterceptorToCallSerializeBody()
         {
             var (httpClient, _) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
@@ -689,19 +658,19 @@ namespace Gremlin.Net.UnitTest.Driver
             {
                 ctx =>
                 {
-                    capturedBody = ctx.Body as byte[];
+                    capturedBody = ctx.SerializeBody();
                     return Task.CompletedTask;
                 },
             };
 
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+            using var connection = new Connection(TestUri, serializer, settings, httpClient,
                 interceptors);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
             Assert.NotNull(capturedBody);
-            // The mock serializer returns { 0x84 }
-            Assert.Equal(new byte[] { 0x84 }, capturedBody);
+            // Should be valid JSON containing "gremlin" field
+            Assert.Contains("gremlin", System.Text.Encoding.UTF8.GetString(capturedBody!));
         }
 
         [Fact]
@@ -721,7 +690,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 },
             };
 
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+            using var connection = new Connection(TestUri, serializer, settings, httpClient,
                 interceptors);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
@@ -746,7 +715,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 },
             };
 
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+            using var connection = new Connection(TestUri, serializer, settings, httpClient,
                 interceptors);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
@@ -772,7 +741,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 },
             };
 
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+            using var connection = new Connection(TestUri, serializer, settings, httpClient,
                 interceptors);
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -808,7 +777,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 },
             };
 
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+            using var connection = new Connection(TestUri, serializer, settings, httpClient,
                 interceptors);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
@@ -820,7 +789,7 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
-        public async Task ShouldAllowCustomContentTypeWhenRequestSerializerIsNull()
+        public async Task ShouldAllowInterceptorToOverrideContentType()
         {
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
@@ -830,52 +799,36 @@ namespace Gremlin.Net.UnitTest.Driver
             {
                 ctx =>
                 {
+                    // Pre-serialize with custom content type
                     ctx.Body = new byte[] { 0x01 };
-                    ctx.Headers["Content-Type"] = "application/json";
+                    ctx.Headers["Content-Type"] = "application/custom";
                     return Task.CompletedTask;
                 },
             };
 
-            using var connection = new Connection(TestUri, null, serializer, settings, httpClient,
+            using var connection = new Connection(TestUri, serializer, settings, httpClient,
                 interceptors);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
             Assert.NotNull(handler.CapturedRequest);
-            Assert.Equal("application/json",
+            Assert.Equal("application/custom",
                 handler.CapturedRequest!.Content!.Headers.ContentType!.MediaType);
         }
 
         [Fact]
-        public async Task ShouldUseResponseSerializerWhenRequestSerializerIsNull()
+        public async Task ShouldUseResponseSerializerForDeserialization()
         {
             var (httpClient, _) = CreateMockHttpClient();
-            var requestSerializer = CreateMockSerializer();
             var responseSerializer = CreateMockSerializer();
             var settings = new ConnectionSettings();
 
-            var interceptors = new List<Func<HttpRequestContext, Task>>
-            {
-                async ctx =>
-                {
-                    if (ctx.Body is RequestMessage msg)
-                    {
-                        ctx.Body = await requestSerializer.SerializeMessageAsync(msg);
-                        ctx.Headers["Content-Type"] = "application/vnd.graphbinary-v4.0";
-                    }
-                },
-            };
-
-            using var connection = new Connection(TestUri, null, responseSerializer, settings, httpClient,
-                interceptors);
+            using var connection = new Connection(TestUri, responseSerializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
             // Verify the response serializer was called for deserialization
             responseSerializer.Received(1)
-                .DeserializeMessageAsync(Arg.Any<Stream>(), Arg.Any<CancellationToken>());
-            // Verify the request serializer was NOT called by Connection (interceptor called it directly)
-            requestSerializer.DidNotReceive()
                 .DeserializeMessageAsync(Arg.Any<Stream>(), Arg.Any<CancellationToken>());
         }
 
@@ -896,7 +849,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 },
             };
 
-            using var connection = new Connection(TestUri, null, serializer, settings, httpClient,
+            using var connection = new Connection(TestUri, serializer, settings, httpClient,
                 interceptors);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
@@ -910,10 +863,9 @@ namespace Gremlin.Net.UnitTest.Driver
         public async Task ShouldUseResponseSerializerMimeTypeForAcceptHeader()
         {
             var (httpClient, handler) = CreateMockHttpClient();
-            var requestSerializer = CreateMockSerializer("application/custom-request");
             var responseSerializer = CreateMockSerializer("application/custom-response");
             var settings = new ConnectionSettings();
-            using var connection = new Connection(TestUri, requestSerializer, responseSerializer, settings, httpClient);
+            using var connection = new Connection(TestUri, responseSerializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -923,39 +875,18 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
-        public async Task ShouldUseRequestSerializerMimeTypeForContentTypeHeader()
+        public async Task ShouldSetContentTypeToApplicationJson()
         {
             var (httpClient, handler) = CreateMockHttpClient();
-            var requestSerializer = CreateMockSerializer("application/custom-request");
-            var responseSerializer = CreateMockSerializer("application/custom-response");
+            var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings();
-            using var connection = new Connection(TestUri, requestSerializer, responseSerializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
             Assert.NotNull(handler.CapturedRequest);
-            Assert.Equal("application/custom-request",
+            Assert.Equal("application/json",
                 handler.CapturedRequest!.Content!.Headers.ContentType!.MediaType);
-        }
-
-        [Fact]
-        public async Task ShouldUseDifferentMimeTypesForRequestAndResponseSerializers()
-        {
-            var (httpClient, handler) = CreateMockHttpClient();
-            var requestSerializer = CreateMockSerializer("application/vnd.custom-request-v1.0");
-            var responseSerializer = CreateMockSerializer("application/vnd.custom-response-v2.0");
-            var settings = new ConnectionSettings();
-            using var connection = new Connection(TestUri, requestSerializer, responseSerializer, settings, httpClient);
-
-            await connection.SubmitAsync<object>(CreateTestRequest());
-
-            Assert.NotNull(handler.CapturedRequest);
-            // Content-Type comes from request serializer
-            Assert.Equal("application/vnd.custom-request-v1.0",
-                handler.CapturedRequest!.Content!.Headers.ContentType!.MediaType);
-            // Accept comes from response serializer
-            Assert.Contains(handler.CapturedRequest.Headers.Accept,
-                h => h.MediaType == "application/vnd.custom-response-v2.0");
         }
 
         [Fact]
@@ -964,7 +895,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, _) = CreateMockHttpClient();
             var serializer = CreateMockSerializer(new List<object> { "hello", 42 });
             var settings = new ConnectionSettings();
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             var result = await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -980,7 +911,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, _) = CreateMockHttpClient();
             var serializer = CreateMockSerializer(new List<object>());
             var settings = new ConnectionSettings();
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             var result = await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -1001,7 +932,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var httpClient = new HttpClient(handler);
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings();
-            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             var result = await connection.SubmitAsync<object>(CreateTestRequest());
 

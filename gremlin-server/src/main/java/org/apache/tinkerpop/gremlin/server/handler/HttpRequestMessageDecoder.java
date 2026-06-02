@@ -210,6 +210,12 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
         final JsonNode txIdNode = body.get(Tokens.ARGS_TRANSACTION_ID);
         if (null != txIdNode) builder.addTransactionId(txIdNode.asText());
 
+        // bulkResults was previously only sent as an HTTP header by GLV drivers using
+        // GraphBinary. With the move to JSON requests in 4.x, drivers may include it in
+        // the body instead.
+        final JsonNode bulkResultsNode = body.get(Tokens.BULK_RESULTS);
+        if (null != bulkResultsNode) builder.addBulkResults(bulkResultsNode.asBoolean());
+
         return builder.create();
     }
 }

@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.tinkerpop.gremlin.driver.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,8 +48,9 @@ import static software.amazon.awssdk.http.auth.aws.internal.signer.util.SignerCo
 import static software.amazon.awssdk.http.auth.aws.internal.signer.util.SignerConstant.X_AMZ_SECURITY_TOKEN;
 
 /**
- * A {@link org.apache.tinkerpop.gremlin.driver.RequestInterceptor} that provides headers required for SigV4. Because
- * the signing process requires final header and body data, this interceptor should almost always be last.
+ * A {@link org.apache.tinkerpop.gremlin.driver.RequestInterceptor} that signs requests with AWS SigV4.
+ * This interceptor calls {@link HttpRequest#serializeBody()} to ensure the body is serialized before
+ * computing the payload hash for signing. It should typically be the last interceptor in the chain.
  */
 public class Sigv4 implements Auth {
     private static final Logger logger = LoggerFactory.getLogger(Sigv4.class);
@@ -70,8 +72,11 @@ public class Sigv4 implements Auth {
     }
 
     @Override
-    public HttpRequest apply(final HttpRequest httpRequest) {
+    public void intercept(final HttpRequest httpRequest) {
         try {
+            // Ensure the body is serialized to bytes so we can compute the payload hash.
+            httpRequest.serializeBody();
+
             final ContentStreamProvider content = toContentStream(httpRequest);
             // Convert Http request into an AWS SDK signable request
             final SdkHttpRequest awsSignableRequest = toSignableRequest(httpRequest);
@@ -91,7 +96,6 @@ public class Sigv4 implements Auth {
             logger.error("Error signing HTTP request: {}", ex.getMessage(), ex);
             throw new AuthenticationException(ex);
         }
-        return httpRequest;
     }
 
     private void setSessionToken(final Map<String, String> headers, final AwsCredentials credentials) {
@@ -123,9 +127,6 @@ public class Sigv4 implements Auth {
 
     private ContentStreamProvider toContentStream(final HttpRequest httpRequest) {
         // carry over the entity (or an empty entity, if no entity is provided)
-        if (!(httpRequest.getBody() instanceof byte[])) {
-            throw new IllegalArgumentException("Expected byte[] in HttpRequest body but got " + httpRequest.getBody().getClass());
-        }
         final byte[] body = (byte[]) httpRequest.getBody();
         return (body.length != 0) ? ContentStreamProvider.fromByteArray(body) : ContentStreamProvider.fromUtf8String("");
     }

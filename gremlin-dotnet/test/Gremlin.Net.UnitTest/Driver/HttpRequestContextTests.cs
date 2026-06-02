@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Messages;
 using Xunit;
@@ -37,7 +38,7 @@ namespace Gremlin.Net.UnitTest.Driver
         {
             var method = "POST";
             var uri = new Uri("http://localhost:8182/gremlin");
-            var headers = new Dictionary<string, string> { { "Content-Type", "application/vnd.graphbinary-v4.0" } };
+            var headers = new Dictionary<string, string> { { "Content-Type", "application/json" } };
             var body = new byte[] { 0x01, 0x02, 0x03 };
 
             var context = new HttpRequestContext(method, uri, headers, body);
@@ -127,5 +128,170 @@ namespace Gremlin.Net.UnitTest.Driver
 
             Assert.Contains("null", ex.Message);
         }
+
+        #region SerializeBody Tests
+
+        [Fact]
+        public void SerializeBodyShouldReturnJsonBytesForRequestMessage()
+        {
+            var message = RequestMessage.Build("g.V().has('name','marko')").AddG("g").Create();
+            var context = new HttpRequestContext("POST", new Uri("http://localhost:8182/gremlin"),
+                new Dictionary<string, string>(), message);
+
+            var result = context.SerializeBody();
+
+            Assert.IsType<byte[]>(context.Body);
+            Assert.Same(context.Body, result);
+
+            var json = JsonDocument.Parse(result);
+            Assert.Equal("g.V().has('name','marko')", json.RootElement.GetProperty("gremlin").GetString());
+            Assert.Equal("g", json.RootElement.GetProperty("g").GetString());
+            Assert.Equal("gremlin-lang", json.RootElement.GetProperty("language").GetString());
+        }
+
+        [Fact]
+        public void SerializeBodyShouldSetContentTypeHeader()
+        {
+            var message = RequestMessage.Build("g.V()").Create();
+            var context = new HttpRequestContext("POST", new Uri("http://localhost:8182/gremlin"),
+                new Dictionary<string, string>(), message);
+
+            context.SerializeBody();
+
+            Assert.Equal("application/json", context.Headers["Content-Type"]);
+        }
+
+        [Fact]
+        public void SerializeBodyShouldSetContentLengthHeader()
+        {
+            var message = RequestMessage.Build("g.V()").Create();
+            var context = new HttpRequestContext("POST", new Uri("http://localhost:8182/gremlin"),
+                new Dictionary<string, string>(), message);
+
+            var result = context.SerializeBody();
+
+            Assert.Equal(result.Length.ToString(), context.Headers["Content-Length"]);
+        }
+
+        [Fact]
+        public void SerializeBodyShouldBeIdempotentWhenBodyIsBytes()
+        {
+            var originalBytes = new byte[] { 0x01, 0x02, 0x03 };
+            var context = new HttpRequestContext("POST", new Uri("http://localhost:8182/gremlin"),
+                new Dictionary<string, string>(), originalBytes);
+
+            var result = context.SerializeBody();
+
+            Assert.Same(originalBytes, result);
+            Assert.Same(originalBytes, context.Body);
+        }
+
+        [Fact]
+        public void SerializeBodyShouldBeIdempotentOnMultipleCalls()
+        {
+            var message = RequestMessage.Build("g.V()").AddG("g").Create();
+            var context = new HttpRequestContext("POST", new Uri("http://localhost:8182/gremlin"),
+                new Dictionary<string, string>(), message);
+
+            var first = context.SerializeBody();
+            var second = context.SerializeBody();
+
+            Assert.Same(first, second);
+        }
+
+        [Fact]
+        public void SerializeBodyShouldIncludeAllFields()
+        {
+            var message = RequestMessage.Build("g.V()")
+                .AddG("g")
+                .AddLanguage("gremlin-lang")
+                .AddBatchSize(100)
+                .AddEvaluationTimeout(30000)
+                .Create();
+            var context = new HttpRequestContext("POST", new Uri("http://localhost:8182/gremlin"),
+                new Dictionary<string, string>(), message);
+
+            var result = context.SerializeBody();
+
+            var json = JsonDocument.Parse(result);
+            Assert.Equal("g.V()", json.RootElement.GetProperty("gremlin").GetString());
+            Assert.Equal("g", json.RootElement.GetProperty("g").GetString());
+            Assert.Equal("gremlin-lang", json.RootElement.GetProperty("language").GetString());
+            Assert.Equal(100, json.RootElement.GetProperty("batchSize").GetInt32());
+            Assert.Equal(30000, json.RootElement.GetProperty("evaluationTimeout").GetInt32());
+        }
+
+        [Fact]
+        public void SerializeBodyShouldThrowForUnsupportedType()
+        {
+            var context = new HttpRequestContext("POST", new Uri("http://localhost:8182/gremlin"),
+                new Dictionary<string, string>(), "unsupported");
+
+            var ex = Assert.Throws<InvalidOperationException>(() => context.SerializeBody());
+
+            Assert.Contains("String", ex.Message);
+        }
+
+        [Fact]
+        public void SerializeBodyShouldThrowForNullBody()
+        {
+            var context = new HttpRequestContext("POST", new Uri("http://localhost:8182/gremlin"),
+                new Dictionary<string, string>(), null!);
+
+            var ex = Assert.Throws<InvalidOperationException>(() => context.SerializeBody());
+
+            Assert.Contains("null", ex.Message);
+        }
+
+        [Fact]
+        public void SerializeBodyShouldReflectFieldMutations()
+        {
+            var message = RequestMessage.Build("g.V()").AddG("g").Create();
+            // Mutate fields before serialization (simulating an interceptor)
+            message.Fields["customField"] = "customValue";
+
+            var context = new HttpRequestContext("POST", new Uri("http://localhost:8182/gremlin"),
+                new Dictionary<string, string>(), message);
+
+            var result = context.SerializeBody();
+
+            var json = JsonDocument.Parse(result);
+            Assert.Equal("customValue", json.RootElement.GetProperty("customField").GetString());
+        }
+
+        [Fact]
+        public void SerializeBodyShouldReflectBodyReplacement()
+        {
+            var original = RequestMessage.Build("g.V()").AddG("g").Create();
+            var replacement = RequestMessage.Build("g.E()").AddG("traversal").Create();
+
+            var context = new HttpRequestContext("POST", new Uri("http://localhost:8182/gremlin"),
+                new Dictionary<string, string>(), original);
+
+            // Interceptor replaces the body
+            context.Body = replacement;
+            var result = context.SerializeBody();
+
+            var json = JsonDocument.Parse(result);
+            Assert.Equal("g.E()", json.RootElement.GetProperty("gremlin").GetString());
+            Assert.Equal("traversal", json.RootElement.GetProperty("g").GetString());
+        }
+
+        [Fact]
+        public void SerializeBodyShouldIncludeBindingsField()
+        {
+            var message = RequestMessage.Build("g.V(x)")
+                .AddBindingsString("[x:1,y:'marko']")
+                .Create();
+            var context = new HttpRequestContext("POST", new Uri("http://localhost:8182/gremlin"),
+                new Dictionary<string, string>(), message);
+
+            var result = context.SerializeBody();
+
+            var json = JsonDocument.Parse(result);
+            Assert.Equal("[x:1,y:'marko']", json.RootElement.GetProperty("bindings").GetString());
+        }
+
+        #endregion
     }
 }

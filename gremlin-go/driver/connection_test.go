@@ -907,13 +907,12 @@ func TestNewConnection(t *testing.T) {
 }
 
 func TestSetHttpRequestHeaders(t *testing.T) {
-	t.Run("sets content type and accept headers", func(t *testing.T) {
+	t.Run("sets accept header", func(t *testing.T) {
 		conn := newConnection(newTestLogHandler(), "http://localhost/gremlin", &connectionSettings{})
 		req, _ := NewHttpRequest(http.MethodPost, "http://localhost/gremlin")
 
 		conn.setHttpRequestHeaders(req)
 
-		assert.Equal(t, graphBinaryMimeType, req.Headers.Get("Content-Type"))
 		assert.Equal(t, graphBinaryMimeType, req.Headers.Get("Accept"))
 	})
 
@@ -1012,7 +1011,7 @@ func TestConnectionWithMockServer(t *testing.T) {
 
 		select {
 		case receivedHeaders := <-headersCh:
-			assert.Equal(t, graphBinaryMimeType, receivedHeaders.Get("Content-Type"))
+			assert.Equal(t, "application/json", receivedHeaders.Get("Content-Type"))
 			assert.Equal(t, "deflate", receivedHeaders.Get("Accept-Encoding"))
 			assert.NotEmpty(t, receivedHeaders.Get(userAgentHeader))
 		case <-time.After(time.Second):
@@ -1105,8 +1104,7 @@ func TestConnectionWithMockServer(t *testing.T) {
 		require.NoError(t, err)
 		_, _ = rs.All()
 
-		// Interceptor should see the default headers
-		assert.Equal(t, graphBinaryMimeType, interceptorHeaders.Get("Content-Type"))
+		// Interceptor should see the default headers (Content-Type is not set until SerializeBody runs)
 		assert.Equal(t, graphBinaryMimeType, interceptorHeaders.Get("Accept"))
 	})
 
@@ -1311,6 +1309,142 @@ func TestDriverRemoteConnectionSettingsWiring(t *testing.T) {
 	})
 }
 
+func TestInterceptorIntegration(t *testing.T) {
+	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
+	testNoAuthEnable := getEnvOrDefaultBool("RUN_INTEGRATION_TESTS", true)
+
+	t.Run("should auto serialize request message with interceptor mutation", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		// Interceptor replaces the RequestMessage body with a different query.
+		// The driver should auto-serialize the modified RequestMessage and the server
+		// should execute the modified query.
+		client, err := NewClient(testNoAuthUrl,
+			func(settings *ClientSettings) {
+				settings.TraversalSource = testServerModernGraphAlias
+				settings.RequestInterceptors = []RequestInterceptor{
+					func(req *HttpRequest) error {
+						if msg, ok := req.Body.(*RequestMessage); ok {
+							req.Body = &RequestMessage{
+								Gremlin: "g.inject(99)",
+								Fields:  map[string]interface{}{"g": msg.Fields["g"], "language": "gremlin-lang"},
+							}
+						}
+						return nil
+					},
+				}
+			})
+		assert.Nil(t, err)
+		assert.NotNil(t, client)
+		defer client.Close()
+
+		rs, err := client.Submit("g.inject(1)")
+		assert.Nil(t, err)
+		result, ok, err := rs.One()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		val, err := result.GetInt()
+		assert.Nil(t, err)
+		assert.Equal(t, 99, val)
+	})
+
+	t.Run("should propagate exception thrown during interceptor", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		// Only throw on the first request to verify recovery.
+		var callCount int
+		var mu sync.Mutex
+
+		client, err := NewClient(testNoAuthUrl,
+			func(settings *ClientSettings) {
+				settings.TraversalSource = testServerModernGraphAlias
+				settings.RequestInterceptors = []RequestInterceptor{
+					func(req *HttpRequest) error {
+						mu.Lock()
+						callCount++
+						count := callCount
+						mu.Unlock()
+						if count == 1 {
+							return fmt.Errorf("interceptor broke")
+						}
+						return nil
+					},
+				}
+			})
+		assert.Nil(t, err)
+		assert.NotNil(t, client)
+		defer client.Close()
+
+		// First request should fail with interceptor error
+		rs, err := client.Submit("g.inject(1)")
+		if err != nil {
+			assert.Contains(t, err.Error(), "interceptor broke")
+		} else {
+			_, err = rs.All()
+			assert.NotNil(t, err)
+			assert.Contains(t, err.Error(), "interceptor broke")
+		}
+
+		// Subsequent request should succeed, proving connection recovery
+		rs, err = client.Submit("g.inject(2)")
+		assert.Nil(t, err)
+		result, ok, err := rs.One()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		val, err := result.GetInt()
+		assert.Nil(t, err)
+		assert.Equal(t, 2, val)
+	})
+
+	t.Run("should propagate error when interceptor sets unsupported body type", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		// Only set invalid body on the first request to verify recovery.
+		var callCount int
+		var mu sync.Mutex
+
+		client, err := NewClient(testNoAuthUrl,
+			func(settings *ClientSettings) {
+				settings.TraversalSource = testServerModernGraphAlias
+				settings.RequestInterceptors = []RequestInterceptor{
+					func(req *HttpRequest) error {
+						mu.Lock()
+						callCount++
+						count := callCount
+						mu.Unlock()
+						if count == 1 {
+							req.Body = 42
+						}
+						return nil
+					},
+				}
+			})
+		assert.Nil(t, err)
+		assert.NotNil(t, client)
+		defer client.Close()
+
+		// First request should fail with serialization error
+		rs, err := client.Submit("g.inject(1)")
+		if err != nil {
+			assert.Contains(t, err.Error(), "unsupported body type")
+		} else {
+			_, err = rs.All()
+			assert.NotNil(t, err)
+			assert.Contains(t, err.Error(), "unsupported body type")
+		}
+
+		// Subsequent request should succeed, proving connection recovery
+		rs, err = client.Submit("g.inject(2)")
+		assert.Nil(t, err)
+		result, ok, err := rs.One()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		val, err := result.GetInt()
+		assert.Nil(t, err)
+		assert.Equal(t, 2, val)
+	})
+}
+
 // TestConnectionWithMockServer_BasicAuth verifies that BasicAuth interceptor sets the correct
 // Authorization header and the body is still valid serialized bytes.
 func TestConnectionWithMockServer_BasicAuth(t *testing.T) {
@@ -1340,6 +1474,6 @@ func TestConnectionWithMockServer_BasicAuth(t *testing.T) {
 
 	// Body should still be valid serialized bytes
 	assert.NotEmpty(t, capturedBody, "serialized body should be non-empty with BasicAuth")
-	assert.Equal(t, byte(0x84), capturedBody[0],
-		"body should start with GraphBinary version byte 0x84")
+	assert.Equal(t, byte('{'), capturedBody[0],
+		"body should start with '{' (JSON)")
 }

@@ -19,7 +19,6 @@
 
 import concurrent.futures
 from collections import namedtuple
-from json import dumps
 import os
 import ssl
 import pytest
@@ -62,7 +61,6 @@ def connection(request):
     try:
         conn = Connection(anonymous_url, 'gmodern',
                           executor, pool,
-                          request_serializer=GraphBinarySerializersV4(),
                           response_serializer=GraphBinarySerializersV4(),
                           auth=basic('stephen', 'password'))
     except OSError:
@@ -122,7 +120,6 @@ def graphbinary_serializer_v4(request):
 def remote_connection(request):
     try:
         remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
-                                             request_serializer=serializer.GraphBinarySerializersV4(),
                                              response_serializer=serializer.GraphBinarySerializersV4())
     except OSError:
         pytest.skip('Gremlin Server is not running')
@@ -192,8 +189,7 @@ def invalid_alias_remote_connection(request):
 def remote_connection_with_interceptor(request):
     try:
         remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
-                                             request_serializer=None,
-                                             interceptors=json_interceptor)
+                                             interceptors=mutating_interceptor)
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
@@ -207,9 +203,8 @@ def remote_connection_with_interceptor(request):
 @pytest.fixture()
 def client_with_interceptor(request):
     try:
-        client = Client(anonymous_url, 'gmodern', request_serializer=None,
-                        response_serializer=GraphBinarySerializersV4(),
-                        interceptors=json_interceptor)
+        client = Client(anonymous_url, 'gmodern',
+                        interceptors=mutating_interceptor)
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
@@ -241,7 +236,8 @@ def remote_connection_with_registry(request):
         return remote_conn
 
 
-def json_interceptor(request):
-        request['headers']['content-type'] = "application/json"
-        request['payload'] = dumps({"gremlin": "g.inject(2)", "g": "g"})
-        return request
+def mutating_interceptor(http_request):
+    """Interceptor that replaces the gremlin query with g.inject(2) for testing."""
+    from gremlin_python.driver.request import RequestMessage
+    if isinstance(http_request.body, RequestMessage):
+        http_request.body = RequestMessage(fields={"g": "g"}, gremlin="g.inject(2)")

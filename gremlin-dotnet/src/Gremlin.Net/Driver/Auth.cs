@@ -94,6 +94,9 @@ namespace Gremlin.Net.Driver
                     }
                 }
 
+                // Ensure the body is serialized before signing so we have bytes to hash.
+                context.SerializeBody();
+
                 // Use the async path — important for credential providers that perform
                 // network I/O (e.g. IMDS on EC2, ECS task role endpoint).
                 var immutableCreds = await cachedProvider.GetCredentialsAsync()
@@ -116,7 +119,7 @@ namespace Gremlin.Net.Driver
                     ? bytes
                     : throw new InvalidOperationException(
                         "SigV4 signing requires Body to be byte[]. " +
-                        "Ensure serialization occurs before the SigV4 interceptor."),
+                        "Ensure SerializeBody() was called before signing."),
                 AuthenticationRegion = clientConfig.AuthenticationRegion,
                 OverrideSigningServiceName = clientConfig.AuthenticationServiceName,
             };

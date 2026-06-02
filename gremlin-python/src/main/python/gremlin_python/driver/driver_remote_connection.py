@@ -33,7 +33,6 @@ class DriverRemoteConnection(RemoteConnection):
 
     def __init__(self, url, traversal_source="g",
                  pool_size=None, max_workers=None,
-                 request_serializer=serializer.GraphBinarySerializersV4(),
                  response_serializer=None, interceptors=None, auth=None,
                  headers=None, enable_user_agent_on_connect=True,
                  bulk_results=False, pdt_registry=None, **transport_kwargs):
@@ -54,7 +53,6 @@ class DriverRemoteConnection(RemoteConnection):
         self._client = client.Client(url, traversal_source,
                                      pool_size=pool_size,
                                      max_workers=max_workers,
-                                     request_serializer=request_serializer,
                                      response_serializer=response_serializer,
                                      interceptors=interceptors, auth=auth,
                                      headers=headers,

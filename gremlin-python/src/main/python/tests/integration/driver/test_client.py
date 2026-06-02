@@ -612,3 +612,47 @@ def test_pdt_in_collection(client):
     assert pdt_list[1].name == 'Point'
     assert pdt_list[1].fields['x'] == 3
     assert pdt_list[1].fields['y'] == 4
+
+
+def test_auto_serializes_request_message_with_interceptor_mutation():
+    """Verifies the driver auto-serializes when an interceptor modifies the RequestMessage body."""
+    from gremlin_python.driver.request import RequestMessage
+
+    def swap_query(http_request):
+        if isinstance(http_request.body, RequestMessage):
+            http_request.body = RequestMessage(fields={"g": "gmodern"}, gremlin="g.inject(99)")
+
+    client = Client(test_no_auth_url, 'gmodern',
+                    pool_size=1, interceptors=swap_query)
+    try:
+        result = client.submit("g.inject(1)").next()
+        assert 99 == result
+    finally:
+        client.close()
+
+
+def test_interceptor_errors_propagate():
+    """Verifies that an interceptor error propagates to the caller, the request is not sent,
+    and the client remains usable for subsequent requests."""
+    call_count = [0]
+
+    def failing_interceptor(http_request):
+        call_count[0] += 1
+        if call_count[0] == 1:
+            raise RuntimeError("interceptor broke")
+
+    client = Client(test_no_auth_url, 'gmodern',
+                    pool_size=1, interceptors=failing_interceptor)
+    try:
+        # First request should fail with interceptor error
+        try:
+            client.submit("g.inject(1)").next()
+            assert False, "Should have thrown an exception"
+        except RuntimeError as e:
+            assert "interceptor broke" in str(e)
+
+        # Subsequent request should succeed, proving the client is still usable
+        result = client.submit("g.inject(2)").next()
+        assert 2 == result
+    finally:
+        client.close()

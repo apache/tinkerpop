@@ -18,16 +18,27 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * HttpRequest represents the data that will be used to create the actual request to the remote endpoint. It will be
- * passed to different {@link RequestInterceptor} that can update its values. The body can be anything as the
- * interceptor may change what the payload is. Also contains some convenience Strings for common HTTP header key and
- * values and HTTP methods.
+ * Represents the HTTP request that will be sent to the server. It is passed through the
+ * {@link RequestInterceptor} chain where interceptors can modify headers, body, URI, and method.
+ * <p>
+ * The body starts as a {@link RequestMessage} and can be serialized to JSON bytes via {@link #serializeBody()}.
+ * After all interceptors run, if the body is still a {@code RequestMessage}, the driver will call
+ * {@code serializeBody()} automatically before sending.
  */
 public class HttpRequest {
+
+    private static final ObjectMapper mapper = new ObjectMapper();
+
     public static class Headers {
         // Add as needed. Headers are case-insensitive; lower case for now to match Netty.
         public static final String ACCEPT = "accept";
@@ -79,7 +90,7 @@ public class HttpRequest {
     /**
      * Get the body of the request.
      *
-     * @return an Object representing the body.
+     * @return an Object representing the body ({@link RequestMessage} or {@code byte[]}).
      */
     public Object getBody() {
         return body;
@@ -104,8 +115,7 @@ public class HttpRequest {
     }
 
     /**
-     * Set the HTTP body of the request. During processing, the body can be any type but the final interceptor must set
-     * the body to a {@code byte[]}.
+     * Set the HTTP body of the request.
      *
      * @return this HttpRequest for method chaining.
      */
@@ -132,5 +142,46 @@ public class HttpRequest {
     public HttpRequest setUri(final URI uri) {
         this.uri = uri;
         return this;
+    }
+
+    /**
+     * Serialize the body to JSON bytes if it is still a {@link RequestMessage}. If the body is already
+     * {@code byte[]}, this method is idempotent and returns the existing bytes. This method also sets the
+     * {@code Content-Type} header to {@code application/json} and the {@code Content-Length} header to the
+     * byte length of the serialized body.
+     * <p>
+     * Interceptors that need the serialized payload (e.g., for computing a signature hash) should call
+     * this method rather than serializing independently.
+     *
+     * @return the serialized body bytes
+     * @throws IllegalStateException if the body is neither a {@link RequestMessage} nor {@code byte[]}
+     */
+    public byte[] serializeBody() {
+        if (body instanceof byte[]) {
+            return (byte[]) body;
+        }
+
+        if (!(body instanceof RequestMessage)) {
+            throw new IllegalStateException("Cannot serialize body of type " +
+                    (body == null ? "null" : body.getClass().getSimpleName()) +
+                    ". Expected RequestMessage or byte[].");
+        }
+
+        final RequestMessage requestMessage = (RequestMessage) body;
+
+        // Build JSON map: gremlin is top-level, plus all fields from the message
+        final Map<String, Object> jsonMap = new LinkedHashMap<>();
+        jsonMap.put("gremlin", requestMessage.getGremlin());
+        jsonMap.putAll(requestMessage.getFields());
+
+        try {
+            final byte[] jsonBytes = mapper.writeValueAsBytes(jsonMap);
+            this.body = jsonBytes;
+            this.headers.put(Headers.CONTENT_TYPE, "application/json");
+            this.headers.put(Headers.CONTENT_LENGTH, String.valueOf(jsonBytes.length));
+            return jsonBytes;
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Failed to serialize RequestMessage to JSON", e);
+        }
     }
 }

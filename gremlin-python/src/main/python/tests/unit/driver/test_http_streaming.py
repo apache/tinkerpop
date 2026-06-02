@@ -29,6 +29,7 @@ These tests define the expected behavior for:
 
 import asyncio
 import io
+import json
 import queue
 import struct
 from concurrent.futures import Future
@@ -1247,12 +1248,11 @@ class TestCustomResponseSerializer:
 
 class TestConnectionWriteRequest:
     """
-    Tests for Connection._write_request() which handles serialization,
-    header construction, auth, and interceptors before calling transport.write().
+    Tests for Connection._write_request() which builds an HttpRequest, runs interceptors,
+    auto-serializes the body to JSON, and calls transport.write().
     """
 
-    def _make_connection(self, request_serializer=None, response_serializer=None,
-                         auth=None, interceptors=None):
+    def _make_connection(self, response_serializer=None, interceptors=None):
         from gremlin_python.driver.connection import Connection
         from gremlin_python.driver.serializer import GraphBinarySerializersV4
 
@@ -1260,31 +1260,21 @@ class TestConnectionWriteRequest:
             response_serializer = GraphBinarySerializersV4()
 
         conn = Connection.__new__(Connection)
-        conn._response_serializer = GraphBinarySerializersV4()
-        conn._request_serializer = request_serializer
+        conn._url = 'http://localhost:8182/gremlin'
         conn._response_serializer = response_serializer
-        conn._auth = auth
         conn._interceptors = interceptors
         conn._transport = MagicMock()
         return conn
 
-    def test_none_request_serializer_passes_raw_message(self):
-        conn = self._make_connection(request_serializer=None)
-        msg = RequestMessage(fields={}, gremlin="g.V()")
+    def test_auto_serializes_body_to_json(self):
+        conn = self._make_connection()
+        msg = RequestMessage(fields={"g": "g"}, gremlin="g.V()")
         conn._write_request(msg)
         written = conn._transport.write.call_args[0][0]
-        assert written['payload'] == msg
-        assert 'content-type' not in written['headers']
-
-    def test_graphbinary_serializer_serializes_payload(self):
-        from gremlin_python.driver.serializer import GraphBinarySerializersV4
-        gb = GraphBinarySerializersV4()
-        conn = self._make_connection(request_serializer=gb, response_serializer=gb)
-        msg = RequestMessage(fields={}, gremlin="g.V()")
-        conn._write_request(msg)
-        written = conn._transport.write.call_args[0][0]
-        assert written['payload'] == gb.serialize_message(msg)
-        assert written['headers']['content-type'] == str(gb.version, encoding='utf-8')
+        payload = json.loads(written['payload'])
+        assert payload['gremlin'] == "g.V()"
+        assert payload['g'] == "g"
+        assert written['headers']['content-type'] == "application/json"
 
     def test_accept_header_set_from_response_serializer(self):
         from gremlin_python.driver.serializer import GraphBinarySerializersV4
@@ -1294,45 +1284,30 @@ class TestConnectionWriteRequest:
         written = conn._transport.write.call_args[0][0]
         assert written['headers']['accept'] == str(gb.version, encoding='utf-8')
 
-    def test_auth_passed_in_message(self):
-        auth_fn = lambda req: req
-        conn = self._make_connection(auth=auth_fn)
-        conn._write_request(RequestMessage(fields={}, gremlin="g.V()"))
-        written = conn._transport.write.call_args[0][0]
-        assert written['auth'] is auth_fn
-
     def test_single_interceptor_runs(self):
-        changed = RequestMessage(fields={}, gremlin="changed")
         def interceptor(request):
-            request['payload'] = changed
-            return request
+            request.body = RequestMessage(fields={"g": "g"}, gremlin="changed")
         conn = self._make_connection(interceptors=[interceptor])
         conn._write_request(RequestMessage(fields={}, gremlin="g.V()"))
         written = conn._transport.write.call_args[0][0]
-        assert written['payload'] == changed
+        assert json.loads(written['payload'])['gremlin'] == "changed"
 
     def test_interceptors_run_sequentially(self):
-        def one(req): req['payload'].gremlin.append(1); return req
-        def two(req): req['payload'].gremlin.append(2); return req
-        def three(req): req['payload'].gremlin.append(3); return req
+        order = []
+        def one(req): order.append(1)
+        def two(req): order.append(2)
+        def three(req): order.append(3)
         conn = self._make_connection(interceptors=[one, two, three])
-        conn._write_request(RequestMessage(fields={}, gremlin=[]))
-        written = conn._transport.write.call_args[0][0]
-        assert written['payload'].gremlin == [1, 2, 3]
+        conn._write_request(RequestMessage(fields={}, gremlin="g.V()"))
+        assert order == [1, 2, 3]
 
-    def test_interceptor_works_with_serializer(self):
-        from gremlin_python.driver.serializer import GraphBinarySerializersV4
-        gb = GraphBinarySerializersV4()
-        msg = RequestMessage(fields={}, gremlin="g.E()")
-        def assert_interceptor(request):
-            assert request['payload'] == gb.serialize_message(msg)
-            request['payload'] = "changed"
-            return request
-        conn = self._make_connection(request_serializer=gb, response_serializer=gb,
-                                     interceptors=[assert_interceptor])
-        conn._write_request(msg)
+    def test_interceptor_can_modify_headers(self):
+        def interceptor(request):
+            request.headers['x-custom'] = "value"
+        conn = self._make_connection(interceptors=[interceptor])
+        conn._write_request(RequestMessage(fields={}, gremlin="g.V()"))
         written = conn._transport.write.call_args[0][0]
-        assert written['payload'] == "changed"
+        assert written['headers']['x-custom'] == "value"
 
 
 class TestConnectionInterceptorValidation:

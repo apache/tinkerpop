@@ -39,7 +39,6 @@ __author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitqui
 class Client:
 
     def __init__(self, url, traversal_source, pool_size=None, max_workers=None,
-                 request_serializer=serializer.GraphBinarySerializersV4(),
                  response_serializer=None, interceptors=None, auth=None,
                  headers=None, enable_user_agent_on_connect=True,
                  bulk_results=False, pdt_registry=None, **transport_kwargs):
@@ -63,7 +62,6 @@ class Client:
 
         self._auth = auth
         self._response_serializer = response_serializer
-        self._request_serializer = request_serializer
         self._interceptors = interceptors
 
         self._transport_kwargs = transport_kwargs
@@ -149,7 +147,6 @@ class Client:
         return connection.Connection(
             self._url, self._traversal_source,
             self._executor, self._pool,
-            request_serializer=self._request_serializer,
             response_serializer=self._response_serializer,
             auth=self._auth, interceptors=self._interceptors,
             headers=self._headers,

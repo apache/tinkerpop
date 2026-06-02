@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
-import org.apache.tinkerpop.gremlin.driver.interceptor.PayloadSerializingInterceptor;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -45,8 +44,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -174,10 +172,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final AtomicInteger httpRequests = new AtomicInteger(0);
 
         final Cluster cluster = TestClientFactory.build().
-                addInterceptor("counter", r -> {
-                    httpRequests.incrementAndGet();
-                    return r;
-                }).create();
+                interceptors(r -> httpRequests.incrementAndGet()).create();
 
         try {
             final Client client = cluster.connect();
@@ -195,15 +190,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldRunInterceptorsInOrder() throws Exception {
         AtomicReference<Object> body = new AtomicReference<>();
         final Cluster cluster = TestClientFactory.build().
-                addInterceptor("first", r -> {
-                    body.set(r.getBody());
-                    r.setBody(null);
-                    return r;
-                }).
-                addInterceptor("second", r -> {
-                    r.setBody(body.get());
-                    return r;
-                }).create();
+                interceptors(
+                    r -> {
+                        body.set(r.getBody());
+                        r.setBody(null);
+                    },
+                    r -> r.setBody(body.get())
+                ).create();
 
         try {
             final Client client = cluster.connect();
@@ -214,8 +207,86 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldWorkWithGraphSONSerializer() throws Exception {
-        final Cluster cluster = TestClientFactory.build(new PayloadSerializingInterceptor(new GraphSONMessageSerializerV4()))
+    public void shouldAutoSerializeRequestMessageWithInterceptorMutation() throws Exception {
+        // Verifies the driver auto-serializes when an interceptor modifies the RequestMessage
+        // body but does not call serializeBody() itself.
+        final Cluster cluster = TestClientFactory.build().
+                interceptors(r -> {
+                    if (r.getBody() instanceof RequestMessage) {
+                        r.setBody(RequestMessage.build("g.inject(99)").create());
+                    }
+                }).create();
+
+        try {
+            final Client client = cluster.connect();
+            assertEquals(99, client.submit("g.inject(1)").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldPropagateExceptionThrownDuringInterceptor() throws Exception {
+        final AtomicInteger callCount = new AtomicInteger(0);
+        final Cluster cluster = TestClientFactory.build().
+                interceptors(r -> {
+                    // Only throw on the first request to verify recovery
+                    if (callCount.incrementAndGet() == 1) {
+                        throw new RuntimeException("interceptor broke");
+                    }
+                }).create();
+        try {
+            final Client client = cluster.connect();
+
+            // First request should fail with interceptor error
+            try {
+                client.submit("g.inject(1)").all().get();
+                fail("Should have thrown an exception");
+            } catch (Exception ex) {
+                assertTrue(ex.getCause().getMessage().contains("interceptor broke"));
+            }
+
+            // Subsequent request should succeed, proving the connection is still usable
+            assertEquals(2, client.submit("g.inject(2)").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldPropagateErrorWhenInterceptorSetsUnsupportedBodyType() throws Exception {
+        // This error occurs after interceptors run, when serializeBody() encounters
+        // a body that is neither RequestMessage nor byte[].
+        final AtomicInteger callCount = new AtomicInteger(0);
+        final Cluster cluster = TestClientFactory.build().
+                interceptors(r -> {
+                    if (callCount.incrementAndGet() == 1) {
+                        r.setBody(42);
+                    }
+                }).create();
+        try {
+            final Client client = cluster.connect();
+
+            // First request should fail with body type error
+            try {
+                client.submit("g.inject(1)").all().get();
+                fail("Should have thrown an exception");
+            } catch (Exception ex) {
+                final String msg = ex.getCause().getMessage();
+                assertTrue(msg.contains("Cannot serialize body of type"));
+                assertTrue(msg.contains("Integer"));
+            }
+
+            // Subsequent request should succeed, proving the connection is still usable
+            assertEquals(3, client.submit("g.inject(3)").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldWorkWithGraphSONResponse() throws Exception {
+        final Cluster cluster = TestClientFactory.build()
                 .serializer(Serializers.GRAPHSON_V4.simpleInstance()).create();
 
         try {
@@ -232,8 +303,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldWorkWithGraphSONRequestAndGraphBinaryResponse() throws Exception {
-        final Cluster cluster = TestClientFactory.build(new PayloadSerializingInterceptor(new GraphSONMessageSerializerV4()))
+    public void shouldWorkWithJsonRequestAndGraphBinaryResponse() throws Exception {
+        final Cluster cluster = TestClientFactory.build()
                 .serializer(Serializers.GRAPHBINARY_V4.simpleInstance()).create();
 
         try {
@@ -245,8 +316,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldWorkWithGraphBinaryRequestAndGraphSONResponse() throws Exception {
-        final Cluster cluster = TestClientFactory.build(new PayloadSerializingInterceptor(new GraphBinaryMessageSerializerV4()))
+    public void shouldWorkWithJsonRequestAndGraphSONResponse() throws Exception {
+        final Cluster cluster = TestClientFactory.build()
                 .serializer(Serializers.GRAPHSON_V4.simpleInstance()).create();
 
         try {
@@ -264,10 +335,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         final Cluster cluster = TestClientFactory.build().
                 maxConnectionPoolSize(1).
-                addInterceptor("counter", r -> {
-                    handshakeRequests.incrementAndGet();
-                    return r;
-                }).create();
+                interceptors(r -> handshakeRequests.incrementAndGet()).create();
 
         try {
             final Client client = cluster.connect();

@@ -21,6 +21,8 @@
 
 #endregion
 
+using System;
+using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Structure.IO.GraphBinary4;
 using Xunit;
@@ -37,10 +39,10 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
-        public void ShouldCreateClientWithCustomSerializer()
+        public void ShouldCreateClientWithCustomResponseSerializer()
         {
             var serializer = new GraphBinary4MessageSerializer();
-            using var client = new GremlinClient(new GremlinServer(), messageSerializer: serializer);
+            using var client = new GremlinClient(new GremlinServer(), responseSerializer: serializer);
             // Should not throw
         }
 
@@ -63,6 +65,22 @@ namespace Gremlin.Net.UnitTest.Driver
             client.Dispose();
             // Should not throw on double dispose
             client.Dispose();
+        }
+
+        [Fact]
+        public void ShouldAppendAuthInterceptorToEndOfList()
+        {
+            Func<HttpRequestContext, Task> userInterceptor = ctx => Task.CompletedTask;
+            Func<HttpRequestContext, Task> auth = ctx => Task.CompletedTask;
+
+            using var client = new GremlinClient(new GremlinServer(),
+                auth: auth,
+                interceptors: new[] { userInterceptor });
+
+            var interceptors = client.Connection.Interceptors;
+            Assert.Equal(2, interceptors.Count);
+            Assert.Same(userInterceptor, interceptors[0]);
+            Assert.Same(auth, interceptors[1]);
         }
     }
 }

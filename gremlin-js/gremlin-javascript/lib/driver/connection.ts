@@ -30,25 +30,17 @@ import StreamReader from '../structure/io/binary/internals/StreamReader.js';
 import * as utils from '../utils.js';
 import ResultSet from './result-set.js';
 import {RequestMessage} from "./request-message.js";
+import { HttpRequest, RequestInterceptor } from './http-request.js';
 import ResponseError from './response-error.js';
 import { Traverser } from '../process/traversal.js';
 
-const { graphBinaryWriter } = ioc;
+const { graphBinaryReader } = ioc;
 
 const responseStatusCode = {
   success: 200,
   noContent: 204,
   partialContent: 206,
 };
-
-export type HttpRequest = {
-  url: string;
-  method: string;
-  headers: Record<string, string>;
-  body: any;
-};
-
-export type RequestInterceptor = (request: HttpRequest) => HttpRequest | Promise<HttpRequest>;
 
 export type ConnectionOptions = {
   ca?: string[];
@@ -59,11 +51,13 @@ export type ConnectionOptions = {
   reader?: any;
   rejectUnauthorized?: boolean;
   traversalSource?: string;
-  writer?: any | null;
   headers?: Record<string, string | string[]>;
   enableUserAgentOnConnect?: boolean;
   agent?: Agent;
   interceptors?: RequestInterceptor | RequestInterceptor[];
+  /** An optional auth interceptor. As a convenience, this is always appended to the end of the
+   *  interceptor list so it runs last, after any user interceptors have modified the request. */
+  auth?: RequestInterceptor;
 };
 
 /**
@@ -71,7 +65,6 @@ export type ConnectionOptions = {
  */
 export default class Connection extends EventEmitter {
   private readonly _reader: any;
-  private readonly _writer: any | null;
 
   isOpen = true;
   traversalSource: string;
@@ -90,8 +83,7 @@ export default class Connection extends EventEmitter {
   ) {
     super();
 
-    this._reader = options.reader || (options.preciseNumbers === true ? createPreciseReader() : new GraphBinaryReader(ioc));
-    this._writer = 'writer' in options ? options.writer : graphBinaryWriter;
+    this._reader = options.reader || (options.preciseNumbers === true ? createPreciseReader() : graphBinaryReader);
     if (options.pdtRegistry) {
       this._reader.pdtRegistry = options.pdtRegistry;
     }
@@ -102,11 +94,16 @@ export default class Connection extends EventEmitter {
     if (typeof interceptors === 'function') {
       this._interceptors = [interceptors];
     } else if (Array.isArray(interceptors)) {
-      this._interceptors = interceptors;
+      this._interceptors = [...interceptors];
     } else if (interceptors === undefined || interceptors === null) {
       this._interceptors = [];
     } else {
       throw new TypeError('interceptors must be a function, array, or undefined');
+    }
+
+    // Auth interceptor is always last so it runs after user interceptors
+    if (options.auth) {
+      this._interceptors.push(options.auth);
     }
   }
 
@@ -123,8 +120,7 @@ export default class Connection extends EventEmitter {
    * Send a request and buffer the entire response. Returns a Promise<ResultSet>.
    */
   async submit(request: RequestMessage) {
-    const body = this._writer ? this._writer.writeRequest(request) : request;
-    const response = await this.#makeHttpRequest(body);
+    const response = await this.#makeHttpRequest(request);
     return this.#handleResponse(response);
   }
 
@@ -142,12 +138,11 @@ export default class Connection extends EventEmitter {
    * @returns {AsyncGenerator<any>}
    */
   async *stream(request: RequestMessage): AsyncGenerator<any> {
-    const body = this._writer ? this._writer.writeRequest(request) : request;
     const abortController = new AbortController();
 
     let response: Response;
     try {
-      response = await this.#makeHttpRequest(body, abortController.signal);
+      response = await this.#makeHttpRequest(request, abortController.signal);
     } catch (e: any) {
       throw new Error(`Stream request failed: ${e.message}`, { cause: e });
     }
@@ -215,14 +210,10 @@ export default class Connection extends EventEmitter {
     return null;
   }
 
-  async #makeHttpRequest(body: any, signal?: AbortSignal): Promise<Response> {
+  async #makeHttpRequest(request: RequestMessage, signal?: AbortSignal): Promise<Response> {
     const headers: Record<string, string> = {
-      'Accept': this._reader.mimeType
+      'Accept': this._reader.mimeType,
     };
-
-    if (this._writer) {
-      headers['Content-Type'] = this._writer.mimeType;
-    }
 
     if (this._enableUserAgentOnConnect) {
       const userAgent = await utils.getUserAgent();
@@ -237,18 +228,13 @@ export default class Connection extends EventEmitter {
       });
     }
 
-    let httpRequest: HttpRequest = {
-      url: this.url,
-      method: 'POST',
-      headers,
-      body,
-    };
+    const httpRequest = new HttpRequest('POST', this.url, headers, request);
 
     // Promote transactionId to HTTP header before interceptors run.
     // The field remains in the serialized body as well (dual transmission
     // per the HTTP transaction protocol specification).
-    if (body instanceof RequestMessage) {
-      const fields = body.getFields();
+    if (request instanceof RequestMessage) {
+      const fields = request.getFields();
       if (fields.has('transactionId')) {
         httpRequest.headers['X-Transaction-Id'] = fields.get('transactionId');
       }
@@ -256,11 +242,14 @@ export default class Connection extends EventEmitter {
 
     for (let i = 0; i < this._interceptors.length; i++) {
       try {
-        httpRequest = await this._interceptors[i](httpRequest);
+        await this._interceptors[i](httpRequest);
       } catch (e: any) {
         throw new Error(`Request interceptor at index ${i} failed: ${e.message}`, { cause: e });
       }
     }
+
+    // Auto-serialize body to JSON after interceptors run (idempotent if already serialized)
+    httpRequest.serializeBody();
 
     return fetch(httpRequest.url, {
       method: httpRequest.method,

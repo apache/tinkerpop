@@ -19,6 +19,7 @@ from concurrent.futures import Future
 
 from gremlin_python.driver import resultset, useragent
 from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
+from gremlin_python.driver.http_request import HttpRequest
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -34,16 +35,22 @@ class GremlinServerError(Exception):
 class Connection:
 
     def __init__(self, url, traversal_source,
-                 executor, pool, request_serializer=None,
+                 executor, pool,
                  response_serializer=None, auth=None, interceptors=None,
                  headers=None, enable_user_agent_on_connect=True,
                  bulk_results=False, **transport_kwargs):
         if callable(interceptors):
             interceptors = [interceptors]
-        elif not (isinstance(interceptors, tuple)
-                  or isinstance(interceptors, list)
-                  or interceptors is None):
+        elif isinstance(interceptors, tuple):
+            interceptors = list(interceptors)
+        elif not (isinstance(interceptors, list) or interceptors is None):
             raise TypeError("interceptors must be a callable, tuple, list or None")
+
+        # Auth is just an interceptor. As a convenience (and for discoverability), the auth
+        # interceptor is appended to the end of the interceptor list so it runs last, after
+        # any user interceptors have modified the request.
+        if auth is not None:
+            interceptors = (interceptors or []) + [auth]
 
         self._url = url
         self._headers = headers
@@ -54,9 +61,7 @@ class Connection:
         self._pool = pool
         self._result_set = None
         self._inited = False
-        self._request_serializer = request_serializer
         self._response_serializer = response_serializer
-        self._auth = auth
         self._interceptors = interceptors
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         if self._enable_user_agent_on_connect:
@@ -78,22 +83,33 @@ class Connection:
 
     def _write_request(self, request_message):
         accept = str(self._response_serializer.version, encoding='utf-8')
-        message = {
-            'headers': {'accept': accept},
-            'payload': self._request_serializer.serialize_message(request_message)
-                if self._request_serializer is not None else request_message,
-            'auth': self._auth
-        }
-        if self._request_serializer is not None:
-            content_type = str(self._request_serializer.version, encoding='utf-8')
-            message['headers']['content-type'] = content_type
+
+        headers = {'accept': accept}
+
         # Promote transactionId to HTTP header before interceptors run.
         # The field remains in the serialized body as well (dual transmission
         # per the HTTP transaction protocol specification).
         if hasattr(request_message, 'fields') and 'transactionId' in request_message.fields:
-            message['headers']['X-Transaction-Id'] = request_message.fields['transactionId']
+            headers['X-Transaction-Id'] = request_message.fields['transactionId']
+
+        http_request = HttpRequest(
+            method="POST",
+            url=self._url,
+            headers=headers,
+            body=request_message
+        )
+
         for interceptor in self._interceptors or []:
-            message = interceptor(message)
+            interceptor(http_request)
+
+        # Auto-serialize if no interceptor already did so
+        http_request.serialize_body()
+
+        # Build the transport message in the format the transport expects
+        message = {
+            'headers': http_request.headers,
+            'payload': http_request.body
+        }
         self._transport.write(message)
 
     def write(self, request_message):

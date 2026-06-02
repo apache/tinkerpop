@@ -274,3 +274,89 @@ describe('ProviderDefinedType - Client', function () {
       });
   });
 });
+
+describe('Client interceptor integration', function () {
+  it('should auto serialize request message with interceptor mutation', async function () {
+    const { RequestMessage } = await import('../../lib/driver/request-message.js');
+    const interceptor = (request) => {
+      if (request.body instanceof RequestMessage) {
+        request.body = RequestMessage.build('g.inject(99)').addG('gmodern').create();
+      }
+    };
+    const interceptorClient = new Client(serverUrl, {
+      traversalSource: 'gmodern',
+      interceptors: [interceptor],
+    });
+    await interceptorClient.open();
+    try {
+      const result = await interceptorClient.submit('g.inject(1)');
+      assert.strictEqual(result.first(), 99);
+    } finally {
+      await interceptorClient.close();
+    }
+  });
+
+  it('should propagate exception thrown during interceptor', async function () {
+    let callCount = 0;
+    const interceptor = () => {
+      callCount++;
+      if (callCount === 1) {
+        throw new Error('interceptor broke');
+      }
+    };
+    const interceptorClient = new Client(serverUrl, {
+      traversalSource: 'gmodern',
+      interceptors: [interceptor],
+    });
+    await interceptorClient.open();
+    try {
+      // First request should fail with interceptor error
+      await assert.rejects(
+        () => interceptorClient.submit('g.inject(1)'),
+        (err) => {
+          assert.ok(err.message.includes('interceptor') || err.message.includes('broke'),
+            `Expected error about interceptor, got: ${err.message}`);
+          return true;
+        }
+      );
+
+      // Subsequent request should succeed, proving connection recovery
+      const result = await interceptorClient.submit('g.inject(2)');
+      assert.strictEqual(result.first(), 2);
+    } finally {
+      await interceptorClient.close();
+    }
+  });
+
+  it('should propagate error when interceptor sets unsupported body type', async function () {
+    let callCount = 0;
+    const interceptor = (request) => {
+      callCount++;
+      if (callCount === 1) {
+        request.body = 42;
+      }
+    };
+    const interceptorClient = new Client(serverUrl, {
+      traversalSource: 'gmodern',
+      interceptors: [interceptor],
+    });
+    await interceptorClient.open();
+    try {
+      // First request should fail with serialization error
+      await assert.rejects(
+        () => interceptorClient.submit('g.inject(1)'),
+        (err) => {
+          assert.ok(err.message.includes('unsupported body type') || err.message.includes('serialize'),
+            `Expected error about unsupported body type, got: ${err.message}`);
+          return true;
+        }
+      );
+
+      // Subsequent request should succeed, proving connection recovery
+      const result = await interceptorClient.submit('g.inject(2)');
+      assert.strictEqual(result.first(), 2);
+    } finally {
+      await interceptorClient.close();
+    }
+  });
+});

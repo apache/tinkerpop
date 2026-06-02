@@ -271,7 +271,49 @@ More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |RequestInterceptors |Functions that modify HTTP requests before sending. Used for authentication and custom headers. |empty
 |PDTRegistry |A `*PDTRegistry` for hydrating and dehydrating <<gremlin-go-pdt,Provider Defined Types>>. |`nil`
+|Auth |A single RequestInterceptor for authentication (e.g. `BasicAuth`). Always appended to the end of the interceptor list so it runs last. |nil
 |=========================================================
+
+[[gremlin-go-interceptors]]
+=== RequestInterceptor
+
+Gremlin-Go allows modification of the underlying HTTP request through `RequestInterceptor` functions. This is
+intended to be an advanced feature which means that you will need to understand how the implementation works in order
+to safely utilize it. Gremlin-Go is written in a way that you should be able to interact with most TinkerPop-enabled
+servers without having to use interceptors. This is intended for cases where the server has special capabilities.
+
+A `RequestInterceptor` is a function with the signature `func(*HttpRequest) error` that mutates the `HttpRequest`
+in place. A slice of these is maintained and will be run sequentially for each request. When creating a
+`DriverRemoteConnection` or `Client`, the `RequestInterceptors` field on the settings struct accepts an ordered
+slice of interceptors. Order matters, so if one interceptor depends on another's output, ensure they are added in
+the correct order. Note that authentication (e.g. `BasicAuth`, `SigV4Auth`) is also implemented using interceptors.
+The `auth` convenience on connection settings appends the auth interceptor to the end of the list so it runs last.
+
+[source,go]
+----
+remote, err := gremlingo.NewDriverRemoteConnection("http://localhost:8182/gremlin",
+  func(settings *gremlingo.DriverRemoteConnectionSettings) {
+    settings.RequestInterceptors = []gremlingo.RequestInterceptor{
+      gremlingo.BasicAuth("username", "password"),
+      func(req *gremlingo.HttpRequest) error {
+        req.Headers.Set("X-Custom-Header", "value")
+        return nil
+      },
+    }
+  })
+----
+
+Each interceptor receives a `*gremlingo.HttpRequest` whose `Body` field initially contains a `*RequestMessage`.
+The `RequestMessage` struct has mutable fields (`Gremlin string` and `Fields map[string]interface{}`), so an
+interceptor can modify them directly or replace the body entirely. By default, the driver serializes the body
+to JSON (`application/json`) by calling `HttpRequest.SerializeBody()` after all interceptors have run. An
+interceptor that needs the serialized bytes (for example, to compute a signature hash) can call
+`SerializeBody()` itself; the method is idempotent. If you require a GraphBinary-encoded request body instead
+of JSON, you can write a custom interceptor that serializes the `RequestMessage` with the GraphBinary serializer
+and sets the resulting `[]byte` as the body.
+
+For an example of a simple `RequestInterceptor` that only modifies the header of the request, see
+link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-go/driver/auth.go[basic authentication].
 
 [[gremlin-go-strategies]]
 === Traversal Strategies
@@ -967,9 +1009,11 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.trustStore |File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and SSL is enabled, the default `TrustManager` will be used. |_none_
 |connectionPool.trustStorePassword |The password of the `trustStore` if it is password-protected |_none_
 |connectionPool.validationRequest |A script that is used to test server connectivity. A good script to use is one that evaluates quickly and returns no data. The default simply returns an empty string, but if a graph is required by a particular provider, a good traversal might be `g.inject()`. |_''_
+|auth |An authentication `RequestInterceptor` (e.g. `Auth.basic()`). Always appended to the end of the interceptor list so it runs last. |_none_
 |bulkResults |Sets whether the server should attempt to get bulk results or not. |false
 |enableUserAgentOnConnect |Enables sending a user agent to the server during connection requests. More details can be found in provider docs link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |hosts |The list of hosts that the driver will connect to. |localhost
+|interceptors |A list of `RequestInterceptor` instances that modify the HTTP request before sending. |empty
 |nioPoolSize |Size of the pool for handling request/response operations. |available processors
 |password |The password to submit on requests that require authentication. |_none_
 |path |The URL path to the Gremlin Server. |_/gremlin_
@@ -1273,21 +1317,26 @@ to "g" and "g1" and "g2" are automatically rebound into "g" on the server-side.
 
 Gremlin-Java allows for modification of the underlying HTTP request through the use of `RequestInterceptors`. This is
 intended to be an advanced feature which means that you will need to understand how the implementation works in order
-to safely utilize it. Gremlin-Java is written in a way that you should be able to interact with a TinkerPop-enabled
-server without having to use interceptors. This is intended for cases where the server has special capabilities.
+to safely utilize it. Gremlin-Java is written in a way that you should be able to interact with most TinkerPop-enabled
+servers without having to use interceptors. This is intended for cases where the server has special capabilities.
 
-A `RequestInterceptor` is simply a `UnaryOperator`. A list of these are maintained and will be run sequentially for
-each request. When building a `Cluster` instance, the methods `addInterceptorAfter()`, `addInterceptorBefore()`,
-`addInterceptor()`, and `removeInterceptor()` can be used to add or remove interceptors. It's important to remember
-that order matters so if one interceptor depends on another's output then ensure they are added in the correct order.
-Note that `Auth` is also implemented using interceptors, and `Auth` is always run last after your list of interceptors
-has already ran. By default, the `PayloadSerializingInterceptor` with the name `serializer` is added to your list of
-interceptors. This interceptor is used for serializing the body of the request. The first interceptor is provided with
-a `org.apache.tinkerpop.gremlin.driver.HttpRequest` that contains a `RequestMessage` in the body. As a reminder
-`RequestMessage` is immutable and only certain keys can be added to them. If you want to customize the body by adding
-other fields, you will need to make a different copy of the `RequestMessage` or completely change the body to contain a
-different data type. The very last interceptor should have a `org.apache.tinkerpop.gremlin.driver.HttpRequest` that
-contains a byte[] in the body.
+A `RequestInterceptor` is a function that mutates the `HttpRequest` in place (it returns nothing).
+A list of these is maintained and will be run sequentially for each request. When building a
+`Cluster` instance, the `interceptors()` method accepts an ordered list of interceptors. It's
+important to remember that order matters so if one interceptor depends on another's output then
+ensure they are added in the correct order. Note that `Auth` is also implemented using interceptors.
+The `auth()` convenience on the `Cluster.Builder` appends the auth interceptor to the end of the list so it runs last.
+
+Each interceptor is provided with a `org.apache.tinkerpop.gremlin.driver.HttpRequest` that contains
+a `RequestMessage` in the body. As a reminder `RequestMessage` is immutable and only certain keys
+can be added to them. If you want to customize the body by adding other fields, you will need to
+make a different copy of the `RequestMessage` or completely change the body to contain a different
+data type. By default, the driver serializes the body to JSON (`application/json`) by calling
+`HttpRequest.serializeBody()` after all interceptors have run. An interceptor that needs the
+serialized bytes (for example, to compute a signature hash) can call `serializeBody()` itself; the
+method is idempotent. If you require a GraphBinary-encoded request body instead of JSON, you can
+write a custom interceptor that serializes the `RequestMessage` with the GraphBinary serializer and
+sets the resulting `byte[]` as the body.
 
 For an example of a simple `RequestInterceptor` that only modifies the header of the request take a look at
 link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-driver/src/main/java/org/apache/tinkerpop/gremlin/driver/auth/Basic.java[basic authentication].
@@ -1826,6 +1875,7 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options.traversalSource |String |The traversal source. |'g'
 |options.headers |Object |Additional HTTP header key/values included with each request. |undefined
 |options.interceptors |RequestInterceptor/RequestInterceptor[] |One or more functions that can modify the HTTP request before it is sent. |undefined
+|options.auth |RequestInterceptor |An auth interceptor that is always appended to the end of the interceptor list so it runs last. |undefined
 |options.preciseNumbers |Boolean |When `true`, wraps deserialized numbers in typed wrappers that preserve the server's original type. |undefined
 |options.reader |GraphBinaryReader |The reader to use for deserializing responses. |GraphBinaryReader
 |options.writer |GraphBinaryWriter |The writer to use for serializing requests. |GraphBinaryWriter
@@ -1833,6 +1883,47 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options.agent |Agent |A custom `node:http` or `node:https` Agent for connection pooling or proxy configuration. |undefined
 |options.pdtRegistry |ProviderDefinedTypeRegistry |A registry for hydrating and dehydrating <<gremlin-javascript-pdt,Provider Defined Types>>. |undefined
 |=========================================================
+
+[[gremlin-javascript-interceptors]]
+=== RequestInterceptor
+
+Gremlin-JavaScript allows modification of the underlying HTTP request through `RequestInterceptor` functions. This is
+intended to be an advanced feature which means that you will need to understand how the implementation works in order
+to safely utilize it. Gremlin-JavaScript is written in a way that you should be able to interact with most
+ TinkerPop-enabled servers without having to use interceptors. This is intended for cases where the server has special
+ capabilities.
+
+A `RequestInterceptor` is a function with the signature `(request: HttpRequest) => void | Promise<void>` that mutates
+the `HttpRequest` in place (it returns nothing). A list of these is maintained and will be run sequentially for each
+request. When creating a `DriverRemoteConnection` or `Client`, the `interceptors` option accepts one interceptor or an
+array of interceptors. Order matters, so if one interceptor depends on another's output, ensure they are added in the
+correct order. Note that authentication (e.g. `auth.basic()`, `auth.sigv4()`) is also implemented using interceptors.
+The `auth` convenience on connection options appends the auth interceptor to the end of the list so it runs last.
+
+[source,javascript]
+----
+const { auth } = gremlin.driver;
+const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin', {
+  interceptors: [
+    auth.basic('myuser', 'mypassword'),
+    (request) => {
+      request.headers['X-Custom-Header'] = 'value';
+    }
+  ]
+}));
+----
+
+Each interceptor receives an `HttpRequest` whose `body` field initially contains a `RequestMessage`. The
+`RequestMessage` class is immutable (fields are private, accessed via getters). To customize the body by adding other
+fields, you must build a new `RequestMessage` via `RequestMessage.build(gremlin)` and its builder methods, or set a
+completely different body (such as a `Buffer`). By default, the driver serializes the body to JSON
+(`application/json`) by calling `HttpRequest.serializeBody()` after all interceptors have run. An interceptor that
+needs the serialized bytes (for example, to compute a signature hash) can call `serializeBody()` itself; the method
+is idempotent. If you require a GraphBinary-encoded request body instead of JSON, you can write a custom interceptor
+that serializes the `RequestMessage` with the GraphBinary writer and sets the resulting `Buffer` as the body.
+
+For an example of a simple `RequestInterceptor` that only modifies the header of the request, see
+link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-js/gremlin-javascript/lib/driver/auth.ts[basic authentication].
 
 [[gremlin-javascript-logging]]
 === Logging
@@ -2458,7 +2549,51 @@ The following options can be passed to the `GremlinClient` constructor:
 |loggerFactory |An `ILoggerFactory` for logging. |`NullLoggerFactory`
 |interceptors |A list of `Func<HttpRequestContext, Task>` that modify HTTP requests before sending. |_none_
 |pdtRegistry |A `ProviderDefinedTypeRegistry` for hydrating and dehydrating <<gremlin-dotnet-pdt,Provider Defined Types>>. |`null`
+|auth |A single `Func<HttpRequestContext, Task>` for authentication. Always appended to the end of the interceptor list so it runs last. |_none_
 |=========================================================
+
+[[gremlin-dotnet-interceptors]]
+=== RequestInterceptor
+
+Gremlin.Net allows modification of the underlying HTTP request through request interceptors. This is
+intended to be an advanced feature which means that you will need to understand how the implementation works in order
+to safely utilize it. Gremlin.Net is written in a way that you should be able to interact with most TinkerPop-enabled
+servers without having to use interceptors. This is intended for cases where the server has special capabilities.
+
+A request interceptor is a `Func<HttpRequestContext, Task>` that mutates the `HttpRequestContext` in place (it returns
+`Task` for async support but does not produce a value). A list of these is maintained and will be run sequentially for
+each request. When creating a `GremlinClient`, the `interceptors` parameter accepts an ordered collection of
+interceptors. Order matters, so if one interceptor depends on another's output, ensure they are added in the correct
+order. Note that authentication (e.g. `Auth.BasicAuth()`, `Auth.SigV4Auth()`) is also implemented using interceptors.
+These factory methods return interceptor delegates that can be included in the `interceptors` list. Alternatively, the
+`auth` parameter on `GremlinClient` appends the auth interceptor to the end of the list so it runs last.
+
+[source,csharp]
+----
+var server = new GremlinServer("localhost", 8182);
+using var client = new GremlinClient(server,
+    interceptors: new Func<HttpRequestContext, Task>[]
+    {
+        Auth.BasicAuth("username", "password"),
+        context =>
+        {
+            context.Headers["X-Custom-Header"] = "value";
+            return Task.CompletedTask;
+        }
+    });
+----
+
+Each interceptor receives an `HttpRequestContext` whose `Body` property initially contains a `RequestMessage`.
+The `RequestMessage` has an immutable `Gremlin` property and a mutable `Fields` dictionary, so an interceptor can
+add or modify fields directly. Alternatively, you can replace the body entirely. By default, the driver serializes
+the body to JSON (`application/json`) by calling `HttpRequestContext.SerializeBody()` after all interceptors have
+run. An interceptor that needs the serialized bytes (for example, to compute a signature hash) can call
+`SerializeBody()` itself; the method is idempotent. If you require a GraphBinary-encoded request body instead of
+JSON, you can write a custom interceptor that serializes the `RequestMessage` with the GraphBinary serializer and
+sets the resulting `byte[]` as the body.
+
+For an example of a simple request interceptor that only modifies the header of the request, see
+link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-dotnet/src/Gremlin.Net/Driver/Auth.cs[basic authentication].
 
 [[gremlin-dotnet-logging]]
 === Logging
@@ -3058,7 +3193,7 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 |request_serializer |The request serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
 |response_serializer |The response serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
 |interceptors |The request interceptors to run after request serialization.|`None`
-|auth |The authentication scheme to use when submitting requests that require authentication. |`None`
+|auth |An authentication interceptor. Always appended to the end of the interceptor list so it runs last. |`None`
 |pool_size |The number of connections used by the pool. |4
 |enable_user_agent_on_connect |Enables sending a user agent to the server during connection requests.
 More details can be found in provider docs
@@ -3079,6 +3214,47 @@ g = traversal().with_(
                          ssl_options=ssl.create_default_context(),
                          read_timeout=30))
 ----
+
+[[gremlin-python-interceptors]]
+=== RequestInterceptor
+
+Gremlin-Python allows modification of the underlying HTTP request through request interceptors. This is
+intended to be an advanced feature which means that you will need to understand how the implementation works in order
+to safely utilize it. Gremlin-Python is written in a way that you should be able to interact with most TinkerPop-enabled
+servers without having to use interceptors. This is intended for cases where the server has special capabilities.
+
+A request interceptor is a callable that receives an `HttpRequest` and mutates it in place (it returns nothing).
+A list of these is maintained and will be run sequentially for each request. When creating a
+`DriverRemoteConnection` or `Client`, the `interceptors` keyword argument accepts an ordered list of interceptors.
+Order matters, so if one interceptor depends on another's output, ensure they are added in the correct order. Note
+that authentication (e.g. `basic()`, `sigv4()`) is also implemented using interceptors. The `auth` convenience
+parameter on `DriverRemoteConnection` and `Client` appends the auth interceptor to the end of the list so it
+runs last.
+
+[source,python]
+----
+from gremlin_python.driver.auth import basic
+
+g = traversal().with_(DriverRemoteConnection(
+    'http://localhost:8182/gremlin', 'g',
+    auth=basic('username', 'password'),
+    interceptors=[
+        lambda req: req.headers.update({'X-Custom-Header': 'value'})
+    ]))
+----
+
+Each interceptor receives an `HttpRequest` whose `body` attribute initially contains a `RequestMessage`.
+The `RequestMessage` is a named tuple with mutable `fields` (a `dict`) and a `gremlin` string. Because
+`fields` is a regular dictionary, an interceptor can add or modify entries directly. To replace the body
+entirely, assign a new value to `req.body`. By default, the driver serializes the body to JSON
+(`application/json`) by calling `HttpRequest.serialize_body()` after all interceptors have run. An interceptor
+that needs the serialized bytes (for example, to compute a signature hash) can call `serialize_body()` itself;
+the method is idempotent. If you require a GraphBinary-encoded request body instead of JSON, you can write a
+custom interceptor that serializes the `RequestMessage` with the GraphBinary serializer and sets the resulting
+`bytes` as the body.
+
+For an example of a simple request interceptor that only modifies the header of the request, see
+link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-python/src/main/python/gremlin_python/driver/auth.py[basic authentication].
 
 [[gremlin-python-strategies]]
 === Traversal Strategies

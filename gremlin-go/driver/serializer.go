@@ -28,7 +28,7 @@ import (
 
 const graphBinaryMimeType = "application/vnd.graphbinary-v4.0"
 
-// Serializer interface for serializers.
+// Serializer interface for serializing requests and deserializing responses.
 type Serializer interface {
 	SerializeMessage(request *RequestMessage) ([]byte, error)
 	DeserializeMessage(message []byte) (Response, error)
@@ -58,27 +58,17 @@ const versionByte byte = 0x84
 
 // SerializeMessage serializes a request message into GraphBinary format.
 //
-// This method is part of the serializer interface and is used internally by the HTTP driver.
-// It is also exposed publicly to enable alternative transport protocols (gRPC, HTTP/2, etc.) to
-// serialize requests created with MakeBytecodeRequest() or MakeStringRequest().
-//
-// The serialized bytes can be transmitted over any transport protocol that supports binary data.
+// This method is part of the Serializer interface. It is no longer used by the default driver
+// flow (which now serializes requests as JSON via HttpRequest.SerializeBody), but remains
+// available for custom interceptors or alternative transport protocols that require
+// GraphBinary-encoded requests.
 //
 // Parameters:
 //   - request: The request to serialize (created via MakeBytecodeRequest or MakeStringRequest)
 //
 // Returns:
-//   - []byte: The GraphBinary-encoded request ready for transmission
+//   - serialized: The GraphBinary-encoded request bytes
 //   - error: Any serialization error encountered
-//
-// Example for alternative transports:
-//
-//	req := MakeBytecodeRequest(bytecode, "g", "")
-//	serializer := newGraphBinarySerializer(nil)
-//	bytes, err := serializer.(graphBinarySerializer).SerializeMessage(&req)
-//	// Send bytes over custom transport
-//
-// SerializeMessage serializes a request message into GraphBinary.
 func (gs *GraphBinarySerializer) SerializeMessage(request *RequestMessage) ([]byte, error) {
 	finalMessage, err := gs.buildMessage(request.Gremlin, request.Fields)
 	if err != nil {
