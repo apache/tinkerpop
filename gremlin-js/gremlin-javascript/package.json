@@ -52,7 +52,7 @@
     "@smithy/signature-v4": "^5.3.12"
   },
   "devDependencies": {
-    "@cucumber/cucumber": "~12.7.0",
+    "@cucumber/cucumber": "~13.0.0",
     "@eslint/js": "^10.0.1",
     "@knighted/duel": "^4.0.2",
     "@tsconfig/node18": "^18.2.2",
