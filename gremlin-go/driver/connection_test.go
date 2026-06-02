@@ -1229,6 +1229,7 @@ func TestConnectionPoolSettings(t *testing.T) {
 			idleTimeout:         300 * time.Second,
 			keepAliveTime:       60 * time.Second,
 			connectTimeout:      30 * time.Second,
+			requestTimeout:      5 * time.Second,
 		}
 
 		conn := newConnection(newTestLogHandler(), "http://localhost:8182/gremlin", customSettings)
@@ -1239,6 +1240,7 @@ func TestConnectionPoolSettings(t *testing.T) {
 		assert.Equal(t, 256, transport.MaxConnsPerHost, "MaxConnsPerHost should be custom value")
 		assert.Equal(t, 16, transport.MaxIdleConnsPerHost, "MaxIdleConnsPerHost should be custom value")
 		assert.Equal(t, 300*time.Second, transport.IdleConnTimeout, "IdleConnTimeout should be custom value")
+		assert.Equal(t, 5*time.Second, transport.ResponseHeaderTimeout, "ResponseHeaderTimeout should be custom value")
 	})
 
 	t.Run("partial custom settings use defaults for unset values", func(t *testing.T) {

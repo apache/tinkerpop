@@ -50,6 +50,7 @@ type connectionSettings struct {
 	ssl                      *tls.Config
 	connectTimeout           time.Duration
 	readTimeout              time.Duration
+	requestTimeout           time.Duration
 	maxConnsPerHost          int
 	maxIdleConnsPerHost      int
 	idleTimeout              time.Duration
@@ -165,6 +166,10 @@ func newConnection(handler *logHandler, url string, connSettings *connectionSett
 		// generic HTTP compression, so the manual decode path in getReader handles
 		// decompression. Disable net/http's transparent (gzip-only) handling.
 		DisableCompression: true,
+		// Bounds the time between finishing writing the request and receiving response
+		// headers. Independent of connectTimeout, which only governs connection
+		// establishment. Zero disables the timeout.
+		ResponseHeaderTimeout: connSettings.requestTimeout,
 	}
 
 	return &connection{
@@ -395,7 +400,11 @@ func (c *connection) streamToResultSet(reader io.Reader, rs ResultSet) {
 		d = NewGraphBinaryDeserializer(reader)
 	}
 	if err := d.ReadHeader(); err != nil {
-		if err != io.EOF {
+		if err == io.EOF {
+			emptyBodyErr := fmt.Errorf("received empty response body from server")
+			c.logHandler.logf(Error, failedToReceiveResponse, emptyBodyErr.Error())
+			rs.setError(emptyBodyErr)
+		} else {
 			c.logHandler.logf(Error, failedToReceiveResponse, err.Error())
 			rs.setError(err)
 		}
