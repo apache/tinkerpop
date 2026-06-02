@@ -40,7 +40,7 @@ import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
  */
 public class TinkerVectorSearchByEmbeddingFactory extends TinkerServiceRegistry.TinkerServiceFactory<Float[], Map<String, Object>> implements Service<Float[], Map<String, Object>> {
 
-    public static final String NAME = "tinker.search.vector.topKByEmbedding";
+    public static final String NAME = "tinker.search.vector.topK.byEmbedding";
 
     public interface Params {
         /**

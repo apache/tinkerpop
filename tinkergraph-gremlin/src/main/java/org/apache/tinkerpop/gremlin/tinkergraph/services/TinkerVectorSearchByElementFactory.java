@@ -41,7 +41,7 @@ import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
  */
 public class TinkerVectorSearchByElementFactory extends TinkerServiceRegistry.TinkerServiceFactory<Element, Map<String, Object>> implements Service<Element, Map<String, Object>> {
 
-    public static final String NAME = "tinker.search.vector.topKByElement";
+    public static final String NAME = "tinker.search.vector.topK.byElement";
 
     public interface Params {
         /**

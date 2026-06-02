@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -44,9 +43,6 @@ public class TinkerIndexElement<T> {
     }
 
     public Map<String, Object> toMap() {
-        return new HashMap<String, Object>() {{
-            put("element", element);
-            put("distance", distance);
-        }};
+        return Map.of("element", element, "distance", distance);
     }
 }

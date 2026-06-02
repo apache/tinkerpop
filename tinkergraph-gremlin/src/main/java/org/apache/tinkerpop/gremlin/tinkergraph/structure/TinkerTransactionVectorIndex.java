@@ -53,71 +53,6 @@ final class TinkerTransactionVectorIndex<T extends TinkerElement> extends Abstra
     private final Map<String, Double> growthRates = new ConcurrentHashMap<>();
 
     /**
-     * Default number of nearest neighbors to return
-     */
-    private static final int DEFAULT_K = 10;
-
-    /**
-     * Default M parameter for HNSW index
-     */
-    private static final int DEFAULT_M = 16;
-
-    /**
-     * Default ef construction parameter for HNSW index
-     */
-    private static final int DEFAULT_EF_CONSTRUCTION = 200;
-
-    /**
-     * Default ef parameter for HNSW index
-     */
-    private static final int DEFAULT_EF = 10;
-
-    /**
-     * Default maximum number of items in the index
-     */
-    private static final int DEFAULT_MAX_ITEMS = 10000;
-
-    /**
-     * Default growth rate for the index when it reaches capacity (10%)
-     */
-    private static final double DEFAULT_GROWTH_RATE = 0.1;
-
-    /**
-     * Configuration key for the dimension of the vector
-     */
-    public static final String CONFIG_DIMENSION = "dimension";
-
-    /**
-     * Configuration key for the M parameter of the HNSW index
-     */
-    public static final String CONFIG_M = "m";
-
-    /**
-     * Configuration key for the ef construction parameter of the HNSW index
-     */
-    public static final String CONFIG_EF_CONSTRUCTION = "efConstruction";
-
-    /**
-     * Configuration key for the ef parameter of the HNSW index
-     */
-    public static final String CONFIG_EF = "ef";
-
-    /**
-     * Configuration key for the maximum number of items in the index
-     */
-    public static final String CONFIG_MAX_ITEMS = "maxItems";
-
-    /**
-     * Configuration key for the distance function of the HNSW index
-     */
-    public static final String CONFIG_DISTANCE_FUNCTION = "distanceFunction";
-
-    /**
-     * Configuration key for the growth rate of the index when it reaches capacity
-     */
-    public static final String CONFIG_GROWTH_RATE = "growthRate";
-
-    /**
      * Creates a new vector index for the specified graph and element class.
      *
      * @param graph      the graph
@@ -250,7 +185,7 @@ final class TinkerTransactionVectorIndex<T extends TinkerElement> extends Abstra
      */
     public void addToIndex(final String key, final float[] vector, final T element) {
         if (!this.indexedKeys.contains(key) || !this.vectorIndices.containsKey(key))
-            throw new IllegalArgumentException("The key '" + key + "' is not indexed");
+            return;
 
         final Index<Object, float[], ElementItem, Float> index = this.vectorIndices.get(key);
         final ElementItem item = new ElementItem(element.id(), vector, element);

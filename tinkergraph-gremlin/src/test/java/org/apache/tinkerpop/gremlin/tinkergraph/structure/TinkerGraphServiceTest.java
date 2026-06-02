@@ -593,7 +593,7 @@ public class TinkerGraphServiceTest {
     }
 
     @Test
-    public void g_V_callXvector_topKByEmbedding_vertexX() {
+    public void g_V_callXvector_topK_byEmbedding_vertexX() {
         final TinkerGraph graf = TinkerGraph.open();
         graf.getServiceRegistry().registerService(new TinkerVectorSearchByEmbeddingFactory(graf));
         graf.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
@@ -629,7 +629,7 @@ public class TinkerGraphServiceTest {
     }
 
     @Test
-    public void g_E_callXvector_topKByEmbedding_edgeX() {
+    public void g_E_callXvector_topK_byEmbedding_edgeX() {
         final TinkerGraph graf = TinkerGraph.open();
         graf.getServiceRegistry().registerService(new TinkerVectorSearchByEmbeddingFactory(graf));
         graf.createIndex(TinkerIndexType.VECTOR, "embedding", Edge.class, indexConfig);
@@ -667,7 +667,7 @@ public class TinkerGraphServiceTest {
     }
 
     @Test
-    public void g_V_callXvector_topKByEmbedding_vertex_topK_1X() {
+    public void g_V_callXvector_topK_byEmbedding_vertex_topK_1X() {
         final TinkerGraph graf = TinkerGraph.open();
         graf.getServiceRegistry().registerService(new TinkerVectorSearchByEmbeddingFactory(graf));
         graf.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
@@ -701,7 +701,7 @@ public class TinkerGraphServiceTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void g_V_callXvector_topKByEmbedding_missing_keyX() {
+    public void g_V_callXvector_topK_byEmbedding_missing_keyX() {
         final TinkerGraph graf = TinkerGraph.open();
         graf.getServiceRegistry().registerService(new TinkerVectorSearchByEmbeddingFactory(graf));
         graf.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
@@ -718,7 +718,7 @@ public class TinkerGraphServiceTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void g_V_callXvector_topKByEmbedding_missing_elementX() {
+    public void g_V_callXvector_topK_byEmbedding_missing_elementX() {
         final TinkerGraph graf = TinkerGraph.open();
         graf.getServiceRegistry().registerService(new TinkerVectorSearchByEmbeddingFactory(graf));
         graf.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
@@ -735,7 +735,7 @@ public class TinkerGraphServiceTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void g_V_callXvector_topKByEmbedding_invalid_elementX() {
+    public void g_V_callXvector_topK_byEmbedding_invalid_elementX() {
         final TinkerGraph graf = TinkerGraph.open();
         graf.getServiceRegistry().registerService(new TinkerVectorSearchByEmbeddingFactory(graf));
         graf.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);

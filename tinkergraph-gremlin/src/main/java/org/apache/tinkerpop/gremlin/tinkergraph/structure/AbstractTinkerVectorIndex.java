@@ -28,10 +28,21 @@ import java.util.List;
  * @param <T> the type of elements stored in the vector index
  */
 abstract class AbstractTinkerVectorIndex<T extends Element> extends AbstractTinkerIndex<T> {
-    /**
-     * Default number of nearest neighbors to return
-     */
-    private static final int DEFAULT_K = 10;
+
+    static final int DEFAULT_K = 10;
+    static final int DEFAULT_M = 16;
+    static final int DEFAULT_EF_CONSTRUCTION = 200;
+    static final int DEFAULT_EF = 10;
+    static final int DEFAULT_MAX_ITEMS = 10000;
+    static final double DEFAULT_GROWTH_RATE = 0.1;
+
+    public static final String CONFIG_DIMENSION = "dimension";
+    public static final String CONFIG_M = "m";
+    public static final String CONFIG_EF_CONSTRUCTION = "efConstruction";
+    public static final String CONFIG_EF = "ef";
+    public static final String CONFIG_MAX_ITEMS = "maxItems";
+    public static final String CONFIG_DISTANCE_FUNCTION = "distanceFunction";
+    public static final String CONFIG_GROWTH_RATE = "growthRate";
 
     protected AbstractTinkerVectorIndex(final AbstractTinkerGraph graph, final Class<T> indexClass) {
         super(graph, indexClass);
