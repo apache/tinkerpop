@@ -623,7 +623,7 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                     TinkerFactory.createModern()
                 },
                 {
-                    "g.call(\"tinker.search\", xx2).element()",
+                    "g.call(\"tinker.search.text\", xx2).element()",
                     Arrays.asList(
                         Pair.of(createBindings("xx2", Map.of("search", "mar")), Arrays.asList(V_MARKO)),
                         Pair.of(createBindings("xx2", Map.of("search", "vada")), Arrays.asList(V_VADAS)),

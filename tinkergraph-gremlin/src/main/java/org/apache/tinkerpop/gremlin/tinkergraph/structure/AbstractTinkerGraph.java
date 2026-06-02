@@ -45,12 +45,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 /**
  * Base class for {@link TinkerGraph} and {@link TinkerTransactionGraph}.
- * Contains common methods, variables and constants, but leaves the work with elements and indices
+ * Contains common methods, variables and coTinkerGraphGremlinLangScriptEngineTestnstants, but leaves the work with elements and indices
  * to concrete implementations.
  *
  * @author Valentyn Kahamlyk

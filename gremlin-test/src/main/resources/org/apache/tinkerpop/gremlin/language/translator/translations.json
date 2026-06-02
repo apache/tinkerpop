@@ -20474,16 +20474,16 @@
         "scenario": "g_callXlistX_withXstring_stringX",
         "traversals": [
             {
-                "original": "g.call(\"--list\").with(\"service\", \"tinker.search\")",
-                "language": "g.call(\"--list\").with(\"service\", \"tinker.search\")",
-                "canonical": "g.call(\"--list\").with(\"service\", \"tinker.search\")",
+                "original": "g.call(\"--list\").with(\"service\", \"tinker.search.text\")",
+                "language": "g.call(\"--list\").with(\"service\", \"tinker.search.text\")",
+                "canonical": "g.call(\"--list\").with(\"service\", \"tinker.search.text\")",
                 "anonymized": "g.call(string0).with(string1, string2)",
-                "dotnet": "g.Call<object>((string) \"--list\").With(\"service\", \"tinker.search\")",
-                "go": "g.Call(\"--list\").With(\"service\", \"tinker.search\")",
-                "groovy": "g.call(\"--list\").with(\"service\", \"tinker.search\")",
-                "java": "g.call(\"--list\").with(\"service\", \"tinker.search\")",
-                "javascript": "g.call(\"--list\").with_(\"service\", \"tinker.search\")",
-                "python": "g.call('--list').with_('service', 'tinker.search')"
+                "dotnet": "g.Call<object>((string) \"--list\").With(\"service\", \"tinker.search.text\")",
+                "go": "g.Call(\"--list\").With(\"service\", \"tinker.search.text\")",
+                "groovy": "g.call(\"--list\").with(\"service\", \"tinker.search.text\")",
+                "java": "g.call(\"--list\").with(\"service\", \"tinker.search.text\")",
+                "javascript": "g.call(\"--list\").with_(\"service\", \"tinker.search.text\")",
+                "python": "g.call('--list').with_('service', 'tinker.search.text')"
             }
         ]
     },
@@ -20491,16 +20491,16 @@
         "scenario": "g_callXlistX_withXstring_traversalX",
         "traversals": [
             {
-                "original": "g.call(\"--list\").with(\"service\", __.constant(\"tinker.search\"))",
-                "language": "g.call(\"--list\").with(\"service\", __.constant(\"tinker.search\"))",
-                "canonical": "g.call(\"--list\").with(\"service\", __.constant(\"tinker.search\"))",
+                "original": "g.call(\"--list\").with(\"service\", __.constant(\"tinker.search.text\"))",
+                "language": "g.call(\"--list\").with(\"service\", __.constant(\"tinker.search.text\"))",
+                "canonical": "g.call(\"--list\").with(\"service\", __.constant(\"tinker.search.text\"))",
                 "anonymized": "g.call(string0).with(string1, __.constant(string2))",
-                "dotnet": "g.Call<object>((string) \"--list\").With(\"service\", __.Constant<object>(\"tinker.search\"))",
-                "go": "g.Call(\"--list\").With(\"service\", gremlingo.T__.Constant(\"tinker.search\"))",
-                "groovy": "g.call(\"--list\").with(\"service\", __.constant(\"tinker.search\"))",
-                "java": "g.call(\"--list\").with(\"service\", __.constant(\"tinker.search\"))",
-                "javascript": "g.call(\"--list\").with_(\"service\", __.constant(\"tinker.search\"))",
-                "python": "g.call('--list').with_('service', __.constant('tinker.search'))"
+                "dotnet": "g.Call<object>((string) \"--list\").With(\"service\", __.Constant<object>(\"tinker.search.text\"))",
+                "go": "g.Call(\"--list\").With(\"service\", gremlingo.T__.Constant(\"tinker.search.text\"))",
+                "groovy": "g.call(\"--list\").with(\"service\", __.constant(\"tinker.search.text\"))",
+                "java": "g.call(\"--list\").with(\"service\", __.constant(\"tinker.search.text\"))",
+                "javascript": "g.call(\"--list\").with_(\"service\", __.constant(\"tinker.search.text\"))",
+                "python": "g.call('--list').with_('service', __.constant('tinker.search.text'))"
             }
         ]
     },
@@ -20525,16 +20525,16 @@
         "scenario": "g_callXlist_traversalX",
         "traversals": [
             {
-                "original": "g.call(\"--list\", __.project(\"service\").by(__.constant(\"tinker.search\")))",
-                "language": "g.call(\"--list\", __.project(\"service\").by(__.constant(\"tinker.search\")))",
-                "canonical": "g.call(\"--list\", __.project(\"service\").by(__.constant(\"tinker.search\")))",
+                "original": "g.call(\"--list\", __.project(\"service\").by(__.constant(\"tinker.search.text\")))",
+                "language": "g.call(\"--list\", __.project(\"service\").by(__.constant(\"tinker.search.text\")))",
+                "canonical": "g.call(\"--list\", __.project(\"service\").by(__.constant(\"tinker.search.text\")))",
                 "anonymized": "g.call(string0, __.project(string1).by(__.constant(string2)))",
-                "dotnet": "g.Call<object>(\"--list\", (ITraversal) __.Project<object>(\"service\").By(__.Constant<object>(\"tinker.search\")))",
-                "go": "g.Call(\"--list\", gremlingo.T__.Project(\"service\").By(gremlingo.T__.Constant(\"tinker.search\")))",
-                "groovy": "g.call(\"--list\", __.project(\"service\").by(__.constant(\"tinker.search\")))",
-                "java": "g.call(\"--list\", __.project(\"service\").by(__.constant(\"tinker.search\")))",
-                "javascript": "g.call(\"--list\", __.project(\"service\").by(__.constant(\"tinker.search\")))",
-                "python": "g.call('--list', __.project('service').by(__.constant('tinker.search')))"
+                "dotnet": "g.Call<object>(\"--list\", (ITraversal) __.Project<object>(\"service\").By(__.Constant<object>(\"tinker.search.text\")))",
+                "go": "g.Call(\"--list\", gremlingo.T__.Project(\"service\").By(gremlingo.T__.Constant(\"tinker.search.text\")))",
+                "groovy": "g.call(\"--list\", __.project(\"service\").by(__.constant(\"tinker.search.text\")))",
+                "java": "g.call(\"--list\", __.project(\"service\").by(__.constant(\"tinker.search.text\")))",
+                "javascript": "g.call(\"--list\", __.project(\"service\").by(__.constant(\"tinker.search.text\")))",
+                "python": "g.call('--list', __.project('service').by(__.constant('tinker.search.text')))"
             }
         ]
     },
@@ -20542,16 +20542,16 @@
         "scenario": "g_callXlist_map_traversalX",
         "traversals": [
             {
-                "original": "g.call(\"--list\", xx1, __.project(\"service\").by(__.constant(\"tinker.search\")))",
-                "language": "g.call(\"--list\", xx1, __.project(\"service\").by(__.constant(\"tinker.search\")))",
-                "canonical": "g.call(\"--list\", xx1, __.project(\"service\").by(__.constant(\"tinker.search\")))",
+                "original": "g.call(\"--list\", xx1, __.project(\"service\").by(__.constant(\"tinker.search.text\")))",
+                "language": "g.call(\"--list\", xx1, __.project(\"service\").by(__.constant(\"tinker.search.text\")))",
+                "canonical": "g.call(\"--list\", xx1, __.project(\"service\").by(__.constant(\"tinker.search.text\")))",
                 "anonymized": "g.call(string0, xx1, __.project(string1).by(__.constant(string2)))",
-                "dotnet": "g.Call<object>(\"--list\", (IDictionary<object, object>) xx1, (ITraversal) __.Project<object>(\"service\").By(__.Constant<object>(\"tinker.search\")))",
-                "go": "g.Call(\"--list\", xx1, gremlingo.T__.Project(\"service\").By(gremlingo.T__.Constant(\"tinker.search\")))",
-                "groovy": "g.call(\"--list\", xx1, __.project(\"service\").by(__.constant(\"tinker.search\")))",
-                "java": "g.call(\"--list\", xx1, __.project(\"service\").by(__.constant(\"tinker.search\")))",
-                "javascript": "g.call(\"--list\", xx1, __.project(\"service\").by(__.constant(\"tinker.search\")))",
-                "python": "g.call('--list', xx1, __.project('service').by(__.constant('tinker.search')))"
+                "dotnet": "g.Call<object>(\"--list\", (IDictionary<object, object>) xx1, (ITraversal) __.Project<object>(\"service\").By(__.Constant<object>(\"tinker.search.text\")))",
+                "go": "g.Call(\"--list\", xx1, gremlingo.T__.Project(\"service\").By(gremlingo.T__.Constant(\"tinker.search.text\")))",
+                "groovy": "g.call(\"--list\", xx1, __.project(\"service\").by(__.constant(\"tinker.search.text\")))",
+                "java": "g.call(\"--list\", xx1, __.project(\"service\").by(__.constant(\"tinker.search.text\")))",
+                "javascript": "g.call(\"--list\", xx1, __.project(\"service\").by(__.constant(\"tinker.search.text\")))",
+                "python": "g.call('--list', xx1, __.project('service').by(__.constant('tinker.search.text')))"
             }
         ]
     },
@@ -20559,16 +20559,16 @@
         "scenario": "g_callXsearch_mapX",
         "traversals": [
             {
-                "original": "g.call(\"tinker.search\", xx1).element()",
-                "language": "g.call(\"tinker.search\", xx1).element()",
-                "canonical": "g.call(\"tinker.search\", xx1).element()",
+                "original": "g.call(\"tinker.search.text\", xx1).element()",
+                "language": "g.call(\"tinker.search.text\", xx1).element()",
+                "canonical": "g.call(\"tinker.search.text\", xx1).element()",
                 "anonymized": "g.call(string0, xx1).element()",
-                "dotnet": "g.Call<object>(\"tinker.search\", (IDictionary<object, object>) xx1).Element()",
-                "go": "g.Call(\"tinker.search\", xx1).Element()",
-                "groovy": "g.call(\"tinker.search\", xx1).element()",
-                "java": "g.call(\"tinker.search\", xx1).element()",
-                "javascript": "g.call(\"tinker.search\", xx1).element()",
-                "python": "g.call('tinker.search', xx1).element()"
+                "dotnet": "g.Call<object>(\"tinker.search.text\", (IDictionary<object, object>) xx1).Element()",
+                "go": "g.Call(\"tinker.search.text\", xx1).Element()",
+                "groovy": "g.call(\"tinker.search.text\", xx1).element()",
+                "java": "g.call(\"tinker.search.text\", xx1).element()",
+                "javascript": "g.call(\"tinker.search.text\", xx1).element()",
+                "python": "g.call('tinker.search.text', xx1).element()"
             }
         ]
     },
@@ -20576,16 +20576,16 @@
         "scenario": "g_callXsearch_traversalX",
         "traversals": [
             {
-                "original": "g.call(\"tinker.search\", __.project(\"search\").by(__.constant(\"vada\"))).element()",
-                "language": "g.call(\"tinker.search\", __.project(\"search\").by(__.constant(\"vada\"))).element()",
-                "canonical": "g.call(\"tinker.search\", __.project(\"search\").by(__.constant(\"vada\"))).element()",
+                "original": "g.call(\"tinker.search.text\", __.project(\"search\").by(__.constant(\"vada\"))).element()",
+                "language": "g.call(\"tinker.search.text\", __.project(\"search\").by(__.constant(\"vada\"))).element()",
+                "canonical": "g.call(\"tinker.search.text\", __.project(\"search\").by(__.constant(\"vada\"))).element()",
                 "anonymized": "g.call(string0, __.project(string1).by(__.constant(string2))).element()",
-                "dotnet": "g.Call<object>(\"tinker.search\", (ITraversal) __.Project<object>(\"search\").By(__.Constant<object>(\"vada\"))).Element()",
-                "go": "g.Call(\"tinker.search\", gremlingo.T__.Project(\"search\").By(gremlingo.T__.Constant(\"vada\"))).Element()",
-                "groovy": "g.call(\"tinker.search\", __.project(\"search\").by(__.constant(\"vada\"))).element()",
-                "java": "g.call(\"tinker.search\", __.project(\"search\").by(__.constant(\"vada\"))).element()",
-                "javascript": "g.call(\"tinker.search\", __.project(\"search\").by(__.constant(\"vada\"))).element()",
-                "python": "g.call('tinker.search', __.project('search').by(__.constant('vada'))).element()"
+                "dotnet": "g.Call<object>(\"tinker.search.text\", (ITraversal) __.Project<object>(\"search\").By(__.Constant<object>(\"vada\"))).Element()",
+                "go": "g.Call(\"tinker.search.text\", gremlingo.T__.Project(\"search\").By(gremlingo.T__.Constant(\"vada\"))).Element()",
+                "groovy": "g.call(\"tinker.search.text\", __.project(\"search\").by(__.constant(\"vada\"))).element()",
+                "java": "g.call(\"tinker.search.text\", __.project(\"search\").by(__.constant(\"vada\"))).element()",
+                "javascript": "g.call(\"tinker.search.text\", __.project(\"search\").by(__.constant(\"vada\"))).element()",
+                "python": "g.call('tinker.search.text', __.project('search').by(__.constant('vada'))).element()"
             }
         ]
     },
@@ -20593,16 +20593,16 @@
         "scenario": "g_callXsearchX_withXstring_stringX",
         "traversals": [
             {
-                "original": "g.call(\"tinker.search\").with(\"search\", \"vada\").element()",
-                "language": "g.call(\"tinker.search\").with(\"search\", \"vada\").element()",
-                "canonical": "g.call(\"tinker.search\").with(\"search\", \"vada\").element()",
+                "original": "g.call(\"tinker.search.text\").with(\"search\", \"vada\").element()",
+                "language": "g.call(\"tinker.search.text\").with(\"search\", \"vada\").element()",
+                "canonical": "g.call(\"tinker.search.text\").with(\"search\", \"vada\").element()",
                 "anonymized": "g.call(string0).with(string1, string2).element()",
-                "dotnet": "g.Call<object>((string) \"tinker.search\").With(\"search\", \"vada\").Element()",
-                "go": "g.Call(\"tinker.search\").With(\"search\", \"vada\").Element()",
-                "groovy": "g.call(\"tinker.search\").with(\"search\", \"vada\").element()",
-                "java": "g.call(\"tinker.search\").with(\"search\", \"vada\").element()",
-                "javascript": "g.call(\"tinker.search\").with_(\"search\", \"vada\").element()",
-                "python": "g.call('tinker.search').with_('search', 'vada').element()"
+                "dotnet": "g.Call<object>((string) \"tinker.search.text\").With(\"search\", \"vada\").Element()",
+                "go": "g.Call(\"tinker.search.text\").With(\"search\", \"vada\").Element()",
+                "groovy": "g.call(\"tinker.search.text\").with(\"search\", \"vada\").element()",
+                "java": "g.call(\"tinker.search.text\").with(\"search\", \"vada\").element()",
+                "javascript": "g.call(\"tinker.search.text\").with_(\"search\", \"vada\").element()",
+                "python": "g.call('tinker.search.text').with_('search', 'vada').element()"
             }
         ]
     },
@@ -20610,16 +20610,16 @@
         "scenario": "g_callXsearchX_withXstring_traversalX",
         "traversals": [
             {
-                "original": "g.call(\"tinker.search\").with(\"search\", __.constant(\"vada\")).element()",
-                "language": "g.call(\"tinker.search\").with(\"search\", __.constant(\"vada\")).element()",
-                "canonical": "g.call(\"tinker.search\").with(\"search\", __.constant(\"vada\")).element()",
+                "original": "g.call(\"tinker.search.text\").with(\"search\", __.constant(\"vada\")).element()",
+                "language": "g.call(\"tinker.search.text\").with(\"search\", __.constant(\"vada\")).element()",
+                "canonical": "g.call(\"tinker.search.text\").with(\"search\", __.constant(\"vada\")).element()",
                 "anonymized": "g.call(string0).with(string1, __.constant(string2)).element()",
-                "dotnet": "g.Call<object>((string) \"tinker.search\").With(\"search\", __.Constant<object>(\"vada\")).Element()",
-                "go": "g.Call(\"tinker.search\").With(\"search\", gremlingo.T__.Constant(\"vada\")).Element()",
-                "groovy": "g.call(\"tinker.search\").with(\"search\", __.constant(\"vada\")).element()",
-                "java": "g.call(\"tinker.search\").with(\"search\", __.constant(\"vada\")).element()",
-                "javascript": "g.call(\"tinker.search\").with_(\"search\", __.constant(\"vada\")).element()",
-                "python": "g.call('tinker.search').with_('search', __.constant('vada')).element()"
+                "dotnet": "g.Call<object>((string) \"tinker.search.text\").With(\"search\", __.Constant<object>(\"vada\")).Element()",
+                "go": "g.Call(\"tinker.search.text\").With(\"search\", gremlingo.T__.Constant(\"vada\")).Element()",
+                "groovy": "g.call(\"tinker.search.text\").with(\"search\", __.constant(\"vada\")).element()",
+                "java": "g.call(\"tinker.search.text\").with(\"search\", __.constant(\"vada\")).element()",
+                "javascript": "g.call(\"tinker.search.text\").with_(\"search\", __.constant(\"vada\")).element()",
+                "python": "g.call('tinker.search.text').with_('search', __.constant('vada')).element()"
             }
         ]
     },
@@ -20627,16 +20627,16 @@
         "scenario": "g_callXsearch_mapX_withXstring_VertexX",
         "traversals": [
             {
-                "original": "g.call(\"tinker.search\", xx1).with(\"type\", \"Vertex\").element()",
-                "language": "g.call(\"tinker.search\", xx1).with(\"type\", \"Vertex\").element()",
-                "canonical": "g.call(\"tinker.search\", xx1).with(\"type\", \"Vertex\").element()",
+                "original": "g.call(\"tinker.search.text\", xx1).with(\"type\", \"Vertex\").element()",
+                "language": "g.call(\"tinker.search.text\", xx1).with(\"type\", \"Vertex\").element()",
+                "canonical": "g.call(\"tinker.search.text\", xx1).with(\"type\", \"Vertex\").element()",
                 "anonymized": "g.call(string0, xx1).with(string1, string2).element()",
-                "dotnet": "g.Call<object>(\"tinker.search\", (IDictionary<object, object>) xx1).With(\"type\", \"Vertex\").Element()",
-                "go": "g.Call(\"tinker.search\", xx1).With(\"type\", \"Vertex\").Element()",
-                "groovy": "g.call(\"tinker.search\", xx1).with(\"type\", \"Vertex\").element()",
-                "java": "g.call(\"tinker.search\", xx1).with(\"type\", \"Vertex\").element()",
-                "javascript": "g.call(\"tinker.search\", xx1).with_(\"type\", \"Vertex\").element()",
-                "python": "g.call('tinker.search', xx1).with_('type', 'Vertex').element()"
+                "dotnet": "g.Call<object>(\"tinker.search.text\", (IDictionary<object, object>) xx1).With(\"type\", \"Vertex\").Element()",
+                "go": "g.Call(\"tinker.search.text\", xx1).With(\"type\", \"Vertex\").Element()",
+                "groovy": "g.call(\"tinker.search.text\", xx1).with(\"type\", \"Vertex\").element()",
+                "java": "g.call(\"tinker.search.text\", xx1).with(\"type\", \"Vertex\").element()",
+                "javascript": "g.call(\"tinker.search.text\", xx1).with_(\"type\", \"Vertex\").element()",
+                "python": "g.call('tinker.search.text', xx1).with_('type', 'Vertex').element()"
             }
         ]
     },
@@ -20644,16 +20644,16 @@
         "scenario": "g_callXsearch_mapX_withXstring_EdgeX",
         "traversals": [
             {
-                "original": "g.call(\"tinker.search\", xx1).with(\"type\", \"Edge\").element()",
-                "language": "g.call(\"tinker.search\", xx1).with(\"type\", \"Edge\").element()",
-                "canonical": "g.call(\"tinker.search\", xx1).with(\"type\", \"Edge\").element()",
+                "original": "g.call(\"tinker.search.text\", xx1).with(\"type\", \"Edge\").element()",
+                "language": "g.call(\"tinker.search.text\", xx1).with(\"type\", \"Edge\").element()",
+                "canonical": "g.call(\"tinker.search.text\", xx1).with(\"type\", \"Edge\").element()",
                 "anonymized": "g.call(string0, xx1).with(string1, string2).element()",
-                "dotnet": "g.Call<object>(\"tinker.search\", (IDictionary<object, object>) xx1).With(\"type\", \"Edge\").Element()",
-                "go": "g.Call(\"tinker.search\", xx1).With(\"type\", \"Edge\").Element()",
-                "groovy": "g.call(\"tinker.search\", xx1).with(\"type\", \"Edge\").element()",
-                "java": "g.call(\"tinker.search\", xx1).with(\"type\", \"Edge\").element()",
-                "javascript": "g.call(\"tinker.search\", xx1).with_(\"type\", \"Edge\").element()",
-                "python": "g.call('tinker.search', xx1).with_('type', 'Edge').element()"
+                "dotnet": "g.Call<object>(\"tinker.search.text\", (IDictionary<object, object>) xx1).With(\"type\", \"Edge\").Element()",
+                "go": "g.Call(\"tinker.search.text\", xx1).With(\"type\", \"Edge\").Element()",
+                "groovy": "g.call(\"tinker.search.text\", xx1).with(\"type\", \"Edge\").element()",
+                "java": "g.call(\"tinker.search.text\", xx1).with(\"type\", \"Edge\").element()",
+                "javascript": "g.call(\"tinker.search.text\", xx1).with_(\"type\", \"Edge\").element()",
+                "python": "g.call('tinker.search.text', xx1).with_('type', 'Edge').element()"
             }
         ]
     },
@@ -20661,16 +20661,16 @@
         "scenario": "g_callXsearch_mapX_withXstring_VertexPropertyX",
         "traversals": [
             {
-                "original": "g.call(\"tinker.search\", xx1).with(\"type\", \"VertexProperty\").element()",
-                "language": "g.call(\"tinker.search\", xx1).with(\"type\", \"VertexProperty\").element()",
-                "canonical": "g.call(\"tinker.search\", xx1).with(\"type\", \"VertexProperty\").element()",
+                "original": "g.call(\"tinker.search.text\", xx1).with(\"type\", \"VertexProperty\").element()",
+                "language": "g.call(\"tinker.search.text\", xx1).with(\"type\", \"VertexProperty\").element()",
+                "canonical": "g.call(\"tinker.search.text\", xx1).with(\"type\", \"VertexProperty\").element()",
                 "anonymized": "g.call(string0, xx1).with(string1, string2).element()",
-                "dotnet": "g.Call<object>(\"tinker.search\", (IDictionary<object, object>) xx1).With(\"type\", \"VertexProperty\").Element()",
-                "go": "g.Call(\"tinker.search\", xx1).With(\"type\", \"VertexProperty\").Element()",
-                "groovy": "g.call(\"tinker.search\", xx1).with(\"type\", \"VertexProperty\").element()",
-                "java": "g.call(\"tinker.search\", xx1).with(\"type\", \"VertexProperty\").element()",
-                "javascript": "g.call(\"tinker.search\", xx1).with_(\"type\", \"VertexProperty\").element()",
-                "python": "g.call('tinker.search', xx1).with_('type', 'VertexProperty').element()"
+                "dotnet": "g.Call<object>(\"tinker.search.text\", (IDictionary<object, object>) xx1).With(\"type\", \"VertexProperty\").Element()",
+                "go": "g.Call(\"tinker.search.text\", xx1).With(\"type\", \"VertexProperty\").Element()",
+                "groovy": "g.call(\"tinker.search.text\", xx1).with(\"type\", \"VertexProperty\").element()",
+                "java": "g.call(\"tinker.search.text\", xx1).with(\"type\", \"VertexProperty\").element()",
+                "javascript": "g.call(\"tinker.search.text\", xx1).with_(\"type\", \"VertexProperty\").element()",
+                "python": "g.call('tinker.search.text', xx1).with_('type', 'VertexProperty').element()"
             }
         ]
     },
