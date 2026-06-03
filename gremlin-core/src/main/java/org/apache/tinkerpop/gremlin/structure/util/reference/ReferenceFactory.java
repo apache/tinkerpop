@@ -102,11 +102,19 @@ public class ReferenceFactory {
                 set.add(ReferenceFactory.detach(item));
             }
             return (D) set;
+        } else if (object instanceof Tree) {
+            final Tree newTree = new Tree();
+            final Tree<Object> sourceTree = (Tree<Object>) object;
+            for (final Object key : sourceTree.rootNodes()) {
+                final Object detachedKey = ReferenceFactory.detach(key);
+                final Tree<Object> detachedSubtree = (Tree<Object>) ReferenceFactory.detach(sourceTree.childAt(key));
+                newTree.getOrCreateChild(detachedKey).addTree(detachedSubtree);
+            }
+            return (D) newTree;
         } else if (object instanceof Map) {
-            final Map map = object instanceof Tree ? new Tree() :
-                    object instanceof LinkedHashMap ?
-                            new LinkedHashMap(((Map) object).size()) :
-                            new HashMap(((Map) object).size());
+            final Map map = object instanceof LinkedHashMap ?
+                    new LinkedHashMap(((Map) object).size()) :
+                    new HashMap(((Map) object).size());
             for (final Map.Entry<Object, Object> entry : ((Map<Object, Object>) object).entrySet()) {
                 map.put(ReferenceFactory.detach(entry.getKey()), ReferenceFactory.detach(entry.getValue()));
             }

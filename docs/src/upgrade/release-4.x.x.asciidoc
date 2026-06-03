@@ -635,6 +635,34 @@ effort to the old custom serializer approach but is entirely optional for basic 
 * <<gremlin-go-pdt,Gremlin-Go>>
 
 
+==== Tree No Longer Extends HashMap
+
+`Tree` no longer extends `HashMap`. It is now a `final` class that holds a `Map` internally and exposes a
+tree-shaped API instead of `Map` methods. This is a breaking change for code that treated a `tree()` result as a
+`Map`.
+
+Replacements for the common `Map`-based access patterns:
+
+[options="header"]
+|=======================
+|3.x (`Tree` as `Map`) |4.x (`Tree` API)
+|`tree.get(key)` |`tree.childAt(key)` (throws if absent) or `tree.findSubtree(key)` (recursive, returns `Optional`)
+|`tree.containsKey(key)` |`tree.hasChild(key)`
+|`tree.keySet()` |`tree.rootNodes()`
+|`tree.size()` |`tree.rootNodes().size()` for root entries, or `tree.nodeCount()` for total nodes
+|`getObjectsAtDepth(d)` |`getNodesAtDepth(d)` (now 0-based: depth 0 returns the roots)
+|`getLeafObjects()` |`getLeafNodes()`
+|=======================
+
+A few Gremlin patterns that worked only because `Tree` was a `Map` (for example `select(keys)`, `count(local)`,
+and `unfold()` applied to a `Tree`) no longer compose. Process the `Tree` result client-side after `next()`, or
+reshape the upstream traversal.
+
+`isLeaf()` no longer throws on an empty tree (it returns `true`), and a `Tree` keeps the long-standing limitation
+that sibling branches resolving to the same value collapse into one node; use `path()` or `subgraph()` when full
+path structure must be preserved.
+
+
 === Upgrading for Providers
 
 ==== Graph System Providers
@@ -653,6 +681,12 @@ benefiting all driver users transparently.
 
 See <<provider-defined-types>> for full details on annotation usage, field filtering, nested types, and ServiceLoader
 registration.
+
+`Tree` no longer extends `HashMap`. Provider code that inspected or rebuilt a `Tree` via `Map` methods
+(`get`, `put`, `keySet`, `entrySet`, `size`) must use the tree-shaped API instead: read with `rootNodes()` +
+`childAt(key)` and build with `getOrCreateChild(key)` + `addTree(subtree)`. The GraphSON (`g:Tree`) and
+GraphBinary (`0x2b`) wire formats are unchanged, so no serialized data or cross-version compatibility is affected
+— only the in-memory Java type changed.
 
 ==== Graph Driver Providers
 
