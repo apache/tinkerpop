@@ -1,0 +1,15 @@
+services:
+  gremlin-server:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    container_name: gremlin-server-dart
+    ports:
+      - "45940:45940"
+    command: ["conf/gremlin-server-dart.yaml"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf -X POST -H 'Content-Type: application/json' -d '{\"gremlin\":\"g.inject(1)\",\"g\":\"gmodern\"}' http://localhost:45940/gremlin"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
