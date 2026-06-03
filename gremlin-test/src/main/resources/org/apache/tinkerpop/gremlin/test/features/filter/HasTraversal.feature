@@ -204,14 +204,14 @@ Feature: Step - has() with traversal arguments
       | result |
       | d[29].i |
 
-  # Multi-traversal within() where one traversal produces multiple results
+  # Multi-traversal within() where one traversal produces multiple results — use fold() to collect
   @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_hasXname_withinXVXvid1X_outXknowsX_valuesXnameX_constantXpeterXXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().has("name", P.within(__.V(vid1).out("knows").values("name"), __.constant("peter")))
+      g.V().has("name", P.within(__.V(vid1).out("knows").values("name").fold(), __.constant("peter")))
       """
     When iterated to list
     Then the result should be unordered
@@ -272,7 +272,7 @@ Feature: Step - has() with traversal arguments
     And using the parameter vid3 defined as "v[josh].id"
     And the traversal of
       """
-      g.V().has("name", P.within(__.V(vid1).out("knows").values("name"), __.V(vid3).out("created").values("name")))
+      g.V().has("name", P.within(__.V(vid1).out("knows").values("name").fold(), __.V(vid3).out("created").values("name").fold()))
       """
     When iterated to list
     Then the result should be unordered
@@ -290,19 +290,19 @@ Feature: Step - has() with traversal arguments
     And using the parameter vid3 defined as "v[josh].id"
     And the traversal of
       """
-      g.V().hasLabel("software").has("name", P.without(__.V(vid1).out("created").values("name"), __.V(vid3).out("created").values("name")))
+      g.V().hasLabel("software").has("name", P.without(__.V(vid1).out("created").values("name").fold(), __.V(vid3).out("created").values("name").fold()))
       """
     When iterated to list
     Then the result should be empty
 
-  # Multi-traversal within() with is() — cross-label dynamic filtering
+  # Multi-traversal within() with is() — cross-label dynamic filtering, use fold() for multi-result
   @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_hasLabelXpersonX_valuesXageX_isXwithinXVXvid1X_valuesXageX_V_hasXname_lopX_inXcreatedX_valuesXageXXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().hasLabel("person").values("age").is(P.within(__.V(vid1).values("age"), __.V().has("name","lop").in("created").values("age")))
+      g.V().hasLabel("person").values("age").is(P.within(__.V(vid1).values("age").fold(), __.V().has("name","lop").in("created").values("age").fold()))
       """
     When iterated to list
     Then the result should be unordered
@@ -318,7 +318,7 @@ Feature: Step - has() with traversal arguments
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(vid1).outE("knows").filter(__.inV().has("name", P.within(__.V().has("name","lop").in("created").values("name"), __.V().has("name","ripple").in("created").values("name"))))
+      g.V(vid1).outE("knows").filter(__.inV().has("name", P.within(__.V().has("name","lop").in("created").values("name").fold(), __.V().has("name","ripple").in("created").values("name").fold())))
       """
     When iterated to list
     Then the result should be unordered

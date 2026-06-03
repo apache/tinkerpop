@@ -93,7 +93,7 @@ Feature: Step - is() with traversal-bearing predicates
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().values("age").is(P.within(__.V(vid1).out("knows").values("age")))
+      g.V().values("age").is(P.within(__.V(vid1).out("knows").values("age").fold()))
       """
     When iterated to list
     Then the result should be unordered

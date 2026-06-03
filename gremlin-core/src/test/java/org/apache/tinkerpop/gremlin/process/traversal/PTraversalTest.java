@@ -163,7 +163,8 @@ public class PTraversalTest {
         @SuppressWarnings("unchecked")
         @Test
         public void shouldAcceptMultipleResultsForWithin() {
-            final P<Object> p = P.within(__.inject(1, 2, 3).asAdmin());
+            // within(traversal) takes first result only. Use fold() to get a collection.
+            final P<Object> p = P.within(__.inject(1, 2, 3).fold().asAdmin());
             p.resolve(createTraverser("start"));
             // After resolve, the predicate should have the collection value and be testable
             assertThat(p.test(1), is(true));
@@ -175,7 +176,8 @@ public class PTraversalTest {
         @SuppressWarnings("unchecked")
         @Test
         public void shouldAcceptMultipleResultsForWithout() {
-            final P<Object> p = P.without(__.inject(1, 2, 3).asAdmin());
+            // without(traversal) takes first result only. Use fold() to get a collection.
+            final P<Object> p = P.without(__.inject(1, 2, 3).fold().asAdmin());
             p.resolve(createTraverser("start"));
             // After resolve, without should exclude the resolved values
             assertThat(p.test(1), is(false));
@@ -303,8 +305,8 @@ public class PTraversalTest {
         @SuppressWarnings("unchecked")
         @Test
         public void shouldResolveMultipleTraversalsWithMultipleResultsEach() {
-            // within(__.inject(1,2), __.inject(3,4)) should union: [1, 2, 3, 4]
-            final P<Object> p = P.within(__.inject(1, 2).asAdmin(), __.inject(3, 4).asAdmin());
+            // within(__.inject(1,2).fold(), __.inject(3,4).fold()) — each fold() produces a list, unpacked into union
+            final P<Object> p = P.within(__.inject(1, 2).fold().asAdmin(), __.inject(3, 4).fold().asAdmin());
             p.resolve(createTraverser("start"));
             assertThat(p.test(1), is(true));
             assertThat(p.test(2), is(true));
@@ -316,9 +318,9 @@ public class PTraversalTest {
         @SuppressWarnings("unchecked")
         @Test
         public void shouldHandleEmptyResultFromOneTraversal() {
-            // within(__.inject(1,2), __.limit(0)) where second produces nothing
+            // within(__.inject(1,2).fold(), __.limit(0)) where second produces nothing
             // Should still match on results from first traversal
-            final P<Object> p = P.within(__.inject(1, 2).asAdmin(), __.limit(0).asAdmin());
+            final P<Object> p = P.within(__.inject(1, 2).fold().asAdmin(), __.limit(0).asAdmin());
             p.resolve(createTraverser("start"));
             assertThat(p.isResolvedEmpty(), is(false));
             assertThat(p.test(1), is(true));

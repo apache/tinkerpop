@@ -321,13 +321,14 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * Resolves the child traversal against the given traverser, replacing the traversal value with the
      * resolved literal(s) for this test cycle. If no traversal is present, this method returns immediately.
      *
-     * <p>For collection predicates ({@link Contains}), all results are collected into the literals
-     * collection. For all other predicates ({@link Compare}, {@link Text}, etc.), the traversal must
-     * produce exactly one result or an {@link IllegalArgumentException} is thrown.</p>
+     * <p>For all predicates, only the first result from the child traversal is used,
+     * consistent with {@code by(traversal)} semantics. For collection predicates
+     * ({@link Contains#within}, {@link Contains#without}), the first result should be a
+     * {@link Collection} (e.g., produced by {@code fold()}).</p>
      *
      * <p>When multiple traversals are present (via {@link #traversalValues}), each traversal is evaluated
-     * independently and results are unioned into a single collection. This is only valid for collection
-     * predicates ({@link Contains#within}, {@link Contains#without}).</p>
+     * independently, the first result from each is taken, and results are combined into a single collection.
+     * This is only valid for collection predicates ({@link Contains#within}, {@link Contains#without}).</p>
      */
     @SuppressWarnings("unchecked")
     public void resolve(final Traverser.Admin<?> traverser) {
@@ -348,28 +349,24 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         this.isCollection = false;
 
         try {
-            if (this.biPredicate instanceof Contains) {
-                // Collection predicates (within, without) need all results
-                final List<Object> results = new ArrayList<>();
-                while (trav.hasNext()) {
-                    results.add(trav.next());
-                }
-                this.resolvedEmpty = results.isEmpty();
-                if (!results.isEmpty()) {
-                    this.literals = (Collection<V>) (Collection<?>) results;
+            // All predicates take only the first result — consistent with by(traversal).
+            // For within/without, the first result should be a Collection (e.g., from fold()).
+            if (!trav.hasNext()) {
+                this.resolvedEmpty = true;
+                this.literals = Collections.emptyList();
+            } else {
+                this.resolvedEmpty = false;
+                final Object firstResult = trav.next();
+                if (this.biPredicate instanceof Contains && firstResult instanceof Collection) {
+                    // The traversal produced a Collection as its first result — use it directly
+                    this.literals = (Collection<V>) firstResult;
+                    this.isCollection = true;
+                } else if (this.biPredicate instanceof Contains) {
+                    // Single non-Collection value for within/without — wrap in a singleton list
+                    this.literals = Collections.singletonList((V) firstResult);
                     this.isCollection = true;
                 } else {
-                    this.literals = Collections.emptyList();
-                }
-            } else {
-                // Single-value predicates (Compare, Text, etc.) only need the first result.
-                // Stop immediately — consistent with by(traversal) and has(key, traversal).
-                if (!trav.hasNext()) {
-                    this.resolvedEmpty = true;
-                    this.literals = Collections.emptyList();
-                } else {
-                    this.resolvedEmpty = false;
-                    this.literals = Collections.singleton((V) trav.next());
+                    this.literals = Collections.singleton((V) firstResult);
                 }
             }
         } finally {
@@ -378,7 +375,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
-     * Resolves multiple child traversals, unioning their results into a single collection.
+     * Resolves multiple child traversals, taking the first result from each and combining into a collection.
      * Only valid for collection predicates ({@link Contains}).
      */
     @SuppressWarnings("unchecked")
@@ -394,8 +391,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             trav.addStart(split);
 
             try {
-                while (trav.hasNext()) {
-                    allResults.add(trav.next());
+                // Take only the first result from each traversal — consistent with by(traversal).
+                // If the first result is a Collection (from fold()), unpack it into the results.
+                if (trav.hasNext()) {
+                    final Object firstResult = trav.next();
+                    if (firstResult instanceof Collection) {
+                        allResults.addAll((Collection<?>) firstResult);
+                    } else {
+                        allResults.add(firstResult);
+                    }
                 }
             } finally {
                 CloseableIterator.closeIterator(trav);
