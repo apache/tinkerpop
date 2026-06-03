@@ -252,6 +252,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
                 writer.writeValue(status.getException(), buffer, true);
             }
         } catch (IOException e) {
+            byteBuf.release();
             throw new SerializationException(e);
         }
         return byteBuf;

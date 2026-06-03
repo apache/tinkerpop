@@ -20,15 +20,18 @@ package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class GraphBinaryMessageSerializerV4Test {
 
@@ -219,5 +223,21 @@ public class GraphBinaryMessageSerializerV4Test {
     private static boolean isEmptyData(final ResponseMessage responseMessage) {
         return responseMessage.getResult() == null || responseMessage.getResult().getData() == null ||
                 responseMessage.getResult().getData().isEmpty();
+    }
+
+    @Test
+    public void shouldReleaseByteBufOnWriteFailure() {
+        final ByteBuf buf = Unpooled.buffer();
+        final ByteBufAllocator mockAllocator = Mockito.mock(ByteBufAllocator.class);
+        Mockito.when(mockAllocator.buffer()).thenReturn(buf);
+
+        try {
+            serializer.writeChunk(Collections.singletonList(new Object()), mockAllocator);
+            fail("Expected SerializationException");
+        } catch (SerializationException e) {
+            // expected
+        }
+
+        assertEquals(0, buf.refCnt());
     }
 }
