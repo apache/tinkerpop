@@ -77,9 +77,17 @@ Supported graph names: `modern`, `classic`, `theCrew`, `kitchenSink`, `gratefulD
 
 ### FR-4: Error Handling in Code Blocks
 
-- When a Gremlin statement produces a runtime error, the extension SHALL capture the error message and include it in the console output — this IS the expected output for documentation purposes.
-- Errors in code blocks SHALL NOT fail the docs build.
-- The "Display stack trace? [yN]" prompt SHALL be dismissed automatically without user intervention.
+- When a Gremlin statement produces a runtime error (signalled by the console's
+  `Display stack trace? [yN]` prompt), the extension SHALL fail the docs build, reporting the
+  failing statement. Executed `gremlin-groovy` blocks are not expected to error; documentation
+  examples that intentionally show errors are authored as manual `[source,text]`/`[source,<lang>]`
+  blocks (Gremlin error output goes to the console's stderr and is not captured into rendered
+  output by design).
+- The "Display stack trace? [yN]" prompt SHALL be answered automatically (without user
+  intervention) solely to unblock the console process and detect the error; the build then fails.
+- A statement exceeding the execution timeout, or a console that dies and does not recover after
+  a single restart-and-retry, SHALL fail the build. The timeout is a failsafe against indefinite
+  hanging, not an expected path.
 
 ### FR-5: Manual Language Variant Tabs
 

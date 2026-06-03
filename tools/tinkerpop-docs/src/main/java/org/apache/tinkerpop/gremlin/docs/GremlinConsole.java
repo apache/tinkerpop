@@ -53,6 +53,10 @@ public class GremlinConsole implements Closeable {
     private final long timeoutMs;
     private volatile boolean running;
     private boolean inEscape;
+    private volatile boolean errorPromptSeen;
+    private volatile String lastErrorText = "";
+    private final StringBuilder errorCapture = new StringBuilder();
+    private static final int MAX_ERROR_CAPTURE = 8192;
 
     /**
      * Creates a new GremlinConsole by starting the {@code bin/gremlin.sh} subprocess.
@@ -93,14 +97,23 @@ public class GremlinConsole implements Closeable {
      *
      * @param statement the Gremlin statement to execute
      * @return the console output for this statement
-     * @throws IOException             if an I/O error occurs
-     * @throws ConsoleTimeoutException if the prompt is not received within the timeout period
+     * @throws IOException              if an I/O error occurs
+     * @throws ConsoleTimeoutException  if the prompt is not received within the timeout period
+     * @throws GremlinExecutionException if the statement produced a Gremlin error
      */
     public String execute(final String statement) throws IOException, ConsoleTimeoutException {
-        dismissPendingErrorPrompt();
+        synchronized (stderrStdinLock) {
+            errorPromptSeen = false;
+            lastErrorText = "";
+            errorCapture.setLength(0);
+        }
         stdin.write(statement + "\n");
         stdin.flush();
-        return readUntilPrompt();
+        final String output = readUntilPrompt();
+        if (errorPromptSeen) {
+            throw new GremlinExecutionException(statement, lastErrorText);
+        }
+        return output;
     }
 
     @Override
@@ -191,26 +204,11 @@ public class GremlinConsole implements Closeable {
     }
 
     /**
-     * Dismisses any pending error prompt before sending a new statement.
-     */
-    private void dismissPendingErrorPrompt() throws IOException {
-        synchronized (stderrStdinLock) {
-            if (stderr.ready()) {
-                final StringBuilder errBuf = new StringBuilder();
-                while (stderr.ready()) {
-                    errBuf.append((char) stderr.read());
-                }
-                if (errBuf.toString().contains(ERROR_PROMPT)) {
-                    stdin.write("\n");
-                    stdin.flush();
-                }
-            }
-        }
-    }
-
-    /**
      * Background thread that monitors stderr and automatically dismisses error prompts.
-     * Uses a sliding window of the last N characters where N = ERROR_PROMPT.length().
+     * The {@code Display stack trace? [yN]} prompt is the signal that the current statement
+     * raised a Gremlin error; the prompt is answered to unblock the process and the error is
+     * recorded so {@link #execute(String)} can surface it as a {@link GremlinExecutionException}.
+     * Error report text precedes the prompt on stderr, so it is captured for the message.
      */
     private void dismissErrorPrompts() {
         final int windowSize = ERROR_PROMPT.length();
@@ -222,11 +220,17 @@ public class GremlinConsole implements Closeable {
                         final int ch = stderr.read();
                         if (ch == -1) return;
                         errBuffer.append((char) ch);
+                        if (errorCapture.length() < MAX_ERROR_CAPTURE) {
+                            errorCapture.append((char) ch);
+                        }
 
                         if (errBuffer.toString().contains(ERROR_PROMPT)) {
                             stdin.write("\n");
                             stdin.flush();
+                            lastErrorText = errorCapture.toString().trim();
+                            errorPromptSeen = true;
                             errBuffer.setLength(0);
+                            errorCapture.setLength(0);
                         } else if (errBuffer.length() > windowSize) {
                             errBuffer.delete(0, errBuffer.length() - windowSize);
                         }
@@ -265,6 +269,18 @@ public class GremlinConsole implements Closeable {
     public static class TimeoutException extends ConsoleTimeoutException {
         public TimeoutException(final String message) {
             super(message);
+        }
+    }
+
+    /**
+     * Thrown when an executed statement produced a Gremlin error (signalled by the console's
+     * {@code Display stack trace? [yN]} prompt). Such errors must fail the docs build rather
+     * than render as silently-empty output.
+     */
+    public static class GremlinExecutionException extends RuntimeException {
+        public GremlinExecutionException(final String statement, final String errorText) {
+            super("Gremlin statement failed: " + statement
+                    + (errorText == null || errorText.isEmpty() ? "" : "\n" + errorText));
         }
     }
 }
