@@ -29,9 +29,12 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -136,7 +139,10 @@ public class GremlinConsoleTest {
 
     @Test
     public void shouldDismissErrorPromptOnStderr() throws Exception {
-        final String fullStdout = "gremlin>" + "gremlin>";
+        // The async dismisser must answer the "Display stack trace? [yN]" prompt on stderr
+        // (sending a newline to stdin) so the console process is never left blocked. Surfacing
+        // the error to the caller is covered by shouldThrowExecutionExceptionWhenErrorPromptSeen.
+        final String fullStdout = "gremlin>";
         final String stderrContent = "Display stack trace? [yN]";
         final ByteArrayOutputStream capturedStdin = new ByteArrayOutputStream();
         final GremlinConsole console = createConsoleWithStdin(fullStdout, stderrContent, capturedStdin);
@@ -147,14 +153,64 @@ public class GremlinConsoleTest {
             while (capturedStdin.size() == 0 && System.currentTimeMillis() < deadline) {
                 Thread.sleep(10);
             }
-            final String result = console.execute("g.V()");
-            assertThat(result, is(""));
             // Verify that a newline was sent to dismiss the error prompt
             final String sent = capturedStdin.toString(StandardCharsets.UTF_8.name());
             assertThat(sent.contains("\n"), is(true));
         } finally {
             console.close();
         }
+    }
+
+    @Test
+    public void shouldThrowExecutionExceptionWhenErrorPromptSeen() throws Exception {
+        // Mirror the real console ordering: after the statement is sent, the error report +
+        // "Display stack trace?" prompt arrive on stderr and the process blocks on stdin until
+        // answered, so the next gremlin> prompt on stdout appears only AFTER the dismisser
+        // replies. execute() must then surface a GremlinExecutionException so the build fails.
+        final PipedOutputStream stdoutFeeder = new PipedOutputStream();
+        final PipedInputStream stdoutStream = new PipedInputStream(stdoutFeeder);
+        stdoutFeeder.write("gremlin>".getBytes(StandardCharsets.UTF_8));
+        stdoutFeeder.flush();
+
+        final PipedOutputStream stderrFeeder = new PipedOutputStream();
+        final PipedInputStream stderrStream = new PipedInputStream(stderrFeeder);
+        final ByteArrayOutputStream capturedStdin = new ByteArrayOutputStream();
+        final GremlinConsole console = new GremlinConsole(
+                new MockProcess(stdoutStream, stderrStream, capturedStdin), 5_000);
+
+        final AtomicReference<Throwable> thrown = new AtomicReference<>();
+        final Thread exec = new Thread(() -> {
+            try {
+                console.execute("g.V().fail('boom')");
+            } catch (final Throwable t) {
+                thrown.set(t);
+            }
+        });
+        exec.start();
+        try {
+            // Emit the error report + prompt on stderr only after execute() has started, so the
+            // per-statement error flag is reset before the dismisser observes the prompt.
+            Thread.sleep(200);
+            stderrFeeder.write("fail() Step Triggered\nDisplay stack trace? [yN]".getBytes(StandardCharsets.UTF_8));
+            stderrFeeder.flush();
+            // Wait for the dismisser to answer (an extra newline beyond the statement itself,
+            // which execute() also wrote to stdin), then release the next prompt on stdout.
+            final int statementBytes = "g.V().fail('boom')\n".getBytes(StandardCharsets.UTF_8).length;
+            final long deadline = System.currentTimeMillis() + 5000;
+            while (capturedStdin.size() <= statementBytes && System.currentTimeMillis() < deadline) {
+                Thread.sleep(10);
+            }
+            stdoutFeeder.write("gremlin>".getBytes(StandardCharsets.UTF_8));
+            stdoutFeeder.flush();
+            exec.join(5000);
+        } finally {
+            console.close();
+            stdoutFeeder.close();
+            stderrFeeder.close();
+        }
+        assertThat(thrown.get(), is(notNullValue()));
+        assertThat(thrown.get(), instanceOf(GremlinConsole.GremlinExecutionException.class));
+        assertThat(thrown.get().getMessage(), containsString("g.V().fail('boom')"));
     }
 
     @Test

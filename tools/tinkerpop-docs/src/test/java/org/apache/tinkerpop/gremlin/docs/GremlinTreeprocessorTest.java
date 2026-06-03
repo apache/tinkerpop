@@ -23,7 +23,6 @@ import org.asciidoctor.Attributes;
 import org.asciidoctor.Options;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -164,16 +163,41 @@ public class GremlinTreeprocessorTest {
     }
 
     @Test
-    public void shouldCaptureErrorsWithoutFailingBuild() {
-        final GremlinTreeprocessor.StatementExecutor failingExecutor = statement -> {
-            throw new IOException("Simulated error");
+    public void shouldFailBuildWhenStatementErrors() {
+        // A statement that raises a Gremlin error (signalled by the console via a
+        // GremlinExecutionException) must fail the docs build rather than render as a
+        // silently-empty block.
+        final String erroringStatement = "g.V().fail('we failed!')";
+        final GremlinTreeprocessor.StatementExecutor erroringExecutor = statement -> {
+            if (statement.equals(erroringStatement)) {
+                throw new GremlinConsole.GremlinExecutionException(statement, "fail() Step Triggered");
+            }
+            return "==>ok";
         };
-        final GremlinTreeprocessor processor = new GremlinTreeprocessor(failingExecutor);
+        final GremlinTreeprocessor processor = new GremlinTreeprocessor(erroringExecutor);
 
         try (final Asciidoctor asciidoctor = Asciidoctor.Factory.create()) {
             asciidoctor.unregisterAllExtensions();
             asciidoctor.javaExtensionRegistry().treeprocessor(processor);
-            final String input = "= Test\n\n[gremlin-groovy,modern]\n----\ninvalid()\n----\n";
+            final String input = "= Test\n\n[gremlin-groovy,modern]\n----\n" + erroringStatement + "\n----\n";
+            asciidoctor.convert(input, Options.builder().build());
+            throw new AssertionError("Expected build to fail with GremlinExecutionException");
+        } catch (final GremlinConsole.GremlinExecutionException e) {
+            assertThat(e.getMessage(), containsString(erroringStatement));
+        }
+    }
+
+    @Test
+    public void shouldNotFailBuildForEmptyResultBlock() {
+        // A block that legitimately produces no ==> result (e.g. a void iterate() or an empty
+        // service list) is NOT an error and must build successfully.
+        final RecordingExecutor executor = new RecordingExecutor("");
+        final GremlinTreeprocessor processor = new GremlinTreeprocessor(executor);
+
+        try (final Asciidoctor asciidoctor = Asciidoctor.Factory.create()) {
+            asciidoctor.unregisterAllExtensions();
+            asciidoctor.javaExtensionRegistry().treeprocessor(processor);
+            final String input = "= Test\n\n[gremlin-groovy,modern]\n----\ng.V().iterate()\n----\n";
             final String result = asciidoctor.convert(input, Options.builder().build());
             assertThat(result, is(notNullValue()));
             assertThat(processor.getGremlinBlockCount(), is(1));
@@ -197,6 +221,37 @@ public class GremlinTreeprocessorTest {
             assertThat(executor.statements.contains("g.V()"), is(true));
             assertThat(executor.statements.contains("g.V().count()"), is(true));
         }
+    }
+
+    @Test
+    public void shouldKeepMultiLineClosureAsSingleStatement() {
+        // A Groovy closure whose closing line is not indented (e.g. "}; []") must stay grouped
+        // with its opening line; splitting it would send an incomplete statement to the console
+        // and hang at a continuation prompt.
+        final String[] lines = {
+                "(1..10).each {",
+                "  g.addV(\"product\").property(\"name\",\"product #${it}\").iterate()",
+                "}; []",
+                "g.V().count()"
+        };
+        final List<String> statements = GremlinTreeprocessor.buildStatements(lines);
+        assertThat(statements.size(), is(2));
+        assertThat(statements.get(0), containsString("(1..10).each {"));
+        assertThat(statements.get(0), containsString("}; []"));
+        assertThat(statements.get(1), is("g.V().count()"));
+    }
+
+    @Test
+    public void shouldNotCountBracketsInsideStrings() {
+        // Brackets inside string literals (including GString interpolation) must not affect
+        // statement grouping.
+        final String[] lines = {
+                "x = '}'",
+                "y = \"${a}\"",
+                "z = 1"
+        };
+        final List<String> statements = GremlinTreeprocessor.buildStatements(lines);
+        assertThat(statements.size(), is(3));
     }
 
     @Test

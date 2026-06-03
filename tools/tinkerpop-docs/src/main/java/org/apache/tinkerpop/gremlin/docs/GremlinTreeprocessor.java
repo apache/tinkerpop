@@ -429,35 +429,10 @@ public class GremlinTreeprocessor extends Treeprocessor {
         try {
             return doBuildConsoleOutput(block, dryRun);
         } catch (final ConsoleRestartedException e) {
-            // Console was restarted — retry the entire block on the fresh console
+            // Console was restarted — retry the entire block once on the fresh console
             LOG.info("Retrying block after console restart");
-            try {
-                return doBuildConsoleOutput(block, dryRun);
-            } catch (final ConsoleRestartedException e2) {
-                // Block is genuinely broken — skip it
-                LOG.warning("Block failed after retry, skipping: " + e2.getMessage());
-                return buildDryRunOutput(block);
-            }
+            return doBuildConsoleOutput(block, dryRun);
         }
-    }
-
-    private String buildDryRunOutput(final Block block) {
-        final String source = block.getSource();
-        if (source == null || source.isEmpty()) return "";
-        final StringBuilder output = new StringBuilder();
-        final String[] lines = source.split("\\r?\\n");
-        final List<String> statements = buildDisplayStatements(lines);
-        for (final String statement : statements) {
-            final String[] stmtLines = statement.split("\\r?\\n");
-            for (int l = 0; l < stmtLines.length; l++) {
-                if (l == 0) {
-                    output.append(PROMPT).append(stmtLines[l]).append("\n");
-                } else {
-                    output.append("         ").append(stmtLines[l]).append("\n");
-                }
-            }
-        }
-        return output.toString().stripTrailing();
     }
 
     private String doBuildConsoleOutput(final Block block, final boolean dryRun) {
@@ -474,17 +449,17 @@ public class GremlinTreeprocessor extends Treeprocessor {
         final List<String> displayStatements = buildDisplayStatements(lines);
         final List<String> execStatements = buildStatements(lines);
 
-        // Sugar syntax permanently mutates the Groovy metaclass, so run sugar
-        // blocks on a fresh console and mark it dirty to force a restart after.
+        // Sugar syntax permanently mutates the Groovy metaclass and only takes effect when
+        // SugarLoader.load() runs on a pristine metaclass -- i.e. BEFORE any traversal has been
+        // used in the JVM. Since the console is long-lived and has executed prior blocks, always
+        // restart to get a fresh console, then load sugar before initializing the graph/source.
         final boolean needsSugar = !dryRun && execStatements.stream().anyMatch(GremlinTreeprocessor::usesSugarSyntax);
         if (needsSugar && getActiveExecutor() != null) {
-            if (sugarLoaded) {
-                restartConsole();
-            }
-            final String graphName = extractGraphName(block);
-            initGraphIfNeeded(graphName);
+            restartConsole();
             executeSafely("org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader.load()");
             sugarLoaded = true;
+            final String graphName = extractGraphName(block);
+            initGraphIfNeeded(graphName);
         } else if (!dryRun && getActiveExecutor() != null) {
             if (sugarLoaded) {
                 // Previous block loaded sugar; restart to get a clean metaclass.
@@ -526,28 +501,7 @@ public class GremlinTreeprocessor extends Treeprocessor {
      * Groups source lines into complete statements for execution. Strips callouts.
      */
     static List<String> buildStatements(final String[] lines) {
-        final List<String> statements = new ArrayList<>();
-        final StringBuilder current = new StringBuilder();
-        boolean inTripleQuote = false;
-        for (final String line : lines) {
-            final String cleaned = stripCallouts(line);
-            // Track triple-quote state
-            final int tqCount = countOccurrences(cleaned, "\"\"\"");
-            if (current.length() == 0) {
-                current.append(cleaned);
-            } else if (inTripleQuote || (cleaned.length() > 0 && Character.isWhitespace(cleaned.charAt(0)))) {
-                current.append("\n").append(cleaned);
-            } else {
-                statements.add(current.toString());
-                current.setLength(0);
-                current.append(cleaned);
-            }
-            if (tqCount % 2 != 0) inTripleQuote = !inTripleQuote;
-        }
-        if (current.length() > 0) {
-            statements.add(current.toString());
-        }
-        return statements;
+        return groupStatements(lines, true);
     }
 
     private static int countOccurrences(final String str, final String sub) {
@@ -561,27 +515,78 @@ public class GremlinTreeprocessor extends Treeprocessor {
      * Groups source lines into complete statements for display. Preserves callouts.
      */
     static List<String> buildDisplayStatements(final String[] lines) {
+        return groupStatements(lines, false);
+    }
+
+    /**
+     * Groups source lines into complete statements. A new statement starts only at a
+     * non-indented line when the accumulated statement has balanced brackets and is not
+     * inside a triple-quoted string. Tracking bracket depth keeps multi-line Groovy
+     * constructs (e.g. {@code (1..10).each \{ ... \}}) together even though their closing
+     * line is not indented, which would otherwise send an incomplete statement to the
+     * console and hang at a continuation prompt.
+     *
+     * @param strip when {@code true}, callouts are stripped from the emitted text (for
+     *              execution); when {@code false}, the original line is emitted (for display)
+     */
+    private static List<String> groupStatements(final String[] lines, final boolean strip) {
         final List<String> statements = new ArrayList<>();
         final StringBuilder current = new StringBuilder();
         boolean inTripleQuote = false;
+        int depth = 0;
         for (final String line : lines) {
-            final String stripped = stripCallouts(line);
-            final int tqCount = countOccurrences(stripped, "\"\"\"");
+            final String detect = stripCallouts(line);
+            final String content = strip ? detect : line;
+            final int tqCount = countOccurrences(detect, "\"\"\"");
+            final boolean touchesTriple = inTripleQuote || tqCount > 0;
             if (current.length() == 0) {
-                current.append(line);
-            } else if (inTripleQuote || (stripped.length() > 0 && Character.isWhitespace(stripped.charAt(0)))) {
-                current.append("\n").append(line);
+                current.append(content);
+            } else if (inTripleQuote || depth > 0
+                    || (detect.length() > 0 && Character.isWhitespace(detect.charAt(0)))) {
+                current.append("\n").append(content);
             } else {
                 statements.add(current.toString());
                 current.setLength(0);
-                current.append(line);
+                depth = 0;
+                current.append(content);
             }
+            if (!touchesTriple) depth += bracketDelta(detect);
             if (tqCount % 2 != 0) inTripleQuote = !inTripleQuote;
         }
         if (current.length() > 0) {
             statements.add(current.toString());
         }
         return statements;
+    }
+
+    /**
+     * Net change in bracket nesting ({@code (} {@code [} {@code \{}) contributed by a line,
+     * ignoring brackets inside single- or double-quoted string literals (so GString
+     * interpolation like {@code ${it}} does not affect the count).
+     */
+    private static int bracketDelta(final String s) {
+        int d = 0;
+        boolean sq = false;
+        boolean dq = false;
+        for (int i = 0; i < s.length(); i++) {
+            final char c = s.charAt(i);
+            if (sq) {
+                if (c == '\\') i++;
+                else if (c == '\'') sq = false;
+            } else if (dq) {
+                if (c == '\\') i++;
+                else if (c == '"') dq = false;
+            } else if (c == '\'') {
+                sq = true;
+            } else if (c == '"') {
+                dq = true;
+            } else if (c == '{' || c == '(' || c == '[') {
+                d++;
+            } else if (c == '}' || c == ')' || c == ']') {
+                d--;
+            }
+        }
+        return d;
     }
 
     /**
@@ -628,6 +633,15 @@ public class GremlinTreeprocessor extends Treeprocessor {
             return;
         }
 
+        // Clear file-backed graph stores reused across blocks. Neo4j holds an exclusive
+        // store lock, so a stale '/tmp/neo4j' left by a prior block (or prior build run)
+        // makes the next Neo4jGraph.open('/tmp/neo4j') hang acquiring the lock. Close any
+        // prior graph to release its lock, then delete the dirs -- mirroring the old
+        // preprocessor which cleared these before every graph-init block.
+        executeSafely("try { if (binding.hasVariable('graph') && graph != null) graph.close() } catch (e) {}");
+        executeSafely("['/tmp/neo4j', '/tmp/tinkergraph.kryo'].each { p -> "
+                + "def f = new File(p); if (f.exists()) f.deleteDir() }");
+
         final String initStatement;
         if (graphName == null) {
             initStatement = "graph = TinkerGraph.open()";
@@ -647,6 +661,9 @@ public class GremlinTreeprocessor extends Treeprocessor {
     private String executeSafely(final String statement) {
         try {
             return getActiveExecutor().execute(statement);
+        } catch (final GremlinConsole.GremlinExecutionException e) {
+            // A genuine Gremlin error must fail the build, not render as empty output.
+            throw e;
         } catch (final GremlinConsole.ConsoleTimeoutException | IOException e) {
             // Console may have died — restart it and propagate to retry at block level
             LOG.warning("Console appears dead, restarting: " + e.getMessage());
