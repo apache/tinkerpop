@@ -68,20 +68,54 @@ func TestGValue(t *testing.T) {
 	})
 
 	t.Run("test invalid name that starts with _", func(t *testing.T) {
-		g := NewGraphTraversalSource(nil, nil)
-		assert.Panics(t, func() { g.Inject(NewGValue("_ids", [2]int{1, 2})) },
-			"invalid GValue name _1. Should not start with _.")
+		assert.Panics(t, func() { NewGValue("_ids", [2]int{1, 2}) },
+			"invalid GValue name _ids. Should not start with _.")
 	})
 
 	t.Run("test name is valid identifier", func(t *testing.T) {
-		g := NewGraphTraversalSource(nil, nil)
-		assert.Panics(t, func() { g.Inject(NewGValue("1a", [2]int{1, 2})) },
-			"invalid parameter name '1a'")
+		assert.Panics(t, func() { NewGValue("1a", [2]int{1, 2}) },
+			"invalid GValue name '1a'.")
 	})
 
 	t.Run("test name is not a number", func(t *testing.T) {
+		assert.Panics(t, func() { NewGValue("1", [2]int{1, 2}) },
+			"invalid GValue name '1'.")
+	})
+
+	t.Run("test mid-string underscore name accepted", func(t *testing.T) {
+		assert.NotPanics(t, func() { NewGValue("a_b", 1) })
+	})
+
+	t.Run("test empty-string name rejected", func(t *testing.T) {
+		assert.Panics(t, func() { NewGValue("", 1) })
+	})
+
+	t.Run("test mid-string dollar sign rejected", func(t *testing.T) {
+		assert.Panics(t, func() { NewGValue("a$b", 1) })
+	})
+
+	t.Run("test unicode letter name accepted", func(t *testing.T) {
+		assert.NotPanics(t, func() { NewGValue("café", 1) })
+	})
+
+	t.Run("test IsNil returns true for nil value", func(t *testing.T) {
+		gv := NewGValue("x", nil)
+		assert.True(t, gv.IsNil())
+	})
+
+	t.Run("test String representation", func(t *testing.T) {
+		gv := NewGValue("x", 1)
+		assert.Equal(t, "x=1", gv.String())
+	})
+
+	t.Run("test Go keyword name accepted", func(t *testing.T) {
+		assert.NotPanics(t, func() { NewGValue("for", 1) })
+	})
+
+	t.Run("test distinct but equal slices allowed under same name", func(t *testing.T) {
 		g := NewGraphTraversalSource(nil, nil)
-		assert.Panics(t, func() { g.Inject(NewGValue("1", [2]int{1, 2})) },
-			"invalid parameter name '1'")
+		param1 := NewGValue("ids", []int{1, 2, 3})
+		param2 := NewGValue("ids", []int{1, 2, 3})
+		assert.NotPanics(t, func() { g.Inject(param1).V(param2) })
 	})
 }

@@ -302,11 +302,6 @@ namespace Gremlin.Net.Process.Traversal
             {
                 var key = gValue.Name;
 
-                if (key == null)
-                {
-                    return ArgAsString(gValue.ObjectValue);
-                }
-
                 if (!IsValidIdentifier(key))
                 {
                     throw new ArgumentException($"Invalid parameter name [{key}].");
@@ -314,7 +309,7 @@ namespace Gremlin.Net.Process.Traversal
 
                 if (_parameters.ContainsKey(key))
                 {
-                    if (!Equals(_parameters[key], gValue.ObjectValue))
+                    if (!ValuesEqual(_parameters[key], gValue.ObjectValue))
                     {
                         throw new ArgumentException($"Parameter with name [{key}] already defined.");
                     }
@@ -722,10 +717,51 @@ namespace Gremlin.Net.Process.Traversal
                 return false;
             for (int i = 1; i < name.Length; i++)
             {
-                if (!char.IsLetterOrDigit(name[i]))
+                if (!char.IsLetterOrDigit(name[i]) && name[i] != '_')
                     return false;
             }
             return true;
+        }
+
+        private static bool ValuesEqual(object? a, object? b)
+        {
+            if (Equals(a, b)) return true;
+            if (a == null || b == null) return false;
+
+            if (a is IDictionary dictA && b is IDictionary dictB)
+            {
+                if (dictA.Count != dictB.Count) return false;
+                foreach (DictionaryEntry entry in dictA)
+                {
+                    if (!dictB.Contains(entry.Key)) return false;
+                    if (!ValuesEqual(entry.Value, dictB[entry.Key])) return false;
+                }
+                return true;
+            }
+
+            if (a is string || b is string) return false;
+
+            if (a is IEnumerable enumA && b is IEnumerable enumB)
+            {
+                var enumeratorA = enumA.GetEnumerator();
+                var enumeratorB = enumB.GetEnumerator();
+                try
+                {
+                    while (enumeratorA.MoveNext())
+                    {
+                        if (!enumeratorB.MoveNext()) return false;
+                        if (!ValuesEqual(enumeratorA.Current, enumeratorB.Current)) return false;
+                    }
+                    return !enumeratorB.MoveNext();
+                }
+                finally
+                {
+                    if (enumeratorA is IDisposable dA) dA.Dispose();
+                    if (enumeratorB is IDisposable dB) dB.Dispose();
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

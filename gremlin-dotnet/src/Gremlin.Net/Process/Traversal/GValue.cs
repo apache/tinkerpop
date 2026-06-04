@@ -72,7 +72,7 @@ namespace Gremlin.Net.Process.Traversal
 
             for (int i = 1; i < name.Length; i++)
             {
-                if (!char.IsLetterOrDigit(name[i]))
+                if (!char.IsLetterOrDigit(name[i]) && name[i] != '_')
                     throw new ArgumentException($"Invalid parameter name [{name}].");
             }
 
@@ -119,10 +119,15 @@ namespace Gremlin.Net.Process.Traversal
             }
         }
 
+        /// <summary>
+        ///     Gets a value indicating whether the parameter value is null.
+        /// </summary>
+        public bool IsNull => Value == null;
+
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"GValue({Name}, {Value})";
+            return $"{Name}={Value}";
         }
     }
 }

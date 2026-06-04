@@ -993,6 +993,81 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             Assert.True(result.Parameters.ContainsKey("ids"));
         }
 
+        [Fact]
+        public void GValue_mid_underscore_name_accepted()
+        {
+            var gval = new GValue<int>("a_b", 42);
+            var result = _g.Inject((object)gval).GremlinLang;
+            Assert.Equal("g.inject(a_b)", result.GetGremlin());
+        }
+
+        [Fact]
+        public void GValue_empty_name_throws_ArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() => new GValue<int>("", 1));
+        }
+
+        [Fact]
+        public void GValue_mid_dollar_name_throws_ArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() => new GValue<int>("a$b", 1));
+        }
+
+        [Fact]
+        public void GValue_unicode_letter_name_accepted()
+        {
+            var gval = new GValue<int>("caf\u00e9", 7);
+            var result = _g.Inject((object)gval).GremlinLang;
+            Assert.Equal("g.inject(caf\u00e9)", result.GetGremlin());
+        }
+
+        [Fact]
+        public void GValue_construction_and_accessors()
+        {
+            var gval = new GValue<string>("myName", "hello");
+            Assert.Equal("myName", gval.Name);
+            Assert.Equal("hello", gval.Value);
+            Assert.Equal("hello", gval.ObjectValue);
+        }
+
+        [Fact]
+        public void GValue_IsNull_true_when_null_value()
+        {
+            var gval = new GValue<string?>("x", null);
+            Assert.True(gval.IsNull);
+        }
+
+        [Fact]
+        public void GValue_IsNull_false_when_non_null_value()
+        {
+            var gval = new GValue<int>("x", 5);
+            Assert.False(gval.IsNull);
+        }
+
+        [Fact]
+        public void GValue_ToString_format()
+        {
+            var gval = new GValue<int>("myVar", 42);
+            Assert.Equal("myVar=42", gval.ToString());
+        }
+
+        [Fact]
+        public void GValue_duplicate_name_equal_list_values_allowed()
+        {
+            var gval1 = new GValue<List<int>>("ids", new List<int> { 1, 2, 3 });
+            var gval2 = new GValue<List<int>>("ids", new List<int> { 1, 2, 3 });
+            var result = _g.Inject((object)gval1).V(gval2).GremlinLang;
+            Assert.Equal("g.inject(ids).V(ids)", result.GetGremlin());
+        }
+
+        [Fact]
+        public void GValue_duplicate_name_different_list_values_throws()
+        {
+            var gval1 = new GValue<List<int>>("ids", new List<int> { 1, 2, 3 });
+            var gval2 = new GValue<List<int>>("ids", new List<int> { 4, 5, 6 });
+            Assert.Throws<ArgumentException>(() => _g.Inject((object)gval1).V(gval2));
+        }
+
         // --- Cardinality with Map Tests ---
 
         [Fact]
@@ -1087,6 +1162,24 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             var parameters = new Dictionary<string, object> { { "name", "it's a \"test\"" } };
             var result = GremlinLang.ConvertParametersToString(parameters);
             Assert.Contains("\"name\":", result);
+        }
+
+        [Fact]
+        public void GValue_duplicate_name_equal_dictionary_values_allowed()
+        {
+            var gval1 = new GValue<Dictionary<string, int>>("m", new Dictionary<string, int> { { "a", 1 }, { "b", 2 } });
+            var gval2 = new GValue<Dictionary<string, int>>("m", new Dictionary<string, int> { { "a", 1 }, { "b", 2 } });
+            var result = _g.Inject((object)gval1).V(gval2).GremlinLang;
+            Assert.Equal("g.inject(m).V(m)", result.GetGremlin());
+        }
+
+        [Fact]
+        public void GValue_duplicate_name_equal_nested_collection_values_allowed()
+        {
+            var gval1 = new GValue<List<List<int>>>("n", new List<List<int>> { new List<int> { 1, 2 }, new List<int> { 3, 4 } });
+            var gval2 = new GValue<List<List<int>>>("n", new List<List<int>> { new List<int> { 1, 2 }, new List<int> { 3, 4 } });
+            var result = _g.Inject((object)gval1).V(gval2).GremlinLang;
+            Assert.Equal("g.inject(n).V(n)", result.GetGremlin());
         }
     }
 }

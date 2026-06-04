@@ -918,9 +918,6 @@ class GremlinLang(object):
         if isinstance(arg, GValue):
             key = arg.get_name()
 
-            if not key.isidentifier():
-                raise Exception(f'invalid parameter name {key}.')
-
             if key in self.parameters:
                 if self.parameters[key] != arg.value:
                     raise Exception(f'parameter with name {key} already exists.')
@@ -1145,10 +1142,8 @@ class GremlinLang(object):
 
 class GValue:
     def __init__(self, name, value):
-        if name is None:
-            raise Exception("The parameter name cannot be None.")
-        if name.startswith('_'):
-            raise Exception(f'invalid GValue name {name}. Should not start with _.')
+        if not name or not name[0].isalpha() or not all(c.isalnum() or c == '_' for c in name[1:]):
+            raise Exception(f'invalid GValue name {name}.')
         self.name = name
         self.value = value
 
@@ -1160,6 +1155,12 @@ class GValue:
 
     def get(self):
         return self.value
+
+    def __repr__(self):
+        return f'{self.name}={self.value}'
+
+    def __str__(self):
+        return f'{self.name}={self.value}'
 
 
 class CardinalityValue(GremlinLang):
