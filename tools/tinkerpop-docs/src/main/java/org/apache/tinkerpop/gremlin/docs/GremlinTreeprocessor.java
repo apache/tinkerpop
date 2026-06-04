@@ -387,7 +387,8 @@ public class GremlinTreeprocessor extends Treeprocessor {
             if (isStandaloneTabBlock(block) || isManualTabBlock(block)) {
                 final Block sourceBlock = (Block) block;
                 final String lang = getSourceLanguage(sourceBlock);
-                tabs.add(TabbedHtmlBuilder.codeTab(lang, sourceBlock.getSource()));
+                tabs.add(TabbedHtmlBuilder.codeTabHighlighted(lang,
+                        highlightAsSource(parent, lang, sourceBlock.getSource())));
                 lastIndex = j;
             } else {
                 break;
