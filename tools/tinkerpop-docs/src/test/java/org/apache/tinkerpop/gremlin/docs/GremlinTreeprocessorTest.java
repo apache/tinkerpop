@@ -514,6 +514,50 @@ public class GremlinTreeprocessorTest {
     }
 
     @Test
+    public void shouldInvokeRestartHandlerForSectionLevelExcludeWithinOneDocument() {
+        final List<List<String>> restartCalls = new ArrayList<>();
+        final ConsoleRestartHandler handler = restartCalls::add;
+        final RecordingExecutor executor = new RecordingExecutor("==>v[1]");
+        final GremlinTreeprocessor processor = new GremlinTreeprocessor(executor, handler);
+
+        try (final Asciidoctor asciidoctor = Asciidoctor.Factory.create()) {
+            asciidoctor.unregisterAllExtensions();
+            asciidoctor.javaExtensionRegistry().treeprocessor(processor);
+            // Single document with per-section exclusions changing mid-document, as in the reference book.
+            final String input = "= Book\n\n"
+                    + "== Neo4j\n[gremlin-groovy,modern]\n----\ng.V(1)\n----\n\n"
+                    + "[gremlin-docs-plugins-exclude=\"neo4j-gremlin\"]\n"
+                    + "== Spark\n[gremlin-groovy,modern]\n----\ng.V(1)\n----\n";
+            asciidoctor.convert(input, Options.builder().build());
+            assertThat(restartCalls.size(), is(1));
+            assertThat(restartCalls.get(0).contains("neo4j-gremlin"), is(true));
+        }
+    }
+
+    @Test
+    public void shouldLatchSectionExclusionUntilChanged() {
+        final List<List<String>> restartCalls = new ArrayList<>();
+        final ConsoleRestartHandler handler = restartCalls::add;
+        final RecordingExecutor executor = new RecordingExecutor("==>v[1]");
+        final GremlinTreeprocessor processor = new GremlinTreeprocessor(executor, handler);
+
+        try (final Asciidoctor asciidoctor = Asciidoctor.Factory.create()) {
+            asciidoctor.unregisterAllExtensions();
+            asciidoctor.javaExtensionRegistry().treeprocessor(processor);
+            // Two consecutive excluding sections sharing the same set => one restart;
+            // a later section with no attribute inherits (no extra restart).
+            final String input = "= Book\n\n"
+                    + "[gremlin-docs-plugins-exclude=\"neo4j-gremlin\"]\n"
+                    + "== Hadoop\n[gremlin-groovy,modern]\n----\ng.V(1)\n----\n\n"
+                    + "[gremlin-docs-plugins-exclude=\"neo4j-gremlin\"]\n"
+                    + "== Spark\n[gremlin-groovy,modern]\n----\ng.V(1)\n----\n\n"
+                    + "== Compilers\n[gremlin-groovy,modern]\n----\ng.V(1)\n----\n";
+            asciidoctor.convert(input, Options.builder().build());
+            assertThat(restartCalls.size(), is(1));
+        }
+    }
+
+    @Test
     public void shouldParseExcludeListWithWhitespace() {
         final List<String> result = GremlinTreeprocessor.parseExcludeList(" neo4j-gremlin , spark-gremlin , hadoop-gremlin ");
         assertThat(result.size(), is(3));

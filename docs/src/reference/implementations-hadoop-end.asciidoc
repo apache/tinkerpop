@@ -16,6 +16,9 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+// Continues the Spark/Hadoop OLAP examples (Scala 2.12), so exclude neo4j-gremlin (Scala 2.11)
+// to keep it off the console's flat classpath.
+[gremlin-docs-plugins-exclude="neo4j-gremlin"]
 === Input/Output Formats
 
 image:adjacency-list.png[width=300,float=right] Hadoop-Gremlin provides various I/O formats -- i.e. Hadoop

@@ -72,6 +72,7 @@ public class GremlinTreeprocessor extends Treeprocessor {
     private final StatementExecutor executor;
     private final TabbedHtmlBuilder tabBuilder;
     private final ConsoleRestartHandler restartHandler;
+    private ConsoleRestartHandler activeRestartHandler;
     private String currentGraph;
     private List<String> currentExcludedPlugins;
 
@@ -135,6 +136,11 @@ public class GremlinTreeprocessor extends Treeprocessor {
             }
         }
 
+        // Use an injected handler (tests) when present, otherwise default to physically toggling
+        // plugin directories under the resolved console home (production via SPI).
+        activeRestartHandler = restartHandler != null ? restartHandler
+                : (consoleHomePath != null ? new PluginDirectoryRestartHandler(consoleHomePath) : null);
+
         try {
             checkPluginExclusions(document);
             processBlock(document, dryRun);
@@ -159,6 +165,10 @@ public class GremlinTreeprocessor extends Treeprocessor {
             LOG.info("Starting GremlinConsole from: " + consoleHomePath);
             lazyConsole = new GremlinConsole(consoleHomePath);
             resolvedExecutor = statement -> lazyConsole.execute(statement);
+            // Match the old preprocessor: raise the console's result display limit so traversals
+            // returning many results (e.g. all-pairs shortestPath) render fully instead of being
+            // truncated with "..." at the interactive default.
+            lazyConsole.execute(":set max-iteration 100");
             LOG.info("GremlinConsole started successfully");
         } catch (final IOException | GremlinConsole.ConsoleTimeoutException e) {
             LOG.warning("Failed to start GremlinConsole: " + e.getMessage());
@@ -174,26 +184,43 @@ public class GremlinTreeprocessor extends Treeprocessor {
     }
 
     /**
-     * Checks the document for the {@code :gremlin-docs-plugins-exclude:} attribute and invokes
-     * the restart handler if the exclusion list has changed.
+     * Establishes the document-level baseline exclusion set before the AST walk. An absent
+     * attribute means "no exclusions", so each book starts with every plugin enabled and any
+     * exclusion latched from a prior document is cleared.
      */
     private void checkPluginExclusions(final Document document) {
-        if (restartHandler == null) return;
-        if (!document.hasAttribute(PLUGINS_EXCLUDE_ATTR)) {
-            if (currentExcludedPlugins != null) {
-                currentExcludedPlugins = null;
-                invokeRestartHandler(Collections.emptyList());
-            }
-            return;
-        }
+        if (activeRestartHandler == null) return;
+        final Object attrValue = document.hasAttribute(PLUGINS_EXCLUDE_ATTR)
+                ? document.getAttribute(PLUGINS_EXCLUDE_ATTR) : null;
+        applyExclusion(parseExcludeList(attrValue == null ? "" : attrValue.toString()));
+    }
 
-        final Object attrValue = document.getAttribute(PLUGINS_EXCLUDE_ATTR);
-        final List<String> excludeList = parseExcludeList(attrValue == null ? "" : attrValue.toString());
-
-        if (!excludeList.equals(currentExcludedPlugins)) {
-            currentExcludedPlugins = excludeList;
-            invokeRestartHandler(excludeList);
+    /**
+     * Applies a section-level {@code :gremlin-docs-plugins-exclude:} attribute encountered during
+     * the walk. Unlike the document baseline, an absent attribute on a section means "inherit"
+     * (no change), so only sections that declare the attribute trigger a transition.
+     */
+    private void maybeApplySectionExclusion(final StructuralNode node) {
+        if (activeRestartHandler == null || !"section".equals(node.getContext())) return;
+        final Object exclude = node.getAttribute(PLUGINS_EXCLUDE_ATTR);
+        if (exclude != null) {
+            applyExclusion(parseExcludeList(exclude.toString()));
         }
+    }
+
+    /**
+     * Transitions the active plugin exclusion set. When it changes, the current console is closed,
+     * the restart handler toggles the plugin directories (and {@code plugins.txt}), and the next
+     * gremlin block lazily starts a fresh console with the new classpath.
+     */
+    private void applyExclusion(final List<String> excludeList) {
+        final List<String> current = currentExcludedPlugins == null
+                ? Collections.emptyList() : currentExcludedPlugins;
+        currentExcludedPlugins = excludeList;
+        if (excludeList.equals(current)) return;
+        closeConsole();
+        invokeRestartHandler(excludeList);
+        sugarLoaded = false;
     }
 
     /**
@@ -213,13 +240,14 @@ public class GremlinTreeprocessor extends Treeprocessor {
 
     private void invokeRestartHandler(final List<String> excludedPlugins) {
         try {
-            restartHandler.onRestart(excludedPlugins);
+            activeRestartHandler.onRestart(excludedPlugins);
         } catch (final IOException e) {
             throw new RuntimeException("Failed to restart console with excluded plugins: " + excludedPlugins, e);
         }
     }
 
     private void processBlock(final StructuralNode node, final boolean dryRun) {
+        maybeApplySectionExclusion(node);
         final List<StructuralNode> blocks = node.getBlocks();
         for (int i = 0; i < blocks.size(); i++) {
             final StructuralNode block = blocks.get(i);
@@ -675,15 +703,26 @@ public class GremlinTreeprocessor extends Treeprocessor {
     }
 
     private void restartConsole() {
-        if (lazyConsole != null) {
-            lazyConsole.close();
-            lazyConsole = null;
-            resolvedExecutor = null;
+        closeConsole();
+        if (lazyConsoleWasClosed) {
             // Allow OS to reclaim resources from dead console and its children
             try { Thread.sleep(2000); } catch (final InterruptedException e) { Thread.currentThread().interrupt(); }
         }
         currentGraph = null;
         ensureConsoleStarted();
+    }
+
+    private boolean lazyConsoleWasClosed;
+
+    /** Closes the lazily-started console (if any) so the next block starts a fresh one. No-op in test mode. */
+    private void closeConsole() {
+        lazyConsoleWasClosed = lazyConsole != null;
+        if (lazyConsole != null) {
+            lazyConsole.close();
+            lazyConsole = null;
+            resolvedExecutor = null;
+        }
+        currentGraph = null;
     }
 
     /**
