@@ -22,7 +22,6 @@ package gremlingo
 import (
 	"encoding/base64"
 	"fmt"
-	"go/token"
 	"math"
 	"math/big"
 	"reflect"
@@ -261,17 +260,9 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		return v.GetGremlin("__"), nil
 	case GValue:
 		key := v.Name()
-		if !token.IsIdentifier(key) {
-			panic(fmt.Sprintf("invalid parameter name '%v'.", key))
-		}
 		value := v.Value()
 		if val, ok := gl.parameters[key]; ok {
-			if reflect.TypeOf(val).Kind() == reflect.Slice || reflect.TypeOf(value).Kind() == reflect.Slice ||
-				reflect.TypeOf(val).Kind() == reflect.Map || reflect.TypeOf(value).Kind() == reflect.Map {
-				if !reflect.DeepEqual(val, value) {
-					panic(fmt.Sprintf("parameter with name '%v' already exists.", key))
-				}
-			} else if val != value {
+			if !reflect.DeepEqual(val, value) {
 				panic(fmt.Sprintf("parameter with name '%v' already exists.", key))
 			}
 		} else {
