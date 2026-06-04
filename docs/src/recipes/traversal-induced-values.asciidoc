@@ -36,7 +36,7 @@ obvious to any programmer - use a variable:
 [gremlin-groovy,modern]
 ----
 vMarko = g.V().has('name','marko').next()
-g.V(vMarko).out('knows').has('age', gt(marko.value('age'))).values('name')
+g.V(vMarko).out('knows').has('age', gt(vMarko.value('age'))).values('name')
 ----
 
 The downside to this approach is that it takes two separate traversals to answer the question. Ideally, there should

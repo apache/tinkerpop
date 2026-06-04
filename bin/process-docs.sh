@@ -105,6 +105,27 @@ SERVER_HOME="$(cd "${SERVER_DIR}" && pwd)"
 
 # 3. Install plugins into console
 echo "Installing plugins into console..."
+
+# Copy a plugin's dependency jars onto the console classpath via ext/<plugin>/plugin/ (which
+# bin/gremlin.sh globs) rather than the shared lib/. This keeps each plugin's transitive deps
+# isolatable so the docs extension can exclude conflicting plugins per-book (e.g. Neo4j's
+# Scala 2.11 vs Spark's 2.12) by moving the plugin directory off the classpath. Jars already
+# present in lib/ (core gremlin deps) and slf4j/logback-classic are skipped to avoid duplicate
+# classpath entries and logger bindings -- mirroring the console's own :install (DependencyGrabber).
+copy_deps_to_plugin() {
+  local src_dir="$1" plugin="$2"
+  local plugin_dir="${CONSOLE_HOME}/ext/${plugin}/plugin"
+  mkdir -p "${plugin_dir}"
+  local jar base
+  for jar in "${src_dir}"/*.jar; do
+    [ -e "${jar}" ] || continue
+    base=$(basename "${jar}")
+    case "${base}" in slf4j-*|logback-classic-*) continue ;; esac
+    [ -e "${CONSOLE_HOME}/lib/${base}" ] && continue
+    cp "${jar}" "${plugin_dir}/" 2>/dev/null
+  done
+}
+
 PLUGINS="hadoop-gremlin spark-gremlin neo4j-gremlin sparql-gremlin"
 for plugin in ${PLUGINS}; do
   PLUGIN_DIR="${plugin}/target/${plugin}-${TP_VERSION}-standalone"
@@ -113,8 +134,7 @@ for plugin in ${PLUGINS}; do
     cp -r "${PLUGIN_DIR}" "${CONSOLE_HOME}/ext/${plugin}"
     mkdir -p "${CONSOLE_HOME}/ext/${plugin}/plugin"
     cp "${plugin}/target/${plugin}-${TP_VERSION}.jar" "${CONSOLE_HOME}/ext/${plugin}/plugin/" 2>/dev/null
-    # Copy deps to main lib for classloading
-    cp "${CONSOLE_HOME}/ext/${plugin}/lib/"*.jar "${CONSOLE_HOME}/lib/" 2>/dev/null
+    copy_deps_to_plugin "${CONSOLE_HOME}/ext/${plugin}/lib" "${plugin}"
   elif [ -f "${plugin}/target/${plugin}-${TP_VERSION}.jar" ]; then
     echo " * installing ${plugin} (jar + dependencies)"
     mkdir -p "${CONSOLE_HOME}/ext/${plugin}/lib"
@@ -123,8 +143,7 @@ for plugin in ${PLUGINS}; do
     cp "${plugin}/target/${plugin}-${TP_VERSION}.jar" "${CONSOLE_HOME}/ext/${plugin}/plugin/"
     cp "${plugin}"/target/dependency/*.jar "${CONSOLE_HOME}/ext/${plugin}/lib/" 2>/dev/null || \
       mvn dependency:copy-dependencies -pl "${plugin}" -DoutputDirectory="${CONSOLE_HOME}/ext/${plugin}/lib" -q
-    # Copy all deps to main lib for classloading
-    cp "${CONSOLE_HOME}/ext/${plugin}/lib/"*.jar "${CONSOLE_HOME}/lib/" 2>/dev/null
+    copy_deps_to_plugin "${CONSOLE_HOME}/ext/${plugin}/lib" "${plugin}"
   else
     echo " * WARNING: ${plugin} not found"
   fi
@@ -152,26 +171,26 @@ POM
   # NoSuchMethodError. Keep netty-3.9.x (org.jboss.netty package) -- it does NOT conflict and
   # is required by Neo4j 3.4's IO layer.
   rm -f "${NEO4J_PLUGIN_LIB}"/netty-all-4.*.jar
-  cp "${NEO4J_PLUGIN_LIB}/"*.jar "${CONSOLE_HOME}/lib/" 2>/dev/null
+  copy_deps_to_plugin "${NEO4J_PLUGIN_LIB}" "neo4j-gremlin"
 fi
 
 # 4. Register plugins in console
 echo "Registering plugins..."
-# TinkerGraphGremlinPlugin must be (re)registered explicitly: the console rewrites plugins.txt
-# to the set of successfully-activated plugins on startup, and a transient activation hiccup
-# while bringing up the newly-added plugins can otherwise drop tinkergraph -- leaving
-# TinkerFactory/TinkerGraph unavailable and failing the first doc block.
-PLUGIN_CLASSES="org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin
+# Write plugins.txt deterministically rather than appending to whatever state a prior run left:
+# the console rewrites this file to the set of successfully-activated plugins on shutdown, so a
+# previous (possibly failed) run can leave it missing TinkerGraph/Credentials, which would fail
+# the first doc block with "No such property: TinkerFactory". Lightweight built-in plugins are
+# listed before the heavy graph plugins so activation order is stable.
+cat > "${CONSOLE_HOME}/ext/plugins.txt" <<'EOF'
+org.apache.tinkerpop.gremlin.console.jsr223.DriverGremlinPlugin
+org.apache.tinkerpop.gremlin.console.jsr223.UtilitiesGremlinPlugin
+org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin
 org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialGraphGremlinPlugin
 org.apache.tinkerpop.gremlin.hadoop.jsr223.HadoopGremlinPlugin
 org.apache.tinkerpop.gremlin.spark.jsr223.SparkGremlinPlugin
 org.apache.tinkerpop.gremlin.neo4j.jsr223.Neo4jGremlinPlugin
-org.apache.tinkerpop.gremlin.sparql.jsr223.SparqlGremlinPlugin"
-for cls in ${PLUGIN_CLASSES}; do
-  if ! grep -q "${cls}" "${CONSOLE_HOME}/ext/plugins.txt" 2>/dev/null; then
-    echo "${cls}" >> "${CONSOLE_HOME}/ext/plugins.txt"
-  fi
-done
+org.apache.tinkerpop.gremlin.sparql.jsr223.SparqlGremlinPlugin
+EOF
 
 # 5. Copy hadoop config to console classpath
 HADOOP_CONF_SRC="tools/tinkerpop-docs/src/main/resources/hadoop-conf"

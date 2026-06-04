@@ -16,6 +16,9 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+// Spark requires Scala 2.12 while Neo4j 3.4 requires Scala 2.11; they cannot share the console's
+// flat classpath, so exclude neo4j-gremlin to restart the console without Neo4j's jars.
+[gremlin-docs-plugins-exclude="neo4j-gremlin"]
 [[hadoop-gremlin]]
 == Hadoop-Gremlin
 

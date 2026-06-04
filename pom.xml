@@ -977,6 +977,10 @@ limitations under the License.
                 <gremlin.docs.console.home/>
                 <gremlin.docs.hadoop.libs/>
                 <gremlin.docs.dryrun>false</gremlin.docs.dryrun>
+
+                <!-- Keep the asciidoctor-maven-plugin's JRuby gem extraction under target/ instead
+                     of creating a 'gems/' directory at the repo root. -->
+                <asciidoctor.gemPath>${project.basedir}/target/asciidoctor-gems</asciidoctor.gemPath>
             </properties>
 
             <build>
