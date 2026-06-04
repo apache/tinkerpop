@@ -545,20 +545,20 @@ public final class StepDefinition {
         final List<TreeNode> roots = parseTree(asciiTree);
 
         // Validate that the tree matches the data in roots
-        assertEquals(roots.size(), tree.keySet().size());
+        assertEquals(roots.size(), tree.rootNodes().size());
         for (TreeNode root : roots) {
             assertThat(String.format("Tree not matching at %s", root.getValue()),
-                    tree.containsKey(root.getValue()), CoreMatchers.is(true));
-            validateTreeStructure((Tree) tree.get(root.getValue()), root);
+                    tree.hasChild(root.getValue()), CoreMatchers.is(true));
+            validateTreeStructure(tree.childAt(root.getValue()), root);
         }
     }
 
-    private void validateTreeStructure(final Tree<?> actualTree, final TreeNode expectedNode) {
-        assertEquals(expectedNode.getChildren().size(), actualTree.keySet().size());
+    private void validateTreeStructure(final Tree actualTree, final TreeNode expectedNode) {
+        assertEquals(expectedNode.getChildren().size(), actualTree.rootNodes().size());
         for (TreeNode child : expectedNode.getChildren()) {
             assertThat(String.format("Tree not matching at %s", child.getValue()),
-                    actualTree.containsKey(child.getValue()), CoreMatchers.is(true));
-            validateTreeStructure(actualTree.get(child.getValue()), child);
+                    actualTree.hasChild(child.getValue()), CoreMatchers.is(true));
+            validateTreeStructure(actualTree.childAt(child.getValue()), child);
         }
     }
 
