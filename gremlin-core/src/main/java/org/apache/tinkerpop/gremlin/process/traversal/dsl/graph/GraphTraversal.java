@@ -4112,6 +4112,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if (choosePredicate.isParameterized()) {
             throw new IllegalArgumentException("Parameterized predicates are not supported by choose()");
         }
+        if (choosePredicate.hasTraversal()) {
+            throw new IllegalArgumentException("Traversal-bearing predicates are not supported by choose(). " +
+                    "Use choose(__.is(P.op(traversal)), trueChoice, falseChoice) instead.");
+        }
         this.asAdmin().getGremlinLang().addStep(Symbols.choose, choosePredicate, trueChoice, falseChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.is(choosePredicate), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) falseChoice));
     }
@@ -4148,6 +4152,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                                                      final Traversal<?, E2> trueChoice) {
         if (choosePredicate.isParameterized()) {
             throw new IllegalArgumentException("Parameterized predicates are not supported by choose()");
+        }
+        if (choosePredicate.hasTraversal()) {
+            throw new IllegalArgumentException("Traversal-bearing predicates are not supported by choose(). " +
+                    "Use choose(__.is(P.op(traversal)), trueChoice) instead.");
         }
         this.asAdmin().getGremlinLang().addStep(Symbols.choose, choosePredicate, trueChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.is(choosePredicate), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) __.identity()));

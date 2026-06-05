@@ -10235,16 +10235,16 @@
         "scenario": "g_V_hasLabelXpersonX_valuesXageX_chooseXgtXVXvid1X_valuesXageXX_olderX",
         "traversals": [
             {
-                "original": "g.V().hasLabel(\"person\").values(\"age\").choose(P.gt(__.V(vid1).values(\"age\")), __.constant(\"older than marko\"), __.constant(\"not older\"))",
-                "language": "g.V().hasLabel(\"person\").values(\"age\").choose(P.gt(__.V(vid1).values(\"age\")), __.constant(\"older than marko\"), __.constant(\"not older\"))",
-                "canonical": "g.V().hasLabel(\"person\").values(\"age\").choose(P.gt(__.V(vid1).values(\"age\")), __.constant(\"older than marko\"), __.constant(\"not older\"))",
-                "anonymized": "g.V().hasLabel(string0).values(string1).choose(P.gt(__.V(vid1).values(string1)), __.constant(string2), __.constant(string3))",
-                "dotnet": "g.V().HasLabel(\"person\").Values<object>(\"age\").Choose<object>(P.Gt(__.V(vid1).Values<object>(\"age\")), __.Constant<object>(\"older than marko\"), __.Constant<object>(\"not older\"))",
-                "go": "g.V().HasLabel(\"person\").Values(\"age\").Choose(gremlingo.P.Gt(gremlingo.T__.V(vid1).Values(\"age\")), gremlingo.T__.Constant(\"older than marko\"), gremlingo.T__.Constant(\"not older\"))",
-                "groovy": "g.V().hasLabel(\"person\").values(\"age\").choose(P.gt(__.V(vid1).values(\"age\")), __.constant(\"older than marko\"), __.constant(\"not older\"))",
-                "java": "g.V().hasLabel(\"person\").values(\"age\").choose(P.gt(__.V(vid1).values(\"age\")), __.constant(\"older than marko\"), __.constant(\"not older\"))",
-                "javascript": "g.V().hasLabel(\"person\").values(\"age\").choose(P.gt(__.V(vid1).values(\"age\")), __.constant(\"older than marko\"), __.constant(\"not older\"))",
-                "python": "g.V().has_label('person').values('age').choose(P.gt(__.V(vid1).values('age')), __.constant('older than marko'), __.constant('not older'))"
+                "original": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gt(__.V(vid1).values(\"age\"))), __.constant(\"older than marko\"), __.constant(\"not older\"))",
+                "language": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gt(__.V(vid1).values(\"age\"))), __.constant(\"older than marko\"), __.constant(\"not older\"))",
+                "canonical": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gt(__.V(vid1).values(\"age\"))), __.constant(\"older than marko\"), __.constant(\"not older\"))",
+                "anonymized": "g.V().hasLabel(string0).values(string1).choose(__.is(P.gt(__.V(vid1).values(string1))), __.constant(string2), __.constant(string3))",
+                "dotnet": "g.V().HasLabel(\"person\").Values<object>(\"age\").Choose<object>(__.Is(P.Gt(__.V(vid1).Values<object>(\"age\"))), __.Constant<object>(\"older than marko\"), __.Constant<object>(\"not older\"))",
+                "go": "g.V().HasLabel(\"person\").Values(\"age\").Choose(gremlingo.T__.Is(gremlingo.P.Gt(gremlingo.T__.V(vid1).Values(\"age\"))), gremlingo.T__.Constant(\"older than marko\"), gremlingo.T__.Constant(\"not older\"))",
+                "groovy": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gt(__.V(vid1).values(\"age\"))), __.constant(\"older than marko\"), __.constant(\"not older\"))",
+                "java": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gt(__.V(vid1).values(\"age\"))), __.constant(\"older than marko\"), __.constant(\"not older\"))",
+                "javascript": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gt(__.V(vid1).values(\"age\"))), __.constant(\"older than marko\"), __.constant(\"not older\"))",
+                "python": "g.V().has_label('person').values('age').choose(__.is_(P.gt(__.V(vid1).values('age'))), __.constant('older than marko'), __.constant('not older'))"
             }
         ]
     },
@@ -10252,16 +10252,16 @@
         "scenario": "g_V_hasLabelXpersonX_valuesXageX_chooseXgteXmeanAgeX_aboveX",
         "traversals": [
             {
-                "original": "g.V().hasLabel(\"person\").values(\"age\").choose(P.gte(__.V().hasLabel(\"person\").values(\"age\").mean()), __.constant(\"above average\"), __.constant(\"below average\"))",
-                "language": "g.V().hasLabel(\"person\").values(\"age\").choose(P.gte(__.V().hasLabel(\"person\").values(\"age\").mean()), __.constant(\"above average\"), __.constant(\"below average\"))",
-                "canonical": "g.V().hasLabel(\"person\").values(\"age\").choose(P.gte(__.V().hasLabel(\"person\").values(\"age\").mean()), __.constant(\"above average\"), __.constant(\"below average\"))",
-                "anonymized": "g.V().hasLabel(string0).values(string1).choose(P.gte(__.V().hasLabel(string0).values(string1).mean()), __.constant(string2), __.constant(string3))",
-                "dotnet": "g.V().HasLabel(\"person\").Values<object>(\"age\").Choose<object>(P.Gte(__.V().HasLabel(\"person\").Values<object>(\"age\").Mean<object>()), __.Constant<object>(\"above average\"), __.Constant<object>(\"below average\"))",
-                "go": "g.V().HasLabel(\"person\").Values(\"age\").Choose(gremlingo.P.Gte(gremlingo.T__.V().HasLabel(\"person\").Values(\"age\").Mean()), gremlingo.T__.Constant(\"above average\"), gremlingo.T__.Constant(\"below average\"))",
-                "groovy": "g.V().hasLabel(\"person\").values(\"age\").choose(P.gte(__.V().hasLabel(\"person\").values(\"age\").mean()), __.constant(\"above average\"), __.constant(\"below average\"))",
-                "java": "g.V().hasLabel(\"person\").values(\"age\").choose(P.gte(__.V().hasLabel(\"person\").values(\"age\").mean()), __.constant(\"above average\"), __.constant(\"below average\"))",
-                "javascript": "g.V().hasLabel(\"person\").values(\"age\").choose(P.gte(__.V().hasLabel(\"person\").values(\"age\").mean()), __.constant(\"above average\"), __.constant(\"below average\"))",
-                "python": "g.V().has_label('person').values('age').choose(P.gte(__.V().has_label('person').values('age').mean()), __.constant('above average'), __.constant('below average'))"
+                "original": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gte(__.V().hasLabel(\"person\").values(\"age\").mean())), __.constant(\"above average\"), __.constant(\"below average\"))",
+                "language": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gte(__.V().hasLabel(\"person\").values(\"age\").mean())), __.constant(\"above average\"), __.constant(\"below average\"))",
+                "canonical": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gte(__.V().hasLabel(\"person\").values(\"age\").mean())), __.constant(\"above average\"), __.constant(\"below average\"))",
+                "anonymized": "g.V().hasLabel(string0).values(string1).choose(__.is(P.gte(__.V().hasLabel(string0).values(string1).mean())), __.constant(string2), __.constant(string3))",
+                "dotnet": "g.V().HasLabel(\"person\").Values<object>(\"age\").Choose<object>(__.Is(P.Gte(__.V().HasLabel(\"person\").Values<object>(\"age\").Mean<object>())), __.Constant<object>(\"above average\"), __.Constant<object>(\"below average\"))",
+                "go": "g.V().HasLabel(\"person\").Values(\"age\").Choose(gremlingo.T__.Is(gremlingo.P.Gte(gremlingo.T__.V().HasLabel(\"person\").Values(\"age\").Mean())), gremlingo.T__.Constant(\"above average\"), gremlingo.T__.Constant(\"below average\"))",
+                "groovy": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gte(__.V().hasLabel(\"person\").values(\"age\").mean())), __.constant(\"above average\"), __.constant(\"below average\"))",
+                "java": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gte(__.V().hasLabel(\"person\").values(\"age\").mean())), __.constant(\"above average\"), __.constant(\"below average\"))",
+                "javascript": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gte(__.V().hasLabel(\"person\").values(\"age\").mean())), __.constant(\"above average\"), __.constant(\"below average\"))",
+                "python": "g.V().has_label('person').values('age').choose(__.is_(P.gte(__.V().has_label('person').values('age').mean())), __.constant('above average'), __.constant('below average'))"
             }
         ]
     },
@@ -10388,16 +10388,16 @@
         "scenario": "g_injectXmarkoX_chooseXeqXV9999_valuesXnameXX_matched_unmatchedX",
         "traversals": [
             {
-                "original": "g.inject(\"marko\").choose(P.eq(__.V(9999).values(\"name\")), __.constant(\"matched\"), __.constant(\"unmatched\"))",
-                "language": "g.inject(\"marko\").choose(P.eq(__.V(9999).values(\"name\")), __.constant(\"matched\"), __.constant(\"unmatched\"))",
-                "canonical": "g.inject(\"marko\").choose(P.eq(__.V(9999).values(\"name\")), __.constant(\"matched\"), __.constant(\"unmatched\"))",
-                "anonymized": "g.inject(string0).choose(P.eq(__.V(number0).values(string1)), __.constant(string2), __.constant(string3))",
-                "dotnet": "g.Inject<object>(\"marko\").Choose<object>(P.Eq(__.V(9999).Values<object>(\"name\")), __.Constant<object>(\"matched\"), __.Constant<object>(\"unmatched\"))",
-                "go": "g.Inject(\"marko\").Choose(gremlingo.P.Eq(gremlingo.T__.V(9999).Values(\"name\")), gremlingo.T__.Constant(\"matched\"), gremlingo.T__.Constant(\"unmatched\"))",
-                "groovy": "g.inject(\"marko\").choose(P.eq(__.V(9999).values(\"name\")), __.constant(\"matched\"), __.constant(\"unmatched\"))",
-                "java": "g.inject(\"marko\").choose(P.eq(__.V(9999).values(\"name\")), __.constant(\"matched\"), __.constant(\"unmatched\"))",
-                "javascript": "g.inject(\"marko\").choose(P.eq(__.V(9999).values(\"name\")), __.constant(\"matched\"), __.constant(\"unmatched\"))",
-                "python": "g.inject('marko').choose(P.eq(__.V(9999).values('name')), __.constant('matched'), __.constant('unmatched'))"
+                "original": "g.inject(\"marko\").choose(__.is(P.eq(__.V(9999).values(\"name\"))), __.constant(\"matched\"), __.constant(\"unmatched\"))",
+                "language": "g.inject(\"marko\").choose(__.is(P.eq(__.V(9999).values(\"name\"))), __.constant(\"matched\"), __.constant(\"unmatched\"))",
+                "canonical": "g.inject(\"marko\").choose(__.is(P.eq(__.V(9999).values(\"name\"))), __.constant(\"matched\"), __.constant(\"unmatched\"))",
+                "anonymized": "g.inject(string0).choose(__.is(P.eq(__.V(number0).values(string1))), __.constant(string2), __.constant(string3))",
+                "dotnet": "g.Inject<object>(\"marko\").Choose<object>(__.Is(P.Eq(__.V(9999).Values<object>(\"name\"))), __.Constant<object>(\"matched\"), __.Constant<object>(\"unmatched\"))",
+                "go": "g.Inject(\"marko\").Choose(gremlingo.T__.Is(gremlingo.P.Eq(gremlingo.T__.V(9999).Values(\"name\"))), gremlingo.T__.Constant(\"matched\"), gremlingo.T__.Constant(\"unmatched\"))",
+                "groovy": "g.inject(\"marko\").choose(__.is(P.eq(__.V(9999).values(\"name\"))), __.constant(\"matched\"), __.constant(\"unmatched\"))",
+                "java": "g.inject(\"marko\").choose(__.is(P.eq(__.V(9999).values(\"name\"))), __.constant(\"matched\"), __.constant(\"unmatched\"))",
+                "javascript": "g.inject(\"marko\").choose(__.is(P.eq(__.V(9999).values(\"name\"))), __.constant(\"matched\"), __.constant(\"unmatched\"))",
+                "python": "g.inject('marko').choose(__.is_(P.eq(__.V(9999).values('name'))), __.constant('matched'), __.constant('unmatched'))"
             }
         ]
     },
