@@ -43,9 +43,11 @@ public final class CountLocalStep<S> extends ScalarMapStep<S, Long> {
     @Override
     protected Long map(final Traverser.Admin<S> traverser) {
         final S item = traverser.get();
+        if (item instanceof Tree)
+            throw new IllegalArgumentException("count(local) is not supported on Tree; Call next() and use the " +
+                    "Tree API: rootNodes().size() for the root-node count, or nodeCount() for the total node count.");
         return (item instanceof Collection) ? ((Collection) item).size()
                 : (item instanceof Map) ? ((Map) item).size()
-                : (item instanceof Tree) ? ((Tree) item).rootNodes().size()
                 : (item instanceof Path) ? ((Path) item).size()
                 : IteratorUtils.count(IteratorUtils.asIterator(item));
     }

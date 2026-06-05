@@ -656,7 +656,8 @@ Replacements for the common `Map`-based access patterns:
 
 A few Gremlin patterns that worked only because `Tree` was a `Map` (for example `select(keys)`, `count(local)`,
 and `unfold()` applied to a `Tree`) no longer compose. Process the `Tree` result client-side after `next()`, or
-reshape the upstream traversal.
+reshape the upstream traversal. The old `count(local)` (which returned the root-node count) is replaced by
+`rootNodes().size()` for the root count, or `nodeCount()` for the total node count.
 
 `isLeaf()` no longer throws on an empty tree (it returns `true`), and a `Tree` keeps the long-standing limitation
 that sibling branches resolving to the same value collapse into one node; use `path()` or `subgraph()` when full
@@ -685,8 +686,12 @@ registration.
 `Tree` no longer extends `HashMap`. Provider code that inspected or rebuilt a `Tree` via `Map` methods
 (`get`, `put`, `keySet`, `entrySet`, `size`) must use the tree-shaped API instead: read with `rootNodes()` +
 `childAt(key)` and build with `getOrCreateChild(key)` + `addTree(subtree)`. The GraphSON (`g:Tree`) and
-GraphBinary (`0x2b`) wire formats are unchanged, so no serialized data or cross-version compatibility is affected
-— only the in-memory Java type changed.
+GraphBinary (`0x2b`) wire formats are unchanged, so no GraphSON- or GraphBinary-serialized data or cross-version
+compatibility is affected. The Gryo `Tree` wire format, however, did change: in 3.x a `Tree` was serialized via
+Kryo's default `Map` serializer because it extended `HashMap`, whereas in 4.x it has an explicit `Tree`
+serializer. As a result, Gryo-serialized `Tree` data written by 3.x cannot be read by 4.x and vice versa. The
+Gryo type registration id (`61`) is unchanged and 4.x-to-4.x Gryo round-trips correctly; this Gryo break is
+expected for the 4.0.0 major release.
 
 ==== Graph Driver Providers
 

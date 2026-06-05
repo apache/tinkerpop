@@ -2201,8 +2201,6 @@ const gremlins = {
     g_VX1X_out_out_out_tree: [function({g}) { return g.V().out().out().out().tree() }], 
     g_VX1X_outE_inV_bothE_otherV_tree: [function({g, vid1}) { return g.V(vid1).outE().inV().bothE().otherV().tree() }], 
     g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX: [function({g, vid1}) { return g.V(vid1).outE().inV().bothE().otherV().tree().by("name").by(T.label) }], 
-    g_V_out_treeXaX_selectXaX_countXlocalX: [function({g}) { return g.V().out().tree("a").select("a").count(Scope.local) }], 
-    g_V_out_order_byXnameX_localXtreeXaX_selectXaX_countXlocalXX: [function({g}) { return g.V().out().local(__.tree("a").select("a").count(Scope.local)) }], 
     g_io_writeXkryoX: [function({g}) { return g.io("tinkerpop-modern-v3.kryo").write() }], 
     g_io_write_withXwriter_gryoX: [function({g}) { return g.io("tinkerpop-modern-v3.kryo").with_(IO.writer, IO.gryo).write() }], 
     g_io_writeXgraphsonX: [function({g}) { return g.io("tinkerpop-modern-v3.json").write() }], 
