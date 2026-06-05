@@ -41,6 +41,18 @@ services:
       retries: 30
       start_period: 30s
 
+  gremlin-socket-server-test-go:
+    container_name: gremlin-socket-server-test-go
+    image: tinkerpop/gremlin-socket-server:${GREMLIN_SERVER}
+    build:
+      context: ../
+      dockerfile: gremlin-tools/gremlin-socket-server/Dockerfile
+      args:
+        - SOCKET_SERVER_DIR=gremlin-tools/gremlin-socket-server/target/
+        - SOCKET_SERVER_VERSION=${GREMLIN_SERVER}
+    ports:
+      - "45943:45943"
+
   gremlin-go-integration-tests:
     container_name: gremlin-go-integration-tests
     image: golang:1.25
@@ -52,6 +64,7 @@ services:
       - CUCUMBER_FEATURE_FOLDER=/gremlin-test
       - GREMLIN_SERVER_URL=http://gremlin-server-test:45940/gremlin
       - GREMLIN_SERVER_BASIC_AUTH_URL=https://gremlin-server-test:45941/gremlin
+      - GREMLIN_SOCKET_SERVER_URL=http://gremlin-socket-server-test-go:45943/gremlin
       - RUN_INTEGRATION_TESTS=true
       - RUN_INTEGRATION_WITH_ALIAS_TESTS=true
       - RUN_BASIC_AUTH_INTEGRATION_TESTS=true
@@ -68,3 +81,5 @@ services:
     depends_on:
       gremlin-server-test:
         condition: service_healthy
+      gremlin-socket-server-test-go:
+        condition: service_started

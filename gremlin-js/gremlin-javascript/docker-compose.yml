@@ -41,6 +41,18 @@ services:
       retries: 30
       start_period: 30s
 
+  gremlin-socket-server-test-js:
+    container_name: gremlin-socket-server-test-js
+    image: tinkerpop/gremlin-socket-server:${GREMLIN_SERVER}
+    build:
+      context: ../../
+      dockerfile: gremlin-tools/gremlin-socket-server/Dockerfile
+      args:
+        - SOCKET_SERVER_DIR=gremlin-tools/gremlin-socket-server/target/
+        - SOCKET_SERVER_VERSION=${GREMLIN_SERVER}
+    ports:
+      - "45943:45943"
+
   gremlin-js-integration-tests:
     container_name: gremlin-js-integration-tests
     image: node:${NODE_VERSION:-22}
@@ -50,12 +62,12 @@ services:
       - ../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/graphbinary:/workspace/gremlin-js/gremlin-javascript/gremlin-test/graphbinary
       - ../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/language/translator:/workspace/gremlin-js/gremlin-javascript/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/language/translator
       - ../../docker/gremlin-test-server:/workspace/gremlin-js/gremlin-javascript/gremlin-test-server
-      - ../../gremlin-tools/gremlin-socket-server/conf:/workspace/gremlin-js/gremlin-javascript/gremlin-socket-server/conf/
       - ../../gremlin-language/src/main/antlr4:/gremlin-language/src/main/antlr4
       - ../..:/workspace
     environment:
       - DOCKER_ENVIRONMENT=true
       - GREMLIN_SERVER_URL=http://gremlin-server-test-js:45940/gremlin
+      - GREMLIN_SOCKET_SERVER_URL=http://gremlin-socket-server-test-js:45943/gremlin
       - VERTEX_LABEL=javascript-example
       - IO_TEST_DIRECTORY=/workspace/gremlin-js/gremlin-javascript/gremlin-test/graphbinary/
       - NPM_CONFIG_CACHE=/tmp/npm-cache
@@ -71,5 +83,7 @@ services:
     depends_on:
       gremlin-server-test-js:
         condition: service_healthy
+      gremlin-socket-server-test-js:
+        condition: service_started
 
 

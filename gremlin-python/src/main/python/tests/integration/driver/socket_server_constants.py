@@ -1,3 +1,4 @@
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -14,23 +15,15 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+#
 
-FROM alpine
-
-LABEL maintainer="dev@tinkerpop.apache.org"
-
-ARG SOCKET_SERVER_DIR
-ARG SOCKET_SERVER_VERSION
-
-RUN apk add --no-cache --update \
-    bash \
-    openjdk11-jdk
-
-COPY ${SOCKET_SERVER_DIR}/gremlin-socket-server-${SOCKET_SERVER_VERSION}.jar /opt/gremlin-socket-server/gremlin-socket-server.jar
-COPY ${SOCKET_SERVER_DIR}/libs/ /opt/gremlin-socket-server/libs/
-
-WORKDIR /opt/gremlin-socket-server
-
-EXPOSE 45943
-
-ENTRYPOINT ["java","-jar","gremlin-socket-server.jar"]
+PORT = 45943
+GREMLIN_SINGLE_VERTEX = "server_single_vertex"
+GREMLIN_CLOSE_CONNECTION = "server_close_connection"
+GREMLIN_VERTEX_THEN_CLOSE = "server_vertex_then_close"
+GREMLIN_FAIL_AFTER_DELAY = "server_fail_after_delay"
+GREMLIN_PARTIAL_CONTENT_CLOSE = "server_partial_content_close"
+GREMLIN_SLOW_RESPONSE = "server_slow_response"
+GREMLIN_MALFORMED_RESPONSE = "server_malformed_response"
+GREMLIN_NO_RESPONSE = "server_no_response"
+GREMLIN_EMPTY_BODY = "server_empty_body"

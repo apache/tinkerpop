@@ -2,6 +2,8 @@
 **/target
 !gremlin-server/target/apache-tinkerpop-gremlin-server-*
 !gremlin-console/target/apache-tinkerpop-gremlin-console-*
+!gremlin-tools/gremlin-socket-server/target/gremlin-socket-server-*
+!gremlin-tools/gremlin-socket-server/target/libs
 *.iml
 .idea
 **/*.DS_Store
