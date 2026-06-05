@@ -151,7 +151,7 @@ which is the OLAP Gremlin machine.
 [gremlin-groovy]
 ----
 hdfs.copyFromLocal('data/tinkerpop-modern.kryo', 'tinkerpop-modern.kryo')
-hdfs.ls()
+hdfs.ls('tinkerpop-modern.kryo')
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
 g = traversal().withEmbedded(graph)
 g.V().count()
