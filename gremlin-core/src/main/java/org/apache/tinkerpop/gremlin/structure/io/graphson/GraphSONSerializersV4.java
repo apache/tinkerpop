@@ -306,11 +306,10 @@ class GraphSONSerializersV4 {
         @Override
         public void serialize(final Tree tree, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider) throws IOException, JsonGenerationException {
             jsonGenerator.writeStartArray();
-            final Set<Map.Entry<Element, Tree>> set = tree.entrySet();
-            for (Map.Entry<Element, Tree> entry : set) {
+            for (final Object key : tree.rootNodes()) {
                 jsonGenerator.writeStartObject();
-                jsonGenerator.writeObjectField(GraphSONTokens.KEY, entry.getKey());
-                jsonGenerator.writeObjectField(GraphSONTokens.VALUE, entry.getValue());
+                jsonGenerator.writeObjectField(GraphSONTokens.KEY, key);
+                jsonGenerator.writeObjectField(GraphSONTokens.VALUE, tree.childAt(key));
                 jsonGenerator.writeEndObject();
             }
             jsonGenerator.writeEndArray();
@@ -581,7 +580,12 @@ class GraphSONSerializersV4 {
             final List<Map> data = deserializationContext.readValue(jsonParser, List.class);
             final Tree t = new Tree();
             for (Map<String, Object> entry : data) {
-                t.put(entry.get(GraphSONTokens.KEY), entry.get(GraphSONTokens.VALUE));
+                final Object key = entry.get(GraphSONTokens.KEY);
+                final Object value = entry.get(GraphSONTokens.VALUE);
+                final Tree child = t.getOrCreateChild(key);
+                if (value instanceof Tree) {
+                    child.addTree((Tree) value);
+                }
             }
             return t;
         }

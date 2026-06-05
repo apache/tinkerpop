@@ -159,7 +159,6 @@ public abstract class RemoteWorld implements World {
                 // TINKERPOP-3209
                 case "g_V_localXgroupCountXaX_selectXaX_countXlocalXX":
                 case "g_V_localXgroupXaX_byXnameX_by_selectXaX_countXlocalXX":
-                case "g_V_out_order_byXnameX_localXtreeXaX_selectXaX_countXlocalXX":
                     throw new AssumptionViolatedException("Selecting side effects inside local() produces inconsistent results in OLAP (See TINKERPOP-3209)");
                 default:
                     // Do nothing

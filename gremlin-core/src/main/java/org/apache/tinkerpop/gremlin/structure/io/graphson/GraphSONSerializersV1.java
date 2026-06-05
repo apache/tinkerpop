@@ -50,7 +50,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -284,14 +283,13 @@ final class GraphSONSerializersV1 {
                 throws IOException {
             jsonGenerator.writeStartObject(); 
             if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
-            
-            Set<Map.Entry<Element, Tree>> set = tree.entrySet();
-            for(Map.Entry<Element, Tree> entry : set)
-            {
-                jsonGenerator.writeObjectFieldStart(entry.getKey().id().toString());
+
+            for (final Object key : tree.rootNodes()) {
+                final Element elementKey = (Element) key;
+                jsonGenerator.writeObjectFieldStart(elementKey.id().toString());
                 if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
-                jsonGenerator.writeObjectField(GraphSONTokens.KEY, entry.getKey()); 
-                jsonGenerator.writeObjectField(GraphSONTokens.VALUE, entry.getValue());
+                jsonGenerator.writeObjectField(GraphSONTokens.KEY, elementKey);
+                jsonGenerator.writeObjectField(GraphSONTokens.VALUE, tree.childAt(key));
                 jsonGenerator.writeEndObject();
             }
             jsonGenerator.writeEndObject();

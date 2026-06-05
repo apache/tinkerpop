@@ -34,12 +34,12 @@ import static org.junit.Assert.assertNotSame;
 public class TreeSupplierTest {
     @Test
     public void shouldSupplyTree() {
-        assertEquals(0, TreeSupplier.instance().get().size());
+        assertEquals(0, TreeSupplier.instance().get().nodeCount());
     }
 
     @Test
     public void shouldSupplyTreeInstance() {
-        assertEquals(0, TreeSupplier.instance().get().size());
+        assertEquals(0, TreeSupplier.instance().get().nodeCount());
         assertThat(TreeSupplier.instance().get(), instanceOf(Tree.class));
     }
 

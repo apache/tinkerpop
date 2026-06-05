@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -42,6 +43,9 @@ public final class CountLocalStep<S> extends ScalarMapStep<S, Long> {
     @Override
     protected Long map(final Traverser.Admin<S> traverser) {
         final S item = traverser.get();
+        if (item instanceof Tree)
+            throw new IllegalArgumentException("count(local) is not supported on Tree; Call next() and use the " +
+                    "Tree API: rootNodes().size() for the root-node count, or nodeCount() for the total node count.");
         return (item instanceof Collection) ? ((Collection) item).size()
                 : (item instanceof Map) ? ((Map) item).size()
                 : (item instanceof Path) ? ((Path) item).size()

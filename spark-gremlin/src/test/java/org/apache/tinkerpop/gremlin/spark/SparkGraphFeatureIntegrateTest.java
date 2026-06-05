@@ -98,7 +98,6 @@ public class SparkGraphFeatureIntegrateTest {
         add(Pair.with("g_V_untilXloops_isX2XX_repeatXout_order_byXnameXX_valuesXnameX", skipReasonOrdering));
         add(Pair.with("g_V_localXgroupCountXaX_selectXaX_countXlocalXX", skipReasonTINKERPOP3209));
         add(Pair.with("g_V_localXgroupXaX_byXnameX_by_selectXaX_countXlocalXX", skipReasonTINKERPOP3209));
-        add(Pair.with("g_V_out_order_byXnameX_localXtreeXaX_selectXaX_countXlocalXX", skipReasonTINKERPOP3209));
     }};
 
     public static final class ServiceModule extends AbstractModule {

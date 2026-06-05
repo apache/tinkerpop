@@ -65,7 +65,7 @@ public class TypeSerializerFailureTests {
         final MutableMetrics metrics = new MutableMetrics("a metric", null);
 
         final Tree<Vertex> tree = new Tree<>();
-        tree.put(vertex, null);
+        tree.getOrCreateChild(vertex);
 
         // Provide instances that are malformed for serialization to fail
         return Arrays.asList(

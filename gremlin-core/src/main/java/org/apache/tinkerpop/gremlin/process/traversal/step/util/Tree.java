@@ -20,125 +20,249 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /**
+ * A tree data structure with a tree-shaped public API that is composed of a {@link HashMap}.
+ * <p>
+ * Internal storage is a plain {@link HashMap}, so iteration order is not promised and sibling-key collisions still
+ * collapse (a known limitation, tracked as TINKERPOP-1693).
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Tree<T> extends HashMap<T, Tree<T>> implements Serializable {
+public final class Tree<T> implements Serializable {
+
+    private final Map<T, Tree<T>> children = new HashMap<>();
 
     public Tree() {
-        super();
     }
 
+    /**
+     * Creates a tree with the given values as root keys, each mapping to an empty {@link Tree}.
+     */
     @SafeVarargs
-    public Tree(final T... children) {
-        this();
-        for (final T t : children) {
-            this.put(t, new Tree<>());
+    public Tree(final T... rootValues) {
+        for (final T t : rootValues) {
+            this.children.put(t, new Tree<>());
         }
     }
 
-    @SafeVarargs
-    public Tree(final Map.Entry<T, Tree<T>>... children) {
-        this();
-        for (final Map.Entry<T, Tree<T>> entry : children) {
-            this.put(entry.getKey(), entry.getValue());
-        }
+    // ------------------------------------------------------------------
+    // navigation
+    // ------------------------------------------------------------------
+
+    /**
+     * Returns the set of keys at the root of this tree. The returned set is unmodifiable.
+     */
+    public Set<T> rootNodes() {
+        return Collections.unmodifiableSet(this.children.keySet());
     }
 
+    /**
+     * Returns the child subtree for the given key.
+     *
+     * @throws IllegalArgumentException if no child exists for the given key
+     */
+    public Tree<T> childAt(final T key) {
+        if (!this.children.containsKey(key)) {
+            throw new IllegalArgumentException("Tree has no child for key: " + key);
+        }
+        return this.children.get(key);
+    }
 
-    public List<Tree<T>> getTreesAtDepth(final int depth) {
-        List<Tree<T>> currentDepth = Collections.singletonList(this);
-        for (int i = 0; i < depth; i++) {
-            if (i == depth - 1) {
-                return currentDepth;
-            } else {
-                final List<Tree<T>> temp = new ArrayList<Tree<T>>();
-                for (final Tree<T> t : currentDepth) {
-                    temp.addAll(t.values());
-                }
-                currentDepth = temp;
+    /**
+     * Returns {@code true} if the given key is an immediate child of this tree.
+     */
+    public boolean hasChild(final T key) {
+        return this.children.containsKey(key);
+    }
+
+    /**
+     * Returns {@code true} if the given value appears as a key anywhere in this tree (recursive).
+     */
+    public boolean contains(final T value) {
+        if (this.children.containsKey(value)) {
+            return true;
+        }
+        for (final Tree<T> sub : this.children.values()) {
+            if (sub.contains(value)) {
+                return true;
             }
         }
-        return Collections.emptyList();
+        return false;
     }
 
-    public List<T> getObjectsAtDepth(final int depth) {
-        final List<T> list = new ArrayList<T>();
+    /**
+     * Recursively searches the tree for the first subtree rooted at {@code key} and returns it. The search visits
+     * direct children first and then recurses, but iteration order across siblings is unspecified.
+     */
+    public Optional<Tree<T>> findSubtree(final T key) {
+        if (this.children.containsKey(key)) {
+            return Optional.of(this.children.get(key));
+        }
+        for (final Tree<T> sub : this.children.values()) {
+            final Optional<Tree<T>> found = sub.findSubtree(key);
+            if (found.isPresent()) {
+                return found;
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Returns the existing child for {@code key}, or inserts and returns a new empty {@link Tree} if absent.
+     */
+    public Tree<T> getOrCreateChild(final T key) {
+        Tree<T> child = this.children.get(key);
+        if (null == child) {
+            child = new Tree<>();
+            this.children.put(key, child);
+        }
+        return child;
+    }
+
+    // ------------------------------------------------------------------
+    // structural
+    // ------------------------------------------------------------------
+
+    /**
+     * Returns {@code true} if this tree has no children. An empty tree is considered a leaf.
+     */
+    public boolean isLeaf() {
+        return this.children.isEmpty();
+    }
+
+    /**
+     * Returns the total number of nodes (keys) in the tree, counted recursively.
+     */
+    public int nodeCount() {
+        int count = this.children.size();
+        for (final Tree<T> sub : this.children.values()) {
+            count += sub.nodeCount();
+        }
+        return count;
+    }
+
+    /**
+     * Returns the keys at the given depth. Depth {@code 0} returns the root keys.
+     */
+    public List<T> getNodesAtDepth(final int depth) {
+        final List<T> list = new ArrayList<>();
         for (final Tree<T> t : this.getTreesAtDepth(depth)) {
-            list.addAll(t.keySet());
+            list.addAll(t.children.keySet());
         }
         return list;
     }
 
-    public List<Tree<T>> getLeafTrees() {
-        final List<Tree<T>> leaves = new ArrayList<>();
+    /**
+     * Returns the trees at the given depth. Depth {@code 0} returns a singleton list containing this tree.
+     * Depths beyond the tree's height return an empty list.
+     */
+    public List<Tree<T>> getTreesAtDepth(final int depth) {
+        if (depth < 0) {
+            return Collections.emptyList();
+        }
         List<Tree<T>> currentDepth = Collections.singletonList(this);
-        boolean allLeaves = false;
-        while (!allLeaves) {
-            allLeaves = true;
-            final List<Tree<T>> temp = new ArrayList<>();
+        for (int i = 0; i < depth; i++) {
+            final List<Tree<T>> next = new ArrayList<>();
             for (final Tree<T> t : currentDepth) {
-                if (t.isLeaf()) {
-                    for (Map.Entry<T, Tree<T>> t2 : t.entrySet()) {
-                        leaves.add(new Tree<T>(t2));
-                    }
-                } else {
-                    allLeaves = false;
-                    temp.addAll(t.values());
-                }
+                next.addAll(t.children.values());
             }
-            currentDepth = temp;
-
+            if (next.isEmpty()) {
+                return Collections.emptyList();
+            }
+            currentDepth = next;
         }
+        return currentDepth;
+    }
+
+    /**
+     * Returns all keys whose subtrees are leaves.
+     */
+    public List<T> getLeafNodes() {
+        final List<T> leaves = new ArrayList<>();
+        collectLeafKeys(leaves);
         return leaves;
     }
 
-    public List<T> getLeafObjects() {
-        final List<T> leaves = new ArrayList<T>();
-        for (final Tree<T> t : this.getLeafTrees()) {
-            leaves.addAll(t.keySet());
-        }
-        return leaves;
-    }
-
-    public boolean isLeaf() {
-        final Collection<Tree<T>> values = this.values();
-        return values.iterator().next().isEmpty();
-
-    }
-
-    public void addTree(final Tree<T> tree) {
-        tree.forEach((k, t) -> {
-            if (this.containsKey(k)) {
-                this.get(k).addTree(t);
+    private void collectLeafKeys(final List<T> out) {
+        for (final Map.Entry<T, Tree<T>> entry : this.children.entrySet()) {
+            if (entry.getValue().isLeaf()) {
+                out.add(entry.getKey());
             } else {
-                this.put(k, t);
+                entry.getValue().collectLeafKeys(out);
             }
-        });
-    }
-
-    public List<Tree<T>> splitParents() {
-        if (this.keySet().size() == 1) {
-            return Collections.singletonList(this);
-        } else {
-            final List<Tree<T>> parents = new ArrayList<>();
-            this.forEach((k, t) -> {
-                final Tree<T> parentTree = new Tree<>();
-                parentTree.put(k, t);
-                parents.add(parentTree);
-            });
-            return parents;
         }
     }
 
     /**
-     * Produce a formatted string representation of the tree structure.
+     * Returns single-key trees representing each leaf key in this tree, preserving the original
+     * key-to-empty-subtree mapping.
+     */
+    public List<Tree<T>> getLeafTrees() {
+        final List<Tree<T>> leaves = new ArrayList<>();
+        collectLeafTrees(leaves);
+        return leaves;
+    }
+
+    private void collectLeafTrees(final List<Tree<T>> out) {
+        for (final Map.Entry<T, Tree<T>> entry : this.children.entrySet()) {
+            if (entry.getValue().isLeaf()) {
+                final Tree<T> leaf = new Tree<>();
+                leaf.children.put(entry.getKey(), entry.getValue());
+                out.add(leaf);
+            } else {
+                entry.getValue().collectLeafTrees(out);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // composition
+    // ------------------------------------------------------------------
+
+    /**
+     * Recursively merges {@code other} into this tree. For overlapping keys, child subtrees are merged in turn.
+     * For keys present only in {@code other}, the corresponding subtree reference is adopted directly.
+     */
+    public void addTree(final Tree<T> other) {
+        other.children.forEach((k, t) -> {
+            if (this.children.containsKey(k)) {
+                this.children.get(k).addTree(t);
+            } else {
+                this.children.put(k, t);
+            }
+        });
+    }
+
+    /**
+     * Splits this tree into one tree per root key. If the tree has a single root, returns a singleton list
+     * containing this tree.
+     */
+    public List<Tree<T>> splitParents() {
+        if (this.children.size() == 1) {
+            return Collections.singletonList(this);
+        }
+        final List<Tree<T>> parents = new ArrayList<>();
+        this.children.forEach((k, t) -> {
+            final Tree<T> parentTree = new Tree<>();
+            parentTree.children.put(k, t);
+            parents.add(parentTree);
+        });
+        return parents;
+    }
+
+    // ------------------------------------------------------------------
+    // output
+    // ------------------------------------------------------------------
+
+    /**
+     * Produces a formatted string representation of the tree structure using a {@code |--} ASCII style.
      */
     public String prettyPrint() {
         final StringBuilder builder = new StringBuilder();
@@ -148,10 +272,36 @@ public class Tree<T> extends HashMap<T, Tree<T>> implements Serializable {
     }
 
     private void prettyPrint(final StringBuilder builder, final String prefix) {
-        for (Map.Entry<T, Tree<T>> entry : this.entrySet()) {
+        for (final Map.Entry<T, Tree<T>> entry : this.children.entrySet()) {
             builder.append(prefix).append("|--").append(entry.getKey());
             builder.append(System.lineSeparator());
             entry.getValue().prettyPrint(builder, prefix + "   ");
         }
+    }
+
+    // ------------------------------------------------------------------
+    // identity
+    // ------------------------------------------------------------------
+
+    /**
+     * Structural recursive equality. Order across siblings is irrelevant; two trees are equal if they have the
+     * same set of keys and each key's subtree is recursively equal.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (this == other) return true;
+        if (!(other instanceof Tree)) return false;
+        final Tree<?> that = (Tree<?>) other;
+        return this.children.equals(that.children);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.children.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return this.children.toString();
     }
 }

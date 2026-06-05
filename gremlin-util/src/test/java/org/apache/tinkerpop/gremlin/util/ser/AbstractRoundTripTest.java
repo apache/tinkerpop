@@ -98,10 +98,10 @@ public abstract class AbstractRoundTripTest {
         final Tree<Vertex> tree = new Tree<>();
         final Tree<Vertex> subTree = new Tree<>();
         final Tree<Vertex> subSubTree = new Tree<>();
-        subSubTree.put(new ReferenceVertex(1, "animal"), new Tree<>());
-        subSubTree.put(new ReferenceVertex(2, "animal"), new Tree<>());
-        subTree.put(new ReferenceVertex(100, "animal"), subSubTree);
-        tree.put(new ReferenceVertex(1000, "animal"), subTree);
+        subSubTree.getOrCreateChild(new ReferenceVertex(1, "animal"));
+        subSubTree.getOrCreateChild(new ReferenceVertex(2, "animal"));
+        subTree.getOrCreateChild(new ReferenceVertex(100, "animal")).addTree(subSubTree);
+        tree.getOrCreateChild(new ReferenceVertex(1000, "animal")).addTree(subTree);
 
         final MutableMetrics metrics = new MutableMetrics("id1", "name1");
         metrics.setDuration(123, TimeUnit.MICROSECONDS);

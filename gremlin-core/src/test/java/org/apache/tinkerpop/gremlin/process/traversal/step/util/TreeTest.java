@@ -24,15 +24,17 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
-import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -40,69 +42,215 @@ import static org.junit.Assert.assertTrue;
  */
 public class TreeTest extends StepTest {
 
+    /**
+     * Helper that builds a subtree shaped like {@code key -> subtree}.
+     */
+    private static <T> Tree<T> branch(final T key, final Tree<T> subtree) {
+        final Tree<T> wrapper = new Tree<>();
+        wrapper.getOrCreateChild(key).addTree(subtree);
+        return wrapper;
+    }
+
     @Test
     public void shouldProvideValidDepths() {
-        Tree<String> tree = new Tree<String>();
-        tree.put("marko", new Tree<String>(TreeTest.createTree("a", new Tree<String>("a1", "a2")), TreeTest.createTree("b", new Tree<String>("b1", "b2", "b3"))));
-        tree.put("josh", new Tree<String>("1", "2"));
+        final Tree<String> tree = new Tree<>();
+        final Tree<String> markoSubtree = new Tree<>();
+        markoSubtree.addTree(branch("a", new Tree<>("a1", "a2")));
+        markoSubtree.addTree(branch("b", new Tree<>("b1", "b2", "b3")));
+        tree.getOrCreateChild("marko").addTree(markoSubtree);
+        tree.getOrCreateChild("josh").addTree(new Tree<>("1", "2"));
 
-        assertEquals(0, tree.getObjectsAtDepth(0).size());
-        assertEquals(2, tree.getObjectsAtDepth(1).size());
-        assertEquals(4, tree.getObjectsAtDepth(2).size());
-        assertEquals(5, tree.getObjectsAtDepth(3).size());
-        assertEquals(0, tree.getObjectsAtDepth(4).size());
-        assertEquals(0, tree.getObjectsAtDepth(5).size());
+        assertEquals(2, tree.getNodesAtDepth(0).size());
+        assertTrue(tree.getNodesAtDepth(0).containsAll(Arrays.asList("marko", "josh")));
+        assertEquals(4, tree.getNodesAtDepth(1).size());
+        assertEquals(5, tree.getNodesAtDepth(2).size());
+        assertEquals(0, tree.getNodesAtDepth(3).size());
+        assertEquals(0, tree.getNodesAtDepth(4).size());
+        assertEquals(0, tree.getNodesAtDepth(5).size());
 
-        assertEquals(2, tree.get("josh").size());
-        assertEquals(0, tree.get("marko").get("b").get("b1").size());
-        assertEquals(3, tree.get("marko").get("b").size());
-        assertNull(tree.get("marko").get("c"));
+        assertEquals(1, tree.getTreesAtDepth(0).size());
+        assertEquals(tree, tree.getTreesAtDepth(0).get(0));
+
+        assertEquals(2, tree.childAt("josh").rootNodes().size());
+        assertTrue(tree.childAt("marko").childAt("b").childAt("b1").isLeaf());
+        assertEquals(3, tree.childAt("marko").childAt("b").rootNodes().size());
+        assertFalse(tree.childAt("marko").hasChild("c"));
     }
 
     @Test
     public void shouldProvideValidLeaves() {
-        Tree<String> tree = new Tree<String>();
-        tree.put("marko", new Tree<String>(TreeTest.createTree("a", new Tree<String>("a1", "a2")), TreeTest.createTree("b", new Tree<String>("b1", "b2", "b3"))));
-        tree.put("josh", new Tree<String>("1", "2"));
+        final Tree<String> tree = new Tree<>();
+        final Tree<String> markoSubtree = new Tree<>();
+        markoSubtree.addTree(branch("a", new Tree<>("a1", "a2")));
+        markoSubtree.addTree(branch("b", new Tree<>("b1", "b2", "b3")));
+        tree.getOrCreateChild("marko").addTree(markoSubtree);
+        tree.getOrCreateChild("josh").addTree(new Tree<>("1", "2"));
 
         assertEquals(7, tree.getLeafTrees().size());
-        for (Tree<String> t : tree.getLeafTrees()) {
-            assertEquals(1, t.keySet().size());
-            final String key = t.keySet().iterator().next();
+        for (final Tree<String> t : tree.getLeafTrees()) {
+            assertEquals(1, t.rootNodes().size());
+            final String key = t.rootNodes().iterator().next();
             assertTrue(Arrays.asList("a1", "a2", "b1", "b2", "b3", "1", "2").contains(key));
         }
 
-        assertEquals(7, tree.getLeafObjects().size());
-        for (String s : tree.getLeafObjects()) {
+        assertEquals(7, tree.getLeafNodes().size());
+        for (final String s : tree.getLeafNodes()) {
             assertTrue(Arrays.asList("a1", "a2", "b1", "b2", "b3", "1", "2").contains(s));
         }
     }
 
     @Test
     public void shouldMergeTreesCorrectly() {
-        Tree<String> tree1 = new Tree<>();
-        tree1.put("1", new Tree<String>(TreeTest.createTree("1_1", new Tree<String>("1_1_1")), TreeTest.createTree("1_2", new Tree<String>("1_2_1"))));
-        Tree<String> tree2 = new Tree<>();
-        tree2.put("1", new Tree<String>(TreeTest.createTree("1_1", new Tree<String>("1_1_1")), TreeTest.createTree("1_2", new Tree<String>("1_2_2"))));
+        final Tree<String> tree1 = new Tree<>();
+        final Tree<String> tree1OneSubtree = new Tree<>();
+        tree1OneSubtree.addTree(branch("1_1", new Tree<>("1_1_1")));
+        tree1OneSubtree.addTree(branch("1_2", new Tree<>("1_2_1")));
+        tree1.getOrCreateChild("1").addTree(tree1OneSubtree);
 
-        Tree<String> mergeTree = new Tree<>();
+        final Tree<String> tree2 = new Tree<>();
+        final Tree<String> tree2OneSubtree = new Tree<>();
+        tree2OneSubtree.addTree(branch("1_1", new Tree<>("1_1_1")));
+        tree2OneSubtree.addTree(branch("1_2", new Tree<>("1_2_2")));
+        tree2.getOrCreateChild("1").addTree(tree2OneSubtree);
+
+        final Tree<String> mergeTree = new Tree<>();
         mergeTree.addTree(tree1);
         mergeTree.addTree(tree2);
 
-        assertEquals(1, mergeTree.size());
-        assertEquals(0, mergeTree.getObjectsAtDepth(0).size());
-        assertEquals(1, mergeTree.getObjectsAtDepth(1).size());
-        assertEquals(2, mergeTree.getObjectsAtDepth(2).size());
-        assertEquals(3, mergeTree.getObjectsAtDepth(3).size());
-        assertTrue(mergeTree.getObjectsAtDepth(3).contains("1_1_1"));
-        assertTrue(mergeTree.getObjectsAtDepth(3).contains("1_2_1"));
-        assertTrue(mergeTree.getObjectsAtDepth(3).contains("1_2_2"));
+        assertEquals(1, mergeTree.rootNodes().size());
+        assertEquals(1, mergeTree.getNodesAtDepth(0).size());
+        assertEquals(2, mergeTree.getNodesAtDepth(1).size());
+        assertEquals(3, mergeTree.getNodesAtDepth(2).size());
+        assertEquals(0, mergeTree.getNodesAtDepth(3).size());
+        assertTrue(mergeTree.getNodesAtDepth(2).contains("1_1_1"));
+        assertTrue(mergeTree.getNodesAtDepth(2).contains("1_2_1"));
+        assertTrue(mergeTree.getNodesAtDepth(2).contains("1_2_2"));
+    }
+
+    @Test
+    public void shouldGetOrCreateChild() {
+        final Tree<String> tree = new Tree<>();
+        final Tree<String> child = tree.getOrCreateChild("a");
+        assertNotNull(child);
+        assertTrue(child.isLeaf());
+        // calling again returns the same instance
+        assertSame(child, tree.getOrCreateChild("a"));
+
+        // mutating the returned subtree is observable through the parent
+        child.getOrCreateChild("a1");
+        assertTrue(tree.childAt("a").hasChild("a1"));
+    }
+
+    @Test
+    public void shouldAllowNullKeys() {
+        // HashMap allows null keys; the new Tree must preserve this (TreeSideEffectStep relies on it).
+        final Tree<Object> tree = new Tree<>();
+        final Tree<Object> nullChild = tree.getOrCreateChild(null);
+        assertNotNull(nullChild);
+        assertTrue(tree.hasChild(null));
+        assertEquals(1, tree.rootNodes().size());
+    }
+
+    @Test
+    public void shouldThrowOnMissingChildAt() {
+        final Tree<String> tree = new Tree<>();
+        tree.getOrCreateChild("a");
+        try {
+            tree.childAt("missing");
+            fail("expected IllegalArgumentException for missing key");
+        } catch (final IllegalArgumentException iae) {
+            assertThat(iae.getMessage(), Matchers.containsString("missing"));
+        }
+    }
+
+    @Test
+    public void shouldDetectImmediateAndRecursiveContainment() {
+        final Tree<String> tree = new Tree<>();
+        tree.getOrCreateChild("root").getOrCreateChild("child").getOrCreateChild("grandchild");
+
+        assertTrue(tree.hasChild("root"));
+        assertFalse(tree.hasChild("child"));
+        assertFalse(tree.hasChild("grandchild"));
+
+        assertTrue(tree.contains("root"));
+        assertTrue(tree.contains("child"));
+        assertTrue(tree.contains("grandchild"));
+        assertFalse(tree.contains("nope"));
+    }
+
+    @Test
+    public void shouldFindSubtreeRecursively() {
+        final Tree<String> tree = new Tree<>();
+        tree.getOrCreateChild("root").getOrCreateChild("child").getOrCreateChild("grandchild");
+
+        final Optional<Tree<String>> found = tree.findSubtree("grandchild");
+        assertTrue(found.isPresent());
+        assertTrue(found.get().isLeaf());
+
+        assertFalse(tree.findSubtree("missing").isPresent());
+    }
+
+    @Test
+    public void shouldReportNodeCount() {
+        final Tree<String> tree = new Tree<>();
+        assertEquals(0, tree.nodeCount());
+        tree.getOrCreateChild("a");
+        assertEquals(1, tree.nodeCount());
+        tree.getOrCreateChild("b").getOrCreateChild("b1");
+        assertEquals(3, tree.nodeCount());
+    }
+
+    @Test
+    public void shouldReportLeafForEmptyTree() {
+        assertTrue(new Tree<String>().isLeaf());
+
+        // a node with children is not a leaf
+        final Tree<String> tree = new Tree<>();
+        tree.getOrCreateChild("a");
+        assertFalse(tree.isLeaf());
+    }
+
+    @Test
+    public void shouldBeStructurallyEqualOrderInsensitive() {
+        final Tree<String> a = new Tree<>();
+        a.getOrCreateChild("x").getOrCreateChild("x1");
+        a.getOrCreateChild("y");
+
+        final Tree<String> b = new Tree<>();
+        b.getOrCreateChild("y");
+        b.getOrCreateChild("x").getOrCreateChild("x1");
+
+        assertEquals(a, b);
+        assertEquals(a.hashCode(), b.hashCode());
+
+        final Tree<String> c = new Tree<>();
+        c.getOrCreateChild("x");
+        c.getOrCreateChild("y");
+        assertFalse(a.equals(c));
+    }
+
+    @Test
+    public void shouldSplitParents() {
+        final Tree<String> single = new Tree<>();
+        single.getOrCreateChild("only").getOrCreateChild("child");
+        final List<Tree<String>> singleSplit = single.splitParents();
+        assertEquals(1, singleSplit.size());
+        assertEquals(single, singleSplit.get(0));
+
+        final Tree<String> multi = new Tree<>();
+        multi.getOrCreateChild("a").getOrCreateChild("a1");
+        multi.getOrCreateChild("b").getOrCreateChild("b1");
+        final List<Tree<String>> multiSplit = multi.splitParents();
+        assertEquals(2, multiSplit.size());
+        for (final Tree<String> parent : multiSplit) {
+            assertEquals(1, parent.rootNodes().size());
+        }
     }
 
     @Test
     public void testPrettyPrintSingleNode() {
         final Tree<String> tree = new Tree<>();
-        tree.put("root", new Tree<>());
+        tree.getOrCreateChild("root");
 
         final String expected = "|--root";
         assertEquals(expected, tree.prettyPrint());
@@ -111,11 +259,9 @@ public class TreeTest extends StepTest {
     @Test
     public void testPrettyPrintMultipleNodes() {
         final Tree<String> tree = new Tree<>();
-        final Tree<String> child1 = new Tree<>();
-        final Tree<String> child2 = new Tree<>();
-        tree.put("root", new Tree<>());
-        tree.get("root").put("child1", child1);
-        tree.get("root").put("child2", child2);
+        final Tree<String> root = tree.getOrCreateChild("root");
+        root.getOrCreateChild("child1");
+        root.getOrCreateChild("child2");
 
         // either can be expected since Tree doesn't maintain node order
         final String expected1 = "|--root" + System.lineSeparator() +
@@ -130,11 +276,7 @@ public class TreeTest extends StepTest {
     @Test
     public void testPrettyPrintNestedTree() {
         final Tree<String> tree = new Tree<>();
-        final Tree<String> child1 = new Tree<>();
-        final Tree<String> grandchild = new Tree<>();
-        tree.put("root", new Tree<>());
-        tree.get("root").put("child1", child1);
-        tree.get("root").get("child1").put("grandchild", grandchild);
+        tree.getOrCreateChild("root").getOrCreateChild("child1").getOrCreateChild("grandchild");
 
         final String expected = "|--root" + System.lineSeparator() +
                                 "   |--child1" + System.lineSeparator() +
@@ -149,8 +291,17 @@ public class TreeTest extends StepTest {
         assertEquals(expected, tree.prettyPrint());
     }
 
-    private static <T> Map.Entry<T, Tree<T>> createTree(T key, Tree<T> tree) {
-        return new AbstractMap.SimpleEntry<>(key, tree);
+    @Test
+    public void shouldRenderToStringAsUnderlyingMap() {
+        assertEquals("{}", new Tree<String>().toString());
+
+        final Tree<String> single = new Tree<>();
+        single.getOrCreateChild("root");
+        assertEquals("{root={}}", single.toString());
+
+        final Tree<String> nested = new Tree<>();
+        nested.getOrCreateChild("root").getOrCreateChild("child");
+        assertEquals("{root={child={}}}", nested.toString());
     }
 
     @Override
