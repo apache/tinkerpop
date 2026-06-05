@@ -549,7 +549,7 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public GraphTraversal<Vertex, Vertex> V(final Traversal<?, ?> traversal) {
         if (null == traversal) return V(new Object[]{ null });
-        ChildTraversalValidator.validateLookupContext(traversal.asAdmin());
+        ChildTraversalValidator.validate(traversal.asAdmin());
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.V, traversal);
         final GraphTraversal.Admin<Vertex, Vertex> traversalAdmin = new DefaultGraphTraversal<>(clone);
@@ -588,7 +588,7 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public GraphTraversal<Edge, Edge> E(final Traversal<?, ?> traversal) {
         if (null == traversal) return E(new Object[]{ null });
-        ChildTraversalValidator.validateLookupContext(traversal.asAdmin());
+        ChildTraversalValidator.validate(traversal.asAdmin());
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.E, traversal);
         final GraphTraversal.Admin<Edge, Edge> traversalAdmin = new DefaultGraphTraversal<>(clone);

@@ -30,20 +30,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.ChildTraversalContext;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ChildTraversalValidator;
 
 /**
- * A verification strategy that validates child traversals do not contain disallowed mutating steps
- * based on the context in which they are used. This serves as a safety net for cases where
- * construction-time validation is bypassed (e.g., programmatic traversal construction).
- * <p>
- * Context classification:
- * <ul>
- *   <li>{@code HasStep}, {@code IsStep}, {@code AllStep}, {@code AnyStep}, {@code NoneStep} → FILTER</li>
- *   <li>{@code GraphStep} with idTraversal → LOOKUP</li>
- *   <li>{@code AddPropertyStepContract} → MUTATION</li>
- * </ul>
+ * Validates that child traversals in filter, lookup, and mutation steps do not contain mutating steps.
+ * Serves as a safety net for programmatic traversal construction that bypasses the DSL's
+ * construction-time validation.
  */
 public final class ChildTraversalVerificationStrategy
         extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy>
@@ -57,31 +49,23 @@ public final class ChildTraversalVerificationStrategy
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if (step instanceof TraversalParent) {
-                final ChildTraversalContext context = classifyContext(step);
-                if (context != ChildTraversalContext.NONE) {
-                    for (final Traversal.Admin<?, ?> child : ((TraversalParent) step).getLocalChildren()) {
-                        try {
-                            ChildTraversalValidator.validateRecursive(child, context);
-                        } catch (final IllegalArgumentException e) {
-                            throw new VerificationException(e.getMessage(), traversal);
-                        }
+            if (step instanceof TraversalParent && hasChildTraversalsToValidate(step)) {
+                for (final Traversal.Admin<?, ?> child : ((TraversalParent) step).getLocalChildren()) {
+                    try {
+                        ChildTraversalValidator.validate(child);
+                    } catch (final IllegalArgumentException e) {
+                        throw new VerificationException(e.getMessage(), traversal);
                     }
                 }
             }
         }
     }
 
-    private ChildTraversalContext classifyContext(final Step<?, ?> step) {
-        if (step instanceof HasStep || step instanceof IsStep ||
-                step instanceof AllStep || step instanceof AnyStep || step instanceof NoneStep) {
-            return ChildTraversalContext.FILTER;
-        } else if (step instanceof GraphStep && ((GraphStep<?, ?>) step).getIdTraversal() != null) {
-            return ChildTraversalContext.LOOKUP;
-        } else if (step instanceof AddPropertyStepContract) {
-            return ChildTraversalContext.MUTATION;
-        }
-        return ChildTraversalContext.NONE;
+    private boolean hasChildTraversalsToValidate(final Step<?, ?> step) {
+        return step instanceof HasStep || step instanceof IsStep ||
+                step instanceof AllStep || step instanceof AnyStep || step instanceof NoneStep ||
+                (step instanceof GraphStep && ((GraphStep<?, ?>) step).getIdTraversal() != null) ||
+                step instanceof AddPropertyStepContract;
     }
 
     public static ChildTraversalVerificationStrategy instance() {

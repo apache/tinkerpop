@@ -24,14 +24,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 
 /**
- * Validates child traversals to ensure they do not contain disallowed steps based on the context
- * in which they are used. This utility is shared between construction-time validation (in API methods)
- * and strategy-time validation ({@code ChildTraversalVerificationStrategy}).
- * <p>
- * Validation rules:
- * <ul>
- *   <li><b>FILTER / LOOKUP / MUTATION context:</b> No steps implementing {@link Mutating} are allowed at any nesting depth.</li>
- * </ul>
+ * Validates that child traversals do not contain mutating steps. Child traversals used as
+ * arguments to filter predicates ({@code has()}, {@code is()}, etc.), lookup steps
+ * ({@code V(traversal)}, {@code E(traversal)}), and mutation steps ({@code property(traversal)})
+ * must be read-only — their purpose is to compute values, not produce side effects.
  * <p>
  * Recursion walks both {@link TraversalParent#getLocalChildren()} and
  * {@link TraversalParent#getGlobalChildren()} to detect mutations nested inside
@@ -40,64 +36,27 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 public final class ChildTraversalValidator {
 
     private ChildTraversalValidator() {
-        // static utility
     }
 
     /**
-     * Validates a child traversal used in filter context (has, is, all, any, none, choose predicate).
-     * Throws {@link IllegalArgumentException} if any {@link Mutating} step is found.
+     * Validates that a child traversal contains no {@link Mutating} steps at any nesting depth.
+     * Throws {@link IllegalArgumentException} if one is found.
      */
-    public static void validateFilterContext(final Traversal.Admin<?, ?> child) {
-        validateRecursive(child, ChildTraversalContext.FILTER);
-    }
-
-    /**
-     * Validates a child traversal used in lookup context (V(traversal), E(traversal)).
-     * Throws {@link IllegalArgumentException} if any {@link Mutating} step is found.
-     */
-    public static void validateLookupContext(final Traversal.Admin<?, ?> child) {
-        validateRecursive(child, ChildTraversalContext.LOOKUP);
-    }
-
-    /**
-     * Validates a child traversal used in mutation context (property(traversal)).
-     * Throws {@link IllegalArgumentException} if any {@link Mutating} step is found.
-     */
-    public static void validateMutationContext(final Traversal.Admin<?, ?> child) {
-        validateRecursive(child, ChildTraversalContext.MUTATION);
-    }
-
-    /**
-     * Recursively validates all steps in the child traversal and its nested children.
-     */
-    public static void validateRecursive(final Traversal.Admin<?, ?> child,
-                                  final ChildTraversalContext context) {
+    public static void validate(final Traversal.Admin<?, ?> child) {
         for (final Step<?, ?> step : child.getSteps()) {
-            validateStep(step, context);
+            if (step instanceof Mutating) {
+                throw new IllegalArgumentException(
+                        "Child traversal contains mutating step " +
+                        step.getClass().getSimpleName() + ". Mutating steps are not allowed in child traversals.");
+            }
             if (step instanceof TraversalParent) {
                 for (final Traversal.Admin<?, ?> nested : ((TraversalParent) step).getLocalChildren()) {
-                    validateRecursive(nested, context);
+                    validate(nested);
                 }
                 for (final Traversal.Admin<?, ?> nested : ((TraversalParent) step).getGlobalChildren()) {
-                    validateRecursive(nested, context);
+                    validate(nested);
                 }
             }
-        }
-    }
-
-    private static void validateStep(final Step<?, ?> step, final ChildTraversalContext context) {
-        switch (context) {
-            case FILTER:
-            case LOOKUP:
-            case MUTATION:
-                if (step instanceof Mutating) {
-                    throw new IllegalArgumentException(
-                            "Child traversal in " + context.name().toLowerCase() + " context contains mutating step " +
-                            step.getClass().getSimpleName() + ". Mutating steps are not allowed in this context.");
-                }
-                break;
-            default:
-                break;
         }
     }
 }

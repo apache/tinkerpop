@@ -346,27 +346,26 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         trav.reset();
         trav.addStart(split);
 
-        this.isCollection = false;
-
         try {
-            // All predicates take only the first result — consistent with by(traversal).
-            // For within/without, the first result should be a Collection (e.g., from fold()).
+            // Take first result only — consistent with by(traversal) semantics.
             if (!trav.hasNext()) {
                 this.resolvedEmpty = true;
                 this.literals = Collections.emptyList();
+                this.isCollection = false;
             } else {
                 this.resolvedEmpty = false;
                 final Object firstResult = trav.next();
-                if (this.biPredicate instanceof Contains && firstResult instanceof Collection) {
-                    // The traversal produced a Collection as its first result — use it directly
-                    this.literals = (Collection<V>) firstResult;
-                    this.isCollection = true;
-                } else if (this.biPredicate instanceof Contains) {
-                    // Single non-Collection value for within/without — wrap in a singleton list
-                    this.literals = Collections.singletonList((V) firstResult);
+                if (this.biPredicate instanceof Contains) {
+                    // Contains predicates need a Collection value. If first result is already
+                    // a Collection (e.g., from fold()), use it directly. Otherwise wrap in singleton.
+                    if (firstResult instanceof Collection) {
+                        this.literals = (Collection<V>) firstResult;
+                    } else {
+                        this.literals = Collections.singletonList((V) firstResult);
+                    }
                     this.isCollection = true;
                 } else {
-                    this.literals = Collections.singleton((V) firstResult);
+                    setValue((V) firstResult);
                 }
             }
         } finally {
@@ -391,8 +390,8 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             trav.addStart(split);
 
             try {
-                // Take only the first result from each traversal — consistent with by(traversal).
-                // If the first result is a Collection (from fold()), unpack it into the results.
+                // Take first result only from each traversal.
+                // If the result is a Collection (from fold()), unpack it.
                 if (trav.hasNext()) {
                     final Object firstResult = trav.next();
                     if (firstResult instanceof Collection) {
@@ -407,7 +406,6 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         }
 
         this.resolvedEmpty = allResults.isEmpty();
-
         if (allResults.isEmpty()) {
             this.literals = Collections.emptyList();
             this.isCollection = false;
@@ -730,7 +728,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> eq(final Traversal<?, ?> traversalValue) {
-        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
         return new P(Compare.eq, traversalValue.asAdmin());
     }
 
@@ -740,7 +738,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> neq(final Traversal<?, ?> traversalValue) {
-        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
         return new P(Compare.neq, traversalValue.asAdmin());
     }
 
@@ -750,7 +748,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> lt(final Traversal<?, ?> traversalValue) {
-        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
         return new P(Compare.lt, traversalValue.asAdmin());
     }
 
@@ -760,7 +758,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> lte(final Traversal<?, ?> traversalValue) {
-        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
         return new P(Compare.lte, traversalValue.asAdmin());
     }
 
@@ -770,7 +768,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> gt(final Traversal<?, ?> traversalValue) {
-        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
         return new P(Compare.gt, traversalValue.asAdmin());
     }
 
@@ -780,7 +778,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> gte(final Traversal<?, ?> traversalValue) {
-        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
         return new P(Compare.gte, traversalValue.asAdmin());
     }
 
@@ -790,7 +788,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> within(final Traversal<?, ?> traversalValue) {
-        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
         return new P(Contains.within, traversalValue.asAdmin());
     }
 
@@ -810,7 +808,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             }
         }
         for (final Traversal.Admin<?, ?> tv : traversals) {
-            ChildTraversalValidator.validateFilterContext(tv);
+            ChildTraversalValidator.validate(tv);
         }
         return new P(Contains.within, traversals);
     }
@@ -821,7 +819,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> without(final Traversal<?, ?> traversalValue) {
-        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
         return new P(Contains.without, traversalValue.asAdmin());
     }
 
@@ -841,7 +839,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             }
         }
         for (final Traversal.Admin<?, ?> tv : traversals) {
-            ChildTraversalValidator.validateFilterContext(tv);
+            ChildTraversalValidator.validate(tv);
         }
         return new P(Contains.without, traversals);
     }

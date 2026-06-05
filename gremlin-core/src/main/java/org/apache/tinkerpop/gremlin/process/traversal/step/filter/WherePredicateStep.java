@@ -54,6 +54,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     protected Set<String> keepLabels;
 
     protected TraversalRing<S, ?> traversalRing = new TraversalRing<>();
+    private List<Traversal.Admin<?, ?>> predicateTraversals;
 
     public WherePredicateStep(final Traversal.Admin traversal, final Optional<String> startKey, final P<String> predicate) {
         super(traversal);
@@ -63,8 +64,12 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
         this.predicate = (P) predicate;
         this.selectKeys = new ArrayList<>();
         this.configurePredicates(this.predicate);
-        // Integrate child traversals from the predicate so they participate in cloning/strategy application
-        P.integrateTraversals(this.predicate, this);
+        // Cache and integrate child traversals from the predicate
+        this.predicateTraversals = new ArrayList<>();
+        P.collectTraversals(this.predicate, this.predicateTraversals);
+        for (final Traversal.Admin<?, ?> t : this.predicateTraversals) {
+            this.integrateChild(t);
+        }
     }
 
     private void configurePredicates(final P<Object> predicate) {
@@ -115,35 +120,28 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        // If the predicate has a child traversal, resolve it and test directly against the
-        // current value (or startKey scope value). This bypasses the scope-label mechanism.
-        if (this.predicate.hasTraversal()) {
-            final Object leftValue;
-            if (null == this.startKey) {
-                final TraversalProduct product = TraversalUtil.produce(traverser, this.traversalRing.next());
-                this.traversalRing.reset();
-                if (!product.isProductive()) return false;
-                leftValue = product.get();
-            } else {
-                final TraversalProduct product = TraversalUtil.produce((S) this.getSafeScopeValue(Pop.last, this.startKey, traverser), this.traversalRing.next());
-                this.traversalRing.reset();
-                if (!product.isProductive()) return false;
-                leftValue = product.get();
-            }
-            this.predicate.resolve(traverser);
-            if (this.predicate.isResolvedEmpty()) return false;
-            return this.predicate.test(leftValue);
-        }
-
-        // Standard scope-label path for non-traversal predicates
+        // Resolve the left-hand value (current traverser or startKey scope value)
         final TraversalProduct product = null == this.startKey ?
                 TraversalUtil.produce(traverser, this.traversalRing.next()) :
                 TraversalUtil.produce((S) this.getSafeScopeValue(Pop.last, this.startKey, traverser), this.traversalRing.next());
 
-        final boolean predicateValuesProductive = this.setPredicateValues(this.predicate, traverser, this.selectKeys.iterator());
-        this.traversalRing.reset();
+        if (!product.isProductive()) {
+            this.traversalRing.reset();
+            return false;
+        }
 
-        return product.isProductive() && predicateValuesProductive && this.predicate.test(product.get());
+        if (this.predicate.hasTraversal()) {
+            // Traversal-bearing predicate: resolve the child traversal, then test
+            this.traversalRing.reset();
+            this.predicate.resolve(traverser);
+            if (this.predicate.isResolvedEmpty()) return false;
+            return this.predicate.test(product.get());
+        } else {
+            // Standard scope-label path: resolve predicate values from path labels
+            final boolean predicateValuesProductive = this.setPredicateValues(this.predicate, traverser, this.selectKeys.iterator());
+            this.traversalRing.reset();
+            return predicateValuesProductive && this.predicate.test(product.get());
+        }
     }
 
     @Override
@@ -190,11 +188,11 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
 
     @Override
     public List<Traversal.Admin<S, ?>> getLocalChildren() {
+        if (this.predicateTraversals.isEmpty()) {
+            return (List) this.traversalRing.getTraversals();
+        }
         final List<Traversal.Admin<S, ?>> children = new ArrayList<>((List) this.traversalRing.getTraversals());
-        // Also expose predicate child traversals for strategy application and cloning
-        final List<Traversal.Admin<?, ?>> predicateTraversals = new ArrayList<>();
-        P.collectTraversals(this.predicate, predicateTraversals);
-        children.addAll((List) predicateTraversals);
+        children.addAll((List) this.predicateTraversals);
         return children;
     }
 
