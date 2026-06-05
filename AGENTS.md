@@ -242,3 +242,9 @@ If AGENTS.md does not clearly cover a situation:
 
 This file is intended to help tools act like a careful, well‑informed contributor. When in doubt, defer to human 
 judgment and the canonical project documentation.
+
+## Security
+
+For Apache TinkerPop's threat model — trust boundaries, in-scope / out-of-scope, the security properties
+the project does and does not provide, and known non-findings — see [SECURITY.md](SECURITY.md), which
+points to [THREAT_MODEL.md](THREAT_MODEL.md). Consult it before triaging or reporting security issues.
