@@ -22,6 +22,8 @@ import { OptionsStrategy, TraversalStrategy } from './traversal-strategy.js';
 import { Long, Int, Float, Double, Short, Byte, INT32_MIN, INT32_MAX } from '../utils.js';
 import { Vertex, ProviderDefinedType } from '../structure/graph.js';
 import { ProviderDefinedTypeRegistry } from '../structure/ProviderDefinedTypeRegistry.js';
+import { GValue } from './gvalue.js';
+import { isDeepStrictEqual } from 'node:util';
 import { Buffer } from 'buffer';
 
 export default class GremlinLang {
@@ -119,6 +121,17 @@ export default class GremlinLang {
       // Strip the outer double quotes and re-wrap in single quotes for Gremlin.
       const escaped = JSON.stringify(arg).slice(1, -1).replace(/'/g, "\\'");
       return `'${escaped}'`;
+    }
+    if (arg instanceof GValue) {
+      const key = arg.name;
+      if (this.parameters.has(key)) {
+        if (!isDeepStrictEqual(this.parameters.get(key), arg.value)) {
+          throw new Error(`Parameter with name ${key} already exists.`);
+        }
+      } else {
+        this.parameters.set(key, arg.value);
+      }
+      return key;
     }
     if (arg instanceof P || arg instanceof TextP) {
       return this._predicateAsString(arg);
