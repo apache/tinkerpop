@@ -112,6 +112,11 @@ func TestGValue(t *testing.T) {
 		assert.NotPanics(t, func() { NewGValue("for", 1) })
 	})
 
+	t.Run("test nested GValue rejected", func(t *testing.T) {
+		assert.Panics(t, func() { NewGValue("x", NewGValue("y", 1)) },
+			"GValues cannot be nested")
+	})
+
 	t.Run("test distinct but equal slices allowed under same name", func(t *testing.T) {
 		g := NewGraphTraversalSource(nil, nil)
 		param1 := NewGValue("ids", []int{1, 2, 3})

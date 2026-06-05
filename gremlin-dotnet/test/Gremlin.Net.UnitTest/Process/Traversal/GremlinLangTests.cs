@@ -977,6 +977,12 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         }
 
         [Fact]
+        public void GValue_nested_throws_ArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() => new GValue<object>("x", new GValue<int>("y", 1)));
+        }
+
+        [Fact]
         public void GValue_duplicate_name_different_value_throws_ArgumentException()
         {
             var gval1 = new GValue<int>("x", 1);

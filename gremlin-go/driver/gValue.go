@@ -34,6 +34,9 @@ type GValue struct {
 // NewGValue creates a new GValue to be used in traversals. The name must be non-empty, start with a
 // Unicode letter, and contain only Unicode letters, digits, or '_'. It cannot begin with "_".
 func NewGValue(name string, value interface{}) GValue {
+	if _, ok := value.(GValue); ok {
+		panic("GValues cannot be nested")
+	}
 	runes := []rune(name)
 	if len(runes) > 0 && runes[0] == '_' {
 		panic(fmt.Sprintf("invalid GValue name '%v'. Should not start with _.", name))
