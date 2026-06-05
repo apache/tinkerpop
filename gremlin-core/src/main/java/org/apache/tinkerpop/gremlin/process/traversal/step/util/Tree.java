@@ -57,10 +57,10 @@ public final class Tree<T> implements Serializable {
     // ------------------------------------------------------------------
 
     /**
-     * Returns the set of keys at the root of this tree.
+     * Returns the set of keys at the root of this tree. The returned set is unmodifiable.
      */
     public Set<T> rootNodes() {
-        return this.children.keySet();
+        return Collections.unmodifiableSet(this.children.keySet());
     }
 
     /**
