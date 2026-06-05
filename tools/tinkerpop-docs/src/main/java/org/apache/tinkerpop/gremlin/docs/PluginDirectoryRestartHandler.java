@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.docs;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -74,21 +73,49 @@ final class PluginDirectoryRestartHandler implements ConsoleRestartHandler {
 
     private void disable(final String plugin) throws IOException {
         final Path active = extDir.resolve(plugin);
+        final Path disabled = disabledDir.resolve(plugin);
         if (Files.isDirectory(active)) {
+            // The active copy is authoritative. Clear any stale disabled copy left by an
+            // interrupted run before moving, since Files.move(REPLACE_EXISTING) cannot replace
+            // a non-empty directory.
             Files.createDirectories(disabledDir);
-            Files.move(active, disabledDir.resolve(plugin), StandardCopyOption.REPLACE_EXISTING);
+            deleteRecursively(disabled);
+            Files.move(active, disabled);
             LOG.info("Excluded plugin: " + plugin);
         }
         setPluginEnabled(TOGGLEABLE.get(plugin), false);
     }
 
     private void enable(final String plugin) throws IOException {
+        final Path active = extDir.resolve(plugin);
         final Path disabled = disabledDir.resolve(plugin);
         if (Files.isDirectory(disabled)) {
-            Files.move(disabled, extDir.resolve(plugin), StandardCopyOption.REPLACE_EXISTING);
-            LOG.info("Restored plugin: " + plugin);
+            if (Files.isDirectory(active)) {
+                // Plugin is already present in ext/ (e.g. freshly installed); the active copy
+                // wins. Just drop the leftover disabled duplicate.
+                deleteRecursively(disabled);
+            } else {
+                Files.move(disabled, active);
+                LOG.info("Restored plugin: " + plugin);
+            }
         }
         setPluginEnabled(TOGGLEABLE.get(plugin), true);
+    }
+
+    /** Recursively deletes a directory tree if it exists; a no-op otherwise. */
+    private static void deleteRecursively(final Path path) throws IOException {
+        if (!Files.exists(path)) return;
+        try (java.util.stream.Stream<Path> walk = Files.walk(path)) {
+            walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
+                try {
+                    Files.delete(p);
+                } catch (final IOException e) {
+                    throw new java.io.UncheckedIOException(e);
+                }
+            });
+        } catch (final java.io.UncheckedIOException e) {
+            throw e.getCause();
+        }
     }
 
     /** Adds or removes a single activation class line in ext/plugins.txt, preserving the rest. */
