@@ -27,6 +27,7 @@ import * as strategiesModule from './process/traversal-strategy.js';
 import * as graph from './structure/graph.js';
 import * as rc from './driver/remote-connection.js';
 import GremlinLang from './process/gremlin-lang.js';
+import { GValue } from './process/gvalue.js';
 import * as utils from './utils.js';
 import DriverRemoteConnection from './driver/driver-remote-connection.js';
 import ResponseError from './driver/response-error.js';
@@ -74,6 +75,7 @@ export const process = {
   GraphTraversalSource: gt.GraphTraversalSource,
   statics: gt.statics,
   GremlinLang,
+  GValue,
   traversal: AnonymousTraversalSource.traversal,
   AnonymousTraversalSource,
   withOptions: t.withOptions,

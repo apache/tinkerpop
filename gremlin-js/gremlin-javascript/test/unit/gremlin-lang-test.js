@@ -29,6 +29,7 @@ import { Graph, Vertex } from '../../lib/structure/graph.js';
 import { TraversalStrategies } from '../../lib/process/traversal-strategy.js';
 import { Long, toFloat, toDouble, toShort, toByte, toInt, toLong } from '../../lib/utils.js';
 import GremlinLang from '../../lib/process/gremlin-lang.js';
+import { GValue } from '../../lib/process/gvalue.js';
 
 const g = new GraphTraversalSource(new Graph(), new TraversalStrategies());
 
@@ -624,6 +625,95 @@ describe('GremlinLang', function () {
       assert.ok(result.endsWith(']'));
       assert.ok(result.includes("'x':1"));
       assert.ok(result.includes("'name':'marko'"));
+    });
+  });
+
+  describe('GValue', function () {
+    it('should construct with name and value accessors', function () {
+      const gv = new GValue('myName', 42);
+      assert.strictEqual(gv.name, 'myName');
+      assert.strictEqual(gv.value, 42);
+    });
+
+    it('should return true for isNull() with null value', function () {
+      assert.strictEqual(new GValue('x', null).isNull(), true);
+    });
+
+    it('should return true for isNull() with undefined value', function () {
+      assert.strictEqual(new GValue('x', undefined).isNull(), true);
+    });
+
+    it('should return false for isNull() with non-null value', function () {
+      assert.strictEqual(new GValue('x', 0).isNull(), false);
+    });
+
+    it('should reject empty name', function () {
+      assert.throws(() => new GValue('', 1), /Invalid GValue name/);
+    });
+
+    it('should reject name with $ character', function () {
+      assert.throws(() => new GValue('a$b', 1), /Invalid GValue name/);
+    });
+
+    it('should reject name starting with underscore', function () {
+      assert.throws(() => new GValue('_x', 1), /Invalid GValue name/);
+    });
+
+    it('should reject numeric name', function () {
+      assert.throws(() => new GValue('1', 1), /Invalid GValue name/);
+    });
+
+    it('should reject name starting with digit', function () {
+      assert.throws(() => new GValue('1a', 1), /Invalid GValue name/);
+    });
+
+    it('should accept name with mid-string underscore', function () {
+      const gv = new GValue('a_b', 1);
+      assert.strictEqual(gv.name, 'a_b');
+    });
+
+    it('should accept Unicode letter name', function () {
+      const gv = new GValue('café', 1);
+      assert.strictEqual(gv.name, 'café');
+    });
+
+    it('should accept language keyword as name', function () {
+      const gv = new GValue('for', 1);
+      assert.strictEqual(gv.name, 'for');
+    });
+
+    it('should reject nested GValue', function () {
+      assert.throws(() => new GValue('x', new GValue('y', 1)), /GValues cannot be nested/);
+    });
+
+    it('should return name=value from toString()', function () {
+      const gv = new GValue('ids', 'hello');
+      assert.strictEqual(gv.toString(), 'ids=hello');
+    });
+
+    it('should render name in gremlin string and store value in parameters', function () {
+      const traversal = g.V(new GValue('ids', [1, 2, 3]));
+      const gl = traversal.getGremlinLang();
+      assert.strictEqual(gl.getGremlin(), 'g.V(ids)');
+      assert.deepStrictEqual(gl.getParameters().get('ids'), [1, 2, 3]);
+    });
+
+    it('should throw when duplicate name has different value', function () {
+      assert.throws(() => {
+        g.V(new GValue('x', 1)).has('name', new GValue('x', 2));
+      }, /Parameter with name x already exists/);
+    });
+
+    it('should allow reuse of same name with equal value', function () {
+      const traversal = g.V(new GValue('ids', [1, 2, 3])).has('name', new GValue('ids', [1, 2, 3]));
+      const gl = traversal.getGremlinLang();
+      assert.strictEqual(gl.getGremlin(), "g.V(ids).has('name',ids)");
+      assert.deepStrictEqual(gl.getParameters().get('ids'), [1, 2, 3]);
+    });
+
+    it('should reject non-string name', function () {
+      assert.throws(() => new GValue(123, 'v'), /Invalid GValue name/);
+      assert.throws(() => new GValue(null, 'v'), /Invalid GValue name/);
     });
   });
 });

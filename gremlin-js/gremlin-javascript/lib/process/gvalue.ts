@@ -1,0 +1,47 @@
+/*
+ *  Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
+
+const NAME_PATTERN = /^[\p{L}][\p{L}\p{Nd}_]*$/u;
+
+export class GValue<T = any> {
+  readonly name: string;
+  readonly value: T;
+
+  constructor(name: string, value: T) {
+    if (typeof name !== 'string' || name.length === 0) {
+      throw new Error(`Invalid GValue name: '${name}' - must be a non-empty string`);
+    }
+    if (!NAME_PATTERN.test(name)) {
+      throw new Error(`Invalid GValue name: '${name}' - must start with a Unicode letter followed by letters, digits, or underscores`);
+    }
+    if (value instanceof GValue) {
+      throw new Error('GValues cannot be nested');
+    }
+    this.name = name;
+    this.value = value;
+  }
+
+  isNull(): boolean {
+    return this.value == null;
+  }
+
+  toString(): string {
+    return `${this.name}=${this.value}`;
+  }
+}
