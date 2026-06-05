@@ -299,6 +299,11 @@ public class Settings {
     public AuthorizationSettings authorization = new AuthorizationSettings();
 
     /**
+     * Configures CORS (Cross-Origin Resource Sharing) for the HTTP endpoint.
+     */
+    public CorsSettings cors = new CorsSettings();
+
+    /**
      * Enable audit logging of authenticated users and gremlin evaluation requests.
      */
     public Boolean enableAuditLog = false;
@@ -555,6 +560,17 @@ public class Settings {
          * {@link Authorizer} implementation for specifics on what configurations are expected.
          */
         public Map<String, Object> config = null;
+    }
+
+    /**
+     * Settings to configure CORS (Cross-Origin Resource Sharing) for the HTTP endpoint.
+     */
+    public static class CorsSettings {
+        /**
+         * List of allowed origins. Defaults to {@code ["*"]} which permits any origin.
+         * Set to specific origins (e.g. {@code ["https://myapp.com"]}) to restrict access.
+         */
+        public List<String> allowedOrigins = new ArrayList<>(Collections.singletonList("*"));
     }
 
     /**

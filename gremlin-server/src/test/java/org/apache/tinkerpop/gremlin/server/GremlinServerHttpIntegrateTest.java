@@ -142,6 +142,10 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
                 settings.evaluationTimeout = 5000;
                 settings.gremlinPool = 1;
                 break;
+            case "shouldRespectCorsAllowedOrigins":
+            case "shouldRejectDisallowedCorsOrigin":
+                settings.cors.allowedOrigins = java.util.Arrays.asList("https://allowed.gremlinexample.com");
+                break;
             case "should200OnPOSTWithChunkedResponse":
             case "shouldHandleErrorsInFirstChunkPOSTWithChunkedResponse":
             case "shouldHandleErrorsInFirstChunkPOSTWithChunkedResponseUsingTextPlain":
@@ -1342,6 +1346,36 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertNull(node.get("result").get(TOKEN_DATA).get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.PROPERTIES));
+        }
+    }
+
+    @Test
+    public void shouldRespectCorsAllowedOrigins() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.addHeader("Origin", "https://allowed.gremlinexample.com");
+        httppost.setEntity(new StringEntity("{\"gremlin\": \"g.inject(1)\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            final Header corsHeader = response.getFirstHeader("Access-Control-Allow-Origin");
+            assertNotNull(corsHeader);
+            assertEquals("https://allowed.gremlinexample.com", corsHeader.getValue());
+        }
+    }
+
+    @Test
+    public void shouldRejectDisallowedCorsOrigin() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.addHeader("Origin", "https://notallowed.gremlinexample.com");
+        httppost.setEntity(new StringEntity("{\"gremlin\": \"g.inject(1)\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            final Header corsHeader = response.getFirstHeader("Access-Control-Allow-Origin");
+            assertNull(corsHeader);
         }
     }
 

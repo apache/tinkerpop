@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server.channel;
 
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpServerKeepAliveHandler;
+import io.netty.handler.codec.http.cors.CorsConfig;
 import io.netty.handler.codec.http.cors.CorsConfigBuilder;
 import io.netty.handler.codec.http.cors.CorsHandler;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
@@ -44,6 +45,8 @@ import io.netty.handler.logging.LoggingHandler;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * Constructs a {@link Channelizer} that exposes an HTTP endpoint in Gremlin Server.
@@ -78,7 +81,7 @@ public class HttpChannelizer extends AbstractChannelizer {
 
         pipeline.addLast("http-requestid-handler", httpRequestIdHandler);
         pipeline.addLast("http-keepalive-handler", new HttpServerKeepAliveHandler());
-        pipeline.addLast("http-cors-handler", new CorsHandler(CorsConfigBuilder.forAnyOrigin().build()));
+        pipeline.addLast("http-cors-handler", new CorsHandler(buildCorsConfig()));
 
         final HttpObjectAggregator aggregator = new HttpObjectAggregator(settings.maxRequestContentLength);
         aggregator.setMaxCumulationBufferComponents(settings.maxAccumulationBufferComponents);
@@ -118,5 +121,21 @@ public class HttpChannelizer extends AbstractChannelizer {
         } else {
             return createAuthenticationHandler(settings);
         }
+    }
+
+    private CorsConfig buildCorsConfig() {
+        final List<String> allowedOrigins = settings.cors.allowedOrigins;
+        final boolean isWildcard = allowedOrigins.size() == 1 && allowedOrigins.get(0).equals("*");
+
+        if (isWildcard) {
+            final boolean hasRealAuth = !AllowAllAuthenticator.class.getName().equals(settings.authentication.authenticator);
+            if (hasRealAuth) {
+                logger.warn("CORS is configured to allow any origin while authentication is enabled. " +
+                        "Consider setting cors.allowedOrigins to specific origins for browser-facing deployments.");
+            }
+            return CorsConfigBuilder.forAnyOrigin().build();
+        }
+
+        return CorsConfigBuilder.forOrigins(allowedOrigins.toArray(new String[0])).build();
     }
 }
