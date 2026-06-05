@@ -70,6 +70,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         /// <summary>
         /// write() is not supported yet for testing
         /// </summary>
-        WriteStepTestingNotSupported
+        WriteStepTestingNotSupported,
+
+        /// <summary>
+        /// Multi-label steps (labels(), addLabel(), dropLabel(), dropLabels()) are not yet available in the .NET GLV
+        /// </summary>
+        MultiLabelStepsNotSupported
     }
 }
