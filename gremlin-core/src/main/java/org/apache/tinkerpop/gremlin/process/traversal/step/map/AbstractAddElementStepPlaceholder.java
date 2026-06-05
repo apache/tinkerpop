@@ -61,7 +61,7 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     protected AbstractAddElementStepPlaceholder(final Traversal.Admin traversal, final GValue<String> label) {
         super(traversal);
         this.label = label == null ? this.getDefaultLabel() : label;
-        if (label.isVariable()) {
+        if (label != null && label.isVariable()) {
             traversal.getGValueManager().register(label);
         }
     }
@@ -73,6 +73,11 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
             traversal.getGValueManager().register(((GValueConstantTraversal<S, String>) labelTraversal).getGValue());
         }
         addTraversal(labelTraversal);
+    }
+
+    protected AbstractAddElementStepPlaceholder(final Traversal.Admin traversal, final Set<String> labels) {
+        super(traversal);
+        this.label = (labels == null || labels.isEmpty()) ? this.getDefaultLabel() : labels;
     }
 
     protected abstract String getDefaultLabel();

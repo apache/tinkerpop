@@ -30,8 +30,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents an {@link Edge} that is disconnected from a {@link Graph}.  "Disconnection" can mean detachment from
@@ -51,6 +53,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
 
     private DetachedVertex outVertex;
     private DetachedVertex inVertex;
+    private Set<String> edgeLabels;
 
     private DetachedEdge() {}
 
@@ -58,6 +61,12 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
         super(edge);
         this.outVertex = DetachedFactory.detach(edge.outVertex(), false);
         this.inVertex = DetachedFactory.detach(edge.inVertex(), false);
+
+        // Capture all labels from the source edge for multi-label support.
+        final Set<String> srcLabels = edge.labels();
+        if (srcLabels.size() > 1) {
+            this.edgeLabels = new LinkedHashSet<>(srcLabels);
+        }
 
         // only serialize properties if requested, the graph supports it and there are meta properties present.
         // this prevents unnecessary object creation of a new HashMap of a new HashMap which will just be empty.
@@ -111,6 +120,23 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
     @Override
     public String toString() {
         return StringFactory.edgeString(this);
+    }
+
+    @Override
+    public Set<String> labels() {
+        if (this.edgeLabels != null) {
+            return Collections.unmodifiableSet(this.edgeLabels);
+        }
+        // Fall back to single label from parent
+        return this.label != null ? Collections.singleton(this.label) : Collections.emptySet();
+    }
+
+    @Override
+    public String label() {
+        if (this.edgeLabels != null && !this.edgeLabels.isEmpty()) {
+            return this.edgeLabels.iterator().next();
+        }
+        return this.label != null ? this.label : Edge.DEFAULT_LABEL;
     }
 
     @Override
@@ -177,6 +203,14 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
 
         public Builder setLabel(final String label) {
             e.label = label;
+            return this;
+        }
+
+        public Builder setLabels(final Set<String> labels) {
+            e.edgeLabels = labels != null ? new LinkedHashSet<>(labels) : null;
+            if (labels != null && !labels.isEmpty()) {
+                e.label = labels.iterator().next();
+            }
             return this;
         }
 

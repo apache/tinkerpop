@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 
+import java.util.Set;
+
 public class AddVertexStepPlaceholder<S> extends AbstractAddVertexStepPlaceholder<S> {
 
     public AddVertexStepPlaceholder(Traversal.Admin traversal, String label) {
@@ -36,10 +38,16 @@ public class AddVertexStepPlaceholder<S> extends AbstractAddVertexStepPlaceholde
         super(traversal, vertexLabelTraversal);
     }
 
+    public AddVertexStepPlaceholder(Traversal.Admin traversal, Set<String> labels) {
+        super(traversal, labels);
+    }
+
     @Override
     public AddVertexStep<S> asConcreteStep() {
         AddVertexStep<S> step;
-        if (label instanceof Traversal) {
+        if (label instanceof Set) {
+            step = new AddVertexStep<>(traversal, (Set<String>) label);
+        } else if (label instanceof Traversal) {
             step = new AddVertexStep<>(traversal, ((Traversal<S, String>) label).asAdmin());
         } else if (label instanceof GValue) {
             step = new AddVertexStep<>(traversal, ((GValue<String>) label).get());

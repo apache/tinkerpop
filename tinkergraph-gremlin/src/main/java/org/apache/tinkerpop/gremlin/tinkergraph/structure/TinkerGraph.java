@@ -303,6 +303,36 @@ public class TinkerGraph extends AbstractTinkerGraph {
         edges.add(edge);
     }
 
+    @Override
+    public void addEdgeToAdjacency(final TinkerEdge edge, final String label) {
+        final TinkerVertex outV = (TinkerVertex) edge.outVertex();
+        final TinkerVertex inV = (TinkerVertex) edge.inVertex();
+        if (null == outV.outEdges) outV.outEdges = new HashMap<>();
+        outV.outEdges.computeIfAbsent(label, k -> new HashSet<>()).add(edge);
+        if (null == inV.inEdges) inV.inEdges = new HashMap<>();
+        inV.inEdges.computeIfAbsent(label, k -> new HashSet<>()).add(edge);
+    }
+
+    @Override
+    public void removeEdgeFromAdjacency(final TinkerEdge edge, final String label) {
+        final TinkerVertex outV = (TinkerVertex) edge.outVertex();
+        final TinkerVertex inV = (TinkerVertex) edge.inVertex();
+        if (outV.outEdges != null) {
+            final Set<Edge> edges = outV.outEdges.get(label);
+            if (edges != null) {
+                edges.remove(edge);
+                if (edges.isEmpty()) outV.outEdges.remove(label);
+            }
+        }
+        if (inV.inEdges != null) {
+            final Set<Edge> edges = inV.inEdges.get(label);
+            if (edges != null) {
+                edges.remove(edge);
+                if (edges.isEmpty()) inV.inEdges.remove(label);
+            }
+        }
+    }
+
     /**
      * Return TinkerGraph feature set.
      * <p/>

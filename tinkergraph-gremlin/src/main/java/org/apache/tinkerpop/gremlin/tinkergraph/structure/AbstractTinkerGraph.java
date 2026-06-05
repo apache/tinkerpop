@@ -293,6 +293,26 @@ public abstract class AbstractTinkerGraph implements Graph {
     protected abstract void addInEdge(final TinkerVertex vertex, final String label, final Edge edge);
 
     /**
+     * Add an edge to the per-vertex adjacency maps under the given label.
+     * Used when labels are added to an existing edge.
+     *
+     * @param edge  the edge to register
+     * @param label the label under which to register the edge
+     * @since 4.0.0
+     */
+    public abstract void addEdgeToAdjacency(final TinkerEdge edge, final String label);
+
+    /**
+     * Remove an edge from the per-vertex adjacency maps for the given label.
+     * Used when labels are removed from an existing edge.
+     *
+     * @param edge  the edge to unregister
+     * @param label the label from which to unregister the edge
+     * @since 4.0.0
+     */
+    public abstract void removeEdgeFromAdjacency(final TinkerEdge edge, final String label);
+
+    /**
      * Called when a vertex's labels are modified to allow the graph to update any internal label indices.
      * The default implementation is a no-op since TinkerGraph does not maintain a separate label index.
      *

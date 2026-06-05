@@ -19,7 +19,10 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,6 +68,15 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge> implements AddEdg
     public AddEdgeStartStep(final Traversal.Admin traversal, final Traversal<?, String> edgeLabelTraversal) {
         super(traversal);
         this.internalParameters.set(this, T.label, edgeLabelTraversal);
+    }
+
+    public AddEdgeStartStep(final Traversal.Admin traversal, final Set<String> labels) {
+        super(traversal);
+        if (labels == null || labels.isEmpty()) {
+            this.internalParameters.set(this, T.label, Edge.DEFAULT_LABEL);
+        } else {
+            this.internalParameters.set(this, T.label, labels);
+        }
     }
 
     @Override
@@ -121,7 +133,21 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge> implements AddEdg
             // a dead traverser to trigger the traversal
             final Traverser.Admin traverser = generator.generate(1, (Step) this, 1);
 
-            final String edgeLabel = (String) this.internalParameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
+            final Object labelParam = this.internalParameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
+            final String edgeLabel;
+            final Set<String> additionalLabels;
+            if (labelParam instanceof Set) {
+                final Set<String> labelSet = (Set<String>) labelParam;
+                final Iterator<String> iter = labelSet.iterator();
+                edgeLabel = iter.next();
+                additionalLabels = new LinkedHashSet<>();
+                while (iter.hasNext()) {
+                    additionalLabels.add(iter.next());
+                }
+            } else {
+                edgeLabel = (String) labelParam;
+                additionalLabels = Collections.emptySet();
+            }
 
             // FROM/TO must be set and must be vertices
             Object theTo = this.internalParameters.get(traverser, TO, () -> null).get(0);
@@ -165,6 +191,10 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge> implements AddEdg
             }
 
             final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.internalParameters.getKeyValues(traverser, TO, FROM, T.label));
+            if (!additionalLabels.isEmpty()) {
+                final String[] extra = additionalLabels.toArray(new String[0]);
+                edge.addLabel(extra[0], Arrays.copyOfRange(extra, 1, extra.length));
+            }
             EventUtil.registerEdgeCreation(callbackRegistry, getTraversal(), edge);
             return generator.generate(edge, this, 1L);
         } else

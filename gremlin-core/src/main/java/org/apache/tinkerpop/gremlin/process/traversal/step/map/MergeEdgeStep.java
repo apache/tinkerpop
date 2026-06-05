@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -166,17 +167,21 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Map<Object, Obje
         final Graph graph = getGraph();
 
         final Object edgeId = search.get(T.id);
-        final String edgeLabel = (String) search.get(T.label);
+        final Object labelValue = search.get(T.label);
         final Object fromId = search.get(Direction.OUT);
         final Object toId = search.get(Direction.IN);
+
+        // Extract a single label string for use in outE(label)/inE(label) calls.
+        // For multi-label (collection), we use hasLabel() chaining instead.
+        final String singleLabel = labelValue instanceof String ? (String) labelValue : null;
+        final boolean hasLabelConstraint = labelValue != null;
 
         GraphTraversal t;
         if (edgeId != null) {
 
             // g.E(eid).hasLabel(label).where(outV().hasId(fromId)).where(inV().hasId(toId));
             t = graph.traversal().E(edgeId);
-            if (edgeLabel != null)
-                t = t.hasLabel(edgeLabel);
+            t = applyLabelConstraint(t, labelValue);
             if (fromId != null)
                 t = t.where(outV().hasId(fromId));
             if (toId != null)
@@ -186,10 +191,14 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Map<Object, Obje
 
             // g.V(fromId).outE(label).where(inV().hasId(toId));
             t = graph.traversal().V(fromId);
-            if (edgeLabel != null)
-                t = t.outE(edgeLabel);
-            else
+            if (singleLabel != null)
+                t = t.outE(singleLabel);
+            else {
                 t = t.outE();
+                // apply multi-label constraint after outE() if it's a collection
+                if (hasLabelConstraint && singleLabel == null)
+                    t = applyLabelConstraint(t, labelValue);
+            }
             if (toId != null)
                 t = t.where(inV().hasId(toId));
 
@@ -197,17 +206,20 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Map<Object, Obje
 
             // g.V(toId).inE(edgeLabel);
             t = graph.traversal().V(toId);
-            if (edgeLabel != null)
-                t = t.inE(edgeLabel);
-            else
+            if (singleLabel != null)
+                t = t.inE(singleLabel);
+            else {
                 t = t.inE();
+                // apply multi-label constraint after inE() if it's a collection
+                if (hasLabelConstraint && singleLabel == null)
+                    t = applyLabelConstraint(t, labelValue);
+            }
 
         } else {
 
             // g.E().hasLabel(label)
             t = graph.traversal().E();
-            if (edgeLabel != null)
-                t = t.hasLabel(edgeLabel);
+            t = applyLabelConstraint(t, labelValue);
 
         }
 
@@ -220,6 +232,26 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Map<Object, Obje
 
         // this should auto-close the underlying traversal
         return CloseableIterator.of(t);
+    }
+
+    /**
+     * Apply label constraint(s) to the traversal. Supports both single String labels and
+     * Collection labels with AND semantics (edge must have ALL specified labels).
+     */
+    protected GraphTraversal applyLabelConstraint(GraphTraversal t, final Object labelValue) {
+        if (labelValue == null) {
+            return t;
+        }
+        if (labelValue instanceof String) {
+            return t.hasLabel((String) labelValue);
+        } else if (labelValue instanceof java.util.Collection) {
+            // Multi-label: AND semantics - must have ALL specified labels
+            for (final Object label : (java.util.Collection<?>) labelValue) {
+                t = t.hasLabel((String) label);
+            }
+            return t;
+        }
+        return t;
     }
 
     protected Map<?,?> resolveVertices(final Map map, final Traverser.Admin<S> traverser) {
@@ -279,14 +311,34 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Map<Object, Obje
                 traverser.set((S) e);
 
                 // assume good input from GraphTraversal - folks might drop in a T here even though it is immutable
-                final Map<String, ?> onMatchMap = materializeMap(traverser, onMatchTraversal);
+                final Map onMatchMap = materializeMap(traverser, onMatchTraversal);
                 validateMapInput(onMatchMap, true);
 
                 onMatchMap.forEach((key, value) -> {
+                    // Handle T.label replacement for multi-label support
+                    if (T.label.equals(key) || T.label.getAccessor().equals(key)) {
+                        // Drop all existing labels and replace with new ones
+                        e.dropLabels();
+                        if (value instanceof String) {
+                            e.addLabel((String) value);
+                        } else if (value instanceof java.util.Collection) {
+                            final java.util.Collection<?> labels = (java.util.Collection<?>) value;
+                            if (!labels.isEmpty()) {
+                                final String[] labelArray = labels.stream()
+                                        .map(l -> (String) l)
+                                        .toArray(String[]::new);
+                                e.addLabel(labelArray[0],
+                                        Arrays.copyOfRange(labelArray, 1, labelArray.length));
+                            }
+                            // Empty collection = use default label behavior (already handled by dropLabels())
+                        }
+                        return;
+                    }
+
                     // trigger callbacks for eventing - in this case, it's a EdgePropertyChangedEvent. if there's no
                     // registry/callbacks then just set the property
-                    EventUtil.registerEdgePropertyChange(callbackRegistry, getTraversal(), e, key, value);
-                    e.property(key, value);
+                    EventUtil.registerEdgePropertyChange(callbackRegistry, getTraversal(), e, (String) key, value);
+                    e.property((String) key, value);
                 });
 
             });
@@ -317,7 +369,30 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Map<Object, Obje
 
         final Vertex fromV = resolveVertex(onCreateMap.get(Direction.OUT));
         final Vertex toV = resolveVertex(onCreateMap.get(Direction.IN));
-        final String label = (String) onCreateMap.getOrDefault(T.label, Edge.DEFAULT_LABEL);
+        final Object labelValue = onCreateMap.getOrDefault(T.label, Edge.DEFAULT_LABEL);
+        final String primaryLabel;
+        final java.util.Collection<String> additionalLabels;
+
+        if (labelValue instanceof String) {
+            primaryLabel = (String) labelValue;
+            additionalLabels = Collections.emptyList();
+        } else if (labelValue instanceof java.util.Collection) {
+            final java.util.Collection<?> labelCollection = (java.util.Collection<?>) labelValue;
+            if (labelCollection.isEmpty()) {
+                primaryLabel = Edge.DEFAULT_LABEL;
+                additionalLabels = Collections.emptyList();
+            } else {
+                final Iterator<?> iter = labelCollection.iterator();
+                primaryLabel = (String) iter.next();
+                additionalLabels = new ArrayList<>();
+                while (iter.hasNext()) {
+                    additionalLabels.add((String) iter.next());
+                }
+            }
+        } else {
+            primaryLabel = Edge.DEFAULT_LABEL;
+            additionalLabels = Collections.emptyList();
+        }
 
         final List<Object> properties = new ArrayList<>();
 
@@ -329,7 +404,13 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Map<Object, Obje
             properties.add(e.getValue());
         }
 
-        final Edge edge = fromV.addEdge(label, toV, properties.toArray());
+        final Edge edge = fromV.addEdge(primaryLabel, toV, properties.toArray());
+
+        // add any additional labels from a multi-label collection
+        if (!additionalLabels.isEmpty()) {
+            final String[] extraLabels = additionalLabels.toArray(new String[0]);
+            edge.addLabel(extraLabels[0], Arrays.copyOfRange(extraLabels, 1, extraLabels.length));
+        }
 
         // trigger callbacks for eventing - in this case, it's a VertexAddedEvent
         EventUtil.registerEdgeCreationWithGenericEventRegistry(callbackRegistry, getTraversal(), edge);

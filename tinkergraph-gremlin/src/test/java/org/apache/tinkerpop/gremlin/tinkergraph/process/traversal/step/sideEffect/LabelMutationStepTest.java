@@ -78,12 +78,14 @@ public class LabelMutationStepTest {
         assertThat(v.labels(), containsInAnyOrder("person", "manager"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void shouldThrowWhenAddingLabelToEdgeViaTraversal() {
+    @Test
+    public void shouldAddLabelToEdgeViaTraversal() {
         final Vertex v1 = g.addV("person").next();
         final Vertex v2 = g.addV("person").next();
-        v1.addEdge("knows", v2);
+        final Edge e = v1.addEdge("knows", v2);
         g.E().addLabel("friend").iterate();
+        assertThat(e.labels(), hasSize(2));
+        assertThat(e.labels(), containsInAnyOrder("knows", "friend"));
     }
 
     // --- dropLabel step tests ---
@@ -112,12 +114,14 @@ public class LabelMutationStepTest {
         assertThat(v.labels(), containsInAnyOrder("employee"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void shouldThrowWhenDroppingLabelsOnEdgeViaTraversal() {
+    @Test
+    public void shouldDropLabelsOnEdgeViaTraversal() {
         final Vertex v1 = g.addV("person").next();
         final Vertex v2 = g.addV("person").next();
-        v1.addEdge("knows", v2);
+        final Edge e = v1.addEdge("knows", v2);
         g.E().dropLabels().iterate();
+        assertThat(e.labels(), hasSize(1));
+        assertThat(e.labels(), containsInAnyOrder(Edge.DEFAULT_LABEL));
     }
 
     // --- addV multi-label tests ---

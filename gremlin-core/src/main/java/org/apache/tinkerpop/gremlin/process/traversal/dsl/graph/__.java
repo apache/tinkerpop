@@ -739,6 +739,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#addE(String, String, String...)
+     */
+    public static <A> GraphTraversal<A, Edge> addE(final String label1, final String label2, final String... moreLabels) {
+        return __.<A>start().addE(label1, label2, moreLabels);
+    }
+
+    /**
      * @see GraphTraversal#addE(GValue)
      */
     public static <A> GraphTraversal<A, Edge> addE(final GValue<String> edgeLabel) {

@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
 
@@ -202,6 +203,33 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
         } else {
             return this.graphTraversal.addE((String) literalOrVar);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_addE_StringVarargs(final GremlinParser.TraversalMethod_addE_StringVarargsContext ctx) {
+        final List<GremlinParser.StringArgumentContext> args = ctx.stringArgument();
+        final Object firstLiteralOrVar = antlr.argumentVisitor.visitStringArgument(args.get(0));
+        final String firstLabel = firstLiteralOrVar instanceof String ? (String) firstLiteralOrVar : ((GValue<String>) firstLiteralOrVar).get();
+        final Object secondLiteralOrVar = antlr.argumentVisitor.visitStringArgument(args.get(1));
+        final String secondLabel = secondLiteralOrVar instanceof String ? (String) secondLiteralOrVar : ((GValue<String>) secondLiteralOrVar).get();
+
+        final String[] moreLabels = new String[args.size() - 2];
+        for (int i = 2; i < args.size(); i++) {
+            final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(args.get(i));
+            moreLabels[i - 2] = literalOrVar instanceof String ? (String) literalOrVar : ((GValue<String>) literalOrVar).get();
+        }
+        return this.graphTraversal.addE(firstLabel, secondLabel, moreLabels);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_addE_Empty(final GremlinParser.TraversalMethod_addE_EmptyContext ctx) {
+        return this.graphTraversal.addE(Edge.DEFAULT_LABEL);
     }
 
     /**

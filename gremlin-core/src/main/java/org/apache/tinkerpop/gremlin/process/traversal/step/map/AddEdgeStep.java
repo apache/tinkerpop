@@ -18,7 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,6 +63,15 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge> implements AddEdgeSte
     public AddEdgeStep(final Traversal.Admin traversal, final Traversal.Admin<S,String> edgeLabelTraversal) {
         super(traversal);
         this.internalParameters.set(this, T.label, edgeLabelTraversal);
+    }
+
+    public AddEdgeStep(final Traversal.Admin traversal, final Set<String> labels) {
+        super(traversal);
+        if (labels == null || labels.isEmpty()) {
+            this.internalParameters.set(this, T.label, Edge.DEFAULT_LABEL);
+        } else {
+            this.internalParameters.set(this, T.label, labels);
+        }
     }
 
     @Override
@@ -109,7 +121,21 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge> implements AddEdgeSte
 
     @Override
     protected Edge map(final Traverser.Admin<S> traverser) {
-        final String edgeLabel = this.internalParameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
+        final Object labelParam = this.internalParameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
+        final String edgeLabel;
+        final Set<String> additionalLabels;
+        if (labelParam instanceof Set) {
+            final Set<String> labelSet = (Set<String>) labelParam;
+            final Iterator<String> iter = labelSet.iterator();
+            edgeLabel = iter.next();
+            additionalLabels = new LinkedHashSet<>();
+            while (iter.hasNext()) {
+                additionalLabels.add(iter.next());
+            }
+        } else {
+            edgeLabel = (String) labelParam;
+            additionalLabels = Collections.emptySet();
+        }
 
         Vertex toVertex = getAdjacentVertex(this.internalParameters, TO, traverser, edgeLabel);
         Vertex fromVertex = getAdjacentVertex(this.internalParameters, FROM, traverser, edgeLabel);
@@ -135,6 +161,10 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge> implements AddEdgeSte
         }
 
         final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.internalParameters.getKeyValues(traverser, TO, FROM, T.label));
+        if (!additionalLabels.isEmpty()) {
+            final String[] extra = additionalLabels.toArray(new String[0]);
+            edge.addLabel(extra[0], Arrays.copyOfRange(extra, 1, extra.length));
+        }
         EventUtil.registerEdgeCreation(callbackRegistry, getTraversal(), edge);
         return edge;
     }

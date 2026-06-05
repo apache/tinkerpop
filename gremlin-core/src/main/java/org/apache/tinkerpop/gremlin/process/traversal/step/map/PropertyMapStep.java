@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -220,10 +219,7 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
      * or source-level {@code g.with("multilabel")}.
      */
     private boolean isMultilabelEnabled() {
-        if (this.multilabel) return true;
-        return getTraversal().getStrategies().getStrategy(OptionsStrategy.class)
-                .map(os -> os.getOptions().containsKey("multilabel") || os.getOptions().containsKey(WithOptions.multilabel))
-                .orElse(false);
+        return WithOptions.isMultilabelEnabled(this.multilabel, getTraversal());
     }
 
     protected Object getElementId(Element element){

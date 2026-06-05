@@ -146,7 +146,7 @@ class GraphSONSerializersV4 {
             jsonGenerator.writeStartObject();
 
             jsonGenerator.writeObjectField(GraphSONTokens.ID, edge.id());
-            writeLabel(jsonGenerator, GraphSONTokens.LABEL, edge.label());
+            writeLabels(jsonGenerator, GraphSONTokens.LABEL, edge.labels());
             writeTypeForGraphObjectIfUntyped(jsonGenerator, typeInfo, GraphSONTokens.EDGE);
             writeVertex(GraphSONTokens.IN, edge.inVertex(), jsonGenerator);
             writeVertex(GraphSONTokens.OUT, edge.outVertex(), jsonGenerator);
@@ -160,7 +160,7 @@ class GraphSONSerializersV4 {
             jsonGenerator.writeFieldName(vertexDirection);
             jsonGenerator.writeStartObject();
             jsonGenerator.writeObjectField(GraphSONTokens.ID, v.id());
-            writeLabel(jsonGenerator, GraphSONTokens.LABEL, v.label());
+            writeLabels(jsonGenerator, GraphSONTokens.LABEL, v.labels());
             jsonGenerator.writeEndObject();
         }
 
@@ -439,8 +439,14 @@ class GraphSONSerializersV4 {
                     e.setId(deserializationContext.readValue(jsonParser, Object.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.LABEL)) {
                     jsonParser.nextToken();
+                    final java.util.Set<String> labels = new java.util.LinkedHashSet<>();
                     while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-                        e.setLabel(jsonParser.getText());
+                        labels.add(jsonParser.getText());
+                    }
+                    if (labels.size() == 1) {
+                        e.setLabel(labels.iterator().next());
+                    } else if (!labels.isEmpty()) {
+                        e.setLabels(labels);
                     }
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.OUT)) {
                     jsonParser.nextToken();

@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * A representation of some action that occurs on a {@link Graph} for a {@link Traversal}.
@@ -210,6 +211,31 @@ public interface Event {
             while (eventListeners.hasNext()) {
                 eventListeners.next().vertexRemoved(vertex);
             }
+        }
+    }
+
+    /**
+     * An event that represents a label change on an element (vertex or edge).
+     * Fired when labels are added or removed via addLabel()/dropLabel()/dropLabels() steps.
+     */
+    class ElementLabelChangedEvent implements Event {
+        private final Element element;
+        private final Set<String> oldLabels;
+        private final Set<String> newLabels;
+
+        public ElementLabelChangedEvent(final Element element, final Set<String> oldLabels, final Set<String> newLabels) {
+            this.element = element;
+            this.oldLabels = oldLabels;
+            this.newLabels = newLabels;
+        }
+
+        public Element getElement() { return element; }
+        public Set<String> getOldLabels() { return oldLabels; }
+        public Set<String> getNewLabels() { return newLabels; }
+
+        @Override
+        public void fireEvent(final Iterator<MutationListener> eventListeners) {
+            // Label change events are dispatched directly via CallbackRegistry, not MutationListener.
         }
     }
 

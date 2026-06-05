@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
  */
 public class TinkerEdge extends TinkerElement implements Edge {
 
+    protected final Set<String> edgeLabels;
     protected Map<String, Property> properties;
 
     protected Vertex inVertex = null;
@@ -62,8 +64,30 @@ public class TinkerEdge extends TinkerElement implements Edge {
         }
     }
 
+    protected TinkerEdge(final Object id, final Vertex outVertex, final Set<String> labels, final Vertex inVertex) {
+        this(id, outVertex, labels, inVertex, 0);
+    }
+
+    protected TinkerEdge(final Object id, final Vertex outVertex, final Set<String> labels, final Vertex inVertex, final long currentVersion) {
+        this(id, (AbstractTinkerGraph) outVertex.graph(), outVertex.id(),
+             (labels == null || labels.isEmpty()) ? Edge.DEFAULT_LABEL : labels.iterator().next(),
+             inVertex.id(), currentVersion, false);
+        this.edgeLabels.clear();
+        if (labels != null && !labels.isEmpty()) {
+            this.edgeLabels.addAll(labels);
+        } else {
+            this.edgeLabels.add(Edge.DEFAULT_LABEL);
+        }
+        if (!isTxMode) {
+            this.inVertex = inVertex;
+            this.outVertex = outVertex;
+        }
+    }
+
     private TinkerEdge(final Object id, AbstractTinkerGraph graph, final Object outVertexId, final String label, final Object inVertexId, final long currentVersion, final Boolean skipIndexUpdate) {
         super(id, label, currentVersion);
+        this.edgeLabels = new LinkedHashSet<>();
+        this.edgeLabels.add(label);
         isTxMode = graph instanceof TinkerTransactionGraph;
         this.graph = graph;
         if (isTxMode) {
@@ -107,7 +131,66 @@ public class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public Set<String> labels() {
-        return Collections.singleton(this.label);
+        return Collections.unmodifiableSet(this.edgeLabels);
+    }
+
+    @Override
+    @Deprecated
+    public String label() {
+        return this.edgeLabels.iterator().next();
+    }
+
+    @Override
+    public void addLabel(final String label, final String... labels) {
+        graph.touch(this);
+        ElementHelper.validateLabel(label);
+        for (final String l : labels) {
+            ElementHelper.validateLabel(l);
+        }
+        // Remove default label if it was the only label
+        if (this.edgeLabels.size() == 1 && this.edgeLabels.contains(Edge.DEFAULT_LABEL)) {
+            this.graph.removeEdgeFromAdjacency(this, Edge.DEFAULT_LABEL);
+            this.edgeLabels.remove(Edge.DEFAULT_LABEL);
+        }
+        this.edgeLabels.add(label);
+        this.graph.addEdgeToAdjacency(this, label);
+        for (final String l : labels) {
+            this.edgeLabels.add(l);
+            this.graph.addEdgeToAdjacency(this, l);
+        }
+        this.label = this.edgeLabels.iterator().next();
+    }
+
+    @Override
+    public void dropLabels() {
+        graph.touch(this);
+        for (final String l : new LinkedHashSet<>(this.edgeLabels)) {
+            this.graph.removeEdgeFromAdjacency(this, l);
+        }
+        this.edgeLabels.clear();
+        this.edgeLabels.add(Edge.DEFAULT_LABEL);
+        this.graph.addEdgeToAdjacency(this, Edge.DEFAULT_LABEL);
+        this.label = this.edgeLabels.iterator().next();
+    }
+
+    @Override
+    public void dropLabel(final String label, final String... labels) {
+        graph.touch(this);
+        if (this.edgeLabels.contains(label)) {
+            this.graph.removeEdgeFromAdjacency(this, label);
+            this.edgeLabels.remove(label);
+        }
+        for (final String l : labels) {
+            if (this.edgeLabels.contains(l)) {
+                this.graph.removeEdgeFromAdjacency(this, l);
+                this.edgeLabels.remove(l);
+            }
+        }
+        if (this.edgeLabels.isEmpty()) {
+            this.edgeLabels.add(Edge.DEFAULT_LABEL);
+            this.graph.addEdgeToAdjacency(this, Edge.DEFAULT_LABEL);
+        }
+        this.label = this.edgeLabels.iterator().next();
     }
 
     @Override
@@ -129,11 +212,15 @@ public class TinkerEdge extends TinkerElement implements Edge {
         if (!isTxMode) {
             // shallow copy for non-tx mode
             final TinkerEdge edge = new TinkerEdge(id, outVertex, label, inVertex, currentVersion);
+            edge.edgeLabels.clear();
+            edge.edgeLabels.addAll(this.edgeLabels);
             edge.properties = properties;
             return edge;
         }
 
         final TinkerEdge edge = new TinkerEdge(id, graph, outVertexId, label, inVertexId, currentVersion, true);
+        edge.edgeLabels.clear();
+        edge.edgeLabels.addAll(this.edgeLabels);
 
         if (properties != null) {
             final Map<String, Property> cloned = new ConcurrentHashMap<>(properties.size());

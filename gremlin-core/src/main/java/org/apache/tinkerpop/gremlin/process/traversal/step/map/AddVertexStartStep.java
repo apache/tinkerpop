@@ -63,6 +63,17 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements 
         userProvidedLabel = vertexLabelTraversal != null;
     }
 
+    public AddVertexStartStep(final Traversal.Admin traversal, final Set<String> labels) {
+        super(traversal);
+        if (labels == null || labels.isEmpty()) {
+            this.internalParameters.set(this, T.label, Vertex.DEFAULT_LABEL);
+            userProvidedLabel = false;
+        } else {
+            this.internalParameters.set(this, T.label, labels);
+            userProvidedLabel = true;
+        }
+    }
+
     @Override
     public boolean hasUserProvidedLabel() {
         return userProvidedLabel;

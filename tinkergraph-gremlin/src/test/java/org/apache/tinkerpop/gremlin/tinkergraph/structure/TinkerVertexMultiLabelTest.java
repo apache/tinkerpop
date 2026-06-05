@@ -147,20 +147,24 @@ public class TinkerVertexMultiLabelTest {
         assertThat(v.labels(), containsInAnyOrder(Vertex.DEFAULT_LABEL));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void shouldThrowWhenAddingLabelToEdge() {
+    @Test
+    public void shouldAddLabelToEdge() {
         final Vertex v1 = g.addV("person").next();
         final Vertex v2 = g.addV("person").next();
         final Edge e = v1.addEdge("knows", v2);
         e.addLabel("friend");
+        assertThat(e.labels(), hasSize(2));
+        assertThat(e.labels(), containsInAnyOrder("knows", "friend"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void shouldThrowWhenDroppingLabelsOnEdge() {
+    @Test
+    public void shouldDropLabelsOnEdge() {
         final Vertex v1 = g.addV("person").next();
         final Vertex v2 = g.addV("person").next();
         final Edge e = v1.addEdge("knows", v2);
         e.dropLabels();
+        assertThat(e.labels(), hasSize(1));
+        assertThat(e.labels(), containsInAnyOrder(Edge.DEFAULT_LABEL));
     }
 
     @Test

@@ -28,6 +28,8 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -36,6 +38,7 @@ public class ReferenceEdge extends ReferenceElement<Edge> implements Edge {
 
     private ReferenceVertex inVertex;
     private ReferenceVertex outVertex;
+    private Set<String> edgeLabels;
 
     private ReferenceEdge() {
 
@@ -45,12 +48,40 @@ public class ReferenceEdge extends ReferenceElement<Edge> implements Edge {
         super(edge);
         this.inVertex = new ReferenceVertex(edge.inVertex());
         this.outVertex = new ReferenceVertex(edge.outVertex());
+        // Capture all labels from the source edge for multi-label support.
+        final Set<String> srcLabels = edge.labels();
+        if (srcLabels.size() > 1) {
+            this.edgeLabels = new LinkedHashSet<>(srcLabels);
+        }
     }
 
     public ReferenceEdge(final Object id, final String label, final ReferenceVertex inVertex, final ReferenceVertex outVertex) {
         super(id, label);
         this.inVertex = inVertex;
         this.outVertex = outVertex;
+    }
+
+    public ReferenceEdge(final Object id, final Set<String> labels, final ReferenceVertex inVertex, final ReferenceVertex outVertex) {
+        super(id, labels != null && !labels.isEmpty() ? labels.iterator().next() : Edge.DEFAULT_LABEL);
+        this.edgeLabels = labels != null ? new LinkedHashSet<>(labels) : null;
+        this.inVertex = inVertex;
+        this.outVertex = outVertex;
+    }
+
+    @Override
+    public Set<String> labels() {
+        if (this.edgeLabels != null) {
+            return Collections.unmodifiableSet(this.edgeLabels);
+        }
+        return this.label != null ? Collections.singleton(this.label) : Collections.emptySet();
+    }
+
+    @Override
+    public String label() {
+        if (this.edgeLabels != null && !this.edgeLabels.isEmpty()) {
+            return this.edgeLabels.iterator().next();
+        }
+        return this.label != null ? this.label : Edge.DEFAULT_LABEL;
     }
 
     @Override

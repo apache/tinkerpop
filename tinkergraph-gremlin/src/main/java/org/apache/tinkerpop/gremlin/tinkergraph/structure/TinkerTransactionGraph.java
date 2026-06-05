@@ -393,6 +393,40 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         edges.add(edge.id());
     }
 
+    @Override
+    public void addEdgeToAdjacency(final TinkerEdge edge, final String label) {
+        final TinkerVertex outV = (TinkerVertex) edge.outVertex();
+        final TinkerVertex inV = (TinkerVertex) edge.inVertex();
+        touch(outV);
+        touch(inV);
+        if (null == outV.outEdgesId) outV.outEdgesId = new ConcurrentHashMap<>();
+        outV.outEdgesId.computeIfAbsent(label, k -> ConcurrentHashMap.newKeySet()).add(edge.id());
+        if (null == inV.inEdgesId) inV.inEdgesId = new ConcurrentHashMap<>();
+        inV.inEdgesId.computeIfAbsent(label, k -> ConcurrentHashMap.newKeySet()).add(edge.id());
+    }
+
+    @Override
+    public void removeEdgeFromAdjacency(final TinkerEdge edge, final String label) {
+        final TinkerVertex outV = (TinkerVertex) edge.outVertex();
+        final TinkerVertex inV = (TinkerVertex) edge.inVertex();
+        touch(outV);
+        touch(inV);
+        if (outV.outEdgesId != null) {
+            final Set<Object> edges = outV.outEdgesId.get(label);
+            if (edges != null) {
+                edges.remove(edge.id());
+                if (edges.isEmpty()) outV.outEdgesId.remove(label);
+            }
+        }
+        if (inV.inEdgesId != null) {
+            final Set<Object> edges = inV.inEdgesId.get(label);
+            if (edges != null) {
+                edges.remove(edge.id());
+                if (edges.isEmpty()) inV.inEdgesId.remove(label);
+            }
+        }
+    }
+
     /**
      * Return TinkerGraph feature set.
      * <p/>

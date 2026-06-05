@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public abstract class AbstractAddEdgeStepPlaceholder<S> extends AbstractAddElementStepPlaceholder<S, Edge, Event.EdgeAddedEvent> implements AddEdgeStepContract<S> {
     protected Traversal.Admin<?, ?> from;
@@ -40,6 +41,10 @@ public abstract class AbstractAddEdgeStepPlaceholder<S> extends AbstractAddEleme
 
     public AbstractAddEdgeStepPlaceholder(Traversal.Admin traversal, GValue<String> label) {
         super(traversal, label);
+    }
+
+    public AbstractAddEdgeStepPlaceholder(Traversal.Admin traversal, Set<String> labels) {
+        super(traversal, labels);
     }
 
     public AbstractAddEdgeStepPlaceholder(Traversal.Admin traversal, Traversal.Admin<S, String> labelTraversal) {

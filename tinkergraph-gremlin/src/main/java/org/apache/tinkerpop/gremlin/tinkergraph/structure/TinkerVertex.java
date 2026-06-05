@@ -61,53 +61,31 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     protected final Set<String> vertexLabels;
 
     protected TinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph) {
-        super(id, label);
-        this.graph = graph;
-        this.isTxMode = graph instanceof TinkerTransactionGraph;
-        this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
-        this.vertexLabels = new LinkedHashSet<>();
-        this.vertexLabels.add(null == label ? Vertex.DEFAULT_LABEL : label);
+        this(id, Collections.singleton(label != null ? label : Vertex.DEFAULT_LABEL), graph, -1);
     }
 
     protected TinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph, final long currentVersion) {
-        super(id, label, currentVersion);
-        this.graph = graph;
-        this.isTxMode = graph instanceof TinkerTransactionGraph;
-        this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
-        this.vertexLabels = new LinkedHashSet<>();
-        this.vertexLabels.add(null == label ? Vertex.DEFAULT_LABEL : label);
+        this(id, Collections.singleton(label != null ? label : Vertex.DEFAULT_LABEL), graph, currentVersion);
     }
 
     /**
      * Constructs a TinkerVertex with multiple labels.
      */
     protected TinkerVertex(final Object id, final Set<String> labels, final AbstractTinkerGraph graph) {
-        super(id, (labels == null || labels.isEmpty()) ? Vertex.DEFAULT_LABEL : labels.iterator().next());
-        this.graph = graph;
-        this.isTxMode = graph instanceof TinkerTransactionGraph;
-        this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
-        if (labels == null || labels.isEmpty()) {
-            this.vertexLabels = new LinkedHashSet<>();
-            this.vertexLabels.add(Vertex.DEFAULT_LABEL);
-        } else {
-            this.vertexLabels = new LinkedHashSet<>(labels);
-        }
+        this(id, labels, graph, -1);
     }
 
     /**
-     * Constructs a TinkerVertex with multiple labels and a specific version (for transactional graphs).
+     * Canonical constructor. Constructs a TinkerVertex with multiple labels and a specific version (for transactional graphs).
      */
     protected TinkerVertex(final Object id, final Set<String> labels, final AbstractTinkerGraph graph, final long currentVersion) {
         super(id, (labels == null || labels.isEmpty()) ? Vertex.DEFAULT_LABEL : labels.iterator().next(), currentVersion);
         this.graph = graph;
         this.isTxMode = graph instanceof TinkerTransactionGraph;
         this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
-        if (labels == null || labels.isEmpty()) {
-            this.vertexLabels = new LinkedHashSet<>();
-            this.vertexLabels.add(Vertex.DEFAULT_LABEL);
-        } else {
-            this.vertexLabels = new LinkedHashSet<>(labels);
-        }
+        this.vertexLabels = (labels == null || labels.isEmpty())
+                ? new LinkedHashSet<>(Collections.singleton(Vertex.DEFAULT_LABEL))
+                : new LinkedHashSet<>(labels);
     }
 
     @Override
@@ -135,6 +113,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
         this.vertexLabels.add(label);
         Collections.addAll(this.vertexLabels, labels);
+        this.label = this.vertexLabels.iterator().next();
         this.graph.updateVertexLabelIndex(this);
     }
 
@@ -142,6 +121,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     public void dropLabels() {
         this.vertexLabels.clear();
         this.vertexLabels.add(Vertex.DEFAULT_LABEL);
+        this.label = this.vertexLabels.iterator().next();
         this.graph.updateVertexLabelIndex(this);
     }
 
@@ -155,6 +135,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         if (this.vertexLabels.isEmpty()) {
             this.vertexLabels.add(Vertex.DEFAULT_LABEL);
         }
+        this.label = this.vertexLabels.iterator().next();
         this.graph.updateVertexLabelIndex(this);
     }
 
@@ -168,9 +149,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
             return vertex;
         }
 
-        final TinkerVertex vertex = new TinkerVertex(id, label, graph, currentVersion);
-        vertex.vertexLabels.clear();
-        vertex.vertexLabels.addAll(this.vertexLabels);
+        final TinkerVertex vertex = new TinkerVertex(id, new LinkedHashSet<>(vertexLabels), graph, currentVersion);
         if (inEdgesId != null)
             vertex.inEdgesId = CollectionUtil.clone((ConcurrentHashMap<String, Set<Object>>) inEdgesId);
 

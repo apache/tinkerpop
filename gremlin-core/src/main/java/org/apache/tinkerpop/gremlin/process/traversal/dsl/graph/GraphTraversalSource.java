@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStepPlaceholder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddLabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
@@ -53,9 +52,12 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -383,12 +385,11 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, label1, label2, moreLabels);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        traversal.addStep(new AddVertexStartStepPlaceholder(traversal, label1));
-        // Add the AddLabelStep directly to avoid double-recording in GremlinLang.
-        // The addV step above already recorded all labels; calling t.addLabel() would
-        // record an additional addLabel() step in GremlinLang, producing incorrect output
-        // like g.addV("a","b").addLabel("b") instead of g.addV("a","b").
-        return traversal.addStep(new AddLabelStep<>(traversal, label2, moreLabels));
+        final Set<String> allLabels = new LinkedHashSet<>();
+        allLabels.add(label1);
+        allLabels.add(label2);
+        Collections.addAll(allLabels, moreLabels);
+        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, allLabels));
     }
 
     /**
@@ -425,6 +426,43 @@ public class GraphTraversalSource implements TraversalSource {
         clone.gremlinLang.addStep(GraphTraversal.Symbols.addE, label);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new AddEdgeStartStepPlaceholder(traversal, label));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by adding an edge with multiple labels.
+     *
+     * @param label1     the first label
+     * @param label2     the second label
+     * @param moreLabels additional labels
+     * @return the traversal with the edge added
+     * @since 4.0.0
+     */
+    public GraphTraversal<Edge, Edge> addE(final String label1, final String label2, final String... moreLabels) {
+        if (null == label1) throw new IllegalArgumentException("edgeLabel cannot be null");
+        if (null == label2) throw new IllegalArgumentException("edgeLabel cannot be null");
+        for (final String l : moreLabels) {
+            if (null == l) throw new IllegalArgumentException("edgeLabel cannot be null");
+        }
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.addE, label1, label2, moreLabels);
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
+        final Set<String> allLabels = new LinkedHashSet<>();
+        allLabels.add(label1);
+        allLabels.add(label2);
+        Collections.addAll(allLabels, moreLabels);
+        return traversal.addStep(new AddEdgeStartStepPlaceholder(traversal, allLabels));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by adding an edge with the provider's default label.
+     *
+     * @since 4.0.0
+     */
+    public GraphTraversal<Edge, Edge> addE() {
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.addE);
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new AddEdgeStartStepPlaceholder(traversal, (String) null));
     }
 
     /**

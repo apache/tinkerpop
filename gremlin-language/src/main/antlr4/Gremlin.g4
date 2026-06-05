@@ -111,7 +111,9 @@ traversalSourceSpawnMethod
     ;
 
 traversalSourceSpawnMethod_addE
-    : K_ADDE LPAREN stringArgument RPAREN
+    : K_ADDE LPAREN RPAREN
+    | K_ADDE LPAREN stringArgument RPAREN
+    | K_ADDE LPAREN stringArgument COMMA stringArgument (COMMA stringArgument)* RPAREN
     | K_ADDE LPAREN nestedTraversal RPAREN
     ;
 
@@ -325,7 +327,9 @@ traversalMethod_E
     ;
 
 traversalMethod_addE
-    : K_ADDE LPAREN stringArgument RPAREN #traversalMethod_addE_String
+    : K_ADDE LPAREN RPAREN #traversalMethod_addE_Empty
+    | K_ADDE LPAREN stringArgument RPAREN #traversalMethod_addE_String
+    | K_ADDE LPAREN stringArgument (COMMA stringArgument)+ RPAREN #traversalMethod_addE_StringVarargs
     | K_ADDE LPAREN nestedTraversal RPAREN #traversalMethod_addE_Traversal
     ;
 

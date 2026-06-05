@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRe
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -35,8 +34,8 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -46,12 +45,12 @@ import java.util.Set;
  * @since 4.0.0
  */
 public class DropLabelsStep<S extends Element> extends SideEffectStep<S>
-        implements Mutating<Event.ElementPropertyChangedEvent>, TraversalParent {
+        implements Mutating<Event.ElementLabelChangedEvent>, TraversalParent {
 
     private final boolean dropAll;
     private final String[] labels;
     private Traversal.Admin<S, String> labelTraversal;
-    private CallbackRegistry<Event.ElementPropertyChangedEvent> callbackRegistry;
+    private CallbackRegistry<Event.ElementLabelChangedEvent> callbackRegistry;
 
     /**
      * Constructor for dropLabels() - removes all labels.
@@ -89,6 +88,7 @@ public class DropLabelsStep<S extends Element> extends SideEffectStep<S>
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
         final Element element = traverser.get();
+        final Set<String> oldLabels = new LinkedHashSet<>(element.labels());
 
         if (this.labelTraversal != null) {
             final String label = TraversalUtil.apply(traverser, this.labelTraversal);
@@ -102,16 +102,14 @@ public class DropLabelsStep<S extends Element> extends SideEffectStep<S>
                     Arrays.copyOfRange(this.labels, 1, this.labels.length));
         }
 
-        // trigger event callbacks
-        final Optional<EventStrategy> optEventStrategy = getTraversal().getStrategies().getStrategy(EventStrategy.class);
-        if (EventUtil.hasAnyCallbacks(callbackRegistry) && optEventStrategy.isPresent()) {
-            final EventStrategy es = optEventStrategy.get();
-            EventUtil.registerPropertyChange(callbackRegistry, es, element, null, null, new Object[0]);
+        // trigger event callbacks only if labels actually changed
+        if (!oldLabels.equals(element.labels())) {
+            EventUtil.registerLabelChange(callbackRegistry, getTraversal(), element, oldLabels, element.labels());
         }
     }
 
     @Override
-    public CallbackRegistry<Event.ElementPropertyChangedEvent> getMutatingCallbackRegistry() {
+    public CallbackRegistry<Event.ElementLabelChangedEvent> getMutatingCallbackRegistry() {
         if (null == callbackRegistry) callbackRegistry = new ListCallbackRegistry<>();
         return callbackRegistry;
     }

@@ -234,6 +234,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -1464,12 +1465,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             if (null == l) throw new IllegalArgumentException("vertexLabel cannot be null");
         }
         this.asAdmin().getGremlinLang().addStep(Symbols.addV, label1, label2, moreLabels);
-        this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), label1));
-        // Add the AddLabelStep directly to avoid double-recording in GremlinLang.
-        // The addV step above already recorded all labels; calling t.addLabel() would
-        // record an additional addLabel() step in GremlinLang, producing incorrect output
-        // like g.addV("a","b").addLabel("b") instead of g.addV("a","b").
-        return this.asAdmin().addStep(new AddLabelStep<>(this.asAdmin(), label2, moreLabels));
+        final Set<String> allLabels = new LinkedHashSet<>();
+        allLabels.add(label1);
+        allLabels.add(label2);
+        Collections.addAll(allLabels, moreLabels);
+        return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), allLabels));
     }
 
     /**
@@ -1627,6 +1627,29 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.addE, edgeLabel);
         AddEdgeStepPlaceholder<Edge> step = new AddEdgeStepPlaceholder<>(this.asAdmin(), edgeLabel);
         return this.asAdmin().addStep(step);
+    }
+
+    /**
+     * Multi-label edge creation.
+     *
+     * @param label1     the first label
+     * @param label2     the second label
+     * @param moreLabels additional labels
+     * @return the traversal with the {@link AddEdgeStepContract} added
+     * @since 4.0.0
+     */
+    public default GraphTraversal<S, Edge> addE(final String label1, final String label2, final String... moreLabels) {
+        if (null == label1) throw new IllegalArgumentException("edgeLabel cannot be null");
+        if (null == label2) throw new IllegalArgumentException("edgeLabel cannot be null");
+        for (final String l : moreLabels) {
+            if (null == l) throw new IllegalArgumentException("edgeLabel cannot be null");
+        }
+        this.asAdmin().getGremlinLang().addStep(Symbols.addE, label1, label2, moreLabels);
+        final Set<String> allLabels = new LinkedHashSet<>();
+        allLabels.add(label1);
+        allLabels.add(label2);
+        Collections.addAll(allLabels, moreLabels);
+        return this.asAdmin().addStep(new AddEdgeStepPlaceholder<>(this.asAdmin(), allLabels));
     }
 
     /**

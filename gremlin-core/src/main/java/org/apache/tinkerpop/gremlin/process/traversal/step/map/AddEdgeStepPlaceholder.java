@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTrave
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
+import java.util.Set;
+
 public class AddEdgeStepPlaceholder<S> extends AbstractAddEdgeStepPlaceholder<S> {
 
     public AddEdgeStepPlaceholder(final Traversal.Admin traversal, final String edgeLabel) {
@@ -39,10 +41,16 @@ public class AddEdgeStepPlaceholder<S> extends AbstractAddEdgeStepPlaceholder<S>
                 new ConstantTraversal<>(Edge.DEFAULT_LABEL) : edgeLabelTraversal);
     }
 
+    public AddEdgeStepPlaceholder(final Traversal.Admin traversal, final Set<String> labels) {
+        super(traversal, labels);
+    }
+
     @Override
     public AddEdgeStep<S> asConcreteStep() {
         AddEdgeStep<S> step;
-        if (label instanceof Traversal) {
+        if (label instanceof Set) {
+            step = new AddEdgeStep<>(traversal, (Set<String>) label);
+        } else if (label instanceof Traversal) {
             step = new AddEdgeStep<>(traversal, ((Traversal<S, String>) label).asAdmin());
         } else if (label instanceof GValue) {
             step = new AddEdgeStep<>(traversal, ((GValue<String>) label).get());
