@@ -58,6 +58,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <exception cref="ArgumentException">Thrown when <paramref name="name" /> is not a valid identifier.</exception>
         public GValue(string name, T value)
         {
+            if (value is IGValue)
+                throw new ArgumentException("GValues cannot be nested");
+
             if (name == null)
                 throw new ArgumentNullException(nameof(name), "The parameter name cannot be null.");
 

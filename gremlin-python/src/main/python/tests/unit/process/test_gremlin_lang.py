@@ -570,6 +570,12 @@ class TestGremlinLang(object):
         assert repr(p) == 'x=1'
         assert str(p) == 'x=1'
 
+    def test_gvalue_cannot_be_nested(self):
+        try:
+            GValue('x', GValue('y', 1))
+        except Exception as ex:
+            assert str(ex) == 'GValues cannot be nested'
+
     def test_unsupported_type_throws(self):
         g = traversal().with_(None)
         import pytest
