@@ -40,6 +40,8 @@ public class HttpRequestIdHandler extends ChannelDuplexHandler {
      */
     private static final AttributeKey<Boolean> IN_USE = AttributeKey.valueOf("inUse");
 
+    private static final AttributeKey<Boolean> CLOSE_AFTER_RESPONSE = AttributeKey.valueOf("closeAfterResponse");
+
     public static String REQUEST_ID_HEADER_NAME = "Gremlin-RequestId";
 
     @Override
@@ -47,7 +49,8 @@ public class HttpRequestIdHandler extends ChannelDuplexHandler {
         if (msg instanceof HttpRequest) {
             final Boolean currentlyInUse = ctx.channel().attr(IN_USE).get();
             if (currentlyInUse != null && currentlyInUse == true) {
-                // Pipelining not supported so just ignore the request if another request already being handled.
+                // Pipelining not supported — mark connection for close after current response completes.
+                ctx.channel().attr(CLOSE_AFTER_RESPONSE).set(true);
                 ReferenceCountUtil.release(msg);
                 return;
             }
@@ -73,6 +76,11 @@ public class HttpRequestIdHandler extends ChannelDuplexHandler {
         }
         if (msg instanceof LastHttpContent) { // possible for an object to be both HttpResponse and LastHttpContent.
             ctx.channel().attr(IN_USE).set(false);
+
+            final Boolean closeAfter = ctx.channel().attr(CLOSE_AFTER_RESPONSE).get();
+            if (closeAfter != null && closeAfter) {
+                promise.addListener(future -> ctx.close());
+            }
         }
 
         ctx.write(msg, promise);

@@ -821,8 +821,10 @@ Gremlin script.  The caveat is that these arguments will always be treated as `S
 types are preserved or to pass complex objects such as lists or maps, use `POST` which will at least support the
 allowed JSON data types.
 
-NOTE: The Gremlin Server doesn't support link:https://en.wikipedia.org/wiki/HTTP_pipelining[HTTP pipelining]. Attempts
-to use this feature will cause the server to throw an error and may lead to results being sent out-of-order.
+NOTE: The Gremlin Server does not support link:https://en.wikipedia.org/wiki/HTTP_pipelining[HTTP pipelining]. Sending
+a second request on the same connection before the first response completes will cause the server to close the
+connection after the current response finishes. Clients must wait for a response before sending the next request on a
+keep-alive connection.
 
 Passing the `Accept` header with a valid MIME type will trigger the server to return the result in a particular format.
 Note that in addition to the formats available given the server's `serializers` configuration, there is also a basic
