@@ -103,6 +103,12 @@ if [ -z "${SERVER_DIR}" ] || [ ! -d "${SERVER_DIR}" ]; then
 fi
 SERVER_HOME="$(cd "${SERVER_DIR}" && pwd)"
 
+# Clear any plugin directories parked aside by a previous (possibly interrupted) run. The
+# extension moves ext/<plugin> to ext-disabled/<plugin> when excluding a plugin per-book; a
+# leftover ext-disabled/ from a crashed build would otherwise shadow the freshly-installed
+# plugins and break the next run's console restarts.
+rm -rf "${CONSOLE_HOME}/ext-disabled"
+
 # 3. Install plugins into console
 echo "Installing plugins into console..."
 
