@@ -115,7 +115,14 @@ class FeatureSteps {
         RegExp(r'^the result should have a count of (\d+)$').firstMatch(text);
     if (countMatch != null) {
       _assertNoError();
-      expect(world.result.length, int.parse(countMatch.group(1)!));
+      final expected = int.parse(countMatch.group(1)!);
+      var actual = world.result.length;
+      // For "iterated next", a single Map result means the count is the number
+      // of map entries (e.g. group() returns one Map whose size is the answer).
+      if (world.resultIsNext && actual == 1 && world.result.first is Map) {
+        actual = (world.result.first as Map).length;
+      }
+      expect(actual, expected);
       return;
     }
 
@@ -189,9 +196,11 @@ class FeatureSteps {
   Future<void> _iterateToList() async {
     try {
       world.result = await _submit(world.pendingTraversal ?? '');
+      world.resultIsNext = false;
       world.errorMessage = null;
     } catch (error) {
       world.result = <dynamic>[];
+      world.resultIsNext = false;
       world.errorMessage = error.toString();
     }
   }
@@ -201,18 +210,16 @@ class FeatureSteps {
       final list = await _submit(world.pendingTraversal ?? '');
       if (list.isEmpty) {
         world.result = <dynamic>[];
-      } else if (list.first is Map) {
-        // group() returns a single Map; expand into entries so count == map.length
-        final map = list.first as Map;
-        world.result = map.entries.map((e) => MapEntry(e.key, e.value)).toList();
-      } else if (list.first is Iterable && list.first is! String) {
+      } else if (list.first is Iterable && list.first is! String && list.first is! Map) {
         world.result = List<dynamic>.from(list.first as Iterable);
       } else {
         world.result = <dynamic>[list.first];
       }
+      world.resultIsNext = true;
       world.errorMessage = null;
     } catch (error) {
       world.result = <dynamic>[];
+      world.resultIsNext = false;
       world.errorMessage = error.toString();
     }
   }
@@ -321,6 +328,7 @@ class FeatureSteps {
     if (value is GDouble) return value.value;
     if (value is GByte) return value.value;
     if (value is GShort) return value.value;
+    if (value is GDecimal) return value.toDouble();
     if (value is EnumValue) return value.toString();
     if (value is Path) return value.objects.map(_normalize).toList();
     if (value is Property) return Property(value.key, _normalize(value.value));

@@ -87,6 +87,10 @@ class _GraphBinaryValueWriter {
       writeDouble(value);
     } else if (value is bool) {
       writeBoolean(value);
+    } else if (value is GDecimal) {
+      writeGDecimal(value);
+    } else if (value is BigInt) {
+      writeBigInt(value);
     } else if (value is String) {
       writeString(value);
     } else if (value is UuidValue) {
@@ -187,6 +191,52 @@ class _GraphBinaryValueWriter {
     _builder.add(value);
   }
 
+  void writeGDecimal(GDecimal value, {bool fullyQualified = true}) {
+    _writeHeader(DataType.bigDecimal, fullyQualified);
+    _writeInt32Bare(value.scale);
+    final bytes = _bigIntToBytes(value.unscaled);
+    _writeInt32Bare(bytes.length);
+    _builder.add(bytes);
+  }
+
+  void writeBigInt(BigInt value, {bool fullyQualified = true}) {
+    _writeHeader(DataType.bigInt, fullyQualified);
+    final bytes = _bigIntToBytes(value);
+    _writeInt32Bare(bytes.length);
+    _builder.add(bytes);
+  }
+
+  Uint8List _bigIntToBytes(BigInt value) {
+    if (value == BigInt.zero) return Uint8List.fromList([0x00]);
+    if (value > BigInt.zero) {
+      final bytes = <int>[];
+      var v = value;
+      while (v > BigInt.zero) {
+        bytes.add((v & BigInt.from(0xFF)).toInt());
+        v >>= 8;
+      }
+      final result = bytes.reversed.toList();
+      // Prepend 0x00 if MSB is set, to preserve positive sign.
+      if (result[0] & 0x80 != 0) result.insert(0, 0x00);
+      return Uint8List.fromList(result);
+    } else {
+      // Negative: compute minimum-length two's-complement encoding.
+      int byteCount = 1;
+      var limit = BigInt.from(0x80);
+      while (-value > limit) {
+        byteCount++;
+        limit <<= 8;
+      }
+      var twos = (BigInt.one << (byteCount * 8)) + value;
+      final bytes = <int>[];
+      for (var i = 0; i < byteCount; i++) {
+        bytes.add((twos & BigInt.from(0xFF)).toInt());
+        twos >>= 8;
+      }
+      return Uint8List.fromList(bytes.reversed.toList());
+    }
+  }
+
   void writeList(List<dynamic> value, {bool fullyQualified = true}) {
     _writeHeader(DataType.list, fullyQualified);
     _writeInt32Bare(value.length);
@@ -207,9 +257,15 @@ class _GraphBinaryValueWriter {
     _writeHeader(DataType.map, fullyQualified);
     _writeInt32Bare(value.length);
     for (final entry in value.entries) {
-      writeAny(entry.key);
-      writeAny(entry.value);
+      // Map entries are always fully-qualified, even when the map container is
+      // written as a bare value by a surrounding serializer.
+      _writeMapEntry(entry.key);
+      _writeMapEntry(entry.value);
     }
+  }
+
+  void _writeMapEntry(dynamic value) {
+    writeAny(value);
   }
 
   void writeVertex(Vertex value, {bool fullyQualified = true}) {
@@ -261,7 +317,13 @@ class _GraphBinaryValueWriter {
       _ => throw ArgumentError('Unsupported GraphBinary enum: ${value.typeName}'),
     };
     _writeHeader(type, fullyQualified);
-    writeString(value.elementName, fullyQualified: true);
+    // Normalize gremlin-lang Direction aliases to canonical Java enum names.
+    final name = switch (value.elementName) {
+      'from' => 'OUT',
+      'to' => 'IN',
+      _ => value.elementName,
+    };
+    writeString(name, fullyQualified: true);
   }
 
   void _writeHeader(DataType type, bool fullyQualified) {

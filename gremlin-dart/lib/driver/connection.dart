@@ -161,6 +161,8 @@ class Connection {
           response.statusCode, response.bodyBytes, 'HTTP ${response.statusCode}');
     }
 
+    if (response.bodyBytes.isEmpty) return ResultSet<dynamic>([]);
+
     final deserialized = await _reader.readResponse(response.bodyBytes);
 
     if (deserialized['status'] != null) {

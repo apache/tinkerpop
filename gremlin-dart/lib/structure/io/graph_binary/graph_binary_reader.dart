@@ -415,10 +415,10 @@ class _GraphBinaryValueReader {
     return value;
   }
 
-  double _readBigDecimal() {
+  GDecimal _readBigDecimal() {
     final scale = readInt32();
     final unscaled = _readBigInt();
-    return unscaled.toDouble() / _pow10(scale);
+    return GDecimal(scale, unscaled);
   }
 
   Duration _readDuration() {
@@ -453,14 +453,6 @@ class _GraphBinaryValueReader {
       return value.entries.map((entry) => Property(entry.key.toString(), entry.value)).toList();
     }
     return const [];
-  }
-
-  double _pow10(int scale) {
-    var value = 1.0;
-    for (var i = 0; i < scale.abs(); i++) {
-      value *= 10;
-    }
-    return scale >= 0 ? value : 1 / value;
   }
 
   void _require(int count) {
