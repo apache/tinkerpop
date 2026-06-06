@@ -67,18 +67,14 @@ class GraphSetup {
     Map<String, dynamic>? params,
     Map<String, dynamic>? sideEffects,
   ]) async {
-    // Substitute parameters directly into the gremlin string (same approach
-    // as Python/Go drivers which inline values via DSL arguments).
-    // Also strip .iterate() which is a client-side terminal — the server iterates for us.
-    var resolved = GremlinLang.substituteParameters(traversal, params);
-    resolved = resolved.replaceAll(RegExp(r'\.iterate\(\)\s*$'), '').trim();
+    // Strip .iterate() — it is a client-side terminal; the server iterates for us.
+    var resolved = traversal.replaceAll(RegExp(r'\.iterate\(\)\s*$'), '').trim();
 
     // Inject side effects as withSideEffect() calls after the leading "g"
     if (sideEffects != null && sideEffects.isNotEmpty) {
       final seStr = sideEffects.entries
           .map((e) => '.withSideEffect("${e.key}", ${GremlinLang.valueToGremlinLiteral(e.value)})')
           .join();
-      // Insert after the leading "g" (before the first step)
       if (resolved.startsWith('g.') || resolved == 'g') {
         resolved = 'g$seStr${resolved.substring(1)}';
       }
@@ -88,11 +84,13 @@ class GraphSetup {
       ConnectionOptions(traversalSource: traversalSource),
     );
     try {
-      final request = RequestMessage.build(resolved)
+      final builder = RequestMessage.build(resolved)
           .addG(traversalSource)
-          .addBulkResults(true)
-          .create();
-      return (await connection.submit(request)).items;
+          .addBulkResults(true);
+      if (params != null && params.isNotEmpty) {
+        builder.addBindings(params);
+      }
+      return (await connection.submit(builder.create())).items;
     } finally {
       await connection.close();
     }

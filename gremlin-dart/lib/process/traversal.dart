@@ -196,6 +196,23 @@ class GByte {
   const GByte(this.value);
 }
 
+class GDecimal {
+  final int scale;
+  final BigInt unscaled;
+  const GDecimal(this.scale, this.unscaled);
+
+  double toDouble() => unscaled.toDouble() / _pow10(scale);
+
+  static double _pow10(int n) {
+    double r = 1.0;
+    for (var i = 0; i < n; i++) r *= 10.0;
+    return r;
+  }
+
+  @override
+  String toString() => 'GDecimal($unscaled e-$scale)';
+}
+
 // ---------------------------------------------------------------------------
 // Enum singletons (mirrors JS driver exports)
 // ---------------------------------------------------------------------------

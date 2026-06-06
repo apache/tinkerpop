@@ -15,13 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import '../process/gremlin_lang.dart';
-
 class RequestMessage {
   final String gremlin;
   final String language;
   final int? timeoutMs;
-  final String? bindings;
+  final Map<String, dynamic>? bindings;
   final String? g;
   final String? materializeProperties;
   final bool? bulkResults;
@@ -63,7 +61,6 @@ class RequestMessageBuilder {
   String _language = 'gremlin-lang';
   int? _timeoutMs;
   final Map<String, dynamic> _bindings = {};
-  String? _bindingsString;
   String? _g;
   String? _materializeProperties;
   bool? _bulkResults;
@@ -77,26 +74,12 @@ class RequestMessageBuilder {
   }
 
   RequestMessageBuilder addBinding(String key, dynamic value) {
-    if (_bindingsString != null) {
-      throw StateError('Cannot mix addBinding() with addBindingsString()');
-    }
     _bindings[key] = value;
     return this;
   }
 
   RequestMessageBuilder addBindings(Map<String, dynamic> bindings) {
-    if (_bindingsString != null) {
-      throw StateError('Cannot mix addBindings() with addBindingsString()');
-    }
     _bindings.addAll(bindings);
-    return this;
-  }
-
-  RequestMessageBuilder addBindingsString(String bindingsStr) {
-    if (_bindings.isNotEmpty) {
-      throw StateError('Cannot mix addBindingsString() with addBinding()');
-    }
-    _bindingsString = bindingsStr;
     return this;
   }
 
@@ -132,12 +115,8 @@ class RequestMessageBuilder {
   }
 
   RequestMessage create() {
-    String? bindings;
-    if (_bindingsString != null) {
-      bindings = _bindingsString;
-    } else if (_bindings.isNotEmpty) {
-      bindings = GremlinLang.convertParametersToString(_bindings);
-    }
+    final Map<String, dynamic>? bindings =
+        _bindings.isNotEmpty ? Map.unmodifiable(_bindings) : null;
     return RequestMessage._(
       gremlin: _gremlin,
       language: _language,

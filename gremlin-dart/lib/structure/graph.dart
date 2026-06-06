@@ -29,10 +29,10 @@ abstract class Element {
 
   @override
   bool operator ==(Object other) =>
-      other is Element && id == other.id;
+      runtimeType == other.runtimeType && other is Element && id == other.id;
 
   @override
-  int get hashCode => id.hashCode;
+  int get hashCode => Object.hash(runtimeType, id);
 }
 
 class Vertex extends Element {

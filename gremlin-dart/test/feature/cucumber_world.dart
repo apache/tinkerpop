@@ -24,6 +24,7 @@ class CucumberWorld {
   String? pendingTraversal;
   Map<String, dynamic> params = <String, dynamic>{};
   List<dynamic> result = <dynamic>[];
+  bool resultIsNext = false;
   String? errorMessage;
   bool ignore = false;
   Map<String, DataGraph> graphDataMap;
@@ -41,6 +42,7 @@ class CucumberWorld {
     params = <String, dynamic>{};
     sideEffects = <String, dynamic>{};
     result = <dynamic>[];
+    resultIsNext = false;
     errorMessage = null;
     ignore = false;
     g = null;
