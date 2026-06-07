@@ -36,7 +36,7 @@ class GraphBinaryWriter {
     if (message.language.isNotEmpty) fields['language'] = message.language;
     if (message.g != null) fields['g'] = message.g;
     if (message.bindings != null) fields['bindings'] = message.bindings;
-    if (message.timeoutMs != null) fields['timeoutMs'] = message.timeoutMs;
+    if (message.timeoutMs != null) fields['evaluationTimeout'] = message.timeoutMs;
     if (message.materializeProperties != null) {
       fields['materializeProperties'] = message.materializeProperties;
     }
