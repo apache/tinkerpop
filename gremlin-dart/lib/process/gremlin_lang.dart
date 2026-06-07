@@ -97,8 +97,12 @@ class GremlinLang {
     }
 
     if (arg is String) {
-      // Escape backslashes, then single-quotes, then wrap.
-      final escaped = arg.replaceAll(r'\', r'\\').replaceAll("'", r"\'");
+      final escaped = arg
+          .replaceAll(r'\', r'\\')
+          .replaceAll("'", r"\'")
+          .replaceAll('\n', r'\n')
+          .replaceAll('\r', r'\r')
+          .replaceAll('\t', r'\t');
       return "'$escaped'";
     }
 

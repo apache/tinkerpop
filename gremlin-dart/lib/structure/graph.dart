@@ -110,5 +110,8 @@ class Path {
   }
 
   @override
-  int get hashCode => Object.hashAll([...objects, ...labels]);
+  int get hashCode => Object.hashAll([
+        ...objects,
+        for (final l in labels) Object.hashAll(l),
+      ]);
 }
