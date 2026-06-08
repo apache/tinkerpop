@@ -40,7 +40,7 @@ void main() {
       expect(gremlin, 'g.V().has("name",x)');
       expect(fields['language'], 'gremlin-lang');
       expect(fields['g'], 'g');
-      expect(fields['timeoutMs'], 1234);
+      expect(fields['evaluationTimeout'], 1234);
       expect(fields['bulkResults'], false);
       expect(fields['materializeProperties'], 'tokens');
     });
