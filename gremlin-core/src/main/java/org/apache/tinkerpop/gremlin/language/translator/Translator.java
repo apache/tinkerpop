@@ -49,6 +49,11 @@ public enum Translator {
     DOTNET("DotNet", DotNetTranslateVisitor::new),
 
     /**
+     * Translates to gremlin-dotnet with parameterized GValue wrapping for variables.
+     */
+    DOTNET_PARAMETERIZE("DotNetParameterize", name -> new DotNetTranslateVisitor(name, true)),
+
+    /**
      * Translates to gremlin-groovy.
      */
     GO("Go", GoTranslateVisitor::new),

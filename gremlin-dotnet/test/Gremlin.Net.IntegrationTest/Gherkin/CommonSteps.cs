@@ -43,6 +43,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 {
     internal class CommonSteps : StepDefinition
     {
+        private static readonly bool Parameterize =
+            Environment.GetEnvironmentVariable("PARAMETERIZE") == "true";
+
         private GraphTraversalSource? _g;
         private string? _graphName;
         private readonly IDictionary<string, object?> _parameters = new Dictionary<string, object?>();
@@ -148,15 +151,30 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 _g = _g.WithComputer();
             }
 
-            _traversal =
-                Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
+            if (Parameterize)
+            {
+                _traversal =
+                    Gremlin.UseParameterizedTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
+            }
+            else
+            {
+                _traversal =
+                    Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
+            }
         }
 
         [Given("the graph initializer of")]
         public void InitTraversal(string traversalText)
         {
-            var traversal =
-                Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
+            ITraversal traversal;
+            if (Parameterize)
+            {
+                traversal = Gremlin.UseParameterizedTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
+            }
+            else
+            {
+                traversal = Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
+            }
             traversal.Iterate();
             
             // We may have modified the so-called `empty` graph
@@ -481,7 +499,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 traversalText = traversalText.Substring(1, traversalText.Length - 2);
             }
             
-            var traversal = (ITraversal) Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
+            var traversal = Parameterize
+                ? (ITraversal) Gremlin.UseParameterizedTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects)
+                : (ITraversal) Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
             
             var count = 0;
             while (traversal.MoveNextAsync().AsTask().GetAwaiter().GetResult())
