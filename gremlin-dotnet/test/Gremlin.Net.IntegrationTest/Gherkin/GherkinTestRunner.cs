@@ -88,6 +88,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             WriteOutput($"Starting Gherkin-based tests with serializer: {messageSerializer.GetType().Name}");
             Gremlin.InstantiateTranslationsForTestRun();
+            if (Environment.GetEnvironmentVariable("PARAMETERIZE") == "true")
+            {
+                Gremlin.InstantiateParameterizedTranslationsForTestRun();
+            }
             var stepDefinitionTypes = GetStepDefinitionTypes();
             var results = new List<ResultFeature>();
             using var scenarioData = new ScenarioData(messageSerializer);

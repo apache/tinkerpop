@@ -85,8 +85,23 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
             '            }\n' +
             '        }\n')
     writer.writeLine(
+            '        public static void InstantiateParameterizedTranslationsForTestRun()\n' +
+            '        {\n' +
+            '            _parameterizedTranslationsForTestRun =\n' +
+            '                new Dictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>>(\n' +
+            '                    ParameterizedTranslations.Count);\n' +
+            '            foreach (var (traversal, translations) in ParameterizedTranslations)\n' +
+            '            {\n' +
+            '                _parameterizedTranslationsForTestRun.Add(traversal,\n' +
+            '                    new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>(translations));\n' +
+            '            }\n' +
+            '        }\n')
+    writer.writeLine(
             '        private static IDictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>>\n' +
             '            _translationsForTestRun;\n')
+    writer.writeLine(
+            '        private static IDictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>>\n' +
+            '            _parameterizedTranslationsForTestRun;\n')
     writer.writeLine(
             '        private static readonly IDictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>,ITraversal>>> FixedTranslations = \n' +
             '            new Dictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>>\n' +
@@ -132,6 +147,43 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     }
     writer.writeLine('            };\n')
 
+    // Generate parameterized translations
+    writer.writeLine(
+            '        private static readonly IDictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>,ITraversal>>> ParameterizedTranslations = \n' +
+            '            new Dictionary<string, List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>>\n' +
+            '            {')
+
+    gremlins.each { k,v ->
+        if (staticTranslate.containsKey(k)) {
+            writer.writeLine(staticTranslate[k])
+        } else {
+            writer.write("               {\"")
+            writer.write(k)
+            writer.write("\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {")
+            def collected = v.collect { GremlinTranslator.translate(it, Translator.DOTNET_PARAMETERIZE) }
+            def gremlinItty = collected.iterator()
+            while (gremlinItty.hasNext()) {
+                def t = gremlinItty.next()
+                writer.write("(g,p) =>")
+                writer.write(t.getTranslated().
+                        replaceAll("(?<!\")xx([0-9]+)", "p[\"xx\$1\"]").
+                        replaceAll("(?<![\\w\\-\"])v([0-9]+)(?![\\w\\.])", "(Vertex) p[\"v\$1\"]").
+                        replaceAll("(?<!\")vid([0-9]+)", "p[\"vid\$1\"]").
+                        replaceAll("(?<![\\w\\-\"])e([0-9]+)(?![\\w\\.])", "p[\"e\$1\"]").
+                        replaceAll("(?<!\")eid([0-9]+)", "p[\"eid\$1\"]").
+                        replaceAll("(?<![\\w\\-\"])l([0-9]+)(?![\\w\\.])", "(IFunction) p[\"l\$1\"]").
+                        replaceAll("(?<!\")pred([0-9]+)", "(IPredicate) p[\"pred\$1\"]").
+                        replaceAll("(?<![\\w\\-\"])c([0-9]+)(?![\\w\\.])", "(IComparator) p[\"c\$1\"]"))
+                if (gremlinItty.hasNext())
+                    writer.write(', ')
+                else
+                    writer.write("}")
+            }
+            writer.writeLine('}, ')
+        }
+    }
+    writer.writeLine('            };\n')
+
     writer.writeLine(
             '        public static ITraversal UseTraversal(string scenarioName, GraphTraversalSource g, IDictionary<string, object> parameters, IDictionary<string, object> sideEffects)\n' +
             '        {\n' +
@@ -141,6 +193,24 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
             '            ITraversal traversal = f.Invoke(g, parameters);\n' +
             '            // Side effects need to be prepended as source steps (before traversal steps).\n' +
             '            // Build them in a temporary GremlinLang and prepend to the traversal\'s gremlin string.\n' +
+            '            if (sideEffects.Count > 0)\n' +
+            '            {\n' +
+            '                var sideEffectLang = new GremlinLang();\n' +
+            '                foreach (var sideEffect in sideEffects)\n' +
+            '                {\n' +
+            '                    sideEffectLang.AddSource("withSideEffect", sideEffect.Key, sideEffect.Value);\n' +
+            '                }\n' +
+            '                traversal.GremlinLang.Gremlin = sideEffectLang.Gremlin + traversal.GremlinLang.Gremlin;\n' +
+            '            }\n' +
+            '            return traversal;\n' +
+            '        }\n')
+    writer.writeLine(
+            '        public static ITraversal UseParameterizedTraversal(string scenarioName, GraphTraversalSource g, IDictionary<string, object> parameters, IDictionary<string, object> sideEffects)\n' +
+            '        {\n' +
+            '            List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> list = _parameterizedTranslationsForTestRun[scenarioName];\n' +
+            '            Func<GraphTraversalSource, IDictionary<string, object>, ITraversal> f = list[0];\n' +
+            '            list.RemoveAt(0);\n' +
+            '            ITraversal traversal = f.Invoke(g, parameters);\n' +
             '            if (sideEffects.Count > 0)\n' +
             '            {\n' +
             '                var sideEffectLang = new GremlinLang();\n' +
