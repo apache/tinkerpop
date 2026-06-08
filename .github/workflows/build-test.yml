@@ -6,6 +6,9 @@ env:
   # modifications could break patterns of replacement they are searching for.
   EXCLUDE_MODULES: '-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-js,-:gremlin-javascript,-:gremlint,-:gremlin-mcp,-:gremlin-python'
   EXCLUDE_FOR_GLV: '-:gremlin-console,-:gremlin-coverage,-:hadoop-gremlin,-:spark-gremlin'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   smoke:
     name: smoke
