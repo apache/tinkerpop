@@ -31,7 +31,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
-import org.apache.tinkerpop.gremlin.server.handler.TransactionManager;
+import org.apache.tinkerpop.gremlin.server.transaction.TransactionManager;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
@@ -646,6 +646,56 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
     private static ByteBuf toByteBuf(final org.apache.http.HttpEntity httpEntity) throws java.io.IOException {
         final byte[] asArray = EntityUtils.toByteArray(httpEntity);
         return Unpooled.wrappedBuffer(asArray);
+    }
+
+    @Test
+    public void shouldNotLeakTransactionExecutorThreadOnCommit() throws Exception {
+        final long txThreadsBefore = Thread.getAllStackTraces().keySet().stream()
+                .filter(t -> t.getName().startsWith("tx-")).count();
+
+        for (int i = 0; i < 3; i++) {
+            final String txId = beginTx(client, GTX);
+            try (final CloseableHttpResponse r = submitInTx(client, txId, "g.addV('leak_test')", GTX)) {
+                assertEquals(200, r.getStatusLine().getStatusCode());
+            }
+            try (final CloseableHttpResponse r = commitTx(client, txId, GTX)) {
+                assertEquals(200, r.getStatusLine().getStatusCode());
+            }
+        }
+
+        // allow time for executor threads to terminate after shutdown
+        Thread.sleep(500);
+
+        final long txThreadsAfter = Thread.getAllStackTraces().keySet().stream()
+                .filter(t -> t.getName().startsWith("tx-")).count();
+
+        assertEquals("Transaction executor threads should be cleaned up after commit",
+                txThreadsBefore, txThreadsAfter);
+    }
+
+    @Test
+    public void shouldNotLeakTransactionExecutorThreadOnRollback() throws Exception {
+        final long txThreadsBefore = Thread.getAllStackTraces().keySet().stream()
+                .filter(t -> t.getName().startsWith("tx-")).count();
+
+        for (int i = 0; i < 3; i++) {
+            final String txId = beginTx(client, GTX);
+            try (final CloseableHttpResponse r = submitInTx(client, txId, "g.addV('leak_test')", GTX)) {
+                assertEquals(200, r.getStatusLine().getStatusCode());
+            }
+            try (final CloseableHttpResponse r = rollbackTx(client, txId, GTX)) {
+                assertEquals(200, r.getStatusLine().getStatusCode());
+            }
+        }
+
+        // allow time for executor threads to terminate after shutdown
+        Thread.sleep(500);
+
+        final long txThreadsAfter = Thread.getAllStackTraces().keySet().stream()
+                .filter(t -> t.getName().startsWith("tx-")).count();
+
+        assertEquals("Transaction executor threads should be cleaned up after rollback",
+                txThreadsBefore, txThreadsAfter);
     }
     @Test
     public void shouldRoundTripTransactionIdWithGraphSON() throws Exception {

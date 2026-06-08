@@ -50,6 +50,8 @@ import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.ProcessingException;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
+import org.apache.tinkerpop.gremlin.server.transaction.TransactionManager;
+import org.apache.tinkerpop.gremlin.server.transaction.UnmanagedTransaction;
 import org.apache.tinkerpop.gremlin.server.util.GremlinError;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.TraverserIterator;
@@ -541,7 +543,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                                final Pair<String, MessageSerializer<?>> serializer) throws Exception {
         final Graph graph = graphManager.getTraversalSource(ctx.getRequestMessage().getField(Tokens.ARGS_G)).getGraph();
         graphOp.accept(graph.tx());
-        transactionManager.destroy(transactionId);
+        transactionManager.get(transactionId).ifPresent(tx -> tx.close(true));
         final ByteBuf chunk = makeChunk(ctx, serializer.getValue1(), List.of(Map.of(Tokens.ARGS_TRANSACTION_ID, transactionId)), false, false);
         ctx.getChannelHandlerContext().writeAndFlush(new DefaultHttpContent(chunk));
     }

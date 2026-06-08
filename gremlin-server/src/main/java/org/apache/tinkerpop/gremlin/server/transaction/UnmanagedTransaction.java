@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.server.handler;
+package org.apache.tinkerpop.gremlin.server.transaction;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.server.handler;
+package org.apache.tinkerpop.gremlin.server.transaction;
 
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
@@ -99,12 +99,11 @@ public class TransactionManager {
     }
 
     /**
-     * Removes a transaction from the active transactions map. Called when a transaction is
-     * committed, rolled back, or otherwise closed.
-     *
-     * @param id The transaction ID to remove
+     * Removes a transaction from the active transactions map. Package-private so that only
+     * {@link UnmanagedTransaction#close(boolean)} can call it — external callers must go
+     * through {@code close()} to ensure the executor is shut down.
      */
-    public void destroy(final String id) {
+    void destroy(final String id) {
         transactions.remove(id);
     }
 

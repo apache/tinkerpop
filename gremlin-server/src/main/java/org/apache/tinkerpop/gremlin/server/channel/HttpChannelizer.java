@@ -36,7 +36,6 @@ import org.apache.tinkerpop.gremlin.server.handler.HttpRequestIdHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpRequestMessageDecoder;
 import org.apache.tinkerpop.gremlin.server.handler.HttpUserAgentHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
-import org.apache.tinkerpop.gremlin.server.handler.TransactionManager;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
