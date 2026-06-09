@@ -72,8 +72,10 @@ public class HttpHandlerUtil {
      * @param ctx           The netty channel context.
      * @param status        The HTTP error status code.
      * @param message       The error message to contain the body.
+     * @param headers       Optional alternating header name/value pairs to set on the response.
      */
-    public static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final String message) {
+    public static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final String message,
+                                  final CharSequence... headers) {
         logger.warn(String.format("Invalid request - responding with %s and %s", status, message));
         errorMeter.mark();
 
@@ -83,6 +85,9 @@ public class HttpHandlerUtil {
         final FullHttpResponse response = new DefaultFullHttpResponse(
                 HTTP_1_1, status, Unpooled.copiedBuffer(node.toString(), CharsetUtil.UTF_8));
         response.headers().set(CONTENT_TYPE, "application/json");
+        for (int i = 0; i < headers.length; i += 2) {
+            response.headers().set(headers[i], headers[i + 1]);
+        }
         HttpUtil.setContentLength(response, response.content().readableBytes());
 
         ctx.writeAndFlush(response);

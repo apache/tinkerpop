@@ -209,6 +209,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(405, response.getStatusLine().getStatusCode());
             assertTrue(response.containsHeader(REQUEST_ID_HEADER_NAME));
+            assertEquals("POST", response.getFirstHeader("Allow").getValue());
         }
     }
 

@@ -82,7 +82,7 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
         final Pair<String, MessageSerializer<?>> serializer = chooseSerializer(acceptMime);
 
         if (req.method() != POST) {
-            sendError(ctx, METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED.toString());
+            sendError(ctx, METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED.toString(), HttpHeaderNames.ALLOW, POST.name());
             return;
         }
 
