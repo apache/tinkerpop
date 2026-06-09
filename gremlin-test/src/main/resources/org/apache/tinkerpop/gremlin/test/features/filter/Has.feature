@@ -18,6 +18,7 @@
 @StepClassFilter @StepHas
 Feature: Step - has()
 
+  @TinyGremlin
   Scenario: g_VX1X_hasXnameX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -30,6 +31,7 @@ Feature: Step - has()
       | result |
       | v[marko] |
 
+  @TinyGremlin
   Scenario: g_VX1X_hasXcircumferenceX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -40,6 +42,7 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_VX1X_hasXname_markoX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -52,6 +55,7 @@ Feature: Step - has()
       | result |
       | v[marko] |
 
+  @TinyGremlin
   Scenario: g_VX1X_hasXname_markovarX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -65,6 +69,7 @@ Feature: Step - has()
       | result |
       | v[marko] |
 
+  @TinyGremlin
   Scenario: g_VX2X_hasXname_markoX
     Given the modern graph
     And using the parameter vid1 defined as "v[vadas].id"
@@ -75,6 +80,7 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_V_hasXname_markoX
     Given the modern graph
     And the traversal of
@@ -86,6 +92,7 @@ Feature: Step - has()
       | result |
       | v[marko] |
 
+  @TinyGremlin
   Scenario: g_V_hasXname_blahX
     Given the modern graph
     And the traversal of
@@ -95,6 +102,7 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_V_hasXage_gt_30X
     Given the modern graph
     And the traversal of
@@ -107,6 +115,7 @@ Feature: Step - has()
       | v[josh] |
       | v[peter] |
 
+  @TinyGremlin
   Scenario: g_VX1X_hasXage_gt_30X
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -117,6 +126,7 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_V_hasXpersonvar_age_gt_30X
     Given the modern graph
     And using the parameter xx1 defined as "person"
@@ -130,6 +140,7 @@ Feature: Step - has()
       | v[peter] |
       | v[josh] |
 
+  @TinyGremlin
   Scenario: g_VX4X_hasXage_gt_30X
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
@@ -142,6 +153,7 @@ Feature: Step - has()
       | result |
       | v[josh] |
 
+  @TinyGremlin
   Scenario: g_VXv1X_hasXage_gt_30X
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -152,6 +164,7 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_VXv4X_hasXage_gt_30X
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
@@ -164,6 +177,7 @@ Feature: Step - has()
       | result |
       | v[josh] |
 
+  @TinyGremlin
   Scenario: g_VX1X_out_hasXid_2X
     Given the modern graph
     And using the parameter vid2 defined as "v[josh].id"
@@ -176,6 +190,7 @@ Feature: Step - has()
       | result |
       | v[josh] |
 
+  @TinyGremlin
   Scenario: g_V_hasXblahX
     Given the modern graph
     And the traversal of
@@ -185,6 +200,7 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_V_hasXperson_name_markoX_age
     Given the modern graph
     And the traversal of
@@ -196,6 +212,7 @@ Feature: Step - has()
       | result |
       | d[29].i |
 
+  @TinyGremlin
   Scenario: g_V_hasXperson_name_markovarX_age
     Given the modern graph
     And using the parameter xx1 defined as "marko"
@@ -208,6 +225,7 @@ Feature: Step - has()
       | result |
       | d[29].i |
 
+  @TinyGremlin
   Scenario: g_V_hasXpersonvar_name_markoX_age
     Given the modern graph
     And using the parameter xx1 defined as "person"
@@ -220,6 +238,7 @@ Feature: Step - has()
       | result |
       | d[29].i |
 
+  @TinyGremlin
   Scenario: g_VX1X_outE_hasXweight_inside_0_06X_inV
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -233,6 +252,7 @@ Feature: Step - has()
       | v[vadas] |
       | v[lop] |
 
+  @TinyGremlin
   Scenario: g_EX11X_outV_outE_hasXid_10X
     Given the modern graph
     And using the parameter eid11 defined as "e[josh-created->lop].id"
@@ -259,7 +279,7 @@ Feature: Step - has()
       | result |
       | e[josh-created->ripple] |
 
-  @MultiProperties @MetaProperties
+  @MultiProperties @MetaProperties @TinyGremlin
   Scenario: g_V_hasXlocationX
     Given the crew graph
     And the traversal of
@@ -329,6 +349,7 @@ Feature: Step - has()
       | result |
       | d[2].l |
 
+  @TinyGremlin
   Scenario: g_V_hasXperson_age_withinX
     Given the modern graph
     And the traversal of
@@ -338,6 +359,7 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_V_hasXperson_age_withoutX
     Given the modern graph
     And the traversal of
@@ -352,6 +374,7 @@ Feature: Step - has()
       | v[josh] |
       | v[peter] |
 
+  @TinyGremlin
   Scenario: g_V_hasXname_containingXarkXX
     Given the modern graph
     And the traversal of
@@ -363,6 +386,7 @@ Feature: Step - has()
       | result |
       | v[marko] |
 
+  @TinyGremlin
   Scenario: g_V_hasXname_startingWithXmarXX
     Given the modern graph
     And the traversal of
@@ -374,6 +398,7 @@ Feature: Step - has()
       | result |
       | v[marko] |
 
+  @TinyGremlin
   Scenario: g_V_hasXname_endingWithXasXX
     Given the modern graph
     And the traversal of
@@ -407,6 +432,7 @@ Feature: Step - has()
       | result |
       | v[marko] |
 
+  @TinyGremlin
   Scenario: g_V_hasXname_not_containingXarkXX
     Given the modern graph
     And the traversal of
@@ -422,6 +448,7 @@ Feature: Step - has()
       | v[ripple] |
       | v[peter] |
 
+  @TinyGremlin
   Scenario: g_V_hasXname_not_startingWithXmarXX
     Given the modern graph
     And the traversal of
@@ -437,6 +464,7 @@ Feature: Step - has()
       | v[ripple] |
       | v[peter] |
 
+  @TinyGremlin
   Scenario: g_V_hasXname_not_endingWithXasXX
     Given the modern graph
     And the traversal of
@@ -452,6 +480,7 @@ Feature: Step - has()
       | v[ripple] |
       | v[peter] |
 
+ @TinyGremlin
  Scenario: g_V_hasXname_regexXrMarXX
     Given the modern graph
     And the traversal of
@@ -463,6 +492,7 @@ Feature: Step - has()
       | result |
       | v[marko] |
 
+ @TinyGremlin
  Scenario: g_V_hasXname_notRegexXrMarXX
     Given the modern graph
     And the traversal of
@@ -478,6 +508,7 @@ Feature: Step - has()
       | v[ripple] |
       | v[peter] |
 
+  @TinyGremlin
   Scenario: g_V_hasXname_regexXTinkerXX
     Given the empty graph
     And the graph initializer of
@@ -493,6 +524,7 @@ Feature: Step - has()
       | result |
       | Apache TinkerPop© |
 
+  @TinyGremlin
   Scenario: g_V_hasXname_regexXTinkerUnicodeXX
     Given the empty graph
     And the graph initializer of
@@ -508,6 +540,7 @@ Feature: Step - has()
       | result |
       | Apache TinkerPop© |
 
+  @TinyGremlin
   Scenario: g_V_hasXp_neqXvXX
     Given the modern graph
     And the traversal of
@@ -541,6 +574,7 @@ Feature: Step - has()
       | v[marko] |
       | v[vadas] |
 
+  @TinyGremlin
   Scenario: g_V_hasXk_withinXcXX_valuesXkX
     Given the empty graph
     And the graph initializer of
@@ -558,6 +592,7 @@ Feature: Step - has()
       | ✦ |
       | ♠ |
 
+  @TinyGremlin
   Scenario: g_V_hasXnullX
     Given the modern graph
     And the traversal of
@@ -567,6 +602,7 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_V_hasXnull_testnullkeyX
     Given the modern graph
     And the traversal of
@@ -576,6 +612,7 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_E_hasXnullX
     Given the modern graph
     And the traversal of
@@ -585,6 +622,7 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_V_hasXlabel_personX
     Given the modern graph
     And the traversal of
@@ -599,6 +637,7 @@ Feature: Step - has()
       | v[josh] |
       | v[peter] |
 
+  @TinyGremlin
   Scenario: g_V_hasXlabel_eqXpersonXX
     Given the modern graph
     And the traversal of
@@ -613,6 +652,7 @@ Feature: Step - has()
       | v[josh] |
       | v[peter] |
 
+  @TinyGremlin
   Scenario: g_V_hasXname_nullX
     Given the modern graph
     And the traversal of

@@ -9790,6 +9790,23 @@
         ]
     },
     {
+        "scenario": "g_V_hasNotXlangX_name",
+        "traversals": [
+            {
+                "original": "g.V().hasNot(\"lang\").values(\"name\")",
+                "language": "g.V().hasNot(\"lang\").values(\"name\")",
+                "canonical": "g.V().hasNot(\"lang\").values(\"name\")",
+                "anonymized": "g.V().hasNot(string0).values(string1)",
+                "dotnet": "g.V().HasNot(\"lang\").Values<object>(\"name\")",
+                "go": "g.V().HasNot(\"lang\").Values(\"name\")",
+                "groovy": "g.V().hasNot(\"lang\").values(\"name\")",
+                "java": "g.V().hasNot(\"lang\").values(\"name\")",
+                "javascript": "g.V().hasNot(\"lang\").values(\"name\")",
+                "python": "g.V().has_not('lang').values('name')"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_properties_hasValueXnullX",
         "traversals": [
             {
@@ -34868,6 +34885,57 @@
         ]
     },
     {
+        "scenario": "g_V_order_byXTidX_name",
+        "traversals": [
+            {
+                "original": "g.V().order().by(T.id).values(\"name\")",
+                "language": "g.V().order().by(T.id).values(\"name\")",
+                "canonical": "g.V().order().by(T.id).values(\"name\")",
+                "anonymized": "g.V().order().by(T.id).values(string0)",
+                "dotnet": "g.V().Order().By(T.Id).Values<object>(\"name\")",
+                "go": "g.V().Order().By(gremlingo.T.Id).Values(\"name\")",
+                "groovy": "g.V().order().by(T.id).values(\"name\")",
+                "java": "g.V().order().by(T.id).values(\"name\")",
+                "javascript": "g.V().order().by(T.id).values(\"name\")",
+                "python": "g.V().order().by(T.id_).values('name')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_order_byXTid_descX_name",
+        "traversals": [
+            {
+                "original": "g.V().order().by(T.id, Order.desc).values(\"name\")",
+                "language": "g.V().order().by(T.id, Order.desc).values(\"name\")",
+                "canonical": "g.V().order().by(T.id, Order.desc).values(\"name\")",
+                "anonymized": "g.V().order().by(T.id, Order.desc).values(string0)",
+                "dotnet": "g.V().Order().By(T.Id, Order.Desc).Values<object>(\"name\")",
+                "go": "g.V().Order().By(gremlingo.T.Id, gremlingo.Order.Desc).Values(\"name\")",
+                "groovy": "g.V().order().by(T.id, Order.desc).values(\"name\")",
+                "java": "g.V().order().by(T.id, Order.desc).values(\"name\")",
+                "javascript": "g.V().order().by(T.id, Order.desc).values(\"name\")",
+                "python": "g.V().order().by(T.id_, Order.desc).values('name')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_order_byXTlabelX_label",
+        "traversals": [
+            {
+                "original": "g.V().order().by(T.label).label()",
+                "language": "g.V().order().by(T.label).label()",
+                "canonical": "g.V().order().by(T.label).label()",
+                "anonymized": "g.V().order().by(T.label).label()",
+                "dotnet": "g.V().Order().By(T.Label).Label()",
+                "go": "g.V().Order().By(gremlingo.T.Label).Label()",
+                "groovy": "g.V().order().by(T.label).label()",
+                "java": "g.V().order().by(T.label).label()",
+                "javascript": "g.V().order().by(T.label).label()",
+                "python": "g.V().order().by(T.label).label()"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_pageRank_hasXpageRankX",
         "traversals": [
             {
@@ -35204,6 +35272,23 @@
                 "java": "g.inject(1, null, null).path().dedup()",
                 "javascript": "g.inject(1, null, null).path().dedup()",
                 "python": "g.inject(1, None, None).path().dedup()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_VX1X_out_out_path",
+        "traversals": [
+            {
+                "original": "g.V(vid1).out().out().path()",
+                "language": "g.V(vid1).out().out().path()",
+                "canonical": "g.V(vid1).out().out().path()",
+                "anonymized": "g.V(vid1).out().out().path()",
+                "dotnet": "g.V(vid1).Out().Out().Path()",
+                "go": "g.V(vid1).Out().Out().Path()",
+                "groovy": "g.V(vid1).out().out().path()",
+                "java": "g.V(vid1).out().out().path()",
+                "javascript": "g.V(vid1).out().out().path()",
+                "python": "g.V(vid1).out().out().path()"
             }
         ]
     },

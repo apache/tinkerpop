@@ -18,6 +18,7 @@
 @StepClassMap @StepE
 Feature: Step - E(), inV(), outV(), bothV(), otherV()
 
+  @TinyGremlin
   Scenario: g_E
     Given the modern graph
     And the traversal of
@@ -34,6 +35,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
 
+  @TinyGremlin
   Scenario: g_EX11X
     Given the modern graph
     And using the parameter eid11 defined as "e[josh-created->lop].id"
@@ -58,6 +60,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | result |
       | e[josh-created->lop] |
 
+  @TinyGremlin
   Scenario: g_EXeid7_eid11X
     Given the modern graph
     And using the parameter eid7 defined as "e[marko-knows->vadas].id"
@@ -72,6 +75,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | e[marko-knows->vadas] |
       | e[josh-created->lop] |
 
+  @TinyGremlin
   Scenario: g_EXlistXeid7_eid11XX
     Given the modern graph
     And using the parameter xx1 defined as "l[e[marko-knows->vadas].id,e[josh-created->lop].id]"
@@ -85,6 +89,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | e[marko-knows->vadas] |
       | e[josh-created->lop] |
 
+  @TinyGremlin
   Scenario: g_EXnullX
     Given the modern graph
     And the traversal of
@@ -94,6 +99,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_EXlistXnullXX
     Given the modern graph
     And using the parameter xx1 defined as "l[null]"
@@ -104,6 +110,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_EX11_nullX
     Given the modern graph
     And using the parameter eid11 defined as "e[josh-created->lop].id"
@@ -116,7 +123,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | result |
       | e[josh-created->lop] |
 
-  @GraphComputerVerificationMidENotSupported
+  @GraphComputerVerificationMidENotSupported @TinyGremlin
   Scenario: g_V_EX11X
     Given the modern graph
     And using the parameter eid11 defined as "e[josh-created->lop].id"
@@ -134,7 +141,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | e[josh-created->lop] |
       | e[josh-created->lop] |
 
-  @GraphComputerVerificationMidENotSupported
+  @GraphComputerVerificationMidENotSupported @TinyGremlin
   Scenario: g_EX11X_E
     Given the modern graph
     And using the parameter eid11 defined as "e[josh-created->lop].id"
@@ -152,7 +159,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
 
-  @GraphComputerVerificationMidENotSupported
+  @GraphComputerVerificationMidENotSupported @TinyGremlin
   Scenario: g_V_EXnullX
     Given the modern graph
     And the traversal of
@@ -162,7 +169,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
     When iterated to list
     Then the result should be empty
 
-  @GraphComputerVerificationMidENotSupported
+  @GraphComputerVerificationMidENotSupported @TinyGremlin
   Scenario: g_V_EXlistXnullXX
     Given the modern graph
     And using the parameter xx1 defined as "l[null]"
@@ -202,6 +209,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.E().hasLabel(\"tests\")"
 
+  @TinyGremlin
   Scenario: g_VX1X_outE_inV
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -216,6 +224,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | v[josh] |
       | v[lop] |
 
+  @TinyGremlin
   Scenario: g_VX2X_inE_outV
     Given the modern graph
     And using the parameter vid2 defined as "v[vadas].id"
@@ -228,6 +237,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | result |
       | v[marko] |
 
+  @TinyGremlin
   Scenario: g_V_outE_hasXweight_1X_outV
     Given the modern graph
     And the traversal of
@@ -240,6 +250,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | v[marko] |
       | v[josh] |
 
+  @TinyGremlin
   Scenario: g_VX1X_outE_otherV
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -254,6 +265,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | v[josh] |
       | v[lop] |
 
+  @TinyGremlin
   Scenario: g_VX4X_bothE_otherV
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
@@ -268,6 +280,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | v[ripple] |
       | v[lop] |
 
+  @TinyGremlin
   Scenario: g_VX4X_bothE_hasXweight_lt_1X_otherV
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
@@ -280,6 +293,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | result |
       | v[lop] |
 
+  @TinyGremlin
   Scenario: get_g_VX1X_outE_otherV
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -294,6 +308,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | v[josh] |
       | v[lop] |
 
+  @TinyGremlin
   Scenario: g_VX1X_outEXknowsX_inV
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -307,6 +322,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | v[vadas] |
       | v[josh] |
 
+  @TinyGremlin
   Scenario: g_VX1X_outEXknows_createdX_inV
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"

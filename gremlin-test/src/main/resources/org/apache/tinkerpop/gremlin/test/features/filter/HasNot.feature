@@ -18,6 +18,7 @@
 @StepClassFilter @StepHasNot
 Feature: Step - hasNot()
 
+  @TinyGremlin
   Scenario: g_V_hasNotXageX_name
     Given the modern graph
     And the traversal of
@@ -29,3 +30,17 @@ Feature: Step - hasNot()
       | result |
       | lop |
       | ripple |
+  @TinyGremlin
+  Scenario: g_V_hasNotXlangX_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasNot("lang").values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko  |
+      | vadas  |
+      | josh   |
+      | peter  |

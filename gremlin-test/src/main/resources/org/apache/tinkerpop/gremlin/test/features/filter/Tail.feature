@@ -30,6 +30,7 @@ Feature: Step - tail()
       | ripple |
       | vadas |
 
+  @TinyGremlin
   Scenario: g_V_valuesXnameX_order_tailX2X
     Given the modern graph
     And the traversal of
@@ -42,6 +43,7 @@ Feature: Step - tail()
       | ripple |
       | vadas |
 
+  @TinyGremlin
   Scenario: g_V_valuesXnameX_order_tailX2varX
     Given the modern graph
     And using the parameter xx1 defined as "d[2].l"
@@ -55,6 +57,7 @@ Feature: Step - tail()
       | ripple |
       | vadas |
 
+  @TinyGremlin
   Scenario: g_V_valuesXnameX_order_tail
     Given the modern graph
     And the traversal of
@@ -66,6 +69,7 @@ Feature: Step - tail()
       | result |
       | vadas |
 
+  @TinyGremlin
   Scenario: g_V_valuesXnameX_order_tailX7X
     Given the modern graph
     And the traversal of

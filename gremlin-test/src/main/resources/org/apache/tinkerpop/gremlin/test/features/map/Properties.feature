@@ -88,6 +88,7 @@ Feature: Step - properties()
       | lop |
       | ripple |
 
+  @TinyGremlin
   Scenario: g_V_valuesXname_age_nullX
     Given the modern graph
     And the traversal of

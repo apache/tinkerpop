@@ -36,6 +36,8 @@ import ResultSet from './driver/result-set.js';
 import { HttpRequest } from './driver/http-request.js';
 import { basic, sigv4 } from './driver/auth.js';
 import AnonymousTraversalSource from './process/anonymous-traversal.js';
+import { LocalGraphConnection } from './driver/local-graph-connection.js';
+import { LocalExecutionError } from './process/local/LocalExecutionError.js';
 
 export const driver = {
   RemoteConnection: rc.RemoteConnection,
@@ -43,6 +45,7 @@ export const driver = {
   RemoteTraversal: rc.RemoteTraversal,
   ResponseError,
   DriverRemoteConnection,
+  LocalGraphConnection,
   Client,
   ResultSet,
   HttpRequest,
@@ -50,6 +53,7 @@ export const driver = {
     basic,
     sigv4,
   },
+  LocalExecutionError,
 };
 
 export const process = {

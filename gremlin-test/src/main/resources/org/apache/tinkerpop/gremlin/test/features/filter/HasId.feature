@@ -63,6 +63,7 @@ Feature: Step - hasId()
       | result |
       | d[6].l |
 
+  @TinyGremlin
   Scenario: g_V_hasIdXnullX
     Given the modern graph
     And the traversal of
@@ -72,6 +73,7 @@ Feature: Step - hasId()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_V_hasIdXeqXnullXX
     Given the modern graph
     And the traversal of
@@ -81,6 +83,7 @@ Feature: Step - hasId()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_V_hasIdX2_nullX
     Given the modern graph
     And using the parameter vid2 defined as "v[vadas].id"
@@ -93,6 +96,7 @@ Feature: Step - hasId()
       | result |
       | v[vadas] |
 
+  @TinyGremlin
   Scenario: g_V_hasIdXmarkovar_vadasvarX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -148,6 +152,7 @@ Feature: Step - hasId()
       | v[marko] |
       | v[vadas] |
 
+  @TinyGremlin
   Scenario: g_V_hasIdXnull_2X
     Given the modern graph
     And using the parameter vid2 defined as "v[vadas].id"
@@ -160,6 +165,7 @@ Feature: Step - hasId()
       | result |
       | v[vadas] |
 
+  @TinyGremlin
   Scenario: g_V_hasIdX1X_hasIdX2X
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -171,6 +177,7 @@ Feature: Step - hasId()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_V_in_hasIdXneqX1XX
     Given the modern graph
     And using the parameter xx1 defined as "v[marko].id"
@@ -185,6 +192,7 @@ Feature: Step - hasId()
       | v[josh] |
       | v[peter] |
 
+  @TinyGremlin
   Scenario: g_VX1X_out_hasIdX2X
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -198,6 +206,7 @@ Feature: Step - hasId()
       | result |
       | v[vadas] |
 
+  @TinyGremlin
   Scenario: g_VX1X_out_hasXid_2_3X
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -241,6 +250,7 @@ Feature: Step - hasId()
       | result |
       | v[vadas] |
 
+  @TinyGremlin
   Scenario: g_VX1X_out_hasXid_2_3X_inList
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -255,6 +265,7 @@ Feature: Step - hasId()
       | v[vadas] |
       | v[lop] |
 
+  @TinyGremlin
   Scenario: g_V_hasXid_1_2X
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -269,6 +280,7 @@ Feature: Step - hasId()
       | v[marko] |
       | v[vadas] |
 
+  @TinyGremlin
   Scenario: g_V_hasXid_1_2X_inList
     Given the modern graph
     And using the parameter xx1 defined as "l[v[marko].id,v[vadas].id]"

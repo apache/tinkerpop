@@ -1903,4 +1903,6 @@ in use with the Gremlin Console plugin host.  Simply instantiate and return a `R
 
 include::gremlin-semantics.asciidoc[]
 
+include::tiny-gremlin.asciidoc[]
+
 include::policies.asciidoc[]

@@ -18,6 +18,7 @@
 @StepClassMap @StepPath
 Feature: Step - path()
 
+  @TinyGremlin
   Scenario: g_VX1X_name_path
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -82,6 +83,7 @@ Feature: Step - path()
       | result |
       | p[v[marko]] |
 
+  @TinyGremlin
   Scenario: g_VX1X_outEXcreatedX_inV_inE_outV_path
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -162,3 +164,16 @@ Feature: Step - path()
       | result |
       | p[d[1].i] |
       | p[null] |
+  @TinyGremlin
+  Scenario: g_VX1X_out_out_path
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).out().out().path()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result                          |
+      | p[v[marko],v[josh],v[ripple]] |
+      | p[v[marko],v[josh],v[lop]]    |

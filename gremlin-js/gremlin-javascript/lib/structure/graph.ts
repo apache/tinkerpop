@@ -30,10 +30,26 @@
 export class Graph {
   readonly vertices: Map<any, Vertex>;
   readonly edges: Map<any, Edge>;
+  /** Outgoing edges indexed by source vertex id. Populated during deserialization and mutation. */
+  readonly outEdges: Map<any, Edge[]>;
+  /** Incoming edges indexed by target vertex id. Populated during deserialization and mutation. */
+  readonly inEdges: Map<any, Edge[]>;
 
   constructor() {
     this.vertices = new Map();
     this.edges = new Map();
+    this.outEdges = new Map();
+    this.inEdges = new Map();
+  }
+
+  /** @internal Registers an edge in the adjacency index. Called by GraphSerializer and addE(). */
+  _indexEdge(edge: Edge): void {
+    const outId = edge.outV.id;
+    const inId = edge.inV.id;
+    if (!this.outEdges.has(outId)) this.outEdges.set(outId, []);
+    if (!this.inEdges.has(inId)) this.inEdges.set(inId, []);
+    this.outEdges.get(outId)!.push(edge);
+    this.inEdges.get(inId)!.push(edge);
   }
 
   toString() {

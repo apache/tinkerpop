@@ -198,6 +198,7 @@ export default class GraphSerializer {
 
       const edge = new Edge(eId, outV, eLabel, inV, edgeProps || []);
       graph.edges.set(eId, edge);
+      graph._indexEdge(edge);
     }
 
     return graph;

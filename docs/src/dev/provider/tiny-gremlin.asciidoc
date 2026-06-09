@@ -1,0 +1,385 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+
+[[tiny-gremlin]]
+= Tiny Gremlin
+
+image:tiny-gremlin.png[]
+
+== Introduction
+
+*Tiny Gremlin* is a defined subset of the Gremlin traversal language intended for local, in-process graph traversal
+against small, detached `Graph` instances. A common use case would be to take the result of a `subgraph()` call and then
+locally traverse it with Tiny Gremlin. It specifies which steps must be supported, the precise semantics of each step
+within the local execution model, and any deviations from the full Gremlin standard that implementors must be aware of.
+
+=== Motivation
+
+The primary use case for Tiny Gremlin is post-processing of subgraphs received from a remote graph server without
+requiring an additional network round-trip. A user retrieves a subgraph, holds it in memory as a `Graph` object, and
+then navigates and filters it locally using familiar Gremlin syntax. A secondary use case is constructing small graphs
+entirely in process for lightweight analysis or testing, using `addV()`, `addE()`, and `property()`.
+
+Because the graph is small and entirely in memory, features that are expensive or architecture-dependent in a full
+implementation, such as `repeat()`, distributed OLAP steps, aggregation barriers, and strategy-based optimizations,
+are deliberately excluded. The result is a small, self-contained, predictable execution model.
+
+=== Supported Steps
+
+Tiny Gremlin supports exactly the 33 steps listed below, grouped by category. No other step may be used in a Tiny
+Gremlin traversal; doing so results in an error before any graph data is accessed.
+
+[width="100%",options="header"]
+|===
+|Category |Steps
+|Source |`V()`, `E()`
+|Navigation |`out()`, `in()`, `both()`, `outE()`, `inE()`, `bothE()`, `outV()`, `inV()`, `otherV()`
+|Filter |`has()`, `hasId()`, `hasLabel()`, `hasNot()`
+|Value Extraction |`id()`, `label()`, `values()`, `valueMap()`, `elementMap()`, `value()`, `key()`
+|Path |`path()`
+|Range |`limit()`, `range()`, `skip()`, `tail()`
+|Ordering |`order()`
+|Mutation |`addV()`, `addE()`, `property()`
+|Modulators |`from()`, `to()`
+|===
+
+=== Terminal Methods
+
+Tiny Gremlin must support the standard `toList()`, `next()`, and `iterate()` terminal methods, but should offer
+language-specific terminals designed to help with stream processing ergonomics. For example, in Javascript, TinkerPop
+offers:
+
+* `forEach(fn)` — calls `fn` for each result element; returns `Promise<void>`.
+* `reduce(fn, seed)` — folds all results into a single value using `fn` and an initial `seed`; returns `Promise<T>`.
+
+Since Tiny Gremlin lacks steps needed for data transformation and filtering, these added steps will allow users to
+express post-processing functions on the result set.
+
+== Step Semantics
+
+The following sub-sections describe each supported step, its relationship to the full Gremlin Semantics definition,
+and any limitations or behavioral differences that apply specifically to Tiny Gremlin.
+
+=== addE()
+
+*Gremlin Semantics reference:* <<adde-step,addE()>>
+
+Creates a new edge in the local `Graph` between vertices specified by `from()` and `to()` modulators.
+
+*Tiny Gremlin limitations:*
+
+* Only the `addE(String edgeLabel)` form is supported. The `addE(Traversal)` label-traversal form is not supported
+  because the traversal would need to reference prior labeled elements via `as()` and `select()`, neither of which
+  is in the Tiny Gremlin step set.
+* `from()` and `to()` must use the anonymous traversal form (e.g. `from(__.V(id))`). The step-label form
+  (`from("stepLabel")`) is not supported because `as()` is not in the Tiny Gremlin step set. The GLV convenience
+  sugar `from_(vertexObject)` does not work because the GLV converts the `Vertex` to its raw ID before
+  serialization, producing `from(id)` which is not a valid grammar form and results in a parse error.
+* The vertex referenced by `from()` or `to()` must exist in the local `Graph` at execution time. If the ID is not
+  found, an error is raised. No vertex is created implicitly.
+
+=== addV()
+
+*Gremlin Semantics reference:* <<addv-step,addV()>>
+
+Creates a new vertex in the local `Graph`.
+
+*Tiny Gremlin limitations:*
+
+* No cardinality-aware property form (`property(Cardinality, key, value)`) is supported; only the simple
+  `property(key, value)` form applies to vertices created by `addV()`.
+* Changes are local only; the remote graph is not modified.
+
+=== both()
+
+*Gremlin Semantics reference:* <<both-step,both()>>
+
+Maps a vertex to its adjacent vertices, traversing both incoming and outgoing edges.
+
+=== bothE()
+
+*Gremlin Semantics reference:* <<bothe-step,bothE()>>
+
+Maps a vertex to its incident edges, both incoming and outgoing.
+
+=== E()
+
+*Gremlin Semantics reference:* <<e-step,E()>>
+
+Produces edges from the local graph. When called with no arguments, all edges are produced. When called with one or
+more IDs, only matching edges are produced. A single list argument is also accepted.
+
+=== elementMap()
+
+*Gremlin Semantics reference:* <<elementmap-step,elementMap()>>
+
+Maps an element to a `Map` containing its `T.id`, `T.label`, and property key-value pairs. For edges,
+`Direction.OUT` and `Direction.IN` keys are included as stub maps containing `T.id` and `T.label` of the adjacent
+vertices.
+
+*Tiny Gremlin limitations:*
+
+* `by()` modulation is not supported.
+
+=== has()
+
+*Gremlin Semantics reference:* <<has-step,has()>>
+
+Filters elements by property existence, equality, or predicate.
+
+Supported forms:
+
+* `has(key)` — element has the property.
+* `has(key, value)` — element has the property with the given value.
+* `has(key, P)` — element has the property satisfying the predicate.
+* `has(label, key, value)` — element has the given label and the property with the given value.
+* `has(label, key, P)` — element has the given label and the property satisfying the predicate.
+
+Supported `P` predicates: `eq`, `neq`, `lt`, `lte`, `gt`, `gte`, `between`, `inside`, `outside`, `within`,
+`without`, `not`. Supported `TextP` predicates: `containing`, `notContaining`, `startingWith`, `notStartingWith`,
+`endingWith`, `notEndingWith`, `regex`, `notRegex`.
+
+The ordering predicates (`lt`, `lte`, `gt`, `gte`, `between`, `inside`, `outside`) follow the
+<<gremlin-semantics-concepts,Gremlin Comparability semantics>>: cross-type comparisons and comparisons involving
+`NaN` return `false` (the comparability ERROR result).
+
+*Tiny Gremlin limitations:*
+
+* Only `T.id` and `T.label` are supported as key tokens. `T.key` and `T.value` are not supported because
+  `properties()` is not in the Tiny Gremlin step set and there is no other way to produce `Property` traversers.
+
+=== hasId()
+
+*Gremlin Semantics reference:* <<hasid-step,hasId()>>
+
+Filters elements by their ID.
+
+*Tiny Gremlin limitations:*
+
+* `hasId([1, 2, 3])` — a single list argument — is unrolled and treated as `hasId(1, 2, 3)`, consistent with
+  `V([1,2,3])` semantics.
+* When more than one argument is provided, each argument is treated as a distinct ID value. A list in that position
+  is compared as-is and will not match any scalar ID (e.g. `hasId(1, [2, 3])` matches only id `1`). This
+  intentionally differs from the standard `hasId()` implementation which unrolls lists in all positions (see
+  TINKERPOP-2863).
+
+=== hasKey()
+
+*Gremlin Semantics reference:* <<haskey-step,hasKey()>>
+
+Filters `Property` traversers by key. Operates on the output of `properties()`.
+
+=== hasLabel()
+
+*Gremlin Semantics reference:* <<haslabel-step,hasLabel()>>
+
+Filters elements by label.
+
+=== hasNot()
+
+*Gremlin Semantics reference:* <<hasnot-step,hasNot()>>
+
+Filters elements by the absence of a property.
+
+=== hasValue()
+
+*Gremlin Semantics reference:* <<hasvalue-step,hasValue()>>
+
+Filters `Property` traversers by value. Operates on the output of `properties()`.
+
+=== id()
+
+*Gremlin Semantics reference:* <<id-step,id()>>
+
+Maps an element to its ID.
+
+=== in()
+
+*Gremlin Semantics reference:* <<in-step,in()>>
+
+Maps a vertex to its adjacent incoming vertices.
+
+=== inE()
+
+*Gremlin Semantics reference:* <<ine-step,inE()>>
+
+Maps a vertex to its incoming edges.
+
+=== inV()
+
+*Gremlin Semantics reference:* <<inv-step,inV()>>
+
+Maps an edge to its incoming vertex (the head of the arrow).
+
+=== key()
+
+*Gremlin Semantics reference:* <<key-step,key()>>
+
+Maps a `Property` traverser to its key.
+
+=== label()
+
+*Gremlin Semantics reference:* <<label-step,label()>>
+
+Maps an element to its label.
+
+=== limit()
+
+*Gremlin Semantics reference:* <<limit-step,limit()>>
+
+Truncates the result stream to at most `n` elements.
+
+*Tiny Gremlin limitations:*
+
+* The `Scope` form is not supported and will raise an error.
+
+=== order()
+
+*Gremlin Semantics reference:* <<order-step,order()>>
+
+Sorts all elements.
+
+Supports a single `by()` modulator with the following forms:
+
+* `by(String key)` — sort by property value ascending.
+* `by(String key, Order)` — sort by property value with explicit direction (`Order.asc` or `Order.desc`).
+* `by(T.id)` / `by(T.id, Order)` and `by(T.label)` / `by(T.label, Order)` — sort by the element's ID or label
+  with optional direction.
+* `by(Order)` — sort by natural element value with explicit direction.
+* `by()` — natural ascending sort (same as omitting `by()`).
+
+*Tiny Gremlin limitations:*
+
+* Only a single `by()` modulator is supported per `order()`.
+* Ordering follows the <<gremlin-semantics-orderability,Gremlin Orderability semantics>>, providing a total order
+  across all types: `null` < `Boolean` < `Number` < `Date` < `String` < `Vertex` < `Edge` < `VertexProperty`
+  < `Property` < `Path` < `Set` < `List` < `Map` < `Unknown`. `NaN` is ordered after `+Infinity` within the
+  numeric type space.
+* The `Scope` form (`order(Scope)`) is not supported and will raise an error.
+* `by(Traversal)`, `by(Traversal, Order)`, and `by(Function)` are not supported and will raise an error.
+
+=== otherV()
+
+*Gremlin Semantics reference:* <<otherv-step,otherV()>>
+
+Maps an edge to the vertex that was not the vertex traversed from.
+
+=== out()
+
+*Gremlin Semantics reference:* <<out-step,out()>>
+
+Maps a vertex to its adjacent outgoing vertices.
+
+=== outE()
+
+*Gremlin Semantics reference:* <<oute-step,outE()>>
+
+Maps a vertex to its outgoing edges.
+
+=== outV()
+
+*Gremlin Semantics reference:* <<outv-step,outV()>>
+
+Maps an edge to its outgoing vertex (the tail of the arrow).
+
+=== path()
+
+*Gremlin Semantics reference:* <<path-step,path()>>
+
+Maps the current traverser to the `Path` of elements it has visited.
+
+*Tiny Gremlin limitations:*
+
+* `by()` modulation is not supported. Path objects always contain the raw elements visited.
+* `from()` and `to()` selection within a path is not supported because `as()` step labels are excluded from Tiny
+  Gremlin.
+
+=== property()
+
+*Gremlin Semantics reference:* <<property-step,property()>>
+
+Sets a property on the current element.
+
+*Tiny Gremlin limitations:*
+
+* Only the `property(key, value)` two-argument form is supported. The cardinality form
+  `property(Cardinality, key, value)` and the map form `property(map)` are not supported.
+* For vertices, an existing property with the same key is replaced (single cardinality semantics regardless of graph
+  configuration).
+
+=== range()
+
+*Gremlin Semantics reference:* <<range-step,range()>>
+
+Emits elements at positions `[low, high)` in the stream, zero-indexed.
+
+*Tiny Gremlin limitations:*
+
+* The `Scope` form is not supported and will raise an error.
+
+=== skip()
+
+*Gremlin Semantics reference:* <<skip-step,skip()>>
+
+Discards the first `n` elements of the stream.
+
+*Tiny Gremlin limitations:*
+
+* The `Scope` form is not supported and will raise an error.
+
+=== tail()
+
+*Gremlin Semantics reference:* <<tail-step,tail()>>
+
+Emits the last `n` elements of the stream. This is a barrier step.
+
+*Tiny Gremlin limitations:*
+
+* The `Scope` form is not supported and will raise an error.
+
+=== V()
+
+*Gremlin Semantics reference:* <<v-step,V()>>
+
+Produces vertices from the local graph. When called with no arguments, all vertices are produced. When called with one
+or more IDs, only matching vertices are produced. A single list argument is also accepted.
+
+=== value()
+
+*Gremlin Semantics reference:* <<value-step,value()>>
+
+Maps a `Property` traverser to its value.
+
+=== valueMap()
+
+*Gremlin Semantics reference:* <<valueMap-step,valueMap()>>
+
+Maps an element to a `Map` of property keys to lists of property values.
+
+*Tiny Gremlin limitations:*
+
+* `by()` modulation is not supported.
+* `with(WithOptions.tokens)` configuration is not supported; use `valueMap(true)` instead.
+
+=== values()
+
+*Gremlin Semantics reference:* <<values-step,values()>>
+
+Maps an element to the values of its properties.
+

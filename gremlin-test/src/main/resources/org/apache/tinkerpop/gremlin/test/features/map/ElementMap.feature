@@ -18,6 +18,7 @@
 @StepClassMap @StepElementMap
 Feature: Step - elementMap()
 
+  @TinyGremlin
   Scenario: g_V_elementMap
     Given the modern graph
     And the traversal of
@@ -34,6 +35,7 @@ Feature: Step - elementMap()
       | m[{"t[id]": "v[lop].id", "t[label]": "software", "name": "lop", "lang": "java"}] |
       | m[{"t[id]": "v[ripple].id", "t[label]": "software", "name": "ripple", "lang": "java"}] |
 
+  @TinyGremlin
   Scenario: g_V_elementMapXname_ageX
     Given the modern graph
     And the traversal of
@@ -50,7 +52,7 @@ Feature: Step - elementMap()
       | m[{"t[id]": "v[lop].id", "t[label]": "software", "name": "lop"}] |
       | m[{"t[id]": "v[ripple].id", "t[label]": "software", "name": "ripple"}] |
 
-  @GraphComputerVerificationReferenceOnly
+  @GraphComputerVerificationReferenceOnly @TinyGremlin
   Scenario: g_EX11X_elementMap
     Given the modern graph
     And using the parameter eid11 defined as "e[josh-created->lop].id"
@@ -63,6 +65,7 @@ Feature: Step - elementMap()
       | result |
       | m[{"t[id]": "e[josh-created->lop].id", "t[label]": "created", "weight": "d[0.4].d", "D[OUT]": "m[{\\"t[id]\\": \\"v[josh].id\\", \\"t[label]\\": \\"person\\"}]", "D[IN]": "m[{\\"t[id]\\": \\"v[lop].id\\", \\"t[label]\\": \\"software\\"}]"}] |
 
+  @TinyGremlin
   Scenario: g_V_elementMapXname_age_nullX
     Given the modern graph
     And the traversal of

@@ -18,6 +18,7 @@
 @StepClassMap @StepVertex
 Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
 
+  @TinyGremlin
   Scenario: g_VXnullX
     Given the modern graph
     And the traversal of
@@ -27,6 +28,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_VXlistXnullXX
     Given the modern graph
     And using the parameter xx1 defined as "l[null]"
@@ -37,6 +39,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_VX1_nullX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -49,6 +52,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | result |
       | v[marko] |
 
+  @TinyGremlin
   Scenario: g_VXlistX1_2_3XX_name
     Given the modern graph
     And using the parameter xx1 defined as "l[v[marko].id,v[vadas].id,v[lop].id]"
@@ -63,6 +67,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | vadas |
       | lop |
 
+  @TinyGremlin
   Scenario: g_VXlistXv1_v2_v3XX_name
     Given the modern graph
     And using the parameter xx1 defined as "l[v[marko].id,v[vadas].id,v[lop].id]"
@@ -77,6 +82,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | vadas |
       | lop |
 
+  @TinyGremlin
   Scenario: g_V
     Given the modern graph
     And the traversal of
@@ -93,6 +99,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | v[ripple] |
       | v[peter] |
 
+  @TinyGremlin
   Scenario: g_VXv1X_out
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -107,6 +114,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | v[lop] |
       | v[josh] |
 
+  @TinyGremlin
   Scenario: g_VX1X_out
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -121,6 +129,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | v[lop] |
       | v[josh] |
 
+  @TinyGremlin
   Scenario: g_VX2X_in
     Given the modern graph
     And using the parameter vid2 defined as "v[vadas].id"
@@ -133,6 +142,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | result |
       | v[marko] |
 
+  @TinyGremlin
   Scenario: g_VX4X_both
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
@@ -147,6 +157,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | v[lop] |
       | v[ripple] |
 
+  @TinyGremlin
   Scenario: g_VX1X_outE
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -161,6 +172,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | e[marko-knows->josh] |
       | e[marko-knows->vadas] |
 
+  @TinyGremlin
   Scenario: g_VX2X_outE
     Given the modern graph
     And using the parameter vid2 defined as "v[vadas].id"
@@ -173,6 +185,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | result |
       | e[marko-knows->vadas] |
 
+  @TinyGremlin
   Scenario: g_VX4X_bothEXcreatedX
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
@@ -186,6 +199,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
 
+  @TinyGremlin
   Scenario: g_VX4X_bothEXcreatedvarX
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
@@ -200,6 +214,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
 
+  @TinyGremlin
   Scenario: g_VX4X_bothE
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
@@ -214,6 +229,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | e[josh-created->ripple] |
       | e[marko-knows->josh] |
 
+  @TinyGremlin
   Scenario: g_V_out_outE_inV_inE_inV_both_name
     Given the modern graph
     And the traversal of
@@ -234,6 +250,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | peter |
       | peter |
 
+  @TinyGremlin
   Scenario: g_VX2X_inE
     Given the modern graph
     And using the parameter vid2 defined as "v[vadas].id"
@@ -246,6 +263,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | result |
       | e[marko-knows->vadas] |
 
+  @TinyGremlin
   Scenario: g_VX1X_outXknowsX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -272,6 +290,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | v[vadas] |
       | v[josh] |
 
+  @TinyGremlin
   Scenario: g_VX1X_outXknows_createdX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -286,6 +305,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | v[josh] |
       | v[lop] |
 
+  @TinyGremlin
   Scenario: g_VX1X_outXknowsvar_createdvarX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -302,6 +322,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | v[josh] |
       | v[lop] |
 
+  @TinyGremlin
   Scenario: g_V_out_out
     Given the modern graph
     And the traversal of
@@ -314,6 +335,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | v[ripple] |
       | v[lop] |
 
+  @TinyGremlin
   Scenario: g_VX1X_out_out_out
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -324,6 +346,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_VX1X_out_name
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -383,7 +406,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
     Then the result should be empty
     And the graph should return 3 for count of "g.V(vid1, vid2, vid3, vid4)"
 
-  @GraphComputerVerificationMidVNotSupported
+  @GraphComputerVerificationMidVNotSupported @TinyGremlin
   Scenario: g_V_hasLabelXpersonX_V_hasLabelXsoftwareX_name
     Given the modern graph
     And the traversal of
@@ -402,6 +425,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | ripple |
       | ripple |
 
+  @TinyGremlin
   Scenario: g_V_hasLabelXloopsX_bothEXselfX
     Given the sink graph
     And the traversal of
@@ -414,6 +438,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | e[loop-self->loop] |
       | e[loop-self->loop] |
 
+  @TinyGremlin
   Scenario: g_V_hasLabelXloopsX_bothXselfX
     Given the sink graph
     And the traversal of
@@ -449,7 +474,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | result |
       | v[marko] |
 
-  @GraphComputerVerificationMidENotSupported
+  @GraphComputerVerificationMidENotSupported @TinyGremlin
   Scenario: g_VX1X_V_valuesXnameX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -467,7 +492,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | ripple |
       | peter  |
 
-  @GraphComputerVerificationMidENotSupported
+  @GraphComputerVerificationMidENotSupported @TinyGremlin
   Scenario: g_V_outXknowsX_V_name
     Given the modern graph
     And the traversal of

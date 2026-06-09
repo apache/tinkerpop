@@ -18,6 +18,7 @@
  */
 
 import { RemoteConnection, RemoteStrategy } from '../driver/remote-connection.js';
+import { LocalGraphConnection } from '../driver/local-graph-connection.js';
 import { Graph } from '../structure/graph.js';
 import { GraphTraversalSource, GraphTraversal } from './graph-traversal.js';
 import { TraversalStrategies } from './traversal-strategy.js';
@@ -51,12 +52,16 @@ export default class AnonymousTraversalSource {
   }
 
   /**
-   * Creates a {@link GraphTraversalSource} binding a {@link RemoteConnection} to a remote {@link Graph} instances as its
-   * reference so that traversals spawned from it will execute over that reference.
-   * @param {RemoteConnection} connection
+   * Creates a {@link GraphTraversalSource} bound to a connection or a local {@link Graph}.
+   * When passed a {@link Graph} instance, execution runs locally via Tiny Gremlin.
+   * When passed a {@link RemoteConnection}, traversals are submitted to a remote server.
+   * @param {RemoteConnection | Graph} connectionOrGraph
    * @return {GraphTraversalSource}
    */
-  with_(connection: RemoteConnection) {
+  with_(connectionOrGraph: RemoteConnection | Graph) {
+    const connection = connectionOrGraph instanceof Graph
+      ? new LocalGraphConnection(connectionOrGraph)
+      : connectionOrGraph;
     const traversalStrategies = new TraversalStrategies();
     traversalStrategies.addStrategy(new RemoteStrategy(connection));
     const gl = new GremlinLang();

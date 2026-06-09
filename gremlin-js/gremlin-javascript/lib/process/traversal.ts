@@ -204,6 +204,34 @@ export class Traversal {
     return itemDone;
   }
 
+  /**
+   * Calls fn for each element in the traversal results.
+   * @returns {Promise.<void>}
+   */
+  async forEach(fn: (element: any) => void): Promise<void> {
+    await this._applyStrategies();
+    while (true) {
+      const it = await this._getNext();
+      if (it.done) break;
+      fn(it.value);
+    }
+  }
+
+  /**
+   * Reduces the traversal results to a single value using fn and seed.
+   * @returns {Promise.<T>}
+   */
+  async reduce<T>(fn: (acc: T, element: any) => T, seed: T): Promise<T> {
+    await this._applyStrategies();
+    let acc = seed;
+    while (true) {
+      const it = await this._getNext();
+      if (it.done) break;
+      acc = fn(acc, it.value);
+    }
+    return acc;
+  }
+
   _applyStrategies() {
     if (this._traversalStrategiesPromise) {
       // Apply strategies only once

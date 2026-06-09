@@ -18,6 +18,7 @@
 @StepClassFilter @StepHasLabel
 Feature: Step - hasLabel()
 
+  @TinyGremlin
   Scenario: g_EX7X_hasLabelXknowsX
     Given the modern graph
     And using the parameter eid7 defined as "e[marko-knows->vadas].id"
@@ -30,6 +31,7 @@ Feature: Step - hasLabel()
       | result |
       | e[marko-knows->vadas] |
 
+  @TinyGremlin
   Scenario: g_E_hasLabelXknowsX
     Given the modern graph
     And the traversal of
@@ -42,7 +44,7 @@ Feature: Step - hasLabel()
       | e[marko-knows->vadas] |
       | e[marko-knows->josh] |
 
-  @MultiProperties @MetaProperties
+  @MultiProperties @MetaProperties @TinyGremlin
   Scenario: g_E_hasLabelXuses_traversesX
     Given the crew graph
     And the traversal of
@@ -62,6 +64,7 @@ Feature: Step - hasLabel()
       | e[matthias-uses->tinkergraph] |
       | e[gremlin-traverses->tinkergraph] |
 
+  @TinyGremlin
   Scenario: g_V_hasLabelXperson_software_blahX
     Given the modern graph
     And the traversal of
@@ -78,6 +81,7 @@ Feature: Step - hasLabel()
       | v[lop] |
       | v[ripple] |
 
+  @TinyGremlin
   Scenario: g_V_hasLabelXperson_softwarevarX
     Given the modern graph
     And using the parameter xx1 defined as "software"
@@ -95,6 +99,7 @@ Feature: Step - hasLabel()
       | v[lop] |
       | v[ripple] |
 
+  @TinyGremlin
   Scenario: g_V_hasLabelXpersonX_hasLabelXsoftwareX
     Given the modern graph
     And the traversal of
@@ -104,6 +109,7 @@ Feature: Step - hasLabel()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_V_hasLabelXpersonvarX_hasLabelXsoftwareX
     Given the modern graph
     And using the parameter xx1 defined as "person"
@@ -114,6 +120,7 @@ Feature: Step - hasLabel()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_V_hasLabelXpersonvar_softwarevarX
     Given the modern graph
     And using the parameter xx1 defined as "person"
@@ -144,6 +151,7 @@ Feature: Step - hasLabel()
       | vadas |
       | peter |
 
+  @TinyGremlin
   Scenario: g_V_hasLabelXnullX
     Given the modern graph
     And the traversal of
@@ -153,6 +161,7 @@ Feature: Step - hasLabel()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_V_hasXlabel_nullX
     Given the modern graph
     And the traversal of
@@ -162,6 +171,7 @@ Feature: Step - hasLabel()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_V_hasLabelXnull_nullX
     Given the modern graph
     And the traversal of
@@ -171,6 +181,7 @@ Feature: Step - hasLabel()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_V_hasLabelXnull_personX
     Given the modern graph
     And the traversal of
@@ -185,6 +196,7 @@ Feature: Step - hasLabel()
       | v[josh] |
       | v[peter] |
 
+  @TinyGremlin
   Scenario: g_E_hasLabelXnullX
     Given the modern graph
     And the traversal of
@@ -194,6 +206,7 @@ Feature: Step - hasLabel()
     When iterated to list
     Then the result should be empty
 
+  @TinyGremlin
   Scenario: g_E_hasXlabel_nullX
     Given the modern graph
     And the traversal of

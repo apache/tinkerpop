@@ -18,6 +18,7 @@
 @StepClassMap @StepOrder
 Feature: Step - order()
 
+  @TinyGremlin
   Scenario: g_V_name_order
     Given the modern graph
     And the traversal of
@@ -34,6 +35,7 @@ Feature: Step - order()
       | ripple |
       | vadas  |
 
+  @TinyGremlin
   Scenario: g_V_order_byXname_ascX_name
     Given the modern graph
     And the traversal of
@@ -50,6 +52,7 @@ Feature: Step - order()
       | ripple |
       | vadas  |
 
+  @TinyGremlin
   Scenario: g_V_order_byXnameX_name
     Given the modern graph
     And the traversal of
@@ -66,6 +69,7 @@ Feature: Step - order()
       | ripple |
       | vadas  |
 
+  @TinyGremlin
   Scenario: g_V_outE_order_byXweight_descX_weight
     Given the modern graph
     And the traversal of
@@ -96,6 +100,7 @@ Feature: Step - order()
       | m[{"a":"v[josh]","b":"v[ripple]"}] |
       | m[{"a":"v[josh]","b":"v[lop]"}] |
 
+  @TinyGremlin
   Scenario: g_V_both_hasLabelXpersonX_order_byXage_descX_limitX5X_name
     Given the modern graph
     And the traversal of
@@ -212,6 +217,7 @@ Feature: Step - order()
       | result |
       | l[v[vadas],v[marko],v[josh],v[peter]] |
 
+  @TinyGremlin
   Scenario: g_V_both_hasLabelXpersonX_order_byXage_descX_name
     Given the modern graph
     And the traversal of
@@ -246,6 +252,7 @@ Feature: Step - order()
       | v[ripple] |
       | v[vadas] |
 
+  @TinyGremlin
   Scenario: g_V_hasLabelXpersonX_order_byXageX
     Given the modern graph
     And the traversal of
@@ -549,3 +556,53 @@ Feature: Step - order()
     Then the result should be unordered
       | result |
       | d[29].i |
+  @TinyGremlin
+  Scenario: g_V_order_byXTidX_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().order().by(T.id).values("name")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | marko  |
+      | vadas  |
+      | lop    |
+      | josh   |
+      | ripple |
+      | peter  |
+
+  @TinyGremlin
+  Scenario: g_V_order_byXTid_descX_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().order().by(T.id, Order.desc).values("name")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | peter  |
+      | ripple |
+      | josh   |
+      | lop    |
+      | vadas  |
+      | marko  |
+
+  @TinyGremlin
+  Scenario: g_V_order_byXTlabelX_label
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().order().by(T.label).label()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result   |
+      | person   |
+      | person   |
+      | person   |
+      | person   |
+      | software |
+      | software |

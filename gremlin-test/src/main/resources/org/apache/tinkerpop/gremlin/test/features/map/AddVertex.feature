@@ -473,6 +473,7 @@ Feature: Step - addV()
       | result |
       | name |
 
+  @TinyGremlin
   Scenario: g_addV_propertyXlabel_personX
     Given the empty graph
     And the traversal of
@@ -605,7 +606,6 @@ Feature: Step - addV()
     Then the result should have a count of 1
     And the graph should return 0 for count of "g.V().hasLabel(\"foo\").values()"
 
-
   Scenario: g_addV_propertyXset_emptyX
     Given the empty graph
     And the traversal of
@@ -616,7 +616,7 @@ Feature: Step - addV()
     Then the result should have a count of 1
     And the graph should return 0 for count of "g.V().hasLabel(\"person\").values()"
 
-  @AllowNullPropertyValues
+  @AllowNullPropertyValues @TinyGremlin
   Scenario: g_addVXpersonX_propertyXname_joshX_propertyXage_nullX
     Given the empty graph
     And the traversal of
@@ -639,6 +639,35 @@ Feature: Step - addV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"friendWeight\", null)"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"friendWeight\").has(\"acl\",null)"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").properties(\"friendWeight\").count()"
+
+  @TinyGremlin
+  Scenario: g_V_hasXperson_name_aliceX_propertyXage_51X
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "alice").property("age", 50)
+      """
+    And the traversal of
+      """
+      g.V().has("person","name","alice").property("age", 51)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 0 for count of "g.V().has(\"person\",\"age\",50)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"age\",51)"
+
+  @TinyGremlin
+  Scenario: g_addVXpersonX_propertyXname_aliceX_propertyXage_30X_query
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV("person").property("name", "alice").property("age", 30)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"age\",30)"
+
 
   Scenario: g_V_hasXperson_name_aliceX_propertyXsingle_age_unionXage_constantX1XX_sumX
     Given the empty graph

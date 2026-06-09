@@ -18,6 +18,7 @@
 @StepClassMap @StepValueMap
 Feature: Step - valueMap()
 
+  @TinyGremlin
   Scenario: g_V_valueMap
     Given the modern graph
     And the traversal of
@@ -34,6 +35,7 @@ Feature: Step - valueMap()
       | m[{"name": ["lop"], "lang": ["java"]}] |
       | m[{"name": ["ripple"], "lang": ["java"]}] |
 
+  @TinyGremlin
   Scenario: g_V_valueMapXtrueX
     Given the modern graph
     And the traversal of
@@ -66,6 +68,7 @@ Feature: Step - valueMap()
       | m[{"t[id]": "v[lop].id", "t[label]": "software", "name": ["lop"], "lang": ["java"]}] |
       | m[{"t[id]": "v[ripple].id", "t[label]": "software", "name": ["ripple"], "lang": ["java"]}] |
 
+  @TinyGremlin
   Scenario: g_V_valueMapXname_ageX
     Given the modern graph
     And the traversal of
@@ -82,6 +85,7 @@ Feature: Step - valueMap()
       | m[{"name": ["lop"]}] |
       | m[{"name": ["ripple"]}] |
 
+  @TinyGremlin
   Scenario: g_V_valueMapXtrue_name_ageX
     Given the modern graph
     And the traversal of
@@ -146,6 +150,7 @@ Feature: Step - valueMap()
       | m[{"t[id]": "v[lop].id", "name": "lop"}] |
       | m[{"t[id]": "v[ripple].id", "name": "ripple"}] |
 
+  @TinyGremlin
   Scenario: g_VX1X_outXcreatedX_valueMap
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -195,6 +200,7 @@ Feature: Step - valueMap()
     When iterated next
     Then the traversal will raise an error with message containing text of "step can only have one by modulator"
 
+  @TinyGremlin
   Scenario: g_V_valueMapXname_age_nullX
     Given the modern graph
     And the traversal of

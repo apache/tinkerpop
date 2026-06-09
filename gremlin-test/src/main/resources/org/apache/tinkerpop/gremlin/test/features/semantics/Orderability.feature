@@ -18,6 +18,7 @@
 @StepClassSemantics
 Feature: Orderability
 
+  @TinyGremlin
   Scenario: g_V_values_order
     Given the modern graph
     And the traversal of

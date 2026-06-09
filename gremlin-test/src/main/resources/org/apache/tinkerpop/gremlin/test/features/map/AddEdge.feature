@@ -450,7 +450,7 @@ Feature: Step - addE()
     And the graph should return 3 for count of "g.V(vid1).outE(\"knows\")"
     And the graph should return 1 for count of "g.V(vid1).out(\"knows\").has(\"name\",\"peter\")"
 
-  @AllowNullPropertyValues
+  @AllowNullPropertyValues @TinyGremlin
   Scenario: g_addEXknowsXpropertyXweight_nullXfromXV_hasXname_markoXX_toXV_hasXname_vadasXX
     Given the empty graph
     And the graph initializer of
@@ -466,7 +466,7 @@ Feature: Step - addE()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.E().has(\"knows\",\"weight\",null)"
 
-  @AllowNullPropertyValues
+  @AllowNullPropertyValues @TinyGremlin
   Scenario: g_addEXknowsvarXpropertyXweight_nullXfromXV_hasXname_markoXX_toXV_hasXname_vadasXX
     Given the empty graph
     And the graph initializer of
@@ -515,6 +515,7 @@ Feature: Step - addE()
       | result |
       | d[0.5].d |
 
+  @TinyGremlin
   Scenario: g_addEXknowsX_fromXV_hasXname_markoXX_toXV_hasXname_vadasXX_propertyXweight_0_5X_addEXknowsX_fromXV_hasXname_markoXX
     Given the empty graph
     And the graph initializer of

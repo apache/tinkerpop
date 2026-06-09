@@ -18,6 +18,7 @@
 @StepClassFilter @StepRange
 Feature: Step - range()
 
+  @TinyGremlin
   Scenario: g_VX1X_out_limitX2X
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -33,6 +34,7 @@ Feature: Step - range()
       | v[lop] |
     And the result should have a count of 2
 
+  @TinyGremlin
   Scenario: g_VX1X_out_limitX2varX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -64,6 +66,7 @@ Feature: Step - range()
       | v[ripple] |
     And the result should have a count of 3
 
+  @TinyGremlin
   Scenario: g_VX1X_outXknowsX_outEXcreatedX_rangeX0_1X_inV
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -78,6 +81,7 @@ Feature: Step - range()
       | v[ripple] |
     And the result should have a count of 1
 
+  @TinyGremlin
   Scenario: g_VX1X_outXknowsX_outXcreatedX_rangeX0_1X
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -92,6 +96,7 @@ Feature: Step - range()
       | v[ripple] |
     And the result should have a count of 1
 
+  @TinyGremlin
   Scenario: g_VX1X_outXcreatedX_inXcreatedX_rangeX1_3X
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -107,6 +112,7 @@ Feature: Step - range()
       | v[peter] |
     And the result should have a count of 2
 
+  @TinyGremlin
   Scenario: g_VX1X_outXcreatedX_inXcreatedX_rangeX1var_3varX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -124,6 +130,7 @@ Feature: Step - range()
       | v[peter] |
     And the result should have a count of 2
 
+  @TinyGremlin
   Scenario: g_VX1X_outXcreatedX_inEXcreatedX_rangeX1_3X_outV
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -231,6 +238,7 @@ Feature: Step - range()
       | m[{"b":"josh"}] |
       | m[{"b":"josh"}] |
 
+  @TinyGremlin
   Scenario: g_V_hasLabelXpersonX_order_byXageX_skipX1X_valuesXnameX
     Given the modern graph
     And the traversal of
@@ -244,6 +252,7 @@ Feature: Step - range()
       | josh |
       | peter |
 
+  @TinyGremlin
   Scenario: g_V_hasLabelXpersonX_order_byXageX_skipX1varX_valuesXnameX
     Given the modern graph
     And using the parameter xx1 defined as "d[1].l"
@@ -293,6 +302,7 @@ Feature: Step - range()
       | result |
       | l[d[0.4].d,d[0.5].d,d[1.0].d,d[1.0].d] |
 
+  @TinyGremlin
   Scenario: g_V_hasLabelXpersonX_order_byXageX_valuesXnameX_skipX1X
     Given the modern graph
     And the traversal of
@@ -331,6 +341,7 @@ Feature: Step - range()
       | marko |
       | marko |
 
+  @TinyGremlin
   Scenario: g_V_rangeX2_1X
     Given the modern graph
     And the traversal of
@@ -341,6 +352,7 @@ Feature: Step - range()
     Then the traversal will raise an error with message containing text of "Not a legal range: [2, 1]"
 
   # iterated next variant of the previous test (which is iterated to list)
+  @TinyGremlin
   Scenario: g_V_rangeX3_2X
     Given the modern graph
     And the traversal of
@@ -436,6 +448,7 @@ Feature: Step - range()
       | result |
       | marko |
 
+  @TinyGremlin
   Scenario: g_VX5X_limitX1X_in_limitX1X_in_valuesXnameX
     Given the modern graph
     And using the parameter vid5 defined as "v[ripple].id"
@@ -497,6 +510,7 @@ Feature: Step - range()
       | result |
       | marko |
 
+  @TinyGremlin
   Scenario: g_VX5X_rangeX0_1X_in_rangeX0_1X_in_valuesXnameX
     Given the modern graph
     And using the parameter vid5 defined as "v[ripple].id"

@@ -93,6 +93,7 @@
     "TODO": "# test other mime types like graphbinary stringd",
     "features": "npm run features-graphbinary",
     "features-graphbinary": "cross-env NODE_OPTIONS='--loader ts-node/esm' TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.graphbinary-v4.0' cucumber-js --tags \"not @DataBigDecimal and not @DataBigInt and not @DataUUID and not @DataLong and not @StepWrite\" --import test/cucumber ../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/",
+    "test:tinygremlin": "cross-env NODE_OPTIONS='--loader ts-node/esm' TS_NODE_PROJECT='tsconfig.test.json' cucumber-js --tags @TinyGremlin --import test/cucumber/feature-steps.js --import test/cucumber/element-comparison.js --import test/cucumber/gremlin.js --import test/cucumber/local-world.ts ../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/",
     "features-docker": "npm run features-graphbinary-docker",
     "features-graphbinary-docker": "cross-env NODE_OPTIONS='--loader ts-node/esm' TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.graphbinary-v4.0' cucumber-js --tags \"not @DataBigDecimal and not @DataBigInt and not @DataUUID and not @DataLong and not @StepWrite\" --import test/cucumber ../gremlin-test/",
     "lint": "eslint --ext .js .",
