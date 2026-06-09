@@ -123,4 +123,19 @@ func TestGValue(t *testing.T) {
 		param2 := NewGValue("ids", []int{1, 2, 3})
 		assert.NotPanics(t, func() { g.Inject(param1).V(param2) })
 	})
+
+	t.Run("test gValue nested in child traversal merges bindings", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		gl := g.V().Where(T__.Is(NewGValue("xx1", 1))).GremlinLang
+		assert.Equal(t, "g.V().where(__.is(xx1))", gl.GetGremlin())
+		assert.Equal(t, 1, gl.parameters["xx1"])
+	})
+
+	t.Run("test gValue nested across multiple child traversals merges bindings", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		gl := g.V().Union(T__.V(NewGValue("vid1", 1)), T__.V(NewGValue("vid4", 4))).GremlinLang
+		assert.Equal(t, "g.V().union(__.V(vid1),__.V(vid4))", gl.GetGremlin())
+		assert.Equal(t, 1, gl.parameters["vid1"])
+		assert.Equal(t, 4, gl.parameters["vid4"])
+	})
 }

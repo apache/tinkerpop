@@ -546,6 +546,19 @@ class TestGremlinLang(object):
         assert 'g.inject(ids).V(ids)' == gremlin.get_gremlin()
         assert val == gremlin.get_parameters().get('ids')
 
+    def test_gvalue_nested_in_child_traversal(self):
+        g = traversal().with_(None)
+        gremlin = g.V().where(__.is_(GValue('xx1', 1))).gremlin_lang
+        assert 'g.V().where(__.is(xx1))' == gremlin.get_gremlin()
+        assert 1 == gremlin.get_parameters().get('xx1')
+
+    def test_gvalue_nested_across_multiple_child_traversals(self):
+        g = traversal().with_(None)
+        gremlin = g.V().union(__.V(GValue('vid1', 1)), __.V(GValue('vid4', 4))).gremlin_lang
+        assert 'g.V().union(__.V(vid1),__.V(vid4))' == gremlin.get_gremlin()
+        assert 1 == gremlin.get_parameters().get('vid1')
+        assert 4 == gremlin.get_parameters().get('vid4')
+
     def test_gvalue_mid_string_underscore_accepted(self):
         g = traversal().with_(None)
         p = GValue('a_b', 42)
