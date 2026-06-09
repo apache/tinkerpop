@@ -529,3 +529,35 @@ Feature: Step - addE()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "must resolve to a Vertex or the ID of a Vertex present in the graph"
+
+  @MultiLabel
+  Scenario: g_addEXa_bX_from_V_to_V_labels_fold
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").addV("person").property("name", "josh")
+      """
+    And the traversal of
+      """
+      g.addE("knows", "trusts").from(__.V().has("name", "marko")).to(__.V().has("name", "josh")).labels().fold()
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.E().hasLabel(\"knows\")"
+    And the graph should return 1 for count of "g.E().hasLabel(\"trusts\")"
+
+  @MultiLabel
+  Scenario: g_addEXa_b_cX_from_V_to_V_labels_count
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").addV("person").property("name", "josh")
+      """
+    And the traversal of
+      """
+      g.addE("a", "b", "c").from(__.V().has("name", "marko")).to(__.V().has("name", "josh")).labels().count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[3].l |

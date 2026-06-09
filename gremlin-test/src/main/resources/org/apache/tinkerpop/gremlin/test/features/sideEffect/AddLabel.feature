@@ -64,3 +64,19 @@ Feature: Step - addLabel()
     Then the result should be unordered
       | result |
       | d[1].l |
+
+  @MultiLabel
+  Scenario: g_E_addLabelXfriendX_labels_fold
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").as("a").addV("person").property("name", "josh").as("b").addE("knows").from("a").to("b")
+      """
+    And the traversal of
+      """
+      g.E().addLabel("friend").labels().fold()
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.E().hasLabel(\"knows\")"
+    And the graph should return 1 for count of "g.E().hasLabel(\"friend\")"

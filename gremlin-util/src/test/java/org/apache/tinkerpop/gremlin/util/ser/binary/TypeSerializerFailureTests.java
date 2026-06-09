@@ -72,7 +72,7 @@ public class TypeSerializerFailureTests {
                 vertex,
                 bulkSet,
                 Collections.singletonList(vertex),
-                new ReferenceEdge("an edge", null, vertex, vertex),
+                new ReferenceEdge("an edge", (String) null, vertex, vertex),
                 Lambda.supplier(null),
                 metrics,
                 new DefaultTraversalMetrics(1L, Collections.singletonList(metrics)),

@@ -78,6 +78,12 @@ func (g *GraphTraversal) AddE(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// AddLabel adds the addLabel step to the GraphTraversal.
+func (g *GraphTraversal) AddLabel(args ...interface{}) *GraphTraversal {
+	g.GremlinLang.AddStep("addLabel", args...)
+	return g
+}
+
 // AddV adds the addV step to the GraphTraversal.
 func (g *GraphTraversal) AddV(args ...interface{}) *GraphTraversal {
 	g.GremlinLang.AddStep("addV", args...)
@@ -290,6 +296,18 @@ func (g *GraphTraversal) Drop(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// DropLabel adds the dropLabel step to the GraphTraversal.
+func (g *GraphTraversal) DropLabel(args ...interface{}) *GraphTraversal {
+	g.GremlinLang.AddStep("dropLabel", args...)
+	return g
+}
+
+// DropLabels adds the dropLabels step to the GraphTraversal.
+func (g *GraphTraversal) DropLabels(args ...interface{}) *GraphTraversal {
+	g.GremlinLang.AddStep("dropLabels", args...)
+	return g
+}
+
 // Element adds the element step to the GraphTraversal.
 func (g *GraphTraversal) Element(args ...interface{}) *GraphTraversal {
 	g.GremlinLang.AddStep("element", args...)
@@ -462,6 +480,12 @@ func (g *GraphTraversal) Key(args ...interface{}) *GraphTraversal {
 // Label adds the label step to the GraphTraversal.
 func (g *GraphTraversal) Label(args ...interface{}) *GraphTraversal {
 	g.GremlinLang.AddStep("label", args...)
+	return g
+}
+
+// Labels adds the labels step to the GraphTraversal.
+func (g *GraphTraversal) Labels(args ...interface{}) *GraphTraversal {
+	g.GremlinLang.AddStep("labels", args...)
 	return g
 }
 

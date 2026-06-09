@@ -404,6 +404,16 @@ export class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal addLabel method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  addLabel(...args: any[]): this {
+    this.gremlinLang.addStep('addLabel', args);
+    return this;
+  }
+
+  /**
    * Graph traversal aggregate method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -743,6 +753,26 @@ export class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal dropLabel method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  dropLabel(...args: any[]): this {
+    this.gremlinLang.addStep('dropLabel', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal dropLabels method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  dropLabels(...args: any[]): this {
+    this.gremlinLang.addStep('dropLabels', args);
+    return this;
+  }
+
+  /**
    * Graph traversal element method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1023,6 +1053,16 @@ export class GraphTraversal extends Traversal {
    */
   label(...args: any[]): this {
     this.gremlinLang.addStep('label', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal labels method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  labels(...args: any[]): this {
+    this.gremlinLang.addStep('labels', args);
     return this;
   }
 
@@ -1784,6 +1824,7 @@ export const statics = {
   V: (...args: any[]) => callOnEmptyTraversal('V', args),
   addE: (...args: any[]) => callOnEmptyTraversal('addE', args),
   addV: (...args: any[]) => callOnEmptyTraversal('addV', args),
+  addLabel: (...args: any[]) => callOnEmptyTraversal('addLabel', args),
   aggregate: (...args: any[]) => callOnEmptyTraversal('aggregate', args),
   all: (...args: any[]) => callOnEmptyTraversal('all', args),
   and: (...args: any[]) => callOnEmptyTraversal('and', args),
@@ -1816,6 +1857,8 @@ export const statics = {
   discard: (...args: any[]) => callOnEmptyTraversal('discard', args),
   disjunct: (...args: any[]) => callOnEmptyTraversal('disjunct', args),
   drop: (...args: any[]) => callOnEmptyTraversal('drop', args),
+  dropLabel: (...args: any[]) => callOnEmptyTraversal('dropLabel', args),
+  dropLabels: (...args: any[]) => callOnEmptyTraversal('dropLabels', args),
   element: (...args: any[]) => callOnEmptyTraversal('element', args),
   elementMap: (...args: any[]) => callOnEmptyTraversal('elementMap', args),
   emit: (...args: any[]) => callOnEmptyTraversal('emit', args),
@@ -1843,6 +1886,7 @@ export const statics = {
   is: (...args: any[]) => callOnEmptyTraversal('is', args),
   key: (...args: any[]) => callOnEmptyTraversal('key', args),
   label: (...args: any[]) => callOnEmptyTraversal('label', args),
+  labels: (...args: any[]) => callOnEmptyTraversal('labels', args),
   length: (...args: any[]) => callOnEmptyTraversal('length', args),
   limit: (...args: any[]) => callOnEmptyTraversal('limit', args),
   local: (...args: any[]) => callOnEmptyTraversal('local', args),

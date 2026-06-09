@@ -17832,6 +17832,88 @@
         ]
     },
     {
+        "scenario": "g_addEXa_bX_from_V_to_V_labels_fold",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"josh\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"josh\")",
+                "canonical": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"josh\")",
+                "anonymized": "g.addV(string0).property(string1, string2).addV(string0).property(string1, string3)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").AddV((string) \"person\").Property(\"name\", \"josh\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").AddV(\"person\").Property(\"name\", \"josh\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"josh\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"josh\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"josh\")",
+                "python": "g.add_v('person').property('name', 'marko').add_v('person').property('name', 'josh')"
+            },
+            {
+                "original": "g.addE(\"knows\", \"trusts\").from(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"josh\")).labels().fold()",
+                "language": "g.addE(\"knows\", \"trusts\").from(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"josh\")).labels().fold()",
+                "canonical": "g.addE(\"knows\", \"trusts\").from(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"josh\")).labels().fold()",
+                "anonymized": "g.addE(string0, string1).from(__.V().has(string2, string3)).to(__.V().has(string2, string4)).labels().fold()",
+                "dotnet": "g.AddE((string) \"knows\", (string) \"trusts\").From(__.V().Has(\"name\", \"marko\")).To(__.V().Has(\"name\", \"josh\")).Labels().Fold()",
+                "go": "g.AddE(\"knows\", \"trusts\").From(gremlingo.T__.V().Has(\"name\", \"marko\")).To(gremlingo.T__.V().Has(\"name\", \"josh\")).Labels().Fold()",
+                "groovy": "g.addE(\"knows\", \"trusts\").from(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"josh\")).labels().fold()",
+                "java": "g.addE(\"knows\", \"trusts\").from(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"josh\")).labels().fold()",
+                "javascript": "g.addE(\"knows\", \"trusts\").from_(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"josh\")).labels().fold()",
+                "python": "g.add_e('knows', 'trusts').from_(__.V().has('name', 'marko')).to(__.V().has('name', 'josh')).labels().fold()"
+            },
+            {
+                "original": "g.E().hasLabel(\"knows\")",
+                "language": "g.E().hasLabel(\"knows\")",
+                "canonical": "g.E().hasLabel(\"knows\")",
+                "anonymized": "g.E().hasLabel(string0)",
+                "dotnet": "g.E().HasLabel(\"knows\")",
+                "go": "g.E().HasLabel(\"knows\")",
+                "groovy": "g.E().hasLabel(\"knows\")",
+                "java": "g.E().hasLabel(\"knows\")",
+                "javascript": "g.E().hasLabel(\"knows\")",
+                "python": "g.E().has_label('knows')"
+            },
+            {
+                "original": "g.E().hasLabel(\"trusts\")",
+                "language": "g.E().hasLabel(\"trusts\")",
+                "canonical": "g.E().hasLabel(\"trusts\")",
+                "anonymized": "g.E().hasLabel(string0)",
+                "dotnet": "g.E().HasLabel(\"trusts\")",
+                "go": "g.E().HasLabel(\"trusts\")",
+                "groovy": "g.E().hasLabel(\"trusts\")",
+                "java": "g.E().hasLabel(\"trusts\")",
+                "javascript": "g.E().hasLabel(\"trusts\")",
+                "python": "g.E().has_label('trusts')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_addEXa_b_cX_from_V_to_V_labels_count",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"josh\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"josh\")",
+                "canonical": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"josh\")",
+                "anonymized": "g.addV(string0).property(string1, string2).addV(string0).property(string1, string3)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").AddV((string) \"person\").Property(\"name\", \"josh\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").AddV(\"person\").Property(\"name\", \"josh\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"josh\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"josh\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"josh\")",
+                "python": "g.add_v('person').property('name', 'marko').add_v('person').property('name', 'josh')"
+            },
+            {
+                "original": "g.addE(\"a\", \"b\", \"c\").from(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"josh\")).labels().count()",
+                "language": "g.addE(\"a\", \"b\", \"c\").from(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"josh\")).labels().count()",
+                "canonical": "g.addE(\"a\", \"b\", \"c\").from(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"josh\")).labels().count()",
+                "anonymized": "g.addE(string0, string1, string2).from(__.V().has(string3, string4)).to(__.V().has(string3, string5)).labels().count()",
+                "dotnet": "g.AddE((string) \"a\", (string) \"b\", (string) \"c\").From(__.V().Has(\"name\", \"marko\")).To(__.V().Has(\"name\", \"josh\")).Labels().Count()",
+                "go": "g.AddE(\"a\", \"b\", \"c\").From(gremlingo.T__.V().Has(\"name\", \"marko\")).To(gremlingo.T__.V().Has(\"name\", \"josh\")).Labels().Count()",
+                "groovy": "g.addE(\"a\", \"b\", \"c\").from(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"josh\")).labels().count()",
+                "java": "g.addE(\"a\", \"b\", \"c\").from(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"josh\")).labels().count()",
+                "javascript": "g.addE(\"a\", \"b\", \"c\").from_(__.V().has(\"name\", \"marko\")).to(__.V().has(\"name\", \"josh\")).labels().count()",
+                "python": "g.add_e('a', 'b', 'c').from_(__.V().has('name', 'marko')).to(__.V().has('name', 'josh')).labels().count()"
+            }
+        ]
+    },
+    {
         "scenario": "g_VX1X_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX",
         "traversals": [
             {
@@ -41545,6 +41627,59 @@
         ]
     },
     {
+        "scenario": "g_E_addLabelXfriendX_labels_fold",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"josh\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"josh\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "canonical": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"josh\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "anonymized": "g.addV(string0).property(string1, string2).as(string3).addV(string0).property(string1, string4).as(string5).addE(string6).from(string3).to(string5)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").As(\"a\").AddV((string) \"person\").Property(\"name\", \"josh\").As(\"b\").AddE((string) \"knows\").From(\"a\").To(\"b\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").As(\"a\").AddV(\"person\").Property(\"name\", \"josh\").As(\"b\").AddE(\"knows\").From(\"a\").To(\"b\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"josh\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"josh\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"josh\").as(\"b\").addE(\"knows\").from_(\"a\").to(\"b\")",
+                "python": "g.add_v('person').property('name', 'marko').as_('a').add_v('person').property('name', 'josh').as_('b').add_e('knows').from_('a').to('b')"
+            },
+            {
+                "original": "g.E().addLabel(\"friend\").labels().fold()",
+                "language": "g.E().addLabel(\"friend\").labels().fold()",
+                "canonical": "g.E().addLabel(\"friend\").labels().fold()",
+                "anonymized": "g.E().addLabel(string0).labels().fold()",
+                "dotnet": "g.E().AddLabel(\"friend\").Labels().Fold()",
+                "go": "g.E().AddLabel(\"friend\").Labels().Fold()",
+                "groovy": "g.E().addLabel(\"friend\").labels().fold()",
+                "java": "g.E().addLabel(\"friend\").labels().fold()",
+                "javascript": "g.E().addLabel(\"friend\").labels().fold()",
+                "python": "g.E().add_label('friend').labels().fold()"
+            },
+            {
+                "original": "g.E().hasLabel(\"knows\")",
+                "language": "g.E().hasLabel(\"knows\")",
+                "canonical": "g.E().hasLabel(\"knows\")",
+                "anonymized": "g.E().hasLabel(string0)",
+                "dotnet": "g.E().HasLabel(\"knows\")",
+                "go": "g.E().HasLabel(\"knows\")",
+                "groovy": "g.E().hasLabel(\"knows\")",
+                "java": "g.E().hasLabel(\"knows\")",
+                "javascript": "g.E().hasLabel(\"knows\")",
+                "python": "g.E().has_label('knows')"
+            },
+            {
+                "original": "g.E().hasLabel(\"friend\")",
+                "language": "g.E().hasLabel(\"friend\")",
+                "canonical": "g.E().hasLabel(\"friend\")",
+                "anonymized": "g.E().hasLabel(string0)",
+                "dotnet": "g.E().HasLabel(\"friend\")",
+                "go": "g.E().HasLabel(\"friend\")",
+                "groovy": "g.E().hasLabel(\"friend\")",
+                "java": "g.E().hasLabel(\"friend\")",
+                "javascript": "g.E().hasLabel(\"friend\")",
+                "python": "g.E().has_label('friend')"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_valueXnameX_aggregateXxX_capXxX",
         "traversals": [
             {
@@ -42650,6 +42785,88 @@
                 "java": "g.V().dropLabels().labels()",
                 "javascript": "g.V().dropLabels().labels()",
                 "python": "g.V().drop_labels().labels()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_E_dropLabelXknowsX_labels",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\", \"trusts\").from(\"a\").to(\"b\")",
+                "language": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\", \"trusts\").from(\"a\").to(\"b\")",
+                "canonical": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\", \"trusts\").from(\"a\").to(\"b\")",
+                "anonymized": "g.addV(string0).as(string1).addV(string0).as(string2).addE(string3, string4).from(string1).to(string2)",
+                "dotnet": "g.AddV((string) \"person\").As(\"a\").AddV((string) \"person\").As(\"b\").AddE(\"knows\", \"trusts\").From(\"a\").To(\"b\")",
+                "go": "g.AddV(\"person\").As(\"a\").AddV(\"person\").As(\"b\").AddE(\"knows\", \"trusts\").From(\"a\").To(\"b\")",
+                "groovy": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\", \"trusts\").from(\"a\").to(\"b\")",
+                "java": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\", \"trusts\").from(\"a\").to(\"b\")",
+                "javascript": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\", \"trusts\").from_(\"a\").to(\"b\")",
+                "python": "g.add_v('person').as_('a').add_v('person').as_('b').add_e('knows', 'trusts').from_('a').to('b')"
+            },
+            {
+                "original": "g.E().dropLabel(\"knows\").labels().fold()",
+                "language": "g.E().dropLabel(\"knows\").labels().fold()",
+                "canonical": "g.E().dropLabel(\"knows\").labels().fold()",
+                "anonymized": "g.E().dropLabel(string0).labels().fold()",
+                "dotnet": "g.E().DropLabel(\"knows\").Labels().Fold()",
+                "go": "g.E().DropLabel(\"knows\").Labels().Fold()",
+                "groovy": "g.E().dropLabel(\"knows\").labels().fold()",
+                "java": "g.E().dropLabel(\"knows\").labels().fold()",
+                "javascript": "g.E().dropLabel(\"knows\").labels().fold()",
+                "python": "g.E().drop_label('knows').labels().fold()"
+            },
+            {
+                "original": "g.E().hasLabel(\"knows\")",
+                "language": "g.E().hasLabel(\"knows\")",
+                "canonical": "g.E().hasLabel(\"knows\")",
+                "anonymized": "g.E().hasLabel(string0)",
+                "dotnet": "g.E().HasLabel(\"knows\")",
+                "go": "g.E().HasLabel(\"knows\")",
+                "groovy": "g.E().hasLabel(\"knows\")",
+                "java": "g.E().hasLabel(\"knows\")",
+                "javascript": "g.E().hasLabel(\"knows\")",
+                "python": "g.E().has_label('knows')"
+            },
+            {
+                "original": "g.E().hasLabel(\"trusts\")",
+                "language": "g.E().hasLabel(\"trusts\")",
+                "canonical": "g.E().hasLabel(\"trusts\")",
+                "anonymized": "g.E().hasLabel(string0)",
+                "dotnet": "g.E().HasLabel(\"trusts\")",
+                "go": "g.E().HasLabel(\"trusts\")",
+                "groovy": "g.E().hasLabel(\"trusts\")",
+                "java": "g.E().hasLabel(\"trusts\")",
+                "javascript": "g.E().hasLabel(\"trusts\")",
+                "python": "g.E().has_label('trusts')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_E_dropLabels_labels",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\", \"trusts\").from(\"a\").to(\"b\")",
+                "language": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\", \"trusts\").from(\"a\").to(\"b\")",
+                "canonical": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\", \"trusts\").from(\"a\").to(\"b\")",
+                "anonymized": "g.addV(string0).as(string1).addV(string0).as(string2).addE(string3, string4).from(string1).to(string2)",
+                "dotnet": "g.AddV((string) \"person\").As(\"a\").AddV((string) \"person\").As(\"b\").AddE(\"knows\", \"trusts\").From(\"a\").To(\"b\")",
+                "go": "g.AddV(\"person\").As(\"a\").AddV(\"person\").As(\"b\").AddE(\"knows\", \"trusts\").From(\"a\").To(\"b\")",
+                "groovy": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\", \"trusts\").from(\"a\").to(\"b\")",
+                "java": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\", \"trusts\").from(\"a\").to(\"b\")",
+                "javascript": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\", \"trusts\").from_(\"a\").to(\"b\")",
+                "python": "g.add_v('person').as_('a').add_v('person').as_('b').add_e('knows', 'trusts').from_('a').to('b')"
+            },
+            {
+                "original": "g.E().dropLabels().labels()",
+                "language": "g.E().dropLabels().labels()",
+                "canonical": "g.E().dropLabels().labels()",
+                "anonymized": "g.E().dropLabels().labels()",
+                "dotnet": "g.E().DropLabels().Labels()",
+                "go": "g.E().DropLabels().Labels()",
+                "groovy": "g.E().dropLabels().labels()",
+                "java": "g.E().dropLabels().labels()",
+                "javascript": "g.E().dropLabels().labels()",
+                "python": "g.E().drop_labels().labels()"
             }
         ]
     },

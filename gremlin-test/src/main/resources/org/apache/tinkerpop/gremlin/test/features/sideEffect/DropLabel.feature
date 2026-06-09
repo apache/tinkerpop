@@ -81,3 +81,35 @@ Feature: Step - dropLabel() / dropLabels()
     Then the result should be unordered
       | result |
       | vertex |
+
+  @MultiLabel
+  Scenario: g_E_dropLabelXknowsX_labels
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").as("a").addV("person").as("b").addE("knows", "trusts").from("a").to("b")
+      """
+    And the traversal of
+      """
+      g.E().dropLabel("knows").labels().fold()
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 0 for count of "g.E().hasLabel(\"knows\")"
+    And the graph should return 1 for count of "g.E().hasLabel(\"trusts\")"
+
+  @MultiLabel
+  Scenario: g_E_dropLabels_labels
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").as("a").addV("person").as("b").addE("knows", "trusts").from("a").to("b")
+      """
+    And the traversal of
+      """
+      g.E().dropLabels().labels()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | edge   |
