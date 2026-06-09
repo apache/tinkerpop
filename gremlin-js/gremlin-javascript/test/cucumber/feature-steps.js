@@ -33,8 +33,10 @@ import { Path, Vertex, Edge, Property, Graph } from '../../lib/structure/graph.j
 import { statics } from '../../lib/process/graph-traversal.js';
 import { t, P, direction, merge, barrier, cardinality, column, order, TextP, IO, pick, pop, scope, operator, withOptions } from '../../lib/process/traversal.js';
 import { toLong } from '../../lib/utils.js';
+import { GValue } from '../../lib/process/gvalue.js';
 import anon from '../../lib/process/anonymous-traversal.js';
 const __ = statics;
+const parameterize = process.env.PARAMETERIZE === 'true';
 import { deepMembersById } from './element-comparison.js';
 import { Buffer } from 'buffer';
 import GremlinLang from "../../lib/process/gremlin-lang.js";
@@ -135,6 +137,11 @@ Given('an unsupported test', () => {});
 
 Given('the traversal of', function (traversalText) {
   const p = Object.assign({}, this.parameters);
+  if (parameterize) {
+    for (const k of Object.keys(p)) {
+      p[k] = new GValue(k, p[k]);
+    }
+  }
   p.g = this.g;
   this.traversal = gremlin[this.scenario].shift()(p);
   const sideEffectLang = new GremlinLang();

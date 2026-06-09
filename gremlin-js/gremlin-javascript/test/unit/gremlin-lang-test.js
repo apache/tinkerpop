@@ -746,6 +746,21 @@ describe('GremlinLang', function () {
       assert.deepStrictEqual(gl.getParameters().get('ids'), [1, 2, 3]);
     });
 
+    it('should merge bindings from a GValue nested in a child traversal', function () {
+      const traversal = g.V().where(__.is(new GValue('xx1', 1)));
+      const gl = traversal.getGremlinLang();
+      assert.strictEqual(gl.getGremlin(), 'g.V().where(__.is(xx1))');
+      assert.deepStrictEqual(gl.getParameters().get('xx1'), 1);
+    });
+
+    it('should merge bindings from GValues nested across multiple child traversals', function () {
+      const traversal = g.union(__.V(new GValue('vid1', 1)), __.V(new GValue('vid4', 4))).values('name');
+      const gl = traversal.getGremlinLang();
+      assert.strictEqual(gl.getGremlin(), "g.union(__.V(vid1),__.V(vid4)).values('name')");
+      assert.deepStrictEqual(gl.getParameters().get('vid1'), 1);
+      assert.deepStrictEqual(gl.getParameters().get('vid4'), 4);
+    });
+
     it('should reject non-string name', function () {
       assert.throws(() => new GValue(123, 'v'), /Invalid GValue name/);
       assert.throws(() => new GValue(null, 'v'), /Invalid GValue name/);
