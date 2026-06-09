@@ -93,7 +93,7 @@ public class TransactionManager {
             throw Graph.Exceptions.transactionsNotSupported();
         }
 
-        final UnmanagedTransaction txCtx = createTransactionContext(ts.getGraph());
+        final UnmanagedTransaction txCtx = createTransactionContext(traversalSourceName, ts.getGraph());
         logger.debug("Transaction {} created for source {}", txCtx.getTransactionId(), traversalSourceName);
         return txCtx;
     }
@@ -111,7 +111,7 @@ public class TransactionManager {
      * Creates a unique transaction ID, retrying on the unlikely UUID collision. The newly created
      * {@link UnmanagedTransaction} is inserted into the transactions map.
      */
-    private UnmanagedTransaction createTransactionContext(final Graph graph) {
+    private UnmanagedTransaction createTransactionContext(final String traversalSourceName, final Graph graph) {
         String txId;
         UnmanagedTransaction ctx;
 
@@ -120,6 +120,7 @@ public class TransactionManager {
             ctx = new UnmanagedTransaction(
                     txId,
                     this,
+                    traversalSourceName,
                     graph,
                     scheduledExecutorService,
                     transactionTimeoutMs,

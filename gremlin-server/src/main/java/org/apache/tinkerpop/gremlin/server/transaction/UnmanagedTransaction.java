@@ -47,6 +47,7 @@ public class UnmanagedTransaction {
     private static final Logger logger = LoggerFactory.getLogger(UnmanagedTransaction.class);
 
     private final String transactionId;
+    private final String traversalSourceName;
     private final TransactionManager manager;
     private final Graph graph;
     private final ScheduledExecutorService scheduledExecutorService;
@@ -66,18 +67,21 @@ public class UnmanagedTransaction {
      *
      * @param transactionId The unique identifier for this transaction
      * @param transactionManager The manager that owns this transaction's lifecycle
+     * @param traversalSourceName The traversal source name bound at begin time
      * @param graph The graph instance for this transaction
      * @param scheduledExecutorService Scheduler for timeout management
      * @param transactionTimeout Timeout in milliseconds before auto-rollback
      */
     public UnmanagedTransaction(final String transactionId,
                                 final TransactionManager transactionManager,
+                                final String traversalSourceName,
                                 final Graph graph,
                                 final ScheduledExecutorService scheduledExecutorService,
                                 final long transactionTimeout,
                                 final long perGraphClose) {
         logger.debug("New transaction context established for {}", transactionId);
         this.transactionId = transactionId;
+        this.traversalSourceName = traversalSourceName;
         this.manager = transactionManager;
         this.graph = graph;
         this.scheduledExecutorService = scheduledExecutorService;
@@ -94,6 +98,13 @@ public class UnmanagedTransaction {
      */
     public String getTransactionId() {
         return transactionId;
+    }
+
+    /**
+     * Returns the traversal source name bound at begin time.
+     */
+    public String getTraversalSourceName() {
+        return traversalSourceName;
     }
 
     /**

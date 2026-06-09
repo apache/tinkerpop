@@ -228,10 +228,19 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
                     doBegin(requestCtx);
                 } else if (txId != null) {
+                    final String requestedSource = requestMessage.getField(Tokens.ARGS_G);
+                    final Optional<UnmanagedTransaction> txOpt = transactionManager.get(txId);
+                    if (txOpt.isEmpty()) {
+                        throw new ProcessingException(GremlinError.transactionNotFound(txId));
+                    }
+                    final UnmanagedTransaction tx = txOpt.get();
+                    if (!tx.getTraversalSourceName().equals(requestedSource)) {
+                        throw new ProcessingException(GremlinError.traversalSourceMismatch(tx.getTraversalSourceName(), requestedSource));
+                    }
                     // This check makes sure that the underlying Graph is already open to stop a closed transaction
                     // from re-opening due to the default autostart nature of transactions. This occurs in cases where a
                     // transactional traversal is submitted after a commit/rollback.
-                    final Graph g = graphManager.getTraversalSource(requestMessage.getField(Tokens.ARGS_G)).getGraph();
+                    final Graph g = graphManager.getTraversalSource(requestedSource).getGraph();
                     if ((!g.tx().isOpen())) {
                         throw new ProcessingException(GremlinError.transactionNotFound(txId));
                     }

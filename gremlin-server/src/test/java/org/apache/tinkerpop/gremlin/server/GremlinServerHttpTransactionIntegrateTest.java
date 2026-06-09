@@ -105,6 +105,15 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
             case "shouldRollbackAbandonedTransaction":
                 settings.transactionTimeout = 300;
                 break;
+            case "shouldRejectMismatchedGraphAliasInTransaction": {
+                final Settings.GraphSettings gs = new Settings.GraphSettings();
+                gs.configuration = "conf/tinkertransactiongraph-empty.properties";
+                final Settings.TraversalSourceSettings ts = new Settings.TraversalSourceSettings();
+                ts.name = "gTxEmpty";
+                gs.traversalSources.add(ts);
+                settings.graphs.put("tx2", gs);
+                break;
+            }
         }
         return settings;
     }
@@ -517,11 +526,11 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
     public void shouldRejectMismatchedGraphAliasInTransaction() throws Exception {
         final String txId = beginTx(client, GTX);
 
-        // send a request with the same txId but a different graph alias
-        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.V().count()", "gclassic")) {
-            final int status = r.getStatusLine().getStatusCode();
-            assertTrue("Expected error status for alias mismatch, got " + status,
-                    status == 400 || status == 404 || status == 500);
+        // send a request with the same txId but a different transactional graph alias
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.V().count()", "gTxEmpty")) {
+            assertEquals(400, r.getStatusLine().getStatusCode());
+            final String msg = extractStatusMessage(r);
+            assertTrue(msg.contains("alias"));
         }
     }
 

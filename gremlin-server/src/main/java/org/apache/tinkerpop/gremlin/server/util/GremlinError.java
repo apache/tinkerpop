@@ -250,4 +250,19 @@ public class GremlinError {
         final String message = String.format("Script engine [%s] is not available.", language);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
+
+    /**
+     * Creates an error for when a transactional request uses a different traversal source
+     * name than the one bound at begin time.
+     *
+     * @param expected The traversal source name bound at transaction begin
+     * @param actual The traversal source name in the current request
+     * @return A GremlinError with appropriate message and status code
+     */
+    public static GremlinError traversalSourceMismatch(final String expected, final String actual) {
+        final String message = String.format(
+                "Transaction traversal source alias mismatch: transaction bound to '%s' but request used '%s'",
+                expected, actual);
+        return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "TransactionException");
+    }
 }
