@@ -324,7 +324,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             }
         } catch (RejectedExecutionException ree) {
             writeError(requestCtx, GremlinError.rateLimiting(), serializer.getValue1());
-        } catch (NoSuchElementException nsee) {
+        } catch (NoSuchElementException | IllegalStateException nsee) {
             writeError(requestCtx, GremlinError.transactionNotFound(requestCtx.getTransactionId()), serializer.getValue1());
         }
     }
