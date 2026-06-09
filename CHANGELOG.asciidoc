@@ -26,10 +26,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.7.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Added `NextN(n)` to `Traversal` in `gremlin-go` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs.
-* Restart the documentation build's Gremlin Console with conflicting plugins excluded per-book (via the `gremlin-docs-plugins-exclude` attribute), so Neo4j (Scala 2.11) and Spark (Scala 2.12) no longer collide on a shared classpath.
-* Updated the developer documentation to describe the Maven/AsciidoctorJ documentation build and removed references to the retired shell/AWK preprocessor.
-* Apply syntax highlighting to standalone and manual language-variant tab blocks in the documentation build, matching the highlighting already applied to `gremlin-groovy` tabs.
-* Scope the Hadoop-Gremlin documentation `hdfs.ls()` examples to the copied graph file so the rendered docs no longer list the build machine's local home directory.
 * Fixed conjoin has incorrect null handling.
 * Expanded `gremlin-python` CI matrix to test against Python 3.9, 3.10, 3.11, 3.12, and 3.13.
 * Add Node 26 support for `gremlin-javascript` and `gremlint`.

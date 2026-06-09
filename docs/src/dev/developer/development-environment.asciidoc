@@ -122,29 +122,17 @@ an issue when working with SNAPSHOT dependencies.
 [[documentation-environment]]
 === Documentation Environment
 
-The documentation generation process is Maven-based: an link:https://asciidoctor.org/[AsciidoctorJ] extension
-(`tools/tinkerpop-docs`) walks each AsciiDoc book, executes the `[gremlin-groovy]` code blocks against a long-lived
+The core of the documentation generation process is an link:https://asciidoctor.org/[AsciidoctorJ] extension
+(`tools/tinkerpop-docs`) which walks each AsciiDoc book, executes the `[gremlin-groovy]` code blocks against a long-lived
 Gremlin Console subprocess, and renders the console output as tabbed HTML. The orchestration script
-`bin/process-docs.sh` wraps this: it validates the Gremlin Console and Gremlin Server distributions, installs the
-required plugins into the console, starts a Gremlin Server (for the `:remote` examples) and a Gephi mock, then invokes
-Maven to run the extension. Javadocs should be built using Java 11.
+`bin/process-docs.sh` wraps this and acts as the entrypoint: it validates the Gremlin Console and Gremlin Server
+distributions, installs the required plugins into the console, starts a Gremlin Server (for the `:remote` examples) and
+a Gephi mock, then invokes Maven to run the extension. Javadocs should be built using Java 11.
 
-NOTE: A previous implementation of this process was not Maven-based and instead relied on a pipeline of shell and AWK
-scripts under `docs/preprocessor` and `docs/postprocessor`. Those scripts have been removed; the console session scope
-also changed from per-file to per-book as a result (see <<docs-plugin-exclusions>>).
-
-The build runs Spark/Hadoop OLAP examples against the local filesystem (`fs.defaultFS=file:///`), so a running Hadoop
-cluster is *not* required for an ordinary documentation build. The one exception is the
-link:https://tinkerpop.apache.org/docs/x.y.z/recipes/#olap-spark-yarn[Spark-on-YARN recipe], whose example targets a
-real YARN cluster and is therefore rendered from pre-captured output rather than executed live. `bin/process-docs.sh`
-sets `HADOOP_GREMLIN_LIBS` for the console automatically. The YARN recipe text also references the `zip` program, so
-install it if you do not already have it.
-
-Before generating documentation, build the Gremlin Console and Gremlin Server distributions that the process consumes
-(include the Neo4j artifacts so the Neo4j examples can run):
+Before generating documentation, build the build all of the dependencies that the process consumes:
 
 [source,text]
-mvn clean install -pl :gremlin-console,:gremlin-server -am -DskipTests -DincludeNeo4j
+mvn clean install -pl :gremlin-console,:gremlin-server:spark-gremlin,:neo4j-gremlin -am -DskipTests -DincludeNeo4j
 
 Documentation can then be generated locally with:
 
