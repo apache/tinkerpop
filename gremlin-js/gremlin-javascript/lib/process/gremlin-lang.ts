@@ -145,6 +145,9 @@ export default class GremlinLang {
       return this._argAsString(arg.id);
     }
     if (arg instanceof GremlinLang) {
+      // Merge the child's parameters so GValue bindings nested inside a child
+      // traversal are still sent to the server alongside the rendered query.
+      arg.parameters.forEach((v, k) => this.parameters.set(k, v));
       return arg.getGremlin('__');
     }
     if (typeof arg.getGremlinLang === 'function') {
@@ -152,7 +155,11 @@ export default class GremlinLang {
       if (arg.graph != null) {
         throw new Error('Child traversal must be anonymous - use __ not g');
       }
-      return arg.getGremlinLang().getGremlin('__');
+      const childLang = arg.getGremlinLang();
+      // Merge the child's parameters so GValue bindings nested inside a child
+      // traversal are still sent to the server alongside the rendered query.
+      childLang.parameters.forEach((v: any, k: string) => this.parameters.set(k, v));
+      return childLang.getGremlin('__');
     }
     if (arg instanceof Uint8Array) {
       return `Binary("${Buffer.from(arg.buffer, arg.byteOffset, arg.byteLength).toString('base64')}")`;
