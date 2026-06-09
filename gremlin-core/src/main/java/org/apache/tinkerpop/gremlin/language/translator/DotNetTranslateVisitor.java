@@ -828,7 +828,6 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
             // Multi-arg hasLabel: in parameterize mode, we must use GValue for ALL args or NONE.
             // If the first arg is a variable, wrap all in GValue; otherwise keep plain string casts.
             final boolean firstIsVariable = ctx.stringNullableArgument().variable() != null;
-            final boolean hasVarInVarargs = hasVariableInVarargs(ctx.stringNullableArgumentVarargs());
             // Use GValue wrapping only if ALL args are variables (safe for GValue overload)
             // Otherwise use plain string casts for all to match HasLabel(string, params string[])
             final boolean useGValue = parameterize && firstIsVariable && allVariablesInVarargs(ctx.stringNullableArgumentVarargs());
@@ -859,15 +858,6 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
             sb.append(")");
             return null;
         }
-    }
-
-    private boolean hasVariableInVarargs(final GremlinParser.StringNullableArgumentVarargsContext ctx) {
-        for (int ix = 0; ix < ctx.getChildCount(); ix++) {
-            if (ctx.getChild(ix) instanceof GremlinParser.StringNullableArgumentContext) {
-                if (((GremlinParser.StringNullableArgumentContext) ctx.getChild(ix)).variable() != null) return true;
-            }
-        }
-        return false;
     }
 
     private boolean allVariablesInVarargs(final GremlinParser.StringNullableArgumentVarargsContext ctx) {
