@@ -1,5 +1,5 @@
 ---
-name: tinkerpop-dev
+name: tinker-dev
 description: >
   Development guidance for the Apache TinkerPop monorepo. Use when building,
   testing, or contributing to TinkerPop's graph computing framework and its
