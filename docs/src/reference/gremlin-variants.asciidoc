@@ -337,7 +337,7 @@ the traversal to utilize a parameter in place of a literal.
 
 [source,go]
 ----
-g.V().Has("name", gremlingo.NewGValue("name", "marko"))
+g.V().Has("name", gremlingo.GValue{Name: "name", Value: "marko"})
 ----
 
 [[gremlin-go-scripts]]

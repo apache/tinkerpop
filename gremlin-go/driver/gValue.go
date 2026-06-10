@@ -23,38 +23,21 @@ import (
 	"fmt"
 )
 
-// GValue is a variable or literal value that is used in a Traversal. It is composed of a key-value pair where the key
-// is the name given to the variable and the value is the object that the variable resolved to.
+// GValue is a variable or literal value that is used in a Traversal. It is composed of a key-value
+// pair where Name is the name given to the variable and Value is the object that the variable
+// resolves to. Construct one directly with a struct literal, e.g. GValue{Name: "x", Value: 1}.
+// A GValue's Value must not itself be a GValue (GValues cannot be nested).
 type GValue struct {
-	name  string
-	value interface{}
-}
-
-// NewGValue creates a new GValue to be used in traversals. GValues cannot be nested, which is
-// the only restriction imposed on the name.
-func NewGValue(name string, value interface{}) GValue {
-	if _, ok := value.(GValue); ok {
-		panic("GValues cannot be nested")
-	}
-	return GValue{name, value}
-}
-
-// Name returns the name of the GValue.
-func (gv GValue) Name() string {
-	return gv.name
+	Name  string
+	Value interface{}
 }
 
 // IsNil determines if the value held is of a nil value.
 func (gv GValue) IsNil() bool {
-	return gv.value == nil
-}
-
-// Value returns the value held by the GValue.
-func (gv GValue) Value() interface{} {
-	return gv.value
+	return gv.Value == nil
 }
 
 // String returns the string representation of the GValue in the format "name=value".
 func (gv GValue) String() string {
-	return fmt.Sprintf("%v=%v", gv.name, gv.value)
+	return fmt.Sprintf("%v=%v", gv.Name, gv.Value)
 }
