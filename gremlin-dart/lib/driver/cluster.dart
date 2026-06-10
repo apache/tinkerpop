@@ -21,6 +21,7 @@ import 'dart:math';
 import '../process/gremlin_lang.dart';
 import '../process/traversal.dart';
 import '../process/traversal_strategy.dart';
+import 'auth.dart';
 import 'connection.dart';
 import 'driver_remote_connection.dart';
 import 'remote_connection.dart';
@@ -350,6 +351,12 @@ class ClusterBuilder {
   /// Shorthand for [options] when only SSL needs to be set.
   ClusterBuilder ssl(SslOptions ssl) {
     _options = _options.copyWith(ssl: ssl);
+    return this;
+  }
+
+  /// Authentication strategy (e.g. [BasicAuth] or [SigV4Auth]).
+  ClusterBuilder auth(AuthOptions auth) {
+    _options = _options.copyWith(auth: auth);
     return this;
   }
 

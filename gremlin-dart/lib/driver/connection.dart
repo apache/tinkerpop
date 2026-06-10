@@ -25,6 +25,7 @@ import '../structure/io/graph_binary/graph_binary_reader.dart';
 import '../structure/io/graph_binary/graph_binary_writer.dart';
 import 'auth.dart';
 import 'request_message.dart';
+import 'sigv4.dart';
 import 'response_error.dart';
 import 'result_set.dart';
 
@@ -233,6 +234,12 @@ class Connection {
 
     for (final interceptor in this.options.interceptors) {
       _dio.interceptors.add(interceptor);
+    }
+
+    // SigV4 runs after user interceptors but before Retry so each attempt
+    // (including retries) gets a fresh signature and timestamp.
+    if (this.options.auth is SigV4Auth) {
+      _dio.interceptors.add(SigV4Interceptor(this.options.auth as SigV4Auth));
     }
 
     // Retry interceptor is added last so it wraps the full request pipeline.

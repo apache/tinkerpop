@@ -30,6 +30,7 @@ export 'process/anonymous_traversal.dart'
 
 // Driver
 export 'driver/auth.dart';
+export 'driver/sigv4.dart' show SigV4Signer, SigV4Interceptor;
 export 'driver/client.dart';
 export 'driver/cluster.dart';
 export 'driver/connection.dart' show Connection, ConnectionOptions;
