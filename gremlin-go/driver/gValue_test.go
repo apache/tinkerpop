@@ -67,31 +67,28 @@ func TestGValue(t *testing.T) {
 		assert.Panics(t, func() { g.Inject(param1).V(param2) }, "parameter with name ids already exists.")
 	})
 
-	t.Run("test invalid name that starts with _", func(t *testing.T) {
-		assert.Panics(t, func() { NewGValue("_ids", [2]int{1, 2}) },
-			"invalid GValue name _ids. Should not start with _.")
+	t.Run("test name starting with _ accepted", func(t *testing.T) {
+		assert.NotPanics(t, func() { NewGValue("_ids", [2]int{1, 2}) })
 	})
 
-	t.Run("test name is valid identifier", func(t *testing.T) {
-		assert.Panics(t, func() { NewGValue("1a", [2]int{1, 2}) },
-			"invalid GValue name '1a'.")
+	t.Run("test name starting with digit accepted", func(t *testing.T) {
+		assert.NotPanics(t, func() { NewGValue("1a", [2]int{1, 2}) })
 	})
 
-	t.Run("test name is not a number", func(t *testing.T) {
-		assert.Panics(t, func() { NewGValue("1", [2]int{1, 2}) },
-			"invalid GValue name '1'.")
+	t.Run("test numeric name accepted", func(t *testing.T) {
+		assert.NotPanics(t, func() { NewGValue("1", [2]int{1, 2}) })
 	})
 
 	t.Run("test mid-string underscore name accepted", func(t *testing.T) {
 		assert.NotPanics(t, func() { NewGValue("a_b", 1) })
 	})
 
-	t.Run("test empty-string name rejected", func(t *testing.T) {
-		assert.Panics(t, func() { NewGValue("", 1) })
+	t.Run("test empty-string name accepted", func(t *testing.T) {
+		assert.NotPanics(t, func() { NewGValue("", 1) })
 	})
 
-	t.Run("test mid-string dollar sign rejected", func(t *testing.T) {
-		assert.Panics(t, func() { NewGValue("a$b", 1) })
+	t.Run("test mid-string dollar sign accepted", func(t *testing.T) {
+		assert.NotPanics(t, func() { NewGValue("a$b", 1) })
 	})
 
 	t.Run("test unicode letter name accepted", func(t *testing.T) {

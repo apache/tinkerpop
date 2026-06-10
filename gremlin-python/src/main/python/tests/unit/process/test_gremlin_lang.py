@@ -485,20 +485,15 @@ class TestGremlinLang(object):
     def test_gvalue_name_cannot_be_null(self):
         try:
             GValue(None, [1, 2, 3])
+            assert False, 'expected exception for null name'
         except Exception as ex:
-            assert str(ex) == 'invalid GValue name None.'
+            assert str(ex) == 'GValue name cannot be null.'
 
-    def test_gvalue_name_empty_string_rejected(self):
-        try:
-            GValue('', [1, 2, 3])
-        except Exception as ex:
-            assert str(ex) == 'invalid GValue name .'
+    def test_gvalue_name_empty_string_accepted(self):
+        assert GValue('', [1, 2, 3]).get_name() == ''
 
-    def test_gvalue_name_mid_string_dollar_rejected(self):
-        try:
-            GValue('a$b', [1, 2, 3])
-        except Exception as ex:
-            assert str(ex) == 'invalid GValue name a$b.'
+    def test_gvalue_name_mid_string_dollar_accepted(self):
+        assert GValue('a$b', [1, 2, 3]).get_name() == 'a$b'
 
     def test_gvalue_name_unicode_letter_accepted(self):
         g = traversal().with_(None)
@@ -507,29 +502,11 @@ class TestGremlinLang(object):
         assert 'g.V(café)' == gremlin.get_gremlin()
         assert 42 == gremlin.get_parameters().get('café')
 
-    def test_gvalue_name_dont_need_escaping(self):
-        try:
-            GValue('"', [1, 2, 3])
-        except Exception as ex:
-            assert str(ex) == 'invalid GValue name ".'
+    def test_gvalue_name_numeric_start_accepted(self):
+        assert GValue('1a', 42).get_name() == '1a'
 
-    def test_gvalue_is_not_number(self):
-        try:
-            GValue('1', [1, 2, 3])
-        except Exception as ex:
-            assert str(ex) == 'invalid GValue name 1.'
-
-    def test_gvalue_is_valid_identifier(self):
-        try:
-            GValue('1a', [1, 2, 3])
-        except Exception as ex:
-            assert str(ex) == 'invalid GValue name 1a.'
-
-    def test_gvalue_is_not_reserved(self):
-        try:
-            GValue('_1', [1, 2, 3])
-        except Exception as ex:
-            assert str(ex) == 'invalid GValue name _1.'
+    def test_gvalue_underscore_name_accepted(self):
+        assert GValue('_1', [1, 2, 3]).get_name() == '_1'
 
     def test_gvalue_is_not_duplicate(self):
         g = traversal().with_(None)

@@ -21,7 +21,6 @@ package gremlingo
 
 import (
 	"fmt"
-	"unicode"
 )
 
 // GValue is a variable or literal value that is used in a Traversal. It is composed of a key-value pair where the key
@@ -31,33 +30,13 @@ type GValue struct {
 	value interface{}
 }
 
-// NewGValue creates a new GValue to be used in traversals. The name must be non-empty, start with a
-// Unicode letter, and contain only Unicode letters, digits, or '_'. It cannot begin with "_".
+// NewGValue creates a new GValue to be used in traversals. GValues cannot be nested, which is
+// the only restriction imposed on the name.
 func NewGValue(name string, value interface{}) GValue {
 	if _, ok := value.(GValue); ok {
 		panic("GValues cannot be nested")
 	}
-	runes := []rune(name)
-	if len(runes) > 0 && runes[0] == '_' {
-		panic(fmt.Sprintf("invalid GValue name '%v'. Should not start with _.", name))
-	}
-	if !isValidGValueName(name) {
-		panic(fmt.Sprintf("invalid GValue name '%v'.", name))
-	}
 	return GValue{name, value}
-}
-
-func isValidGValueName(name string) bool {
-	runes := []rune(name)
-	if len(runes) == 0 || !unicode.IsLetter(runes[0]) {
-		return false
-	}
-	for _, r := range runes[1:] {
-		if !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '_' {
-			return false
-		}
-	}
-	return true
 }
 
 // Name returns the name of the GValue.
