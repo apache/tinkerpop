@@ -53,6 +53,7 @@ public class Context {
     private final long requestTimeout;
     private final String materializeProperties;
     private final Object gremlinArgument;
+    private final RequestType requestType;
     private HttpGremlinEndpointHandler.RequestState requestState;
     private final AtomicBoolean startedResponse = new AtomicBoolean(false);
     private ScheduledFuture<?> timeoutExecutor = null;
@@ -80,7 +81,9 @@ public class Context {
         this.scheduledExecutorService = scheduledExecutorService;
 
         // order of calls matter as one depends on the next
-        this.gremlinArgument = requestMessage.getGremlin();
+        final String gremlin = requestMessage.getGremlin();
+        this.gremlinArgument = gremlin;
+        this.requestType = RequestType.fromGremlin(gremlin);
         this.requestState = requestState;
         this.requestTimeout = determineTimeout();
         this.materializeProperties = determineMaterializeProperties();
@@ -126,6 +129,27 @@ public class Context {
 
     public String getTransactionId() {
         return transactionId;
+    }
+
+    /**
+     * Returns {@code true} if this request is a transaction begin control command.
+     */
+    public boolean isTransactionBegin() {
+        return requestType == RequestType.BEGIN_TX;
+    }
+
+    /**
+     * Returns {@code true} if this request is a transaction commit control command.
+     */
+    public boolean isTransactionCommit() {
+        return requestType == RequestType.COMMIT_TX;
+    }
+
+    /**
+     * Returns {@code true} if this request is a transaction rollback control command.
+     */
+    public boolean isTransactionRollback() {
+        return requestType == RequestType.ROLLBACK_TX;
     }
 
     public void setTransactionId(final String transactionId) {
@@ -232,5 +256,37 @@ public class Context {
 
     public void setRequestState(HttpGremlinEndpointHandler.RequestState requestState) {
         this.requestState = requestState;
+    }
+
+    /**
+     * Classifies an HTTP request by the kind of work it performs. Transaction control requests reuse the canonical
+     * Gremlin idioms ({@code g.tx().begin()} etc.) as protocol signals rather than evaluating them, because the
+     * ThreadLocal-bound nature of graph transactions forces the server to route the underlying graph operation onto
+     * a dedicated per-transaction thread instead of the shared eval path. The match is therefore against fixed,
+     * case-sensitive tokens — the same spelling the script engine would accept — not a grammar parse.
+     */
+    private enum RequestType {
+        BEGIN_TX,
+        COMMIT_TX,
+        ROLLBACK_TX,
+        EVAL;
+
+        private static final String BEGIN = "g.tx().begin()";
+        private static final String COMMIT = "g.tx().commit()";
+        private static final String ROLLBACK = "g.tx().rollback()";
+
+        /**
+         * Classifies a gremlin string into a {@link RequestType}. Leading/trailing whitespace is tolerated, but the
+         * token match is case-sensitive so that the routing decision cannot disagree with how the script engine would
+         * parse the same string.
+         */
+        private static RequestType fromGremlin(final String gremlin) {
+            if (gremlin == null) return EVAL;
+            final String trimmed = gremlin.trim();
+            if (trimmed.equals(BEGIN)) return BEGIN_TX;
+            if (trimmed.equals(COMMIT)) return COMMIT_TX;
+            if (trimmed.equals(ROLLBACK)) return ROLLBACK_TX;
+            return EVAL;
+        }
     }
 }

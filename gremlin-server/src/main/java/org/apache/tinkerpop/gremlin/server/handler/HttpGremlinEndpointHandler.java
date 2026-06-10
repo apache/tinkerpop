@@ -218,8 +218,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 // These guards prevent any obvious failures from returning 200 OK early by detecting them here and
                 // throwing before any other processing starts so the user gets a better error code.
                 final String txId = requestCtx.getTransactionId();
-                final String gremlin = requestMessage.getGremlin();
-                if (isTransactionBegin(gremlin)) {
+                if (requestCtx.isTransactionBegin()) {
                     // If this is a begin transaction request then we need to create the Transaction ID first since the
                     // dual-transmission expectation means the response header below should contain it.
 
@@ -244,7 +243,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     if ((!g.tx().isOpen())) {
                         throw new ProcessingException(GremlinError.transactionNotFound(txId));
                     }
-                } else if ((txId == null) && (isTransactionCommit(gremlin) || isTransactionRollback(gremlin))) {
+                } else if ((txId == null) && (requestCtx.isTransactionCommit() || requestCtx.isTransactionRollback())) {
                     // Logically, commit/rollback should only be allowed on a transactional request.
                     throw new ProcessingException(GremlinError.transactionalControlRequiresTransaction());
                 }
@@ -309,7 +308,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         });
 
         try {
-            final boolean isBeginTransactionRequest = isTransactionBegin(requestMessage.getGremlin());
+            final boolean isBeginTransactionRequest = requestCtx.isTransactionBegin();
             final Future<?> executionFuture = ((requestCtx.getTransactionId() != null) && !isBeginTransactionRequest) ?
                     transactionManager.get(requestCtx.getTransactionId()).get().submit(evalFuture) :
                     requestCtx.getGremlinExecutor().getExecutorService().submit(evalFuture);
@@ -355,11 +354,11 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         // Early guard against fake or incorrect transaction IDs.
         if ((txId != null) && transaction.isEmpty()) throw new ProcessingException(GremlinError.transactionNotFound(txId));
 
-        if (isTransactionBegin(request.getGremlin())) {
+        if (requestContext.isTransactionBegin()) {
             runBegin(requestContext, transaction.get(), serializer);
-        } else if (isTransactionCommit(request.getGremlin())) {
+        } else if (requestContext.isTransactionCommit()) {
             handleGraphOp(requestContext, txId, Transaction::commit, serializer);
-        } else if (isTransactionRollback(requestContext.getRequestMessage().getGremlin())) {
+        } else if (requestContext.isTransactionRollback()) {
             handleGraphOp(requestContext, txId, Transaction::rollback, serializer);
         } else {
             // Both transactional and non-transactional traversals follow this path for response chunking.
@@ -489,30 +488,6 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         if (ctx.channel().isActive()) {
             HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, cause.getMessage());
         }
-    }
-
-    /**
-     * Detects if the gremlin script is a transaction begin command.
-     */
-    private boolean isTransactionBegin(final String gremlin) {
-        if (gremlin == null) return false;
-        return gremlin.trim().equalsIgnoreCase("g.tx().begin()");
-    }
-
-    /**
-     * Detects if the gremlin script is a transaction commit command.
-     */
-    private boolean isTransactionCommit(final String gremlin) {
-        if (gremlin == null) return false;
-        return gremlin.trim().equalsIgnoreCase("g.tx().commit()");
-    }
-
-    /**
-     * Detects if the gremlin script is a transaction rollback command.
-     */
-    private boolean isTransactionRollback(final String gremlin) {
-        if (gremlin == null) return false;
-        return gremlin.trim().equalsIgnoreCase("g.tx().rollback()");
     }
 
     /**
