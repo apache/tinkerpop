@@ -2690,7 +2690,7 @@ Anonymous pattern elements (those without a variable name) are not exposed and c
 
 [gremlin-groovy,modern]
 ----
-g.match("MATCH (a:person)-[:knows]->(b:person)")
+g.match("MATCH (a:person)-[:knows]->(b:person)").
     select("a", "b").by("name")
 ----
 

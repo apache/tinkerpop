@@ -1813,7 +1813,7 @@ bound parameters to the query; how (and whether) these are used is left to the p
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|Y |Y |Y (via `with()`) |`any` |`Map<String, Element>`
+|Y |Y |Y (via `with()`) |`any` |`Map<String, Object>`
 |=========================================================
 
 *Arguments:*

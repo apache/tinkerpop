@@ -500,25 +500,10 @@ func (g *GraphTraversal) Map(args ...interface{}) *GraphTraversal {
 	return g
 }
 
-// Match adds the match step to the GraphTraversal.
-// Deprecated: As of release 4.0.0, prefer MatchGql for declarative GQL pattern matching.
+// Match adds the match step to the GraphTraversal. Accepts either the traditional traversal form
+// Match(traversal, ...) or the declarative string form Match(queryString) / Match(queryString, params).
 func (g *GraphTraversal) Match(args ...interface{}) *GraphTraversal {
 	g.GremlinLang.AddStep("match", args...)
-	return g
-}
-
-// MatchGql adds a declarative pattern match step to the GraphTraversal. The query language
-// defaults to "gql" and can be overridden with .With("queryLanguage", value).
-func (g *GraphTraversal) MatchGql(matchQuery string) *GraphTraversal {
-	g.GremlinLang.AddStep("match", matchQuery)
-	return g
-}
-
-// MatchGqlWithParams adds a declarative pattern match step with bound parameters to the
-// GraphTraversal. The query language defaults to "gql" and can be overridden with
-// .With("queryLanguage", value).
-func (g *GraphTraversal) MatchGqlWithParams(matchQuery string, params map[string]interface{}) *GraphTraversal {
-	g.GremlinLang.AddStep("match", matchQuery, params)
 	return g
 }
 

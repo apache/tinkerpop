@@ -162,7 +162,7 @@ traversalSourceSpawnMethod_union
 
 traversalSourceSpawnMethod_match
     : K_MATCH LPAREN stringLiteral RPAREN #traversalSourceSpawnMethod_match_string
-    | K_MATCH LPAREN stringLiteral COMMA genericMapArgument RPAREN #traversalSourceSpawnMethod_match_string_map
+    | K_MATCH LPAREN stringLiteral COMMA genericMapLiteral RPAREN #traversalSourceSpawnMethod_match_string_map
     ;
 
 chainedTraversal
@@ -659,7 +659,7 @@ traversalMethod_map
 traversalMethod_match
     : K_MATCH LPAREN nestedTraversalList RPAREN #traversalMethod_match_traversal // deprecated
     | K_MATCH LPAREN stringLiteral RPAREN #traversalMethod_match_string
-    | K_MATCH LPAREN stringLiteral COMMA genericMapArgument RPAREN #traversalMethod_match_string_map
+    | K_MATCH LPAREN stringLiteral COMMA genericMapLiteral RPAREN #traversalMethod_match_string_map
     ;
 
 traversalMethod_math

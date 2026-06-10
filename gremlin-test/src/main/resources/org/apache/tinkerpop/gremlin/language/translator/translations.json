@@ -25638,6 +25638,57 @@
         ]
     },
     {
+        "scenario": "g_match_multiPattern_bridgeVariable_selectXa_b_sX_byXnameX",
+        "traversals": [
+            {
+                "original": "g.match(\"MATCH (a:person)-[:knows]->(b:person), (b:person)-[:created]->(s:software)\").select(\"a\",\"b\",\"s\").by(\"name\")",
+                "language": "g.match(\"MATCH (a:person)-[:knows]->(b:person), (b:person)-[:created]->(s:software)\").select(\"a\", \"b\", \"s\").by(\"name\")",
+                "canonical": "g.match(\"MATCH (a:person)-[:knows]->(b:person), (b:person)-[:created]->(s:software)\").select(\"a\", \"b\", \"s\").by(\"name\")",
+                "anonymized": "g.match(string0).select(string1, string2, string3).by(string4)",
+                "dotnet": "g.Match(\"MATCH (a:person)-[:knows]->(b:person), (b:person)-[:created]->(s:software)\").Select<object>(\"a\", \"b\", \"s\").By(\"name\")",
+                "go": "g.Match(\"MATCH (a:person)-[:knows]->(b:person), (b:person)-[:created]->(s:software)\").Select(\"a\", \"b\", \"s\").By(\"name\")",
+                "groovy": "g.match(\"MATCH (a:person)-[:knows]->(b:person), (b:person)-[:created]->(s:software)\").select(\"a\", \"b\", \"s\").by(\"name\")",
+                "java": "g.match(\"MATCH (a:person)-[:knows]->(b:person), (b:person)-[:created]->(s:software)\").select(\"a\", \"b\", \"s\").by(\"name\")",
+                "javascript": "g.match(\"MATCH (a:person)-[:knows]->(b:person), (b:person)-[:created]->(s:software)\").select(\"a\", \"b\", \"s\").by(\"name\")",
+                "python": "g.match('MATCH (a:person)-[:knows]->(b:person), (b:person)-[:created]->(s:software)').select('a', 'b', 's').by('name')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_match_personXknowsXeVar_weight_1X_person_selectXa_e_bX",
+        "traversals": [
+            {
+                "original": "g.match(\"MATCH (a:person)-[e:knows {weight: 1.0}]->(b:person)\").select(\"a\",\"e\",\"b\")",
+                "language": "g.match(\"MATCH (a:person)-[e:knows {weight: 1.0}]->(b:person)\").select(\"a\", \"e\", \"b\")",
+                "canonical": "g.match(\"MATCH (a:person)-[e:knows {weight: 1.0}]->(b:person)\").select(\"a\", \"e\", \"b\")",
+                "anonymized": "g.match(string0).select(string1, string2, string3)",
+                "dotnet": "g.Match(\"MATCH (a:person)-[e:knows {weight: 1.0}]->(b:person)\").Select<object>(\"a\", \"e\", \"b\")",
+                "go": "g.Match(\"MATCH (a:person)-[e:knows {weight: 1.0}]->(b:person)\").Select(\"a\", \"e\", \"b\")",
+                "groovy": "g.match(\"MATCH (a:person)-[e:knows {weight: 1.0}]->(b:person)\").select(\"a\", \"e\", \"b\")",
+                "java": "g.match(\"MATCH (a:person)-[e:knows {weight: 1.0}]->(b:person)\").select(\"a\", \"e\", \"b\")",
+                "javascript": "g.match(\"MATCH (a:person)-[e:knows {weight: 1.0}]->(b:person)\").select(\"a\", \"e\", \"b\")",
+                "python": "g.match('MATCH (a:person)-[e:knows {weight: 1.0}]->(b:person)').select('a', 'e', 'b')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_match_anyXknowsX_any_selectXaX_byXnameX_concatXconstant_selectXbX_byXnameXX",
+        "traversals": [
+            {
+                "original": "g.match(\"MATCH (a)-[:knows]->(b)\").select(\"a\").by(\"name\").concat(constant(\" knows \"), select(\"b\").by(\"name\"))",
+                "language": "g.match(\"MATCH (a)-[:knows]->(b)\").select(\"a\").by(\"name\").concat(__.constant(\" knows \"), __.select(\"b\").by(\"name\"))",
+                "canonical": "g.match(\"MATCH (a)-[:knows]->(b)\").select(\"a\").by(\"name\").concat(__.constant(\" knows \"), __.select(\"b\").by(\"name\"))",
+                "anonymized": "g.match(string0).select(string1).by(string2).concat(__.constant(string3), __.select(string4).by(string2))",
+                "dotnet": "g.Match(\"MATCH (a)-[:knows]->(b)\").Select<object>(\"a\").By(\"name\").Concat(__.Constant<object>(\" knows \"), __.Select<object>(\"b\").By(\"name\"))",
+                "go": "g.Match(\"MATCH (a)-[:knows]->(b)\").Select(\"a\").By(\"name\").Concat(gremlingo.T__.Constant(\" knows \"), gremlingo.T__.Select(\"b\").By(\"name\"))",
+                "groovy": "g.match(\"MATCH (a)-[:knows]->(b)\").select(\"a\").by(\"name\").concat(__.constant(\" knows \"), __.select(\"b\").by(\"name\"))",
+                "java": "g.match(\"MATCH (a)-[:knows]->(b)\").select(\"a\").by(\"name\").concat(__.constant(\" knows \"), __.select(\"b\").by(\"name\"))",
+                "javascript": "g.match(\"MATCH (a)-[:knows]->(b)\").select(\"a\").by(\"name\").concat(__.constant(\" knows \"), __.select(\"b\").by(\"name\"))",
+                "python": "g.match('MATCH (a)-[:knows]->(b)').select('a').by('name').concat(__.constant(' knows '), __.select('b').by('name'))"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_outE_mathX0_minus_itX_byXweightX",
         "traversals": [
             {

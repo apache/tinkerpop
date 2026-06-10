@@ -308,3 +308,15 @@ Feature: Step - match() (String form)
     Then the result should be unordered
       | result |
       | m[{"a":"v[marko]","e":"e[marko-knows->josh]","b":"v[josh]"}] |
+
+  Scenario: g_match_anyXknowsX_any_selectXaX_byXnameX_concatXconstant_selectXbX_byXnameXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a)-[:knows]->(b)").select("a").by("name").concat(constant(" knows "), select("b").by("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko knows vadas |
+      | marko knows josh  |

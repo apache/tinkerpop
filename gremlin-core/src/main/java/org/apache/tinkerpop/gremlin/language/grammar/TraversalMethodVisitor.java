@@ -1109,11 +1109,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_match_string_map(final GremlinParser.TraversalMethod_match_string_mapContext ctx) {
-        final Object literalOrVar = antlr.argumentVisitor.visitGenericMapArgument(ctx.genericMapArgument());
-        if (GValue.valueInstanceOf(literalOrVar, Map.class))
-            return this.graphTraversal.match(antlr.genericVisitor.parseString(ctx.stringLiteral()), (Map<String, Object>) ((GValue<?>) literalOrVar).get());
-        else
-            return this.graphTraversal.match(antlr.genericVisitor.parseString(ctx.stringLiteral()), (Map<String, Object>) literalOrVar);
+        final Map<String, Object> params = (Map<String, Object>) antlr.genericVisitor.visitGenericMapLiteral(ctx.genericMapLiteral());
+        return this.graphTraversal.match(antlr.genericVisitor.parseString(ctx.stringLiteral()), params);
     }
 
     /**

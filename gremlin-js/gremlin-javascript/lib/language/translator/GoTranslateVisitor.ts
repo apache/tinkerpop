@@ -368,31 +368,40 @@ export default class GoTranslateVisitor extends TranslateVisitor {
         }
     }
 
+    visitTraversalSourceSpawnMethod_match_string(ctx: any): void {
+        this.sb.push('Match(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(')');
+    }
+
     visitTraversalSourceSpawnMethod_match_string_map(ctx: any): void {
         this.sb.push('MatchWithParams(');
         this.visit(ctx.stringLiteral());
         this.sb.push(', ');
-        this.visitGoParamsMap(ctx.genericMapArgument());
+        this.visitGoParamsMap(ctx.genericMapLiteral());
+        this.sb.push(')');
+    }
+
+    visitTraversalMethod_match_string(ctx: any): void {
+        this.sb.push('Match(');
+        this.visit(ctx.stringLiteral());
         this.sb.push(')');
     }
 
     visitTraversalMethod_match_string_map(ctx: any): void {
-        this.sb.push('MatchGqlWithParams(');
+        this.sb.push('Match(');
         this.visit(ctx.stringLiteral());
         this.sb.push(', ');
-        this.visitGoParamsMap(ctx.genericMapArgument());
+        this.visitGoParamsMap(ctx.genericMapLiteral());
         this.sb.push(')');
     }
 
-    private visitGoParamsMap(mapArg: any): void {
+    private visitGoParamsMap(mapLiteral: any): void {
         this.sb.push('map[string]interface{}{');
-        const mapLiteral = mapArg.genericMapLiteral != null ? mapArg.genericMapLiteral() : null;
-        if (mapLiteral != null) {
-            const entries: any[] = mapLiteral.mapEntry();
-            for (let i = 0; i < entries.length; i++) {
-                this.visit(entries[i]);
-                if (i < entries.length - 1) this.sb.push(', ');
-            }
+        const entries: any[] = mapLiteral.mapEntry();
+        for (let i = 0; i < entries.length; i++) {
+            this.visit(entries[i]);
+            if (i < entries.length - 1) this.sb.push(', ');
         }
         this.sb.push(' }');
     }
