@@ -53,6 +53,33 @@ class ConnectionOptions {
     this.maxConnectionsPerHost = 8,
     this.httpClientAdapter,
   });
+
+  ConnectionOptions copyWith({
+    bool? enableUserAgentOnConnect,
+    Map<String, String>? headers,
+    String? traversalSource,
+    AuthOptions? auth,
+    List<Interceptor>? interceptors,
+    Duration? connectTimeout,
+    Duration? receiveTimeout,
+    Duration? idleTimeout,
+    int? maxConnectionsPerHost,
+    HttpClientAdapter? httpClientAdapter,
+  }) =>
+      ConnectionOptions(
+        enableUserAgentOnConnect:
+            enableUserAgentOnConnect ?? this.enableUserAgentOnConnect,
+        headers: headers ?? this.headers,
+        traversalSource: traversalSource ?? this.traversalSource,
+        auth: auth ?? this.auth,
+        interceptors: interceptors ?? this.interceptors,
+        connectTimeout: connectTimeout ?? this.connectTimeout,
+        receiveTimeout: receiveTimeout ?? this.receiveTimeout,
+        idleTimeout: idleTimeout ?? this.idleTimeout,
+        maxConnectionsPerHost:
+            maxConnectionsPerHost ?? this.maxConnectionsPerHost,
+        httpClientAdapter: httpClientAdapter ?? this.httpClientAdapter,
+      );
 }
 
 class _RawResponse {

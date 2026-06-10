@@ -31,6 +31,7 @@ export 'process/anonymous_traversal.dart'
 // Driver
 export 'driver/auth.dart';
 export 'driver/client.dart';
+export 'driver/cluster.dart';
 export 'driver/connection.dart' show Connection, ConnectionOptions;
 export 'driver/driver_remote_connection.dart';
 export 'driver/remote_connection.dart';
