@@ -52,6 +52,7 @@ class HostEntry {
   bool isAvailable = true;
   Connection? _connection;
   Timer? _reconnectTimer;
+  bool _probingInProgress = false;
 
   HostEntry(this.url);
 
@@ -195,6 +196,9 @@ class Cluster {
     // Cancel any existing reconnect attempt before scheduling a new one.
     host._reconnectTimer?.cancel();
     host._reconnectTimer = Timer.periodic(_reconnectInterval, (_) async {
+      // Guard against overlapping probes if reconnectInterval < probe latency.
+      if (host._probingInProgress) return;
+      host._probingInProgress = true;
       try {
         final probe = Connection(host.url, _baseOptions);
         await probe.submit(
@@ -209,6 +213,8 @@ class Cluster {
         _lb.onAvailable(host);
       } catch (_) {
         // Host still unreachable; timer keeps firing.
+      } finally {
+        host._probingInProgress = false;
       }
     });
   }
@@ -337,6 +343,19 @@ class ClusterBuilder {
   /// interceptors, SSL adapter, etc.).
   ClusterBuilder options(ConnectionOptions options) {
     _options = options;
+    return this;
+  }
+
+  /// TLS/SSL configuration (custom CA, client cert, skip verification).
+  /// Shorthand for [options] when only SSL needs to be set.
+  ClusterBuilder ssl(SslOptions ssl) {
+    _options = _options.copyWith(ssl: ssl);
+    return this;
+  }
+
+  /// Automatic retry policy for transient errors on each host.
+  ClusterBuilder retry(RetryOptions retry) {
+    _options = _options.copyWith(retryOptions: retry);
     return this;
   }
 

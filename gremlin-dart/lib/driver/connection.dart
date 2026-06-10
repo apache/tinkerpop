@@ -28,6 +28,107 @@ import 'request_message.dart';
 import 'response_error.dart';
 import 'result_set.dart';
 
+// ---------------------------------------------------------------------------
+// SslOptions
+// ---------------------------------------------------------------------------
+
+/// TLS/SSL configuration for a [Connection].
+///
+/// Pass bytes (in-memory PEM) or a file path for each credential.  Bytes take
+/// precedence when both are supplied for the same field.
+///
+/// ```dart
+/// // Self-signed server cert — skip verification (dev only!)
+/// SslOptions(skipCertificateVerification: true)
+///
+/// // Trust a private CA
+/// SslOptions(trustedCertificates: File('ca.pem').readAsBytesSync())
+///
+/// // Mutual TLS
+/// SslOptions(
+///   clientCertificate: File('client.pem').readAsBytesSync(),
+///   privateKey:        File('client.key').readAsBytesSync(),
+///   privateKeyPassword: 'secret',
+/// )
+/// ```
+class SslOptions {
+  /// Skip TLS certificate verification entirely.  **For testing only.**
+  final bool skipCertificateVerification;
+
+  /// PEM-encoded trusted CA certificate(s) — bytes.
+  final Uint8List? trustedCertificates;
+
+  /// Path to PEM-encoded trusted CA certificate(s) file.
+  final String? trustedCertificatesPath;
+
+  /// PEM-encoded client certificate chain (bytes) — for mutual TLS.
+  final Uint8List? clientCertificate;
+
+  /// Path to PEM-encoded client certificate chain file.
+  final String? clientCertificatePath;
+
+  /// PEM-encoded private key (bytes) — for mutual TLS.
+  final Uint8List? privateKey;
+
+  /// Path to PEM-encoded private key file.
+  final String? privateKeyPath;
+
+  /// Password for the private key (if encrypted).
+  final String? privateKeyPassword;
+
+  const SslOptions({
+    this.skipCertificateVerification = false,
+    this.trustedCertificates,
+    this.trustedCertificatesPath,
+    this.clientCertificate,
+    this.clientCertificatePath,
+    this.privateKey,
+    this.privateKeyPath,
+    this.privateKeyPassword,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// RetryOptions  (configured per-Connection; wires a RetryInterceptor into Dio)
+// ---------------------------------------------------------------------------
+
+/// Controls automatic retry behaviour on transient errors.
+///
+/// By default retries connection errors, timeouts, and 503 responses up to
+/// 3 times with a 500 ms fixed delay.
+///
+/// ```dart
+/// ConnectionOptions(
+///   retryOptions: RetryOptions(
+///     maxAttempts: 5,
+///     delay: Duration(seconds: 1),
+///     useExponentialBackoff: true,
+///   ),
+/// )
+/// ```
+class RetryOptions {
+  /// Total number of attempts (first try + retries).  Must be ≥ 1.
+  final int maxAttempts;
+
+  /// Base delay between attempts.  Doubles on each attempt when
+  /// [useExponentialBackoff] is true.
+  final Duration delay;
+
+  /// Double the delay on each successive retry.
+  final bool useExponentialBackoff;
+
+  /// Custom predicate — return true to retry the given error.  When null the
+  /// default policy applies (connection errors, timeouts, HTTP 503).
+  final bool Function(DioException)? retryWhen;
+
+  const RetryOptions({
+    this.maxAttempts = 3,
+    this.delay = const Duration(milliseconds: 500),
+    this.useExponentialBackoff = false,
+    this.retryWhen,
+  });
+}
+
 class ConnectionOptions {
   final bool enableUserAgentOnConnect;
   final Map<String, String> headers;
@@ -40,6 +141,8 @@ class ConnectionOptions {
   final int maxConnectionsPerHost;
   // Provide a custom adapter to override SSL, proxy, or transport behaviour.
   final HttpClientAdapter? httpClientAdapter;
+  final SslOptions? ssl;
+  final RetryOptions? retryOptions;
 
   const ConnectionOptions({
     this.enableUserAgentOnConnect = true,
@@ -52,6 +155,8 @@ class ConnectionOptions {
     this.idleTimeout = const Duration(seconds: 30),
     this.maxConnectionsPerHost = 8,
     this.httpClientAdapter,
+    this.ssl,
+    this.retryOptions,
   });
 
   ConnectionOptions copyWith({
@@ -65,6 +170,8 @@ class ConnectionOptions {
     Duration? idleTimeout,
     int? maxConnectionsPerHost,
     HttpClientAdapter? httpClientAdapter,
+    SslOptions? ssl,
+    RetryOptions? retryOptions,
   }) =>
       ConnectionOptions(
         enableUserAgentOnConnect:
@@ -79,6 +186,8 @@ class ConnectionOptions {
         maxConnectionsPerHost:
             maxConnectionsPerHost ?? this.maxConnectionsPerHost,
         httpClientAdapter: httpClientAdapter ?? this.httpClientAdapter,
+        ssl: ssl ?? this.ssl,
+        retryOptions: retryOptions ?? this.retryOptions,
       );
 }
 
@@ -119,10 +228,16 @@ class Connection {
           idleTimeout: this.options.idleTimeout,
           connectTimeout: this.options.connectTimeout,
           maxConnectionsPerHost: this.options.maxConnectionsPerHost,
+          ssl: this.options.ssl,
         );
 
     for (final interceptor in this.options.interceptors) {
       _dio.interceptors.add(interceptor);
+    }
+
+    // Retry interceptor is added last so it wraps the full request pipeline.
+    if (this.options.retryOptions != null) {
+      _dio.interceptors.add(RetryInterceptor(_dio, this.options.retryOptions!));
     }
   }
 
@@ -285,10 +400,65 @@ class _TrailerTolerantAdapter implements HttpClientAdapter {
     required Duration idleTimeout,
     required Duration connectTimeout,
     required int maxConnectionsPerHost,
-  }) : _client = io.HttpClient()
-          ..idleTimeout = idleTimeout
-          ..connectionTimeout = connectTimeout
-          ..maxConnectionsPerHost = maxConnectionsPerHost;
+    SslOptions? ssl,
+  }) : _client = _buildClient(idleTimeout, connectTimeout,
+            maxConnectionsPerHost, ssl);
+
+  static io.HttpClient _buildClient(
+    Duration idleTimeout,
+    Duration connectTimeout,
+    int maxConnectionsPerHost,
+    SslOptions? ssl,
+  ) {
+    io.SecurityContext? ctx;
+
+    if (ssl != null) {
+      final needsCtx = ssl.trustedCertificates != null ||
+          ssl.trustedCertificatesPath != null ||
+          ssl.clientCertificate != null ||
+          ssl.clientCertificatePath != null ||
+          ssl.privateKey != null ||
+          ssl.privateKeyPath != null;
+
+      if (needsCtx) {
+        ctx = io.SecurityContext(withTrustedRoots: true);
+
+        if (ssl.trustedCertificates != null) {
+          ctx.setTrustedCertificatesBytes(ssl.trustedCertificates!);
+        } else if (ssl.trustedCertificatesPath != null) {
+          ctx.setTrustedCertificates(ssl.trustedCertificatesPath!);
+        }
+
+        if (ssl.clientCertificate != null) {
+          ctx.useCertificateChainBytes(ssl.clientCertificate!);
+        } else if (ssl.clientCertificatePath != null) {
+          ctx.useCertificateChain(ssl.clientCertificatePath!);
+        }
+
+        if (ssl.privateKey != null) {
+          ctx.usePrivateKeyBytes(ssl.privateKey!,
+              password: ssl.privateKeyPassword);
+        } else if (ssl.privateKeyPath != null) {
+          ctx.usePrivateKey(ssl.privateKeyPath!,
+              password: ssl.privateKeyPassword);
+        }
+      }
+    }
+
+    final client =
+        ctx != null ? io.HttpClient(context: ctx) : io.HttpClient();
+
+    client
+      ..idleTimeout = idleTimeout
+      ..connectionTimeout = connectTimeout
+      ..maxConnectionsPerHost = maxConnectionsPerHost;
+
+    if (ssl?.skipCertificateVerification == true) {
+      client.badCertificateCallback = (_, __, ___) => true;
+    }
+
+    return client;
+  }
 
   @override
   Future<ResponseBody> fetch(
@@ -374,5 +544,52 @@ class _TrailerTolerantAdapter implements HttpClientAdapter {
 
     final result = out.takeBytes();
     return result.isEmpty ? raw : result;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// RetryInterceptor
+// ---------------------------------------------------------------------------
+
+/// Dio interceptor that transparently retries requests on transient errors.
+/// Added automatically by [Connection] when [ConnectionOptions.retryOptions]
+/// is non-null.
+class RetryInterceptor extends Interceptor {
+  final Dio _dio;
+  final RetryOptions options;
+
+  RetryInterceptor(this._dio, this.options);
+
+  @override
+  Future<void> onError(
+      DioException err, ErrorInterceptorHandler handler) async {
+    final attempt = (err.requestOptions.extra['_attempt'] as int?) ?? 0;
+    if (attempt < options.maxAttempts - 1 && _shouldRetry(err)) {
+      final wait = options.useExponentialBackoff
+          ? options.delay * (1 << attempt)
+          : options.delay;
+      await Future<void>.delayed(wait);
+      try {
+        final cloned = err.requestOptions.copyWith(
+          extra: {...err.requestOptions.extra, '_attempt': attempt + 1},
+        );
+        handler.resolve(await _dio.fetch<dynamic>(cloned));
+      } catch (e) {
+        handler.next(e is DioException ? e : err);
+      }
+      return;
+    }
+    handler.next(err);
+  }
+
+  bool shouldRetry(DioException err) => _shouldRetry(err);
+
+  bool _shouldRetry(DioException err) {
+    if (options.retryWhen != null) return options.retryWhen!(err);
+    return err.type == DioExceptionType.connectionError ||
+        err.type == DioExceptionType.connectionTimeout ||
+        err.type == DioExceptionType.receiveTimeout ||
+        err.type == DioExceptionType.sendTimeout ||
+        (err.response?.statusCode == 503);
   }
 }
