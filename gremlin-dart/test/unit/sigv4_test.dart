@@ -475,13 +475,90 @@ void main() {
       );
       final adapter = _CapturingAdapter();
       final dio = _buildDio(badAuth, adapter);
-      expect(
-        () => dio.post<void>(
+      await expectLater(
+        dio.post<void>(
           'https://cluster.us-east-1.neptune.amazonaws.com:8182/gremlin',
           data: Uint8List(0),
         ),
         throwsA(isA<DioException>()),
       );
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // SigV4Auth defaults
+  // -------------------------------------------------------------------------
+  group('SigV4Auth', () {
+    test('default service is neptune-db', () {
+      final auth = SigV4Auth(
+        credentials: StaticCredentialsProvider(const AwsCredentials(
+          accessKeyId: 'K',
+          secretAccessKey: 'S',
+        )),
+        region: 'us-east-1',
+      );
+      expect(auth.service, 'neptune-db');
+    });
+
+    test('custom service is stored', () {
+      final auth = SigV4Auth(
+        credentials: StaticCredentialsProvider(const AwsCredentials(
+          accessKeyId: 'K',
+          secretAccessKey: 'S',
+        )),
+        region: 'us-east-1',
+        service: 'execute-api',
+      );
+      expect(auth.service, 'execute-api');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // SigV4Signer URI signing: host header and path/query coverage
+  // -------------------------------------------------------------------------
+  group('SigV4Signer URI signing', () {
+    final signer = SigV4Signer(region: 'us-east-1', service: 'neptune-db');
+    final now = DateTime.utc(2024, 1, 15, 12, 0, 0);
+    final headers = <String, dynamic>{'Content-Type': 'application/json'};
+
+    Map<String, String> _sign(Uri uri) => signer.sign(
+          method: 'GET',
+          uri: uri,
+          headers: headers,
+          body: Uint8List(0),
+          accessKeyId: 'AKID',
+          secretAccessKey: 'SECRET',
+          now: now,
+        );
+
+    test('HTTPS default port 443 gives same signature as explicit :443', () {
+      final r1 = _sign(Uri.parse('https://host.example.com/path'));
+      final r2 = _sign(Uri.parse('https://host.example.com:443/path'));
+      expect(r1['Authorization'], equals(r2['Authorization']));
+    });
+
+    test('non-default port 8182 gives different signature than default port', () {
+      final rDefault = _sign(Uri.parse('https://host.example.com/path'));
+      final rCustom = _sign(Uri.parse('https://host.example.com:8182/path'));
+      expect(rDefault['Authorization'], isNot(equals(rCustom['Authorization'])));
+    });
+
+    test('different path segments produce different signatures', () {
+      final r1 = _sign(Uri.parse('https://host.example.com/a/b/c'));
+      final r2 = _sign(Uri.parse('https://host.example.com/a/b/d'));
+      expect(r1['Authorization'], isNot(equals(r2['Authorization'])));
+    });
+
+    test('query parameters are included in the signature', () {
+      final r1 = _sign(Uri.parse('https://host.example.com/path?foo=bar'));
+      final r2 = _sign(Uri.parse('https://host.example.com/path?foo=baz'));
+      expect(r1['Authorization'], isNot(equals(r2['Authorization'])));
+    });
+
+    test('URI with query differs from URI without query', () {
+      final r1 = _sign(Uri.parse('https://host.example.com/path'));
+      final r2 = _sign(Uri.parse('https://host.example.com/path?x=1'));
+      expect(r1['Authorization'], isNot(equals(r2['Authorization'])));
     });
   });
 }

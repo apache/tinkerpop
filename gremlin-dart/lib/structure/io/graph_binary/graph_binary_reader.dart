@@ -448,6 +448,10 @@ class _GraphBinaryValueReader {
   // GraphBinary encodes char as a 4-byte big-endian UTF-32 code point.
   String _readChar() {
     final codePoint = readInt32();
+    if (codePoint < 0 || codePoint > 0x10FFFF) {
+      throw FormatException(
+          'Invalid Unicode code point in GraphBinary char: 0x${codePoint.toRadixString(16)}');
+    }
     return String.fromCharCode(codePoint);
   }
 

@@ -199,6 +199,16 @@ class GremlinLang {
       }
       return this;
     }
+    // Strategy names for withoutStrategies are unquoted class-name identifiers,
+    // not string literals.  Every other TinkerPop driver (Go, JS, Python)
+    // renders them this way; the server parser requires bare identifiers.
+    if (name == 'withoutStrategies' && args != null) {
+      final names = args.map((s) => s.toString()).where((s) => s.isNotEmpty).join(',');
+      if (names.isNotEmpty) {
+        _gremlin += '.withoutStrategies($names)';
+      }
+      return this;
+    }
     final argsStr =
         args != null && args.isNotEmpty ? args.map(_argAsString).join(',') : '';
     _gremlin += '.$name($argsStr)';

@@ -8,6 +8,8 @@
 //
 //   http://www.apache.org/licenses/LICENSE-2.0
 
+import 'dart:typed_data';
+
 import 'package:test/test.dart';
 import 'package:gremlin_dart/gremlin_dart.dart';
 
@@ -131,6 +133,63 @@ void main() {
     test('has with P predicate', () {
       final t = g.V().has('age', P.gt(30));
       expect(t.toString(), contains("has('age',gt(30))"));
+    });
+  });
+
+  group('GremlinLang.valueToGremlinLiteral', () {
+    test('GShort serialises with S suffix', () {
+      expect(GremlinLang.valueToGremlinLiteral(GShort(42)), '42S');
+      expect(GremlinLang.valueToGremlinLiteral(GShort(-1)), '-1S');
+    });
+
+    test('GByte serialises with B suffix', () {
+      expect(GremlinLang.valueToGremlinLiteral(GByte(5)), '5B');
+      expect(GremlinLang.valueToGremlinLiteral(GByte(0)), '0B');
+    });
+
+    test('GInt serialises without suffix', () {
+      expect(GremlinLang.valueToGremlinLiteral(GInt(10)), '10');
+      expect(GremlinLang.valueToGremlinLiteral(GInt(-7)), '-7');
+    });
+
+    test('DateTime serialises as datetime(...) in UTC', () {
+      final dt = DateTime.utc(2024, 6, 1, 12, 34, 56);
+      final result = GremlinLang.valueToGremlinLiteral(dt);
+      expect(result, 'datetime("2024-06-01T12:34:56.000Z")');
+    });
+
+    test('Uint8List serialises as Binary(base64)', () {
+      final bytes = Uint8List.fromList([0x01, 0x02, 0x03]);
+      expect(GremlinLang.valueToGremlinLiteral(bytes), 'Binary("AQID")');
+    });
+
+    test('empty Uint8List serialises as Binary("")', () {
+      expect(GremlinLang.valueToGremlinLiteral(Uint8List(0)), 'Binary("")');
+    });
+
+    test('Set with one element serialises as {item}', () {
+      expect(GremlinLang.valueToGremlinLiteral({1}), '{1}');
+    });
+
+    test('empty Set serialises as {}', () {
+      expect(GremlinLang.valueToGremlinLiteral(<int>{}), '{}');
+    });
+
+    test('empty Map serialises as [:]', () {
+      expect(GremlinLang.valueToGremlinLiteral(<String, dynamic>{}), '[:]');
+    });
+  });
+
+  group('BasicAuth', () {
+    test('headerValue encodes username:password as Base64 Basic', () {
+      final auth = BasicAuth(username: 'alice', password: 'secret');
+      // 'alice:secret' → base64 → YWxpY2U6c2VjcmV0
+      expect(auth.headerValue, 'Basic YWxpY2U6c2VjcmV0');
+    });
+
+    test('headerValue starts with Basic for any credentials', () {
+      final auth = BasicAuth(username: 'user@example.com', password: 'p@ss!');
+      expect(auth.headerValue, startsWith('Basic '));
     });
   });
 }

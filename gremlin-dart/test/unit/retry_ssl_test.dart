@@ -21,6 +21,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:test/test.dart';
 
+import '../../lib/driver/auth.dart';
 import '../../lib/driver/connection.dart';
 import '../../lib/driver/cluster.dart';
 
@@ -251,6 +252,55 @@ void main() {
           .create();
       expect(cluster.toString(), contains('https://myhost'));
       cluster.close();
+    });
+
+    test('auth() sets SigV4Auth on cluster options', () {
+      final auth = SigV4Auth(
+        credentials: StaticCredentialsProvider(const AwsCredentials(
+          accessKeyId: 'AKID',
+          secretAccessKey: 'SECRET',
+        )),
+        region: 'us-east-1',
+      );
+      final cluster = Cluster.build().auth(auth).create();
+      expect(cluster.hosts, isNotEmpty);
+      cluster.close();
+    });
+
+    test('auth() with BasicAuth builds cluster without errors', () {
+      final auth = BasicAuth(username: 'alice', password: 'secret');
+      final cluster = Cluster.build().auth(auth).create();
+      expect(cluster.hosts, isNotEmpty);
+      cluster.close();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Exponential backoff
+  // -------------------------------------------------------------------------
+  group('RetryInterceptor exponential backoff', () {
+    ({Dio dio, _FakeAdapter adapter}) _build(int failCount, RetryOptions opts) {
+      final dio = Dio(BaseOptions(validateStatus: (_) => true));
+      final adapter = _FakeAdapter(failCount);
+      dio.httpClientAdapter = adapter;
+      dio.interceptors.add(RetryInterceptor(dio, opts));
+      return (dio: dio, adapter: adapter);
+    }
+
+    test('high attempt count does not overflow (clamp at 30)', () async {
+      // 35 failures forces attempt indices > 30, which would overflow 1 << attempt
+      // without the clamp. delay: Duration.zero makes the test instant.
+      final (:dio, :adapter) = _build(
+        35,
+        RetryOptions(
+          maxAttempts: 36,
+          delay: Duration.zero,
+          useExponentialBackoff: true,
+        ),
+      );
+      await dio.get('http://x/');
+      expect(adapter.calls, 36);
+      dio.close(force: true);
     });
   });
 }

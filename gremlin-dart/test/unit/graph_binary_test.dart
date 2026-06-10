@@ -176,6 +176,61 @@ void main() {
       });
     });
   });
+
+  // -------------------------------------------------------------------------
+  // GraphBinary reader error handling
+  // -------------------------------------------------------------------------
+  group('GraphBinary reader error handling', () {
+    final reader = GraphBinaryReader();
+
+    test('readResponse throws ArgumentError on empty bytes', () async {
+      await expectLater(
+        reader.readResponse(Uint8List(0)),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
+    test('readResponse throws FormatException on wrong version byte', () async {
+      await expectLater(
+        reader.readResponse(Uint8List.fromList([0x01])),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('decodeValue returns null when value flag is 0x01', () {
+      // type = string (0x03), value flag = 0x01 (null)
+      final bytes = Uint8List.fromList([0x03, 0x01]);
+      expect(reader.decodeValue(bytes), isNull);
+    });
+
+    test('decodeValue throws FormatException for unknown type code', () {
+      // 0x70 is not a registered DataType
+      final bytes = Uint8List.fromList([0x70, 0x00]);
+      expect(
+          () => reader.decodeValue(bytes), throwsA(isA<FormatException>()));
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // GraphBinary char error handling
+  // -------------------------------------------------------------------------
+  group('GraphBinary char error handling', () {
+    final reader = GraphBinaryReader();
+
+    test('decodeValue throws FormatException for code point above U+10FFFF', () {
+      // type=char (0x80), flag=0x00, code_point=0x00200000 (> U+10FFFF)
+      final bytes = Uint8List.fromList([0x80, 0x00, 0x00, 0x20, 0x00, 0x00]);
+      expect(
+          () => reader.decodeValue(bytes), throwsA(isA<FormatException>()));
+    });
+
+    test('decodeValue throws FormatException for negative code point', () {
+      // type=char (0x80), flag=0x00, code_point=0xFFFFFFFF (signed int32 -1)
+      final bytes = Uint8List.fromList([0x80, 0x00, 0xFF, 0xFF, 0xFF, 0xFF]);
+      expect(
+          () => reader.decodeValue(bytes), throwsA(isA<FormatException>()));
+    });
+  });
 }
 
 Uint8List _response(List<Uint8List> values,

@@ -573,7 +573,7 @@ class RetryInterceptor extends Interceptor {
     final attempt = (err.requestOptions.extra['_attempt'] as int?) ?? 0;
     if (attempt < options.maxAttempts - 1 && _shouldRetry(err)) {
       final wait = options.useExponentialBackoff
-          ? options.delay * (1 << attempt)
+          ? options.delay * (1 << attempt.clamp(0, 30))
           : options.delay;
       await Future<void>.delayed(wait);
       try {

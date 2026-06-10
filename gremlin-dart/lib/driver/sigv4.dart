@@ -77,7 +77,7 @@ class SigV4Signer {
     final canonicalHeaders = sortedKeys.map((k) => '$k:${canonMap[k]}\n').join();
     final signedHeaders = sortedKeys.join(';');
 
-    final canonUri = _canonUri(uri.path);
+    final canonUri = _canonUri(uri);
     final canonQuery = _canonQuery(uri.queryParameters);
 
     final canonicalRequest =
@@ -142,18 +142,22 @@ class SigV4Signer {
   /// Returns the lowercase hex SHA-256 of [data].
   static String hexSha256(List<int> data) => sha256.convert(data).toString();
 
-  /// Formats [dt] as `yyyyMMdd` (UTC).
-  static String formatDate(DateTime dt) =>
-      '${dt.year.toString().padLeft(4, '0')}'
-      '${dt.month.toString().padLeft(2, '0')}'
-      '${dt.day.toString().padLeft(2, '0')}';
+  /// Formats [dt] as `yyyyMMdd` (UTC).  Converts to UTC if not already.
+  static String formatDate(DateTime dt) {
+    final u = dt.toUtc();
+    return '${u.year.toString().padLeft(4, '0')}'
+        '${u.month.toString().padLeft(2, '0')}'
+        '${u.day.toString().padLeft(2, '0')}';
+  }
 
-  /// Formats [dt] as `yyyyMMddTHHmmssZ` (UTC).
-  static String formatDateTime(DateTime dt) =>
-      '${formatDate(dt)}T'
-      '${dt.hour.toString().padLeft(2, '0')}'
-      '${dt.minute.toString().padLeft(2, '0')}'
-      '${dt.second.toString().padLeft(2, '0')}Z';
+  /// Formats [dt] as `yyyyMMddTHHmmssZ` (UTC).  Converts to UTC if not already.
+  static String formatDateTime(DateTime dt) {
+    final u = dt.toUtc();
+    return '${formatDate(u)}T'
+        '${u.hour.toString().padLeft(2, '0')}'
+        '${u.minute.toString().padLeft(2, '0')}'
+        '${u.second.toString().padLeft(2, '0')}Z';
+  }
 
   // ---------------------------------------------------------------------------
   // Private helpers
@@ -165,9 +169,12 @@ class SigV4Signer {
     return isDefault ? uri.host : '${uri.host}:${uri.port}';
   }
 
-  static String _canonUri(String path) {
-    if (path.isEmpty) return '/';
-    return path.split('/').map(encode).join('/');
+  // Use pathSegments (decoded) rather than path (percent-encoded) to avoid
+  // double-encoding sequences like %20 → %2520.
+  static String _canonUri(Uri uri) {
+    final segments = uri.pathSegments;
+    if (segments.isEmpty) return '/';
+    return '/${segments.map(encode).join('/')}';
   }
 
   static String _canonQuery(Map<String, String> params) {
@@ -204,15 +211,16 @@ class SigV4Signer {
 /// receives a fresh timestamp and signature.
 class SigV4Interceptor extends Interceptor {
   final SigV4Auth _auth;
+  final SigV4Signer _signer;
 
-  SigV4Interceptor(this._auth);
+  SigV4Interceptor(this._auth)
+      : _signer = SigV4Signer(region: _auth.region, service: _auth.service);
 
   @override
   Future<void> onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
     try {
       final creds = await _auth.credentials.resolve();
-      final signer = SigV4Signer(region: _auth.region, service: _auth.service);
 
       Uint8List bodyBytes;
       final data = options.data;
@@ -224,7 +232,7 @@ class SigV4Interceptor extends Interceptor {
         bodyBytes = Uint8List(0);
       }
 
-      final signed = signer.sign(
+      final signed = _signer.sign(
         method: options.method,
         uri: options.uri,
         headers: Map<String, dynamic>.from(options.headers),
@@ -238,7 +246,9 @@ class SigV4Interceptor extends Interceptor {
       handler.next(options);
     } catch (e) {
       handler.reject(
-        DioException(requestOptions: options, error: e),
+        e is DioException
+            ? e
+            : DioException(requestOptions: options, error: e),
         true,
       );
     }

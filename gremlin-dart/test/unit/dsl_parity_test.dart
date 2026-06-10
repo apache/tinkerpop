@@ -33,19 +33,22 @@ void main() {
   // GraphTraversalSource.withoutStrategies
   // ---------------------------------------------------------------------------
   group('GraphTraversalSource.withoutStrategies', () {
-    test('produces withoutStrategies source step in gremlin string', () {
+    test('produces withoutStrategies source step with unquoted class name', () {
       final gs = _g().withoutStrategies(['ConnectiveStrategy']);
       final gremlin = gs.gremlinLang.getGremlin();
-      expect(gremlin, contains('withoutStrategies'));
-      expect(gremlin, contains('ConnectiveStrategy'));
+      // Strategy names must be bare identifiers, not quoted strings.
+      expect(gremlin, contains('withoutStrategies(ConnectiveStrategy)'));
+      expect(gremlin, isNot(contains("'ConnectiveStrategy'")));
     });
 
-    test('multiple strategy names are all included', () {
+    test('multiple strategy names are unquoted identifiers separated by commas', () {
       final gs =
           _g().withoutStrategies(['ReadOnlyStrategy', 'OptionsStrategy']);
       final gremlin = gs.gremlinLang.getGremlin();
-      expect(gremlin, contains('ReadOnlyStrategy'));
-      expect(gremlin, contains('OptionsStrategy'));
+      expect(gremlin,
+          contains('withoutStrategies(ReadOnlyStrategy,OptionsStrategy)'));
+      expect(gremlin, isNot(contains("'ReadOnlyStrategy'")));
+      expect(gremlin, isNot(contains("'OptionsStrategy'")));
     });
 
     test('does not mutate original source', () {
@@ -69,7 +72,14 @@ void main() {
           .withoutStrategies(['EarlyLimitStrategy']);
       final gremlin = gs.gremlinLang.getGremlin();
       expect(gremlin, contains('withStrategies'));
-      expect(gremlin, contains('withoutStrategies'));
+      expect(gremlin,
+          contains('withoutStrategies(EarlyLimitStrategy)'));
+    });
+
+    test('empty list produces no withoutStrategies step', () {
+      final gs = _g().withoutStrategies([]);
+      final gremlin = gs.gremlinLang.getGremlin();
+      expect(gremlin, isNot(contains('withoutStrategies')));
     });
   });
 
