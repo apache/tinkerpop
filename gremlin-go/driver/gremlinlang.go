@@ -259,14 +259,14 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		}
 		return v.GetGremlin("__"), nil
 	case GValue:
-		key := v.Name()
-		value := v.Value()
+		key := v.Name
+		value := v.Value
 		if val, ok := gl.parameters[key]; ok {
 			if !reflect.DeepEqual(val, value) {
 				panic(fmt.Sprintf("parameter with name '%v' already exists.", key))
 			}
 		} else {
-			gl.parameters[key] = v.Value()
+			gl.parameters[key] = v.Value
 		}
 		return key, nil
 	case uuid.UUID:

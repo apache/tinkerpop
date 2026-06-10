@@ -27,16 +27,16 @@ import (
 func TestGValue(t *testing.T) {
 
 	t.Run("test simple gValue", func(t *testing.T) {
-		gVal := NewGValue("intVal", 2)
-		assert.Equal(t, "intVal", gVal.Name())
-		assert.Equal(t, 2, gVal.Value())
+		gVal := GValue{Name: "intVal", Value: 2}
+		assert.Equal(t, "intVal", gVal.Name)
+		assert.Equal(t, 2, gVal.Value)
 		assert.False(t, gVal.IsNil())
 	})
 
 	t.Run("test gValue allow parameter reuse with arrays", func(t *testing.T) {
 		g := NewGraphTraversalSource(nil, nil)
 		val := [3]int{1, 2, 3}
-		param := NewGValue("ids", val)
+		param := GValue{Name: "ids", Value: val}
 		gl := g.Inject(param).V(param).GremlinLang
 		assert.Equal(t, "g.inject(ids).V(ids)", gl.GetGremlin())
 		assert.Equal(t, val, gl.parameters["ids"])
@@ -45,7 +45,7 @@ func TestGValue(t *testing.T) {
 	t.Run("test gValue allow parameter reuse with slices", func(t *testing.T) {
 		g := NewGraphTraversalSource(nil, nil)
 		val := []int{1, 2, 3}
-		param := NewGValue("ids", val)
+		param := GValue{Name: "ids", Value: val}
 		gl := g.Inject(param).V(param).GremlinLang
 		assert.Equal(t, "g.inject(ids).V(ids)", gl.GetGremlin())
 		assert.Equal(t, val, gl.parameters["ids"])
@@ -54,7 +54,7 @@ func TestGValue(t *testing.T) {
 	t.Run("test gValue allow parameter reuse with maps", func(t *testing.T) {
 		g := NewGraphTraversalSource(nil, nil)
 		val := map[string]int{"foo": 1, "bar": 2}
-		param := NewGValue("ids", val)
+		param := GValue{Name: "ids", Value: val}
 		gl := g.Inject(param).V(param).GremlinLang
 		assert.Equal(t, "g.inject(ids).V(ids)", gl.GetGremlin())
 		assert.Equal(t, val, gl.parameters["ids"])
@@ -62,75 +62,38 @@ func TestGValue(t *testing.T) {
 
 	t.Run("test gValue name not duplicated", func(t *testing.T) {
 		g := NewGraphTraversalSource(nil, nil)
-		param1 := NewGValue("ids", [2]int{1, 2})
-		param2 := NewGValue("ids", [2]int{2, 3})
+		param1 := GValue{Name: "ids", Value: [2]int{1, 2}}
+		param2 := GValue{Name: "ids", Value: [2]int{2, 3}}
 		assert.Panics(t, func() { g.Inject(param1).V(param2) }, "parameter with name ids already exists.")
 	})
 
-	t.Run("test name starting with _ accepted", func(t *testing.T) {
-		assert.NotPanics(t, func() { NewGValue("_ids", [2]int{1, 2}) })
-	})
-
-	t.Run("test name starting with digit accepted", func(t *testing.T) {
-		assert.NotPanics(t, func() { NewGValue("1a", [2]int{1, 2}) })
-	})
-
-	t.Run("test numeric name accepted", func(t *testing.T) {
-		assert.NotPanics(t, func() { NewGValue("1", [2]int{1, 2}) })
-	})
-
-	t.Run("test mid-string underscore name accepted", func(t *testing.T) {
-		assert.NotPanics(t, func() { NewGValue("a_b", 1) })
-	})
-
-	t.Run("test empty-string name accepted", func(t *testing.T) {
-		assert.NotPanics(t, func() { NewGValue("", 1) })
-	})
-
-	t.Run("test mid-string dollar sign accepted", func(t *testing.T) {
-		assert.NotPanics(t, func() { NewGValue("a$b", 1) })
-	})
-
-	t.Run("test unicode letter name accepted", func(t *testing.T) {
-		assert.NotPanics(t, func() { NewGValue("café", 1) })
-	})
-
 	t.Run("test IsNil returns true for nil value", func(t *testing.T) {
-		gv := NewGValue("x", nil)
+		gv := GValue{Name: "x", Value: nil}
 		assert.True(t, gv.IsNil())
 	})
 
 	t.Run("test String representation", func(t *testing.T) {
-		gv := NewGValue("x", 1)
+		gv := GValue{Name: "x", Value: 1}
 		assert.Equal(t, "x=1", gv.String())
-	})
-
-	t.Run("test Go keyword name accepted", func(t *testing.T) {
-		assert.NotPanics(t, func() { NewGValue("for", 1) })
-	})
-
-	t.Run("test nested GValue rejected", func(t *testing.T) {
-		assert.Panics(t, func() { NewGValue("x", NewGValue("y", 1)) },
-			"GValues cannot be nested")
 	})
 
 	t.Run("test distinct but equal slices allowed under same name", func(t *testing.T) {
 		g := NewGraphTraversalSource(nil, nil)
-		param1 := NewGValue("ids", []int{1, 2, 3})
-		param2 := NewGValue("ids", []int{1, 2, 3})
+		param1 := GValue{Name: "ids", Value: []int{1, 2, 3}}
+		param2 := GValue{Name: "ids", Value: []int{1, 2, 3}}
 		assert.NotPanics(t, func() { g.Inject(param1).V(param2) })
 	})
 
 	t.Run("test gValue nested in child traversal merges bindings", func(t *testing.T) {
 		g := NewGraphTraversalSource(nil, nil)
-		gl := g.V().Where(T__.Is(NewGValue("xx1", 1))).GremlinLang
+		gl := g.V().Where(T__.Is(GValue{Name: "xx1", Value: 1})).GremlinLang
 		assert.Equal(t, "g.V().where(__.is(xx1))", gl.GetGremlin())
 		assert.Equal(t, 1, gl.parameters["xx1"])
 	})
 
 	t.Run("test gValue nested across multiple child traversals merges bindings", func(t *testing.T) {
 		g := NewGraphTraversalSource(nil, nil)
-		gl := g.V().Union(T__.V(NewGValue("vid1", 1)), T__.V(NewGValue("vid4", 4))).GremlinLang
+		gl := g.V().Union(T__.V(GValue{Name: "vid1", Value: 1}), T__.V(GValue{Name: "vid4", Value: 4})).GremlinLang
 		assert.Equal(t, "g.V().union(__.V(vid1),__.V(vid4))", gl.GetGremlin())
 		assert.Equal(t, 1, gl.parameters["vid1"])
 		assert.Equal(t, 4, gl.parameters["vid4"])

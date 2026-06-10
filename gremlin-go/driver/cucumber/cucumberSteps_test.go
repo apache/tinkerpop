@@ -998,7 +998,7 @@ func (tg *tinkerPopGraph) usingTheParameterDefined(name string, params string) e
 	}
 	val := parseValue(strings.Replace(params, "\\\"", "\"", -1), tg.graphName)
 	if parameterize {
-		tg.parameters[name] = gremlingo.NewGValue(name, val)
+		tg.parameters[name] = gremlingo.GValue{Name: name, Value: val}
 	} else {
 		tg.parameters[name] = val
 	}
