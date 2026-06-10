@@ -29,10 +29,6 @@ limitations under the License.
     <properties>
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
-        <!-- Host UID/GID passed to Docker so container writes files as the current user.
-             Override with -Dhost.uid=$(id -u) -Dhost.gid=$(id -g) if your UID != 1000. -->
-        <host.uid>1000</host.uid>
-        <host.gid>1000</host.gid>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -277,9 +273,6 @@ limitations under the License.
                                         <!-- setting this env variable is needed to be cross-platform compatible -->
                                         <HOME>${user.home}</HOME>
                                         <NODE_VERSION>${node.test.version}</NODE_VERSION>
-                                        <!-- pass host UID/GID so Docker writes files as the current user -->
-                                        <HOST_UID>${host.uid}</HOST_UID>
-                                        <HOST_GID>${host.gid}</HOST_GID>
                                     </environmentVariables>
                                     <executable>bash</executable>
                                     <!--
@@ -296,7 +289,7 @@ limitations under the License.
                                     -->
                                     <arguments>
                                         <argument>-c</argument>
-                                        <argument>docker compose down; docker compose up --build --exit-code-from gremlin-js-integration-tests; EXIT=$?; docker compose down; for i in $(seq 1 30); do ss -tlnp | grep -qE ':(45940|45941|45942|4588) ' || break; sleep 1; done; docker image prune --filter label=maintainer=dev@tinkerpop.apache.org -f; exit $EXIT</argument>
+                                        <argument>export HOST_UID=$(id -u) HOST_GID=$(id -g); docker compose down; docker compose up --build --exit-code-from gremlin-js-integration-tests; EXIT=$?; docker compose down; for i in $(seq 1 30); do ss -tlnp | grep -qE ':(45940|45941|45942|4588) ' || break; sleep 1; done; docker image prune --filter label=maintainer=dev@tinkerpop.apache.org -f; exit $EXIT</argument>
                                     </arguments>
                                     <workingDirectory>.</workingDirectory>
                                 </configuration>
