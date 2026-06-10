@@ -59,9 +59,10 @@ public class GValueTest {
         GValue.of("x", gValue);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldRejectVariableNamesStartingWithUnderscore() {
-        GValue.of("_invalid", "value");
+    @Test
+    public void shouldAcceptVariableNamesStartingWithUnderscore() {
+        final GValue<String> gValue = GValue.of("_valid", "value");
+        assertEquals("_valid", gValue.getName());
     }
 
     @Test(expected = IllegalArgumentException.class)

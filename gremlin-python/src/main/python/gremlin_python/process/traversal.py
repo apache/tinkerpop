@@ -1183,8 +1183,8 @@ class GValue:
     def __init__(self, name, value):
         if isinstance(value, GValue):
             raise Exception('GValues cannot be nested')
-        if not name or not name[0].isalpha() or not all(c.isalnum() or c == '_' for c in name[1:]):
-            raise Exception(f'invalid GValue name {name}.')
+        if name is None:
+            raise Exception('GValue name cannot be null.')
         self.name = name
         self.value = value
 

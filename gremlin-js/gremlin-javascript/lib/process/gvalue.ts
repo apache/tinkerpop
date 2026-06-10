@@ -17,21 +17,16 @@
  *  under the License.
  */
 
-const NAME_PATTERN = /^[\p{L}][\p{L}\p{Nd}_]*$/u;
-
 export class GValue<T = any> {
   readonly name: string;
   readonly value: T;
 
   constructor(name: string, value: T) {
-    if (typeof name !== 'string' || name.length === 0) {
-      throw new Error(`Invalid GValue name: '${name}' - must be a non-empty string`);
-    }
-    if (!NAME_PATTERN.test(name)) {
-      throw new Error(`Invalid GValue name: '${name}' - must start with a Unicode letter followed by letters, digits, or underscores`);
-    }
     if (value instanceof GValue) {
       throw new Error('GValues cannot be nested');
+    }
+    if (name == null) {
+      throw new Error('GValue name cannot be null.');
     }
     this.name = name;
     this.value = value;

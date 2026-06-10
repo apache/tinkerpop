@@ -682,24 +682,29 @@ describe('GremlinLang', function () {
       assert.strictEqual(new GValue('x', 0).isNull(), false);
     });
 
-    it('should reject empty name', function () {
-      assert.throws(() => new GValue('', 1), /Invalid GValue name/);
+    it('should accept empty name', function () {
+      const gv = new GValue('', 1);
+      assert.strictEqual(gv.name, '');
     });
 
-    it('should reject name with $ character', function () {
-      assert.throws(() => new GValue('a$b', 1), /Invalid GValue name/);
+    it('should accept name with $ character', function () {
+      const gv = new GValue('a$b', 1);
+      assert.strictEqual(gv.name, 'a$b');
     });
 
-    it('should reject name starting with underscore', function () {
-      assert.throws(() => new GValue('_x', 1), /Invalid GValue name/);
+    it('should accept name starting with underscore', function () {
+      const gv = new GValue('_x', 1);
+      assert.strictEqual(gv.name, '_x');
     });
 
-    it('should reject numeric name', function () {
-      assert.throws(() => new GValue('1', 1), /Invalid GValue name/);
+    it('should accept numeric name', function () {
+      const gv = new GValue('1', 1);
+      assert.strictEqual(gv.name, '1');
     });
 
-    it('should reject name starting with digit', function () {
-      assert.throws(() => new GValue('1a', 1), /Invalid GValue name/);
+    it('should accept name starting with digit', function () {
+      const gv = new GValue('1a', 1);
+      assert.strictEqual(gv.name, '1a');
     });
 
     it('should accept name with mid-string underscore', function () {
@@ -761,9 +766,8 @@ describe('GremlinLang', function () {
       assert.deepStrictEqual(gl.getParameters().get('vid4'), 4);
     });
 
-    it('should reject non-string name', function () {
-      assert.throws(() => new GValue(123, 'v'), /Invalid GValue name/);
-      assert.throws(() => new GValue(null, 'v'), /Invalid GValue name/);
+    it('should reject null name', function () {
+      assert.throws(() => new GValue(null, 'v'), /GValue name cannot be null/);
     });
   });
 });

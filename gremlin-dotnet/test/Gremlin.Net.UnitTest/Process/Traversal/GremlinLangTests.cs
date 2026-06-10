@@ -953,27 +953,30 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         }
 
         [Fact]
-        public void GValue_special_char_name_throws_ArgumentException()
+        public void GValue_special_char_name_accepted()
         {
-            Assert.Throws<ArgumentException>(() => new GValue<int>("\"", 1));
+            var gval = new GValue<int>("\"", 1);
+            Assert.Equal("\"", gval.Name);
         }
 
         [Fact]
-        public void GValue_numeric_name_throws_ArgumentException()
+        public void GValue_numeric_name_accepted()
         {
-            Assert.Throws<ArgumentException>(() => new GValue<int>("1", 1));
+            var gval = new GValue<int>("1", 1);
+            Assert.Equal("1", gval.Name);
         }
 
         [Fact]
-        public void GValue_invalid_identifier_name_throws_ArgumentException()
+        public void GValue_digit_start_name_accepted()
         {
-            Assert.Throws<ArgumentException>(() => new GValue<int>("1a", 1));
+            var gval = new GValue<int>("1a", 1);
+            Assert.Equal("1a", gval.Name);
         }
 
         [Fact]
-        public void GValue_underscore_name_throws_ArgumentException()
+        public void GValue_underscore_name_accepted()
         {
-            Assert.Throws<ArgumentException>(() => new GValue<int>("_1", 1));
+            Assert.Equal("_1", new GValue<int>("_1", 1).Name);
         }
 
         [Fact]
@@ -1008,15 +1011,17 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         }
 
         [Fact]
-        public void GValue_empty_name_throws_ArgumentException()
+        public void GValue_empty_name_accepted()
         {
-            Assert.Throws<ArgumentException>(() => new GValue<int>("", 1));
+            var gval = new GValue<int>("", 1);
+            Assert.Equal("", gval.Name);
         }
 
         [Fact]
-        public void GValue_mid_dollar_name_throws_ArgumentException()
+        public void GValue_mid_dollar_name_accepted()
         {
-            Assert.Throws<ArgumentException>(() => new GValue<int>("a$b", 1));
+            var gval = new GValue<int>("a$b", 1);
+            Assert.Equal("a$b", gval.Name);
         }
 
         [Fact]
