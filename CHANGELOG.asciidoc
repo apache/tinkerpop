@@ -58,6 +58,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Modified HTTP API to expect gremlin-lang strings for parameters and update all GLVs to send requests in new format.
 * Added string parameter parsing to `GremlinServer` to prevent traversal injection and excessive nesting depths.
 * Modified all GLVs to detect unsupported types in `GremlinLang` and throw consistent error for that case.
+* Relaxed `GValue` name validation by removing the reserved leading underscore restriction.
 * Added GraphBinary 4.0 `Graph` (`0x10`) serializer/deserializer to `gremlin-javascript`, `gremlin-dotnet`, and `gremlin-go` so that `subgraph()` results are returned as a detached `Graph` data container.
 
 [[release-4-0-0-beta-2]]
