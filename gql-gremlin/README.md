@@ -23,8 +23,9 @@ under the License.
 minimal subset of [ISO GQL](https://www.iso.org/standard/76120.html) `MATCH` syntax, as a portable graph-pattern execution engine 
 for the `match(String)` step.
 
-Any TinkerPop graph provider can add TinkerGQL support to their graph in minutes. TinkerGraph
-ships with it out of the box.
+Any TinkerPop graph provider can add TinkerGQL support to their graph and provide deeper 
+optimizations than those provided by TinkerPop's default implementation. TinkerGraph ships with 
+the default out of the box.
 
 ---
 
@@ -32,11 +33,9 @@ ships with it out of the box.
 
 TinkerGQL is the named dialect implemented by `gql-gremlin`. It covers enough of the GQL `MATCH`
 grammar to express multi-hop path patterns, inline property filters, parameterized queries, and
-multi-pattern joins — the most common declarative graph query patterns — while deliberately
-omitting features (aggregations, variable-length paths, `WHERE`/`RETURN` clauses) that are
-better served by Gremlin steps.
+multi-pattern joins.
 
-Full syntax reference: [the-traversal.asciidoc §TinkerGQL](../docs/src/reference/the-traversal.asciidoc).
+Full syntax reference: [the-traversal.asciidoc TinkerGQL](../docs/src/reference/the-traversal.asciidoc).
 
 ---
 

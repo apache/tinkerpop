@@ -720,16 +720,16 @@ func Test_GremlinLang(t *testing.T) {
 			equals: "g.match(\"MATCH (p:person)-[e:knows]->(friend:person)\",[\"limit\":10])",
 		},
 		{
-			name: "GT MatchGql mid-traversal step",
+			name: "GT Match mid-traversal string step",
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
-				return g.V().MatchGql("MATCH (p:person)-[e:knows]->(friend:person)")
+				return g.V().Match("MATCH (p:person)-[e:knows]->(friend:person)")
 			},
 			equals: "g.V().match(\"MATCH (p:person)-[e:knows]->(friend:person)\")",
 		},
 		{
-			name: "GT MatchGqlWithParams mid-traversal step",
+			name: "GT Match mid-traversal string+params step",
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
-				return g.V().MatchGqlWithParams("MATCH (p:person)", map[string]interface{}{"name": "marko"})
+				return g.V().Match("MATCH (p:person)", map[string]interface{}{"name": "marko"})
 			},
 			equals: "g.V().match(\"MATCH (p:person)\",[\"name\":\"marko\"])",
 		},

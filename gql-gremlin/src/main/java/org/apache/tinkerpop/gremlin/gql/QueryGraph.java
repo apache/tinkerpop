@@ -18,10 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.gql;
 
+import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.BailErrorStrategy;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.atn.PredictionMode;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.gql.GQLLexer;
 import org.apache.tinkerpop.gremlin.gql.GQLParser;
@@ -48,6 +51,18 @@ import java.util.stream.Collectors;
  * <p>Use {@link #parse(String)} to construct a {@code QueryGraph} from a GQL MATCH string.
  */
 public final class QueryGraph {
+
+    private static final BaseErrorListener GQL_ERROR_LISTENER = new BaseErrorListener() {
+        @Override
+        public void syntaxError(final Recognizer<?, ?> recognizer, final Object offendingSymbol,
+                                final int line, final int charPositionInLine,
+                                final String msg, final RecognitionException e) {
+            throw new ParseCancellationException(
+                    "Query parsing failed at line " + line +
+                    ", character position at " + charPositionInLine +
+                    ", error message : " + msg);
+        }
+    };
 
     private final List<QueryVertex> nodes;
     private final List<QueryEdge> edges;
@@ -88,10 +103,11 @@ public final class QueryGraph {
     public static QueryGraph parse(final String gqlMatchString) {
         final GQLLexer lexer = new GQLLexer(CharStreams.fromString(gqlMatchString));
         lexer.removeErrorListeners();
+        lexer.addErrorListener(GQL_ERROR_LISTENER);
         final CommonTokenStream tokens = new CommonTokenStream(lexer);
         final GQLParser parser = new GQLParser(tokens);
         parser.removeErrorListeners();
-        parser.setErrorHandler(new BailErrorStrategy());
+        parser.addErrorListener(GQL_ERROR_LISTENER);
         parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
 
         try {
@@ -105,7 +121,7 @@ public final class QueryGraph {
             try {
                 return fromParseTree(parser.matchClause());
             } catch (final Exception retryEx) {
-                throw new IllegalArgumentException("Failed to parse GQL MATCH expression: " + gqlMatchString, retryEx);
+                throw new IllegalArgumentException("Failed to parse GQL MATCH expression: " + retryEx.getMessage(), retryEx);
             }
         }
     }

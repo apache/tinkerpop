@@ -238,10 +238,7 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
      */
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_match_string_map(final GremlinParser.TraversalSourceSpawnMethod_match_string_mapContext ctx) {
-        final Object literalOrVar = antlr.argumentVisitor.visitGenericMapArgument(ctx.genericMapArgument());
-        if (GValue.valueInstanceOf(literalOrVar, Map.class))
-            return this.traversalSource.match(antlr.genericVisitor.parseString(ctx.stringLiteral()), (Map<String, Object>) ((GValue<?>) literalOrVar).get());
-        else
-            return this.traversalSource.match(antlr.genericVisitor.parseString(ctx.stringLiteral()), (Map<String, Object>) literalOrVar);
+        final Map<String, Object> params = (Map<String, Object>) antlr.genericVisitor.visitGenericMapLiteral(ctx.genericMapLiteral());
+        return this.traversalSource.match(antlr.genericVisitor.parseString(ctx.stringLiteral()), params);
     }
 }
