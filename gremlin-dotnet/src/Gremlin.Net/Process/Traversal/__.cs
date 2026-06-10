@@ -71,6 +71,14 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addE step to that traversal.
         /// </summary>
+        public static GraphTraversal<object, Edge> AddE(GValue<string> edgeLabel)
+        {
+            return new GraphTraversal<object, Edge>().AddE(edgeLabel);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addE step to that traversal.
+        /// </summary>
         public static GraphTraversal<object, Edge> AddE(ITraversal edgeLabelTraversal)
         {
             return new GraphTraversal<object, Edge>().AddE(edgeLabelTraversal);            
@@ -90,6 +98,14 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, Vertex> AddV(string vertexLabel)
         {
             return new GraphTraversal<object, Vertex>().AddV(vertexLabel);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addV step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Vertex> AddV(GValue<string> vertexLabel)
+        {
+            return new GraphTraversal<object, Vertex>().AddV(vertexLabel);
         }
 
         /// <summary>
@@ -211,6 +227,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the both step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Vertex> Both(GValue<string> edgeLabel, params GValue<string>[] otherEdgeLabels)
+        {
+            return new GraphTraversal<object, Vertex>().Both(edgeLabel, otherEdgeLabels);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the bothE step to that traversal.
         /// </summary>
         public static GraphTraversal<object, Edge> BothE(params string?[] edgeLabels)
@@ -218,6 +242,14 @@ namespace Gremlin.Net.Process.Traversal
             return edgeLabels is { Length: 0 }
                 ? new GraphTraversal<object, Edge>().BothE()
                 : new GraphTraversal<object, Edge>().BothE(edgeLabels);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the bothE step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Edge> BothE(GValue<string> edgeLabel, params GValue<string>[] otherEdgeLabels)
+        {
+            return new GraphTraversal<object, Edge>().BothE(edgeLabel, otherEdgeLabels);
         }
 
         /// <summary>
@@ -274,6 +306,22 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, E2> Call<E2>(string? service, IDictionary<object,object>? m, ITraversal? t)
         {
             return new GraphTraversal<object, E2>().Call<E2>(service, m, t);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the call step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Call<E2>(string service, GValue<IDictionary<object, object>> m)
+        {
+            return new GraphTraversal<object, E2>().Call<E2>(service, m);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the call step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Call<E2>(string service, GValue<IDictionary<object, object>> m, ITraversal childTraversal)
+        {
+            return new GraphTraversal<object, E2>().Call<E2>(service, m, childTraversal);
         }
 
         /// <summary>
@@ -353,6 +401,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the coin step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Coin(GValue<double> probability)
+        {
+            return new GraphTraversal<object, object>().Coin(probability);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the combine step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> Combine(object combineObject)
@@ -392,6 +448,14 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, E2> Constant<E2>(E2 a)
         {
             return new GraphTraversal<object, E2>().Constant(a);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the constant step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Constant<E2>(GValue<E2> a)
+        {
+            return new GraphTraversal<object, E2>().Constant(a);
         }
 
         /// <summary>
@@ -713,6 +777,22 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the has step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Has(GValue<string> label, string propertyKey, P predicate)
+        {
+            return new GraphTraversal<object, object>().Has(label, propertyKey, predicate);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the has step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Has(GValue<string> label, string propertyKey, object value)
+        {
+            return new GraphTraversal<object, object>().Has(label, propertyKey, value);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasId step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> HasId(object? id, params object?[]? otherIds)
@@ -783,6 +863,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasLabel step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> HasLabel(GValue<string> label, params GValue<string>[] otherLabels)
+        {
+            return new GraphTraversal<object, object>().HasLabel(label, otherLabels);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasNot step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> HasNot(string? propertyKey)
@@ -843,6 +931,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the in step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Vertex> In(GValue<string> edgeLabel, params GValue<string>[] otherEdgeLabels)
+        {
+            return new GraphTraversal<object, Vertex>().In(edgeLabel, otherEdgeLabels);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the inE step to that traversal.
         /// </summary>
         public static GraphTraversal<object, Edge> InE(params string?[] edgeLabels)
@@ -850,6 +946,14 @@ namespace Gremlin.Net.Process.Traversal
             return edgeLabels is { Length: 0 }
                 ? new GraphTraversal<object, Edge>().InE()
                 : new GraphTraversal<object, Edge>().InE(edgeLabels);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the inE step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Edge> InE(GValue<string> edgeLabel, params GValue<string>[] otherEdgeLabels)
+        {
+            return new GraphTraversal<object, Edge>().InE(edgeLabel, otherEdgeLabels);
         }
 
         /// <summary>
@@ -945,9 +1049,25 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the limit step to that traversal.
         /// </summary>
+        public static GraphTraversal<object, E2> Limit<E2>(Scope scope, GValue<long> limit)
+        {
+            return new GraphTraversal<object, E2>().Limit<E2>(scope, limit);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the limit step to that traversal.
+        /// </summary>
         public static GraphTraversal<object, E2> Limit<E2>(long limit)
         {
             return new GraphTraversal<object, E2>().Limit<E2>(limit);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the limit step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Limit<E2>(GValue<long> limit)
+        {
+            return new GraphTraversal<object, E2>().Limit<E2>(limit);
         }
 
         /// <summary>
@@ -1105,6 +1225,14 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mergeE step to that traversal.
         /// </summary>
+        public static GraphTraversal<object, Edge> MergeE(GValue<IDictionary<object, object>> m)
+        {
+            return new GraphTraversal<object, Edge>().MergeE(m);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mergeE step to that traversal.
+        /// </summary>
         public static GraphTraversal<object, Edge> MergeE (ITraversal? t)
         {
             return new GraphTraversal<object, Edge>().MergeE(t);
@@ -1122,6 +1250,14 @@ namespace Gremlin.Net.Process.Traversal
         ///     Adds the mergeV step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public static GraphTraversal<object, Vertex> MergeV (IDictionary<object,object>? m)
+        {
+            return new GraphTraversal<object, Vertex>().MergeV(m);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mergeV step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Vertex> MergeV(GValue<IDictionary<object, object>> m)
         {
             return new GraphTraversal<object, Vertex>().MergeV(m);
         }
@@ -1219,6 +1355,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the out step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Vertex> Out(GValue<string> edgeLabel, params GValue<string>[] otherEdgeLabels)
+        {
+            return new GraphTraversal<object, Vertex>().Out(edgeLabel, otherEdgeLabels);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the outE step to that traversal.
         /// </summary>
         public static GraphTraversal<object, Edge> OutE(params string?[] edgeLabels)
@@ -1226,6 +1370,14 @@ namespace Gremlin.Net.Process.Traversal
             return edgeLabels is { Length: 0 }
                 ? new GraphTraversal<object, Edge>().OutE()
                 : new GraphTraversal<object, Edge>().OutE(edgeLabels);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the outE step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Edge> OutE(GValue<string> edgeLabel, params GValue<string>[] otherEdgeLabels)
+        {
+            return new GraphTraversal<object, Edge>().OutE(edgeLabel, otherEdgeLabels);
         }
 
         /// <summary>
@@ -1332,9 +1484,25 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the range step to that traversal.
         /// </summary>
+        public static GraphTraversal<object, E2> Range<E2>(Scope scope, GValue<long> low, GValue<long> high)
+        {
+            return new GraphTraversal<object, E2>().Range<E2>(scope, low, high);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the range step to that traversal.
+        /// </summary>
         public static GraphTraversal<object, E2> Range<E2>(long low, long high)
         {
             return new GraphTraversal<object, E2>().Range<E2>(low, high);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the range step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Range<E2>(GValue<long> low, GValue<long> high)
+        {
+            return new GraphTraversal<object, E2>().Range<E2>(low, high);
         }
 
         /// <summary>
@@ -1516,9 +1684,25 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the skip step to that traversal.
         /// </summary>
+        public static GraphTraversal<object, E2> Skip<E2>(Scope scope, GValue<long> skip)
+        {
+            return new GraphTraversal<object, E2>().Skip<E2>(scope, skip);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the skip step to that traversal.
+        /// </summary>
         public static GraphTraversal<object, E2> Skip<E2>(long skip)
         {
             return new GraphTraversal<object, E2>().Skip<E2>(skip);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the skip step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Skip<E2>(GValue<long> skip)
+        {
+            return new GraphTraversal<object, E2>().Skip<E2>(skip);
         }
 
         /// <summary>
@@ -1604,9 +1788,25 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the tail step to that traversal.
         /// </summary>
+        public static GraphTraversal<object, E2> Tail<E2>(Scope scope, GValue<long> limit)
+        {
+            return new GraphTraversal<object, E2>().Tail<E2>(scope, limit);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the tail step to that traversal.
+        /// </summary>
         public static GraphTraversal<object, E2> Tail<E2>(long limit)
         {
             return new GraphTraversal<object, E2>().Tail<E2>(limit);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the tail step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, E2> Tail<E2>(GValue<long> limit)
+        {
+            return new GraphTraversal<object, E2>().Tail<E2>(limit);
         }
 
         /// <summary>
@@ -1636,6 +1836,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the to step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Vertex> To(Direction? direction, GValue<string> edgeLabel, params GValue<string>[] otherEdgeLabels)
+        {
+            return new GraphTraversal<object, Vertex>().To(direction, edgeLabel, otherEdgeLabels);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the toE step to that traversal.
         /// </summary>
         public static GraphTraversal<object, Edge> ToE(Direction? direction, params string?[] edgeLabels)
@@ -1643,6 +1851,14 @@ namespace Gremlin.Net.Process.Traversal
             return edgeLabels is { Length: 0 }
                 ? new GraphTraversal<object, Edge>().ToE(direction)
                 : new GraphTraversal<object, Edge>().ToE(direction, edgeLabels);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the toE step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Edge> ToE(Direction? direction, GValue<string> edgeLabel, params GValue<string>[] otherEdgeLabels)
+        {
+            return new GraphTraversal<object, Edge>().ToE(direction, edgeLabel, otherEdgeLabels);
         }
         
         /// <summary>
@@ -1813,222 +2029,6 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, object> Where(ITraversal whereTraversal)
         {
             return new GraphTraversal<object, object>().Where(whereTraversal);            
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the constant step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, E2> Constant<E2>(GValue<E2> a)
-        {
-            return new GraphTraversal<object, E2>().Constant(a);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the to step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, Vertex> To(Direction? direction, GValue<string> edgeLabel, params GValue<string>[] otherEdgeLabels)
-        {
-            return new GraphTraversal<object, Vertex>().To(direction, edgeLabel, otherEdgeLabels);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the out step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, Vertex> Out(GValue<string> edgeLabel, params GValue<string>[] otherEdgeLabels)
-        {
-            return new GraphTraversal<object, Vertex>().Out(edgeLabel, otherEdgeLabels);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the in step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, Vertex> In(GValue<string> edgeLabel, params GValue<string>[] otherEdgeLabels)
-        {
-            return new GraphTraversal<object, Vertex>().In(edgeLabel, otherEdgeLabels);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the both step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, Vertex> Both(GValue<string> edgeLabel, params GValue<string>[] otherEdgeLabels)
-        {
-            return new GraphTraversal<object, Vertex>().Both(edgeLabel, otherEdgeLabels);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the toE step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, Edge> ToE(Direction? direction, GValue<string> edgeLabel, params GValue<string>[] otherEdgeLabels)
-        {
-            return new GraphTraversal<object, Edge>().ToE(direction, edgeLabel, otherEdgeLabels);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the outE step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, Edge> OutE(GValue<string> edgeLabel, params GValue<string>[] otherEdgeLabels)
-        {
-            return new GraphTraversal<object, Edge>().OutE(edgeLabel, otherEdgeLabels);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the inE step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, Edge> InE(GValue<string> edgeLabel, params GValue<string>[] otherEdgeLabels)
-        {
-            return new GraphTraversal<object, Edge>().InE(edgeLabel, otherEdgeLabels);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the bothE step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, Edge> BothE(GValue<string> edgeLabel, params GValue<string>[] otherEdgeLabels)
-        {
-            return new GraphTraversal<object, Edge>().BothE(edgeLabel, otherEdgeLabels);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addV step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, Vertex> AddV(GValue<string> vertexLabel)
-        {
-            return new GraphTraversal<object, Vertex>().AddV(vertexLabel);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mergeV step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, Vertex> MergeV(GValue<IDictionary<object, object>> m)
-        {
-            return new GraphTraversal<object, Vertex>().MergeV(m);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addE step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, Edge> AddE(GValue<string> edgeLabel)
-        {
-            return new GraphTraversal<object, Edge>().AddE(edgeLabel);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mergeE step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, Edge> MergeE(GValue<IDictionary<object, object>> m)
-        {
-            return new GraphTraversal<object, Edge>().MergeE(m);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the has step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, object> Has(GValue<string> label, string propertyKey, P predicate)
-        {
-            return new GraphTraversal<object, object>().Has(label, propertyKey, predicate);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the has step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, object> Has(GValue<string> label, string propertyKey, object value)
-        {
-            return new GraphTraversal<object, object>().Has(label, propertyKey, value);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasLabel step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, object> HasLabel(GValue<string> label, params GValue<string>[] otherLabels)
-        {
-            return new GraphTraversal<object, object>().HasLabel(label, otherLabels);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the coin step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, object> Coin(GValue<double> probability)
-        {
-            return new GraphTraversal<object, object>().Coin(probability);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the range step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, E2> Range<E2>(GValue<long> low, GValue<long> high)
-        {
-            return new GraphTraversal<object, E2>().Range<E2>(low, high);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the range step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, E2> Range<E2>(Scope scope, GValue<long> low, GValue<long> high)
-        {
-            return new GraphTraversal<object, E2>().Range<E2>(scope, low, high);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the limit step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, E2> Limit<E2>(GValue<long> limit)
-        {
-            return new GraphTraversal<object, E2>().Limit<E2>(limit);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the limit step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, E2> Limit<E2>(Scope scope, GValue<long> limit)
-        {
-            return new GraphTraversal<object, E2>().Limit<E2>(scope, limit);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the skip step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, E2> Skip<E2>(GValue<long> skip)
-        {
-            return new GraphTraversal<object, E2>().Skip<E2>(skip);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the skip step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, E2> Skip<E2>(Scope scope, GValue<long> skip)
-        {
-            return new GraphTraversal<object, E2>().Skip<E2>(scope, skip);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the tail step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, E2> Tail<E2>(GValue<long> limit)
-        {
-            return new GraphTraversal<object, E2>().Tail<E2>(limit);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the tail step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, E2> Tail<E2>(Scope scope, GValue<long> limit)
-        {
-            return new GraphTraversal<object, E2>().Tail<E2>(scope, limit);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the call step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, E2> Call<E2>(string service, GValue<IDictionary<object, object>> m)
-        {
-            return new GraphTraversal<object, E2>().Call<E2>(service, m);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the call step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, E2> Call<E2>(string service, GValue<IDictionary<object, object>> m, ITraversal childTraversal)
-        {
-            return new GraphTraversal<object, E2>().Call<E2>(service, m, childTraversal);
         }
 
     }
