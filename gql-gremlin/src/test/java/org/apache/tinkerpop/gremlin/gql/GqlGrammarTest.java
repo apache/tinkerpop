@@ -32,8 +32,8 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 
 /**
  * Validates that {@link GQLParser} correctly parses the minimal GQL MATCH patterns
