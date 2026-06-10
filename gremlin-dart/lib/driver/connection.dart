@@ -19,6 +19,8 @@ import 'dart:convert';
 import 'dart:io' as io;
 import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
+
 import '../structure/io/graph_binary/graph_binary_reader.dart';
 import '../structure/io/graph_binary/graph_binary_writer.dart';
 import 'auth.dart';
@@ -26,17 +28,18 @@ import 'request_message.dart';
 import 'response_error.dart';
 import 'result_set.dart';
 
-typedef RequestInterceptor = Future<Map<String, dynamic>> Function(
-    Map<String, dynamic> request);
-
 class ConnectionOptions {
   final bool enableUserAgentOnConnect;
   final Map<String, String> headers;
   final String traversalSource;
   final AuthOptions? auth;
-  final List<RequestInterceptor> interceptors;
+  final List<Interceptor> interceptors;
+  final Duration connectTimeout;
+  final Duration receiveTimeout;
   final Duration idleTimeout;
   final int maxConnectionsPerHost;
+  // Provide a custom adapter to override SSL, proxy, or transport behaviour.
+  final HttpClientAdapter? httpClientAdapter;
 
   const ConnectionOptions({
     this.enableUserAgentOnConnect = true,
@@ -44,8 +47,11 @@ class ConnectionOptions {
     this.traversalSource = 'g',
     this.auth,
     this.interceptors = const [],
+    this.connectTimeout = const Duration(seconds: 30),
+    this.receiveTimeout = const Duration(seconds: 30),
     this.idleTimeout = const Duration(seconds: 30),
     this.maxConnectionsPerHost = 8,
+    this.httpClientAdapter,
   });
 }
 
@@ -60,12 +66,13 @@ class _RawResponse {
 
 class Connection {
   static const String transactionIdHeader = 'X-Transaction-Id';
+  static const String _transactionIdHeaderLower = 'x-transaction-id';
 
   final String url;
   final ConnectionOptions options;
   final GraphBinaryReader _reader;
   final GraphBinaryWriter _writer;
-  late final io.HttpClient _httpClient;
+  late final Dio _dio;
 
   bool isOpen = true;
 
@@ -73,9 +80,23 @@ class Connection {
       : options = options ?? const ConnectionOptions(),
         _reader = GraphBinaryReader(),
         _writer = GraphBinaryWriter() {
-    _httpClient = io.HttpClient()
-      ..idleTimeout = this.options.idleTimeout
-      ..maxConnectionsPerHost = this.options.maxConnectionsPerHost;
+    _dio = Dio(BaseOptions(
+      connectTimeout: this.options.connectTimeout,
+      receiveTimeout: this.options.receiveTimeout,
+      // Let our own _handleResponse deal with non-2xx status codes.
+      validateStatus: (_) => true,
+    ));
+
+    _dio.httpClientAdapter = this.options.httpClientAdapter ??
+        _TrailerTolerantAdapter(
+          idleTimeout: this.options.idleTimeout,
+          connectTimeout: this.options.connectTimeout,
+          maxConnectionsPerHost: this.options.maxConnectionsPerHost,
+        );
+
+    for (final interceptor in this.options.interceptors) {
+      _dio.interceptors.add(interceptor);
+    }
   }
 
   Future<void> open() async {}
@@ -92,13 +113,6 @@ class Connection {
     yield* _streamResponse(response);
   }
 
-  // ---------------------------------------------------------------------------
-  // HTTP transport — uses dart:io directly so we can handle HTTP trailers that
-  // TinkerPop's Netty server appends after the final 0\r\n chunk. Dart's built-in
-  // HTTP parser throws HttpException when it sees trailer bytes; we swallow that
-  // error after the body has been fully buffered.
-  // ---------------------------------------------------------------------------
-
   Future<_RawResponse> _makeHttpRequest(
       RequestMessage request, Uint8List body) async {
     final reqHeaders = <String, String>{
@@ -109,9 +123,7 @@ class Connection {
     if (options.enableUserAgentOnConnect) {
       reqHeaders['x-gremlin-useragent'] = _userAgent();
     }
-
     reqHeaders.addAll(options.headers);
-
     if (options.auth is BasicAuth) {
       reqHeaders['Authorization'] = (options.auth as BasicAuth).headerValue;
     }
@@ -119,53 +131,23 @@ class Connection {
       reqHeaders[transactionIdHeader] = request.transactionId!;
     }
 
-    Map<String, dynamic> req = {
-      'url': url,
-      'method': 'POST',
-      'headers': reqHeaders,
-      'body': body,
-    };
+    final response = await _dio.post<Uint8List>(
+      url,
+      data: body,
+      options: Options(
+        headers: reqHeaders,
+        responseType: ResponseType.bytes,
+        // sendTimeout per-request if needed in future
+      ),
+    );
 
-    for (final interceptor in options.interceptors) {
-      req = await interceptor(req);
-    }
+    final statusCode = response.statusCode ?? 0;
+    final contentType = response.headers['content-type']?.firstOrNull;
+    final transactionId =
+        response.headers.value(_transactionIdHeaderLower);
+    final bytes = response.data ?? Uint8List(0);
 
-    final uri = Uri.parse(req['url'] as String);
-    final finalHeaders = Map<String, String>.from(req['headers'] as Map);
-    final finalBody = req['body'] as Uint8List;
-
-    final ioReq = await _httpClient.postUrl(uri);
-    finalHeaders.forEach((k, v) => ioReq.headers.set(k, v));
-    ioReq.add(finalBody);
-
-    final ioResp = await ioReq.close();
-    final statusCode = ioResp.statusCode;
-    final contentType = ioResp.headers.contentType?.toString();
-    final transactionId = ioResp.headers.value(transactionIdHeader);
-
-    final bodyBytes = BytesBuilder(copy: false);
-    bool trailerException = false;
-    try {
-      await for (final chunk in ioResp) {
-        bodyBytes.add(chunk);
-      }
-    } on io.HttpException catch (_) {
-      // TinkerPop Netty sends HTTP trailers (e.g. "code: 200") after the
-      // final 0\r\n chunk. Dart's parser throws here. The body is already
-      // complete, so we can safely swallow this error.
-      if (bodyBytes.isEmpty) rethrow;
-      trailerException = true;
-    } on StateError catch (_) {
-      if (bodyBytes.isEmpty) rethrow;
-      trailerException = true;
-    }
-
-    final raw = bodyBytes.takeBytes();
-    // When the HttpException fires, dart:io may have handed us raw chunked-
-    // encoding bytes instead of the decoded payload (the stream yields wire
-    // bytes before the codec finishes). Detect and decode manually.
-    final decoded = trailerException ? _maybeDecodeChunked(raw) : raw;
-    return _RawResponse(statusCode, contentType, transactionId, decoded);
+    return _RawResponse(statusCode, contentType, transactionId, bytes);
   }
 
   Future<ResultSet<dynamic>> _handleResponse(_RawResponse response) async {
@@ -206,7 +188,8 @@ class Connection {
         : data;
 
     return ResultSet<dynamic>(items, {
-      if (response.transactionId != null) 'transactionId': response.transactionId,
+      if (response.transactionId != null)
+        'transactionId': response.transactionId,
     });
   }
 
@@ -237,7 +220,6 @@ class Connection {
           exception: status?['exception'] as String?,
         );
       }
-
       final decoded = jsonDecode(utf8.decode(body)) as Map<String, dynamic>;
       final status = decoded['status'] as Map<String, dynamic>?;
       throw ResponseError(
@@ -256,27 +238,92 @@ class Connection {
 
   Future<void> close() async {
     isOpen = false;
-    _httpClient.close(force: true);
+    _dio.close(force: true);
   }
+
+  static String _userAgent() => 'gremlin-dart/0.1.0 Dart/unknown';
+}
+
+// ---------------------------------------------------------------------------
+// Custom HTTP adapter — wraps dart:io so we can tolerate the non-standard
+// HTTP trailers that TinkerPop's Netty server appends after the final 0\r\n
+// chunk.  Dart's built-in HTTP parser throws HttpException when it sees those
+// trailer bytes; we catch it (after the body is already fully buffered) and
+// fall back to manual chunked-encoding decoding when needed.
+// ---------------------------------------------------------------------------
+class _TrailerTolerantAdapter implements HttpClientAdapter {
+  final io.HttpClient _client;
+
+  _TrailerTolerantAdapter({
+    required Duration idleTimeout,
+    required Duration connectTimeout,
+    required int maxConnectionsPerHost,
+  }) : _client = io.HttpClient()
+          ..idleTimeout = idleTimeout
+          ..connectionTimeout = connectTimeout
+          ..maxConnectionsPerHost = maxConnectionsPerHost;
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<dynamic>? cancelFuture,
+  ) async {
+    final ioReq = await _client.openUrl(options.method, options.uri);
+    options.headers.forEach((name, value) {
+      if (value != null) ioReq.headers.set(name, value.toString());
+    });
+
+    if (requestStream != null) {
+      await requestStream.forEach(ioReq.add);
+    }
+    final ioResp = await ioReq.close();
+
+    final bodyBytes = BytesBuilder(copy: false);
+    bool trailerException = false;
+    try {
+      await for (final chunk in ioResp) {
+        bodyBytes.add(chunk);
+      }
+    } on io.HttpException catch (_) {
+      if (bodyBytes.isEmpty) rethrow;
+      trailerException = true;
+    } on StateError catch (_) {
+      if (bodyBytes.isEmpty) rethrow;
+      trailerException = true;
+    }
+
+    final raw = bodyBytes.takeBytes();
+    final decoded = trailerException ? _decodeChunked(raw) : raw;
+
+    final headersMap = <String, List<String>>{};
+    ioResp.headers.forEach((name, values) => headersMap[name] = values);
+
+    return ResponseBody.fromBytes(
+      decoded,
+      ioResp.statusCode,
+      headers: headersMap,
+    );
+  }
+
+  @override
+  void close({bool force = false}) => _client.close(force: force);
 
   // Decodes HTTP chunked transfer encoding manually. When dart:io throws an
   // HttpException due to trailing headers, the stream may yield raw wire bytes
   // (chunk-size CRLF chunk-data CRLF ... 0 CRLF) instead of decoded payload.
   // If the buffer doesn't look like chunked encoding, return it unchanged.
-  static Uint8List _maybeDecodeChunked(Uint8List raw) {
-    // Chunked encoding starts with a hex size followed by \r\n.
-    // If the first byte is not a hex digit, it's already decoded.
+  static Uint8List _decodeChunked(Uint8List raw) {
     if (raw.isEmpty) return raw;
     final first = raw[0];
-    final isHex = (first >= 0x30 && first <= 0x39) || // 0-9
-        (first >= 0x41 && first <= 0x46) || // A-F
-        (first >= 0x61 && first <= 0x66); // a-f
+    final isHex = (first >= 0x30 && first <= 0x39) ||
+        (first >= 0x41 && first <= 0x46) ||
+        (first >= 0x61 && first <= 0x66);
     if (!isHex) return raw;
 
     final out = BytesBuilder();
     int pos = 0;
     while (pos < raw.length) {
-      // Find the \r\n after the chunk size
       int crPos = pos;
       while (crPos < raw.length - 1 &&
           !(raw[crPos] == 0x0D && raw[crPos + 1] == 0x0A)) {
@@ -286,22 +333,19 @@ class Connection {
 
       final sizeHex = String.fromCharCodes(raw.sublist(pos, crPos));
       final chunkSize = int.tryParse(sizeHex.trim(), radix: 16);
-      if (chunkSize == null) return raw; // not chunked after all
-      if (chunkSize == 0) break; // final chunk
+      if (chunkSize == null) return raw;
+      if (chunkSize == 0) break;
 
-      pos = crPos + 2; // skip \r\n
+      pos = crPos + 2;
       if (pos + chunkSize > raw.length) {
-        // Partial last chunk — take what we have
         out.add(raw.sublist(pos));
         break;
       }
       out.add(raw.sublist(pos, pos + chunkSize));
-      pos += chunkSize + 2; // skip chunk data + trailing \r\n
+      pos += chunkSize + 2;
     }
 
     final result = out.takeBytes();
     return result.isEmpty ? raw : result;
   }
-
-  static String _userAgent() => 'gremlin-dart/0.1.0 Dart/unknown';
 }

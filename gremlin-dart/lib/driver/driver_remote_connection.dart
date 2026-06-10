@@ -43,8 +43,11 @@ class DriverRemoteConnection extends RemoteConnection
           traversalSource: traversalSource ?? options.traversalSource,
           auth: options.auth,
           interceptors: options.interceptors,
+          connectTimeout: options.connectTimeout,
+          receiveTimeout: options.receiveTimeout,
           idleTimeout: options.idleTimeout,
           maxConnectionsPerHost: options.maxConnectionsPerHost,
+          httpClientAdapter: options.httpClientAdapter,
         ),
       );
 
