@@ -25,7 +25,8 @@ export 'process/traversal.dart';
 export 'process/traversal_strategy.dart';
 export 'process/gremlin_lang.dart';
 export 'process/graph_traversal.dart';
-export 'process/anonymous_traversal.dart' show traversal, Anon, AnonymousTraversalSource;
+export 'process/anonymous_traversal.dart'
+    show traversal, Anon, AnonymousTraversalSource;
 
 // Driver
 export 'driver/auth.dart';
@@ -36,3 +37,4 @@ export 'driver/remote_connection.dart';
 export 'driver/request_message.dart';
 export 'driver/response_error.dart';
 export 'driver/result_set.dart';
+export 'driver/transaction.dart';

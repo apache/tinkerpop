@@ -19,6 +19,7 @@ import 'dart:typed_data';
 
 import 'package:gremlin_dart/gremlin_dart.dart';
 import 'package:test/test.dart';
+import 'package:uuid/uuid_value.dart';
 
 import 'cucumber_world.dart';
 import 'feature_runner.dart';
@@ -33,12 +34,17 @@ const skipTags = <String>{
   'StepSubgraph',
   'DataChar',
   'WithReservedKeysVerificationStrategy',
-  // Optional features not supported by beta.2 gremlin-lang string parser
+  // These scenarios use gremlin-lang literal forms (Binary("..."),
+  // Duration(...), 'c') that the beta.2 server parser rejects over the HTTP
+  // string-submission path.  The driver can handle these types via GraphBinary
+  // bindings, but the feature tests submit raw gremlin strings so they stay
+  // skipped until the server parser is fixed.
   'SupportsDuration',
   'SupportsBinary',
   'SupportsChar',
-  'SupportsBigInteger',
-  'SupportsBigDecimal',
+  // SupportsBigInteger / SupportsBigDecimal are NOT used as tags in any
+  // feature file — BigInt/BigDecimal scenarios run under DataBigInt /
+  // DataBigDecimal and already pass.  Removed to avoid confusion.
 };
 
 class FeatureSteps {
@@ -66,18 +72,20 @@ class FeatureSteps {
     }
 
     final parameterMatch =
-        RegExp(r'^using the parameter (\w+) defined as "(.*)"$').firstMatch(text);
+        RegExp(r'^using the parameter (\w+) defined as "(.*)"$')
+            .firstMatch(text);
     if (parameterMatch != null) {
-      world.params[parameterMatch.group(1)!] =
-          ValueParser(world).parse(parameterMatch.group(2)!.replaceAll(r'\"', '"'));
+      world.params[parameterMatch.group(1)!] = ValueParser(world)
+          .parse(parameterMatch.group(2)!.replaceAll(r'\"', '"'));
       return;
     }
 
     final sideEffectMatch =
-        RegExp(r'^using the side effect (\w+) defined as "(.*)"$').firstMatch(text);
+        RegExp(r'^using the side effect (\w+) defined as "(.*)"$')
+            .firstMatch(text);
     if (sideEffectMatch != null) {
-      world.sideEffects[sideEffectMatch.group(1)!] =
-          ValueParser(world).parse(sideEffectMatch.group(2)!.replaceAll(r'\"', '"'));
+      world.sideEffects[sideEffectMatch.group(1)!] = ValueParser(world)
+          .parse(sideEffectMatch.group(2)!.replaceAll(r'\"', '"'));
       return;
     }
 
@@ -152,7 +160,8 @@ class FeatureSteps {
     if (errorMsgMatch != null) {
       final expectedText = errorMsgMatch.group(1)!.replaceAll(r'\"', '"');
       if (world.errorMessage == null) {
-        fail('Expected traversal to raise an error containing "$expectedText" but it succeeded');
+        fail(
+            'Expected traversal to raise an error containing "$expectedText" but it succeeded');
       }
       expect(world.errorMessage, contains(expectedText),
           reason: 'Error message should contain "$expectedText"');
@@ -184,7 +193,9 @@ class FeatureSteps {
     world.graphName = graphName;
     final graph = world.graphDataMap[graphName];
     if (graph == null) throw StateError('Unknown graph: $graphName');
-    world.g = traversal().withRemote(graph.connection).with_('language', 'gremlin-lang');
+    world.g = traversal()
+        .withRemote(graph.connection)
+        .with_('language', 'gremlin-lang');
     if (graphName == 'empty') {
       await graphSetup.cleanEmptyGraph();
       graph.vertices = <String, Vertex>{};
@@ -210,7 +221,9 @@ class FeatureSteps {
       final list = await _submit(world.pendingTraversal ?? '');
       if (list.isEmpty) {
         world.result = <dynamic>[];
-      } else if (list.first is Iterable && list.first is! String && list.first is! Map) {
+      } else if (list.first is Iterable &&
+          list.first is! String &&
+          list.first is! Map) {
         world.result = List<dynamic>.from(list.first as Iterable);
       } else {
         world.result = <dynamic>[list.first];
@@ -241,7 +254,8 @@ class FeatureSteps {
 
   void _assertTable(List<Map<String, String>> table, {required bool ordered}) {
     _assertNoError();
-    expect(world.result.length, table.length, reason: 'result: ${world.result}');
+    expect(world.result.length, table.length,
+        reason: 'result: ${world.result}');
     final expected =
         table.map((row) => ValueParser(world).parse(row['result']!)).toList();
     if (ordered) {
@@ -304,7 +318,8 @@ class FeatureSteps {
       if (a.length != b.length) return false;
       for (final aEntry in a.entries) {
         // Use deep key equality (Dart's Map.containsKey uses == which fails for List keys)
-        final bEntry = b.entries.where((e) => _deepEquals(e.key, aEntry.key)).firstOrNull;
+        final bEntry =
+            b.entries.where((e) => _deepEquals(e.key, aEntry.key)).firstOrNull;
         if (bEntry == null || !_deepEquals(aEntry.value, bEntry.value)) {
           return false;
         }
@@ -329,6 +344,7 @@ class FeatureSteps {
     if (value is GByte) return value.value;
     if (value is GShort) return value.value;
     if (value is GDecimal) return value.toDouble();
+    if (value is UuidValue) return value.toString();
     if (value is EnumValue) return value.toString();
     if (value is Path) return value.objects.map(_normalize).toList();
     if (value is Property) return Property(value.key, _normalize(value.value));
@@ -338,7 +354,8 @@ class FeatureSteps {
     if (value is List) return value.map(_normalize).toList();
     if (value is Set) return value.map(_normalize).toSet();
     if (value is Map) {
-      return value.map((key, val) => MapEntry(_normalize(key), _normalize(val)));
+      return value
+          .map((key, val) => MapEntry(_normalize(key), _normalize(val)));
     }
     return value;
   }

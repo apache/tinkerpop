@@ -12,17 +12,20 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:gremlin_dart/driver/request_message.dart';
+import 'package:gremlin_dart/process/traversal.dart';
 import 'package:gremlin_dart/structure/graph.dart';
 import 'package:gremlin_dart/structure/io/graph_binary/data_type.dart';
 import 'package:gremlin_dart/structure/io/graph_binary/graph_binary_reader.dart';
 import 'package:gremlin_dart/structure/io/graph_binary/graph_binary_writer.dart';
 import 'package:test/test.dart';
+import 'package:uuid/uuid_value.dart';
 
 void main() {
   group('GraphBinary v4', () {
     test('writer encodes a request as binary GraphBinary v4', () {
       final message = RequestMessage.build('g.V().has("name",x)')
           .addG('g')
+          .addTransactionId('tx-123')
           .addTimeoutMillis(1234)
           .addBulkResults(false)
           .addField('materializeProperties', 'tokens')
@@ -40,12 +43,42 @@ void main() {
       expect(gremlin, 'g.V().has("name",x)');
       expect(fields['language'], 'gremlin-lang');
       expect(fields['g'], 'g');
+      expect(fields['transactionId'], 'tx-123');
       expect(fields['evaluationTimeout'], 1234);
       expect(fields['bulkResults'], false);
       expect(fields['materializeProperties'], 'tokens');
     });
 
-    test('reader decodes primitive and collection values from a response', () async {
+    test('writer encodes typed GraphBinary bindings', () {
+      final uuid = UuidValue.fromString('00112233-4455-6677-8899-aabbccddeeff');
+      final when = DateTime.utc(2024, 6, 1, 12, 34, 56, 789, 123);
+      final message = RequestMessage.build('g.inject(x)')
+          .addBinding('uuidValue', uuid)
+          .addBinding('durationValue', const Duration(milliseconds: -500))
+          .addBinding('bigIntValue', BigInt.parse('-9223372036854775809'))
+          .addBinding('decimalValue', GDecimal(2, BigInt.from(12345)))
+          .addBinding('when', when)
+          .addBinding('bytes', Uint8List.fromList([1, 2, 3]))
+          .create();
+
+      final bytes = GraphBinaryWriter().writeRequest(message);
+      final reader = _TestReader(bytes);
+      reader.readUint8();
+      final fields = reader.readBareMap();
+      final bindings = fields['bindings'] as Map;
+
+      expect(bindings['uuidValue'], uuid);
+      expect(bindings['durationValue'], const Duration(milliseconds: -500));
+      expect(bindings['bigIntValue'], BigInt.parse('-9223372036854775809'));
+      final decimal = bindings['decimalValue'] as GDecimal;
+      expect(decimal.scale, 2);
+      expect(decimal.unscaled, BigInt.from(12345));
+      expect(bindings['when'], when);
+      expect(bindings['bytes'], Uint8List.fromList([1, 2, 3]));
+    });
+
+    test('reader decodes primitive and collection values from a response',
+        () async {
       final response = _response([
         _string('marko'),
         _int32(29),
@@ -82,6 +115,51 @@ void main() {
       expect(vertex.label, 'person');
     });
 
+    test('reader decodes extended scalar GraphBinary values', () async {
+      final uuid = UuidValue.fromString('00112233-4455-6677-8899-aabbccddeeff');
+      final timestamp = DateTime.utc(2024, 6, 1, 12, 34, 56, 789, 123);
+      final response = _response([
+        _uuid(uuid),
+        _binary([1, 2, 3]),
+        _bigInt(BigInt.parse('-9223372036854775809')),
+        _bigDecimal(2, BigInt.from(12345)),
+        _duration(const Duration(milliseconds: -500)),
+        _dateTime(timestamp),
+      ]);
+
+      final decoded = await GraphBinaryReader().readResponse(response);
+      final data = decoded['result']['data'] as List;
+
+      expect(data[0], uuid);
+      expect(data[1], Uint8List.fromList([1, 2, 3]));
+      expect(data[2], BigInt.parse('-9223372036854775809'));
+      final decimal = data[3] as GDecimal;
+      expect(decimal.scale, 2);
+      expect(decimal.unscaled, BigInt.from(12345));
+      expect(data[4], const Duration(milliseconds: -500));
+      expect(data[5], timestamp);
+    });
+
+    test('reader decodes bulked responses into traversers', () async {
+      final response = _response([
+        _string('marko'),
+        _int64(2),
+        _int32(29),
+        _int64(3),
+      ], bulked: true);
+
+      final decoded = await GraphBinaryReader()
+          .readResponseStream(Stream.value(response))
+          .toList();
+
+      expect(decoded, hasLength(2));
+      expect(decoded[0], isA<Traverser<dynamic>>());
+      expect((decoded[0] as Traverser).object, 'marko');
+      expect((decoded[0] as Traverser).bulk, 2);
+      expect((decoded[1] as Traverser).object, 29);
+      expect((decoded[1] as Traverser).bulk, 3);
+    });
+
     test('reader decodes a full response envelope', () async {
       final response = _response([
         _string('ok'),
@@ -101,10 +179,13 @@ void main() {
 }
 
 Uint8List _response(List<Uint8List> values,
-    {int statusCode = 200, String? statusMessage = 'OK', String? exception}) {
+    {int statusCode = 200,
+    String? statusMessage = 'OK',
+    String? exception,
+    bool bulked = false}) {
   final b = _Bytes();
   b.u8(0x84);
-  b.u8(0x00);
+  b.u8(bulked ? 0x01 : 0x00);
   for (final value in values) {
     b.bytes(value);
   }
@@ -147,7 +228,67 @@ Uint8List _boolean(bool value) {
   return b.done();
 }
 
-Uint8List _nullValue() => Uint8List.fromList([DataType.unspecifiedNull.code, 0x01]);
+Uint8List _uuid(UuidValue value) {
+  final b = _Bytes()..header(DataType.uuid);
+  b.bytes(value.toBytes(validate: true));
+  return b.done();
+}
+
+Uint8List _binary(List<int> value) {
+  final b = _Bytes()..header(DataType.binary);
+  b.i32(value.length);
+  b.bytes(Uint8List.fromList(value));
+  return b.done();
+}
+
+Uint8List _bigInt(BigInt value) {
+  final b = _Bytes()..header(DataType.bigInt);
+  final encoded = _bigIntBytes(value);
+  b.i32(encoded.length);
+  b.bytes(encoded);
+  return b.done();
+}
+
+Uint8List _bigDecimal(int scale, BigInt unscaled) {
+  final b = _Bytes()..header(DataType.bigDecimal);
+  b.i32(scale);
+  final encoded = _bigIntBytes(unscaled);
+  b.i32(encoded.length);
+  b.bytes(encoded);
+  return b.done();
+}
+
+Uint8List _duration(Duration value) {
+  final b = _Bytes()..header(DataType.duration);
+  final totalNanos = BigInt.from(value.inMicroseconds) * BigInt.from(1000);
+  final nanosPerSecond = BigInt.from(1000000000);
+  var seconds = totalNanos ~/ nanosPerSecond;
+  var nanos = totalNanos.remainder(nanosPerSecond);
+  if (nanos.isNegative) {
+    seconds -= BigInt.one;
+    nanos += nanosPerSecond;
+  }
+  b.i64Big(seconds);
+  b.i32(nanos.toInt());
+  return b.done();
+}
+
+Uint8List _dateTime(DateTime value) {
+  final b = _Bytes()..header(DataType.dateTime);
+  final utc = value.toUtc();
+  final nanos = BigInt.from(utc.hour * 3600 + utc.minute * 60 + utc.second) *
+          BigInt.from(1000000000) +
+      BigInt.from(utc.millisecond * 1000000 + utc.microsecond * 1000);
+  b.i32(utc.year);
+  b.u8(utc.month);
+  b.u8(utc.day);
+  b.i64Big(nanos);
+  b.i32(0);
+  return b.done();
+}
+
+Uint8List _nullValue() =>
+    Uint8List.fromList([DataType.unspecifiedNull.code, 0x01]);
 
 Uint8List _list(List<Uint8List> values, {bool fullyQualified = true}) {
   final b = _Bytes();
@@ -175,6 +316,36 @@ Uint8List _vertex(int id, String label) {
   return b.done();
 }
 
+Uint8List _bigIntBytes(BigInt value) {
+  if (value == BigInt.zero) return Uint8List.fromList([0x00]);
+  if (value > BigInt.zero) {
+    final bytes = <int>[];
+    var v = value;
+    while (v > BigInt.zero) {
+      bytes.add((v & BigInt.from(0xff)).toInt());
+      v >>= 8;
+    }
+    final result = bytes.reversed.toList();
+    if ((result.first & 0x80) != 0) result.insert(0, 0x00);
+    return Uint8List.fromList(result);
+  }
+
+  int byteCount = 1;
+  var limit = BigInt.from(0x80);
+  while (-value > limit) {
+    byteCount++;
+    limit <<= 8;
+  }
+
+  var twos = (BigInt.one << (byteCount * 8)) + value;
+  final bytes = <int>[];
+  for (var i = 0; i < byteCount; i++) {
+    bytes.add((twos & BigInt.from(0xff)).toInt());
+    twos >>= 8;
+  }
+  return Uint8List.fromList(bytes.reversed.toList());
+}
+
 class _Bytes {
   final BytesBuilder _builder = BytesBuilder(copy: false);
 
@@ -193,6 +364,17 @@ class _Bytes {
   void i64(int value) {
     final data = ByteData(8)..setInt64(0, value, Endian.big);
     _builder.add(data.buffer.asUint8List());
+  }
+
+  void i64Big(BigInt value) {
+    var unsigned = value;
+    if (value.isNegative) unsigned += BigInt.one << 64;
+    final bytes = Uint8List(8);
+    for (var i = 7; i >= 0; i--) {
+      bytes[i] = (unsigned & BigInt.from(0xff)).toInt();
+      unsigned >>= 8;
+    }
+    _builder.add(bytes);
   }
 
   void f64(double value) {
@@ -247,11 +429,15 @@ class _TestReader {
     return value;
   }
 
-  String readBareString() {
-    final length = readInt32();
-    final value = utf8.decode(bytes.sublist(offset, offset + length));
+  Uint8List readBytes(int length) {
+    final value = Uint8List.sublistView(bytes, offset, offset + length);
     offset += length;
     return value;
+  }
+
+  String readBareString() {
+    final length = readInt32();
+    return utf8.decode(readBytes(length));
   }
 
   Map<dynamic, dynamic> readBareMap() {
@@ -279,10 +465,67 @@ class _TestReader {
         return readBareString();
       case DataType.boolean:
         return readUint8() == 1;
+      case DataType.uuid:
+        return UuidValue.fromByteList(readBytes(16));
+      case DataType.binary:
+        return readBytes(readInt32());
+      case DataType.bigInt:
+        final length = readInt32();
+        return _decodeBigInt(readBytes(length));
+      case DataType.bigDecimal:
+        final scale = readInt32();
+        final length = readInt32();
+        return GDecimal(scale, _decodeBigInt(readBytes(length)));
+      case DataType.duration:
+        final seconds = readInt64();
+        final nanos = readInt32();
+        return Duration(seconds: seconds, microseconds: nanos ~/ 1000);
+      case DataType.dateTime:
+        final year = readInt32();
+        final month = readUint8();
+        final day = readUint8();
+        final nanos = _readBigInt64();
+        final offsetSeconds = readInt32();
+        final hour = (nanos ~/ BigInt.from(3600000000000)).toInt();
+        var remaining = nanos.remainder(BigInt.from(3600000000000));
+        final minute = (remaining ~/ BigInt.from(60000000000)).toInt();
+        remaining = remaining.remainder(BigInt.from(60000000000));
+        final second = (remaining ~/ BigInt.from(1000000000)).toInt();
+        remaining = remaining.remainder(BigInt.from(1000000000));
+        final millisecond = (remaining ~/ BigInt.from(1000000)).toInt();
+        remaining = remaining.remainder(BigInt.from(1000000));
+        final microsecond = (remaining ~/ BigInt.from(1000)).toInt();
+        return DateTime.utc(year, month, day, hour, minute, second, millisecond,
+                microsecond)
+            .subtract(Duration(seconds: offsetSeconds));
       case DataType.map:
         return readBareMap();
       default:
         throw StateError('Unsupported test type: $type');
     }
+  }
+
+  BigInt _readBigInt64() {
+    BigInt value = BigInt.zero;
+    for (var i = 0; i < 8; i++) {
+      value = (value << 8) | BigInt.from(bytes[offset + i]);
+    }
+    offset += 8;
+    if ((bytes[offset - 8] & 0x80) != 0) {
+      value -= BigInt.one << 64;
+    }
+    return value;
+  }
+
+  BigInt _decodeBigInt(Uint8List valueBytes) {
+    if (valueBytes.isEmpty) return BigInt.zero;
+    BigInt value = BigInt.zero;
+    for (final byte in valueBytes) {
+      value = (value << 8) | BigInt.from(byte);
+    }
+    if ((valueBytes.first & 0x80) != 0) {
+      value -= BigInt.one << (valueBytes.length * 8);
+    }
+    return value;
   }
 }

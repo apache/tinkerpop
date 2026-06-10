@@ -35,6 +35,8 @@ class ConnectionOptions {
   final String traversalSource;
   final AuthOptions? auth;
   final List<RequestInterceptor> interceptors;
+  final Duration idleTimeout;
+  final int maxConnectionsPerHost;
 
   const ConnectionOptions({
     this.enableUserAgentOnConnect = true,
@@ -42,40 +44,51 @@ class ConnectionOptions {
     this.traversalSource = 'g',
     this.auth,
     this.interceptors = const [],
+    this.idleTimeout = const Duration(seconds: 30),
+    this.maxConnectionsPerHost = 8,
   });
 }
 
 class _RawResponse {
   final int statusCode;
   final String? contentType;
+  final String? transactionId;
   final Uint8List bodyBytes;
-  const _RawResponse(this.statusCode, this.contentType, this.bodyBytes);
+  const _RawResponse(
+      this.statusCode, this.contentType, this.transactionId, this.bodyBytes);
 }
 
 class Connection {
+  static const String transactionIdHeader = 'X-Transaction-Id';
+
   final String url;
   final ConnectionOptions options;
   final GraphBinaryReader _reader;
   final GraphBinaryWriter _writer;
+  late final io.HttpClient _httpClient;
 
   bool isOpen = true;
 
   Connection(this.url, [ConnectionOptions? options])
       : options = options ?? const ConnectionOptions(),
         _reader = GraphBinaryReader(),
-        _writer = GraphBinaryWriter();
+        _writer = GraphBinaryWriter() {
+    _httpClient = io.HttpClient()
+      ..idleTimeout = this.options.idleTimeout
+      ..maxConnectionsPerHost = this.options.maxConnectionsPerHost;
+  }
 
   Future<void> open() async {}
 
   Future<ResultSet<dynamic>> submit(RequestMessage request) async {
     final body = _writer.writeRequest(request);
-    final response = await _makeHttpRequest(body);
+    final response = await _makeHttpRequest(request, body);
     return _handleResponse(response);
   }
 
   Stream<dynamic> stream(RequestMessage request) async* {
     final body = _writer.writeRequest(request);
-    final response = await _makeHttpRequest(body);
+    final response = await _makeHttpRequest(request, body);
     yield* _streamResponse(response);
   }
 
@@ -86,7 +99,8 @@ class Connection {
   // error after the body has been fully buffered.
   // ---------------------------------------------------------------------------
 
-  Future<_RawResponse> _makeHttpRequest(Uint8List body) async {
+  Future<_RawResponse> _makeHttpRequest(
+      RequestMessage request, Uint8List body) async {
     final reqHeaders = <String, String>{
       'Content-Type': _writer.mimeType,
       'Accept': _reader.mimeType,
@@ -100,6 +114,9 @@ class Connection {
 
     if (options.auth is BasicAuth) {
       reqHeaders['Authorization'] = (options.auth as BasicAuth).headerValue;
+    }
+    if (request.transactionId != null) {
+      reqHeaders[transactionIdHeader] = request.transactionId!;
     }
 
     Map<String, dynamic> req = {
@@ -117,48 +134,48 @@ class Connection {
     final finalHeaders = Map<String, String>.from(req['headers'] as Map);
     final finalBody = req['body'] as Uint8List;
 
-    final client = io.HttpClient();
+    final ioReq = await _httpClient.postUrl(uri);
+    finalHeaders.forEach((k, v) => ioReq.headers.set(k, v));
+    ioReq.add(finalBody);
+
+    final ioResp = await ioReq.close();
+    final statusCode = ioResp.statusCode;
+    final contentType = ioResp.headers.contentType?.toString();
+    final transactionId = ioResp.headers.value(transactionIdHeader);
+
+    final bodyBytes = BytesBuilder(copy: false);
+    bool trailerException = false;
     try {
-      final ioReq = await client.postUrl(uri);
-      finalHeaders.forEach((k, v) => ioReq.headers.set(k, v));
-      ioReq.add(finalBody);
-
-      final ioResp = await ioReq.close();
-      final statusCode = ioResp.statusCode;
-      final contentType = ioResp.headers.contentType?.toString();
-
-      final bodyBytes = BytesBuilder(copy: false);
-      bool trailerException = false;
-      try {
-        await for (final chunk in ioResp) {
-          bodyBytes.add(chunk);
-        }
-      } on io.HttpException catch (_) {
-        // TinkerPop Netty sends HTTP trailers (e.g. "code: 200") after the
-        // final 0\r\n chunk. Dart's parser throws here. The body is already
-        // complete, so we can safely swallow this error.
-        if (bodyBytes.isEmpty) rethrow;
-        trailerException = true;
-      } on StateError catch (_) {
-        if (bodyBytes.isEmpty) rethrow;
-        trailerException = true;
+      await for (final chunk in ioResp) {
+        bodyBytes.add(chunk);
       }
-
-      final raw = bodyBytes.takeBytes();
-      // When the HttpException fires, dart:io may have handed us raw chunked-
-      // encoding bytes instead of the decoded payload (the stream yields wire
-      // bytes before the codec finishes). Detect and decode manually.
-      final decoded = trailerException ? _maybeDecodeChunked(raw) : raw;
-      return _RawResponse(statusCode, contentType, decoded);
-    } finally {
-      client.close();
+    } on io.HttpException catch (_) {
+      // TinkerPop Netty sends HTTP trailers (e.g. "code: 200") after the
+      // final 0\r\n chunk. Dart's parser throws here. The body is already
+      // complete, so we can safely swallow this error.
+      if (bodyBytes.isEmpty) rethrow;
+      trailerException = true;
+    } on StateError catch (_) {
+      if (bodyBytes.isEmpty) rethrow;
+      trailerException = true;
     }
+
+    final raw = bodyBytes.takeBytes();
+    // When the HttpException fires, dart:io may have handed us raw chunked-
+    // encoding bytes instead of the decoded payload (the stream yields wire
+    // bytes before the codec finishes). Detect and decode manually.
+    final decoded = trailerException ? _maybeDecodeChunked(raw) : raw;
+    return _RawResponse(statusCode, contentType, transactionId, decoded);
   }
 
   Future<ResultSet<dynamic>> _handleResponse(_RawResponse response) async {
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      _throwResponseError(
-          response.statusCode, response.bodyBytes, 'HTTP ${response.statusCode}');
+      await _throwResponseError(
+        response.statusCode,
+        response.contentType,
+        response.bodyBytes,
+        'HTTP ${response.statusCode}',
+      );
     }
 
     if (response.bodyBytes.isEmpty) return ResultSet<dynamic>([]);
@@ -182,30 +199,45 @@ class Connection {
     final data = result['data'] as List? ?? [];
 
     final items = bulked
-        ? data
-            .expand((item) {
-              final bulk = (item['bulk'] as int?) ?? 1;
-              return List.filled(bulk, item['v']);
-            })
-            .toList()
+        ? data.expand((item) {
+            final bulk = (item['bulk'] as int?) ?? 1;
+            return List.filled(bulk, item['v']);
+          }).toList()
         : data;
 
-    return ResultSet<dynamic>(items);
+    return ResultSet<dynamic>(items, {
+      if (response.transactionId != null) 'transactionId': response.transactionId,
+    });
   }
 
   Stream<dynamic> _streamResponse(_RawResponse response) async* {
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      _throwResponseError(
-          response.statusCode, response.bodyBytes, 'HTTP ${response.statusCode}');
+      await _throwResponseError(
+        response.statusCode,
+        response.contentType,
+        response.bodyBytes,
+        'HTTP ${response.statusCode}',
+      );
     }
     if (response.bodyBytes.isEmpty) return;
-    yield* _reader
-        .readResponseStream(Stream.value(response.bodyBytes));
+    yield* _reader.readResponseStream(Stream.value(response.bodyBytes));
   }
 
-  void _throwResponseError(int statusCode, Uint8List body, String reasonPhrase) {
+  Future<void> _throwResponseError(int statusCode, String? contentType,
+      Uint8List body, String reasonPhrase) async {
     final message = 'Server returned HTTP $statusCode: $reasonPhrase';
     try {
+      if (contentType != null && contentType.startsWith(_reader.mimeType)) {
+        final decoded = await _reader.readResponse(body);
+        final status = decoded['status'] as Map<String, dynamic>?;
+        throw ResponseError(
+          message,
+          statusCode: statusCode,
+          serverMessage: status?['message'] as String? ?? reasonPhrase,
+          exception: status?['exception'] as String?,
+        );
+      }
+
       final decoded = jsonDecode(utf8.decode(body)) as Map<String, dynamic>;
       final status = decoded['status'] as Map<String, dynamic>?;
       throw ResponseError(
@@ -224,6 +256,7 @@ class Connection {
 
   Future<void> close() async {
     isOpen = false;
+    _httpClient.close(force: true);
   }
 
   // Decodes HTTP chunked transfer encoding manually. When dart:io throws an

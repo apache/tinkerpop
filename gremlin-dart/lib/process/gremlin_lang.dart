@@ -41,10 +41,13 @@ class GremlinLang {
 
   String _predicateAsString(dynamic p) {
     if (p is P) {
-      if (p.operator == 'and' || p.operator == 'or') {
-        return '${_predicateAsString(p.value)}.${p.operator}(${_predicateAsString(p.other)})';
+      final operatorName = p.operator.endsWith('_')
+          ? p.operator.substring(0, p.operator.length - 1)
+          : p.operator;
+      if (operatorName == 'and' || operatorName == 'or') {
+        return '${_predicateAsString(p.value)}.$operatorName(${_predicateAsString(p.other)})';
       }
-      final buf = StringBuffer('${p.operator}(');
+      final buf = StringBuffer('$operatorName(');
       if (p.value is List) {
         buf.write('[');
         buf.write((p.value as List).map(_argAsString).join(','));
@@ -125,8 +128,7 @@ class GremlinLang {
 
     if (arg is Traversal) {
       if (arg.graph != null) {
-        throw StateError(
-            'Child traversal must be anonymous - use __ not g');
+        throw StateError('Child traversal must be anonymous - use __ not g');
       }
       return arg.getGremlinLang().getGremlin('__');
     }
@@ -155,8 +157,7 @@ class GremlinLang {
       return '[${arg.map(_argAsString).join(',')}]';
     }
 
-    throw ArgumentError(
-        'GremlinLang cannot represent type ${arg.runtimeType}');
+    throw ArgumentError('GremlinLang cannot represent type ${arg.runtimeType}');
   }
 
   static String _fpAsString(double v, String suffix) {
@@ -171,9 +172,8 @@ class GremlinLang {
   // -------------------------------------------------------------------------
 
   GremlinLang addStep(String name, [List<dynamic>? args]) {
-    final argsStr = args != null && args.isNotEmpty
-        ? args.map(_argAsString).join(',')
-        : '';
+    final argsStr =
+        args != null && args.isNotEmpty ? args.map(_argAsString).join(',') : '';
     _gremlin += '.$name($argsStr)';
     return this;
   }
@@ -199,9 +199,8 @@ class GremlinLang {
       }
       return this;
     }
-    final argsStr = args != null && args.isNotEmpty
-        ? args.map(_argAsString).join(',')
-        : '';
+    final argsStr =
+        args != null && args.isNotEmpty ? args.map(_argAsString).join(',') : '';
     _gremlin += '.$name($argsStr)';
     return this;
   }

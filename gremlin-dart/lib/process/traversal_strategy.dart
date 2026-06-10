@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import '../driver/transaction.dart';
 import 'gremlin_lang.dart';
 import 'traversal.dart';
 
@@ -68,6 +69,11 @@ class RemoteStrategy extends TraversalStrategy {
 // driver/remote_connection.dart.
 abstract class RemoteConnectionBase {
   Future<RemoteTraversal> submit(GremlinLang gremlinLang);
+}
+
+abstract class TransactionCapableRemoteConnectionBase
+    implements RemoteConnectionBase {
+  Transaction tx([String? traversalSource]);
 }
 
 // ---------------------------------------------------------------------------

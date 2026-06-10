@@ -28,15 +28,14 @@ class Traversal {
   Stream<dynamic>? resultsStream;
   Future<void>? _strategiesApplied;
 
-  Traversal(this.graph, this.traversalStrategies,
-      [GremlinLang? gremlinLang])
+  Traversal(this.graph, this.traversalStrategies, [GremlinLang? gremlinLang])
       : gremlinLang = gremlinLang ?? GremlinLang();
 
   GremlinLang getGremlinLang() => gremlinLang;
 
   Future<void> applyStrategies() {
-    _strategiesApplied ??= traversalStrategies?.applyStrategies(this) ??
-        Future.value();
+    _strategiesApplied ??=
+        traversalStrategies?.applyStrategies(this) ?? Future.value();
     return _strategiesApplied!;
   }
 
@@ -117,8 +116,11 @@ class P {
 
   @override
   String toString() {
-    if (other == null) return '$operator($value)';
-    return '$operator($value, $other)';
+    final name = operator.endsWith('_')
+        ? operator.substring(0, operator.length - 1)
+        : operator;
+    if (other == null) return '$name($value)';
+    return '$name($value, $other)';
   }
 }
 

@@ -18,6 +18,7 @@
 import 'dart:convert';
 
 import 'package:gremlin_dart/gremlin_dart.dart';
+import 'package:uuid/uuid_value.dart';
 
 import 'cucumber_world.dart';
 
@@ -60,7 +61,8 @@ class ValueParser {
 
     if (_matches(value, 'str')) return _inner(value, 'str');
     if (_matches(value, 'dt')) return DateTime.parse(_inner(value, 'dt'));
-    if (_matches(value, 'uuid')) return _inner(value, 'uuid');
+    if (_matches(value, 'uuid'))
+      return UuidValue.fromString(_inner(value, 'uuid'));
     if (_matches(value, 'dur')) return _duration(_inner(value, 'dur'));
     if (_matches(value, 'bin')) return base64.decode(_inner(value, 'bin'));
     if (_matches(value, 'l')) return _list(_inner(value, 'l'));
@@ -81,13 +83,15 @@ class ValueParser {
     final vertexId = RegExp(r'^v\[(.+)\]\.id$').firstMatch(value);
     if (vertexId != null) return _vertex(vertexId.group(1)!).id;
     final vertexStringId = RegExp(r'^v\[(.+)\]\.sid$').firstMatch(value);
-    if (vertexStringId != null) return _vertex(vertexStringId.group(1)!).id.toString();
+    if (vertexStringId != null)
+      return _vertex(vertexStringId.group(1)!).id.toString();
     if (_matches(value, 'v')) return _vertex(_inner(value, 'v'));
 
     final edgeId = RegExp(r'^e\[(.+)\]\.id$').firstMatch(value);
     if (edgeId != null) return _edge(edgeId.group(1)!).id;
     final edgeStringId = RegExp(r'^e\[(.+)\]\.sid$').firstMatch(value);
-    if (edgeStringId != null) return _edge(edgeStringId.group(1)!).id.toString();
+    if (edgeStringId != null)
+      return _edge(edgeStringId.group(1)!).id.toString();
     if (_matches(value, 'e')) return _edge(_inner(value, 'e'));
 
     return value;

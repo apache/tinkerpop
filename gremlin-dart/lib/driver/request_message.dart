@@ -21,6 +21,7 @@ class RequestMessage {
   final int? timeoutMs;
   final Map<String, dynamic>? bindings;
   final String? g;
+  final String? transactionId;
   final String? materializeProperties;
   final bool? bulkResults;
   final Map<String, dynamic> fields;
@@ -34,6 +35,7 @@ class RequestMessage {
     this.timeoutMs,
     this.bindings,
     this.g,
+    this.transactionId,
     this.materializeProperties,
     this.bulkResults,
     this.fields = const {},
@@ -46,6 +48,7 @@ class RequestMessage {
     final m = <String, dynamic>{'gremlin': gremlin, 'language': language};
     if (bindings != null) m['bindings'] = bindings;
     if (g != null) m['g'] = g;
+    if (transactionId != null) m['transactionId'] = transactionId;
     if (materializeProperties != null) {
       m['materializeProperties'] = materializeProperties;
     }
@@ -62,6 +65,7 @@ class RequestMessageBuilder {
   int? _timeoutMs;
   final Map<String, dynamic> _bindings = {};
   String? _g;
+  String? _transactionId;
   String? _materializeProperties;
   bool? _bulkResults;
   final Map<String, dynamic> _fields = {};
@@ -85,6 +89,14 @@ class RequestMessageBuilder {
 
   RequestMessageBuilder addG(String g) {
     _g = g;
+    return this;
+  }
+
+  RequestMessageBuilder addTransactionId(String transactionId) {
+    if (transactionId.isEmpty) {
+      throw ArgumentError('transactionId cannot be empty');
+    }
+    _transactionId = transactionId;
     return this;
   }
 
@@ -123,6 +135,7 @@ class RequestMessageBuilder {
       timeoutMs: _timeoutMs,
       bindings: bindings,
       g: _g,
+      transactionId: _transactionId,
       materializeProperties: _materializeProperties,
       bulkResults: _bulkResults,
       fields: Map.unmodifiable(_fields),

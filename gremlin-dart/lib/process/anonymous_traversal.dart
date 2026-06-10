@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import '../driver/driver_remote_connection.dart';
 import '../structure/graph.dart';
 import 'gremlin_lang.dart';
 import 'graph_traversal.dart';
@@ -33,6 +34,8 @@ class AnonymousTraversalSource {
       Graph(),
       strategies,
       GremlinLang(),
+      connection is TransactionCapableRemoteConnectionBase ? connection : null,
+      connection is DriverRemoteConnection ? connection.options.traversalSource : null,
     );
   }
 

@@ -25,6 +25,7 @@ class RequestOptions {
   final int? evaluationTimeout;
   final bool? bulkResults;
   final String? materializeProperties;
+  final String? transactionId;
 
   const RequestOptions({
     this.bindings,
@@ -32,6 +33,7 @@ class RequestOptions {
     this.evaluationTimeout,
     this.bulkResults,
     this.materializeProperties,
+    this.transactionId,
   });
 }
 
@@ -90,6 +92,9 @@ class Client {
     }
     if (requestOptions?.bulkResults != null) {
       builder.addBulkResults(requestOptions!.bulkResults!);
+    }
+    if (requestOptions?.transactionId != null) {
+      builder.addTransactionId(requestOptions!.transactionId!);
     }
 
     return builder.create();

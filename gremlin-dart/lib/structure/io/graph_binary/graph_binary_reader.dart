@@ -18,6 +18,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:uuid/uuid_value.dart';
+
 import '../../../process/traversal.dart';
 import '../../../structure/graph.dart';
 import 'data_type.dart';
@@ -37,7 +39,8 @@ class GraphBinaryReader {
     final reader = _GraphBinaryValueReader(bytes);
     final version = reader.readUint8();
     if (version != _version) {
-      throw FormatException('Unsupported GraphBinary version: 0x${version.toRadixString(16)}');
+      throw FormatException(
+          'Unsupported GraphBinary version: 0x${version.toRadixString(16)}');
     }
 
     final bulked = reader.readUint8() == 0x01;
@@ -49,7 +52,8 @@ class GraphBinaryReader {
       if (bulked) {
         // bulk count is a fully-typed value (type + flag + int64), not raw bytes
         final bulk = reader.readAny();
-        data.add({'v': value, 'bulk': bulk is int ? bulk : (bulk as num).toInt()});
+        data.add(
+            {'v': value, 'bulk': bulk is int ? bulk : (bulk as num).toInt()});
       } else {
         data.add(value);
       }
@@ -96,8 +100,7 @@ class _GraphBinaryValueReader {
   final ByteData _data;
   int _offset = 0;
 
-  _GraphBinaryValueReader(this._bytes)
-      : _data = ByteData.sublistView(_bytes);
+  _GraphBinaryValueReader(this._bytes) : _data = ByteData.sublistView(_bytes);
 
   int readUint8() {
     _require(1);
@@ -170,13 +173,15 @@ class _GraphBinaryValueReader {
     final typeCode = readUint8();
     final type = DataType.fromCode(typeCode);
     if (type == null) {
-      throw FormatException('Unknown GraphBinary type 0x${typeCode.toRadixString(16)} at $position');
+      throw FormatException(
+          'Unknown GraphBinary type 0x${typeCode.toRadixString(16)} at $position');
     }
 
     final valueFlag = readUint8();
     if (valueFlag == 0x01) return null;
     if (valueFlag != 0x00 && valueFlag != _bulkFlag) {
-      throw FormatException('Unexpected value flag 0x${valueFlag.toRadixString(16)} at $position');
+      throw FormatException(
+          'Unexpected value flag 0x${valueFlag.toRadixString(16)} at $position');
     }
 
     return _readValue(type, valueFlag);
@@ -186,7 +191,8 @@ class _GraphBinaryValueReader {
     final flag = readUint8();
     if (flag == 0x01) return null;
     if (flag != 0x00) {
-      throw FormatException('Unexpected nullable string flag 0x${flag.toRadixString(16)}');
+      throw FormatException(
+          'Unexpected nullable string flag 0x${flag.toRadixString(16)}');
     }
     return _readString();
   }
@@ -320,11 +326,15 @@ class _GraphBinaryValueReader {
     return values;
   }
 
-  String _readUuid() {
+  UuidValue _readUuid() {
     final bytes = readBytes(16);
-    String hex(int start, int end) =>
-        bytes.sublist(start, end).map((b) => b.toRadixString(16).padLeft(2, '0')).join();
-    return '${hex(0, 4)}-${hex(4, 6)}-${hex(6, 8)}-${hex(8, 10)}-${hex(10, 16)}';
+    String hex(int start, int end) => bytes
+        .sublist(start, end)
+        .map((b) => b.toRadixString(16).padLeft(2, '0'))
+        .join();
+    return UuidValue.fromString(
+      '${hex(0, 4)}-${hex(4, 6)}-${hex(6, 8)}-${hex(8, 10)}-${hex(10, 16)}',
+    );
   }
 
   Vertex _readVertex() {
@@ -343,7 +353,8 @@ class _GraphBinaryValueReader {
     final outVLabel = _firstLabel(_readList(false));
     readAny();
     final properties = _asProperties(readAny());
-    return Edge(id, Vertex(outVId, outVLabel), label, Vertex(inVId, inVLabel), properties);
+    return Edge(id, Vertex(outVId, outVLabel), label, Vertex(inVId, inVLabel),
+        properties);
   }
 
   VertexProperty _readVertexProperty() {
@@ -398,7 +409,8 @@ class _GraphBinaryValueReader {
     remaining = remaining.remainder(BigInt.from(1000000));
     final microsecond = (remaining ~/ BigInt.from(1000)).toInt();
 
-    return DateTime.utc(year, month, day, hour, minute, second, millisecond, microsecond)
+    return DateTime.utc(
+            year, month, day, hour, minute, second, millisecond, microsecond)
         .subtract(Duration(seconds: offsetSeconds));
   }
 
@@ -450,7 +462,9 @@ class _GraphBinaryValueReader {
       return value.whereType<Property>().toList();
     }
     if (value is Map) {
-      return value.entries.map((entry) => Property(entry.key.toString(), entry.value)).toList();
+      return value.entries
+          .map((entry) => Property(entry.key.toString(), entry.value))
+          .toList();
     }
     return const [];
   }

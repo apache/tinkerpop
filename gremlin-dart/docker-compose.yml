@@ -25,7 +25,7 @@ services:
       - "45940:45940"
     command: ["conf/gremlin-server-dart.yaml"]
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf -X POST -H 'Content-Type: application/json' -d '{\"gremlin\":\"g.inject(1)\",\"g\":\"gmodern\"}' http://localhost:45940/gremlin"]
+      test: ["CMD-SHELL", "wget -qO- --header='Content-Type: application/json' --post-data='{\"gremlin\":\"g.inject(1)\",\"g\":\"gmodern\"}' http://127.0.0.1:45940/gremlin >/dev/null"]
       interval: 10s
       timeout: 5s
       retries: 15

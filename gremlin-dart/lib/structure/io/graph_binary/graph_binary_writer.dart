@@ -35,12 +35,17 @@ class GraphBinaryWriter {
     final fields = <String, dynamic>{};
     if (message.language.isNotEmpty) fields['language'] = message.language;
     if (message.g != null) fields['g'] = message.g;
+    if (message.transactionId != null) {
+      fields['transactionId'] = message.transactionId;
+    }
     if (message.bindings != null) fields['bindings'] = message.bindings;
-    if (message.timeoutMs != null) fields['evaluationTimeout'] = message.timeoutMs;
+    if (message.timeoutMs != null)
+      fields['evaluationTimeout'] = message.timeoutMs;
     if (message.materializeProperties != null) {
       fields['materializeProperties'] = message.materializeProperties;
     }
-    if (message.bulkResults != null) fields['bulkResults'] = message.bulkResults;
+    if (message.bulkResults != null)
+      fields['bulkResults'] = message.bulkResults;
     fields.addAll(message.fields);
 
     final writer = _GraphBinaryValueWriter();
@@ -97,6 +102,8 @@ class _GraphBinaryValueWriter {
       writeUuid(value);
     } else if (value is DateTime) {
       writeDateTime(value);
+    } else if (value is Duration) {
+      writeDuration(value);
     } else if (value is Uint8List) {
       writeBinary(value);
     } else if (value is List) {
@@ -118,7 +125,8 @@ class _GraphBinaryValueWriter {
     } else if (value is EnumValue) {
       writeEnum(value);
     } else {
-      throw ArgumentError('Unsupported GraphBinary value: ${value.runtimeType}');
+      throw ArgumentError(
+          'Unsupported GraphBinary value: ${value.runtimeType}');
     }
   }
 
@@ -189,6 +197,23 @@ class _GraphBinaryValueWriter {
     _writeHeader(DataType.binary, fullyQualified);
     _writeInt32Bare(value.length);
     _builder.add(value);
+  }
+
+  void writeDuration(Duration value, {bool fullyQualified = true}) {
+    _writeHeader(DataType.duration, fullyQualified);
+
+    final totalNanos = BigInt.from(value.inMicroseconds) * BigInt.from(1000);
+    final nanosPerSecond = BigInt.from(1000000000);
+
+    var seconds = totalNanos ~/ nanosPerSecond;
+    var nanos = totalNanos.remainder(nanosPerSecond);
+    if (nanos.isNegative) {
+      seconds -= BigInt.one;
+      nanos += nanosPerSecond;
+    }
+
+    _writeInt64BareBig(seconds);
+    _writeInt32Bare(nanos.toInt());
   }
 
   void writeGDecimal(GDecimal value, {bool fullyQualified = true}) {
@@ -314,7 +339,8 @@ class _GraphBinaryValueWriter {
       'Direction' => DataType.direction,
       'Merge' => DataType.merge,
       'T' => DataType.t,
-      _ => throw ArgumentError('Unsupported GraphBinary enum: ${value.typeName}'),
+      _ =>
+        throw ArgumentError('Unsupported GraphBinary enum: ${value.typeName}'),
     };
     _writeHeader(type, fullyQualified);
     // Normalize gremlin-lang Direction aliases to canonical Java enum names.

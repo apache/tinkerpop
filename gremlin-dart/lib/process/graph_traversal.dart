@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import '../driver/transaction.dart';
 import '../structure/graph.dart';
 import 'gremlin_lang.dart';
 import 'traversal.dart';
@@ -28,17 +29,23 @@ class GraphTraversalSource {
   final Graph graph;
   final TraversalStrategies traversalStrategies;
   final GremlinLang gremlinLang;
+  final TransactionCapableRemoteConnectionBase? remoteConnection;
+  final String? traversalSource;
 
   GraphTraversalSource(
     this.graph,
     this.traversalStrategies, [
     GremlinLang? gremlinLang,
+    this.remoteConnection,
+    this.traversalSource,
   ]) : gremlinLang = gremlinLang ?? GremlinLang();
 
   GraphTraversalSource _spawn([GremlinLang? gl]) => GraphTraversalSource(
         graph,
         TraversalStrategies(traversalStrategies),
         gl ?? GremlinLang(gremlinLang),
+        remoteConnection,
+        traversalSource,
       );
 
   GraphTraversal _spawnTraversal(GremlinLang gl) =>
@@ -47,7 +54,8 @@ class GraphTraversalSource {
   // ---- Source modifiers ----------------------------------------------------
 
   GraphTraversalSource withStrategies(List<TraversalStrategy> strategies) {
-    final gl = GremlinLang(gremlinLang)..addSource('withStrategies', strategies);
+    final gl = GremlinLang(gremlinLang)
+      ..addSource('withStrategies', strategies);
     return _spawn(gl);
   }
 
@@ -60,7 +68,8 @@ class GraphTraversalSource {
     } else {
       // Replace the last entry in the clone's list with a new merged copy,
       // so the original source's OptionsStrategy object is never mutated.
-      final merged = Map<String, dynamic>.from(opts.last.configuration)..[key] = val;
+      final merged = Map<String, dynamic>.from(opts.last.configuration)
+        ..[key] = val;
       opts[opts.length - 1] = OptionsStrategy(merged);
     }
     return _spawn(gl);
@@ -87,16 +96,19 @@ class GraphTraversalSource {
       _spawnTraversal(GremlinLang(gremlinLang)..addStep('E', args));
 
   GraphTraversal addV([dynamic label]) =>
-      _spawnTraversal(GremlinLang(gremlinLang)..addStep('addV', label != null ? [label] : null));
+      _spawnTraversal(GremlinLang(gremlinLang)
+        ..addStep('addV', label != null ? [label] : null));
 
   GraphTraversal addE(dynamic label) =>
       _spawnTraversal(GremlinLang(gremlinLang)..addStep('addE', [label]));
 
   GraphTraversal mergeV([dynamic args]) =>
-      _spawnTraversal(GremlinLang(gremlinLang)..addStep('mergeV', args != null ? [args] : null));
+      _spawnTraversal(GremlinLang(gremlinLang)
+        ..addStep('mergeV', args != null ? [args] : null));
 
   GraphTraversal mergeE([dynamic args]) =>
-      _spawnTraversal(GremlinLang(gremlinLang)..addStep('mergeE', args != null ? [args] : null));
+      _spawnTraversal(GremlinLang(gremlinLang)
+        ..addStep('mergeE', args != null ? [args] : null));
 
   GraphTraversal inject(List<dynamic> args) =>
       _spawnTraversal(GremlinLang(gremlinLang)..addStep('inject', args));
@@ -105,8 +117,15 @@ class GraphTraversalSource {
       _spawnTraversal(GremlinLang(gremlinLang)..addStep('io', [file]));
 
   GraphTraversal call_(String procedure, [List<dynamic>? args]) =>
-      _spawnTraversal(GremlinLang(gremlinLang)
-        ..addStep('call', [procedure, ...?args]));
+      _spawnTraversal(
+          GremlinLang(gremlinLang)..addStep('call', [procedure, ...?args]));
+
+  Transaction tx() {
+    if (remoteConnection == null) {
+      throw StateError('Transactions require a remote traversal source');
+    }
+    return remoteConnection!.tx(traversalSource);
+  }
 
   @override
   String toString() => 'graphtraversalsource[$graph]';
@@ -127,8 +146,10 @@ class GraphTraversal extends Traversal {
     GremlinLang gl,
   ) : super(graph, strategies, gl);
 
-  GraphTraversal _step(String name, [List<dynamic>? args]) =>
-      GraphTraversal(graph, traversalStrategies, GremlinLang(gremlinLang)..addStep(name, args));
+  GraphTraversal _step(String name, [List<dynamic>? args]) => GraphTraversal(
+      graph,
+      traversalStrategies,
+      GremlinLang(gremlinLang)..addStep(name, args));
 
   // ---- Map steps -----------------------------------------------------------
 
@@ -340,19 +361,17 @@ class GraphTraversal extends Traversal {
     return _step('choose', args);
   }
 
-  GraphTraversal optional(dynamic traversal) =>
-      _step('optional', [traversal]);
+  GraphTraversal optional(dynamic traversal) => _step('optional', [traversal]);
 
-  GraphTraversal union(List<dynamic> traversals) =>
-      _step('union', traversals);
+  GraphTraversal union(List<dynamic> traversals) => _step('union', traversals);
 
   GraphTraversal coalesce(List<dynamic> traversals) =>
       _step('coalesce', traversals);
 
   GraphTraversal repeat(dynamic traversal) => _step('repeat', [traversal]);
 
-  GraphTraversal emit([dynamic traversalOrPredicate]) =>
-      _step('emit', traversalOrPredicate != null ? [traversalOrPredicate] : null);
+  GraphTraversal emit([dynamic traversalOrPredicate]) => _step(
+      'emit', traversalOrPredicate != null ? [traversalOrPredicate] : null);
 
   GraphTraversal until(dynamic traversalOrPredicate) =>
       _step('until', [traversalOrPredicate]);
@@ -459,4 +478,44 @@ class GraphTraversal extends Traversal {
 
   GraphTraversal merge_(dynamic first, [dynamic second]) =>
       _step('merge', [first, if (second != null) second]);
+
+  // ---- Additional steps ----
+
+  GraphTraversal sack([dynamic operatorOrTraversal]) =>
+      _step('sack', operatorOrTraversal != null ? [operatorOrTraversal] : null);
+
+  GraphTraversal loops([String? variable]) =>
+      _step('loops', variable != null ? [variable] : null);
+
+  GraphTraversal match_(List<dynamic> traversals) => _step('match', traversals);
+
+  GraphTraversal project(String key, [List<String>? others]) =>
+      _step('project', [key, ...?others]);
+
+  GraphTraversal conjoin(String delimiter) => _step('conjoin', [delimiter]);
+
+  GraphTraversal format_(String template) => _step('format', [template]);
+
+  GraphTraversal value_() => _step('value');
+
+  GraphTraversal key_() => _step('key');
+
+  GraphTraversal toV(dynamic direction) => _step('toV', [direction]);
+
+  GraphTraversal toE(dynamic direction, [List<String>? edgeLabels]) =>
+      _step('toE', [direction, ...?edgeLabels]);
+
+  GraphTraversal asBool() => _step('asBool');
+
+  GraphTraversal asDate() => _step('asDate');
+
+  GraphTraversal asNumber() => _step('asNumber');
+
+  GraphTraversal dateAdd(dynamic chronoUnit, int amount) =>
+      _step('dateAdd', [chronoUnit, amount]);
+
+  GraphTraversal dateDiff(dynamic other, [dynamic chronoUnit]) =>
+      _step('dateDiff', [other, if (chronoUnit != null) chronoUnit]);
+
+  GraphTraversal clone_() => _step('clone');
 }

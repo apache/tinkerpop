@@ -17,16 +17,36 @@
 
 import '../process/gremlin_lang.dart';
 import '../process/traversal.dart';
+import '../process/traversal_strategy.dart';
 import 'client.dart';
 import 'connection.dart';
 import 'remote_connection.dart';
+import 'result_set.dart';
+import 'transaction.dart';
 
-class DriverRemoteConnection extends RemoteConnection {
+class DriverRemoteConnection extends RemoteConnection
+    implements TransactionCapableRemoteConnectionBase {
+  final ConnectionOptions options;
   final Client _client;
 
   DriverRemoteConnection(String url, [ConnectionOptions? options])
-      : _client = Client(url, options),
+      : options = options ?? const ConnectionOptions(),
+        _client = Client(url, options ?? const ConnectionOptions()),
         super(url);
+
+  DriverRemoteConnection _spawnDedicated([String? traversalSource]) =>
+      DriverRemoteConnection(
+        url,
+        ConnectionOptions(
+          enableUserAgentOnConnect: options.enableUserAgentOnConnect,
+          headers: options.headers,
+          traversalSource: traversalSource ?? options.traversalSource,
+          auth: options.auth,
+          interceptors: options.interceptors,
+          idleTimeout: options.idleTimeout,
+          maxConnectionsPerHost: options.maxConnectionsPerHost,
+        ),
+      );
 
   @override
   Future<void> open() => _client.open();
@@ -41,7 +61,31 @@ class DriverRemoteConnection extends RemoteConnection {
     return Future.value(RemoteTraversal(stream));
   }
 
-  (String, RequestOptions) _buildRequestArgs(GremlinLang gremlinLang) {
+  Future<ResultSet<dynamic>> submitInTransactionBuffered(
+      GremlinLang gremlinLang, String transactionId) {
+    final (gremlin, requestOptions) =
+        _buildRequestArgs(gremlinLang, transactionId: transactionId);
+    return _client.submit(gremlin, requestOptions: requestOptions);
+  }
+
+  Future<ResultSet<dynamic>> submitAsync(
+    String gremlin, {
+    Map<String, dynamic>? bindings,
+    RequestOptions? requestOptions,
+  }) =>
+      _client.submit(
+        gremlin,
+        bindings: bindings,
+        requestOptions: requestOptions,
+      );
+
+  Transaction tx([String? traversalSource]) =>
+      Transaction(_spawnDedicated(traversalSource));
+
+  (String, RequestOptions) _buildRequestArgs(
+    GremlinLang gremlinLang, {
+    String? transactionId,
+  }) {
     final strategies = gremlinLang.getOptionsStrategies();
     final allowed = {
       'evaluationTimeout',
@@ -73,6 +117,7 @@ class DriverRemoteConnection extends RemoteConnection {
       evaluationTimeout: evalTimeout,
       bulkResults: bulkResults,
       materializeProperties: materializeProperties,
+      transactionId: transactionId,
     );
 
     return (gremlinLang.getGremlin(), requestOptions);
