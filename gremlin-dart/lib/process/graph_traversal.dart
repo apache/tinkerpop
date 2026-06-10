@@ -59,6 +59,16 @@ class GraphTraversalSource {
     return _spawn(gl);
   }
 
+  /// Removes named strategies from the traversal compilation pipeline.
+  ///
+  /// Strategy names should match the simple class name used by the server
+  /// (e.g. `'ConnectiveStrategy'`, `'ReadOnlyStrategy'`).
+  GraphTraversalSource withoutStrategies(List<String> strategyNames) {
+    final gl = GremlinLang(gremlinLang)
+      ..addSource('withoutStrategies', strategyNames);
+    return _spawn(gl);
+  }
+
   GraphTraversalSource with_(String key, [dynamic value]) {
     final val = value ?? true;
     final gl = GremlinLang(gremlinLang);
@@ -493,6 +503,10 @@ class GraphTraversal extends Traversal {
       _step('project', [key, ...?others]);
 
   GraphTraversal conjoin(String delimiter) => _step('conjoin', [delimiter]);
+
+  /// Computes the set-theoretic disjunction (symmetric difference) of the
+  /// incoming list/set traverser and [values] (a literal list or a traversal).
+  GraphTraversal disjunct(dynamic values) => _step('disjunct', [values]);
 
   GraphTraversal format_(String template) => _step('format', [template]);
 

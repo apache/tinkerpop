@@ -31,6 +31,10 @@ class GraphBinaryReader {
 
   String get mimeType => _mimeType;
 
+  /// Decodes a single fully-qualified value previously encoded by
+  /// [GraphBinaryWriter.encodeValue].
+  dynamic decodeValue(Uint8List bytes) => _GraphBinaryValueReader(bytes).readAny();
+
   Future<Map<String, dynamic>> readResponse(Uint8List bytes) async {
     if (bytes.isEmpty) {
       throw ArgumentError('GraphBinary response is empty.');
@@ -245,6 +249,8 @@ class _GraphBinaryValueReader {
         return _readBigDecimal();
       case DataType.duration:
         return _readDuration();
+      case DataType.char:
+        return _readChar();
       case DataType.marker:
         final marker = readUint8();
         if (marker != 0x00) {
@@ -437,6 +443,12 @@ class _GraphBinaryValueReader {
     final seconds = readInt64();
     final nanos = readInt32();
     return Duration(seconds: seconds, microseconds: nanos ~/ 1000);
+  }
+
+  // GraphBinary encodes char as a 4-byte big-endian UTF-32 code point.
+  String _readChar() {
+    final codePoint = readInt32();
+    return String.fromCharCode(codePoint);
   }
 
   EnumValue _readEnum(DataType type) {

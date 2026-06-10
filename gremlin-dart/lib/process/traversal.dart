@@ -198,6 +198,18 @@ class GByte {
   const GByte(this.value);
 }
 
+/// Wraps a single Unicode code point so it serialises as GraphBinary `char`
+/// (type 0x80) rather than as a `string`.
+class GChar {
+  final int codePoint;
+  const GChar(this.codePoint);
+
+  String toStr() => String.fromCharCode(codePoint);
+
+  @override
+  String toString() => toStr();
+}
+
 class GDecimal {
   final int scale;
   final BigInt unscaled;

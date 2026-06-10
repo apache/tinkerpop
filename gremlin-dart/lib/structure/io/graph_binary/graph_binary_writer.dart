@@ -31,6 +31,13 @@ class GraphBinaryWriter {
 
   String get mimeType => _mimeType;
 
+  /// Encodes a single fully-qualified value to its GraphBinary wire form.
+  /// Useful for testing and custom serialisation pipelines.
+  Uint8List encodeValue(dynamic value) {
+    final w = _GraphBinaryValueWriter()..writeAny(value);
+    return w.takeBytes();
+  }
+
   Uint8List writeRequest(RequestMessage message) {
     final fields = <String, dynamic>{};
     if (message.language.isNotEmpty) fields['language'] = message.language;
@@ -82,6 +89,8 @@ class _GraphBinaryValueWriter {
       writeShort(value.value);
     } else if (value is GByte) {
       writeByte(value.value);
+    } else if (value is GChar) {
+      writeChar(value.codePoint);
     } else if (value is int) {
       if (value >= _int32Min && value <= _int32Max) {
         writeInt32(value);
@@ -156,6 +165,11 @@ class _GraphBinaryValueWriter {
     _writeHeader(DataType.short, fullyQualified);
     final data = ByteData(2)..setInt16(0, value, Endian.big);
     _builder.add(data.buffer.asUint8List());
+  }
+
+  void writeChar(int codePoint, {bool fullyQualified = true}) {
+    _writeHeader(DataType.char, fullyQualified);
+    _writeInt32Bare(codePoint);
   }
 
   void writeByte(int value, {bool fullyQualified = true}) {
