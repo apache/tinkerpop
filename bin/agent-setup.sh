@@ -20,9 +20,12 @@
 
 # Set up AI coding agent integration with TinkerPop's Agent Skills.
 #
-# TinkerPop maintains development guidance as an Agent Skill in .skills/tinkerpop-dev/.
+# TinkerPop maintains Agent Skills in .skills/:
+#   tinker-dev    - Development guidance (coding conventions, build recipes, etc.)
+#   tinker-review - Graph-based PR review (knowledge graph analysis, playbooks, etc.)
+#
 # Different AI coding tools discover skills in different directories. This script
-# creates the necessary symlinks or shims so your tool can find the skill.
+# creates the necessary symlinks or shims so your tool can find the skills.
 #
 # Usage:
 #   bin/agent-setup.sh <agent>
@@ -44,8 +47,7 @@
 
 set -uo pipefail
 
-SKILL_DIR=".skills/tinkerpop-dev"
-SKILL_NAME="tinkerpop-dev"
+SKILLS=("tinker-dev" "tinker-review")
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -68,8 +70,8 @@ usage() {
 }
 
 # Verify we're in the repo root
-if [[ ! -d "$SKILL_DIR" ]]; then
-    bad "Cannot find $SKILL_DIR — run this script from the TinkerPop repository root."
+if [[ ! -d ".skills/tinker-dev" ]]; then
+    bad "Cannot find .skills/tinker-dev — run this script from the TinkerPop repository root."
     exit 1
 fi
 
@@ -77,9 +79,11 @@ fi
 setup_symlink() {
     local tool_name="$1"
     local target_dir="$2"
+    local skill_name="$3"
+    local skill_dir=".skills/$skill_name"
 
     mkdir -p "$target_dir"
-    local link_path="$target_dir/$SKILL_NAME"
+    local link_path="$target_dir/$skill_name"
 
     if [[ -L "$link_path" ]]; then
         skip "$tool_name: symlink already exists at $link_path"
@@ -91,12 +95,11 @@ setup_symlink() {
         return 1
     fi
 
-    # Compute relative path from target_dir to SKILL_DIR
+    # Compute relative path from target_dir to skill_dir
     local rel_path
-    rel_path=$(python3 -c "import os.path; print(os.path.relpath('$SKILL_DIR', '$target_dir'))" 2>/dev/null)
+    rel_path=$(python3 -c "import os.path; print(os.path.relpath('$skill_dir', '$target_dir'))" 2>/dev/null)
     if [[ -z "$rel_path" ]]; then
-        # Fallback if python3 not available
-        rel_path=$(perl -e 'use File::Spec; print File::Spec->abs2rel("'"$SKILL_DIR"'", "'"$target_dir"'")' 2>/dev/null)
+        rel_path=$(perl -e 'use File::Spec; print File::Spec->abs2rel("'"$skill_dir"'", "'"$target_dir"'")' 2>/dev/null)
     fi
     if [[ -z "$rel_path" ]]; then
         bad "$tool_name: could not compute relative path (need python3 or perl)"
@@ -110,39 +113,48 @@ setup_symlink() {
 # Kiro doesn't follow symlinks in .kiro/skills/, so we copy the skill directory
 # instead. See: https://github.com/kirodotdev/Kiro/issues (symlink support).
 setup_kiro() {
-    local target_dir=".kiro/skills/$SKILL_NAME"
-
-    if [[ -d "$target_dir" ]]; then
-        rm -rf "$target_dir"
-        skip "kiro: removed existing copy at $target_dir"
-    fi
-
     mkdir -p ".kiro/skills"
-    cp -r "$SKILL_DIR" "$target_dir"
-    ok "kiro: copied skill to $target_dir"
+    for skill_name in "${SKILLS[@]}"; do
+        local target_dir=".kiro/skills/$skill_name"
+        if [[ -d "$target_dir" ]]; then
+            rm -rf "$target_dir"
+        fi
+        cp -r ".skills/$skill_name" "$target_dir"
+        ok "kiro: copied $skill_name to $target_dir"
+    done
     echo ""
-    echo -e "  ${YELLOW}NOTE:${NC} Kiro uses a copy, not a symlink. If you update the skill in"
-    echo -e "        $SKILL_DIR, re-run this script to sync the changes."
+    echo -e "  ${YELLOW}NOTE:${NC} Kiro uses copies, not symlinks. If you update skills in"
+    echo -e "        .skills/, re-run this script to sync the changes."
 }
 
 setup_agent() {
     local agent="$1"
     case "$agent" in
         claude)
-            setup_symlink "claude" ".claude/skills"
+            for skill in "${SKILLS[@]}"; do
+                setup_symlink "claude" ".claude/skills" "$skill"
+            done
             ;;
         copilot)
-            setup_symlink "copilot (.github)" ".github/skills"
-            setup_symlink "copilot (.agents)" ".agents/skills"
+            for skill in "${SKILLS[@]}"; do
+                setup_symlink "copilot (.github)" ".github/skills" "$skill"
+                setup_symlink "copilot (.agents)" ".agents/skills" "$skill"
+            done
             ;;
         cursor)
-            setup_symlink "cursor" ".cursor/skills"
+            for skill in "${SKILLS[@]}"; do
+                setup_symlink "cursor" ".cursor/skills" "$skill"
+            done
             ;;
         codex)
-            setup_symlink "codex" ".codex/skills"
+            for skill in "${SKILLS[@]}"; do
+                setup_symlink "codex" ".codex/skills" "$skill"
+            done
             ;;
         junie)
-            setup_symlink "junie" ".junie/skills"
+            for skill in "${SKILLS[@]}"; do
+                setup_symlink "junie" ".junie/skills" "$skill"
+            done
             ;;
         kiro)
             setup_kiro
@@ -159,13 +171,15 @@ setup_agent() {
 list_agents() {
     echo "Supported agents and their skill discovery paths:"
     echo ""
-    echo "  claude    .claude/skills/$SKILL_NAME/     -> symlink to $SKILL_DIR"
-    echo "  copilot   .github/skills/$SKILL_NAME/     -> symlink to $SKILL_DIR"
-    echo "            .agents/skills/$SKILL_NAME/     -> symlink to $SKILL_DIR"
-    echo "  cursor    .cursor/skills/$SKILL_NAME/     -> symlink to $SKILL_DIR"
-    echo "  codex     .codex/skills/$SKILL_NAME/      -> symlink to $SKILL_DIR"
-    echo "  junie     .junie/skills/$SKILL_NAME/      -> symlink to $SKILL_DIR"
-    echo "  kiro      .kiro/skills/$SKILL_NAME/       -> copy of $SKILL_DIR (re-run to sync)"
+    echo "  Skills: ${SKILLS[*]}"
+    echo ""
+    echo "  claude    .claude/skills/<skill>/     -> symlink to .skills/<skill>"
+    echo "  copilot   .github/skills/<skill>/     -> symlink to .skills/<skill>"
+    echo "            .agents/skills/<skill>/     -> symlink to .skills/<skill>"
+    echo "  cursor    .cursor/skills/<skill>/     -> symlink to .skills/<skill>"
+    echo "  codex     .codex/skills/<skill>/      -> symlink to .skills/<skill>"
+    echo "  junie     .junie/skills/<skill>/      -> symlink to .skills/<skill>"
+    echo "  kiro      .kiro/skills/<skill>/       -> copy of .skills/<skill> (re-run to sync)"
 }
 
 # --- Main ---

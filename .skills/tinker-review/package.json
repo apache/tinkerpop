@@ -1,0 +1,19 @@
+{
+  "name": "@tinkerpop/graph-review",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Graph-based PR review skill for Apache TinkerPop",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "test": "node --test test/",
+    "review": "node review.js"
+  },
+  "dependencies": {
+    "gremlin": "^3.8.1",
+    "web-tree-sitter": "^0.24.7",
+    "tree-sitter-wasms": "^0.1.13"
+  }
+}

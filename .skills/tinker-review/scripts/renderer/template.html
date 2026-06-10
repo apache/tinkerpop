@@ -1,0 +1,73 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Graph Review</title>
+<style>
+:root { --bg: #ffffff; --bg-alt: #f8f9fa; --bg-card: #ffffff; --border: #dee2e6; --text: #212529; --text-muted: #6c757d; --primary: #0d6efd; --success: #198754; --warning: #ffc107; --danger: #dc3545; --radius: 6px; --shadow: 0 1px 3px rgba(0,0,0,0.08); }
+@media (prefers-color-scheme: dark) { :root { --bg: #1a1a2e; --bg-alt: #16213e; --bg-card: #0f3460; --border: #2a4a7f; --text: #e4e4e4; --text-muted: #a0a0a0; --primary: #4dabf7; --success: #51cf66; --warning: #fcc419; --danger: #ff6b6b; } }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto; }
+a { color: var(--primary); text-decoration: none; } a:hover { text-decoration: underline; }
+header { border-bottom: 2px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.25rem; }
+header .meta { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.875rem; color: var(--text-muted); }
+.badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 3px; font-weight: 500; font-size: 0.75rem; text-transform: uppercase; }
+.badge-domain { background: var(--primary); color: #fff; } .badge-attention { background: var(--danger); color: #fff; }
+.badge-safe { background: var(--success); color: #fff; } .badge-context { background: #6f42c1; color: #fff; }
+.badge-test { background: #20c997; color: #fff; } .badge-modified { background: var(--warning); color: #000; }
+nav { background: var(--bg-alt); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; margin-bottom: 2rem; }
+nav h2 { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem; }
+nav ul { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; } nav ul li a { font-size: 0.875rem; }
+section { margin-bottom: 2.5rem; }
+section h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+section h3 { font-size: 1.05rem; font-weight: 600; margin: 1.25rem 0 0.5rem; }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
+.card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; margin-top: 0; } .card p { margin-bottom: 0.5rem; }
+.card-attention { border-left: 4px solid var(--danger); } .card-safe { border-left: 4px solid var(--success); }
+.card-info { border-left: 4px solid var(--primary); } .card-context { border-left: 4px solid #6f42c1; }
+.card-test { border-left: 4px solid #20c997; }
+code { background: var(--bg-alt); padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.85rem; font-family: "SF Mono", Consolas, monospace; }
+pre { background: var(--bg-alt); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; overflow-x: auto; font-size: 0.8rem; line-height: 1.5; margin: 0.75rem 0; }
+pre code { background: none; padding: 0; }
+.walk-number { display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; background: var(--primary); color: #fff; font-size: 0.8rem; font-weight: 700; margin-right: 0.5rem; }
+.finding { border-left: 3px solid var(--warning); } .finding-title { font-weight: 600; margin-bottom: 0.25rem; }
+.test-pass { color: var(--success); font-weight: 600; } .test-fail { color: var(--danger); font-weight: 600; }
+.test-grid { display: grid; grid-template-columns: auto 1fr auto; gap: 0.25rem 0.75rem; font-size: 0.875rem; align-items: baseline; }
+.section-intro { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.5; }
+.cluster-svg { width: 100%; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-alt); margin: 1rem 0; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.75rem; }
+.stat-box { background: var(--bg-alt); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; text-align: center; }
+.stat-box .value { font-size: 1.25rem; font-weight: 700; color: var(--primary); } .stat-box .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+.gap-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.gap-table th { text-align: left; padding: 0.4rem 0.6rem; background: var(--bg-alt); border-bottom: 2px solid var(--border); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); }
+.gap-table td { padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border); } .gap-table .fn-name { font-family: monospace; font-weight: 500; } .gap-table .num { text-align: right; font-family: monospace; }
+.discovery-meta { font-size: 0.8rem; color: var(--text-muted); font-style: italic; margin-top: 0.5rem; }
+footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-muted); text-align: center; }
+</style>
+</head>
+<body>
+
+{{content}}
+
+</body>
+</html>
