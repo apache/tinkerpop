@@ -1267,6 +1267,17 @@ IMPORTANT: It is important to think of `choose()` as a branching step and not a 
 intuitively lead to thinking the latter, where no match would mean to remove the traverser from the stream. As shown in
 the examples, this is not what happens.
 
+NOTE: The `choose(P)` form does not support traversal-bearing predicates directly. To use a dynamic comparison as the
+branch condition, wrap it in an `is()` step: `choose(__.is(P.op(traversal)), trueChoice, falseChoice)`.
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').choose(__.is(P.gt(__.V(1).values('age'))), __.constant('older'), __.constant('not older')) <1>
+----
+
+<1> For each age value, compare dynamically against marko's age using a traversal inside the predicate. If greater,
+return "older"; otherwise return "not older".
+
 The `choose()`-step can be used within a `map()` step to apply the branching logic to each element in a collection.
 
 [gremlin-groovy,modern]
@@ -2088,6 +2099,10 @@ It is possible to filter vertices, edges, and vertex properties based on their p
   * `has(key,value)`: Remove the traverser if its element does not have the provided key/value property.
   * `has(label, key, value)`: Remove the traverser if its element does not have the specified label and provided key/value property.
   * `has(key,predicate)`: Remove the traverser if its element does not have a key value that satisfies the bi-predicate. For more information on predicates, please read <<a-note-on-predicates,A Note on Predicates>>.
+  * `has(key, traversal)`: Remove the traverser if its element's key value does not equal the first result of the provided traversal.
+  * `has(T, traversal)`: Remove the traverser if its element's `T`-based value (e.g. `T.id`, `T.label`) does not equal the first result of the provided traversal.
+  * `has(label, key, traversal)`: Remove the traverser if its element does not have the specified label and its key value does not equal the first result of the provided traversal.
+  * `hasLabel(traversal)`: Remove the traverser if its element's label does not equal the first result of the provided traversal.
   * `hasLabel(labels...)`: Remove the traverser if its element does not have any of the labels.
   * `hasId(ids...)`: Remove the traverser if its element does not have any of the ids.
   * `hasKey(keys...)`: Remove the `Property` traverser if it does not match one of the provided keys.
@@ -2125,6 +2140,24 @@ the key,value pairs for those vertices.
 <8> Find all "person" vertices that have a name property that starts with the letter "m".
 <9> Property key is always stored as `String` and therefore an equality check with `null` will produce no result.
 <10> An example of using `has()` with regular expression predicate.
+
+The traversal-accepting forms of `has()` allow for dynamic property comparisons. Rather than providing a literal value,
+a child traversal is supplied and its first result is used as the comparison value. This follows the same first-result
+semantics as `by(traversal)`. The child traversal must be read-only — mutating steps are rejected.
+
+[gremlin-groovy,modern]
+----
+g.V().has('age', P.gt(__.V(1).values('age'))) <1>
+g.V().has('name', __.V(1).values('name')) <2>
+g.V().hasLabel(__.V(1).label()) <3>
+----
+
+<1> Find all vertices whose age is greater than marko's age using a traversal inside a predicate.
+<2> Find all vertices whose name equals marko's name using a traversal as the value argument.
+<3> Find all vertices whose label equals the label of vertex 1.
+
+NOTE: When a `Traversal` is provided directly as the value argument (not inside a `P`), it is internally wrapped in
+`P.eq(traversal)`. See <<a-note-on-predicates,A Note on Predicates>> for more details on traversal-bearing predicates.
 
 *Additional References*
 
@@ -2480,6 +2513,18 @@ g.V().where(__.in('created').values('age').
 <1> Find projects having exactly one contributor.
 <2> Find projects having two or more contributors.
 <3> Find projects whose contributors average age is between 30 and 35.
+
+The `is()` step also supports predicates that contain traversal arguments for dynamic threshold comparison.
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').is(P.gt(__.V(1).values('age'))) <1>
+----
+
+<1> Find all age values that are greater than marko's age using a traversal inside the predicate.
+
+NOTE: When `is(traversal)` is used directly (without an explicit predicate), it is internally wrapped in
+`P.eq(traversal)`.
 
 *Additional References*
 
@@ -4003,6 +4048,19 @@ g.addV().property(set, null)
 <7> The label value can be specified as a property only at the time a vertex is added and if one is not specified in the addV()
 <8> If you pass a `null` value for the Map this will be treated as a no-op and the input will be returned
 
+The `property()` step also accepts a traversal that produces a `Map` of key-value pairs to set as properties. The
+child traversal must be read-only — mutating steps are rejected. If the traversal does not produce a `Map`, the result
+is rejected.
+
+[gremlin-groovy,modern]
+----
+g.V(2).property(__.V(2).project('friendCount').by(__.both('knows').count())) <1>
+g.V(2).valueMap()
+----
+
+<1> Set properties on vertex 2 from a Map produced by a child traversal. Here the `project()` step creates a Map with
+key "friendCount" and a value computed from the graph.
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#property(java.lang.Object,java.lang.Object,java.lang.Object...)++[`property(Object, Object, Object...)`],
@@ -5201,6 +5259,19 @@ g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
 <1> Normally the `V()`-step will iterate over all vertices. However, graph strategies can fold ``HasContainer``'s into a `GraphStep` to allow index lookups.
 <2> Whether the graph system provider supports mid-traversal `V()` index lookups or not can easily be determined by inspecting the `toString()` output of the iterated traversal. If `has` conditions were folded into the `V()`-step, an index - if one exists - will be used.
 
+The `V()` step also accepts a traversal argument. The child traversal is evaluated and its results are used as the
+vertex identifiers. This works both as a start step and mid-traversal. When used as a start step, a synthetic traverser
+is provided to the child traversal.
+
+[gremlin-groovy,modern]
+----
+g.V(__.V(1).id()).values('name') <1>
+g.inject(1).V(__.identity()).values('name') <2>
+----
+
+<1> Use a child traversal to dynamically determine the vertex ID. Here the traversal resolves vertex 1's ID.
+<2> Mid-traversal usage where the injected value is used via `identity()` as the ID argument to `V()`.
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#V(java.lang.Object...)++[`V(Object...)`]
@@ -5413,6 +5484,18 @@ g.V().as('a').both().both().as('b').
 <8> Marko is younger than josh, but josh knows someone equal in age to marko (which is marko).
 <9> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered.
 
+The `where()` step also supports predicates that contain traversal arguments. When a predicate contains a child
+traversal, the traversal is resolved per-traverser and the result is tested directly against the current value —
+bypassing scope-label resolution.
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').where(P.gt(__.V(1).values('age'))) <1>
+----
+
+<1> Find all age values that are greater than marko's age. The child traversal inside `P.gt()` is resolved and the
+current traverser's value is compared against the result.
+
 WARNING: The anonymous traversal of `where()` processes the current object "locally". In OLAP, where the atomic unit
 of computing is the vertex and its local "star graph," it is important that the anonymous traversal does not leave
 the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or
@@ -5537,6 +5620,24 @@ supports text predicates (`TextP`), which are specialized predicates that only w
 NOTE: The TinkerPop reference implementation uses the Java `Pattern` and `Matcher` classes for it regular expression
 engine. Other implementations may decide to use a different regular expression engine. It's a good idea to check
 the documentation for the implementation you are using to verify the allowed regular expression syntax.
+
+In addition to literal values, most predicates also accept a `Traversal` argument. When a traversal is provided, it is
+evaluated and only its first result is used for comparison — consistent with `by(traversal)` first-result semantics.
+The child traversal must be read-only; mutating steps are rejected.
+
+* For `within()` and `without()`, the first result should be a `Collection`. Use `fold()` in the child traversal to
+  produce one.
+* The multi-traversal form `within(trav1, trav2, ...)` takes the first result from each traversal and combines them
+  into a collection for membership testing.
+
+[gremlin-groovy,modern]
+----
+g.V().has('age', P.gt(__.V(1).values('age'))) <1>
+g.V().has('age', P.within(__.V(1).out('knows').values('age').fold())) <2>
+----
+
+<1> Find vertices whose age is greater than marko's age using a traversal inside the predicate.
+<2> Find vertices whose age is in the set of ages of marko's friends, using `fold()` to produce a collection.
 
 [gremlin-groovy]
 ----

@@ -28,6 +28,15 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added typed numeric wrappers and `preciseNumbers` connection option to `gremlin-javascript` for explicit control over numeric type serialization and deserialization.
 * Added `NextN(n)` to `Traversal` in `gremlin-go` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs, and updated the Go translators in `gremlin-core` and `gremlin-javascript` to emit `NextN(n)` for the batched form.
 * Added Gremlator, a single page web application, that translates Gremlin into various programming languages like Javascript and Python.
+* Added child traversal support to `has()`, `hasLabel()`, `V()`, `E()`, `property()`, `is()`, `where(P)`, `P.eq/neq/gt/lt/gte/lte/within/without()`, and `TextP` predicates. Child traversals are resolved per-traverser at runtime, enabling dynamic filtering and lookup patterns.
+* Added multi-traversal `P.within(trav1, trav2, ...)` and `P.without(trav1, trav2, ...)` which combine results from multiple child traversals for collection membership testing.
+* Added `V(traversal)` and `E(traversal)` as start steps with synthetic traverser seeding, consistent with `mergeV(traversal)` behavior.
+* Added `ChildTraversalVerificationStrategy` that blocks mutating steps (`addV`, `addE`, `drop`, etc.) inside child traversals. All child traversals must be read-only.
+* Added `hasLabel(Traversal)` overload with grammar support for dynamic label filtering.
+* Added traversal-bearing predicate support to `where(P)` — resolves child traversal and tests against current value when `P.hasTraversal()` is true.
+* Added rejection of traversal-bearing predicates in `choose(P)` — use `choose(__.is(P.op(traversal)), ...)` form instead.
+* Added runtime Map validation for `property(traversal)` — rejects non-Map results to prevent sentinel key leakage.
+* Added mixed traversal/literal detection in `P.within()` and `P.without()` — throws `IllegalArgumentException` with guidance to wrap literals in `__.constant()`.
 * Removed `uuid` dependency from `gremlin-javascript` in favor of the built-in `globalThis.crypto.randomUUID()`.
 * Added streaming HTTP response support to `gremlin-driver` for incremental result deserialization over GraphBinary.
 * Connected HTTP streaming response deserialization to the traversal API in `gremlin-javascript`, enabling `next()` to return the first result without waiting for the full response.

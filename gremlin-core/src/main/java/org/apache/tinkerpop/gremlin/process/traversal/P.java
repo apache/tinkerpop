@@ -340,14 +340,9 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         if (this.traversalValue == null) return;
 
         final Traversal.Admin<Object, Object> trav = (Traversal.Admin<Object, Object>) (Traversal.Admin) this.traversalValue;
-        final Traverser.Admin<Object> split = (Traverser.Admin<Object>) traverser.split();
-        split.setSideEffects(trav.getSideEffects());
-        split.setBulk(1L);
-        trav.reset();
-        trav.addStart(split);
+        prepareChildTraversal(traverser, trav);
 
         try {
-            // Take first result only — consistent with by(traversal) semantics.
             if (!trav.hasNext()) {
                 this.resolvedEmpty = true;
                 this.literals = Collections.emptyList();
@@ -356,8 +351,6 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
                 this.resolvedEmpty = false;
                 final Object firstResult = trav.next();
                 if (this.biPredicate instanceof Contains) {
-                    // Contains predicates need a Collection value. If first result is already
-                    // a Collection (e.g., from fold()), use it directly. Otherwise wrap in singleton.
                     if (firstResult instanceof Collection) {
                         this.literals = (Collection<V>) firstResult;
                     } else {
@@ -383,15 +376,9 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
         for (final Traversal.Admin<?, ?> tv : this.traversalValues) {
             final Traversal.Admin<Object, Object> trav = (Traversal.Admin<Object, Object>) (Traversal.Admin) tv;
-            final Traverser.Admin<Object> split = (Traverser.Admin<Object>) traverser.split();
-            split.setSideEffects(trav.getSideEffects());
-            split.setBulk(1L);
-            trav.reset();
-            trav.addStart(split);
+            prepareChildTraversal(traverser, trav);
 
             try {
-                // Take first result only from each traversal.
-                // If the result is a Collection (from fold()), unpack it.
                 if (trav.hasNext()) {
                     final Object firstResult = trav.next();
                     if (firstResult instanceof Collection) {
@@ -413,6 +400,18 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             this.literals = (Collection<V>) (Collection<?>) allResults;
             this.isCollection = true;
         }
+    }
+
+    /**
+     * Prepares a child traversal for evaluation by splitting the current traverser and seeding it.
+     */
+    @SuppressWarnings("unchecked")
+    private static void prepareChildTraversal(final Traverser.Admin<?> traverser, final Traversal.Admin<Object, Object> trav) {
+        final Traverser.Admin<Object> split = (Traverser.Admin<Object>) traverser.split();
+        split.setSideEffects(trav.getSideEffects());
+        split.setBulk(1L);
+        trav.reset();
+        trav.addStart(split);
     }
 
     //////////////// predicate traversal utilities
@@ -625,26 +624,8 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 3.0.0-incubating
      */
     public static <V> P<V> within(final V... values) {
-        // If a single Traversal is passed, redirect to the Traversal-accepting overload.
-        // This handles cases where Java's overload resolution picks the varargs method
-        // instead of the Traversal-specific method.
-        if (values != null && values.length == 1 && values[0] instanceof Traversal) {
-            return P.within((Traversal<?, ?>) values[0]);
-        }
-        // If multiple Traversals are passed, redirect to the multi-traversal overload.
-        if (values != null && values.length > 1 && allTraversals(values)) {
-            final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>(values.length);
-            for (final V v : values) {
-                traversals.add(((Traversal<?, ?>) v).asAdmin());
-            }
-            return new P(Contains.within, traversals);
-        }
-        // Reject mixed traversals and literals — would silently produce wrong results.
-        if (values != null && values.length > 1 && anyTraversals(values)) {
-            throw new IllegalArgumentException(
-                    "Cannot mix traversals and literal values in within(). " +
-                    "Use within(__.constant(val1), __.constant(val2)) to wrap all values as traversals.");
-        }
+        final P<V> traversalP = handleContainsVarargs(values, Contains.within, "within");
+        if (traversalP != null) return traversalP;
         final V[] v = null == values ? (V[]) new Object[] { null } : (V[]) values;
         return P.within(Arrays.asList(v));
     }
@@ -678,24 +659,8 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 3.0.0-incubating
      */
     public static <V> P<V> without(final V... values) {
-        // If a single Traversal is passed, redirect to the Traversal-accepting overload.
-        if (values != null && values.length == 1 && values[0] instanceof Traversal) {
-            return P.without((Traversal<?, ?>) values[0]);
-        }
-        // If multiple Traversals are passed, redirect to the multi-traversal overload.
-        if (values != null && values.length > 1 && allTraversals(values)) {
-            final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>(values.length);
-            for (final V v : values) {
-                traversals.add(((Traversal<?, ?>) v).asAdmin());
-            }
-            return new P(Contains.without, traversals);
-        }
-        // Reject mixed traversals and literals
-        if (values != null && values.length > 1 && anyTraversals(values)) {
-            throw new IllegalArgumentException(
-                    "Cannot mix traversals and literal values in without(). " +
-                    "Use without(__.constant(val1), __.constant(val2)) to wrap all values as traversals.");
-        }
+        final P<V> traversalP = handleContainsVarargs(values, Contains.without, "without");
+        if (traversalP != null) return traversalP;
         final V[] v = null == values ? (V[]) new Object[] { null } : values;
         return P.without(Arrays.asList(v));
     }
@@ -799,18 +764,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> within(final Traversal<?, ?> first, final Traversal<?, ?> second, final Traversal<?, ?>... more) {
-        final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>(2 + (more != null ? more.length : 0));
-        traversals.add(first.asAdmin());
-        traversals.add(second.asAdmin());
-        if (more != null) {
-            for (final Traversal<?, ?> tv : more) {
-                traversals.add(tv.asAdmin());
-            }
-        }
-        for (final Traversal.Admin<?, ?> tv : traversals) {
-            ChildTraversalValidator.validate(tv);
-        }
-        return new P(Contains.within, traversals);
+        return containsTraversals(Contains.within, first, second, more);
     }
 
     /**
@@ -830,18 +784,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> without(final Traversal<?, ?> first, final Traversal<?, ?> second, final Traversal<?, ?>... more) {
-        final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>(2 + (more != null ? more.length : 0));
-        traversals.add(first.asAdmin());
-        traversals.add(second.asAdmin());
-        if (more != null) {
-            for (final Traversal<?, ?> tv : more) {
-                traversals.add(tv.asAdmin());
-            }
-        }
-        for (final Traversal.Admin<?, ?> tv : traversals) {
-            ChildTraversalValidator.validate(tv);
-        }
-        return new P(Contains.without, traversals);
+        return containsTraversals(Contains.without, first, second, more);
     }
 
     /**
@@ -887,6 +830,55 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      */
     public static <V> P<V> not(final P<V> predicate) {
         return predicate.negate();
+    }
+
+    /**
+     * Handles varargs traversal detection for within/without. Returns a P if traversals were found,
+     * or null if the values are plain literals.
+     */
+    @SuppressWarnings("unchecked")
+    private static <V> P<V> handleContainsVarargs(final V[] values, final PBiPredicate predicate, final String stepName) {
+        if (values != null && values.length == 1 && values[0] instanceof Traversal) {
+            final Traversal<?, ?> trav = (Traversal<?, ?>) values[0];
+            ChildTraversalValidator.validate(trav.asAdmin());
+            return new P(predicate, trav.asAdmin());
+        }
+        if (values != null && values.length > 1 && allTraversals(values)) {
+            final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>(values.length);
+            for (final V v : values) {
+                traversals.add(((Traversal<?, ?>) v).asAdmin());
+            }
+            for (final Traversal.Admin<?, ?> tv : traversals) {
+                ChildTraversalValidator.validate(tv);
+            }
+            return new P(predicate, traversals);
+        }
+        if (values != null && values.length > 1 && anyTraversals(values)) {
+            throw new IllegalArgumentException(
+                    "Cannot mix traversals and literal values in " + stepName + "(). " +
+                    "Use " + stepName + "(__.constant(val1), __.constant(val2)) to wrap all values as traversals.");
+        }
+        return null;
+    }
+
+    /**
+     * Creates a Contains predicate from multiple validated child traversals.
+     */
+    @SuppressWarnings("unchecked")
+    private static <V> P<V> containsTraversals(final PBiPredicate predicate, final Traversal<?, ?> first,
+                                               final Traversal<?, ?> second, final Traversal<?, ?>... more) {
+        final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>(2 + (more != null ? more.length : 0));
+        traversals.add(first.asAdmin());
+        traversals.add(second.asAdmin());
+        if (more != null) {
+            for (final Traversal<?, ?> tv : more) {
+                traversals.add(tv.asAdmin());
+            }
+        }
+        for (final Traversal.Admin<?, ?> tv : traversals) {
+            ChildTraversalValidator.validate(tv);
+        }
+        return new P(predicate, traversals);
     }
 
     /**
