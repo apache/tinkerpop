@@ -489,9 +489,6 @@ class TestGremlinLang(object):
         except Exception as ex:
             assert str(ex) == 'GValue name cannot be null.'
 
-    def test_gvalue_name_empty_string_accepted(self):
-        assert GValue('', [1, 2, 3]).get_name() == ''
-
     def test_gvalue_name_mid_string_dollar_accepted(self):
         assert GValue('a$b', [1, 2, 3]).get_name() == 'a$b'
 
@@ -501,9 +498,6 @@ class TestGremlinLang(object):
         gremlin = g.V(p).gremlin_lang
         assert 'g.V(café)' == gremlin.get_gremlin()
         assert 42 == gremlin.get_parameters().get('café')
-
-    def test_gvalue_name_numeric_start_accepted(self):
-        assert GValue('1a', 42).get_name() == '1a'
 
     def test_gvalue_underscore_name_accepted(self):
         assert GValue('_1', [1, 2, 3]).get_name() == '_1'
@@ -542,6 +536,24 @@ class TestGremlinLang(object):
         gremlin = g.V(p).gremlin_lang
         assert 'g.V(a_b)' == gremlin.get_gremlin()
         assert 42 == gremlin.get_parameters().get('a_b')
+
+    def test_gvalue_underscore_start_name_in_traversal(self):
+        g = traversal().with_(None)
+        gremlin = g.V(GValue('_1', [1, 2, 3])).gremlin_lang
+        assert 'g.V(_1)' == gremlin.get_gremlin()
+        assert [1, 2, 3] == gremlin.get_parameters().get('_1')
+
+    def test_gvalue_dollar_name_in_traversal(self):
+        g = traversal().with_(None)
+        gremlin = g.V(GValue('a$b', 1)).gremlin_lang
+        assert 'g.V(a$b)' == gremlin.get_gremlin()
+        assert 1 == gremlin.get_parameters().get('a$b')
+
+    def test_gvalue_invalid_name_raises_in_traversal(self):
+        import pytest
+        g = traversal().with_(None)
+        with pytest.raises(Exception, match='Invalid parameter name'):
+            g.V(GValue('1a', 1)).gremlin_lang.get_gremlin()
 
     def test_gvalue_construction_and_accessors(self):
         p = GValue('x', 1)

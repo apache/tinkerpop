@@ -779,11 +779,11 @@ namespace Gremlin.Net.Process.Traversal
         {
             if (string.IsNullOrEmpty(name))
                 return false;
-            if (!char.IsLetter(name[0]))
+            if (!char.IsLetter(name[0]) && name[0] != '_' && name[0] != '$')
                 return false;
             for (int i = 1; i < name.Length; i++)
             {
-                if (!char.IsLetterOrDigit(name[i]) && name[i] != '_')
+                if (!char.IsLetterOrDigit(name[i]) && name[i] != '_' && name[i] != '$')
                     return false;
             }
             return true;

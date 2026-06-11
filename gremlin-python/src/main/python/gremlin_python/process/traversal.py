@@ -19,6 +19,7 @@
 
 import copy
 import math
+import re
 import threading
 import uuid
 import warnings
@@ -926,6 +927,8 @@ class GremlinLang(object):
 
         if isinstance(arg, GValue):
             key = arg.get_name()
+            if not re.fullmatch(r'(?:[^\W\d]|\$)(?:\w|\$)*', key):
+                raise Exception(f'Invalid parameter name [{key}].')
 
             if key in self.parameters:
                 if self.parameters[key] != arg.value:

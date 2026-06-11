@@ -98,4 +98,21 @@ func TestGValue(t *testing.T) {
 		assert.Equal(t, 1, gl.parameters["vid1"])
 		assert.Equal(t, 4, gl.parameters["vid4"])
 	})
+
+	t.Run("test gValue underscore name works", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		gl := g.V(GValue{Name: "_1", Value: []int{1, 2, 3}}).GremlinLang
+		assert.Equal(t, "g.V(_1)", gl.GetGremlin())
+	})
+
+	t.Run("test gValue dollar sign name works", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		gl := g.V(GValue{Name: "a$b", Value: 1}).GremlinLang
+		assert.Equal(t, "g.V(a$b)", gl.GetGremlin())
+	})
+
+	t.Run("test gValue invalid identifier panics", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		assert.Panics(t, func() { g.V(GValue{Name: "1a", Value: 1}) })
+	})
 }

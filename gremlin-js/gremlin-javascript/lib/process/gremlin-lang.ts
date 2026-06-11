@@ -26,6 +26,8 @@ import { GValue } from './gvalue.js';
 import { isDeepStrictEqual } from 'node:util';
 import { Buffer } from 'buffer';
 
+const PARAM_NAME_PATTERN = /^[\p{L}_$][\p{L}\p{Nd}_$]*$/u;
+
 export default class GremlinLang {
   private gremlin: string = '';
   private optionsStrategies: OptionsStrategy[] = [];
@@ -124,6 +126,9 @@ export default class GremlinLang {
     }
     if (arg instanceof GValue) {
       const key = arg.name;
+      if (!PARAM_NAME_PATTERN.test(key)) {
+        throw new Error(`Invalid parameter name [${key}].`);
+      }
       if (this.parameters.has(key)) {
         if (!isDeepStrictEqual(this.parameters.get(key), arg.value)) {
           throw new Error(`Parameter with name ${key} already exists.`);
