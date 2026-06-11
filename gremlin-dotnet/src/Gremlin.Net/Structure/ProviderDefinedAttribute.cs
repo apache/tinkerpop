@@ -60,22 +60,32 @@ namespace Gremlin.Net.Structure
 
         /// <summary>
         /// Hydrates a <see cref="ProviderDefinedType"/> using a registered annotated type.
-        /// Returns the original PDT if no annotated type is registered for the name.
+        /// Returns the original PDT if no annotated type is registered for the name or if hydration fails.
         /// </summary>
         internal static object HydrateIfRegistered(ProviderDefinedType pdt)
         {
             if (!RegisteredTypes.TryGetValue(pdt.Name, out var type))
                 return pdt;
-            var obj = Activator.CreateInstance(type)!;
-            foreach (var (key, value) in pdt.Fields)
+            try
             {
-                var prop = type.GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
-                if (prop != null && prop.CanWrite && value != null)
+                var obj = Activator.CreateInstance(type)!;
+                foreach (var (key, value) in pdt.Fields)
                 {
-                    prop.SetValue(obj, Convert.ChangeType(value, prop.PropertyType));
+                    var prop = type.GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
+                    if (prop != null && prop.CanWrite && value != null)
+                    {
+                        var resolved = value is ProviderDefinedType nested
+                            ? HydrateIfRegistered(nested)
+                            : value;
+                        prop.SetValue(obj, Convert.ChangeType(resolved, prop.PropertyType));
+                    }
                 }
+                return obj;
             }
-            return obj;
+            catch
+            {
+                return pdt;
+            }
         }
     }
 }
