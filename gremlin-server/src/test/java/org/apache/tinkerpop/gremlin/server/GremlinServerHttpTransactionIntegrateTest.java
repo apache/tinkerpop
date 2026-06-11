@@ -467,11 +467,17 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
     public void shouldNotLeakDataWhenTraversalQueuedBehindCommit() throws Exception {
         final String txId = beginTx(client, GTX);
 
-        // add vertices and an edge in the transaction
+        // add two vertices and an edge between them in the transaction. the edge is required so that the
+        // "long traversal" below (repeat(both())) actually has something to traverse and keeps the single
+        // transaction executor occupied while the commit and short query queue behind it. without an edge,
+        // both() yields nothing and the traversal returns immediately, defeating the ordering this test relies on.
         try (final CloseableHttpResponse r = submitInTx(client, txId, "g.addV().property(T.id, 1)", GTX)) {
             assertEquals(200, r.getStatusLine().getStatusCode());
         }
         try (final CloseableHttpResponse r = submitInTx(client, txId, "g.addV().property(T.id, 2)", GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+        }
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.V(1).addE('self').to(__.V(2))", GTX)) {
             assertEquals(200, r.getStatusLine().getStatusCode());
         }
 
