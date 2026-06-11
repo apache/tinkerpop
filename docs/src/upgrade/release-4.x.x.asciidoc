@@ -733,6 +733,22 @@ beyond this limit will be rejected with an error.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3247[TINKERPOP-3247]
 
+==== GValue in the Language Variants
+
+`GValue`, the named query-parameter wrapper introduced for Java in 3.8.0, is now available as a client-side API in all
+of the Gremlin Language Variants. Users of the Python, JavaScript, .NET, and Go drivers can construct a `GValue` and
+pass it to a parameterizable step; the driver sends the value to the server as a named parameter rather than inlining
+it as a literal. See the "GValue Parameterization" reference documentation for
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-java-gvalue[Java],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-python-gvalue[Python],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-javascript-gvalue[JavaScript],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-dotnet-gvalue[.NET], and
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-go-gvalue[Go] for construction syntax and examples.
+
+The leading-underscore restriction on `GValue` names that was present in 3.8.0 has been removed. Parameter names
+beginning with `_` are now accepted in Java and across all language variants. The only remaining constraints are that
+a `GValue` may not wrap another `GValue`, and (in the non-Java drivers) its name may not be null.
+
 ==== JavaScript Typed Numeric Wrappers
 
 JavaScript has a single `Number` type (IEEE 754 double) which loses the distinction between Gremlin numeric types like
