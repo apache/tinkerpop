@@ -1502,6 +1502,13 @@ with the fully qualified class name of each adapter:
 com.example.graph.ColorAdapter
 ----
 
+NOTE: Annotation-based hydration reflectively constructs and populates the annotated class
+(`Constructor.setAccessible(true)` and `Field.set()` in `AnnotatedTypeAdapter`). Under JPMS, the provider's module
+must therefore `opens` its PDT package to `org.apache.tinkerpop.gremlin.core` (e.g.
+`opens com.example.graph.types to org.apache.tinkerpop.gremlin.core;` in `module-info.java`, or the equivalent
+`--add-opens` JVM flag), otherwise the JVM throws `InaccessibleObjectException` at hydration time. Providers using a
+`ProviderDefinedTypeAdapter` with explicit `fromFields` logic do not rely on reflection and are unaffected.
+
 ===== Python
 
 Hydration is fully automatic for `@provider_defined`-decorated classes. The decorator registers the class at
@@ -1547,7 +1554,7 @@ the registry is populated:
 ----
 // In the provider's client library
 public class MyGraphTypeRegistry {
-    public static ProviderDefinedTypeRegistry build() {
+    public static ProviderDefinedTypeRegistry create() {
         ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.create(); // discovers ServiceLoader adapters
         registry.register(Point.class, Address.class, Person.class);               // registers annotated types
         return registry;
@@ -1560,7 +1567,7 @@ End users configure their connection in one line:
 [source,java]
 ----
 DriverRemoteConnection conn = DriverRemoteConnection.using(cluster);
-conn.setPdtRegistry(MyGraphTypeRegistry.build());
+conn.setPdtRegistry(MyGraphTypeRegistry.create());
 GraphTraversalSource g = traversal().with(conn);
 ----
 
@@ -1569,31 +1576,6 @@ serialization and the registry handles inbound reconstruction.
 
 For driver users consuming PDTs, see the <<gremlin-variants,Gremlin Variants>> reference documentation for
 each language driver.
-
-==== JPMS Considerations
-
-Annotation-based PDT hydration uses reflection internally — specifically `Constructor.setAccessible(true)` and
-`Field.set()` on the provider's annotated class (see `AnnotatedTypeAdapter.fromFields` in
-`ProviderDefinedTypeRegistry`). Under the Java Platform Module System (JPMS), this means the provider's module must
-`opens` its PDT package to `org.apache.tinkerpop.gremlin.core` (or to `ALL-UNNAMED` for classpath usage), otherwise
-the JVM will throw `InaccessibleObjectException` at hydration time.
-
-For example, in the provider's `module-info.java`:
-
-[source,java]
-----
-opens com.example.graph.types to org.apache.tinkerpop.gremlin.core;
-----
-
-Alternatively, providers that cannot modify their module descriptor can pass JVM flags:
-
-[source,text]
-----
---add-opens=com.example.graph/com.example.graph.types=ALL-UNNAMED
-----
-
-NOTE: This only applies to annotation-based hydration. Providers using `ProviderDefinedTypeAdapter` with explicit
-`fromFields` logic do not require reflective access and are unaffected by JPMS restrictions.
 
 [[gremlin-plugins]]
 == Gremlin Plugins
