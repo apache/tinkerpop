@@ -296,7 +296,7 @@ class TestDriverRemoteConnection(object):
         result = g.inject(pdt).next()
         assert isinstance(result, ProviderDefinedType)
         assert result.name == 'Point'
-        assert result.properties == {'x': 1, 'y': 2}
+        assert result.fields == {'x': 1, 'y': 2}
 
     def test_pdt_registry_round_trip_via_traversal(self, remote_connection_with_registry, registry_point_class):
         g = traversal().with_(remote_connection_with_registry)

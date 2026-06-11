@@ -566,8 +566,8 @@ def test_simple_pdt_round_trip(client):
     pdt = results[0]
     assert isinstance(pdt, ProviderDefinedType)
     assert pdt.name == 'Point'
-    assert pdt.properties['x'] == 1
-    assert pdt.properties['y'] == 2
+    assert pdt.fields['x'] == 1
+    assert pdt.fields['y'] == 2
 
 
 def test_nested_pdt(client):
@@ -581,15 +581,15 @@ def test_nested_pdt(client):
     pdt = results[0]
     assert isinstance(pdt, ProviderDefinedType)
     assert pdt.name == 'Person'
-    assert pdt.properties['name'] == 'Alice'
-    assert pdt.properties['age'] == 30
+    assert pdt.fields['name'] == 'Alice'
+    assert pdt.fields['age'] == 30
 
-    address = pdt.properties['address']
+    address = pdt.fields['address']
     assert isinstance(address, ProviderDefinedType)
     assert address.name == 'Address'
-    assert address.properties['street'] == '123 Main St'
-    assert address.properties['city'] == 'Springfield'
-    assert address.properties['zip'] == '12345'
+    assert address.fields['street'] == '123 Main St'
+    assert address.fields['city'] == 'Springfield'
+    assert address.fields['zip'] == '12345'
 
 
 def test_pdt_in_collection(client):
@@ -605,10 +605,10 @@ def test_pdt_in_collection(client):
 
     assert isinstance(pdt_list[0], ProviderDefinedType)
     assert pdt_list[0].name == 'Point'
-    assert pdt_list[0].properties['x'] == 1
-    assert pdt_list[0].properties['y'] == 2
+    assert pdt_list[0].fields['x'] == 1
+    assert pdt_list[0].fields['y'] == 2
 
     assert isinstance(pdt_list[1], ProviderDefinedType)
     assert pdt_list[1].name == 'Point'
-    assert pdt_list[1].properties['x'] == 3
-    assert pdt_list[1].properties['y'] == 4
+    assert pdt_list[1].fields['x'] == 3
+    assert pdt_list[1].fields['y'] == 4

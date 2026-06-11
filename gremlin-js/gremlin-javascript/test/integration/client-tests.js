@@ -227,8 +227,8 @@ describe('ProviderDefinedType - Client', function () {
         const pdt = result.first();
         assert.ok(pdt instanceof ProviderDefinedType);
         assert.strictEqual(pdt.name, 'Point');
-        assert.strictEqual(pdt.properties.x, 1);
-        assert.strictEqual(pdt.properties.y, 2);
+        assert.strictEqual(pdt.fields.x, 1);
+        assert.strictEqual(pdt.fields.y, 2);
       });
   });
 
@@ -241,15 +241,15 @@ describe('ProviderDefinedType - Client', function () {
         const pdt = result.first();
         assert.ok(pdt instanceof ProviderDefinedType);
         assert.strictEqual(pdt.name, 'Person');
-        assert.strictEqual(pdt.properties.name, 'Alice');
-        assert.strictEqual(pdt.properties.age, 30);
+        assert.strictEqual(pdt.fields.name, 'Alice');
+        assert.strictEqual(pdt.fields.age, 30);
 
-        const address = pdt.properties.address;
+        const address = pdt.fields.address;
         assert.ok(address instanceof ProviderDefinedType);
         assert.strictEqual(address.name, 'Address');
-        assert.strictEqual(address.properties.street, '123 Main St');
-        assert.strictEqual(address.properties.city, 'Springfield');
-        assert.strictEqual(address.properties.zip, '12345');
+        assert.strictEqual(address.fields.street, '123 Main St');
+        assert.strictEqual(address.fields.city, 'Springfield');
+        assert.strictEqual(address.fields.zip, '12345');
       });
   });
 
@@ -264,13 +264,13 @@ describe('ProviderDefinedType - Client', function () {
 
         assert.ok(list[0] instanceof ProviderDefinedType);
         assert.strictEqual(list[0].name, 'Point');
-        assert.strictEqual(list[0].properties.x, 1);
-        assert.strictEqual(list[0].properties.y, 2);
+        assert.strictEqual(list[0].fields.x, 1);
+        assert.strictEqual(list[0].fields.y, 2);
 
         assert.ok(list[1] instanceof ProviderDefinedType);
         assert.strictEqual(list[1].name, 'Point');
-        assert.strictEqual(list[1].properties.x, 3);
-        assert.strictEqual(list[1].properties.y, 4);
+        assert.strictEqual(list[1].fields.x, 3);
+        assert.strictEqual(list[1].fields.y, 4);
       });
   });
 });

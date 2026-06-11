@@ -359,8 +359,8 @@ describe('ProviderDefinedType - Traversal API', function () {
       const result = results[0];
       assert.ok(result instanceof ProviderDefinedType);
       assert.strictEqual(result.name, 'TestPoint');
-      assert.strictEqual(result.properties.x, 1);
-      assert.strictEqual(result.properties.y, 2);
+      assert.strictEqual(result.fields.x, 1);
+      assert.strictEqual(result.fields.y, 2);
     });
   });
 
