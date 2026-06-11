@@ -3161,6 +3161,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_V_hasLabelXpersonX_valuesXageX_asString", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().HasLabel("person").Values<object>("age").AsString()}}, 
                {"g_V_hasLabelXpersonX_valuesXageX_order_fold_asStringXlocalX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().HasLabel("person").Values<object>("age").Order().Fold().AsString<object>(Scope.Local)}}, 
                {"g_V_hasLabelXpersonX_valuesXageX_asString_concatX_years_oldX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().HasLabel("person").Values<object>("age").AsString().Concat(" years old")}}, 
+               {"g_V_outEXknowsX_subgraphXsgX_capXsgX_asString", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().OutE("knows").Subgraph("sg").Cap<object>("sg").AsString()}}, 
                {"g_call", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Call<object>()}}, 
                {"g_callXlistX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Call<object>((string) "--list")}}, 
                {"g_callXlistX_withXstring_stringX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Call<object>((string) "--list").With("service", "tinker.search")}}, 

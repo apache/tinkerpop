@@ -28,6 +28,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/google/uuid"
 )
@@ -130,6 +131,22 @@ func escapeString(s string) string {
 	return sb.String()
 }
 
+
+func isValidParameterName(name string) bool {
+	runes := []rune(name)
+	if len(runes) == 0 {
+		return false
+	}
+	if !unicode.IsLetter(runes[0]) && runes[0] != '_' && runes[0] != '$' {
+		return false
+	}
+	for _, r := range runes[1:] {
+		if !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '_' && r != '$' {
+			return false
+		}
+	}
+	return true
+}
 
 func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 	if arg == nil {
@@ -245,6 +262,9 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		return v.GetGremlin("__"), nil
 	case GValue:
 		key := v.Name
+		if !isValidParameterName(key) {
+			panic(fmt.Sprintf("invalid parameter name [%v]", key))
+		}
 		value := v.Value
 		if val, ok := gl.parameters[key]; ok {
 			if !reflect.DeepEqual(val, value) {

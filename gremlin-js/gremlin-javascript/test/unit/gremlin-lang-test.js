@@ -647,29 +647,14 @@ describe('GremlinLang', function () {
       assert.strictEqual(new GValue('x', 0).isNull(), false);
     });
 
-    it('should accept empty name', function () {
-      const gv = new GValue('', 1);
-      assert.strictEqual(gv.name, '');
-    });
-
-    it('should accept name with $ character', function () {
-      const gv = new GValue('a$b', 1);
-      assert.strictEqual(gv.name, 'a$b');
-    });
-
     it('should accept name starting with underscore', function () {
       const gv = new GValue('_x', 1);
       assert.strictEqual(gv.name, '_x');
     });
 
-    it('should accept numeric name', function () {
-      const gv = new GValue('1', 1);
-      assert.strictEqual(gv.name, '1');
-    });
-
-    it('should accept name starting with digit', function () {
-      const gv = new GValue('1a', 1);
-      assert.strictEqual(gv.name, '1a');
+    it('should accept name with $ character', function () {
+      const gv = new GValue('$x', 1);
+      assert.strictEqual(gv.name, '$x');
     });
 
     it('should accept name with mid-string underscore', function () {
@@ -733,6 +718,19 @@ describe('GremlinLang', function () {
 
     it('should reject null name', function () {
       assert.throws(() => new GValue(null, 'v'), /GValue name cannot be null/);
+    });
+
+    it('should validate name starting with underscore in traversal', function () {
+      const traversal = g.V(new GValue('_1', [1, 2, 3]));
+      const gl = traversal.getGremlinLang();
+      assert.strictEqual(gl.getGremlin(), 'g.V(_1)');
+      assert.deepStrictEqual(gl.getParameters().get('_1'), [1, 2, 3]);
+    });
+
+    it('should throw for invalid identifier name when used in traversal', function () {
+      assert.throws(() => {
+        g.V(new GValue('1a', 1));
+      }, /Invalid parameter name/);
     });
   });
 });

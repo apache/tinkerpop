@@ -1192,5 +1192,31 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             var result = _g.Inject((object)gval1).V(gval2).GremlinLang;
             Assert.Equal("g.inject(n).V(n)", result.GetGremlin());
         }
+
+        [Fact]
+        public void GValue_underscore_start_name_accepted_in_traversal()
+        {
+            var gval = new GValue<int[]>("_1", new[] { 1, 2, 3 });
+            var result = _g.V(gval).GremlinLang;
+            Assert.Equal("g.V(_1)", result.GetGremlin());
+            Assert.True(result.Parameters.ContainsKey("_1"));
+        }
+
+        [Fact]
+        public void GValue_dollar_sign_name_accepted_in_traversal()
+        {
+            var gval = new GValue<int>("a$b", 42);
+            var result = _g.Inject((object)gval).GremlinLang;
+            Assert.Equal("g.inject(a$b)", result.GetGremlin());
+            Assert.True(result.Parameters.ContainsKey("a$b"));
+        }
+
+        [Fact]
+        public void GValue_invalid_identifier_throws_in_traversal()
+        {
+            var gval = new GValue<int>("1a", 1);
+            var ex = Assert.Throws<ArgumentException>(() => _g.V(gval).GremlinLang.GetGremlin());
+            Assert.Contains("Invalid parameter name", ex.Message);
+        }
     }
 }
