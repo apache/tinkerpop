@@ -6,6 +6,9 @@ env:
   # modifications could break patterns of replacement they are searching for.
   EXCLUDE_MODULES: '-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-javascript,-:gremlint,-:gremlin-mcp,-:gremlin-python'
   EXCLUDE_FOR_GLV: '-:gremlin-archetype,-:gremlin-console,-:gremlin-coverage,-:hadoop-gremlin,-:neo4j-gremlin,-:spark-gremlin,-:sparql-gremlin'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   smoke:
     name: smoke
@@ -49,7 +52,7 @@ jobs:
       - name: Build with Maven
         run: mvn clean install -pl $EXCLUDE_MODULES -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dcoverage
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
          directory: ./gremlin-tools/gremlin-coverage/target/site
   gremlin-server-default:
@@ -374,7 +377,7 @@ jobs:
           mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
           mvn verify -pl :gremlin-go
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           working-directory: ./gremlin-go
       - name: Go-Vet
