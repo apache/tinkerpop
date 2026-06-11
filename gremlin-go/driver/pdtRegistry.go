@@ -80,13 +80,10 @@ func (r *PDTRegistry) GetAdapterByType(t reflect.Type) *PDTAdapter {
 
 // Hydrate converts a ProviderDefinedType into a domain object using the registered adapter.
 // Returns the raw PDT if no adapter is found or if hydration fails.
+// Nested registered PDTs in Fields are always hydrated recursively, even when the outer has no adapter.
 func (r *PDTRegistry) Hydrate(pdt *ProviderDefinedType) interface{} {
 	if pdt == nil {
 		return nil
-	}
-	adapter, ok := r.adaptersByName[pdt.Name]
-	if !ok {
-		return pdt
 	}
 	hydratedFields := make(map[string]interface{}, len(pdt.Fields))
 	for k, v := range pdt.Fields {
@@ -95,6 +92,10 @@ func (r *PDTRegistry) Hydrate(pdt *ProviderDefinedType) interface{} {
 		} else {
 			hydratedFields[k] = v
 		}
+	}
+	adapter, ok := r.adaptersByName[pdt.Name]
+	if !ok {
+		return &ProviderDefinedType{Name: pdt.Name, Fields: hydratedFields}
 	}
 	result, err := adapter.FromFields(hydratedFields)
 	if err != nil {

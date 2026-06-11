@@ -98,6 +98,23 @@ describe('ProviderDefinedTypeRegistry', () => {
       assert.strictEqual(registry.hydrate(42), 42);
       assert.strictEqual(registry.hydrate(null), null);
     });
+
+    it('should hydrate nested registered PDT inside unregistered outer', () => {
+      const registry = new ProviderDefinedTypeRegistry();
+      registry.register('Inner', {
+        serialize: (obj) => ({ val: obj.val }),
+        deserialize: (fields) => ({ type: 'Inner', val: fields.val }),
+      });
+
+      const innerPdt = new ProviderDefinedType('Inner', { val: 42 });
+      const outerPdt = new ProviderDefinedType('Outer', { nested: innerPdt, plain: 'hello' });
+      const result = registry.hydrate(outerPdt);
+
+      assert.instanceOf(result, ProviderDefinedType);
+      assert.strictEqual(result.name, 'Outer');
+      assert.deepStrictEqual(result.fields.nested, { type: 'Inner', val: 42 });
+      assert.strictEqual(result.fields.plain, 'hello');
+    });
   });
 
   describe('#hasAdapter()', () => {

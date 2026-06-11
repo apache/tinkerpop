@@ -380,4 +380,37 @@ public class ProviderDefinedTypeRegistryTest {
             assertTrue(e.getMessage().contains("no-arg constructor"));
         }
     }
+
+    @Test
+    public void shouldHydrateNestedRegisteredTypeInsideUnregisteredOuter() {
+        // Contract: a registered type ALWAYS hydrates even when nested inside an unregistered outer PDT.
+        // The outer "Container" has no adapter, so it remains a raw ProviderDefinedType,
+        // but the inner "Point" field value should be hydrated to a Point instance.
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(new PointAdapter());
+
+        final Map<String, Object> pointFields = new HashMap<>();
+        pointFields.put("x", 10);
+        pointFields.put("y", 20);
+        final ProviderDefinedType innerPointPdt = new ProviderDefinedType("Point", pointFields);
+
+        final Map<String, Object> containerFields = new HashMap<>();
+        containerFields.put("location", innerPointPdt);
+        final ProviderDefinedType outerPdt = new ProviderDefinedType("Container", containerFields);
+
+        final Object result = registry.hydrate(outerPdt);
+
+        // Outer should remain a raw ProviderDefinedType (no adapter for "Container")
+        assertTrue("Expected outer to remain a ProviderDefinedType", result instanceof ProviderDefinedType);
+        final ProviderDefinedType resultPdt = (ProviderDefinedType) result;
+        assertEquals("Container", resultPdt.getName());
+
+        // Inner "location" field should be hydrated to a Point instance
+        final Object innerValue = resultPdt.getFields().get("location");
+        assertTrue("Expected inner field to be hydrated to Point but was: " +
+                (innerValue == null ? "null" : innerValue.getClass().getName()),
+                innerValue instanceof Point);
+        assertEquals(10, ((Point) innerValue).x);
+        assertEquals(20, ((Point) innerValue).y);
+    }
 }

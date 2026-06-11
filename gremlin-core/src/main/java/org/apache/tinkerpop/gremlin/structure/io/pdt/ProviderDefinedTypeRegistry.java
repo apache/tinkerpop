@@ -90,21 +90,31 @@ public final class ProviderDefinedTypeRegistry {
     }
 
     /**
+    /**
      * Attempts to hydrate a {@link ProviderDefinedType} into a typed object using a registered adapter.
-     * Recursively hydrates nested PDT values in the properties map (including those inside Lists, Sets,
-     * and Maps) before calling the adapter.
-     * Returns the original PDT if no adapter is found or if the adapter throws an exception.
+     * Recursively hydrates nested PDT values in the fields map (including those inside Lists, Sets,
+     * and Maps) regardless of whether the outer type itself has a registered adapter — so a registered
+     * inner type is hydrated even when nested inside an unregistered outer PDT.
+     * Returns the original PDT (with nested values hydrated) if no adapter is found for the outer type,
+     * or if the adapter throws an exception.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Object hydrate(final ProviderDefinedType pdt) {
-        final ProviderDefinedTypeAdapter adapter = adaptersByName.get(pdt.getName());
-        if (adapter == null)
-            return pdt;
-
-        // recursively hydrate nested PDTs in the fields map
+        // recursively hydrate nested PDTs in the fields map, whether or not the outer has an adapter
+        boolean nestedChanged = false;
         final Map<String, Object> hydrated = new LinkedHashMap<>();
         for (final Map.Entry<String, Object> entry : pdt.getFields().entrySet()) {
-            hydrated.put(entry.getKey(), hydrateValue(entry.getValue()));
+            final Object original = entry.getValue();
+            final Object value = hydrateValue(original);
+            if (value != original) nestedChanged = true;
+            hydrated.put(entry.getKey(), value);
+        }
+
+        final ProviderDefinedTypeAdapter adapter = adaptersByName.get(pdt.getName());
+        if (adapter == null) {
+            // No adapter for the outer type: return it raw, but with any registered nested types hydrated.
+            // Preserve identity when nothing nested was hydrated.
+            return nestedChanged ? new ProviderDefinedType(pdt.getName(), hydrated) : pdt;
         }
 
         try {

@@ -101,6 +101,26 @@ class TestProviderDefinedTypeRegistry(object):
         adapter = registry.get_adapter_by_class(dict)
         assert adapter['serialize'] is None
 
+    def test_hydrate_inner_registered_in_unregistered_outer(self):
+        """A registered type ALWAYS hydrates even when nested inside an unregistered outer PDT."""
+        from collections import namedtuple
+        Inner = namedtuple("Inner", ["val"])
+        registry = ProviderDefinedTypeRegistry()
+        registry.register("com.example.Inner", lambda props: Inner(props["val"]))
+        # "com.example.Outer" is intentionally NOT registered
+        inner_pdt = ProviderDefinedType("com.example.Inner", {"val": 42})
+        outer_pdt = ProviderDefinedType("com.example.Outer", {"child": inner_pdt, "count": 7})
+
+        result = registry.hydrate(outer_pdt)
+
+        # Outer stays raw ProviderDefinedType (no adapter)
+        assert isinstance(result, ProviderDefinedType)
+        assert result.name == "com.example.Outer"
+        # Inner field MUST be hydrated to Inner(val=42)
+        assert result.fields["child"] == Inner(val=42)
+        # Non-PDT fields pass through unchanged
+        assert result.fields["count"] == 7
+
 
 class TestProviderDefinedTypeRegistryBuild(object):
 

@@ -224,12 +224,23 @@ class ProviderDefinedTypeRegistry(object):
         """Attempt to hydrate a ProviderDefinedType. Returns typed object or raw PDT."""
         if not isinstance(pdt, ProviderDefinedType):
             return pdt
+
+        # Always recurse into fields to hydrate nested registered PDTs.
+        changed = False
+        hydrated_fields = {}
+        for k, v in pdt.fields.items():
+            if isinstance(v, ProviderDefinedType):
+                h = self.hydrate(v)
+                if h is not v:
+                    changed = True
+                hydrated_fields[k] = h
+            else:
+                hydrated_fields[k] = v
+
         adapter = self._adapters_by_name.get(pdt.name)
         if adapter is None:
-            return pdt
+            return ProviderDefinedType(pdt.name, hydrated_fields) if changed else pdt
         try:
-            hydrated_fields = {k: self.hydrate(v) if isinstance(v, ProviderDefinedType) else v
-                               for k, v in pdt.fields.items()}
             return adapter['deserialize'](hydrated_fields)
         except Exception as e:
             import logging

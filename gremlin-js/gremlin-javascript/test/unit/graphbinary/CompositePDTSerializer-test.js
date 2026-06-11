@@ -37,8 +37,8 @@ describe('CompositePDTSerializer', () => {
       const result = await roundTrip(pdt);
       assert.instanceOf(result, ProviderDefinedType);
       assert.strictEqual(result.name, 'myType');
-      assert.strictEqual(result.properties.key1, 'value1');
-      assert.strictEqual(result.properties.key2, 42);
+      assert.strictEqual(result.fields.key1, 'value1');
+      assert.strictEqual(result.fields.key2, 42);
     });
 
     it('uses COMPOSITEPDT type code', () => {
@@ -55,10 +55,10 @@ describe('CompositePDTSerializer', () => {
       const result = await roundTrip(outer);
       assert.instanceOf(result, ProviderDefinedType);
       assert.strictEqual(result.name, 'outer');
-      assert.strictEqual(result.properties.num, 99);
-      assert.instanceOf(result.properties.nested, ProviderDefinedType);
-      assert.strictEqual(result.properties.nested.name, 'inner');
-      assert.strictEqual(result.properties.nested.properties.x, 'hello');
+      assert.strictEqual(result.fields.num, 99);
+      assert.instanceOf(result.fields.nested, ProviderDefinedType);
+      assert.strictEqual(result.fields.nested.name, 'inner');
+      assert.strictEqual(result.fields.nested.fields.x, 'hello');
     });
   });
 
@@ -68,8 +68,8 @@ describe('CompositePDTSerializer', () => {
       const result = await roundTrip(pdt);
       assert.instanceOf(result, ProviderDefinedType);
       assert.strictEqual(result.name, 'withNull');
-      assert.strictEqual(result.properties.present, 'yes');
-      assert.strictEqual(result.properties.absent, null);
+      assert.strictEqual(result.fields.present, 'yes');
+      assert.strictEqual(result.fields.absent, null);
     });
   });
 

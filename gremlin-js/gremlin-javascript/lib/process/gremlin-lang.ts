@@ -132,11 +132,11 @@ export default class GremlinLang {
       return arg.name;
     }
     if (arg instanceof ProviderDefinedType) {
-      const props = arg.properties;
-      const keys = Object.keys(props);
+      const fields = arg.fields;
+      const keys = Object.keys(fields);
       const escapedName = JSON.stringify(arg.name).slice(1, -1);
       if (keys.length === 0) return `PDT("${escapedName}",[:])`; 
-      const entries = keys.map(k => `${this._argAsString(k)}:${this._argAsString(props[k])}`);
+      const entries = keys.map(k => `${this._argAsString(k)}:${this._argAsString(fields[k])}`);
       return `PDT("${escapedName}",[${entries.join(',')}])`;
     }
     if (arg instanceof Vertex) {
@@ -182,8 +182,8 @@ export default class GremlinLang {
     if (this.pdtRegistry && typeof arg === 'object' && arg.constructor) {
       const entry = this.pdtRegistry.getAdapterByClass(arg.constructor);
       if (entry) {
-        const props = entry.serialize(arg);
-        return this._argAsString(new ProviderDefinedType(entry.typeName, props));
+        const fields = entry.serialize(arg);
+        return this._argAsString(new ProviderDefinedType(entry.typeName, fields));
       }
     }
     throw new TypeError(`GremlinLang contains at least one type [${arg?.constructor?.name ?? typeof arg}] that cannot be represented as text.`);

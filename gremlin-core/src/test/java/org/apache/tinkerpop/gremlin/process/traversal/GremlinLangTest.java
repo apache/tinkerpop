@@ -490,6 +490,41 @@ public class GremlinLangTest {
             assertTrue(gremlin, gremlin.contains("\"v\":7"));
             assertFalse(gremlin, gremlin.contains("AnnotationName"));
         }
+
+        private static class TestPoint {
+            final int x;
+            final int y;
+            TestPoint(int x, int y) { this.x = x; this.y = y; }
+        }
+
+        @Test
+        public void shouldDehydrateRegisteredTypeNestedInsideUnregisteredOuterPdt() {
+            final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+            registry.register(new ProviderDefinedTypeAdapter<TestPoint>() {
+                @Override public String typeName() { return "Point"; }
+                @Override public Class<TestPoint> targetClass() { return TestPoint.class; }
+                @Override public Map<String, Object> toFields(final TestPoint obj) {
+                    final Map<String, Object> m = new HashMap<>();
+                    m.put("x", obj.x);
+                    m.put("y", obj.y);
+                    return m;
+                }
+                @Override public TestPoint fromFields(final Map<String, Object> properties) {
+                    return new TestPoint((int) properties.get("x"), (int) properties.get("y"));
+                }
+            });
+
+            // Outer is a raw ProviderDefinedType whose "location" field value is a registered domain object
+            final Map<String, Object> outerFields = new LinkedHashMap<>();
+            outerFields.put("location", new TestPoint(3, 7));
+            final ProviderDefinedType outerPdt = new ProviderDefinedType("Container", outerFields);
+
+            final GraphTraversalSource g2 = traversal().with(EmptyGraph.instance());
+            g2.getGremlinLang().setPdtRegistry(registry);
+            final String gremlin = g2.inject(outerPdt).asAdmin().getGremlinLang().getGremlin();
+
+            assertEquals("g.inject(PDT(\"Container\",[\"location\":PDT(\"Point\",[\"x\":3,\"y\":7])]))", gremlin);
+        }
     }
 
     public static class UnsupportedTypeTests {

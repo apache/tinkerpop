@@ -1209,5 +1209,27 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             public IReadOnlyDictionary<string, object?> ToFields(AnnotatedPointWithAdapter obj) =>
                 new Dictionary<string, object?> { { "a", obj.X }, { "b", obj.Y } };
         }
+
+        [Fact]
+        public void g_Inject_PDT_dehydrates_annotated_inner_nested_in_unregistered_outer()
+        {
+            // An unregistered outer PDT contains an annotated inner object as a field value.
+            // The inner should be dehydrated to its PDT form when the outer is serialized.
+            var inner = new NestedAnnotatedWidget { Tag = "abc" };
+            var outer = new ProviderDefinedType("unregistered:Container",
+                new Dictionary<string, object?> { { "widget", inner }, { "count", 7 } });
+
+            var result = _g.Inject((object)outer).GremlinLang.GetGremlin();
+
+            Assert.Equal(
+                "g.inject(PDT(\"unregistered:Container\",[\"widget\":PDT(\"nested.Widget\",[\"Tag\":\"abc\"]),\"count\":7]))",
+                result);
+        }
+
+        [ProviderDefined(Name = "nested.Widget")]
+        private class NestedAnnotatedWidget
+        {
+            public string Tag { get; set; } = "";
+        }
     }
 }

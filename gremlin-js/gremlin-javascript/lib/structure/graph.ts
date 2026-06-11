@@ -201,16 +201,16 @@ function areEqual(obj1: any, obj2: any) {
  */
 export class ProviderDefinedType {
   readonly name: string;
-  readonly properties: Readonly<Record<string, any>>;
+  readonly fields: Readonly<Record<string, any>>;
 
-  constructor(name: string, properties?: Record<string, any>) {
+  constructor(name: string, fields?: Record<string, any>) {
     if (!name) throw new Error('ProviderDefinedType name cannot be null or empty');
     this.name = name;
-    this.properties = Object.freeze(properties || {});
+    this.fields = Object.freeze(fields || {});
   }
 
   toString() {
-    return `pdt[${this.name}]${JSON.stringify(this.properties)}`;
+    return `pdt[${this.name}]${JSON.stringify(this.fields)}`;
   }
 }
 

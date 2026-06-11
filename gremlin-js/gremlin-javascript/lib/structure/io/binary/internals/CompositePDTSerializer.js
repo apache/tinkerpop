@@ -46,7 +46,7 @@ export default class CompositePDTSerializer {
       bufs.push(Buffer.from([this.ioc.DataType.COMPOSITEPDT, 0x00]));
     }
     bufs.push(this.ioc.stringSerializer.serialize(item.name, true));
-    bufs.push(this.ioc.mapSerializer.serialize(item.properties, true));
+    bufs.push(this.ioc.mapSerializer.serialize(item.fields, true));
     return Buffer.concat(bufs);
   }
 
@@ -55,9 +55,9 @@ export default class CompositePDTSerializer {
     if (!name) {
       throw new Error('CompositePDTSerializer: name cannot be null or empty');
     }
-    const properties = await this.ioc.anySerializer.deserialize(reader);
-    const props = properties instanceof Map ? Object.fromEntries(properties) : properties || {};
-    const pdt = new ProviderDefinedType(name, props);
+    const fieldsRaw = await this.ioc.anySerializer.deserialize(reader);
+    const fields = fieldsRaw instanceof Map ? Object.fromEntries(fieldsRaw) : fieldsRaw || {};
+    const pdt = new ProviderDefinedType(name, fields);
     const pdtRegistry = reader.pdtRegistry;
     if (pdtRegistry) {
       const hydrated = pdtRegistry.hydrate(pdt);

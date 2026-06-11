@@ -90,3 +90,27 @@ func TestPDTRegistryHydrateNil(t *testing.T) {
 	reg := NewPDTRegistry()
 	assert.Nil(t, reg.Hydrate(nil))
 }
+
+// TestPDTRegistryNestedHydration_UnregisteredOuter asserts that a registered inner PDT
+// is hydrated even when the outer PDT has no registered adapter (desired contract).
+func TestPDTRegistryNestedHydration_UnregisteredOuter(t *testing.T) {
+	reg := NewPDTRegistry()
+	reg.RegisterFuncs("x:Inner", func(props map[string]interface{}) (interface{}, error) {
+		return [2]int{props["x"].(int), props["y"].(int)}, nil
+	}, nil)
+
+	inner := &ProviderDefinedType{Name: "x:Inner", Fields: map[string]interface{}{"x": 10, "y": 20}}
+	outer := &ProviderDefinedType{Name: "x:Unregistered", Fields: map[string]interface{}{"loc": inner, "label": "test"}}
+
+	result := reg.Hydrate(outer)
+
+	// The outer should remain a raw *ProviderDefinedType (no adapter registered for it).
+	pdt, ok := result.(*ProviderDefinedType)
+	assert.True(t, ok, "outer must remain *ProviderDefinedType, got %T", result)
+	assert.Equal(t, "x:Unregistered", pdt.Name)
+
+	// The inner field "loc" must be hydrated to [2]int{10,20} because x:Inner IS registered.
+	assert.Equal(t, [2]int{10, 20}, pdt.Fields["loc"], "inner registered PDT must be hydrated even inside unregistered outer")
+	// Non-PDT fields remain unchanged.
+	assert.Equal(t, "test", pdt.Fields["label"])
+}

@@ -138,6 +138,39 @@ namespace Gremlin.Net.UnitTest.Structure
             Assert.Same(pdt, result);
         }
 
+        [Fact]
+        public void ShouldHydrateRegisteredInnerInsideUnregisteredOuter()
+        {
+            // Register ONLY the inner type, NOT the outer
+            ProviderDefinedAttribute.RegisteredTypes["test:InnerWidget"] = typeof(TestInnerWidget);
+            try
+            {
+                var innerPdt = new ProviderDefinedType("test:InnerWidget",
+                    new Dictionary<string, object?> { ["Label"] = "hello" });
+                var outerPdt = new ProviderDefinedType("test:UnregisteredOuter",
+                    new Dictionary<string, object?> { ["Widget"] = innerPdt, ["Count"] = 5 });
+
+                // Act
+                var result = ProviderDefinedAttribute.HydrateIfRegistered(outerPdt);
+
+                // Assert: outer is unregistered so stays raw PDT
+                var rawOuter = Assert.IsType<ProviderDefinedType>(result);
+                Assert.Equal("test:UnregisteredOuter", rawOuter.Name);
+
+                // The inner field SHOULD be hydrated because it IS registered
+                var widgetValue = rawOuter.Fields["Widget"];
+                var hydratedInner = Assert.IsType<TestInnerWidget>(widgetValue);
+                Assert.Equal("hello", hydratedInner.Label);
+
+                // Non-PDT fields unchanged
+                Assert.Equal(5, rawOuter.Fields["Count"]);
+            }
+            finally
+            {
+                ProviderDefinedAttribute.RegisteredTypes.TryRemove("test:InnerWidget", out _);
+            }
+        }
+
         #region Test helpers
 
         [ProviderDefined(Name = "test:Address")]
@@ -170,6 +203,12 @@ namespace Gremlin.Net.UnitTest.Structure
         public class TestInner
         {
             public int X { get; set; }
+        }
+
+        [ProviderDefined(Name = "test:InnerWidget")]
+        public class TestInnerWidget
+        {
+            public string Label { get; set; } = "";
         }
 
         #endregion

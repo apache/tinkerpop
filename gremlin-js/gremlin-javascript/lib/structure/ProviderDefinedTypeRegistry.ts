@@ -21,7 +21,7 @@ import { ProviderDefinedType } from './graph.js';
 
 export interface PdtAdapter {
   serialize: (obj: any) => Record<string, any>;
-  deserialize: (properties: Record<string, any>) => any;
+  deserialize: (fields: Record<string, any>) => any;
 }
 
 /**
@@ -42,13 +42,22 @@ export class ProviderDefinedTypeRegistry {
   hydrate(pdt: any): any {
     if (!(pdt instanceof ProviderDefinedType)) return pdt;
     const adapter = this._adapters.get(pdt.name);
-    if (!adapter) return pdt;
-    try {
-      const hydratedProps: Record<string, any> = {};
-      for (const [k, v] of Object.entries(pdt.properties)) {
-        hydratedProps[k] = v instanceof ProviderDefinedType ? this.hydrate(v) : v;
+    const hydratedFields: Record<string, any> = {};
+    let changed = false;
+    for (const [k, v] of Object.entries(pdt.fields)) {
+      if (v instanceof ProviderDefinedType) {
+        const h = this.hydrate(v);
+        hydratedFields[k] = h;
+        if (h !== v) changed = true;
+      } else {
+        hydratedFields[k] = v;
       }
-      return adapter.deserialize(hydratedProps);
+    }
+    if (!adapter) {
+      return changed ? new ProviderDefinedType(pdt.name, hydratedFields) : pdt;
+    }
+    try {
+      return adapter.deserialize(hydratedFields);
     } catch (e: any) {
       console.warn(`PDT hydration failed for '${pdt.name}': ${e.message}`);
       return pdt;

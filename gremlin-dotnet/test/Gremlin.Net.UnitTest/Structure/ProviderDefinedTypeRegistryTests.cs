@@ -123,6 +123,35 @@ namespace Gremlin.Net.UnitTest.Structure
             Assert.Equal("hello", obj.Value);
         }
 
+        [Fact]
+        public void ShouldHydrateRegisteredInnerInsideUnregisteredOuter()
+        {
+            // Contract: a registered/adapted inner PDT always hydrates even when nested inside an
+            // unregistered outer PDT. Register only the inner type adapter, NOT the outer.
+            var registry = new ProviderDefinedTypeRegistry();
+            registry.Register(new InnerPointAdapter());
+
+            var innerPdt = new ProviderDefinedType("nested:Point",
+                new Dictionary<string, object?> { ["x"] = 3.0, ["y"] = 4.0 });
+            var outerPdt = new ProviderDefinedType("unregistered:Container",
+                new Dictionary<string, object?> { ["location"] = innerPdt, ["label"] = "test" });
+
+            var result = registry.Hydrate(outerPdt);
+
+            // Outer stays raw PDT since it has no adapter
+            var rawOuter = Assert.IsType<ProviderDefinedType>(result);
+            Assert.Equal("unregistered:Container", rawOuter.Name);
+
+            // The inner field SHOULD be hydrated to InnerPoint because it IS registered
+            var locationValue = rawOuter.Fields["location"];
+            var hydratedInner = Assert.IsType<InnerPoint>(locationValue);
+            Assert.Equal(3.0, hydratedInner.X);
+            Assert.Equal(4.0, hydratedInner.Y);
+
+            // Non-PDT fields should be unchanged
+            Assert.Equal("test", rawOuter.Fields["label"]);
+        }
+
         #region Test helpers
 
         private class Point
@@ -171,6 +200,23 @@ namespace Gremlin.Net.UnitTest.Structure
 
             public IReadOnlyDictionary<string, object?> ToFields(object obj) =>
                 throw new InvalidOperationException("intentional failure");
+        }
+
+        private class InnerPoint
+        {
+            public double X { get; init; }
+            public double Y { get; init; }
+        }
+
+        private class InnerPointAdapter : IProviderDefinedTypeAdapter<InnerPoint>
+        {
+            public string TypeName => "nested:Point";
+
+            public InnerPoint FromFields(IReadOnlyDictionary<string, object?> fields) =>
+                new() { X = (double)fields["x"]!, Y = (double)fields["y"]! };
+
+            public IReadOnlyDictionary<string, object?> ToFields(InnerPoint obj) =>
+                new Dictionary<string, object?> { ["x"] = obj.X, ["y"] = obj.Y };
         }
 
         #endregion

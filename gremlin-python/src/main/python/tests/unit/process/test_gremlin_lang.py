@@ -636,3 +636,22 @@ class TestGremlinLang(object):
         outer = ProviderDefinedType('Outer', {'inner': inner})
         gremlin = g.inject(outer).gremlin_lang.get_gremlin()
         assert "PDT('Outer',['inner':PDT('Inner',['v':1])])" in gremlin
+
+    def test_dehydrate_inner_decorated_in_unregistered_outer(self):
+        """A @provider_defined inner object must dehydrate to PDT form even when nested
+        as a field value inside a raw (unregistered/undecorated) ProviderDefinedType."""
+        from gremlin_python.structure.graph import ProviderDefinedType, provider_defined
+        g = traversal().with_(None)
+
+        @provider_defined(name="com.example.Inner")
+        class Inner:
+            def __init__(self, val):
+                self.val = val
+
+        inner_obj = Inner(99)
+        # Outer is a raw ProviderDefinedType — no adapter, no decorator
+        outer_pdt = ProviderDefinedType("com.example.Outer", {"child": inner_obj, "count": 7})
+
+        gremlin = g.inject(outer_pdt).gremlin_lang.get_gremlin()
+        # The inner decorated object MUST be dehydrated to its PDT representation
+        assert "PDT('com.example.Outer',['child':PDT('com.example.Inner',['val':99]),'count':7])" in gremlin

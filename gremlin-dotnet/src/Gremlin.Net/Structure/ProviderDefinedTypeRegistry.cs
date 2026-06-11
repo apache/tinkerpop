@@ -121,7 +121,23 @@ namespace Gremlin.Net.Structure
         public object Hydrate(ProviderDefinedType pdt)
         {
             if (!_adaptersByName.TryGetValue(pdt.Name, out var adapterObj))
-                return pdt;
+            {
+                // No adapter for outer — still recurse into nested PDT fields
+                Dictionary<string, object?>? resolved = null;
+                foreach (var (key, value) in pdt.Fields)
+                {
+                    if (value is ProviderDefinedType nested)
+                    {
+                        var hydrated = Hydrate(nested);
+                        if (!ReferenceEquals(hydrated, nested))
+                        {
+                            resolved ??= new Dictionary<string, object?>(pdt.Fields);
+                            resolved[key] = hydrated;
+                        }
+                    }
+                }
+                return resolved != null ? new ProviderDefinedType(pdt.Name, resolved) : pdt;
+            }
             try
             {
                 var hydratedFields = new Dictionary<string, object?>();

@@ -948,3 +948,30 @@ func Test_PDT_AdapterPrecedenceOverDefault(t *testing.T) {
 		t.Errorf("adapter precedence: got %v, expected %v", gremlin, expected)
 	}
 }
+
+// TestPDT_GremlinLang_NestedRegisteredInUnregisteredOuter asserts that a registered domain
+// object nested inside an unregistered outer *ProviderDefinedType is dehydrated to PDT form.
+func TestPDT_GremlinLang_NestedRegisteredInUnregisteredOuter(t *testing.T) {
+	registry := NewPDTRegistry()
+	registry.RegisterFuncsWithType("test:Point", reflect.TypeOf(adapterPrecedencePoint{}),
+		nil,
+		func(obj interface{}) (map[string]interface{}, error) {
+			p := obj.(adapterPrecedencePoint)
+			return map[string]interface{}{"x": p.X, "y": p.Y}, nil
+		})
+
+	g := NewGraphTraversalSource(nil, nil)
+	g.GetGremlinLang().pdtRegistry = registry
+
+	// Outer is an unregistered raw PDT; its "pt" field is a registered Go domain object.
+	outer := &ProviderDefinedType{
+		Name:   "unregistered:Wrapper",
+		Fields: map[string]interface{}{"pt": adapterPrecedencePoint{X: 3, Y: 4}, "tag": "hello"},
+	}
+
+	gremlin := g.Inject(outer).GremlinLang.GetGremlin()
+	expected := `g.inject(PDT("unregistered:Wrapper",["pt":PDT("test:Point",["x":3,"y":4]),"tag":"hello"]))`
+	if gremlin != expected {
+		t.Errorf("nested dehydration: got %v, expected %v", gremlin, expected)
+	}
+}
