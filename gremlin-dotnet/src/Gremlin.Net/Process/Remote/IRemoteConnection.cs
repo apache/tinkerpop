@@ -55,11 +55,6 @@ namespace Gremlin.Net.Process.Remote
         RemoteTransaction Tx(GraphTraversalSource graphTraversalSource);
 
         /// <summary>
-        ///     Determines if the connection is bound to a session.
-        /// </summary>
-        bool IsSessionBound { get; }
-
-        /// <summary>
         ///     Gets the <see cref="ProviderDefinedTypeRegistry"/> for registry-based dehydration, or null.
         /// </summary>
         ProviderDefinedTypeRegistry? PdtRegistry => null;

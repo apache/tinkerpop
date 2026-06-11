@@ -48,8 +48,9 @@ func NewGraphTraversalSource(graph *Graph, remoteConnection remoteConnection,
 	traversalStrategies ...TraversalStrategy) *GraphTraversalSource {
 	// TODO: revisit when updating strategies
 	gl := NewGremlinLang(nil)
-	if remoteConnection != nil && remoteConnection.settings != nil && remoteConnection.settings.PDTRegistry != nil {
-		gl.pdtRegistry = remoteConnection.settings.PDTRegistry
+	if drc, ok := remoteConnection.(*DriverRemoteConnection); ok && drc != nil &&
+		drc.settings != nil && drc.settings.PDTRegistry != nil {
+		gl.pdtRegistry = drc.settings.PDTRegistry
 	}
 	return &GraphTraversalSource{graph: graph, gremlinLang: gl, remoteConnection: remoteConnection}
 }
