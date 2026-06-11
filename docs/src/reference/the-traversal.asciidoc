@@ -1495,8 +1495,9 @@ g.V().hasLabel('person').outE('created').count().map {it.get() * 10}.path() <2>
 <1> `count()`-step is a <<a-note-on-barrier-steps,reducing barrier step>> meaning that all of the previous traversers are folded into a new traverser.
 <2> The path of the traverser emanating from `count()` starts at `count()`.
 
-IMPORTANT: `count(local)` counts the current, local object (not the objects in the traversal stream). This works for
-`Collection`- and `Map`-type objects. For any other object, a count of 1 is returned.
+IMPORTANT: `count(local)` counts the current, local object (not the objects in the traversal stream). For a
+`Collection` it returns the number of elements, for a `Map` the number of entries, for a `Path` the number of
+objects in the path, and for a `Tree` the total number of nodes in the tree. For any other object, a count of 1 is returned.
 
 *Additional References*
 
@@ -5054,8 +5055,8 @@ The resultant tree data structure can then be navigated with its tree-shaped API
 [gremlin-groovy,modern]
 ----
 tree = g.V().out().out().tree().by('name').next()
-tree.childAt('marko')
-tree.childAt('marko').childAt('josh')
+tree.childAt('marko')          // with the SugarPlugin: tree['marko']
+tree.childAt('marko').childAt('josh')          // with the SugarPlugin: tree['marko']['josh']
 tree.getNodesAtDepth(2)
 ----
 

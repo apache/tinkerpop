@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.groovy.loaders
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
@@ -76,6 +77,7 @@ class SugarLoader {
         Vertex.metaClass.mixin(VertexCategory.class);
         Edge.metaClass.mixin(ElementCategory.class);
         VertexProperty.metaClass.mixin(ElementCategory.class);
+        Tree.metaClass.mixin(TreeCategory.class);
     }
 
     public static class TraverserCategory {
@@ -85,6 +87,17 @@ class SugarLoader {
 
         public String toString() {
             return this.metaClass.owner.get().toString();
+        }
+    }
+
+    public static class TreeCategory {
+        // Groovy subscript on a Tree: tree['marko'] -> tree.childAt('marko').
+        public static final Object getAt(final Tree tree, final String key) {
+            return tree.childAt(key);
+        }
+
+        public static final Object getAt(final Tree tree, final Object key) {
+            return tree.childAt(key);
         }
     }
 

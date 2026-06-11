@@ -520,24 +520,35 @@ Replacements for the common `Map`-based access patterns:
 |`getLeafObjects()` |`getLeafNodes()`
 |=======================
 
-A few Gremlin patterns that worked only because `Tree` was a `Map` (for example `select(keys)`, `count(local)`,
-and `unfold()` applied to a `Tree`) no longer compose. Process the `Tree` result client-side after `next()`, or
-reshape the upstream traversal. The old `count(local)` (which returned the root-node count) is replaced by
-`rootNodes().size()` for the root count, or `nodeCount()` for the total node count.
+A few Gremlin patterns that worked only because `Tree` was a `Map` (for example `select(keys)` and `unfold()`
+applied to a `Tree`) no longer compose. Process the `Tree` result client-side after `next()`, or reshape the
+upstream traversal.
+
+`count(local)` on a `Tree` has changed semantics. Previously, because `Tree` was a `Map`, it returned the
+number of root entries; it now returns the total number of nodes in the tree (`Tree.nodeCount()`), consistent
+with how `count(local)` counts the contents of other local objects (for example the objects in a `Path`). Use
+`rootNodes().size()` on the materialized `Tree` if the root-entry count is required.
 
 `isLeaf()` no longer throws on an empty tree (it returns `true`), and a `Tree` keeps the long-standing limitation
 that sibling branches resolving to the same value collapse into one node; use `path()` or `subgraph()` when full
 path structure must be preserved.
+
+See: link:https://lists.apache.org/thread/o0nqh6kmrkdht531655p351ldjll045d[[DISCUSS] Make Tree no longer extend HashMap]
 
 
 === Upgrading for Providers
 
 ==== Graph System Providers
 
-`Tree` no longer extends `HashMap`. Provider code that inspected or rebuilt a `Tree` via `Map` methods
-(`get`, `put`, `keySet`, `entrySet`, `size`) must use the tree-shaped API instead: read with `rootNodes()` +
-`childAt(key)` and build with `getOrCreateChild(key)` + `addTree(subtree)`. The GraphSON (`g:Tree`) and
-GraphBinary (`0x2b`) wire formats are unchanged, so no GraphSON- or GraphBinary-serialized data or cross-version
+===== Tree Serialization and API Changes
+
+`Tree` no longer extends `HashMap`.
+
+Providers that use the reference (de)serializers receive a `Tree` instance from TinkerPop. Code that inspected or
+rebuilt that `Tree` via `Map` methods (`get`, `put`, `keySet`, `entrySet`, `size`) must use the tree-shaped API
+instead: read with `rootNodes()` + `childAt(key)` and build with `getOrCreateChild(key)` + `addTree(subtree)`.
+
+The GraphSON (`g:Tree`) and GraphBinary (`0x2b`) wire formats are unchanged, so no GraphSON- or GraphBinary-serialized data or cross-version
 compatibility is affected. The Gryo `Tree` wire format, however, did change: in 3.x a `Tree` was serialized via
 Kryo's default `Map` serializer because it extended `HashMap`, whereas in 4.x it has an explicit `Tree`
 serializer. As a result, Gryo-serialized `Tree` data written by 3.x cannot be read by 4.x and vice versa. The

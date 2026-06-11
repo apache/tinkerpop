@@ -44370,6 +44370,40 @@
         ]
     },
     {
+        "scenario": "g_V_out_treeXaX_selectXaX_countXlocalX",
+        "traversals": [
+            {
+                "original": "g.V().out().tree(\"a\").select(\"a\").count(local)",
+                "language": "g.V().out().tree(\"a\").select(\"a\").count(Scope.local)",
+                "canonical": "g.V().out().tree(\"a\").select(\"a\").count(Scope.local)",
+                "anonymized": "g.V().out().tree(string0).select(string0).count(Scope.local)",
+                "dotnet": "g.V().Out().Tree(\"a\").Select<object>(\"a\").Count(Scope.Local)",
+                "go": "g.V().Out().Tree(\"a\").Select(\"a\").Count(gremlingo.Scope.Local)",
+                "groovy": "g.V().out().tree(\"a\").select(\"a\").count(Scope.local)",
+                "java": "g.V().out().tree(\"a\").select(\"a\").count(Scope.local)",
+                "javascript": "g.V().out().tree(\"a\").select(\"a\").count(Scope.local)",
+                "python": "g.V().out().tree('a').select('a').count(Scope.local)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_out_order_byXnameX_localXtreeXaX_selectXaX_countXlocalXX",
+        "traversals": [
+            {
+                "original": "g.V().out().local(tree(\"a\").select(\"a\").count(local))",
+                "language": "g.V().out().local(__.tree(\"a\").select(\"a\").count(Scope.local))",
+                "canonical": "g.V().out().local(__.tree(\"a\").select(\"a\").count(Scope.local))",
+                "anonymized": "g.V().out().local(__.tree(string0).select(string0).count(Scope.local))",
+                "dotnet": "g.V().Out().Local<object>(__.Tree(\"a\").Select<object>(\"a\").Count(Scope.Local))",
+                "go": "g.V().Out().Local(gremlingo.T__.Tree(\"a\").Select(\"a\").Count(gremlingo.Scope.Local))",
+                "groovy": "g.V().out().local(__.tree(\"a\").select(\"a\").count(Scope.local))",
+                "java": "g.V().out().local(__.tree(\"a\").select(\"a\").count(Scope.local))",
+                "javascript": "g.V().out().local(__.tree(\"a\").select(\"a\").count(Scope.local))",
+                "python": "g.V().out().local(__.tree('a').select('a').count(Scope.local))"
+            }
+        ]
+    },
+    {
         "scenario": "g_io_writeXkryoX",
         "traversals": [
             {

@@ -28,10 +28,11 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * A tree data structure with a tree-shaped public API that is composed of a {@link HashMap}.
+ * A tree data structure with a tree-shaped public API.
  * <p>
- * Internal storage is a plain {@link HashMap}, so iteration order is not promised and sibling-key collisions still
- * collapse (a known limitation, tracked as TINKERPOP-1693).
+ * Iteration order over the nodes at a given level is not promised. Because children are keyed by node value,
+ * sibling branches that resolve to the same value are represented as a single node; callers that require every
+ * path to be preserved should use {@link org.apache.tinkerpop.gremlin.process.traversal.Path} instead.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
