@@ -80,9 +80,9 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
         final ProviderDefinedType pdt = mapper.readValue(json, ProviderDefinedType.class);
 
         assertEquals("Point", pdt.getName());
-        assertEquals(2, pdt.getProperties().size());
-        assertEquals(1, pdt.getProperties().get("x"));
-        assertEquals(2, pdt.getProperties().get("y"));
+        assertEquals(2, pdt.getFields().size());
+        assertEquals(1, pdt.getFields().get("x"));
+        assertEquals(2, pdt.getFields().get("y"));
     }
 
     @Test
@@ -95,7 +95,7 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
         final ProviderDefinedType result = serializeDeserialize(mapper, original, ProviderDefinedType.class);
 
         assertEquals(original.getName(), result.getName());
-        assertEquals(original.getProperties(), result.getProperties());
+        assertEquals(original.getFields(), result.getFields());
     }
 
     @Test
@@ -122,11 +122,11 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
         // round-trip nested
         final ProviderDefinedType result = serializeDeserialize(mapper, outer, ProviderDefinedType.class);
         assertEquals("NamedPoint", result.getName());
-        assertTrue(result.getProperties().get("location") instanceof ProviderDefinedType);
-        final ProviderDefinedType nestedResult = (ProviderDefinedType) result.getProperties().get("location");
+        assertTrue(result.getFields().get("location") instanceof ProviderDefinedType);
+        final ProviderDefinedType nestedResult = (ProviderDefinedType) result.getFields().get("location");
         assertEquals("Point", nestedResult.getName());
-        assertEquals(10, nestedResult.getProperties().get("x"));
-        assertEquals(20, nestedResult.getProperties().get("y"));
+        assertEquals(10, nestedResult.getFields().get("x"));
+        assertEquals(20, nestedResult.getFields().get("y"));
     }
 
     @Test
@@ -139,9 +139,9 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
         final ProviderDefinedType result = serializeDeserialize(mapper, pdt, ProviderDefinedType.class);
 
         assertEquals("NullableType", result.getName());
-        assertEquals("test", result.getProperties().get("name"));
-        assertNull(result.getProperties().get("value"));
-        assertTrue(result.getProperties().containsKey("value"));
+        assertEquals("test", result.getFields().get("name"));
+        assertNull(result.getFields().get("value"));
+        assertTrue(result.getFields().containsKey("value"));
     }
 
     // --- Hydration tests ---
@@ -155,13 +155,13 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
     static class PointAdapter implements ProviderDefinedTypeAdapter<Point> {
         @Override public String typeName() { return "Point"; }
         @Override public Class<Point> targetClass() { return Point.class; }
-        @Override public Map<String, Object> toProperties(Point obj) {
+        @Override public Map<String, Object> toFields(Point obj) {
             final Map<String, Object> m = new HashMap<>();
             m.put("x", obj.x);
             m.put("y", obj.y);
             return m;
         }
-        @Override public Point fromProperties(Map<String, Object> properties) {
+        @Override public Point fromFields(Map<String, Object> properties) {
             return new Point((int) properties.get("x"), (int) properties.get("y"));
         }
     }
@@ -202,7 +202,7 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
 
         assertNull(result.getHydrated());
         assertEquals("Point", result.getName());
-        assertEquals(1, result.getProperties().get("x"));
+        assertEquals(1, result.getFields().get("x"));
     }
 
     @Test
@@ -225,6 +225,6 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
 
         assertNull(result.getHydrated());
         assertEquals("Unknown", result.getName());
-        assertEquals(1, result.getProperties().get("a"));
+        assertEquals(1, result.getFields().get("a"));
     }
 }

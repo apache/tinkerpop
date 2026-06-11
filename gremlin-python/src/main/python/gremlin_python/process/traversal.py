@@ -907,7 +907,7 @@ class GremlinLang(object):
                 return tmp
 
         if isinstance(arg, ProviderDefinedType):
-            return f'PDT({self._arg_as_string(arg.name)},{self._process_dict(arg.properties)})'
+            return f'PDT({self._arg_as_string(arg.name)},{self._process_dict(arg.fields)})'
 
         if isinstance(arg, Vertex):
             return f'{self._arg_as_string(arg.id)}'

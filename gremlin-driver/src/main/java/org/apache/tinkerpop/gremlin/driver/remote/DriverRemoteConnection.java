@@ -55,7 +55,10 @@ public class DriverRemoteConnection implements RemoteConnection {
     private transient Optional<Configuration> conf = Optional.empty();
 
     private final boolean attachElements;
-    private ProviderDefinedTypeRegistry pdtRegistry;
+
+    // Default to SPI-discovered adapters so PDT dehydration works with zero configuration.
+    // This performs a lightweight ServiceLoader scan; the serializer path does its own independent scan.
+    private ProviderDefinedTypeRegistry pdtRegistry = ProviderDefinedTypeRegistry.create();
 
     public DriverRemoteConnection(final Configuration conf) {
         final boolean hasClusterConf = IteratorUtils.anyMatch(conf.getKeys(), k -> k.startsWith("clusterConfiguration"));

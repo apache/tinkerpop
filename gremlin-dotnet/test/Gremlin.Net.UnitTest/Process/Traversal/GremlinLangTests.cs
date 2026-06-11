@@ -1203,10 +1203,10 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         {
             public string TypeName => "adapter.Point";
 
-            public AnnotatedPointWithAdapter FromProperties(IReadOnlyDictionary<string, object?> properties) =>
-                new() { X = (int)properties["a"]!, Y = (int)properties["b"]! };
+            public AnnotatedPointWithAdapter FromFields(IReadOnlyDictionary<string, object?> fields) =>
+                new() { X = (int)fields["a"]!, Y = (int)fields["b"]! };
 
-            public IReadOnlyDictionary<string, object?> ToProperties(AnnotatedPointWithAdapter obj) =>
+            public IReadOnlyDictionary<string, object?> ToFields(AnnotatedPointWithAdapter obj) =>
                 new Dictionary<string, object?> { { "a", obj.X }, { "b", obj.Y } };
         }
     }

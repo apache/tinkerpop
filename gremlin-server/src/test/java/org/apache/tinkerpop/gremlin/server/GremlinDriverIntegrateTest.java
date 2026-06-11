@@ -1287,8 +1287,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertTrue(result instanceof ProviderDefinedType);
             final ProviderDefinedType r = (ProviderDefinedType) result;
             assertEquals("TestPoint", r.getName());
-            assertEquals(1, r.getProperties().get("x"));
-            assertEquals(2, r.getProperties().get("y"));
+            assertEquals(1, r.getFields().get("x"));
+            assertEquals(2, r.getFields().get("y"));
         } finally {
             cluster.close();
         }
@@ -1386,8 +1386,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                     value instanceof ProviderDefinedType);
             final ProviderDefinedType pdt = (ProviderDefinedType) value;
             assertEquals("Point", pdt.getName());
-            assertEquals(3, pdt.getProperties().get("x"));
-            assertEquals(4, pdt.getProperties().get("y"));
+            assertEquals(3, pdt.getFields().get("x"));
+            assertEquals(4, pdt.getFields().get("y"));
         } finally {
             // cleanup
             client.submit("g.V().hasLabel('location').drop().iterate()", groovyRequestOptions).all().get();
@@ -1407,13 +1407,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         // so the adapter's type name matches the server type name "Point".
         @Override public String typeName() { return "Point"; }
         @Override public Class<TestPoint> targetClass() { return TestPoint.class; }
-        @Override public Map<String, Object> toProperties(final TestPoint obj) {
+        @Override public Map<String, Object> toFields(final TestPoint obj) {
             final Map<String, Object> m = new HashMap<>();
             m.put("x", obj.x);
             m.put("y", obj.y);
             return m;
         }
-        @Override public TestPoint fromProperties(final Map<String, Object> props) {
+        @Override public TestPoint fromFields(final Map<String, Object> props) {
             return new TestPoint(((Number) props.get("x")).intValue(), ((Number) props.get("y")).intValue());
         }
     }

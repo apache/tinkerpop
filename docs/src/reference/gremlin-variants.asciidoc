@@ -667,8 +667,8 @@ Consult your graph provider's documentation for the list of PDTs they support.
 ----
 results, err := g.V().Has("location").Values("location").ToList()
 pdt := results[0].GetInterface().(*gremlingo.ProviderDefinedType)
-fmt.Println(pdt.Name)       // "x:Point"
-fmt.Println(pdt.Properties) // map[x:1.0 y:2.0]
+fmt.Println(pdt.Name)   // "x:Point"
+fmt.Println(pdt.Fields) // map[x:1.0 y:2.0]
 ----
 
 Working with raw `*ProviderDefinedType` values is always available. Using a `PDTRegistry` is an optional
@@ -1600,7 +1600,7 @@ Receiving a raw PDT:
 ----
 ProviderDefinedType pdt = (ProviderDefinedType) g.V().has("location").values("location").next();
 String typeName = pdt.getName();                   // "x:Point"
-Map<String, Object> props = pdt.getProperties();   // {x: 1.0, y: 2.0}
+Map<String, Object> fields = pdt.getFields();      // {x: 1.0, y: 2.0}
 ----
 
 Working with raw `ProviderDefinedType` objects is always available. The following two approaches are optional
@@ -1611,8 +1611,8 @@ Using a `ProviderDefinedTypeRegistry` for hydration and dehydration:
 public class PointAdapter implements ProviderDefinedTypeAdapter<Point> {
     @Override public String typeName() { return "x:Point"; }
     @Override public Class<Point> targetClass() { return Point.class; }
-    @Override public Map<String, Object> toProperties(Point p) { return Map.of("x", p.getX(), "y", p.getY()); }
-    @Override public Point fromProperties(Map<String, Object> m) { return new Point((double) m.get("x"), (double) m.get("y")); }
+    @Override public Map<String, Object> toFields(Point p) { return Map.of("x", p.getX(), "y", p.getY()); }
+    @Override public Point fromFields(Map<String, Object> m) { return new Point((double) m.get("x"), (double) m.get("y")); }
 }
 ----
 
@@ -2294,8 +2294,8 @@ Receiving a raw PDT:
 ----
 const results = await g.V().has('location').values('location').toList();
 const pdt = results[0];
-console.log(pdt.name);       // "x:Point"
-console.log(pdt.properties); // { x: 1.0, y: 2.0 }
+console.log(pdt.name);   // "x:Point"
+console.log(pdt.fields); // { x: 1.0, y: 2.0 }
 ----
 
 Working with raw `ProviderDefinedType` objects is always available. Using a `ProviderDefinedTypeRegistry` is an
@@ -2811,8 +2811,8 @@ Receiving a raw PDT:
 [source,csharp]
 ----
 var pdt = (ProviderDefinedType) g.V().Has("location").Values<object>("location").Next();
-Console.WriteLine(pdt.Name);       // "x:Point"
-Console.WriteLine(pdt.Properties); // { x: 1.0, y: 2.0 }
+Console.WriteLine(pdt.Name);   // "x:Point"
+Console.WriteLine(pdt.Fields); // { x: 1.0, y: 2.0 }
 ----
 
 Working with raw `ProviderDefinedType` objects is always available. The following two approaches are optional
@@ -2826,10 +2826,10 @@ public class PointAdapter : IProviderDefinedTypeAdapter<Point>
 {
     public string TypeName => "x:Point";
 
-    public Point FromProperties(IReadOnlyDictionary<string, object?> properties) =>
-        new Point((double)properties["x"], (double)properties["y"]);
+    public Point FromFields(IReadOnlyDictionary<string, object?> fields) =>
+        new Point((double)fields["x"], (double)fields["y"]);
 
-    public IReadOnlyDictionary<string, object?> ToProperties(Point value) =>
+    public IReadOnlyDictionary<string, object?> ToFields(Point value) =>
         new Dictionary<string, object?> { ["x"] = value.X, ["y"] = value.Y };
 }
 
@@ -2839,7 +2839,7 @@ registry.Register(new PointAdapter());
 using var client = new GremlinClient(new GremlinServer("localhost", 8182), pdtRegistry: registry);
 ----
 
-The `ProviderDefinedTypeRegistry.Build()` method scans loaded assemblies for `IProviderDefinedTypeAdapter<T>`
+The `ProviderDefinedTypeRegistry.Create()` method scans loaded assemblies for `IProviderDefinedTypeAdapter<T>`
 implementations and registers them automatically.
 
 For simpler cases where you own the type, annotate it directly to avoid writing an adapter:
@@ -3491,8 +3491,8 @@ Receiving a raw PDT:
 [source,python]
 ----
 pdt = g.V().has('location').values('location').next()
-print(pdt.name)       # "x:Point"
-print(pdt.properties) # {'x': 1.0, 'y': 2.0}
+print(pdt.name)   # "x:Point"
+print(pdt.fields) # {'x': 1.0, 'y': 2.0}
 ----
 
 Working with raw `ProviderDefinedType` objects is always available. The following two approaches are optional
@@ -3506,7 +3506,7 @@ from gremlin_python.structure.graph import ProviderDefinedTypeRegistry
 
 registry = ProviderDefinedTypeRegistry()
 registry.register('x:Point',
-    deserialize_fn=lambda props: Point(props['x'], props['y']),
+    deserialize_fn=lambda fields: Point(fields['x'], fields['y']),
     serialize_fn=lambda p: {'x': p.x, 'y': p.y},
     target_class=Point)
 
@@ -3514,7 +3514,7 @@ g = traversal().with_(DriverRemoteConnection('http://localhost:8182/gremlin', 'g
     pdt_registry=registry))
 ----
 
-The `ProviderDefinedTypeRegistry.build()` class method discovers adapters via `entry_points` in `pyproject.toml`
+The `ProviderDefinedTypeRegistry.create()` class method discovers adapters via `entry_points` in `pyproject.toml`
 under the `tinkerpop.pdt` group.
 
 For simpler cases where you own the type, the `@provider_defined` decorator enables automatic round-trip conversion

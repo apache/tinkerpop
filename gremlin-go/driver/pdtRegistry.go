@@ -23,9 +23,9 @@ import "reflect"
 
 // PDTAdapter defines how to hydrate/dehydrate a provider-defined type.
 type PDTAdapter struct {
-	TypeName       string
-	FromProperties func(map[string]interface{}) (interface{}, error)
-	ToProperties   func(interface{}) (map[string]interface{}, error)
+	TypeName  string
+	FromFields func(map[string]interface{}) (interface{}, error)
+	ToFields   func(interface{}) (map[string]interface{}, error)
 }
 
 // PDTRegistry maps type names to their hydration adapters.
@@ -41,13 +41,13 @@ func NewPDTRegistry() *PDTRegistry {
 
 // RegisterFuncs registers hydration/dehydration functions for a type name.
 func (r *PDTRegistry) RegisterFuncs(typeName string, fromProps func(map[string]interface{}) (interface{}, error), toProps func(interface{}) (map[string]interface{}, error)) {
-	adapter := &PDTAdapter{TypeName: typeName, FromProperties: fromProps, ToProperties: toProps}
+	adapter := &PDTAdapter{TypeName: typeName, FromFields: fromProps, ToFields: toProps}
 	r.adaptersByName[typeName] = adapter
 }
 
 // RegisterFuncsWithType registers hydration/dehydration functions for a type name and associates a Go type for dehydration lookup.
 func (r *PDTRegistry) RegisterFuncsWithType(typeName string, targetType reflect.Type, fromProps func(map[string]interface{}) (interface{}, error), toProps func(interface{}) (map[string]interface{}, error)) {
-	adapter := &PDTAdapter{TypeName: typeName, FromProperties: fromProps, ToProperties: toProps}
+	adapter := &PDTAdapter{TypeName: typeName, FromFields: fromProps, ToFields: toProps}
 	r.adaptersByName[typeName] = adapter
 	r.adaptersByType[targetType] = adapter
 }
@@ -56,7 +56,7 @@ func (r *PDTRegistry) RegisterFuncsWithType(typeName string, targetType reflect.
 func (r *PDTRegistry) RegisterType(typeName string, targetType reflect.Type) {
 	r.adaptersByName[typeName] = &PDTAdapter{
 		TypeName: typeName,
-		FromProperties: func(props map[string]interface{}) (interface{}, error) {
+		FromFields: func(props map[string]interface{}) (interface{}, error) {
 			obj := reflect.New(targetType).Elem()
 			for i := 0; i < targetType.NumField(); i++ {
 				field := targetType.Field(i)
@@ -88,15 +88,15 @@ func (r *PDTRegistry) Hydrate(pdt *ProviderDefinedType) interface{} {
 	if !ok {
 		return pdt
 	}
-	hydratedProps := make(map[string]interface{}, len(pdt.Properties))
-	for k, v := range pdt.Properties {
+	hydratedFields := make(map[string]interface{}, len(pdt.Fields))
+	for k, v := range pdt.Fields {
 		if nested, ok := v.(*ProviderDefinedType); ok {
-			hydratedProps[k] = r.Hydrate(nested)
+			hydratedFields[k] = r.Hydrate(nested)
 		} else {
-			hydratedProps[k] = v
+			hydratedFields[k] = v
 		}
 	}
-	result, err := adapter.FromProperties(hydratedProps)
+	result, err := adapter.FromFields(hydratedFields)
 	if err != nil {
 		return pdt
 	}

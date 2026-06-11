@@ -31,23 +31,23 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * An immutable representation of a provider-defined type consisting of a name and a map of properties.
+ * An immutable representation of a provider-defined type consisting of a name and a map of fields.
  */
 public final class ProviderDefinedType {
 
     private static final ConcurrentHashMap<Class<?>, FieldCache> FIELD_CACHE = new ConcurrentHashMap<>();
 
     private final String name;
-    private final Map<String, Object> properties;
+    private final Map<String, Object> fields;
     private Object hydrated;
 
-    public ProviderDefinedType(final String name, final Map<String, Object> properties) {
+    public ProviderDefinedType(final String name, final Map<String, Object> fields) {
         if (name == null || name.isEmpty())
             throw new IllegalArgumentException("name cannot be null or empty");
-        if (properties == null)
-            throw new IllegalArgumentException("properties cannot be null");
+        if (fields == null)
+            throw new IllegalArgumentException("fields cannot be null");
         this.name = name;
-        this.properties = Collections.unmodifiableMap(new LinkedHashMap<>(properties));
+        this.fields = Collections.unmodifiableMap(new LinkedHashMap<>(fields));
     }
 
     /**
@@ -139,15 +139,15 @@ public final class ProviderDefinedType {
         return name;
     }
 
-    public Map<String, Object> getProperties() {
-        return properties;
+    public Map<String, Object> getFields() {
+        return fields;
     }
 
     /**
      * Returns a copy of this PDT with the hydrated object attached.
      */
     public ProviderDefinedType withHydrated(final Object hydrated) {
-        final ProviderDefinedType copy = new ProviderDefinedType(this.name, this.properties);
+        final ProviderDefinedType copy = new ProviderDefinedType(this.name, this.fields);
         copy.hydrated = hydrated;
         return copy;
     }
@@ -159,21 +159,28 @@ public final class ProviderDefinedType {
         return hydrated;
     }
 
+    /**
+     * Equality is based solely on {@code name} and {@code fields} (the serialized wire form).
+     * The {@code hydrated} field is intentionally excluded — it is a transient, derived view
+     * cached by the deserializer via {@link #withHydrated(Object)} and is not part of the
+     * type's logical identity.
+     */
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (!(o instanceof ProviderDefinedType)) return false;
         final ProviderDefinedType that = (ProviderDefinedType) o;
-        return name.equals(that.name) && properties.equals(that.properties);
+        return name.equals(that.name) && fields.equals(that.fields);
     }
 
+    /** See {@link #equals(Object)} for rationale on field inclusion. */
     @Override
     public int hashCode() {
-        return Objects.hash(name, properties);
+        return Objects.hash(name, fields);
     }
 
     @Override
     public String toString() {
-        return "pdt[" + name + "]" + properties;
+        return "pdt[" + name + "]" + fields;
     }
 }

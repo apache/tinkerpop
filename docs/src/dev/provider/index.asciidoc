@@ -1450,13 +1450,13 @@ public class ColorAdapter implements ProviderDefinedTypeAdapter<java.awt.Color> 
     public Class<java.awt.Color> targetClass() { return java.awt.Color.class; }
 
     @Override
-    public Map<String, Object> toProperties(java.awt.Color color) {
+    public Map<String, Object> toFields(java.awt.Color color) {
         return Map.of("r", color.getRed(), "g", color.getGreen(),
                       "b", color.getBlue(), "a", color.getAlpha());
     }
 
     @Override
-    public java.awt.Color fromProperties(Map<String, Object> fields) {
+    public java.awt.Color fromFields(Map<String, Object> fields) {
         return new java.awt.Color((int) fields.get("r"), (int) fields.get("g"),
                                   (int) fields.get("b"), (int) fields.get("a"));
     }
@@ -1485,12 +1485,12 @@ annotation to derive the type name and field mapping automatically:
 
 [source,java]
 ----
-ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.build();
+ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.create();
 registry.register(Point.class, Address.class, Person.class);
 ----
 
 Adapter types (for classes you don't own) are discovered automatically via `ServiceLoader` when using
-`ProviderDefinedTypeRegistry.build()`. Register them by adding a file at:
+`ProviderDefinedTypeRegistry.create()`. Register them by adding a file at:
 
 ----
 META-INF/services/org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter
@@ -1509,9 +1509,9 @@ definition time (import time), so any annotated type round-trips without any add
 
 ===== .NET
 
-`[ProviderDefined]`-annotated types are discovered automatically. Calling `ProviderDefinedTypeRegistry.Build()`
+`[ProviderDefined]`-annotated types are discovered automatically. Calling `ProviderDefinedTypeRegistry.Create()`
 scans all loaded assemblies for `[ProviderDefined]`-annotated types and registers them for hydration. No extra
-configuration is needed — providers simply annotate their types and users call `Build()` to create the registry.
+configuration is needed — providers simply annotate their types and users call `Create()` to create the registry.
 
 ===== JavaScript
 
@@ -1548,7 +1548,7 @@ the registry is populated:
 // In the provider's client library
 public class MyGraphTypeRegistry {
     public static ProviderDefinedTypeRegistry build() {
-        ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.build(); // discovers ServiceLoader adapters
+        ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.create(); // discovers ServiceLoader adapters
         registry.register(Point.class, Address.class, Person.class);               // registers annotated types
         return registry;
     }
@@ -1573,7 +1573,7 @@ each language driver.
 ==== JPMS Considerations
 
 Annotation-based PDT hydration uses reflection internally — specifically `Constructor.setAccessible(true)` and
-`Field.set()` on the provider's annotated class (see `AnnotatedTypeAdapter.fromProperties` in
+`Field.set()` on the provider's annotated class (see `AnnotatedTypeAdapter.fromFields` in
 `ProviderDefinedTypeRegistry`). Under the Java Platform Module System (JPMS), this means the provider's module must
 `opens` its PDT package to `org.apache.tinkerpop.gremlin.core` (or to `ALL-UNNAMED` for classpath usage), otherwise
 the JVM will throw `InaccessibleObjectException` at hydration time.
@@ -1593,7 +1593,7 @@ Alternatively, providers that cannot modify their module descriptor can pass JVM
 ----
 
 NOTE: This only applies to annotation-based hydration. Providers using `ProviderDefinedTypeAdapter` with explicit
-`fromProperties` logic do not require reflective access and are unaffected by JPMS restrictions.
+`fromFields` logic do not require reflective access and are unaffected by JPMS restrictions.
 
 [[gremlin-plugins]]
 == Gremlin Plugins

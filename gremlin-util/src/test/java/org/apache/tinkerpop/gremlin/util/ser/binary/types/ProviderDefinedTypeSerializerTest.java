@@ -16,15 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.binary.types;
+package org.apache.tinkerpop.gremlin.util.ser.binary.types;
 
+import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
-import org.apache.tinkerpop.gremlin.structure.io.binary.HeapBuffer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
+import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -42,9 +44,11 @@ public class ProviderDefinedTypeSerializerTest {
 
     private static final GraphBinaryReader reader = new GraphBinaryReader();
     private static final GraphBinaryWriter writer = new GraphBinaryWriter();
+    private static final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
+    private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
 
     private Buffer writeAndRead(final Object value) throws IOException {
-        final Buffer buffer = HeapBuffer.allocate(1024);
+        final Buffer buffer = bufferFactory.create(allocator.buffer());
         writer.write(value, buffer);
         buffer.readerIndex(0);
         return buffer;
@@ -120,8 +124,7 @@ public class ProviderDefinedTypeSerializerTest {
 
     @Test(expected = IOException.class)
     public void shouldThrowOnEmptyNameDuringRead() throws IOException {
-        // Manually write a PDT with empty name to trigger the validation
-        final Buffer buffer = HeapBuffer.allocate(256);
+        final Buffer buffer = bufferFactory.create(allocator.buffer());
         // Write type code for COMPOSITE_PDT
         buffer.writeByte(0xF0);
         // Write value_flag = 0 (not null)
@@ -141,7 +144,7 @@ public class ProviderDefinedTypeSerializerTest {
 
     @Test(expected = IOException.class)
     public void shouldThrowOnNonStringKeyInPropertiesMap() throws IOException {
-        final Buffer buffer = HeapBuffer.allocate(256);
+        final Buffer buffer = bufferFactory.create(allocator.buffer());
         // Write type code for COMPOSITE_PDT (0xF0), value_flag 0
         buffer.writeByte(0xF0);
         buffer.writeByte(0x00);
@@ -170,7 +173,7 @@ public class ProviderDefinedTypeSerializerTest {
 
     @Test
     public void shouldHandleNullPdt() throws IOException {
-        final Buffer buffer = HeapBuffer.allocate(64);
+        final Buffer buffer = bufferFactory.create(allocator.buffer());
         writer.write(null, buffer);
         buffer.readerIndex(0);
         final Object result = reader.read(buffer);
@@ -188,18 +191,18 @@ public class ProviderDefinedTypeSerializerTest {
             public Class<Map<String, Object>> targetClass() { return (Class) Map.class; }
 
             @Override
-            public Map<String, Object> fromProperties(final Map<String, Object> properties) {
+            public Map<String, Object> fromFields(final Map<String, Object> properties) {
                 final Map<String, Object> result = new LinkedHashMap<>(properties);
                 result.put("hydrated", true);
                 return result;
             }
 
             @Override
-            public Map<String, Object> toProperties(final Map<String, Object> value) { return value; }
+            public Map<String, Object> toFields(final Map<String, Object> value) { return value; }
         });
 
         final GraphBinaryReader hydratingReader = new GraphBinaryReader(
-                org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry.INSTANCE, pdtRegistry);
+                TypeSerializerRegistry.INSTANCE, pdtRegistry);
 
         final Map<String, Object> props = new LinkedHashMap<>();
         props.put("x", 1);

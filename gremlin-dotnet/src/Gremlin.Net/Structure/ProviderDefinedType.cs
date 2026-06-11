@@ -28,7 +28,7 @@ using System.Linq;
 namespace Gremlin.Net.Structure
 {
     /// <summary>
-    /// Represents a provider-defined type (PDT) with a name and a set of properties.
+    /// Represents a provider-defined type (PDT) with a name and a set of fields.
     /// </summary>
     public class ProviderDefinedType
     {
@@ -36,12 +36,12 @@ namespace Gremlin.Net.Structure
         /// Initializes a new instance of the <see cref="ProviderDefinedType"/> class.
         /// </summary>
         /// <param name="name">The fully-qualified name of the provider-defined type.</param>
-        /// <param name="properties">The properties of the provider-defined type.</param>
-        public ProviderDefinedType(string name, IReadOnlyDictionary<string, object?> properties)
+        /// <param name="fields">The fields of the provider-defined type.</param>
+        public ProviderDefinedType(string name, IReadOnlyDictionary<string, object?> fields)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             if (string.IsNullOrEmpty(name)) throw new ArgumentException("name cannot be empty", nameof(name));
-            Properties = properties ?? new Dictionary<string, object?>();
+            Fields = fields ?? new Dictionary<string, object?>();
         }
 
         /// <summary>
@@ -50,21 +50,21 @@ namespace Gremlin.Net.Structure
         public string Name { get; }
 
         /// <summary>
-        /// Gets the properties of this provider-defined type.
+        /// Gets the fields of this provider-defined type.
         /// </summary>
-        public IReadOnlyDictionary<string, object?> Properties { get; }
+        public IReadOnlyDictionary<string, object?> Fields { get; }
 
         /// <inheritdoc />
         public override string ToString() =>
-            $"pdt[{Name}]{{{string.Join(", ", Properties.Select(kv => $"{kv.Key}={kv.Value}"))}}}";
+            $"pdt[{Name}]{{{string.Join(", ", Fields.Select(kv => $"{kv.Key}={kv.Value}"))}}}";
 
         /// <inheritdoc />
         public override bool Equals(object? obj) =>
             obj is ProviderDefinedType other && Name == other.Name &&
-            Properties.Count == other.Properties.Count &&
-            Properties.All(kv => other.Properties.TryGetValue(kv.Key, out var v) && Equals(kv.Value, v));
+            Fields.Count == other.Fields.Count &&
+            Fields.All(kv => other.Fields.TryGetValue(kv.Key, out var v) && Equals(kv.Value, v));
 
         /// <inheritdoc />
-        public override int GetHashCode() => HashCode.Combine(Name, Properties.Count);
+        public override int GetHashCode() => HashCode.Combine(Name, Fields.Count);
     }
 }

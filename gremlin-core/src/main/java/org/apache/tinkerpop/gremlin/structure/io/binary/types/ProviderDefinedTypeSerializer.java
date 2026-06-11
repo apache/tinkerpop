@@ -38,19 +38,19 @@ public class ProviderDefinedTypeSerializer extends SimpleTypeSerializer<Provider
         final String name = context.read(buffer);
         if (name == null || name.isEmpty())
             throw new IOException("ProviderDefinedType name cannot be null or empty");
-        final Map<?, ?> properties = context.read(buffer);
-        for (final Object key : properties.keySet()) {
+        final Map<?, ?> fields = context.read(buffer);
+        for (final Object key : fields.keySet()) {
             if (!(key instanceof String))
-                throw new IOException("ProviderDefinedType properties map must have String keys, found: " + key.getClass().getName());
+                throw new IOException("ProviderDefinedType fields map must have String keys, found: " + key.getClass().getName());
         }
         @SuppressWarnings("unchecked")
-        final Map<String, Object> typedProperties = (Map<String, Object>) (Map<?, ?>) properties;
-        return new ProviderDefinedType(name, typedProperties);
+        final Map<String, Object> typedFields = (Map<String, Object>) (Map<?, ?>) fields;
+        return new ProviderDefinedType(name, typedFields);
     }
 
     @Override
     protected void writeValue(final ProviderDefinedType value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
         context.write(value.getName(), buffer);
-        context.write(value.getProperties(), buffer);
+        context.write(value.getFields(), buffer);
     }
 }

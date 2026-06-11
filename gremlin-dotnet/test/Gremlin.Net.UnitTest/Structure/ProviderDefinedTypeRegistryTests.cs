@@ -103,17 +103,17 @@ namespace Gremlin.Net.UnitTest.Structure
         }
 
         [Fact]
-        public void BuildShouldReturnRegistryWithoutCrashing()
+        public void CreateShouldReturnRegistryWithoutCrashing()
         {
-            var registry = ProviderDefinedTypeRegistry.Build();
+            var registry = ProviderDefinedTypeRegistry.Create();
 
             Assert.NotNull(registry);
         }
 
         [Fact]
-        public void BuildShouldDiscoverAdapterFromAssembly()
+        public void CreateShouldDiscoverAdapterFromAssembly()
         {
-            var registry = ProviderDefinedTypeRegistry.Build();
+            var registry = ProviderDefinedTypeRegistry.Create();
             var pdt = new ProviderDefinedType("test:Discoverable",
                 new Dictionary<string, object?> { ["value"] = "hello" });
 
@@ -144,10 +144,10 @@ namespace Gremlin.Net.UnitTest.Structure
         {
             public string TypeName => "geo:Point";
 
-            public Point FromProperties(IReadOnlyDictionary<string, object?> properties) =>
-                new() { X = (double)properties["x"]!, Y = (double)properties["y"]! };
+            public Point FromFields(IReadOnlyDictionary<string, object?> fields) =>
+                new() { X = (double)fields["x"]!, Y = (double)fields["y"]! };
 
-            public IReadOnlyDictionary<string, object?> ToProperties(Point obj) =>
+            public IReadOnlyDictionary<string, object?> ToFields(Point obj) =>
                 new Dictionary<string, object?> { ["x"] = obj.X, ["y"] = obj.Y };
         }
 
@@ -155,10 +155,10 @@ namespace Gremlin.Net.UnitTest.Structure
         {
             public string TypeName => "geo:Line";
 
-            public Line FromProperties(IReadOnlyDictionary<string, object?> properties) =>
-                new() { Start = (Point)properties["start"]!, End = (Point)properties["end"]! };
+            public Line FromFields(IReadOnlyDictionary<string, object?> fields) =>
+                new() { Start = (Point)fields["start"]!, End = (Point)fields["end"]! };
 
-            public IReadOnlyDictionary<string, object?> ToProperties(Line obj) =>
+            public IReadOnlyDictionary<string, object?> ToFields(Line obj) =>
                 new Dictionary<string, object?> { ["start"] = obj.Start, ["end"] = obj.End };
         }
 
@@ -166,10 +166,10 @@ namespace Gremlin.Net.UnitTest.Structure
         {
             public string TypeName => "bad:Type";
 
-            public object FromProperties(IReadOnlyDictionary<string, object?> properties) =>
+            public object FromFields(IReadOnlyDictionary<string, object?> fields) =>
                 throw new InvalidOperationException("intentional failure");
 
-            public IReadOnlyDictionary<string, object?> ToProperties(object obj) =>
+            public IReadOnlyDictionary<string, object?> ToFields(object obj) =>
                 throw new InvalidOperationException("intentional failure");
         }
 
@@ -187,10 +187,10 @@ namespace Gremlin.Net.UnitTest.Structure
     {
         public string TypeName => "test:Discoverable";
 
-        public DiscoverableType FromProperties(IReadOnlyDictionary<string, object?> properties) =>
-            new() { Value = (string)properties["value"]! };
+        public DiscoverableType FromFields(IReadOnlyDictionary<string, object?> fields) =>
+            new() { Value = (string)fields["value"]! };
 
-        public IReadOnlyDictionary<string, object?> ToProperties(DiscoverableType obj) =>
+        public IReadOnlyDictionary<string, object?> ToFields(DiscoverableType obj) =>
             new Dictionary<string, object?> { ["value"] = obj.Value };
     }
 }

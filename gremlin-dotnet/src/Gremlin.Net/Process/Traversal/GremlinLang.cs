@@ -340,14 +340,14 @@ namespace Gremlin.Net.Process.Traversal
             if (arg is ProviderDefinedType pdt)
             {
                 var sb2 = new StringBuilder("[");
-                var count = pdt.Properties.Count;
+                var count = pdt.Fields.Count;
                 if (count == 0)
                 {
                     sb2.Append(':');
                 }
                 else
                 {
-                    foreach (var kvp in pdt.Properties)
+                    foreach (var kvp in pdt.Fields)
                     {
                         sb2.Append(ArgAsString(kvp.Key)).Append(':').Append(ArgAsString(kvp.Value));
                         if (--count > 0) sb2.Append(',');
@@ -382,8 +382,8 @@ namespace Gremlin.Net.Process.Traversal
                 var adapterInfo = PdtRegistry.GetAdapterByType(arg.GetType());
                 if (adapterInfo != null)
                 {
-                    var (adapterTypeName, toProperties) = adapterInfo.Value;
-                    var props = toProperties(arg);
+                    var (adapterTypeName, toFields) = adapterInfo.Value;
+                    var props = toFields(arg);
                     return ArgAsString(new ProviderDefinedType(adapterTypeName,
                         new Dictionary<string, object?>(props)));
                 }

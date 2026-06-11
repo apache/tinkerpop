@@ -826,14 +826,14 @@ func (d *GraphBinaryDeserializer) readCompositePDT() (interface{}, error) {
 	if propsObj != nil {
 		raw, ok := propsObj.(map[interface{}]interface{})
 		if !ok {
-			return nil, fmt.Errorf("ProviderDefinedType properties must be a map")
+			return nil, fmt.Errorf("ProviderDefinedType fields must be a map")
 		}
 		props = make(map[string]interface{}, len(raw))
 		for k, v := range raw {
 			props[fmt.Sprint(k)] = v
 		}
 	}
-	pdt := &ProviderDefinedType{Name: name, Properties: props}
+	pdt := &ProviderDefinedType{Name: name, Fields: props}
 	if d.pdtRegistry != nil {
 		hydrated := d.pdtRegistry.Hydrate(pdt)
 		if hydrated != pdt {

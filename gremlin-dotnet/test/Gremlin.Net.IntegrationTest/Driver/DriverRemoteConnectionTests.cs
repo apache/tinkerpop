@@ -113,8 +113,8 @@ public class DriverRemoteConnectionTests
         Assert.Single(results);
         var result = Assert.IsType<ProviderDefinedType>(results[0]);
         Assert.Equal("TestPoint", result.Name);
-        Assert.Equal(1, result.Properties["x"]);
-        Assert.Equal(2, result.Properties["y"]);
+        Assert.Equal(1, result.Fields["x"]);
+        Assert.Equal(2, result.Fields["y"]);
     }
 
     [Fact]
@@ -168,16 +168,16 @@ public class DriverRemoteConnectionTests
     {
         public string TypeName => "TestPoint";
 
-        public TestPointClass FromProperties(IReadOnlyDictionary<string, object?> properties)
+        public TestPointClass FromFields(IReadOnlyDictionary<string, object?> fields)
         {
             return new TestPointClass
             {
-                X = Convert.ToInt32(properties["x"]),
-                Y = Convert.ToInt32(properties["y"])
+                X = Convert.ToInt32(fields["x"]),
+                Y = Convert.ToInt32(fields["y"])
             };
         }
 
-        public IReadOnlyDictionary<string, object?> ToProperties(TestPointClass obj)
+        public IReadOnlyDictionary<string, object?> ToFields(TestPointClass obj)
         {
             return new ReadOnlyDictionary<string, object?>(
                 new Dictionary<string, object?> { { "x", obj.X }, { "y", obj.Y } });

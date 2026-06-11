@@ -525,7 +525,7 @@ func TestProviderDefinedTypeTraversalAPIIntegration(t *testing.T) {
 		defer remote.Close()
 
 		g := Traversal_().With(remote)
-		pdt := &ProviderDefinedType{Name: "TestPoint", Properties: map[string]interface{}{"x": int32(1), "y": int32(2)}}
+		pdt := &ProviderDefinedType{Name: "TestPoint", Fields: map[string]interface{}{"x": int32(1), "y": int32(2)}}
 
 		results, err := g.Inject(pdt).ToList()
 		require.NoError(t, err)
@@ -534,8 +534,8 @@ func TestProviderDefinedTypeTraversalAPIIntegration(t *testing.T) {
 		result, ok := results[0].GetInterface().(*ProviderDefinedType)
 		require.True(t, ok, "expected *ProviderDefinedType, got %T", results[0].GetInterface())
 		assert.Equal(t, "TestPoint", result.Name)
-		assert.Equal(t, int32(1), result.Properties["x"])
-		assert.Equal(t, int32(2), result.Properties["y"])
+		assert.Equal(t, int32(1), result.Fields["x"])
+		assert.Equal(t, int32(2), result.Fields["y"])
 	})
 
 	t.Run("registry-based round-trip via typed struct", func(t *testing.T) {

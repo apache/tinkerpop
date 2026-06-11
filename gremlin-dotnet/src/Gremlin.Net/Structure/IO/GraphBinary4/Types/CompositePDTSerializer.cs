@@ -47,8 +47,8 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
         {
             // Write name as fully-qualified string
             await writer.WriteAsync(value.Name, stream, cancellationToken).ConfigureAwait(false);
-            // Write properties as fully-qualified map
-            await writer.WriteAsync((IDictionary<string, object?>)new Dictionary<string, object?>(value.Properties),
+            // Write fields as fully-qualified map
+            await writer.WriteAsync((IDictionary<string, object?>)new Dictionary<string, object?>(value.Fields),
                 stream, cancellationToken).ConfigureAwait(false);
         }
 
@@ -63,16 +63,16 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
             var map = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false)
                 as IDictionary<object, object?>;
 
-            var properties = new Dictionary<string, object?>();
+            var fields = new Dictionary<string, object?>();
             if (map != null)
             {
                 foreach (var kv in map)
                 {
-                    properties[(string)kv.Key] = kv.Value;
+                    fields[(string)kv.Key] = kv.Value;
                 }
             }
 
-            return new ProviderDefinedType(name!, properties);
+            return new ProviderDefinedType(name!, fields);
         }
     }
 }

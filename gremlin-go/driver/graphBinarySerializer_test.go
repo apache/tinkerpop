@@ -725,8 +725,8 @@ func TestProviderDefinedTypeSerialization(t *testing.T) {
 
 	t.Run("round-trip simple PDT", func(t *testing.T) {
 		source := &ProviderDefinedType{
-			Name:       "com.example.MyType",
-			Properties: map[string]interface{}{"key": "value", "num": int32(42)},
+			Name:   "com.example.MyType",
+			Fields: map[string]interface{}{"key": "value", "num": int32(42)},
 		}
 		var buf bytes.Buffer
 		err := serializer.write(source, &buf)
@@ -738,18 +738,18 @@ func TestProviderDefinedTypeSerialization(t *testing.T) {
 		pdt, ok := result.(*ProviderDefinedType)
 		assert.True(t, ok)
 		assert.Equal(t, source.Name, pdt.Name)
-		assert.Equal(t, source.Properties["key"], pdt.Properties["key"])
-		assert.Equal(t, source.Properties["num"], pdt.Properties["num"])
+		assert.Equal(t, source.Fields["key"], pdt.Fields["key"])
+		assert.Equal(t, source.Fields["num"], pdt.Fields["num"])
 	})
 
 	t.Run("round-trip nested PDT", func(t *testing.T) {
 		inner := &ProviderDefinedType{
-			Name:       "com.example.Inner",
-			Properties: map[string]interface{}{"x": int32(1)},
+			Name:   "com.example.Inner",
+			Fields: map[string]interface{}{"x": int32(1)},
 		}
 		outer := &ProviderDefinedType{
-			Name:       "com.example.Outer",
-			Properties: map[string]interface{}{"child": inner},
+			Name:   "com.example.Outer",
+			Fields: map[string]interface{}{"child": inner},
 		}
 		var buf bytes.Buffer
 		err := serializer.write(outer, &buf)
@@ -761,10 +761,10 @@ func TestProviderDefinedTypeSerialization(t *testing.T) {
 		pdt, ok := result.(*ProviderDefinedType)
 		assert.True(t, ok)
 		assert.Equal(t, "com.example.Outer", pdt.Name)
-		child, ok := pdt.Properties["child"].(*ProviderDefinedType)
+		child, ok := pdt.Fields["child"].(*ProviderDefinedType)
 		assert.True(t, ok)
 		assert.Equal(t, "com.example.Inner", child.Name)
-		assert.Equal(t, int32(1), child.Properties["x"])
+		assert.Equal(t, int32(1), child.Fields["x"])
 	})
 
 	t.Run("empty name produces error", func(t *testing.T) {
@@ -787,8 +787,8 @@ func TestProviderDefinedTypeSerialization(t *testing.T) {
 			}, nil)
 
 		source := &ProviderDefinedType{
-			Name:       "com.example.MyType",
-			Properties: map[string]interface{}{"key": "value"},
+			Name:   "com.example.MyType",
+			Fields: map[string]interface{}{"key": "value"},
 		}
 		var buf bytes.Buffer
 		err := serializer.write(source, &buf)
@@ -805,8 +805,8 @@ func TestProviderDefinedTypeSerialization(t *testing.T) {
 
 	t.Run("no hydration without registry", func(t *testing.T) {
 		source := &ProviderDefinedType{
-			Name:       "com.example.MyType",
-			Properties: map[string]interface{}{"key": "value"},
+			Name:   "com.example.MyType",
+			Fields: map[string]interface{}{"key": "value"},
 		}
 		var buf bytes.Buffer
 		err := serializer.write(source, &buf)

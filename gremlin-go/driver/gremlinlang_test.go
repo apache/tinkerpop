@@ -863,7 +863,7 @@ func Test_ConvertParametersToString(t *testing.T) {
 func Test_PDT_GremlinLang(t *testing.T) {
 	t.Run("basic PDT", func(t *testing.T) {
 		g := NewGraphTraversalSource(nil, nil)
-		pdt := &ProviderDefinedType{Name: "MyType", Properties: map[string]interface{}{"x": int32(1), "y": "hello"}}
+		pdt := &ProviderDefinedType{Name: "MyType", Fields: map[string]interface{}{"x": int32(1), "y": "hello"}}
 		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
 		expected := `g.inject(PDT("MyType",["x":1,"y":"hello"]))`
 		if gremlin != expected {
@@ -873,7 +873,7 @@ func Test_PDT_GremlinLang(t *testing.T) {
 
 	t.Run("empty PDT", func(t *testing.T) {
 		g := NewGraphTraversalSource(nil, nil)
-		pdt := &ProviderDefinedType{Name: "Empty", Properties: map[string]interface{}{}}
+		pdt := &ProviderDefinedType{Name: "Empty", Fields: map[string]interface{}{}}
 		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
 		expected := `g.inject(PDT("Empty",[:]))`
 		if gremlin != expected {
@@ -883,7 +883,7 @@ func Test_PDT_GremlinLang(t *testing.T) {
 
 	t.Run("PDT with special characters in name", func(t *testing.T) {
 		g := NewGraphTraversalSource(nil, nil)
-		pdt := &ProviderDefinedType{Name: `say"hello"`, Properties: map[string]interface{}{"v": int32(1)}}
+		pdt := &ProviderDefinedType{Name: `say"hello"`, Fields: map[string]interface{}{"v": int32(1)}}
 		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
 		expected := `g.inject(PDT("say\"hello\"",["v":1]))`
 		if gremlin != expected {
@@ -893,7 +893,7 @@ func Test_PDT_GremlinLang(t *testing.T) {
 
 	t.Run("PDT with backslash in name", func(t *testing.T) {
 		g := NewGraphTraversalSource(nil, nil)
-		pdt := &ProviderDefinedType{Name: `back\slash`, Properties: map[string]interface{}{"v": int32(1)}}
+		pdt := &ProviderDefinedType{Name: `back\slash`, Fields: map[string]interface{}{"v": int32(1)}}
 		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
 		expected := `g.inject(PDT("back\\slash",["v":1]))`
 		if gremlin != expected {
@@ -903,8 +903,8 @@ func Test_PDT_GremlinLang(t *testing.T) {
 
 	t.Run("nested PDT", func(t *testing.T) {
 		g := NewGraphTraversalSource(nil, nil)
-		inner := &ProviderDefinedType{Name: "Inner", Properties: map[string]interface{}{"v": int32(1)}}
-		outer := &ProviderDefinedType{Name: "Outer", Properties: map[string]interface{}{"inner": inner}}
+		inner := &ProviderDefinedType{Name: "Inner", Fields: map[string]interface{}{"v": int32(1)}}
+		outer := &ProviderDefinedType{Name: "Outer", Fields: map[string]interface{}{"inner": inner}}
 		gremlin := g.Inject(outer).GremlinLang.GetGremlin()
 		expected := `g.inject(PDT("Outer",["inner":PDT("Inner",["v":1])]))`
 		if gremlin != expected {
@@ -914,7 +914,7 @@ func Test_PDT_GremlinLang(t *testing.T) {
 
 	t.Run("PDT map keys sorted", func(t *testing.T) {
 		g := NewGraphTraversalSource(nil, nil)
-		pdt := &ProviderDefinedType{Name: "T", Properties: map[string]interface{}{"z": int32(3), "a": int32(1), "m": int32(2)}}
+		pdt := &ProviderDefinedType{Name: "T", Fields: map[string]interface{}{"z": int32(3), "a": int32(1), "m": int32(2)}}
 		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
 		expected := `g.inject(PDT("T",["a":1,"m":2,"z":3]))`
 		if gremlin != expected {

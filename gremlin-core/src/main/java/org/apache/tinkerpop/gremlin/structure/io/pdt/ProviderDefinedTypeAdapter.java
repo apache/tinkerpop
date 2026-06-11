@@ -21,11 +21,11 @@ package org.apache.tinkerpop.gremlin.structure.io.pdt;
 import java.util.Map;
 
 /**
- * Adapter for converting between a typed object and a {@link ProviderDefinedType} property map.
+ * Adapter for converting between a typed object and a {@link ProviderDefinedType} field map.
  */
 public interface ProviderDefinedTypeAdapter<T> {
     String typeName();
     Class<T> targetClass();
-    Map<String, Object> toProperties(T obj);
-    T fromProperties(Map<String, Object> properties);
+    Map<String, Object> toFields(T obj);
+    T fromFields(Map<String, Object> fields);
 }

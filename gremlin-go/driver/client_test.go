@@ -318,8 +318,8 @@ func TestProviderDefinedTypeIntegration(t *testing.T) {
 		pdt, ok := result.Data.(*ProviderDefinedType)
 		require.True(t, ok, "expected *ProviderDefinedType, got %T", result.Data)
 		assert.Equal(t, "Point", pdt.Name)
-		assert.Equal(t, int32(1), pdt.Properties["x"])
-		assert.Equal(t, int32(2), pdt.Properties["y"])
+		assert.Equal(t, int32(1), pdt.Fields["x"])
+		assert.Equal(t, int32(2), pdt.Fields["y"])
 	})
 
 	t.Run("nested PDT (Person with Address)", func(t *testing.T) {
@@ -343,15 +343,15 @@ func TestProviderDefinedTypeIntegration(t *testing.T) {
 		pdt, ok := result.Data.(*ProviderDefinedType)
 		require.True(t, ok, "expected *ProviderDefinedType, got %T", result.Data)
 		assert.Equal(t, "Person", pdt.Name)
-		assert.Equal(t, "Alice", pdt.Properties["name"])
-		assert.Equal(t, int32(30), pdt.Properties["age"])
+		assert.Equal(t, "Alice", pdt.Fields["name"])
+		assert.Equal(t, int32(30), pdt.Fields["age"])
 
-		address, ok := pdt.Properties["address"].(*ProviderDefinedType)
+		address, ok := pdt.Fields["address"].(*ProviderDefinedType)
 		require.True(t, ok, "expected nested *ProviderDefinedType for address")
 		assert.Equal(t, "Address", address.Name)
-		assert.Equal(t, "123 Main St", address.Properties["street"])
-		assert.Equal(t, "Springfield", address.Properties["city"])
-		assert.Equal(t, "12345", address.Properties["zip"])
+		assert.Equal(t, "123 Main St", address.Fields["street"])
+		assert.Equal(t, "Springfield", address.Fields["city"])
+		assert.Equal(t, "12345", address.Fields["zip"])
 	})
 
 	t.Run("PDT in collection", func(t *testing.T) {
@@ -378,13 +378,13 @@ func TestProviderDefinedTypeIntegration(t *testing.T) {
 		p1, ok := list[0].(*ProviderDefinedType)
 		require.True(t, ok)
 		assert.Equal(t, "Point", p1.Name)
-		assert.Equal(t, int32(1), p1.Properties["x"])
-		assert.Equal(t, int32(2), p1.Properties["y"])
+		assert.Equal(t, int32(1), p1.Fields["x"])
+		assert.Equal(t, int32(2), p1.Fields["y"])
 
 		p2, ok := list[1].(*ProviderDefinedType)
 		require.True(t, ok)
 		assert.Equal(t, "Point", p2.Name)
-		assert.Equal(t, int32(3), p2.Properties["x"])
-		assert.Equal(t, int32(4), p2.Properties["y"])
+		assert.Equal(t, int32(3), p2.Fields["x"])
+		assert.Equal(t, int32(4), p2.Fields["y"])
 	})
 }

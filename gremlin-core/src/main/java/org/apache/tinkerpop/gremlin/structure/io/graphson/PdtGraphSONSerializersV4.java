@@ -53,7 +53,7 @@ final class PdtGraphSONSerializersV4 {
             jsonGenerator.writeStringField("type", pdt.getName());
             jsonGenerator.writeFieldName("fields");
             jsonGenerator.writeStartObject();
-            for (final Map.Entry<String, Object> entry : pdt.getProperties().entrySet()) {
+            for (final Map.Entry<String, Object> entry : pdt.getFields().entrySet()) {
                 jsonGenerator.writeFieldName(entry.getKey());
                 jsonGenerator.writeObject(entry.getValue());
             }

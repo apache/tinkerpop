@@ -33,14 +33,14 @@ func TestPDTRegistryRegisterFuncsAndHydrate(t *testing.T) {
 		return [2]int{props["x"].(int), props["y"].(int)}, nil
 	}, nil)
 
-	pdt := &ProviderDefinedType{Name: "x:Point", Properties: map[string]interface{}{"x": 1, "y": 2}}
+	pdt := &ProviderDefinedType{Name: "x:Point", Fields: map[string]interface{}{"x": 1, "y": 2}}
 	result := reg.Hydrate(pdt)
 	assert.Equal(t, [2]int{1, 2}, result)
 }
 
 func TestPDTRegistryNoAdapterReturnsRawPDT(t *testing.T) {
 	reg := NewPDTRegistry()
-	pdt := &ProviderDefinedType{Name: "x:Unknown", Properties: map[string]interface{}{"a": "b"}}
+	pdt := &ProviderDefinedType{Name: "x:Unknown", Fields: map[string]interface{}{"a": "b"}}
 	result := reg.Hydrate(pdt)
 	assert.Equal(t, pdt, result)
 }
@@ -51,7 +51,7 @@ func TestPDTRegistryAdapterErrorReturnsRawPDT(t *testing.T) {
 		return nil, errors.New("fail")
 	}, nil)
 
-	pdt := &ProviderDefinedType{Name: "x:Bad", Properties: map[string]interface{}{}}
+	pdt := &ProviderDefinedType{Name: "x:Bad", Fields: map[string]interface{}{}}
 	result := reg.Hydrate(pdt)
 	assert.Equal(t, pdt, result)
 }
@@ -65,8 +65,8 @@ func TestPDTRegistryNestedHydration(t *testing.T) {
 		return "outer:" + props["child"].(string), nil
 	}, nil)
 
-	inner := &ProviderDefinedType{Name: "x:Inner", Properties: map[string]interface{}{"val": "hi"}}
-	outer := &ProviderDefinedType{Name: "x:Outer", Properties: map[string]interface{}{"child": inner}}
+	inner := &ProviderDefinedType{Name: "x:Inner", Fields: map[string]interface{}{"val": "hi"}}
+	outer := &ProviderDefinedType{Name: "x:Outer", Fields: map[string]interface{}{"child": inner}}
 	result := reg.Hydrate(outer)
 	assert.Equal(t, "outer:hi!", result)
 }
@@ -81,7 +81,7 @@ func TestPDTRegistryRegisterType(t *testing.T) {
 	reg := NewPDTRegistry()
 	reg.RegisterType("x:Point", reflect.TypeOf(testPoint{}))
 
-	pdt := &ProviderDefinedType{Name: "x:Point", Properties: map[string]interface{}{"x": 3, "y": 4, "L": "label"}}
+	pdt := &ProviderDefinedType{Name: "x:Point", Fields: map[string]interface{}{"x": 3, "y": 4, "L": "label"}}
 	result := reg.Hydrate(pdt)
 	assert.Equal(t, testPoint{X: 3, Y: 4, L: "label"}, result)
 }

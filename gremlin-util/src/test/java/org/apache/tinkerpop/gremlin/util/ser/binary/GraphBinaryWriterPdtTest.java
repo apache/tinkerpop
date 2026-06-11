@@ -16,11 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.binary;
+package org.apache.tinkerpop.gremlin.util.ser.binary;
 
+import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -35,6 +39,8 @@ public class GraphBinaryWriterPdtTest {
 
     private static final GraphBinaryReader reader = new GraphBinaryReader();
     private static final GraphBinaryWriter writer = new GraphBinaryWriter();
+    private static final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
+    private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
 
     @ProviderDefined
     static class TestPoint {
@@ -53,19 +59,19 @@ public class GraphBinaryWriterPdtTest {
 
     @Test
     public void shouldAutoConvertAnnotatedObjectToPdt() throws IOException {
-        final Buffer buffer = HeapBuffer.allocate(1024);
+        final Buffer buffer = bufferFactory.create(allocator.buffer());
         writer.write(new TestPoint(1, 2), buffer);
         buffer.readerIndex(0);
 
         final ProviderDefinedType result = reader.read(buffer);
         assertEquals("TestPoint", result.getName());
-        assertEquals(1, result.getProperties().get("x"));
-        assertEquals(2, result.getProperties().get("y"));
+        assertEquals(1, result.getFields().get("x"));
+        assertEquals(2, result.getFields().get("y"));
     }
 
     @Test
     public void shouldThrowActionableMessageForUnannotatedType() {
-        final Buffer buffer = HeapBuffer.allocate(1024);
+        final Buffer buffer = bufferFactory.create(allocator.buffer());
         final IOException ex = assertThrows(IOException.class, () -> writer.write(new UnannotatedType(), buffer));
         assertTrue(ex.getMessage().contains("@ProviderDefined"));
         assertTrue(ex.getMessage().contains("UnannotatedType"));
@@ -78,7 +84,7 @@ public class GraphBinaryWriterPdtTest {
         props.put("y", 2);
         final ProviderDefinedType pdt = new ProviderDefinedType("TestPoint", props);
 
-        final Buffer buffer = HeapBuffer.allocate(1024);
+        final Buffer buffer = bufferFactory.create(allocator.buffer());
         writer.write(pdt, buffer);
         buffer.readerIndex(0);
 

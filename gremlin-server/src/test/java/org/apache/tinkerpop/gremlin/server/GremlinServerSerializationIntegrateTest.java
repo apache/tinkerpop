@@ -278,8 +278,8 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
         assertEquals(1, results.size());
         final ProviderDefinedType pdt = (ProviderDefinedType) results.get(0).getObject();
         assertEquals("Point", pdt.getName());
-        assertEquals(1, pdt.getProperties().get("x"));
-        assertEquals(2, pdt.getProperties().get("y"));
+        assertEquals(1, pdt.getFields().get("x"));
+        assertEquals(2, pdt.getFields().get("y"));
     }
 
     @Test
@@ -291,13 +291,13 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
         assertEquals(1, results.size());
         final ProviderDefinedType person = (ProviderDefinedType) results.get(0).getObject();
         assertEquals("Person", person.getName());
-        assertEquals("Alice", person.getProperties().get("name"));
-        assertEquals(30, person.getProperties().get("age"));
+        assertEquals("Alice", person.getFields().get("name"));
+        assertEquals(30, person.getFields().get("age"));
 
-        final ProviderDefinedType address = (ProviderDefinedType) person.getProperties().get("address");
+        final ProviderDefinedType address = (ProviderDefinedType) person.getFields().get("address");
         assertEquals("Address", address.getName());
-        assertEquals("123 Main St", address.getProperties().get("street"));
-        assertEquals("Springfield", address.getProperties().get("city"));
+        assertEquals("123 Main St", address.getFields().get("street"));
+        assertEquals("Springfield", address.getFields().get("city"));
     }
 
     @Test
@@ -311,13 +311,13 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
 
         final ProviderDefinedType p1 = (ProviderDefinedType) list.get(0);
         assertEquals("Point", p1.getName());
-        assertEquals(1, p1.getProperties().get("x"));
-        assertEquals(2, p1.getProperties().get("y"));
+        assertEquals(1, p1.getFields().get("x"));
+        assertEquals(2, p1.getFields().get("y"));
 
         final ProviderDefinedType p2 = (ProviderDefinedType) list.get(1);
         assertEquals("Point", p2.getName());
-        assertEquals(3, p2.getProperties().get("x"));
-        assertEquals(4, p2.getProperties().get("y"));
+        assertEquals(3, p2.getFields().get("x"));
+        assertEquals(4, p2.getFields().get("y"));
     }
 
     @Test

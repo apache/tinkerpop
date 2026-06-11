@@ -206,7 +206,7 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		name := reflect.ValueOf(v).Type().Name()
 		return fmt.Sprintf("%s.%s", strings.ToUpper(name), v), nil
 	case *ProviderDefinedType:
-		props := v.Properties
+		props := v.Fields
 		if props == nil {
 			props = map[string]interface{}{}
 		}
@@ -304,10 +304,10 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		// default behavior for a given Go type.
 		if gl.pdtRegistry != nil {
 			adapter := gl.pdtRegistry.GetAdapterByType(reflect.TypeOf(arg))
-			if adapter != nil && adapter.ToProperties != nil {
-				props, err := adapter.ToProperties(arg)
+			if adapter != nil && adapter.ToFields != nil {
+				props, err := adapter.ToFields(arg)
 				if err == nil {
-					pdt := &ProviderDefinedType{Name: adapter.TypeName, Properties: props}
+					pdt := &ProviderDefinedType{Name: adapter.TypeName, Fields: props}
 					return gl.argAsString(pdt)
 				}
 			}

@@ -99,7 +99,7 @@ public class ProviderDefinedTypeTest {
         props.put("y", 2);
         final ProviderDefinedType pdt = new ProviderDefinedType("Point", props);
         assertEquals("Point", pdt.getName());
-        assertEquals(props, pdt.getProperties());
+        assertEquals(props, pdt.getFields());
     }
 
     @Test
@@ -108,7 +108,7 @@ public class ProviderDefinedTypeTest {
         props.put("x", 1);
         final ProviderDefinedType pdt = new ProviderDefinedType("Point", props);
         props.put("y", 2);
-        assertEquals(1, pdt.getProperties().size());
+        assertEquals(1, pdt.getFields().size());
     }
 
     @Test
@@ -116,15 +116,15 @@ public class ProviderDefinedTypeTest {
         final Map<String, Object> props = new HashMap<>();
         props.put("x", 1);
         final ProviderDefinedType pdt = new ProviderDefinedType("Point", props);
-        assertThrows(UnsupportedOperationException.class, () -> pdt.getProperties().put("y", 2));
+        assertThrows(UnsupportedOperationException.class, () -> pdt.getFields().put("y", 2));
     }
 
     @Test
     public void shouldCreateFromAnnotatedObject() {
         final ProviderDefinedType pdt = ProviderDefinedType.from(new Point());
         assertEquals("Point", pdt.getName());
-        assertEquals(1, pdt.getProperties().get("x"));
-        assertEquals(2, pdt.getProperties().get("y"));
+        assertEquals(1, pdt.getFields().get("x"));
+        assertEquals(2, pdt.getFields().get("y"));
     }
 
     @Test
@@ -136,16 +136,16 @@ public class ProviderDefinedTypeTest {
     @Test
     public void shouldFilterWithIncludedFields() {
         final ProviderDefinedType pdt = ProviderDefinedType.from(new IncludedFieldsPoint());
-        assertEquals(1, pdt.getProperties().size());
-        assertEquals(10, pdt.getProperties().get("x"));
+        assertEquals(1, pdt.getFields().size());
+        assertEquals(10, pdt.getFields().get("x"));
     }
 
     @Test
     public void shouldFilterWithExcludedFields() {
         final ProviderDefinedType pdt = ProviderDefinedType.from(new ExcludedFieldsPoint());
-        assertEquals(2, pdt.getProperties().size());
-        assertEquals(10, pdt.getProperties().get("x"));
-        assertEquals(20, pdt.getProperties().get("y"));
+        assertEquals(2, pdt.getFields().size());
+        assertEquals(10, pdt.getFields().get("x"));
+        assertEquals(20, pdt.getFields().get("y"));
     }
 
     @Test
@@ -189,9 +189,9 @@ public class ProviderDefinedTypeTest {
     @Test
     public void shouldPreserveNullFieldValues() {
         final ProviderDefinedType pdt = ProviderDefinedType.from(new NullFieldPoint());
-        assertEquals(2, pdt.getProperties().size());
-        assertEquals(null, pdt.getProperties().get("label"));
-        assertEquals(5, pdt.getProperties().get("x"));
+        assertEquals(2, pdt.getFields().size());
+        assertEquals(null, pdt.getFields().get("label"));
+        assertEquals(5, pdt.getFields().get("x"));
     }
 
     @Test
@@ -203,25 +203,25 @@ public class ProviderDefinedTypeTest {
     public void shouldIncludeInheritedFields() {
         final ProviderDefinedType pdt = ProviderDefinedType.from(new InheritedPoint());
         assertEquals("GeoPoint", pdt.getName());
-        assertEquals(3, pdt.getProperties().size());
-        assertEquals("origin", pdt.getProperties().get("label"));
-        assertEquals(1, pdt.getProperties().get("x"));
-        assertEquals(2, pdt.getProperties().get("y"));
+        assertEquals(3, pdt.getFields().size());
+        assertEquals("origin", pdt.getFields().get("label"));
+        assertEquals(1, pdt.getFields().get("x"));
+        assertEquals(2, pdt.getFields().get("y"));
     }
 
     @Test
     public void shouldExcludeInheritedFields() {
         final ProviderDefinedType pdt = ProviderDefinedType.from(new InheritedExcluded());
-        assertEquals(2, pdt.getProperties().size());
-        assertEquals("test", pdt.getProperties().get("label"));
-        assertEquals(1, pdt.getProperties().get("x"));
+        assertEquals(2, pdt.getFields().size());
+        assertEquals("test", pdt.getFields().get("label"));
+        assertEquals(1, pdt.getFields().get("x"));
     }
 
     @Test
     public void shouldIncludeOnlySpecifiedFieldsAcrossHierarchy() {
         final ProviderDefinedType pdt = ProviderDefinedType.from(new InheritedIncluded());
-        assertEquals(2, pdt.getProperties().size());
-        assertEquals("included", pdt.getProperties().get("label"));
-        assertEquals(1, pdt.getProperties().get("x"));
+        assertEquals(2, pdt.getFields().size());
+        assertEquals("included", pdt.getFields().get("label"));
+        assertEquals(1, pdt.getFields().get("x"));
     }
 }

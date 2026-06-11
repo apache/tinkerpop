@@ -37,13 +37,13 @@ namespace Gremlin.Net.Structure
         string TypeName { get; }
 
         /// <summary>
-        /// Creates a typed instance from the PDT properties.
+        /// Creates a typed instance from the PDT fields.
         /// </summary>
-        T FromProperties(IReadOnlyDictionary<string, object?> properties);
+        T FromFields(IReadOnlyDictionary<string, object?> fields);
 
         /// <summary>
-        /// Converts a typed instance back to PDT properties.
+        /// Converts a typed instance back to PDT fields.
         /// </summary>
-        IReadOnlyDictionary<string, object?> ToProperties(T obj);
+        IReadOnlyDictionary<string, object?> ToFields(T obj);
     }
 }

@@ -49,7 +49,7 @@ public final class ProviderDefinedTypeRegistry {
      * Creates a registry populated via {@link ServiceLoader} discovery.
      */
     @SuppressWarnings("rawtypes")
-    public static ProviderDefinedTypeRegistry build() {
+    public static ProviderDefinedTypeRegistry create() {
         final ProviderDefinedTypeRegistry registry = new ProviderDefinedTypeRegistry();
         for (final ProviderDefinedTypeAdapter adapter : ServiceLoader.load(ProviderDefinedTypeAdapter.class)) {
             registry.register(adapter);
@@ -101,14 +101,14 @@ public final class ProviderDefinedTypeRegistry {
         if (adapter == null)
             return pdt;
 
-        // recursively hydrate nested PDTs in the properties map
+        // recursively hydrate nested PDTs in the fields map
         final Map<String, Object> hydrated = new LinkedHashMap<>();
-        for (final Map.Entry<String, Object> entry : pdt.getProperties().entrySet()) {
+        for (final Map.Entry<String, Object> entry : pdt.getFields().entrySet()) {
             hydrated.put(entry.getKey(), hydrateValue(entry.getValue()));
         }
 
         try {
-            return adapter.fromProperties(hydrated);
+            return adapter.fromFields(hydrated);
         } catch (final Exception e) {
             logger.warn("Failed to hydrate ProviderDefinedType '{}', returning raw PDT: {}",
                     pdt.getName(), e.getMessage());
@@ -176,18 +176,18 @@ public final class ProviderDefinedTypeRegistry {
         @Override public Class<T> targetClass() { return targetClass; }
 
         @Override
-        public Map<String, Object> toProperties(final T obj) {
-            return ProviderDefinedType.from(obj).getProperties();
+        public Map<String, Object> toFields(final T obj) {
+            return ProviderDefinedType.from(obj).getFields();
         }
 
         @Override
-        public T fromProperties(final Map<String, Object> properties) {
+        public T fromFields(final Map<String, Object> fieldMap) {
             try {
                 final java.lang.reflect.Constructor<T> ctor = targetClass.getDeclaredConstructor();
                 ctor.setAccessible(true);
                 final T obj = ctor.newInstance();
                 for (final Field field : fields) {
-                    final Object value = properties.get(field.getName());
+                    final Object value = fieldMap.get(field.getName());
                     if (value != null)
                         field.set(obj, coerce(value, field.getType()));
                 }

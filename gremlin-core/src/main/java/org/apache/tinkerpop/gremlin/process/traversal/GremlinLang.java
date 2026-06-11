@@ -191,7 +191,7 @@ public class GremlinLang implements Cloneable, Serializable {
 
         if (arg instanceof ProviderDefinedType) {
             final ProviderDefinedType pdt = (ProviderDefinedType) arg;
-            return "PDT(" + argAsString(pdt.getName()) + "," + asString((Map<?, ?>) pdt.getProperties()) + ")";
+            return "PDT(" + argAsString(pdt.getName()) + "," + asString((Map<?, ?>) pdt.getFields()) + ")";
         }
 
         if (arg instanceof Enum) {
@@ -273,7 +273,7 @@ public class GremlinLang implements Cloneable, Serializable {
             final Optional<ProviderDefinedTypeAdapter<?>> adapter = pdtRegistry.getAdapterByClass(arg.getClass());
             if (adapter.isPresent()) {
                 @SuppressWarnings("unchecked")
-                final Map<String, Object> props = ((ProviderDefinedTypeAdapter) adapter.get()).toProperties(arg);
+                final Map<String, Object> props = ((ProviderDefinedTypeAdapter) adapter.get()).toFields(arg);
                 return argAsString(new ProviderDefinedType(adapter.get().typeName(), props));
             }
         }

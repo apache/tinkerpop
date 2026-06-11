@@ -67,7 +67,7 @@ namespace Gremlin.Net.Structure
             if (!RegisteredTypes.TryGetValue(pdt.Name, out var type))
                 return pdt;
             var obj = Activator.CreateInstance(type)!;
-            foreach (var (key, value) in pdt.Properties)
+            foreach (var (key, value) in pdt.Fields)
             {
                 var prop = type.GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
                 if (prop != null && prop.CanWrite && value != null)

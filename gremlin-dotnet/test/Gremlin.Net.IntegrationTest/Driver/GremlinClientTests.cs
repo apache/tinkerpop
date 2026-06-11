@@ -219,9 +219,9 @@ namespace Gremlin.Net.IntegrationTest.Driver
             Assert.Single(results);
             var pdt = Assert.IsType<ProviderDefinedType>(results[0]);
             Assert.Equal("Point", pdt.Name);
-            Assert.Equal(2, pdt.Properties.Count);
-            Assert.Equal(1, pdt.Properties["x"]);
-            Assert.Equal(2, pdt.Properties["y"]);
+            Assert.Equal(2, pdt.Fields.Count);
+            Assert.Equal(1, pdt.Fields["x"]);
+            Assert.Equal(2, pdt.Fields["y"]);
         }
 
         [Fact]
@@ -238,14 +238,14 @@ namespace Gremlin.Net.IntegrationTest.Driver
             Assert.Single(results);
             var pdt = Assert.IsType<ProviderDefinedType>(results[0]);
             Assert.Equal("Person", pdt.Name);
-            Assert.Equal("Alice", pdt.Properties["name"]);
-            Assert.Equal(30, pdt.Properties["age"]);
+            Assert.Equal("Alice", pdt.Fields["name"]);
+            Assert.Equal(30, pdt.Fields["age"]);
 
-            var address = Assert.IsType<ProviderDefinedType>(pdt.Properties["address"]);
+            var address = Assert.IsType<ProviderDefinedType>(pdt.Fields["address"]);
             Assert.Equal("Address", address.Name);
-            Assert.Equal("123 Main St", address.Properties["street"]);
-            Assert.Equal("Springfield", address.Properties["city"]);
-            Assert.Equal("12345", address.Properties["zip"]);
+            Assert.Equal("123 Main St", address.Fields["street"]);
+            Assert.Equal("Springfield", address.Fields["city"]);
+            Assert.Equal("12345", address.Fields["zip"]);
         }
 
         [Fact]
@@ -264,13 +264,13 @@ namespace Gremlin.Net.IntegrationTest.Driver
 
             var p1 = Assert.IsType<ProviderDefinedType>(list[0]);
             Assert.Equal("Point", p1.Name);
-            Assert.Equal(1, p1.Properties["x"]);
-            Assert.Equal(2, p1.Properties["y"]);
+            Assert.Equal(1, p1.Fields["x"]);
+            Assert.Equal(2, p1.Fields["y"]);
 
             var p2 = Assert.IsType<ProviderDefinedType>(list[1]);
             Assert.Equal("Point", p2.Name);
-            Assert.Equal(3, p2.Properties["x"]);
-            Assert.Equal(4, p2.Properties["y"]);
+            Assert.Equal(3, p2.Fields["x"]);
+            Assert.Equal(4, p2.Fields["y"]);
         }
     }
 }

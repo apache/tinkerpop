@@ -473,10 +473,10 @@ public class GremlinLangTest {
             registry.register(new ProviderDefinedTypeAdapter<DualType>() {
                 @Override public String typeName() { return "AdapterName"; }
                 @Override public Class<DualType> targetClass() { return DualType.class; }
-                @Override public Map<String, Object> toProperties(final DualType obj) {
+                @Override public Map<String, Object> toFields(final DualType obj) {
                     return Collections.singletonMap("v", obj.value);
                 }
-                @Override public DualType fromProperties(final Map<String, Object> properties) {
+                @Override public DualType fromFields(final Map<String, Object> properties) {
                     return new DualType((int) properties.get("v"));
                 }
             });

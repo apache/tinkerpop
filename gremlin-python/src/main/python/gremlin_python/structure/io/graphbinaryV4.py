@@ -181,7 +181,7 @@ class GraphBinaryReader(object):
         """Hydrate a ProviderDefinedType using a @provider_defined decorated class."""
         cls = _pdt_decorated_types[pdt.name]
         props = {}
-        for k, v in pdt.properties.items():
+        for k, v in pdt.fields.items():
             if isinstance(v, ProviderDefinedType) and v.name in _pdt_decorated_types:
                 props[k] = self._hydrate_decorated(v)
             elif self.pdt_registry is not None and isinstance(v, ProviderDefinedType):
@@ -958,7 +958,7 @@ class ProviderDefinedTypeIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         StringIO.dictify(obj.name, writer, to_extend)
-        MapIO.dictify(obj.properties, writer, to_extend)
+        MapIO.dictify(obj.fields, writer, to_extend)
         return to_extend
 
     @classmethod
@@ -968,5 +968,5 @@ class ProviderDefinedTypeIO(_GraphBinaryTypeIO):
     @classmethod
     def _read_pdt(cls, b, r):
         name = r.read_object(b)
-        properties = r.read_object(b)
-        return ProviderDefinedType(name, properties)
+        fields = r.read_object(b)
+        return ProviderDefinedType(name, fields)

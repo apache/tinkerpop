@@ -54,7 +54,7 @@ namespace Gremlin.Net.Structure
         /// <item>Types annotated with <see cref="ProviderDefinedAttribute"/> (annotation-based round-trip)</item>
         /// </list>
         /// </summary>
-        public static ProviderDefinedTypeRegistry Build()
+        public static ProviderDefinedTypeRegistry Create()
         {
             var registry = new ProviderDefinedTypeRegistry();
 
@@ -103,13 +103,13 @@ namespace Gremlin.Net.Structure
         }
 
         /// <summary>
-        /// Returns the type name and ToProperties method for the given CLR type, or null if not registered.
+        /// Returns the type name and ToFields method for the given CLR type, or null if not registered.
         /// </summary>
         internal (string typeName, Func<object, IReadOnlyDictionary<string, object?>>)? GetAdapterByType(Type type)
         {
             if (!_adaptersByType.TryGetValue(type, out var entry))
                 return null;
-            var method = entry.adapter.GetType().GetMethod("ToProperties");
+            var method = entry.adapter.GetType().GetMethod("ToFields");
             if (method == null) return null;
             return (entry.typeName, obj => (IReadOnlyDictionary<string, object?>)method.Invoke(entry.adapter, new[] { obj })!);
         }
@@ -124,15 +124,15 @@ namespace Gremlin.Net.Structure
                 return pdt;
             try
             {
-                var hydratedProps = new Dictionary<string, object?>();
-                foreach (var (key, value) in pdt.Properties)
+                var hydratedFields = new Dictionary<string, object?>();
+                foreach (var (key, value) in pdt.Fields)
                 {
-                    hydratedProps[key] = value is ProviderDefinedType nested ? Hydrate(nested) : value;
+                    hydratedFields[key] = value is ProviderDefinedType nested ? Hydrate(nested) : value;
                 }
 
-                var readOnlyProps = new ReadOnlyDictionary<string, object?>(hydratedProps);
-                var method = adapterObj.GetType().GetMethod("FromProperties");
-                return method!.Invoke(adapterObj, new object[] { readOnlyProps })!;
+                var readOnlyFields = new ReadOnlyDictionary<string, object?>(hydratedFields);
+                var method = adapterObj.GetType().GetMethod("FromFields");
+                return method!.Invoke(adapterObj, new object[] { readOnlyFields })!;
             }
             catch (Exception)
             {

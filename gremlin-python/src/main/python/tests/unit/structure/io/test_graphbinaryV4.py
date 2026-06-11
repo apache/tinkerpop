@@ -322,19 +322,19 @@ class TestGraphBinaryV4(object):
         result = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(pdt))
         assert isinstance(result, ProviderDefinedType)
         assert result.name == 'Point'
-        assert result.properties == {'x': 1, 'y': 2}
+        assert result.fields == {'x': 1, 'y': 2}
 
     def test_provider_defined_type_nested(self):
         inner = ProviderDefinedType('Address', {'street': 'Main'})
         outer = ProviderDefinedType('Person', {'name': 'Alice', 'address': inner})
         result = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(outer))
         assert result.name == 'Person'
-        assert result.properties['name'] == 'Alice'
-        assert isinstance(result.properties['address'], ProviderDefinedType)
-        assert result.properties['address'].name == 'Address'
+        assert result.fields['name'] == 'Alice'
+        assert isinstance(result.fields['address'], ProviderDefinedType)
+        assert result.fields['address'].name == 'Address'
 
     def test_provider_defined_type_null_field(self):
         pdt = ProviderDefinedType('NullableType', {'value': None, 'name': 'test'})
         result = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(pdt))
-        assert result.properties['value'] is None
-        assert result.properties['name'] == 'test'
+        assert result.fields['value'] is None
+        assert result.fields['name'] == 'test'

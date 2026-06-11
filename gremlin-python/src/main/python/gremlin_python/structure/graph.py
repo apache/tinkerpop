@@ -144,33 +144,33 @@ class Path(object):
 
 
 class ProviderDefinedType(object):
-    def __init__(self, name, properties):
+    def __init__(self, name, fields):
         if not name:
             raise ValueError("name cannot be null or empty")
         self._name = name
-        self._properties = dict(properties) if properties else {}
-        if any(not isinstance(k, str) for k in self._properties):
-            raise TypeError("ProviderDefinedType property keys must be strings")
+        self._fields = dict(fields) if fields else {}
+        if any(not isinstance(k, str) for k in self._fields):
+            raise TypeError("ProviderDefinedType field keys must be strings")
 
     @property
     def name(self):
         return self._name
 
     @property
-    def properties(self):
-        return self._properties
+    def fields(self):
+        return self._fields
 
     def __eq__(self, other):
-        return isinstance(other, ProviderDefinedType) and self._name == other._name and self._properties == other._properties
+        return isinstance(other, ProviderDefinedType) and self._name == other._name and self._fields == other._fields
 
     def __hash__(self):
         try:
-            return hash((self._name, frozenset(self._properties.items())))
+            return hash((self._name, frozenset(self._fields.items())))
         except TypeError:
             return hash(self._name)
 
     def __repr__(self):
-        return f"pdt[{self._name}]{self._properties}"
+        return f"pdt[{self._name}]{self._fields}"
 
 
 class ProviderDefinedTypeRegistry(object):
@@ -191,7 +191,7 @@ class ProviderDefinedTypeRegistry(object):
             }
 
     @classmethod
-    def build(cls):
+    def create(cls):
         """Create a registry populated by entry_points discovery.
 
         Providers register adapters via pyproject.toml:
@@ -228,9 +228,9 @@ class ProviderDefinedTypeRegistry(object):
         if adapter is None:
             return pdt
         try:
-            hydrated_props = {k: self.hydrate(v) if isinstance(v, ProviderDefinedType) else v
-                             for k, v in pdt.properties.items()}
-            return adapter['deserialize'](hydrated_props)
+            hydrated_fields = {k: self.hydrate(v) if isinstance(v, ProviderDefinedType) else v
+                               for k, v in pdt.fields.items()}
+            return adapter['deserialize'](hydrated_fields)
         except Exception as e:
             import logging
             logging.getLogger(__name__).warning(f"PDT hydration failed for '{pdt.name}': {e}")

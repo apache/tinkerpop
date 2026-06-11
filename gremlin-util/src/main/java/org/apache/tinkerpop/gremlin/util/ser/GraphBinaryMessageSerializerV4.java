@@ -55,18 +55,15 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V4;
 
     /**
-     * Creates a new instance of the message serializer using the default type serializers.
+     * Creates a new instance of the message serializer using the default type serializers and
+     * an SPI-discovered {@link ProviderDefinedTypeRegistry} for automatic PDT hydration.
      */
     public GraphBinaryMessageSerializerV4() {
-        this(TypeSerializerRegistry.INSTANCE);
+        this(TypeSerializerRegistry.INSTANCE, ProviderDefinedTypeRegistry.create());
     }
 
     public GraphBinaryMessageSerializerV4(final TypeSerializerRegistry registry) {
-        reader = new GraphBinaryReader(registry);
-        writer = new GraphBinaryWriter(registry);
-        mapper = new GraphBinaryMapper(writer, reader);
-
-        requestSerializer = new RequestMessageSerializer();
+        this(registry, ProviderDefinedTypeRegistry.create());
     }
 
     public GraphBinaryMessageSerializerV4(final TypeSerializerRegistry registry, final ProviderDefinedTypeRegistry pdtRegistry) {
@@ -104,7 +101,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
         }
 
         final TypeSerializerRegistry registry = builder.create();
-        reader = new GraphBinaryReader(registry);
+        reader = new GraphBinaryReader(registry, ProviderDefinedTypeRegistry.create());
         writer = new GraphBinaryWriter(registry);
 
         requestSerializer = new RequestMessageSerializer();

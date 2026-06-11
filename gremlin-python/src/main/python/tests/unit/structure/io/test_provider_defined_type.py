@@ -105,7 +105,7 @@ class TestProviderDefinedTypeRegistry(object):
 class TestProviderDefinedTypeRegistryBuild(object):
 
     def test_build_returns_registry_with_no_entry_points(self):
-        registry = ProviderDefinedTypeRegistry.build()
+        registry = ProviderDefinedTypeRegistry.create()
         assert isinstance(registry, ProviderDefinedTypeRegistry)
 
     def test_build_loads_entry_point(self):
@@ -122,7 +122,7 @@ class TestProviderDefinedTypeRegistryBuild(object):
             else:
                 mock_entry_points.return_value = {'tinkerpop.pdt': [mock_ep]}
 
-            registry = ProviderDefinedTypeRegistry.build()
+            registry = ProviderDefinedTypeRegistry.create()
             assert "com.mock.Type" in registry._adapters_by_name
 
     def test_build_handles_failing_entry_point(self):
@@ -139,7 +139,7 @@ class TestProviderDefinedTypeRegistryBuild(object):
             else:
                 mock_entry_points.return_value = {'tinkerpop.pdt': [mock_ep]}
 
-            registry = ProviderDefinedTypeRegistry.build()
+            registry = ProviderDefinedTypeRegistry.create()
             assert isinstance(registry, ProviderDefinedTypeRegistry)
             assert len(registry._adapters_by_name) == 0
 

@@ -43,13 +43,13 @@ public class ProviderDefinedTypeRegistryTest {
     static class PointAdapter implements ProviderDefinedTypeAdapter<Point> {
         @Override public String typeName() { return "Point"; }
         @Override public Class<Point> targetClass() { return Point.class; }
-        @Override public Map<String, Object> toProperties(Point obj) {
+        @Override public Map<String, Object> toFields(Point obj) {
             final Map<String, Object> m = new HashMap<>();
             m.put("x", obj.x);
             m.put("y", obj.y);
             return m;
         }
-        @Override public Point fromProperties(Map<String, Object> properties) {
+        @Override public Point fromFields(Map<String, Object> properties) {
             return new Point((int) properties.get("x"), (int) properties.get("y"));
         }
     }
@@ -64,13 +64,13 @@ public class ProviderDefinedTypeRegistryTest {
     static class LineAdapter implements ProviderDefinedTypeAdapter<Line> {
         @Override public String typeName() { return "Line"; }
         @Override public Class<Line> targetClass() { return Line.class; }
-        @Override public Map<String, Object> toProperties(Line obj) {
+        @Override public Map<String, Object> toFields(Line obj) {
             final Map<String, Object> m = new HashMap<>();
             m.put("start", obj.start);
             m.put("end", obj.end);
             return m;
         }
-        @Override public Line fromProperties(Map<String, Object> properties) {
+        @Override public Line fromFields(Map<String, Object> properties) {
             return new Line((Point) properties.get("start"), (Point) properties.get("end"));
         }
     }
@@ -79,8 +79,8 @@ public class ProviderDefinedTypeRegistryTest {
     static class FailingAdapter implements ProviderDefinedTypeAdapter<Point> {
         @Override public String typeName() { return "Failing"; }
         @Override public Class<Point> targetClass() { return Point.class; }
-        @Override public Map<String, Object> toProperties(Point obj) { return new HashMap<>(); }
-        @Override public Point fromProperties(Map<String, Object> properties) {
+        @Override public Map<String, Object> toFields(Point obj) { return new HashMap<>(); }
+        @Override public Point fromFields(Map<String, Object> properties) {
             throw new RuntimeException("intentional failure");
         }
     }
@@ -162,7 +162,7 @@ public class ProviderDefinedTypeRegistryTest {
         final ProviderDefinedType linePdt = new ProviderDefinedType("Line", lineProps);
 
         // Line adapter will receive ProviderDefinedType values for start/end since Point is not registered.
-        // The LineAdapter.fromProperties casts to Point which will throw ClassCastException,
+        // The LineAdapter.fromFields casts to Point which will throw ClassCastException,
         // so hydrate should fall back to returning the raw PDT.
         final Object result = registry.hydrate(linePdt);
         assertSame(linePdt, result);
@@ -202,13 +202,13 @@ public class ProviderDefinedTypeRegistryTest {
     static class PolygonAdapter implements ProviderDefinedTypeAdapter<Polygon> {
         @Override public String typeName() { return "Polygon"; }
         @Override public Class<Polygon> targetClass() { return Polygon.class; }
-        @Override public Map<String, Object> toProperties(Polygon obj) {
+        @Override public Map<String, Object> toFields(Polygon obj) {
             final Map<String, Object> m = new HashMap<>();
             m.put("vertices", obj.vertices);
             return m;
         }
         @SuppressWarnings("unchecked")
-        @Override public Polygon fromProperties(Map<String, Object> properties) {
+        @Override public Polygon fromFields(Map<String, Object> properties) {
             return new Polygon((List<Point>) properties.get("vertices"));
         }
     }
@@ -249,9 +249,9 @@ public class ProviderDefinedTypeRegistryTest {
         registry.register(new ProviderDefinedTypeAdapter<Map>() {
             @Override public String typeName() { return "PointMap"; }
             @Override public Class<Map> targetClass() { return Map.class; }
-            @Override public Map<String, Object> toProperties(Map obj) { return new HashMap<>(); }
+            @Override public Map<String, Object> toFields(Map obj) { return new HashMap<>(); }
             @SuppressWarnings("unchecked")
-            @Override public Map fromProperties(Map<String, Object> properties) {
+            @Override public Map fromFields(Map<String, Object> properties) {
                 return (Map<String, Object>) properties.get("points");
             }
         });
@@ -283,7 +283,7 @@ public class ProviderDefinedTypeRegistryTest {
     public void shouldBuildViaServiceLoader() {
         // ServiceLoader.load will find adapters on the classpath. With no META-INF/services file
         // in test scope, this should produce an empty registry that still functions.
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.build();
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.create();
 
         final Map<String, Object> props = new HashMap<>();
         props.put("x", 1);

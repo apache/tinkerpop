@@ -49,7 +49,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 
             Assert.NotNull(actual);
             Assert.Equal(expected.Name, actual!.Name);
-            Assert.Equal(expected.Properties, actual.Properties);
+            Assert.Equal(expected.Fields, actual.Fields);
         }
 
         [Fact]
@@ -64,7 +64,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 
             Assert.NotNull(actual);
             Assert.Equal(expected.Name, actual!.Name);
-            Assert.Empty(actual.Properties);
+            Assert.Empty(actual.Fields);
         }
 
         [Fact]
@@ -80,7 +80,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 
             Assert.NotNull(actual);
             Assert.Equal(expected.Name, actual!.Name);
-            Assert.Null(actual.Properties["key"]);
+            Assert.Null(actual.Fields["key"]);
         }
 
         [Fact]

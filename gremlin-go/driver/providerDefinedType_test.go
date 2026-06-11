@@ -28,8 +28,8 @@ import (
 func TestProviderDefinedType(t *testing.T) {
 	t.Run("String method", func(t *testing.T) {
 		pdt := &ProviderDefinedType{
-			Name:       "com.example.Test",
-			Properties: map[string]interface{}{"a": int32(1)},
+			Name:   "com.example.Test",
+			Fields: map[string]interface{}{"a": int32(1)},
 		}
 		assert.Contains(t, pdt.String(), "pdt[com.example.Test]")
 	})

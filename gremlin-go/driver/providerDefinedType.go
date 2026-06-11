@@ -26,25 +26,25 @@ import (
 
 // ProviderDefinedType represents a provider-defined type (PDT) in GraphBinary serialization.
 type ProviderDefinedType struct {
-	Name       string
-	Properties map[string]interface{}
+	Name   string
+	Fields map[string]interface{}
 }
 
 func (p *ProviderDefinedType) String() string {
-	return fmt.Sprintf("pdt[%s]%v", p.Name, p.Properties)
+	return fmt.Sprintf("pdt[%s]%v", p.Name, p.Fields)
 }
 
-// pdtWriter serializes a ProviderDefinedType as a fully-qualified string (name) followed by a fully-qualified map (properties).
+// pdtWriter serializes a ProviderDefinedType as a fully-qualified string (name) followed by a fully-qualified map (fields).
 func pdtWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
 	pdt := value.(*ProviderDefinedType)
 	if err := typeSerializer.write(pdt.Name, w); err != nil {
 		return err
 	}
-	if pdt.Properties == nil {
+	if pdt.Fields == nil {
 		return typeSerializer.write(map[interface{}]interface{}{}, w)
 	}
-	m := make(map[interface{}]interface{}, len(pdt.Properties))
-	for k, v := range pdt.Properties {
+	m := make(map[interface{}]interface{}, len(pdt.Fields))
+	for k, v := range pdt.Fields {
 		m[k] = v
 	}
 	return typeSerializer.write(m, w)

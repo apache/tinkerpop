@@ -1061,8 +1061,8 @@ public class GeneralLiteralVisitorTest {
             assertThat(result, instanceOf(ProviderDefinedType.class));
             final ProviderDefinedType pdt = (ProviderDefinedType) result;
             assertEquals("MyType", pdt.getName());
-            assertEquals(1, pdt.getProperties().get("x"));
-            assertEquals("hello", pdt.getProperties().get("y"));
+            assertEquals(1, pdt.getFields().get("x"));
+            assertEquals("hello", pdt.getFields().get("y"));
         }
 
         @Test
@@ -1074,7 +1074,7 @@ public class GeneralLiteralVisitorTest {
             assertThat(result, instanceOf(ProviderDefinedType.class));
             final ProviderDefinedType pdt = (ProviderDefinedType) result;
             assertEquals("Empty", pdt.getName());
-            assertTrue(pdt.getProperties().isEmpty());
+            assertTrue(pdt.getFields().isEmpty());
         }
 
         @Test
