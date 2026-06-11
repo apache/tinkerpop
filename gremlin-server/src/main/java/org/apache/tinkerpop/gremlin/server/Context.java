@@ -23,7 +23,6 @@ import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.AbstractTraverser;
-import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
@@ -36,7 +35,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The context of Gremlin Server within which a particular request is made.
@@ -54,8 +52,6 @@ public class Context {
     private final String materializeProperties;
     private final Object gremlinArgument;
     private final RequestType requestType;
-    private HttpGremlinEndpointHandler.RequestState requestState;
-    private final AtomicBoolean startedResponse = new AtomicBoolean(false);
     private ScheduledFuture<?> timeoutExecutor = null;
     private boolean timeoutExecutorGrabbed = false;
     private final Object timeoutExecutorLock = new Object();
@@ -65,14 +61,6 @@ public class Context {
     public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
                    final Settings settings, final GraphManager graphManager,
                    final GremlinExecutor gremlinExecutor, final ScheduledExecutorService scheduledExecutorService) {
-        this(requestMessage, ctx, settings, graphManager, gremlinExecutor, scheduledExecutorService,
-                HttpGremlinEndpointHandler.RequestState.NOT_STARTED);
-    }
-
-    public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
-                   final Settings settings, final GraphManager graphManager,
-                   final GremlinExecutor gremlinExecutor, final ScheduledExecutorService scheduledExecutorService,
-                   final HttpGremlinEndpointHandler.RequestState requestState) {
         this.requestMessage = requestMessage;
         this.channelHandlerContext = ctx;
         this.settings = settings;
@@ -84,7 +72,6 @@ public class Context {
         final String gremlin = requestMessage.getGremlin();
         this.gremlinArgument = gremlin;
         this.requestType = RequestType.fromGremlin(gremlin);
-        this.requestState = requestState;
         this.requestTimeout = determineTimeout();
         this.materializeProperties = determineMaterializeProperties();
         this.transactionId = requestMessage.getField(Tokens.ARGS_TRANSACTION_ID);
@@ -200,16 +187,6 @@ public class Context {
         return gremlinExecutor;
     }
 
-    /**
-     * Gets whether the server has started processing the response for this request.
-     */
-    public boolean getStartedResponse() { return startedResponse.get(); }
-
-    /**
-     * Signal that the server has started processing the response.
-     */
-    public void setStartedResponse() { startedResponse.set(true); }
-
     private long determineTimeout() {
         // timeout override - handle both deprecated and newly named configuration. earlier logic should prevent
         // both configurations from being submitted at the same time
@@ -248,14 +225,6 @@ public class Context {
                 }
             }
         }
-    }
-
-    public HttpGremlinEndpointHandler.RequestState getRequestState() {
-        return requestState;
-    }
-
-    public void setRequestState(HttpGremlinEndpointHandler.RequestState requestState) {
-        this.requestState = requestState;
     }
 
     /**
