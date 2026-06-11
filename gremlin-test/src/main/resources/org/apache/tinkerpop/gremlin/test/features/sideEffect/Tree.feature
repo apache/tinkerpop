@@ -206,3 +206,36 @@ Feature: Step - tree()
                   |--josh
                   |--peter
       """
+
+  Scenario: g_V_out_treeXaX_selectXaX_countXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().tree("a").select("a").count(local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[9].l |
+      | d[9].l |
+      | d[9].l |
+      | d[9].l |
+      | d[9].l |
+      | d[9].l |
+
+  @InsertionOrderingRequired
+  Scenario: g_V_out_order_byXnameX_localXtreeXaX_selectXaX_countXlocalXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().local(tree("a").select("a").count(local))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[2].l |
+      | d[3].l |
+      | d[4].l |
+      | d[6].l |
+      | d[7].l |
+      | d[9].l |

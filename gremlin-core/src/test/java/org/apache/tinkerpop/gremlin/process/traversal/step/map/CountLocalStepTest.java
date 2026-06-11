@@ -30,8 +30,7 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -43,16 +42,31 @@ public class CountLocalStepTest extends StepTest {
         return Collections.singletonList(__.count(Scope.local));
     }
 
-    @Test
-    public void shouldThrowOnTree() {
-        final Traversal.Admin<Object, Long> traversal = __.<Object>count(Scope.local).asAdmin();
-        final CountLocalStep<Object> step = (CountLocalStep<Object>) traversal.getSteps().get(0);
-
-        final Tree<String> tree = new Tree<>();
-        tree.getOrCreateChild("a").getOrCreateChild("b");
-        final Traverser.Admin<Object> traverser = new B_O_Traverser<>(tree, 1L);
-
-        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> step.map(traverser));
-        assertTrue(ex.getMessage().contains("not supported on Tree"));
-    }
+        @Test
+        public void shouldCountTotalNodesOnTree() {
+            final Traversal.Admin<Object, Long> traversal = __.<Object>count(Scope.local).asAdmin();
+            final CountLocalStep<Object> step = (CountLocalStep<Object>) traversal.getSteps().get(0);
+    
+            // tree: a -> b (two total nodes)
+            final Tree<String> tree = new Tree<>();
+            tree.getOrCreateChild("a").getOrCreateChild("b");
+            final Traverser.Admin<Object> traverser = new B_O_Traverser<>(tree, 1L);
+    
+            // count(local) on a Tree returns the total node count (Tree.nodeCount()), not the root-entry count
+            assertEquals(Long.valueOf(2L), step.map(traverser));
+        }
+    
+        @Test
+        public void shouldCountTotalNodesOnMultiRootTree() {
+            final Traversal.Admin<Object, Long> traversal = __.<Object>count(Scope.local).asAdmin();
+            final CountLocalStep<Object> step = (CountLocalStep<Object>) traversal.getSteps().get(0);
+    
+            // tree with two roots and nested children: x -> x1, y (three total nodes)
+            final Tree<String> tree = new Tree<>();
+            tree.getOrCreateChild("x").getOrCreateChild("x1");
+            tree.getOrCreateChild("y");
+            final Traverser.Admin<Object> traverser = new B_O_Traverser<>(tree, 1L);
+    
+            assertEquals(Long.valueOf(3L), step.map(traverser));
+        }
 }
