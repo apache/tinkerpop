@@ -375,7 +375,8 @@ namespace Gremlin.Net.Process.Traversal
             if (arg is Type type)
                 return type.Name;
 
-            // Registry-based dehydration
+            // Precedence: a registered adapter intentionally takes priority over the [ProviderDefined]
+            // attribute so that explicit adapters can override attribute-derived dehydration behavior.
             if (PdtRegistry != null)
             {
                 var adapterInfo = PdtRegistry.GetAdapterByType(arg.GetType());

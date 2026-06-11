@@ -1386,10 +1386,11 @@ public class Point {
 }
 ----
 
-The `name` attribute is a unique identifier for the type. It is strongly recommended to namespace type names using
-your graph's identifier as a prefix (e.g. `"mygraph:Point"`). This avoids collisions when clients interact with
-multiple providers and makes the origin of a type immediately clear. By default, all fields are included. Use
-`includedFields` or `excludedFields` to control which fields are serialized:
+The `name` attribute is a unique identifier for the type. It must not be null or empty — all GLVs reject an
+empty name when a type is defined or a `ProviderDefinedType` is constructed. It is strongly recommended to namespace
+type names using your graph's identifier as a prefix (e.g. `"mygraph:Point"`). This avoids collisions when clients
+interact with multiple providers and makes the origin of a type immediately clear. By default, all fields are included.
+Use `includedFields` or `excludedFields` to control which fields are serialized:
 
 [source,java]
 ----
@@ -1405,6 +1406,10 @@ NOTE: For annotation-based round-trip hydration (see <<round-trip-support>>), an
 constructor and the mapped fields must be directly settable (e.g. public fields). Classes that cannot meet these
 requirements — for example those with immutable `final` fields or no default constructor — should instead use a
 `ProviderDefinedTypeAdapter` (see <<adapter-for-types-you-don-t-own>>), which gives full control over construction.
+
+The serialized field set becomes a property map whose keys are always strings. In statically typed GLVs (Java, .NET,
+Go, and TypeScript) this is enforced by the type system; in Python the keys are validated at runtime and a
+`TypeError` is raised for any non-string key.
 
 ==== Nested Types
 
@@ -1564,6 +1569,31 @@ serialization and the registry handles inbound reconstruction.
 
 For driver users consuming PDTs, see the <<gremlin-variants,Gremlin Variants>> reference documentation for
 each language driver.
+
+==== JPMS Considerations
+
+Annotation-based PDT hydration uses reflection internally — specifically `Constructor.setAccessible(true)` and
+`Field.set()` on the provider's annotated class (see `AnnotatedTypeAdapter.fromProperties` in
+`ProviderDefinedTypeRegistry`). Under the Java Platform Module System (JPMS), this means the provider's module must
+`opens` its PDT package to `org.apache.tinkerpop.gremlin.core` (or to `ALL-UNNAMED` for classpath usage), otherwise
+the JVM will throw `InaccessibleObjectException` at hydration time.
+
+For example, in the provider's `module-info.java`:
+
+[source,java]
+----
+opens com.example.graph.types to org.apache.tinkerpop.gremlin.core;
+----
+
+Alternatively, providers that cannot modify their module descriptor can pass JVM flags:
+
+[source,text]
+----
+--add-opens=com.example.graph/com.example.graph.types=ALL-UNNAMED
+----
+
+NOTE: This only applies to annotation-based hydration. Providers using `ProviderDefinedTypeAdapter` with explicit
+`fromProperties` logic do not require reflective access and are unaffected by JPMS restrictions.
 
 [[gremlin-plugins]]
 == Gremlin Plugins

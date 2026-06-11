@@ -22,6 +22,7 @@ package gremlingo
 import (
 	"fmt"
 	"math"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
@@ -920,4 +921,30 @@ func Test_PDT_GremlinLang(t *testing.T) {
 			t.Errorf("got %v, expected %v", gremlin, expected)
 		}
 	})
+}
+
+// adapterPrecedencePoint is a struct type used to verify that a registered adapter
+// takes precedence over the default handling (which would panic for an unknown struct).
+type adapterPrecedencePoint struct {
+	X int32
+	Y int32
+}
+
+func Test_PDT_AdapterPrecedenceOverDefault(t *testing.T) {
+	registry := NewPDTRegistry()
+	registry.RegisterFuncsWithType("test:Point", reflect.TypeOf(adapterPrecedencePoint{}),
+		nil,
+		func(obj interface{}) (map[string]interface{}, error) {
+			p := obj.(adapterPrecedencePoint)
+			return map[string]interface{}{"x": p.X, "y": p.Y}, nil
+		})
+
+	g := NewGraphTraversalSource(nil, nil)
+	g.GetGremlinLang().pdtRegistry = registry
+
+	gremlin := g.Inject(adapterPrecedencePoint{X: 7, Y: 9}).GremlinLang.GetGremlin()
+	expected := `g.inject(PDT("test:Point",["x":7,"y":9]))`
+	if gremlin != expected {
+		t.Errorf("adapter precedence: got %v, expected %v", gremlin, expected)
+	}
 }

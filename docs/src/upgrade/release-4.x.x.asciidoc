@@ -552,12 +552,15 @@ effort to the old custom serializer approach but is entirely optional for basic 
 
 ===== Provider Defined Types
 
-TinkerPop 4 replaces the TP3 `CustomTypeSerializer` mechanism with Provider Defined Types (PDT). The key improvement
-is that driver users receive PDT values as structured `ProviderDefinedType` objects by default, without any
-configuration — eliminating the serializer errors that unknown custom types caused in TP3. Providers expose types by
-annotating classes with `@ProviderDefined` or implementing `ProviderDefinedTypeAdapter<T>` for types they don't own;
-adapters are discovered automatically via ServiceLoader, requiring similar effort to the old approach but benefiting
-all driver users transparently.
+TinkerPop 4 replaces the TP3 `CustomTypeSerializer` mechanism with Provider Defined Types (PDT). The TP3 extension
+point has been removed entirely and there is no backward-compatible bridge, so any existing `CustomTypeSerializer`
+implementations must be migrated: providers expose their custom types by annotating classes with `@ProviderDefined`
+or, for types they don't own, by implementing `ProviderDefinedTypeAdapter<T>`. Adapters are discovered automatically
+via ServiceLoader, so this requires similar effort to the old approach.
+
+The key improvement is that driver users now receive PDT values as structured `ProviderDefinedType` objects by
+default, without any configuration — eliminating the serializer errors that unknown custom types caused in TP3, and
+benefiting all driver users transparently.
 
 See <<provider-defined-types>> for full details on annotation usage, field filtering, nested types, and ServiceLoader
 registration.

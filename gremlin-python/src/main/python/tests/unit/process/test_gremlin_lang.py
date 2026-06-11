@@ -594,6 +594,28 @@ class TestGremlinLang(object):
         gremlin = g.inject(p).gremlin_lang.get_gremlin()
         assert "PDT('com.example.Point',['x':1,'y':2])" in gremlin
 
+    def test_pdt_adapter_takes_precedence_over_decorator(self):
+        from gremlin_python.structure.graph import ProviderDefinedTypeRegistry, provider_defined
+        g = traversal().with_(None)
+
+        @provider_defined(name="com.example.Point")
+        class Point:
+            def __init__(self, x, y):
+                self.x = x
+                self.y = y
+
+        registry = ProviderDefinedTypeRegistry()
+        registry.register("com.adapter.Point",
+                          deserialize_fn=lambda props: Point(props["a"], props["b"]),
+                          serialize_fn=lambda p: {"a": p.x, "b": p.y},
+                          target_class=Point)
+        g.gremlin_lang.pdt_registry = registry
+
+        p = Point(3, 4)
+        gremlin = g.inject(p).gremlin_lang.get_gremlin()
+        # The adapter's type_name and properties must win over the decorator's
+        assert "PDT('com.adapter.Point',['a':3,'b':4])" in gremlin
+
     def test_pdt_special_characters_in_name(self):
         from gremlin_python.structure.graph import ProviderDefinedType
         g = traversal().with_(None)

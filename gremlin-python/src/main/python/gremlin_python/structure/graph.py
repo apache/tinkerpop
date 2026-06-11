@@ -149,6 +149,8 @@ class ProviderDefinedType(object):
             raise ValueError("name cannot be null or empty")
         self._name = name
         self._properties = dict(properties) if properties else {}
+        if any(not isinstance(k, str) for k in self._properties):
+            raise TypeError("ProviderDefinedType property keys must be strings")
 
     @property
     def name(self):

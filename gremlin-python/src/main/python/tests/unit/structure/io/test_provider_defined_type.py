@@ -35,6 +35,10 @@ class TestProviderDefinedType(object):
         with pytest.raises(ValueError):
             ProviderDefinedType(None, {"x": 1})
 
+    def test_non_string_key_rejected(self):
+        with pytest.raises(TypeError):
+            ProviderDefinedType("com.example.Bad", {1: "value"})
+
 
 class TestProviderDefinedTypeRegistry(object):
 

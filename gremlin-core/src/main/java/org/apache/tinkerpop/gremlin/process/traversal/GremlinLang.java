@@ -267,6 +267,8 @@ public class GremlinLang implements Cloneable, Serializable {
             return ((Class) arg).getSimpleName();
         }
 
+        // Intentional precedence: a registered adapter takes priority over @ProviderDefined annotation
+        // so that providers/users can override annotation-derived behavior with an explicit adapter.
         if (pdtRegistry != null) {
             final Optional<ProviderDefinedTypeAdapter<?>> adapter = pdtRegistry.getAdapterByClass(arg.getClass());
             if (adapter.isPresent()) {

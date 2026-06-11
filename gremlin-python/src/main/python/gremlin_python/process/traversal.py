@@ -952,7 +952,9 @@ class GremlinLang(object):
         if isinstance(arg, type):
             return arg.__name__
 
-        # Registry-based dehydration
+        # Registry-based dehydration — a registered adapter intentionally takes
+        # precedence over the @provider_defined decorator fallback below, allowing
+        # explicit adapters to override decorator-derived behavior.
         if self.pdt_registry is not None:
             adapter = self.pdt_registry.get_adapter_by_class(type(arg))
             if adapter is not None and adapter['serialize'] is not None:

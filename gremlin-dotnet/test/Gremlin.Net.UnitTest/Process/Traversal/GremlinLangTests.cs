@@ -1174,5 +1174,40 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             public int X { get; set; }
             public int Y { get; set; }
         }
+
+        [Fact]
+        public void g_Inject_PDT_adapter_takes_precedence_over_attribute()
+        {
+            var registry = new ProviderDefinedTypeRegistry();
+            registry.Register(new AdapterForAnnotatedPoint());
+
+            var g = new GraphTraversalSource();
+            g.GremlinLang.PdtRegistry = registry;
+
+            var point = new AnnotatedPointWithAdapter { X = 5, Y = 10 };
+            var result = g.Inject((object)point).GremlinLang.GetGremlin();
+
+            // The adapter uses type name "adapter.Point" and only exposes "a"/"b" properties,
+            // overriding the attribute which would produce "attr.Point" with "X"/"Y".
+            Assert.Equal("g.inject(PDT(\"adapter.Point\",[\"a\":5,\"b\":10]))", result);
+        }
+
+        [ProviderDefined(Name = "attr.Point")]
+        private class AnnotatedPointWithAdapter
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+        }
+
+        private class AdapterForAnnotatedPoint : IProviderDefinedTypeAdapter<AnnotatedPointWithAdapter>
+        {
+            public string TypeName => "adapter.Point";
+
+            public AnnotatedPointWithAdapter FromProperties(IReadOnlyDictionary<string, object?> properties) =>
+                new() { X = (int)properties["a"]!, Y = (int)properties["b"]! };
+
+            public IReadOnlyDictionary<string, object?> ToProperties(AnnotatedPointWithAdapter obj) =>
+                new Dictionary<string, object?> { { "a", obj.X }, { "b", obj.Y } };
+        }
     }
 }

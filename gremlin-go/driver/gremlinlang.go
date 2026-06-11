@@ -299,7 +299,9 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 	case []byte:
 		return fmt.Sprintf("Binary(\"%s\")", base64.StdEncoding.EncodeToString(v)), nil
 	default:
-		// Registry-based dehydration
+		// Registry-based dehydration: a registered adapter intentionally takes precedence
+		// over any reflection/struct-based fallback, allowing explicit adapters to override
+		// default behavior for a given Go type.
 		if gl.pdtRegistry != nil {
 			adapter := gl.pdtRegistry.GetAdapterByType(reflect.TypeOf(arg))
 			if adapter != nil && adapter.ToProperties != nil {

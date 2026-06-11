@@ -28,7 +28,10 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
@@ -447,6 +450,45 @@ public class GremlinLangTest {
             final Map<String, Object> params = new HashMap<>();
             params.put("caf\u00e9", 1);
             assertEquals("[\"caf\\u00E9\":1]", GremlinLang.convertParametersToString(params));
+        }
+    }
+
+    public static class AdapterPrecedenceTests {
+
+        /**
+         * A type annotated with @ProviderDefined that also has an explicit adapter registered.
+         * The adapter should take precedence over the annotation.
+         */
+        @ProviderDefined(name = "AnnotationName")
+        private static class DualType {
+            public int value = 42;
+
+            private DualType() {}
+            DualType(final int value) { this.value = value; }
+        }
+
+        @Test
+        public void shouldUseAdapterOverAnnotation() {
+            final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+            registry.register(new ProviderDefinedTypeAdapter<DualType>() {
+                @Override public String typeName() { return "AdapterName"; }
+                @Override public Class<DualType> targetClass() { return DualType.class; }
+                @Override public Map<String, Object> toProperties(final DualType obj) {
+                    return Collections.singletonMap("v", obj.value);
+                }
+                @Override public DualType fromProperties(final Map<String, Object> properties) {
+                    return new DualType((int) properties.get("v"));
+                }
+            });
+
+            final GraphTraversalSource g2 = traversal().with(EmptyGraph.instance());
+            g2.getGremlinLang().setPdtRegistry(registry);
+            final String gremlin = g2.inject(new DualType(7)).asAdmin().getGremlinLang().getGremlin();
+
+            // adapter produces "AdapterName" with key "v", not annotation's "AnnotationName" with key "value"
+            assertTrue(gremlin, gremlin.contains("PDT(\"AdapterName\""));
+            assertTrue(gremlin, gremlin.contains("\"v\":7"));
+            assertFalse(gremlin, gremlin.contains("AnnotationName"));
         }
     }
 
