@@ -383,9 +383,9 @@ namespace Gremlin.Net.Process.Traversal
                 if (adapterInfo != null)
                 {
                     var (adapterTypeName, toFields) = adapterInfo.Value;
-                    var props = toFields(arg);
+                    var fields = toFields(arg);
                     return ArgAsString(new ProviderDefinedType(adapterTypeName,
-                        new Dictionary<string, object?>(props)));
+                        new Dictionary<string, object?>(fields)));
                 }
             }
 
@@ -393,14 +393,14 @@ namespace Gremlin.Net.Process.Traversal
             var cached = GetPdtInfo(arg.GetType());
             if (cached != null)
             {
-                var (typeName, fields) = cached.Value;
+                var (typeName, properties) = cached.Value;
                 ProviderDefinedAttribute.RegisteredTypes.TryAdd(typeName, arg.GetType());
-                var props = new Dictionary<string, object?>();
-                foreach (var field in fields)
+                var fields = new Dictionary<string, object?>();
+                foreach (var property in properties)
                 {
-                    props[field.Name] = field.GetValue(arg);
+                    fields[property.Name] = property.GetValue(arg);
                 }
-                return ArgAsString(new ProviderDefinedType(typeName, props));
+                return ArgAsString(new ProviderDefinedType(typeName, fields));
             }
 
             throw new ArgumentException(
