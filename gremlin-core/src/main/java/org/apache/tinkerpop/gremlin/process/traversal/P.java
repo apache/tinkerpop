@@ -20,9 +20,13 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ChildTraversalValidator;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -31,7 +35,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -49,10 +56,23 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     protected Map<String, V> variables = new HashMap<>();
     protected Collection<V> literals = Collections.EMPTY_LIST;
     private boolean isCollection = false;
+    private boolean resolvedEmpty = false;
+    private Traversal.Admin<?, ?> traversalValue;
+    private List<Traversal.Admin<?, ?>> traversalValues;
 
     public P(final PBiPredicate<V, V> biPredicate, final V value) {
-        setValue(value);
         this.biPredicate = biPredicate;
+        // If the value is a DefaultGraphTraversal (the type created by __.xxx() anonymous traversals),
+        // treat it as a child traversal rather than a literal. This handles the case where Java's
+        // overload resolution picks P(BiPredicate, V) instead of P(BiPredicate, Traversal) when
+        // the caller passes a GraphTraversal. We specifically check for DefaultGraphTraversal
+        // rather than Traversal to avoid catching internal traversal types like ConstantTraversal,
+        // ValueTraversal, and IdentityTraversal which are used as literal values in P.
+        if (value instanceof org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal) {
+            this.traversalValue = ((Traversal<?, ?>) value).asAdmin();
+        } else {
+            setValue(value);
+        }
     }
 
     public P(final PBiPredicate<V, V> biPredicate, final GValue<V> value) {
@@ -79,6 +99,29 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             this.literals = new ArrayList<>(literals);
         }
         this.isCollection = isCollection;
+    }
+
+    /**
+     * Constructs a {@code P} with a child traversal whose result is resolved at runtime against the current
+     * traverser. The literals and variables are left at their defaults and will be populated when
+     * {@link #resolve(Traverser.Admin)} is called.
+     */
+    public P(final PBiPredicate<V, V> biPredicate, final Traversal.Admin<?, ?> traversalValue) {
+        this.biPredicate = biPredicate;
+        this.traversalValue = traversalValue;
+    }
+
+    /**
+     * Constructs a {@code P} with multiple child traversals whose results are unioned at runtime against the
+     * current traverser. Only valid for collection predicates ({@link Contains#within}, {@link Contains#without}).
+     * The literals and variables are left at their defaults and will be populated when
+     * {@link #resolve(Traverser.Admin)} is called.
+     *
+     * @since 4.0.0
+     */
+    public P(final PBiPredicate<V, V> biPredicate, final List<Traversal.Admin<?, ?>> traversalValues) {
+        this.biPredicate = biPredicate;
+        this.traversalValues = traversalValues;
     }
 
     public PBiPredicate<V, V> getBiPredicate() {
@@ -162,6 +205,10 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             result ^= this.variables.hashCode();
         if (null != this.literals)
             result ^= this.literals.hashCode();
+        if (null != this.traversalValue)
+            result ^= this.traversalValue.hashCode();
+        if (null != this.traversalValues)
+            result ^= this.traversalValues.hashCode();
         return result;
     }
 
@@ -171,7 +218,9 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
                 ((P) other).getClass().equals(this.getClass()) &&
                 ((P) other).getBiPredicate().equals(this.biPredicate) &&
                 ((((P) other).variables == null && this.variables == null) || (((P) other).variables != null && ((P) other).variables.equals(this.variables))) &&
-                ((((P) other).literals == null && this.literals == null) || (((P) other).literals != null && CollectionUtils.isEqualCollection(((P) other).literals, this.literals)));
+                ((((P) other).literals == null && this.literals == null) || (((P) other).literals != null && CollectionUtils.isEqualCollection(((P) other).literals, this.literals))) &&
+                Objects.equals(((P) other).traversalValue, this.traversalValue) &&
+                Objects.equals(((P) other).traversalValues, this.traversalValues);
     }
 
     @Override
@@ -200,7 +249,17 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     public P<V> clone() {
         try {
-            return (P<V>) super.clone();
+            final P<V> clone = (P<V>) super.clone();
+            if (this.traversalValue != null) {
+                clone.traversalValue = this.traversalValue.clone();
+            }
+            if (this.traversalValues != null) {
+                clone.traversalValues = new ArrayList<>(this.traversalValues.size());
+                for (final Traversal.Admin<?, ?> tv : this.traversalValues) {
+                    clone.traversalValues.add(tv.clone());
+                }
+            }
+            return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -222,6 +281,187 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             results.add(GValue.of(entry.getKey(), entry.getValue()));
         }
         return results;
+    }
+
+    /**
+     * Determines if this predicate holds a child traversal whose result is resolved at runtime.
+     */
+    public boolean hasTraversal() {
+        return this.traversalValue != null || (this.traversalValues != null && !this.traversalValues.isEmpty());
+    }
+
+    /**
+     * Returns {@code true} if the most recent call to {@link #resolve(Traverser.Admin)} produced no results.
+     * Steps should check this after calling {@code resolve()} and short-circuit appropriately rather than
+     * calling {@link #test(Object)}, which would compare against {@code null}.
+     */
+    public boolean isResolvedEmpty() {
+        return this.resolvedEmpty;
+    }
+
+    /**
+     * Gets the child traversal value, if one was provided. Returns {@code null} when this predicate uses
+     * literal values or variables.
+     */
+    public Traversal.Admin<?, ?> getTraversalValue() {
+        return this.traversalValue;
+    }
+
+    /**
+     * Gets the list of child traversal values for multi-traversal predicates (e.g., {@code within(trav1, trav2)}).
+     * Returns {@code null} when this predicate uses a single traversal or literal values.
+     *
+     * @since 4.0.0
+     */
+    public List<Traversal.Admin<?, ?>> getTraversalValues() {
+        return this.traversalValues;
+    }
+
+    /**
+     * Resolves the child traversal against the given traverser, replacing the traversal value with the
+     * resolved literal(s) for this test cycle. If no traversal is present, this method returns immediately.
+     *
+     * <p>For all predicates, only the first result from the child traversal is used,
+     * consistent with {@code by(traversal)} semantics. For collection predicates
+     * ({@link Contains#within}, {@link Contains#without}), the first result should be a
+     * {@link Collection} (e.g., produced by {@code fold()}).</p>
+     *
+     * <p>When multiple traversals are present (via {@link #traversalValues}), each traversal is evaluated
+     * independently, the first result from each is taken, and results are combined into a single collection.
+     * This is only valid for collection predicates ({@link Contains#within}, {@link Contains#without}).</p>
+     */
+    @SuppressWarnings("unchecked")
+    public void resolve(final Traverser.Admin<?> traverser) {
+        if (this.traversalValues != null && !this.traversalValues.isEmpty()) {
+            resolveMultipleTraversals(traverser);
+            return;
+        }
+
+        if (this.traversalValue == null) return;
+
+        final Traversal.Admin<Object, Object> trav = (Traversal.Admin<Object, Object>) (Traversal.Admin) this.traversalValue;
+        prepareChildTraversal(traverser, trav);
+
+        try {
+            if (!trav.hasNext()) {
+                // No results from the child traversal. For collection predicates (within/without) this is a
+                // legitimate empty set: within(empty) -> false, without(empty) -> true. Resolve to an empty
+                // collection and let Contains.test() apply the correct semantics rather than short-circuiting.
+                // For scalar predicates (eq/gt/lt/etc.) there is no comparison value, so flag as resolved-empty
+                // and let the step short-circuit (cannot satisfy).
+                this.literals = Collections.emptyList();
+                if (this.biPredicate instanceof Contains) {
+                    this.resolvedEmpty = false;
+                    this.isCollection = true;
+                } else {
+                    this.resolvedEmpty = true;
+                    this.isCollection = false;
+                }
+            } else {
+                this.resolvedEmpty = false;
+                final Object firstResult = trav.next();
+                if (this.biPredicate instanceof Contains) {
+                    if (firstResult instanceof Collection) {
+                        this.literals = (Collection<V>) firstResult;
+                    } else {
+                        this.literals = Collections.singletonList((V) firstResult);
+                    }
+                    this.isCollection = true;
+                } else {
+                    setValue((V) firstResult);
+                }
+            }
+        } finally {
+            CloseableIterator.closeIterator(trav);
+        }
+    }
+
+    /**
+     * Resolves multiple child traversals, taking the first result from each and combining into a collection.
+     * Only valid for collection predicates ({@link Contains}).
+     */
+    @SuppressWarnings("unchecked")
+    private void resolveMultipleTraversals(final Traverser.Admin<?> traverser) {
+        final List<Object> allResults = new ArrayList<>();
+
+        for (final Traversal.Admin<?, ?> tv : this.traversalValues) {
+            final Traversal.Admin<Object, Object> trav = (Traversal.Admin<Object, Object>) (Traversal.Admin) tv;
+            prepareChildTraversal(traverser, trav);
+
+            try {
+                if (trav.hasNext()) {
+                    final Object firstResult = trav.next();
+                    if (firstResult instanceof Collection) {
+                        allResults.addAll((Collection<?>) firstResult);
+                    } else {
+                        allResults.add(firstResult);
+                    }
+                }
+            } finally {
+                CloseableIterator.closeIterator(trav);
+            }
+        }
+
+        // Multi-traversal resolution is only valid for collection predicates (within/without). An empty
+        // combined result is a legitimate empty set, so resolve to an empty collection and let Contains.test()
+        // apply the correct semantics (within(empty) -> false, without(empty) -> true) instead of short-circuiting.
+        this.resolvedEmpty = false;
+        this.isCollection = true;
+        this.literals = allResults.isEmpty()
+                ? Collections.emptyList()
+                : (Collection<V>) (Collection<?>) allResults;
+    }
+
+    /**
+     * Prepares a child traversal for evaluation by splitting the current traverser and seeding it.
+     */
+    @SuppressWarnings("unchecked")
+    private static void prepareChildTraversal(final Traverser.Admin<?> traverser, final Traversal.Admin<Object, Object> trav) {
+        final Traverser.Admin<Object> split = (Traverser.Admin<Object>) traverser.split();
+        split.setSideEffects(trav.getSideEffects());
+        split.setBulk(1L);
+        trav.reset();
+        trav.addStart(split);
+    }
+
+    //////////////// predicate traversal utilities
+
+    /**
+     * Recursively integrates all child traversals found in the predicate tree into the given parent step.
+     * Handles {@link ConnectiveP} (recurses into children) and {@link NotP} (recurses into wrapped predicate).
+     */
+    public static void integrateTraversals(final P<?> p, final TraversalParent parent) {
+        if (p instanceof ConnectiveP) {
+            for (final P<?> child : ((ConnectiveP<?>) p).getPredicates()) {
+                integrateTraversals(child, parent);
+            }
+        } else if (p instanceof NotP) {
+            integrateTraversals(((NotP<?>) p).getWrapped(), parent);
+        } else if (p.getTraversalValue() != null) {
+            parent.integrateChild(p.getTraversalValue());
+        } else if (p.getTraversalValues() != null) {
+            for (final Traversal.Admin<?, ?> tv : p.getTraversalValues()) {
+                parent.integrateChild(tv);
+            }
+        }
+    }
+
+    /**
+     * Recursively collects all child traversals from a predicate tree.
+     * Handles {@link ConnectiveP} (recurses into children) and {@link NotP} (recurses into wrapped predicate).
+     */
+    public static void collectTraversals(final P<?> p, final List<Traversal.Admin<?, ?>> traversals) {
+        if (p instanceof ConnectiveP) {
+            for (final P<?> child : ((ConnectiveP<?>) p).getPredicates()) {
+                collectTraversals(child, traversals);
+            }
+        } else if (p instanceof NotP) {
+            collectTraversals(((NotP<?>) p).getWrapped(), traversals);
+        } else if (p.getTraversalValue() != null) {
+            traversals.add(p.getTraversalValue());
+        } else if (p.getTraversalValues() != null) {
+            traversals.addAll(p.getTraversalValues());
+        }
     }
 
     //////////////// statics
@@ -394,6 +634,8 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 3.0.0-incubating
      */
     public static <V> P<V> within(final V... values) {
+        final P<V> traversalP = handleContainsVarargs(values, Contains.within, "within");
+        if (traversalP != null) return traversalP;
         final V[] v = null == values ? (V[]) new Object[] { null } : (V[]) values;
         return P.within(Arrays.asList(v));
     }
@@ -427,6 +669,8 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 3.0.0-incubating
      */
     public static <V> P<V> without(final V... values) {
+        final P<V> traversalP = handleContainsVarargs(values, Contains.without, "without");
+        if (traversalP != null) return traversalP;
         final V[] v = null == values ? (V[]) new Object[] { null } : values;
         return P.without(Arrays.asList(v));
     }
@@ -451,6 +695,106 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     public static <V> P<V> without(final Collection<V> value) {
         if (null == value) return P.without((V) null);
         return new P(Contains.without, value);
+    }
+
+    /**
+     * Determines if values are equal using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> eq(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
+        return new P(Compare.eq, traversalValue.asAdmin());
+    }
+
+    /**
+     * Determines if values are not equal using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> neq(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
+        return new P(Compare.neq, traversalValue.asAdmin());
+    }
+
+    /**
+     * Determines if a value is less than another using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> lt(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
+        return new P(Compare.lt, traversalValue.asAdmin());
+    }
+
+    /**
+     * Determines if a value is less than or equal to another using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> lte(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
+        return new P(Compare.lte, traversalValue.asAdmin());
+    }
+
+    /**
+     * Determines if a value is greater than another using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> gt(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
+        return new P(Compare.gt, traversalValue.asAdmin());
+    }
+
+    /**
+     * Determines if a value is greater than or equal to another using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> gte(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
+        return new P(Compare.gte, traversalValue.asAdmin());
+    }
+
+    /**
+     * Determines if a value is within the results of a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> within(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
+        return new P(Contains.within, traversalValue.asAdmin());
+    }
+
+    /**
+     * Determines if a value is within the union of results from multiple child traversals resolved at runtime.
+     * Each traversal is evaluated independently and results are combined into a single collection.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> within(final Traversal<?, ?> first, final Traversal<?, ?> second, final Traversal<?, ?>... more) {
+        return containsTraversals(Contains.within, first, second, more);
+    }
+
+    /**
+     * Determines if a value is not within the results of a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> without(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
+        return new P(Contains.without, traversalValue.asAdmin());
+    }
+
+    /**
+     * Determines if a value is not within the union of results from multiple child traversals resolved at runtime.
+     * Each traversal is evaluated independently and results are combined into a single collection.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> without(final Traversal<?, ?> first, final Traversal<?, ?> second, final Traversal<?, ?>... more) {
+        return containsTraversals(Contains.without, first, second, more);
     }
 
     /**
@@ -496,5 +840,80 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      */
     public static <V> P<V> not(final P<V> predicate) {
         return predicate.negate();
+    }
+
+    /**
+     * Handles varargs traversal detection for within/without. Returns a P if traversals were found,
+     * or null if the values are plain literals.
+     */
+    @SuppressWarnings("unchecked")
+    private static <V> P<V> handleContainsVarargs(final V[] values, final PBiPredicate predicate, final String stepName) {
+        if (values != null && values.length == 1 && values[0] instanceof Traversal) {
+            final Traversal<?, ?> trav = (Traversal<?, ?>) values[0];
+            ChildTraversalValidator.validate(trav.asAdmin());
+            return new P(predicate, trav.asAdmin());
+        }
+        if (values != null && values.length > 1 && allTraversals(values)) {
+            final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>(values.length);
+            for (final V v : values) {
+                traversals.add(((Traversal<?, ?>) v).asAdmin());
+            }
+            for (final Traversal.Admin<?, ?> tv : traversals) {
+                ChildTraversalValidator.validate(tv);
+            }
+            return new P(predicate, traversals);
+        }
+        if (values != null && values.length > 1 && anyTraversals(values)) {
+            throw new IllegalArgumentException(
+                    "Cannot mix traversals and literal values in " + stepName + "(). " +
+                    "Use " + stepName + "(__.constant(val1), __.constant(val2)) to wrap all values as traversals.");
+        }
+        return null;
+    }
+
+    /**
+     * Creates a Contains predicate from multiple validated child traversals.
+     */
+    @SuppressWarnings("unchecked")
+    private static <V> P<V> containsTraversals(final PBiPredicate predicate, final Traversal<?, ?> first,
+                                               final Traversal<?, ?> second, final Traversal<?, ?>... more) {
+        final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>(2 + (more != null ? more.length : 0));
+        traversals.add(first.asAdmin());
+        traversals.add(second.asAdmin());
+        if (more != null) {
+            for (final Traversal<?, ?> tv : more) {
+                traversals.add(tv.asAdmin());
+            }
+        }
+        for (final Traversal.Admin<?, ?> tv : traversals) {
+            ChildTraversalValidator.validate(tv);
+        }
+        return new P(predicate, traversals);
+    }
+
+    /**
+     * Checks if all elements in the array are {@link Traversal} instances (specifically
+     * {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal}).
+     */
+    private static <V> boolean allTraversals(final V[] values) {
+        for (final V v : values) {
+            if (!(v instanceof org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks if any element in the array is a {@link Traversal} instance (specifically
+     * {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal}).
+     */
+    private static <V> boolean anyTraversals(final V[] values) {
+        for (final V v : values) {
+            if (v instanceof org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal) {
+                return true;
+            }
+        }
+        return false;
     }
 }
