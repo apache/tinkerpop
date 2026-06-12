@@ -69,6 +69,32 @@ GLVs (including the Java driver). This aligns with the embedded graph transactio
 partial work is discarded if the user forgets to call `commit()`. In Java (both remote and embedded mode), the behavior
 can still be overridden via `tx.onClose(Transaction.CLOSE_BEHAVIOR.COMMIT)`. The non-Java GLVs do not support
 configuring close behavior and always rollback.
+==== Traversal-Accepting Steps
+
+Steps and predicates that previously only accepted literal values now accept child traversals resolved per-traverser
+at runtime. This enables dynamic filtering, lookup, and mutation patterns without `where()`/`select()` workarounds.
+
+Affected steps: `has()`, `hasLabel()`, `V()`, `E()`, `property()`, `is()`, `where(P)`, `P.eq/neq/gt/lt/gte/lte()`,
+`P.within/without()`, and all `TextP` predicates.
+
+[source,groovy]
+----
+// Dynamic property comparison
+g.V().has("age", P.gt(__.V(1).values("age")))
+
+// Dynamic vertex lookup: resolve the ids of marko's friends, then look them up by id
+g.V(1).V(__.out("knows").id()).values("name")
+
+// Multi-source filtering with within()
+g.V().has("name", P.within(__.V(1).out("knows").values("name").fold(), __.constant("peter")))
+----
+
+Child traversals take only the first result (consistent with `by(traversal)` semantics). For `within()`/`without()`,
+use `fold()` to collect multiple values into a list.
+
+All child traversals must be read-only. Mutating steps (`addV`, `addE`, `drop`, `property`) inside child traversals
+are rejected at construction time with `IllegalArgumentException`. A `ChildTraversalVerificationStrategy` provides
+additional safety at strategy time.
 
 ==== Removed `uuid` Dependency in gremlin-javascript
 
@@ -564,6 +590,21 @@ benefiting all driver users transparently.
 
 See <<provider-defined-types>> for full details on annotation usage, field filtering, nested types, and ServiceLoader
 registration.
+
+===== Traversal-Accepting Steps - HasContainer Guard
+
+Steps and predicates now accept child traversals resolved at runtime. `HasContainer` instances that hold a child
+traversal cannot be folded into index lookups because their value is dynamic (resolved per-traverser). Providers that
+fold `HasContainer` predicates into their graph step must guard against this:
+
+[source,java]
+----
+if (hasContainer.hasTraversal()) continue;  // skip - dynamic value, cannot fold into index
+----
+
+`GraphStep.processHasContainerIds()` already includes this guard. Providers that implement their own `HasContainer`
+folding strategy should add the same check. Without it, the container's value is read before it has been resolved
+against a traverser, so an unresolved value would be folded into the index lookup and produce incorrect results.
 
 ==== Graph Driver Providers
 
