@@ -21,27 +21,36 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.AcceptsChildPredicateTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.EnumSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class IsStep<S> extends FilterStep<S> implements IsStepContract<S> {
+public final class IsStep<S> extends FilterStep<S> implements IsStepContract<S>, TraversalParent, AcceptsChildPredicateTraversal {
 
     private P<S> predicate;
 
     public IsStep(final Traversal.Admin traversal, final P<S> predicate) {
         super(traversal);
         this.predicate = predicate;
+        P.integrateTraversals(this.predicate, this);
     }
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
+        if (this.predicate.hasTraversal()) {
+            this.predicate.resolve(traverser);
+            if (this.predicate.isResolvedEmpty()) return false;
+        }
         return this.predicate.test(traverser.get());
     }
 
@@ -53,6 +62,14 @@ public final class IsStep<S> extends FilterStep<S> implements IsStepContract<S> 
     @Override
     public P<S> getPredicate() {
         return this.predicate;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
+        final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>();
+        P.collectTraversals(this.predicate, traversals);
+        return (List) Collections.unmodifiableList(traversals);
     }
 
     @Override
@@ -69,7 +86,12 @@ public final class IsStep<S> extends FilterStep<S> implements IsStepContract<S> 
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return EnumSet.of(TraverserRequirement.OBJECT);
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
     }
 
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        P.integrateTraversals(this.predicate, this);
+    }
 }
