@@ -20,18 +20,14 @@
 import assert from 'assert';
 import { Buffer } from 'buffer';
 import { basic, sigv4 } from '../../lib/driver/auth.js';
+import { HttpRequest } from '../../lib/driver/http-request.js';
 
 describe('auth', function () {
   describe('basic', function () {
     function createMockRequest() {
-      return {
-        url: 'https://localhost:8182/gremlin',
-        method: 'POST',
-        headers: {
-          'accept': 'application/vnd.graphbinary-v4.0',
-        },
-        body: new Uint8Array(0),
-      };
+      return new HttpRequest('POST', 'https://localhost:8182/gremlin', {
+        'accept': 'application/vnd.graphbinary-v4.0',
+      }, Buffer.from(''));
     }
 
     it('should add authorization header', function () {
@@ -39,40 +35,28 @@ describe('auth', function () {
       assert.strictEqual(request.headers['authorization'], undefined);
 
       const interceptor = basic('username', 'password');
-      const result = interceptor(request);
+      interceptor(request);
 
-      assert.ok(result.headers['authorization'].startsWith('Basic '));
+      assert.ok(request.headers['authorization'].startsWith('Basic '));
     });
 
     it('should encode credentials correctly', function () {
       const request = createMockRequest();
       const interceptor = basic('username', 'password');
-      const result = interceptor(request);
+      interceptor(request);
 
-      const encoded = result.headers['authorization'].substring('Basic '.length);
+      const encoded = request.headers['authorization'].substring('Basic '.length);
       const decoded = Buffer.from(encoded, 'base64').toString();
       assert.strictEqual(decoded, 'username:password');
-    });
-
-    it('should return the same request object', function () {
-      const request = createMockRequest();
-      const interceptor = basic('username', 'password');
-      const result = interceptor(request);
-
-      assert.strictEqual(result, request);
     });
   });
 
   describe('sigv4', function () {
     function createMockRequest() {
-      return {
-        url: 'https://localhost:8182/gremlin',
-        method: 'POST',
-        headers: {
-          'accept': 'application/vnd.graphbinary-v4.0',
-        },
-        body: new Uint8Array(Buffer.from('{"gremlin":"g.V()"}')),
-      };
+      return new HttpRequest('POST', 'https://localhost:8182/gremlin', {
+        'accept': 'application/vnd.graphbinary-v4.0',
+        'content-type': 'application/json',
+      }, Buffer.from('{"gremlin":"g.V()"}'));
     }
 
     const mockProvider = () => ({
@@ -85,10 +69,10 @@ describe('auth', function () {
       assert.strictEqual(request.headers['authorization'], undefined);
 
       const interceptor = sigv4('xx-dummy-1', 'test-service', mockProvider);
-      const result = await interceptor(request);
+      await interceptor(request);
 
-      assert.ok(result.headers['x-amz-date']);
-      const authHeader = result.headers['authorization'];
+      assert.ok(request.headers['x-amz-date']);
+      const authHeader = request.headers['authorization'];
       assert.ok(authHeader.startsWith('AWS4-HMAC-SHA256 Credential=MOCK_ACCESS_KEY'));
       assert.ok(authHeader.includes('xx-dummy-1/test-service/aws4_request'));
       assert.ok(authHeader.includes('Signature='));
@@ -103,20 +87,33 @@ describe('auth', function () {
       });
 
       const interceptor = sigv4('xx-dummy-1', 'test-service', providerWithToken);
-      const result = await interceptor(request);
+      await interceptor(request);
 
-      assert.strictEqual(result.headers['x-amz-security-token'], 'MOCK_SESSION_TOKEN');
-      const authHeader = result.headers['authorization'];
+      assert.strictEqual(request.headers['x-amz-security-token'], 'MOCK_SESSION_TOKEN');
+      const authHeader = request.headers['authorization'];
       assert.ok(authHeader.startsWith('AWS4-HMAC-SHA256 Credential='));
       assert.ok(authHeader.includes('Signature='));
     });
 
-    it('should return the same request object', async function () {
+    it('should preserve pre-existing headers after signing', async function () {
       const request = createMockRequest();
-      const interceptor = sigv4('xx-dummy-1', 'test-service', mockProvider);
-      const result = await interceptor(request);
+      // Capture the headers present before signing (accept + content-type)
+      const preSignKeys = Object.keys(request.headers);
 
-      assert.strictEqual(result, request);
+      const interceptor = sigv4('xx-dummy-1', 'test-service', mockProvider);
+      await interceptor(request);
+
+      // The original headers must still be present (not dropped by wholesale replacement)
+      for (const key of preSignKeys) {
+        assert.ok(
+          key in request.headers,
+          `expected header '${key}' to be preserved after signing`);
+      }
+      assert.strictEqual(request.headers['accept'], 'application/vnd.graphbinary-v4.0');
+      assert.strictEqual(request.headers['content-type'], 'application/json');
+
+      // Signing adds at least authorization and x-amz-date on top of the originals
+      assert.ok(Object.keys(request.headers).length >= preSignKeys.length + 2);
     });
   });
 });

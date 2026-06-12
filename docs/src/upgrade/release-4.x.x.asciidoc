@@ -32,6 +32,37 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Request Interceptors
+
+When TinkerPop supported WebSockets prior to 4.0.0, the Java driver offered a `RequestInterceptor` interface (and
+its predecessor, `HandshakeInterceptor`) that allowed modification of the raw Netty `FullHttpRequest`. For WebSocket
+connections, the interceptor only ran on the initial HTTP upgrade handshake. With the move to HTTP, the notion of
+the "interceptor" has shifted to a per-request concern that is now standardized across all GLVs.
+
+All GLVs now support request interceptors, which allow modification of the HTTP request before it is sent to the
+server. An interceptor is a function that receives the mutable HTTP request object and can modify headers, the
+request body, the URI, or the HTTP method. Interceptors are run in the order they are registered.
+
+The most common use case for interceptors is authentication (e.g., SigV4 signing), but they can also be used to add
+provider-specific fields, inject custom headers, or transform the request body.
+
+Here is a simple Java example that adds a custom header:
+
+[source,java]
+----
+Cluster cluster = Cluster.build("localhost")
+    .interceptors(request -> request.headers().put("X-Custom-Header", "value"))
+    .create();
+----
+
+Authentication is also an interceptor. Each GLV provides convenience methods (e.g., `Auth.basic()`, `Auth.sigv4()`)
+that return interceptors and can be registered alongside custom ones.
+
+For full details on the interceptor API for each language variant, refer to the RequestInterceptor section in
+each GLV's documentation in the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
+reference.
+
 ==== Gremlator
 
 link:https://gremlator.com[Gremlator] has been rebuilt entirely in JavaScript as a browser-based single-page
@@ -566,6 +597,20 @@ See <<provider-defined-types>> for full details on annotation usage, field filte
 registration.
 
 ==== Graph Driver Providers
+
+===== Request Interceptors
+
+Graph driver providers should implement request interceptor support in their drivers. Interceptors allow users to
+modify the HTTP request before it is sent, which is essential for authentication schemes (like SigV4), adding
+provider-specific request fields, and other server-specific capabilities.
+
+All TinkerPop reference drivers now include interceptor support. The interceptor contract is standardized across all
+GLVs: interceptors receive a mutable HTTP request object, can modify headers/body/URI, and the driver auto-serializes
+the request body to JSON after all interceptors have run.
+
+For the full specification of how interceptors should behave, see the
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_http_request_interceptor[HTTP Request Interceptor]
+section in the provider documentation.
 
 == TinkerPop 4.0.0-beta.2
 

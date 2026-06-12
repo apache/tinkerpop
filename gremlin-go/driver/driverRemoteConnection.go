@@ -60,6 +60,11 @@ type DriverRemoteConnectionSettings struct {
 	// RequestInterceptors are functions that modify HTTP requests before sending.
 	RequestInterceptors []RequestInterceptor
 
+	// Auth is a RequestInterceptor for authentication (e.g. BasicAuth, SigV4Auth).
+	// As a convenience, this is always appended to the end of the interceptor list
+	// so it runs last, after any user interceptors have modified the request.
+	Auth RequestInterceptor
+
 	// PDTRegistry enables registry-based dehydration in the gremlin-lang translator.
 	PDTRegistry *PDTRegistry
 }
@@ -116,6 +121,11 @@ func NewDriverRemoteConnection(
 	// Add user-provided interceptors
 	for _, interceptor := range settings.RequestInterceptors {
 		conn.AddInterceptor(interceptor)
+	}
+
+	// Auth interceptor is always last so it runs after user interceptors
+	if settings.Auth != nil {
+		conn.AddInterceptor(settings.Auth)
 	}
 
 	client := &Client{

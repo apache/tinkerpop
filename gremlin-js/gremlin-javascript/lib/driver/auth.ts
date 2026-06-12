@@ -18,12 +18,11 @@
  */
 
 import { Buffer } from 'buffer';
-import type { HttpRequest, RequestInterceptor } from './connection.js';
+import type { HttpRequest, RequestInterceptor } from './http-request.js';
 
 export function basic(username: string, password: string): RequestInterceptor {
   return (request: HttpRequest) => {
     request.headers['authorization'] = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
-    return request;
   };
 }
 
@@ -40,6 +39,10 @@ export function sigv4(region: string, service: string, credentialsProvider?: Aws
   let resolvedProvider: AwsCredentialsProvider;
 
   return async (request: HttpRequest) => {
+    // Ensure body is serialized to JSON bytes before signing.
+    // serializeBody is idempotent: safe to call even if already serialized.
+    request.serializeBody();
+
     // Lazy-initialize signer and credentials provider on first use
     if (!signer) {
       const { SignatureV4 } = await import('@smithy/signature-v4');
@@ -76,6 +79,5 @@ export function sigv4(region: string, service: string, credentialsProvider?: Aws
     });
 
     request.headers = signed.headers;
-    return request;
   };
 }

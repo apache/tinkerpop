@@ -19,8 +19,6 @@ under the License.
 
 package gremlingo
 
-import "strconv"
-
 // RequestMessage represents a request to the server.
 type RequestMessage struct {
 	Gremlin string
@@ -31,7 +29,7 @@ type RequestMessage struct {
 //
 // This function is exposed publicly to enable alternative transport protocols (gRPC, HTTP/2, etc.)
 // to construct properly formatted requests outside the standard HTTP client. The returned
-// request can then be serialized using SerializeMessage().
+// request can be placed in an HttpRequest.Body and serialized via SerializeBody().
 //
 // Parameters:
 //   - stringGremlin: The Gremlin query string to execute
@@ -44,8 +42,9 @@ type RequestMessage struct {
 // Example for alternative transports:
 //
 //	req := MakeStringRequest("g.V().count()", "g", RequestOptions{})
-//	serializer := newGraphBinarySerializer(nil)
-//	bytes, _ := serializer.(graphBinarySerializer).SerializeMessage(&req)
+//	httpReq, _ := NewHttpRequest("POST", "http://localhost:8182/gremlin")
+//	httpReq.Body = &req
+//	bytes, _ := httpReq.SerializeBody()
 //	// Send bytes over gRPC, HTTP/2, etc.
 func MakeStringRequest(stringGremlin string, traversalSource string, requestOptions RequestOptions) (req RequestMessage) {
 	newFields := map[string]interface{}{
@@ -74,7 +73,7 @@ func MakeStringRequest(stringGremlin string, traversalSource string, requestOpti
 	}
 
 	if requestOptions.bulkResults != nil {
-		newFields["bulkResults"] = strconv.FormatBool(*requestOptions.bulkResults)
+		newFields["bulkResults"] = *requestOptions.bulkResults
 	}
 
 	if requestOptions.transactionId != "" {

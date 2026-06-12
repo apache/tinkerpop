@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.RequestInterceptor;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleHttpClient;
 
 import java.net.URI;
@@ -41,10 +40,6 @@ public final class TestClientFactory {
 
     public static Cluster.Builder build(final String address) {
         return Cluster.build(address).port(PORT);
-    }
-
-    public static Cluster.Builder build(final RequestInterceptor serializingInterceptor) {
-        return Cluster.build(serializingInterceptor).port(PORT);
     }
 
     public static Cluster open() {

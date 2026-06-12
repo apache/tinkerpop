@@ -133,7 +133,7 @@ namespace Gremlin.Net.UnitTest.Driver
             await connection.SubmitAsync<object, object>(gl);
 
             Assert.NotNull(capturedRequest);
-            Assert.Equal("true", capturedRequest!.Fields[Tokens.ArgsBulkResults]);
+            Assert.Equal(true, capturedRequest!.Fields[Tokens.ArgsBulkResults]);
         }
 
         [Fact]
@@ -189,13 +189,13 @@ namespace Gremlin.Net.UnitTest.Driver
             gl.AddStep("V", Array.Empty<object>());
             gl.OptionsStrategies.Add(new OptionsStrategy(new Dictionary<string, object>
             {
-                { Tokens.ArgsBulkResults, "false" }
+                { Tokens.ArgsBulkResults, false }
             }));
 
             await connection.SubmitAsync<object, object>(gl);
 
             Assert.NotNull(capturedRequest);
-            Assert.Equal("false", capturedRequest!.Fields[Tokens.ArgsBulkResults]);
+            Assert.Equal(false, capturedRequest!.Fields[Tokens.ArgsBulkResults]);
         }
 
         /// <summary>

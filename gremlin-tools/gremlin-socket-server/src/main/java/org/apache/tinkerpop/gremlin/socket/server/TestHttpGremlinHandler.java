@@ -31,15 +31,17 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -56,10 +58,17 @@ public class TestHttpGremlinHandler extends SimpleChannelInboundHandler<FullHttp
     private static final Graph graph = TinkerFactory.createModern();
     private static final Vertex singleVertex = graph.traversal().V().hasLabel("person").next();
 
+    // Lightweight pattern to extract the "gremlin" field from a JSON request body.
+    // This avoids pulling in a full JSON parser for the test server.
+    private static final Pattern GREMLIN_FIELD = Pattern.compile("\"gremlin\"\\s*:\\s*\"([^\"]+)\"");
+
     @Override
     protected void channelRead0(final ChannelHandlerContext ctx, final FullHttpRequest request) throws Exception {
-        final RequestMessage msg = serializer.deserializeBinaryRequest(request.content());
-        final String gremlin = msg.getGremlin();
+        final String gremlin = extractGremlin(request);
+        if (gremlin == null) {
+            writeErrorResponse(ctx, BAD_REQUEST, "Could not parse gremlin field from request");
+            return;
+        }
 
         switch (gremlin) {
             case SocketServerConstants.GREMLIN_SINGLE_VERTEX:
@@ -206,5 +215,15 @@ public class TestHttpGremlinHandler extends SimpleChannelInboundHandler<FullHttp
         response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
         ctx.write(response);
         ctx.writeAndFlush(new DefaultLastHttpContent());
+    }
+
+    /**
+     * Extracts the "gremlin" field from the request body. Supports JSON requests
+     * (the format sent by all GLV drivers since 4.0) by using a simple regex match.
+     */
+    private String extractGremlin(final FullHttpRequest request) {
+        final String body = request.content().toString(StandardCharsets.UTF_8);
+        final Matcher m = GREMLIN_FIELD.matcher(body);
+        return m.find() ? m.group(1) : null;
     }
 }

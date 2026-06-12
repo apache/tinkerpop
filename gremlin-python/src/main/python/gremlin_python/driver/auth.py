@@ -16,24 +16,29 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+import base64
 
 
 def basic(username, password):
-    from aiohttp import BasicAuth as aiohttpBasicAuth
+    """Returns an interceptor that adds Basic auth to the request."""
+    def interceptor(request):
+        credentials = base64.b64encode(f"{username}:{password}".encode("utf-8")).decode("utf-8")
+        request.headers['authorization'] = f"Basic {credentials}"
 
-    def apply(request):
-        return request['headers'].update({'authorization': aiohttpBasicAuth(username, password).encode()})
-
-    return apply
+    return interceptor
 
 
 def sigv4(region, service):
+    """Returns an interceptor that signs the request with AWS SigV4."""
     import os
     from boto3 import Session
     from botocore.auth import SigV4Auth
     from botocore.awsrequest import AWSRequest
 
-    def apply(request):
+    def interceptor(request):
+        # Ensure body is serialized so we can sign it
+        body_bytes = request.serialize_body()
+
         access_key = os.environ.get('AWS_ACCESS_KEY_ID', '')
         secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
         session_token = os.environ.get('AWS_SESSION_TOKEN', '')
@@ -45,11 +50,8 @@ def sigv4(region, service):
             region_name=region
         )
 
-        sigv4_request = AWSRequest(method="POST", url=request['url'], data=request['payload'])
+        sigv4_request = AWSRequest(method=request.method, url=request.url, data=body_bytes)
         SigV4Auth(session.get_credentials(), service, region).add_auth(sigv4_request)
-        request['headers'].update(sigv4_request.headers)
-        request['payload'] = sigv4_request.data
-        return request
+        request.headers.update(dict(sigv4_request.headers))
 
-    return apply
-
+    return interceptor

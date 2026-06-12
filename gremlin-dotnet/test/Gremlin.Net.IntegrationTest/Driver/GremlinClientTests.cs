@@ -272,5 +272,94 @@ namespace Gremlin.Net.IntegrationTest.Driver
             Assert.Equal(3, p2.Fields["x"]);
             Assert.Equal(4, p2.Fields["y"]);
         }
+
+        [Fact]
+        public async Task ShouldAutoSerializeRequestMessageWithInterceptorMutation()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    if (ctx.Body is RequestMessage msg)
+                    {
+                        var g = msg.Fields.ContainsKey("g") ? (string)msg.Fields["g"] : "g";
+                        ctx.Body = RequestMessage.Build("g.inject(99)").AddG(g).Create();
+                    }
+                    return Task.CompletedTask;
+                }
+            };
+
+            using var gremlinClient = new GremlinClient(gremlinServer, interceptors: interceptors);
+
+            var response = await gremlinClient.SubmitWithSingleResultAsync<int>("g.inject(1)");
+            Assert.Equal(99, response);
+        }
+
+        [Fact]
+        public async Task ShouldPropagateExceptionThrownDuringInterceptor()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            var callCount = 0;
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    callCount++;
+                    if (callCount == 1)
+                    {
+                        throw new InvalidOperationException("interceptor broke");
+                    }
+                    return Task.CompletedTask;
+                }
+            };
+
+            using var gremlinClient = new GremlinClient(gremlinServer, interceptors: interceptors);
+
+            // First request should fail with interceptor error
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                var resultSet = await gremlinClient.SubmitAsync<int>("g.inject(1)");
+                await resultSet.ToListAsync();
+            });
+            Assert.Contains("interceptor broke", ex.Message);
+
+            // Subsequent request should succeed, proving connection recovery
+            var response = await gremlinClient.SubmitWithSingleResultAsync<int>("g.inject(2)");
+            Assert.Equal(2, response);
+        }
+
+        [Fact]
+        public async Task ShouldPropagateErrorWhenInterceptorSetsUnsupportedBodyType()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            var callCount = 0;
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    callCount++;
+                    if (callCount == 1)
+                    {
+                        ctx.Body = 42;
+                    }
+                    return Task.CompletedTask;
+                }
+            };
+
+            using var gremlinClient = new GremlinClient(gremlinServer, interceptors: interceptors);
+
+            // First request should fail with serialization error
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                var resultSet = await gremlinClient.SubmitAsync<int>("g.inject(1)");
+                await resultSet.ToListAsync();
+            });
+            Assert.Contains("Cannot serialize body", ex.Message);
+
+            // Subsequent request should succeed, proving connection recovery
+            var response = await gremlinClient.SubmitWithSingleResultAsync<int>("g.inject(2)");
+            Assert.Equal(2, response);
+        }
     }
 }

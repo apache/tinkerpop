@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -31,6 +31,12 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
     /// <summary>
     ///     Serializes a <see cref="RequestMessage"/> in the GraphBinary 4.0 wire format.
     /// </summary>
+    /// <remarks>
+    ///     This serializer is no longer used by the default driver flow (which now serializes
+    ///     requests as JSON via <see cref="Gremlin.Net.Driver.HttpRequestContext.SerializeBody"/>),
+    ///     but remains available for custom interceptors or alternative transport protocols that
+    ///     require GraphBinary-encoded requests.
+    /// </remarks>
     public class RequestMessageSerializer
     {
         /// <summary>

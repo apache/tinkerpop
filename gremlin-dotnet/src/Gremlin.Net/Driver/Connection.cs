@@ -32,8 +32,6 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process;
-using Gremlin.Net.Process.Traversal;
-using Gremlin.Net.Structure.IO;
 
 namespace Gremlin.Net.Driver
 {
@@ -44,7 +42,6 @@ namespace Gremlin.Net.Driver
     {
         private readonly HttpClient _httpClient;
         private readonly Uri _uri;
-        private readonly IMessageSerializer? _requestSerializer;
         private readonly IMessageSerializer _responseSerializer;
         private readonly ConnectionSettings _settings;
         private readonly IReadOnlyList<Func<HttpRequestContext, Task>> _interceptors;
@@ -55,24 +52,15 @@ namespace Gremlin.Net.Driver
         ///     so a single <see cref="Connection"/> instance handles concurrent requests efficiently.
         /// </summary>
         /// <param name="uri">The Gremlin Server URI.</param>
-        /// <param name="requestSerializer">
-        ///     The serializer for outgoing requests. When non-null, the request body is serialized
-        ///     to <c>byte[]</c> before interceptors run and the <c>Content-Type</c> header is set
-        ///     automatically. When <c>null</c>, the body is passed as a <see cref="RequestMessage"/>
-        ///     and an interceptor is responsible for serializing it to <c>byte[]</c> and setting
-        ///     <c>Content-Type</c>. This follows the Python driver's <c>request_serializer=None</c>
-        ///     pattern.
-        /// </param>
         /// <param name="responseSerializer">The serializer for incoming responses (always required).</param>
         /// <param name="settings">Connection settings.</param>
         /// <param name="interceptors">Optional request interceptors.</param>
-        public Connection(Uri uri, IMessageSerializer? requestSerializer,
+        public Connection(Uri uri,
             IMessageSerializer responseSerializer,
             ConnectionSettings settings,
             IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null)
         {
             _uri = uri;
-            _requestSerializer = requestSerializer;
             _responseSerializer = responseSerializer;
             _settings = settings;
             _interceptors = interceptors ?? Array.Empty<Func<HttpRequestContext, Task>>();
@@ -97,13 +85,12 @@ namespace Gremlin.Net.Driver
         /// <summary>
         ///     Constructor that accepts a pre-configured HttpClient (for testing).
         /// </summary>
-        internal Connection(Uri uri, IMessageSerializer? requestSerializer,
+        internal Connection(Uri uri,
             IMessageSerializer responseSerializer,
             ConnectionSettings settings, HttpClient httpClient,
             IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null)
         {
             _uri = uri;
-            _requestSerializer = requestSerializer;
             _responseSerializer = responseSerializer;
             _settings = settings;
             _httpClient = httpClient;
@@ -139,7 +126,7 @@ namespace Gremlin.Net.Driver
                 headers["bulkResults"] = "true";
             }
 
-            // Promote transactionId to HTTP header before serialization.
+            // Promote transactionId to HTTP header before interceptors run.
             // The field remains in the serialized body as well (dual transmission
             // per the HTTP transaction protocol specification).
             if (requestMessage.Fields.TryGetValue(Tokens.ArgsTransactionId, out var txIdObj) &&
@@ -148,24 +135,18 @@ namespace Gremlin.Net.Driver
                 headers["X-Transaction-Id"] = txId;
             }
 
-            object body;
-            if (_requestSerializer != null)
-            {
-                var requestBytes = await _requestSerializer.SerializeMessageAsync(requestMessage, cancellationToken)
-                    .ConfigureAwait(false);
-                body = requestBytes;
-                headers["Content-Type"] = _requestSerializer.MimeType;
-            }
-            else
-            {
-                body = requestMessage;
-            }
-
-            var context = new HttpRequestContext("POST", _uri, headers, body);
+            var context = new HttpRequestContext("POST", _uri, headers, requestMessage);
 
             foreach (var interceptor in _interceptors)
             {
                 await interceptor(context).ConfigureAwait(false);
+            }
+
+            // Auto-serialize after interceptors: idempotent if already serialized by an interceptor.
+            // Skip if body is HttpContent (an escape hatch for full wire-format control).
+            if (context.Body is not System.Net.Http.HttpContent)
+            {
+                context.SerializeBody();
             }
 
             // The HttpResponseMessage is NOT disposed here — ownership transfers to
@@ -184,10 +165,8 @@ namespace Gremlin.Net.Driver
                 else
                 {
                     throw new InvalidOperationException(
-                        "Request body must be byte[] or HttpContent after all interceptors complete, " +
-                        "but found " + (context.Body?.GetType().Name ?? "null") +
-                        ". Either provide a requestSerializer or add an interceptor " +
-                        "that serializes the RequestMessage.");
+                        "Request body must be byte[] or HttpContent after serialization, " +
+                        "but found " + (context.Body?.GetType().Name ?? "null") + ".");
                 }
 
                 foreach (var header in context.Headers)
@@ -195,6 +174,10 @@ namespace Gremlin.Net.Driver
                     if (string.Equals(header.Key, "Content-Type", StringComparison.OrdinalIgnoreCase))
                     {
                         httpRequest.Content.Headers.ContentType = new MediaTypeHeaderValue(header.Value);
+                    }
+                    else if (string.Equals(header.Key, "Content-Length", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Content-Length is set automatically by ByteArrayContent; skip to avoid conflict.
                     }
                     else
                     {
@@ -345,5 +328,7 @@ namespace Gremlin.Net.Driver
         }
 
         #endregion
+
+        internal IReadOnlyList<Func<HttpRequestContext, Task>> Interceptors => _interceptors;
     }
 }

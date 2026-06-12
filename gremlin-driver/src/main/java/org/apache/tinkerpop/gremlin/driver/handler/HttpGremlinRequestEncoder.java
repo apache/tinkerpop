@@ -29,7 +29,6 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.driver.HttpRequest;
 import org.apache.tinkerpop.gremlin.driver.RequestInterceptor;
 import org.apache.tinkerpop.gremlin.driver.UserAgent;
@@ -49,7 +48,7 @@ import java.util.Map;
 import static org.apache.tinkerpop.gremlin.driver.handler.InactiveChannelHandler.REQUEST_SENT;
 
 /**
- * Converts {@link RequestMessage} to a {@code HttpRequest}.
+ * Converts {@link RequestMessage} to an HTTP request, running interceptors and serializing the body to JSON.
  */
 @ChannelHandler.Sharable
 public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
@@ -57,11 +56,11 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
     private final MessageSerializer<?> serializer;
     private final boolean userAgentEnabled;
     private final boolean bulkResults;
-    private final List<Pair<String, ? extends RequestInterceptor>> interceptors;
+    private final List<RequestInterceptor> interceptors;
     private final URI uri;
 
     public HttpGremlinRequestEncoder(final MessageSerializer<?> serializer,
-                                     final List<Pair<String, ? extends RequestInterceptor>> interceptors,
+                                     final List<RequestInterceptor> interceptors,
                                      final boolean userAgentEnabled, boolean bulkResults, final URI uri) {
         this.serializer = serializer;
         this.interceptors = interceptors;
@@ -72,7 +71,6 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
 
     @Override
     protected void encode(final ChannelHandlerContext channelHandlerContext, final RequestMessage requestMessage, final List<Object> objects) throws Exception {
-        final String mimeType = serializer.mimeTypesSupported()[0];
         if (requestMessage.getField("gremlin") instanceof GremlinLang) {
             throw new ResponseException(HttpResponseStatus.BAD_REQUEST, String.format(
                     "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: GremlinLang is not intended to be send as query.",
@@ -81,9 +79,10 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
 
         final InetSocketAddress remoteAddress = getRemoteAddress(channelHandlerContext.channel());
         try {
-            Map<String, String> headersMap = new HashMap<>();
+            final Map<String, String> headersMap = new HashMap<>();
             headersMap.put(HttpRequest.Headers.HOST, remoteAddress.getAddress().getHostAddress());
-            headersMap.put(HttpRequest.Headers.ACCEPT, mimeType);
+            // Accept header uses the response serializer's mime type (GraphBinary for responses)
+            headersMap.put(HttpRequest.Headers.ACCEPT, serializer.mimeTypesSupported()[0]);
             headersMap.put(HttpRequest.Headers.ACCEPT_ENCODING, HttpRequest.Headers.DEFLATE);
             if (userAgentEnabled) {
                 headersMap.put(HttpRequest.Headers.USER_AGENT, UserAgent.USER_AGENT);
@@ -91,21 +90,26 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
             if (bulkResults) {
                 headersMap.put(Tokens.BULK_RESULTS, "true");
             }
-            
-            // Add X-Transaction-Id header to comply with specification's dual transmission (header and body)
+
+            // Promote transactionId to HTTP header for dual transmission (header and body)
             final String transactionId = requestMessage.getField(Tokens.ARGS_TRANSACTION_ID);
             if (transactionId != null) {
                 headersMap.put(Tokens.Headers.TRANSACTION_ID, transactionId);
             }
-            
-            HttpRequest gremlinRequest = new HttpRequest(headersMap, requestMessage, uri);
 
-            for (final Pair<String, ? extends RequestInterceptor> interceptor : interceptors) {
-                gremlinRequest = interceptor.getRight().apply(gremlinRequest);
+            final HttpRequest gremlinRequest = new HttpRequest(headersMap, requestMessage, uri);
+
+            for (final RequestInterceptor interceptor : interceptors) {
+                interceptor.intercept(gremlinRequest);
             }
 
+            // Auto-serialize if interceptors did not already produce bytes
+            gremlinRequest.serializeBody();
+
+            final byte[] bodyBytes = (byte[]) gremlinRequest.getBody();
+
             final FullHttpRequest finalRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
-                    uri.getPath(), convertBody(gremlinRequest));
+                    uri.getPath(), Unpooled.wrappedBuffer(bodyBytes));
             gremlinRequest.headers().forEach((k, v) -> finalRequest.headers().add(k, v));
 
             objects.add(finalRequest);
@@ -127,16 +131,5 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
             throw new RuntimeException("Request cannot be serialized because the channel is not connected");
         }
         return remoteAddress;
-    }
-    
-    private static ByteBuf convertBody(final HttpRequest request) {
-        final Object body = request.getBody();
-        if (body instanceof byte[]) {
-            request.headers().put(HttpRequest.Headers.CONTENT_LENGTH, String.valueOf(((byte[]) body).length));
-            return Unpooled.wrappedBuffer((byte[]) body);
-        } else {
-            throw new IllegalArgumentException("Final body must be byte[] but found "
-                    + body.getClass().getSimpleName());
-        }
     }
 }

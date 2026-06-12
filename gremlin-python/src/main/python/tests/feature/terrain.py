@@ -107,5 +107,5 @@ def __create_remote(server_graph_name):
     bulking = world.config.user_data["bulking"] == "true" if "bulking" in world.config.user_data else False
 
     return DriverRemoteConnection(test_no_auth_url, server_graph_name,
-                                  request_serializer=s, response_serializer=s,
+                                  response_serializer=s,
                                   bulk_results=bulking)

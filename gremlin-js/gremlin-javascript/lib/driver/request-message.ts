@@ -100,6 +100,44 @@ export class RequestMessage {
     return this.customFields;
   }
 
+  /**
+   * Builds the plain object that represents this message on the wire. Standard fields are
+   * included when set, and custom fields are flattened to the top level. This method is
+   * invoked automatically by {@link JSON.stringify}.
+   *
+   * When a new standard field is added to this class, it should be added here as well so that
+   * it is included in the serialized request body.
+   */
+  toJSON(): Record<string, any> {
+    const payload: Record<string, any> = { gremlin: this.gremlin };
+
+    if (this.language) {
+      payload['language'] = this.language;
+    }
+    if (this.g) {
+      payload['g'] = this.g;
+    }
+    if (this.bindings !== undefined) {
+      payload['bindings'] = this.bindings;
+    }
+    if (this.timeoutMs !== undefined) {
+      payload['timeoutMs'] = this.timeoutMs;
+    }
+    if (this.materializeProperties) {
+      payload['materializeProperties'] = this.materializeProperties;
+    }
+    if (this.bulkResults !== undefined) {
+      payload['bulkResults'] = this.bulkResults;
+    }
+
+    // Flatten custom/provider fields to the top level
+    this.customFields.forEach((v, k) => {
+      payload[k] = v;
+    });
+
+    return payload;
+  }
+
   static build(gremlin: string): Builder {
     return new Builder(gremlin);
   }

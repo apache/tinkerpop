@@ -132,11 +132,6 @@ class AiohttpHTTPTransport:
     def write(self, message):
         # Inner function to perform async write.
         async def async_write():
-            # To pass url into message for request authentication processing
-            message.update({'url': self._url})
-            if message['auth']:
-                message['auth'](message)
-
             async with async_timeout.timeout(self._write_timeout):
                 self._http_req_resp = await self._client_session.post(url=self._url,
                                                                       data=message['payload'],

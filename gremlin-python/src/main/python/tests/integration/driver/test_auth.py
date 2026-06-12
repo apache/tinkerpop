@@ -16,51 +16,58 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+import base64
 import os
-from aiohttp import BasicAuth as aiohttpBasicAuth
+
 from gremlin_python.driver.auth import basic, sigv4
+from gremlin_python.driver.http_request import HttpRequest
 
 
 def create_mock_request():
-    return {'headers':
-            {'content-type': 'application/vnd.graphbinary-v4.0',
-             'accept': 'application/vnd.graphbinary-v4.0'},
-            'payload': b'',
-            'url': 'https://test_url:8182/gremlin'}
+    return HttpRequest(
+        method="POST",
+        url="https://test_url:8182/gremlin",
+        headers={
+            'content-type': 'application/vnd.graphbinary-v4.0',
+            'accept': 'application/vnd.graphbinary-v4.0',
+        },
+        body=b'',
+    )
 
 
 class TestAuth(object):
 
     def test_basic_auth_request(self):
         mock_request = create_mock_request()
-        assert 'authorization' not in mock_request['headers']
+        assert 'authorization' not in mock_request.headers
         basic('username', 'password')(mock_request)
-        assert 'authorization' in mock_request['headers']
-        assert aiohttpBasicAuth('username', 'password').encode() == mock_request['headers']['authorization']
+        assert 'authorization' in mock_request.headers
+        expected = 'Basic ' + base64.b64encode('username:password'.encode('utf-8')).decode('utf-8')
+        assert expected == mock_request.headers['authorization']
 
     def test_sigv4_auth_request(self):
         mock_request = create_mock_request()
-        assert 'Authorization' not in mock_request['headers']
-        assert 'X-Amz-Date' not in mock_request['headers']
+        assert 'Authorization' not in mock_request.headers
+        assert 'X-Amz-Date' not in mock_request.headers
         os.environ['AWS_ACCESS_KEY_ID'] = 'MOCK_ID'
         os.environ['AWS_SECRET_ACCESS_KEY'] = 'MOCK_KEY'
         sigv4('gremlin-east-1', 'tinkerpop-sigv4')(mock_request)
-        assert mock_request['headers']['X-Amz-Date'] is not None
-        assert mock_request['headers']['Authorization'].startswith('AWS4-HMAC-SHA256 Credential=MOCK_ID')
-        assert 'gremlin-east-1/tinkerpop-sigv4/aws4_request' in mock_request['headers']['Authorization']
-        assert 'Signature=' in mock_request['headers']['Authorization']
+        assert mock_request.headers['X-Amz-Date'] is not None
+        assert mock_request.headers['Authorization'].startswith('AWS4-HMAC-SHA256 Credential=MOCK_ID')
+        assert 'gremlin-east-1/tinkerpop-sigv4/aws4_request' in mock_request.headers['Authorization']
+        assert 'Signature=' in mock_request.headers['Authorization']
 
     def test_sigv4_auth_request_session_token(self):
         mock_request = create_mock_request()
-        assert 'Authorization' not in mock_request['headers']
-        assert 'X-Amz-Date' not in mock_request['headers']
-        assert 'X-Amz-Security-Token' not in mock_request['headers']
+        assert 'Authorization' not in mock_request.headers
+        assert 'X-Amz-Date' not in mock_request.headers
+        assert 'X-Amz-Security-Token' not in mock_request.headers
+        os.environ['AWS_ACCESS_KEY_ID'] = 'MOCK_ID'
+        os.environ['AWS_SECRET_ACCESS_KEY'] = 'MOCK_KEY'
         os.environ['AWS_SESSION_TOKEN'] = 'MOCK_TOKEN'
         sigv4('gremlin-east-1', 'tinkerpop-sigv4')(mock_request)
-        assert mock_request['headers']['X-Amz-Date'] is not None
-        assert mock_request['headers']['Authorization'].startswith('AWS4-HMAC-SHA256 Credential=')
-        assert mock_request['headers']['X-Amz-Security-Token'] == 'MOCK_TOKEN'
-        assert 'gremlin-east-1/tinkerpop-sigv4/aws4_request' in mock_request['headers']['Authorization']
-        assert 'Signature=' in mock_request['headers']['Authorization']
-
-
+        assert mock_request.headers['X-Amz-Date'] is not None
+        assert mock_request.headers['Authorization'].startswith('AWS4-HMAC-SHA256 Credential=')
+        assert mock_request.headers['X-Amz-Security-Token'] == 'MOCK_TOKEN'
+        assert 'gremlin-east-1/tinkerpop-sigv4/aws4_request' in mock_request.headers['Authorization']
+        assert 'Signature=' in mock_request.headers['Authorization']

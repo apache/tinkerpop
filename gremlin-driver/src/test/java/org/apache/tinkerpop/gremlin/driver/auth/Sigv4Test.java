@@ -20,10 +20,9 @@
 package org.apache.tinkerpop.gremlin.driver.auth;
 
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import org.apache.tinkerpop.gremlin.driver.HttpRequest;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,7 +51,6 @@ import static software.amazon.awssdk.http.auth.aws.internal.signer.util.SignerCo
 public class Sigv4Test {
     private static final String REGION = "us-west-2";
     private static final String SERVICE_NAME = "service-name";
-    private static final byte[] REQUEST_BODY = "{\"gremlin\":\"2-1\"}".getBytes(StandardCharsets.UTF_8);
     private static final String HOST = "localhost";
     private static final String URI_WITH_QUERY_PARAMS = "http://" + HOST + ":8182?a=1&b=2";
     private static final String KEY = "foo";
@@ -71,8 +69,16 @@ public class Sigv4Test {
     @Test
     public void shouldAddSignedHeaders() throws Exception {
         when(credentialsProvider.resolveCredentials()).thenReturn(AwsBasicCredentials.create(KEY, SECRET));
-        HttpRequest httpRequest = createRequest();
-        sigv4.apply(httpRequest);
+        HttpRequest httpRequest = createRequestWithRequestMessage();
+        sigv4.intercept(httpRequest);
+        validateExpectedHeaders(httpRequest);
+    }
+
+    @Test
+    public void shouldSignPreSerializedBody() throws Exception {
+        when(credentialsProvider.resolveCredentials()).thenReturn(AwsBasicCredentials.create(KEY, SECRET));
+        HttpRequest httpRequest = createRequestWithBytes();
+        sigv4.intercept(httpRequest);
         validateExpectedHeaders(httpRequest);
     }
 
@@ -80,35 +86,48 @@ public class Sigv4Test {
     public void shouldAddSignedHeadersAndSessionToken() throws Exception {
         String sessionToken = "foobarz";
         when(credentialsProvider.resolveCredentials()).thenReturn(AwsSessionCredentials.create(KEY, SECRET, sessionToken));
-        HttpRequest httpRequest = createRequest();
-        sigv4.apply(httpRequest);
+        HttpRequest httpRequest = createRequestWithRequestMessage();
+        sigv4.intercept(httpRequest);
         validateExpectedHeaders(httpRequest);
         assertEquals(sessionToken, httpRequest.headers().get(X_AMZ_SECURITY_TOKEN));
     }
 
     @Test
-    public void shouldThrowIfRequestNonByteArray() {
+    public void shouldThrowIfBodyIsUnsupportedType() {
+        // serializeBody() will throw because body is a String
         Auth.AuthenticationException ex = assertThrows(Auth.AuthenticationException.class,
-                () -> sigv4.apply(new HttpRequest(new HashMap<>(), "not byte array", new URI(URI_WITH_QUERY_PARAMS))));
-        assertTrue(ex.getMessage().contains("Expected byte[] in HttpRequest body"));
+                () -> sigv4.intercept(new HttpRequest(new HashMap<>(), "not valid", URI.create(URI_WITH_QUERY_PARAMS))));
+        assertTrue(ex.getCause().getMessage().contains("Cannot serialize body of type"));
     }
 
     @Test
-    public void shouldThrowIfNoRequestMethod() {
+    public void shouldThrowIfNoRequestMethod() throws Exception {
+        when(credentialsProvider.resolveCredentials()).thenReturn(AwsBasicCredentials.create(KEY, SECRET));
+        final byte[] body = "{\"gremlin\":\"g.V()\"}".getBytes();
         Auth.AuthenticationException ex = assertThrows(Auth.AuthenticationException.class,
-                () -> sigv4.apply(new HttpRequest(new HashMap<>(), REQUEST_BODY, new URI(URI_WITH_QUERY_PARAMS), null)));
-        assertTrue(ex.getMessage().contains("The request method must not be null"));
+                () -> sigv4.intercept(new HttpRequest(new HashMap<>(), body, URI.create(URI_WITH_QUERY_PARAMS), null)));
+        assertTrue(ex.getCause().getMessage().contains("The request method must not be null"));
     }
 
     @Test
     public void shouldThrowIfNoRequestURI() {
+        when(credentialsProvider.resolveCredentials()).thenReturn(AwsBasicCredentials.create(KEY, SECRET));
+        final byte[] body = "{\"gremlin\":\"g.V()\"}".getBytes();
         Auth.AuthenticationException ex = assertThrows(Auth.AuthenticationException.class,
-                () -> sigv4.apply(new HttpRequest(new HashMap<>(), REQUEST_BODY, null)));
-        assertTrue(ex.getMessage().contains("The request URI must not be null"));
+                () -> sigv4.intercept(new HttpRequest(new HashMap<>(), body, null)));
+        assertTrue(ex.getCause().getMessage().contains("The request URI must not be null"));
     }
 
-    private HttpRequest createRequest() throws URISyntaxException {
-        HttpRequest httpRequest = new HttpRequest(new HashMap<>(), REQUEST_BODY, new URI(URI_WITH_QUERY_PARAMS));
+    private HttpRequest createRequestWithRequestMessage() throws Exception {
+        final RequestMessage msg = RequestMessage.build("g.V()").addG("g").create();
+        HttpRequest httpRequest = new HttpRequest(new HashMap<>(), msg, new URI(URI_WITH_QUERY_PARAMS));
+        httpRequest.headers().put("Host", "this-should-be-ignored-for-signed-host-header");
+        return httpRequest;
+    }
+
+    private HttpRequest createRequestWithBytes() throws Exception {
+        final byte[] body = "{\"gremlin\":\"2-1\"}".getBytes();
+        HttpRequest httpRequest = new HttpRequest(new HashMap<>(), body, new URI(URI_WITH_QUERY_PARAMS));
         httpRequest.headers().put("Content-Type", "application/json");
         httpRequest.headers().put("Host", "this-should-be-ignored-for-signed-host-header");
         return httpRequest;
@@ -123,5 +142,4 @@ public class Sigv4Test {
                         containsString("/" + REGION + "/service-name/aws4_request"),
                         containsString("Signature=")));
     }
-
 }

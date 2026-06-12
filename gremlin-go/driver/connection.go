@@ -53,7 +53,6 @@ type connection struct {
 	httpClient   *http.Client
 	connSettings *connectionSettings
 	logHandler   *logHandler
-	serializer   *GraphBinarySerializer
 	interceptors []RequestInterceptor
 	wg           sync.WaitGroup
 }
@@ -111,7 +110,6 @@ func newConnection(handler *logHandler, url string, connSettings *connectionSett
 		httpClient:   &http.Client{Transport: transport}, // No Timeout - allows streaming
 		connSettings: connSettings,
 		logHandler:   handler,
-		serializer:   newGraphBinarySerializer(handler),
 	}
 }
 
@@ -205,19 +203,12 @@ func (c *connection) sendRequest(req *RequestMessage) (*http.Response, error) {
 		}
 	}
 
-	// After interceptors, serialize if Body is still *RequestMessage
-	if r, ok := httpReq.Body.(*RequestMessage); ok {
-		if c.serializer != nil {
-			data, err := c.serializer.SerializeMessage(r)
-			if err != nil {
-				c.logHandler.logf(Error, failedToSendRequest, err.Error())
-				return nil, err
-			}
-			httpReq.Body = data
-		} else {
-			errMsg := "request body was not serialized; either provide a serializer or add an interceptor that serializes the request"
-			c.logHandler.logf(Error, failedToSendRequest, errMsg)
-			return nil, fmt.Errorf("%s", errMsg)
+	// After interceptors, auto-serialize the body to JSON if still a *RequestMessage.
+	// SerializeBody is idempotent: if an interceptor already called it, this is a no-op.
+	if _, ok := httpReq.Body.(*RequestMessage); ok {
+		if _, err := httpReq.SerializeBody(); err != nil {
+			c.logHandler.logf(Error, failedToSendRequest, err.Error())
+			return nil, err
 		}
 	}
 
@@ -277,7 +268,6 @@ func (c *connection) streamResponse(resp *http.Response, rs ResultSet) {
 
 // setHttpRequestHeaders sets default headers on HttpRequest (for interceptors)
 func (c *connection) setHttpRequestHeaders(req *HttpRequest) {
-	req.Headers.Set(HeaderContentType, graphBinaryMimeType)
 	req.Headers.Set(HeaderAccept, graphBinaryMimeType)
 
 	if c.connSettings.enableUserAgentOnConnect {

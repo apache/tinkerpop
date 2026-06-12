@@ -109,6 +109,15 @@ public final class RequestMessage {
             this.gremlin = gremlin;
         }
 
+        /**
+         * Add a custom field to the request. This is intended for provider-specific fields
+         * that interceptors need to include in the serialized request body.
+         */
+        public Builder add(final String key, final Object value) {
+            this.fields.put(key, value);
+            return this;
+        }
+
         public Builder addLanguage(final String language) {
             Objects.requireNonNull(language, "language argument cannot be null.");
             this.fields.put(Tokens.ARGS_LANGUAGE, language);

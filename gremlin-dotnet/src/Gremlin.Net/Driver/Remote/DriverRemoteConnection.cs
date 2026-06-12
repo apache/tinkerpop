@@ -137,11 +137,11 @@ namespace Gremlin.Net.Driver.Remote
                 }
             }
 
-            // Default bulkResults to "true" if not set per-request
+            // Default bulkResults to true if not set per-request
             // (consistent with Java RequestOptions.fromGremlinLang and Python extract_request_options)
             if (!requestMsg.HasField(Tokens.ArgsBulkResults))
             {
-                requestMsg.AddField(Tokens.ArgsBulkResults, "true");
+                requestMsg.AddField(Tokens.ArgsBulkResults, true);
             }
 
             var resultSet = await _client.SubmitAsync<Traverser>(requestMsg.Create(), cancellationToken)

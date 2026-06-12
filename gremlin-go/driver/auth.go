@@ -49,13 +49,12 @@ func SigV4Auth(region, service string) RequestInterceptor {
 // SigV4AuthWithCredentials returns a RequestInterceptor that signs requests using AWS SigV4
 // with the provided credentials provider. If provider is nil, uses default credential chain.
 // If the request body has not been serialized yet (*RequestMessage), it is automatically
-// serialized to GraphBinary before signing.
+// serialized to JSON before signing via SerializeBody().
 //
 // Caches the signer and credentials provider for efficiency.
 func SigV4AuthWithCredentials(region, service string, credentialsProvider aws.CredentialsProvider) RequestInterceptor {
 	// Create signer once - it's stateless and safe to reuse
 	signer := v4.NewSigner()
-	serialize := SerializeRequest()
 
 	// Cache for resolved credentials provider (lazy initialization)
 	var cachedProvider aws.CredentialsProvider
@@ -63,15 +62,10 @@ func SigV4AuthWithCredentials(region, service string, credentialsProvider aws.Cr
 	var providerErr error
 
 	return func(req *HttpRequest) error {
-		// If Body is still *RequestMessage, serialize it to GraphBinary before signing.
-		if _, ok := req.Body.(*RequestMessage); ok {
-			if err := serialize(req); err != nil {
-				return fmt.Errorf("SigV4 auto-serialization failed: %w", err)
-			}
-		}
-
-		if _, ok := req.Body.([]byte); !ok {
-			return fmt.Errorf("SigV4 signing requires body to be []byte; got %T", req.Body)
+		// Ensure body is serialized to JSON bytes before signing.
+		// SerializeBody is idempotent: safe to call even if already serialized.
+		if _, err := req.SerializeBody(); err != nil {
+			return fmt.Errorf("SigV4 signing requires a serialized body: %w", err)
 		}
 
 		ctx := context.Background()
