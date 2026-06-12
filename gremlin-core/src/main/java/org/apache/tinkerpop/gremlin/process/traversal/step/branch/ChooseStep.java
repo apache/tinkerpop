@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
@@ -122,6 +123,10 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
             }
         } else if (pickToken instanceof Traversal) {
             throw new IllegalArgumentException("Traversal is not allowed as a Pick token for choose().option()");
+        } else if (pickToken instanceof P && ((P<?>) pickToken).hasTraversal()) {
+            throw new IllegalArgumentException(
+                    "Traversal-bearing predicates are not supported as option keys in choose(). " +
+                    "The predicate's child traversal cannot be resolved in this context.");
         } else {
             super.addChildOption(pickToken, traversalOption);
         }

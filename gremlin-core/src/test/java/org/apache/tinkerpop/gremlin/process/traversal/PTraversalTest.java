@@ -26,6 +26,9 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -36,13 +39,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class PTraversalTest {
 
     /**
-     * Property 10: Traversal detection in predicates is accurate.
-     * <p>
-     * For any P instance containing a child traversal, {@code P.hasTraversal()} SHALL return true.
-     * For any P instance containing only literal values or GValue variables,
-     * {@code P.hasTraversal()} SHALL return false.
-     * <p>
-     * <b>Validates: Requirements 9.4</b>
+     * Tests that traversal detection in predicates is accurate: {@code P.hasTraversal()} returns
+     * true for traversal-bearing predicates and false for literal/GValue predicates.
      */
     public static class TraversalDetectionTest {
 
@@ -74,33 +72,26 @@ public class PTraversalTest {
         public void shouldReturnTraversalValueWhenPresent() {
             final Traversal.Admin<?, ?> traversal = __.inject(42).asAdmin();
             final P<Object> p = P.eq(traversal);
-            assertThat(p.getTraversalValue() == traversal, is(true));
+            assertThat(p.getTraversalValue(), is(sameInstance(traversal)));
         }
 
         @Test
         public void shouldReturnNullTraversalValueForLiteral() {
             final P<String> p = P.eq("value");
-            assertThat(p.getTraversalValue() == null, is(true));
+            assertThat(p.getTraversalValue(), is(nullValue()));
         }
     }
 
     /**
-     * Property 3: Single-value predicate rejects multiple traversal results.
-     * <p>
-     * For any single-value predicate (eq, neq, gt, lt, gte, lte) and any child traversal that produces
-     * more than one result, the predicate SHALL throw an IllegalArgumentException.
-     * For any collection predicate (within, without) and any child traversal producing multiple results,
-     * the predicate SHALL accept all results as the collection value.
-     * <p>
-     * <b>Validates: Requirements 2.5</b>
+     * Tests first-result semantics: single-value predicates (eq, neq, gt, lt, gte, lte) take the
+     * first result from a multi-result traversal. Collection predicates (within, without) accept
+     * all results as the collection value.
      */
     public static class SingleValuePredicateRejectionTest {
 
         private Traverser.Admin<?> createTraverser(final Object value) {
             return new B_O_Traverser<>(value, 1L);
         }
-
-        // --- Single-value predicates should throw on multiple results ---
 
         // --- Single-value predicates take first result, ignore extras (consistent with by()) ---
 
@@ -267,7 +258,7 @@ public class PTraversalTest {
         @Test
         public void shouldReturnTraversalValuesListForMultiTraversal() {
             final P<Object> p = P.within(__.constant(1).asAdmin(), __.constant(2).asAdmin());
-            assertThat(p.getTraversalValues() != null, is(true));
+            assertThat(p.getTraversalValues(), is(notNullValue()));
             assertThat(p.getTraversalValues().size(), is(2));
         }
 
@@ -275,7 +266,7 @@ public class PTraversalTest {
         public void shouldReturnNullTraversalValueForMultiTraversal() {
             // Single traversalValue should be null when using multi-traversal form
             final P<Object> p = P.within(__.constant(1).asAdmin(), __.constant(2).asAdmin());
-            assertThat(p.getTraversalValue() == null, is(true));
+            assertThat(p.getTraversalValue(), is(nullValue()));
         }
 
         // --- Resolution and testing ---
@@ -361,14 +352,17 @@ public class PTraversalTest {
 
             // Clone should have independent traversal values
             assertThat(clone.hasTraversal(), is(true));
-            assertThat(clone.getTraversalValues() != null, is(true));
+            assertThat(clone.getTraversalValues(), is(notNullValue()));
             assertThat(clone.getTraversalValues().size(), is(2));
 
-            // Modifying clone should not affect original
+            // Resolve the clone - this mutates the clone's internal state
             clone.resolve(createTraverser("start"));
             assertThat(clone.test(1), is(true));
-            // Original should still be unresolved (literals empty)
-            assertThat(original.getTraversalValues().size(), is(2));
+
+            // Original should be unaffected: resolving it independently should still work correctly
+            original.resolve(createTraverser("other"));
+            assertThat(original.test(1), is(true));
+            assertThat(original.test(2), is(true));
         }
 
         // --- Varargs detection ---

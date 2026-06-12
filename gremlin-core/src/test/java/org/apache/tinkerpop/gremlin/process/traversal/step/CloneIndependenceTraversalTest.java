@@ -42,8 +42,6 @@ import static org.hamcrest.core.IsSame.sameInstance;
  * For any step containing child traversal arguments, cloning the step SHALL produce a deep copy
  * where modifying the clone's child traversal state does NOT affect the original step's child
  * traversal state.
- * <p>
- * <b>Validates: Requirements 6.2</b>
  */
 public class CloneIndependenceTraversalTest {
 

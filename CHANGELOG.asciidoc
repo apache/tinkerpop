@@ -40,7 +40,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `ChildTraversalVerificationStrategy` that blocks mutating steps (`addV`, `addE`, `drop`, etc.) inside child traversals. All child traversals must be read-only.
 * Added `hasLabel(Traversal)` overload with grammar support for dynamic label filtering.
 * Added traversal-bearing predicate support to `where(P)` - resolves child traversal and tests against current value when `P.hasTraversal()` is true.
-* Added rejection of traversal-bearing predicates in `choose(P)` - use `choose(__.is(P.op(traversal)), ...)` form instead.
+* Added rejection of traversal-bearing predicates in `choose(P)` and `choose().option(P, ...)` - the predicate's child traversal cannot be resolved in the branch-selection context.
 * Added runtime Map validation for `property(traversal)` - rejects results that are not a `Map` of property key/value pairs.
 * Added mixed traversal/literal detection in `P.within()` and `P.without()` - throws `IllegalArgumentException` with guidance to wrap literals in `__.constant()`.
 * Removed `uuid` dependency from `gremlin-javascript` in favor of the built-in `globalThis.crypto.randomUUID()`.
