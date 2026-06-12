@@ -123,7 +123,7 @@ describe('CompositePDTSerializer', () => {
       const registry = new ProviderDefinedTypeRegistry();
       registry.register('myType', {
         serialize: (obj) => obj,
-        deserialize: (props) => ({ hydrated: true, ...props }),
+        deserialize: (fields) => ({ hydrated: true, ...fields }),
       });
 
       const pdt = new ProviderDefinedType('myType', { key1: 'value1', key2: 42 });

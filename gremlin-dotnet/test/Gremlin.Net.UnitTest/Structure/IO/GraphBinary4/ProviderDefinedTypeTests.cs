@@ -39,8 +39,8 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public async Task TestRoundTripWithFields()
         {
-            var properties = new Dictionary<string, object?> { { "x", 1 }, { "y", "hello" } };
-            var expected = new ProviderDefinedType("com.example.MyType", properties);
+            var fields = new Dictionary<string, object?> { { "x", 1 }, { "y", "hello" } };
+            var expected = new ProviderDefinedType("com.example.MyType", fields);
 
             using var stream = new MemoryStream();
             await Writer.WriteAsync(expected, stream);
@@ -70,8 +70,8 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public async Task TestRoundTripWithNullFieldValue()
         {
-            var properties = new Dictionary<string, object?> { { "key", null } };
-            var expected = new ProviderDefinedType("com.example.NullVal", properties);
+            var fields = new Dictionary<string, object?> { { "key", null } };
+            var expected = new ProviderDefinedType("com.example.NullVal", fields);
 
             using var stream = new MemoryStream();
             await Writer.WriteAsync(expected, stream);

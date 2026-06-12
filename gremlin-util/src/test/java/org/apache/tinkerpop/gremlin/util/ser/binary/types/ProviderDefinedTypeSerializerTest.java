@@ -56,10 +56,10 @@ public class ProviderDefinedTypeSerializerTest {
 
     @Test
     public void shouldRoundTripSimplePdt() throws IOException {
-        final Map<String, Object> props = new LinkedHashMap<>();
-        props.put("x", 1);
-        props.put("y", "hello");
-        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Point", props);
+        final Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("x", 1);
+        fields.put("y", "hello");
+        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Point", fields);
 
         final Buffer buffer = writeAndRead(pdt);
         final ProviderDefinedType result = reader.read(buffer);
@@ -69,10 +69,10 @@ public class ProviderDefinedTypeSerializerTest {
 
     @Test
     public void shouldRoundTripPdtWithNullFieldValue() throws IOException {
-        final Map<String, Object> props = new LinkedHashMap<>();
-        props.put("name", "test");
-        props.put("value", null);
-        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Nullable", props);
+        final Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("name", "test");
+        fields.put("value", null);
+        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Nullable", fields);
 
         final Buffer buffer = writeAndRead(pdt);
         final ProviderDefinedType result = reader.read(buffer);
@@ -82,14 +82,14 @@ public class ProviderDefinedTypeSerializerTest {
 
     @Test
     public void shouldRoundTripNestedPdt() throws IOException {
-        final Map<String, Object> innerProps = new LinkedHashMap<>();
-        innerProps.put("street", "123 Main");
-        final ProviderDefinedType inner = new ProviderDefinedType("com.example.Address", innerProps);
+        final Map<String, Object> innerFields = new LinkedHashMap<>();
+        innerFields.put("street", "123 Main");
+        final ProviderDefinedType inner = new ProviderDefinedType("com.example.Address", innerFields);
 
-        final Map<String, Object> outerProps = new LinkedHashMap<>();
-        outerProps.put("name", "Alice");
-        outerProps.put("address", inner);
-        final ProviderDefinedType outer = new ProviderDefinedType("com.example.Person", outerProps);
+        final Map<String, Object> outerFields = new LinkedHashMap<>();
+        outerFields.put("name", "Alice");
+        outerFields.put("address", inner);
+        final ProviderDefinedType outer = new ProviderDefinedType("com.example.Person", outerFields);
 
         final Buffer buffer = writeAndRead(outer);
         final ProviderDefinedType result = reader.read(buffer);
@@ -99,8 +99,8 @@ public class ProviderDefinedTypeSerializerTest {
 
     @Test
     public void shouldRoundTripPdtInsideList() throws IOException {
-        final Map<String, Object> props = Collections.singletonMap("id", 42);
-        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Item", props);
+        final Map<String, Object> fields = Collections.singletonMap("id", 42);
+        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Item", fields);
         final List<Object> list = Arrays.asList(pdt, "other");
 
         final Buffer buffer = writeAndRead(list);
@@ -111,8 +111,8 @@ public class ProviderDefinedTypeSerializerTest {
 
     @Test
     public void shouldRoundTripPdtInsideMapValue() throws IOException {
-        final Map<String, Object> props = Collections.singletonMap("val", 99L);
-        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Wrapper", props);
+        final Map<String, Object> fields = Collections.singletonMap("val", 99L);
+        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Wrapper", fields);
         final Map<String, Object> map = new HashMap<>();
         map.put("key", pdt);
 
@@ -191,8 +191,8 @@ public class ProviderDefinedTypeSerializerTest {
             public Class<Map<String, Object>> targetClass() { return (Class) Map.class; }
 
             @Override
-            public Map<String, Object> fromFields(final Map<String, Object> properties) {
-                final Map<String, Object> result = new LinkedHashMap<>(properties);
+            public Map<String, Object> fromFields(final Map<String, Object> fields) {
+                final Map<String, Object> result = new LinkedHashMap<>(fields);
                 result.put("hydrated", true);
                 return result;
             }
@@ -204,10 +204,10 @@ public class ProviderDefinedTypeSerializerTest {
         final GraphBinaryReader hydratingReader = new GraphBinaryReader(
                 TypeSerializerRegistry.INSTANCE, pdtRegistry);
 
-        final Map<String, Object> props = new LinkedHashMap<>();
-        props.put("x", 1);
-        props.put("y", 2);
-        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Point", props);
+        final Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("x", 1);
+        fields.put("y", 2);
+        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Point", fields);
 
         final Buffer buffer = writeAndRead(pdt);
         final Object result = hydratingReader.read(buffer);
@@ -220,9 +220,9 @@ public class ProviderDefinedTypeSerializerTest {
 
     @Test
     public void shouldNotHydrateWhenNoRegistryConfigured() throws IOException {
-        final Map<String, Object> props = new LinkedHashMap<>();
-        props.put("x", 1);
-        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Point", props);
+        final Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("x", 1);
+        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Point", fields);
 
         final Buffer buffer = writeAndRead(pdt);
         final ProviderDefinedType result = reader.read(buffer);

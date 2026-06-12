@@ -29,7 +29,7 @@ describe('ProviderDefinedTypeRegistry', () => {
       const registry = new ProviderDefinedTypeRegistry();
       registry.register('GeoPoint', {
         serialize: (obj) => ({ lat: obj.lat, lon: obj.lon }),
-        deserialize: (props) => ({ type: 'GeoPoint', lat: props.lat, lon: props.lon }),
+        deserialize: (fields) => ({ type: 'GeoPoint', lat: fields.lat, lon: fields.lon }),
       });
 
       const pdt = new ProviderDefinedType('GeoPoint', { lat: 37.7749, lon: -122.4194 });
@@ -73,11 +73,11 @@ describe('ProviderDefinedTypeRegistry', () => {
       const registry = new ProviderDefinedTypeRegistry();
       registry.register('Address', {
         serialize: (obj) => obj,
-        deserialize: (props) => ({ type: 'Address', city: props.city, zip: props.zip }),
+        deserialize: (fields) => ({ type: 'Address', city: fields.city, zip: fields.zip }),
       });
       registry.register('Person', {
         serialize: (obj) => obj,
-        deserialize: (props) => ({ type: 'Person', name: props.name, address: props.address }),
+        deserialize: (fields) => ({ type: 'Person', name: fields.name, address: fields.address }),
       });
 
       const addressPdt = new ProviderDefinedType('Address', { city: 'Portland', zip: '97201' });
@@ -146,7 +146,7 @@ describe('pdtRegistry wiring through Client/Connection', () => {
     const registry = new ProviderDefinedTypeRegistry();
     registry.register('GeoPoint', {
       serialize: (obj) => obj,
-      deserialize: (props) => ({ type: 'GeoPoint', ...props }),
+      deserialize: (fields) => ({ type: 'GeoPoint', ...fields }),
     });
 
     const conn = new Connection('http://localhost:8182', { pdtRegistry: registry });
@@ -157,7 +157,7 @@ describe('pdtRegistry wiring through Client/Connection', () => {
     const registry = new ProviderDefinedTypeRegistry();
     registry.register('GeoPoint', {
       serialize: (obj) => obj,
-      deserialize: (props) => ({ type: 'GeoPoint', ...props }),
+      deserialize: (fields) => ({ type: 'GeoPoint', ...fields }),
     });
 
     const client = new Client('http://localhost:8182', { pdtRegistry: registry });

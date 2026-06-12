@@ -1278,10 +1278,10 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().create();
         try {
             final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
-            final Map<String, Object> props = new HashMap<>();
-            props.put("x", 1);
-            props.put("y", 2);
-            final ProviderDefinedType pdt = new ProviderDefinedType("TestPoint", props);
+            final Map<String, Object> fields = new HashMap<>();
+            fields.put("x", 1);
+            fields.put("y", 2);
+            final ProviderDefinedType pdt = new ProviderDefinedType("TestPoint", fields);
             final Object result = g.inject(pdt).next();
 
             assertTrue(result instanceof ProviderDefinedType);
@@ -1413,8 +1413,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             m.put("y", obj.y);
             return m;
         }
-        @Override public TestPoint fromFields(final Map<String, Object> props) {
-            return new TestPoint(((Number) props.get("x")).intValue(), ((Number) props.get("y")).intValue());
+        @Override public TestPoint fromFields(final Map<String, Object> fields) {
+            return new TestPoint(((Number) fields.get("x")).intValue(), ((Number) fields.get("y")).intValue());
         }
     }
 

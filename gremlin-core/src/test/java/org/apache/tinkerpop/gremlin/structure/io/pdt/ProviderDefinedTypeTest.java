@@ -94,28 +94,28 @@ public class ProviderDefinedTypeTest {
 
     @Test
     public void shouldConstructDirectly() {
-        final Map<String, Object> props = new HashMap<>();
-        props.put("x", 1);
-        props.put("y", 2);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Point", props);
+        final Map<String, Object> fields = new HashMap<>();
+        fields.put("x", 1);
+        fields.put("y", 2);
+        final ProviderDefinedType pdt = new ProviderDefinedType("Point", fields);
         assertEquals("Point", pdt.getName());
-        assertEquals(props, pdt.getFields());
+        assertEquals(fields, pdt.getFields());
     }
 
     @Test
     public void shouldBeImmutableFromInputMap() {
-        final Map<String, Object> props = new HashMap<>();
-        props.put("x", 1);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Point", props);
-        props.put("y", 2);
+        final Map<String, Object> fields = new HashMap<>();
+        fields.put("x", 1);
+        final ProviderDefinedType pdt = new ProviderDefinedType("Point", fields);
+        fields.put("y", 2);
         assertEquals(1, pdt.getFields().size());
     }
 
     @Test
     public void shouldReturnUnmodifiableFields() {
-        final Map<String, Object> props = new HashMap<>();
-        props.put("x", 1);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Point", props);
+        final Map<String, Object> fields = new HashMap<>();
+        fields.put("x", 1);
+        final ProviderDefinedType pdt = new ProviderDefinedType("Point", fields);
         assertThrows(UnsupportedOperationException.class, () -> pdt.getFields().put("y", 2));
     }
 
@@ -160,14 +160,14 @@ public class ProviderDefinedTypeTest {
 
     @Test
     public void shouldHaveCorrectEqualsAndHashCode() {
-        final Map<String, Object> props = new HashMap<>();
-        props.put("x", 1);
-        final ProviderDefinedType a = new ProviderDefinedType("Point", props);
-        final ProviderDefinedType b = new ProviderDefinedType("Point", props);
+        final Map<String, Object> fields = new HashMap<>();
+        fields.put("x", 1);
+        final ProviderDefinedType a = new ProviderDefinedType("Point", fields);
+        final ProviderDefinedType b = new ProviderDefinedType("Point", fields);
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
 
-        final ProviderDefinedType c = new ProviderDefinedType("Other", props);
+        final ProviderDefinedType c = new ProviderDefinedType("Other", fields);
         assertNotEquals(a, c);
     }
 

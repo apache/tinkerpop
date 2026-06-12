@@ -681,8 +681,8 @@ Using a `PDTRegistry` for hydration and dehydration:
 registry := gremlingo.NewPDTRegistry()
 registry.RegisterFuncsWithType("x:Point", reflect.TypeOf(Point{}),
     // hydrate: convert incoming PDT fields map to a Go type
-    func(props map[string]interface{}) (interface{}, error) {
-        return &Point{X: props["x"].(float64), Y: props["y"].(float64)}, nil
+    func(fields map[string]interface{}) (interface{}, error) {
+        return &Point{X: fields["x"].(float64), Y: fields["y"].(float64)}, nil
     },
     // dehydrate: convert a Go type to a PDT fields map for sending
     func(obj interface{}) (map[string]interface{}, error) {
@@ -2309,7 +2309,7 @@ const { ProviderDefinedTypeRegistry } = require('gremlin');
 const registry = new ProviderDefinedTypeRegistry();
 registry.register('x:Point', {
     serialize: (point) => ({ x: point.x, y: point.y }),
-    deserialize: (props) => new Point(props.x, props.y)
+    deserialize: (fields) => new Point(fields.x, fields.y)
 }, Point);
 
 const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin', {

@@ -606,7 +606,7 @@ class TestGremlinLang(object):
 
         registry = ProviderDefinedTypeRegistry()
         registry.register("com.adapter.Point",
-                          deserialize_fn=lambda props: Point(props["a"], props["b"]),
+                          deserialize_fn=lambda fields: Point(fields["a"], fields["b"]),
                           serialize_fn=lambda p: {"a": p.x, "b": p.y},
                           target_class=Point)
         g.gremlin_lang.pdt_registry = registry

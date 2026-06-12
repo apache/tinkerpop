@@ -1529,7 +1529,7 @@ Register hydration adapters explicitly on a `ProviderDefinedTypeRegistry` instan
 const registry = new ProviderDefinedTypeRegistry();
 registry.register('mygraph:Point', {
     serialize: (obj) => ({ x: obj.x, y: obj.y }),
-    deserialize: (props) => new Point(props.x, props.y)
+    deserialize: (fields) => new Point(fields.x, fields.y)
 }, Point);
 ----
 

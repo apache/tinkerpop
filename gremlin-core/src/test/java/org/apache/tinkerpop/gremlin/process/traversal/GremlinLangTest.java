@@ -476,8 +476,8 @@ public class GremlinLangTest {
                 @Override public Map<String, Object> toFields(final DualType obj) {
                     return Collections.singletonMap("v", obj.value);
                 }
-                @Override public DualType fromFields(final Map<String, Object> properties) {
-                    return new DualType((int) properties.get("v"));
+                @Override public DualType fromFields(final Map<String, Object> fields) {
+                    return new DualType((int) fields.get("v"));
                 }
             });
 
@@ -509,8 +509,8 @@ public class GremlinLangTest {
                     m.put("y", obj.y);
                     return m;
                 }
-                @Override public TestPoint fromFields(final Map<String, Object> properties) {
-                    return new TestPoint((int) properties.get("x"), (int) properties.get("y"));
+                @Override public TestPoint fromFields(final Map<String, Object> fields) {
+                    return new TestPoint((int) fields.get("x"), (int) fields.get("y"));
                 }
             });
 

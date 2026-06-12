@@ -79,10 +79,10 @@ public class GraphBinaryWriterPdtTest {
 
     @Test
     public void shouldNotDoubleWrapProviderDefinedType() throws IOException {
-        final Map<String, Object> props = new LinkedHashMap<>();
-        props.put("x", 1);
-        props.put("y", 2);
-        final ProviderDefinedType pdt = new ProviderDefinedType("TestPoint", props);
+        final Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("x", 1);
+        fields.put("y", 2);
+        final ProviderDefinedType pdt = new ProviderDefinedType("TestPoint", fields);
 
         final Buffer buffer = bufferFactory.create(allocator.buffer());
         writer.write(pdt, buffer);

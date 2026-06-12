@@ -653,7 +653,7 @@ describe('GremlinLang', function () {
       );
     });
 
-    it('should handle PDT with empty properties', function () {
+    it('should handle PDT with empty fields', function () {
       const pdt = new ProviderDefinedType('Empty', {});
       assert.strictEqual(
         g.inject(pdt).getGremlinLang().getGremlin(),

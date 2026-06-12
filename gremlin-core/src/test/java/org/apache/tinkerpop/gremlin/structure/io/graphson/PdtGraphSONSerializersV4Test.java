@@ -55,10 +55,10 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
 
     @Test
     public void shouldSerializeSimplePdt() throws Exception {
-        final Map<String, Object> props = new LinkedHashMap<>();
-        props.put("x", 1);
-        props.put("y", 2);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Point", props);
+        final Map<String, Object> pdtFields = new LinkedHashMap<>();
+        pdtFields.put("x", 1);
+        pdtFields.put("y", 2);
+        final ProviderDefinedType pdt = new ProviderDefinedType("Point", pdtFields);
 
         final String json = mapper.writeValueAsString(pdt);
         final JsonNode node = plainMapper.readTree(json);
@@ -87,10 +87,10 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
 
     @Test
     public void shouldRoundTrip() throws Exception {
-        final Map<String, Object> props = new LinkedHashMap<>();
-        props.put("x", 1);
-        props.put("y", 2);
-        final ProviderDefinedType original = new ProviderDefinedType("Point", props);
+        final Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("x", 1);
+        fields.put("y", 2);
+        final ProviderDefinedType original = new ProviderDefinedType("Point", fields);
 
         final ProviderDefinedType result = serializeDeserialize(mapper, original, ProviderDefinedType.class);
 
@@ -100,15 +100,15 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
 
     @Test
     public void shouldSerializeNestedPdt() throws Exception {
-        final Map<String, Object> innerProps = new LinkedHashMap<>();
-        innerProps.put("x", 10);
-        innerProps.put("y", 20);
-        final ProviderDefinedType inner = new ProviderDefinedType("Point", innerProps);
+        final Map<String, Object> innerFields = new LinkedHashMap<>();
+        innerFields.put("x", 10);
+        innerFields.put("y", 20);
+        final ProviderDefinedType inner = new ProviderDefinedType("Point", innerFields);
 
-        final Map<String, Object> outerProps = new LinkedHashMap<>();
-        outerProps.put("name", "origin");
-        outerProps.put("location", inner);
-        final ProviderDefinedType outer = new ProviderDefinedType("NamedPoint", outerProps);
+        final Map<String, Object> outerFields = new LinkedHashMap<>();
+        outerFields.put("name", "origin");
+        outerFields.put("location", inner);
+        final ProviderDefinedType outer = new ProviderDefinedType("NamedPoint", outerFields);
 
         final String json = mapper.writeValueAsString(outer);
         final JsonNode node = plainMapper.readTree(json);
@@ -131,10 +131,10 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
 
     @Test
     public void shouldHandleNullFieldValues() throws Exception {
-        final Map<String, Object> props = new LinkedHashMap<>();
-        props.put("name", "test");
-        props.put("value", null);
-        final ProviderDefinedType pdt = new ProviderDefinedType("NullableType", props);
+        final Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("name", "test");
+        fields.put("value", null);
+        final ProviderDefinedType pdt = new ProviderDefinedType("NullableType", fields);
 
         final ProviderDefinedType result = serializeDeserialize(mapper, pdt, ProviderDefinedType.class);
 
@@ -161,8 +161,8 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
             m.put("y", obj.y);
             return m;
         }
-        @Override public Point fromFields(Map<String, Object> properties) {
-            return new Point((int) properties.get("x"), (int) properties.get("y"));
+        @Override public Point fromFields(Map<String, Object> fields) {
+            return new Point((int) fields.get("x"), (int) fields.get("y"));
         }
     }
 
@@ -178,10 +178,10 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
                 .pdtRegistry(registry)
                 .create().createMapper();
 
-        final Map<String, Object> props = new LinkedHashMap<>();
-        props.put("x", 3);
-        props.put("y", 7);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Point", props);
+        final Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("x", 3);
+        fields.put("y", 7);
+        final ProviderDefinedType pdt = new ProviderDefinedType("Point", fields);
 
         final ProviderDefinedType result = serializeDeserialize(hydratingMapper, pdt, ProviderDefinedType.class);
 
@@ -193,10 +193,10 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
 
     @Test
     public void shouldNotHydrateWhenNoRegistryConfigured() throws Exception {
-        final Map<String, Object> props = new LinkedHashMap<>();
-        props.put("x", 1);
-        props.put("y", 2);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Point", props);
+        final Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("x", 1);
+        fields.put("y", 2);
+        final ProviderDefinedType pdt = new ProviderDefinedType("Point", fields);
 
         final ProviderDefinedType result = serializeDeserialize(mapper, pdt, ProviderDefinedType.class);
 
@@ -217,9 +217,9 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
                 .pdtRegistry(registry)
                 .create().createMapper();
 
-        final Map<String, Object> props = new LinkedHashMap<>();
-        props.put("a", 1);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Unknown", props);
+        final Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("a", 1);
+        final ProviderDefinedType pdt = new ProviderDefinedType("Unknown", fields);
 
         final ProviderDefinedType result = serializeDeserialize(hydratingMapper, pdt, ProviderDefinedType.class);
 

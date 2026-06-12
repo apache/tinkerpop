@@ -56,7 +56,7 @@ func (r *PDTRegistry) RegisterFuncsWithType(typeName string, targetType reflect.
 func (r *PDTRegistry) RegisterType(typeName string, targetType reflect.Type) {
 	r.adaptersByName[typeName] = &PDTAdapter{
 		TypeName: typeName,
-		FromFields: func(props map[string]interface{}) (interface{}, error) {
+		FromFields: func(fields map[string]interface{}) (interface{}, error) {
 			obj := reflect.New(targetType).Elem()
 			for i := 0; i < targetType.NumField(); i++ {
 				field := targetType.Field(i)
@@ -64,7 +64,7 @@ func (r *PDTRegistry) RegisterType(typeName string, targetType reflect.Type) {
 				if tag == "" {
 					tag = field.Name
 				}
-				if val, ok := props[tag]; ok && val != nil {
+				if val, ok := fields[tag]; ok && val != nil {
 					obj.Field(i).Set(reflect.ValueOf(val))
 				}
 			}

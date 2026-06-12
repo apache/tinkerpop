@@ -49,8 +49,8 @@ public class ProviderDefinedTypeRegistryTest {
             m.put("y", obj.y);
             return m;
         }
-        @Override public Point fromFields(Map<String, Object> properties) {
-            return new Point((int) properties.get("x"), (int) properties.get("y"));
+        @Override public Point fromFields(Map<String, Object> fields) {
+            return new Point((int) fields.get("x"), (int) fields.get("y"));
         }
     }
 
@@ -70,8 +70,8 @@ public class ProviderDefinedTypeRegistryTest {
             m.put("end", obj.end);
             return m;
         }
-        @Override public Line fromFields(Map<String, Object> properties) {
-            return new Line((Point) properties.get("start"), (Point) properties.get("end"));
+        @Override public Line fromFields(Map<String, Object> fields) {
+            return new Line((Point) fields.get("start"), (Point) fields.get("end"));
         }
     }
 
@@ -80,7 +80,7 @@ public class ProviderDefinedTypeRegistryTest {
         @Override public String typeName() { return "Failing"; }
         @Override public Class<Point> targetClass() { return Point.class; }
         @Override public Map<String, Object> toFields(Point obj) { return new HashMap<>(); }
-        @Override public Point fromFields(Map<String, Object> properties) {
+        @Override public Point fromFields(Map<String, Object> fields) {
             throw new RuntimeException("intentional failure");
         }
     }
@@ -90,10 +90,10 @@ public class ProviderDefinedTypeRegistryTest {
         final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
         registry.register(new PointAdapter());
 
-        final Map<String, Object> props = new HashMap<>();
-        props.put("x", 3);
-        props.put("y", 7);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Point", props);
+        final Map<String, Object> fields = new HashMap<>();
+        fields.put("x", 3);
+        fields.put("y", 7);
+        final ProviderDefinedType pdt = new ProviderDefinedType("Point", fields);
 
         final Object result = registry.hydrate(pdt);
         assertTrue(result instanceof Point);
@@ -105,9 +105,9 @@ public class ProviderDefinedTypeRegistryTest {
     public void shouldReturnRawPdtWhenNoAdapterRegistered() {
         final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
 
-        final Map<String, Object> props = new HashMap<>();
-        props.put("x", 1);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Unknown", props);
+        final Map<String, Object> fields = new HashMap<>();
+        fields.put("x", 1);
+        final ProviderDefinedType pdt = new ProviderDefinedType("Unknown", fields);
 
         final Object result = registry.hydrate(pdt);
         assertSame(pdt, result);
@@ -119,17 +119,17 @@ public class ProviderDefinedTypeRegistryTest {
         registry.register(new PointAdapter());
         registry.register(new LineAdapter());
 
-        final Map<String, Object> startProps = new HashMap<>();
-        startProps.put("x", 0);
-        startProps.put("y", 0);
-        final Map<String, Object> endProps = new HashMap<>();
-        endProps.put("x", 5);
-        endProps.put("y", 5);
+        final Map<String, Object> startFields = new HashMap<>();
+        startFields.put("x", 0);
+        startFields.put("y", 0);
+        final Map<String, Object> endFields = new HashMap<>();
+        endFields.put("x", 5);
+        endFields.put("y", 5);
 
-        final Map<String, Object> lineProps = new HashMap<>();
-        lineProps.put("start", new ProviderDefinedType("Point", startProps));
-        lineProps.put("end", new ProviderDefinedType("Point", endProps));
-        final ProviderDefinedType linePdt = new ProviderDefinedType("Line", lineProps);
+        final Map<String, Object> lineFields = new HashMap<>();
+        lineFields.put("start", new ProviderDefinedType("Point", startFields));
+        lineFields.put("end", new ProviderDefinedType("Point", endFields));
+        final ProviderDefinedType linePdt = new ProviderDefinedType("Line", lineFields);
 
         final Object result = registry.hydrate(linePdt);
         assertTrue(result instanceof Line);
@@ -146,20 +146,20 @@ public class ProviderDefinedTypeRegistryTest {
         registry.register(new LineAdapter());
         // Point adapter NOT registered
 
-        final Map<String, Object> startProps = new HashMap<>();
-        startProps.put("x", 1);
-        startProps.put("y", 2);
-        final ProviderDefinedType startPdt = new ProviderDefinedType("Point", startProps);
+        final Map<String, Object> startFields = new HashMap<>();
+        startFields.put("x", 1);
+        startFields.put("y", 2);
+        final ProviderDefinedType startPdt = new ProviderDefinedType("Point", startFields);
 
-        final Map<String, Object> endProps = new HashMap<>();
-        endProps.put("x", 3);
-        endProps.put("y", 4);
-        final ProviderDefinedType endPdt = new ProviderDefinedType("Point", endProps);
+        final Map<String, Object> endFields = new HashMap<>();
+        endFields.put("x", 3);
+        endFields.put("y", 4);
+        final ProviderDefinedType endPdt = new ProviderDefinedType("Point", endFields);
 
-        final Map<String, Object> lineProps = new HashMap<>();
-        lineProps.put("start", startPdt);
-        lineProps.put("end", endPdt);
-        final ProviderDefinedType linePdt = new ProviderDefinedType("Line", lineProps);
+        final Map<String, Object> lineFields = new HashMap<>();
+        lineFields.put("start", startPdt);
+        lineFields.put("end", endPdt);
+        final ProviderDefinedType linePdt = new ProviderDefinedType("Line", lineFields);
 
         // Line adapter will receive ProviderDefinedType values for start/end since Point is not registered.
         // The LineAdapter.fromFields casts to Point which will throw ClassCastException,
@@ -173,9 +173,9 @@ public class ProviderDefinedTypeRegistryTest {
         final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
         registry.register(new FailingAdapter());
 
-        final Map<String, Object> props = new HashMap<>();
-        props.put("x", 1);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Failing", props);
+        final Map<String, Object> fields = new HashMap<>();
+        fields.put("x", 1);
+        final ProviderDefinedType pdt = new ProviderDefinedType("Failing", fields);
 
         // should not throw, should return raw PDT
         final Object result = registry.hydrate(pdt);
@@ -208,8 +208,8 @@ public class ProviderDefinedTypeRegistryTest {
             return m;
         }
         @SuppressWarnings("unchecked")
-        @Override public Polygon fromFields(Map<String, Object> properties) {
-            return new Polygon((List<Point>) properties.get("vertices"));
+        @Override public Polygon fromFields(Map<String, Object> fields) {
+            return new Polygon((List<Point>) fields.get("vertices"));
         }
     }
 
@@ -224,11 +224,11 @@ public class ProviderDefinedTypeRegistryTest {
         final Map<String, Object> p2 = new HashMap<>();
         p2.put("x", 3); p2.put("y", 4);
 
-        final Map<String, Object> polyProps = new HashMap<>();
-        polyProps.put("vertices", Arrays.asList(
+        final Map<String, Object> polyFields = new HashMap<>();
+        polyFields.put("vertices", Arrays.asList(
                 new ProviderDefinedType("Point", p1),
                 new ProviderDefinedType("Point", p2)));
-        final ProviderDefinedType polyPdt = new ProviderDefinedType("Polygon", polyProps);
+        final ProviderDefinedType polyPdt = new ProviderDefinedType("Polygon", polyFields);
 
         final Object result = registry.hydrate(polyPdt);
         assertTrue(result instanceof Polygon);
@@ -251,8 +251,8 @@ public class ProviderDefinedTypeRegistryTest {
             @Override public Class<Map> targetClass() { return Map.class; }
             @Override public Map<String, Object> toFields(Map obj) { return new HashMap<>(); }
             @SuppressWarnings("unchecked")
-            @Override public Map fromFields(Map<String, Object> properties) {
-                return (Map<String, Object>) properties.get("points");
+            @Override public Map fromFields(Map<String, Object> fields) {
+                return (Map<String, Object>) fields.get("points");
             }
         });
 
@@ -265,9 +265,9 @@ public class ProviderDefinedTypeRegistryTest {
         innerMap.put("origin", new ProviderDefinedType("Point", p1));
         innerMap.put("target", new ProviderDefinedType("Point", p2));
 
-        final Map<String, Object> props = new HashMap<>();
-        props.put("points", innerMap);
-        final ProviderDefinedType pdt = new ProviderDefinedType("PointMap", props);
+        final Map<String, Object> fields = new HashMap<>();
+        fields.put("points", innerMap);
+        final ProviderDefinedType pdt = new ProviderDefinedType("PointMap", fields);
 
         final Object result = registry.hydrate(pdt);
         assertTrue(result instanceof Map);
@@ -285,9 +285,9 @@ public class ProviderDefinedTypeRegistryTest {
         // in test scope, this should produce an empty registry that still functions.
         final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.create();
 
-        final Map<String, Object> props = new HashMap<>();
-        props.put("x", 1);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Unregistered", props);
+        final Map<String, Object> fields = new HashMap<>();
+        fields.put("x", 1);
+        final ProviderDefinedType pdt = new ProviderDefinedType("Unregistered", fields);
         final Object result = registry.hydrate(pdt);
         assertSame(pdt, result);
     }
@@ -323,10 +323,10 @@ public class ProviderDefinedTypeRegistryTest {
         final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
         registry.register(AnnotatedPoint.class);
 
-        final Map<String, Object> props = new HashMap<>();
-        props.put("x", 3);
-        props.put("y", 7);
-        final Object result = registry.hydrate(new ProviderDefinedType("AnnotatedPoint", props));
+        final Map<String, Object> fields = new HashMap<>();
+        fields.put("x", 3);
+        fields.put("y", 7);
+        final Object result = registry.hydrate(new ProviderDefinedType("AnnotatedPoint", fields));
 
         assertTrue(result instanceof AnnotatedPoint);
         assertEquals(3, ((AnnotatedPoint) result).x);
@@ -348,10 +348,10 @@ public class ProviderDefinedTypeRegistryTest {
         final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
         registry.register(ExcludedFields.class);
 
-        final Map<String, Object> props = new HashMap<>();
-        props.put("value", 42);
-        props.put("secret", "should-be-ignored");
-        final Object result = registry.hydrate(new ProviderDefinedType("Excluded", props));
+        final Map<String, Object> fields = new HashMap<>();
+        fields.put("value", 42);
+        fields.put("secret", "should-be-ignored");
+        final Object result = registry.hydrate(new ProviderDefinedType("Excluded", fields));
 
         assertTrue(result instanceof ExcludedFields);
         assertEquals(42, ((ExcludedFields) result).value);

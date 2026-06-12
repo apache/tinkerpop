@@ -60,16 +60,16 @@ public final class ProviderDefinedType {
         final Class<?> clazz = obj.getClass();
         final FieldCache cache = FIELD_CACHE.computeIfAbsent(clazz, ProviderDefinedType::buildCache);
 
-        final Map<String, Object> props = new LinkedHashMap<>();
+        final Map<String, Object> fields = new LinkedHashMap<>();
         for (final Field field : cache.fields) {
             try {
-                props.put(field.getName(), field.get(obj));
+                fields.put(field.getName(), field.get(obj));
             } catch (Exception e) {
                 throw new RuntimeException("Failed to read field '" + field.getName() + "' from " + clazz.getName(), e);
             }
         }
 
-        return new ProviderDefinedType(cache.name, props);
+        return new ProviderDefinedType(cache.name, fields);
     }
 
     /**
