@@ -49,7 +49,7 @@ describe('CompositePDTSerializer', () => {
   });
 
   describe('round-trip: nested PDT', () => {
-    it('serializes and deserializes a PDT with nested PDT in properties', async () => {
+    it('serializes and deserializes a PDT with nested PDT in fields', async () => {
       const inner = new ProviderDefinedType('inner', { x: 'hello' });
       const outer = new ProviderDefinedType('outer', { nested: inner, num: 99 });
       const result = await roundTrip(outer);
@@ -63,7 +63,7 @@ describe('CompositePDTSerializer', () => {
   });
 
   describe('round-trip: null/undefined field value', () => {
-    it('handles null property values', async () => {
+    it('handles null field values', async () => {
       const pdt = new ProviderDefinedType('withNull', { present: 'yes', absent: null });
       const result = await roundTrip(pdt);
       assert.instanceOf(result, ProviderDefinedType);

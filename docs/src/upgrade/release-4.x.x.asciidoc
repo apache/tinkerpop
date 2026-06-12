@@ -534,7 +534,7 @@ re-query elements against the original graph, extract their ids and call `g.V(id
 
 Graph providers may now expose custom types as Provider Defined Types (PDT) (replacing the old `CustomTypeSerializer`
 mechanism). The key improvement is that the default case now works out of the box — drivers deserialize PDT values
-as `ProviderDefinedType` objects containing a `name` and a `properties` map without any configuration, eliminating
+as `ProviderDefinedType` objects containing a `name` and a `fields` map without any configuration, eliminating
 the serializer errors that occurred with unknown custom types in TP3. For automatic conversion between PDT values and
 application-specific types, each driver supports an optional registry or annotation mechanism, which requires similar
 effort to the old custom serializer approach but is entirely optional for basic usage:

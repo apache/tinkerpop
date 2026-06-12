@@ -1484,7 +1484,7 @@ public class GremlinTranslatorTest {
                             null,
                             "g.inject(providerdefinedtype0)",
                             "g.Inject<object>(new ProviderDefinedType(\"Point\", new Dictionary<object, object> {{ \"x\", 1 }, { \"y\", 2 }}))",
-                            "g.Inject(&gremlingo.ProviderDefinedType{Name: \"Point\", Properties: map[interface{}]interface{}{\"x\": 1, \"y\": 2 }})",
+                            "g.Inject(&gremlingo.ProviderDefinedType{Name: \"Point\", Fields: map[interface{}]interface{}{\"x\": 1, \"y\": 2 }})",
                             "g.inject(new ProviderDefinedType(\"Point\", [\"x\":1, \"y\":2]))",
                             "g.inject(new ProviderDefinedType(\"Point\", new LinkedHashMap<Object, Object>() {{ put(\"x\", 1); put(\"y\", 2); }}))",
                             "g.inject(new ProviderDefinedType(\"Point\", new Map([[\"x\", 1], [\"y\", 2]])))",

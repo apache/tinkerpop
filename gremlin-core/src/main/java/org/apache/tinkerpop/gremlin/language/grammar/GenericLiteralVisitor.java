@@ -585,14 +585,14 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     @Override
     public Object visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) {
         final String name = (String) visitStringLiteral(ctx.stringLiteral());
-        final Map<String, Object> properties = new LinkedHashMap<>();
+        final Map<String, Object> fields = new LinkedHashMap<>();
         final Map<?, ?> rawMap = (Map<?, ?>) visitGenericMapLiteral(ctx.genericMapLiteral());
         for (final Map.Entry<?, ?> entry : rawMap.entrySet()) {
             if (!(entry.getKey() instanceof String))
-                throw new IllegalArgumentException("PDT properties map must have String keys, found: " + entry.getKey().getClass().getName());
-            properties.put((String) entry.getKey(), entry.getValue());
+                throw new IllegalArgumentException("PDT fields map must have String keys, found: " + entry.getKey().getClass().getName());
+            fields.put((String) entry.getKey(), entry.getValue());
         }
-        return new ProviderDefinedType(name, properties);
+        return new ProviderDefinedType(name, fields);
     }
 
     /**

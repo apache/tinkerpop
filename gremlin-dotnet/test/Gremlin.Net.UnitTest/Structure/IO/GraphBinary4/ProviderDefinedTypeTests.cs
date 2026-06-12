@@ -37,7 +37,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         private static readonly GraphBinaryReader Reader = new();
 
         [Fact]
-        public async Task TestRoundTripWithProperties()
+        public async Task TestRoundTripWithFields()
         {
             var properties = new Dictionary<string, object?> { { "x", 1 }, { "y", "hello" } };
             var expected = new ProviderDefinedType("com.example.MyType", properties);
@@ -53,7 +53,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         }
 
         [Fact]
-        public async Task TestRoundTripWithEmptyProperties()
+        public async Task TestRoundTripWithEmptyFields()
         {
             var expected = new ProviderDefinedType("com.example.Empty", new Dictionary<string, object?>());
 
@@ -68,7 +68,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         }
 
         [Fact]
-        public async Task TestRoundTripWithNullPropertyValue()
+        public async Task TestRoundTripWithNullFieldValue()
         {
             var properties = new Dictionary<string, object?> { { "key", null } };
             var expected = new ProviderDefinedType("com.example.NullVal", properties);

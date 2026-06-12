@@ -1086,7 +1086,7 @@ public class GeneralLiteralVisitorTest {
                 new GenericLiteralVisitor(new GremlinAntlrToJava()).visitPdtLiteral(ctx);
                 fail("Expected IllegalArgumentException for non-String map key");
             } catch (final IllegalArgumentException e) {
-                assertTrue(e.getMessage().contains("PDT properties map must have String keys, found: java.lang.Integer"));
+                assertTrue(e.getMessage().contains("PDT fields map must have String keys, found: java.lang.Integer"));
             }
         }
     }

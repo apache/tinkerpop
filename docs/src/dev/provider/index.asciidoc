@@ -1407,7 +1407,7 @@ constructor and the mapped fields must be directly settable (e.g. public fields)
 requirements — for example those with immutable `final` fields or no default constructor — should instead use a
 `ProviderDefinedTypeAdapter` (see <<adapter-for-types-you-don-t-own>>), which gives full control over construction.
 
-The serialized field set becomes a property map whose keys are always strings. In statically typed GLVs (Java, .NET,
+The serialized field set becomes a map whose keys are always strings. In statically typed GLVs (Java, .NET,
 Go, and TypeScript) this is enforced by the type system; in Python the keys are validated at runtime and a
 `TypeError` is raised for any non-string key.
 

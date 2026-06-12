@@ -68,7 +68,7 @@ public class ProviderDefinedTypeSerializerTest {
     }
 
     @Test
-    public void shouldRoundTripPdtWithNullPropertyValue() throws IOException {
+    public void shouldRoundTripPdtWithNullFieldValue() throws IOException {
         final Map<String, Object> props = new LinkedHashMap<>();
         props.put("name", "test");
         props.put("value", null);
@@ -143,7 +143,7 @@ public class ProviderDefinedTypeSerializerTest {
     }
 
     @Test(expected = IOException.class)
-    public void shouldThrowOnNonStringKeyInPropertiesMap() throws IOException {
+    public void shouldThrowOnNonStringKeyInFieldsMap() throws IOException {
         final Buffer buffer = bufferFactory.create(allocator.buffer());
         // Write type code for COMPOSITE_PDT (0xF0), value_flag 0
         buffer.writeByte(0xF0);

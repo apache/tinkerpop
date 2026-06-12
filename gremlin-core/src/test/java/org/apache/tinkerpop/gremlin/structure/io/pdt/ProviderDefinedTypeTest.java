@@ -112,7 +112,7 @@ public class ProviderDefinedTypeTest {
     }
 
     @Test
-    public void shouldReturnUnmodifiableProperties() {
+    public void shouldReturnUnmodifiableFields() {
         final Map<String, Object> props = new HashMap<>();
         props.put("x", 1);
         final ProviderDefinedType pdt = new ProviderDefinedType("Point", props);
@@ -182,7 +182,7 @@ public class ProviderDefinedTypeTest {
     }
 
     @Test
-    public void shouldThrowOnNullProperties() {
+    public void shouldThrowOnNullFields() {
         assertThrows(IllegalArgumentException.class, () -> new ProviderDefinedType("Point", null));
     }
 

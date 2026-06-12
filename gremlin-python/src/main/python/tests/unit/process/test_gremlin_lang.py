@@ -613,7 +613,7 @@ class TestGremlinLang(object):
 
         p = Point(3, 4)
         gremlin = g.inject(p).gremlin_lang.get_gremlin()
-        # The adapter's type_name and properties must win over the decorator's
+        # The adapter's type_name and fields must win over the decorator's
         assert "PDT('com.adapter.Point',['a':3,'b':4])" in gremlin
 
     def test_pdt_special_characters_in_name(self):

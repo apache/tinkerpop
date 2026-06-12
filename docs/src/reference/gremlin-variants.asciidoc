@@ -660,7 +660,7 @@ go run modern_traversals.go
 === Provider Defined Types
 
 Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
-`*ProviderDefinedType` structs containing a `Name` and `Properties` map without any configuration.
+`*ProviderDefinedType` structs containing a `Name` and `Fields` map without any configuration.
 Consult your graph provider's documentation for the list of PDTs they support.
 
 [source,go]
@@ -680,11 +680,11 @@ Using a `PDTRegistry` for hydration and dehydration:
 ----
 registry := gremlingo.NewPDTRegistry()
 registry.RegisterFuncsWithType("x:Point", reflect.TypeOf(Point{}),
-    // hydrate: convert incoming PDT properties map to a Go type
+    // hydrate: convert incoming PDT fields map to a Go type
     func(props map[string]interface{}) (interface{}, error) {
         return &Point{X: props["x"].(float64), Y: props["y"].(float64)}, nil
     },
-    // dehydrate: convert a Go type to a PDT properties map for sending
+    // dehydrate: convert a Go type to a PDT fields map for sending
     func(obj interface{}) (map[string]interface{}, error) {
         p := obj.(*Point)
         return map[string]interface{}{"x": p.X, "y": p.Y}, nil
@@ -1591,7 +1591,7 @@ java -cp target/run-examples-shaded.jar examples.ModernTraversals
 === Provider Defined Types
 
 Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
-`ProviderDefinedType` objects containing a name and properties map without any configuration.
+`ProviderDefinedType` objects containing a name and fields map without any configuration.
 Consult your graph provider's documentation for the list of PDTs they support.
 
 Receiving a raw PDT:
@@ -2285,7 +2285,7 @@ node modern-traversals.js
 === Provider Defined Types
 
 Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
-`ProviderDefinedType` objects containing a `name` and `properties` map without any configuration.
+`ProviderDefinedType` objects containing a `name` and `fields` map without any configuration.
 Consult your graph provider's documentation for the list of PDTs they support.
 
 Receiving a raw PDT:
@@ -2803,7 +2803,7 @@ dotnet run --project ModernTraversals
 === Provider Defined Types
 
 Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
-`ProviderDefinedType` objects containing a `Name` and `Properties` dictionary without any configuration.
+`ProviderDefinedType` objects containing a `Name` and `Fields` dictionary without any configuration.
 Consult your graph provider's documentation for the list of PDTs they support.
 
 Receiving a raw PDT:
@@ -2848,7 +2848,7 @@ Attribute-based conversion with `[ProviderDefined]`:
 
 [source,csharp]
 ----
-// IncludedFields: only serialize the listed properties
+// IncludedFields: only serialize the listed fields
 [ProviderDefined(Name = "x:Point", IncludedFields = new[] { "X", "Y" })]
 public class Point
 {
@@ -2857,7 +2857,7 @@ public class Point
     public string InternalId { get; set; } // not serialized
 }
 
-// ExcludedFields: serialize all properties except those listed
+// ExcludedFields: serialize all fields except those listed
 [ProviderDefined(Name = "x:Timestamped", ExcludedFields = new[] { "CreatedAt" })]
 public class Timestamped
 {
@@ -3483,7 +3483,7 @@ python modern_traversals.py
 === Provider Defined Types
 
 Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
-`ProviderDefinedType` objects containing a `name` and `properties` dict without any configuration.
+`ProviderDefinedType` objects containing a `name` and `fields` dict without any configuration.
 Consult your graph provider's documentation for the list of PDTs they support.
 
 Receiving a raw PDT:

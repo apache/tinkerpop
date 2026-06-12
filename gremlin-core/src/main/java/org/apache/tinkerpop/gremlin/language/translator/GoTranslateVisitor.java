@@ -380,7 +380,7 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     public Void visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) {
         sb.append("&gremlingo.ProviderDefinedType{Name: ");
         visitStringLiteral(ctx.stringLiteral());
-        sb.append(", Properties: ");
+        sb.append(", Fields: ");
         visitGenericMapLiteral(ctx.genericMapLiteral());
         sb.append("}");
         return null;

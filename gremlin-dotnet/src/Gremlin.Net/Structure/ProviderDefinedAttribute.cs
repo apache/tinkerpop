@@ -40,15 +40,15 @@ namespace Gremlin.Net.Structure
         public string? Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of property names to include during dehydration.
-        /// If non-null and non-empty, only these properties are serialized.
+        /// Gets or sets the list of field names to include during dehydration.
+        /// If non-null and non-empty, only these fields are serialized.
         /// Cannot be combined with <see cref="ExcludedFields"/>.
         /// </summary>
         public string[]? IncludedFields { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of property names to exclude during dehydration.
-        /// If non-null and non-empty, these properties are omitted from serialization.
+        /// Gets or sets the list of field names to exclude during dehydration.
+        /// If non-null and non-empty, these fields are omitted from serialization.
         /// Cannot be combined with <see cref="IncludedFields"/>.
         /// </summary>
         public string[]? ExcludedFields { get; set; }

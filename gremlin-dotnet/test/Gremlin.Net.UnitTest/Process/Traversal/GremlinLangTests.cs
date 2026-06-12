@@ -1187,7 +1187,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             var point = new AnnotatedPointWithAdapter { X = 5, Y = 10 };
             var result = g.Inject((object)point).GremlinLang.GetGremlin();
 
-            // The adapter uses type name "adapter.Point" and only exposes "a"/"b" properties,
+            // The adapter uses type name "adapter.Point" and only exposes "a"/"b" fields,
             // overriding the attribute which would produce "attr.Point" with "X"/"Y".
             Assert.Equal("g.inject(PDT(\"adapter.Point\",[\"a\":5,\"b\":10]))", result);
         }
