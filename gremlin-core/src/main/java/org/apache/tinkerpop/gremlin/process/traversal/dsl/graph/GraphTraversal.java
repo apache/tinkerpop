@@ -4150,7 +4150,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         }
         if (choosePredicate.hasTraversal()) {
             throw new IllegalArgumentException("Traversal-bearing predicates are not supported by choose(). " +
-                    "Use choose(__.is(P.op(traversal)), trueChoice, falseChoice) instead.");
+                    "The predicate's child traversal cannot be resolved in this context.");
         }
         this.asAdmin().getGremlinLang().addStep(Symbols.choose, choosePredicate, trueChoice, falseChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.is(choosePredicate), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) falseChoice));
@@ -4191,7 +4191,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         }
         if (choosePredicate.hasTraversal()) {
             throw new IllegalArgumentException("Traversal-bearing predicates are not supported by choose(). " +
-                    "Use choose(__.is(P.op(traversal)), trueChoice) instead.");
+                    "The predicate's child traversal cannot be resolved in this context.");
         }
         this.asAdmin().getGremlinLang().addStep(Symbols.choose, choosePredicate, trueChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.is(choosePredicate), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) __.identity()));

@@ -131,7 +131,7 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
      * {@link #setTraversal(Traversal.Admin)} which is the single integration point.
      */
     private void collectChildTraversals(final HasContainer hc) {
-        if (hc.getPredicate() != null && hc.getPredicate().hasTraversal()) {
+        if (hc.getPredicate().hasTraversal()) {
             P.collectTraversals(hc.getPredicate(), this.childTraversals);
         }
     }
@@ -182,7 +182,7 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
         for (final HasContainer hasContainer : this.hasContainers) {
             final HasContainer clonedHc = hasContainer.clone();
             clone.hasContainers.add(clonedHc);
-            if (clonedHc.getPredicate() != null && clonedHc.getPredicate().hasTraversal()) {
+            if (clonedHc.getPredicate().hasTraversal()) {
                 P.collectTraversals(clonedHc.getPredicate(), clone.childTraversals);
             }
         }

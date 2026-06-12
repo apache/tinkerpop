@@ -29,12 +29,9 @@ import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalS
 import static org.junit.Assert.assertEquals;
 
 /**
- * Property 7: GremlinLang serialization round-trip preserves traversal arguments.
- * <p>
+ * Tests that GremlinLang serialization round-trips preserve traversal arguments.
  * For any step containing a child traversal argument, serializing to GremlinLang and parsing back
- * SHALL produce a structurally equivalent traversal.
- * <p>
- * <b>Validates: Requirements 1.3, 3.6, 4.5, 6.5, 7.3</b>
+ * produces a structurally equivalent traversal.
  */
 public class GremlinLangTraversalRoundTripTest {
 

@@ -216,7 +216,7 @@ public class ChildTraversalValidatorTest {
 
     @Test
     public void shouldRejectAddVInMutationContext() {
-        // addV is now blocked in property(traversal) - all mutating steps are blocked in all contexts
+        // addV is blocked in property(traversal) - mutating steps are blocked in child traversals
         assertThrows(IllegalArgumentException.class, () ->
                 g.V().property(__.V().addV("temp").project("k").by("name")));
     }
@@ -225,5 +225,37 @@ public class ChildTraversalValidatorTest {
     public void shouldAllowReadOnlyPropertyTraversal() {
         // Should not throw
         g.V().property(__.V().project("name").by("name"));
+    }
+
+    // ===== CHOOSE CONTEXT: should reject traversal-bearing predicates =====
+
+    @Test
+    public void shouldRejectTraversalPredicateInChooseIfThen() {
+        assertThrows(IllegalArgumentException.class, () ->
+                g.V().values("age").choose(P.gt(__.V().values("age")), __.constant("older"), __.constant("younger")));
+    }
+
+    @Test
+    public void shouldRejectTraversalPredicateInChooseIfOnly() {
+        assertThrows(IllegalArgumentException.class, () ->
+                g.V().values("age").choose(P.gt(__.V().values("age")), __.constant("older")));
+    }
+
+    @Test
+    public void shouldRejectTraversalPredicateInChooseOption() {
+        assertThrows(IllegalArgumentException.class, () ->
+                g.V().values("age").choose(__.identity()).option(P.gt(__.V().values("age")), __.constant("older")));
+    }
+
+    @Test
+    public void shouldAllowLiteralPredicateInChoose() {
+        // Literal predicates should still work
+        g.V().values("age").choose(P.gt(30), __.constant("older"), __.constant("younger"));
+    }
+
+    @Test
+    public void shouldAllowLiteralPredicateInChooseOption() {
+        // Literal predicates as option keys should still work
+        g.V().values("age").choose(__.identity()).option(P.gt(30), __.constant("older"));
     }
 }

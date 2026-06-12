@@ -1311,16 +1311,8 @@ IMPORTANT: It is important to think of `choose()` as a branching step and not a 
 intuitively lead to thinking the latter, where no match would mean to remove the traverser from the stream. As shown in
 the examples, this is not what happens.
 
-NOTE: The `choose(P)` form does not support traversal-bearing predicates directly. To use a dynamic comparison as the
-branch condition, wrap it in an `is()` step: `choose(__.is(P.op(traversal)), trueChoice, falseChoice)`.
-
-[gremlin-groovy,modern]
-----
-g.V().values('age').choose(__.is(P.gt(__.V(1).values('age'))), __.constant('older'), __.constant('not older')) <1>
-----
-
-<1> For each age value, compare dynamically against marko's age using a traversal inside the predicate. If greater,
-return "older"; otherwise return "not older".
+NOTE: The `choose(P)` form and `choose().option(P, ...)` currently do not support traversal-bearing predicates.
+Dynamic branching is restricted in 4.0.0.
 
 The `choose()`-step can be used within a `map()` step to apply the branching logic to each element in a collection.
 

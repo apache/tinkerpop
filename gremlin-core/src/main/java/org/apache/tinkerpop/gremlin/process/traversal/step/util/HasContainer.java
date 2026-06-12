@@ -110,7 +110,7 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
     public HasContainer clone() {
         try {
             final HasContainer clone = (HasContainer) super.clone();
-            clone.predicate = this.predicate != null ? this.predicate.clone() : null;
+            clone.predicate = this.predicate.clone();
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -119,7 +119,7 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
 
     @Override
     public int hashCode() {
-        return (this.key != null ? this.key.hashCode() : 0) ^ (this.predicate != null ? this.predicate.hashCode() : 0);
+        return (this.key != null ? this.key.hashCode() : 0) ^ this.predicate.hashCode();
     }
 
     public final String getKey() {
@@ -147,7 +147,7 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
      * at runtime (e.g. {@code P.eq(traversal)} or {@code P.within(traversal)}).
      */
     public boolean hasTraversal() {
-        return this.predicate != null && this.predicate.hasTraversal();
+        return this.predicate.hasTraversal();
     }
 
     ////////////

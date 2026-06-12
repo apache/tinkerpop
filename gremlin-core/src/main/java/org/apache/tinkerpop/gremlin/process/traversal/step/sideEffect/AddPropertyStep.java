@@ -49,21 +49,12 @@ import java.util.Set;
  */
 public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implements AddPropertyStepContract<S> {
 
-    /**
-     * Internal placeholder key used for the single-argument {@code property(traversal)} (Map-producing) form,
-     * where the property keys are supplied by the traversal's resulting Map rather than by a caller-provided key.
-     * This value is never used for dispatch (see {@link #mapForm}); it exists only to give the parameter a
-     * stable, non-null key within {@link org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters}.
-     */
-    static final String MAP_VALUE_TRAVERSAL_KEY = "~traversalMap";
-
     private Parameters internalParameters = new Parameters();
     private Parameters withConfiguration = new Parameters();
     private final VertexProperty.Cardinality cardinality;
     /**
      * Marks the single-argument {@code property(traversal)} form whose child traversal must produce a Map of
-     * property key/value pairs. Dispatch is driven by this flag rather than by inspecting the property key, so a
-     * caller-supplied key that happens to collide with {@link #MAP_VALUE_TRAVERSAL_KEY} is handled normally.
+     * property key/value pairs. Dispatch is driven by this flag rather than by inspecting the property key.
      */
     private final boolean mapForm;
     private CallbackRegistry<Event.ElementPropertyChangedEvent> callbackRegistry;

@@ -56,7 +56,6 @@ public class HasContainerTest {
         final HasContainer hc = new HasContainer("age", P.eq(traversal));
 
         assertEquals("age", hc.getKey());
-        assertThat(hc.getPredicate(), is(notNullValue()));
         assertThat(hc.getPredicate().getTraversalValue(), is(sameInstance(traversal)));
     }
 
