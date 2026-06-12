@@ -5162,9 +5162,12 @@ The resultant tree data structure can then be navigated with its tree-shaped API
 [gremlin-groovy,modern]
 ----
 tree = g.V().out().out().tree().by('name').next()
-tree.childAt('marko')          // with the SugarPlugin: tree['marko']
-tree.childAt('marko').childAt('josh')          // with the SugarPlugin: tree['marko']['josh']
+tree.childAt('marko')
+tree.childAt('marko').childAt('josh')
 tree.getNodesAtDepth(2)
+// The sugar plugin offer convenience accessors
+tree['marko']
+tree['marko']['josh']
 ----
 
 Note that when using `by()`-modulation, tree nodes are combined based on projection uniqueness, not on the
