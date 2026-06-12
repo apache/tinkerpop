@@ -782,8 +782,8 @@ func TestProviderDefinedTypeSerialization(t *testing.T) {
 	t.Run("auto-hydrate with registry", func(t *testing.T) {
 		registry := NewPDTRegistry()
 		registry.RegisterFuncs("com.example.MyType",
-			func(props map[string]interface{}) (interface{}, error) {
-				return map[string]interface{}{"hydrated": true, "key": props["key"]}, nil
+			func(fields map[string]interface{}) (interface{}, error) {
+				return map[string]interface{}{"hydrated": true, "key": fields["key"]}, nil
 			}, nil)
 
 		source := &ProviderDefinedType{

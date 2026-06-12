@@ -180,16 +180,16 @@ class GraphBinaryReader(object):
     def _hydrate_decorated(self, pdt):
         """Hydrate a ProviderDefinedType using a @provider_defined decorated class."""
         cls = _pdt_decorated_types[pdt.name]
-        props = {}
+        fields = {}
         for k, v in pdt.fields.items():
             if isinstance(v, ProviderDefinedType) and v.name in _pdt_decorated_types:
-                props[k] = self._hydrate_decorated(v)
+                fields[k] = self._hydrate_decorated(v)
             elif self.pdt_registry is not None and isinstance(v, ProviderDefinedType):
-                props[k] = self.pdt_registry.hydrate(v)
+                fields[k] = self.pdt_registry.hydrate(v)
             else:
-                props[k] = v
+                fields[k] = v
         obj = cls.__new__(cls)
-        for k, v in props.items():
+        for k, v in fields.items():
             setattr(obj, k, v)
         return obj
 

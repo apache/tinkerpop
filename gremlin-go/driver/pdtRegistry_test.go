@@ -29,8 +29,8 @@ import (
 
 func TestPDTRegistryRegisterFuncsAndHydrate(t *testing.T) {
 	reg := NewPDTRegistry()
-	reg.RegisterFuncs("x:Point", func(props map[string]interface{}) (interface{}, error) {
-		return [2]int{props["x"].(int), props["y"].(int)}, nil
+	reg.RegisterFuncs("x:Point", func(fields map[string]interface{}) (interface{}, error) {
+		return [2]int{fields["x"].(int), fields["y"].(int)}, nil
 	}, nil)
 
 	pdt := &ProviderDefinedType{Name: "x:Point", Fields: map[string]interface{}{"x": 1, "y": 2}}
@@ -47,7 +47,7 @@ func TestPDTRegistryNoAdapterReturnsRawPDT(t *testing.T) {
 
 func TestPDTRegistryAdapterErrorReturnsRawPDT(t *testing.T) {
 	reg := NewPDTRegistry()
-	reg.RegisterFuncs("x:Bad", func(props map[string]interface{}) (interface{}, error) {
+	reg.RegisterFuncs("x:Bad", func(fields map[string]interface{}) (interface{}, error) {
 		return nil, errors.New("fail")
 	}, nil)
 
@@ -58,11 +58,11 @@ func TestPDTRegistryAdapterErrorReturnsRawPDT(t *testing.T) {
 
 func TestPDTRegistryNestedHydration(t *testing.T) {
 	reg := NewPDTRegistry()
-	reg.RegisterFuncs("x:Inner", func(props map[string]interface{}) (interface{}, error) {
-		return props["val"].(string) + "!", nil
+	reg.RegisterFuncs("x:Inner", func(fields map[string]interface{}) (interface{}, error) {
+		return fields["val"].(string) + "!", nil
 	}, nil)
-	reg.RegisterFuncs("x:Outer", func(props map[string]interface{}) (interface{}, error) {
-		return "outer:" + props["child"].(string), nil
+	reg.RegisterFuncs("x:Outer", func(fields map[string]interface{}) (interface{}, error) {
+		return "outer:" + fields["child"].(string), nil
 	}, nil)
 
 	inner := &ProviderDefinedType{Name: "x:Inner", Fields: map[string]interface{}{"val": "hi"}}
@@ -95,8 +95,8 @@ func TestPDTRegistryHydrateNil(t *testing.T) {
 // is hydrated even when the outer PDT has no registered adapter (desired contract).
 func TestPDTRegistryNestedHydration_UnregisteredOuter(t *testing.T) {
 	reg := NewPDTRegistry()
-	reg.RegisterFuncs("x:Inner", func(props map[string]interface{}) (interface{}, error) {
-		return [2]int{props["x"].(int), props["y"].(int)}, nil
+	reg.RegisterFuncs("x:Inner", func(fields map[string]interface{}) (interface{}, error) {
+		return [2]int{fields["x"].(int), fields["y"].(int)}, nil
 	}, nil)
 
 	inner := &ProviderDefinedType{Name: "x:Inner", Fields: map[string]interface{}{"x": 10, "y": 20}}

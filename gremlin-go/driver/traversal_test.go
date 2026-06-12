@@ -542,8 +542,8 @@ func TestProviderDefinedTypeTraversalAPIIntegration(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		registry := NewPDTRegistry()
 		registry.RegisterFuncsWithType("RegPoint", reflect.TypeOf(regPoint{}),
-			func(props map[string]interface{}) (interface{}, error) {
-				return &regPoint{X: props["x"].(int32), Y: props["y"].(int32)}, nil
+			func(fields map[string]interface{}) (interface{}, error) {
+				return &regPoint{X: fields["x"].(int32), Y: fields["y"].(int32)}, nil
 			},
 			func(obj interface{}) (map[string]interface{}, error) {
 				p := obj.(regPoint)

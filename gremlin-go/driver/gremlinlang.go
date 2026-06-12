@@ -206,11 +206,11 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		name := reflect.ValueOf(v).Type().Name()
 		return fmt.Sprintf("%s.%s", strings.ToUpper(name), v), nil
 	case *ProviderDefinedType:
-		props := v.Fields
-		if props == nil {
-			props = map[string]interface{}{}
+		fields := v.Fields
+		if fields == nil {
+			fields = map[string]interface{}{}
 		}
-		mapStr, err := gl.translateMap(props)
+		mapStr, err := gl.translateMap(fields)
 		if err != nil {
 			return "", err
 		}
@@ -305,9 +305,9 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		if gl.pdtRegistry != nil {
 			adapter := gl.pdtRegistry.GetAdapterByType(reflect.TypeOf(arg))
 			if adapter != nil && adapter.ToFields != nil {
-				props, err := adapter.ToFields(arg)
+				fields, err := adapter.ToFields(arg)
 				if err == nil {
-					pdt := &ProviderDefinedType{Name: adapter.TypeName, Fields: props}
+					pdt := &ProviderDefinedType{Name: adapter.TypeName, Fields: fields}
 					return gl.argAsString(pdt)
 				}
 			}

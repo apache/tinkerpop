@@ -40,14 +40,14 @@ func NewPDTRegistry() *PDTRegistry {
 }
 
 // RegisterFuncs registers hydration/dehydration functions for a type name.
-func (r *PDTRegistry) RegisterFuncs(typeName string, fromProps func(map[string]interface{}) (interface{}, error), toProps func(interface{}) (map[string]interface{}, error)) {
-	adapter := &PDTAdapter{TypeName: typeName, FromFields: fromProps, ToFields: toProps}
+func (r *PDTRegistry) RegisterFuncs(typeName string, fromFields func(map[string]interface{}) (interface{}, error), toFields func(interface{}) (map[string]interface{}, error)) {
+	adapter := &PDTAdapter{TypeName: typeName, FromFields: fromFields, ToFields: toFields}
 	r.adaptersByName[typeName] = adapter
 }
 
 // RegisterFuncsWithType registers hydration/dehydration functions for a type name and associates a Go type for dehydration lookup.
-func (r *PDTRegistry) RegisterFuncsWithType(typeName string, targetType reflect.Type, fromProps func(map[string]interface{}) (interface{}, error), toProps func(interface{}) (map[string]interface{}, error)) {
-	adapter := &PDTAdapter{TypeName: typeName, FromFields: fromProps, ToFields: toProps}
+func (r *PDTRegistry) RegisterFuncsWithType(typeName string, targetType reflect.Type, fromFields func(map[string]interface{}) (interface{}, error), toFields func(interface{}) (map[string]interface{}, error)) {
+	adapter := &PDTAdapter{TypeName: typeName, FromFields: fromFields, ToFields: toFields}
 	r.adaptersByName[typeName] = adapter
 	r.adaptersByType[targetType] = adapter
 }

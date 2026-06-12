@@ -378,7 +378,7 @@ describe('ProviderDefinedType - Traversal API', function () {
       const registry = new ProviderDefinedTypeRegistry();
       registry.register('TestPoint', {
         serialize: (obj) => ({ x: obj.x, y: obj.y }),
-        deserialize: (props) => new TestPoint(props.x, props.y),
+        deserialize: (fields) => new TestPoint(fields.x, fields.y),
       }, TestPoint);
       pdtConnection = new DriverRemoteConnection(serverUrl, {
         traversalSource: 'gmodern',

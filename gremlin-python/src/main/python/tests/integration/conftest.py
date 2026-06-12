@@ -226,7 +226,7 @@ def remote_connection_with_registry(request):
 
     registry = ProviderDefinedTypeRegistry()
     registry.register('RegistryPoint',
-                      deserialize_fn=lambda props: RegistryPoint(x=props['x'], y=props['y']),
+                      deserialize_fn=lambda fields: RegistryPoint(x=fields['x'], y=fields['y']),
                       serialize_fn=lambda p: {'x': p.x, 'y': p.y},
                       target_class=RegistryPoint)
     try:

@@ -958,8 +958,8 @@ class GremlinLang(object):
         if self.pdt_registry is not None:
             adapter = self.pdt_registry.get_adapter_by_class(type(arg))
             if adapter is not None and adapter['serialize'] is not None:
-                props = adapter['serialize'](arg)
-                return self._arg_as_string(ProviderDefinedType(adapter['type_name'], props))
+                fields = adapter['serialize'](arg)
+                return self._arg_as_string(ProviderDefinedType(adapter['type_name'], fields))
 
         # Auto-dehydrate @provider_defined decorated objects
         if hasattr(arg, '_pdt_name'):

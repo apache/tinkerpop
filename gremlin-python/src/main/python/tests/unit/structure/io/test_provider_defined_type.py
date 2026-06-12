@@ -44,7 +44,7 @@ class TestProviderDefinedTypeRegistry(object):
 
     def test_hydrate_simple(self):
         registry = ProviderDefinedTypeRegistry()
-        registry.register("com.example.Point", lambda props: (props["x"], props["y"]))
+        registry.register("com.example.Point", lambda fields: (fields["x"], fields["y"]))
         pdt = ProviderDefinedType("com.example.Point", {"x": 1.0, "y": 2.0})
         result = registry.hydrate(pdt)
         assert result == (1.0, 2.0)
@@ -57,7 +57,7 @@ class TestProviderDefinedTypeRegistry(object):
 
     def test_hydrate_adapter_throws_falls_back(self):
         registry = ProviderDefinedTypeRegistry()
-        registry.register("com.example.Bad", lambda props: 1 / 0)
+        registry.register("com.example.Bad", lambda fields: 1 / 0)
         pdt = ProviderDefinedType("com.example.Bad", {"x": 1})
         result = registry.hydrate(pdt)
         assert result is pdt
@@ -67,8 +67,8 @@ class TestProviderDefinedTypeRegistry(object):
         Inner = namedtuple("Inner", ["val"])
         Outer = namedtuple("Outer", ["child", "count"])
         registry = ProviderDefinedTypeRegistry()
-        registry.register("com.example.Inner", lambda props: Inner(props["val"].upper()))
-        registry.register("com.example.Outer", lambda props: Outer(props["child"], props["count"]))
+        registry.register("com.example.Inner", lambda fields: Inner(fields["val"].upper()))
+        registry.register("com.example.Outer", lambda fields: Outer(fields["child"], fields["count"]))
         inner = ProviderDefinedType("com.example.Inner", {"val": "hello"})
         outer = ProviderDefinedType("com.example.Outer", {"child": inner, "count": 42})
         result = registry.hydrate(outer)
@@ -84,12 +84,12 @@ class TestProviderDefinedTypeRegistry(object):
         Point = namedtuple("Point", ["x", "y"])
         registry = ProviderDefinedTypeRegistry()
         registry.register("com.example.Point",
-                          deserialize_fn=lambda props: Point(props["x"], props["y"]),
+                          deserialize_fn=lambda fields: Point(fields["x"], fields["y"]),
                           serialize_fn=lambda p: {"x": p.x, "y": p.y},
                           target_class=Point)
         adapter = registry.get_adapter_by_class(Point)
-        props = adapter['serialize'](Point(1.0, 2.0))
-        assert props == {"x": 1.0, "y": 2.0}
+        fields = adapter['serialize'](Point(1.0, 2.0))
+        assert fields == {"x": 1.0, "y": 2.0}
 
     def test_dehydrate_no_adapter_returns_none(self):
         registry = ProviderDefinedTypeRegistry()
@@ -97,7 +97,7 @@ class TestProviderDefinedTypeRegistry(object):
 
     def test_dehydrate_no_serialize_fn_returns_none(self):
         registry = ProviderDefinedTypeRegistry()
-        registry.register("com.example.Thing", deserialize_fn=lambda props: props, target_class=dict)
+        registry.register("com.example.Thing", deserialize_fn=lambda fields: fields, target_class=dict)
         adapter = registry.get_adapter_by_class(dict)
         assert adapter['serialize'] is None
 
@@ -106,7 +106,7 @@ class TestProviderDefinedTypeRegistry(object):
         from collections import namedtuple
         Inner = namedtuple("Inner", ["val"])
         registry = ProviderDefinedTypeRegistry()
-        registry.register("com.example.Inner", lambda props: Inner(props["val"]))
+        registry.register("com.example.Inner", lambda fields: Inner(fields["val"]))
         # "com.example.Outer" is intentionally NOT registered
         inner_pdt = ProviderDefinedType("com.example.Inner", {"val": 42})
         outer_pdt = ProviderDefinedType("com.example.Outer", {"child": inner_pdt, "count": 7})
@@ -133,7 +133,7 @@ class TestProviderDefinedTypeRegistryBuild(object):
 
         mock_ep = MagicMock()
         mock_ep.name = "mock_adapter"
-        mock_ep.load.return_value = lambda reg: reg.register("com.mock.Type", lambda props: props)
+        mock_ep.load.return_value = lambda reg: reg.register("com.mock.Type", lambda fields: fields)
 
         with patch("importlib.metadata.entry_points") as mock_entry_points:
             import sys
@@ -168,7 +168,7 @@ class TestReaderAutoHydration(object):
 
     def test_reader_auto_hydrates_with_registry(self):
         registry = ProviderDefinedTypeRegistry()
-        registry.register("com.example.Point", lambda props: {"x": props["x"], "y": props["y"], "hydrated": True})
+        registry.register("com.example.Point", lambda fields: {"x": fields["x"], "y": fields["y"], "hydrated": True})
         writer = GraphBinaryWriter()
         reader = GraphBinaryReader(pdt_registry=registry)
 
