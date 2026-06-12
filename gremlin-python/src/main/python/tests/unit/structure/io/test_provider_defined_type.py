@@ -230,7 +230,6 @@ class TestPdtRegistryWiring(object):
         registry = ProviderDefinedTypeRegistry()
         with patch.object(Client, '_fill_pool'):
             c = Client("ws://localhost:8182/gremlin", "g", pdt_registry=registry)
-            assert c._request_serializer._graphbinary_reader.pdt_registry is registry
             assert c._response_serializer._graphbinary_reader.pdt_registry is registry
 
     def test_driver_remote_connection_passes_registry(self):

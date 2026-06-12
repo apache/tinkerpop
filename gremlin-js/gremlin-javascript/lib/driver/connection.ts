@@ -34,8 +34,6 @@ import { HttpRequest, RequestInterceptor } from './http-request.js';
 import ResponseError from './response-error.js';
 import { Traverser } from '../process/traversal.js';
 
-const { graphBinaryReader } = ioc;
-
 const responseStatusCode = {
   success: 200,
   noContent: 204,
@@ -83,7 +81,7 @@ export default class Connection extends EventEmitter {
   ) {
     super();
 
-    this._reader = options.reader || (options.preciseNumbers === true ? createPreciseReader() : graphBinaryReader);
+    this._reader = options.reader || (options.preciseNumbers === true ? createPreciseReader() : new GraphBinaryReader(ioc));
     if (options.pdtRegistry) {
       this._reader.pdtRegistry = options.pdtRegistry;
     }

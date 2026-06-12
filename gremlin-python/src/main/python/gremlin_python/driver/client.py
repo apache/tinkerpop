@@ -56,8 +56,6 @@ class Client:
         if response_serializer is None:
             response_serializer = serializer.GraphBinarySerializersV4()
         if pdt_registry is not None:
-            if request_serializer is not None:
-                request_serializer.configure_pdt_registry(pdt_registry)
             response_serializer.configure_pdt_registry(pdt_registry)
 
         self._auth = auth
