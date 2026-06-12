@@ -51,9 +51,19 @@ namespace Gremlin.Net.Process.Traversal
             return new TextP("containing", value);
         }
 
+        public static P Containing(object value)
+        {
+            return new P("containing", value);
+        }
+
         public static TextP EndingWith(string value)
         {
             return new TextP("endingWith", value);
+        }
+
+        public static P EndingWith(object value)
+        {
+            return new P("endingWith", value);
         }
 
         public static TextP NotContaining(string value)
@@ -61,9 +71,19 @@ namespace Gremlin.Net.Process.Traversal
             return new TextP("notContaining", value);
         }
 
+        public static P NotContaining(object value)
+        {
+            return new P("notContaining", value);
+        }
+
         public static TextP NotEndingWith(string value)
         {
             return new TextP("notEndingWith", value);
+        }
+
+        public static P NotEndingWith(object value)
+        {
+            return new P("notEndingWith", value);
         }
 
         public static TextP NotStartingWith(string value)
@@ -71,9 +91,19 @@ namespace Gremlin.Net.Process.Traversal
             return new TextP("notStartingWith", value);
         }
 
+        public static P NotStartingWith(object value)
+        {
+            return new P("notStartingWith", value);
+        }
+
         public static TextP StartingWith(string value)
         {
             return new TextP("startingWith", value);
+        }
+
+        public static P StartingWith(object value)
+        {
+            return new P("startingWith", value);
         }
 
         public static TextP Regex(string value)

@@ -1850,6 +1850,16 @@ namespace Gremlin.Net.Process.Traversal
             return Wrap<TStart, TEnd>(this);
         }
 
+        /// <summary>
+        ///     Adds the property step with a map-producing traversal to this <see cref="GraphTraversal{SType, EType}" />.
+        ///     The traversal must produce a Map whose entries become properties on the element.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> Property(ITraversal propertyTraversal)
+        {
+            GremlinLang.AddStep("property", propertyTraversal);
+            return Wrap<TStart, TEnd>(this);
+        }
+
 
         /// <summary>
         ///     Adds the propertyMap step to this <see cref="GraphTraversal{SType, EType}" />.

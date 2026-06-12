@@ -370,11 +370,17 @@ export class P<T1 = any, T2 = any> {
     if (args.length === 1 && Array.isArray(args[0])) {
       return new P('within', args[0], null);
     }
+    if (args.length === 1 && args[0] != null && typeof args[0].getGremlinLang === 'function') {
+      return new P('within', args[0], null);
+    }
     return new P('within', args, null);
   }
 
   static without(...args: any[]) {
     if (args.length === 1 && Array.isArray(args[0])) {
+      return new P('without', args[0], null);
+    }
+    if (args.length === 1 && args[0] != null && typeof args[0].getGremlinLang === 'function') {
       return new P('without', args[0], null);
     }
     return new P('without', args, null);

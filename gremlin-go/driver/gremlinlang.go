@@ -444,7 +444,22 @@ func (gl *GremlinLang) translatePValue(operator string, values []interface{}) (s
 	sb := strings.Builder{}
 	sb.WriteString(operator + "(")
 
-	if len(values) > 1 && operator != "between" && operator != "inside" {
+	// Check if all values are traversals - if so, serialize as comma-separated args (no brackets)
+	// This matches the server grammar: within(trav1, trav2) via genericArgumentVarargs
+	allTraversals := len(values) > 1
+	if allTraversals {
+		for _, v := range values {
+			switch v.(type) {
+			case *Traversal, Traversal, *GraphTraversal, GraphTraversal:
+				// ok, it's a traversal
+			default:
+				allTraversals = false
+				break
+			}
+		}
+	}
+
+	if len(values) > 1 && !allTraversals && operator != "between" && operator != "inside" {
 		sb.WriteString("[")
 	}
 
@@ -459,7 +474,7 @@ func (gl *GremlinLang) translatePValue(operator string, values []interface{}) (s
 		}
 	}
 
-	if len(values) > 1 && operator != "between" && operator != "inside" {
+	if len(values) > 1 && !allTraversals && operator != "between" && operator != "inside" {
 		sb.WriteString("]")
 	}
 	sb.WriteString(")")
