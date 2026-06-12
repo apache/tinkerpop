@@ -47,7 +47,10 @@ class DriverRemoteConnection extends RemoteConnection
           receiveTimeout: options.receiveTimeout,
           idleTimeout: options.idleTimeout,
           maxConnectionsPerHost: options.maxConnectionsPerHost,
-          httpClientAdapter: options.httpClientAdapter,
+          ssl: options.ssl,
+          retryOptions: options.retryOptions,
+          // httpClientAdapter is intentionally excluded — each dedicated
+          // connection builds its own adapter from ssl/tls config.
         ),
       );
 

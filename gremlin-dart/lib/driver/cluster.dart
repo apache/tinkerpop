@@ -18,6 +18,8 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:dio/dio.dart' show DioException, DioExceptionType;
+
 import '../process/gremlin_lang.dart';
 import '../process/traversal.dart';
 import '../process/traversal_strategy.dart';
@@ -61,15 +63,19 @@ class HostEntry {
       _connection ??= Connection(url, opts);
 
   void reset() {
-    _connection?.close();
+    // Null the field first so a concurrent open() creates a fresh connection;
+    // close is fire-and-forget because Connection.close() force-terminates sync.
+    final c = _connection;
     _connection = null;
+    c?.close();
   }
 
   void dispose() {
     _reconnectTimer?.cancel();
     _reconnectTimer = null;
-    _connection?.close();
+    final c = _connection;
     _connection = null;
+    c?.close();
   }
 
   @override
@@ -183,12 +189,26 @@ class Cluster {
         yield* host.open(_baseOptions).stream(request);
         return;
       } catch (e) {
+        // Only eject the host for transport-level failures (socket, timeout).
+        // Application errors (400/500, bad traversal, auth failure) come from a
+        // healthy server and must NOT poison the host pool.
+        if (!_isTransportError(e)) rethrow;
         lastError = e;
         _markUnavailable(host);
       }
     }
     throw NoHostAvailableException(
         lastError?.toString() ?? 'All hosts are unavailable');
+  }
+
+  static bool _isTransportError(Object e) {
+    if (e is DioException) {
+      return e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout;
+    }
+    return false;
   }
 
   void _markUnavailable(HostEntry host) {
@@ -200,21 +220,23 @@ class Cluster {
       // Guard against overlapping probes if reconnectInterval < probe latency.
       if (host._probingInProgress) return;
       host._probingInProgress = true;
+      Connection? probe;
       try {
-        final probe = Connection(host.url, _baseOptions);
+        probe = Connection(host.url, _baseOptions);
         await probe.submit(
           RequestMessage.build('g.inject(0)')
               .addG(_baseOptions.traversalSource)
               .addBulkResults(false)
               .create(),
         );
-        await probe.close();
         host._reconnectTimer?.cancel();
         host._reconnectTimer = null;
         _lb.onAvailable(host);
       } catch (_) {
         // Host still unreachable; timer keeps firing.
       } finally {
+        // Always close the probe — leak prevention even when submit() throws.
+        await probe?.close();
         host._probingInProgress = false;
       }
     });
@@ -279,11 +301,15 @@ class ClusterRemoteConnection extends RemoteConnection
     ));
   }
 
+  /// Cluster-level commit/rollback are not supported — they have no meaning
+  /// outside of an explicit transaction.  Use [tx()] to obtain a [Transaction].
   @override
-  Future<void> commit() async {}
+  Future<void> commit() =>
+      throw UnsupportedError('Use tx() to get a Transaction for commit/rollback.');
 
   @override
-  Future<void> rollback() async {}
+  Future<void> rollback() =>
+      throw UnsupportedError('Use tx() to get a Transaction for commit/rollback.');
 
   // The cluster manages its own connection lifecycle.
   @override
@@ -348,8 +374,9 @@ class ClusterBuilder {
   }
 
   /// TLS/SSL configuration (custom CA, client cert, skip verification).
-  /// Shorthand for [options] when only SSL needs to be set.
+  /// Automatically enables HTTPS — equivalent to calling enableSsl(true) too.
   ClusterBuilder ssl(SslOptions ssl) {
+    _enableSsl = true;
     _options = _options.copyWith(ssl: ssl);
     return this;
   }

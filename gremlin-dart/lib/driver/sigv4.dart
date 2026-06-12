@@ -78,7 +78,7 @@ class SigV4Signer {
     final signedHeaders = sortedKeys.join(';');
 
     final canonUri = _canonUri(uri);
-    final canonQuery = _canonQuery(uri.queryParameters);
+    final canonQuery = _canonQuery(uri.queryParametersAll);
 
     final canonicalRequest =
         '${method.toUpperCase()}\n$canonUri\n$canonQuery\n'
@@ -177,13 +177,20 @@ class SigV4Signer {
     return '/${segments.map(encode).join('/')}';
   }
 
-  static String _canonQuery(Map<String, String> params) {
+  // Accepts queryParametersAll so duplicate keys are preserved and sorted
+  // correctly per SigV4 §3.4 (each (key, value) pair is a separate entry).
+  static String _canonQuery(Map<String, List<String>> params) {
     if (params.isEmpty) return '';
-    final pairs = params.entries.toList()
-      ..sort((a, b) {
-        final c = a.key.compareTo(b.key);
-        return c != 0 ? c : a.value.compareTo(b.value);
-      });
+    final pairs = <MapEntry<String, String>>[];
+    for (final e in params.entries) {
+      for (final v in e.value) {
+        pairs.add(MapEntry(e.key, v));
+      }
+    }
+    pairs.sort((a, b) {
+      final c = a.key.compareTo(b.key);
+      return c != 0 ? c : a.value.compareTo(b.value);
+    });
     return pairs.map((e) => '${encode(e.key)}=${encode(e.value)}').join('&');
   }
 
@@ -224,12 +231,20 @@ class SigV4Interceptor extends Interceptor {
 
       Uint8List bodyBytes;
       final data = options.data;
-      if (data is Uint8List) {
+      if (data == null) {
+        bodyBytes = Uint8List(0);
+      } else if (data is Uint8List) {
         bodyBytes = data;
       } else if (data is String) {
         bodyBytes = Uint8List.fromList(utf8.encode(data));
       } else {
-        bodyBytes = Uint8List(0);
+        // Dio serialises Map/FormData after interceptors run, so the actual
+        // wire bytes are unknowable here.  Throw rather than sign an empty body
+        // hash that will produce a 403 SignatureDoesNotMatch from the server.
+        throw StateError(
+            'SigV4Interceptor cannot compute body hash for '
+            '${data.runtimeType}. Pre-serialise the body to Uint8List or '
+            'String before adding SigV4Interceptor.');
       }
 
       final signed = _signer.sign(

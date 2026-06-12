@@ -561,6 +561,12 @@ class _TrailerTolerantAdapter implements HttpClientAdapter {
 /// Dio interceptor that transparently retries requests on transient errors.
 /// Added automatically by [Connection] when [ConnectionOptions.retryOptions]
 /// is non-null.
+///
+/// **Warning:** retries replay the entire Gremlin request.  Non-idempotent
+/// mutations (e.g. `addV`, `addE`, `property`) may be executed more than once
+/// if the server processed the first attempt but the response was lost in
+/// transit.  Only enable retries when your traversals are idempotent or the
+/// server enforces exactly-once semantics.
 class RetryInterceptor extends Interceptor {
   final Dio _dio;
   final RetryOptions options;
@@ -576,13 +582,15 @@ class RetryInterceptor extends Interceptor {
           ? options.delay * (1 << attempt.clamp(0, 30))
           : options.delay;
       await Future<void>.delayed(wait);
+      final cloned = err.requestOptions.copyWith(
+        extra: {...err.requestOptions.extra, '_attempt': attempt + 1},
+      );
       try {
-        final cloned = err.requestOptions.copyWith(
-          extra: {...err.requestOptions.extra, '_attempt': attempt + 1},
-        );
         handler.resolve(await _dio.fetch<dynamic>(cloned));
       } catch (e) {
-        handler.next(e is DioException ? e : err);
+        handler.next(e is DioException
+            ? e
+            : DioException(requestOptions: cloned, error: e));
       }
       return;
     }

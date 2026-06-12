@@ -183,9 +183,15 @@ class _GraphBinaryValueReader {
 
     final valueFlag = readUint8();
     if (valueFlag == 0x01) return null;
-    if (valueFlag != 0x00 && valueFlag != _bulkFlag) {
-      throw FormatException(
-          'Unexpected value flag 0x${valueFlag.toRadixString(16)} at $position');
+    if (valueFlag != 0x00) {
+      if (valueFlag == _bulkFlag &&
+          (type == DataType.list || type == DataType.set_)) {
+        // valid — bulk encoding is only defined for list and set
+      } else {
+        throw FormatException(
+            'Unexpected value flag 0x${valueFlag.toRadixString(16)} '
+            'for type ${type.name} at $position');
+      }
     }
 
     return _readValue(type, valueFlag);
