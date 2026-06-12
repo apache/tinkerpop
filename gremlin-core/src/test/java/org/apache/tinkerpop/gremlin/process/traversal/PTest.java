@@ -65,8 +65,8 @@ public class PTest {
                     {P.eq(-0), +0, true},
                     {P.eq(0), 1, false},
                     {P.eq(0), null, false},
-                    {P.eq(null), null, true},
-                    {P.eq(null), 0, false},
+                    {P.eq((Object) null), null, true},
+                    {P.eq((Object) null), 0, false},
                     {P.eq(Double.POSITIVE_INFINITY), Double.NEGATIVE_INFINITY, false},
                     {P.eq(Float.POSITIVE_INFINITY), Float.NEGATIVE_INFINITY, false},
                     {P.eq(Float.POSITIVE_INFINITY), Double.NEGATIVE_INFINITY, false},
@@ -82,8 +82,8 @@ public class PTest {
                     {P.neq(-0), +0, false},
                     {P.neq(0), 1, true},
                     {P.neq(0), null, true},
-                    {P.neq(null), null, false},
-                    {P.neq(null), 0, true},
+                    {P.neq((Object) null), null, false},
+                    {P.neq((Object) null), 0, true},
                     {P.neq(Double.POSITIVE_INFINITY), Double.NEGATIVE_INFINITY, true},
                     {P.neq(Float.POSITIVE_INFINITY), Float.NEGATIVE_INFINITY, true},
                     {P.neq(Float.POSITIVE_INFINITY), Double.NEGATIVE_INFINITY, true},
@@ -468,7 +468,7 @@ public class PTest {
             assertTrue(predicate.test(null));
             assertFalse(predicate.test(INITIAL_VALUE));
             assertEquals("eq", predicate.toString());
-            assertEquals(predicate, P.eq(null));
+            assertEquals(predicate, P.eq((Object) null));
             assertNotEquals(predicate, P.eq(INITIAL_VALUE));
         }
 
