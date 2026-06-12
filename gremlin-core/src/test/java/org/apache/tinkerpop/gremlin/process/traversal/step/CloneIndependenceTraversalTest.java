@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
@@ -48,9 +49,9 @@ public class CloneIndependenceTraversalTest {
 
     @Test
     public void shouldProduceIndependentCloneForHasStepWithTraversalValue() {
-        // Create a HasStep with a traversal-bearing HasContainer
+        // Create a HasStep with a traversal-bearing HasContainer (P.eq(traversal))
         final Traversal.Admin<?, ?> childTraversal = __.constant("marko").asAdmin();
-        final HasContainer hc = new HasContainer("name", childTraversal);
+        final HasContainer hc = new HasContainer("name", P.eq(childTraversal));
         final HasStep<Vertex> original = new HasStep<>(EmptyTraversal.instance(), hc);
 
         // Clone the step
@@ -70,8 +71,8 @@ public class CloneIndependenceTraversalTest {
         final List<HasContainer> originalContainers = original.getHasContainers();
         final List<HasContainer> cloneContainers = clone.getHasContainers();
         assertThat(cloneContainers.get(0), is(not(sameInstance(originalContainers.get(0)))));
-        assertThat(cloneContainers.get(0).getTraversalValue(),
-                is(not(sameInstance(originalContainers.get(0).getTraversalValue()))));
+        assertThat(cloneContainers.get(0).getPredicate().getTraversalValue(),
+                is(not(sameInstance(originalContainers.get(0).getPredicate().getTraversalValue()))));
     }
 
     @Test
@@ -95,8 +96,8 @@ public class CloneIndependenceTraversalTest {
     @Test
     public void shouldProduceIndependentCloneForHasStepWithMultipleContainers() {
         // Create a HasStep with multiple HasContainers, some with traversals
-        final HasContainer hc1 = new HasContainer("name", __.constant("marko").asAdmin());
-        final HasContainer hc2 = new HasContainer("age", __.constant(29).asAdmin());
+        final HasContainer hc1 = new HasContainer("name", P.eq(__.constant("marko").asAdmin()));
+        final HasContainer hc2 = new HasContainer("age", P.eq(__.constant(29).asAdmin()));
         final HasStep<Vertex> original = new HasStep<>(EmptyTraversal.instance(), hc1, hc2);
 
         // Clone the step
@@ -111,8 +112,8 @@ public class CloneIndependenceTraversalTest {
 
         for (int i = 0; i < originalContainers.size(); i++) {
             assertThat(cloneContainers.get(i), is(not(sameInstance(originalContainers.get(i)))));
-            assertThat(cloneContainers.get(i).getTraversalValue(),
-                    is(not(sameInstance(originalContainers.get(i).getTraversalValue()))));
+            assertThat(cloneContainers.get(i).getPredicate().getTraversalValue(),
+                    is(not(sameInstance(originalContainers.get(i).getPredicate().getTraversalValue()))));
         }
     }
 

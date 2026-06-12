@@ -21,14 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.AcceptsChildPredicateTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AllStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AnyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ChildTraversalValidator;
 
@@ -49,7 +43,7 @@ public final class ChildTraversalVerificationStrategy
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if (step instanceof TraversalParent && hasChildTraversalsToValidate(step)) {
+            if (step instanceof AcceptsChildPredicateTraversal && step instanceof TraversalParent) {
                 for (final Traversal.Admin<?, ?> child : ((TraversalParent) step).getLocalChildren()) {
                     try {
                         ChildTraversalValidator.validate(child);
@@ -59,13 +53,6 @@ public final class ChildTraversalVerificationStrategy
                 }
             }
         }
-    }
-
-    private boolean hasChildTraversalsToValidate(final Step<?, ?> step) {
-        return step instanceof HasStep || step instanceof IsStep ||
-                step instanceof AllStep || step instanceof AnyStep || step instanceof NoneStep ||
-                (step instanceof GraphStep && ((GraphStep<?, ?>) step).getIdTraversal() != null) ||
-                step instanceof AddPropertyStepContract;
     }
 
     public static ChildTraversalVerificationStrategy instance() {

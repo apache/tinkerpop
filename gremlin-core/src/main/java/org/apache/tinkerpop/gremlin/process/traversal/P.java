@@ -344,9 +344,19 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
         try {
             if (!trav.hasNext()) {
-                this.resolvedEmpty = true;
+                // No results from the child traversal. For collection predicates (within/without) this is a
+                // legitimate empty set: within(empty) -> false, without(empty) -> true. Resolve to an empty
+                // collection and let Contains.test() apply the correct semantics rather than short-circuiting.
+                // For scalar predicates (eq/gt/lt/etc.) there is no comparison value, so flag as resolved-empty
+                // and let the step short-circuit (cannot satisfy).
                 this.literals = Collections.emptyList();
-                this.isCollection = false;
+                if (this.biPredicate instanceof Contains) {
+                    this.resolvedEmpty = false;
+                    this.isCollection = true;
+                } else {
+                    this.resolvedEmpty = true;
+                    this.isCollection = false;
+                }
             } else {
                 this.resolvedEmpty = false;
                 final Object firstResult = trav.next();
@@ -392,14 +402,14 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             }
         }
 
-        this.resolvedEmpty = allResults.isEmpty();
-        if (allResults.isEmpty()) {
-            this.literals = Collections.emptyList();
-            this.isCollection = false;
-        } else {
-            this.literals = (Collection<V>) (Collection<?>) allResults;
-            this.isCollection = true;
-        }
+        // Multi-traversal resolution is only valid for collection predicates (within/without). An empty
+        // combined result is a legitimate empty set, so resolve to an empty collection and let Contains.test()
+        // apply the correct semantics (within(empty) -> false, without(empty) -> true) instead of short-circuiting.
+        this.resolvedEmpty = false;
+        this.isCollection = true;
+        this.literals = allResults.isEmpty()
+                ? Collections.emptyList()
+                : (Collection<V>) (Collection<?>) allResults;
     }
 
     /**
@@ -426,7 +436,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
                 integrateTraversals(child, parent);
             }
         } else if (p instanceof NotP) {
-            integrateTraversals(((NotP<?>) p).negate(), parent);
+            integrateTraversals(((NotP<?>) p).getWrapped(), parent);
         } else if (p.getTraversalValue() != null) {
             parent.integrateChild(p.getTraversalValue());
         } else if (p.getTraversalValues() != null) {
@@ -446,7 +456,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
                 collectTraversals(child, traversals);
             }
         } else if (p instanceof NotP) {
-            collectTraversals(((NotP<?>) p).negate(), traversals);
+            collectTraversals(((NotP<?>) p).getWrapped(), traversals);
         } else if (p.getTraversalValue() != null) {
             traversals.add(p.getTraversalValue());
         } else if (p.getTraversalValues() != null) {

@@ -25,14 +25,15 @@ import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests for {@link HasContainer}, including traversal-bearing constructor and lifecycle methods.
+ * Tests for {@link HasContainer}, including traversal-bearing predicates and lifecycle methods.
+ * A traversal-bearing container holds a {@link P} whose value is resolved at runtime from a child traversal
+ * (e.g. {@code P.eq(traversal)}); the container exposes this via {@link HasContainer#hasTraversal()}.
  */
 public class HasContainerTest {
 
@@ -43,32 +44,32 @@ public class HasContainerTest {
     }
 
     @Test
-    public void shouldReturnTrueForHasTraversalWithTraversalValue() {
+    public void shouldReturnTrueForHasTraversalWithTraversalPredicate() {
         final Traversal.Admin<?, ?> traversal = __.identity().asAdmin();
-        final HasContainer hc = new HasContainer("name", traversal);
+        final HasContainer hc = new HasContainer("name", P.eq(traversal));
         assertThat(hc.hasTraversal(), is(true));
     }
 
     @Test
-    public void shouldSetFieldsCorrectlyWithTraversalConstructor() {
+    public void shouldSetFieldsCorrectlyWithTraversalPredicate() {
         final Traversal.Admin<?, ?> traversal = __.identity().asAdmin();
-        final HasContainer hc = new HasContainer("age", traversal);
+        final HasContainer hc = new HasContainer("age", P.eq(traversal));
 
         assertEquals("age", hc.getKey());
-        assertThat(hc.getPredicate(), is(nullValue()));
-        assertThat(hc.getTraversalValue(), is(notNullValue()));
-        assertThat(hc.getTraversalValue(), is(sameInstance(traversal)));
+        assertThat(hc.getPredicate(), is(notNullValue()));
+        assertThat(hc.getPredicate().getTraversalValue(), is(sameInstance(traversal)));
     }
 
     @Test
-    public void shouldCloneProduceIndependentDeepCopyOfTraversalValue() {
+    public void shouldCloneProduceIndependentDeepCopyOfTraversalPredicate() {
         final Traversal.Admin<?, ?> traversal = __.identity().asAdmin();
-        final HasContainer original = new HasContainer("name", traversal);
+        final HasContainer original = new HasContainer("name", P.eq(traversal));
         final HasContainer clone = original.clone();
 
-        // clone should have a traversalValue that is not the same instance
-        assertThat(clone.getTraversalValue(), is(notNullValue()));
-        assertThat(clone.getTraversalValue(), is(not(sameInstance(original.getTraversalValue()))));
+        // clone's predicate should carry a traversal that is not the same instance
+        assertThat(clone.getPredicate().getTraversalValue(), is(notNullValue()));
+        assertThat(clone.getPredicate().getTraversalValue(),
+                is(not(sameInstance(original.getPredicate().getTraversalValue()))));
 
         // key should be equal
         assertEquals(original.getKey(), clone.getKey());
@@ -83,14 +84,7 @@ public class HasContainerTest {
         final HasContainer clone = original.clone();
 
         assertThat(clone.hasTraversal(), is(false));
-        assertThat(clone.getTraversalValue(), is(nullValue()));
         assertEquals("name", clone.getKey());
         assertEquals(P.eq("marko"), clone.getPredicate());
-    }
-
-    @Test
-    public void shouldReturnNullTraversalValueForLiteralConstructor() {
-        final HasContainer hc = new HasContainer("name", P.eq("marko"));
-        assertThat(hc.getTraversalValue(), is(nullValue()));
     }
 }

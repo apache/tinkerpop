@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -40,7 +39,6 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
 
     private String key;
     private P predicate;
-    private Traversal.Admin<?, ?> traversalValue;
 
     private final boolean testingIdString;
 
@@ -48,18 +46,6 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
         this.key = key;
         this.predicate = predicate;
         this.testingIdString = isStringTestable();
-    }
-
-    /**
-     * Constructs a {@code HasContainer} with a child traversal whose result is resolved at runtime
-     * against the current traverser. The predicate is set to {@code null} and will be constructed
-     * dynamically during evaluation (e.g., as {@code P.within(results)}).
-     */
-    public HasContainer(final String key, final Traversal.Admin<?, ?> traversalValue) {
-        this.key = key;
-        this.predicate = null;
-        this.traversalValue = traversalValue;
-        this.testingIdString = false;
     }
 
     public final boolean test(final Element element) {
@@ -118,9 +104,6 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
     }
 
     public final String toString() {
-        if (this.traversalValue != null) {
-            return Objects.toString(this.key) + ".traversal(" + this.traversalValue + ")";
-        }
         return Objects.toString(this.key) + '.' + this.predicate;
     }
 
@@ -128,9 +111,6 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
         try {
             final HasContainer clone = (HasContainer) super.clone();
             clone.predicate = this.predicate != null ? this.predicate.clone() : null;
-            if (this.traversalValue != null) {
-                clone.traversalValue = this.traversalValue.clone();
-            }
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -155,31 +135,19 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
     }
 
     public final BiPredicate<?, ?> getBiPredicate() {
-        if (this.predicate == null)
-            throw new IllegalStateException("Cannot access BiPredicate on a traversal-bearing HasContainer; check hasTraversal() first");
         return this.predicate.getBiPredicate();
     }
 
     public final Object getValue() {
-        if (this.predicate == null)
-            throw new IllegalStateException("Cannot access value on a traversal-bearing HasContainer; check hasTraversal() first");
         return this.predicate.getValue();
     }
 
     /**
-     * Determines if this {@code HasContainer} holds a child traversal, either directly
-     * via the {@code traversalValue} field or embedded within the predicate.
+     * Determines if this {@code HasContainer}'s predicate holds a child traversal whose result is resolved
+     * at runtime (e.g. {@code P.eq(traversal)} or {@code P.within(traversal)}).
      */
     public boolean hasTraversal() {
-        return this.traversalValue != null || (this.predicate != null && this.predicate.hasTraversal());
-    }
-
-    /**
-     * Gets the child traversal value, if one was provided. Returns {@code null} when this
-     * {@code HasContainer} uses a literal predicate.
-     */
-    public Traversal.Admin<?, ?> getTraversalValue() {
-        return this.traversalValue;
+        return this.predicate != null && this.predicate.hasTraversal();
     }
 
     ////////////

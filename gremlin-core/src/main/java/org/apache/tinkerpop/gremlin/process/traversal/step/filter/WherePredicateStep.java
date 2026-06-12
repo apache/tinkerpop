@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.AcceptsChildPredicateTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
@@ -45,7 +46,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WherePredicateStep<S> extends FilterStep<S> implements Scoping, PathProcessor, ByModulating, TraversalParent {
+public final class WherePredicateStep<S> extends FilterStep<S> implements Scoping, PathProcessor, ByModulating, TraversalParent, AcceptsChildPredicateTraversal {
 
     protected String startKey;
     protected List<String> selectKeys;

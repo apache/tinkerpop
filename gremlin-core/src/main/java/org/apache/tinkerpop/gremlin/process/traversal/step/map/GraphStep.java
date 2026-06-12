@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.AcceptsChildPredicateTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
@@ -52,7 +53,7 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
  */
-public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphStepContract<S, E>, TraversalParent {
+public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphStepContract<S, E>, TraversalParent, AcceptsChildPredicateTraversal {
 
     protected Parameters parameters = new Parameters();
     protected final Class<E> returnClass;

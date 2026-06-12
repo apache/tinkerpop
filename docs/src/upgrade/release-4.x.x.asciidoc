@@ -54,8 +54,8 @@ Affected steps: `has()`, `hasLabel()`, `V()`, `E()`, `property()`, `is()`, `wher
 // Dynamic property comparison
 g.V().has("age", P.gt(__.V(1).values("age")))
 
-// Dynamic vertex lookup via select()
-g.V(1).id().as("x").V().has("name","josh").V(__.select("x")).values("name")
+// Dynamic vertex lookup: resolve the ids of marko's friends, then look them up by id
+g.V(1).V(__.out("knows").id()).values("name")
 
 // Multi-source filtering with within()
 g.V().has("name", P.within(__.V(1).out("knows").values("name").fold(), __.constant("peter")))
@@ -544,8 +544,8 @@ if (hasContainer.hasTraversal()) continue;  // skip — dynamic value, cannot fo
 ----
 
 `GraphStep.processHasContainerIds()` already includes this guard. Providers that implement their own `HasContainer`
-folding strategy should add the same check. Without it, `getValue()` and `getBiPredicate()` will throw
-`IllegalStateException` on traversal-bearing containers.
+folding strategy should add the same check. Without it, the container's value is read before it has been resolved
+against a traverser, so an unresolved value would be folded into the index lookup and produce incorrect results.
 
 ==== Graph Driver Providers
 

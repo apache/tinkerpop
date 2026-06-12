@@ -21,29 +21,26 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.AcceptsChildPredicateTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HasStep<S extends Element> extends FilterStep<S> implements HasContainerHolder<S, S>, Configuring, TraversalParent {
+public class HasStep<S extends Element> extends FilterStep<S> implements HasContainerHolder<S, S>, Configuring, TraversalParent, AcceptsChildPredicateTraversal {
 
     private final Parameters parameters = new Parameters();
     private List<HasContainer> hasContainers;
@@ -54,7 +51,7 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
         this.hasContainers = new ArrayList<>();
         for (final HasContainer hc : hasContainers) {
             this.hasContainers.add(hc);
-            extractAndIntegrateTraversals(hc);
+            collectChildTraversals(hc);
         }
     }
 
@@ -87,12 +84,13 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
     }
 
     /**
-     * Tests all HasContainers against an Element, handling traversal-bearing containers by evaluating
-     * child traversals against the current traverser.
+     * Tests all HasContainers against an Element. Traversal-bearing containers carry a {@code P} predicate
+     * (e.g. {@code P.eq(traversal)}) whose child traversal is resolved against the current traverser before
+     * the standard {@link HasContainer#test(Element)} is applied.
      */
     private boolean testAllWithTraversals(final Traverser.Admin<S> traverser, final Element element) {
         for (final HasContainer hc : this.hasContainers) {
-            if (!testHasContainer(traverser, hc, element)) {
+            if (!resolvePredicate(hc, traverser) || !hc.test(element)) {
                 return false;
             }
         }
@@ -100,151 +98,41 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
     }
 
     /**
-     * Tests all HasContainers against a Property, handling traversal-bearing containers by evaluating
-     * child traversals against the current traverser.
+     * Tests all HasContainers against a Property. See {@link #testAllWithTraversals(Traverser.Admin, Element)}.
      */
-    @SuppressWarnings("unchecked")
     private boolean testAllWithTraversals(final Traverser.Admin<S> traverser, final Property property) {
         for (final HasContainer hc : this.hasContainers) {
-            if (hc.hasTraversal()) {
-                if (hc.getTraversalValue() != null) {
-                    final Traversal.Admin<Object, Object> trav = (Traversal.Admin<Object, Object>) (Traversal.Admin) hc.getTraversalValue();
-                    final Traverser.Admin<Object> split = (Traverser.Admin<Object>) (Traverser.Admin) traverser.split();
-                    split.setSideEffects(trav.getSideEffects());
-                    split.setBulk(1L);
-                    trav.reset();
-                    trav.addStart(split);
-                    try {
-                        if (!trav.hasNext()) return false;
-                        final Object result = trav.next();
-                        final Object propertyValue = getPropertyValueFromProperty(property, hc.getKey());
-                        if (!P.eq(result).test(propertyValue)) return false;
-                    } finally {
-                        CloseableIterator.closeIterator(trav);
-                    }
-                } else if (hc.getPredicate() != null && hc.getPredicate().hasTraversal()) {
-                    hc.getPredicate().resolve(traverser);
-                    if (hc.getPredicate().isResolvedEmpty()) return false;
-                    if (!hc.test(property)) return false;
-                } else {
-                    if (!hc.test(property)) return false;
-                }
-            } else {
-                if (!hc.test(property)) return false;
+            if (!resolvePredicate(hc, traverser) || !hc.test(property)) {
+                return false;
             }
         }
         return true;
     }
 
     /**
-     * Tests a single HasContainer against an Element, resolving traversals if present.
+     * Resolves a container's predicate traversal (if any) against the current traverser, mutating the
+     * predicate with the resolved value for this test cycle.
+     *
+     * @return {@code false} if the predicate resolved empty (no comparison value), meaning the element
+     *         cannot match and the caller should short-circuit; {@code true} otherwise.
      */
-    @SuppressWarnings("unchecked")
-    private boolean testHasContainer(final Traverser.Admin<S> traverser, final HasContainer hc, final Element element) {
+    private boolean resolvePredicate(final HasContainer hc, final Traverser.Admin<S> traverser) {
         if (hc.hasTraversal()) {
-            if (hc.getTraversalValue() != null) {
-                // Direct traversal value: evaluate and use P.eq(first result) — takes first, ignores extras.
-                // Consistent with by(traversal) which also takes the first result silently.
-                final Traversal.Admin<Object, Object> trav = (Traversal.Admin<Object, Object>) (Traversal.Admin) hc.getTraversalValue();
-                final Traverser.Admin<Object> split = (Traverser.Admin<Object>) (Traverser.Admin) traverser.split();
-                split.setSideEffects(trav.getSideEffects());
-                split.setBulk(1L);
-                trav.reset();
-                trav.addStart(split);
-                try {
-                    if (!trav.hasNext()) return false;
-                    final Object result = trav.next();
-                    final Object propertyValue = getPropertyValue(element, hc.getKey());
-                    if (propertyValue == null) return false;
-                    return P.eq(result).test(propertyValue);
-                } finally {
-                    CloseableIterator.closeIterator(trav);
-                }
-            } else if (hc.getPredicate() != null && hc.getPredicate().hasTraversal()) {
-                // Predicate with embedded traversal: resolve then test normally
-                hc.getPredicate().resolve(traverser);
-                if (hc.getPredicate().isResolvedEmpty()) return false;
-                return hc.test(element);
-            }
+            hc.getPredicate().resolve(traverser);
+            return !hc.getPredicate().isResolvedEmpty();
         }
-        // No traversal: use existing test path
-        return hc.test(element);
+        return true;
     }
 
     /**
-     * Gets the property value from an Element for the given key, handling T.id and T.label accessors.
+     * Collects the child traversals embedded within a HasContainer's predicate (including
+     * {@link org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP}, which may carry traversals on
+     * child predicates) into {@link #childTraversals}. Parenting is deferred to
+     * {@link #setTraversal(Traversal.Admin)} which is the single integration point.
      */
-    private Object getPropertyValue(final Element element, final String key) {
-        if (key != null) {
-            if (key.equals(T.id.getAccessor())) {
-                return element.id();
-            }
-            if (key.equals(T.label.getAccessor())) {
-                return element.label();
-            }
-        }
-        final Iterator<? extends Property> itty = element.properties(key);
-        try {
-            if (itty.hasNext()) {
-                return itty.next().value();
-            }
-        } finally {
-            CloseableIterator.closeIterator(itty);
-        }
-        return null;
-    }
-
-    /**
-     * Gets the property value from a Property for the given key, handling T.value and T.key accessors.
-     */
-    private Object getPropertyValueFromProperty(final Property property, final String key) {
-        if (key != null) {
-            if (key.equals(T.value.getAccessor())) {
-                return property.value();
-            }
-            if (key.equals(T.key.getAccessor())) {
-                return property.key();
-            }
-        }
-        if (property instanceof Element) {
-            return getPropertyValue((Element) property, key);
-        }
-        return null;
-    }
-
-    /**
-     * Collects all results from a child traversal evaluated against the current traverser.
-     * Uses the same prepare + iterate pattern as {@link TraversalUtil#applyAll(Traverser.Admin, Traversal.Admin)}
-     * to avoid ambiguous overload resolution when S extends Element.
-     */
-    @SuppressWarnings("unchecked")
-    private List<Object> collectTraversalResults(final Traverser.Admin<S> traverser,
-                                                  final Traversal.Admin<?, ?> childTraversal) {
-        final List<Object> results = new ArrayList<>();
-        TraversalUtil.prepare(traverser, (Traversal.Admin) childTraversal);
-        while (childTraversal.hasNext()) {
-            results.add(childTraversal.next());
-        }
-        return results;
-    }
-
-    /**
-     * Extracts child traversals from a HasContainer and integrates them as children of this step.
-     * Handles direct traversal values on the container as well as traversals embedded within
-     * predicates (including ConnectiveP which may have traversals on child predicates).
-     */
-    private void extractAndIntegrateTraversals(final HasContainer hc) {
-        if (hc.getTraversalValue() != null) {
-            this.childTraversals.add(hc.getTraversalValue());
-            this.integrateChild(hc.getTraversalValue());
-        }
+    private void collectChildTraversals(final HasContainer hc) {
         if (hc.getPredicate() != null && hc.getPredicate().hasTraversal()) {
-            final List<Traversal.Admin<?, ?>> predicateTraversals = new ArrayList<>();
-            P.collectTraversals(hc.getPredicate(), predicateTraversals);
-            for (final Traversal.Admin<?, ?> t : predicateTraversals) {
-                this.childTraversals.add(t);
-                this.integrateChild(t);
-            }
+            P.collectTraversals(hc.getPredicate(), this.childTraversals);
         }
     }
 
@@ -266,7 +154,13 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
     @Override
     public void addHasContainer(final HasContainer hasContainer) {
         this.hasContainers.add(hasContainer);
-        extractAndIntegrateTraversals(hasContainer);
+        // A container may be added after this step has already been parented (e.g. by a strategy), so collect
+        // its child traversals and integrate just those new ones immediately.
+        final int before = this.childTraversals.size();
+        collectChildTraversals(hasContainer);
+        for (int i = before; i < this.childTraversals.size(); i++) {
+            this.integrateChild(this.childTraversals.get(i));
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -288,9 +182,6 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
         for (final HasContainer hasContainer : this.hasContainers) {
             final HasContainer clonedHc = hasContainer.clone();
             clone.hasContainers.add(clonedHc);
-            if (clonedHc.getTraversalValue() != null) {
-                clone.childTraversals.add(clonedHc.getTraversalValue());
-            }
             if (clonedHc.getPredicate() != null && clonedHc.getPredicate().hasTraversal()) {
                 P.collectTraversals(clonedHc.getPredicate(), clone.childTraversals);
             }

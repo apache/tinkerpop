@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.PBiPredicate;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
@@ -54,6 +55,25 @@ public final class AndP<V> extends ConnectiveP<V> {
     public P<V> negate() {
         super.negate();
         return new OrP<>(this.predicates);
+    }
+
+    /**
+     * Resolves child predicates with short-circuiting. Because a conjunction fails as soon as any child
+     * predicate cannot be satisfied, resolution stops at the first child that resolves empty (i.e. a scalar
+     * predicate whose child traversal produced no comparison value). This avoids evaluating the remaining
+     * child traversals, which may be expensive. Collection predicates (within/without) never resolve empty
+     * (they resolve to an empty collection), so they do not trigger the short-circuit.
+     */
+    @Override
+    public void resolve(final Traverser.Admin<?> traverser) {
+        // No super.resolve(): a connective predicate carries no child traversal of its own; only its
+        // operands do. Resolving each operand directly is sufficient (and enables the short-circuit below).
+        for (final P<V> p : this.predicates) {
+            if (p.hasTraversal()) {
+                p.resolve(traverser);
+                if (p.isResolvedEmpty()) return;
+            }
+        }
     }
 
     @Override

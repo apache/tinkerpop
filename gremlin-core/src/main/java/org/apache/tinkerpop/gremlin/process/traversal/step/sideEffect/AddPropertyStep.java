@@ -49,15 +49,34 @@ import java.util.Set;
  */
 public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implements AddPropertyStepContract<S> {
 
+    /**
+     * Internal placeholder key used for the single-argument {@code property(traversal)} (Map-producing) form,
+     * where the property keys are supplied by the traversal's resulting Map rather than by a caller-provided key.
+     * This value is never used for dispatch (see {@link #mapForm}); it exists only to give the parameter a
+     * stable, non-null key within {@link org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters}.
+     */
+    static final String MAP_VALUE_TRAVERSAL_KEY = "~traversalMap";
+
     private Parameters internalParameters = new Parameters();
     private Parameters withConfiguration = new Parameters();
     private final VertexProperty.Cardinality cardinality;
+    /**
+     * Marks the single-argument {@code property(traversal)} form whose child traversal must produce a Map of
+     * property key/value pairs. Dispatch is driven by this flag rather than by inspecting the property key, so a
+     * caller-supplied key that happens to collide with {@link #MAP_VALUE_TRAVERSAL_KEY} is handled normally.
+     */
+    private final boolean mapForm;
     private CallbackRegistry<Event.ElementPropertyChangedEvent> callbackRegistry;
 
     public AddPropertyStep(final Traversal.Admin traversal, final VertexProperty.Cardinality cardinality, final Object keyObject, final Object valueObject) {
+        this(traversal, cardinality, keyObject, valueObject, false);
+    }
+
+    public AddPropertyStep(final Traversal.Admin traversal, final VertexProperty.Cardinality cardinality, final Object keyObject, final Object valueObject, final boolean mapForm) {
         super(traversal);
         this.internalParameters.set(this, T.key, keyObject, T.value, valueObject);
         this.cardinality = cardinality;
+        this.mapForm = mapForm;
     }
 
     @Override
@@ -134,23 +153,24 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implem
         final Element element = traverser.get();
         final Object[] vertexPropertyKeyValues = this.internalParameters.getKeyValues(traverser, T.key, T.value);
 
-        // Map-producing form: property(traversal) where traversal produces a Map
-        if (results.size() == 1 && results.get(0) instanceof Map) {
-            final Map<?, ?> map = (Map<?, ?>) results.get(0);
-            for (final Map.Entry<?, ?> entry : map.entrySet()) {
-                if (!(entry.getKey() instanceof String)) {
-                    throw new IllegalArgumentException(
-                            "Property key must be a String but found " + entry.getKey().getClass().getSimpleName());
+        // Map-producing form: single-argument property(traversal) where the traversal produces a Map.
+        // Only the dedicated map form expands a Map into per-entry properties; for the key+traversal form a
+        // Map result is treated as an ordinary property value.
+        if (this.mapForm) {
+            if (results.size() == 1 && results.get(0) instanceof Map) {
+                final Map<?, ?> map = (Map<?, ?>) results.get(0);
+                for (final Map.Entry<?, ?> entry : map.entrySet()) {
+                    if (!(entry.getKey() instanceof String)) {
+                        throw new IllegalArgumentException(
+                                "Property key must be a String but found " + entry.getKey().getClass().getSimpleName());
+                    }
+                    final String mapKey = (String) entry.getKey();
+                    applyPropertyMutation(traverser, mapKey, entry.getValue(), vertexPropertyKeyValues);
                 }
-                final String mapKey = (String) entry.getKey();
-                applyPropertyMutation(traverser, mapKey, entry.getValue(), vertexPropertyKeyValues);
+                return;
             }
-            return;
-        }
 
-        // Runtime validation for property(traversal) — the Map-producing form uses sentinel key "~traversalMap".
-        // If the traversal did NOT produce a Map, reject it to prevent the sentinel key from leaking as a real property.
-        if ("~traversalMap".equals(key)) {
+            // The map form requires a Map result. Reject anything else rather than guessing.
             final Object result = results.get(0);
             throw new IllegalArgumentException(
                     "property(traversal) requires the traversal to produce a Map, but got: " +
@@ -282,7 +302,7 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implem
 
     @Override
     public int hashCode() {
-        final int hash = super.hashCode() ^ this.internalParameters.hashCode() ^ this.withConfiguration.hashCode();
+        int hash = super.hashCode() ^ this.internalParameters.hashCode() ^ this.withConfiguration.hashCode() ^ Boolean.hashCode(this.mapForm);
         return (null != this.cardinality) ? (hash ^ cardinality.hashCode()) : hash;
     }
 

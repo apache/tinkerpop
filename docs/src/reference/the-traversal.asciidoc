@@ -4050,16 +4050,18 @@ g.addV().property(set, null)
 
 The `property()` step also accepts a traversal that produces a `Map` of key-value pairs to set as properties. The
 child traversal must be read-only — mutating steps are rejected. If the traversal does not produce a `Map`, the result
-is rejected.
+is rejected. Each entry in the resulting Map becomes a separate property on the element, allowing multiple properties
+to be set in a single step.
 
 [gremlin-groovy,modern]
 ----
-g.V(2).property(__.V(2).project('friendCount').by(__.both('knows').count())) <1>
-g.V(2).valueMap()
+g.V(4).property(__.V(1).project('friendCount','createdSoftware').by(__.out('knows').count()).by(__.out('created').values('name'))) <1>
+g.V(4).valueMap('friendCount','createdSoftware')
 ----
 
-<1> Set properties on vertex 2 from a Map produced by a child traversal. Here the `project()` step creates a Map with
-key "friendCount" and a value computed from the graph.
+<1> Set two properties on vertex 4 (josh) from a Map produced by a child traversal. The `project()` step builds a Map
+with keys "friendCount" and "createdSoftware", whose values are computed from vertex 1's (marko's) relationships —
+number of friends and name of software created. Both properties are applied to vertex 4 in one operation.
 
 *Additional References*
 

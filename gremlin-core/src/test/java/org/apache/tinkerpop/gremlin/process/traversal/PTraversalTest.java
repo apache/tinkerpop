@@ -331,10 +331,12 @@ public class PTraversalTest {
         @SuppressWarnings("unchecked")
         @Test
         public void shouldHandleAllEmptyResults() {
-            // within(__.limit(0), __.limit(0)) where both produce nothing
+            // within(__.limit(0), __.limit(0)) where both produce nothing. A collection predicate resolves to
+            // an empty set rather than flagging resolved-empty, so within() simply matches nothing.
             final P<Object> p = P.within(__.limit(0).asAdmin(), __.limit(0).asAdmin());
             p.resolve(createTraverser("start"));
-            assertThat(p.isResolvedEmpty(), is(true));
+            assertThat(p.isResolvedEmpty(), is(false));
+            assertThat(p.test(1), is(false));
         }
 
         @SuppressWarnings("unchecked")
@@ -395,6 +397,139 @@ public class PTraversalTest {
             final java.util.List<Traversal.Admin<?, ?>> collected = new java.util.ArrayList<>();
             P.collectTraversals(p, collected);
             assertThat(collected.size(), is(3));
+        }
+    }
+
+    /**
+     * Covers the empty-result semantics of collection (within/without) versus scalar predicates and the
+     * behavior of connective predicates (AndP/OrP) and NotP when their operands carry child traversals.
+     * <p>
+     * Regression coverage for: within(empty) -> false, without(empty) -> true (collection predicates resolve
+     * to an empty collection rather than short-circuiting), scalar predicates remain resolved-empty, and the
+     * shared-state safety of resolving the same predicate across many traversers sequentially.
+     */
+    public static class EmptyResolutionAndConnectiveTest {
+
+        private Traverser.Admin<?> createTraverser(final Object value) {
+            return new B_O_Traverser<>(value, 1L);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldPassWithoutWhenTraversalResolvesEmpty() {
+            // without(empty set) -> nothing to exclude -> everything passes
+            final P<Object> p = P.without(__.<Object>limit(0).asAdmin());
+            p.resolve(createTraverser("anything"));
+            assertThat(p.isResolvedEmpty(), is(false));
+            assertThat(p.test("anything"), is(true));
+            assertThat(p.test(42), is(true));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldFailWithinWhenTraversalResolvesEmpty() {
+            // within(empty set) -> nothing matches -> everything fails
+            final P<Object> p = P.within(__.<Object>limit(0).asAdmin());
+            p.resolve(createTraverser("anything"));
+            assertThat(p.isResolvedEmpty(), is(false));
+            assertThat(p.test("anything"), is(false));
+            assertThat(p.test(42), is(false));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldPassWithoutWhenFoldedTraversalIsEmpty() {
+            // explicit empty collection via fold() of nothing
+            final P<Object> p = P.without(__.<Object>limit(0).fold().asAdmin());
+            p.resolve(createTraverser("anything"));
+            assertThat(p.test("anything"), is(true));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldFailWithinWhenMultiTraversalResolvesAllEmpty() {
+            final P<Object> p = P.within(__.<Object>limit(0).asAdmin(), __.<Object>limit(0).asAdmin());
+            p.resolve(createTraverser("anything"));
+            assertThat(p.isResolvedEmpty(), is(false));
+            assertThat(p.test(1), is(false));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldRemainResolvedEmptyForScalarPredicateWithEmptyTraversal() {
+            // eq(empty) has no comparison value -> resolved empty so the step can short-circuit
+            final P<Object> p = P.eq(__.<Object>limit(0).asAdmin());
+            p.resolve(createTraverser("anything"));
+            assertThat(p.isResolvedEmpty(), is(true));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldResolveAndPWithTraversalOperands() {
+            final P<Object> p = (P<Object>) (P) P.gt(__.constant(10).asAdmin()).and(P.lt(__.constant(20).asAdmin()));
+            p.resolve(createTraverser("start"));
+            assertThat(p.test(15), is(true));
+            assertThat(p.test(10), is(false));
+            assertThat(p.test(25), is(false));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldShortCircuitAndPResolveWhenScalarChildEmpty() {
+            // first child resolves empty (no comparison value); AndP cannot be satisfied
+            final P<Object> p = (P<Object>) (P) P.eq(__.<Object>limit(0).asAdmin()).and(P.gt(__.constant(5).asAdmin()));
+            p.resolve(createTraverser("start"));
+            assertThat(p.isResolvedEmpty(), is(true));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldResolveOrPWithTraversalOperands() {
+            final P<Object> p = (P<Object>) (P) P.eq(__.constant(1).asAdmin()).or(P.eq(__.constant(2).asAdmin()));
+            p.resolve(createTraverser("start"));
+            assertThat(p.test(1), is(true));
+            assertThat(p.test(2), is(true));
+            assertThat(p.test(3), is(false));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldReturnFalseForOrPWhenResolvedNonEmptyButNonMatching() {
+            // a non-empty within() resolution that simply does not contain the test value must still return false
+            final P<Object> p = (P<Object>) (P) P.within(__.inject(1, 2, 3).fold().asAdmin())
+                    .or(P.within(__.inject(4, 5, 6).fold().asAdmin()));
+            p.resolve(createTraverser("start"));
+            assertThat(p.test(2), is(true));
+            assertThat(p.test(5), is(true));
+            assertThat(p.test(9), is(false));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldResolveNotPWrappingTraversalPredicate() {
+            final P<Object> p = P.eq(__.constant(42).asAdmin()).negate();
+            p.resolve(createTraverser("start"));
+            assertThat(p.test(42), is(false));
+            assertThat(p.test(99), is(true));
+        }
+
+        @Test
+        public void shouldExposeWrappedPredicateFromNotP() {
+            final P<Object> inner = P.eq(__.constant(42).asAdmin());
+            final NotP<Object> notP = new NotP<>(inner);
+            assertThat(notP.getWrapped() == inner, is(true));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldProduceConsistentResultsAcrossManySequentialResolves() {
+            // resolve() mutates the predicate per traverser; verify repeated resolve+test cycles are stable
+            final P<Object> p = P.gt(__.constant(10).asAdmin());
+            for (int i = 0; i < 1000; i++) {
+                p.resolve(createTraverser("start" + i));
+                assertThat(p.test(11), is(true));
+                assertThat(p.test(5), is(false));
+            }
         }
     }
 }

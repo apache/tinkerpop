@@ -2720,7 +2720,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if (null == traversal) return has(propertyKey, (Object) null);
         ChildTraversalValidator.validate(traversal.asAdmin());
         this.asAdmin().getGremlinLang().addStep(Symbols.has, propertyKey, traversal);
-        final HasContainer hasContainer = new HasContainer(propertyKey, traversal.asAdmin());
+        final HasContainer hasContainer = new HasContainer(propertyKey, P.eq(traversal.asAdmin()));
         return this.asAdmin().addStep(new HasStep(this.asAdmin(), hasContainer));
     }
 
@@ -2742,7 +2742,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         ChildTraversalValidator.validate(traversal.asAdmin());
 
         this.asAdmin().getGremlinLang().addStep(Symbols.has, accessor, traversal);
-        final HasContainer hasContainer = new HasContainer(accessor.getAccessor(), traversal.asAdmin());
+        final HasContainer hasContainer = new HasContainer(accessor.getAccessor(), P.eq(traversal.asAdmin()));
         return this.asAdmin().addStep(new HasStep(this.asAdmin(), hasContainer));
     }
 
@@ -2795,7 +2795,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         ChildTraversalValidator.validate(traversal.asAdmin());
         this.asAdmin().getGremlinLang().addStep(Symbols.has, label, propertyKey, traversal);
         TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), P.eq(label)));
-        final HasContainer hasContainer = new HasContainer(propertyKey, traversal.asAdmin());
+        final HasContainer hasContainer = new HasContainer(propertyKey, P.eq(traversal.asAdmin()));
         return this.asAdmin().addStep(new HasStep(this.asAdmin(), hasContainer));
     }
 
@@ -2907,7 +2907,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if (null == traversal) return hasLabel((String) null);
         ChildTraversalValidator.validate(traversal.asAdmin());
         this.asAdmin().getGremlinLang().addStep(Symbols.hasLabel, traversal);
-        final HasContainer hasContainer = new HasContainer(T.label.getAccessor(), traversal.asAdmin());
+        final HasContainer hasContainer = new HasContainer(T.label.getAccessor(), P.eq(traversal.asAdmin()));
         return this.asAdmin().addStep(new HasStep(this.asAdmin(), hasContainer));
     }
 
@@ -3961,7 +3961,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if (null == mapTraversal) return this;
         ChildTraversalValidator.validate(mapTraversal.asAdmin());
         this.asAdmin().getGremlinLang().addStep(Symbols.property, mapTraversal);
-        this.asAdmin().addStep(new AddPropertyStepPlaceholder(this.asAdmin(), null, "~traversalMap", mapTraversal.asAdmin()));
+        this.asAdmin().addStep(new AddPropertyStepPlaceholder(this.asAdmin(), null, null, mapTraversal.asAdmin(), true));
         return this;
     }
 
