@@ -488,7 +488,7 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
         this.sb.push(')');
     }
 
-    // ─── Traversal method overrides — handleGenerics ─────────────────────────
+    // ─── Traversal method overrides - handleGenerics ─────────────────────────
 
     visitTraversalMethod_asString_Scope(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_branch(ctx: any): void { this.handleGenerics(ctx); }
@@ -560,7 +560,7 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
     visitTraversalMethod_valueMap_boolean_String(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_values(ctx: any): void { this.handleGenerics(ctx); }
 
-    // ─── Traversal method overrides — handleLongArguments ────────────────────
+    // ─── Traversal method overrides - handleLongArguments ────────────────────
 
     visitTraversalMethod_limit_long(ctx: any): void { this.handleLongArguments(ctx); }
     visitTraversalMethod_limit_Scope_long(ctx: any): void { this.handleLongArguments(ctx); }
@@ -833,6 +833,45 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
     }
 
     // ─── property ────────────────────────────────────────────────────────────
+
+    visitTraversalMethod_property_Object(ctx: any): void {
+        // Property(null) is ambiguous with Property(ITraversal) - cast null to IDictionary to disambiguate
+        if (ctx.genericMapNullableArgument().genericMapNullableLiteral() != null &&
+            ctx.genericMapNullableArgument().genericMapNullableLiteral().nullLiteral() != null) {
+            this.visit(ctx.getChild(0));
+            this.sb.push('(');
+            this.sb.push('(IDictionary<object, object>) ');
+            this.visit(ctx.genericMapNullableArgument());
+            this.sb.push(')');
+            return;
+        }
+        this.visitChildren(ctx);
+    }
+
+    visitTraversalMethod_property_Cardinality_Object(ctx: any): void {
+        // Property(Cardinality, null) - cast null to IDictionary to disambiguate
+        if (ctx.genericMapNullableArgument().genericMapNullableLiteral() != null &&
+            ctx.genericMapNullableArgument().genericMapNullableLiteral().nullLiteral() != null) {
+            this.visit(ctx.getChild(0));
+            this.sb.push('(');
+            this.visit(ctx.traversalCardinality());
+            this.sb.push(', ');
+            this.sb.push('(IDictionary<object, object>) ');
+            this.visit(ctx.genericMapNullableArgument());
+            this.sb.push(')');
+            return;
+        }
+        this.visitChildren(ctx);
+    }
+
+    visitTraversalMethod_property_Traversal(ctx: any): void {
+        // Property(ITraversal) - cast to ITraversal to disambiguate
+        this.visit(ctx.getChild(0));
+        this.sb.push('(');
+        this.sb.push('(ITraversal) ');
+        this.visit(ctx.nestedTraversal());
+        this.sb.push(')');
+    }
 
     visitTraversalMethod_property_Cardinality_Object_Object_Object(ctx: any): void {
         if (ctx.genericArgumentVarargs() == null || ctx.genericArgumentVarargs().getChildCount() === 0) {

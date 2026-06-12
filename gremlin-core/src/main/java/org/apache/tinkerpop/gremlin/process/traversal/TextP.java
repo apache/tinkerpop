@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ChildTraversalValidator;
 
 import java.util.Collection;
 import java.util.Map;
@@ -36,6 +37,16 @@ public class TextP extends P<String> {
 
     public TextP(final PBiPredicate<String, String> biPredicate, final GValue<String> value) {
         super(biPredicate, value);
+    }
+
+    /**
+     * Constructs a {@code TextP} with a child traversal whose result is resolved at runtime against the
+     * current traverser. The traversal must produce a {@code String} result.
+     *
+     * @since 4.0.0
+     */
+    public TextP(final PBiPredicate<String, String> biPredicate, final Traversal.Admin<?, ?> traversalValue) {
+        super(biPredicate, traversalValue);
     }
 
     protected TextP(final PBiPredicate<String, String> biPredicate, final Collection<String> literals, final Map<String, String> variables) {
@@ -77,6 +88,16 @@ public class TextP extends P<String> {
     }
 
     /**
+     * Determines if String does start with the value resolved from a child traversal at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static TextP startingWith(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
+        return new TextP(Text.startingWith, traversalValue.asAdmin());
+    }
+
+    /**
      * Determines if String does not start with the given value.
      *
      * @since 3.4.0
@@ -95,7 +116,17 @@ public class TextP extends P<String> {
     }
 
     /**
-     * Determines if String does start with the given value.
+     * Determines if String does not start with the value resolved from a child traversal at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static TextP notStartingWith(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
+        return new TextP(Text.notStartingWith, traversalValue.asAdmin());
+    }
+
+    /**
+     * Determines if String does end with the given value.
      *
      * @since 3.4.0
      */
@@ -104,7 +135,7 @@ public class TextP extends P<String> {
     }
 
     /**
-     * Determines if String does start with the given value.
+     * Determines if String does end with the given value.
      *
      * @since 3.8.0
      */
@@ -113,7 +144,17 @@ public class TextP extends P<String> {
     }
 
     /**
-     * Determines if String does not start with the given value.
+     * Determines if String does end with the value resolved from a child traversal at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static TextP endingWith(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
+        return new TextP(Text.endingWith, traversalValue.asAdmin());
+    }
+
+    /**
+     * Determines if String does not end with the given value.
      *
      * @since 3.4.0
      */
@@ -122,12 +163,22 @@ public class TextP extends P<String> {
     }
 
     /**
-     * Determines if String does not start with the given value.
+     * Determines if String does not end with the given value.
      *
      * @since 3.8.0
      */
     public static TextP notEndingWith(final GValue<String> value) {
         return new TextP(Text.notEndingWith, value);
+    }
+
+    /**
+     * Determines if String does not end with the value resolved from a child traversal at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static TextP notEndingWith(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
+        return new TextP(Text.notEndingWith, traversalValue.asAdmin());
     }
 
     /**
@@ -149,6 +200,16 @@ public class TextP extends P<String> {
     }
 
     /**
+     * Determines if String does contain the value resolved from a child traversal at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static TextP containing(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
+        return new TextP(Text.containing, traversalValue.asAdmin());
+    }
+
+    /**
      * Determines if String does not contain the given value.
      *
      * @since 3.4.0
@@ -164,6 +225,16 @@ public class TextP extends P<String> {
      */
     public static TextP notContaining(final GValue<String> value) {
         return new TextP(Text.notContaining, value);
+    }
+
+    /**
+     * Determines if String does not contain the value resolved from a child traversal at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static TextP notContaining(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validate(traversalValue.asAdmin());
+        return new TextP(Text.notContaining, traversalValue.asAdmin());
     }
     
     /**           

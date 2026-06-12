@@ -19,9 +19,14 @@
 package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import java.util.Map;
 
 /**
@@ -94,7 +99,14 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
      */
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_E(final GremlinParser.TraversalSourceSpawnMethod_EContext ctx) {
-        return this.traversalSource.E(antlr.argumentVisitor.parseObjectVarargs(ctx.genericArgumentVarargs()));
+        if (ctx.nestedTraversal() != null) {
+            return this.traversalSource.E((Traversal<?, ?>) anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
+        final Object[] args = antlr.argumentVisitor.parseObjectVarargs(ctx.genericArgumentVarargs());
+        if (args.length == 1 && args[0] instanceof Traversal) {
+            return this.traversalSource.E((Traversal<?, ?>) args[0]);
+        }
+        return this.traversalSource.E(args);
     }
 
     /**
@@ -102,7 +114,14 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
      */
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_V(final GremlinParser.TraversalSourceSpawnMethod_VContext ctx) {
-        return this.traversalSource.V(antlr.argumentVisitor.parseObjectVarargs(ctx.genericArgumentVarargs()));
+        if (ctx.nestedTraversal() != null) {
+            return this.traversalSource.V((Traversal<?, ?>) anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        }
+        final Object[] args = antlr.argumentVisitor.parseObjectVarargs(ctx.genericArgumentVarargs());
+        if (args.length == 1 && args[0] instanceof Traversal) {
+            return this.traversalSource.V((Traversal<?, ?>) args[0]);
+        }
+        return this.traversalSource.V(args);
     }
 
     /**

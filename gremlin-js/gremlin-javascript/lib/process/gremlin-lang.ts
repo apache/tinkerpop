@@ -58,7 +58,14 @@ export default class GremlinLang {
     
     let result = p.operator + '(';
     if (Array.isArray(p.value)) {
-      result += '[' + p.value.map(v => this._argAsString(v)).join(',') + ']';
+      // If all elements are traversals, serialize as comma-separated args (no brackets)
+      // This matches the server grammar: within(trav1, trav2) via genericArgumentVarargs
+      const allTraversals = p.value.length > 0 && p.value.every((v: any) => v != null && typeof v.getGremlinLang === 'function');
+      if (allTraversals) {
+        result += p.value.map((v: any) => this._argAsString(v)).join(',');
+      } else {
+        result += '[' + p.value.map((v: any) => this._argAsString(v)).join(',') + ']';
+      }
     } else {
       result += this._argAsString(p.value);
       if (p.other !== undefined && p.other !== null) {
@@ -99,7 +106,7 @@ export default class GremlinLang {
       if (arg === -Infinity) return '-Infinity';
       if (!Number.isInteger(arg)) return String(arg) + 'D';
       if (arg >= INT32_MIN && arg <= INT32_MAX) return String(arg);
-      // Outside safe integer range, values have lost precision and may exceed Java Long — emit as Double.
+      // Outside safe integer range, values have lost precision and may exceed Java Long - emit as Double.
       if (arg > Number.MAX_SAFE_INTEGER || arg < -Number.MAX_SAFE_INTEGER) return String(arg) + 'D';
       return String(arg) + 'L';
     }
