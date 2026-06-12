@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.*;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -35,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.keyed.KeyedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.keyed.KeyedVertexProperty;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -47,15 +49,34 @@ import java.util.Set;
  */
 public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implements AddPropertyStepContract<S> {
 
+    /**
+     * Internal placeholder key used for the single-argument {@code property(traversal)} (Map-producing) form,
+     * where the property keys are supplied by the traversal's resulting Map rather than by a caller-provided key.
+     * This value is never used for dispatch (see {@link #mapForm}); it exists only to give the parameter a
+     * stable, non-null key within {@link org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters}.
+     */
+    static final String MAP_VALUE_TRAVERSAL_KEY = "~traversalMap";
+
     private Parameters internalParameters = new Parameters();
     private Parameters withConfiguration = new Parameters();
     private final VertexProperty.Cardinality cardinality;
+    /**
+     * Marks the single-argument {@code property(traversal)} form whose child traversal must produce a Map of
+     * property key/value pairs. Dispatch is driven by this flag rather than by inspecting the property key, so a
+     * caller-supplied key that happens to collide with {@link #MAP_VALUE_TRAVERSAL_KEY} is handled normally.
+     */
+    private final boolean mapForm;
     private CallbackRegistry<Event.ElementPropertyChangedEvent> callbackRegistry;
 
     public AddPropertyStep(final Traversal.Admin traversal, final VertexProperty.Cardinality cardinality, final Object keyObject, final Object valueObject) {
+        this(traversal, cardinality, keyObject, valueObject, false);
+    }
+
+    public AddPropertyStep(final Traversal.Admin traversal, final VertexProperty.Cardinality cardinality, final Object keyObject, final Object valueObject, final boolean mapForm) {
         super(traversal);
         this.internalParameters.set(this, T.key, keyObject, T.value, valueObject);
         this.cardinality = cardinality;
+        this.mapForm = mapForm;
     }
 
     @Override
@@ -89,11 +110,109 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implem
             throw new IllegalStateException(String.format("T.%s is immutable on existing elements", ((T) k).name()));
 
         final String key = (String) k;
-        final Object value = this.internalParameters.get(traverser, T.value, () -> {
-            throw new IllegalStateException("The AddPropertyStep does not have a provided value: " + this);
-        }).get(0);
+
+        // Check if the raw value is a traversal to enable multi-result handling.
+        // Exclude ConstantTraversal which is used internally by TinkerPop to wrap literal values.
+        final List<Object> rawValues = this.internalParameters.get(T.value, null);
+        final boolean valueIsTraversal = !rawValues.isEmpty()
+                && rawValues.get(0) instanceof Traversal.Admin
+                && !(rawValues.get(0) instanceof ConstantTraversal);
+
+        if (valueIsTraversal) {
+            handleTraversalValue(traverser, key);
+        } else {
+            final Object value = this.internalParameters.get(traverser, T.value, () -> {
+                throw new IllegalStateException("The AddPropertyStep does not have a provided value: " + this);
+            }).get(0);
+            final Object[] vertexPropertyKeyValues = this.internalParameters.getKeyValues(traverser, T.key, T.value);
+            applyPropertyMutation(traverser, key, value, vertexPropertyKeyValues);
+        }
+    }
+
+    /**
+     * Handles the case where the value argument is a child traversal, supporting multi-result
+     * resolution, Map-producing traversals, and cardinality-aware property setting.
+     */
+    private void handleTraversalValue(final Traverser.Admin<S> traverser, final String key) {
+        final List<Object> rawValues = this.internalParameters.get(T.value, null);
+        final Traversal.Admin<?, ?> valueTraversal = (Traversal.Admin<?, ?>) rawValues.get(0);
+
+        // Collect all results from the child traversal
+        final List<Object> results = new ArrayList<>();
+        final Traverser.Admin<S> trav = traverser;
+        final Iterator<?> itty = TraversalUtil.<S, Object>applyAll(trav, (Traversal.Admin<S, Object>) (Traversal.Admin) valueTraversal);
+        while (itty.hasNext()) {
+            results.add(itty.next());
+        }
+
+        // No-result case: skip mutation, pass element through unchanged
+        if (results.isEmpty()) {
+            return;
+        }
+
+        final Element element = traverser.get();
         final Object[] vertexPropertyKeyValues = this.internalParameters.getKeyValues(traverser, T.key, T.value);
 
+        // Map-producing form: single-argument property(traversal) where the traversal produces a Map.
+        // Only the dedicated map form expands a Map into per-entry properties; for the key+traversal form a
+        // Map result is treated as an ordinary property value.
+        if (this.mapForm) {
+            if (results.size() == 1 && results.get(0) instanceof Map) {
+                final Map<?, ?> map = (Map<?, ?>) results.get(0);
+                for (final Map.Entry<?, ?> entry : map.entrySet()) {
+                    if (!(entry.getKey() instanceof String)) {
+                        throw new IllegalArgumentException(
+                                "Property key must be a String but found " + entry.getKey().getClass().getSimpleName());
+                    }
+                    final String mapKey = (String) entry.getKey();
+                    applyPropertyMutation(traverser, mapKey, entry.getValue(), vertexPropertyKeyValues);
+                }
+                return;
+            }
+
+            // The map form requires a Map result. Reject anything else rather than guessing.
+            final Object result = results.get(0);
+            throw new IllegalArgumentException(
+                    "property(traversal) requires the traversal to produce a Map, but got: " +
+                    (result == null ? "null" : result.getClass().getSimpleName()));
+        }
+
+        // Multi-result handling with cardinality awareness
+        if (results.size() > 1) {
+            // Determine effective cardinality
+            final VertexProperty.Cardinality effectiveCard = this.cardinality != null
+                    ? this.cardinality
+                    : (element instanceof Vertex ? element.graph().features().vertex().getCardinality(key) : null);
+
+            if (effectiveCard == VertexProperty.Cardinality.single) {
+                throw new IllegalArgumentException(
+                        "Single-cardinality property requires exactly one value, but traversal produced " +
+                                results.size() + " results");
+            }
+
+            // For list/set cardinality with multiple results, add each as a separate property value
+            if (effectiveCard == VertexProperty.Cardinality.list || effectiveCard == VertexProperty.Cardinality.set) {
+                if (!(element instanceof Vertex)) {
+                    throw new IllegalStateException(String.format(
+                            "Property cardinality can only be set for a Vertex but the traversal encountered %s for key: %s",
+                            element.getClass().getSimpleName(), key));
+                }
+                for (final Object v : results) {
+                    applyPropertyMutation(traverser, key, v, vertexPropertyKeyValues);
+                }
+                return;
+            }
+        }
+
+        // Single result or default cardinality: use the first result
+        applyPropertyMutation(traverser, key, results.get(0), vertexPropertyKeyValues);
+    }
+
+    /**
+     * Applies a single property mutation to the element, handling eventing and cardinality.
+     */
+    private void applyPropertyMutation(final Traverser.Admin<S> traverser, final String key,
+                                       final Object value, final Object[] vertexPropertyKeyValues) {
         final Element element = traverser.get();
 
         // can't set cardinality if the element is something other than a vertex as only vertices can have
@@ -116,7 +235,7 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implem
 
         final VertexProperty.Cardinality card = this.cardinality != null
                 ? this.cardinality
-                : element.graph().features().vertex().getCardinality(key);
+                : (element instanceof Vertex ? element.graph().features().vertex().getCardinality(key) : null);
 
         // update property
         if (element instanceof Vertex) {
@@ -183,7 +302,7 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implem
 
     @Override
     public int hashCode() {
-        final int hash = super.hashCode() ^ this.internalParameters.hashCode() ^ this.withConfiguration.hashCode();
+        int hash = super.hashCode() ^ this.internalParameters.hashCode() ^ this.withConfiguration.hashCode() ^ Boolean.hashCode(this.mapForm);
         return (null != this.cardinality) ? (hash ^ cardinality.hashCode()) : hash;
     }
 

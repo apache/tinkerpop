@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.AcceptsChildPredicateTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
@@ -33,7 +34,8 @@ import java.util.HashSet;
 import java.util.List;
 
 public interface AddPropertyStepContract<S> extends Step<S, S>, TraversalParent, Scoping, PropertiesHolder,
-        Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent>, Configuring {
+        Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent>, Configuring,
+        AcceptsChildPredicateTraversal {
 
     /**
      * Concrete implementations of this contract that can be referenced as TinkerPop implementations.

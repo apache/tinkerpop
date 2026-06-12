@@ -143,10 +143,24 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#V(Traversal)
+     */
+    public static <A> GraphTraversal<A, Vertex> V(final Traversal<?, ?> traversal) {
+        return __.<A>start().V(traversal);
+    }
+
+    /**
      * @see GraphTraversal#E(Object...)
      */
     public static <A> GraphTraversal<A, Edge> E(final Object... edgeIdsOrElements) {
         return __.<A>start().E(edgeIdsOrElements);
+    }
+
+    /**
+     * @see GraphTraversal#E(Traversal)
+     */
+    public static <A> GraphTraversal<A, Edge> E(final Traversal<?, ?> traversal) {
+        return __.<A>start().E(traversal);
     }
 
     /**
@@ -1111,6 +1125,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#has(String, Traversal)
+     */
+    public static <A> GraphTraversal<A, A> has(final String propertyKey, final Traversal<?, ?> traversal) {
+        return __.<A>start().has(propertyKey, traversal);
+    }
+
+    /**
      * @see GraphTraversal#has(T, P)
      */
     public static <A> GraphTraversal<A, A> has(final T accessor, final P<?> predicate) {
@@ -1129,6 +1150,13 @@ public class __ {
      */
     public static <A> GraphTraversal<A, A> has(final T accessor, final Object value) {
         return __.<A>start().has(accessor, value);
+    }
+
+    /**
+     * @see GraphTraversal#has(T, Traversal)
+     */
+    public static <A> GraphTraversal<A, A> has(final T accessor, final Traversal<?, ?> traversal) {
+        return __.<A>start().has(accessor, traversal);
     }
 
     /**
@@ -1158,6 +1186,13 @@ public class __ {
      */
     public static <A> GraphTraversal<A, A> has(final String label, final String propertyKey, final P<?> predicate) {
         return __.<A>start().has(label, propertyKey, predicate);
+    }
+
+    /**
+     * @see GraphTraversal#has(String, String, Traversal)
+     */
+    public static <A> GraphTraversal<A, A> has(final String label, final String propertyKey, final Traversal<?, ?> traversal) {
+        return __.<A>start().has(label, propertyKey, traversal);
     }
 
     /**
@@ -1193,6 +1228,13 @@ public class __ {
      */
     public static <A> GraphTraversal<A, A> hasLabel(final P<String> predicate) {
         return __.<A>start().hasLabel(predicate);
+    }
+
+    /**
+     * @see GraphTraversal#hasLabel(Traversal)
+     */
+    public static <A> GraphTraversal<A, A> hasLabel(final Traversal<?, ?> traversal) {
+        return __.<A>start().hasLabel(traversal);
     }
 
     /**
@@ -1574,6 +1616,13 @@ public class __ {
      */
     public static <A> GraphTraversal<A, A> property(final Map<Object, Object> value) {
         return __.<A>start().property(value);
+    }
+
+    /**
+     * @see GraphTraversal#property(Traversal)
+     */
+    public static <A> GraphTraversal<A, A> property(final Traversal<?, ?> mapTraversal) {
+        return __.<A>start().property(mapTraversal);
     }
 
     ///////////////////// BRANCH STEPS /////////////////////

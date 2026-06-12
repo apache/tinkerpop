@@ -110,7 +110,7 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
     public HasContainer clone() {
         try {
             final HasContainer clone = (HasContainer) super.clone();
-            clone.predicate = this.predicate.clone();
+            clone.predicate = this.predicate != null ? this.predicate.clone() : null;
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -140,6 +140,14 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
 
     public final Object getValue() {
         return this.predicate.getValue();
+    }
+
+    /**
+     * Determines if this {@code HasContainer}'s predicate holds a child traversal whose result is resolved
+     * at runtime (e.g. {@code P.eq(traversal)} or {@code P.within(traversal)}).
+     */
+    public boolean hasTraversal() {
+        return this.predicate != null && this.predicate.hasTraversal();
     }
 
     ////////////
