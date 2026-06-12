@@ -165,12 +165,24 @@ public class UnmanagedTransaction {
             }
         }
 
-        // prevent any additional requests from processing. if the kill was not "forced" then jobs were scheduled to
-        // try to rollback open transactions. those jobs either timed-out or completed successfully. either way, no
-        // additional jobs will be allowed, running jobs will be cancelled (if possible) and any scheduled jobs will
-        // be cancelled
-        executor.shutdownNow();
+        // ORDERING IS LOAD-BEARING: manager.destroy(transactionId) MUST happen before executor.shutdown().
+        //
+        // We use a graceful shutdown() rather than shutdownNow(). A sibling request for this transaction may already
+        // be queued behind the commit/rollback that triggered this close (single-threaded executor). shutdownNow()
+        // would drain and silently discard those queued tasks, leaving their HTTP clients with no response (a hang) -
+        // this was observed as an intermittent CI hang. shutdown() instead lets each queued task run to completion
+        // (so every request gets a response) while still terminating the worker thread once the queue drains, so the
+        // transaction thread is not leaked. shutdown() also avoids the self-interrupt shutdownNow() caused when close()
+        // runs on the tx thread itself (commit/rollback), which could corrupt the in-flight response write.
+        //
+        // Because those queued tasks now actually RUN, correctness depends on them NOT mutating a committed/rolled-back
+        // transaction. Removing the transaction from the manager FIRST guarantees that: when a queued sibling task
+        // runs, its pre-evaluation guard (transactionManager.get(txId)) finds nothing and fails fast with a 404
+        // (transaction not found) before reaching evaluation. If the destroy were moved after shutdown(), a queued
+        // task (e.g. an addV submitted after a commit) could execute against the transaction and leak data. Do not
+        // reorder these two statements.
         manager.destroy(transactionId);
+        executor.shutdown();
         Optional.ofNullable(timeoutFuture.get()).ifPresent(f -> f.cancel(true));
         logger.debug("Transaction {} closed", transactionId);
     }
