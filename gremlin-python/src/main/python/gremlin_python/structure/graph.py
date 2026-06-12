@@ -141,3 +141,127 @@ class Path(object):
 
     def __len__(self):
         return len(self.objects)
+
+
+class ProviderDefinedType(object):
+    def __init__(self, name, fields):
+        if not name:
+            raise ValueError("name cannot be null or empty")
+        self._name = name
+        self._fields = dict(fields) if fields else {}
+        if any(not isinstance(k, str) for k in self._fields):
+            raise TypeError("ProviderDefinedType field keys must be strings")
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def fields(self):
+        return self._fields
+
+    def __eq__(self, other):
+        return isinstance(other, ProviderDefinedType) and self._name == other._name and self._fields == other._fields
+
+    def __hash__(self):
+        try:
+            return hash((self._name, frozenset(self._fields.items())))
+        except TypeError:
+            return hash(self._name)
+
+    def __repr__(self):
+        return f"pdt[{self._name}]{self._fields}"
+
+
+class ProviderDefinedTypeRegistry(object):
+    def __init__(self):
+        self._adapters_by_name = {}
+        self._adapters_by_class = {}
+
+    def register(self, type_name, deserialize_fn, serialize_fn=None, target_class=None):
+        self._adapters_by_name[type_name] = {
+            'deserialize': deserialize_fn,
+            'serialize': serialize_fn,
+            'target_class': target_class
+        }
+        if target_class is not None:
+            self._adapters_by_class[target_class] = {
+                'type_name': type_name,
+                'serialize': serialize_fn,
+            }
+
+    @classmethod
+    def create(cls):
+        """Create a registry populated by entry_points discovery.
+
+        Providers register adapters via pyproject.toml:
+            [project.entry-points."tinkerpop.pdt"]
+            my_types = "my_package:register_pdt_types"
+
+        Each entry point should be a callable that accepts a registry and registers adapters.
+        """
+        import sys
+        registry = cls()
+        if sys.version_info >= (3, 10):
+            from importlib.metadata import entry_points
+            eps = entry_points(group='tinkerpop.pdt')
+        else:
+            from importlib.metadata import entry_points
+            all_eps = entry_points()
+            eps = all_eps.get('tinkerpop.pdt', [])
+
+        for ep in eps:
+            try:
+                factory = ep.load()
+                factory(registry)
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).warning(
+                    f"Failed to load PDT adapter from entry point '{ep.name}': {e}")
+        return registry
+
+    def hydrate(self, pdt):
+        """Attempt to hydrate a ProviderDefinedType. Returns typed object or raw PDT."""
+        if not isinstance(pdt, ProviderDefinedType):
+            return pdt
+
+        # Always recurse into fields to hydrate nested registered PDTs.
+        changed = False
+        hydrated_fields = {}
+        for k, v in pdt.fields.items():
+            if isinstance(v, ProviderDefinedType):
+                h = self.hydrate(v)
+                if h is not v:
+                    changed = True
+                hydrated_fields[k] = h
+            else:
+                hydrated_fields[k] = v
+
+        adapter = self._adapters_by_name.get(pdt.name)
+        if adapter is None:
+            return ProviderDefinedType(pdt.name, hydrated_fields) if changed else pdt
+        try:
+            return adapter['deserialize'](hydrated_fields)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"PDT hydration failed for '{pdt.name}': {e}")
+            return pdt
+
+    def get_adapter_by_class(self, cls):
+        """Return (type_name, serialize_fn) tuple for the given class, or None."""
+        return self._adapters_by_class.get(cls)
+
+
+# Module-level registry of @provider_defined decorated classes keyed by PDT name.
+_pdt_decorated_types = {}
+
+
+def provider_defined(name=None, included_fields=None, excluded_fields=None):
+    """Decorator that marks a class as a Provider Defined Type."""
+    def decorator(cls):
+        cls._pdt_name = name or cls.__name__
+        cls._pdt_included_fields = included_fields
+        cls._pdt_excluded_fields = excluded_fields
+        _pdt_decorated_types[cls._pdt_name] = cls
+        return cls
+    return decorator

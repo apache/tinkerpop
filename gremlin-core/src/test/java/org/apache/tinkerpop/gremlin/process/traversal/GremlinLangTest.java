@@ -28,6 +28,10 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
@@ -140,6 +144,19 @@ public class GremlinLangTest {
                 {g.inject(new byte[]{1, 2, 3}), "g.inject(Binary(\"AQID\"))"},
                 {g.inject(new byte[]{}), "g.inject(Binary(\"\"))"},
                 {g.inject(new byte[]{0}), "g.inject(Binary(\"AA==\"))"},
+                // PDT
+                {g.inject(new ProviderDefinedType("MyType", asMap("x", 1, "y", "hello"))),
+                        "g.inject(PDT(\"MyType\",[\"x\":1,\"y\":\"hello\"]))"},
+                {g.inject(new ProviderDefinedType("Empty", Collections.emptyMap())),
+                        "g.inject(PDT(\"Empty\",[:]))"},
+                // PDT with special characters in name
+                {g.inject(new ProviderDefinedType("say\"hello\"", asMap("v", 1))),
+                        "g.inject(PDT(\"say\\\"hello\\\"\",[\"v\":1]))"},
+                {g.inject(new ProviderDefinedType("back\\slash", asMap("v", 1))),
+                        "g.inject(PDT(\"back\\\\slash\",[\"v\":1]))"},
+                // Nested PDT
+                {g.inject(new ProviderDefinedType("Outer", asMap("inner", new ProviderDefinedType("Inner", asMap("v", 1))))),
+                        "g.inject(PDT(\"Outer\",[\"inner\":PDT(\"Inner\",[\"v\":1])]))"},
         });
     }
 
@@ -433,6 +450,80 @@ public class GremlinLangTest {
             final Map<String, Object> params = new HashMap<>();
             params.put("caf\u00e9", 1);
             assertEquals("[\"caf\\u00E9\":1]", GremlinLang.convertParametersToString(params));
+        }
+    }
+
+    public static class AdapterPrecedenceTests {
+
+        /**
+         * A type annotated with @ProviderDefined that also has an explicit adapter registered.
+         * The adapter should take precedence over the annotation.
+         */
+        @ProviderDefined(name = "AnnotationName")
+        private static class DualType {
+            public int value = 42;
+
+            private DualType() {}
+            DualType(final int value) { this.value = value; }
+        }
+
+        @Test
+        public void shouldUseAdapterOverAnnotation() {
+            final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+            registry.register(new ProviderDefinedTypeAdapter<DualType>() {
+                @Override public String typeName() { return "AdapterName"; }
+                @Override public Class<DualType> targetClass() { return DualType.class; }
+                @Override public Map<String, Object> toFields(final DualType obj) {
+                    return Collections.singletonMap("v", obj.value);
+                }
+                @Override public DualType fromFields(final Map<String, Object> fields) {
+                    return new DualType((int) fields.get("v"));
+                }
+            });
+
+            final GraphTraversalSource g2 = traversal().with(EmptyGraph.instance());
+            g2.getGremlinLang().setPdtRegistry(registry);
+            final String gremlin = g2.inject(new DualType(7)).asAdmin().getGremlinLang().getGremlin();
+
+            // adapter produces "AdapterName" with key "v", not annotation's "AnnotationName" with key "value"
+            assertTrue(gremlin, gremlin.contains("PDT(\"AdapterName\""));
+            assertTrue(gremlin, gremlin.contains("\"v\":7"));
+            assertFalse(gremlin, gremlin.contains("AnnotationName"));
+        }
+
+        private static class TestPoint {
+            final int x;
+            final int y;
+            TestPoint(int x, int y) { this.x = x; this.y = y; }
+        }
+
+        @Test
+        public void shouldDehydrateRegisteredTypeNestedInsideUnregisteredOuterPdt() {
+            final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+            registry.register(new ProviderDefinedTypeAdapter<TestPoint>() {
+                @Override public String typeName() { return "Point"; }
+                @Override public Class<TestPoint> targetClass() { return TestPoint.class; }
+                @Override public Map<String, Object> toFields(final TestPoint obj) {
+                    final Map<String, Object> m = new HashMap<>();
+                    m.put("x", obj.x);
+                    m.put("y", obj.y);
+                    return m;
+                }
+                @Override public TestPoint fromFields(final Map<String, Object> fields) {
+                    return new TestPoint((int) fields.get("x"), (int) fields.get("y"));
+                }
+            });
+
+            // Outer is a raw ProviderDefinedType whose "location" field value is a registered domain object
+            final Map<String, Object> outerFields = new LinkedHashMap<>();
+            outerFields.put("location", new TestPoint(3, 7));
+            final ProviderDefinedType outerPdt = new ProviderDefinedType("Container", outerFields);
+
+            final GraphTraversalSource g2 = traversal().with(EmptyGraph.instance());
+            g2.getGremlinLang().setPdtRegistry(registry);
+            final String gremlin = g2.inject(outerPdt).asAdmin().getGremlinLang().getGremlin();
+
+            assertEquals("g.inject(PDT(\"Container\",[\"location\":PDT(\"Point\",[\"x\":3,\"y\":7])]))", gremlin);
         }
     }
 

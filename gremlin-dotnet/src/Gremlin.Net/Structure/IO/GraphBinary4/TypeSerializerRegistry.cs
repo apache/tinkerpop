@@ -65,6 +65,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
                 {typeof(char), new CharSerializer()},
                 {typeof(TimeSpan), new DurationSerializer()},
                 {typeof(Marker), SingleTypeSerializers.MarkerSerializer},
+                {typeof(ProviderDefinedType), new CompositePDTSerializer()},
             };
 
         private readonly Dictionary<DataType, ITypeSerializer> _serializerByDataType =
@@ -98,6 +99,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
                 {DataType.Char, new CharSerializer()},
                 {DataType.Duration, new DurationSerializer()},
                 {DataType.Marker, SingleTypeSerializers.MarkerSerializer},
+                {DataType.CompositePDT, new CompositePDTSerializer()},
             };
 
         /// <summary>

@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
+using Gremlin.Net.Structure;
 using Gremlin.Net.Structure.IO.GraphBinary4;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -65,14 +66,25 @@ namespace Gremlin.Net.Driver
         ///     <see cref="HttpRequestContext" /> and can modify headers, body, URI, and method
         ///     before the request is sent.
         /// </param>
+        /// <param name="pdtRegistry">
+        ///     An optional <see cref="ProviderDefinedTypeRegistry"/> for automatic hydration of
+        ///     provider-defined types.
+        /// </param>
         public GremlinClient(GremlinServer gremlinServer, IMessageSerializer? requestSerializer,
             IMessageSerializer responseSerializer,
             ConnectionSettings? connectionSettings = null,
             ILoggerFactory? loggerFactory = null,
-            IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null)
+            IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null,
+            ProviderDefinedTypeRegistry? pdtRegistry = null)
         {
             connectionSettings ??= new ConnectionSettings();
             LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+
+            if (pdtRegistry != null)
+            {
+                requestSerializer?.SetPdtRegistry(pdtRegistry);
+                responseSerializer.SetPdtRegistry(pdtRegistry);
+            }
 
             _connection = new Connection(
                 gremlinServer.Uri,
@@ -100,14 +112,19 @@ namespace Gremlin.Net.Driver
         /// <param name="interceptors">
         ///     An optional list of request interceptors.
         /// </param>
+        /// <param name="pdtRegistry">
+        ///     An optional <see cref="ProviderDefinedTypeRegistry"/> for automatic hydration of
+        ///     provider-defined types.
+        /// </param>
         public GremlinClient(GremlinServer gremlinServer, IMessageSerializer? messageSerializer = null,
             ConnectionSettings? connectionSettings = null,
             ILoggerFactory? loggerFactory = null,
-            IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null)
+            IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null,
+            ProviderDefinedTypeRegistry? pdtRegistry = null)
             : this(gremlinServer,
                   messageSerializer ?? new GraphBinary4MessageSerializer(),
                   messageSerializer ?? new GraphBinary4MessageSerializer(),
-                  connectionSettings, loggerFactory, interceptors)
+                  connectionSettings, loggerFactory, interceptors, pdtRegistry)
         {
         }
 

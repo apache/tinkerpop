@@ -57,10 +57,11 @@ import (
 // The bufio.Reader wrapper provides efficient buffering without affecting the
 // streaming semantics - it simply reduces the number of underlying read syscalls.
 type GraphBinaryDeserializer struct {
-	r      *bufio.Reader
-	buf    [8]byte
-	err    error // sticky error
-	bulked bool  // whether the response stream uses bulked encoding
+	r           *bufio.Reader
+	buf         [8]byte
+	err         error        // sticky error
+	bulked      bool         // whether the response stream uses bulked encoding
+	pdtRegistry *PDTRegistry // optional: auto-hydrates ProviderDefinedType results
 }
 
 // GraphBinary flag for bulked list/set
@@ -70,6 +71,12 @@ const flagBulked = 0x02
 // The reader is wrapped in a buffered reader for efficient reading.
 func NewGraphBinaryDeserializer(r io.Reader) *GraphBinaryDeserializer {
 	return &GraphBinaryDeserializer{r: bufio.NewReaderSize(r, 8192)}
+}
+
+// NewGraphBinaryDeserializerWithRegistry creates a new GraphBinaryDeserializer with a PDTRegistry
+// for automatic hydration of ProviderDefinedType values.
+func NewGraphBinaryDeserializerWithRegistry(r io.Reader, registry *PDTRegistry) *GraphBinaryDeserializer {
+	return &GraphBinaryDeserializer{r: bufio.NewReaderSize(r, 8192), pdtRegistry: registry}
 }
 
 func (d *GraphBinaryDeserializer) readByte() (byte, error) {
@@ -269,6 +276,8 @@ func (d *GraphBinaryDeserializer) readValue(dt dataType, flag byte) (interface{}
 		return d.readByteBuffer()
 	case tType, directionType, mergeType, gTypeType:
 		return d.readEnum(dt)
+	case compositePDTType:
+		return d.readCompositePDT()
 	default:
 		return nil, newError(err0408GetSerializerToReadUnknownTypeError, dt)
 	}
@@ -798,6 +807,40 @@ func (d *GraphBinaryDeserializer) readEnum(dt dataType) (interface{}, error) {
 	default:
 		return s, nil
 	}
+}
+
+func (d *GraphBinaryDeserializer) readCompositePDT() (interface{}, error) {
+	nameObj, err := d.ReadFullyQualified()
+	if err != nil {
+		return nil, err
+	}
+	name, ok := nameObj.(string)
+	if !ok || name == "" {
+		return nil, fmt.Errorf("ProviderDefinedType name must be a non-empty string")
+	}
+	fieldsObj, err := d.ReadFullyQualified()
+	if err != nil {
+		return nil, err
+	}
+	var fields map[string]interface{}
+	if fieldsObj != nil {
+		raw, ok := fieldsObj.(map[interface{}]interface{})
+		if !ok {
+			return nil, fmt.Errorf("ProviderDefinedType fields must be a map")
+		}
+		fields = make(map[string]interface{}, len(raw))
+		for k, v := range raw {
+			fields[fmt.Sprint(k)] = v
+		}
+	}
+	pdt := &ProviderDefinedType{Name: name, Fields: fields}
+	if d.pdtRegistry != nil {
+		hydrated := d.pdtRegistry.Hydrate(pdt)
+		if hydrated != pdt {
+			return hydrated, nil
+		}
+	}
+	return pdt, nil
 }
 
 // ReadStatus reads the response status after the EndOfStream marker.

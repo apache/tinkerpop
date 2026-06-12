@@ -23,7 +23,8 @@
 
 import assert from 'assert';
 import { AssertionError } from 'assert';
-import {Edge, Vertex, VertexProperty} from '../../lib/structure/graph.js';
+import {Edge, Vertex, VertexProperty, ProviderDefinedType} from '../../lib/structure/graph.js';
+import { ProviderDefinedTypeRegistry } from '../../lib/structure/ProviderDefinedTypeRegistry.js';
 import anon from '../../lib/process/anonymous-traversal.js';
 import { GraphTraversalSource, GraphTraversal, statics } from '../../lib/process/graph-traversal.js';
 import {
@@ -31,6 +32,7 @@ import {
   OptionsStrategy, ReservedKeysVerificationStrategy, EdgeLabelVerificationStrategy, MatchAlgorithmStrategy
 } from '../../lib/process/traversal-strategy.js';
 import GremlinLang from '../../lib/process/gremlin-lang.js';
+import DriverRemoteConnection from '../../lib/driver/driver-remote-connection.js';
 import { getConnection, getDriverRemoteConnection } from '../helper.js';
 const __ = statics;
 
@@ -328,3 +330,77 @@ describe('Traversal', function () {
   });
 });
 
+let serverUrl;
+if (process.env.DOCKER_ENVIRONMENT === 'true') {
+  serverUrl = 'http://gremlin-server-test-js:45940/gremlin';
+} else {
+  serverUrl = 'http://localhost:45940/gremlin';
+}
+
+describe('ProviderDefinedType - Traversal API', function () {
+  describe('raw PDT round-trip via Traversal API', function () {
+    let pdtConnection;
+
+    before(function () {
+      pdtConnection = getConnection('gmodern');
+      return pdtConnection.open();
+    });
+    after(function () {
+      return pdtConnection.close();
+    });
+
+    it('should round-trip a PDT via g.inject()', async function () {
+      const g = anon.traversal().with_(pdtConnection);
+      const pdt = new ProviderDefinedType('TestPoint', { x: 1, y: 2 });
+
+      const results = await g.inject(pdt).toList();
+
+      assert.strictEqual(results.length, 1);
+      const result = results[0];
+      assert.ok(result instanceof ProviderDefinedType);
+      assert.strictEqual(result.name, 'TestPoint');
+      assert.strictEqual(result.fields.x, 1);
+      assert.strictEqual(result.fields.y, 2);
+    });
+  });
+
+  describe('registry-based round-trip via typed object', function () {
+    let pdtConnection;
+
+    class TestPoint {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+      }
+    }
+
+    before(function () {
+      const registry = new ProviderDefinedTypeRegistry();
+      registry.register('TestPoint', {
+        serialize: (obj) => ({ x: obj.x, y: obj.y }),
+        deserialize: (fields) => new TestPoint(fields.x, fields.y),
+      }, TestPoint);
+      pdtConnection = new DriverRemoteConnection(serverUrl, {
+        traversalSource: 'gmodern',
+        pdtRegistry: registry,
+      });
+      return pdtConnection.open();
+    });
+    after(function () {
+      return pdtConnection.close();
+    });
+
+    it('should auto-dehydrate on send and auto-hydrate on receive via registry', async function () {
+      const g = anon.traversal().with_(pdtConnection);
+      const point = new TestPoint(5, 10);
+
+      const results = await g.inject(point).toList();
+
+      assert.strictEqual(results.length, 1);
+      const result = results[0];
+      assert.ok(result instanceof TestPoint);
+      assert.strictEqual(result.x, 5);
+      assert.strictEqual(result.y, 10);
+    });
+  });
+});

@@ -270,6 +270,7 @@ can be passed to the `NewClient` or `NewDriverRemoteConnection` functions as con
 More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |RequestInterceptors |Functions that modify HTTP requests before sending. Used for authentication and custom headers. |empty
+|PDTRegistry |A `*PDTRegistry` for hydrating and dehydrating <<gremlin-go-pdt,Provider Defined Types>>. |`nil`
 |=========================================================
 
 [[gremlin-go-strategies]]
@@ -653,6 +654,48 @@ Run the examples:
 go run connections.go
 go run basic_gremlin.go
 go run modern_traversals.go
+----
+
+[[gremlin-go-pdt]]
+=== Provider Defined Types
+
+Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
+`*ProviderDefinedType` structs containing a `Name` and `Fields` map without any configuration.
+Consult your graph provider's documentation for the list of PDTs they support.
+
+[source,go]
+----
+results, err := g.V().Has("location").Values("location").ToList()
+pdt := results[0].GetInterface().(*gremlingo.ProviderDefinedType)
+fmt.Println(pdt.Name)   // "x:Point"
+fmt.Println(pdt.Fields) // map[x:1.0 y:2.0]
+----
+
+Working with raw `*ProviderDefinedType` values is always available. Using a `PDTRegistry` is an optional
+convenience that automates conversion between PDT values and application types on both the request and response paths.
+
+Using a `PDTRegistry` for hydration and dehydration:
+
+[source,go]
+----
+registry := gremlingo.NewPDTRegistry()
+registry.RegisterFuncsWithType("x:Point", reflect.TypeOf(Point{}),
+    // hydrate: convert incoming PDT fields map to a Go type
+    func(fields map[string]interface{}) (interface{}, error) {
+        return &Point{X: fields["x"].(float64), Y: fields["y"].(float64)}, nil
+    },
+    // dehydrate: convert a Go type to a PDT fields map for sending
+    func(obj interface{}) (map[string]interface{}, error) {
+        p := obj.(*Point)
+        return map[string]interface{}{"x": p.X, "y": p.Y}, nil
+    },
+)
+
+remote, _ := gremlingo.NewDriverRemoteConnection("http://localhost:8182/gremlin",
+    func(settings *gremlingo.DriverRemoteConnectionSettings) {
+        settings.PDTRegistry = registry
+    })
+g := gremlingo.Traversal_().With(remote)
 ----
 
 [[gremlin-groovy]]
@@ -1544,6 +1587,72 @@ java -cp target/run-examples-shaded.jar examples.BasicGremlin
 java -cp target/run-examples-shaded.jar examples.ModernTraversals
 ----
 
+[[gremlin-java-pdt]]
+=== Provider Defined Types
+
+Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
+`ProviderDefinedType` objects containing a name and fields map without any configuration.
+Consult your graph provider's documentation for the list of PDTs they support.
+
+Receiving a raw PDT:
+
+[source,java]
+----
+ProviderDefinedType pdt = (ProviderDefinedType) g.V().has("location").values("location").next();
+String typeName = pdt.getName();                   // "x:Point"
+Map<String, Object> fields = pdt.getFields();      // {x: 1.0, y: 2.0}
+----
+
+Working with raw `ProviderDefinedType` objects is always available. The following two approaches are optional
+conveniences that automate conversion between PDT values and application types on both the request and response paths.
+
+Using a `ProviderDefinedTypeRegistry` for hydration and dehydration:
+----
+public class PointAdapter implements ProviderDefinedTypeAdapter<Point> {
+    @Override public String typeName() { return "x:Point"; }
+    @Override public Class<Point> targetClass() { return Point.class; }
+    @Override public Map<String, Object> toFields(Point p) { return Map.of("x", p.getX(), "y", p.getY()); }
+    @Override public Point fromFields(Map<String, Object> m) { return new Point((double) m.get("x"), (double) m.get("y")); }
+}
+----
+
+Register adapters via ServiceLoader by adding the fully qualified class name to
+`META-INF/services/org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter`. The driver discovers
+adapters on the classpath and automatically hydrates/dehydrates.
+
+For simpler cases where you own the type, annotate it directly to avoid writing an adapter:
+
+Annotation-based conversion with `@ProviderDefined`:
+
+[source,java]
+----
+// includedFields: only serialize the listed fields
+@ProviderDefined(name = "x:Point", includedFields = {"x", "y"})
+public class Point {
+    private final double x;
+    private final double y;
+    private final String internalId; // not serialized
+    // constructor, getters...
+}
+
+// excludedFields: serialize all fields except those listed
+@ProviderDefined(name = "x:Timestamped", excludedFields = {"createdAt"})
+public class Timestamped {
+    private final String value;
+    private final long createdAt; // not serialized
+    // constructor, getters...
+}
+
+// send: Point is automatically dehydrated
+g.inject(new Point(1.0, 2.0, "internal")).iterate();
+
+// receive: PDT is automatically hydrated back to Point
+Point p = (Point) g.V().has("location").values("location").next();
+----
+
+Classes annotated with `@ProviderDefined` are automatically dehydrated when passed as traversal arguments and
+hydrated on deserialization without explicit registry configuration.
+
 [[gremlin-javascript]]
 == Gremlin-JavaScript
 
@@ -1722,6 +1831,7 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options.writer |GraphBinaryWriter |The writer to use for serializing requests. |GraphBinaryWriter
 |options.enableUserAgentOnConnect |Boolean |Determines if a user agent header will be sent with requests. |true
 |options.agent |Agent |A custom `node:http` or `node:https` Agent for connection pooling or proxy configuration. |undefined
+|options.pdtRegistry |ProviderDefinedTypeRegistry |A registry for hydrating and dehydrating <<gremlin-javascript-pdt,Provider Defined Types>>. |undefined
 |=========================================================
 
 [[gremlin-javascript-logging]]
@@ -2171,6 +2281,42 @@ node basic-gremlin.js
 node modern-traversals.js
 ----
 
+[[gremlin-javascript-pdt]]
+=== Provider Defined Types
+
+Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
+`ProviderDefinedType` objects containing a `name` and `fields` map without any configuration.
+Consult your graph provider's documentation for the list of PDTs they support.
+
+Receiving a raw PDT:
+
+[source,javascript]
+----
+const results = await g.V().has('location').values('location').toList();
+const pdt = results[0];
+console.log(pdt.name);   // "x:Point"
+console.log(pdt.fields); // { x: 1.0, y: 2.0 }
+----
+
+Working with raw `ProviderDefinedType` objects is always available. Using a `ProviderDefinedTypeRegistry` is an
+optional convenience that automates conversion between PDT values and application types on both the request and
+response paths.
+
+[source,javascript]
+----
+const { ProviderDefinedTypeRegistry } = require('gremlin');
+
+const registry = new ProviderDefinedTypeRegistry();
+registry.register('x:Point', {
+    serialize: (point) => ({ x: point.x, y: point.y }),
+    deserialize: (fields) => new Point(fields.x, fields.y)
+}, Point);
+
+const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin', {
+    pdtRegistry: registry
+}));
+----
+
 anchor:gremlin-DotNet[]
 [[gremlin-dotnet]]
 == Gremlin.Net
@@ -2311,6 +2457,7 @@ The following options can be passed to the `GremlinClient` constructor:
 |connectionSettings |The `ConnectionSettings` for the HTTP connection. |default `ConnectionSettings`
 |loggerFactory |An `ILoggerFactory` for logging. |`NullLoggerFactory`
 |interceptors |A list of `Func<HttpRequestContext, Task>` that modify HTTP requests before sending. |_none_
+|pdtRegistry |A `ProviderDefinedTypeRegistry` for hydrating and dehydrating <<gremlin-dotnet-pdt,Provider Defined Types>>. |`null`
 |=========================================================
 
 [[gremlin-dotnet-logging]]
@@ -2652,6 +2799,82 @@ dotnet run --project Connections
 dotnet run --project ModernTraversals
 ----
 
+[[gremlin-dotnet-pdt]]
+=== Provider Defined Types
+
+Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
+`ProviderDefinedType` objects containing a `Name` and `Fields` dictionary without any configuration.
+Consult your graph provider's documentation for the list of PDTs they support.
+
+Receiving a raw PDT:
+
+[source,csharp]
+----
+var pdt = (ProviderDefinedType) g.V().Has("location").Values<object>("location").Next();
+Console.WriteLine(pdt.Name);   // "x:Point"
+Console.WriteLine(pdt.Fields); // { x: 1.0, y: 2.0 }
+----
+
+Working with raw `ProviderDefinedType` objects is always available. The following two approaches are optional
+conveniences that automate conversion between PDT values and application types on both the request and response paths.
+
+Using a `ProviderDefinedTypeRegistry` for hydration and dehydration:
+
+[source,csharp]
+----
+public class PointAdapter : IProviderDefinedTypeAdapter<Point>
+{
+    public string TypeName => "x:Point";
+
+    public Point FromFields(IReadOnlyDictionary<string, object?> fields) =>
+        new Point((double)fields["x"], (double)fields["y"]);
+
+    public IReadOnlyDictionary<string, object?> ToFields(Point value) =>
+        new Dictionary<string, object?> { ["x"] = value.X, ["y"] = value.Y };
+}
+
+var registry = new ProviderDefinedTypeRegistry();
+registry.Register(new PointAdapter());
+
+using var client = new GremlinClient(new GremlinServer("localhost", 8182), pdtRegistry: registry);
+----
+
+The `ProviderDefinedTypeRegistry.Create()` method scans loaded assemblies for `IProviderDefinedTypeAdapter<T>`
+implementations and registers them automatically.
+
+For simpler cases where you own the type, annotate it directly to avoid writing an adapter:
+
+Attribute-based conversion with `[ProviderDefined]`:
+
+[source,csharp]
+----
+// IncludedFields: only serialize the listed fields
+[ProviderDefined(Name = "x:Point", IncludedFields = new[] { "X", "Y" })]
+public class Point
+{
+    public double X { get; set; }
+    public double Y { get; set; }
+    public string InternalId { get; set; } // not serialized
+}
+
+// ExcludedFields: serialize all fields except those listed
+[ProviderDefined(Name = "x:Timestamped", ExcludedFields = new[] { "CreatedAt" })]
+public class Timestamped
+{
+    public string Value { get; set; }
+    public long CreatedAt { get; set; } // not serialized
+}
+
+// send: Point is automatically dehydrated
+await g.Inject(new Point { X = 1.0, Y = 2.0 }).Promise(t => t.Iterate());
+
+// receive: PDT is automatically hydrated back to Point
+var p = (Point) await g.V().Has("location").Values<object>("location").Promise(t => t.Next());
+----
+
+Classes annotated with `[ProviderDefined]` are automatically dehydrated when passed as traversal arguments and
+hydrated on deserialization without explicit registry configuration.
+
 [[gremlin-python]]
 == Gremlin-Python
 
@@ -2841,6 +3064,7 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|True
 |bulk_results |Enables bulking of results on the server. |False
+|pdt_registry |A `ProviderDefinedTypeRegistry` for hydrating and dehydrating <<gremlin-python-pdt,Provider Defined Types>>. |`None`
 |=========================================================
 
 Transport options such as SSL and timeouts can be passed as keyword arguments to `Client` or
@@ -3254,3 +3478,76 @@ python connections.py
 python basic_gremlin.py
 python modern_traversals.py
 ----
+
+[[gremlin-python-pdt]]
+=== Provider Defined Types
+
+Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
+`ProviderDefinedType` objects containing a `name` and `fields` dict without any configuration.
+Consult your graph provider's documentation for the list of PDTs they support.
+
+Receiving a raw PDT:
+
+[source,python]
+----
+pdt = g.V().has('location').values('location').next()
+print(pdt.name)   # "x:Point"
+print(pdt.fields) # {'x': 1.0, 'y': 2.0}
+----
+
+Working with raw `ProviderDefinedType` objects is always available. The following two approaches are optional
+conveniences that automate conversion between PDT values and application types on both the request and response paths.
+
+Using a `ProviderDefinedTypeRegistry` for hydration and dehydration:
+
+[source,python]
+----
+from gremlin_python.structure.graph import ProviderDefinedTypeRegistry
+
+registry = ProviderDefinedTypeRegistry()
+registry.register('x:Point',
+    deserialize_fn=lambda fields: Point(fields['x'], fields['y']),
+    serialize_fn=lambda p: {'x': p.x, 'y': p.y},
+    target_class=Point)
+
+g = traversal().with_(DriverRemoteConnection('http://localhost:8182/gremlin', 'g',
+    pdt_registry=registry))
+----
+
+The `ProviderDefinedTypeRegistry.create()` class method discovers adapters via `entry_points` in `pyproject.toml`
+under the `tinkerpop.pdt` group.
+
+For simpler cases where you own the type, the `@provider_defined` decorator enables automatic round-trip conversion
+without an explicit registry:
+
+Decorator-based conversion with `@provider_defined`:
+
+[source,python]
+----
+from gremlin_python.structure.graph import provider_defined
+
+# included_fields: only serialize the listed fields
+@provider_defined(name='x:Point', included_fields=['x', 'y'])
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self._internal_id = None  # not serialized
+
+# excluded_fields: serialize all instance fields except those listed
+@provider_defined(name='x:Timestamped', excluded_fields=['created_at'])
+class Timestamped:
+    def __init__(self, value, created_at):
+        self.value = value
+        self.created_at = created_at  # not serialized
+
+# send: Point is automatically dehydrated
+g.inject(Point(1.0, 2.0)).iterate()
+
+# receive: PDT is automatically hydrated back to Point
+p = g.V().has('location').values('location').next()
+# type(p) is Point
+----
+
+Objects decorated with `@provider_defined` are automatically dehydrated when passed as traversal arguments and
+hydrated back into the same type when received in responses.

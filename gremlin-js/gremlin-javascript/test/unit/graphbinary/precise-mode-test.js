@@ -515,7 +515,7 @@ describe('Precise Mode Tests', () => {
 
     it('default uses the default reader', () => {
       const conn = new Connection('http://localhost:8182', {});
-      assert.strictEqual(conn._reader, graphBinaryReader);
+      assert.ok(conn._reader instanceof graphBinaryReader.constructor);
     });
   });
 });

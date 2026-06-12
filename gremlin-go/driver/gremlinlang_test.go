@@ -22,6 +22,7 @@ package gremlingo
 import (
 	"fmt"
 	"math"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
@@ -857,4 +858,120 @@ func Test_ConvertParametersToString(t *testing.T) {
 		}()
 		new(RequestOptionsBuilder).SetBindings(map[string]interface{}{"x": struct{}{}}).Create()
 	})
+}
+
+func Test_PDT_GremlinLang(t *testing.T) {
+	t.Run("basic PDT", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &ProviderDefinedType{Name: "MyType", Fields: map[string]interface{}{"x": int32(1), "y": "hello"}}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("MyType",["x":1,"y":"hello"]))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+
+	t.Run("empty PDT", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &ProviderDefinedType{Name: "Empty", Fields: map[string]interface{}{}}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("Empty",[:]))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+
+	t.Run("PDT with special characters in name", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &ProviderDefinedType{Name: `say"hello"`, Fields: map[string]interface{}{"v": int32(1)}}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("say\"hello\"",["v":1]))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+
+	t.Run("PDT with backslash in name", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &ProviderDefinedType{Name: `back\slash`, Fields: map[string]interface{}{"v": int32(1)}}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("back\\slash",["v":1]))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+
+	t.Run("nested PDT", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		inner := &ProviderDefinedType{Name: "Inner", Fields: map[string]interface{}{"v": int32(1)}}
+		outer := &ProviderDefinedType{Name: "Outer", Fields: map[string]interface{}{"inner": inner}}
+		gremlin := g.Inject(outer).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("Outer",["inner":PDT("Inner",["v":1])]))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+
+	t.Run("PDT map keys sorted", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &ProviderDefinedType{Name: "T", Fields: map[string]interface{}{"z": int32(3), "a": int32(1), "m": int32(2)}}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("T",["a":1,"m":2,"z":3]))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+}
+
+// adapterPrecedencePoint is a struct type used to verify that a registered adapter
+// takes precedence over the default handling (which would panic for an unknown struct).
+type adapterPrecedencePoint struct {
+	X int32
+	Y int32
+}
+
+func Test_PDT_AdapterPrecedenceOverDefault(t *testing.T) {
+	registry := NewPDTRegistry()
+	registry.RegisterFuncsWithType("test:Point", reflect.TypeOf(adapterPrecedencePoint{}),
+		nil,
+		func(obj interface{}) (map[string]interface{}, error) {
+			p := obj.(adapterPrecedencePoint)
+			return map[string]interface{}{"x": p.X, "y": p.Y}, nil
+		})
+
+	g := NewGraphTraversalSource(nil, nil)
+	g.GetGremlinLang().pdtRegistry = registry
+
+	gremlin := g.Inject(adapterPrecedencePoint{X: 7, Y: 9}).GremlinLang.GetGremlin()
+	expected := `g.inject(PDT("test:Point",["x":7,"y":9]))`
+	if gremlin != expected {
+		t.Errorf("adapter precedence: got %v, expected %v", gremlin, expected)
+	}
+}
+
+// TestPDT_GremlinLang_NestedRegisteredInUnregisteredOuter asserts that a registered domain
+// object nested inside an unregistered outer *ProviderDefinedType is dehydrated to PDT form.
+func TestPDT_GremlinLang_NestedRegisteredInUnregisteredOuter(t *testing.T) {
+	registry := NewPDTRegistry()
+	registry.RegisterFuncsWithType("test:Point", reflect.TypeOf(adapterPrecedencePoint{}),
+		nil,
+		func(obj interface{}) (map[string]interface{}, error) {
+			p := obj.(adapterPrecedencePoint)
+			return map[string]interface{}{"x": p.X, "y": p.Y}, nil
+		})
+
+	g := NewGraphTraversalSource(nil, nil)
+	g.GetGremlinLang().pdtRegistry = registry
+
+	// Outer is an unregistered raw PDT; its "pt" field is a registered Go domain object.
+	outer := &ProviderDefinedType{
+		Name:   "unregistered:Wrapper",
+		Fields: map[string]interface{}{"pt": adapterPrecedencePoint{X: 3, Y: 4}, "tag": "hello"},
+	}
+
+	gremlin := g.Inject(outer).GremlinLang.GetGremlin()
+	expected := `g.inject(PDT("unregistered:Wrapper",["pt":PDT("test:Point",["x":3,"y":4]),"tag":"hello"]))`
+	if gremlin != expected {
+		t.Errorf("nested dehydration: got %v, expected %v", gremlin, expected)
+	}
 }

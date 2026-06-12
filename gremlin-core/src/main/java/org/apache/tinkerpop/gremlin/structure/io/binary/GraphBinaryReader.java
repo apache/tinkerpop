@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.structure.io.binary;
 
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 
 import java.io.IOException;
 
@@ -48,13 +50,19 @@ import java.io.IOException;
  */
 public class GraphBinaryReader {
     private final TypeSerializerRegistry registry;
+    private final ProviderDefinedTypeRegistry pdtRegistry;
 
     public GraphBinaryReader() {
         this(TypeSerializerRegistry.INSTANCE);
     }
 
     public GraphBinaryReader(final TypeSerializerRegistry registry) {
+        this(registry, null);
+    }
+
+    public GraphBinaryReader(final TypeSerializerRegistry registry, final ProviderDefinedTypeRegistry pdtRegistry) {
         this.registry = registry;
+        this.pdtRegistry = pdtRegistry;
     }
 
     /**
@@ -95,14 +103,11 @@ public class GraphBinaryReader {
             return null;
         }
 
-        TypeSerializer<T> serializer;
-        if (type != DataType.CUSTOM) {
-            serializer = registry.getSerializer(type);
-        } else {
-            final String customTypeName = this.readValue(buffer, String.class, false);
-            serializer = registry.getSerializerForCustomType(customTypeName);
+        final TypeSerializer<T> serializer = registry.getSerializer(type);
+        final T result = serializer.read(buffer, this);
+        if (pdtRegistry != null && result instanceof ProviderDefinedType) {
+            return (T) pdtRegistry.hydrate((ProviderDefinedType) result);
         }
-
-        return serializer.read(buffer, this);
+        return result;
     }
 }

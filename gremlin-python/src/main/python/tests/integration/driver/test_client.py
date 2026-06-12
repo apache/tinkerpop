@@ -26,6 +26,7 @@ from gremlin_python.driver.client import Client
 from gremlin_python.driver.connection import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
 from gremlin_python.driver.serializer import GraphBinarySerializersV4
+from gremlin_python.structure.graph import ProviderDefinedType
 from gremlin_python.process.graph_traversal import __, GraphTraversalSource
 from gremlin_python.process.traversal import TraversalStrategies, GValue
 from gremlin_python.process.strategies import OptionsStrategy
@@ -554,3 +555,60 @@ def test_response_serializer_never_None():
 def test_serializer_and_interceptor_forwarded(client_with_interceptor):
     result = client_with_interceptor.submit("g.inject(1)").next()
     assert 2 == result # interceptor changes request to g.inject(2)
+
+def test_simple_pdt_round_trip(client):
+    """Inject and retrieve a simple Point PDT."""
+    results = client.submit(
+        "g.inject(PDT(\"Point\", [\"x\":1, \"y\":2]))"
+    ).all().result()
+
+    assert len(results) == 1
+    pdt = results[0]
+    assert isinstance(pdt, ProviderDefinedType)
+    assert pdt.name == 'Point'
+    assert pdt.fields['x'] == 1
+    assert pdt.fields['y'] == 2
+
+
+def test_nested_pdt(client):
+    """Inject and retrieve a nested PDT (Person containing Address)."""
+    results = client.submit(
+        "g.inject(PDT(\"Person\", [\"name\":\"Alice\", \"age\":30, "
+        "\"address\":PDT(\"Address\", [\"street\":\"123 Main St\", \"city\":\"Springfield\", \"zip\":\"12345\"])]))"
+    ).all().result()
+
+    assert len(results) == 1
+    pdt = results[0]
+    assert isinstance(pdt, ProviderDefinedType)
+    assert pdt.name == 'Person'
+    assert pdt.fields['name'] == 'Alice'
+    assert pdt.fields['age'] == 30
+
+    address = pdt.fields['address']
+    assert isinstance(address, ProviderDefinedType)
+    assert address.name == 'Address'
+    assert address.fields['street'] == '123 Main St'
+    assert address.fields['city'] == 'Springfield'
+    assert address.fields['zip'] == '12345'
+
+
+def test_pdt_in_collection(client):
+    """Retrieve multiple PDTs as a list."""
+    results = client.submit(
+        "g.inject([PDT(\"Point\", [\"x\":1, \"y\":2]), PDT(\"Point\", [\"x\":3, \"y\":4])])"
+    ).all().result()
+
+    assert len(results) == 1
+    pdt_list = results[0]
+    assert isinstance(pdt_list, list)
+    assert len(pdt_list) == 2
+
+    assert isinstance(pdt_list[0], ProviderDefinedType)
+    assert pdt_list[0].name == 'Point'
+    assert pdt_list[0].fields['x'] == 1
+    assert pdt_list[0].fields['y'] == 2
+
+    assert isinstance(pdt_list[1], ProviderDefinedType)
+    assert pdt_list[1].name == 'Point'
+    assert pdt_list[1].fields['x'] == 3
+    assert pdt_list[1].fields['y'] == 4

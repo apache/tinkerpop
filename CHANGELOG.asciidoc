@@ -29,6 +29,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `ByteBuf` leak in `GraphBinaryMessageSerializerV4` when serialization throws an `IOException`.
 * Added typed numeric wrappers and `preciseNumbers` connection option to `gremlin-javascript` for explicit control over numeric type serialization and deserialization.
 * Added `NextN(n)` to `Traversal` in `gremlin-go` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs, and updated the Go translators in `gremlin-core` and `gremlin-javascript` to emit `NextN(n)` for the batched form.
+* Added Provider Defined Types (PDT) support — graph providers can define custom types via `@ProviderDefined` annotation that serialize/deserialize seamlessly across all GLVs without driver-side configuration. Replaces TP3 custom type mechanism.
 * Added Gremlator, a single page web application, that translates Gremlin into various programming languages like Javascript and Python.
 * Added explicit transaction support to all non-Java GLVs (gremlin-python, gremlin-go, gremlin-javascript, gremlin-dotnet).
 * Changed default transaction close behavior from commit to rollback across all GLVs to align with embedded graph defaults.

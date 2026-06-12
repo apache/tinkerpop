@@ -25,6 +25,7 @@ import { Buffer } from 'buffer';
 import { EventEmitter } from 'eventemitter3';
 import type { Agent } from 'node:http';
 import ioc, { createPreciseReader } from '../structure/io/binary/GraphBinary.js';
+import GraphBinaryReader from '../structure/io/binary/internals/GraphBinaryReader.js';
 import StreamReader from '../structure/io/binary/internals/StreamReader.js';
 import * as utils from '../utils.js';
 import ResultSet from './result-set.js';
@@ -32,7 +33,7 @@ import {RequestMessage} from "./request-message.js";
 import ResponseError from './response-error.js';
 import { Traverser } from '../process/traversal.js';
 
-const { graphBinaryReader, graphBinaryWriter } = ioc;
+const { graphBinaryWriter } = ioc;
 
 const responseStatusCode = {
   success: 200,
@@ -54,6 +55,7 @@ export type ConnectionOptions = {
   cert?: string | string[] | Buffer;
   pfx?: string | Buffer;
   preciseNumbers?: boolean;
+  pdtRegistry?: any;
   reader?: any;
   rejectUnauthorized?: boolean;
   traversalSource?: string;
@@ -88,8 +90,11 @@ export default class Connection extends EventEmitter {
   ) {
     super();
 
-    this._reader = options.reader || (options.preciseNumbers === true ? createPreciseReader() : graphBinaryReader);
+    this._reader = options.reader || (options.preciseNumbers === true ? createPreciseReader() : new GraphBinaryReader(ioc));
     this._writer = 'writer' in options ? options.writer : graphBinaryWriter;
+    if (options.pdtRegistry) {
+      this._reader.pdtRegistry = options.pdtRegistry;
+    }
     this.traversalSource = options.traversalSource || 'g';
     this._enableUserAgentOnConnect = options.enableUserAgentOnConnect !== false;
 

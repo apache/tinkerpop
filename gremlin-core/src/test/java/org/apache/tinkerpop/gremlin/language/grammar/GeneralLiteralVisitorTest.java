@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -1046,6 +1047,46 @@ public class GeneralLiteralVisitorTest {
                 fail("Invalid Binary/base64 value should have thrown exception");
             } catch (GremlinParserException gpe) {
                 assertThat(gpe.getMessage().contains("Invalid Binary literal:"), Matchers.is(true));
+            }
+        }
+    }
+
+    public static class ValidPdtLiteralTest {
+        @Test
+        public void shouldParsePdtLiteral() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("PDT(\"MyType\",[\"x\":1,\"y\":\"hello\"])"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.PdtLiteralContext ctx = parser.pdtLiteral();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitPdtLiteral(ctx);
+            assertThat(result, instanceOf(ProviderDefinedType.class));
+            final ProviderDefinedType pdt = (ProviderDefinedType) result;
+            assertEquals("MyType", pdt.getName());
+            assertEquals(1, pdt.getFields().get("x"));
+            assertEquals("hello", pdt.getFields().get("y"));
+        }
+
+        @Test
+        public void shouldParsePdtLiteralWithEmptyMap() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("PDT(\"Empty\",[:])"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.PdtLiteralContext ctx = parser.pdtLiteral();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitPdtLiteral(ctx);
+            assertThat(result, instanceOf(ProviderDefinedType.class));
+            final ProviderDefinedType pdt = (ProviderDefinedType) result;
+            assertEquals("Empty", pdt.getName());
+            assertTrue(pdt.getFields().isEmpty());
+        }
+
+        @Test
+        public void shouldRejectNonStringMapKey() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("PDT(\"Bad\",[1:\"value\"])"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.PdtLiteralContext ctx = parser.pdtLiteral();
+            try {
+                new GenericLiteralVisitor(new GremlinAntlrToJava()).visitPdtLiteral(ctx);
+                fail("Expected IllegalArgumentException for non-String map key");
+            } catch (final IllegalArgumentException e) {
+                assertTrue(e.getMessage().contains("PDT fields map must have String keys, found: java.lang.Integer"));
             }
         }
     }

@@ -30,6 +30,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.gremlin.util.NumberHelper;
 
 import javax.lang.model.SourceVersion;
@@ -48,6 +52,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.Base64;
@@ -67,8 +72,13 @@ public class GremlinLang implements Cloneable, Serializable {
     private Map<String, Object> parameters = new HashMap<>();
     private String unsupportedType = "";
     private List<OptionsStrategy> optionsStrategies = new ArrayList<>();
+    private ProviderDefinedTypeRegistry pdtRegistry;
 
     public GremlinLang() {
+    }
+
+    public GremlinLang(final ProviderDefinedTypeRegistry pdtRegistry) {
+        this.pdtRegistry = pdtRegistry;
     }
 
     public GremlinLang(final String sourceName, final Object... arguments) {
@@ -179,6 +189,11 @@ public class GremlinLang implements Cloneable, Serializable {
             return String.format("Binary(\"%s\")", Base64.getEncoder().encodeToString((byte[]) arg));
         }
 
+        if (arg instanceof ProviderDefinedType) {
+            final ProviderDefinedType pdt = (ProviderDefinedType) arg;
+            return "PDT(" + argAsString(pdt.getName()) + "," + asString((Map<?, ?>) pdt.getFields()) + ")";
+        }
+
         if (arg instanceof Enum) {
             // special handling for enums with additional interfaces
             if (arg instanceof T)
@@ -250,6 +265,21 @@ public class GremlinLang implements Cloneable, Serializable {
 
         if (arg instanceof Class) {
             return ((Class) arg).getSimpleName();
+        }
+
+        // Intentional precedence: a registered adapter takes priority over @ProviderDefined annotation
+        // so that providers/users can override annotation-derived behavior with an explicit adapter.
+        if (pdtRegistry != null) {
+            final Optional<ProviderDefinedTypeAdapter<?>> adapter = pdtRegistry.getAdapterByClass(arg.getClass());
+            if (adapter.isPresent()) {
+                @SuppressWarnings("unchecked")
+                final Map<String, Object> fields = ((ProviderDefinedTypeAdapter) adapter.get()).toFields(arg);
+                return argAsString(new ProviderDefinedType(adapter.get().typeName(), fields));
+            }
+        }
+
+        if (arg.getClass().isAnnotationPresent(ProviderDefined.class)) {
+            return argAsString(ProviderDefinedType.from(arg));
         }
 
         unsupportedType = arg.getClass().getSimpleName();
@@ -532,6 +562,20 @@ public class GremlinLang implements Cloneable, Serializable {
         return optionsStrategies;
     }
 
+    /**
+     * Sets the {@link ProviderDefinedTypeRegistry} used for registry-based dehydration of unknown types.
+     */
+    public void setPdtRegistry(final ProviderDefinedTypeRegistry pdtRegistry) {
+        this.pdtRegistry = pdtRegistry;
+    }
+
+    /**
+     * Gets the {@link ProviderDefinedTypeRegistry} used for registry-based dehydration.
+     */
+    public ProviderDefinedTypeRegistry getPdtRegistry() {
+        return this.pdtRegistry;
+    }
+
     public boolean isEmpty() {
         return this.gremlin.length() == 0;
     }
@@ -565,6 +609,7 @@ public class GremlinLang implements Cloneable, Serializable {
             clone.gremlin.append(gremlin);
             clone.optionsStrategies = new ArrayList<>(this.optionsStrategies);
             clone.unsupportedType = this.unsupportedType;
+            clone.pdtRegistry = this.pdtRegistry;
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);

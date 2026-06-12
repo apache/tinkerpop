@@ -196,6 +196,24 @@ function areEqual(obj1: any, obj2: any) {
   return false;
 }
 
+/**
+ * Represents a composite Provider Defined Type (PDT).
+ */
+export class ProviderDefinedType {
+  readonly name: string;
+  readonly fields: Readonly<Record<string, any>>;
+
+  constructor(name: string, fields?: Record<string, any>) {
+    if (!name) throw new Error('ProviderDefinedType name cannot be null or empty');
+    this.name = name;
+    this.fields = Object.freeze(fields || {});
+  }
+
+  toString() {
+    return `pdt[${this.name}]${JSON.stringify(this.fields)}`;
+  }
+}
+
 function summarize(value: any) {
   if (value === null || value === undefined) {
     return value;

@@ -25,7 +25,7 @@ import { P, TextP, t as T, order as Order, scope as Scope, column as Column,
          withOptions as WithOptions, direction } from '../../lib/process/traversal.js';
 import { ReadOnlyStrategy, SubgraphStrategy, OptionsStrategy,
          PartitionStrategy, SeedStrategy } from '../../lib/process/traversal-strategy.js';
-import { Graph, Vertex } from '../../lib/structure/graph.js';
+import { Graph, Vertex, ProviderDefinedType } from '../../lib/structure/graph.js';
 import { TraversalStrategies } from '../../lib/process/traversal-strategy.js';
 import { Long, toFloat, toDouble, toShort, toByte, toInt, toLong } from '../../lib/utils.js';
 import GremlinLang from '../../lib/process/gremlin-lang.js';
@@ -624,6 +624,41 @@ describe('GremlinLang', function () {
       assert.ok(result.endsWith(']'));
       assert.ok(result.includes("'x':1"));
       assert.ok(result.includes("'name':'marko'"));
+    });
+  });
+
+  describe('PDT gremlin-lang tests', function () {
+    it('should handle basic PDT', function () {
+      const pdt = new ProviderDefinedType('Point', { x: 1, y: 2 });
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        "g.inject(PDT(\"Point\",['x':1,'y':2]))"
+      );
+    });
+
+    it('should handle PDT with special chars in name (quotes)', function () {
+      const pdt = new ProviderDefinedType('my"type', { a: 1 });
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        "g.inject(PDT(\"my\\\"type\",['a':1]))"
+      );
+    });
+
+    it('should handle nested PDT', function () {
+      const inner = new ProviderDefinedType('Inner', { v: 42 });
+      const outer = new ProviderDefinedType('Outer', { child: inner });
+      assert.strictEqual(
+        g.inject(outer).getGremlinLang().getGremlin(),
+        "g.inject(PDT(\"Outer\",['child':PDT(\"Inner\",['v':42])]))"
+      );
+    });
+
+    it('should handle PDT with empty fields', function () {
+      const pdt = new ProviderDefinedType('Empty', {});
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        "g.inject(PDT(\"Empty\",[:]))"
+      );
     });
   });
 });

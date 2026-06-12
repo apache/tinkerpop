@@ -1208,6 +1208,16 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) {
+        sb.append("new ProviderDefinedType(");
+        sb.append(ctx.stringLiteral().getText());
+        sb.append(", ");
+        visitGenericMapLiteral(ctx.genericMapLiteral());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
     public Void visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
         sb.append("Convert.FromBase64String(");
         sb.append(ctx.stringLiteral().getText());

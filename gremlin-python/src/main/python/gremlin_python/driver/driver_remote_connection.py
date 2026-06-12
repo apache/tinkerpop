@@ -36,7 +36,7 @@ class DriverRemoteConnection(RemoteConnection):
                  request_serializer=serializer.GraphBinarySerializersV4(),
                  response_serializer=None, interceptors=None, auth=None,
                  headers=None, enable_user_agent_on_connect=True,
-                 bulk_results=False, **transport_kwargs):
+                 bulk_results=False, pdt_registry=None, **transport_kwargs):
         log.info("Creating DriverRemoteConnection with url '%s'", str(url))
         self.__url = url
         self.__traversal_source = traversal_source
@@ -47,6 +47,7 @@ class DriverRemoteConnection(RemoteConnection):
         self.__enable_user_agent_on_connect = enable_user_agent_on_connect
         self.__bulk_results = bulk_results
         self.__transport_kwargs = transport_kwargs
+        self.pdt_registry = pdt_registry
 
         if response_serializer is None:
             response_serializer = serializer.GraphBinarySerializersV4()
@@ -59,6 +60,7 @@ class DriverRemoteConnection(RemoteConnection):
                                      headers=headers,
                                      enable_user_agent_on_connect=enable_user_agent_on_connect,
                                      bulk_results=bulk_results,
+                                     pdt_registry=pdt_registry,
                                      **transport_kwargs)
         self._url = self._client._url
         self._traversal_source = self._client._traversal_source

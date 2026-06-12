@@ -24,8 +24,6 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
@@ -93,8 +91,7 @@ public class Connections {
 
     // Connecting and specifying a serializer
     private static void withSerializer() throws Exception {
-        IoRegistry registry = new FakeIoRegistry(); // an IoRegistry instance exposed by a specific graph provider
-        TypeSerializerRegistry typeSerializerRegistry = TypeSerializerRegistry.build().addRegistry(registry).create();
+        TypeSerializerRegistry typeSerializerRegistry = TypeSerializerRegistry.build().create();
         MessageSerializer serializer = new GraphBinaryMessageSerializerV4(typeSerializerRegistry);
         Cluster cluster = Cluster.build(SERVER_HOST).
             port(SERVER_PORT).
@@ -110,6 +107,4 @@ public class Connections {
         cluster.close();
         g.close();
     }
-
-    public static class FakeIoRegistry extends AbstractIoRegistry {}
 }

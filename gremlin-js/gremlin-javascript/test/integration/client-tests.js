@@ -18,7 +18,7 @@
  */
 
 import assert from 'assert';
-import { Vertex, Edge, VertexProperty } from '../../lib/structure/graph.js';
+import { Vertex, Edge, VertexProperty, ProviderDefinedType } from '../../lib/structure/graph.js';
 import { getClient, serverUrl } from '../helper.js';
 import { cardinality } from '../../lib/process/traversal.js';
 import Client from '../../lib/driver/client.js';
@@ -209,3 +209,68 @@ function assertVertexProperties(vertex) {
   assert.strictEqual(start.value, 1990);
   assert.strictEqual(end.value, 2000);
 }
+
+describe('ProviderDefinedType - Client', function () {
+  let pdtClient;
+  before(function () {
+    pdtClient = getClient('gmodern');
+    return pdtClient.open();
+  });
+  after(function () {
+    return pdtClient.close();
+  });
+
+  it('should round-trip a simple Point PDT', function () {
+    return pdtClient.submit('g.inject(PDT("Point", ["x":1, "y":2]))')
+      .then(function (result) {
+        assert.strictEqual(result.length, 1);
+        const pdt = result.first();
+        assert.ok(pdt instanceof ProviderDefinedType);
+        assert.strictEqual(pdt.name, 'Point');
+        assert.strictEqual(pdt.fields.x, 1);
+        assert.strictEqual(pdt.fields.y, 2);
+      });
+  });
+
+  it('should round-trip a nested PDT (Person with Address)', function () {
+    return pdtClient.submit(
+      'g.inject(PDT("Person", ["name":"Alice", "age":30, ' +
+      '"address":PDT("Address", ["street":"123 Main St", "city":"Springfield", "zip":"12345"])]))')
+      .then(function (result) {
+        assert.strictEqual(result.length, 1);
+        const pdt = result.first();
+        assert.ok(pdt instanceof ProviderDefinedType);
+        assert.strictEqual(pdt.name, 'Person');
+        assert.strictEqual(pdt.fields.name, 'Alice');
+        assert.strictEqual(pdt.fields.age, 30);
+
+        const address = pdt.fields.address;
+        assert.ok(address instanceof ProviderDefinedType);
+        assert.strictEqual(address.name, 'Address');
+        assert.strictEqual(address.fields.street, '123 Main St');
+        assert.strictEqual(address.fields.city, 'Springfield');
+        assert.strictEqual(address.fields.zip, '12345');
+      });
+  });
+
+  it('should handle PDTs in a collection', function () {
+    return pdtClient.submit(
+      'g.inject([PDT("Point", ["x":1, "y":2]), PDT("Point", ["x":3, "y":4])])')
+      .then(function (result) {
+        assert.strictEqual(result.length, 1);
+        const list = result.first();
+        assert.ok(Array.isArray(list));
+        assert.strictEqual(list.length, 2);
+
+        assert.ok(list[0] instanceof ProviderDefinedType);
+        assert.strictEqual(list[0].name, 'Point');
+        assert.strictEqual(list[0].fields.x, 1);
+        assert.strictEqual(list[0].fields.y, 2);
+
+        assert.ok(list[1] instanceof ProviderDefinedType);
+        assert.strictEqual(list[1].name, 'Point');
+        assert.strictEqual(list[1].fields.x, 3);
+        assert.strictEqual(list[1].fields.y, 4);
+      });
+  });
+});

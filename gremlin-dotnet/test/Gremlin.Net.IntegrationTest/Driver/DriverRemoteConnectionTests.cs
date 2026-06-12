@@ -22,10 +22,14 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Remote;
 using Gremlin.Net.Process.Traversal;
+using Gremlin.Net.Structure;
+using Gremlin.Net.Structure.IO.GraphBinary4;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
@@ -92,4 +96,100 @@ public class DriverRemoteConnectionTests
             return gremlinLang;
         }
     }
+
+    [Fact]
+    public void ShouldRoundTripPdtViaTraversalApi()
+    {
+        var gremlinServer = new GremlinServer(TestHost, TestPort);
+        using var gremlinClient = new GremlinClient(gremlinServer);
+        using var connection = new DriverRemoteConnection(gremlinClient, "gmodern");
+        var g = AnonymousTraversalSource.Traversal().With(connection);
+
+        var pdt = new ProviderDefinedType("TestPoint",
+            new Dictionary<string, object?> { { "x", 1 }, { "y", 2 } });
+
+        var results = g.Inject<object>(pdt).ToList();
+
+        Assert.Single(results);
+        var result = Assert.IsType<ProviderDefinedType>(results[0]);
+        Assert.Equal("TestPoint", result.Name);
+        Assert.Equal(1, result.Fields["x"]);
+        Assert.Equal(2, result.Fields["y"]);
+    }
+
+    [Fact]
+    public void ShouldRoundTripTypedObjectViaRegistry()
+    {
+        var registry = new ProviderDefinedTypeRegistry();
+        registry.Register(new TestPointAdapter());
+
+        var gremlinServer = new GremlinServer(TestHost, TestPort);
+        using var gremlinClient = new GremlinClient(gremlinServer, pdtRegistry: registry);
+        using var connection = new DriverRemoteConnection(gremlinClient, "gmodern", pdtRegistry: registry);
+        var g = AnonymousTraversalSource.Traversal().With(connection);
+
+        var point = new TestPointClass { X = 5, Y = 10 };
+
+        var results = g.Inject<object>(point).ToList();
+
+        Assert.Single(results);
+        var result = Assert.IsType<TestPointClass>(results[0]);
+        Assert.Equal(5, result.X);
+        Assert.Equal(10, result.Y);
+    }
+
+    [Fact]
+    public void ShouldRoundTripAnnotatedClass()
+    {
+        var gremlinServer = new GremlinServer(TestHost, TestPort);
+        using var gremlinClient = new GremlinClient(gremlinServer);
+        using var connection = new DriverRemoteConnection(gremlinClient, "gmodern");
+        var g = AnonymousTraversalSource.Traversal().With(connection);
+
+        var point = new AnnotatedTestPoint { X = 3, Y = 7 };
+
+        var results = g.Inject<object>(point).ToList();
+
+        Assert.Single(results);
+        var result = Assert.IsType<AnnotatedTestPoint>(results[0]);
+        Assert.Equal(3, result.X);
+        Assert.Equal(7, result.Y);
+    }
+
+    #region Test helpers
+
+    private class TestPointClass
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+    }
+
+    private class TestPointAdapter : IProviderDefinedTypeAdapter<TestPointClass>
+    {
+        public string TypeName => "TestPoint";
+
+        public TestPointClass FromFields(IReadOnlyDictionary<string, object?> fields)
+        {
+            return new TestPointClass
+            {
+                X = Convert.ToInt32(fields["x"]),
+                Y = Convert.ToInt32(fields["y"])
+            };
+        }
+
+        public IReadOnlyDictionary<string, object?> ToFields(TestPointClass obj)
+        {
+            return new ReadOnlyDictionary<string, object?>(
+                new Dictionary<string, object?> { { "x", obj.X }, { "y", obj.Y } });
+        }
+    }
+
+    [ProviderDefined(Name = "TestPoint")]
+    private class AnnotatedTestPoint
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+    }
+
+    #endregion
 }

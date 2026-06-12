@@ -62,6 +62,9 @@ type ClientSettings struct {
 
 	EnableUserAgentOnConnect bool
 
+	// PDTRegistry enables automatic hydration of ProviderDefinedType values during deserialization.
+	PDTRegistry *PDTRegistry
+
 	// RequestInterceptors are functions that modify HTTP requests before sending.
 	RequestInterceptors []RequestInterceptor
 }
@@ -107,6 +110,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		keepAliveInterval:        settings.KeepAliveInterval,
 		enableCompression:        settings.EnableCompression,
 		enableUserAgentOnConnect: settings.EnableUserAgentOnConnect,
+		pdtRegistry:              settings.PDTRegistry,
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)

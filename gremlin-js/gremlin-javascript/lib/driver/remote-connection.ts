@@ -37,7 +37,7 @@ export abstract class RemoteConnection {
    */
   constructor(
     public url: string,
-    protected readonly options: ConnectionOptions = {},
+    public readonly options: ConnectionOptions = {},
   ) {}
 
   /**

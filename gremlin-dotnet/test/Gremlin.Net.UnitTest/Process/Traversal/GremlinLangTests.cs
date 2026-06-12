@@ -1088,5 +1088,148 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             var result = GremlinLang.ConvertParametersToString(parameters);
             Assert.Contains("\"name\":", result);
         }
+
+        [Fact]
+        public void g_Inject_PDT_basic()
+        {
+            var pdt = new ProviderDefinedType("Point", new Dictionary<string, object?> { { "x", 1 }, { "y", 2 } });
+            var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"Point\",[\"x\":1,\"y\":2]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_special_chars_in_name()
+        {
+            var pdt = new ProviderDefinedType("my\"type", new Dictionary<string, object?> { { "a", 1 } });
+            var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"my\\\"type\",[\"a\":1]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_nested()
+        {
+            var inner = new ProviderDefinedType("Inner", new Dictionary<string, object?> { { "v", 42 } });
+            var outer = new ProviderDefinedType("Outer", new Dictionary<string, object?> { { "child", inner } });
+            var result = _g.Inject((object)outer).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"Outer\",[\"child\":PDT(\"Inner\",[\"v\":42])]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_auto_dehydration_via_attribute()
+        {
+            var point = new TestPoint { X = 10, Y = 20 };
+            var result = _g.Inject((object)point).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"geo.Point\",[\"X\":10,\"Y\":20]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_auto_dehydration_IncludedFields()
+        {
+            var point = new IncludedFieldsPoint { X = 1, Y = 2, Z = 3 };
+            var result = _g.Inject((object)point).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"IncludedFieldsPoint\",[\"X\":1]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_auto_dehydration_ExcludedFields()
+        {
+            var point = new ExcludedFieldsPoint { X = 1, Y = 2, Z = 3 };
+            var result = _g.Inject((object)point).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"ExcludedFieldsPoint\",[\"X\":1,\"Y\":2]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_auto_dehydration_both_fields_throws()
+        {
+            var point = new BothFieldsPoint { X = 1, Y = 2 };
+            Assert.Throws<ArgumentException>(() => _g.Inject((object)point).GremlinLang.GetGremlin());
+        }
+
+        [ProviderDefined(Name = "geo.Point")]
+        private class TestPoint
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+        }
+
+        [ProviderDefined(IncludedFields = new[] { "X" })]
+        private class IncludedFieldsPoint
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+            public int Z { get; set; }
+        }
+
+        [ProviderDefined(ExcludedFields = new[] { "Z" })]
+        private class ExcludedFieldsPoint
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+            public int Z { get; set; }
+        }
+
+        [ProviderDefined(IncludedFields = new[] { "X" }, ExcludedFields = new[] { "Y" })]
+        private class BothFieldsPoint
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+        }
+
+        [Fact]
+        public void g_Inject_PDT_adapter_takes_precedence_over_attribute()
+        {
+            var registry = new ProviderDefinedTypeRegistry();
+            registry.Register(new AdapterForAnnotatedPoint());
+
+            var g = new GraphTraversalSource();
+            g.GremlinLang.PdtRegistry = registry;
+
+            var point = new AnnotatedPointWithAdapter { X = 5, Y = 10 };
+            var result = g.Inject((object)point).GremlinLang.GetGremlin();
+
+            // The adapter uses type name "adapter.Point" and only exposes "a"/"b" fields,
+            // overriding the attribute which would produce "attr.Point" with "X"/"Y".
+            Assert.Equal("g.inject(PDT(\"adapter.Point\",[\"a\":5,\"b\":10]))", result);
+        }
+
+        [ProviderDefined(Name = "attr.Point")]
+        private class AnnotatedPointWithAdapter
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+        }
+
+        private class AdapterForAnnotatedPoint : IProviderDefinedTypeAdapter<AnnotatedPointWithAdapter>
+        {
+            public string TypeName => "adapter.Point";
+
+            public AnnotatedPointWithAdapter FromFields(IReadOnlyDictionary<string, object?> fields) =>
+                new() { X = (int)fields["a"]!, Y = (int)fields["b"]! };
+
+            public IReadOnlyDictionary<string, object?> ToFields(AnnotatedPointWithAdapter obj) =>
+                new Dictionary<string, object?> { { "a", obj.X }, { "b", obj.Y } };
+        }
+
+        [Fact]
+        public void g_Inject_PDT_dehydrates_annotated_inner_nested_in_unregistered_outer()
+        {
+            // An unregistered outer PDT contains an annotated inner object as a field value.
+            // The inner should be dehydrated to its PDT form when the outer is serialized.
+            var inner = new NestedAnnotatedWidget { Tag = "abc" };
+            var outer = new ProviderDefinedType("unregistered:Container",
+                new Dictionary<string, object?> { { "widget", inner }, { "count", 7 } });
+
+            var result = _g.Inject((object)outer).GremlinLang.GetGremlin();
+
+            Assert.Equal(
+                "g.inject(PDT(\"unregistered:Container\",[\"widget\":PDT(\"nested.Widget\",[\"Tag\":\"abc\"]),\"count\":7]))",
+                result);
+        }
+
+        [ProviderDefined(Name = "nested.Widget")]
+        private class NestedAnnotatedWidget
+        {
+            public string Tag { get; set; } = "";
+        }
     }
 }

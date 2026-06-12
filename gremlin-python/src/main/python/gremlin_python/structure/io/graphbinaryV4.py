@@ -30,7 +30,8 @@ from aenum import Enum
 from gremlin_python.process.traversal import Direction, T, Merge, GType
 from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, BigIntType, \
     DictType, SetType, SingleByte, SingleChar
-from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
+from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path, ProviderDefinedType, \
+    _pdt_decorated_types
 from gremlin_python.structure.io.util import HashableDict, SymbolUtil, Marker
 
 log = logging.getLogger(__name__)
@@ -73,8 +74,8 @@ class DataType(Enum):
     gtype = 0x30
     char = 0x80
     duration = 0x81
+    composite_pdt = 0xf0
     marker = 0xfd
-    custom = 0x00                 # todo
 
 
 NULL_BYTES = [DataType.null.value, 0x01]
@@ -144,10 +145,11 @@ class GraphBinaryWriter(object):
 
 
 class GraphBinaryReader(object):
-    def __init__(self, deserializer_map=None):
+    def __init__(self, deserializer_map=None, pdt_registry=None):
         self.deserializers = _deserializers.copy()
         if deserializer_map:
             self.deserializers.update(deserializer_map)
+        self.pdt_registry = pdt_registry
 
     def read_object(self, b):
         if b is None:
@@ -163,9 +165,33 @@ class GraphBinaryReader(object):
                 if nullable:
                     buff.read(1)
                 return None
-            return self.deserializers[DataType(bt)].objectify(buff, self, nullable)
+            result = self.deserializers[DataType(bt)].objectify(buff, self, nullable)
         else:
-            return self.deserializers[data_type].objectify(buff, self, nullable)
+            result = self.deserializers[data_type].objectify(buff, self, nullable)
+        if self.pdt_registry is not None and isinstance(result, ProviderDefinedType):
+            hydrated = self.pdt_registry.hydrate(result)
+            if not isinstance(hydrated, ProviderDefinedType):
+                return hydrated
+            result = hydrated
+        if isinstance(result, ProviderDefinedType) and result.name in _pdt_decorated_types:
+            return self._hydrate_decorated(result)
+        return result
+
+    def _hydrate_decorated(self, pdt):
+        """Hydrate a ProviderDefinedType using a @provider_defined decorated class."""
+        cls = _pdt_decorated_types[pdt.name]
+        fields = {}
+        for k, v in pdt.fields.items():
+            if isinstance(v, ProviderDefinedType) and v.name in _pdt_decorated_types:
+                fields[k] = self._hydrate_decorated(v)
+            elif self.pdt_registry is not None and isinstance(v, ProviderDefinedType):
+                fields[k] = self.pdt_registry.hydrate(v)
+            else:
+                fields[k] = v
+        obj = cls.__new__(cls)
+        for k, v in fields.items():
+            setattr(obj, k, v)
+        return obj
 
 
 class _GraphBinaryTypeIO(object, metaclass=GraphBinaryTypeType):
@@ -922,3 +948,25 @@ class MarkerIO(_GraphBinaryTypeIO):
         return cls.is_null(buff, reader,
                            lambda b, r: Marker.of(int8_unpack(b.read(1))),
                            nullable)
+
+
+class ProviderDefinedTypeIO(_GraphBinaryTypeIO):
+    python_type = ProviderDefinedType
+    graphbinary_type = DataType.composite_pdt
+
+    @classmethod
+    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
+        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
+        StringIO.dictify(obj.name, writer, to_extend)
+        MapIO.dictify(obj.fields, writer, to_extend)
+        return to_extend
+
+    @classmethod
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_pdt, nullable)
+
+    @classmethod
+    def _read_pdt(cls, b, r):
+        name = r.read_object(b)
+        fields = r.read_object(b)
+        return ProviderDefinedType(name, fields)

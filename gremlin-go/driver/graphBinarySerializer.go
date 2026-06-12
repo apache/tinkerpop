@@ -37,7 +37,6 @@ type dataType uint8
 
 // dataType defined as constants.
 const (
-	customType         dataType = 0x00
 	intType            dataType = 0x01
 	longType           dataType = 0x02
 	stringType         dataType = 0x03
@@ -65,6 +64,7 @@ const (
 	mergeType          dataType = 0x2e
 	gTypeType          dataType = 0x30
 	durationType       dataType = 0x81
+	compositePDTType   dataType = 0xf0
 	markerType         dataType = 0xfd
 	nullType           dataType = 0xFE
 )
@@ -621,6 +621,8 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return bigDecimalType, nil
 	case *ByteBuffer, ByteBuffer:
 		return byteBuffer, nil
+	case *ProviderDefinedType:
+		return compositePDTType, nil
 	default:
 		switch reflect.TypeOf(val).Kind() {
 		case reflect.Map:

@@ -18,8 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary;
 
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.CustomTypeSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.types.ProviderDefinedTypeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TransformSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.io.IOException;
@@ -50,7 +51,6 @@ public class GraphBinaryWriter {
     public final static byte VERSION_BYTE = (byte)0x84;
     public final static byte BULKED_BYTE = (byte)0x01;
     private final static byte[] unspecifiedNullBytes = new byte[] { DataType.UNSPECIFIED_NULL.getCodeByte(), 0x01};
-    private final static byte[] customTypeCodeBytes = new byte[] { DataType.CUSTOM.getCodeByte() };
 
     public GraphBinaryWriter() {
         this(TypeSerializerRegistry.INSTANCE);
@@ -76,6 +76,10 @@ public class GraphBinaryWriter {
         final Class<?> objectClass = value.getClass();
 
         final TypeSerializer<T> serializer = (TypeSerializer<T>) registry.getSerializer(objectClass);
+        if (serializer instanceof ProviderDefinedTypeSerializer && !(value instanceof ProviderDefinedType)) {
+            serializer.writeValue((T) ProviderDefinedType.from(value), buffer, this, nullable);
+            return;
+        }
         serializer.writeValue(value, buffer, this, nullable);
     }
 
@@ -92,13 +96,11 @@ public class GraphBinaryWriter {
         final Class<?> objectClass = value.getClass();
         final TypeSerializer<T> serializer = (TypeSerializer<T>) registry.getSerializer(objectClass);
 
-        if (serializer instanceof CustomTypeSerializer) {
-            // It's a custom type
-            CustomTypeSerializer customTypeSerializer = (CustomTypeSerializer) serializer;
-
-            buffer.writeBytes(customTypeCodeBytes);
-            writeValue(customTypeSerializer.getTypeName(), buffer, false);
-            customTypeSerializer.write(value, buffer, this);
+        if (serializer instanceof ProviderDefinedTypeSerializer && !(value instanceof ProviderDefinedType)) {
+            // Convert @ProviderDefined-annotated object to ProviderDefinedType, then re-enter write().
+            // On re-entry, ProviderDefinedType.class is directly registered in the registry,
+            // and the instanceof guard prevents double-wrapping.
+            write((T) ProviderDefinedType.from(value), buffer);
             return;
         }
 

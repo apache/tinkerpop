@@ -579,3 +579,79 @@ class TestGremlinLang(object):
         result = GremlinLang.convert_parameters_to_string({'name': "it's a test"})
         assert "'name'" in result
         assert "it" in result
+
+    def test_provider_defined_auto_dehydration(self):
+        from gremlin_python.structure.graph import ProviderDefinedType, provider_defined
+        g = traversal().with_(None)
+
+        @provider_defined(name="com.example.Point")
+        class Point:
+            def __init__(self, x, y):
+                self.x = x
+                self.y = y
+
+        p = Point(1, 2)
+        gremlin = g.inject(p).gremlin_lang.get_gremlin()
+        assert "PDT('com.example.Point',['x':1,'y':2])" in gremlin
+
+    def test_pdt_adapter_takes_precedence_over_decorator(self):
+        from gremlin_python.structure.graph import ProviderDefinedTypeRegistry, provider_defined
+        g = traversal().with_(None)
+
+        @provider_defined(name="com.example.Point")
+        class Point:
+            def __init__(self, x, y):
+                self.x = x
+                self.y = y
+
+        registry = ProviderDefinedTypeRegistry()
+        registry.register("com.adapter.Point",
+                          deserialize_fn=lambda fields: Point(fields["a"], fields["b"]),
+                          serialize_fn=lambda p: {"a": p.x, "b": p.y},
+                          target_class=Point)
+        g.gremlin_lang.pdt_registry = registry
+
+        p = Point(3, 4)
+        gremlin = g.inject(p).gremlin_lang.get_gremlin()
+        # The adapter's type_name and fields must win over the decorator's
+        assert "PDT('com.adapter.Point',['a':3,'b':4])" in gremlin
+
+    def test_pdt_special_characters_in_name(self):
+        from gremlin_python.structure.graph import ProviderDefinedType
+        g = traversal().with_(None)
+
+        pdt = ProviderDefinedType('say"hello"', {'v': 1})
+        gremlin = g.inject(pdt).gremlin_lang.get_gremlin()
+        assert "PDT('say\"hello\"',['v':1])" in gremlin
+
+        pdt2 = ProviderDefinedType('back\\slash', {'v': 1})
+        gremlin2 = g.inject(pdt2).gremlin_lang.get_gremlin()
+        assert "PDT('back\\\\slash',['v':1])" in gremlin2
+
+    def test_pdt_nested(self):
+        from gremlin_python.structure.graph import ProviderDefinedType
+        g = traversal().with_(None)
+
+        inner = ProviderDefinedType('Inner', {'v': 1})
+        outer = ProviderDefinedType('Outer', {'inner': inner})
+        gremlin = g.inject(outer).gremlin_lang.get_gremlin()
+        assert "PDT('Outer',['inner':PDT('Inner',['v':1])])" in gremlin
+
+    def test_dehydrate_inner_decorated_in_unregistered_outer(self):
+        """A @provider_defined inner object must dehydrate to PDT form even when nested
+        as a field value inside a raw (unregistered/undecorated) ProviderDefinedType."""
+        from gremlin_python.structure.graph import ProviderDefinedType, provider_defined
+        g = traversal().with_(None)
+
+        @provider_defined(name="com.example.Inner")
+        class Inner:
+            def __init__(self, val):
+                self.val = val
+
+        inner_obj = Inner(99)
+        # Outer is a raw ProviderDefinedType — no adapter, no decorator
+        outer_pdt = ProviderDefinedType("com.example.Outer", {"child": inner_obj, "count": 7})
+
+        gremlin = g.inject(outer_pdt).gremlin_lang.get_gremlin()
+        # The inner decorated object MUST be dehydrated to its PDT representation
+        assert "PDT('com.example.Outer',['child':PDT('com.example.Inner',['val':99]),'count':7])" in gremlin

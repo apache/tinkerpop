@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.language.translator;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -203,5 +204,10 @@ public class AnonymizedTranslatorVisitor extends TranslateVisitor {
     @Override
     public Void visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
         return anonymize(ctx, ByteBuffer.class);
+    }
+
+    @Override
+    public Void visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) {
+        return anonymize(ctx, ProviderDefinedType.class);
     }
 }

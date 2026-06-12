@@ -59,10 +59,14 @@ export default class AnonymousTraversalSource {
   with_(connection: RemoteConnection) {
     const traversalStrategies = new TraversalStrategies();
     traversalStrategies.addStrategy(new RemoteStrategy(connection));
+    const gl = new GremlinLang();
+    if (connection.options?.pdtRegistry) {
+      gl.pdtRegistry = connection.options.pdtRegistry;
+    }
     return new this.traversalSourceClass!(
       new Graph(),
       traversalStrategies,
-      new GremlinLang(),
+      gl,
       this.traversalSourceClass,
       this.traversalClass,
     );

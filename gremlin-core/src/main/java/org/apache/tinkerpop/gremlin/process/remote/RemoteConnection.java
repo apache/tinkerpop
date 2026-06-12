@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 
 import java.lang.reflect.Constructor;
 import java.util.Iterator;
@@ -54,6 +55,14 @@ public interface RemoteConnection extends AutoCloseable {
      * response from the server: the results of the {@link Traversal} itself and the side-effects that it produced.
      */
     public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final GremlinLang gremlinLang) throws RemoteConnectionException;
+
+    /**
+     * Returns the {@link ProviderDefinedTypeRegistry} associated with this connection, or {@code null} if none.
+     * Used by the gremlin-lang translator for registry-based dehydration of unknown types.
+     */
+    public default ProviderDefinedTypeRegistry getPdtRegistry() {
+        return null;
+    }
 
     /**
      * Create a {@link RemoteConnection} from a {@code Configuration} object. The configuration must contain a
