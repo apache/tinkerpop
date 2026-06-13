@@ -53,7 +53,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @GraphComputerOnly and not @TinkerServiceRegistry and not @InsertionOrderingRequired and not @StepWrite",
+        tags = "not @GraphComputerOnly and not @TinkerServiceRegistry and not @InsertionOrderingRequired and not @StepWrite and not @TinkerGQL",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = HadoopGraphFeatureIntegrateTest.HadoopGraphGuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },

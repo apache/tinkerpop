@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphCountStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
@@ -59,7 +60,8 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     static {
         TraversalStrategies.GlobalCache.registerStrategies(TinkerTransactionGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(
                 TinkerGraphStepStrategy.instance(),
-                TinkerGraphCountStrategy.instance()));
+                TinkerGraphCountStrategy.instance(),
+                GqlDeclarativeMatchStrategy.instance()));
     }
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
@@ -299,6 +301,22 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     @Override
     public int getEdgesCount() {
         return (int) edges.entrySet().stream().filter(v -> v.getValue().get() != null).count();
+    }
+
+    @Override
+    public long countVerticesByLabel(final String label) {
+        if (label == null) return getVerticesCount();
+        return vertices.values().stream()
+                .filter(c -> c.get() != null && label.equals(c.get().label()))
+                .count();
+    }
+
+    @Override
+    public long countEdgesByLabel(final String label) {
+        if (label == null) return getEdgesCount();
+        return edges.values().stream()
+                .filter(c -> c.get() != null && label.equals(c.get().label()))
+                .count();
     }
 
     @Override

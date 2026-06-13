@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStepP
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.DeclarativeMatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStepPlaceholder;
@@ -666,6 +667,43 @@ public class GraphTraversalSource implements TraversalSource {
         clone.gremlinLang.addStep(GraphTraversal.Symbols.call, service, params, childTraversal);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new CallStepPlaceholder<>(traversal, true, service, params, childTraversal.asAdmin()));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by executing a declarative pattern match query. The query language is not
+     * prescribed or implemented by the framework; it defaults to {@code null}, meaning the graph
+     * provider will use its native query language. Use {@code .with("queryLanguage", value)} to specify a
+     * language explicitly. Consult the graph system you are using to determine what query language you can give to
+     * this step.
+     *
+     * @param matchQuery the declarative query string
+     * @return the traversal with an appended {@link DeclarativeMatchStep}.
+     * @since 4.0.0
+     */
+    public <S> GraphTraversal<S, Map<String, Object>> match(final String matchQuery) {
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.match, matchQuery);
+        final GraphTraversal.Admin<S, Map<String, Object>> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new DeclarativeMatchStep<>(traversal, matchQuery, null, null, true));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by executing a declarative pattern match query. The query language is not
+     * prescribed or implemented by the framework; it defaults to {@code null}, meaning the graph
+     * provider will use its native query language. Use {@code .with("queryLanguage", value)} to specify a
+     * language explicitly. Consult the graph system you are using to determine what query language you can give to
+     * this step.
+     *
+     * @param matchQuery the declarative query string
+     * @param params the query parameters (may be {@code null})
+     * @return the traversal with an appended {@link DeclarativeMatchStep}.
+     * @since 4.0.0
+     */
+    public <S> GraphTraversal<S, Map<String, Object>> match(final String matchQuery, final Map<String, Object> params) {
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.match, matchQuery, params);
+        final GraphTraversal.Admin<S, Map<String, Object>> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new DeclarativeMatchStep<>(traversal, matchQuery, params, null, true));
     }
 
     /**

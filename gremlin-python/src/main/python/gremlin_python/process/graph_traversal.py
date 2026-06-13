@@ -236,6 +236,14 @@ class GraphTraversalSource(object):
         traversal.gremlin_lang.add_step("call", *args)
         return traversal
 
+    def match(self, match_query, params=None):
+        traversal = self.get_graph_traversal()
+        if params is not None:
+            traversal.gremlin_lang.add_step("match", match_query, params)
+        else:
+            traversal.gremlin_lang.add_step("match", match_query)
+        return traversal
+
     def union(self, *args):
         traversal = self.get_graph_traversal()
         traversal.gremlin_lang.add_step("union", *args)
@@ -683,6 +691,12 @@ class GraphTraversal(Traversal):
         return self
 
     def match(self, *args):
+        if len(args) > 0 and not isinstance(args[0], str):
+            warnings.warn(
+                "Passing Traversal objects to match() is deprecated as of TinkerPop 4.0.0 "
+                "and will be removed in a future release. Use match(str) for declarative "
+                "pattern matching instead.",
+                DeprecationWarning, stacklevel=2)
         self.gremlin_lang.add_step("match", *args)
         return self
 

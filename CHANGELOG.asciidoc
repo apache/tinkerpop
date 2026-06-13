@@ -60,6 +60,11 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added string parameter parsing to `GremlinServer` to prevent traversal injection and excessive nesting depths.
 * Modified all GLVs to detect unsupported types in `GremlinLang` and throw consistent error for that case.
 * Added GraphBinary 4.0 `Graph` (`0x10`) serializer/deserializer to `gremlin-javascript`, `gremlin-dotnet`, and `gremlin-go` so that `subgraph()` results are returned as a detached `Graph` data container.
+* Added `match(string)` and `match(string, IDictionary)` overloads for declarative pattern matching.
+* Deprecated the traversal-based `match(Traversal[])` in favor of the new string-based API.
+* Added the `gql-gremlin` module containing the TinkerGQL engine, a `MATCH`-pattern executor implementing a deliberate minimal subset of ISO GQL, usable by any graph provider.
+* Added `Graph.countVerticesByLabel(String)`, `Graph.countEdgesByLabel(String)`, and the `Graph.Index` nested interface as performance-hint extension points for the TinkerGQL engine.
+* Added GQL support to TinkerGraph with `gql-gremlin`,
 
 [[release-4-0-0-beta-2]]
 === TinkerPop 4.0.0-beta.2 (April 1, 2026)
@@ -90,7 +95,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Replace `WebSocket` with `HTTP` (non-streaming) in `gremlin-dotnet`.
 * Added `MimeType` to `IMessageSerializer` and split client option to allow separate request and response serialization in `gremlin-dotnet`.
 * Added `RequestInterceptor` to `gremlin-dotnet` with `auth` reference implementations.
-* Added streaming deserialization to `gremlin-dotnet`, results are now deserialized incrementally from the HTTP response stream via `IAsyncEnumerable<T>`. 
+* Added streaming deserialization to `gremlin-dotnet`, results are now deserialized incrementally from the HTTP response stream via `IAsyncEnumerable<T>`.
 * Target framework for `gremlin-dotnet` updated to `net8.0`.
 * Bumped minimum Node.js version for `gremlin-javascript` from 20 to 22.
 * Removed `mimeType` connection option in `gremlin-javascript` in favor of direct use of `reader` and `writer` options.

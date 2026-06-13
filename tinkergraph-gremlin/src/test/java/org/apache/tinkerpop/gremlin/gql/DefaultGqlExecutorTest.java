@@ -1,0 +1,1194 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.tinkerpop.gremlin.gql;
+
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.*;
+
+/**
+ * Unit tests for {@link DefaultGqlExecutor}: DFS backtracking pattern matching,
+ * label constraints, equality constraints for shared variables, edge variable binding,
+ * self-loops, and multi-hop paths.
+ */
+public class DefaultGqlExecutorTest {
+
+    private TinkerGraph graph;
+    private DefaultGqlPlanner planner;
+    private DefaultGqlExecutor executor;
+
+    @Before
+    public void setUp() {
+        graph = TinkerGraph.open();
+        planner = new DefaultGqlPlanner(graph);
+        executor = new DefaultGqlExecutor(graph);
+    }
+
+    @After
+    public void tearDown() {
+        graph.close();
+    }
+
+    // -------------------------------------------------------------------------
+    // Test helper: materialise lazy iterator into a List<Map<String,Element>>
+    // -------------------------------------------------------------------------
+
+    /**
+     * Drains the lazy result iterator into a list of named-variable maps, mirroring the
+     * old List<Map> API so that existing assertions can be reused without change.
+     * Entries whose variable name starts with {@code $anon} are excluded (anonymous nodes).
+     */
+    private List<Map<String, Element>> materialize(final Iterator<Element[]> iter,
+                                                    final GqlMatchPlan plan) {
+        final String[] variables = plan.getVariables();
+        final List<Map<String, Element>> rows = new ArrayList<>();
+        while (iter.hasNext()) {
+            final Element[] row = iter.next();
+            final Map<String, Element> map = new LinkedHashMap<>();
+            for (int i = 0; i < variables.length; i++) {
+                if (!variables[i].startsWith("$anon") && row[i] != null)
+                    map.put(variables[i], row[i]);
+            }
+            rows.add(map);
+        }
+        return rows;
+    }
+
+    private List<Map<String, Element>> execute(final String query) {
+        return execute(query, Collections.emptyMap());
+    }
+
+    private List<Map<String, Element>> execute(final String query, final Map<String, Object> params) {
+        final GqlMatchPlan plan = planner.plan(query);
+        return materialize(executor.execute(plan, params), plan);
+    }
+
+    // -------------------------------------------------------------------------
+    // Empty / no-match cases
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testEmptyGraphReturnsNoResults() {
+        assertTrue(execute("MATCH (n:Person)").isEmpty());
+    }
+
+    @Test
+    public void testSingleNodeNoLabelMatch() {
+        graph.addVertex("Person");
+        assertTrue(execute("MATCH (n:Animal)").isEmpty());
+    }
+
+    @Test
+    public void testEdgePatternNoMatchWhenNoEdges() {
+        graph.addVertex("Person");
+        graph.addVertex("Person");
+        assertTrue(execute("MATCH (a:Person)-[:KNOWS]->(b:Person)").isEmpty());
+    }
+
+    // -------------------------------------------------------------------------
+    // Single-node patterns
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testSingleNodeWithLabel() {
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex bob = graph.addVertex("Person");
+        graph.addVertex("Company");
+
+        final List<Map<String, Element>> results = execute("MATCH (n:Person)");
+
+        assertEquals(2, results.size());
+        final List<Element> found = results.stream()
+                .map(r -> r.get("n")).collect(Collectors.toList());
+        assertTrue(found.contains(alice));
+        assertTrue(found.contains(bob));
+    }
+
+    @Test
+    public void testSingleNodeWithoutLabel() {
+        graph.addVertex("Person");
+        graph.addVertex("Company");
+        assertEquals(2, execute("MATCH (n)").size());
+    }
+
+    // -------------------------------------------------------------------------
+    // Single-edge patterns
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testSingleOutEdgeWithLabel() {
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex acme = graph.addVertex("Company");
+        alice.addEdge("WORKS_AT", acme);
+
+        final List<Map<String, Element>> results = execute("MATCH (a:Person)-[:WORKS_AT]->(c:Company)");
+
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("a"));
+        assertEquals(acme, results.get(0).get("c"));
+    }
+
+    @Test
+    public void testSingleOutEdgeDoesNotMatchWrongDirection() {
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex acme = graph.addVertex("Company");
+        acme.addEdge("WORKS_AT", alice);  // reversed — acme→alice
+        assertTrue(execute("MATCH (a:Person)-[:WORKS_AT]->(c:Company)").isEmpty());
+    }
+
+    @Test
+    public void testSingleInEdge() {
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex bob = graph.addVertex("Person");
+        alice.addEdge("KNOWS", bob);  // alice→bob, so bob<-KNOWS-alice
+
+        final List<Map<String, Element>> results = execute("MATCH (a:Person)<-[:KNOWS]-(b:Person)");
+
+        assertEquals(1, results.size());
+        assertEquals(bob, results.get(0).get("a"));
+        assertEquals(alice, results.get(0).get("b"));
+    }
+
+    @Test
+    public void testUndirectedEdge() {
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex bob = graph.addVertex("Person");
+        alice.addEdge("KNOWS", bob);
+
+        // Undirected matches both directions
+        assertEquals(2, execute("MATCH (a:Person)-[:KNOWS]-(b:Person)").size());
+    }
+
+    @Test
+    public void testNamedEdgeVariable() {
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex acme = graph.addVertex("Company");
+        final Edge e = alice.addEdge("WORKS_AT", acme);
+
+        final List<Map<String, Element>> results = execute("MATCH (a:Person)-[r:WORKS_AT]->(c:Company)");
+
+        assertEquals(1, results.size());
+        assertEquals(e, results.get(0).get("r"));
+        assertEquals(alice, results.get(0).get("a"));
+        assertEquals(acme, results.get(0).get("c"));
+    }
+
+    @Test
+    public void testAnonymousEdge() {
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex acme = graph.addVertex("Company");
+        alice.addEdge("WORKS_AT", acme);
+
+        final List<Map<String, Element>> results = execute("MATCH (a:Person)-[]->(c:Company)");
+
+        assertEquals(1, results.size());
+        assertFalse(results.get(0).containsKey("r")); // no edge variable
+    }
+
+    @Test
+    public void testWrongEdgeLabelNotMatched() {
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex acme = graph.addVertex("Company");
+        alice.addEdge("LIKES", acme);  // different label
+        assertTrue(execute("MATCH (a:Person)-[:WORKS_AT]->(c:Company)").isEmpty());
+    }
+
+    // -------------------------------------------------------------------------
+    // Multi-hop paths
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testTwoHopPath() {
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex bob = graph.addVertex("Person");
+        final Vertex acme = graph.addVertex("Company");
+        alice.addEdge("KNOWS", bob);
+        bob.addEdge("WORKS_AT", acme);
+
+        final List<Map<String, Element>> results = execute(
+                "MATCH (a:Person)-[:KNOWS]->(b:Person)-[:WORKS_AT]->(c:Company)");
+
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("a"));
+        assertEquals(bob, results.get(0).get("b"));
+        assertEquals(acme, results.get(0).get("c"));
+    }
+
+    @Test
+    public void testTwoHopPathMultipleMatches() {
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex bob = graph.addVertex("Person");
+        final Vertex carol = graph.addVertex("Person");
+        final Vertex acme = graph.addVertex("Company");
+        alice.addEdge("KNOWS", bob);
+        carol.addEdge("KNOWS", bob);
+        bob.addEdge("WORKS_AT", acme);
+
+        // Both alice and carol know bob, who works at acme
+        assertEquals(2, execute("MATCH (a:Person)-[:KNOWS]->(b:Person)-[:WORKS_AT]->(c:Company)").size());
+    }
+
+    // -------------------------------------------------------------------------
+    // Shared variable (equality constraint)
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testSharedVariableAcrossPatterns() {
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex bob = graph.addVertex("Person");
+        final Vertex acme = graph.addVertex("Company");
+        alice.addEdge("KNOWS", bob);
+        alice.addEdge("WORKS_AT", acme);
+        bob.addEdge("WORKS_AT", acme);
+
+        final List<Map<String, Element>> results = execute(
+                "MATCH (a:Person)-[:KNOWS]->(b:Person), (b)-[:WORKS_AT]->(c:Company)");
+
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("a"));
+        assertEquals(bob, results.get(0).get("b"));
+        assertEquals(acme, results.get(0).get("c"));
+    }
+
+    @Test
+    public void testSelfLoopPattern() {
+        final Vertex alice = graph.addVertex("Person");
+        alice.addEdge("SELF", alice);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:Person)-[:SELF]->(n:Person)");
+
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testSelfLoopNotMatchedWhenNoSelfEdge() {
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex bob = graph.addVertex("Person");
+        alice.addEdge("SELF", bob);  // alice → bob, not self-loop
+        assertTrue(execute("MATCH (n:Person)-[:SELF]->(n:Person)").isEmpty());
+    }
+
+    // -------------------------------------------------------------------------
+    // Triangle (cycle with back-edge equality constraint)
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testTrianglePattern() {
+        final Vertex a = graph.addVertex("A");
+        final Vertex b = graph.addVertex("B");
+        final Vertex c = graph.addVertex("C");
+        a.addEdge("AB", b);
+        b.addEdge("BC", c);
+        c.addEdge("CA", a);
+
+        final List<Map<String, Element>> results = execute(
+                "MATCH (a:A)-[:AB]->(b:B)-[:BC]->(c:C)-[:CA]->(a:A)");
+
+        assertEquals(1, results.size());
+        assertEquals(a, results.get(0).get("a"));
+        assertEquals(b, results.get(0).get("b"));
+        assertEquals(c, results.get(0).get("c"));
+    }
+
+    @Test
+    public void testTriangleNotMatchedWhenCycleIncomplete() {
+        final Vertex a = graph.addVertex("A");
+        final Vertex b = graph.addVertex("B");
+        final Vertex c = graph.addVertex("C");
+        a.addEdge("AB", b);
+        b.addEdge("BC", c);
+        // Missing c→a edge
+        assertTrue(execute("MATCH (a:A)-[:AB]->(b:B)-[:BC]->(c:C)-[:CA]->(a:A)").isEmpty());
+    }
+
+    // -------------------------------------------------------------------------
+    // Property filters: literal values
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testStringLiteralFilterMatchesSingleVertex() {
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("Person");
+        bob.property("name", "Bob");
+
+        final List<Map<String, Element>> results = execute("MATCH (n:Person {name: 'Alice'})");
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testStringLiteralFilterNoMatch() {
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        assertTrue(execute("MATCH (n:Person {name: 'Charlie'})").isEmpty());
+    }
+
+    @Test
+    public void testIntegerLiteralFilter() {
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("age", 30L);
+        final Vertex bob = graph.addVertex("Person");
+        bob.property("age", 25L);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:Person {age: 30})");
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testFloatLiteralFilter() {
+        final Vertex a = graph.addVertex("Item");
+        a.property("score", 9.5);
+        final Vertex b = graph.addVertex("Item");
+        b.property("score", 8.0);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:Item {score: 9.5})");
+        assertEquals(1, results.size());
+        assertEquals(a, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testBooleanTrueLiteralFilter() {
+        final Vertex active = graph.addVertex("Person");
+        active.property("active", true);
+        final Vertex inactive = graph.addVertex("Person");
+        inactive.property("active", false);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:Person {active: true})");
+        assertEquals(1, results.size());
+        assertEquals(active, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testBooleanFalseLiteralFilter() {
+        final Vertex active = graph.addVertex("Person");
+        active.property("active", true);
+        final Vertex inactive = graph.addVertex("Person");
+        inactive.property("active", false);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:Person {active: false})");
+        assertEquals(1, results.size());
+        assertEquals(inactive, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testMultiPropertyLiteralFilter() {
+        final Vertex alice30 = graph.addVertex("Person");
+        alice30.property("name", "Alice");
+        alice30.property("age", 30L);
+        final Vertex alice25 = graph.addVertex("Person");
+        alice25.property("name", "Alice");
+        alice25.property("age", 25L);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:Person {name: 'Alice', age: 30})");
+        assertEquals(1, results.size());
+        assertEquals(alice30, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testPropertyFilterMissingPropertyNoMatch() {
+        // Vertex has no 'name' property — predicate must not match
+        graph.addVertex("Person");
+        assertTrue(execute("MATCH (n:Person {name: 'Alice'})").isEmpty());
+    }
+
+    // -------------------------------------------------------------------------
+    // Property filters: parameter references
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testStringParamFilter() {
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("Person");
+        bob.property("name", "Bob");
+
+        final Map<String, Object> params = Collections.singletonMap("n", "Alice");
+        final List<Map<String, Element>> results = execute("MATCH (p:Person {name: $n})", params);
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("p"));
+    }
+
+    @Test
+    public void testParamFilterNoMatch() {
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+
+        final Map<String, Object> params = Collections.singletonMap("n", "Charlie");
+        assertTrue(execute("MATCH (p:Person {name: $n})", params).isEmpty());
+    }
+
+    @Test
+    public void testMissingParamYieldsNoMatch() {
+        // $n not in params map — resolves to null, property is non-null → no match
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        assertTrue(execute("MATCH (p:Person {name: $n})", Collections.emptyMap()).isEmpty());
+    }
+
+    @Test
+    public void testMultiParamFilter() {
+        final Vertex alice30 = graph.addVertex("Person");
+        alice30.property("name", "Alice");
+        alice30.property("age", 30L);
+        final Vertex alice25 = graph.addVertex("Person");
+        alice25.property("name", "Alice");
+        alice25.property("age", 25L);
+
+        final Map<String, Object> params = new java.util.HashMap<>();
+        params.put("name", "Alice");
+        params.put("age", 30L);
+        final List<Map<String, Element>> results =
+                execute("MATCH (n:Person {name: $name, age: $age})", params);
+        assertEquals(1, results.size());
+        assertEquals(alice30, results.get(0).get("n"));
+    }
+
+    // -------------------------------------------------------------------------
+    // Property filters: on target vertex in edge patterns
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testPropertyFilterOnTargetVertex() {
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("Person");
+        bob.property("name", "Bob");
+        final Vertex carol = graph.addVertex("Person");
+        carol.property("name", "Carol");
+        alice.addEdge("KNOWS", bob);
+        alice.addEdge("KNOWS", carol);
+
+        final Map<String, Object> params = Collections.singletonMap("name", "Bob");
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person)-[:KNOWS]->(b:Person {name: $name})", params);
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("a"));
+        assertEquals(bob, results.get(0).get("b"));
+    }
+
+    // -------------------------------------------------------------------------
+    // Property filters: vertex index integration
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testIndexedLiteralFilterUsesIndex() {
+        graph.createIndex("name", org.apache.tinkerpop.gremlin.structure.Vertex.class);
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("Person");
+        bob.property("name", "Bob");
+
+        final List<Map<String, Element>> results = execute("MATCH (n:Person {name: 'Alice'})");
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testIndexedParamFilterUsesIndex() {
+        graph.createIndex("name", org.apache.tinkerpop.gremlin.structure.Vertex.class);
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("Person");
+        bob.property("name", "Bob");
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (n:Person {name: $n})", Collections.singletonMap("n", "Alice"));
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testIndexedFilterNoMatch() {
+        graph.createIndex("name", org.apache.tinkerpop.gremlin.structure.Vertex.class);
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+
+        assertTrue(execute("MATCH (n:Person {name: 'Nobody'})").isEmpty());
+    }
+
+    @Test
+    public void testIndexedFilterMissingParamFallsBackToScan() {
+        // $n not in params — index cannot be used; full scan applies; no vertex matches null
+        graph.createIndex("name", org.apache.tinkerpop.gremlin.structure.Vertex.class);
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+
+        assertTrue(execute("MATCH (n:Person {name: $n})", Collections.emptyMap()).isEmpty());
+    }
+
+    @Test
+    public void testMostSelectiveIndexPredicateChosen() {
+        // Two indexed keys: 'name' is more selective (1 match) than 'role' (4 matches).
+        // The executor should use 'name' for the index lookup and return exactly 1 result.
+        graph.createIndex("name", org.apache.tinkerpop.gremlin.structure.Vertex.class);
+        graph.createIndex("role", org.apache.tinkerpop.gremlin.structure.Vertex.class);
+
+        for (int i = 0; i < 3; i++) {
+            final Vertex v = graph.addVertex("Person");
+            v.property("name", "Person" + i);
+            v.property("role", "employee");
+        }
+        final Vertex target = graph.addVertex("Person");
+        target.property("name", "Alice");
+        target.property("role", "employee");
+
+        final Map<String, Object> params = new java.util.HashMap<>();
+        params.put("name", "Alice");
+        params.put("role", "employee");
+        final List<Map<String, Element>> results =
+                execute("MATCH (n:Person {name: $name, role: $role})", params);
+        assertEquals(1, results.size());
+        assertEquals(target, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testIndexedSeedWithEdgePattern() {
+        graph.createIndex("name", org.apache.tinkerpop.gremlin.structure.Vertex.class);
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("Person");
+        bob.property("name", "Bob");
+        final Vertex carol = graph.addVertex("Person");
+        carol.property("name", "Carol");
+        alice.addEdge("KNOWS", bob);
+        alice.addEdge("KNOWS", carol);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {name: 'Alice'})-[:KNOWS]->(b:Person)");
+        assertEquals(2, results.size());
+        assertTrue(results.stream().allMatch(r -> alice.equals(r.get("a"))));
+    }
+
+    @Test
+    public void testPropertyFilterOnSeedAndTarget() {
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("Person");
+        bob.property("name", "Bob");
+        final Vertex carol = graph.addVertex("Person");
+        carol.property("name", "Carol");
+        alice.addEdge("KNOWS", bob);
+        carol.addEdge("KNOWS", bob);
+
+        final Map<String, Object> params = new java.util.HashMap<>();
+        params.put("src", "Alice");
+        params.put("dst", "Bob");
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {name: $src})-[:KNOWS]->(b:Person {name: $dst})", params);
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("a"));
+        assertEquals(bob, results.get(0).get("b"));
+    }
+
+    // -------------------------------------------------------------------------
+    // Gremlin-compatible literal types
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testIntegerLiteralDefaultsToInteger() {
+        // Unsuffixed integer literal must produce Integer (not Long) to match
+        // the type stored by graph implementations that use Integer for counts/ages.
+        final Vertex v = graph.addVertex("person");
+        v.property("age", 29);  // stored as Integer
+        final Vertex other = graph.addVertex("person");
+        other.property("age", 30);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:person {age: 29})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testIntegerSuffixI() {
+        final Vertex v = graph.addVertex("item");
+        v.property("count", 5);  // Integer
+        final List<Map<String, Element>> results = execute("MATCH (n:item {count: 5i})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testIntegerSuffixL() {
+        final Vertex v = graph.addVertex("item");
+        v.property("count", 999999999999L);  // Long
+        final List<Map<String, Element>> results = execute("MATCH (n:item {count: 999999999999l})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testNegativeIntegerLiteral() {
+        final Vertex v = graph.addVertex("account");
+        v.property("balance", -100);  // stored as Integer
+        final Vertex other = graph.addVertex("account");
+        other.property("balance", 50);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:account {balance: -100})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testFloatSuffixF() {
+        final Vertex v = graph.addVertex("item");
+        v.property("weight", 3.14f);  // Float
+        final List<Map<String, Element>> results = execute("MATCH (n:item {weight: 3.14f})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testByteSuffixFilter() {
+        final Vertex v = graph.addVertex("item");
+        v.property("small", (byte) 5);
+        final Vertex other = graph.addVertex("item");
+        other.property("small", (byte) 10);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:item {small: 5b})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testShortSuffixFilter() {
+        final Vertex v = graph.addVertex("item");
+        v.property("medium", (short) 1000);
+        final Vertex other = graph.addVertex("item");
+        other.property("medium", (short) 2000);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:item {medium: 1000s})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testBigIntegerSuffixFilter() {
+        final Vertex v = graph.addVertex("item");
+        v.property("big", new BigInteger("999999999999"));
+        final Vertex other = graph.addVertex("item");
+        other.property("big", new BigInteger("1"));
+
+        final List<Map<String, Element>> results = execute("MATCH (n:item {big: 999999999999n})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testBigDecimalSuffixFilter() {
+        final Vertex v = graph.addVertex("item");
+        v.property("price", new BigDecimal("1.99"));
+        final Vertex other = graph.addVertex("item");
+        other.property("price", new BigDecimal("9.99"));
+
+        final List<Map<String, Element>> results = execute("MATCH (n:item {price: 1.99m})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testDoubleSuffixFilter() {
+        final Vertex v = graph.addVertex("item");
+        v.property("score", 9.5);
+        final Vertex other = graph.addVertex("item");
+        other.property("score", 8.0);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:item {score: 9.5d})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testNegativeFloatLiteral() {
+        final Vertex v = graph.addVertex("sensor");
+        v.property("temperature", -1.5);  // Double
+        final Vertex other = graph.addVertex("sensor");
+        other.property("temperature", 20.0);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:sensor {temperature: -1.5})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testDoubleQuotedStringLiteral() {
+        final Vertex v = graph.addVertex("person");
+        v.property("name", "Alice");
+        final Vertex other = graph.addVertex("person");
+        other.property("name", "Bob");
+
+        final List<Map<String, Element>> results = execute("MATCH (n:person {name: \"Alice\"})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testStringWithEscapeSequence() {
+        final Vertex v = graph.addVertex("item");
+        v.property("desc", "line1\nline2");
+        final Vertex other = graph.addVertex("item");
+        other.property("desc", "plain");
+
+        final List<Map<String, Element>> results = execute("MATCH (n:item {desc: 'line1\\nline2'})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testNullLiteralMatchesAbsentProperty() {
+        // null predicate should match vertices where the property is absent.
+        final Vertex noName = graph.addVertex("person");
+        final Vertex withName = graph.addVertex("person");
+        withName.property("name", "Alice");
+
+        final List<Map<String, Element>> results = execute("MATCH (n:person {name: null})");
+        assertEquals(1, results.size());
+        assertEquals(noName, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testNullLiteralDoesNotMatchPresentProperty() {
+        final Vertex v = graph.addVertex("person");
+        v.property("name", "Alice");
+
+        assertTrue(execute("MATCH (n:person {name: null})").isEmpty());
+    }
+
+    @Test
+    public void testNanLiteralMatchesNanProperty() {
+        final Vertex v = graph.addVertex("sensor");
+        v.property("reading", Double.NaN);
+        final Vertex other = graph.addVertex("sensor");
+        other.property("reading", 1.0);
+
+        // NaN == NaN via Objects.equals on same Double.NaN constant
+        final List<Map<String, Element>> results = execute("MATCH (n:sensor {reading: NaN})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testInfinityLiteralMatchesInfinityProperty() {
+        final Vertex v = graph.addVertex("node");
+        v.property("limit", Double.POSITIVE_INFINITY);
+        final Vertex other = graph.addVertex("node");
+        other.property("limit", 1000.0);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:node {limit: Infinity})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testNegativeInfinityLiteral() {
+        final Vertex v = graph.addVertex("node");
+        v.property("limit", Double.NEGATIVE_INFINITY);
+        graph.addVertex("node").property("limit", 0.0);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:node {limit: -Infinity})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    // -------------------------------------------------------------------------
+    // Equality constraint short-circuit
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testParallelEdgesWithAnonymousEdgeAndBoundTargetProduceOneResult() {
+        // Multigraph: two parallel KNOWS edges from alice to bob. Pattern has a shared
+        // variable (b) so the second step's target is already bound when evaluated.
+        // The anonymous edge short-circuit must produce exactly one result, not two.
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex bob = graph.addVertex("Person");
+        final Vertex acme = graph.addVertex("Company");
+        alice.addEdge("KNOWS", bob);
+        alice.addEdge("KNOWS", bob); // parallel edge
+        bob.addEdge("WORKS_AT", acme);
+
+        final List<Map<String, Element>> results = execute(
+                "MATCH (a:Person)-[:KNOWS]->(b:Person), (b)-[:WORKS_AT]->(c:Company)");
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("a"));
+        assertEquals(bob, results.get(0).get("b"));
+        assertEquals(acme, results.get(0).get("c"));
+    }
+
+    @Test
+    public void testParallelEdgesWithNamedEdgeAndBoundTargetProduceOneResultPerEdge() {
+        // When the edge IS named, each parallel edge is a distinct result.
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex bob = graph.addVertex("Person");
+        final Vertex acme = graph.addVertex("Company");
+        alice.addEdge("KNOWS", bob);
+        alice.addEdge("KNOWS", bob); // parallel edge
+        bob.addEdge("WORKS_AT", acme);
+
+        final List<Map<String, Element>> results = execute(
+                "MATCH (a:Person)-[r:KNOWS]->(b:Person), (b)-[:WORKS_AT]->(c:Company)");
+        assertEquals(2, results.size());
+        assertEquals(2, results.stream().map(row -> row.get("r")).distinct().count());
+    }
+
+    @Test
+    public void testTriangleWithParallelClosingEdgeProducesOneResult() {
+        // Triangle pattern — the closing edge triggers the equality constraint path.
+        // Parallel edges on the closing edge must not produce duplicates.
+        final Vertex a = graph.addVertex("A");
+        final Vertex b = graph.addVertex("B");
+        final Vertex c = graph.addVertex("C");
+        a.addEdge("AB", b);
+        b.addEdge("BC", c);
+        c.addEdge("CA", a);
+        c.addEdge("CA", a); // parallel closing edge
+
+        final List<Map<String, Element>> results = execute(
+                "MATCH (a:A)-[:AB]->(b:B)-[:BC]->(c:C)-[:CA]->(a:A)");
+        assertEquals(1, results.size());
+    }
+
+    // -------------------------------------------------------------------------
+    // Adaptive step ordering: selectivityRatio() and estimatedCost
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testAdaptiveCountersUpdateAfterExecution() {
+        // After execution the step's attempts and hits counters must be non-zero,
+        // confirming that recordAttempt/recordHit are wired correctly.
+        final Vertex a = graph.addVertex("Person");
+        final Vertex b = graph.addVertex("Person");
+        a.addEdge("KNOWS", b);
+
+        final GqlMatchPlan plan = planner.plan("MATCH (a:Person)-[:KNOWS]->(b:Person)");
+        executor.execute(plan).forEachRemaining(row -> {}); // drain fully
+
+        // The plan has one extension step; it must have been invoked at least once.
+        final ExtensionStep step = plan.getSteps().get(0);
+        final double ratio = step.selectivityRatio();
+        assertTrue("selectivityRatio must be positive", ratio > 0.0);
+        assertTrue("selectivityRatio must be finite", Double.isFinite(ratio));
+    }
+
+    @Test
+    public void testMultipleEligibleStepsProduceCorrectResultsRegardlessOfOrder() {
+        // Two independent branches from the seed: seed -[:A]-> x and seed -[:B]-> y.
+        // Both steps are simultaneously eligible after the seed is bound.
+        // The executor must try them in some order and produce all combinations.
+        final Vertex seed = graph.addVertex("Hub");
+        final Vertex x1   = graph.addVertex("X");
+        final Vertex x2   = graph.addVertex("X");
+        final Vertex y1   = graph.addVertex("Y");
+        seed.addEdge("A", x1);
+        seed.addEdge("A", x2);
+        seed.addEdge("B", y1);
+
+        // MATCH (s:Hub)-[:A]->(x:X), (s)-[:B]->(y:Y) — s is shared, both steps eligible once s is bound
+        final List<Map<String, Element>> results = execute(
+                "MATCH (s:Hub)-[:A]->(x:X), (s)-[:B]->(y:Y)");
+
+        // 2 x-candidates × 1 y-candidate = 2 result rows
+        assertEquals(2, results.size());
+        results.forEach(r -> {
+            assertEquals(seed, r.get("s"));
+            assertEquals(y1, r.get("y"));
+            assertTrue(r.get("x").equals(x1) || r.get("x").equals(x2));
+        });
+    }
+
+    @Test
+    public void testHighlySelectiveStepChosenFirstAdaptively() {
+        // After several executions, the step that produces fewer results per attempt should
+        // converge to a lower selectivityRatio and be preferred.
+        final Vertex seed = graph.addVertex("Hub");
+        final Vertex y = graph.addVertex("Y");
+        seed.addEdge("B", y);
+        for (int i = 0; i < 10; i++) {
+            seed.addEdge("A", graph.addVertex("X"));
+        }
+
+        final GqlMatchPlan plan = planner.plan("MATCH (s:Hub)-[:A]->(x:X), (s)-[:B]->(y:Y)");
+
+        // Execute multiple times so the adaptive counters accumulate.
+        for (int i = 0; i < 5; i++) {
+            executor.execute(plan).forEachRemaining(row -> {});
+        }
+
+        // The B-step produces 1 hit per attempt (ratio ≈ 1.0);
+        // the A-step produces 10 hits per attempt (ratio > 1.0).
+        // After convergence, B-step's ratio < A-step's ratio.
+        ExtensionStep stepA = null, stepB = null;
+        for (final ExtensionStep s : plan.getSteps()) {
+            if ("A".equals(s.getEdgeLabel())) stepA = s;
+            if ("B".equals(s.getEdgeLabel())) stepB = s;
+        }
+        assertNotNull(stepA);
+        assertNotNull(stepB);
+        assertTrue("B-step (1 hit/attempt) should have lower selectivityRatio than A-step (10 hits/attempt)",
+                stepB.selectivityRatio() < stepA.selectivityRatio());
+    }
+
+    // -------------------------------------------------------------------------
+    // Edge property filter evaluation
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testEdgePropertyFilterLiteralFiltersResults() {
+        // Two KNOWS edges: one with weight=1.0, one with weight=0.5.
+        // The filter [e:KNOWS {weight: 0.5}] should return only the low-weight edge.
+        final Vertex a = graph.addVertex("Person");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        final Edge highWeight = a.addEdge("KNOWS", b);
+        highWeight.property("weight", 1.0);
+        final Edge lowWeight = a.addEdge("KNOWS", c);
+        lowWeight.property("weight", 0.5);
+
+        final GqlMatchPlan plan = planner.plan(
+                "MATCH (a:Person)-[e:KNOWS {weight: 0.5}]->(b:Person)");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan).forEachRemaining(results::add);
+
+        assertEquals("Only the edge with weight=0.5 should match", 1, results.size());
+        final Element[] row = results.get(0);
+        final int eIdx = plan.getIndex("e");
+        assertEquals(lowWeight, row[eIdx]);
+    }
+
+    @Test
+    public void testEdgePropertyFilterExcludesAllWhenNoMatch() {
+        // KNOWS edge has weight=0.8 — filter for weight=0.1 matches nothing.
+        final Vertex a = graph.addVertex("Person");
+        final Vertex b = graph.addVertex("Person");
+        final Edge edge = a.addEdge("KNOWS", b);
+        edge.property("weight", 0.8);
+
+        final GqlMatchPlan plan = planner.plan(
+                "MATCH (a:Person)-[e:KNOWS {weight: 0.1}]->(b:Person)");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan).forEachRemaining(results::add);
+
+        assertTrue("Filter matching no edge should return no results", results.isEmpty());
+    }
+
+    @Test
+    public void testEdgePropertyFilterWithParamRef() {
+        // Parameterized edge filter: [e:KNOWS {weight: $w}]
+        final Vertex a = graph.addVertex("Person");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        final Edge heavy = a.addEdge("KNOWS", b);
+        heavy.property("weight", 2.0);
+        final Edge light = a.addEdge("KNOWS", c);
+        light.property("weight", 0.1);
+
+        final GqlMatchPlan plan = planner.plan(
+                "MATCH (a:Person)-[e:KNOWS {weight: $w}]->(b:Person)");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan, Collections.singletonMap("w", 2.0)).forEachRemaining(results::add);
+
+        assertEquals(1, results.size());
+        final int eIdx = plan.getIndex("e");
+        assertEquals(heavy, results.get(0)[eIdx]);
+    }
+
+    @Test
+    public void testEdgeFilterDoesNotAffectUnfilteredEdges() {
+        // When no edge filter is specified, both edges match.
+        final Vertex a = graph.addVertex("Person");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        a.addEdge("KNOWS", b);
+        a.addEdge("KNOWS", c);
+
+        final GqlMatchPlan plan = planner.plan(
+                "MATCH (a:Person)-[:KNOWS]->(b:Person)");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan).forEachRemaining(results::add);
+
+        assertEquals("Without an edge filter both edges match", 2, results.size());
+    }
+
+    // -------------------------------------------------------------------------
+    // Reused edge variable equality constraint
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testReusedEdgeVariableAcrossPatternsEnforcesEquality() {
+        // MATCH (a)-[r:LOOP]->(a) — self-loop where 'r' connects 'a' to itself.
+        // A non-loop edge and a self-loop exist. Only the self-loop satisfies the equality
+        // constraint that anchor and target are both bound to 'a'.
+        final Vertex x = graph.addVertex("Node");
+        final Vertex y = graph.addVertex("Node");
+        final Edge selfLoop = x.addEdge("LOOP", x);
+        x.addEdge("LOOP", y); // non-loop — must not match MATCH (a)-[r:LOOP]->(a)
+
+        final GqlMatchPlan plan = planner.plan("MATCH (a:Node)-[r:LOOP]->(a:Node)");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan).forEachRemaining(results::add);
+
+        assertEquals("Only the self-loop satisfies the equality constraint on 'a'", 1, results.size());
+        final int rIdx = plan.getIndex("r");
+        assertEquals(selfLoop, results.get(0)[rIdx]);
+    }
+
+    @Test
+    public void testReusedEdgeVariableInMultiPatternEnforcesEquality() {
+        // MATCH (a)-[r:E]->(b), (b)-[r:E]->(c)
+        // 'r' cannot be the same edge for both traversals because they start from different
+        // anchors. The result should be empty.
+        final Vertex a = graph.addVertex("N");
+        final Vertex b = graph.addVertex("N");
+        final Vertex c = graph.addVertex("N");
+        a.addEdge("E", b);
+        b.addEdge("E", c);
+
+        final GqlMatchPlan plan = planner.plan("MATCH (a:N)-[r:E]->(b:N), (b)-[r:E]->(c:N)");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan).forEachRemaining(results::add);
+
+        assertTrue("No single edge can connect a→b and b→c simultaneously", results.isEmpty());
+    }
+
+    // -------------------------------------------------------------------------
+    // GqlMatchPlan.getIndex() unknown variable
+    // -------------------------------------------------------------------------
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetIndexUnknownVariableThrowsIllegalArgument() {
+        final GqlMatchPlan plan = planner.plan("MATCH (n:Person)");
+        plan.getIndex("doesNotExist");
+    }
+
+    // -------------------------------------------------------------------------
+    // Lazy delivery: each row is an independent array snapshot
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testResultRowsAreIndependentSnapshots() {
+        // Verify that the Element[] arrays returned by the iterator are independent copies —
+        // modifying one does not corrupt another (backtracking correctness).
+        graph.addVertex("Person");
+        graph.addVertex("Person");
+        final GqlMatchPlan plan = planner.plan("MATCH (n:Person)");
+        final Iterator<Element[]> iter = executor.execute(plan);
+
+        final Element[] first = iter.next();
+        final Element first0 = first[0];
+        // Corrupt the first row's array
+        first[0] = null;
+
+        // Second row must be unaffected
+        assertTrue(iter.hasNext());
+        final Element[] second = iter.next();
+        assertNotNull(second[0]);
+        assertNotSame(first, second);
+    }
+
+    // -------------------------------------------------------------------------
+    // Multi-property (list cardinality) predicate evaluation
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testMultiPropertyAnyValueMatches() {
+        // A vertex with list cardinality on 'lang' should match if any value equals the predicate.
+        final Vertex v = graph.addVertex("Software");
+        v.property(VertexProperty.Cardinality.list, "lang", "java");
+        v.property(VertexProperty.Cardinality.list, "lang", "groovy");
+
+        final GqlMatchPlan plan = planner.plan("MATCH (s:Software {lang: 'groovy'})");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan).forEachRemaining(results::add);
+
+        assertEquals("vertex with 'groovy' among its lang values must match", 1, results.size());
+    }
+
+    @Test
+    public void testMultiPropertyNoMatchWhenValueAbsent() {
+        // A vertex with list cardinality on 'lang' must not match a value not in its list.
+        final Vertex v = graph.addVertex("Software");
+        v.property(VertexProperty.Cardinality.list, "lang", "java");
+        v.property(VertexProperty.Cardinality.list, "lang", "groovy");
+
+        final GqlMatchPlan plan = planner.plan("MATCH (s:Software {lang: 'python'})");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan).forEachRemaining(results::add);
+
+        assertTrue("vertex without 'python' in its lang values must not match", results.isEmpty());
+    }
+
+    @Test
+    public void testMultiPropertyNullValueMatchesNullPredicate() {
+        // When a vertex has a null value among its list-cardinality properties, a {key: null}
+        // predicate should match (any-value semantics apply to null too).
+        final BaseConfiguration config = new BaseConfiguration();
+        config.setProperty(AbstractTinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, true);
+        final TinkerGraph nullGraph = TinkerGraph.open(config);
+        try {
+            final DefaultGqlPlanner nullPlanner = new DefaultGqlPlanner(nullGraph);
+            final DefaultGqlExecutor nullExecutor = new DefaultGqlExecutor(nullGraph);
+
+            final Vertex v = nullGraph.addVertex("Item");
+            v.property(VertexProperty.Cardinality.list, "tag", "java");
+            v.property(VertexProperty.Cardinality.list, "tag", null);
+
+            final GqlMatchPlan plan = nullPlanner.plan("MATCH (n:Item {tag: null})");
+            final List<Element[]> results = new ArrayList<>();
+            nullExecutor.execute(plan).forEachRemaining(results::add);
+
+            assertEquals("vertex with null among its tag values must match {tag: null}", 1, results.size());
+        } finally {
+            nullGraph.close();
+        }
+    }
+
+    @Test
+    public void testParamBindingWithMultiProperty() {
+        // A $param reference predicate must use any-value-matches semantics for list cardinality.
+        final Vertex v = graph.addVertex("Software");
+        v.property(VertexProperty.Cardinality.list, "lang", "java");
+        v.property(VertexProperty.Cardinality.list, "lang", "groovy");
+
+        final GqlMatchPlan plan = planner.plan("MATCH (s:Software {lang: $lang})");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan, Collections.singletonMap("lang", "groovy")).forEachRemaining(results::add);
+
+        assertEquals("param predicate must match against any value in a list-cardinality property", 1, results.size());
+    }
+}

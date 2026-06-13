@@ -71,6 +71,8 @@ public class AbstractGraphBenchmark extends AbstractBenchmarkBase {
                 graphFile = "tinkerpop-classic-v3.kryo";
             } else if (loadGraphWithData.equals(LoadGraphWith.GraphData.CREW)) {
                 graphFile = "tinkerpop-crew-v3.kryo";
+            } else if (loadGraphWithData.equals(LoadGraphWith.GraphData.AIR_ROUTES)) {
+                graphFile = "air-routes-v3.kryo";
             } else {
                 throw new RuntimeException("Could not load graph with " + loadGraphWithData);
             }

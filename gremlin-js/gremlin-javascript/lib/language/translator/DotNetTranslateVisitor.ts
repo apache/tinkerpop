@@ -405,6 +405,22 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
     visitTraversalSourceSpawnMethod_union(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalSourceSpawnMethod_call_empty(ctx: any): void { this.handleGenerics(ctx); }
 
+    visitTraversalSourceSpawnMethod_match_string(ctx: any): void {
+        this.sb.push(capitalize(ctx.getChild(0).getText()));
+        this.sb.push('(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(')');
+    }
+
+    visitTraversalSourceSpawnMethod_match_string_map(ctx: any): void {
+        this.sb.push(capitalize(ctx.getChild(0).getText()));
+        this.sb.push('(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(', (IDictionary<object, object>) ');
+        this.visit(ctx.genericMapLiteral());
+        this.sb.push(')');
+    }
+
     visitTraversalSourceSpawnMethod_addV(ctx: any): void {
         this.sb.push(capitalize(ctx.getChild(0).getText()));
         for (let ix = 1; ix < ctx.getChildCount(); ix++) {
@@ -520,7 +536,23 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
     visitTraversalMethod_local(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_lTrim_Scope(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_map(ctx: any): void { this.handleGenerics(ctx); }
-    visitTraversalMethod_match(ctx: any): void { this.handleGenerics(ctx); }
+    visitTraversalMethod_match_traversal(ctx: any): void { this.handleGenerics(ctx); }
+
+    visitTraversalMethod_match_string(ctx: any): void {
+        this.sb.push(capitalize(ctx.getChild(0).getText()));
+        this.sb.push('(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(')');
+    }
+
+    visitTraversalMethod_match_string_map(ctx: any): void {
+        this.sb.push(capitalize(ctx.getChild(0).getText()));
+        this.sb.push('(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(', (IDictionary<object, object>) ');
+        this.visit(ctx.genericMapLiteral());
+        this.sb.push(')');
+    }
     visitTraversalMethod_max_Empty(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_max_Scope(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_mean_Empty(ctx: any): void { this.handleGenerics(ctx); }

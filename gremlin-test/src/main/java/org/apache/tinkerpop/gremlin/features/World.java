@@ -46,7 +46,7 @@ public interface World {
             "not @GraphComputerVerificationInjectionNotSupported and " +
             "not @GraphComputerVerificationStarGraphExceeded and not @GraphComputerVerificationReferenceOnly and " +
             "not @TinkerServiceRegistry and not @InsertionOrderingRequired and " +
-            "not @GraphComputerVerificationOrderingNotSupported";
+            "not @GraphComputerVerificationOrderingNotSupported and not @TinkerGQL";
 
     /**
      * Gets a {@link GraphTraversalSource} that is backed by the specified {@link GraphData}. For {@code null}, the

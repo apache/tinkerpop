@@ -331,6 +331,45 @@ public interface Graph extends AutoCloseable, Host {
     Variables variables();
 
     /**
+     * Returns the number of vertices with the given label, or {@code Long.MAX_VALUE} if unknown.
+     * A {@code null} label returns the total vertex count regardless of label.
+     *
+     * <p>The default implementation returns {@code Long.MAX_VALUE}. Graph implementations that
+     * maintain label cardinality counts should override this method to enable the GQL
+     * planner to select an optimal seed variable and order extension steps by label density.
+     * Approximate values are sufficient; exact counts are not required.</p>
+     */
+    default long countVerticesByLabel(final String label) {
+        return Long.MAX_VALUE;
+    }
+
+    /**
+     * Returns the number of edges with the given label, or {@code Long.MAX_VALUE} if unknown.
+     * A {@code null} label returns the total edge count regardless of label.
+     *
+     * <p>The default implementation returns {@code Long.MAX_VALUE}. Graph implementations that
+     * maintain edge label cardinality counts should override this method to enable the GQL
+     * planner to order extension steps by edge-label density so that rarer labels prune the
+     * DFS search space sooner.</p>
+     */
+    default long countEdgesByLabel(final String label) {
+        return Long.MAX_VALUE;
+    }
+
+    /**
+     * Returns the {@link Index} accessor for this graph. The default implementation returns
+     * {@link Index#EMPTY}, whose methods return conservative values indicating that no property
+     * index is available.
+     *
+     * <p>Graph implementations that maintain property indexes should override this method
+     * and return an {@link Index} backed by their index structures. The GQL executor uses the
+     * {@link Index} to replace full vertex scans with targeted lookups for selective predicates.</p>
+     */
+    default Index index() {
+        return Index.EMPTY;
+    }
+
+    /**
      * Get the {@code Configuration} associated with the construction of this graph. Whatever configuration was passed
      * to {@link GraphFactory#open(Configuration)} is what should be returned by this method.
      *
@@ -407,6 +446,49 @@ public interface Graph extends AutoCloseable, Host {
             }
         }
 
+    }
+
+    /**
+     * Provides access to property index lookups for the graph. {@code Index} exposes the read
+     * side of a graph's property index structures for use by query planners and executors.
+     *
+     * <p>Implementations whose graphs do not support property indexes need not implement this
+     * interface; the default {@link Graph#index()} accessor returns {@link Index#EMPTY}.</p>
+     */
+    interface Index {
+
+        /**
+         * Returns an iterator over all vertices where the given property key equals the given
+         * value. Must return an empty iterator (not {@code null}) when no match exists or when
+         * the key is not indexed.
+         *
+         * @param key   the property key to look up
+         * @param value the property value to match
+         * @return an iterator over matching vertices; never {@code null}
+         */
+        default Iterator<Vertex> queryVertexIndex(final String key, final Object value) {
+            return Collections.emptyIterator();
+        }
+
+        /**
+         * Returns the number of vertices where the given property key equals the given value,
+         * or {@code Long.MAX_VALUE} when the key is not indexed or the count is unknown.
+         *
+         * <p>A return value of {@code Long.MAX_VALUE} signals to the GQL planner/executor
+         * that no index exists for this key — the executor will fall back to a full vertex
+         * scan. A value less than {@code Long.MAX_VALUE} (including {@code 0}) indicates that
+         * an index exists and was consulted.</p>
+         *
+         * @param key   the property key to look up
+         * @param value the property value to count
+         * @return the indexed count, or {@code Long.MAX_VALUE} if not indexed
+         */
+        default long countVertexIndex(final String key, final Object value) {
+            return Long.MAX_VALUE;
+        }
+
+        /** No-op singleton returned by the default {@link Graph#index()} implementation. */
+        Index EMPTY = new Index() {};
     }
 
     /**

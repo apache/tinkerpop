@@ -623,6 +623,200 @@ from TinkerPop using the link:https://tinkerpop.apache.org/docs/x.y.z/reference/
 Simply provide a `InputFormat` and `OutputFormat` that can be referenced by a `HadoopGraph` instance as discussed
 in the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[Reference Documentation].
 
+[[tinkerpop-providers-tinkergql]]
+==== Supporting Declarative Pattern Matching (TinkerGQL)
+
+Graph providers can offer declarative pattern matching via the `match(String)` step by integrating the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergql[TinkerGQL] engine shipped in the optional
+`gql-gremlin` module. TinkerGQL handles GQL `MATCH` parsing, query planning, and execution against any `Graph`
+implementation through a thin set of default interface methods, so most providers can get working `match()` support
+with only a few lines of wiring code.
+
+===== Maven Dependency
+
+Add `gql-gremlin` alongside your provider's existing TinkerPop dependencies:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.apache.tinkerpop</groupId>
+    <artifactId>gql-gremlin</artifactId>
+    <version>x.y.z</version>
+</dependency>
+----
+
+===== Registering the Strategy
+
+Register `GqlDeclarativeMatchStrategy.instance()` in the global strategy cache from a static initializer on your
+graph class. This is exactly how TinkerGraph registers TinkerGQL support:
+
+[source,java]
+----
+import org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
+public class AcmeGraph implements Graph {
+
+    static {
+        TraversalStrategies.GlobalCache.registerStrategies(
+                AcmeGraph.class,
+                TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone()
+                        .addStrategies(GqlDeclarativeMatchStrategy.instance()));  // <1>
+    }
+    // ...
+}
+----
+
+<1> `instance()` is a singleton. On first use against a given graph it lazily creates one `DefaultGqlPlanner`
+    and one `DefaultGqlExecutor` for that graph instance and caches them. All traversals on the same graph
+    reuse that pair, so the planner's query parse cache is shared automatically.
+
+Providers should also evict the cached pair when the graph is closed to avoid retaining it in memory:
+
+[source,java]
+----
+@Override
+public void close() {
+    GqlDeclarativeMatchStrategy.evict(this);  // <1>
+    // ... other cleanup
+}
+----
+
+<1> Removes the per-graph `DefaultGqlPlanner` / `DefaultGqlExecutor` pair from the singleton cache.
+    `AbstractTinkerGraph.close()` does this automatically for TinkerGraph-based implementations.
+
+===== Performance Hints (Optional, but strongly recommended)
+
+Without these overrides the TinkerGQL planner has no cardinality information. It treats every label count as
+unknown (`Long.MAX_VALUE`), which causes it to pick the seed vertex arbitrarily and order extension steps without
+regard to label density. On any graph of meaningful size this produces unnecessarily large intermediate result
+sets and slow query execution. The fix is two method overrides.
+
+The most common customization — and the one that requires the least code — is telling the planner about your
+graph's label cardinalities. Overriding these two methods on your `Graph` implementation is all that is needed
+for the planner to make better join-ordering decisions:
+
+[source,java]
+----
+@Override
+public long countVerticesByLabel(final String label) {
+    return myLabelIndex.getCount(label);  // <1>
+}
+
+@Override
+public long countEdgesByLabel(final String label) {
+    return myEdgeLabelIndex.getCount(label);
+}
+----
+
+<1> Return `Long.MAX_VALUE` if the count is unknown. The planner uses these values only for relative comparison
+    when choosing a seed vertex and ordering extension steps — approximate counts are fine.
+
+These hooks feed directly into `DefaultGqlPlanner`'s seed-selection and step-ordering logic, so no planner
+replacement is needed to benefit from them.
+
+===== Property Index Integration (Optional, but strongly recommended)
+
+Without this override every `MATCH` query performs a full scan of all vertices regardless of any inline property
+filters in the pattern. A query like `MATCH (p:Person {name: $n})` will iterate every vertex in the graph and
+test each one against the predicate, even if your graph has a `name` index that could satisfy it in a single
+lookup. The planner is also unable to use index cardinalities to refine seed selection, so join ordering
+degrades to label-count-only heuristics.
+
+If your graph maintains property indexes, expose them by returning a custom `Graph.Index` from `Graph.index()`.
+When a `MATCH` pattern includes an inline property filter and the executor finds an index for that key, it
+replaces the full vertex scan with a targeted index lookup. The planner also uses index cardinalities to
+refine seed selection:
+
+[source,java]
+----
+@Override
+public Graph.Index index() {
+    return new Graph.Index() {
+
+        @Override
+        public Iterator<Vertex> queryVertexIndex(final String key, final Object value) {
+            return myVertexIndex.lookup(key, value);  // <1>
+        }
+
+        @Override
+        public long countVertexIndex(final String key, final Object value) {
+            return myVertexIndex.isIndexed(key)
+                    ? myVertexIndex.count(key, value)
+                    : Long.MAX_VALUE;  // <2>
+        }
+    };
+}
+----
+
+<1> Return an empty iterator (not `null`) when the key is not indexed or no match exists.
+<2> Returning `Long.MAX_VALUE` for an un-indexed key signals both the planner and executor to fall back to a
+    full vertex scan. Any value less than `Long.MAX_VALUE` — including `0` — means "the index was consulted
+    and returned this count."
+
+===== Custom Executor (Native Engine Integration, Optional)
+
+For providers whose graph has a native traversal API, the most practical advanced customization is replacing
+only the *executor* while keeping `DefaultGqlPlanner`. This lets a provider get free GQL parsing and
+cardinality-guided join ordering from the default planner, then translate the resulting `GqlMatchPlan` into
+native queries rather than running `DefaultGqlExecutor`'s DFS over `Graph.vertices()`.
+
+[source,java]
+----
+public class AcmeGraph implements Graph {
+
+    private final GqlPlanner gqlPlanner = new DefaultGqlPlanner(this);  // <1>
+    private final GqlExecutor gqlExecutor = new AcmeGqlExecutor(this);  // <2>
+
+    @Override
+    public GraphTraversalSource traversal() {
+        return super.traversal()
+                .withStrategies(GqlDeclarativeMatchStrategy.create(gqlPlanner, gqlExecutor));  // <3>
+    }
+    // ...
+}
+----
+
+<1> The default planner is reused: it handles GQL MATCH parsing, BFS join ordering, and seed selection using
+    the `countVerticesByLabel`, `countEdgesByLabel`, and `Graph.index()` overrides already in place.
+<2> `AcmeGqlExecutor` receives a `GqlMatchPlan` and translates each `ExtensionStep` to a native traversal
+    or query rather than calling `Graph.vertices()`.
+<3> Instances are held as fields and reused so the parse cache is shared across traversals.
+
+The contract for a `GqlExecutor` implementation is: for each seed vertex matching the plan's seed label and
+predicates, extend through each `ExtensionStep` in an order that keeps every step's anchor variable bound
+before that step executes, and emit one `Element[]` per complete match. Each array's indices must match
+`GqlMatchPlan.getVariables()`, with the seed variable at index 0. See `DefaultGqlExecutor` for a reference
+implementation.
+
+NOTE: Replacing only the *planner* is rarely worthwhile. Producing a valid `GqlMatchPlan` requires
+      constructing `ExtensionStep` objects, assigning variable index maps, and satisfying all other
+      invariants of that concrete class — effort comparable to writing a full executor anyway. The
+      `Graph` method hooks described above (`countVerticesByLabel`, `countEdgesByLabel`, `Graph.index()`)
+      are the right way to improve plan quality because `DefaultGqlPlanner` already consults them when
+      selecting the seed and ordering steps. A custom planner is only warranted when a provider needs a
+      fundamentally different join strategy (such as a cost-based optimizer backed by richer statistics
+      than label counts). At that level of investment, consider whether replacing both planner and
+      executor — or bypassing `gql-gremlin` entirely via the `DeclarativeMatchStep` pattern described
+      below — is the cleaner path.
+
+===== Implementing a Different Declarative Language
+
+The `GqlDeclarativeMatchStrategy` pattern is not TinkerGQL-specific. Providers that want to support a different
+declarative language over the `match(String)` step, for example openCypher, SPARQL, or a proprietary query language,
+can follow the same pattern:
+
+. Implement `TraversalStrategy.ProviderOptimizationStrategy` and in its `apply()` method locate all
+  `DeclarativeMatchStep` instances in the traversal using `TraversalHelper.getStepsOfClass()`.
+. Replace each `DeclarativeMatchStep` with a custom step that parses the query string and executes it
+  against the graph, emitting binding maps in the same form as `GqlMatchStep`.
+. Register the strategy in the global cache from a static initializer, exactly as shown above for TinkerGQL.
+
+`DeclarativeMatchStep` is the placeholder step inserted by the `match(String)` overload. The first registered
+`ProviderOptimizationStrategy` to claim all `DeclarativeMatchStep` instances in a traversal wins; providers do not
+need to interact with `gql-gremlin` at all if they supply their own end-to-end implementation.
+
 [[validating-with-gremlin-test]]
 === Validating with Gremlin-Test
 

@@ -30,6 +30,10 @@ public final class TinkerIndexHelper {
         return null == graph.vertexIndex ? Collections.emptyList() : graph.vertexIndex.get(key, value);
     }
 
+    public static long countVertexIndex(final AbstractTinkerGraph graph, final String key, final Object value) {
+        return null == graph.vertexIndex ? 0L : graph.vertexIndex.count(key, value);
+    }
+
     public static List<TinkerEdge> queryEdgeIndex(final AbstractTinkerGraph graph, final String key, final Object value) {
         return null == graph.edgeIndex ? Collections.emptyList() : graph.edgeIndex.get(key, value);
     }

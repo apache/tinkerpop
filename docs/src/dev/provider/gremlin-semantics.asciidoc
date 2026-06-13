@@ -1796,6 +1796,59 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LTrimLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#lTrim-step[reference]
 
+[[match-step]]
+=== match()
+
+*Description:* Executes a declarative pattern match query against the graph using a provider-supported query
+string. The query string format is provider-specific; providers may use TinkerPop's optional `gql-gremlin` module
+(which implements the <<tinkergql,TinkerGQL>> dialect) or supply their own engine. Users should consult their
+graph system's documentation to determine what format is supported. The second argument, when provided, supplies
+bound parameters to the query; how (and whether) these are used is left to the provider.
+
+*Syntax:*
+
+* `match(String matchQuery)` +
+* `match(String matchQuery, Map<String, Object> params)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|Y |Y |Y (via `with()`) |`any` |`Map<String, Object>`
+|=========================================================
+
+*Arguments:*
+
+* `matchQuery` - An opaque query string evaluated by the graph provider. For example, a GQL MATCH expression:
+  `"MATCH (a:person)-[:knows]->(b:person)"`.
+* `params` - Optional bound parameters passed to the provider alongside the query string. May be `null` or empty.
+
+*Modulation:*
+
+`with("queryLanguage", value)` - specifies which query language the provider should use to evaluate the string.
+When omitted, the provider uses its native or default language.
+
+*Considerations:*
+
+* The step is a provider-delegation point. `gremlin-core` supplies only the placeholder `DeclarativeMatchStep`;
+graph providers replace it with their own implementation via a `TraversalStrategy`.
+* The traverser value emitted by the step is a `Map<String, Object>` containing one entry per named variable in
+the matched pattern, keyed by variable name. Providers must set this map as the traverser value for each result
+row.
+* Each named variable is also recorded as a labeled entry in the traverser's path, so results remain retrievable
+by name via `select()` when downstream steps require individual values.
+* Anonymous elements in the pattern (those without a variable name) are not exposed in the map or path and cannot be
+referenced by `select()`.
+* When used as a spawn step on `GraphTraversalSource`, no upstream traversers are consumed; the provider
+executes the query once and emits one traverser per result row.
+
+*Exceptions*
+
+* If the step is reached and no supporting strategy has replaced the placeholder, an `UnsupportedOperationException` is
+thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DeclarativeMatchStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#match-step[reference]
+
 [[merge-step]]
 === merge()
 

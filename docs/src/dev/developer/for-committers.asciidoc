@@ -665,6 +665,10 @@ tries to reference inaccessible properties that are on elements only available b
 the traversal does not mind the star graph limitation.
 * `@GremlinGroovyNotSupported` - The scenario uses `gremlin-lang` syntax which is incompatible with `gremlin-groovy` and
 cannot be resolved with the groovy translator. This is typically for scenarios using ambiguously-types `null` parameters.
+* `@TinkerGQL` - The scenario uses `match(String)` with GQL MATCH syntax and requires a graph that supports the
+TinkerGQL engine (i.e. has `GqlDeclarativeMatchStrategy` registered). Graph providers that do not support
+`match(String)` should add `and not @TinkerGQL` to their `@CucumberOptions` tag filter. TinkerGraph includes
+TinkerGQL support out of the box and runs these scenarios without any additional configuration.
 * `@InsertionOrderingRequired` - The scenario is reliant on the graph system predictably returning results (vertices,
 edges, properties) in the same order in which they were inserted into the graph.
 * `@MetaProperties` - The scenario makes use of meta-properties.

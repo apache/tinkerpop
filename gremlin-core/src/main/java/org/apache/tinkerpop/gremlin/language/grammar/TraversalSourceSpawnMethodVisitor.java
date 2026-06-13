@@ -224,4 +224,21 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
     public GraphTraversal visitTraversalSourceSpawnMethod_union(final GremlinParser.TraversalSourceSpawnMethod_unionContext ctx) {
         return this.traversalSource.union(antlr.tListVisitor.visitNestedTraversalList(ctx.nestedTraversalList()));
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalSourceSpawnMethod_match_string(final GremlinParser.TraversalSourceSpawnMethod_match_stringContext ctx) {
+        return this.traversalSource.match(antlr.genericVisitor.parseString(ctx.stringLiteral()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalSourceSpawnMethod_match_string_map(final GremlinParser.TraversalSourceSpawnMethod_match_string_mapContext ctx) {
+        final Map<String, Object> params = (Map<String, Object>) antlr.genericVisitor.visitGenericMapLiteral(ctx.genericMapLiteral());
+        return this.traversalSource.match(antlr.genericVisitor.parseString(ctx.stringLiteral()), params);
+    }
 }

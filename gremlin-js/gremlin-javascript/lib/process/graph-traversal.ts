@@ -356,6 +356,18 @@ export class GraphTraversalSource {
     const gl = new GremlinLang(this.gremlinLang).addStep('union', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), gl);
   }
+
+  /**
+   * Spawns a {@link GraphTraversal} by executing a declarative pattern match query.
+   * @param {string} matchQuery - the declarative query string
+   * @param {Record<string, any>} [params] - optional query parameters
+   * @returns {GraphTraversal}
+   */
+  match(matchQuery: string, params?: Record<string, any>): GraphTraversal {
+    const args = params !== undefined ? [matchQuery, params] : [matchQuery];
+    const gl = new GremlinLang(this.gremlinLang).addStep('match', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), gl);
+  }
 }
 
 /**
@@ -1102,10 +1114,24 @@ export class GraphTraversal extends Traversal {
   }
 
   /**
-   * Graph traversal match method.
-   * @param {...Object} args
+   * Graph traversal match method. Accepts either traversal-based match patterns
+   * (deprecated) or a declarative query string.
+   * @param {string} matchQuery - declarative query string
    * @returns {GraphTraversal}
    */
+  match(matchQuery: string): this;
+  /**
+   * @param {string} matchQuery - declarative query string
+   * @param {Record<string, any>} params - query parameters
+   * @returns {GraphTraversal}
+   */
+  match(matchQuery: string, params: Record<string, any>): this;
+  /**
+   * @deprecated Use match(String) for declarative pattern matching.
+   * @param {...any} matchTraversals - traversal-based match patterns
+   * @returns {GraphTraversal}
+   */
+  match(...matchTraversals: any[]): this;
   match(...args: any[]): this {
     this.gremlinLang.addStep('match', args);
     return this;

@@ -542,6 +542,33 @@ namespace Gremlin.Net.Process.Traversal
             return traversal;
         }
 
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and executes a declarative
+        ///     pattern match query. The step requires a graph provider to register an execution strategy before the
+        ///     traversal can be executed.
+        /// </summary>
+        /// <param name="matchQuery">The declarative query string.</param>
+        public GraphTraversal<object, object> Match(string matchQuery)
+        {
+            var traversal = new GraphTraversal<object, object>(TraversalStrategies, GremlinLang.Clone());
+            traversal.GremlinLang.AddStep("match", matchQuery);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and executes a declarative
+        ///     pattern match query with bound parameters. The step requires a graph provider to register an execution
+        ///     strategy before the traversal can be executed.
+        /// </summary>
+        /// <param name="matchQuery">The declarative query string.</param>
+        /// <param name="parameters">The query parameters.</param>
+        public GraphTraversal<object, object> Match(string matchQuery, IDictionary<object, object> parameters)
+        {
+            var traversal = new GraphTraversal<object, object>(TraversalStrategies, GremlinLang.Clone());
+            traversal.GremlinLang.AddStep("match", matchQuery, parameters);
+            return traversal;
+        }
+
     }
     
 #pragma warning restore 1591

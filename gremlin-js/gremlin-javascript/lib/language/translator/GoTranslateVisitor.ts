@@ -368,6 +368,44 @@ export default class GoTranslateVisitor extends TranslateVisitor {
         }
     }
 
+    visitTraversalSourceSpawnMethod_match_string(ctx: any): void {
+        this.sb.push('Match(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(')');
+    }
+
+    visitTraversalSourceSpawnMethod_match_string_map(ctx: any): void {
+        this.sb.push('Match(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(', ');
+        this.visitGoParamsMap(ctx.genericMapLiteral());
+        this.sb.push(')');
+    }
+
+    visitTraversalMethod_match_string(ctx: any): void {
+        this.sb.push('Match(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(')');
+    }
+
+    visitTraversalMethod_match_string_map(ctx: any): void {
+        this.sb.push('Match(');
+        this.visit(ctx.stringLiteral());
+        this.sb.push(', ');
+        this.visitGoParamsMap(ctx.genericMapLiteral());
+        this.sb.push(')');
+    }
+
+    private visitGoParamsMap(mapLiteral: any): void {
+        this.sb.push('map[string]interface{}{');
+        const entries: any[] = mapLiteral.mapEntry();
+        for (let i = 0; i < entries.length; i++) {
+            this.visit(entries[i]);
+            if (i < entries.length - 1) this.sb.push(', ');
+        }
+        this.sb.push(' }');
+    }
+
     visitTraversalSourceSelfMethod_withoutStrategies(ctx: any): void {
         this.sb.push('WithoutStrategies(');
         this.sb.push(GO_PACKAGE_NAME);

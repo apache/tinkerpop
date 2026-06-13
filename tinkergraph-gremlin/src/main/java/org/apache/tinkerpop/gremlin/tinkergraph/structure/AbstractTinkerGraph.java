@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
+import org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 
 import java.io.File;
@@ -167,6 +168,67 @@ public abstract class AbstractTinkerGraph implements Graph {
     public abstract int getEdgesCount();
 
     /**
+     * Returns the number of vertices with the given label. A {@code null} label returns the
+     * total vertex count. The default implementation does a full vertex scan; subclasses that
+     * maintain a label index should override this for O(1) performance.
+     */
+    @Override
+    public long countVerticesByLabel(final String label) {
+        if (label == null) return getVerticesCount();
+        long count = 0;
+        final Iterator<Vertex> it = vertices();
+        while (it.hasNext()) {
+            if (label.equals(it.next().label())) count++;
+        }
+        return count;
+    }
+
+    /**
+     * Returns the number of edges with the given label. A {@code null} label returns the
+     * total edge count. The default implementation does a full edge scan; subclasses that
+     * maintain a label index should override this for O(1) performance.
+     */
+    @Override
+    public long countEdgesByLabel(final String label) {
+        if (label == null) return getEdgesCount();
+        long count = 0;
+        final Iterator<Edge> it = edges();
+        while (it.hasNext()) {
+            if (label.equals(it.next().label())) count++;
+        }
+        return count;
+    }
+
+    /**
+     * {@link Graph.Index} implementation backed by TinkerGraph's property index structures.
+     * Returns {@code Long.MAX_VALUE} from {@link Graph.Index#countVertexIndex} when the key
+     * is not indexed, signalling to the GQL executor that a full scan is required.
+     */
+    private final class TinkerGraphIndex implements Graph.Index {
+        @Override
+        public Iterator<Vertex> queryVertexIndex(final String key, final Object value) {
+            return TinkerIndexHelper.queryVertexIndex(AbstractTinkerGraph.this, key, value)
+                    .stream().map(v -> (Vertex) v).iterator();
+        }
+
+        @Override
+        public long countVertexIndex(final String key, final Object value) {
+            if (vertexIndex == null) return Long.MAX_VALUE;
+            // TinkerIndex.count() returns 0 for keys that are not indexed, which is
+            // indistinguishable from "indexed but empty". Use getIndexedKeys() to distinguish.
+            if (!getIndexedKeys(Vertex.class).contains(key)) return Long.MAX_VALUE;
+            return TinkerIndexHelper.countVertexIndex(AbstractTinkerGraph.this, key, value);
+        }
+    }
+
+    private final Graph.Index tinkerGraphIndex = new TinkerGraphIndex();
+
+    @Override
+    public Graph.Index index() {
+        return tinkerGraphIndex;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public abstract boolean hasEdge(final Object id);
@@ -278,8 +340,8 @@ public abstract class AbstractTinkerGraph implements Graph {
     @Override
     public void close() {
         if (graphLocation != null) saveGraph();
-        // shutdown services
         serviceRegistry.close();
+        GqlDeclarativeMatchStrategy.evict(this);
     }
 
     @Override

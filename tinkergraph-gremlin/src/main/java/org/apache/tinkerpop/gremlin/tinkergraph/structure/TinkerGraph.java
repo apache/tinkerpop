@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphCountStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
@@ -45,6 +46,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * An in-memory (with optional persistence on calls to {@link #close()}), reference implementation of the property
@@ -62,7 +64,8 @@ public class TinkerGraph extends AbstractTinkerGraph {
     static {
         TraversalStrategies.GlobalCache.registerStrategies(TinkerGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(
                 TinkerGraphStepStrategy.instance(),
-                TinkerGraphCountStrategy.instance()));
+                TinkerGraphCountStrategy.instance(),
+                GqlDeclarativeMatchStrategy.instance()));
     }
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
@@ -73,6 +76,9 @@ public class TinkerGraph extends AbstractTinkerGraph {
 
     protected Map<Object, Vertex> vertices = new ConcurrentHashMap<>();
     protected Map<Object, Edge> edges = new ConcurrentHashMap<>();
+
+    private final Map<String, AtomicInteger> vertexLabelCounts = new ConcurrentHashMap<>();
+    private final Map<String, AtomicInteger> edgeLabelCounts = new ConcurrentHashMap<>();
 
     /**
      * An empty private constructor that initializes {@link TinkerGraph}.
@@ -147,6 +153,7 @@ public class TinkerGraph extends AbstractTinkerGraph {
         final Vertex vertex = createTinkerVertex(idValue, label, this);
         ElementHelper.attachProperties(vertex, VertexProperty.Cardinality.list, keyValues);
         this.vertices.put(vertex.id(), vertex);
+        vertexLabelCounts.computeIfAbsent(label, l -> new AtomicInteger()).incrementAndGet();
 
         return vertex;
     }
@@ -154,7 +161,9 @@ public class TinkerGraph extends AbstractTinkerGraph {
     @Override
     public void removeVertex(final Object vertexId)
     {
-        this.vertices.remove(vertexId);
+        final Vertex removed = this.vertices.remove(vertexId);
+        if (removed != null)
+            vertexLabelCounts.computeIfPresent(removed.label(), (l, c) -> { c.decrementAndGet(); return c; });
     }
 
     @Override
@@ -175,6 +184,7 @@ public class TinkerGraph extends AbstractTinkerGraph {
         edge = new TinkerEdge(idValue, outVertex, label, inVertex);
         ElementHelper.attachProperties(edge, keyValues);
         edges.put(edge.id(), edge);
+        edgeLabelCounts.computeIfAbsent(label, l -> new AtomicInteger()).incrementAndGet();
         addOutEdge(outVertex, label, edge);
         addInEdge(inVertex, label, edge);
         return edge;
@@ -201,6 +211,21 @@ public class TinkerGraph extends AbstractTinkerGraph {
         }
 
         this.edges.remove(edgeId);
+        edgeLabelCounts.computeIfPresent(edge.label(), (l, c) -> { c.decrementAndGet(); return c; });
+    }
+
+    @Override
+    public long countVerticesByLabel(final String label) {
+        if (label == null) return getVerticesCount();
+        final AtomicInteger count = vertexLabelCounts.get(label);
+        return count == null ? 0L : count.get();
+    }
+
+    @Override
+    public long countEdgesByLabel(final String label) {
+        if (label == null) return getEdgesCount();
+        final AtomicInteger count = edgeLabelCounts.get(label);
+        return count == null ? 0L : count.get();
     }
 
     @Override
@@ -208,6 +233,8 @@ public class TinkerGraph extends AbstractTinkerGraph {
         super.clear();
         this.vertices.clear();
         this.edges.clear();
+        this.vertexLabelCounts.clear();
+        this.edgeLabelCounts.clear();
     }
 
     @Override

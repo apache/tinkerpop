@@ -372,3 +372,43 @@ g.V().valueMap()
 <3> Commit the add vertex operation
 <4> Add a second vertex without committing
 <5> Rollback the change
+
+[[tinkergraph-gql]]
+=== Declarative Pattern Matching (TinkerGQL)
+
+TinkerGraph ships with full support for the <<tinkergql,TinkerGQL>> dialect out of the box.
+`GqlDeclarativeMatchStrategy` is registered automatically when a `GraphTraversalSource` is created from
+a TinkerGraph instance, so no additional configuration is required:
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (a:person)-[:knows]->(b:person)")
+g.match("MATCH (a:person)-[:knows]->(b:person)").
+  select("a", "b").by("name")
+----
+
+See <<tinkergql>> for the complete TinkerGQL syntax reference, including supported patterns, property filters,
+parameterized queries, variable reuse, and known limitations.
+
+==== Index Integration
+
+TinkerGraph maintains in-memory indexes that the TinkerGQL executor consults automatically. When a vertex index
+exists on a property key that appears in an inline filter, the executor uses the index for the seed vertex lookup
+rather than scanning all vertices. This is especially effective when the same parameterized query is executed
+repeatedly with different parameter values — the query graph is parsed and cached once, and each invocation performs
+an index-backed lookup:
+
+[source,groovy]
+----
+graph.createIndex("name", Vertex.class)   // <1>
+names = ["marko", "josh", "peter", "vadas"]
+names.collect { name ->
+    g.match("MATCH (p:person {name: \$who})-[:knows]->(f:person)",
+            ["who": name]).
+      select("p", "f").by("name").toList()
+}
+----
+
+<1> Create the index once at graph setup time; all subsequent `match()` calls referencing `{name: $who}` use it
+automatically. Indexes created after a traversal source has already been built take effect on the next traversal
+execution.

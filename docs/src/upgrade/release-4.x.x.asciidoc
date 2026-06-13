@@ -32,6 +32,64 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+===== Declarative Pattern Matching
+
+Gremlin has always offered both imperative and declarative styles to writing graph queries. While the imperative style
+has largely dominated examples and usages, the `match` step has always provided a declarative way to express queries.
+The syntax for `match` looked something like this:
+
+[source,text]
+----
+gremlin> g.V().match(__.as("a").hasLabel("person").out("created").hasLabel("software").as("s"),
+......1>             __.as("s").hasLabel("software").in("created").hasLabel("person").as("b")).
+......2>   where("a", neq("b")).
+......3>   select("a", "b", "s").by("name")
+==>[a:marko,b:josh,s:lop]
+==>[a:marko,b:peter,s:lop]
+==>[a:josh,b:marko,s:lop]
+==>[a:josh,b:peter,s:lop]
+==>[a:peter,b:marko,s:lop]
+==>[a:peter,b:josh,s:lop]
+----
+
+While this approach worked, it was syntactically complex and since `match` took an arbitrary `Traversal` as arguments,
+the declarative style wasn't necessarily enforced well. Moreover, providers found it complicated to optimize `match` as
+a step, which meant that, more often than not, it was more performant to simply write the imperative form of the query,
+which could take advantage of normal optimization patterns. As a result, `match` never really gained a main stream sort
+of usage beyond some fairly narrow use cases.
+
+In TinkerPop 4.0.0, `match` has a new direction. Instead of taking Gremlin traversals to define the match pattern, it
+takes a query string that could technically be any declarative graph query language. Using
+link:https://www.iso.org/standard/76120.html[GQL] as an example, the previous Gremlin query using the old `match` style
+would look like this:
+
+[source,text]
+----
+gremlin> g.match("MATCH (a:person)-[:created]->(s:software), (b:person)-[:created]->(s)").
+......1>   where("a", neq("b")).
+......2>   select("a", "b", "s").by("name")
+==>[a:marko,b:josh,s:lop]
+==>[a:marko,b:peter,s:lop]
+==>[a:josh,b:marko,s:lop]
+==>[a:josh,b:peter,s:lop]
+==>[a:peter,b:marko,s:lop]
+==>[a:peter,b:josh,s:lop]
+----
+
+With `match` redesigned in this way users have the opportunity to take advantage of the strengths of declarative query
+languages, where it makes sense, while equally retaining the power and feel that Gremlin has always had. The promise of
+Gremlin being both imperative and declarative offers a much more compelling story with this model.
+
+NOTE: The traversal-based form of `match` (e.g. `g.V().match(as("a").out().as("b"))`) is deprecated as of
+TinkerPop 4.0.0 and will be removed in a future release. Users should migrate to the new `match(String)` API.
+
+TinkerPop ships a reference GQL engine for `match()` via the optional `gql-gremlin` module. The engine implements the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergql[TinkerGQL] dialect — a deliberate minimal subset of
+ISO GQL `MATCH` syntax — and works against any `Graph` implementation through a thin set of default interface methods.
+TinkerGraph uses it out of the box with no configuration required. Graph providers that want to offer TinkerGQL support
+can add the `gql-gremlin` dependency and register `GqlDeclarativeMatchStrategy` as described in the
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#tinkerpop-providers-tinkergql[provider documentation].
+
 ==== Request Interceptors
 
 When TinkerPop supported WebSockets prior to 4.0.0, the Java driver offered a `RequestInterceptor` interface (and
@@ -611,6 +669,40 @@ the request body to JSON after all interceptors have run.
 For the full specification of how interceptors should behave, see the
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_http_request_interceptor[HTTP Request Interceptor]
 section in the provider documentation.
+
+===== match() Support
+
+The new `match(String)` step represents TinkerPop's first explicit extension point for provider-native query languages.
+Graph systems that support a declarative query language can now expose it directly through the standard Gremlin
+traversal API, making the language a first-class citizen of any `g.` chain rather than a parallel API that users have to
+context-switch into.
+
+The mechanism follows the same provider extension pattern used elsewhere in TinkerPop: `gremlin-core` inserts a
+placeholder step (`DeclarativeMatchStep`) into the traversal, and graph providers replace it with a concrete
+implementation via a `ProviderOptimizationStrategy`. The placeholder carries everything the provider needs:
+
+* `getMatchQuery()` — the raw query string as written by the user
+* `getParams()` — the bound parameter map from the `match(String, Map)` overload, or `null`
+* `getQueryLanguage()` — the explicit language hint from `with("queryLanguage", ...)`, or `null` meaning "use your native language"
+* `isStart()` — `true` when the step was invoked as a spawn step on `GraphTraversalSource`
+
+For each result row the concrete step must:
+
+* Set the traverser value to a `Map<String, Object>` keyed by named variable name, containing one entry per bound
+  variable in the row. Anonymous elements must not appear in the map.
+* Record each named variable in the traverser's path history via `addLabels()`, so downstream `select()` steps
+  can retrieve values by name.
+* Declare `TraverserRequirement.LABELED_PATH` in `getRequirements()`.
+
+Providers that want to use TinkerPop's built-in GQL engine rather than supplying their own step can add the
+`gql-gremlin` module and register `GqlDeclarativeMatchStrategy.instance()` in their graph's global strategy
+cache. The singleton lazily allocates a `DefaultGqlPlanner` and `DefaultGqlExecutor` per graph instance on
+first use and caches them for the lifetime of the graph, sharing the planner's query parse cache across all
+traversals. Optional performance hints are available via `countVerticesByLabel()`, `countEdgesByLabel()`,
+and `Graph.Index`. See `GqlMatchStep` and `GqlDeclarativeMatchStrategy` in `gql-gremlin` for the complete
+reference implementation, and the
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#tinkerpop-providers-tinkergql[provider documentation]
+for wiring instructions.
 
 == TinkerPop 4.0.0-beta.2
 

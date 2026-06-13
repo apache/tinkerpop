@@ -500,7 +500,8 @@ func (g *GraphTraversal) Map(args ...interface{}) *GraphTraversal {
 	return g
 }
 
-// Match adds the match step to the GraphTraversal.
+// Match adds the match step to the GraphTraversal. Accepts either the traditional traversal form
+// Match(traversal, ...) or the declarative string form Match(queryString) / Match(queryString, params).
 func (g *GraphTraversal) Match(args ...interface{}) *GraphTraversal {
 	g.GremlinLang.AddStep("match", args...)
 	return g
