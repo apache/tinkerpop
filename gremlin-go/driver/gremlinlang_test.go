@@ -715,7 +715,7 @@ func Test_GremlinLang(t *testing.T) {
 		{
 			name: "GTS Match with query string and params spawn step",
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
-				return g.MatchWithParams("MATCH (p:person)-[e:knows]->(friend:person)", map[string]interface{}{"limit": 10})
+				return g.Match("MATCH (p:person)-[e:knows]->(friend:person)", map[string]interface{}{"limit": 10})
 			},
 			equals: "g.match(\"MATCH (p:person)-[e:knows]->(friend:person)\",[\"limit\":10])",
 		},
