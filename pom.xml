@@ -566,6 +566,7 @@ limitations under the License.
                         <exclude>**/gremlinpython.egg-info/**</exclude>
                         <exclude>**/docfx/**</exclude>
                         <exclude>**/go.sum</exclude>
+                        <exclude>**/pubspec.lock</exclude>
                         <exclude>**/coverage.out</exclude>
                         <exclude>**/gremlinconsoletest.egg-info/**</exclude>
                         <!-- SKILL.md requires frontmatter at very start of file so that precludes use of the license header -->
