@@ -375,7 +375,7 @@ export default class GoTranslateVisitor extends TranslateVisitor {
     }
 
     visitTraversalSourceSpawnMethod_match_string_map(ctx: any): void {
-        this.sb.push('MatchWithParams(');
+        this.sb.push('Match(');
         this.visit(ctx.stringLiteral());
         this.sb.push(', ');
         this.visitGoParamsMap(ctx.genericMapLiteral());

@@ -435,7 +435,7 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitTraversalSourceSpawnMethod_match_string_map(final GremlinParser.TraversalSourceSpawnMethod_match_string_mapContext ctx) {
-        sb.append("MatchWithParams(");
+        sb.append("Match(");
         visit(ctx.stringLiteral());
         sb.append(", ");
         visitGoParamsMap(ctx.genericMapLiteral());

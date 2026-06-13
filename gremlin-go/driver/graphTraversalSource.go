@@ -236,20 +236,12 @@ func (gts *GraphTraversalSource) MergeV(args ...interface{}) *GraphTraversal {
 	return traversal
 }
 
-// Match starts the traversal with a declarative pattern match query. The query language
-// defaults to "gql" and can be overridden with .With("queryLanguage", value).
-func (gts *GraphTraversalSource) Match(matchQuery string) *GraphTraversal {
+// Match starts the traversal with a declarative pattern match query. Accepts either a GQL
+// query string (with optional bound parameters map) or the traditional traversal form.
+// The query language defaults to "gql" and can be overridden with .With("queryLanguage", value).
+func (gts *GraphTraversalSource) Match(args ...interface{}) *GraphTraversal {
 	traversal := gts.GetGraphTraversal()
-	traversal.GremlinLang.AddStep("match", matchQuery)
-	return traversal
-}
-
-// MatchWithParams starts the traversal with a declarative pattern match query with bound
-// parameters. The query language defaults to "gql" and can be overridden with
-// .With("queryLanguage", value).
-func (gts *GraphTraversalSource) MatchWithParams(matchQuery string, params map[string]interface{}) *GraphTraversal {
-	traversal := gts.GetGraphTraversal()
-	traversal.GremlinLang.AddStep("match", matchQuery, params)
+	traversal.GremlinLang.AddStep("match", args...)
 	return traversal
 }
 
