@@ -119,8 +119,9 @@ public final class Cluster {
      * @param graphOrTraversalSource the graph/traversal source alias, or null to use the server default
      */
     public RemoteTransaction transact(final String graphOrTraversalSource) {
-        final Client.PinnedClient pinnedClient = new Client.PinnedClient(this);
-        manager.trackClient(pinnedClient);
+        // Ensures the shared transaction client and its pools exist before pinning the transaction to a host.
+        init();
+        final Client.PinnedClient pinnedClient = new Client.PinnedClient(manager.transactionClient);
         return new HttpRemoteTransaction(pinnedClient, graphOrTraversalSource);
     }
 
@@ -911,6 +912,10 @@ public final class Cluster {
 
         private final List<WeakReference<Client>> openedClients = new ArrayList<>();
 
+        // Single ClusteredClient shared by all transactions. Not tracked in openedClients: it is Cluster-owned and
+        // closed explicitly in close(), after the rollbacks that borrow from its pools.
+        private Client.ClusteredClient transactionClient;
+
         private Manager(final Builder builder) {
             validateBuilder(builder);
 
@@ -1018,6 +1023,13 @@ public final class Cluster {
             contactPoints.forEach(address -> {
                 final Host host = add(address);
             });
+
+            // All transactions share one ClusteredClient rather than each transact() standing up (and tearing down on
+            // commit/rollback) its own per-host pools. Sharing is safe because transactions borrow a connection per
+            // request and return it immediately, so pool occupancy matches normal query traffic. Eager for simplicity;
+            // unused connections are reaped by the idle timeout.
+            transactionClient = new Client.ClusteredClient(Cluster.this);
+            transactionClient.init();
         }
 
         void trackClient(final Client client) {
@@ -1066,6 +1078,12 @@ public final class Cluster {
                     // any background client closing operations are included in this shutdown future
                     clientCloseFutures.add(client.closeAsync());
                 }
+            }
+
+            // Closed here, after the rollbacks above that borrow from its pools (it is intentionally not in
+            // openedClients).
+            if (transactionClient != null) {
+                clientCloseFutures.add(transactionClient.closeAsync());
             }
 
             // when all the clients are fully closed then shutdown the netty event loop. not sure why this needs to

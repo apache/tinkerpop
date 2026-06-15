@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -567,35 +568,54 @@ public abstract class Client implements RequestSubmitter, RequestSubmitterAsync 
     }
 
     /**
-     * A {@link Client} that pins all requests to a single {@link Host}. Used internally by transactions
-     * to ensure all requests within a transaction go to the same server.
+     * A {@link Client} that pins all requests of a single transaction to one {@link Host}. Used internally by
+     * transactions; obtain one indirectly via {@link Cluster#transact()} or {@link Cluster#transact(String)} rather
+     * than directly.
      * <p>
-     * This client is not intended to be used directly — obtain a {@link org.apache.tinkerpop.gremlin.structure.Transaction}
-     * via {@link Cluster#transact()} or {@link Cluster#transact(String)} instead.
+     * This is a lightweight routing view that owns no connection pools. All transactions share a single
+     * {@link ClusteredClient} (one per {@link Cluster}) and borrow a connection per request from the pinned host's
+     * pool, returning it once the response completes. Those pools are closed when the Cluster closes, never by this
+     * client.
      */
     public static class PinnedClient extends Client {
         private final ClusteredClient clusteredClient;
         private final Host pinnedHost;
-        private final AtomicReference<CompletableFuture<Void>> closing = new AtomicReference<>(null);
+        // Tracks this view's own closed state for the isClosing() contract; see closeAsync().
+        private final AtomicBoolean closed = new AtomicBoolean(false);
 
-        PinnedClient(final Cluster cluster) {
-            super(cluster);
-            this.pinnedHost = chooseRandomHost();
-            this.clusteredClient = cluster.connect();
+        PinnedClient(final ClusteredClient clusteredClient) {
+            super(clusteredClient.getCluster());
+            this.clusteredClient = clusteredClient;
+            this.pinnedHost = choosePinnedHost();
         }
 
         public Host getPinnedHost() {
             return pinnedHost;
         }
 
+        /**
+         * Delegates host selection to the cluster's {@link LoadBalancingStrategy} so transactions honor the configured
+         * strategy and skip unavailable hosts rather than pinning to a dead one. Falls back to a random host if the
+         * strategy yields none, mirroring {@link ClusteredClient#chooseConnection(RequestMessage)}.
+         */
+        private Host choosePinnedHost() {
+            final Iterator<Host> hosts = cluster.loadBalancingStrategy().select(null);
+            return hosts.hasNext() ? hosts.next() : chooseRandomHost();
+        }
+
         @Override
         protected void initializeImplementation() {
-            this.clusteredClient.init();
+            // Pools are owned and eagerly initialized by the shared client; this idempotent call just ensures they
+            // exist before the first request is routed.
+            clusteredClient.init();
             initialized = true;
         }
 
         @Override
         protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
+            // Transactions pin to a host, not a connection: each request carries its transaction id, so any connection
+            // to the pinned host is interchangeable. The borrowed connection returns to the pool as soon as the
+            // response completes (see Connection.write()).
             final ConnectionPool pool = clusteredClient.hostConnectionPools.get(pinnedHost);
             if (pool == null) throw new NoHostAvailableException();
             return pool.borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
@@ -603,18 +623,17 @@ public abstract class Client implements RequestSubmitter, RequestSubmitterAsync 
 
         @Override
         public boolean isClosing() {
-            return closing.get() != null;
+            return closed.get();
         }
 
         /**
-         * Marks this client as closed. The underlying pool is owned by {@link ClusteredClient} and is not closed here.
+         * Records the closed state for the {@link #isClosing()} contract. Intentionally closes no connections: the
+         * shared pools are owned by the transaction {@link ClusteredClient} and closed with the {@link Cluster}.
          */
         @Override
-        public synchronized CompletableFuture<Void> closeAsync() {
-            if (closing.get() != null) return closing.get();
-
-            closing.set(clusteredClient.closeAsync());
-            return closing.get();
+        public CompletableFuture<Void> closeAsync() {
+            closed.set(true);
+            return CompletableFuture.completedFuture(null);
         }
     }
 }
