@@ -465,6 +465,15 @@ g.V().has("name","gremlin").
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="code-box h-100">
+                                        <!-- When TinkerPop 4.0 releases replace with this example
+
+                                        <pre><code class="language-groovy">// What are the names of projects that were created by friends?
+                                        g.match("MATCH (a)-[:knows]->(b), " +
+                                                "(a)-[:created]->(c), " +
+                                                "(b)-[:created]->(c)").
+                                          select("c").by("name")
+                                        </code></pre>
+                                        -->
                                         <pre><code class="language-groovy">// What are the names of projects that were created by two friends?
 g.V().
   match(as("a").out("knows").as("b"),

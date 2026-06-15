@@ -553,29 +553,20 @@ g.V().as('a').out('created').addE('createdBy').to('a').property('acl','public') 
 g.V(1).as('a').out('knows').
   addE('livesNear').from('a').property('year',2009).
   inV().inE('livesNear').values('year') <4>
-g.V().match(
-        __.as('a').out('knows').as('b'),
-        __.as('a').out('created').as('c'),
-        __.as('b').out('created').as('c')).
-      addE('friendlyCollaborator').from('a').to('b').
-        property(id,23).property('project',select('c').values('name')) <5>
-g.E(23).valueMap()
 vMarko = g.V().has('name','marko').next()
 vPeter = g.V().has('name','peter').next()
-g.V(vMarko).addE('knows').to(vPeter) <6>
-g.addE('knows').from(vMarko).to(vPeter) <7>
-g.addE('knows').from(__.V(1)).to(__.constant(6)) <8>
+g.V(vMarko).addE('knows').to(vPeter) <5>
+g.addE('knows').from(vMarko).to(vPeter) <6>
+g.addE('knows').from(__.V(1)).to(__.constant(6)) <7>
 ----
 
 <1> Add a co-developer edge with a year-property between marko and his collaborators.
 <2> Add incoming createdBy edges from the josh-vertex to the lop- and ripple-vertices.
 <3> Add an inverse createdBy edge for all created edges.
 <4> The newly created edge is a traversable object.
-<5> Two arbitrary bindings in a traversal can be joined ``from()``->``to()``, where `id` can be provided for graphs that
-supports user provided ids.
+<5> Add an edge between marko and peter given the directed (detached) vertex references.
 <6> Add an edge between marko and peter given the directed (detached) vertex references.
-<7> Add an edge between marko and peter given the directed (detached) vertex references.
-<8> Use child traversals producing either a vertex, or vertex id to add an edge between marko and peter.
+<7> Use child traversals producing either a vertex, or vertex id to add an edge between marko and peter.
 
 *Additional References*
 
@@ -6113,34 +6104,6 @@ replacing `GraphStep.HasStep...HasStep` with `TinkerGraphStep`). If provider opt
 steps and implement `OptimizationStrategy`, then other TinkerPop optimizations may fail to optimize the traversal or
 mis-understand the graph system specific step behaviors (e.g. `ProviderVertexStep extends VertexStep`) and yield
 incorrect semantics.
-
-Finally, here is a complicated traversal that has various components that are optimized by the default TinkerPop strategies.
-
-[gremlin-groovy,modern]
-----
-g.V().hasLabel('person'). <1>
-        and(has('name'),  <2>
-            has('name','marko'),
-            filter(has('age',gt(20)))). <3>
-  match(__.as('a').has('age',lt(32)), <4>
-        __.as('a').repeat(outE().inV()).times(2).as('b')). <5>
-    where('a',neq('b')). <6>
-    where(__.as('b').both().count().is(gt(1))). <7>
-  select('b'). <8>
-  groupCount().
-    by(out().count()). <9>
-  explain()
-----
-
-<1> `TinkerGraphStepStrategy` pulls in `has()`-step predicates for global, graph-centric index lookups.
-<2> `FilterRankStrategy` sorts filter steps by their time/space execution costs.
-<3> `InlineFilterStrategy` de-nests filters to increase the likelihood of filter concatenation and aggregation.
-<4> `InlineFilterStrategy` pulls out named predicates from `match()`-step to more easily allow provider strategies to use indices.
-<5> `RepeatUnrollStrategy` will unroll loops and `IncidentToAdjacentStrategy` will turn `outE().inV()`-patterns into `out()`.
-<6> `MatchPredicateStrategy` will pull in `where()`-steps so that they can be subjected to `match()`-steps runtime query optimizer.
-<7> `CountStrategy` will limit the traversal to only the number of traversers required for the `count().is(x)`-check.
-<8> `PathRetractionStrategy` will remove paths from the traversers and increase the likelihood of bulking as path data is not required after `select('b')`.
-<9> `AdjacentToIncidentStrategy` will turn `out()` into `outE()` to increase data access locality.
 
 ==== A note on Traversal Parameters
 

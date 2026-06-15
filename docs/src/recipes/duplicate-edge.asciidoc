@@ -87,17 +87,13 @@ the outgoing vertex, the edge label, and the incoming vertex as the key, with th
 value.
 <4> The rest of the traversal is the same as the previous one.
 
-Note that the above traversal could also be written using `match` step:
+Note that the above traversal could also be written using `match` step and TinkerGQL:
 
 [gremlin-groovy,existing]
 ----
-g.V().match(
-    __.as("ov").outE().as("e"),
-    __.as("e").inV().as("iv"),
-    __.as("iv").inE().as("ie"),
-    __.as("ie").outV().as("ov")).
-      where("ie",neq("e")).
-      where("ie",eq("e")).by(label).
+g.match("MATCH (ov)-[e]->(iv)<-[ie]-(ov)").
+    where("ie",neq("e")).
+    where("ie",eq("e")).by(label).
     select("ie").
     group().
       by(select("ov","e","iv").by().by(label)).
