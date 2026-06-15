@@ -1481,8 +1481,9 @@ g.V().hasLabel('person').outE('created').count().map {it.get() * 10}.path() <2>
 <1> `count()`-step is a <<a-note-on-barrier-steps,reducing barrier step>> meaning that all of the previous traversers are folded into a new traverser.
 <2> The path of the traverser emanating from `count()` starts at `count()`.
 
-IMPORTANT: `count(local)` counts the current, local object (not the objects in the traversal stream). This works for
-`Collection`- and `Map`-type objects. For any other object, a count of 1 is returned.
+IMPORTANT: `count(local)` counts the current, local object (not the objects in the traversal stream). For a
+`Collection` it returns the number of elements, for a `Map` the number of entries, for a `Path` the number of
+objects in the path, and for a `Tree` the total number of nodes in the tree. For any other object, a count of 1 is returned.
 
 *Additional References*
 
@@ -5156,14 +5157,17 @@ It is important to see how the paths of all the emanating traversers are united 
 
 image::tree-step2.png[width=500]
 
-The resultant tree data structure can then be manipulated (see `Tree` JavaDoc).
+The resultant tree data structure can then be navigated with its tree-shaped API such as `childAt()`, `findSubtree()`, `getNodesAtDepth()`, and `getLeafNodes()` (see `Tree` JavaDoc).
 
 [gremlin-groovy,modern]
 ----
 tree = g.V().out().out().tree().by('name').next()
+tree.childAt('marko')
+tree.childAt('marko').childAt('josh')
+tree.getNodesAtDepth(2)
+// The sugar plugin offer convenience accessors
 tree['marko']
 tree['marko']['josh']
-tree.getObjectsAtDepth(3)
 ----
 
 Note that when using `by()`-modulation, tree nodes are combined based on projection uniqueness, not on the
@@ -5178,6 +5182,11 @@ g.V().has('name','josh').out('created').values('name').
 
 <1> When the `tree()` is created, vertex 3 and 5 are unique and thus, form unique branches in the tree structure.
 <2> When the `tree()` is `by()`-modulated by `label`, then vertex 3 and 5 are both "software" and thus are merged to a single node in the tree.
+
+NOTE: A `Tree` keys its children by node value, so sibling branches that resolve to the same value (whether the
+original objects or a `by()`-projection) collapse into a single node. This means structure can be lost when distinct
+paths share a value at the same depth. If every path must be preserved, use `path()`; if a queryable result that
+retains element identity, cycles, and parallel edges is required, use `subgraph()`.
 
 The `tree()` step can also take a side-effect key as an argument. When using this form, the `Tree` is is built up in a
 side-effect as each traverser passes through. The `Tree` can later be accessed by either `select()` or `cap()`.

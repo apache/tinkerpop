@@ -85,9 +85,7 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements T
             final TraversalProduct product = TraversalUtil.produce(path.<Object>get(i), this.traversalRing.next());
             if (product.isProductive()) {
                 final Object object = product.get();
-                if (!depth.containsKey(object))
-                    depth.put(object, new Tree<>());
-                depth = (Tree) depth.get(object);
+                depth = depth.getOrCreateChild(object);
             }
         }
         this.traversalRing.reset();

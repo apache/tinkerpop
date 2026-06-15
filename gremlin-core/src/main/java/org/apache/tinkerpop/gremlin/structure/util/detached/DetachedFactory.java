@@ -106,11 +106,19 @@ public class DetachedFactory {
                 set.add(DetachedFactory.detach(item, withProperties));
             }
             return (D) set;
+        } else if (object instanceof Tree) {
+            final Tree newTree = new Tree();
+            final Tree<Object> sourceTree = (Tree<Object>) object;
+            for (final Object key : sourceTree.rootNodes()) {
+                final Object detachedKey = DetachedFactory.detach(key, withProperties);
+                final Tree<Object> detachedSubtree = (Tree<Object>) DetachedFactory.detach(sourceTree.childAt(key), withProperties);
+                newTree.getOrCreateChild(detachedKey).addTree(detachedSubtree);
+            }
+            return (D) newTree;
         } else if (object instanceof Map) {
-            final Map map = object instanceof Tree ? new Tree() :
-                    object instanceof LinkedHashMap ?
-                            new LinkedHashMap(((Map) object).size()) :
-                            new HashMap(((Map) object).size());
+            final Map map = object instanceof LinkedHashMap ?
+                    new LinkedHashMap(((Map) object).size()) :
+                    new HashMap(((Map) object).size());
             for (final Map.Entry<Object, Object> entry : ((Map<Object, Object>) object).entrySet()) {
                 map.put(DetachedFactory.detach(entry.getKey(), withProperties), DetachedFactory.detach(entry.getValue(), withProperties));
             }

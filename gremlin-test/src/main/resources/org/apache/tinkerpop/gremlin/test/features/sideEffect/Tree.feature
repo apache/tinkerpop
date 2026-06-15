@@ -216,12 +216,12 @@ Feature: Step - tree()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[3].l |
-      | d[3].l |
-      | d[3].l |
-      | d[3].l |
-      | d[3].l |
-      | d[3].l |
+      | d[9].l |
+      | d[9].l |
+      | d[9].l |
+      | d[9].l |
+      | d[9].l |
+      | d[9].l |
 
   @InsertionOrderingRequired
   Scenario: g_V_out_order_byXnameX_localXtreeXaX_selectXaX_countXlocalXX
@@ -233,9 +233,9 @@ Feature: Step - tree()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[1].l |
-      | d[1].l |
-      | d[1].l |
-      | d[2].l |
       | d[2].l |
       | d[3].l |
+      | d[4].l |
+      | d[6].l |
+      | d[7].l |
+      | d[9].l |
