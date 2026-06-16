@@ -1536,6 +1536,9 @@ Given that I/O operations in Node.js are asynchronous by default, <<terminal-ste
 * `Traversal.toList()`: Returns a `Promise` with an `Array` as result value.
 * `Traversal.next()`: Returns a `Promise` with a `{ value, done }` tuple as result value, according to the
 link:https://github.com/tc39/proposal-async-iteration[async iterator proposal].
+* `Traversal.next(amount)`: Returns a `Promise` with an `Array` of up to `amount` result values, the batched form
+of `next(n)` available in the other GLVs. The `Array` is always returned when an `amount` is supplied, so `next(1)`
+resolves to an `Array` of one value, and an `amount` of zero or less resolves to an empty `Array`.
 * `Traversal.iterate()`: Returns a `Promise` without a value.
 
 For example:
