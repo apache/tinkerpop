@@ -29,6 +29,7 @@ import type { Property } from './models/index.js';
 import type { GraphTraversalSource, SchemaConfig } from './types.js';
 import { getSamplePropertyValues, processBatched } from './query-utils.js';
 import type { GremlinQueryError } from '../errors.js';
+import { PROPERTY_TYPES } from '../constants.js';
 
 /**
  * Analyzes property characteristics from collected values.
@@ -47,7 +48,7 @@ export const analyzePropertyFromValues = (
   if (config.enumPropertyDenyList.includes(propertyKey)) {
     return {
       name: propertyKey,
-      type: ['unknown'],
+      type: [PROPERTY_TYPES.UNKNOWN],
     };
   }
 
@@ -59,7 +60,7 @@ export const analyzePropertyFromValues = (
 
   const property: Property = {
     name: propertyKey,
-    type: types.length > 0 ? types : ['unknown'],
+    type: types.length > 0 ? types : [PROPERTY_TYPES.UNKNOWN],
   };
 
   // Add sample values if requested
@@ -98,7 +99,7 @@ export const analyzeSingleProperty = (
     if (config.enumPropertyDenyList.includes(propertyKey)) {
       return {
         name: propertyKey,
-        type: ['unknown'],
+        type: [PROPERTY_TYPES.UNKNOWN],
       };
     }
 
