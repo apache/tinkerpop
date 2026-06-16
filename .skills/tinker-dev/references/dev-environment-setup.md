@@ -50,7 +50,7 @@ GLV builds and many integration tests will be skipped.
 Run the included check script to verify your setup:
 
 ```bash
-bash .skills/tinkerpop-dev/scripts/check-env.sh
+bash .skills/tinker-dev/scripts/check-env.sh
 ```
 
 This checks for Java, Maven, Docker, and optionally Python, Node.js, .NET, and Go.

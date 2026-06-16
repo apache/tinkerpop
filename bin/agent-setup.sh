@@ -75,6 +75,30 @@ if [[ ! -d ".skills/tinker-dev" ]]; then
     exit 1
 fi
 
+# Remove TinkerPop skill entries (symlinks or copies) from a tool's skill
+# directory before the current ones are (re)created. Matching only "tinker*"
+# keeps any custom skills the user maintains intact. Entries for skills that no
+# longer exist (e.g. a renamed "tinkerpop-dev") are reported as stale removals;
+# current skills are cleared silently so the setup step can recreate them
+# cleanly — this also fixes symlinks whose relative target path has changed.
+purge_tinker_skills() {
+    local target_dir="$1"
+    [[ -d "$target_dir" ]] || return 0
+
+    local entry name skill is_current
+    for entry in "$target_dir"/tinker*; do
+        # If the glob matched nothing it stays literal — skip non-existent paths.
+        [[ -e "$entry" || -L "$entry" ]] || continue
+        name=$(basename "$entry")
+        is_current=0
+        for skill in "${SKILLS[@]}"; do
+            [[ "$name" == "$skill" ]] && is_current=1 && break
+        done
+        rm -rf "$entry"
+        [[ "$is_current" -eq 0 ]] && skip "removed stale skill $target_dir/$name"
+    done
+}
+
 # Create a symlink from a tool's skill directory to our canonical skill
 setup_symlink() {
     local tool_name="$1"
@@ -114,11 +138,9 @@ setup_symlink() {
 # instead. See: https://github.com/kirodotdev/Kiro/issues (symlink support).
 setup_kiro() {
     mkdir -p ".kiro/skills"
+    purge_tinker_skills ".kiro/skills"
     for skill_name in "${SKILLS[@]}"; do
         local target_dir=".kiro/skills/$skill_name"
-        if [[ -d "$target_dir" ]]; then
-            rm -rf "$target_dir"
-        fi
         cp -r ".skills/$skill_name" "$target_dir"
         ok "kiro: copied $skill_name to $target_dir"
     done
@@ -131,27 +153,33 @@ setup_agent() {
     local agent="$1"
     case "$agent" in
         claude)
+            purge_tinker_skills ".claude/skills"
             for skill in "${SKILLS[@]}"; do
                 setup_symlink "claude" ".claude/skills" "$skill"
             done
             ;;
         copilot)
+            purge_tinker_skills ".github/skills"
+            purge_tinker_skills ".agents/skills"
             for skill in "${SKILLS[@]}"; do
                 setup_symlink "copilot (.github)" ".github/skills" "$skill"
                 setup_symlink "copilot (.agents)" ".agents/skills" "$skill"
             done
             ;;
         cursor)
+            purge_tinker_skills ".cursor/skills"
             for skill in "${SKILLS[@]}"; do
                 setup_symlink "cursor" ".cursor/skills" "$skill"
             done
             ;;
         codex)
+            purge_tinker_skills ".codex/skills"
             for skill in "${SKILLS[@]}"; do
                 setup_symlink "codex" ".codex/skills" "$skill"
             done
             ;;
         junie)
+            purge_tinker_skills ".junie/skills"
             for skill in "${SKILLS[@]}"; do
                 setup_symlink "junie" ".junie/skills" "$skill"
             done

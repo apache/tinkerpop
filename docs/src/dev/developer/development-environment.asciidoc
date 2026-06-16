@@ -453,7 +453,7 @@ while also supporting
 
 === Agent Skills
 
-TinkerPop provides development guidance as an link:https://agentskills.io[Agent Skill] in `.skills/tinkerpop-dev/`.
+TinkerPop provides development guidance as an link:https://agentskills.io[Agent Skill] in `.skills/tinker-dev/`.
 The skill follows the open Agent Skills standard and includes:
 
 * Project conventions, coding standards, and agent guardrails (in `SKILL.md`)

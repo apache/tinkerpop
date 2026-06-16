@@ -19,7 +19,7 @@
 #
 
 # Verify TinkerPop development environment prerequisites.
-# Usage: bash .skills/tinkerpop-dev/scripts/check-env.sh
+# Usage: bash .skills/tinker-dev/scripts/check-env.sh
 
 set -uo pipefail
 

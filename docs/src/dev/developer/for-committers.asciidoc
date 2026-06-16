@@ -1077,7 +1077,7 @@ the graph of decisions visible across contributors and sessions.
 === Workflow
 
 Because beads usage is optional, the agent does not load beads context automatically. Once the
-`tinkerpop-dev` skill is active, the committer opts in by telling the agent to use beads:
+`tinker-dev` skill is active, the committer opts in by telling the agent to use beads:
 
 ----
 Use beads.
@@ -1090,7 +1090,7 @@ the committer does not give this instruction will proceed without beads involvem
 
 From the committer's perspective this means:
 
-* *At session start* — invoke the `tinkerpop-dev` skill, then say "Use beads" to opt in.
+* *At session start* — invoke the `tinker-dev` skill, then say "Use beads" to opt in.
   The agent will check for available work and propose a plan using beads.
 * *During work* — the agent creates and updates beads as it goes. The committer reviews and
   guides this, the same way they review the code changes themselves.
@@ -1125,5 +1125,5 @@ bin/beads-bootstrap.sh
 ----
 
 This requires `bd` and `dolt` to be installed and valid DoltHub credentials (`dolt login`).
-Full workflow guidance for AI agents is in `.claude/skills/tinkerpop-dev/references/beads-workflow.md`.
+Full workflow guidance for AI agents is in `.claude/skills/tinker-dev/references/beads-workflow.md`.
 
