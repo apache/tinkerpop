@@ -72,13 +72,14 @@ public class PTraversalTest {
         public void shouldReturnTraversalValueWhenPresent() {
             final Traversal.Admin<?, ?> traversal = __.inject(42).asAdmin();
             final P<Object> p = P.eq(traversal);
-            assertThat(p.getTraversalValue(), is(sameInstance(traversal)));
+            assertThat(p.getChildTraversals(), is(notNullValue()));
+            assertThat(p.getChildTraversals().get(0), is(sameInstance(traversal)));
         }
 
         @Test
         public void shouldReturnNullTraversalValueForLiteral() {
             final P<String> p = P.eq("value");
-            assertThat(p.getTraversalValue(), is(nullValue()));
+            assertThat(p.getChildTraversals(), is(nullValue()));
         }
     }
 
@@ -258,15 +259,16 @@ public class PTraversalTest {
         @Test
         public void shouldReturnTraversalValuesListForMultiTraversal() {
             final P<Object> p = P.within(__.constant(1).asAdmin(), __.constant(2).asAdmin());
-            assertThat(p.getTraversalValues(), is(notNullValue()));
-            assertThat(p.getTraversalValues().size(), is(2));
+            assertThat(p.getChildTraversals(), is(notNullValue()));
+            assertThat(p.getChildTraversals().size(), is(2));
         }
 
         @Test
         public void shouldReturnNullTraversalValueForMultiTraversal() {
-            // Single traversalValue should be null when using multi-traversal form
+            // childTraversals should be non-null when using multi-traversal form
             final P<Object> p = P.within(__.constant(1).asAdmin(), __.constant(2).asAdmin());
-            assertThat(p.getTraversalValue(), is(nullValue()));
+            assertThat(p.getChildTraversals(), is(notNullValue()));
+            assertThat(p.getChildTraversals().size(), is(2));
         }
 
         // --- Resolution and testing ---
@@ -352,8 +354,8 @@ public class PTraversalTest {
 
             // Clone should have independent traversal values
             assertThat(clone.hasTraversal(), is(true));
-            assertThat(clone.getTraversalValues(), is(notNullValue()));
-            assertThat(clone.getTraversalValues().size(), is(2));
+            assertThat(clone.getChildTraversals(), is(notNullValue()));
+            assertThat(clone.getChildTraversals().size(), is(2));
 
             // Resolve the clone - this mutates the clone's internal state
             clone.resolve(createTraverser("start"));
@@ -375,8 +377,8 @@ public class PTraversalTest {
             final Traversal<?, ?> trav2 = __.constant(20);
             final P<Object> p = (P<Object>) P.within(trav1, trav2);
             assertThat(p.hasTraversal(), is(true));
-            assertThat(p.getTraversalValues() != null, is(true));
-            assertThat(p.getTraversalValues().size(), is(2));
+            assertThat(p.getChildTraversals() != null, is(true));
+            assertThat(p.getChildTraversals().size(), is(2));
             p.resolve(createTraverser("start"));
             assertThat(p.test(10), is(true));
             assertThat(p.test(20), is(true));

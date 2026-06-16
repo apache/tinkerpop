@@ -90,7 +90,8 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
      */
     private boolean testAllWithTraversals(final Traverser.Admin<S> traverser, final Element element) {
         for (final HasContainer hc : this.hasContainers) {
-            if (!resolvePredicate(hc, traverser) || !hc.test(element)) {
+            if (hc.hasTraversal()) hc.getPredicate().resolve(traverser);
+            if (!hc.test(element)) {
                 return false;
             }
         }
@@ -102,24 +103,10 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
      */
     private boolean testAllWithTraversals(final Traverser.Admin<S> traverser, final Property property) {
         for (final HasContainer hc : this.hasContainers) {
-            if (!resolvePredicate(hc, traverser) || !hc.test(property)) {
+            if (hc.hasTraversal()) hc.getPredicate().resolve(traverser);
+            if (!hc.test(property)) {
                 return false;
             }
-        }
-        return true;
-    }
-
-    /**
-     * Resolves a container's predicate traversal (if any) against the current traverser, mutating the
-     * predicate with the resolved value for this test cycle.
-     *
-     * @return {@code false} if the predicate resolved empty (no comparison value), meaning the element
-     *         cannot match and the caller should short-circuit; {@code true} otherwise.
-     */
-    private boolean resolvePredicate(final HasContainer hc, final Traverser.Admin<S> traverser) {
-        if (hc.hasTraversal()) {
-            hc.getPredicate().resolve(traverser);
-            return !hc.getPredicate().isResolvedEmpty();
         }
         return true;
     }

@@ -42,14 +42,12 @@ public final class IsStep<S> extends FilterStep<S> implements IsStepContract<S>,
     public IsStep(final Traversal.Admin traversal, final P<S> predicate) {
         super(traversal);
         this.predicate = predicate;
-        P.integrateTraversals(this.predicate, this);
     }
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
         if (this.predicate.hasTraversal()) {
             this.predicate.resolve(traverser);
-            if (this.predicate.isResolvedEmpty()) return false;
         }
         return this.predicate.test(traverser.get());
     }
@@ -92,6 +90,8 @@ public final class IsStep<S> extends FilterStep<S> implements IsStepContract<S>,
     @Override
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
-        P.integrateTraversals(this.predicate, this);
+        final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>();
+        P.collectTraversals(this.predicate, traversals);
+        traversals.forEach(this::integrateChild);
     }
 }

@@ -318,7 +318,7 @@ public class GremlinLang implements Cloneable, Serializable {
         if (p instanceof TextP) {
             sb.append("TextP.").append(p.getPredicateName()).append("(");
             if (p.hasTraversal()) {
-                sb.append(argAsString(p.getTraversalValue()));
+                sb.append(argAsString(p.getChildTraversals().get(0)));
             } else {
                 sb.append(argAsString(p.getValue()));
             }
@@ -344,15 +344,14 @@ public class GremlinLang implements Cloneable, Serializable {
         } else if (p.hasTraversal()) {
             // Traversal-bearing predicate: serialize as P.op(traversalGremlinLang)
             sb.append("P.").append(p.getPredicateName()).append("(");
-            if (p.getTraversalValues() != null) {
-                // Multi-traversal predicate (within/without with multiple traversals)
-                final List<Traversal.Admin<?, ?>> traversals = p.getTraversalValues();
+            final List<Traversal.Admin<?, ?>> traversals = p.getChildTraversals();
+            if (traversals.size() > 1) {
                 for (int i = 0; i < traversals.size(); i++) {
                     if (i > 0) sb.append(",");
                     sb.append(argAsString(traversals.get(i)));
                 }
             } else {
-                sb.append(argAsString(p.getTraversalValue()));
+                sb.append(argAsString(traversals.get(0)));
             }
         } else {
             sb.append("P.").append(p.getPredicateName()).append("(");

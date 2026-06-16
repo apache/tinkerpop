@@ -69,8 +69,8 @@ public class CloneIndependenceTraversalTest {
         final List<HasContainer> originalContainers = original.getHasContainers();
         final List<HasContainer> cloneContainers = clone.getHasContainers();
         assertThat(cloneContainers.get(0), is(not(sameInstance(originalContainers.get(0)))));
-        assertThat(cloneContainers.get(0).getPredicate().getTraversalValue(),
-                is(not(sameInstance(originalContainers.get(0).getPredicate().getTraversalValue()))));
+        assertThat(cloneContainers.get(0).getPredicate().getChildTraversals().get(0),
+                is(not(sameInstance(originalContainers.get(0).getPredicate().getChildTraversals().get(0)))));
     }
 
     @Test
@@ -110,8 +110,8 @@ public class CloneIndependenceTraversalTest {
 
         for (int i = 0; i < originalContainers.size(); i++) {
             assertThat(cloneContainers.get(i), is(not(sameInstance(originalContainers.get(i)))));
-            assertThat(cloneContainers.get(i).getPredicate().getTraversalValue(),
-                    is(not(sameInstance(originalContainers.get(i).getPredicate().getTraversalValue()))));
+            assertThat(cloneContainers.get(i).getPredicate().getChildTraversals().get(0),
+                    is(not(sameInstance(originalContainers.get(i).getPredicate().getChildTraversals().get(0)))));
         }
     }
 

@@ -45,14 +45,12 @@ public final class AllStep<S, S2> extends FilterStep<S> implements TraversalPare
         }
 
         this.predicate = predicate;
-        P.integrateTraversals(this.predicate, this);
     }
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
         if (this.predicate.hasTraversal()) {
             this.predicate.resolve(traverser);
-            if (this.predicate.isResolvedEmpty()) return false;
         }
 
         final S item = traverser.get();
@@ -98,6 +96,8 @@ public final class AllStep<S, S2> extends FilterStep<S> implements TraversalPare
     @Override
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
-        P.integrateTraversals(this.predicate, this);
+        final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>();
+        P.collectTraversals(this.predicate, traversals);
+        traversals.forEach(this::integrateChild);
     }
 }

@@ -21,17 +21,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+
+import java.util.List;
 
 /**
  * Validates that child traversals do not contain mutating steps. Child traversals used as
  * arguments to filter predicates ({@code has()}, {@code is()}, etc.), lookup steps
  * ({@code V(traversal)}, {@code E(traversal)}), and mutation steps ({@code property(traversal)})
  * must be read-only - their purpose is to compute values, not produce side effects.
- * <p>
- * Recursion walks both {@link TraversalParent#getLocalChildren()} and
- * {@link TraversalParent#getGlobalChildren()} to detect mutations nested inside
- * {@code map()}, {@code union()}, {@code choose()}, {@code coalesce()}, or any other parent step.
  */
 public final class ChildTraversalValidator {
 
@@ -43,20 +40,12 @@ public final class ChildTraversalValidator {
      * Throws {@link IllegalArgumentException} if one is found.
      */
     public static void validate(final Traversal.Admin<?, ?> child) {
-        for (final Step<?, ?> step : child.getSteps()) {
-            if (step instanceof Mutating) {
-                throw new IllegalArgumentException(
-                        "Child traversal contains mutating step " +
-                        step.getClass().getSimpleName() + ". Mutating steps are not allowed in child traversals.");
-            }
-            if (step instanceof TraversalParent) {
-                for (final Traversal.Admin<?, ?> nested : ((TraversalParent) step).getLocalChildren()) {
-                    validate(nested);
-                }
-                for (final Traversal.Admin<?, ?> nested : ((TraversalParent) step).getGlobalChildren()) {
-                    validate(nested);
-                }
-            }
+        final List<Mutating> mutating = TraversalHelper.getStepsOfAssignableClassRecursively(Mutating.class, child);
+        if (!mutating.isEmpty()) {
+            final Step<?, ?> step = (Step<?, ?>) mutating.get(0);
+            throw new IllegalArgumentException(
+                    "Child traversal contains mutating step " +
+                    step.getClass().getSimpleName() + ". Mutating steps are not allowed in child traversals.");
         }
     }
 }

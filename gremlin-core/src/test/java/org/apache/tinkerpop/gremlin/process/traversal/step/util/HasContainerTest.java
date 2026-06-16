@@ -56,7 +56,7 @@ public class HasContainerTest {
         final HasContainer hc = new HasContainer("age", P.eq(traversal));
 
         assertEquals("age", hc.getKey());
-        assertThat(hc.getPredicate().getTraversalValue(), is(sameInstance(traversal)));
+        assertThat(hc.getPredicate().getChildTraversals().get(0), is(sameInstance(traversal)));
     }
 
     @Test
@@ -66,9 +66,9 @@ public class HasContainerTest {
         final HasContainer clone = original.clone();
 
         // clone's predicate should carry a traversal that is not the same instance
-        assertThat(clone.getPredicate().getTraversalValue(), is(notNullValue()));
-        assertThat(clone.getPredicate().getTraversalValue(),
-                is(not(sameInstance(original.getPredicate().getTraversalValue()))));
+        assertThat(clone.getPredicate().getChildTraversals(), is(notNullValue()));
+        assertThat(clone.getPredicate().getChildTraversals().get(0),
+                is(not(sameInstance(original.getPredicate().getChildTraversals().get(0)))));
 
         // key should be equal
         assertEquals(original.getKey(), clone.getKey());

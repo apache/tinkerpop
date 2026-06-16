@@ -135,7 +135,6 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
             // Traversal-bearing predicate: resolve the child traversal, then test
             this.traversalRing.reset();
             this.predicate.resolve(traverser);
-            if (this.predicate.isResolvedEmpty()) return false;
             return this.predicate.test(product.get());
         } else {
             // Standard scope-label path: resolve predicate values from path labels

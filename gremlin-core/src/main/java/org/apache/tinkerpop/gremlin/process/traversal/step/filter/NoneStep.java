@@ -45,16 +45,12 @@ public final class NoneStep<S, S2> extends FilterStep<S> implements TraversalPar
         }
 
         this.predicate = predicate;
-        P.integrateTraversals(this.predicate, this);
     }
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
         if (this.predicate.hasTraversal()) {
             this.predicate.resolve(traverser);
-            // Vacuously true: if the predicate can't be evaluated (no comparison value),
-            // then no item can match, so none() is satisfied.
-            if (this.predicate.isResolvedEmpty()) return true;
         }
 
         final S item = traverser.get();
@@ -100,6 +96,8 @@ public final class NoneStep<S, S2> extends FilterStep<S> implements TraversalPar
     @Override
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
-        P.integrateTraversals(this.predicate, this);
+        final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>();
+        P.collectTraversals(this.predicate, traversals);
+        traversals.forEach(this::integrateChild);
     }
 }
