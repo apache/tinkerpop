@@ -354,6 +354,34 @@ err = tx.Commit()
 if err != nil { log.Fatal(err) }
 ----
 
+==== Managed Transaction Blocks
+
+To avoid the manual begin/commit/rollback boilerplate, `g` provides closure methods that manage the
+lifecycle: the closure receives the transaction-bound `gtx` and the transaction is committed when it returns a `nil`
+error or rolled back if it returns an error (or panics). `ExecuteInTx` is for the common no-result case; `EvaluateInTx`
+returns the value the body produces as `interface{}`, which the caller type-asserts:
+
+[source,go]
+----
+g := gremlingo.Traversal_().With(remote)
+
+// ExecuteInTx: no return value
+err := g.ExecuteInTx(func(gtx *gremlingo.GraphTraversalSource) error {
+    _, e := gtx.AddV("person").Property("name", "alice").Iterate()
+    return <-e
+})
+
+// EvaluateInTx: returns the body's value as interface{}
+v, err := g.EvaluateInTx(func(gtx *gremlingo.GraphTraversalSource) (interface{}, error) {
+    return gtx.V().Count().Next()
+})
+count := v.(int64)
+----
+
+The transaction runs exactly once (no automatic retry). The body's error is returned after the rollback; if the commit
+fails, a rollback is still attempted and the commit error is returned. A panic in the body rolls back and then
+re-panics.
+
 ==== Driver API
 
 [source,go]
@@ -1054,6 +1082,31 @@ try {
 
 Traversals spawned from `gtx` are bound to the transaction. The driver handles host pinning and transaction ID
 propagation automatically.
+
+==== Managed Transaction Blocks
+
+To avoid the manual begin/commit/rollback boilerplate, `g` also provides closure methods that manage the
+transaction lifecycle. The closure receives the transaction-bound `gtx`, and the transaction is committed when the
+closure completes normally or rolled back if it throws. Use `executeInTx` when the body returns nothing and
+`evaluateInTx` when it returns a value:
+
+[source,java]
+----
+GraphTraversalSource g = traversal().with(DriverRemoteConnection.using("localhost", 8182, "g"));
+
+// executeInTx: no return value
+g.executeInTx(gtx -> {
+    gtx.addV("person").property("name", "jorge").iterate();
+    gtx.addV("person").property("name", "josh").iterate();
+});
+
+// evaluateInTx: returns the body's value
+long count = g.evaluateInTx(gtx -> gtx.V().count().next());
+----
+
+The transaction runs exactly once (no automatic retry). If the closure throws, the original exception is re-thrown
+after the rollback; if the commit fails, a rollback is still attempted to release server-side resources and the commit
+error propagates. These methods are also available on embedded graphs that support transactions.
 
 ==== Driver API
 
@@ -2017,6 +2070,29 @@ await gtx.addV("person").property("name", "josh").iterate();
 await tx.commit();
 ----
 
+==== Managed Transaction Blocks
+
+To avoid the manual begin/commit/rollback boilerplate, `g` provides an `executeInTx` method that manages the
+lifecycle. The callback receives the transaction-bound `gtx` and may be `async`; the transaction is committed when the
+callback resolves or rolled back if it throws. `executeInTx` resolves to whatever the callback returns:
+
+[source,javascript]
+----
+const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin'));
+
+// no return value
+await g.executeInTx(async (gtx) => {
+    await gtx.addV("person").property("name", "jorge").iterate();
+    await gtx.addV("person").property("name", "josh").iterate();
+});
+
+// returns the callback's value
+const count = await g.executeInTx((gtx) => gtx.V().count().next());
+----
+
+The transaction runs exactly once (no automatic retry). If the callback rejects, the original error is re-thrown after
+the rollback; if the commit fails, a rollback is still attempted and the commit error propagates.
+
 ==== Driver API
 
 [source,javascript]
@@ -2655,6 +2731,31 @@ await gtx.AddV("person").Property("name", "josh").Promise(t => t.Iterate());
 
 await tx.CommitAsync();
 ----
+
+==== Managed Transaction Blocks
+
+To avoid the manual begin/commit/rollback boilerplate, `g` provides closure methods that manage the
+lifecycle. The callback receives the transaction-bound `gtx` and the transaction is committed when it completes or
+rolled back if it throws. Use `ExecuteInTxAsync` when the body returns nothing and `EvaluateInTxAsync` when it returns
+a value; both accept an optional `CancellationToken`:
+
+[source,csharp]
+----
+var g = AnonymousTraversalSource.Traversal().With(new DriverRemoteConnection("localhost", 8182));
+
+// ExecuteInTxAsync: no return value
+await g.ExecuteInTxAsync(async gtx =>
+{
+    await gtx.AddV("person").Property("name", "jorge").Promise(t => t.Iterate());
+    await gtx.AddV("person").Property("name", "josh").Promise(t => t.Iterate());
+});
+
+// EvaluateInTxAsync: returns the body's value
+var count = await g.EvaluateInTxAsync(gtx => gtx.V().Count().Promise(t => t.Next()));
+----
+
+The transaction runs exactly once (no automatic retry). If the callback throws, the original exception is re-thrown
+after the rollback; if the commit fails, a rollback is still attempted and the commit error propagates.
 
 ==== Driver API
 
@@ -3309,6 +3410,26 @@ gtx.addV('person').property('name', 'josh').iterate()
 
 tx.commit()
 ----
+
+==== Managed Transaction Blocks
+
+To avoid the manual begin/commit/rollback boilerplate, `g` provides an `execute_in_tx` method that manages the
+lifecycle. The function receives the transaction-bound `gtx` and the transaction is committed when it returns or rolled
+back if it raises. `execute_in_tx` returns whatever the function returns:
+
+[source,python]
+----
+g = traversal().with_remote(DriverRemoteConnection('http://localhost:8182/gremlin', 'g'))
+
+# no return value
+g.execute_in_tx(lambda gtx: gtx.addV('person').property('name', 'jorge').iterate())
+
+# returns the function's value
+count = g.execute_in_tx(lambda gtx: gtx.V().count().next())
+----
+
+The transaction runs exactly once (no automatic retry). If the function raises, the original exception is re-raised
+after the rollback; if the commit fails, a rollback is still attempted and the commit error propagates.
 
 ==== Driver API
 

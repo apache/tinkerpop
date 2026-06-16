@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -536,7 +537,6 @@ func TestTransactionBeginAfterRollback(t *testing.T) {
 	assert.Contains(t, err.Error(), "E1101")
 }
 
-
 func TestTransactionRollbackOnClientClose(t *testing.T) {
 	client := newTxClient(t)
 	dropTxGraph(t, client)
@@ -578,7 +578,6 @@ func TestTransactionRollbackOnDrcClose(t *testing.T) {
 	dropTxGraph(t, client2)
 	assert.Equal(t, int64(0), getTxCount(t, client2, "drc_close_test"))
 }
-
 
 func TestTransactionMultiRollback(t *testing.T) {
 	client := newTxClient(t)
@@ -630,4 +629,192 @@ func TestTransactionMultiCommitAndRollback(t *testing.T) {
 	err = tx2.Rollback()
 	assert.Nil(t, err)
 	assert.Equal(t, int64(0), getTxCount(t, client, "multi_cr2"))
+}
+
+func TestTransactionExecuteInTxCommitsOnSuccess(t *testing.T) {
+	client := newTxClient(t)
+	defer client.Close()
+	dropTxGraph(t, client)
+
+	remote := newTxRemoteConnection(t)
+	defer remote.Close()
+	g := Traversal_().With(remote)
+
+	err := g.ExecuteInTx(func(gtx *GraphTraversalSource) error {
+		promise := gtx.AddV("person").Iterate()
+		return <-promise
+	})
+	assert.Nil(t, err)
+
+	// Committed data is visible outside the transaction.
+	assert.Equal(t, int64(1), getTxCount(t, client, "person"))
+}
+
+func TestTransactionExecuteInTxRollsBackAndRethrowsOnBodyError(t *testing.T) {
+	client := newTxClient(t)
+	defer client.Close()
+	dropTxGraph(t, client)
+
+	remote := newTxRemoteConnection(t)
+	defer remote.Close()
+	g := Traversal_().With(remote)
+
+	sentinel := errors.New("intentional body failure")
+
+	err := g.ExecuteInTx(func(gtx *GraphTraversalSource) error {
+		// Add a vertex, then fail: the add must be rolled back.
+		promise := gtx.AddV("person").Iterate()
+		assert.Nil(t, <-promise)
+		return sentinel
+	})
+
+	// (i) the exact original error is returned unchanged.
+	assert.NotNil(t, err)
+	assert.True(t, errors.Is(err, sentinel))
+	assert.Equal(t, sentinel, err)
+
+	// (ii) the vertex was NOT persisted (rollback happened).
+	assert.Equal(t, int64(0), getTxCount(t, client, "person"))
+}
+
+// EvaluateInTx returns the value computed by the body as interface{}, matching
+// the driver's untyped result API; the caller type-asserts it.
+func TestTransactionEvaluateInTxReturnsValue(t *testing.T) {
+	client := newTxClient(t)
+	defer client.Close()
+	dropTxGraph(t, client)
+
+	remote := newTxRemoteConnection(t)
+	defer remote.Close()
+	g := Traversal_().With(remote)
+
+	v, err := g.EvaluateInTx(func(gtx *GraphTraversalSource) (interface{}, error) {
+		// Add two vertices and return the in-transaction count.
+		promise := gtx.AddV("widget").Iterate()
+		if pErr := <-promise; pErr != nil {
+			return nil, pErr
+		}
+		promise = gtx.AddV("widget").Iterate()
+		if pErr := <-promise; pErr != nil {
+			return nil, pErr
+		}
+		counts, cErr := gtx.V().HasLabel("widget").Count().ToList()
+		if cErr != nil {
+			return nil, cErr
+		}
+		count, cErr := counts[0].GetInt64()
+		if cErr != nil {
+			return nil, cErr
+		}
+		return count, nil
+	})
+	assert.Nil(t, err)
+	// the body returned an int64; the caller type-asserts the interface{} result
+	assert.Equal(t, int64(2), v)
+
+	// The committed value matches what was returned.
+	assert.Equal(t, int64(2), getTxCount(t, client, "widget"))
+}
+
+// Opening a SECOND transaction from inside the body must error. gtx.Tx() itself
+// legitimately returns the SAME transaction (it must not error - that is the
+// commit path), but a nested Begin() on it is rejected by the existing
+// double-begin guard (E1101).
+func TestTransactionExecuteInTxRejectsNestedBegin(t *testing.T) {
+	client := newTxClient(t)
+	defer client.Close()
+	dropTxGraph(t, client)
+
+	remote := newTxRemoteConnection(t)
+	defer remote.Close()
+	g := Traversal_().With(remote)
+
+	err := g.ExecuteInTx(func(gtx *GraphTraversalSource) error {
+		// gtx.Tx() returns the bound, already-open transaction (must NOT error).
+		tx := gtx.Tx()
+		assert.True(t, tx.IsOpen())
+
+		// gtx.Tx() called again returns that same transaction handle.
+		assert.Equal(t, tx, gtx.Tx())
+
+		// Opening a second transaction (a nested begin) IS rejected.
+		_, beginErr := tx.Begin()
+		assert.NotNil(t, beginErr)
+		assert.Contains(t, beginErr.Error(), "E1101")
+
+		// Surface the nested-begin error from the body so the wrapper rolls back.
+		return beginErr
+	})
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "E1101")
+}
+
+// Verifies that a failure of the wrapper's automatic Commit() is surfaced from
+// ExecuteInTx. To drive a deterministic, no-mock commit failure, the body
+// succeeds but the transaction is rolled back from a SEPARATE connection (by its
+// transactionId) before the body returns; the wrapper's Commit() is then a real
+// commit RPC that the server rejects with "Transaction not found".
+func TestTransactionExecuteInTxPropagatesCommitFailure(t *testing.T) {
+	client := newTxClient(t)
+	defer client.Close()
+	dropTxGraph(t, client)
+
+	// a second connection used to kill the transaction out-of-band
+	sideClient := newTxClient(t)
+	defer sideClient.Close()
+
+	remote := newTxRemoteConnection(t)
+	defer remote.Close()
+	g := Traversal_().With(remote)
+
+	err := g.ExecuteInTx(func(gtx *GraphTraversalSource) error {
+		if pErr := <-gtx.AddV("commit_fail").Iterate(); pErr != nil {
+			return pErr
+		}
+		// Roll the transaction back from a separate connection, targeting it by its
+		// transactionId. The body still returns nil, so the wrapper proceeds to commit -
+		// which now fails server-side because the transaction no longer exists.
+		txId := gtx.Tx().TransactionId()
+		_, rbErr := sideClient.SubmitWithOptions("g.tx().rollback()",
+			new(RequestOptionsBuilder).SetTransactionId(txId).Create())
+		return rbErr
+	})
+
+	// the commit failure is the error surfaced to the caller
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "Transaction not found")
+
+	// data was not persisted (the transaction was rolled back out-of-band)
+	assert.Equal(t, int64(0), getTxCount(t, client, "commit_fail"))
+}
+
+func TestTransactionExecuteInTxRollsBackAndRepanicsOnPanic(t *testing.T) {
+	client := newTxClient(t)
+	defer client.Close()
+	dropTxGraph(t, client)
+
+	remote := newTxRemoteConnection(t)
+	defer remote.Close()
+	g := Traversal_().With(remote)
+
+	func() {
+		defer func() {
+			r := recover()
+			// The panic must propagate out of ExecuteInTx (not be swallowed).
+			assert.NotNil(t, r)
+			assert.Equal(t, "intentional body panic", r)
+		}()
+
+		_ = g.ExecuteInTx(func(gtx *GraphTraversalSource) error {
+			promise := gtx.AddV("panic_vertex").Iterate()
+			assert.Nil(t, <-promise)
+			panic("intentional body panic")
+		})
+		// Unreachable: ExecuteInTx must re-panic.
+		assert.Fail(t, "expected ExecuteInTx to re-panic")
+	}()
+
+	// The transaction was rolled back during panic handling: nothing persisted.
+	assert.Equal(t, int64(0), getTxCount(t, client, "panic_vertex"))
 }

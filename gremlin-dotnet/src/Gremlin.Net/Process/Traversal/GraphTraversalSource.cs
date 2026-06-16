@@ -24,6 +24,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
@@ -273,6 +275,109 @@ namespace Gremlin.Net.Process.Traversal
         public RemoteTransaction Tx()
         {
             return _connection!.Tx(this);
+        }
+
+        /// <summary>
+        ///     Runs a unit of work inside a transaction whose lifecycle is managed automatically.
+        ///     A transaction is started via <c>this.Tx().BeginAsync()</c>, the supplied
+        ///     <paramref name="txWork"/> is invoked with the transaction-bound
+        ///     <see cref="GraphTraversalSource"/> (<c>gtx</c>), and the transaction is then committed
+        ///     on normal completion or rolled back on any failure.
+        ///
+        ///     This is a single-shot wrapper (no retry): exactly one
+        ///     begin → run → commit/rollback sequence is performed. Only <c>gtx</c> is in scope inside
+        ///     the body; the non-transactional source must not be used. If <paramref name="txWork"/>
+        ///     throws, the transaction is rolled back and the original exception is re-thrown unchanged.
+        ///     If the commit fails, a rollback is attempted for server-side hygiene and the commit error
+        ///     is propagated. A failed rollback during cleanup is swallowed so it never replaces the
+        ///     primary (body or commit) error.
+        /// </summary>
+        /// <param name="txWork">
+        ///     The unit of work to run against the transaction-bound <c>gtx</c>.
+        /// </param>
+        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <returns>A <see cref="Task"/> that completes when the transaction has been committed.</returns>
+        public async Task ExecuteInTxAsync(Func<GraphTraversalSource, Task> txWork,
+            CancellationToken cancellationToken = default)
+            => await EvaluateInTxAsync<object?>(async gtx =>
+            {
+                await txWork(gtx).ConfigureAwait(false);
+                return null;
+            }, cancellationToken).ConfigureAwait(false);
+
+        /// <summary>
+        ///     Runs a value-returning unit of work inside a transaction whose lifecycle is managed
+        ///     automatically. A transaction is started via <c>this.Tx().BeginAsync()</c>, the supplied
+        ///     <paramref name="txWork"/> is invoked with the transaction-bound
+        ///     <see cref="GraphTraversalSource"/> (<c>gtx</c>), and the transaction is then committed
+        ///     on normal completion or rolled back on any failure.
+        ///
+        ///     This is a single-shot wrapper (no retry): exactly one
+        ///     begin → run → commit/rollback sequence is performed. Only <c>gtx</c> is in scope inside
+        ///     the body; the non-transactional source must not be used. The value produced by
+        ///     <paramref name="txWork"/> is returned to the caller after a successful commit. If
+        ///     <paramref name="txWork"/> throws, the transaction is rolled back and the original
+        ///     exception is re-thrown unchanged. If the commit fails, a rollback is attempted for
+        ///     server-side hygiene and the commit error is propagated. A failed rollback during cleanup
+        ///     is swallowed so it never replaces the primary (body or commit) error.
+        /// </summary>
+        /// <typeparam name="T">The type of value produced by <paramref name="txWork"/>.</typeparam>
+        /// <param name="txWork">
+        ///     The unit of work to run against the transaction-bound <c>gtx</c>. Its result is returned
+        ///     to the caller once the transaction commits.
+        /// </param>
+        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <returns>The value produced by <paramref name="txWork"/>.</returns>
+        public async Task<T> EvaluateInTxAsync<T>(Func<GraphTraversalSource, Task<T>> txWork,
+            CancellationToken cancellationToken = default)
+        {
+            var tx = this.Tx();
+            var gtx = await tx.BeginAsync(cancellationToken).ConfigureAwait(false);
+            T result;
+            // Phase 1: run the user's work. If it throws, roll back and rethrow the body error - the
+            // throw below exits the method, so a failed body never reaches the commit in phase 2.
+            try
+            {
+                result = await txWork(gtx).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                try
+                {
+                    // No cancellation token: if the body failed because the token was cancelled,
+                    // honoring it here would abort the cleanup rollback before it is sent.
+                    await tx.RollbackAsync().ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    // Rollback cleanup failure is swallowed so the original body error stays primary.
+                }
+                throw;
+            }
+
+            // Phase 2: the body succeeded, so commit. A separate try because this failure mode is
+            // distinct (commit, not body): we still roll back for server-side hygiene, then rethrow
+            // the commit error as the primary error.
+            try
+            {
+                await tx.CommitAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                try
+                {
+                    // No cancellation token: honoring a cancelled token here would abort the
+                    // cleanup rollback before it is sent, leaving the transaction open server-side.
+                    await tx.RollbackAsync().ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    // Rollback cleanup failure is swallowed so the commit error stays primary.
+                }
+                throw;
+            }
+
+            return result;
         }
 
         /// <summary>

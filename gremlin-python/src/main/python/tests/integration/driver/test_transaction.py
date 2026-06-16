@@ -410,3 +410,89 @@ class TestTransaction(object):
         tx2.rollback()
         result = client.submit("g.V().hasLabel('multi_cr2').count()").all().result()
         assert result[0] == 0
+
+    def test_execute_in_tx_commits_on_success(self, remote_connection):
+        g = traversal().with_(remote_connection)
+
+        g.execute_in_tx(lambda gtx: gtx.addV('person').property('name', 'exec_commit').iterate())
+
+        c = Client(test_no_auth_url, 'gtx')
+        result = c.submit("g.V().has('person','name','exec_commit').count()").all().result()
+        assert result[0] == 1
+        c.close()
+
+    def test_execute_in_tx_rolls_back_and_rethrows_when_body_throws(self, remote_connection):
+        # Asserts BOTH that the exact original exception (type + message)
+        # propagates and that the vertex added before the raise is NOT persisted.
+        g = traversal().with_(remote_connection)
+
+        def body(gtx):
+            gtx.addV('person').property('name', 'exec_throw').iterate()
+            raise RuntimeError("simulated body failure 0xDEADBEEF")
+
+        with pytest.raises(RuntimeError, match="simulated body failure 0xDEADBEEF"):
+            g.execute_in_tx(body)
+
+        c = Client(test_no_auth_url, 'gtx')
+        result = c.submit("g.V().has('person','name','exec_throw').count()").all().result()
+        assert result[0] == 0
+        c.close()
+
+    def test_execute_in_tx_returns_body_value(self, remote_connection):
+        g = traversal().with_(remote_connection)
+
+        # Seed two vertices in their own committed transaction so the
+        # value-returning body has something to count.
+        g.execute_in_tx(lambda gtx: gtx.addV('person').iterate())
+        g.execute_in_tx(lambda gtx: gtx.addV('person').iterate())
+
+        count = g.execute_in_tx(lambda gtx: gtx.V().count().next())
+        assert count == 2
+
+    def test_execute_in_tx_rejects_nested_transaction(self, remote_connection):
+        # Opening a SECOND transaction inside the body must raise. gtx.tx()
+        # itself legitimately returns the same transaction (so we do NOT assert
+        # it raises); calling begin() on it does raise.
+        g = traversal().with_(remote_connection)
+
+        def body(gtx):
+            # gtx.tx() returns the same (already-open) transaction; begin()
+            # on an already-open transaction is the double-begin guard.
+            gtx.tx().begin()
+
+        with pytest.raises(Exception, match="Transaction already started"):
+            g.execute_in_tx(body)
+
+    def test_execute_in_tx_propagates_commit_failure(self, remote_connection):
+        # To drive a deterministic, no-mock commit failure, the body succeeds but
+        # the transaction is rolled back server-side from a separate connection
+        # (by its transactionId) before the body returns, leaving the id invalid.
+        # The commit() inside execute_in_tx() then fails with "Transaction not
+        # found", and that commit error propagates to the caller.
+        g = traversal().with_(remote_connection)
+
+        invalidator = Client(test_no_auth_url, 'gtx')
+
+        def body(gtx):
+            # Add work, then invalidate the transaction server-side by rolling
+            # it back through a separate plain client that targets this
+            # transaction's id. The body itself completes normally so execute_in_tx()
+            # proceeds to commit(), which will now fail.
+            gtx.addV('person').property('name', 'exec_commit_fail').iterate()
+            tx_id = gtx.tx().transaction_id
+            invalidator.submit("g.tx().rollback()",
+                               request_options={'transactionId': tx_id}).all().result()
+
+        try:
+            with pytest.raises(Exception) as exc_info:
+                g.execute_in_tx(body)
+            # The commit error is the primary error surfaced to the caller.
+            assert "Transaction not found" in str(exc_info.value)
+        finally:
+            invalidator.close()
+
+        # Nothing was persisted (the server rolled the transaction back).
+        c = Client(test_no_auth_url, 'gtx')
+        result = c.submit("g.V().has('person','name','exec_commit_fail').count()").all().result()
+        assert result[0] == 0
+        c.close()

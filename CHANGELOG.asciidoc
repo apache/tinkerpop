@@ -35,6 +35,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added Provider Defined Types (PDT) support — graph providers can define custom types via `@ProviderDefined` annotation that serialize/deserialize seamlessly across all GLVs without driver-side configuration. Replaces TP3 custom type mechanism.
 * Added Gremlator, a single page web application, that translates Gremlin into various programming languages like Javascript and Python.
 * Added explicit transaction support to all non-Java GLVs (gremlin-python, gremlin-go, gremlin-javascript, gremlin-dotnet).
+* Added transaction closure methods (`executeInTx`/`evaluateInTx`) on `GraphTraversalSource` in all GLVs that wrap the begin/commit/rollback lifecycle, so a lambda receives the transaction-bound `g` and is auto-committed on success or rolled back on error.
 * Changed default transaction close behavior from commit to rollback across all GLVs to align with embedded graph defaults.
 * Refactored Go driver connection to block until response headers arrive, enabling synchronous error returns and proper transaction ordering.
 * Removed `uuid` dependency from `gremlin-javascript` in favor of the built-in `globalThis.crypto.randomUUID()`.

@@ -44,6 +44,7 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexProper
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -979,5 +980,92 @@ public class TransactionTest extends AbstractGremlinTest {
                 0,
                 IteratorUtils.count(graph.vertices())
         );
+    }
+
+    /**
+     * A sentinel exception used by {@link #shouldRollbackAndRethrowOriginalErrorWhenTxClosureBodyThrows()} to verify
+     * that the exact original error thrown by an {@code executeInTx}/{@code evaluateInTx} body propagates to the
+     * caller unchanged.
+     */
+    private static class TxClosureSentinelException extends RuntimeException {
+        TxClosureSentinelException(final String message) {
+            super(message);
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void shouldCommitWhenTxClosureBodyCompletes() {
+        g.executeInTx(gtx -> gtx.addV("person").iterate());
+
+        // committed data is visible to reads outside the closure
+        assertEquals(1L, g.V().hasLabel("person").count().next().longValue());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void shouldRollbackAndRethrowOriginalErrorWhenTxClosureBodyThrows() {
+        try {
+            g.executeInTx(gtx -> {
+                gtx.addV("person").iterate();
+                throw new TxClosureSentinelException("boom");
+            });
+            fail("The exact exception thrown by the closure body should propagate to the caller");
+        } catch (Exception ex) {
+            // (i) the exact original error (type + message) propagates to the caller, unchanged
+            assertThat(ex, instanceOf(TxClosureSentinelException.class));
+            assertEquals("boom", ex.getMessage());
+        }
+
+        // (ii) the vertex added before the error was rolled back and is not persisted
+        assertEquals(0L, g.V().hasLabel("person").count().next().longValue());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void shouldReturnBodyValueFromTxClosureCall() {
+        final long count = g.evaluateInTx(gtx -> {
+            gtx.addV("person").iterate();
+            gtx.addV("person").iterate();
+            return gtx.V().hasLabel("person").count().next();
+        });
+
+        // the value computed in the body is returned to the caller
+        assertEquals(2L, count);
+
+        // the work also committed, so the data is visible afterward
+        assertEquals(2L, g.V().hasLabel("person").count().next().longValue());
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void shouldRejectOpeningSecondTransactionInsideTxClosureBody() {
+        g.executeInTx(gtx -> {
+            // gtx.tx() itself is legitimate and returns the (same) transaction - it must NOT throw, as it is the
+            // standard way to commit/rollback when holding a transactional source.
+            final Transaction nested = gtx.tx();
+            assertNotNull(nested);
+
+            // opening a SECOND transaction from within an already-open one must raise. On the embedded impl
+            // (TinkerTransaction) begin() calls doOpen() unconditionally with no double-open guard, so the guard lives
+            // in AbstractTransaction.open() (transactionAlreadyOpen()) - hence the embedded nesting test asserts on
+            // open(), not begin().
+            try {
+                nested.open();
+                fail("Opening a second transaction from within an already-open one should raise");
+            } catch (Exception ex) {
+                // expected - a transaction is already open
+                assertThat(ex, instanceOf(IllegalStateException.class));
+            }
+
+            gtx.addV("person").iterate();
+        });
+
+        // the outer transaction still committed normally
+        assertEquals(1L, g.V().hasLabel("person").count().next().longValue());
     }
 }

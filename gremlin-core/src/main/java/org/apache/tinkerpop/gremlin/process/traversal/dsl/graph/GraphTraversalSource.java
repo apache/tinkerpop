@@ -51,12 +51,16 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -69,6 +73,8 @@ import java.util.function.UnaryOperator;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphTraversalSource implements TraversalSource {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GraphTraversalSource.class);
+
     protected transient RemoteConnection connection;
     protected final Graph graph;
     protected TraversalStrategies strategies;
@@ -757,6 +763,93 @@ public class GraphTraversalSource implements TraversalSource {
             return this.graph.tx();
         else
             return this.connection.tx();
+    }
+
+    /**
+     * Runs the supplied unit of work inside a single transaction, managing the transaction lifecycle automatically.
+     * <p>
+     * This is the no-return (action) form of {@link #evaluateInTx(Function)}. It is a thin convenience wrapper that
+     * obtains a {@link Transaction} via {@link #tx()}, {@link Transaction#begin() begins} it, invokes {@code txWork}
+     * with the transaction-bound {@link GraphTraversalSource} ({@code gtx}), and then {@link Transaction#commit()
+     * commits} on normal completion. If {@code txWork} throws, the transaction is {@link Transaction#rollback() rolled
+     * back} and the original error is re-thrown unchanged. Because the lifecycle is driven through {@link #tx()}, the
+     * underlying transaction semantics (embedded thread-bound vs. remote server session) are whatever the underlying
+     * {@code begin()}/{@code commit()}/{@code rollback()} provide.
+     * <p>
+     * This is a <strong>single-shot</strong> operation - exactly one attempt is made, with no automatic retry. The
+     * lambda receives the transactional {@code gtx} and should issue its traversals against that source only.
+     *
+     * @param txWork the unit of work to run against the transaction-bound {@link GraphTraversalSource}
+     * @see #evaluateInTx(Function)
+     */
+    public void executeInTx(final Consumer<GraphTraversalSource> txWork) {
+        evaluateInTx(gtx -> {
+            txWork.accept(gtx);
+            return null;
+        });
+    }
+
+    /**
+     * Runs the supplied unit of work inside a single transaction, managing the transaction lifecycle automatically,
+     * and returns the value the work produces.
+     * <p>
+     * This wrapper obtains a {@link Transaction} via {@link #tx()}, {@link Transaction#begin() begins} it, invokes
+     * {@code txWork} with the transaction-bound {@link GraphTraversalSource} ({@code gtx}), and then
+     * {@link Transaction#commit() commits} on normal completion, returning the value computed by {@code txWork}.
+     * Error handling:
+     * <ul>
+     *   <li>If {@code txWork} throws, the transaction is {@link Transaction#rollback() rolled back} and the exact
+     *       original error is re-thrown to the caller. If that rollback itself fails, the rollback failure is attached
+     *       to the original error via {@link Throwable#addSuppressed(Throwable)} and a warning is logged, but the
+     *       original error still propagates as the primary error.</li>
+     *   <li>If {@link Transaction#commit() commit} fails, a {@link Transaction#rollback() rollback} is attempted
+     *       afterward (to avoid leaving transaction resources tied up on the server), and the commit error is re-thrown
+     *       as the primary error. If the follow-up rollback also fails, the rollback failure is attached to the commit
+     *       error via {@link Throwable#addSuppressed(Throwable)} and a warning is logged.</li>
+     * </ul>
+     * <p>
+     * This is a <strong>single-shot</strong> operation - exactly one attempt is made, with no automatic retry. The
+     * lambda receives the transactional {@code gtx} and should issue its traversals against that source only. Because
+     * the lifecycle is driven through {@link #tx()}, the underlying transaction semantics (embedded thread-bound vs.
+     * remote server session) are whatever the underlying {@code begin()}/{@code commit()}/{@code rollback()} provide.
+     *
+     * @param txWork the unit of work to run against the transaction-bound {@link GraphTraversalSource}
+     * @param <T> the type of value produced by {@code txWork}
+     * @return the value produced by {@code txWork}
+     * @see #executeInTx(Consumer)
+     */
+    public <T> T evaluateInTx(final Function<GraphTraversalSource, T> txWork) {
+        final Transaction tx = this.tx();
+        final GraphTraversalSource gtx = tx.begin();
+        final T result;
+        // Phase 1: run the user's work. If it throws, roll back and rethrow the body error - the
+        // throw below exits the method, so a failed body never reaches the commit in phase 2.
+        try {
+            result = txWork.apply(gtx);
+        } catch (Throwable bodyError) {
+            try {
+                tx.rollback();
+            } catch (Throwable rollbackError) {
+                bodyError.addSuppressed(rollbackError);
+                LOGGER.warn("Rollback failed after transaction body error", rollbackError);
+            }
+            throw bodyError;
+        }
+        // Phase 2: the body succeeded, so commit. A separate try because this failure mode is
+        // distinct (commit, not body): we still roll back for server-side hygiene, then rethrow
+        // the commit error as the primary error.
+        try {
+            tx.commit();
+        } catch (Throwable commitError) {
+            try {
+                tx.rollback();
+            } catch (Throwable rollbackError) {
+                commitError.addSuppressed(rollbackError);
+                LOGGER.warn("Rollback failed after commit failure", rollbackError);
+            }
+            throw commitError;
+        }
+        return result;
     }
 
     /**

@@ -164,6 +164,59 @@ class GraphTraversalSource(object):
         from gremlin_python.driver.transaction import Transaction
         return Transaction(remote_connection._client)
 
+    def execute_in_tx(self, tx_work):
+        """Runs a unit of work inside a transaction, managing its lifecycle.
+
+        The transaction is started automatically via tx().begin() and the
+        transaction-bound GraphTraversalSource (gtx) is passed to tx_work as its
+        sole argument. Only gtx should be used inside the body; the
+        non-transactional g is not in scope. On normal completion the
+        transaction is committed and the body's return value is returned
+        (None if the body returns nothing). If the body raises, the
+        transaction is rolled back and the exact original exception is
+        re-raised unchanged.
+
+        This is single-shot: exactly one begin -> run -> commit/rollback
+        attempt is made; there is no automatic retry. If the body raises and
+        the follow-up rollback also fails, a warning is logged and the original
+        body exception still propagates. If commit() fails (e.g. the server
+        already rolled the transaction back), a rollback is attempted for
+        server-side hygiene and the commit error propagates as the primary
+        error.
+
+        For example, g.execute_in_tx(lambda gtx: gtx.addV('person').iterate())
+        runs the body and commits, while
+        count = g.execute_in_tx(lambda gtx: gtx.V().count().next()) returns the
+        body's value.
+        """
+        tx = self.tx()
+        gtx = tx.begin()
+        # Phase 1: run the user's work. If it raises, roll back and re-raise the body error - the
+        # bare `raise` exits the method, so a failed body never reaches the commit in phase 2.
+        try:
+            result = tx_work(gtx)
+        except BaseException:
+            # Catch BaseException so any abnormal exit (including KeyboardInterrupt) rolls back.
+            try:
+                tx.rollback()
+            except BaseException as rollback_error:
+                # The cleanup rollback failure is only logged - the bare `raise` below re-raises
+                # the original body error unchanged so it always stays the primary error.
+                log.warning("Rollback failed after transaction body error: %s", rollback_error)
+            raise
+        # Phase 2: the body succeeded, so commit. A separate try because this failure mode is
+        # distinct (commit, not body): we still roll back for server-side hygiene, then re-raise
+        # the commit error as the primary error.
+        try:
+            tx.commit()
+        except Exception:
+            try:
+                tx.rollback()
+            except BaseException as rollback_error:
+                log.warning("Rollback failed after commit failure: %s", rollback_error)
+            raise
+        return result
+
     def withComputer(self, graph_computer=None, workers=None, result=None, persist=None, vertices=None,
                      edges=None, configuration=None):
         warnings.warn(
