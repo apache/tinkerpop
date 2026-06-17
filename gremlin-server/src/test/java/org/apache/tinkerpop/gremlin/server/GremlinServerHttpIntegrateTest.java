@@ -948,8 +948,21 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             }
         };
 
+        // The second query also times out; additionally assert that the timed-out response is exactly one
+        // well-formed, terminated chunked response. The timeout path is the cross-thread case (the scheduler thread
+        // calls the coordinator's writeError concurrently with the eval worker), so this guards that the single-
+        // response + termination guarantee holds when the second writer is the timeout, not just the eval failure
+        // path covered by the shouldHandleErrors* tests. EntityUtils.toString only returns once the chunked entity
+        // is fully read including the terminal zero-length chunk, so a non-terminated response would block until the
+        // @Test timeout.
         final Callable<Integer> secondQueryWrapper = () -> {
             try (final CloseableHttpResponse response = secondClient.execute(secondPost)) {
+                assertTrue(response.getEntity().isChunked());
+                final JsonNode node = mapper.readTree(EntityUtils.toString(response.getEntity()));
+                assertEquals(500, node.get("status").get("code").intValue());
+                final Header[] footers = getTrailingHeaders(response);
+                assertEquals("code", footers[0].getName());
+                assertEquals("500", footers[0].getValue());
                 return response.getStatusLine().getStatusCode();
             }
         };
@@ -964,6 +977,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
         threadPool.shutdown();
     }
+
     @Test
     public void shouldErrorWhenTryingToConnectWithHttp1() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
