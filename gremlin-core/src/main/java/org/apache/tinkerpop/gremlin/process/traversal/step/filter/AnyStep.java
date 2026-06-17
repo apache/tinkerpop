@@ -73,7 +73,6 @@ public final class AnyStep<S, S2> extends FilterStep<S> implements TraversalPare
         return StringFactory.stepString(this, this.predicate);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
         final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>();

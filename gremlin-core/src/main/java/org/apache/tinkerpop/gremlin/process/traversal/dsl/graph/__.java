@@ -1266,6 +1266,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#hasKey(Traversal)
+     */
+    public static <A> GraphTraversal<A, A> hasKey(final Traversal<?, ?> traversal) {
+        return __.<A>start().hasKey(traversal);
+    }
+
+    /**
      * @see GraphTraversal#hasValue(Object, Object...)
      */
     public static <A> GraphTraversal<A, A> hasValue(final Object value, Object... values) {
@@ -1277,6 +1284,13 @@ public class __ {
      */
     public static <A> GraphTraversal<A, A> hasValue(final P<?> predicate) {
         return __.<A>start().hasValue(predicate);
+    }
+
+    /**
+     * @see GraphTraversal#hasValue(Traversal)
+     */
+    public static <A> GraphTraversal<A, A> hasValue(final Traversal<?, ?> traversal) {
+        return __.<A>start().hasValue(traversal);
     }
 
     /**

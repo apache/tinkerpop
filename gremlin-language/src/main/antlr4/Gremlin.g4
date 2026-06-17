@@ -574,6 +574,7 @@ traversalMethod_hasId
 traversalMethod_hasKey
     : K_HASKEY LPAREN traversalPredicate RPAREN #traversalMethod_hasKey_P
     | K_HASKEY LPAREN stringNullableLiteral (COMMA stringNullableLiteralVarargs)? RPAREN #traversalMethod_hasKey_String_String
+    | K_HASKEY LPAREN nestedTraversal RPAREN #traversalMethod_hasKey_Traversal
     ;
 
 traversalMethod_hasLabel
@@ -589,6 +590,7 @@ traversalMethod_hasNot
 traversalMethod_hasValue
     : K_HASVALUE LPAREN genericArgument (COMMA genericArgumentVarargs)? RPAREN #traversalMethod_hasValue_Object_Object
     | K_HASVALUE LPAREN traversalPredicate RPAREN #traversalMethod_hasValue_P
+    | K_HASVALUE LPAREN nestedTraversal RPAREN #traversalMethod_hasValue_Traversal
     ;
 
 traversalMethod_id

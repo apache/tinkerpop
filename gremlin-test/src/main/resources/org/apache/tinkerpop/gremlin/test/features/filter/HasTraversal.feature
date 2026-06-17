@@ -324,3 +324,110 @@ Feature: Step - has() with traversal arguments
     Then the result should be unordered
       | result |
       | e[marko-knows->josh] |
+
+  # hasLabel with a child traversal
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasLabelXVXvid1X_labelXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().hasLabel(__.V(vid1).label())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[peter] |
+
+  # hasId with P.eq(traversal)
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasIdXeqXVXvid1X_idXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().hasId(P.eq(__.V(vid1).id()))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+
+  # hasId with traversal passed directly
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasIdXVXvid1X_idXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().hasId(__.V(vid1).id())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+
+  # hasKey with a child traversal
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_propertiesXageX_hasKeyXVXvid1X_propertiesXageX_keyXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().properties("age").hasKey(__.V(vid1).properties("age").key())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vp[marko-age->d[29].i] |
+      | vp[vadas-age->d[27].i] |
+      | vp[josh-age->d[32].i] |
+      | vp[peter-age->d[35].i] |
+
+  # hasKey with P.eq(traversal)
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_propertiesXageX_hasKeyXeqXVXvid1X_propertiesXageX_keyXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().properties("age").hasKey(P.eq(__.V(vid1).properties("age").key()))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vp[marko-age->d[29].i] |
+      | vp[vadas-age->d[27].i] |
+      | vp[josh-age->d[32].i] |
+      | vp[peter-age->d[35].i] |
+
+  # hasValue with a child traversal
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_propertiesXageX_hasValueXVXvid1X_valuesXageXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().properties("age").hasValue(__.V(vid1).values("age"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vp[marko-age->d[29].i] |
+
+  # hasValue with P.eq(traversal)
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_propertiesXageX_hasValueXeqXVXvid1X_valuesXageXXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().properties("age").hasValue(P.eq(__.V(vid1).values("age")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vp[marko-age->d[29].i] |

@@ -767,6 +767,15 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
+    public GraphTraversal visitTraversalMethod_hasKey_Traversal(final GremlinParser.TraversalMethod_hasKey_TraversalContext ctx) {
+        final Traversal.Admin<?, ?> traversal = (Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal());
+        return graphTraversal.hasKey((Traversal<?, ?>) traversal);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public GraphTraversal visitTraversalMethod_hasLabel_P(final GremlinParser.TraversalMethod_hasLabel_PContext ctx) {
         return graphTraversal.hasLabel(antlr.traversalPredicateVisitor.visitTraversalPredicate(ctx.traversalPredicate()));
     }
@@ -836,6 +845,15 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
     @Override
     public GraphTraversal visitTraversalMethod_hasValue_P(final GremlinParser.TraversalMethod_hasValue_PContext ctx) {
         return graphTraversal.hasValue(antlr.traversalPredicateVisitor.visitTraversalPredicate(ctx.traversalPredicate()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_hasValue_Traversal(final GremlinParser.TraversalMethod_hasValue_TraversalContext ctx) {
+        final Traversal.Admin<?, ?> traversal = (Traversal.Admin<?, ?>) antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal());
+        return graphTraversal.hasValue((Traversal<?, ?>) traversal);
     }
 
     /**

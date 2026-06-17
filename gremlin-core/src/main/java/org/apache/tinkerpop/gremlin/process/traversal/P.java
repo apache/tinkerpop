@@ -152,6 +152,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         this.variables.clear();
         this.literals = Collections.EMPTY_LIST;
         this.isCollection = false;
+        this.resolvedEmpty = false;
         applyValue(value);
     }
 

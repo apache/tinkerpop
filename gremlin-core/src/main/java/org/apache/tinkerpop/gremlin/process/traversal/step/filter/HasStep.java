@@ -150,7 +150,6 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
         return (List) Collections.unmodifiableList(this.childTraversals);

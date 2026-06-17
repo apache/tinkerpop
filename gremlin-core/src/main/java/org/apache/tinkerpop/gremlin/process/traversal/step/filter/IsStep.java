@@ -62,7 +62,6 @@ public final class IsStep<S> extends FilterStep<S> implements IsStepContract<S>,
         return this.predicate;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
         final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>();

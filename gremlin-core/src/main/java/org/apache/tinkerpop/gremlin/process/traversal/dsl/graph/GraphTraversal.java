@@ -3095,6 +3095,23 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * Filters {@link Property} objects based on their key using a child traversal whose results are resolved at
+     * runtime against the current traverser.
+     *
+     * @param traversal the child traversal whose results are used as the key filter value
+     * @return the traversal with an appended {@link HasStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
+     * @since 4.0.0
+     */
+    public default GraphTraversal<S, E> hasKey(final Traversal<?, ?> traversal) {
+        if (null == traversal) return hasKey((String) null);
+        ChildTraversalValidator.validate(traversal.asAdmin());
+        this.asAdmin().getGremlinLang().addStep(Symbols.hasKey, traversal);
+        final HasContainer hasContainer = new HasContainer(T.key.getAccessor(), P.eq(traversal.asAdmin()));
+        return this.asAdmin().addStep(new HasStep(this.asAdmin(), hasContainer));
+    }
+
+    /**
      * Filters {@link Property} objects based on their value.
      *
      * @param value       the value of the {@link Element}
@@ -3146,6 +3163,23 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             this.asAdmin().getGremlinLang().addStep(Symbols.hasValue, predicate);
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.value.getAccessor(), predicate));
         }
+    }
+
+    /**
+     * Filters {@link Property} objects based on their value using a child traversal whose results are resolved at
+     * runtime against the current traverser.
+     *
+     * @param traversal the child traversal whose results are used as the value filter
+     * @return the traversal with an appended {@link HasStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
+     * @since 4.0.0
+     */
+    public default GraphTraversal<S, E> hasValue(final Traversal<?, ?> traversal) {
+        if (null == traversal) return hasValue((Object) null);
+        ChildTraversalValidator.validate(traversal.asAdmin());
+        this.asAdmin().getGremlinLang().addStep(Symbols.hasValue, traversal);
+        final HasContainer hasContainer = new HasContainer(T.value.getAccessor(), P.eq(traversal.asAdmin()));
+        return this.asAdmin().addStep(new HasStep(this.asAdmin(), hasContainer));
     }
 
     /**

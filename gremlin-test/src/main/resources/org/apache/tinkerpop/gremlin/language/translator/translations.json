@@ -9926,6 +9926,125 @@
         ]
     },
     {
+        "scenario": "g_V_hasLabelXVXvid1X_labelXX",
+        "traversals": [
+            {
+                "original": "g.V().hasLabel(__.V(vid1).label())",
+                "language": "g.V().hasLabel(__.V(vid1).label())",
+                "canonical": "g.V().hasLabel(__.V(vid1).label())",
+                "anonymized": "g.V().hasLabel(__.V(vid1).label())",
+                "dotnet": "g.V().HasLabel(__.V(vid1).Label())",
+                "go": "g.V().HasLabel(gremlingo.T__.V(vid1).Label())",
+                "groovy": "g.V().hasLabel(__.V(vid1).label())",
+                "java": "g.V().hasLabel(__.V(vid1).label())",
+                "javascript": "g.V().hasLabel(__.V(vid1).label())",
+                "python": "g.V().has_label(__.V(vid1).label())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasIdXeqXVXvid1X_idXX",
+        "traversals": [
+            {
+                "original": "g.V().hasId(P.eq(__.V(vid1).id()))",
+                "language": "g.V().hasId(P.eq(__.V(vid1).id()))",
+                "canonical": "g.V().hasId(P.eq(__.V(vid1).id()))",
+                "anonymized": "g.V().hasId(P.eq(__.V(vid1).id()))",
+                "dotnet": "g.V().HasId(P.Eq(__.V(vid1).Id()))",
+                "go": "g.V().HasId(gremlingo.P.Eq(gremlingo.T__.V(vid1).Id()))",
+                "groovy": "g.V().hasId(P.eq(__.V(vid1).id()))",
+                "java": "g.V().hasId(P.eq(__.V(vid1).id()))",
+                "javascript": "g.V().hasId(P.eq(__.V(vid1).id()))",
+                "python": "g.V().has_id(P.eq(__.V(vid1).id_()))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasIdXVXvid1X_idXX",
+        "traversals": [
+            {
+                "original": "g.V().hasId(__.V(vid1).id())",
+                "language": "g.V().hasId(__.V(vid1).id())",
+                "canonical": "g.V().hasId(__.V(vid1).id())",
+                "anonymized": "g.V().hasId(__.V(vid1).id())",
+                "dotnet": "g.V().HasId(__.V(vid1).Id())",
+                "go": "g.V().HasId(gremlingo.T__.V(vid1).Id())",
+                "groovy": "g.V().hasId(__.V(vid1).id())",
+                "java": "g.V().hasId(__.V(vid1).id())",
+                "javascript": "g.V().hasId(__.V(vid1).id())",
+                "python": "g.V().has_id(__.V(vid1).id_())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_propertiesXageX_hasKeyXVXvid1X_propertiesXageX_keyXX",
+        "traversals": [
+            {
+                "original": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
+                "language": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
+                "canonical": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
+                "anonymized": "g.V().properties(string0).hasKey(__.V(vid1).properties(string0).key())",
+                "dotnet": "g.V().Properties<object>(\"age\").HasKey(__.V(vid1).Properties<object>(\"age\").Key())",
+                "go": "g.V().Properties(\"age\").HasKey(gremlingo.T__.V(vid1).Properties(\"age\").Key())",
+                "groovy": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
+                "java": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
+                "javascript": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
+                "python": "g.V().properties('age').has_key(__.V(vid1).properties('age').key())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_propertiesXageX_hasKeyXeqXVXvid1X_propertiesXageX_keyXX",
+        "traversals": [
+            {
+                "original": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
+                "language": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
+                "canonical": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
+                "anonymized": "g.V().properties(string0).hasKey(P.eq(__.V(vid1).properties(string0).key()))",
+                "dotnet": "g.V().Properties<object>(\"age\").HasKey(P.Eq(__.V(vid1).Properties<object>(\"age\").Key()))",
+                "go": "g.V().Properties(\"age\").HasKey(gremlingo.P.Eq(gremlingo.T__.V(vid1).Properties(\"age\").Key()))",
+                "groovy": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
+                "java": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
+                "javascript": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
+                "python": "g.V().properties('age').has_key(P.eq(__.V(vid1).properties('age').key()))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_propertiesXageX_hasValueXVXvid1X_valuesXageXX",
+        "traversals": [
+            {
+                "original": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
+                "language": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
+                "canonical": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
+                "anonymized": "g.V().properties(string0).hasValue(__.V(vid1).values(string0))",
+                "dotnet": "g.V().Properties<object>(\"age\").HasValue(__.V(vid1).Values<object>(\"age\"))",
+                "go": "g.V().Properties(\"age\").HasValue(gremlingo.T__.V(vid1).Values(\"age\"))",
+                "groovy": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
+                "java": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
+                "javascript": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
+                "python": "g.V().properties('age').has_value(__.V(vid1).values('age'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_propertiesXageX_hasValueXeqXVXvid1X_valuesXageXXX",
+        "traversals": [
+            {
+                "original": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
+                "language": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
+                "canonical": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
+                "anonymized": "g.V().properties(string0).hasValue(P.eq(__.V(vid1).values(string0)))",
+                "dotnet": "g.V().Properties<object>(\"age\").HasValue(P.Eq(__.V(vid1).Values<object>(\"age\")))",
+                "go": "g.V().Properties(\"age\").HasValue(gremlingo.P.Eq(gremlingo.T__.V(vid1).Values(\"age\")))",
+                "groovy": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
+                "java": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
+                "javascript": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
+                "python": "g.V().properties('age').has_value(P.eq(__.V(vid1).values('age')))"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_properties_hasValueXnullX",
         "traversals": [
             {
