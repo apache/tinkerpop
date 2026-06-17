@@ -32,6 +32,54 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Standardizing Java Connection Options
+
+TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In the Java reference driver
+(`gremlin-driver`), several `Cluster.Builder` options have been renamed for consistency, with the old names retained
+as deprecated aliases so that existing code keeps compiling, and a number of new options have been added. The notes
+below describe the Java changes. See <<glv-driver-changes, GLV Driver Changes>> for the equivalent changes in the
+other drivers.
+
+Renames (deprecated aliases). The following builder methods have been renamed. The old names still work but are
+deprecated and should be migrated to the new names:
+
+- `maxConnectionPoolSize` is now `maxConnections` (default 128).
+- `idleConnectionTimeoutMillis` is now `idleTimeout` (default 180000 ms).
+- `connectionSetupTimeoutMillis` is now `connectTimeout`.
+- `resultIterationBatchSize` is now `defaultBatchSize` (default 64).
+- The individual SSL builders (`enableSsl`, `keyStore`, `keyStorePassword`, `keyStoreType`, `trustStore`,
+  `trustStorePassword`, `trustStoreType`, `sslCipherSuites`, `sslEnabledProtocols`, `sslSkipCertValidation`, and
+  `sslContext`) are superseded by a single `ssl(SslContext)` option that accepts a fully configured Netty
+  `SslContext`. The old SSL builders are deprecated.
+- On `RequestOptions`, `addG` is now `traversalSource` (deprecated alias).
+
+Behavior changes. These change runtime behavior on upgrade, even if you do not change your configuration:
+
+- `connectTimeout` now defaults to 5s (lowered from 15s) and is now actually applied to the connection bootstrap.
+  Previously `connectionSetupTimeoutMillis` was validated but never enforced, so the connection setup was effectively
+  unbounded. A slow TCP or TLS setup now fails after 5s where it previously did not time out. If you rely on the old
+  behavior, set `connectTimeout` explicitly to a larger value.
+- `compression` now defaults to `Compression.DEFLATE` (on), so the driver sends `Accept-Encoding: deflate` by default.
+  This preserves the pre-4.x always-on Java behavior. Set `compression(Compression.NONE)` to disable it.
+- The `validationRequest` builder default has been reconciled to `g.inject(0)` (it was previously an empty string in
+  the builder, which did not match the config-file default).
+
+New options:
+
+- `readTimeout` (default 0, disabled): a streaming-safe idle-read timeout that fires only if no response chunk arrives
+  within the interval. It is armed per request and does not affect idle pooled connections.
+- `keepAliveTime` (default 30000 ms): the idle time before TCP keep-alive probes begin. It enables `SO_KEEPALIVE` and
+  sets `TCP_KEEPIDLE` where supported (JDK 11+ on Linux and macOS). Set 0 to disable.
+- `maxResponseHeaderBytes` (default 8192): the maximum response header size, which was previously hardcoded.
+- `proxy(ProxyOptions)`: routes connections through an HTTP proxy.
+- `url(String)`: configures the endpoint from a single URL (scheme, host, port, and path). The existing
+  `addContactPoint`/`addContactPoints`, `port`, and `path` options remain for multi-host configurations.
+
+The `maxResponseContentLength` setting has been removed. Responses are now streamed rather than aggregated
+and size-capped. The new idle `readTimeout` is the partial mitigation for unbounded or slow responses.
+
+See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[dev list discussion on standardizing GLV connection options].
+
 ==== Declarative Pattern Matching
 
 Gremlin has always offered both imperative and declarative styles to writing graph queries. While the imperative style
@@ -1063,7 +1111,6 @@ updated from `ws://` to `http://` (or `wss://` to `https://`). The following set
 
 - `enableCompression` — removed.
 - `bulkResults` — added. See <<result-bulking-from-server, Result Bulking from Server>> for details.
-- `maxContentLength` — renamed to `maxResponseContentLength`. Now limits total response size.
 - `minConnectionPoolSize` — removed. Connections are now closed based on `idleConnectionTimeout` rather than usage
   thresholds. Multiple connections can be opened concurrently to support bursty workloads.
 
@@ -1260,8 +1307,6 @@ The following configuration changes were introduced in the beta.1 release for Gr
 * Java GLV
 ** `enableCompression` setting has been removed.
 ** `bulkResults` has been added. See <<result-bulking-from-server, result bulking>> for more details.
-** `maxContentLength` setting has been renamed to `maxResponseContentLength` and now blocks incoming responses that are
-too large based on total response size.
 ** `addInterceptorAfter`, `addInterceptorBefore`, `addInterceptor` and `removeInterceptor` have been added.
 See <<java-requestinterceptor, Changes to Java RequestInterceptor>> for more details.
 * Python GLV

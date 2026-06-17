@@ -151,8 +151,19 @@ public final class RequestOptions {
         }
 
         /**
-         * The aliases to set on the request.
+         * Sets the traversal source (or graph) alias to rebind to "g" on the request.
          */
+        public Builder traversalSource(final String traversalSource) {
+            this.graphOrTraversalSource = traversalSource;
+            return this;
+        }
+
+        /**
+         * The aliases to set on the request.
+         *
+         * @deprecated As of release 4.0.0, replaced by {@link #traversalSource(String)}.
+         */
+        @Deprecated
         public Builder addG(final String graphOrTraversalSource) {
             this.graphOrTraversalSource = graphOrTraversalSource;
             return this;

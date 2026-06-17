@@ -64,13 +64,16 @@ public class SettingsTest {
         conf.setProperty("connectionPool.maxInProcessPerConnection", 500);
         conf.setProperty("connectionPool.minInProcessPerConnection", 600);
         conf.setProperty("connectionPool.maxWaitForConnection", 700);
-        conf.setProperty("connectionPool.maxResponseContentLength", 800);
+        conf.setProperty("connectionPool.maxResponseHeaderBytes", 800);
         conf.setProperty("connectionPool.reconnectInterval", 900);
-        conf.setProperty("connectionPool.resultIterationBatchSize", 1100);
+        conf.setProperty("connectionPool.defaultBatchSize", 1100);
         conf.setProperty("connectionPool.channelizer", "channelizer0");
         conf.setProperty("connectionPool.validationRequest", "g.inject()");
-        conf.setProperty("connectionPool.connectionSetupTimeoutMillis", 15000);
-        conf.setProperty("connectionPool.idleConnectionTimeout", 160000);
+        conf.setProperty("connectionPool.connectTimeout", 15000);
+        conf.setProperty("connectionPool.idleTimeout", 160000);
+        conf.setProperty("connectionPool.keepAliveTime", 45000);
+        conf.setProperty("connectionPool.readTimeout", 5000);
+        conf.setProperty("connectionPool.compression", "deflate");
 
         final Settings settings = Settings.from(conf);
 
@@ -95,13 +98,16 @@ public class SettingsTest {
         assertEquals(Arrays.asList("TLSv1.1","TLSv1.2"), settings.connectionPool.sslEnabledProtocols);
         assertEquals(Arrays.asList("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"), settings.connectionPool.sslCipherSuites);
         assertThat(settings.connectionPool.sslSkipCertValidation, is(true));
-        assertEquals(200, settings.connectionPool.maxSize);
+        assertEquals(200, settings.connectionPool.maxConnections);
         assertEquals(700, settings.connectionPool.maxWaitForConnection);
-        assertEquals(800, settings.connectionPool.maxResponseContentLength);
+        assertEquals(800, settings.connectionPool.maxResponseHeaderBytes);
         assertEquals(900, settings.connectionPool.reconnectInterval);
-        assertEquals(15000, settings.connectionPool.connectionSetupTimeoutMillis);
-        assertEquals(160000, settings.connectionPool.idleConnectionTimeout);
-        assertEquals(1100, settings.connectionPool.resultIterationBatchSize);
+        assertEquals(15000, settings.connectionPool.connectTimeout);
+        assertEquals(160000, settings.connectionPool.idleTimeout);
+        assertEquals(45000, settings.connectionPool.keepAliveTime);
+        assertEquals(5000, settings.connectionPool.readTimeout);
+        assertEquals(Compression.DEFLATE, settings.connectionPool.compression);
+        assertEquals(1100, settings.connectionPool.defaultBatchSize);
         assertEquals("g.inject()", settings.connectionPool.validationRequest);
     }
 }

@@ -67,9 +67,9 @@ public class HttpStreamingResponseHandlerTest {
         executor.shutdownNow();
     }
 
-    private EmbeddedChannel createChannel(final AtomicReference<ResultSet> pendingResultSet, final long maxResponseContentLength) {
+    private EmbeddedChannel createChannel(final AtomicReference<ResultSet> pendingResultSet) {
         final HttpStreamingResponseHandler handler = new HttpStreamingResponseHandler(
-                reader, pendingResultSet, executor, maxResponseContentLength);
+                reader, pendingResultSet, executor);
         return new EmbeddedChannel(handler);
     }
 
@@ -77,7 +77,7 @@ public class HttpStreamingResponseHandlerTest {
     public void shouldEmitLastContentReadResponseOnHappyPath() throws Exception {
         final ResultSet rs = new ResultSet(executor, RequestMessage.build("g.V()").create(), null);
         final AtomicReference<ResultSet> pending = new AtomicReference<>(rs);
-        final EmbeddedChannel channel = createChannel(pending, 0);
+        final EmbeddedChannel channel = createChannel(pending);
 
         // Serialize a valid GraphBinary response
         final byte[] payload = toBytes(serializer.serializeResponseAsBinary(
@@ -107,7 +107,7 @@ public class HttpStreamingResponseHandlerTest {
     public void shouldHandleDoubleLastHttpContentWithoutError() throws Exception {
         final ResultSet rs = new ResultSet(executor, RequestMessage.build("g.V()").create(), null);
         final AtomicReference<ResultSet> pending = new AtomicReference<>(rs);
-        final EmbeddedChannel channel = createChannel(pending, 0);
+        final EmbeddedChannel channel = createChannel(pending);
 
         final byte[] payload = toBytes(serializer.serializeResponseAsBinary(
                 ResponseMessage.build().code(HttpResponseStatus.OK)
@@ -127,31 +127,10 @@ public class HttpStreamingResponseHandlerTest {
     }
 
     @Test
-    public void shouldThrowTooLongFrameExceptionWhenMaxLengthExceeded() {
-        final ResultSet rs = new ResultSet(executor, RequestMessage.build("g.V()").create(), null);
-        final AtomicReference<ResultSet> pending = new AtomicReference<>(rs);
-        final EmbeddedChannel channel = createChannel(pending, 10);
-
-        final HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_GRAPHBINARY_V4);
-        channel.writeInbound(response);
-
-        try {
-            // Send content exceeding the 10-byte limit
-            channel.writeInbound(new DefaultHttpContent(Unpooled.wrappedBuffer(new byte[20])));
-            fail("Expected TooLongFrameException");
-        } catch (Exception e) {
-            assertTrue(e instanceof TooLongFrameException);
-        }
-
-        channel.finishAndReleaseAll();
-    }
-
-    @Test
     public void shouldSignalQueueInputStreamOnChannelInactive() throws Exception {
         final ResultSet rs = new ResultSet(executor, RequestMessage.build("g.V()").create(), null);
         final AtomicReference<ResultSet> pending = new AtomicReference<>(rs);
-        final EmbeddedChannel channel = createChannel(pending, 0);
+        final EmbeddedChannel channel = createChannel(pending);
 
         final HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_GRAPHBINARY_V4);
@@ -170,7 +149,7 @@ public class HttpStreamingResponseHandlerTest {
     public void shouldMarkErrorOnResultSetForNonGraphBinaryError() throws Exception {
         final ResultSet rs = new ResultSet(executor, RequestMessage.build("g.V()").create(), null);
         final AtomicReference<ResultSet> pending = new AtomicReference<>(rs);
-        final EmbeddedChannel channel = createChannel(pending, 0);
+        final EmbeddedChannel channel = createChannel(pending);
 
         // Send a 500 response with JSON content type
         final HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);

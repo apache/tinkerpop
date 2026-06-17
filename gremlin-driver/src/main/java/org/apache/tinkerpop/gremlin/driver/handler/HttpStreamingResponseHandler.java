@@ -22,7 +22,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
-import io.netty.handler.codec.TooLongFrameException;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -66,7 +65,6 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
     private final GraphBinaryReader graphBinaryReader;
     private final AtomicReference<ResultSet> pendingResultSet;
     private final ExecutorService readerPool;
-    private final long maxResponseContentLength;
 
     // Mutable state below is accessed exclusively from the channel's event loop thread.
     private HttpResponseStatus responseStatus;
@@ -77,12 +75,10 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
 
     public HttpStreamingResponseHandler(final GraphBinaryReader graphBinaryReader,
                                         final AtomicReference<ResultSet> pendingResultSet,
-                                        final ExecutorService readerPool,
-                                        final long maxResponseContentLength) {
+                                        final ExecutorService readerPool) {
         this.graphBinaryReader = graphBinaryReader;
         this.pendingResultSet = pendingResultSet;
         this.readerPool = readerPool;
-        this.maxResponseContentLength = maxResponseContentLength;
     }
 
     @Override
@@ -129,10 +125,6 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
 
             if (bytesRead > 0 && ctx.channel().attr(InactiveChannelHandler.BYTES_READ).get() == null) {
                 ctx.channel().attr(InactiveChannelHandler.BYTES_READ).set(0);
-            }
-
-            if (maxResponseContentLength > 0 && bytesRead > maxResponseContentLength) {
-                throw new TooLongFrameException("Response entity too large");
             }
 
             if (!isGraphBinaryResponse()) {

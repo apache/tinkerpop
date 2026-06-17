@@ -56,16 +56,19 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
     private final MessageSerializer<?> serializer;
     private final boolean userAgentEnabled;
     private final boolean bulkResults;
+    private final boolean compressionEnabled;
     private final List<RequestInterceptor> interceptors;
     private final URI uri;
 
     public HttpGremlinRequestEncoder(final MessageSerializer<?> serializer,
                                      final List<RequestInterceptor> interceptors,
-                                     final boolean userAgentEnabled, boolean bulkResults, final URI uri) {
+                                     final boolean userAgentEnabled, boolean bulkResults,
+                                     final boolean compressionEnabled, final URI uri) {
         this.serializer = serializer;
         this.interceptors = interceptors;
         this.userAgentEnabled = userAgentEnabled;
         this.bulkResults = bulkResults;
+        this.compressionEnabled = compressionEnabled;
         this.uri = uri;
     }
 
@@ -83,7 +86,9 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
             headersMap.put(HttpRequest.Headers.HOST, remoteAddress.getAddress().getHostAddress());
             // Accept header uses the response serializer's mime type (GraphBinary for responses)
             headersMap.put(HttpRequest.Headers.ACCEPT, serializer.mimeTypesSupported()[0]);
-            headersMap.put(HttpRequest.Headers.ACCEPT_ENCODING, HttpRequest.Headers.DEFLATE);
+            if (compressionEnabled) {
+                headersMap.put(HttpRequest.Headers.ACCEPT_ENCODING, HttpRequest.Headers.DEFLATE);
+            }
             if (userAgentEnabled) {
                 headersMap.put(HttpRequest.Headers.USER_AGENT, UserAgent.USER_AGENT);
             }

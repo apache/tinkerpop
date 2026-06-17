@@ -106,7 +106,7 @@ final class ConnectionPool {
         poolLabel = "Connection Pool {host=" + host + "}";
 
         final Settings.ConnectionPoolSettings settings = settings();
-        this.maxPoolSize = overrideMaxPoolSize.orElse(settings.maxSize);
+        this.maxPoolSize = overrideMaxPoolSize.orElse(settings.maxConnections);
 
         this.connections = new CopyOnWriteArrayList<>();
         this.open = new AtomicInteger();

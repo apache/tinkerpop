@@ -413,29 +413,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldEventuallySucceedAfterChannelLevelError() {
-        final Cluster cluster = TestClientFactory.build()
-                .reconnectInterval(500)
-                .maxResponseContentLength(32).create(); // Warning: compression can change the content length. Adjust as needed.
-        final Client client = cluster.connect();
-
-        try {
-            try {
-                client.submit("g.inject('x').repeat(concat('x')).times(512)").all().get();
-                fail("Request should have failed because it exceeded the max content length allowed");
-            } catch (Exception ex) {
-                final Throwable root = ExceptionHelper.getRootCause(ex);
-                assertThat(root.getMessage(), containsString("Response entity too large"));
-            }
-
-            assertEquals(2, client.submit("g.inject(2)").all().join().get(0).getInt());
-
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
     public void shouldEventuallySucceedAfterMuchFailure() {
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
@@ -907,36 +884,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Vertex v = r.get(0).get(DetachedVertex.class);
             assertEquals(1, v.id());
             assertEquals("person", v.label());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldFailClientSideWithTooLargeAResponse() {
-        final Cluster cluster = TestClientFactory.build().maxResponseContentLength(1).create();
-        final Client client = cluster.connect();
-
-        try {
-            final String fatty = IntStream.range(0, 100).mapToObj(String::valueOf).collect(Collectors.joining());
-            client.submit(String.format("g.inject('%s')", fatty)).all().get();
-            fail("Should throw an exception.");
-        } catch (Exception re) {
-            final Throwable root = ExceptionHelper.getRootCause(re);
-            assertTrue(root.getMessage().contains("Response entity too large"));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldSucceedClientSideWithLargeResponseIfMaxResponseContentLengthZero() throws Exception {
-        final Cluster cluster = TestClientFactory.build().maxResponseContentLength(0).create();
-        final Client client = cluster.connect();
-
-        try {
-            final String fatty = IntStream.range(0, 10000).mapToObj(String::valueOf).collect(Collectors.joining());
-            assertEquals(fatty, client.submit(String.format("g.inject('%s')", fatty)).all().get().get(0).getString());
         } finally {
             cluster.close();
         }

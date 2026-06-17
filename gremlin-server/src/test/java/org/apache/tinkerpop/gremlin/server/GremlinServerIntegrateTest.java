@@ -913,7 +913,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             optionsBuilder.addParameter("x" + ix, ix);
         }
 
-        final Cluster cluster = TestClientFactory.build().maxResponseContentLength(4096000).create();
+        final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
 
         try {
