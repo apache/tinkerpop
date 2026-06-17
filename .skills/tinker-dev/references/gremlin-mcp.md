@@ -1,22 +1,3 @@
-<!--
-Licensed to the Apache Software Foundation (ASF) under one
-or more contributor license agreements.  See the NOTICE file
-distributed with this work for additional information
-regarding copyright ownership.  The ASF licenses this file
-to you under the Apache License, Version 2.0 (the
-"License"); you may not use this file except in compliance
-with the License.  You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.
--->
-
 # Gremlin MCP Server
 
 The Gremlin MCP server (`gremlin-mcp`) is an MCP (Model Context Protocol) server that
@@ -49,76 +30,6 @@ When `GREMLIN_MCP_ENDPOINT` is not set, graph tools are not registered but
 `translate_gremlin_query` and `format_gremlin_query` remain fully available. This is
 useful for query translation and formatting without a running database.
 
-## Configuration
-
-### MCP Client Configuration (e.g., Claude Desktop, Cursor, Windsurf, Kiro)
-
-Using the published package:
-```json
-{
-  "mcpServers": {
-    "gremlin": {
-      "command": "npx",
-      "args": ["gremlin-mcp"],
-      "env": {
-        "GREMLIN_MCP_ENDPOINT": "localhost:8182",
-        "GREMLIN_MCP_LOG_LEVEL": "info"
-      }
-    }
-  }
-}
-```
-
-From source (after building):
-```json
-{
-  "mcpServers": {
-    "gremlin": {
-      "command": "node",
-      "args": ["gremlin-js/gremlin-mcp/dist/server.js"],
-      "env": {
-        "GREMLIN_MCP_ENDPOINT": "localhost:8182",
-        "GREMLIN_MCP_LOG_LEVEL": "info"
-      }
-    }
-  }
-}
-```
-
-For offline mode (translation and formatting only), omit `GREMLIN_MCP_ENDPOINT`.
-
-### With Authentication
-```json
-{
-  "mcpServers": {
-    "gremlin": {
-      "command": "npx",
-      "args": ["gremlin-mcp"],
-      "env": {
-        "GREMLIN_MCP_ENDPOINT": "your-server.com:8182/g",
-        "GREMLIN_MCP_USERNAME": "your-username",
-        "GREMLIN_MCP_PASSWORD": "your-password",
-        "GREMLIN_MCP_USE_SSL": "true"
-      }
-    }
-  }
-}
-```
-
-### Environment Variables
-
-| Variable                              | Required | Default | Purpose                          |
-|---------------------------------------|----------|---------|----------------------------------|
-| `GREMLIN_MCP_ENDPOINT`               | No       | —       | Server endpoint (host:port[/g])  |
-| `GREMLIN_MCP_USE_SSL`                | No       | false   | Enable SSL/TLS                   |
-| `GREMLIN_MCP_USERNAME`               | No       | —       | Authentication username          |
-| `GREMLIN_MCP_PASSWORD`               | No       | —       | Authentication password          |
-| `GREMLIN_MCP_IDLE_TIMEOUT`           | No       | 300     | Connection timeout (seconds)     |
-| `GREMLIN_MCP_LOG_LEVEL`              | No       | info    | Logging: error, warn, info, debug|
-| `GREMLIN_MCP_ENUM_DISCOVERY_ENABLED` | No       | true    | Smart enum detection             |
-| `GREMLIN_MCP_ENUM_CARDINALITY_THRESHOLD` | No   | 10      | Max distinct values for enum     |
-| `GREMLIN_MCP_ENUM_PROPERTY_DENYLIST` | No       | —       | Properties to exclude from enums |
-
 ## Translation
 
 The `translate_gremlin_query` tool supports these targets:
@@ -142,7 +53,7 @@ This starts the MCP server and opens a browser-based tool for interacting with i
 
 ## Building gremlin-mcp
 
-See `references/build-javascript.md` for full build instructions. Quick reference:
+Quick reference (validate per the **Definition of Done** table in `SKILL.md`):
 
 ```bash
 # Build only

@@ -570,8 +570,9 @@ limitations under the License.
                         <exclude>**/go.sum</exclude>
                         <exclude>**/coverage.out</exclude>
                         <exclude>**/gremlinconsoletest.egg-info/**</exclude>
-                        <!-- SKILL.md requires frontmatter at very start of file so that precludes use of the license header -->
-                        <exclude>**/.skills/**/SKILL.md</exclude>
+                        <!-- Agent skill markdown is guidance for AI agents, kept header-free to maximize signal;
+                             SKILL.md additionally requires frontmatter at the very start of the file -->
+                        <exclude>**/.skills/**/*.md</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>

@@ -41,6 +41,31 @@ provenance tracking.
 * *The contributor remains responsible for what they submit.* Review generated output for licensing, correctness, and 
 style before committing.
 
+## Definition of Done
+
+A change is **not done** until a full Maven validation has passed locally. Run it before
+presenting work for review — even when your targeted or unit tests already pass, and even if you
+judge a full run unnecessary. Incremental testing during development is encouraged, but it does
+**not** satisfy this gate.
+
+Match the validation to your changeset using a two-step pattern:
+
+1. Rebuild and install the whole reactor without tests, so every module picks up your changes:
+   `mvn clean install -DskipTests`
+2. Run `verify` on the modules you changed, enabling integration tests where the change warrants
+   them: `mvn verify -pl <changed-modules> [-DskipIntegrationTests=false]`
+
+Examples:
+
+- Python GLV → `mvn clean install -DskipTests` then `mvn verify -pl gremlin-python`
+- `gremlin-server` + `gremlin-driver` → `mvn clean install -DskipTests` then
+  `mvn verify -pl gremlin-driver,gremlin-server -DskipIntegrationTests=false`
+- Broad or core changes, or when unsure → `mvn clean install -DskipIntegrationTests=false`
+
+See the `tinker-dev` skill (and its `references/build-*.md`) for the full changeset-to-command
+mapping and per-GLV details. If you cannot run the validation (for example, Docker is
+unavailable), say so explicitly and report the change as **not validated**.
+
 ## Essential Rules
 
 These rules apply to any AI/IDE assistant operating on this repository.
@@ -48,7 +73,8 @@ These rules apply to any AI/IDE assistant operating on this repository.
 ### Do
 
 - Make small, focused changes that are easy to review.
-- Run the relevant build and test commands before suggesting that a change is complete.
+- Before presenting any change as complete, satisfy the **Definition of Done** above — a full
+  Maven validation matched to your changeset, not just targeted or unit tests.
 - Update or add tests when behavior changes.
 - Update documentation and/or changelog when you change public behavior or APIs.
 - Follow existing patterns for code structure, documentation layout, and naming.

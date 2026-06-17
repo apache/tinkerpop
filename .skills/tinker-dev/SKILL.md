@@ -33,29 +33,82 @@ Canonical project documentation (prefer local files over external URLs):
 - Upgrade docs: `docs/src/upgrade/`
 - Future plans: `docs/src/dev/future/`
 
+## Definition of Done
+
+A change is **not done** until a full Maven validation has passed locally. Run it before
+presenting work for review — even when your targeted or unit tests already pass, and even if you
+judge a full run unnecessary. Incremental testing during development is encouraged, but it does
+**not** satisfy this gate.
+
+Validation is two steps. First, rebuild and install the whole reactor so every module picks up
+your changes:
+
+```bash
+mvn clean install -DskipTests
+```
+
+Then run `verify` scoped to what you changed, using the **broadest** rule that applies, and
+always list every module you touched.
+
+**Self-contained modules** — changing one of these only requires validating that module:
+
+| Changed module | Validate command |
+|---|---|
+| Python GLV | `mvn verify -pl gremlin-python` |
+| JavaScript GLV | `mvn verify -pl :gremlin-javascript` |
+| .NET GLV | `mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-source,:gremlin-dotnet-tests` |
+| Go GLV | `mvn verify -pl :gremlin-go` |
+| `gremlint` | `mvn verify -pl :gremlint` |
+| `gremlin-mcp` | `mvn verify -pl :gremlin-mcp` |
+| Other single JVM module (e.g. `tinkergraph-gremlin`, `gremlin-console`) | `mvn verify -pl <module> -DskipIntegrationTests=false` |
+
+**Shared modules** — depended on by others, so changing them means validating the consumers too.
+Use the broadest rule that matches:
+
+- **`gremlin-server`, `gremlin-driver`, or `gremlin-util`** define the wire protocol and
+  serialization that every GLV exercises → validate the changed module(s) **plus all GLVs**:
+  `mvn verify -pl <changed>,gremlin-python,:gremlin-javascript,:gremlin-dotnet,:gremlin-dotnet-source,:gremlin-dotnet-tests,:gremlin-go -DskipIntegrationTests=false`
+- **`gremlin-core`, `gremlin-test`, or anything they depend on** ripple across the whole project,
+  including the OLAP engines (`hadoop-gremlin`, `spark-gremlin`) → run everything:
+  `mvn clean install -DskipIntegrationTests=false`
+- **Unsure?** Treat it as the `gremlin-core` case and run everything.
+
+**Docs or code comments only** — no validation gate; this gate is for changes that affect behavior.
+
+### Things that quietly invalidate a run
+
+- **GLV tests are skipped unless activated.** A GLV is built and tested only when its `.glv`
+  sentinel exists: `gremlin-python/.glv`, `gremlin-go/.glv`, and *both* `gremlin-dotnet/src/.glv`
+  and `gremlin-dotnet/test/.glv` (JavaScript builds by default). Without the sentinel the module
+  is silently skipped — a green run may have tested nothing of your change. Create the sentinel
+  (or pass `-Pglv-python` / `-Pglv-go`) before validating a GLV change.
+- **Grammar and feature-test changes need a reactor build to take effect.** The ANTLR grammar
+  (`gremlin-language/src/main/antlr4/Gremlin.g4`) and the Gherkin features under `gremlin-test`
+  drive code generation during `mvn clean install` — ANTLR parsers, and per-language test code
+  generated from the feature corpus (e.g. `gremlin-python/build/generate.groovy`, with
+  equivalents for Go, .NET, and JavaScript). After changing either, run `mvn clean install
+  -DskipTests` before relying on *any* test, including fast native ones, or you will be testing
+  stale generated code.
+- **Judge pass/fail by the Maven exit code, not console text.** Do not `grep`/`tail` the build
+  output — tests deliberately emit expected errors, so the log misleads. Exit `0` = pass. For
+  Python, detailed per-suite results are in `gremlin-python/target/python3/python-reports/*.xml`.
+
+If you cannot run the validation (for example, Docker is unavailable), say so explicitly and
+report the change as **not validated** — do not present it as done.
+
 ## Repository Structure
 
-```
-tinkerpop/
-├── gremlin-core/              Core graph API and traversal engine (Java)
-├── gremlin-server/            Gremlin Server (Java)
-├── tinkergraph-gremlin/       In-memory reference graph (Java)
-├── gremlin-python/            Python GLV
-├── gremlin-js/                JavaScript/TypeScript workspace root
-│   ├── gremlin-javascript/    JS driver (npm: "gremlin")
-│   ├── gremlin-mcp/           Gremlin MCP server (npm: "gremlin-mcp")
-│   └── gremlint/              Gremlin query formatter (npm: "gremlint")
-├── gremlin-dotnet/            .NET GLV
-├── gremlin-go/                Go GLV
-├── gremlin-test/              Shared test resources and Gherkin features
-├── gremlin-tools/             Benchmarks, coverage, socket server
-├── docs/src/                  AsciiDoc documentation
-├── docker/                    Docker build scripts and configs
-├── bin/                       Utility scripts
-└── CHANGELOG.asciidoc         Changelog
-```
+Most module names map directly to their purpose (`gremlin-core`, `gremlin-server`,
+`gremlin-go`, etc.). Two things that aren't obvious:
 
-Maven is the build orchestration tool for all modules, including non-JVM ones.
+- The **JavaScript workspace lives under `gremlin-js/`** — it contains `gremlin-javascript/`
+  (the `gremlin` npm driver), `gremlin-mcp/`, and `gremlint/`. There is no top-level
+  `gremlin-javascript/` directory.
+- **Maven orchestrates the build for every module, including the non-JVM ones** (Python,
+  JavaScript, .NET, Go) — which is why the validation in the Definition of Done runs through
+  Maven rather than each language's native test runner.
+
+Cross-language Gherkin feature tests live in `gremlin-test/`.
 
 ## Basic Build Commands
 
@@ -69,96 +122,46 @@ Build a specific module:
 mvn clean install -pl <module-name>
 ```
 
-For GLV-specific builds, test execution, and advanced workflows, see the appropriate
-reference file under `references/`.
+For GLV-specific builds and the validation commands per module, see the **Definition of Done**
+table above. For environment setup and GLV activation, see `references/dev-environment-setup.md`.
 
-## Coding Conventions
+## Conventions
 
-- All files must include the Apache Software Foundation license header. Canonical text
-  is at `bin/asf-license-header.txt`.
-- Do not use import wildcards (e.g., avoid `import org.apache.tinkerpop.gremlin.structure.*`).
-  Use explicit imports.
-- Define variables as `final` whenever possible, except for loop variables.
-- Respect existing naming patterns and package organization.
-- Use `@/` path aliases for JavaScript/TypeScript imports where the project uses them.
+The general Do/Don't rules and "when in doubt" guidance live in the root `AGENTS.md` — the
+single source of truth, not repeated here. The conventions below are the TinkerPop-specific
+ones that are easy to miss:
 
-## Test Conventions
-
-- Prefer SLF4J `Logger` over `System.out.println` or `println` in tests.
-- Use `TestHelper` utilities for temporary directories and file structures instead of
-  hard-coding paths.
-- Always close `Graph` instances that are manually constructed in tests.
-- Tests using a `GraphProvider` with `AbstractGremlinTest` should be suffixed `Check`,
-  not `Test`.
-- Prefer Hamcrest matchers for boolean assertions (e.g., `assertThat(..., is(true))`)
-  instead of manually checking booleans.
-- Gremlin language tests use Gherkin features under:
+- **License header**: every new file needs the ASF header. Canonical text: `bin/asf-license-header.txt`.
+- **Test naming**: a test using a `GraphProvider` with `AbstractGremlinTest` is suffixed
+  `Check`, not `Test`.
+- **Gremlin language tests**: cross-language behavior is tested with Gherkin features under
   `gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/`
-  See `docs/src/dev/developer/for-committers.asciidoc` for details.
+  (see `docs/src/dev/developer/for-committers.asciidoc`).
+- **Docs are AsciiDoc** under `docs/src/` — never Markdown in the main docs tree. Add new
+  content to the right book and update its `index.asciidoc`; generate with `bin/process-docs.sh`
+  (Java 11).
+- **Changelog**: for user-visible or API changes, update `CHANGELOG.asciidoc` in the correct
+  version section. Do not invent version numbers or release names.
 
-## Documentation Conventions
+Otherwise, match the existing code in neighboring files — explicit imports (no wildcards),
+`final` where practical, SLF4J logging over `println`, Hamcrest matchers, and closing any
+`Graph` you construct in a test.
 
-- TinkerPop documentation is AsciiDoc-based under `docs/src/`. Do not use Markdown in
-  the main docs tree.
-- Place new content in the appropriate book (reference, dev, recipes, etc.).
-- Update the relevant `index.asciidoc` so new content is included in the build.
-- For detailed documentation generation instructions, see `references/documentation.md`.
+## Beads Caveats
 
-## Changelog, License, and Checks
+The general agent Do/Don't rules are in the root `AGENTS.md`. Two beads rules are easy to get
+wrong and worth repeating here (full workflow in `references/beads-workflow.md`):
 
-When changes affect behavior, APIs, or user-visible features:
-
-- Add or update entries in `CHANGELOG.asciidoc` in the correct version section.
-- Do not invent new version numbers or release names; follow the existing pattern.
-- Preserve and respect license headers and notices in all files.
-- Avoid adding third-party code or dependencies with incompatible licenses.
-
-## Agent Guardrails
-
-### Do
-
-- Make small, focused changes that are easy to review.
-- Run the relevant build and test commands before suggesting a change is complete.
-- Update or add tests when behavior changes.
-- Update documentation and/or changelog when changing public behavior or APIs.
-- Follow existing patterns for code structure, documentation layout, and naming.
-- Point maintainers to relevant documentation or issues when proposing non-trivial changes.
-
-### Don't
-
-- Don't perform large, sweeping refactors unless explicitly requested.
-- Don't change public APIs, configuration formats, or network protocols without explicit
-  human approval and an associated design/issue.
-- Don't switch documentation formats (e.g., AsciiDoc to Markdown) in the main docs tree.
-- Don't introduce new external dependencies, modules, or build plugins without an
-  associated discussion and issue.
-- Don't invent project policies, version numbers, or release names.
-- Don't remove or weaken tests to "fix" failures; adjust the implementation or test
-  data instead.
-- Don't run `bd dolt push` — pushing to DoltHub is a maintainer action performed after
-  PRs merge, not during active development.
-- Don't close a beads issue when a PR is submitted — close it only after the PR merges
-  to the target branch.
-
-If uncertain about the impact of a change, prefer to make a minimal patch, add comments
-for reviewers, and ask for clarification.
-
-## When In Doubt
-
-1. Check `CONTRIBUTING.md`, developer docs under `docs/src/dev/developer/`, and reference docs.
-2. Prefer no change over an unsafe or speculative change.
-3. Surface the question to human maintainers.
+- Don't run `bd dolt push` — pushing to DoltHub is a maintainer action performed after PRs
+  merge, not during active development.
+- Don't close a beads issue when a PR is submitted — close it only after the PR merges to the
+  target branch.
 
 ## Reference Guides
 
-For deeper, task-specific guidance, see the reference files in this skill:
+Build and validate commands live in the **Definition of Done** table above. For the remaining
+task-specific guidance, see:
 
-- [Development Environment Setup](references/dev-environment-setup.md) — fresh clone to working environment
-- [Java / Core Builds](references/build-java.md) — Java modules, gremlin-server, integration tests
-- [Python GLV](references/build-python.md) — build, test, result evaluation
-- [JavaScript GLV](references/build-javascript.md) — npm workspace, build, test, evaluation
-- [.NET GLV](references/build-dotnet.md) — build, test, Docker setup
-- [Go GLV](references/build-go.md) — build, test, Docker setup
-- [Documentation](references/documentation.md) — AsciiDoc generation, website
+- [Development Environment Setup](references/dev-environment-setup.md) — fresh clone to working environment, prerequisites, GLV activation
 - [Gremlin MCP Server](references/gremlin-mcp.md) — translation, formatting, querying via MCP
 - [Beads Workflow](references/beads-workflow.md) — agent planning, persistent memory, TinkerPop-specific conventions and DoltHub push policy
