@@ -167,6 +167,8 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
         final WherePredicateStep<S> clone = (WherePredicateStep<S>) super.clone();
         clone.predicate = this.predicate.clone();
         clone.traversalRing = this.traversalRing.clone();
+        clone.predicateTraversals = new ArrayList<>();
+        P.collectTraversals(clone.predicate, clone.predicateTraversals);
         return clone;
     }
 
@@ -174,6 +176,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
         this.traversalRing.getTraversals().forEach(this::integrateChild);
+        this.predicateTraversals.forEach(this::integrateChild);
     }
 
     @Override
