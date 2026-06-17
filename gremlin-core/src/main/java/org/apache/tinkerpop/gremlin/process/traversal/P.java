@@ -700,13 +700,18 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
-     * Determines if a value is within the union of results from multiple child traversals resolved at runtime.
+     * Determines if a value is within the results of child traversals resolved at runtime.
      * Each traversal is evaluated independently and results are combined into a single collection.
      *
      * @since 4.0.0
      */
-    public static <V> P<V> within(final Traversal<?, ?> first, final Traversal<?, ?> second, final Traversal<?, ?>... more) {
-        return containsTraversals(Contains.within, first, second, more);
+    public static <V> P<V> within(final Traversal<?, ?> first, final Traversal<?, ?>... more) {
+        final List<Traversal.Admin<?, ?>> admins = new ArrayList<>(1 + more.length);
+        admins.add(first.asAdmin());
+        for (final Traversal<?, ?> tv : more) {
+            admins.add(tv.asAdmin());
+        }
+        return new P(Contains.within, admins);
     }
 
     /**
@@ -719,13 +724,18 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
-     * Determines if a value is not within the union of results from multiple child traversals resolved at runtime.
+     * Determines if a value is not within the results of child traversals resolved at runtime.
      * Each traversal is evaluated independently and results are combined into a single collection.
      *
      * @since 4.0.0
      */
-    public static <V> P<V> without(final Traversal<?, ?> first, final Traversal<?, ?> second, final Traversal<?, ?>... more) {
-        return containsTraversals(Contains.without, first, second, more);
+    public static <V> P<V> without(final Traversal<?, ?> first, final Traversal<?, ?>... more) {
+        final List<Traversal.Admin<?, ?>> admins = new ArrayList<>(1 + more.length);
+        admins.add(first.asAdmin());
+        for (final Traversal<?, ?> tv : more) {
+            admins.add(tv.asAdmin());
+        }
+        return new P(Contains.without, admins);
     }
 
     /**
@@ -796,23 +806,6 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
                     "Use " + stepName + "(__.constant(val1), __.constant(val2)) to wrap all values as traversals.");
         }
         return null;
-    }
-
-    /**
-     * Creates a Contains predicate from multiple validated child traversals.
-     */
-    @SuppressWarnings("unchecked")
-    private static <V> P<V> containsTraversals(final PBiPredicate predicate, final Traversal<?, ?> first,
-                                               final Traversal<?, ?> second, final Traversal<?, ?>... more) {
-        final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>(2 + (more != null ? more.length : 0));
-        traversals.add(first.asAdmin());
-        traversals.add(second.asAdmin());
-        if (more != null) {
-            for (final Traversal<?, ?> tv : more) {
-                traversals.add(tv.asAdmin());
-            }
-        }
-        return new P(predicate, traversals);
     }
 
     /**
