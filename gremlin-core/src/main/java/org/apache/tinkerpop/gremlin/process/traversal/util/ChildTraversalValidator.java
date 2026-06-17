@@ -18,11 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
-
-import java.util.List;
 
 /**
  * Validates that child traversals do not contain mutating steps. Child traversals used as
@@ -40,12 +37,9 @@ public final class ChildTraversalValidator {
      * Throws {@link IllegalArgumentException} if one is found.
      */
     public static void validate(final Traversal.Admin<?, ?> child) {
-        final List<Mutating> mutating = TraversalHelper.getStepsOfAssignableClassRecursively(Mutating.class, child);
-        if (!mutating.isEmpty()) {
-            final Step<?, ?> step = (Step<?, ?>) mutating.get(0);
-            throw new IllegalArgumentException(
-                    "Child traversal contains mutating step " +
-                    step.getClass().getSimpleName() + ". Mutating steps are not allowed in child traversals.");
+        if (TraversalHelper.hasStepOfAssignableClassRecursively(Mutating.class, child)) {
+            throw new IllegalArgumentException("Child traversal contains a mutating step. " +
+                    "Mutating steps are not allowed in child traversals.");
         }
     }
 }
