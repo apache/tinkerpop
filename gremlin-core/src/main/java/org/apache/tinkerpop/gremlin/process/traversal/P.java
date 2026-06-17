@@ -627,8 +627,6 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 3.0.0-incubating
      */
     public static <V> P<V> within(final V... values) {
-        final P<V> traversalP = handleContainsVarargs(values, Contains.within, "within");
-        if (traversalP != null) return traversalP;
         final V[] v = null == values ? (V[]) new Object[] { null } : (V[]) values;
         return P.within(Arrays.asList(v));
     }
@@ -686,8 +684,6 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 3.0.0-incubating
      */
     public static <V> P<V> without(final V... values) {
-        final P<V> traversalP = handleContainsVarargs(values, Contains.without, "without");
-        if (traversalP != null) return traversalP;
         final V[] v = null == values ? (V[]) new Object[] { null } : values;
         return P.without(Arrays.asList(v));
     }
@@ -781,54 +777,5 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      */
     public static <V> P<V> not(final P<V> predicate) {
         return predicate.negate();
-    }
-
-    /**
-     * Handles varargs traversal detection for within/without. Returns a P if traversals were found,
-     * or null if the values are plain literals.
-     */
-    @SuppressWarnings("unchecked")
-    private static <V> P<V> handleContainsVarargs(final V[] values, final PBiPredicate predicate, final String stepName) {
-        if (values != null && values.length == 1 && values[0] instanceof Traversal) {
-            final Traversal<?, ?> trav = (Traversal<?, ?>) values[0];
-            return new P(predicate, trav.asAdmin());
-        }
-        if (values != null && values.length > 1 && allTraversals(values)) {
-            final List<Traversal.Admin<?, ?>> traversals = new ArrayList<>(values.length);
-            for (final V v : values) {
-                traversals.add(((Traversal<?, ?>) v).asAdmin());
-            }
-            return new P(predicate, traversals);
-        }
-        if (values != null && values.length > 1 && anyTraversals(values)) {
-            throw new IllegalArgumentException(
-                    "Cannot mix traversals and literal values in " + stepName + "(). " +
-                    "Use " + stepName + "(__.constant(val1), __.constant(val2)) to wrap all values as traversals.");
-        }
-        return null;
-    }
-
-    /**
-     * Checks if all elements in the array are {@link GraphTraversal} instances.
-     */
-    private static <V> boolean allTraversals(final V[] values) {
-        for (final V v : values) {
-            if (!(v instanceof GraphTraversal)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Checks if any element in the array is a {@link GraphTraversal} instance.
-     */
-    private static <V> boolean anyTraversals(final V[] values) {
-        for (final V v : values) {
-            if (v instanceof GraphTraversal) {
-                return true;
-            }
-        }
-        return false;
     }
 }
