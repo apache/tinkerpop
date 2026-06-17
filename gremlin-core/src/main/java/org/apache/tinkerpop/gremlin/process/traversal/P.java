@@ -423,6 +423,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if values are equal using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> eq(final Traversal<?, ?> traversalValue) {
+        return new P(Compare.eq, traversalValue.asAdmin());
+    }
+
+    /**
      * Determines if values are not equal.
      *
      * @since 3.0.0-incubating
@@ -438,6 +447,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      */
     public static <V> P<V> neq(final GValue<V> value) {
         return new P(Compare.neq, value);
+    }
+
+    /**
+     * Determines if values are not equal using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> neq(final Traversal<?, ?> traversalValue) {
+        return new P(Compare.neq, traversalValue.asAdmin());
     }
 
     /**
@@ -459,6 +477,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if a value is less than another using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> lt(final Traversal<?, ?> traversalValue) {
+        return new P(Compare.lt, traversalValue.asAdmin());
+    }
+
+    /**
      * Determines if a value is less than or equal to another.
      *
      * @since 3.0.0-incubating
@@ -474,6 +501,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      */
     public static <V> P<V> lte(final GValue<V> value) {
         return new P(Compare.lte, value);
+    }
+
+    /**
+     * Determines if a value is less than or equal to another using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> lte(final Traversal<?, ?> traversalValue) {
+        return new P(Compare.lte, traversalValue.asAdmin());
     }
 
     /**
@@ -495,6 +531,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if a value is greater than another using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> gt(final Traversal<?, ?> traversalValue) {
+        return new P(Compare.gt, traversalValue.asAdmin());
+    }
+
+    /**
      * Determines if a value is greater than or equal to another.
      *
      * @since 3.0.0-incubating
@@ -510,6 +555,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      */
     public static <V> P<V> gte(final GValue<V> value) {
         return new P(Compare.gte, value);
+    }
+
+    /**
+     * Determines if a value is greater than or equal to another using a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> gte(final Traversal<?, ?> traversalValue) {
+        return new P(Compare.gte, traversalValue.asAdmin());
     }
 
     /**
@@ -602,6 +656,30 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if a value is within the results of a child traversal resolved at runtime.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> within(final Traversal<?, ?> traversalValue) {
+        return new P(Contains.within, Collections.singletonList(traversalValue.asAdmin()));
+    }
+
+    /**
+     * Determines if a value is within the results of child traversals resolved at runtime.
+     * Each traversal is evaluated independently and results are combined into a single collection.
+     *
+     * @since 4.0.0
+     */
+    public static <V> P<V> within(final Traversal<?, ?> first, final Traversal<?, ?>... more) {
+        final List<Traversal.Admin<?, ?>> admins = new ArrayList<>(1 + more.length);
+        admins.add(first.asAdmin());
+        for (final Traversal<?, ?> tv : more) {
+            admins.add(tv.asAdmin());
+        }
+        return new P(Contains.within, admins);
+    }
+
+    /**
      * Determines if a value is not within the specified list of values. If the array of arguments itself is {@code null}
      * then the argument is treated as {@code Object[1]} where that single value is {@code null}.
      *
@@ -634,84 +712,6 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     public static <V> P<V> without(final Collection<V> value) {
         if (null == value) return P.without((V) null);
         return new P(Contains.without, value);
-    }
-
-    /**
-     * Determines if values are equal using a child traversal resolved at runtime.
-     *
-     * @since 4.0.0
-     */
-    public static <V> P<V> eq(final Traversal<?, ?> traversalValue) {
-        return new P(Compare.eq, traversalValue.asAdmin());
-    }
-
-    /**
-     * Determines if values are not equal using a child traversal resolved at runtime.
-     *
-     * @since 4.0.0
-     */
-    public static <V> P<V> neq(final Traversal<?, ?> traversalValue) {
-        return new P(Compare.neq, traversalValue.asAdmin());
-    }
-
-    /**
-     * Determines if a value is less than another using a child traversal resolved at runtime.
-     *
-     * @since 4.0.0
-     */
-    public static <V> P<V> lt(final Traversal<?, ?> traversalValue) {
-        return new P(Compare.lt, traversalValue.asAdmin());
-    }
-
-    /**
-     * Determines if a value is less than or equal to another using a child traversal resolved at runtime.
-     *
-     * @since 4.0.0
-     */
-    public static <V> P<V> lte(final Traversal<?, ?> traversalValue) {
-        return new P(Compare.lte, traversalValue.asAdmin());
-    }
-
-    /**
-     * Determines if a value is greater than another using a child traversal resolved at runtime.
-     *
-     * @since 4.0.0
-     */
-    public static <V> P<V> gt(final Traversal<?, ?> traversalValue) {
-        return new P(Compare.gt, traversalValue.asAdmin());
-    }
-
-    /**
-     * Determines if a value is greater than or equal to another using a child traversal resolved at runtime.
-     *
-     * @since 4.0.0
-     */
-    public static <V> P<V> gte(final Traversal<?, ?> traversalValue) {
-        return new P(Compare.gte, traversalValue.asAdmin());
-    }
-
-    /**
-     * Determines if a value is within the results of a child traversal resolved at runtime.
-     *
-     * @since 4.0.0
-     */
-    public static <V> P<V> within(final Traversal<?, ?> traversalValue) {
-        return new P(Contains.within, Collections.singletonList(traversalValue.asAdmin()));
-    }
-
-    /**
-     * Determines if a value is within the results of child traversals resolved at runtime.
-     * Each traversal is evaluated independently and results are combined into a single collection.
-     *
-     * @since 4.0.0
-     */
-    public static <V> P<V> within(final Traversal<?, ?> first, final Traversal<?, ?>... more) {
-        final List<Traversal.Admin<?, ?>> admins = new ArrayList<>(1 + more.length);
-        admins.add(first.asAdmin());
-        for (final Traversal<?, ?> tv : more) {
-            admins.add(tv.asAdmin());
-        }
-        return new P(Contains.within, admins);
     }
 
     /**
