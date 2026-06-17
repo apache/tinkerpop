@@ -173,7 +173,10 @@ public class ServerGremlinExecutor {
             try {
                 // gremlin-lang does not need to be initialized. not so nice, but gremlin-lang is the only exception
                 // and ultimately, gremlin-lang will likely end up the only choice in gremlin-server.
-                if (!engineName.equals("gremlin-lang")) {
+                // groovy-test (used for testing purposes only) also interprets input via the Gremlin grammar, so it
+                // cannot evaluate the "1+1" init probe and likewise does not need init-script priming (its engine
+                // setup happens at construction, which is triggered by registerMetrics below).
+                if (!engineName.equals("gremlin-lang") && !engineName.equals("groovy-test")) {
                     // use no timeout on the engine initialization - perhaps this can be a configuration later
                     final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build().
                             evaluationTimeoutOverride(0L).create();
