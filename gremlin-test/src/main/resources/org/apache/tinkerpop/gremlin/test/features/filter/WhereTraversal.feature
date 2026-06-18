@@ -120,3 +120,49 @@ Feature: Step - where(P) with traversal-bearing predicates
       | result |
       | josh |
       | peter |
+
+  # Mixed ConnectiveP: traversal-bearing predicate AND scope-label predicate
+  # Verifies that scope-label resolution still works when combined with traversal predicates
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_VX1X_asXaX_V_valuesXageX_whereXgteXconstantX0XX_andXneqXaXXX_byX_byXageX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).as("a").V().hasLabel("person").values("age").where(P.gte(__.constant(0)).and(P.neq("a"))).by().by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
+
+  # Mixed ConnectiveP: scope-label predicate AND traversal-bearing predicate (reversed order)
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_VX1X_asXaX_V_valuesXageX_whereXneqXaX_andXgtXVXvid1X_valuesXageXXXX_byX_byXageX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).as("a").V().hasLabel("person").values("age").where(P.neq("a").and(P.gt(__.V(vid1).values("age")))).by().by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[32].i |
+      | d[35].i |
+
+  # Mixed ConnectiveP with OR: traversal OR scope-label
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_VX1X_asXaX_V_valuesXageX_whereXeqXVXvid1X_valuesXageXX_orXeqXaXXX_byX_byXageX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).as("a").V().hasLabel("person").values("age").where(P.eq(__.V(vid1).values("age")).or(P.eq("a"))).by().by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |

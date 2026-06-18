@@ -418,8 +418,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     /**
      * A {@code V} step that accepts a child traversal whose results are used as vertex IDs for lookup.
-     * This form is only valid as a mid-traversal step; using it as a start step will throw an
-     * {@link IllegalStateException} at runtime because there is no traverser context to evaluate the child traversal.
      *
      * @param traversal the child traversal that produces vertex IDs
      * @return the traversal with an appended {@link GraphStep}
@@ -458,8 +456,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     /**
      * A {@code E} step that accepts a child traversal whose results are used as edge IDs for lookup.
-     * This form is only valid as a mid-traversal step; using it as a start step will throw an
-     * {@link IllegalStateException} at runtime because there is no traverser context to evaluate the child traversal.
      *
      * @param traversal the child traversal that produces edge IDs
      * @return the traversal with an appended {@link GraphStep}

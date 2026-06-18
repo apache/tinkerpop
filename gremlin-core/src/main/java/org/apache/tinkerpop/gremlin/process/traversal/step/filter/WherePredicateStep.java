@@ -92,6 +92,9 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
             }
 
             return true;
+        } else if (predicate.hasTraversal()) {
+            // Already resolved by P.resolve() — skip, consuming no selectKey entry
+            return true;
         } else {
             final TraversalProduct product = TraversalUtil.produce((S) this.getSafeScopeValue(Pop.last, selectKeysIterator.next(), traverser), this.traversalRing.next());
             if (product.isProductive())
@@ -132,16 +135,20 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
         }
 
         if (this.predicate.hasTraversal()) {
-            // Traversal-bearing predicate: resolve the child traversal, then test
-            this.traversalRing.reset();
+            // Resolve traversal-bearing predicates first
             this.predicate.resolve(traverser);
-            return this.predicate.test(product.get());
-        } else {
-            // Standard scope-label path: resolve predicate values from path labels
+        }
+
+        // Resolve scope-label children (setPredicateValues skips traversal-bearing leaves)
+        if (!this.selectKeys.isEmpty()) {
             final boolean predicateValuesProductive = this.setPredicateValues(this.predicate, traverser, this.selectKeys.iterator());
             this.traversalRing.reset();
-            return predicateValuesProductive && this.predicate.test(product.get());
+            if (!predicateValuesProductive) return false;
+        } else {
+            this.traversalRing.reset();
         }
+
+        return this.predicate.test(product.get());
     }
 
     @Override

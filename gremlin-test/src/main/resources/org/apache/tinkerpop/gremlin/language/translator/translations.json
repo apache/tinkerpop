@@ -13615,6 +13615,57 @@
         ]
     },
     {
+        "scenario": "g_VX1X_asXaX_V_valuesXageX_whereXgteXconstantX0XX_andXneqXaXXX_byX_byXageX",
+        "traversals": [
+            {
+                "original": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.gte(__.constant(0)).and(P.neq(\"a\"))).by().by(\"age\")",
+                "language": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.gte(__.constant(0)).and(P.neq(\"a\"))).by().by(\"age\")",
+                "canonical": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.gte(__.constant(0)).and(P.neq(\"a\"))).by().by(\"age\")",
+                "anonymized": "g.V(vid1).as(string0).V().hasLabel(string1).values(string2).where(P.gte(__.constant(number0)).and(P.neq(string0))).by().by(string2)",
+                "dotnet": "g.V(vid1).As(\"a\").V().HasLabel(\"person\").Values<object>(\"age\").Where(P.Gte(__.Constant<object>(0)).And(P.Neq(\"a\"))).By().By(\"age\")",
+                "go": "g.V(vid1).As(\"a\").V().HasLabel(\"person\").Values(\"age\").Where(gremlingo.P.Gte(gremlingo.T__.Constant(0)).And(gremlingo.P.Neq(\"a\"))).By().By(\"age\")",
+                "groovy": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.gte(__.constant(0)).and(P.neq(\"a\"))).by().by(\"age\")",
+                "java": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.gte(__.constant(0)).and(P.neq(\"a\"))).by().by(\"age\")",
+                "javascript": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.gte(__.constant(0)).and(P.neq(\"a\"))).by().by(\"age\")",
+                "python": "g.V(vid1).as_('a').V().has_label('person').values('age').where(P.gte(__.constant(0)).and_(P.neq('a'))).by().by('age')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_VX1X_asXaX_V_valuesXageX_whereXneqXaX_andXgtXVXvid1X_valuesXageXXXX_byX_byXageX",
+        "traversals": [
+            {
+                "original": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.neq(\"a\").and(P.gt(__.V(vid1).values(\"age\")))).by().by(\"age\")",
+                "language": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.neq(\"a\").and(P.gt(__.V(vid1).values(\"age\")))).by().by(\"age\")",
+                "canonical": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.neq(\"a\").and(P.gt(__.V(vid1).values(\"age\")))).by().by(\"age\")",
+                "anonymized": "g.V(vid1).as(string0).V().hasLabel(string1).values(string2).where(P.neq(string0).and(P.gt(__.V(vid1).values(string2)))).by().by(string2)",
+                "dotnet": "g.V(vid1).As(\"a\").V().HasLabel(\"person\").Values<object>(\"age\").Where(P.Neq(\"a\").And(P.Gt(__.V(vid1).Values<object>(\"age\")))).By().By(\"age\")",
+                "go": "g.V(vid1).As(\"a\").V().HasLabel(\"person\").Values(\"age\").Where(gremlingo.P.Neq(\"a\").And(gremlingo.P.Gt(gremlingo.T__.V(vid1).Values(\"age\")))).By().By(\"age\")",
+                "groovy": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.neq(\"a\").and(P.gt(__.V(vid1).values(\"age\")))).by().by(\"age\")",
+                "java": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.neq(\"a\").and(P.gt(__.V(vid1).values(\"age\")))).by().by(\"age\")",
+                "javascript": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.neq(\"a\").and(P.gt(__.V(vid1).values(\"age\")))).by().by(\"age\")",
+                "python": "g.V(vid1).as_('a').V().has_label('person').values('age').where(P.neq('a').and_(P.gt(__.V(vid1).values('age')))).by().by('age')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_VX1X_asXaX_V_valuesXageX_whereXeqXVXvid1X_valuesXageXX_orXeqXaXXX_byX_byXageX",
+        "traversals": [
+            {
+                "original": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.eq(__.V(vid1).values(\"age\")).or(P.eq(\"a\"))).by().by(\"age\")",
+                "language": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.eq(__.V(vid1).values(\"age\")).or(P.eq(\"a\"))).by().by(\"age\")",
+                "canonical": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.eq(__.V(vid1).values(\"age\")).or(P.eq(\"a\"))).by().by(\"age\")",
+                "anonymized": "g.V(vid1).as(string0).V().hasLabel(string1).values(string2).where(P.eq(__.V(vid1).values(string2)).or(P.eq(string0))).by().by(string2)",
+                "dotnet": "g.V(vid1).As(\"a\").V().HasLabel(\"person\").Values<object>(\"age\").Where(P.Eq(__.V(vid1).Values<object>(\"age\")).Or(P.Eq(\"a\"))).By().By(\"age\")",
+                "go": "g.V(vid1).As(\"a\").V().HasLabel(\"person\").Values(\"age\").Where(gremlingo.P.Eq(gremlingo.T__.V(vid1).Values(\"age\")).Or(gremlingo.P.Eq(\"a\"))).By().By(\"age\")",
+                "groovy": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.eq(__.V(vid1).values(\"age\")).or(P.eq(\"a\"))).by().by(\"age\")",
+                "java": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.eq(__.V(vid1).values(\"age\")).or(P.eq(\"a\"))).by().by(\"age\")",
+                "javascript": "g.V(vid1).as(\"a\").V().hasLabel(\"person\").values(\"age\").where(P.eq(__.V(vid1).values(\"age\")).or(P.eq(\"a\"))).by().by(\"age\")",
+                "python": "g.V(vid1).as_('a').V().has_label('person').values('age').where(P.eq(__.V(vid1).values('age')).or_(P.eq('a'))).by().by('age')"
+            }
+        ]
+    },
+    {
         "scenario": "g_withStrategiesXAdjacentToIncidentStrategyX_V",
         "traversals": [
             {
