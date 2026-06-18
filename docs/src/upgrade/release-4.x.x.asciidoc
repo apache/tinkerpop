@@ -1111,6 +1111,7 @@ updated from `ws://` to `http://` (or `wss://` to `https://`). The following set
 
 - `enableCompression` — removed.
 - `bulkResults` — added. See <<result-bulking-from-server, Result Bulking from Server>> for details.
+- `maxContentLength` — renamed to `maxResponseContentLength`. Now limits total response size.
 - `minConnectionPoolSize` — removed. Connections are now closed based on `idleConnectionTimeout` rather than usage
   thresholds. Multiple connections can be opened concurrently to support bursty workloads.
 
@@ -1307,6 +1308,8 @@ The following configuration changes were introduced in the beta.1 release for Gr
 * Java GLV
 ** `enableCompression` setting has been removed.
 ** `bulkResults` has been added. See <<result-bulking-from-server, result bulking>> for more details.
+** `maxContentLength` setting has been renamed to `maxResponseContentLength` and now blocks incoming responses that are
+too large based on total response size.
 ** `addInterceptorAfter`, `addInterceptorBefore`, `addInterceptor` and `removeInterceptor` have been added.
 See <<java-requestinterceptor, Changes to Java RequestInterceptor>> for more details.
 * Python GLV
