@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-
 /**
  * Marker interface for {@link TraversalParent} steps whose child traversals must be read-only
  * (no mutating steps allowed). Examples include {@code has(key, traversal)},
