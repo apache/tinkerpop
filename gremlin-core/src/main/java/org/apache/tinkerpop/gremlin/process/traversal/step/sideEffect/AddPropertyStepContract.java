@@ -19,12 +19,11 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.step.AcceptsChildPredicateTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ReadOnlyTraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PropertiesHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
@@ -33,9 +32,9 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import java.util.HashSet;
 import java.util.List;
 
-public interface AddPropertyStepContract<S> extends Step<S, S>, TraversalParent, Scoping, PropertiesHolder,
+public interface AddPropertyStepContract<S> extends Step<S, S>, Scoping, PropertiesHolder,
         Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent>, Configuring,
-        AcceptsChildPredicateTraversal {
+        ReadOnlyTraversalParent {
 
     /**
      * Concrete implementations of this contract that can be referenced as TinkerPop implementations.
@@ -48,7 +47,7 @@ public interface AddPropertyStepContract<S> extends Step<S, S>, TraversalParent,
     default HashSet<PopInstruction> getPopInstructions() {
         final HashSet<PopInstruction> popInstructions = new HashSet<>();
         popInstructions.addAll(Scoping.super.getPopInstructions());
-        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        popInstructions.addAll(ReadOnlyTraversalParent.super.getPopInstructions());
         return popInstructions;
     }
 

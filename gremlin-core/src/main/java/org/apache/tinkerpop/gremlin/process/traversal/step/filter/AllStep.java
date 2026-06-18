@@ -21,8 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.AcceptsChildPredicateTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ReadOnlyTraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -33,7 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public final class AllStep<S, S2> extends FilterStep<S> implements TraversalParent, AcceptsChildPredicateTraversal {
+public final class AllStep<S, S2> extends FilterStep<S> implements ReadOnlyTraversalParent {
 
     private P<S2> predicate;
 

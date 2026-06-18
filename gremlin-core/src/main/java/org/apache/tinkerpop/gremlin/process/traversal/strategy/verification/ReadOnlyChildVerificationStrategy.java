@@ -21,8 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.AcceptsChildPredicateTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ReadOnlyTraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ReadOnlyChildValidator;
 
@@ -43,8 +42,8 @@ public final class ReadOnlyChildVerificationStrategy
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if (step instanceof AcceptsChildPredicateTraversal && step instanceof TraversalParent) {
-                for (final Traversal.Admin<?, ?> child : ((TraversalParent) step).getLocalChildren()) {
+            if (step instanceof ReadOnlyTraversalParent) {
+                for (final Traversal.Admin<?, ?> child : ((ReadOnlyTraversalParent) step).getLocalChildren()) {
                     try {
                         ReadOnlyChildValidator.validate(child);
                     } catch (final IllegalArgumentException e) {

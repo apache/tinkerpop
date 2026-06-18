@@ -18,10 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+
 /**
- * Marker interface for steps that accept user-supplied child traversals embedded as predicate or lookup
- * arguments (for example {@code has(key, traversal)}, {@code is(P.gt(traversal))},
- * {@code V(traversal)}, or {@code property(traversal)}).
+ * Marker interface for {@link TraversalParent} steps whose child traversals must be read-only
+ * (no mutating steps allowed). Examples include {@code has(key, traversal)},
+ * {@code is(P.gt(traversal))}, {@code V(traversal)}, and {@code property(traversal)}.
  * <p>
  * The {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyChildVerificationStrategy}
  * validates the local children of every step implementing this interface, rejecting child traversals that
@@ -30,5 +32,5 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
  *
  * @since 4.0.0
  */
-public interface AcceptsChildPredicateTraversal {
+public interface ReadOnlyTraversalParent extends TraversalParent {
 }

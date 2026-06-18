@@ -21,10 +21,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.AcceptsChildPredicateTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ReadOnlyTraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -40,7 +39,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HasStep<S extends Element> extends FilterStep<S> implements HasContainerHolder<S, S>, Configuring, TraversalParent, AcceptsChildPredicateTraversal {
+public class HasStep<S extends Element> extends FilterStep<S> implements HasContainerHolder<S, S>, Configuring, ReadOnlyTraversalParent {
 
     private final Parameters parameters = new Parameters();
     private List<HasContainer> hasContainers;

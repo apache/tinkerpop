@@ -22,11 +22,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.AcceptsChildPredicateTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ReadOnlyTraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
@@ -46,7 +45,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WherePredicateStep<S> extends FilterStep<S> implements Scoping, PathProcessor, ByModulating, TraversalParent, AcceptsChildPredicateTraversal {
+public final class WherePredicateStep<S> extends FilterStep<S> implements Scoping, PathProcessor, ByModulating, ReadOnlyTraversalParent {
 
     protected String startKey;
     protected List<String> selectKeys;
@@ -165,7 +164,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     public HashSet<PopInstruction> getPopInstructions() {
         final HashSet<PopInstruction> popInstructions = new HashSet<>();
         popInstructions.addAll(Scoping.super.getPopInstructions());
-        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        popInstructions.addAll(ReadOnlyTraversalParent.super.getPopInstructions());
         return popInstructions;
     }
 
