@@ -211,6 +211,7 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
         clone.properties = new HashMap<>();
         for (Map.Entry<Object, List<Object>> entry : this.properties.entrySet()) {
             final Object key = entry.getKey();
+            final Object clonedKey = key instanceof Traversal ? ((Traversal<?, ?>) key).asAdmin().clone() : key;
             final List<Object> oldValues = entry.getValue();
             final List<Object> newValues = new ArrayList<>(oldValues.size());
             for (Object v : oldValues) {
@@ -222,7 +223,7 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
                     newValues.add(v);
                 }
             }
-            clone.properties.put(key, newValues);
+            clone.properties.put(clonedKey, newValues);
         }
 
         return clone;

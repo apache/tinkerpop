@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -112,6 +113,7 @@ import org.junit.runners.Parameterized;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -1032,23 +1034,51 @@ public class TraversalParentTest {
         if (expectedGlobalChildren != null && expectedLocalChildren != null) {
             verifyExpectedParents(expectedGlobalChildren, expectedLocalChildren, "(pre-strategy application)");
 
+            final List<Traversal.Admin<?,?>> preCloneGlobal = getChildTraversals(true);
+            final List<Traversal.Admin<?,?>> preCloneLocal = getChildTraversals(false);
+
             traversal = traversal.clone();
 
             verifyExpectedParents(expectedGlobalChildren, expectedLocalChildren, "(cloned traversal, pre-strategy application)");
+            verifyCloneIndependence(preCloneGlobal, getChildTraversals(true), "(cloned traversal, pre-strategy application)");
+            verifyCloneIndependence(preCloneLocal, getChildTraversals(false), "(cloned traversal, pre-strategy application)");
         }
 
         traversal.getStrategies().addStrategies(GValueReductionStrategy.instance());
         traversal.applyStrategies();
 
-        verifyExpectedParents(postStrategyExpectedGlobalChildren == null ? expectedGlobalChildren : postStrategyExpectedGlobalChildren,
-                postStrategyExpectedLocalChildren == null ? expectedLocalChildren : postStrategyExpectedLocalChildren,
-                "(post-strategy application)");
+        final List<Traversal.Admin<?,?>> expectedPostGlobal = postStrategyExpectedGlobalChildren == null ? expectedGlobalChildren : postStrategyExpectedGlobalChildren;
+        final List<Traversal.Admin<?,?>> expectedPostLocal = postStrategyExpectedLocalChildren == null ? expectedLocalChildren : postStrategyExpectedLocalChildren;
+
+        verifyExpectedParents(expectedPostGlobal, expectedPostLocal, "(post-strategy application)");
+
+        final List<Traversal.Admin<?,?>> preClonePostStratGlobal = getChildTraversals(true);
+        final List<Traversal.Admin<?,?>> preClonePostStratLocal = getChildTraversals(false);
 
         traversal = traversal.clone();
 
-        verifyExpectedParents(postStrategyExpectedGlobalChildren == null ? expectedGlobalChildren : postStrategyExpectedGlobalChildren,
-                postStrategyExpectedLocalChildren == null ? expectedLocalChildren : postStrategyExpectedLocalChildren,
-                "(cloned traversal, post-strategy application)");
+        verifyExpectedParents(expectedPostGlobal, expectedPostLocal, "(cloned traversal, post-strategy application)");
+        verifyCloneIndependence(preClonePostStratGlobal, getChildTraversals(true), "(cloned traversal, post-strategy application)");
+        verifyCloneIndependence(preClonePostStratLocal, getChildTraversals(false), "(cloned traversal, post-strategy application)");
+    }
+
+    private List<Traversal.Admin<?,?>> getChildTraversals(boolean global) {
+        List<Step<?,?>> steps = TraversalHelper.getStepsOfAssignableClass(stepClass, traversal);
+        if (steps.size() != 1 || !(steps.get(0) instanceof TraversalParent)) return List.of();
+        TraversalParent parent = (TraversalParent) steps.get(0);
+        return new ArrayList<>(global ? parent.getGlobalChildren() : parent.getLocalChildren());
+    }
+
+    private void verifyCloneIndependence(List<Traversal.Admin<?,?>> originalChildren, List<Traversal.Admin<?,?>> clonedChildren, String messageSuffix) {
+        for (Traversal.Admin<?, ?> clonedChild : clonedChildren) {
+            if (clonedChild instanceof AbstractLambdaTraversal) continue;
+            for (Traversal.Admin<?, ?> originalChild : originalChildren) {
+                assertFalse(
+                        String.format("Cloned child traversal %s should be a different instance from original for Traversal [%s] %s",
+                                clonedChild.toString(), traversal, messageSuffix),
+                        clonedChild == originalChild);
+            }
+        }
     }
 
     private void verifyExpectedParents(List<Traversal.Admin<?,?>> expectedGlobalChildren, List<Traversal.Admin<?,?>> expectedLocalChildren, String messageSuffix) {

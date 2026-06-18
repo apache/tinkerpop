@@ -150,7 +150,7 @@ public final class FormatStep<S> extends MapStep<S, String> implements ByModulat
         final FormatStep<S> clone = (FormatStep<S>) super.clone();
         clone.format = this.format;
         clone.variables = this.variables;
-        clone.traversalRing = this.traversalRing;
+        clone.traversalRing = this.traversalRing.clone();
         return clone;
     }
 
