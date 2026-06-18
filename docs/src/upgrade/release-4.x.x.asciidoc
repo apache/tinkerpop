@@ -73,6 +73,8 @@ across pooled-connection reuse, so it never fires while a pooled connection is i
 - `Proxy`: an explicit `func(*http.Request) (*url.URL, error)` proxy override for the transport.
 - `DefaultBatchSize` (default 64): a connection-level default that fills a request's `batchSize` when it is left
 unset.
+- `BulkResults` (default false): a connection-level default for `bulkResults` applied to every request unless
+overridden per-request. The `DriverRemoteConnection` traversal path defaults to `true` regardless of this setting.
 
 See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[dev list discussion on standardizing GLV connection options].
 

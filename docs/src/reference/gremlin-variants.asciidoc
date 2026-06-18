@@ -220,8 +220,8 @@ The following options are allowed on a per-request basis in this fashion: `batch
 `evaluationTimeout`.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
-to optimize result transfer. This does not apply to direct `Client.Submit()` calls, where `bulkResults` must be
-set explicitly if desired.
+to optimize result transfer. For direct `Client.Submit()` calls, set the connection-level `BulkResults` option to
+apply a default to every request, or set `bulkResults` per-request to override it.
 
 anchor:go-imports[]
 [[gremlin-go-imports]]
@@ -268,6 +268,7 @@ can be passed to the `NewClient` or `NewDriverRemoteConnection` functions as con
 |ReadTimeout | Idle-read timeout reset on each read of the response body. Set to `0` to disable. |0
 |Compression |The wire compression negotiated with the server (`gremlingo.CompressionNone` or `gremlingo.CompressionDeflate`). |gremlingo.CompressionDeflate
 |DefaultBatchSize |The connection-level default batch size used when a request does not specify one. |64
+|BulkResults |Connection-level default for `bulkResults`, applied to every request unless overridden per-request. The `DriverRemoteConnection` traversal path defaults to `true` regardless of this setting. |false
 |MaxResponseHeaderBytes |Limit on the number of response header bytes the client will read. Maps to `http.Transport.MaxResponseHeaderBytes`. |0 (net/http default)
 |Proxy |Function returning the proxy URL to use for a request. When `nil`, uses `http.ProxyFromEnvironment`. |nil
 |EnableUserAgentOnConnect |Enables sending a user agent to the server during connection requests.

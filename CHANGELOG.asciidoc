@@ -63,6 +63,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 ** Added `MaxResponseHeaderBytes`, exposing `http.Transport.MaxResponseHeaderBytes`.
 ** Added `Proxy` and set `http.Transport.Proxy` to `http.ProxyFromEnvironment` by default, fixing a regression where a custom transport silently dropped environment proxy configuration.
 ** Added `ReadTimeout`, an idle-read timeout reset on each read (via `SetReadDeadline`) that is re-armed across pooled-connection reuse and does not set `http.Client.Timeout`.
+** Added `BulkResults` (default false), a connection-level default for `bulkResults` applied to every request unless overridden per-request, aligning gremlin-go with the other GLVs which already expose a connection-level setting; the `DriverRemoteConnection` traversal path defaults to `true` regardless of this setting.
 * Fixed `ByteBuf` leak in `GraphBinaryMessageSerializerV4` when serialization throws an `IOException`.
 * Changed `Tree` to no longer extend `HashMap`; it is now a final class with a tree-shaped API (`childAt`, `hasChild`, `contains`, `findSubtree`, `getOrCreateChild`, `getNodesAtDepth`, `getLeafNodes`, `nodeCount`) and is no longer a `Map`.
 * Changed `count(local)` on a `Tree` to return the total node count (`Tree.nodeCount()`) instead of the root-entry count.

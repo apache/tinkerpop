@@ -80,6 +80,13 @@ type ClientSettings struct {
 	// Default: 64. Set to 0 to use the default.
 	DefaultBatchSize int
 
+	// BulkResults is the connection-level default for bulkResults. When true, requests
+	// submitted on this connection bulk results unless overridden per-request via
+	// RequestOptionsBuilder.SetBulkResults. The DriverRemoteConnection traversal path
+	// defaults to true regardless of this setting.
+	// Default: false.
+	BulkResults bool
+
 	// MaxResponseHeaderBytes limits the number of response header bytes the client will
 	// read. Maps to http.Transport.MaxResponseHeaderBytes.
 	// Default: 0 (use net/http's default).
@@ -110,6 +117,7 @@ type Client struct {
 	logHandler         *logHandler
 	connectionSettings *connectionSettings
 	conn               *connection
+	bulkResults        bool     // connection-level default for bulkResults (default false)
 	transactions       sync.Map // tracks open transactions for cascade rollback on close
 }
 
@@ -172,6 +180,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		logHandler:         logHandler,
 		connectionSettings: connSettings,
 		conn:               conn,
+		bulkResults:        settings.BulkResults,
 	}
 
 	return client, nil
@@ -216,6 +225,14 @@ func (client *Client) untrackTransaction(tx *Transaction) {
 // SubmitWithOptions submits a Gremlin script to the server with specified RequestOptions and returns a ResultSet.
 func (client *Client) SubmitWithOptions(traversalString string, requestOptions RequestOptions) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
+	// Apply the connection-level bulkResults default when the request did not set it
+	// per-request. The script path only forces bulking when the connection-level
+	// setting is true; a false setting leaves the request untouched (matching the
+	// other GLVs, whose connection-level bulkResults defaults to false).
+	if requestOptions.bulkResults == nil && client.bulkResults {
+		bulk := true
+		requestOptions.bulkResults = &bulk
+	}
 	request := MakeStringRequest(traversalString, client.traversalSource, requestOptions)
 	rs, err := client.conn.submit(&request)
 	return rs, err
@@ -253,7 +270,9 @@ func (client *Client) submitGremlinLangWithBuilder(gremlinLang *GremlinLang, bui
 	}
 
 	// default bulkResults to true when using DRC through request options
-	// consistent with Java RequestOptions.getRequestOptions and Python extract_request_options
+	// consistent with Java RequestOptions.getRequestOptions and Python extract_request_options.
+	// The traversal path always defaults to true when unset, regardless of the
+	// connection-level BulkResults setting (matching the other GLVs).
 	if builder.bulkResults == nil {
 		builder.SetBulkResults(true)
 	}

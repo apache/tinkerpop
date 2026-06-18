@@ -79,6 +79,13 @@ type DriverRemoteConnectionSettings struct {
 	// Default: 64. Set to 0 to use the default.
 	DefaultBatchSize int
 
+	// BulkResults is the connection-level default for bulkResults. When true, requests
+	// submitted on this connection bulk results unless overridden per-request via
+	// RequestOptionsBuilder.SetBulkResults. The DriverRemoteConnection traversal path
+	// defaults to true regardless of this setting.
+	// Default: false.
+	BulkResults bool
+
 	// MaxResponseHeaderBytes limits the number of response header bytes the client will
 	// read. Maps to http.Transport.MaxResponseHeaderBytes.
 	// Default: 0 (use net/http's default).
@@ -170,6 +177,7 @@ func NewDriverRemoteConnection(
 		logHandler:         logHandler,
 		connectionSettings: connSettings,
 		conn:               conn,
+		bulkResults:        settings.BulkResults,
 	}
 
 	return &DriverRemoteConnection{client: client, isClosed: false, settings: settings}, nil
