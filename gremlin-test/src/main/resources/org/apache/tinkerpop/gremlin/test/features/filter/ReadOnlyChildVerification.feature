@@ -16,7 +16,7 @@
 # under the License.
 
 @StepClassFilter @StepHas
-Feature: Child Traversal Verification - mutating steps blocked in filter/lookup contexts
+Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup contexts
 
   # ===== FILTER CONTEXT: has() with mutating child traversals =====
   # All error scenarios use addV()/drop() which ComputerVerificationStrategy also rejects on OLAP

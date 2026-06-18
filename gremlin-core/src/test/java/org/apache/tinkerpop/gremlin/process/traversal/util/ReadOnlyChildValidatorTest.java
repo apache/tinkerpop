@@ -30,7 +30,7 @@ import static org.junit.Assert.assertThrows;
 /**
  * Tests for construction-time child traversal validation.
  */
-public class ChildTraversalValidatorTest {
+public class ReadOnlyChildValidatorTest {
 
     private final GraphTraversalSource g = EmptyGraph.instance().traversal();
 

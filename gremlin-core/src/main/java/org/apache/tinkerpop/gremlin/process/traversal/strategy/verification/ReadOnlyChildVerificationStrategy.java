@@ -24,20 +24,20 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.AcceptsChildPredicateTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.ChildTraversalValidator;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ReadOnlyChildValidator;
 
 /**
  * Validates that child traversals in filter, lookup, and mutation steps do not contain mutating steps.
  * Serves as a safety net for programmatic traversal construction that bypasses the DSL's
  * construction-time validation.
  */
-public final class ChildTraversalVerificationStrategy
+public final class ReadOnlyChildVerificationStrategy
         extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy>
         implements TraversalStrategy.VerificationStrategy {
 
-    private static final ChildTraversalVerificationStrategy INSTANCE = new ChildTraversalVerificationStrategy();
+    private static final ReadOnlyChildVerificationStrategy INSTANCE = new ReadOnlyChildVerificationStrategy();
 
-    private ChildTraversalVerificationStrategy() {
+    private ReadOnlyChildVerificationStrategy() {
     }
 
     @Override
@@ -46,7 +46,7 @@ public final class ChildTraversalVerificationStrategy
             if (step instanceof AcceptsChildPredicateTraversal && step instanceof TraversalParent) {
                 for (final Traversal.Admin<?, ?> child : ((TraversalParent) step).getLocalChildren()) {
                     try {
-                        ChildTraversalValidator.validate(child);
+                        ReadOnlyChildValidator.validate(child);
                     } catch (final IllegalArgumentException e) {
                         throw new VerificationException(e.getMessage(), traversal);
                     }
@@ -55,7 +55,7 @@ public final class ChildTraversalVerificationStrategy
         }
     }
 
-    public static ChildTraversalVerificationStrategy instance() {
+    public static ReadOnlyChildVerificationStrategy instance() {
         return INSTANCE;
     }
 }

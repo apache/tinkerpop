@@ -31,9 +31,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
 /**
- * Tests for the ChildTraversalVerificationStrategy (strategy-time layer).
+ * Tests for the ReadOnlyChildVerificationStrategy (strategy-time layer).
  */
-public class ChildTraversalVerificationStrategyTest {
+public class ReadOnlyChildVerificationStrategyTest {
 
     private final GraphTraversalSource g = EmptyGraph.instance().traversal();
 
@@ -42,14 +42,14 @@ public class ChildTraversalVerificationStrategyTest {
         // The strategy should be present in the default Graph strategy set (not EmptyGraph which has none)
         assertTrue(TraversalStrategies.GlobalCache
                 .getStrategies(Graph.class)
-                .getStrategy(ChildTraversalVerificationStrategy.class).isPresent());
+                .getStrategy(ReadOnlyChildVerificationStrategy.class).isPresent());
     }
 
     @Test
     public void shouldBeRemovableViaWithoutStrategies() {
         // Users should be able to remove the strategy if needed
-        final GraphTraversalSource gNoVerify = g.withoutStrategies(ChildTraversalVerificationStrategy.class);
-        assertFalse(gNoVerify.getStrategies().getStrategy(ChildTraversalVerificationStrategy.class).isPresent());
+        final GraphTraversalSource gNoVerify = g.withoutStrategies(ReadOnlyChildVerificationStrategy.class);
+        assertFalse(gNoVerify.getStrategies().getStrategy(ReadOnlyChildVerificationStrategy.class).isPresent());
     }
 
     @Test

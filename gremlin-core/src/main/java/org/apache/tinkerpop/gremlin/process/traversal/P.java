@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.ChildTraversalValidator;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ReadOnlyChildValidator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
@@ -165,7 +165,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     private void applyValue(final V value) {
         if (value instanceof GraphTraversal) {
             final Traversal.Admin<?, ?> admin = ((Traversal<?, ?>) value).asAdmin();
-            ChildTraversalValidator.validate(admin);
+            ReadOnlyChildValidator.validate(admin);
             this.childTraversals = Collections.singletonList(admin);
         } else if (value == null) {
             this.literals = Collections.singleton(null);
@@ -182,7 +182,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
                 final List<Traversal.Admin<?, ?>> admins = new ArrayList<>(coll.size());
                 for (final Object t : coll) {
                     final Traversal.Admin<?, ?> admin = ((Traversal<?, ?>) t).asAdmin();
-                    ChildTraversalValidator.validate(admin);
+                    ReadOnlyChildValidator.validate(admin);
                     admins.add(admin);
                 }
                 this.childTraversals = admins;

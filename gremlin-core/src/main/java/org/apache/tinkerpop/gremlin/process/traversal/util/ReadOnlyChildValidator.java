@@ -27,9 +27,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
  * ({@code V(traversal)}, {@code E(traversal)}), and mutation steps ({@code property(traversal)})
  * must be read-only - their purpose is to compute values, not produce side effects.
  */
-public final class ChildTraversalValidator {
+public final class ReadOnlyChildValidator {
 
-    private ChildTraversalValidator() {
+    private ReadOnlyChildValidator() {
     }
 
     /**

@@ -43,7 +43,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.ChildTraversalValidator;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ReadOnlyChildValidator;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -559,7 +559,7 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public GraphTraversal<Vertex, Vertex> V(final Traversal<?, ?> traversal) {
         if (null == traversal) return V(new Object[]{ null });
-        ChildTraversalValidator.validate(traversal.asAdmin());
+        ReadOnlyChildValidator.validate(traversal.asAdmin());
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.V, traversal);
         final GraphTraversal.Admin<Vertex, Vertex> traversalAdmin = new DefaultGraphTraversal<>(clone);
@@ -598,7 +598,7 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public GraphTraversal<Edge, Edge> E(final Traversal<?, ?> traversal) {
         if (null == traversal) return E(new Object[]{ null });
-        ChildTraversalValidator.validate(traversal.asAdmin());
+        ReadOnlyChildValidator.validate(traversal.asAdmin());
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.E, traversal);
         final GraphTraversal.Admin<Edge, Edge> traversalAdmin = new DefaultGraphTraversal<>(clone);

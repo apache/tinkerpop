@@ -426,7 +426,7 @@ Child traversals take only the first result (consistent with `by(traversal)` sem
 use `fold()` to collect multiple values into a list.
 
 All child traversals must be read-only. Mutating steps (`addV`, `addE`, `drop`, `property`) inside child traversals
-are rejected at construction time with `IllegalArgumentException`. A `ChildTraversalVerificationStrategy` provides
+are rejected at construction time with `IllegalArgumentException`. A `ReadOnlyChildVerificationStrategy` provides
 additional safety at strategy time.
 
 ==== Removed `uuid` Dependency in gremlin-javascript
