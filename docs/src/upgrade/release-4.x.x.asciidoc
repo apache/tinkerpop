@@ -32,6 +32,50 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Standardizing Go Connection Options
+
+TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In `gremlin-go`, several
+`DriverRemoteConnectionSettings`/`ClientSettings` options introduced for the HTTP driver in 4.0.0-beta.2 have been
+renamed for consistency, the authentication helpers have moved into a dedicated `auth` sub-package, and a number of
+new options have been added. The notes below describe the Go changes. See <<glv-driver-changes, GLV Driver Changes>>
+for the equivalent changes in the other drivers.
+
+Renames (breaking). The following settings fields have been renamed. Because they are struct fields, they cannot be
+aliased, so existing code must be updated to the new names:
+
+- `MaximumConcurrentConnections` is now `MaxConnections` (default 128).
+- `IdleConnectionTimeout` is now `IdleTimeout` (default 180s).
+- `KeepAliveInterval` is now `KeepAliveTime` (default 30s).
+- `ConnectionTimeout` is now `ConnectTimeout` (default 5s).
+- `TlsConfig` (`*tls.Config`) is now `Ssl`.
+- `RequestInterceptors` is now `Interceptors`.
+- `EnableCompression` is now `Compression`.
+- The `BasicAuth`, `SigV4Auth`, and `SigV4AuthWithCredentials` functions have moved out of package `gremlingo` into a
+new `auth` sub-package (`github.com/apache/tinkerpop/gremlin-go/v4/driver/auth`) as `auth.Basic`, `auth.SigV4`, and
+`auth.SigV4WithCredentials`. The flat `gremlingo` functions are retained as deprecated delegators (marked with
+idiomatic Go `// Deprecated:` doc comments) so existing code keeps compiling; new code should use the `auth`
+sub-package.
+
+Behavior changes. These change runtime behavior on upgrade, even if you do not change your configuration:
+
+- `Compression` is now a typed `Compression` const (`gremlingo.CompressionNone`/`gremlingo.CompressionDeflate`)
+defaulting to `CompressionDeflate` (compression on by default), so the driver sends `Accept-Encoding: deflate` by
+default. Set `gremlingo.CompressionNone` to disable it. The manual per-chunk deflate decode path is retained.
+- `http.Transport.Proxy` now defaults to `http.ProxyFromEnvironment`, so the standard `HTTP_PROXY`/`HTTPS_PROXY`/
+`NO_PROXY` environment variables are honored. Previously the custom transport left `Proxy` unset, silently dropping
+any environment proxy configuration.
+
+New options:
+
+- `ReadTimeout` (default 0, disabled): a per-read idle timeout reset on each read of the response body and re-armed
+across pooled-connection reuse, so it never fires while a pooled connection is idle between requests.
+- `MaxResponseHeaderBytes`: exposes `http.Transport.MaxResponseHeaderBytes` (native bytes).
+- `Proxy`: an explicit `func(*http.Request) (*url.URL, error)` proxy override for the transport.
+- `DefaultBatchSize` (default 64): a connection-level default that fills a request's `batchSize` when it is left
+unset.
+
+See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[dev list discussion on standardizing GLV connection options].
+
 ==== Standardizing Python Connection Options
 
 TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In `gremlin-python`, several

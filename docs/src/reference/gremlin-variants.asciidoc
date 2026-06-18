@@ -189,17 +189,17 @@ headers, or request signing. Plain text and SigV4 authentication are provided as
 // Plain text authentication
 remote, err := gremlingo.NewDriverRemoteConnection("https://localhost:8182/gremlin",
   func(settings *gremlingo.DriverRemoteConnectionSettings) {
-    settings.TlsConfig = &tls.Config{InsecureSkipVerify: true}
-    settings.RequestInterceptors = []gremlingo.RequestInterceptor{
-      gremlingo.BasicAuth("username", "password"),
+    settings.Ssl = &tls.Config{InsecureSkipVerify: true}
+    settings.Interceptors = []gremlingo.RequestInterceptor{
+      auth.Basic("username", "password"),
     }
   })
 
 // SigV4 authentication
 remote, err := gremlingo.NewDriverRemoteConnection("https://localhost:8182/gremlin",
   func(settings *gremlingo.DriverRemoteConnectionSettings) {
-    settings.RequestInterceptors = []gremlingo.RequestInterceptor{
-      gremlingo.SigV4Auth("service-region", "service-name"),
+    settings.Interceptors = []gremlingo.RequestInterceptor{
+      auth.SigV4("service-region", "service-name"),
     }
   })
 ----
@@ -259,19 +259,23 @@ can be passed to the `NewClient` or `NewDriverRemoteConnection` functions as con
 |LogVerbosity |Log verbosity.|gremlingo.INFO
 |Logger |Instance of logger. |log
 |Language |Language used for logging messages. |language.English
-|TlsConfig |TLS configuration. |empty
-|ConnectionTimeout | Timeout for establishing connection. |15 seconds
-|MaximumConcurrentConnections | Maximum number of concurrent TCP connections to the server. |128
+|Ssl |TLS configuration. |empty
+|ConnectTimeout | Timeout for establishing the connection (TCP connect plus TLS handshake). |5 seconds
+|MaxConnections | Maximum number of concurrent TCP connections to the server. |128
 |MaxIdleConnections | Maximum number of idle (keep-alive) connections in the pool. |8
-|IdleConnectionTimeout | How long idle connections remain in the pool before being closed. |180 seconds
-|KeepAliveInterval | TCP keep-alive probe interval. |30 seconds
-|EnableCompression |Flag to enable compression. |false
+|IdleTimeout | How long idle connections remain in the pool before being closed. |180 seconds
+|KeepAliveTime | Idle time before TCP keep-alive probes begin. |30 seconds
+|ReadTimeout | Idle-read timeout reset on each read of the response body. Set to `0` to disable. |0
+|Compression |The wire compression negotiated with the server (`gremlingo.CompressionNone` or `gremlingo.CompressionDeflate`). |gremlingo.CompressionDeflate
+|DefaultBatchSize |The connection-level default batch size used when a request does not specify one. |64
+|MaxResponseHeaderBytes |Limit on the number of response header bytes the client will read. Maps to `http.Transport.MaxResponseHeaderBytes`. |0 (net/http default)
+|Proxy |Function returning the proxy URL to use for a request. When `nil`, uses `http.ProxyFromEnvironment`. |nil
 |EnableUserAgentOnConnect |Enables sending a user agent to the server during connection requests.
 More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
-|RequestInterceptors |Functions that modify HTTP requests before sending. Used for authentication and custom headers. |empty
+|Interceptors |Functions that modify HTTP requests before sending. Used for authentication and custom headers. |empty
 |PDTRegistry |A `*PDTRegistry` for hydrating and dehydrating <<gremlin-go-pdt,Provider Defined Types>>. |`nil`
-|Auth |A single RequestInterceptor for authentication (e.g. `BasicAuth`). Always appended to the end of the interceptor list so it runs last. |nil
+|Auth |A single RequestInterceptor for authentication (e.g. `auth.Basic`). Always appended to the end of the interceptor list so it runs last. |nil
 |=========================================================
 
 [[gremlin-go-interceptors]]
@@ -284,17 +288,17 @@ servers without having to use interceptors. This is intended for cases where the
 
 A `RequestInterceptor` is a function with the signature `func(*HttpRequest) error` that mutates the `HttpRequest`
 in place. A slice of these is maintained and will be run sequentially for each request. When creating a
-`DriverRemoteConnection` or `Client`, the `RequestInterceptors` field on the settings struct accepts an ordered
+`DriverRemoteConnection` or `Client`, the `Interceptors` field on the settings struct accepts an ordered
 slice of interceptors. Order matters, so if one interceptor depends on another's output, ensure they are added in
-the correct order. Note that authentication (e.g. `BasicAuth`, `SigV4Auth`) is also implemented using interceptors.
+the correct order. Note that authentication (e.g. `auth.Basic`, `auth.SigV4`) is also implemented using interceptors.
 The `auth` convenience on connection settings appends the auth interceptor to the end of the list so it runs last.
 
 [source,go]
 ----
 remote, err := gremlingo.NewDriverRemoteConnection("http://localhost:8182/gremlin",
   func(settings *gremlingo.DriverRemoteConnectionSettings) {
-    settings.RequestInterceptors = []gremlingo.RequestInterceptor{
-      gremlingo.BasicAuth("username", "password"),
+    settings.Interceptors = []gremlingo.RequestInterceptor{
+      auth.Basic("username", "password"),
       func(req *gremlingo.HttpRequest) error {
         req.Headers.Set("X-Custom-Header", "value")
         return nil

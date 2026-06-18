@@ -31,7 +31,7 @@ func newTxRemoteConnection(t *testing.T) *DriverRemoteConnection {
 	url := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
 	remote, err := NewDriverRemoteConnection(url,
 		func(settings *DriverRemoteConnectionSettings) {
-			settings.TlsConfig = &tls.Config{}
+			settings.Ssl = &tls.Config{}
 			settings.TraversalSource = "gtx"
 		})
 	assert.Nil(t, err)
@@ -42,7 +42,7 @@ func newTxRemoteConnection(t *testing.T) *DriverRemoteConnection {
 func newTxClient(t *testing.T) *Client {
 	url := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
 	client, err := NewClient(url, func(settings *ClientSettings) {
-		settings.TlsConfig = &tls.Config{}
+		settings.Ssl = &tls.Config{}
 		settings.TraversalSource = "gtx"
 	})
 	assert.Nil(t, err)
@@ -356,7 +356,7 @@ func TestTransactionWithTraversalAPI(t *testing.T) {
 func TestTransactionRejectBeginOnNonTransactionalGraph(t *testing.T) {
 	url := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
 	client, err := NewClient(url, func(settings *ClientSettings) {
-		settings.TlsConfig = &tls.Config{}
+		settings.Ssl = &tls.Config{}
 		settings.TraversalSource = "gclassic"
 	})
 	assert.Nil(t, err)
@@ -371,7 +371,7 @@ func TestTransactionRejectBeginOnNonTransactionalGraph(t *testing.T) {
 func TestTransactionCleanUpOnBeginFailure(t *testing.T) {
 	url := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
 	client, err := NewClient(url, func(settings *ClientSettings) {
-		settings.TlsConfig = &tls.Config{}
+		settings.Ssl = &tls.Config{}
 		settings.TraversalSource = "gclassic"
 	})
 	assert.Nil(t, err)

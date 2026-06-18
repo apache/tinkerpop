@@ -21,6 +21,8 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"net/http"
+	"net/url"
 	"reflect"
 	"sync"
 	"time"
@@ -28,47 +30,74 @@ import (
 	"golang.org/x/text/language"
 )
 
-const connectionTimeoutDefault = 5 * time.Second
-
 // ClientSettings is used to modify a Client's settings on initialization.
 type ClientSettings struct {
-	TraversalSource   string
-	LogVerbosity      LogVerbosity
-	Logger            Logger
-	Language          language.Tag
-	TlsConfig         *tls.Config
-	ConnectionTimeout time.Duration
-	EnableCompression bool
+	TraversalSource string
+	LogVerbosity    LogVerbosity
+	Logger          Logger
+	Language        language.Tag
 
-	// MaximumConcurrentConnections is the maximum number of concurrent TCP connections
+	// Ssl is the TLS configuration used for secure (wss/https) connections.
+	Ssl *tls.Config
+
+	// ConnectTimeout is the TCP/transport-establishment timeout (TCP connect plus
+	// TLS handshake where applicable), not an HTTP request timeout.
+	// Default: 5 seconds. Set to 0 to use the default.
+	ConnectTimeout time.Duration
+
+	// ReadTimeout is an idle-read timeout: it is reset on each read of the response
+	// body rather than bounding the whole request. Streaming-safe. The deadline is
+	// re-armed across pooled-connection reuse.
+	// Default: 0 (disabled).
+	ReadTimeout time.Duration
+
+	// Compression selects the content-encoding negotiated with the server.
+	// Default: CompressionDeflate (on). Set to CompressionNone to disable compression.
+	Compression Compression
+
+	// MaxConnections is the maximum number of concurrent TCP connections
 	// to the Gremlin server. This limits how many requests can be in-flight simultaneously.
 	// Default: 128. Set to 0 to use the default.
-	MaximumConcurrentConnections int
+	MaxConnections int
 
 	// MaxIdleConnections is the maximum number of idle (keep-alive) connections to retain
 	// in the connection pool. Idle connections are reused for subsequent requests.
 	// Default: 8. Set to 0 to use the default.
 	MaxIdleConnections int
 
-	// IdleConnectionTimeout is how long an idle connection remains in the pool before
+	// IdleTimeout is how long an idle connection remains in the pool before
 	// being closed. Set this to match your server's idle timeout if needed.
 	// Default: 180 seconds (3 minutes). Set to 0 to use the default.
-	IdleConnectionTimeout time.Duration
+	IdleTimeout time.Duration
 
-	// KeepAliveInterval is the interval between TCP keep-alive probes on idle connections.
+	// KeepAliveTime is the TCP keep-alive idle-before-probe interval on connections.
 	// This helps detect dead connections and keeps connections alive through firewalls.
 	// Default: 30 seconds. Set to 0 to use the default.
-	KeepAliveInterval time.Duration
+	KeepAliveTime time.Duration
+
+	// DefaultBatchSize is the connection-level default that fills a request's batchSize
+	// when it is not set per-request.
+	// Default: 64. Set to 0 to use the default.
+	DefaultBatchSize int
+
+	// MaxResponseHeaderBytes limits the number of response header bytes the client will
+	// read. Maps to http.Transport.MaxResponseHeaderBytes.
+	// Default: 0 (use net/http's default).
+	MaxResponseHeaderBytes int64
+
+	// Proxy returns the proxy URL to use for a given request. When nil, the client
+	// uses http.ProxyFromEnvironment (HTTP_PROXY/HTTPS_PROXY/NO_PROXY).
+	Proxy func(*http.Request) (*url.URL, error)
 
 	EnableUserAgentOnConnect bool
 
 	// PDTRegistry enables automatic hydration of ProviderDefinedType values during deserialization.
 	PDTRegistry *PDTRegistry
 
-	// RequestInterceptors are functions that modify HTTP requests before sending.
-	RequestInterceptors []RequestInterceptor
+	// Interceptors are functions that modify HTTP requests before sending.
+	Interceptors []RequestInterceptor
 
-	// Auth is a RequestInterceptor for authentication (e.g. BasicAuth, SigV4Auth).
+	// Auth is a RequestInterceptor for authentication (e.g. auth.Basic, auth.SigV4).
 	// As a convenience, this is always appended to the end of the interceptor list
 	// so it runs last, after any user interceptors have modified the request.
 	Auth RequestInterceptor
@@ -92,28 +121,33 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		LogVerbosity:             Info,
 		Logger:                   &defaultLogger{},
 		Language:                 language.English,
-		TlsConfig:                &tls.Config{},
-		ConnectionTimeout:        connectionTimeoutDefault,
-		EnableCompression:        false,
+		Ssl:                      &tls.Config{},
+		ConnectTimeout:           defaultConnectTimeout,
+		Compression:              CompressionDeflate,
 		EnableUserAgentOnConnect: true,
 
-		MaximumConcurrentConnections: 0, // Use default (128)
-		MaxIdleConnections:           0, // Use default (8)
-		IdleConnectionTimeout:        0, // Use default (180s)
-		KeepAliveInterval:            0, // Use default (30s)
+		MaxConnections:     0, // Use default (128)
+		MaxIdleConnections: 0, // Use default (8)
+		IdleTimeout:        0, // Use default (180s)
+		KeepAliveTime:      0, // Use default (30s)
+		DefaultBatchSize:   0, // Use default (64)
 	}
 	for _, configuration := range configurations {
 		configuration(settings)
 	}
 
 	connSettings := &connectionSettings{
-		tlsConfig:                settings.TlsConfig,
-		connectionTimeout:        settings.ConnectionTimeout,
-		maxConnsPerHost:          settings.MaximumConcurrentConnections,
+		ssl:                      settings.Ssl,
+		connectTimeout:           settings.ConnectTimeout,
+		readTimeout:              settings.ReadTimeout,
+		maxConnsPerHost:          settings.MaxConnections,
 		maxIdleConnsPerHost:      settings.MaxIdleConnections,
-		idleConnTimeout:          settings.IdleConnectionTimeout,
-		keepAliveInterval:        settings.KeepAliveInterval,
-		enableCompression:        settings.EnableCompression,
+		idleTimeout:              settings.IdleTimeout,
+		keepAliveTime:            settings.KeepAliveTime,
+		compression:              settings.Compression,
+		maxResponseHeaderBytes:   settings.MaxResponseHeaderBytes,
+		defaultBatchSize:         settings.DefaultBatchSize,
+		proxy:                    settings.Proxy,
 		enableUserAgentOnConnect: settings.EnableUserAgentOnConnect,
 		pdtRegistry:              settings.PDTRegistry,
 	}
@@ -123,7 +157,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 	conn := newConnection(logHandler, url, connSettings)
 
 	// Add user-provided interceptors
-	for _, interceptor := range settings.RequestInterceptors {
+	for _, interceptor := range settings.Interceptors {
 		conn.AddInterceptor(interceptor)
 	}
 

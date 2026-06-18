@@ -31,7 +31,17 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 )
 
-// BasicAuth returns a RequestInterceptor that adds Basic authentication header.
+// This file retains the flat authentication functions that previously lived in
+// package gremlingo. They are kept as deprecated wrappers so existing code keeps
+// compiling, and they produce interceptors equivalent to the constructors in the
+// auth sub-package.
+//
+// Note: these functions cannot literally call auth.Basic / auth.SigV4 because the
+// auth sub-package imports this package (for RequestInterceptor, HttpRequest, etc.),
+// so a back-import would create an import cycle. They are therefore re-implemented
+// inline to mirror the auth sub-package behavior exactly.
+
+// Deprecated: As of 4.0.0, BasicAuth is replaced by auth.Basic in the auth sub-package.
 func BasicAuth(username, password string) RequestInterceptor {
 	encoded := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
 	return func(req *HttpRequest) error {
@@ -40,18 +50,12 @@ func BasicAuth(username, password string) RequestInterceptor {
 	}
 }
 
-// SigV4Auth returns a RequestInterceptor that signs requests using AWS SigV4.
-// It uses the default AWS credential chain (env vars, shared config, IAM role, etc.)
+// Deprecated: As of 4.0.0, SigV4Auth is replaced by auth.SigV4 in the auth sub-package.
 func SigV4Auth(region, service string) RequestInterceptor {
 	return SigV4AuthWithCredentials(region, service, nil)
 }
 
-// SigV4AuthWithCredentials returns a RequestInterceptor that signs requests using AWS SigV4
-// with the provided credentials provider. If provider is nil, uses default credential chain.
-// If the request body has not been serialized yet (*RequestMessage), it is automatically
-// serialized to JSON before signing via SerializeBody().
-//
-// Caches the signer and credentials provider for efficiency.
+// Deprecated: As of 4.0.0, SigV4AuthWithCredentials is replaced by auth.SigV4WithCredentials in the auth sub-package.
 func SigV4AuthWithCredentials(region, service string, credentialsProvider aws.CredentialsProvider) RequestInterceptor {
 	// Create signer once - it's stateless and safe to reuse
 	signer := v4.NewSigner()

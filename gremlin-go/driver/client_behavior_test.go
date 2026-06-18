@@ -144,7 +144,7 @@ func TestShouldHandleMalformedResponse(t *testing.T) {
 func TestShouldHandleEmptyResponseBody(t *testing.T) {
 	url := socketServerURL()
 	client, err := NewClient(url, func(settings *ClientSettings) {
-		settings.ConnectionTimeout = 5 * time.Second
+		settings.ConnectTimeout = 5 * time.Second
 	})
 	if err != nil {
 		t.Skip("Socket server not available")
