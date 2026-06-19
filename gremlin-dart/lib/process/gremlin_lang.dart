@@ -109,6 +109,8 @@ class GremlinLang {
       return "'$escaped'";
     }
 
+    if (arg is GremlinRawLiteral) return arg.text;
+
     if (arg is P || arg is TextP) return _predicateAsString(arg);
 
     if (arg is EnumValue) return arg.toString();

@@ -206,7 +206,7 @@ class FeatureSteps {
 
   Future<void> _iterateToList() async {
     try {
-      world.result = await _submit(world.pendingTraversal ?? '');
+      world.result = await _executePendingTraversalToList();
       world.resultIsNext = false;
       world.errorMessage = null;
     } catch (error) {
@@ -218,15 +218,13 @@ class FeatureSteps {
 
   Future<void> _iterateNext() async {
     try {
-      final list = await _submit(world.pendingTraversal ?? '');
-      if (list.isEmpty) {
+      final value = await _executePendingTraversalNext();
+      if (value == null) {
         world.result = <dynamic>[];
-      } else if (list.first is Iterable &&
-          list.first is! String &&
-          list.first is! Map) {
-        world.result = List<dynamic>.from(list.first as Iterable);
+      } else if (value is Iterable && value is! String && value is! Map) {
+        world.result = List<dynamic>.from(value);
       } else {
-        world.result = <dynamic>[list.first];
+        world.result = <dynamic>[value];
       }
       world.resultIsNext = true;
       world.errorMessage = null;
@@ -245,6 +243,31 @@ class FeatureSteps {
       world.sideEffects,
     );
   }
+
+  GraphTraversalSource _sourceWithSideEffects() {
+    var source = world.g!;
+    for (final entry in world.sideEffects.entries) {
+      source = source.withSideEffect([entry.key, entry.value]);
+    }
+    return source;
+  }
+
+  GraphTraversal _buildPendingTraversal() {
+    final parsed = GremlinAntlrToDart.parse(
+      _sourceWithSideEffects(),
+      (world.pendingTraversal ?? '').trim(),
+      variables: world.params,
+    );
+    if (parsed is! GraphTraversal) {
+      throw StateError('Expected a GraphTraversal but parsed ${parsed.runtimeType}');
+    }
+    return parsed;
+  }
+
+  Future<List<dynamic>> _executePendingTraversalToList() =>
+      _buildPendingTraversal().toList();
+
+  Future<dynamic> _executePendingTraversalNext() => _buildPendingTraversal().next();
 
   void _assertNoError() {
     if (world.errorMessage != null) {

@@ -227,6 +227,17 @@ class GDecimal {
   String toString() => 'GDecimal($unscaled e-$scale)';
 }
 
+/// Preserves a gremlin-lang literal exactly as parsed when there is no native
+/// Dart representation or when fidelity is more important than normalization.
+class GremlinRawLiteral {
+  final String text;
+
+  const GremlinRawLiteral(this.text);
+
+  @override
+  String toString() => text;
+}
+
 // ---------------------------------------------------------------------------
 // Enum singletons (mirrors JS driver exports)
 // ---------------------------------------------------------------------------

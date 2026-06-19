@@ -24,6 +24,7 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
+  antlr4: ^4.13.2
   crypto: ^3.0.0
   dio: ^5.4.0
   uuid: ^4.4.0

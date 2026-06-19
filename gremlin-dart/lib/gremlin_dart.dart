@@ -27,6 +27,7 @@ export 'process/gremlin_lang.dart';
 export 'process/graph_traversal.dart';
 export 'process/anonymous_traversal.dart'
     show traversal, Anon, AnonymousTraversalSource;
+export 'language/grammar/gremlin_antlr_to_dart.dart';
 
 // Driver
 export 'driver/auth.dart';
