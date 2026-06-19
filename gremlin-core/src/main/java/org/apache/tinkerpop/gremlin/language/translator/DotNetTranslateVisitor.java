@@ -57,6 +57,19 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         this(graphTraversalSourceName, false);
     }
 
+    /**
+     * Creates a visitor that translates gremlin-language into a C# source representation.
+     * <p>
+     * The {@code parameterize} flag is unique to the .NET translator. When {@code true}, variable arguments are
+     * emitted as strongly-typed {@code GValue<T>} instances (e.g. {@code new GValue<string>("x", (string) x)})
+     * rather than bare parameters. This is required because .NET is the only language variant that is both
+     * statically typed and exposes strongly-typed {@code GValue} overloads, so whether an argument is a value or a
+     * {@code GValue} is a compile-time overload choice that must be resolved during translation. All other variants
+     * parameterize at runtime and therefore do not need this distinction. See {@link Translator#DOTNET_PARAMETERIZE}.
+     *
+     * @param graphTraversalSourceName the name of the {@code GraphTraversalSource} (typically {@code "g"})
+     * @param parameterize when {@code true}, wrap variable arguments in typed {@code GValue<T>} instances
+     */
     public DotNetTranslateVisitor(final String graphTraversalSourceName, final boolean parameterize) {
         super(graphTraversalSourceName);
         this.parameterize = parameterize;
