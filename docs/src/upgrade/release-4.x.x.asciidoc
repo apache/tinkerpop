@@ -1284,7 +1284,7 @@ no longer supported in `gremlin-console`. If sending a traversal, users should i
 While a `RemoteTraversalSource` is the preferred method of executing remote traversals from `gremlin-console`, it
 remains possible to send scripts directly using a `gremlin-driver` `Client`.
 
-[gremlin-groovy]
+[source,groovy]
 ----
 cluster = Cluster.open('conf/remote.yaml')
 client = cluster.connect()
