@@ -225,5 +225,6 @@ class _TransactionRemoteConnection
   Future<RemoteTraversal> submit(GremlinLang gremlinLang) =>
       _transaction.submit(gremlinLang);
 
+  @override
   Transaction tx([String? traversalSource]) => _transaction;
 }

@@ -19,6 +19,8 @@ name: gremlin_dart
 description: Apache TinkerPop Gremlin driver for Dart
 version: 0.1.0
 homepage: https://tinkerpop.apache.org
+repository: https://github.com/apache/tinkerpop
+issue_tracker: https://issues.apache.org/jira/projects/TINKERPOP
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

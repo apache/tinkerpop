@@ -29,10 +29,9 @@ class DriverRemoteConnection extends RemoteConnection
   final ConnectionOptions options;
   final Client _client;
 
-  DriverRemoteConnection(String url, [ConnectionOptions? options])
+  DriverRemoteConnection(super.url, [ConnectionOptions? options])
       : options = options ?? const ConnectionOptions(),
-        _client = Client(url, options ?? const ConnectionOptions()),
-        super(url);
+        _client = Client(url, options ?? const ConnectionOptions());
 
   DriverRemoteConnection _spawnDedicated([String? traversalSource]) =>
       DriverRemoteConnection(
@@ -85,6 +84,7 @@ class DriverRemoteConnection extends RemoteConnection
         requestOptions: requestOptions,
       );
 
+  @override
   Transaction tx([String? traversalSource]) =>
       Transaction(_spawnDedicated(traversalSource));
 

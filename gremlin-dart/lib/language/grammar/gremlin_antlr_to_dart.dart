@@ -518,7 +518,8 @@ class GremlinAntlrToDart {
 
   EnumValue? _parseEnum(String text) {
     final dot = text.indexOf('.');
-    if (dot == -1) return switch (text) {
+    if (dot == -1) {
+      return switch (text) {
       'asc' => EnumValue('Order', 'asc'),
       'desc' => EnumValue('Order', 'desc'),
       'shuffle' => EnumValue('Order', 'shuffle'),
@@ -535,6 +536,7 @@ class GremlinAntlrToDart {
       'addAll' => EnumValue('Operator', 'addAll'),
       _ => null,
     };
+    }
 
     final type = text.substring(0, dot);
     final member = text.substring(dot + 1);

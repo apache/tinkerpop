@@ -219,7 +219,7 @@ class GDecimal {
 
   static double _pow10(int n) {
     double r = 1.0;
-    for (var i = 0; i < n; i++) r *= 10.0;
+    for (var i = 0; i < n; i++) { r *= 10.0; }
     return r;
   }
 

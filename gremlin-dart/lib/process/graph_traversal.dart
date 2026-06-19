@@ -150,11 +150,7 @@ class GraphTraversalSource {
 // ---------------------------------------------------------------------------
 
 class GraphTraversal extends Traversal {
-  GraphTraversal(
-    Graph? graph,
-    TraversalStrategies? strategies,
-    GremlinLang gl,
-  ) : super(graph, strategies, gl);
+  GraphTraversal(super.graph, super.strategies, super.gl);
 
   GraphTraversal _step(String name, [List<dynamic>? args]) => GraphTraversal(
       graph,
@@ -474,6 +470,7 @@ class GraphTraversal extends Traversal {
   GraphTraversal all_(dynamic traversalOrPredicate) =>
       _step('all', [traversalOrPredicate]);
 
+  // ignore: non_constant_identifier_names
   GraphTraversal none__(dynamic traversalOrPredicate) =>
       _step('none', [traversalOrPredicate]);
 

@@ -46,13 +46,15 @@ class GraphBinaryWriter {
       fields['transactionId'] = message.transactionId;
     }
     if (message.bindings != null) fields['bindings'] = message.bindings;
-    if (message.timeoutMs != null)
+    if (message.timeoutMs != null) {
       fields['evaluationTimeout'] = message.timeoutMs;
+    }
     if (message.materializeProperties != null) {
       fields['materializeProperties'] = message.materializeProperties;
     }
-    if (message.bulkResults != null)
+    if (message.bulkResults != null) {
       fields['bulkResults'] = message.bulkResults;
+    }
     fields.addAll(message.fields);
 
     final writer = _GraphBinaryValueWriter();

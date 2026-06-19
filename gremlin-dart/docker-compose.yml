@@ -16,17 +16,48 @@
 # under the License.
 
 services:
-  gremlin-server:
+
+  gremlin-server-test-dart:
+    container_name: gremlin-server-test-dart
+    image: tinkerpop/gremlin-server-test:${GREMLIN_SERVER}
     build:
-      context: ./docker
-      dockerfile: Dockerfile
-    container_name: gremlin-server-dart
+      context: ../
+      dockerfile: docker/gremlin-test-server/Dockerfile
+      args:
+        - GREMLIN_SERVER=${GREMLIN_SERVER}
     ports:
       - "45940:45940"
-    command: ["conf/gremlin-server-dart.yaml"]
+      - "45941:45941"
+      - "45942:45942"
+      - "4588:4588"
+    volumes:
+      - ${HOME}/.groovy:/root/.groovy
+      - ${HOME}/.m2:/root/.m2
+      - ${ABS_PROJECT_HOME}/gremlin-test/target:/opt/gremlin-test
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- --header='Content-Type: application/json' --post-data='{\"gremlin\":\"g.inject(1)\",\"g\":\"gmodern\"}' http://127.0.0.1:45940/gremlin >/dev/null"]
-      interval: 10s
-      timeout: 5s
-      retries: 15
-      start_period: 20s
+      test: ["CMD-SHELL", "curl -sf -X POST -H 'Content-Type: application/json' -d '{\"gremlin\":\"g.inject(1)\"}' http://localhost:45940"]
+      interval: 30s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
+
+  gremlin-dart-integration-tests:
+    container_name: gremlin-dart-integration-tests
+    image: dart:stable
+    volumes:
+      - .:/dart_app
+      - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/gremlin-test
+      - ../docker/gremlin-test-server:/dart_app/gremlin-test-server
+    environment:
+      - GREMLIN_SERVER_URL=http://gremlin-server-test-dart:45940/gremlin
+    working_dir: /dart_app
+    command: >
+      bash -c "dart pub get
+      && dart test test/unit/
+      && dart test test/feature/ --timeout=120s
+      && echo 'Running examples...'
+      && dart run example/basic.dart
+      && echo 'All examples completed successfully'"
+    depends_on:
+      gremlin-server-test-dart:
+        condition: service_healthy
