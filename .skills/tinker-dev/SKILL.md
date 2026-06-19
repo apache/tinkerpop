@@ -137,9 +137,10 @@ ones that are easy to miss:
 - **Gremlin language tests**: cross-language behavior is tested with Gherkin features under
   `gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/`
   (see `docs/src/dev/developer/for-committers.asciidoc`).
-- **Docs are AsciiDoc** under `docs/src/` — never Markdown in the main docs tree. Add new
-  content to the right book and update its `index.asciidoc`; generate with `bin/process-docs.sh`
-  (Java 11).
+- **Docs are AsciiDoc** under `docs/src/` — never Markdown in the main docs tree. For writing or
+  revising any documentation (voice, per-book style, executable code blocks, AsciiDoc wiring),
+  use the **tinker-doc** skill. The mechanical minimum: add new content to the right book and update
+  its `index.asciidoc`.
 - **Changelog**: for user-visible or API changes, update `CHANGELOG.asciidoc` in the correct
   version section. Do not invent version numbers or release names.
 
