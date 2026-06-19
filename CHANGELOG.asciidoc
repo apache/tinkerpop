@@ -25,6 +25,20 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Standardized `gremlin-javascript` connection options per the TinkerPop 4.x GLV proposal: *(breaking)*
+** Adopted `undici` as a pinned dependency that ships a default dispatcher built from the discrete connection options below.
+** Added `maxConnections` (default 128), which caps concurrent connections per origin where it was previously uncapped. *(breaking)*
+** Added `readTimeout`, a per-read idle (body) timeout in milliseconds applied to the default dispatcher.
+** Added `maxResponseHeaderBytes`, the maximum size of the response headers in bytes applied to the default dispatcher.
+** Added `keepAliveTime` (default 30s/30000ms), the idle time before TCP keep-alive probes begin, applied to the default dispatcher via a `SO_KEEPALIVE` connector; set to `0` to disable.
+** Added `proxy`, which routes requests through an undici `ProxyAgent`.
+** Added `compression`, a `'none'`/`'deflate'` string union defaulting to `'deflate'` (on). *(breaking)*
+** Added `defaultBatchSize` (default 64), a connection-level default that fills a request's `batchSize` when it is left unset.
+** Added a connection-level `bulkResults` default, applied to every request unless overridden per-request.
+** Added `logger`, a logger object or callback (logging is disabled when unset).
+** Removed the dead `agent`, `ca`, `cert`, `pfx`, and `rejectUnauthorized` TLS fields; TLS is now configured via the Node/undici runtime. *(breaking)*
+** Deprecated the standalone `headers` option (now implemented via an interceptor); use interceptors directly.
+* Fixed `gremlin-javascript` `Client.submit()` so that an explicit `bulkResults: false` request option is forwarded to the server instead of being silently dropped.
 * Standardized `gremlin-dotnet` connection options per the TinkerPop 4.x GLV proposal:
 ** Renamed the `Auth.BasicAuth`/`Auth.SigV4Auth` factory methods to `Auth.Basic`/`Auth.Sigv4` (breaking; the old methods have been removed). *(breaking)*
 ** Renamed `MaxConnectionsPerServer` to `MaxConnections`, `IdleConnectionTimeout` to `IdleTimeout`, and `KeepAliveInterval` to `KeepAliveTime` (now wired to a real TCP keep-alive socket option rather than the inert HTTP/2 ping timeout, enabling `SO_KEEPALIVE` and setting the per-socket idle time on Windows, Linux, and macOS, with a no-op fallback to the OS default idle time on other platforms); the old property names have been removed. *(breaking)*

@@ -27,6 +27,7 @@ const Tokens = {
   ARGS_MATERIALIZE_PROPERTIES: 'materializeProperties',
   TIMEOUT_MS: 'timeoutMs',
   BULK_RESULTS: 'bulkResults',
+  BATCH_SIZE: 'batchSize',
   MATERIALIZE_PROPERTIES_TOKENS: 'tokens',
   MATERIALIZE_PROPERTIES_ALL: 'all'
 };
@@ -42,6 +43,7 @@ export class RequestMessage {
   private g?: string;
   private materializeProperties?: string;
   private bulkResults?: boolean;
+  private batchSize?: number;
   private customFields: Map<string, any>;
 
   private constructor(
@@ -52,6 +54,7 @@ export class RequestMessage {
     g: string | undefined,
     materializeProperties: string | undefined,
     bulkResults: boolean | undefined,
+    batchSize: number | undefined,
     customFields: Map<string, any>
   ) {
     if (!gremlin) {
@@ -65,6 +68,7 @@ export class RequestMessage {
     this.g = g;
     this.materializeProperties = materializeProperties;
     this.bulkResults = bulkResults;
+    this.batchSize = batchSize;
     this.customFields = customFields;
   }
 
@@ -94,6 +98,10 @@ export class RequestMessage {
 
   getBulkResults(): boolean | undefined {
     return this.bulkResults;
+  }
+
+  getBatchSize(): number | undefined {
+    return this.batchSize;
   }
 
   getFields(): ReadonlyMap<string, any> {
@@ -129,6 +137,9 @@ export class RequestMessage {
     if (this.bulkResults !== undefined) {
       payload['bulkResults'] = this.bulkResults;
     }
+    if (this.batchSize !== undefined) {
+      payload['batchSize'] = this.batchSize;
+    }
 
     // Flatten custom/provider fields to the top level
     this.customFields.forEach((v, k) => {
@@ -155,6 +166,7 @@ export class Builder {
   public g?: string;
   public materializeProperties?: string;
   public bulkResults?: boolean;
+  public batchSize?: number;
   public additionalFields = new Map<string, any>();
 
   constructor(gremlin: string) {
@@ -230,6 +242,12 @@ export class Builder {
     return this;
   }
 
+  addBatchSize(batchSize: number): Builder {
+    if (batchSize <= 0) throw new Error('batchSize argument must be positive.');
+    this.batchSize = batchSize;
+    return this;
+  }
+
   addField(key: string, value: any): Builder {
     this.additionalFields.set(key, value);
     return this;
@@ -256,6 +274,7 @@ export class Builder {
       this.g,
       this.materializeProperties,
       this.bulkResults,
+      this.batchSize,
       this.additionalFields
     );
   }

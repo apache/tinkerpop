@@ -52,7 +52,6 @@ export function getClient(traversalSource) {
 export function getAuthenticatedClient(traversalSource, interceptors) {
   return new Client(serverAuthUrl, {
     traversalSource,
-    rejectUnauthorized: false,
     interceptors,
   });
 }
@@ -60,7 +59,6 @@ export function getAuthenticatedClient(traversalSource, interceptors) {
 export function getAuthenticatedConnection(traversalSource, interceptors) {
   return new DriverRemoteConnection(serverAuthUrl, {
     traversalSource,
-    rejectUnauthorized: false,
     interceptors,
   });
 }

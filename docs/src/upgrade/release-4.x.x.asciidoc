@@ -32,6 +32,49 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Standardizing JavaScript Connection Options
+
+TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In `gremlin-javascript`, the driver
+now adopts `undici` as a pinned dependency that ships a default dispatcher, several dead options have been removed, the
+standalone `headers` option has been deprecated, and a number of new options have been added. The notes below describe
+the JavaScript changes. See <<glv-driver-changes, GLV Driver Changes>> for the equivalent changes in the other
+drivers.
+
+Renames (deprecated aliases). The following option has been deprecated. It still works but should be migrated:
+
+- `headers` is deprecated. The standalone `headers` option is now implemented via a synthesized interceptor, so custom
+headers continue to work without re-introducing dead configuration. Prefer setting custom headers via an interceptor
+directly, e.g. `interceptors: (req) => { req.headers['X-Custom'] = 'value'; }`. When the `headers` option is set, it is
+applied by an interceptor that runs before the auth interceptor, so SigV4 still signs over those headers.
+
+Behavior changes. These change runtime behavior on upgrade, even if you do not change your configuration:
+
+- `compression` now defaults to `'deflate'` (on), so the driver sends `Accept-Encoding: deflate` by default. It is a
+`'none'`/`'deflate'` string union. Set `'none'` to disable it.
+- `maxConnections` now caps concurrent connections per origin at 128 by default, where the number of connections was
+previously uncapped.
+
+New options:
+
+- `readTimeout`: a per-read idle (body) timeout in milliseconds applied to the default dispatcher (undici
+`bodyTimeout`). It resets per chunk, so it is safe for streaming.
+- `maxResponseHeaderBytes`: the maximum size of the response headers in bytes applied to the default dispatcher (undici
+`maxHeaderSize`).
+- `keepAliveTime` (default 30000 ms): the idle time before TCP keep-alive probes begin, applied to the default
+dispatcher via a `SO_KEEPALIVE` connector. Set 0 to disable.
+- `proxy`: an HTTP proxy URI that routes requests through an undici `ProxyAgent`.
+- `defaultBatchSize` (default 64): a connection-level default that fills a request's `batchSize` when it is left unset.
+- `bulkResults` (default false): a connection-level default for `bulkResults` applied to every request unless
+overridden per-request. The `DriverRemoteConnection` traversal path defaults to `true` regardless of this setting.
+- `logger`: a logger object (with `debug`/`info`/`warn`/`error` methods) or a `(level, message, ...args)` callback.
+Logging is disabled when unset.
+
+The dead `agent`, `ca`, `cert`, `pfx`, and `rejectUnauthorized` fields have been removed. They were declared but never
+wired. TLS is now configured through the Node/undici runtime (for example `NODE_EXTRA_CA_CERTS` or
+`NODE_TLS_REJECT_UNAUTHORIZED`). *(breaking)*
+
+See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[dev list discussion on standardizing GLV connection options].
+
 ==== Standardizing .NET Connection Options
 
 TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In `gremlin-dotnet`, several

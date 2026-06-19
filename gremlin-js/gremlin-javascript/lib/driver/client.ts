@@ -126,8 +126,17 @@ export default class Client {
     if (requestOptions?.evaluationTimeout) {
       requestBuilder.addTimeoutMillis(requestOptions.evaluationTimeout);
     }
-    if (requestOptions?.bulkResults) {
+    // Per-request value wins (including an explicit `false`); otherwise apply the
+    // connection-level default only when it is true.
+    if (requestOptions?.bulkResults !== undefined) {
       requestBuilder.addBulkResults(requestOptions.bulkResults);
+    } else if (this._connection.bulkResults) {
+      requestBuilder.addBulkResults(true);
+    }
+    // Fill the per-request batchSize from the connection-level default when unset.
+    const batchSize = requestOptions?.batchSize ?? this._connection.defaultBatchSize;
+    if (batchSize !== undefined) {
+      requestBuilder.addBatchSize(batchSize);
     }
     if (requestOptions?.transactionId) {
       requestBuilder.addField('transactionId', requestOptions.transactionId);
