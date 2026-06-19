@@ -32,17 +32,17 @@ __author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitqui
 class DriverRemoteConnection(RemoteConnection):
 
     def __init__(self, url, traversal_source="g",
-                 pool_size=None, max_workers=None,
+                 max_connections=None, max_workers=None,
                  response_serializer=None, interceptors=None, auth=None,
-                 headers=None, enable_user_agent_on_connect=True,
-                 bulk_results=False, pdt_registry=None, **transport_kwargs):
+                 enable_user_agent_on_connect=True,
+                 bulk_results=False, pdt_registry=None, default_batch_size=None,
+                 **transport_kwargs):
         log.info("Creating DriverRemoteConnection with url '%s'", str(url))
         self.__url = url
         self.__traversal_source = traversal_source
-        self.__pool_size = pool_size
+        self.__max_connections = max_connections
         self.__max_workers = max_workers
         self.__auth = auth
-        self.__headers = headers
         self.__enable_user_agent_on_connect = enable_user_agent_on_connect
         self.__bulk_results = bulk_results
         self.__transport_kwargs = transport_kwargs
@@ -51,14 +51,14 @@ class DriverRemoteConnection(RemoteConnection):
         if response_serializer is None:
             response_serializer = serializer.GraphBinarySerializersV4()
         self._client = client.Client(url, traversal_source,
-                                     pool_size=pool_size,
+                                     max_connections=max_connections,
                                      max_workers=max_workers,
                                      response_serializer=response_serializer,
                                      interceptors=interceptors, auth=auth,
-                                     headers=headers,
                                      enable_user_agent_on_connect=enable_user_agent_on_connect,
                                      bulk_results=bulk_results,
                                      pdt_registry=pdt_registry,
+                                     default_batch_size=default_batch_size,
                                      **transport_kwargs)
         self._url = self._client._url
         self._traversal_source = self._client._traversal_source

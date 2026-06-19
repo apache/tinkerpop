@@ -37,7 +37,7 @@ class Connection:
     def __init__(self, url, traversal_source,
                  executor, pool,
                  response_serializer=None, auth=None, interceptors=None,
-                 headers=None, enable_user_agent_on_connect=True,
+                 enable_user_agent_on_connect=True,
                  bulk_results=False, **transport_kwargs):
         if callable(interceptors):
             interceptors = [interceptors]
@@ -53,7 +53,10 @@ class Connection:
             interceptors = (interceptors or []) + [auth]
 
         self._url = url
-        self._headers = headers
+        # Custom request headers are set via interceptors. This internal dict
+        # only carries connection-level headers managed by the driver itself
+        # (user agent, bulkResults) and is established at construction time.
+        self._headers = None
         self._traversal_source = traversal_source
         self._transport_kwargs = transport_kwargs
         self._executor = executor

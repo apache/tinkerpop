@@ -28,30 +28,53 @@ def basic(username, password):
     return interceptor
 
 
-def sigv4(region, service):
-    """Returns an interceptor that signs the request with AWS SigV4."""
+def sigv4(region, service, credentials=None):
+    """Returns an interceptor that signs the request with AWS SigV4.
+
+    By default credentials are sourced from the standard AWS environment
+    variables (``AWS_ACCESS_KEY_ID``, ``AWS_SECRET_ACCESS_KEY`` and the optional
+    ``AWS_SESSION_TOKEN``). A custom credentials provider may be supplied via
+    ``credentials``; it accepts either:
+
+    * a callable returning a botocore ``Credentials`` object (or any object with
+      ``access_key``/``secret_key``/``token`` attributes), evaluated per request, or
+    * a botocore ``Credentials`` object (or ``Session``) used directly.
+
+    When no provider is given, signing falls back to the environment.
+    """
     import os
     from boto3 import Session
     from botocore.auth import SigV4Auth
     from botocore.awsrequest import AWSRequest
 
+    def _resolve_credentials():
+        if credentials is None:
+            access_key = os.environ.get('AWS_ACCESS_KEY_ID', '')
+            secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+            session_token = os.environ.get('AWS_SESSION_TOKEN', '')
+            session = Session(
+                aws_access_key_id=access_key,
+                aws_secret_access_key=secret_key,
+                aws_session_token=session_token,
+                region_name=region
+            )
+            return session.get_credentials()
+
+        provider = credentials() if callable(credentials) else credentials
+        # A botocore Session exposes get_credentials(); a Credentials object is
+        # already usable as-is.
+        if hasattr(provider, 'get_credentials'):
+            return provider.get_credentials()
+        return provider
+
     def interceptor(request):
         # Ensure body is serialized so we can sign it
         body_bytes = request.serialize_body()
 
-        access_key = os.environ.get('AWS_ACCESS_KEY_ID', '')
-        secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
-        session_token = os.environ.get('AWS_SESSION_TOKEN', '')
-
-        session = Session(
-            aws_access_key_id=access_key,
-            aws_secret_access_key=secret_key,
-            aws_session_token=session_token,
-            region_name=region
-        )
+        resolved = _resolve_credentials()
 
         sigv4_request = AWSRequest(method=request.method, url=request.url, data=body_bytes)
-        SigV4Auth(session.get_credentials(), service, region).add_auth(sigv4_request)
+        SigV4Auth(resolved, service, region).add_auth(sigv4_request)
         request.headers.update(dict(sigv4_request.headers))
 
     return interceptor

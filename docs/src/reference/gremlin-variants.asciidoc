@@ -3177,13 +3177,15 @@ the "g" provided to the `DriverRemoteConnection` corresponds to the name of a `G
 g = traversal().with_(DriverRemoteConnection('http://localhost:8182/gremlin','g'))
 ----
 
-If you need to send additional headers in the HTTP connection, you can pass an optional `headers` parameter
-to the `DriverRemoteConnection` constructor.
+If you need to send additional headers on each HTTP request, set them via a request interceptor rather than a
+connection parameter. Pass a callable to the `interceptors` keyword argument that mutates the request headers in
+place. See <<gremlin-python-interceptors, RequestInterceptor>> for details.
 
 [source,python]
 ----
 g = traversal().with_(DriverRemoteConnection(
-    'http://localhost:8182/gremlin', 'g', headers={'Header':'Value'}))
+    'http://localhost:8182/gremlin', 'g',
+    interceptors=[lambda req: req.headers.update({'Header': 'Value'})]))
 ----
 
 Gremlin-Python contains an `auth` module that provides built-in authentication functions. These are passed to the
@@ -3207,7 +3209,7 @@ with 'https://'. If Gremlin-Server uses a self-signed certificate for SSL, Greml
 the CA certificate file (in openssl .pem format), to be specified in the SSL_CERT_FILE environment variable.
 
 NOTE: If connecting from an inherently single-threaded Python process where blocking while waiting for Gremlin
-traversals to complete is acceptable, it might be helpful to set `pool_size` and `max_workers` parameters to 1.
+traversals to complete is acceptable, it might be helpful to set `max_connections` and `max_workers` parameters to 1.
 See the <<python-configuration,Configuration>> section just below.  Examples where this could apply are serverless cloud functions or WSGI
 worker processes.
 
@@ -3311,13 +3313,21 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|headers |Additional headers that will be added to each request message. |`None`
-|max_workers |Maximum number of worker threads. |Number of CPUs * 5
-|request_serializer |The request serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
+|max_workers |Maximum number of worker threads. |Same as `max_connections` (128)
 |response_serializer |The response serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
-|interceptors |The request interceptors to run after request serialization.|`None`
+|interceptors |The request interceptors to run before the request body is serialized.|`None`
 |auth |An authentication interceptor. Always appended to the end of the interceptor list so it runs last. |`None`
-|pool_size |The number of connections used by the pool. |4
+|max_connections |The maximum number of connections used by the pool. `pool_size` is accepted as a deprecated alias. |128
+|connect_timeout |Timeout in seconds for establishing the connection (TCP connect plus TLS handshake). |5
+|read_timeout |Per-read idle timeout in seconds applied while streaming a response. Resets per chunk. |`None`
+|write_timeout |Timeout in seconds for writing a request to the transport. |`None`
+|ssl |An `ssl.SSLContext` used for TLS connections. `ssl_options` is accepted as a deprecated alias. |`None`
+|idle_timeout |How long in seconds an idle connection remains in the pool before being closed. |180
+|keep_alive_time |TCP keep-alive idle time in seconds before probes begin on an otherwise idle connection. |30
+|compression |The wire compression negotiated with the server (`'none'` or `'deflate'`). |`'deflate'`
+|default_batch_size |The connection-level default batch size used when a request does not specify one. |64
+|proxy |HTTP proxy URL routed through the underlying `ClientSession`. |`None`
+|trust_env |Whether to trust environment variables for proxy and SSL configuration. |False
 |enable_user_agent_on_connect |Enables sending a user agent to the server during connection requests.
 More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|True
@@ -3334,7 +3344,7 @@ import ssl
 ...
 g = traversal().with_(
   DriverRemoteConnection('https://localhost:8182/gremlin','g',
-                         ssl_options=ssl.create_default_context(),
+                         ssl=ssl.create_default_context(),
                          read_timeout=30))
 ----
 

@@ -38,21 +38,34 @@ __author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitqui
 
 class Client:
 
-    def __init__(self, url, traversal_source, pool_size=None, max_workers=None,
+    def __init__(self, url, traversal_source, max_connections=None, max_workers=None,
                  response_serializer=None, interceptors=None, auth=None,
-                 headers=None, enable_user_agent_on_connect=True,
-                 bulk_results=False, pdt_registry=None, **transport_kwargs):
+                 enable_user_agent_on_connect=True,
+                 bulk_results=False, pdt_registry=None, default_batch_size=None,
+                 **transport_kwargs):
         log.info("Creating Client with url '%s'", url)
+
+        # pool_size is a deprecated alias for max_connections (deprecated as of 4.0.0), retained for one release.
+        if 'pool_size' in transport_kwargs:
+            warnings.warn(
+                "As of release 4.0.0, the 'pool_size' option is deprecated and will be "
+                "removed in a future release. Use 'max_connections' instead.",
+                DeprecationWarning)
+            pool_size = transport_kwargs.pop('pool_size')
+            if max_connections is None:
+                max_connections = pool_size
 
         self._closed = False
         self._url = url
         # A raw list is safe here because Python's GIL ensures list.append and
         # list.remove are atomic at the bytecode level.
         self._tracked_transactions = []
-        self._headers = headers
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         self._bulk_results = bulk_results
         self._traversal_source = traversal_source
+        if default_batch_size is None:
+            default_batch_size = 64
+        self._default_batch_size = default_batch_size
         if response_serializer is None:
             response_serializer = serializer.GraphBinarySerializersV4()
         if pdt_registry is not None:
@@ -64,14 +77,14 @@ class Client:
 
         self._transport_kwargs = transport_kwargs
 
-        if pool_size is None:
-            pool_size = 8
-        self._pool_size = pool_size
+        if max_connections is None:
+            max_connections = 128
+        self._max_connections = max_connections
         # This is until concurrent.futures backport 3.1.0 release
         if max_workers is None:
             # If your application is overlapping Gremlin I/O on multiple threads
             # consider passing kwarg max_workers = (cpu_count() or 1) * 5
-            max_workers = pool_size
+            max_workers = max_connections
         self._executor = ThreadPoolExecutor(max_workers=max_workers)
         # Threadsafe queue
         self._pool = queue.Queue()
@@ -93,7 +106,7 @@ class Client:
         return self._traversal_source
 
     def _fill_pool(self):
-        for i in range(self._pool_size):
+        for i in range(self._max_connections):
             conn = self._get_connection()
             self._pool.put_nowait(conn)
 
@@ -147,9 +160,9 @@ class Client:
             self._executor, self._pool,
             response_serializer=self._response_serializer,
             auth=self._auth, interceptors=self._interceptors,
-            headers=self._headers,
             enable_user_agent_on_connect=self._enable_user_agent_on_connect,
             bulk_results=self._bulk_results,
+            max_connections=self._max_connections,
             **self._transport_kwargs)
 
     def submit(self, message, bindings=None, request_options=None):
@@ -181,6 +194,14 @@ class Client:
         if isinstance(message, str):
             log.debug("fields='%s', gremlin='%s'", str(fields), str(message))
             message = request.RequestMessage(fields=fields, gremlin=message)
+        else:
+            # A caller-supplied RequestMessage must not be mutated in place:
+            # resubmitting the same message (e.g. on retry) would otherwise
+            # accumulate request_options/batchSize from prior submits. Clone the
+            # fields dict so this submit's mutations stay local, matching the
+            # no-mutate contract of the .NET/JS drivers. Freshly built messages
+            # (the string path above) already own a private fields dict.
+            message = message._replace(fields=dict(message.fields))
 
         conn = self._pool.get(True)
         if request_options:
@@ -192,5 +213,10 @@ class Client:
                     from gremlin_python.process.traversal import GremlinLang
                     bindings_val = GremlinLang.convert_parameters_to_string(bindings_val)
                 message.fields['bindings'] = bindings_val
+
+        # Fill in the connection-level default batch size when the caller did
+        # not set a per-request batchSize.
+        if self._default_batch_size is not None and 'batchSize' not in message.fields:
+            message.fields['batchSize'] = self._default_batch_size
 
         return conn.write(message)

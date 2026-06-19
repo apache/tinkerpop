@@ -18,7 +18,9 @@
 #
 import aiohttp
 import asyncio
+import socket
 import sys
+import warnings
 
 if sys.version_info >= (3, 11):
     import asyncio as async_timeout
@@ -26,6 +28,60 @@ else:
     import async_timeout
 
 __author__ = 'Lyndon Bauto (lyndonb@bitquilltech.com)'
+
+# Default connection option values (canonical TinkerPop 4.x GLV defaults).
+DEFAULT_CONNECT_TIMEOUT = 5
+DEFAULT_IDLE_TIMEOUT = 180
+DEFAULT_KEEP_ALIVE_TIME = 30
+DEFAULT_COMPRESSION = 'deflate'
+
+
+def _normalize_compression(compression):
+    """Normalize the compression option to a canonical string ('none' or 'deflate').
+
+    Accepts the string forms 'none'/'deflate'.
+    """
+    if compression is None:
+        return DEFAULT_COMPRESSION
+    if isinstance(compression, str):
+        normalized = compression.lower()
+        if normalized in ('none', 'deflate'):
+            return normalized
+        raise ValueError("compression must be one of 'none', 'deflate', got '%s'" % compression)
+    raise TypeError("compression must be a str ('none'|'deflate'), got %s" % type(compression).__name__)
+
+
+def _keep_alive_socket_options(keep_alive_time):
+    """Build the list of socket options that enable TCP keep-alive with the
+    given idle time before probes begin. TCP_KEEPIDLE is platform dependent
+    (Linux); macOS exposes the equivalent as TCP_KEEPALIVE. Both are guarded so
+    platforms lacking the option (e.g. Windows) simply enable SO_KEEPALIVE."""
+    options = [(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)]
+    idle_opt = getattr(socket, 'TCP_KEEPIDLE', None)
+    if idle_opt is None:
+        # macOS names the idle-before-probe option TCP_KEEPALIVE
+        idle_opt = getattr(socket, 'TCP_KEEPALIVE', None)
+    if idle_opt is not None:
+        options.append((socket.IPPROTO_TCP, idle_opt, int(keep_alive_time)))
+    return options
+
+
+def _keep_alive_socket_factory(keep_alive_time):
+    """Return a socket_factory (aiohttp >= 3.11) that applies the keep-alive
+    socket options when each connection socket is created."""
+    options = _keep_alive_socket_options(keep_alive_time)
+
+    def factory(addr_info):
+        family, type_, proto, _, _ = addr_info
+        sock = socket.socket(family=family, type=type_, proto=proto)
+        for level, optname, value in options:
+            try:
+                sock.setsockopt(level, optname, value)
+            except (OSError, AttributeError):
+                pass
+        return sock
+
+    return factory
 
 
 class AiohttpSyncStream:
@@ -78,7 +134,11 @@ class AiohttpSyncStream:
 class AiohttpHTTPTransport:
     nest_asyncio_applied = False
 
-    def __init__(self, call_from_event_loop=None, read_timeout=None, write_timeout=None, **kwargs):
+    def __init__(self, call_from_event_loop=None, read_timeout=None, write_timeout=None,
+                 connect_timeout=DEFAULT_CONNECT_TIMEOUT,
+                 idle_timeout=DEFAULT_IDLE_TIMEOUT, keep_alive_time=DEFAULT_KEEP_ALIVE_TIME,
+                 compression=DEFAULT_COMPRESSION, proxy=None, trust_env=False,
+                 max_connections=None, **kwargs):
         if call_from_event_loop is not None and call_from_event_loop and not AiohttpHTTPTransport.nest_asyncio_applied:
             """ 
                 The AiohttpTransport implementation uses the asyncio event loop. Because of this, it cannot be called 
@@ -95,17 +155,41 @@ class AiohttpHTTPTransport:
         self._client_session = None
         self._http_req_resp = None
         self._enable_ssl = False
+        self._ssl_context = None
         self._url = None
 
         # Set all inner variables to parameters passed in.
         self._aiohttp_kwargs = kwargs
         self._write_timeout = write_timeout
         self._read_timeout = read_timeout
-        # max_content_length is no longer enforced with streaming deserialization, but pop it
-        # to prevent it from leaking to aiohttp as an unknown kwarg
-        self._aiohttp_kwargs.pop("max_content_length", None)
+
+        # Connection-level pooling / lifecycle options.
+        self._connect_timeout = connect_timeout
+        self._idle_timeout = idle_timeout
+        self._keep_alive_time = keep_alive_time
+        # Caps the aiohttp connector's simultaneous connections per Connection
+        # (the Client also sizes its Connection pool by this value).
+        self._max_connections = max_connections
+
+        # Compression negotiation. Default 'deflate' (on); advertises
+        # Accept-Encoding: deflate. Set 'none' to opt out.
+        self._compression = _normalize_compression(compression)
+
+        # HTTP proxy support routed through the ClientSession.
+        self._proxy = proxy
+        self._trust_env = trust_env
+
+        # ssl: canonical name accepting an ssl.SSLContext. ssl_options is a
+        # deprecated alias retained for one release.
         if "ssl_options" in self._aiohttp_kwargs:
+            warnings.warn(
+                "As of release 4.0.0, the 'ssl_options' option is deprecated and will be removed in a future "
+                "release. Use 'ssl' instead.",
+                DeprecationWarning)
             self._ssl_context = self._aiohttp_kwargs.pop("ssl_options")
+            self._enable_ssl = True
+        if "ssl" in self._aiohttp_kwargs:
+            self._ssl_context = self._aiohttp_kwargs.pop("ssl")
             self._enable_ssl = True
 
     def __del__(self):
@@ -117,26 +201,75 @@ class AiohttpHTTPTransport:
         self._url = url
         # Inner function to perform async connect.
         async def async_connect():
-            # Start client session and use it to send all HTTP requests. Headers can be set here.
+            # Build the TCP connector with the standardized pooling / lifecycle
+            # options. keepalive_timeout maps to the idle connection timeout;
+            # the socket factory enables TCP keep-alive probes after
+            # keep_alive_time idle.
+            connector_kwargs = {}
             if self._enable_ssl:
-                # ssl context is established through tcp connector
-                tcp_conn = aiohttp.TCPConnector(ssl_context=self._ssl_context)
-                self._client_session = aiohttp.ClientSession(connector=tcp_conn,
-                                                             headers=headers, loop=self._loop)
-            else:
-                self._client_session = aiohttp.ClientSession(headers=headers, loop=self._loop)
+                # ssl context is established through the tcp connector
+                connector_kwargs['ssl_context'] = self._ssl_context
+            if self._idle_timeout is not None:
+                connector_kwargs['keepalive_timeout'] = self._idle_timeout
+            if self._keep_alive_time is not None:
+                self._apply_keep_alive(connector_kwargs)
+            # Reflect max_connections at the aiohttp layer so the connector's
+            # simultaneous-connection limit matches the driver option.
+            if self._max_connections is not None:
+                connector_kwargs['limit'] = self._max_connections
+
+            session_kwargs = {'headers': headers, 'loop': self._loop,
+                              'trust_env': self._trust_env}
+            # Use the per-socket timeouts (sock_connect/sock_read) rather than a
+            # whole-request total, which would abort long but legitimate streaming
+            # responses. sock_read bounds idle time between chunks so a stalled
+            # server cannot hang forever.
+            timeout_kwargs = {}
+            if self._connect_timeout is not None:
+                timeout_kwargs['sock_connect'] = self._connect_timeout
+            if self._read_timeout is not None:
+                timeout_kwargs['sock_read'] = self._read_timeout
+            if timeout_kwargs:
+                session_kwargs['timeout'] = aiohttp.ClientTimeout(**timeout_kwargs)
+            if connector_kwargs:
+                session_kwargs['connector'] = aiohttp.TCPConnector(**connector_kwargs)
+
+            self._client_session = aiohttp.ClientSession(**session_kwargs)
 
         # Execute the async connect synchronously.
         self._loop.run_until_complete(async_connect())
 
+    def _apply_keep_alive(self, connector_kwargs):
+        """Wire TCP keep-alive into the connector via the aiohttp socket_factory.
+        The factory sets SO_KEEPALIVE plus the per-socket idle time; unsupported
+        platforms degrade gracefully inside the factory."""
+        connector_kwargs['socket_factory'] = _keep_alive_socket_factory(self._keep_alive_time)
+
     def write(self, message):
+        # Negotiate compression unless the caller already set Accept-Encoding:
+        # deflate advertises Accept-Encoding: deflate; none suppresses aiohttp's
+        # auto-injected Accept-Encoding so compression is not silently negotiated.
+        headers = message['headers']
+        has_accept_encoding = any(k.lower() == 'accept-encoding' for k in headers)
+        skip_auto_headers = None
+        if self._compression == 'deflate':
+            if not has_accept_encoding:
+                headers['accept-encoding'] = 'deflate'
+        elif not has_accept_encoding:
+            skip_auto_headers = ['Accept-Encoding']
+
         # Inner function to perform async write.
         async def async_write():
+            post_kwargs = dict(self._aiohttp_kwargs)
+            if self._proxy is not None:
+                post_kwargs['proxy'] = self._proxy
+            if skip_auto_headers is not None:
+                post_kwargs['skip_auto_headers'] = skip_auto_headers
             async with async_timeout.timeout(self._write_timeout):
                 self._http_req_resp = await self._client_session.post(url=self._url,
                                                                       data=message['payload'],
-                                                                      headers=message['headers'],
-                                                                      **self._aiohttp_kwargs)
+                                                                      headers=headers,
+                                                                      **post_kwargs)
 
         # Execute the async write synchronously.
         self._loop.run_until_complete(async_write())
@@ -183,5 +316,5 @@ class AiohttpHTTPTransport:
 
     @property
     def closed(self):
-        # Connection is closed when client session is closed.
-        return self._client_session.closed
+        # Connection is closed when client session is closed (or not yet created).
+        return self._client_session is None or self._client_session.closed
