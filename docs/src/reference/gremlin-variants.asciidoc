@@ -338,6 +338,7 @@ the traversal to utilize a parameter in place of a literal.
 [source,go]
 ----
 g.V().Has("name", gremlingo.GValue{Name: "name", Value: "marko"})
+g.MergeV(gremlingo.GValue{Name: "vertexPattern", Value: map[interface{}]interface{}{"name": "marko"}})
 ----
 
 [[gremlin-go-scripts]]
@@ -2407,6 +2408,8 @@ the traversal to utilize a parameter in place of a literal.
 [source,csharp]
 ----
 g.V().Has("name", new GValue<string>("name", "marko"));
+g.MergeV(new GValue<IDictionary<object, object>>("vertexPattern",
+    new Dictionary<object, object> { { "name", "marko" } }));
 ----
 
 [[gremlin-dotnet-scripts]]
