@@ -402,32 +402,51 @@ GLVs (including the Java driver). This aligns with the embedded graph transactio
 partial work is discarded if the user forgets to call `commit()`. In Java (both remote and embedded mode), the behavior
 can still be overridden via `tx.onClose(Transaction.CLOSE_BEHAVIOR.COMMIT)`. The non-Java GLVs do not support
 configuring close behavior and always rollback.
-==== Traversal-Accepting Steps
 
-Steps and predicates that previously only accepted literal values now accept child traversals resolved per-traverser
-at runtime. This enables dynamic filtering, lookup, and mutation patterns without `where()`/`select()` workarounds.
+==== Expanding Dynamic Arguments to Additional Steps
 
-Affected steps: `has()`, `hasLabel()`, `V()`, `E()`, `property()`, `is()`, `where(P)`, `P.eq/neq/gt/lt/gte/lte()`,
-`P.within/without()`, and all `TextP` predicates.
+Prior to 4.0, comparing a traverser's value against a dynamically computed reference required verbose workarounds with
+`where()`, `select()`, and labeled steps. For example, finding all people older than "marko" previously required:
 
 [source,groovy]
 ----
-// Dynamic property comparison
-g.V().has("age", P.gt(__.V(1).values("age")))
-
-// Dynamic vertex lookup: resolve the ids of marko's friends, then look them up by id
-g.V(1).V(__.out("knows").id()).values("name")
-
-// Multi-source filtering with within()
-g.V().has("name", P.within(__.V(1).out("knows").values("name").fold(), __.constant("peter")))
+// Old way: label marko's age, compare via where()
+g.V(1).values("age").as("markosAge").
+  V().hasLabel("person").as("p").
+  values("age").as("otherAge").
+  where("otherAge", gt("markosAge")).
+  select("p").values("name")
 ----
 
-Child traversals take only the first result (consistent with `by(traversal)` semantics). For `within()`/`without()`,
-use `fold()` to collect multiple values into a list.
+This pattern was unintuitive and could not easily compose with other predicates. With traversal-accepting arguments,
+the same query becomes a single, readable step:
 
-All child traversals must be read-only. Mutating steps (`addV`, `addE`, `drop`, `property`) inside child traversals
-are rejected at construction time with `IllegalArgumentException`. A `ReadOnlyChildVerificationStrategy` provides
-additional safety at strategy time.
+[source,groovy]
+----
+// New way: traversal inside the predicate
+g.V().has("age", P.gt(__.V(1).values("age"))).values("name")
+----
+
+Steps and predicates that previously only accepted literal values now accept child traversals resolved per-traverser
+at runtime. Affected steps: `has()`, `hasId()`, `hasKey()`, `hasLabel()`, `hasValue()`, `V()`, `E()`, `property()`,
+`is()`, `where(P)`, and all `P` and `TextP` predicates.
+
+[source,groovy]
+----
+// Multi-source filtering with within()
+g.V().has("name", P.within(__.V(1).out("knows").values("name").fold(), __.constant("peter")))
+
+// Set multiple properties from a computed Map
+g.V(4).property(__.V(1).project("friendCount").by(__.out("knows").count()))
+----
+
+See <<has-step,has()>>, <<v-step,V()>>, <<property-step,property()>>, <<is-step,is()>>, and
+<<where-step,where()>> in the Reference Documentation for full details and additional examples.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2586[TINKERPOP-2586],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2777[TINKERPOP-2777],
+link:https://issues.apache.org/jira/browse/TINKERPOP-3005[TINKERPOP-3005],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1463[TINKERPOP-1463]
 
 ==== Removed `uuid` Dependency in gremlin-javascript
 

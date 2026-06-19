@@ -2190,9 +2190,10 @@ the key,value pairs for those vertices.
 <9> Property key is always stored as `String` and therefore an equality check with `null` will produce no result.
 <10> An example of using `has()` with regular expression predicate.
 
-The traversal-accepting forms of `has()` allow for dynamic property comparisons. Rather than providing a literal value,
-a child traversal is supplied and its first result is used as the comparison value. This follows the same first-result
-semantics as `by(traversal)`. The child traversal must be read-only - mutating steps are rejected.
+In addition to literal values, `has()` accepts child traversals for dynamic comparisons. The child traversal is
+evaluated per-traverser and its first result becomes the comparison value, consistent with `by(traversal)` semantics.
+The child traversal cannot include mutating steps like `addV()` or `property()`; if present, they are rejected with
+an `IllegalArgumentException`.
 
 [gremlin-groovy,modern]
 ----
@@ -2553,24 +2554,17 @@ The term `is` is a reserved word in Python, and therefore must be referred to in
 g.V().values('age').is(32)
 g.V().values('age').is(lte(30))
 g.V().values('age').is(inside(30, 40))
-g.V().where(__.in('created').count().is(1)).values('name') <1>
-g.V().where(__.in('created').count().is(gte(2))).values('name') <2>
-g.V().where(__.in('created').values('age').
-                           mean().is(inside(30d, 35d))).values('name') <3>
-----
-
-<1> Find projects having exactly one contributor.
-<2> Find projects having two or more contributors.
-<3> Find projects whose contributors average age is between 30 and 35.
-
-The `is()` step also supports predicates that contain traversal arguments for dynamic threshold comparison.
-
-[gremlin-groovy,modern]
-----
 g.V().values('age').is(P.gt(__.V(1).values('age'))) <1>
+g.V().where(__.in('created').count().is(1)).values('name') <2>
+g.V().where(__.in('created').count().is(gte(2))).values('name') <3>
+g.V().where(__.in('created').values('age').
+                           mean().is(inside(30d, 35d))).values('name') <4>
 ----
 
 <1> Find all age values that are greater than marko's age using a traversal inside the predicate.
+<2> Find projects having exactly one contributor.
+<3> Find projects having two or more contributors.
+<4> Find projects whose contributors average age is between 30 and 35.
 
 NOTE: When `is(traversal)` is used directly (without an explicit predicate), it is internally wrapped in
 `P.eq(traversal)`.
@@ -4204,8 +4198,13 @@ g.V(1).property(list, ['age': single(36), 'city': 'wilmington', 'state': 'delawa
 g.V(1).valueMap()
 g.V(1).property('friendWeight',outE('knows').values('weight').sum(),'acl','private') <5>
 g.V(1).properties('friendWeight').valueMap() <6>
-g.addV().property(T.label,'person').valueMap().with(WithOptions.tokens) <7>
-g.addV().property(null) <8>
+g.V(4).property(
+    __.V(1).project('friendCount', 'createdSoftware').
+      by(__.out('knows').count()).
+      by(__.out('created').values('name'))) <7>
+g.V(4).valueMap()
+g.addV().property(T.label,'person').valueMap().with(WithOptions.tokens) <8>
+g.addV().property(null) <9>
 g.addV().property(set, null)
 ----
 
@@ -4215,23 +4214,10 @@ g.addV().property(set, null)
 <4> Assign the `Cardinality` individually to override the specified `list` or the default cardinality if not specified.
 <5> It is possible to select the property value (as well as key) via a traversal.
 <6> For vertices, the `property()`-step can add meta-properties.
-<7> The label value can be specified as a property only at the time a vertex is added and if one is not specified in the addV()
-<8> If you pass a `null` value for the Map this will be treated as a no-op and the input will be returned
-
-The `property()` step also accepts a traversal that produces a `Map` of key-value pairs to set as properties. The
-child traversal must be read-only - mutating steps are rejected. If the traversal does not produce a `Map`, the result
-is rejected. Each entry in the resulting Map becomes a separate property on the element, allowing multiple properties
-to be set in a single step.
-
-[gremlin-groovy,modern]
-----
-g.V(4).property(__.V(1).project('friendCount','createdSoftware').by(__.out('knows').count()).by(__.out('created').values('name'))) <1>
-g.V(4).valueMap('friendCount','createdSoftware')
-----
-
-<1> Set two properties on vertex 4 (josh) from a Map produced by a child traversal. The `project()` step builds a Map
-with keys "friendCount" and "createdSoftware", whose values are computed from vertex 1's (marko's) relationships -
-number of friends and name of software created. Both properties are applied to vertex 4 in one operation.
+<7> A child traversal that produces a `Map` can set multiple properties at once. The child traversal cannot include
+mutating steps (`IllegalArgumentException`) and must produce a `Map` (`IllegalStateException` otherwise).
+<8> The label value can be specified as a property only at the time a vertex is added and if one is not specified in the addV()
+<9> If you pass a `null` value for the Map this will be treated as a no-op and the input will be returned
 
 *Additional References*
 
@@ -5418,12 +5404,14 @@ be used mid-traversal.
 [gremlin-groovy,modern]
 ----
 g.V(1) <1>
+g.inject([1,2,4]).as('ids').V(__.select('ids').unfold()).values('name') <2>
 g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
-  V().has('name', within('lop', 'ripple')).addE('uses').from('person') <2>
+  V().has('name', within('lop', 'ripple')).addE('uses').from('person') <3>
 ----
 
 <1> Find the vertex by its unique identifier (i.e. `T.id`) - not all graphs will use a numeric value for their identifier.
-<2> An example where `V()` is used both as a start step and in the middle of a traversal.
+<2> Dynamically resolve the vertex lookup from a child traversal.
+<3> An example where `V()` is used both as a start step and in the middle of a traversal.
 
 NOTE: Whether a mid-traversal `V()` uses an index or not, depends on a) whether suitable index exists and b) if the
 particular graph system provider implemented this functionality.
@@ -5438,19 +5426,6 @@ g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
 
 <1> Normally the `V()`-step will iterate over all vertices. However, graph strategies can fold ``HasContainer``'s into a `GraphStep` to allow index lookups.
 <2> Whether the graph system provider supports mid-traversal `V()` index lookups or not can easily be determined by inspecting the `toString()` output of the iterated traversal. If `has` conditions were folded into the `V()`-step, an index - if one exists - will be used.
-
-The `V()` step also accepts a traversal argument. The child traversal is evaluated and its results are used as the
-vertex identifiers. This works both as a start step and mid-traversal. When used as a start step, a synthetic traverser
-is provided to the child traversal.
-
-[gremlin-groovy,modern]
-----
-g.V(__.V(1).id()).values('name') <1>
-g.inject(1).V(__.identity()).values('name') <2>
-----
-
-<1> Use a child traversal to dynamically determine the vertex ID. Here the traversal resolves vertex 1's ID.
-<2> Mid-traversal usage where the injected value is used via `identity()` as the ID argument to `V()`.
 
 *Additional References*
 
@@ -5652,6 +5627,8 @@ g.V().as('a').out('knows').as('b').
     by('name') <8>
 g.V().as('a').both().both().as('b').
   where('a',eq('b')).by('age') <9>
+g.V().values('age').where(P.gt(__.V(1).values('age'))) <10>
+g.V().where(P.gt(__.V(1).values('age'))).by('age').values('name') <11>
 ----
 
 <1> What are the names of the people who have created a project?
@@ -5663,18 +5640,8 @@ g.V().as('a').both().both().as('b').
 <7> Marko knows josh and vadas but is only older than vadas.
 <8> Marko is younger than josh, but josh knows someone equal in age to marko (which is marko).
 <9> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered.
-
-The `where()` step also supports predicates that contain traversal arguments. When a predicate contains a child
-traversal, the traversal is resolved per-traverser and the result is tested directly against the current value -
-bypassing scope-label resolution.
-
-[gremlin-groovy,modern]
-----
-g.V().values('age').where(P.gt(__.V(1).values('age'))) <1>
-----
-
-<1> Find all age values that are greater than marko's age. The child traversal inside `P.gt()` is resolved and the
-current traverser's value is compared against the result.
+<10> Find all age values that are greater than marko's age, where marko's age is resolved dynamically via a child traversal.
+<11> Find all people older than marko. The child traversal resolves marko's age, and `by('age')` extracts the age from each vertex for comparison.
 
 WARNING: The anonymous traversal of `where()` processes the current object "locally". In OLAP, where the atomic unit
 of computing is the vertex and its local "star graph," it is important that the anonymous traversal does not leave
