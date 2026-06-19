@@ -198,16 +198,22 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
     }
 
     @Test
-    public void shouldThrowOnDoubleBegin() throws Exception {
+    public void shouldBeIdempotentOnDoubleBegin() throws Exception {
         final RemoteTransaction tx = cluster.transact(GTX);
         tx.begin();
+        final String txId = tx.getTransactionId();
 
-        try {
-            tx.begin();
-            fail("Expected IllegalStateException on second begin()");
-        } catch (IllegalStateException ex) {
-            assertThat(ex.getMessage(), containsString("Transaction already started"));
-        }
+        // begin() while already open is idempotent: it does not throw, does not start a new server-side
+        // transaction (the transactionId is unchanged), and returns a usable source bound to the same tx
+        final GraphTraversalSource gtx = tx.begin();
+        assertTrue(tx.isOpen());
+        assertEquals(txId, tx.getTransactionId());
+
+        // the source from the second begin() works within the same transaction
+        gtx.addV("person").property("name", "double_begin").iterate();
+        assertEquals(1L, (long) gtx.V().has("name", "double_begin").count().next());
+
+        tx.rollback();
     }
 
     @Test
@@ -275,6 +281,18 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
         final RemoteTransaction tx2 = cluster.transact(GTX);
         tx2.begin();
         assertEquals(1L, tx2.submit("g.V().hasLabel('person').count()").one().getLong());
+    }
+
+    @Test
+    public void shouldBeIdempotentOnDoubleClose() throws Exception {
+        final RemoteTransaction tx = cluster.transact(GTX);
+        tx.begin();
+        tx.close();
+        assertFalse(tx.isOpen());
+
+        // close() is idempotent: closing an already-closed transaction is a safe no-op (no exception)
+        tx.close();
+        assertFalse(tx.isOpen());
     }
 
     @Test
@@ -579,12 +597,13 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
         assertFalse(tx.isOpen());
         assertNull(tx.getTransactionId());
 
-        // second begin should fail — state moved to CLOSED, not back to NOT_STARTED
+        // second begin should fail — state moved to CLOSED, not back to NOT_STARTED. A remote transaction is
+        // single-use, so begin() on a closed transaction throws rather than reusing it.
         try {
             tx.begin();
             fail("Expected IllegalStateException on begin after failed begin");
         } catch (IllegalStateException ex) {
-            assertThat(ex.getMessage(), containsString("Transaction already started"));
+            assertThat(ex.getMessage(), containsString("Transaction is closed and cannot be reused"));
         }
     }
 
@@ -773,7 +792,7 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
     }
 
     @Test
-    public void shouldRejectOpeningSecondTransactionInsideTxClosureBody() throws Exception {
+    public void shouldBeIdempotentWhenBeginningInsideTxClosureBody() throws Exception {
         final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster, GTX));
 
         g.executeInTx(gtx -> {
@@ -781,17 +800,13 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
             // standard way to commit/rollback when holding a transactional source.
             final Transaction nested = gtx.tx();
             assertNotNull(nested);
+            final String txId = ((RemoteTransaction) nested).getTransactionId();
 
-            // opening a SECOND transaction from within an already-open one must raise. The remote
-            // HttpRemoteTransaction.begin() guards against double-begin, so the remote nesting test asserts on begin().
-            try {
-                nested.begin();
-                fail("Opening a second transaction from within an already-open one should raise");
-            } catch (Exception ex) {
-                // expected - the transaction is already started
-                assertThat(ex, instanceOf(IllegalStateException.class));
-                assertThat(ex.getMessage(), containsString("Transaction already started"));
-            }
+            // begin() from within an already-open transaction is idempotent: it does not throw and does not start a
+            // new server-side transaction (the transactionId is unchanged), returning a source bound to the same tx.
+            final GraphTraversalSource gtx2 = nested.begin();
+            assertNotNull(gtx2);
+            assertEquals(txId, ((RemoteTransaction) gtx2.tx()).getTransactionId());
 
             gtx.addV("person").iterate();
         });

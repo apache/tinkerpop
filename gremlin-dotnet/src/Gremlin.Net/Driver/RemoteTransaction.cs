@@ -73,68 +73,82 @@ namespace Gremlin.Net.Driver
 
         /// <summary>
         ///     Starts the transaction and returns a transaction-bound <see cref="GraphTraversalSource"/>.
+        ///     <para>
+        ///     This method is idempotent: calling it while a transaction is already open does not send a second
+        ///     begin to the server and does not throw - it reuses the existing transaction ID and returns a source
+        ///     bound to the same transaction. A transaction is single-use, so calling it after the transaction has
+        ///     been closed (commit/rollback/failed begin) throws.
+        ///     </para>
         /// </summary>
         /// <param name="cancellationToken">The token to cancel the operation.</param>
         /// <returns>A <see cref="GraphTraversalSource"/> bound to this transaction.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the transaction is already started.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the transaction has already been closed.</exception>
         public async Task<GraphTraversalSource> BeginAsync(CancellationToken cancellationToken = default)
         {
-            if (_isOpen || _failed)
+            if (_failed)
             {
-                throw new InvalidOperationException("Transaction already started");
+                throw new InvalidOperationException(
+                    "Transaction is closed and cannot be reused; begin a new transaction");
             }
 
-            var requestMsg = RequestMessage.Build("g.tx().begin()")
-                .AddG(_traversalSource)
-                .Create();
-
-            await _submitLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try
+            // idempotent: if a transaction is already open, reuse the existing transactionId without sending a
+            // second begin to the server, and return a source bound to the same transaction
+            if (!_isOpen)
             {
-                List<object> results;
+                var requestMsg = RequestMessage.Build("g.tx().begin()")
+                    .AddG(_traversalSource)
+                    .Create();
+
+                await _submitLock.WaitAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
-                    var resultSet = await _client.SubmitAsync<object>(requestMsg, cancellationToken)
-                        .ConfigureAwait(false);
-                    results = await resultSet.ToListAsync(cancellationToken).ConfigureAwait(false);
-                }
-                catch
-                {
-                    _failed = true;
-                    throw;
-                }
+                    List<object> results;
+                    try
+                    {
+                        var resultSet = await _client.SubmitAsync<object>(requestMsg, cancellationToken)
+                            .ConfigureAwait(false);
+                        results = await resultSet.ToListAsync(cancellationToken).ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                        _failed = true;
+                        throw;
+                    }
 
-                if (results.Count == 0)
-                {
-                    _failed = true;
-                    throw new InvalidOperationException("Server did not return transaction ID");
-                }
+                    if (results.Count == 0)
+                    {
+                        _failed = true;
+                        throw new InvalidOperationException("Server did not return transaction ID");
+                    }
 
-                if (results[0] is Dictionary<object, object> resultMap &&
-                    resultMap.TryGetValue("transactionId", out var txIdObj) &&
-                    txIdObj is string txId && !string.IsNullOrEmpty(txId))
-                {
-                    _transactionId = txId;
-                }
-                else
-                {
-                    _failed = true;
-                    throw new InvalidOperationException("Server did not return transaction ID in expected format");
-                }
+                    if (results[0] is Dictionary<object, object> resultMap &&
+                        resultMap.TryGetValue("transactionId", out var txIdObj) &&
+                        txIdObj is string txId && !string.IsNullOrEmpty(txId))
+                    {
+                        _transactionId = txId;
+                    }
+                    else
+                    {
+                        _failed = true;
+                        throw new InvalidOperationException("Server did not return transaction ID in expected format");
+                    }
 
-                _isOpen = true;
-                (_client as GremlinClient)?.TrackTransaction(this);
+                    // assign _txConnection before publishing _isOpen=true so any thread that observes the
+                    // transaction as open is guaranteed to also see a non-null _txConnection
+                    _txConnection = new TransactionRemoteConnection(_client, _traversalSource, _transactionId, this);
+                    _isOpen = true;
+                    (_client as GremlinClient)?.TrackTransaction(this);
+                }
+                finally
+                {
+                    _submitLock.Release();
+                }
             }
-            finally
-            {
-                _submitLock.Release();
-            }
 
-            _txConnection = new TransactionRemoteConnection(_client, _traversalSource, _transactionId, this);
             return new GraphTraversalSource(
                 new List<ITraversalStrategy>(),
                 new GremlinLang(),
-                _txConnection);
+                _txConnection!);
         }
 
         /// <summary>

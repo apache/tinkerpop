@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
@@ -52,7 +53,6 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @ExceptionCoverage(exceptionClass = Transaction.Exceptions.class, methods = {
-        "transactionAlreadyOpen",
         "threadedTransactionsNotSupported",
         "openTransactionsOnClose",
         "transactionMustBeOpenToReadWrite",
@@ -63,16 +63,17 @@ public class TransactionTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
-    public void shouldHaveExceptionConsistencyWhenTransactionAlreadyOpen() {
+    public void shouldBeIdempotentWhenTransactionAlreadyOpen() {
+        // begin() is idempotent: calling it when a transaction is already open does not start a new
+        // transaction and does not throw - it returns a traversal source bound to the open transaction.
         if (!g.tx().isOpen())
-            g.tx().open();
+            g.tx().begin();
 
-        try {
-            g.tx().open();
-            fail("An exception should be thrown when a transaction is opened twice");
-        } catch (Exception ex) {
-            validateException(Transaction.Exceptions.transactionAlreadyOpen(), ex);
-        }
+        assertThat(g.tx().isOpen(), is(true));
+        g.tx().begin();
+        assertThat(g.tx().isOpen(), is(true));
+
+        g.tx().rollback();
     }
 
     @Test
@@ -81,7 +82,7 @@ public class TransactionTest extends AbstractGremlinTest {
         g.tx().onClose(Transaction.CLOSE_BEHAVIOR.MANUAL);
 
         if (!g.tx().isOpen())
-            g.tx().open();
+            g.tx().begin();
 
         try {
             graph.tx().close();
@@ -150,6 +151,20 @@ public class TransactionTest extends AbstractGremlinTest {
     public void shouldAllowJustRollbackOnlyWithAutoTransaction() {
         // not expecting any exceptions here
         g.tx().rollback();
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
+    public void shouldBeIdempotentWhenClosingAnAlreadyClosedTransaction() {
+        // close() is idempotent: closing a transaction that is not open is a safe no-op (no exception).
+        if (g.tx().isOpen())
+            g.tx().rollback();
+
+        assertThat(g.tx().isOpen(), is(false));
+        // not expecting any exceptions here - a double/extra close must be a no-op
+        g.tx().close();
+        g.tx().close();
+        assertThat(g.tx().isOpen(), is(false));
     }
 
     @Test
@@ -763,15 +778,15 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldAllowReferenceOfVertexOutsideOfOriginalTransactionalContextManual() {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
-        g.tx().open();
+        g.tx().begin();
         final Vertex v1 = graph.addVertex("name", "stephen");
         g.tx().commit();
 
-        g.tx().open();
+        g.tx().begin();
         assertEquals("stephen", v1.value("name"));
 
         g.tx().rollback();
-        g.tx().open();
+        g.tx().begin();
         assertEquals("stephen", v1.value("name"));
         g.tx().close();
     }
@@ -781,16 +796,16 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldAllowReferenceOfEdgeOutsideOfOriginalTransactionalContextManual() {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
-        g.tx().open();
+        g.tx().begin();
         final Vertex v1 = graph.addVertex();
         final Edge e = v1.addEdge("self", v1, "weight", 0.5d);
         g.tx().commit();
 
-        g.tx().open();
+        g.tx().begin();
         assertEquals(0.5d, e.value("weight"), 0.00001d);
 
         g.tx().rollback();
-        g.tx().open();
+        g.tx().begin();
         assertEquals(0.5d, e.value("weight"), 0.00001d);
         g.tx().close();
     }
@@ -828,12 +843,12 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldAllowReferenceOfVertexIdOutsideOfOriginalThreadManual() throws Exception {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
-        g.tx().open();
+        g.tx().begin();
         final Vertex v1 = graph.addVertex("name", "stephen");
 
         final AtomicReference<Object> id = new AtomicReference<>();
         final Thread t = new Thread(() -> {
-            g.tx().open();
+            g.tx().begin();
             id.set(v1.id());
         });
 
@@ -850,13 +865,13 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     public void shouldAllowReferenceOfEdgeIdOutsideOfOriginalThreadManual() throws Exception {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
-        g.tx().open();
+        g.tx().begin();
         final Vertex v1 = graph.addVertex();
         final Edge e = v1.addEdge("self", v1, "weight", 0.5d);
 
         final AtomicReference<Object> id = new AtomicReference<>();
         final Thread t = new Thread(() -> {
-            g.tx().open();
+            g.tx().begin();
             id.set(e.id());
         });
 
@@ -1043,29 +1058,15 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_TRANSACTIONS)
-    public void shouldRejectOpeningSecondTransactionInsideTxClosureBody() {
+    public void shouldAllowIdempotentBeginInsideTxClosureBody() {
         g.executeInTx(gtx -> {
-            // gtx.tx() itself is legitimate and returns the (same) transaction - it must NOT throw, as it is the
-            // standard way to commit/rollback when holding a transactional source.
-            final Transaction nested = gtx.tx();
-            assertNotNull(nested);
+            // calling begin() again inside the closure is idempotent: the transaction is already open so
+            // begin() returns a source bound to the same underlying transaction.
+            final GraphTraversalSource gtx2 = gtx.tx().begin();
+            assertNotNull(gtx2);
 
-            // opening a SECOND transaction from within an already-open one must raise. On the embedded impl
-            // (TinkerTransaction) begin() calls doOpen() unconditionally with no double-open guard, so the guard lives
-            // in AbstractTransaction.open() (transactionAlreadyOpen()) - hence the embedded nesting test asserts on
-            // open(), not begin().
-            try {
-                nested.open();
-                fail("Opening a second transaction from within an already-open one should raise");
-            } catch (Exception ex) {
-                // expected - a transaction is already open
-                assertThat(ex, instanceOf(IllegalStateException.class));
-            }
-
-            gtx.addV("person").iterate();
+            // both sources reference the same Transaction
+            assertEquals(gtx.tx(), gtx2.tx());
         });
-
-        // the outer transaction still committed normally
-        assertEquals(1L, g.V().hasLabel("person").count().next().longValue());
     }
 }

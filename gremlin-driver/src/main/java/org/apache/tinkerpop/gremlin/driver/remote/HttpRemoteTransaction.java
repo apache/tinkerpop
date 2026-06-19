@@ -98,44 +98,46 @@ public class HttpRemoteTransaction implements RemoteTransaction {
     }
 
     /**
-     * Not supported for remote transactions. Use {@link #begin(Class)} instead.
-     *
-     * @throws UnsupportedOperationException always
-     */
-    @Override
-    public void open() {
-        begin();
-    }
-
-    /**
      * Starts a transaction and returns a traversal source bound to it.
      * <p>
-     * This method sends {@code g.tx().begin()} to the server, which returns
-     * the transaction ID. All subsequent requests will include this ID.
+     * When this transaction has not yet been started, this method sends {@code g.tx().begin()} to the server,
+     * which returns the transaction ID that all subsequent requests will include. This method is idempotent: if
+     * the transaction is already open, it does not send a second begin to the server and does not throw - it
+     * reuses the existing transaction ID and returns a traversal source bound to the same transaction. A remote
+     * transaction is single-use, so once it has been closed (via {@code commit()}, {@code rollback()}, timeout,
+     * or a failed begin) it cannot be reused and this method throws.
      *
      * @param traversalSourceClass the class of the traversal source to create
      * @param <T> the type of the traversal source
-     * @return a new traversal source bound to this transaction
-     * @throws IllegalStateException if the transaction is already started
+     * @return a traversal source bound to this transaction
+     * @throws IllegalStateException if the transaction has already been closed
      * @throws RuntimeException if the transaction fails to begin
      */
     @Override
     public <T extends TraversalSource> T begin(final Class<T> traversalSourceClass) {
-        if (state != TransactionState.NOT_STARTED) {
-            throw new IllegalStateException("Transaction already started");
-        }
-        cluster.trackTransaction(this);
+        switch (state) {
+            case NOT_STARTED:
+                cluster.trackTransaction(this);
+                try {
+                    // Send begin - no txId attached yet
+                    final ResultSet rs = submitInternal("g.tx().begin()");
 
-        try {
-            // Send begin - no txId attached yet
-            final ResultSet rs = submitInternal("g.tx().begin()");
-            
-            // Server returns the transaction ID
-            this.transactionId = extractTransactionId(rs);
-            this.state = TransactionState.OPEN;
-        } catch (Exception e) {
-            cleanUp();
-            throw new RuntimeException("Failed to begin transaction: " + e.getMessage(), e);
+                    // Server returns the transaction ID
+                    this.transactionId = extractTransactionId(rs);
+                    this.state = TransactionState.OPEN;
+                } catch (Exception e) {
+                    cleanUp();
+                    throw new RuntimeException("Failed to begin transaction: " + e.getMessage(), e);
+                }
+                break;
+            case OPEN:
+                // idempotent: a transaction is already open - reuse the existing transactionId without
+                // sending a second begin to the server, and return a source bound to the same transaction
+                break;
+            case CLOSED:
+                throw new IllegalStateException("Transaction is closed and cannot be reused; begin a new transaction");
+            default:
+                throw new IllegalStateException("Unknown transaction state: " + state);
         }
 
         // Create RemoteConnection for the traversal source
@@ -242,8 +244,11 @@ public class HttpRemoteTransaction implements RemoteTransaction {
 
     @Override
     public void close() {
+        // close() is idempotent: closing an already-closed transaction is a safe no-op
+        if (state == TransactionState.CLOSED) return;
+
         closeConsumer.accept(this);
-        
+
         // this is just for safety in case of custom closeConsumer but should normally be handled by commit/rollback
         cleanUp();
     }

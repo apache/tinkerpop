@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.util.AbstractThreadLocalTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
@@ -79,12 +78,6 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
     @Override
     public boolean isOpen() {
         return txNumber.get() != NOT_STARTED;
-    }
-
-    @Override
-    public <T extends TraversalSource> T begin() {
-        doOpen();
-        return super.begin();
     }
 
     @Override

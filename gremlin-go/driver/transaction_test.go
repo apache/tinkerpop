@@ -188,10 +188,16 @@ func TestTransactionDoubleBegin(t *testing.T) {
 	tx := client.Transact()
 	_, err := tx.Begin()
 	assert.Nil(t, err)
+	txId := tx.TransactionId()
 
+	// Begin() while already open is idempotent: it does not error and does not start a new
+	// server-side transaction (the transactionId is unchanged)
 	_, err = tx.Begin()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "E1101")
+	assert.Nil(t, err)
+	assert.True(t, tx.IsOpen())
+	assert.Equal(t, txId, tx.TransactionId())
+
+	tx.Rollback()
 }
 
 func TestTransactionCommitWhenNotOpen(t *testing.T) {
@@ -410,7 +416,7 @@ func TestTransactionReturnsSameTxFromGtxTx(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestTransactionBeginFromGtxTxThrows(t *testing.T) {
+func TestTransactionBeginFromGtxTxIsIdempotent(t *testing.T) {
 	client := newTxClient(t)
 	defer client.Close()
 
@@ -421,11 +427,15 @@ func TestTransactionBeginFromGtxTxThrows(t *testing.T) {
 	tx := g.Tx()
 	gtx, err := tx.Begin()
 	assert.Nil(t, err)
+	txId := tx.TransactionId()
 
+	// Begin() on the same (already open) transaction obtained via gtx.Tx() is idempotent: it does
+	// not start a new server-side transaction, so it stays bound to the same transaction id
 	sameTx := gtx.Tx()
 	_, err = sameTx.Begin()
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "E1101")
+	assert.Nil(t, err)
+	assert.True(t, sameTx.IsOpen())
+	assert.Equal(t, txId, sameTx.TransactionId())
 
 	tx.Rollback()
 }
@@ -482,6 +492,24 @@ func TestTransactionDoubleRollback(t *testing.T) {
 	err = tx.Rollback()
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "E1102")
+}
+
+func TestTransactionDoubleClose(t *testing.T) {
+	client := newTxClient(t)
+	defer client.Close()
+	dropTxGraph(t, client)
+
+	tx := client.Transact()
+	_, err := tx.Begin()
+	assert.Nil(t, err)
+	err = tx.Close()
+	assert.Nil(t, err)
+	assert.False(t, tx.IsOpen())
+
+	// Close() is idempotent: closing an already-closed transaction is a safe no-op (no error)
+	err = tx.Close()
+	assert.Nil(t, err)
+	assert.False(t, tx.IsOpen())
 }
 
 func TestTransactionIsolateFromNonTx(t *testing.T) {
@@ -718,9 +746,9 @@ func TestTransactionEvaluateInTxReturnsValue(t *testing.T) {
 
 // Opening a SECOND transaction from inside the body must error. gtx.Tx() itself
 // legitimately returns the SAME transaction (it must not error - that is the
-// commit path), but a nested Begin() on it is rejected by the existing
-// double-begin guard (E1101).
-func TestTransactionExecuteInTxRejectsNestedBegin(t *testing.T) {
+// commit path), and a nested Begin() on it is idempotent: it does not error and
+// reuses the same already-open transaction.
+func TestTransactionExecuteInTxBeginIsIdempotent(t *testing.T) {
 	client := newTxClient(t)
 	defer client.Close()
 	dropTxGraph(t, client)
@@ -733,21 +761,22 @@ func TestTransactionExecuteInTxRejectsNestedBegin(t *testing.T) {
 		// gtx.Tx() returns the bound, already-open transaction (must NOT error).
 		tx := gtx.Tx()
 		assert.True(t, tx.IsOpen())
+		txId := tx.TransactionId()
 
 		// gtx.Tx() called again returns that same transaction handle.
 		assert.Equal(t, tx, gtx.Tx())
 
-		// Opening a second transaction (a nested begin) IS rejected.
-		_, beginErr := tx.Begin()
-		assert.NotNil(t, beginErr)
-		assert.Contains(t, beginErr.Error(), "E1101")
+		// Begin() on the already-open transaction is idempotent: no error, no new server-side
+		// transaction (the transaction id is unchanged).
+		gtx2, beginErr := tx.Begin()
+		assert.Nil(t, beginErr)
+		assert.NotNil(t, gtx2)
+		assert.Equal(t, txId, gtx2.Tx().TransactionId())
 
-		// Surface the nested-begin error from the body so the wrapper rolls back.
-		return beginErr
+		return nil
 	})
 
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "E1101")
+	assert.Nil(t, err)
 }
 
 // Verifies that a failure of the wrapper's automatic Commit() is surfaced from

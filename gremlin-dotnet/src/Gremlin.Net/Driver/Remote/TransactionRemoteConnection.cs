@@ -97,8 +97,8 @@ namespace Gremlin.Net.Driver.Remote
         /// <inheritdoc />
         public RemoteTransaction Tx(GraphTraversalSource g)
         {
-            // Return the existing transaction. Calling BeginAsync() on it will throw
-            // "Transaction already started" since it's already open.
+            // Return the existing transaction. Calling BeginAsync() on it again is idempotent
+            // (it is already open) and returns a source bound to the same transaction.
             return _transaction;
         }
 

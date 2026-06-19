@@ -44,37 +44,47 @@ type Transaction struct {
 	mutex         sync.Mutex
 }
 
+// Begin starts the transaction and returns a transaction-bound GraphTraversalSource.
+//
+// Begin is idempotent: calling it while a transaction is already open does not send a second
+// begin to the server and does not return an error - it reuses the existing transaction ID and
+// returns a source bound to the same transaction. A transaction is single-use, so calling Begin
+// after it has been closed (commit/rollback/failed begin) returns an error.
 func (t *Transaction) Begin() (*GraphTraversalSource, error) {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 
-	if t.isOpen || t.failed {
-		return nil, newError(err1101TransactionRepeatedOpenError)
+	if t.failed {
+		return nil, newError(err1101TransactionClosedCannotReuseError)
 	}
 
-	// Submit g.tx().begin() via the Client to obtain a server-generated transactionId
-	rs, err := t.client.SubmitWithOptions("g.tx().begin()",
-		RequestOptions{})
-	if err != nil {
-		t.failed = true
-		return nil, newError(err1105TransactionBeginFailedError, err)
-	}
+	// idempotent: if a transaction is already open, reuse the existing transactionId without
+	// sending a second begin to the server, and return a source bound to the same transaction
+	if !t.isOpen {
+		// Submit g.tx().begin() via the Client to obtain a server-generated transactionId
+		rs, err := t.client.SubmitWithOptions("g.tx().begin()",
+			RequestOptions{})
+		if err != nil {
+			t.failed = true
+			return nil, newError(err1105TransactionBeginFailedError, err)
+		}
 
-	results, err := rs.All()
-	if err != nil {
-		t.failed = true
-		return nil, newError(err1105TransactionBeginFailedError, err)
-	}
+		results, err := rs.All()
+		if err != nil {
+			t.failed = true
+			return nil, newError(err1105TransactionBeginFailedError, err)
+		}
 
-	txId, err := extractTransactionId(results)
-	if err != nil {
-		t.failed = true
-		return nil, err
-	}
+		txId, err := extractTransactionId(results)
+		if err != nil {
+			t.failed = true
+			return nil, err
+		}
 
-	t.transactionId = txId
-	t.isOpen = true
-	t.client.trackTransaction(t)
+		t.transactionId = txId
+		t.isOpen = true
+		t.client.trackTransaction(t)
+	}
 
 	// Create a transaction-bound remote connection that injects transactionId
 	txDRC := &transactionRemoteConnection{

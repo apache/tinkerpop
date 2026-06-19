@@ -149,13 +149,25 @@ namespace Gremlin.Net.IntegrationTest.Driver
         }
 
         [Fact]
-        public async Task ShouldThrowOnDoubleBegin()
+        public async Task ShouldBeIdempotentOnDoubleBegin()
         {
             using var client = CreateClient();
+            await DropGraph(client);
             var tx = client.Transact("gtx");
             await tx.BeginAsync();
+            var txId = tx.TransactionId;
 
-            await Assert.ThrowsAsync<InvalidOperationException>(() => tx.BeginAsync());
+            // BeginAsync while already open is idempotent: it does not throw and does not start a new
+            // server-side transaction (the transactionId is unchanged)
+            var gtx = await tx.BeginAsync();
+            Assert.True(tx.IsOpen);
+            Assert.Equal(txId, tx.TransactionId);
+
+            // the source from the second begin works within the same transaction
+            await gtx.AddV("person").Property("name", "double_begin").Promise(t => t.Iterate());
+            Assert.Equal(1L, await gtx.V().Has("name", "double_begin").Count().Promise(t => t.Next()));
+
+            await tx.RollbackAsync();
         }
 
         [Fact]
@@ -203,6 +215,22 @@ namespace Gremlin.Net.IntegrationTest.Driver
             }
 
             Assert.Equal(0L, await GetCount(client, "person"));
+        }
+
+        [Fact]
+        public async Task ShouldBeIdempotentOnDoubleDispose()
+        {
+            using var client = CreateClient();
+            await DropGraph(client);
+            var tx = client.Transact("gtx");
+            await tx.BeginAsync();
+            await tx.RollbackAsync();
+            Assert.False(tx.IsOpen);
+
+            // disposing (closing) an already-closed transaction is a safe no-op (no exception)
+            await tx.DisposeAsync();
+            await tx.DisposeAsync();
+            Assert.False(tx.IsOpen);
         }
 
         [Fact]
@@ -320,7 +348,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         }
 
         [Fact]
-        public async Task ShouldThrowOnBeginFromGtxTx()
+        public async Task ShouldBeIdempotentOnBeginFromGtxTx()
         {
             using var client = CreateClient();
             await DropGraph(client);
@@ -329,9 +357,14 @@ namespace Gremlin.Net.IntegrationTest.Driver
 
             var tx = g.Tx();
             var gtx = await tx.BeginAsync();
+            var txId = tx.TransactionId;
             var sameTx = gtx.Tx();
 
-            await Assert.ThrowsAsync<InvalidOperationException>(() => sameTx.BeginAsync());
+            // BeginAsync on the same (already open) transaction obtained via gtx.Tx() is idempotent: it
+            // does not start a new server-side transaction, so it stays bound to the same transaction id
+            await sameTx.BeginAsync();
+            Assert.True(sameTx.IsOpen);
+            Assert.Equal(txId, sameTx.TransactionId);
 
             await tx.RollbackAsync();
         }
@@ -585,22 +618,24 @@ namespace Gremlin.Net.IntegrationTest.Driver
         }
 
         [Fact]
-        public async Task ShouldThrowWhenOpeningNestedTransactionInsideExecuteInTxAsync()
+        public async Task ShouldBeIdempotentWhenBeginningInsideExecuteInTxAsync()
         {
             using var client = CreateClient();
             await DropGraph(client);
             var connection = new DriverRemoteConnection(client, "gtx");
             var g = AnonymousTraversalSource.Traversal().With(connection);
 
-            // Opening a SECOND transaction from inside the body must throw. The closure body's
-            // own commit will then fail because the body threw, surfacing the nesting error.
-            await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                g.ExecuteInTxAsync(async gtx =>
-                {
-                    // gtx.Tx() legitimately returns the SAME transaction (it must not throw);
-                    // calling BeginAsync() on it opens a second transaction and must throw.
-                    await gtx.Tx().BeginAsync();
-                }));
+            // BeginAsync() from inside the body, on the same already-open transaction returned by
+            // gtx.Tx(), is idempotent: it does not throw and does not start a new server-side
+            // transaction (the transaction id is unchanged).
+            await g.ExecuteInTxAsync(async gtx =>
+            {
+                var tx = gtx.Tx();
+                var txId = tx.TransactionId;
+                var gtx2 = await tx.BeginAsync();
+                Assert.NotNull(gtx2);
+                Assert.Equal(txId, gtx2.Tx().TransactionId);
+            });
         }
 
         [Fact]

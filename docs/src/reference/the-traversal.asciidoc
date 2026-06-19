@@ -135,9 +135,10 @@ in relation to the usage convention and graph provider caveats alluded to earlie
 
 Focusing on remote contexts first, note that it is still possible to issue traversals from `g`, but those will
 operate as implicit transactions (as opposed to the explicit transaction opened by `gtx`) and simply behave as
-self-contained units of work (i.e. one traversal is one implicit transaction). Each explicit transaction requires its
-own `Transaction` object. Multiple `begin()` calls on the same `Transaction` object are not permitted and will throw
-an `IllegalStateException`:
+self-contained units of work (i.e. one traversal is one implicit transaction). Each independent explicit transaction
+requires its own `Transaction` object obtained from `g.tx()`. Calling `begin()` more than once on the same
+`Transaction` object is idempotent - it does not start a new transaction and does not throw, returning a
+`GraphTraversalSource` bound to the already-open transaction:
 
 [source,java]
 ----
@@ -259,8 +260,28 @@ occurs. `Transaction.READ_WRITE_BEHAVIOR` contains pre-defined `Consumer` functi
 method.  It has two options:
 
 * `AUTO` - automatic transactions where the transaction is started implicitly to the read or write operation
-* `MANUAL` - manual transactions where it is up to the user to explicitly open a transaction, throwing an exception
-if the transaction is not open
+* `MANUAL` - manual transactions where it is up to the user to explicitly begin a transaction with `begin()`,
+throwing an exception if the transaction is not open
+
+The `begin()` method is idempotent with respect to an open transaction: calling it when a transaction is already open
+does not start a new transaction and does not throw - it returns a `TraversalSource` bound to the transaction that is
+already open. This behavior is what allows `begin()` to coexist with `AUTO`. Under `AUTO`, a read or write implicitly
+opens a transaction, so an explicit `begin()` issued afterward would otherwise be operating on an already-open
+transaction; because `begin()` is idempotent, that call is safe rather than an error. Likewise, `close()` is
+idempotent - closing a transaction that is not open is a no-op.
+
+How `begin()` behaves once a transaction has been closed depends on the transaction model, and the two reference
+models differ here intentionally:
+
+* *Embedded* transactions are, by default (excluding threaded transactions), thread-bound and reusable. After a
+`commit()` or `rollback()`, the same `Transaction` is reset and a subsequent `begin()` (or an implicit `AUTO` open on
+the next read or write) starts a new transaction on it. This reusability is required for `AUTO` to keep working after
+each transaction completes. Threaded transactions obtained via `createThreadedTx()` differ in that multiple threads
+can collaborate on the same transaction, but the lifecycle after commit or rollback is not specified by the API and is
+provider-defined.
+* *Remote* transactions are single-use. A `Transaction` obtained from `g.tx()` represents one transaction; once it has
+been committed or rolled back it cannot be reused, and calling `begin()` on it throws. Start another transaction by
+obtaining a fresh `Transaction` from `g.tx()`.
 
 Providing a `Consumer` function to `onClose` allows configuration of how a transaction is handled when
 `Transaction.close()` is called.  `Transaction.CLOSE_BEHAVIOR` has several pre-defined options that can be supplied to
@@ -307,8 +328,8 @@ gremlin> g.tx().isOpen()
 ==>false
 gremlin> g.addV("person").property("name","marko") <6>
 Open a transaction before attempting to read/write the transaction
-gremlin> g.tx().open() <7>
-==>null
+gremlin> g.tx().begin() <7>
+==>graphtraversalsource[tinkertransactiongraph[vertices:1 edges:0], standard]
 gremlin> g.addV("person").property("name","marko") <8>
 ==>v[1]
 gremlin> g.tx().commit()
@@ -322,7 +343,7 @@ or other read operations executed in the context of that open transaction.
 <4> Calling `commit` finalizes the transaction.
 <5> Change transaction behavior to require manual control.
 <6> Adding a vertex now results in failure because the transaction was not explicitly opened.
-<7> Explicitly open a transaction.
+<7> Explicitly begin a transaction with `begin()`, which returns a `GraphTraversalSource` bound to it.
 <8> Adding a vertex now succeeds as the transaction was manually opened.
 
 NOTE: It may be important to consult the documentation of the `Graph` implementation you are using when it comes to the

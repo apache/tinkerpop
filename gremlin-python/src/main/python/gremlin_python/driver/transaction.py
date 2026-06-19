@@ -49,34 +49,42 @@ class Transaction:
         The returned GTS can be used to submit traversals within this transaction.
         Users of the driver-level API (client.transact()) may ignore the return
         value and use submit() directly instead.
+
+        begin() is idempotent: calling it while a transaction is already open does not
+        send a second begin to the server and does not raise - it reuses the existing
+        transaction ID and returns a source bound to the same transaction. A transaction
+        is single-use, so calling begin() after it has been closed raises.
         """
-        if self._is_open or self._failed:
-            raise Exception("Transaction already started")
+        if self._failed:
+            raise Exception("Transaction is closed and cannot be reused; begin a new transaction")
 
-        try:
-            result = self._client.submit("g.tx().begin()")
-            results = result.all().result()
-        except Exception:
-            self._failed = True
-            raise
+        # idempotent: if a transaction is already open, reuse the existing transactionId without
+        # sending a second begin to the server, and return a source bound to the same transaction
+        if not self._is_open:
+            try:
+                result = self._client.submit("g.tx().begin()")
+                results = result.all().result()
+            except Exception:
+                self._failed = True
+                raise
 
-        if not results:
-            self._failed = True
-            raise Exception("Server did not return transaction ID")
+            if not results:
+                self._failed = True
+                raise Exception("Server did not return transaction ID")
 
-        result_map = results[0]
-        if isinstance(result_map, dict):
-            self._transaction_id = result_map.get('transactionId')
-        else:
-            self._failed = True
-            raise Exception("Server did not return transaction ID in expected format")
+            result_map = results[0]
+            if isinstance(result_map, dict):
+                self._transaction_id = result_map.get('transactionId')
+            else:
+                self._failed = True
+                raise Exception("Server did not return transaction ID in expected format")
 
-        if not self._transaction_id:
-            self._failed = True
-            raise Exception("Server returned empty transaction ID")
+            if not self._transaction_id:
+                self._failed = True
+                raise Exception("Server returned empty transaction ID")
 
-        self._is_open = True
-        self._client.track_transaction(self)
+            self._is_open = True
+            self._client.track_transaction(self)
 
         # Return a GraphTraversalSource bound to this transaction via
         # TransactionRemoteConnection. Inline imports avoid circular dependencies
