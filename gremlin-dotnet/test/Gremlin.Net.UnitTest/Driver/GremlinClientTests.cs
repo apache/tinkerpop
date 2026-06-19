@@ -51,7 +51,7 @@ namespace Gremlin.Net.UnitTest.Driver
         {
             var settings = new ConnectionSettings
             {
-                EnableCompression = true,
+                Compression = Compression.Deflate,
                 BulkResults = true
             };
             using var client = new GremlinClient(new GremlinServer(), connectionSettings: settings);

@@ -53,6 +53,21 @@ namespace Gremlin.Net.Driver.Messages
         public Dictionary<string, object> Fields { get; }
 
         /// <summary>
+        ///     Returns a copy of this message with <paramref name="key"/> set to
+        ///     <paramref name="value"/>, without mutating this instance (and therefore without
+        ///     mutating the caller-owned message). Used to fill connection-level defaults onto
+        ///     the outgoing request only.
+        /// </summary>
+        /// <param name="key">The field key to set on the copy.</param>
+        /// <param name="value">The field value to set on the copy.</param>
+        /// <returns>A new <see cref="RequestMessage"/> carrying the added field.</returns>
+        internal RequestMessage CloneWithField(string key, object value)
+        {
+            var copiedFields = new Dictionary<string, object>(Fields) { [key] = value };
+            return new RequestMessage(Gremlin, copiedFields);
+        }
+
+        /// <summary>
         ///     Initializes a <see cref="Builder" /> to build a <see cref="RequestMessage" />.
         /// </summary>
         /// <param name="gremlin">The Gremlin query string.</param>

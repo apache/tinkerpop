@@ -53,7 +53,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         {
             // The secure server uses SimpleAuthenticator with credentials: stephen/password
             using var gremlinClient = CreateSecureClient(
-                new[] { Auth.BasicAuth("stephen", "password") });
+                new[] { Auth.Basic("stephen", "password") });
 
             var response = await gremlinClient.SubmitAsync<long>("g.inject(1).count()");
 
@@ -65,7 +65,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         {
             // Test through DriverRemoteConnection + traversal
             using var client = CreateSecureClient(
-                new[] { Auth.BasicAuth("stephen", "password") });
+                new[] { Auth.Basic("stephen", "password") });
             using var remote = new DriverRemoteConnection(client, "gmodern");
             var g = AnonymousTraversalSource.Traversal().With(remote);
 
@@ -78,7 +78,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         public async Task ShouldFailWithWrongCredentials()
         {
             using var gremlinClient = CreateSecureClient(
-                new[] { Auth.BasicAuth("stephen", "wrongpassword") });
+                new[] { Auth.Basic("stephen", "wrongpassword") });
 
             // The server returns auth errors as JSON (not GraphBinary), so Connection
             // extracts the message and throws HttpRequestException.

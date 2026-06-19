@@ -141,7 +141,7 @@ namespace Gremlin.Net.UnitTest.Driver
         {
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
-            var settings = new ConnectionSettings { EnableCompression = true };
+            var settings = new ConnectionSettings { Compression = Compression.Deflate };
             using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
@@ -156,13 +156,28 @@ namespace Gremlin.Net.UnitTest.Driver
         {
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
-            var settings = new ConnectionSettings { EnableCompression = false };
+            var settings = new ConnectionSettings { Compression = Compression.None };
             using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
             Assert.NotNull(handler.CapturedRequest);
             Assert.DoesNotContain(handler.CapturedRequest!.Headers.AcceptEncoding,
+                e => e.Value == "deflate");
+        }
+
+        [Fact]
+        public async Task ShouldSetAcceptEncodingByDefault()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.Contains(handler.CapturedRequest!.Headers.AcceptEncoding,
                 e => e.Value == "deflate");
         }
 
@@ -226,21 +241,24 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task ShouldDecompressDeflateResponse()
         {
-            // Compress the minimal response bytes with deflate
+            // Compress the minimal response bytes the way the server does: java.util.zip.Deflater's
+            // default constructor emits a zlib-wrapped stream (RFC 1950: 2-byte header + Adler-32),
+            // which corresponds to .NET's ZLibStream (NOT the raw RFC 1951 DeflateStream). Using
+            // ZLibStream here exercises the real wire format and would catch a raw/zlib mismatch.
             var originalBytes = BuildMinimalResponseBytes();
             byte[] compressedBytes;
             using (var compressedStream = new MemoryStream())
             {
-                using (var deflateStream = new DeflateStream(compressedStream, CompressionMode.Compress, true))
+                using (var zlibStream = new ZLibStream(compressedStream, CompressionMode.Compress, true))
                 {
-                    deflateStream.Write(originalBytes, 0, originalBytes.Length);
+                    zlibStream.Write(originalBytes, 0, originalBytes.Length);
                 }
                 compressedBytes = compressedStream.ToArray();
             }
 
             var (httpClient, handler) = CreateMockHttpClient(compressedBytes, "deflate");
             var serializer = CreateMockSerializer();
-            var settings = new ConnectionSettings { EnableCompression = true };
+            var settings = new ConnectionSettings { Compression = Compression.Deflate };
             using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             // Should not throw — decompression should work
@@ -260,6 +278,110 @@ namespace Gremlin.Net.UnitTest.Driver
             connection.Dispose();
             // Double dispose should not throw
             connection.Dispose();
+        }
+
+        [Fact]
+        public void ShouldNotMutateUserSslOptionsWhenSkippingCertValidation()
+        {
+            // The public constructor must NOT mutate the caller's SslClientAuthenticationOptions
+            // when SkipCertificateValidation is set. The options object is a reference type that
+            // may be shared across clients, so mutating it in place could silently disable
+            // validation on another client. Instead, the skip-cert callback must be installed on
+            // an internal clone, leaving the caller's object untouched.
+            var userSsl = new System.Net.Security.SslClientAuthenticationOptions
+            {
+                TargetHost = "example.com"
+            };
+            var settings = new ConnectionSettings
+            {
+                Ssl = userSsl,
+                SkipCertificateValidation = true
+            };
+
+            using var connection = new Connection(
+                TestUri, CreateMockSerializer(), settings);
+
+            // The caller's own options object must be left exactly as supplied: its
+            // RemoteCertificateValidationCallback must remain null and its other fields intact.
+            Assert.Equal("example.com", userSsl.TargetHost);
+            Assert.Null(userSsl.RemoteCertificateValidationCallback);
+            // settings.Ssl must still reference the very same object the caller provided.
+            Assert.Same(userSsl, settings.Ssl);
+        }
+
+        [Fact]
+        public void ShouldNotShareSkipCertCallbackAcrossClientsSharingSslOptions()
+        {
+            // Reusing one Ssl options object across two clients, only one of which skips cert
+            // validation, must not leak the accept-all callback onto the shared object (and thus
+            // onto the other client).
+            var sharedSsl = new System.Net.Security.SslClientAuthenticationOptions
+            {
+                TargetHost = "example.com"
+            };
+
+            var skipSettings = new ConnectionSettings
+            {
+                Ssl = sharedSsl,
+                SkipCertificateValidation = true
+            };
+            var strictSettings = new ConnectionSettings
+            {
+                Ssl = sharedSsl,
+                SkipCertificateValidation = false
+            };
+
+            using var skipConnection = new Connection(TestUri, CreateMockSerializer(), skipSettings);
+            using var strictConnection = new Connection(TestUri, CreateMockSerializer(), strictSettings);
+
+            // The shared object must never have had the accept-all callback written onto it.
+            Assert.Null(sharedSsl.RemoteCertificateValidationCallback);
+        }
+
+        [Fact]
+        public void ShouldConstructWithProxyAndMaxHeaderBytes()
+        {
+            var settings = new ConnectionSettings
+            {
+                Proxy = new System.Net.WebProxy("http://localhost:3128"),
+                MaxResponseHeaderBytes = 16384
+            };
+
+            // Should construct the handler without throwing.
+            using var connection = new Connection(
+                TestUri, CreateMockSerializer(), settings);
+        }
+
+        [Theory]
+        [InlineData(1, 1)]      // a single byte still needs one whole kilobyte
+        [InlineData(1023, 1)]   // just under 1 KB rounds up to 1
+        [InlineData(1024, 1)]   // exactly 1 KB stays 1 (no spurious round-up)
+        [InlineData(1025, 2)]   // one byte over a KB boundary rounds up to 2
+        [InlineData(8191, 8)]   // just under 8 KB rounds up to 8
+        [InlineData(8192, 8)]   // exactly 8 KB (the default) stays 8
+        [InlineData(8193, 9)]   // one byte over rounds up to 9
+        [InlineData(16384, 16)] // exactly 16 KB stays 16
+        public void ShouldRoundMaxResponseHeaderBytesUpToKilobytes(int bytes, int expectedKilobytes)
+        {
+            // SocketsHttpHandler.MaxResponseHeadersLength is expressed in kilobytes while the
+            // public option is in bytes. The conversion must round UP so the configured byte cap
+            // is never silently lowered (ceil(bytes / 1024)). This asserts the rounding math the
+            // public Connection constructor applies to the handler.
+            Assert.Equal(expectedKilobytes, Connection.MaxResponseHeaderBytesToKilobytes(bytes));
+        }
+
+        [Fact]
+        public void ShouldLeaveMaxResponseHeadersAtDefaultWhenBytesUnset()
+        {
+            // When MaxResponseHeaderBytes is 0 (the default / unset), the constructor must NOT
+            // touch the handler's MaxResponseHeadersLength, leaving the .NET default in place.
+            // The conversion is only applied for a positive byte cap, so constructing with the
+            // default must succeed without invoking the rounding path.
+            var settings = new ConnectionSettings();
+            Assert.Equal(0, settings.MaxResponseHeaderBytes);
+
+            // Should construct without throwing and without configuring the header cap.
+            using var connection = new Connection(TestUri, CreateMockSerializer(), settings);
         }
 
         private static RequestMessage CreateTestRequest()
@@ -938,6 +1060,162 @@ namespace Gremlin.Net.UnitTest.Driver
 
             Assert.NotNull(result);
             Assert.True(handler.WasCalled, "SendAsync should have been called");
+        }
+
+        [Fact]
+        public async Task ShouldFillBatchSizeFromDefaultWhenUnset()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings { DefaultBatchSize = 42 };
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            var request = CreateTestRequest();
+            await connection.SubmitAsync<object>(request);
+
+            // The caller-owned request must NOT be mutated by default-filling.
+            Assert.False(request.Fields.ContainsKey(Tokens.ArgsBatchSize));
+            // The outgoing wire payload must carry the connection-level default.
+            Assert.Equal(42, await ReadBatchSizeFromBodyAsync(handler));
+        }
+
+        [Fact]
+        public async Task ShouldNotOverrideExplicitBatchSize()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings { DefaultBatchSize = 42 };
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            var request = RequestMessage.Build("g.V()").AddG("g").AddBatchSize(100).Create();
+            await connection.SubmitAsync<object>(request);
+
+            // A per-request explicit batchSize always wins, on the caller object and the wire.
+            Assert.Equal(100, request.Fields[Tokens.ArgsBatchSize]);
+            Assert.Equal(100, await ReadBatchSizeFromBodyAsync(handler));
+        }
+
+        [Fact]
+        public async Task ShouldUseDefaultBatchSizeOf64ByDefault()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            var request = CreateTestRequest();
+            await connection.SubmitAsync<object>(request);
+
+            Assert.False(request.Fields.ContainsKey(Tokens.ArgsBatchSize));
+            Assert.Equal(64, await ReadBatchSizeFromBodyAsync(handler));
+        }
+
+        [Fact]
+        public async Task ShouldNotPersistDefaultBatchSizeAcrossResubmissions()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings { DefaultBatchSize = 42 };
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            // Resubmitting the same message must not carry over a previously injected default.
+            var request = CreateTestRequest();
+            await connection.SubmitAsync<object>(request);
+            await connection.SubmitAsync<object>(request);
+
+            Assert.False(request.Fields.ContainsKey(Tokens.ArgsBatchSize));
+            Assert.Equal(42, await ReadBatchSizeFromBodyAsync(handler));
+        }
+
+        /// <summary>
+        ///     Reads the serialized JSON request body captured by the mock handler and returns
+        ///     the <c>batchSize</c> field value, or <c>null</c> when it is absent.
+        /// </summary>
+        private static async Task<int?> ReadBatchSizeFromBodyAsync(MockHandler handler)
+        {
+            Assert.NotNull(handler.CapturedRequest);
+            var bodyBytes = await handler.CapturedRequest!.Content!.ReadAsByteArrayAsync();
+            using var doc = System.Text.Json.JsonDocument.Parse(bodyBytes);
+            if (doc.RootElement.TryGetProperty(Tokens.ArgsBatchSize, out var batchSizeProp))
+            {
+                return batchSizeProp.GetInt32();
+            }
+            return null;
+        }
+
+        [Fact]
+        public async Task ShouldTimeOutSlowReadWhenReadTimeoutSet()
+        {
+            // A response stream that blocks indefinitely on read should trigger the
+            // per-read idle timeout once it is consumed during deserialization.
+            var blockingStream = new BlockingStream();
+            var handler = new StreamMockHandler(blockingStream);
+            var httpClient = new HttpClient(handler);
+            // The serializer actually reads from the stream so the read timeout can fire.
+            var serializer = CreateReadingSerializer();
+            var settings = new ConnectionSettings
+            {
+                ReadTimeout = TimeSpan.FromMilliseconds(100)
+            };
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            var result = await connection.SubmitAsync<object>(CreateTestRequest());
+
+            // The background streaming task surfaces the timeout as a faulted enumeration.
+            await Assert.ThrowsAnyAsync<Exception>(async () =>
+            {
+                await foreach (var _ in result) { }
+            });
+        }
+
+        private static IMessageSerializer CreateReadingSerializer(
+            string mimeType = SerializationTokens.GraphBinary4MimeType)
+        {
+            var serializer = Substitute.For<IMessageSerializer>();
+            serializer.MimeType.Returns(mimeType);
+            serializer.DeserializeMessageAsync(Arg.Any<Stream>(), Arg.Any<CancellationToken>())
+                .Returns(callInfo => ReadAllAsync((Stream)callInfo[0], (CancellationToken)callInfo[1]));
+            return serializer;
+        }
+
+        private static async IAsyncEnumerable<object> ReadAllAsync(Stream stream,
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var buffer = new byte[16];
+            while (await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false) > 0)
+            {
+                yield return new object();
+            }
+        }
+
+        /// <summary>
+        ///     A stream whose ReadAsync never completes until cancelled, used to exercise the
+        ///     per-read timeout.
+        /// </summary>
+        private sealed class BlockingStream : Stream
+        {
+            public override async ValueTask<int> ReadAsync(Memory<byte> buffer,
+                CancellationToken cancellationToken = default)
+            {
+                await Task.Delay(Timeout.Infinite, cancellationToken).ConfigureAwait(false);
+                return 0;
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                Thread.Sleep(Timeout.Infinite);
+                return 0;
+            }
+
+            public override bool CanRead => true;
+            public override bool CanSeek => false;
+            public override bool CanWrite => false;
+            public override long Length => throw new NotSupportedException();
+            public override long Position { get => 0; set { } }
+            public override void Flush() { }
+            public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+            public override void SetLength(long value) => throw new NotSupportedException();
+            public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
         }
 
         /// <summary>

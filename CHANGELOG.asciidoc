@@ -25,6 +25,18 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Standardized `gremlin-dotnet` connection options per the TinkerPop 4.x GLV proposal:
+** Renamed the `Auth.BasicAuth`/`Auth.SigV4Auth` factory methods to `Auth.Basic`/`Auth.Sigv4`; the old methods are retained as `[Obsolete]` deprecated aliases that delegate to the canonical members, so existing code keeps compiling.
+** Renamed `MaxConnectionsPerServer` to `MaxConnections`, `IdleConnectionTimeout` to `IdleTimeout`, and `KeepAliveInterval` to `KeepAliveTime` (now wired to a real TCP keep-alive socket option rather than the inert HTTP/2 ping timeout, enabling `SO_KEEPALIVE` and setting the per-socket idle time on Windows, Linux, and macOS, with a no-op fallback to the OS default idle time on other platforms); the old property names are retained as `[Obsolete]` deprecated aliases.
+** Renamed `ConnectionTimeout` to `ConnectTimeout` (default lowered from 15s to 5s; old name retained as a deprecated alias). *(breaking)*
+** Renamed `EnableCompression` to `Compression`, now a `{None, Deflate}` enum defaulting to `Deflate` (compression on by default; set `None` to disable). The deprecated `EnableCompression` `bool` is retained as a compatibility shim mapping `true`/`false` to `Compression.Deflate`/`Compression.None`. *(breaking)*
+** Added `Ssl` (an `SslClientAuthenticationOptions`; `SkipCertificateValidation` is applied to an internal copy rather than mutating the caller's options).
+** Added `DefaultBatchSize` (default 64), a connection-level default that fills the per-request `batchSize` when unset.
+** Added `MaxResponseHeaderBytes`, exposing the handler's maximum response header size.
+** Added `ReadTimeout`, a per-read idle timeout applied to each read of the response stream.
+** Added `Proxy`, routing connections through an `IWebProxy`.
+* Fixed `gremlin-dotnet` deflate response decompression, which threw on the server's zlib-framed output because it used `DeflateStream` (raw DEFLATE, RFC 1951) instead of `ZLibStream` (zlib, RFC 1950); the bug was previously masked because compression was off by default.
+* Fixed `gremlin-dotnet` SSL options cloning (used on the skip-certificate-validation path) to copy `ClientCertificateContext` and `AllowTlsResume`, which were previously dropped, breaking mTLS client certificates and silently re-enabling TLS resumption.
 * Standardized `gremlin-python` connection options per the TinkerPop 4.x GLV proposal:
 ** Renamed `pool_size` to `max_connections` (breaking; the old name has been removed) and changed the default from 8 to 128; `max_connections` is now also applied to the aiohttp `TCPConnector` `limit` so the transport layer reflects the option in addition to sizing the Connection pool.
 ** Renamed `ssl_options` to `ssl` accepting an `ssl.SSLContext` (breaking; the old name has been removed).

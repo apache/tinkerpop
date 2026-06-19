@@ -34,14 +34,14 @@ public class CompressionBenchmarks
     public static async Task GraphBinaryWithoutCompression()
     {
         var client = new GremlinClient(new GremlinServer("localhost", 45940),
-            connectionSettings: new ConnectionSettings { EnableCompression = false });
+            connectionSettings: new ConnectionSettings { Compression = Compression.None });
         await PerformBenchmarkWithClient(client);
     }
 
     public static async Task GraphBinaryWithCompression()
     {
         var client = new GremlinClient(new GremlinServer("localhost", 45940),
-            connectionSettings: new ConnectionSettings { EnableCompression = true });
+            connectionSettings: new ConnectionSettings { Compression = Compression.Deflate });
         await PerformBenchmarkWithClient(client);
     }
 

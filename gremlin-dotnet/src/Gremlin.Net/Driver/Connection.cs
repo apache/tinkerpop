@@ -67,18 +67,125 @@ namespace Gremlin.Net.Driver
 
             var handler = new SocketsHttpHandler
             {
-                PooledConnectionIdleTimeout = settings.IdleConnectionTimeout,
-                MaxConnectionsPerServer = settings.MaxConnectionsPerServer,
-                ConnectTimeout = settings.ConnectionTimeout,
-                KeepAlivePingTimeout = settings.KeepAliveInterval,
+                PooledConnectionIdleTimeout = settings.IdleTimeout,
+                MaxConnectionsPerServer = settings.MaxConnections,
+                ConnectTimeout = settings.ConnectTimeout,
             };
-            if (settings.SkipCertificateValidation)
+
+            // Rewire keep-alive to a real TCP socket option (HTTP/1.1). The handler's
+            // KeepAlivePingTimeout only applies to HTTP/2; instead open the socket ourselves
+            // in a ConnectCallback and set the TCP keep-alive idle time. Probe interval and
+            // count stay at OS defaults (not standardized).
+            var keepAliveTime = settings.KeepAliveTime;
+            handler.ConnectCallback = async (context, cancellationToken) =>
             {
-                handler.SslOptions = new System.Net.Security.SslClientAuthenticationOptions
+                // Resolve the endpoint to concrete IP addresses and attempt each with its own
+                // socket. A single Socket cannot be reused across connection attempts (handing a
+                // multi-address DnsEndPoint to one socket throws "Sockets on this platform are
+                // invalid for use after a failed connection attempt"), so a fresh socket per
+                // address is required to support round-robin/fallback DNS.
+                var endpoint = context.DnsEndPoint;
+                System.Net.IPAddress[] addresses;
+                if (System.Net.IPAddress.TryParse(endpoint.Host, out var literal))
                 {
-                    RemoteCertificateValidationCallback = (_, _, _, _) => true,
-                };
+                    addresses = new[] { literal };
+                }
+                else
+                {
+                    addresses = await System.Net.Dns.GetHostAddressesAsync(
+                        endpoint.Host, cancellationToken).ConfigureAwait(false);
+                }
+
+                if (addresses.Length == 0)
+                {
+                    throw new System.Net.Sockets.SocketException(
+                        (int)System.Net.Sockets.SocketError.HostNotFound);
+                }
+
+                System.Exception? lastError = null;
+                foreach (var address in addresses)
+                {
+                    var socket = new System.Net.Sockets.Socket(
+                        address.AddressFamily,
+                        System.Net.Sockets.SocketType.Stream,
+                        System.Net.Sockets.ProtocolType.Tcp)
+                    {
+                        NoDelay = true
+                    };
+                    try
+                    {
+                        socket.SetSocketOption(System.Net.Sockets.SocketOptionLevel.Socket,
+                            System.Net.Sockets.SocketOptionName.KeepAlive, true);
+                        var keepAliveSeconds = (int)keepAliveTime.TotalSeconds;
+                        if (keepAliveSeconds > 0)
+                        {
+                            // Set the idle time before the first keep-alive probe. Windows/Linux use
+                            // the TcpKeepAliveTime enum; macOS uses the equivalent raw TCP_KEEPALIVE
+                            // option. Other platforms keep the OS default idle time.
+                            if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux())
+                            {
+                                socket.SetSocketOption(System.Net.Sockets.SocketOptionLevel.Tcp,
+                                    System.Net.Sockets.SocketOptionName.TcpKeepAliveTime, keepAliveSeconds);
+                            }
+                            else if (OperatingSystem.IsMacOS())
+                            {
+                                // TCP_KEEPALIVE on macOS (<sys/socket.h>: 0x10) is the idle-time knob,
+                                // the analog of Linux TCP_KEEPIDLE.
+                                const int tcpKeepAliveMacOs = 0x10;
+                                socket.SetSocketOption(System.Net.Sockets.SocketOptionLevel.Tcp,
+                                    (System.Net.Sockets.SocketOptionName)tcpKeepAliveMacOs, keepAliveSeconds);
+                            }
+                        }
+                        await socket.ConnectAsync(
+                            new System.Net.IPEndPoint(address, endpoint.Port), cancellationToken)
+                            .ConfigureAwait(false);
+                        return new System.Net.Sockets.NetworkStream(socket, ownsSocket: true);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        socket.Dispose();
+                        lastError = ex;
+                    }
+                }
+
+                throw lastError ?? new System.Net.Sockets.SocketException(
+                    (int)System.Net.Sockets.SocketError.HostUnreachable);
+            };
+
+            // Configure SSL/TLS. Start from the user-supplied options (if any) so client
+            // certificates, custom CAs, and protocol settings are preserved. When
+            // SkipCertificateValidation is set we must NOT mutate the caller's options object
+            // (it is a reference type that may be shared across clients); instead we clone it
+            // and install the accept-all callback on the copy.
+            if (settings.Ssl != null || settings.SkipCertificateValidation)
+            {
+                System.Net.Security.SslClientAuthenticationOptions sslOptions;
+                if (settings.SkipCertificateValidation)
+                {
+                    sslOptions = CloneSslOptions(settings.Ssl);
+                    sslOptions.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+                }
+                else
+                {
+                    sslOptions = settings.Ssl!;
+                }
+                handler.SslOptions = sslOptions;
             }
+
+            // Expose the max response header size. The native handler unit is kilobytes while
+            // the user provides bytes, so convert (rounding up to avoid silently lowering the cap).
+            if (settings.MaxResponseHeaderBytes > 0)
+            {
+                handler.MaxResponseHeadersLength =
+                    MaxResponseHeaderBytesToKilobytes(settings.MaxResponseHeaderBytes);
+            }
+
+            if (settings.Proxy != null)
+            {
+                handler.Proxy = settings.Proxy;
+                handler.UseProxy = true;
+            }
+
             _httpClient = new HttpClient(handler);
         }
 
@@ -111,7 +218,18 @@ namespace Gremlin.Net.Driver
             var headers = new Dictionary<string, string>();
             headers["Accept"] = _responseSerializer.MimeType;
 
-            if (_settings.EnableCompression)
+            // Fill the per-request batch size from the connection-level default when the
+            // request did not set one. Build a copy for the outgoing request so the caller's
+            // RequestMessage is never mutated (resubmitting the same message must not pick up
+            // a previously injected default). A per-request explicit batchSize always wins.
+            var outgoingMessage = requestMessage;
+            if (!outgoingMessage.Fields.ContainsKey(Tokens.ArgsBatchSize))
+            {
+                outgoingMessage = outgoingMessage.CloneWithField(
+                    Tokens.ArgsBatchSize, _settings.DefaultBatchSize);
+            }
+
+            if (_settings.Compression.Type == CompressionType.Deflate)
             {
                 headers["Accept-Encoding"] = "deflate";
             }
@@ -129,13 +247,13 @@ namespace Gremlin.Net.Driver
             // Promote transactionId to HTTP header before interceptors run.
             // The field remains in the serialized body as well (dual transmission
             // per the HTTP transaction protocol specification).
-            if (requestMessage.Fields.TryGetValue(Tokens.ArgsTransactionId, out var txIdObj) &&
+            if (outgoingMessage.Fields.TryGetValue(Tokens.ArgsTransactionId, out var txIdObj) &&
                 txIdObj is string txId && !string.IsNullOrEmpty(txId))
             {
                 headers["X-Transaction-Id"] = txId;
             }
 
-            var context = new HttpRequestContext("POST", _uri, headers, requestMessage);
+            var context = new HttpRequestContext("POST", _uri, headers, outgoingMessage);
 
             foreach (var interceptor in _interceptors)
             {
@@ -212,13 +330,26 @@ namespace Gremlin.Net.Driver
             {
                 var contentStream = await response.Content.ReadAsStreamAsync()
                     .ConfigureAwait(false);
-                DeflateStream? deflateStream = null;
+
+                // Apply the per-read idle timeout (if configured) to the raw content stream so it
+                // covers both the compressed and decompressed read paths.
+                if (_settings.ReadTimeout > TimeSpan.Zero)
+                {
+                    contentStream = new ReadTimeoutStream(contentStream, _settings.ReadTimeout);
+                }
+
+                // The server (gremlin-server HttpContentCompressionHandler) compresses with
+                // java.util.zip.Deflater's default constructor, which emits a zlib-wrapped
+                // stream (RFC 1950: 2-byte header + Adler-32 checksum), not raw DEFLATE
+                // (RFC 1951). ZLibStream understands that wrapper; DeflateStream would throw
+                // on the zlib header.
+                Stream? decompressionStream = null;
                 if (response.Content.Headers.ContentEncoding.Contains("deflate"))
                 {
-                    deflateStream = new DeflateStream(contentStream, CompressionMode.Decompress);
+                    decompressionStream = new ZLibStream(contentStream, CompressionMode.Decompress);
                 }
                 streamingContext = new StreamingResponseContext(
-                    response, contentStream, deflateStream);
+                    response, contentStream, decompressionStream);
 
                 var resultStream = _responseSerializer.DeserializeMessageAsync(
                     streamingContext.Stream, cancellationToken);
@@ -281,6 +412,58 @@ namespace Gremlin.Net.Driver
                 disposeCts?.Dispose();
                 throw;
             }
+        }
+
+        /// <summary>
+        ///     Converts a maximum response header size expressed in bytes to the kilobyte unit
+        ///     used by <see cref="SocketsHttpHandler.MaxResponseHeadersLength"/>, rounding up so
+        ///     the configured byte cap is never silently lowered. For example 1024 bytes maps to
+        ///     1 KB, 1025 bytes maps to 2 KB, and 8192 bytes maps to 8 KB. Callers only invoke
+        ///     this when <paramref name="maxResponseHeaderBytes"/> is positive.
+        /// </summary>
+        /// <param name="maxResponseHeaderBytes">The header cap in bytes (expected to be positive).</param>
+        /// <returns>The equivalent cap in kilobytes, rounded up.</returns>
+        internal static int MaxResponseHeaderBytesToKilobytes(int maxResponseHeaderBytes)
+        {
+            return (maxResponseHeaderBytes + 1023) / 1024;
+        }
+
+        /// <summary>
+        ///     Creates a shallow copy of the supplied
+        ///     <see cref="System.Net.Security.SslClientAuthenticationOptions"/> so the caller's
+        ///     object is never mutated when the skip-cert convenience is applied. Copies the
+        ///     commonly used properties; the accept-all
+        ///     <see cref="System.Net.Security.SslClientAuthenticationOptions.RemoteCertificateValidationCallback"/>
+        ///     is set on the returned copy by the caller.
+        /// </summary>
+        /// <param name="source">The caller-owned options to clone, or <c>null</c>.</param>
+        /// <returns>A new options instance carrying the copied settings.</returns>
+        private static System.Net.Security.SslClientAuthenticationOptions CloneSslOptions(
+            System.Net.Security.SslClientAuthenticationOptions? source)
+        {
+            var clone = new System.Net.Security.SslClientAuthenticationOptions();
+            if (source == null)
+            {
+                return clone;
+            }
+
+            clone.ClientCertificates = source.ClientCertificates;
+            clone.EnabledSslProtocols = source.EnabledSslProtocols;
+            clone.TargetHost = source.TargetHost;
+            // RemoteCertificateValidationCallback is intentionally NOT copied here: the caller
+            // overwrites it with the accept-all callback (skip-cert is the only path that clones).
+            clone.LocalCertificateSelectionCallback = source.LocalCertificateSelectionCallback;
+            clone.CipherSuitesPolicy = source.CipherSuitesPolicy;
+            clone.EncryptionPolicy = source.EncryptionPolicy;
+            clone.ApplicationProtocols = source.ApplicationProtocols;
+            clone.CertificateRevocationCheckMode = source.CertificateRevocationCheckMode;
+            clone.AllowRenegotiation = source.AllowRenegotiation;
+            // ClientCertificateContext carries the mTLS client certificate chain; omitting it
+            // would break client-certificate auth when combined with skip-cert.
+            clone.ClientCertificateContext = source.ClientCertificateContext;
+            // AllowTlsResume defaults to true, so it must be copied to honor a caller's false.
+            clone.AllowTlsResume = source.AllowTlsResume;
+            return clone;
         }
 
         /// <summary>
