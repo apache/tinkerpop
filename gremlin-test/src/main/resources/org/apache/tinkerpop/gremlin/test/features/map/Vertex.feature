@@ -541,3 +541,86 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
     And the graph should return 2 for count of "g.V(vid4).outE(\"uses\")"
     And the graph should return 4 for count of "g.V(vid5).inE(\"uses\")"
     And the graph should return 2 for count of "g.V(vid6).outE(\"uses\")"
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_VXvid1X_id_VXidentityX_name
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).id().V(__.identity()).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_VXvid1_vid2X_id_VXidentityX_name
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[josh].id"
+    And the traversal of
+      """
+      g.V(vid1, vid2).id().V(__.identity()).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
+
+  # Use as()/select() to bookmark a vertex ID and return to it later via V(select()).
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_VXvid1X_id_asXbookmarkX_V_hasXname_joshX_VXselectXbookmarkXX_name
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).id().as("bookmark").V().has("name","josh").V(__.select("bookmark")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_VXvid1X_VXoutXknowsX_idX_name
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).V(__.out("knows").id()).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vadas |
+      | josh |
+
+  @GraphComputerVerificationMidENotSupported
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_injectX9999X_VXidentityX
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(9999).V(__.identity())
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationMidENotSupported
+    Then the result should be empty
+
+  Scenario: g_VXVXvid1X_idX_name
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(__.V(vid1).id()).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+

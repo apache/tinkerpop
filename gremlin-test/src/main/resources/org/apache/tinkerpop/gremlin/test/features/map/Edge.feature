@@ -363,3 +363,56 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | result |
       | d[0.5].d |
       | d[1.0].d |
+  @GraphComputerVerificationMidENotSupported
+  Scenario: g_VXvid1X_EXoutE_idX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).E(__.outE().id())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | e[marko-created->lop] |
+      | e[marko-knows->josh] |
+      | e[marko-knows->vadas] |
+
+  @GraphComputerVerificationMidENotSupported
+  Scenario: g_VXvid1X_outEXknowsX_hasXinV_name_vadasX_id_EXidentityX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).outE("knows").filter(__.inV().has("name","vadas")).id().E(__.identity())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | e[marko-knows->vadas] |
+
+  @GraphComputerVerificationMidENotSupported
+  Scenario: g_injectX9999X_EXidentityX
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(9999).E(__.identity())
+      """
+    When iterated to list
+    Then the result should be empty
+
+      | marko |
+
+  Scenario: g_EXVXvid1X_outE_idX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.E(__.V(vid1).outE().id())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | e[marko-created->lop] |
+      | e[marko-knows->josh] |
+      | e[marko-knows->vadas] |

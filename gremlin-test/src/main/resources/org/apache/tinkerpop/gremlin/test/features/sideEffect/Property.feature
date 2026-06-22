@@ -16,7 +16,7 @@
 # under the License.
 
 @StepClassSideEffect @StepAddProperty
-Feature: Step - property() with traversal arguments
+Feature: Step - property()
 
   @GraphComputerVerificationMidVNotSupported
   Scenario: g_VXvid2X_propertyXalias_VXvid1X_valuesXnameXX

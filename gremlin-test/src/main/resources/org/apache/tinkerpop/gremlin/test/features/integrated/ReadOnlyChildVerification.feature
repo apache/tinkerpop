@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-@StepClassFilter @StepHas
+@StepClassIntegrated
 Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup contexts
 
   # ===== FILTER CONTEXT: has() with mutating child traversals =====
