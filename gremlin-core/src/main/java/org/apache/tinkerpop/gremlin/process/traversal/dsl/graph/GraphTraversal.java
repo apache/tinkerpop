@@ -4165,6 +4165,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * Routes the current traverser to a particular traversal branch option which allows the creation of if-then-else
      * like semantics within a traversal.
+     * <p>
+     * Note: Traversal-bearing predicates (e.g. {@code P.gt(__.V(1).values("age"))}) are not supported in
+     * {@code choose()} and will throw an {@code IllegalArgumentException}.
      *
      * @param choosePredicate the {@link P} used to determine the "if" portion of the if-then-else
      * @param trueChoice      the traversal to execute in the event the {@code traversalPredicate} returns true
@@ -4207,6 +4210,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * Routes the current traverser to a particular traversal branch option which allows the creation of if-then
      * like semantics within a traversal.
+     * <p>
+     * Note: Traversal-bearing predicates (e.g. {@code P.gt(__.V(1).values("age"))}) are not supported in
+     * {@code choose()} and will throw an {@code IllegalArgumentException}.
      *
      * @param choosePredicate the {@link P} used to determine the "if" portion of the if-then-else
      * @param trueChoice      the traversal to execute in the event the {@code traversalPredicate} returns true
@@ -4758,6 +4764,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * This is a step modulator to a {@link TraversalOptionParent} like {@code choose()} or {@code mergeV()} where the
      * provided argument associated to the {@code token} is applied according to the semantics of the step. Please see
      * the documentation of such steps to understand the usage context.
+     * <p>
+     * Note: When used with {@code choose()}, traversal-bearing predicates are not supported as option tokens
+     * and will throw an {@code IllegalArgumentException}.
      *
      * @param token       the token that would trigger this option which may be a {@link Pick}, {@link Merge},
      *                    a {@link Traversal}, {@link Predicate}, or object depending on the step being modulated.

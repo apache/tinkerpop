@@ -143,6 +143,12 @@ public class InlineFilterStrategyTest {
                     {outE().hasLabel(P.eq("knows").or(P.gt("created"))).has("weight", gt(1.0)).inV(), addHas(outE(), T.label.getAccessor(), P.eq("knows").or(P.gt("created")), "weight", gt(1.0)).inV(), Collections.emptyList()},
                     {outE().hasLabel(P.eq("knows").or(P.eq("created"))).has("weight", gt(1.0)).inV(), outE("knows", "created").has("weight", gt(1.0)).inV(), Collections.emptyList()},
                     {outE().hasLabel(P.within("knows", "created")).inV(), outE("knows", "created").inV(), Collections.emptyList()},
+                    //
+                    // Traversal-bearing has-steps should NOT be inlined (remain unchanged)
+                    {has("age", P.gt(__.V().values("age").asAdmin())).has("name", "marko"), has("age", P.gt(__.V().values("age").asAdmin())).has("name", "marko"), Collections.emptyList()},
+                    {has("name", "marko").has("age", P.gt(__.V().values("age").asAdmin())), has("name", "marko").has("age", P.gt(__.V().values("age").asAdmin())), Collections.emptyList()},
+                    {filter(has("age", P.gt(__.V().values("age").asAdmin()))), filter(has("age", P.gt(__.V().values("age").asAdmin()))), Collections.emptyList()},
+                    {and(has("name", "marko"), has("age", P.gt(__.V().values("age").asAdmin()))), and(has("name", "marko"), has("age", P.gt(__.V().values("age").asAdmin()))), Collections.emptyList()},
             });
         }
 

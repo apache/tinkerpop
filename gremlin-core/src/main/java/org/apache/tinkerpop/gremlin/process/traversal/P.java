@@ -177,7 +177,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
                 if (!coll.stream().allMatch(v -> v instanceof GraphTraversal)) {
                     throw new IllegalArgumentException(
                             "Cannot mix traversals and literal values. " +
-                            "Use __.constant(val) to wrap all values as traversals.");
+                            "Use __.constant(val) to wrap each value as a traversal.");
                 }
                 final List<Traversal.Admin<?, ?>> admins = new ArrayList<>(coll.size());
                 for (final Object t : coll) {
