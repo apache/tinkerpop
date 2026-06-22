@@ -117,6 +117,32 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     ]
     // SAMPLE: g_injectXnull_nullX: "               {\"g_injectXnull_nullX\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(null,null)}}, ",1\"]).Values<object>(\"age\").Inject(null,null)}}, "
 
+    // .NET generates TWO translation sets for every feature-test scenario: a non-parameterized set (FixedTranslations,
+    // via Translator.DOTNET) and a parameterized set (ParameterizedTranslations, via a DotNetTranslateVisitor with
+    // parameterize=true). This double generation is unique to .NET. Because gremlin-dotnet is statically typed and
+    // exposes strongly-typed GValue<T> overloads, value-vs-GValue is a compile-time overload choice and so must be
+    // decided at translation time rather than at runtime as the other GLVs do. Generating both sets lets the feature
+    // tests exercise each scenario with and without GValue parameterization.
+    //
+    // Both sets share the same token substitution, which replaces the cucumber test-data tokens (xx1, v1, vid1, e1,
+    // eid1, l1, pred1, c1) with strongly-typed lookups into the parameter map `p`. The two differ only in `quoteAware`:
+    // the parameterized variant additionally excludes a double-quote from the lookbehind so that token-like substrings
+    // appearing inside generated GValue names (e.g. new GValue<string>("v1", ...)) are left untouched. Routing both
+    // call sites through this single closure keeps the two regex sets from drifting out of sync.
+    def substituteCSharpParameters = { String translated, boolean quoteAware ->
+        final String simpleLb = quoteAware ? "(?<!\")" : ""
+        final String wordLb = quoteAware ? "(?<![\\w\\-\"])" : "(?<![\\w\\-])"
+        return translated.
+                replaceAll(simpleLb + "xx([0-9]+)", "p[\"xx\$1\"]").
+                replaceAll(wordLb + "v([0-9]+)(?![\\w\\.])", "(Vertex) p[\"v\$1\"]").
+                replaceAll(simpleLb + "vid([0-9]+)", "p[\"vid\$1\"]").
+                replaceAll(wordLb + "e([0-9]+)(?![\\w\\.])", "p[\"e\$1\"]").
+                replaceAll(simpleLb + "eid([0-9]+)", "p[\"eid\$1\"]").
+                replaceAll(wordLb + "l([0-9]+)(?![\\w\\.])", "(IFunction) p[\"l\$1\"]").
+                replaceAll(simpleLb + "pred([0-9]+)", "(IPredicate) p[\"pred\$1\"]").
+                replaceAll(wordLb + "c([0-9]+)(?![\\w\\.])", "(IComparator) p[\"c\$1\"]")
+    }
+
     gremlins.each { k,v ->
         if (staticTranslate.containsKey(k)) {
             writer.writeLine(staticTranslate[k])
@@ -129,15 +155,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
             while (gremlinItty.hasNext()) {
                 def t = gremlinItty.next()
                 writer.write("(g,p) =>")
-                writer.write(t.getTranslated().
-                        replaceAll("xx([0-9]+)", "p[\"xx\$1\"]").
-                        replaceAll("(?<![\\w\\-])v([0-9]+)(?![\\w\\.])", "(Vertex) p[\"v\$1\"]").
-                        replaceAll("vid([0-9]+)", "p[\"vid\$1\"]").
-                        replaceAll("(?<![\\w\\-])e([0-9]+)(?![\\w\\.])", "p[\"e\$1\"]").
-                        replaceAll("eid([0-9]+)", "p[\"eid\$1\"]").
-                        replaceAll("(?<![\\w\\-])l([0-9]+)(?![\\w\\.])", "(IFunction) p[\"l\$1\"]").
-                        replaceAll("pred([0-9]+)", "(IPredicate) p[\"pred\$1\"]").
-                        replaceAll("(?<![\\w\\-])c([0-9]+)(?![\\w\\.])", "(IComparator) p[\"c\$1\"]"))
+                writer.write(substituteCSharpParameters(t.getTranslated(), false))
                 if (gremlinItty.hasNext())
                     writer.write(', ')
                 else
@@ -166,15 +184,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
             while (gremlinItty.hasNext()) {
                 def t = gremlinItty.next()
                 writer.write("(g,p) =>")
-                writer.write(t.getTranslated().
-                        replaceAll("(?<!\")xx([0-9]+)", "p[\"xx\$1\"]").
-                        replaceAll("(?<![\\w\\-\"])v([0-9]+)(?![\\w\\.])", "(Vertex) p[\"v\$1\"]").
-                        replaceAll("(?<!\")vid([0-9]+)", "p[\"vid\$1\"]").
-                        replaceAll("(?<![\\w\\-\"])e([0-9]+)(?![\\w\\.])", "p[\"e\$1\"]").
-                        replaceAll("(?<!\")eid([0-9]+)", "p[\"eid\$1\"]").
-                        replaceAll("(?<![\\w\\-\"])l([0-9]+)(?![\\w\\.])", "(IFunction) p[\"l\$1\"]").
-                        replaceAll("(?<!\")pred([0-9]+)", "(IPredicate) p[\"pred\$1\"]").
-                        replaceAll("(?<![\\w\\-\"])c([0-9]+)(?![\\w\\.])", "(IComparator) p[\"c\$1\"]"))
+                writer.write(substituteCSharpParameters(t.getTranslated(), true))
                 if (gremlinItty.hasNext())
                     writer.write(', ')
                 else
