@@ -188,7 +188,7 @@ public final class Cluster {
             addresses.stream().skip(1).forEach(builder::addContactPoint);
 
         try {
-            builder.serializer(settings.serializer.create());
+            builder.responseSerializer(settings.responseSerializer.create());
         } catch (Exception ex) {
             throw new IllegalStateException("Could not establish serializer - " + ex.getMessage());
         }
@@ -522,7 +522,7 @@ public final class Cluster {
         private final List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
         private String path = "/gremlin";
-        private MessageSerializer<?> serializer = null;
+        private MessageSerializer<?> responseSerializer = null;
         private int nioPoolSize = Runtime.getRuntime().availableProcessors();
         private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
         private int maxConnections = ConnectionPool.MAX_POOL_SIZE;
@@ -588,29 +588,34 @@ public final class Cluster {
         }
 
         /**
-         * Set the {@link MessageSerializer} to use given the exact name of a {@link Serializers} enum.  Note that
-         * setting this value this way will not allow specific configuration of the serializer itself.  If specific
-         * configuration is required * please use {@link #serializer(MessageSerializer)}.
+         * Set the {@link MessageSerializer} used to deserialize responses from the server given the exact name of a
+         * {@link Serializers} enum. This selects the encoding requested via the {@code Accept} header; requests are
+         * always sent as JSON regardless of this setting. Note that setting this value this way will not allow specific
+         * configuration of the serializer itself. If specific configuration is required please use
+         * {@link #responseSerializer(MessageSerializer)}.
          */
-        public Builder serializer(final String mimeType) {
-            serializer = Serializers.valueOf(mimeType).simpleInstance();
+        public Builder responseSerializer(final String mimeType) {
+            responseSerializer = Serializers.valueOf(mimeType).simpleInstance();
             return this;
         }
 
         /**
-         * Set the {@link MessageSerializer} to use via the {@link Serializers} enum. If specific configuration is
-         * required please use {@link #serializer(MessageSerializer)}.
+         * Set the {@link MessageSerializer} used to deserialize responses from the server via the {@link Serializers}
+         * enum. This selects the encoding requested via the {@code Accept} header; requests are always sent as JSON
+         * regardless of this setting. If specific configuration is required please use
+         * {@link #responseSerializer(MessageSerializer)}.
          */
-        public Builder serializer(final Serializers mimeType) {
-            serializer = mimeType.simpleInstance();
+        public Builder responseSerializer(final Serializers mimeType) {
+            responseSerializer = mimeType.simpleInstance();
             return this;
         }
 
         /**
-         * Sets the {@link MessageSerializer} to use.
+         * Sets the {@link MessageSerializer} used to deserialize responses from the server. This selects the encoding
+         * requested via the {@code Accept} header; requests are always sent as JSON regardless of this setting.
          */
-        public Builder serializer(final MessageSerializer<?> serializer) {
-            this.serializer = serializer;
+        public Builder responseSerializer(final MessageSerializer<?> responseSerializer) {
+            this.responseSerializer = responseSerializer;
             return this;
         }
 
@@ -1014,7 +1019,7 @@ public final class Cluster {
 
         public Cluster create() {
             if (addresses.isEmpty()) addContactPoint("localhost");
-            if (null == serializer) serializer = Serializers.GRAPHBINARY_V4.simpleInstance();
+            if (null == responseSerializer) responseSerializer = Serializers.GRAPHBINARY_V4.simpleInstance();
             if (null != auth) interceptors.add(auth);
             return new Cluster(this);
         }
@@ -1137,7 +1142,7 @@ public final class Cluster {
             path = builder.path;
 
             this.factory = new Factory(builder.nioPoolSize);
-            this.serializer = builder.serializer;
+            this.serializer = builder.responseSerializer;
             
             this.executor = new ScheduledThreadPoolExecutor(builder.workerPoolSize,
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());

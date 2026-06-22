@@ -82,9 +82,10 @@ These change runtime behavior on upgrade even if you do not change your configur
 ===== Driver-specific notes
 
 - *Java* (`gremlin-driver`): renamed `maxConnectionPoolSize`->`maxConnections`, `connectionSetupTimeoutMillis`->`connectTimeoutMillis`,
-  `idleConnectionTimeoutMillis`->`idleTimeoutMillis`, `resultIterationBatchSize`->`batchSize`, and `RequestOptions` `addG`->`traversalSource`;
-  old names are removed. New: `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`, `proxy(ProxyOptions)`,
-  `url(String)`, `ssl(SslContext)`. Removed `maxResponseContentLength`. `validationRequest` default reconciled to `g.inject(0)`.
+  `idleConnectionTimeoutMillis`->`idleTimeoutMillis`, `resultIterationBatchSize`->`batchSize`, `serializer`->`responseSerializer`,
+  and `RequestOptions` `addG`->`traversalSource`; old names are removed. New: `readTimeoutMillis`, `keepAliveTimeMillis`,
+  `maxResponseHeaderBytes`, `proxy(ProxyOptions)`, `url(String)`, `ssl(SslContext)`. Removed `maxResponseContentLength`.
+  `validationRequest` default reconciled to `g.inject(0)`.
 - *Python* (`gremlin-python`): renamed `pool_size`->`max_connections` (default 8->128) and `ssl_options`->`ssl` (old names removed).
   New: `connect_timeout_millis`, `read_timeout_millis`, `idle_timeout_millis`, `keep_alive_time_millis`, `compression`,
   `batch_size`, `proxy`, `trust_env`. `auth.sigv4` gained an optional credentials provider. Removed `headers` (use interceptors)
@@ -99,10 +100,10 @@ These change runtime behavior on upgrade even if you do not change your configur
   (`BasicAuth`/`SigV4Auth`/`SigV4AuthWithCredentials`) into a new `auth` sub-package (`auth.Basic`/`auth.SigV4`/`auth.SigV4WithCredentials`).
   New: `ReadTimeout(Millis)`, `MaxResponseHeaderBytes`, `Proxy` (defaults to `http.ProxyFromEnvironment`), `BatchSize`, `BulkResults`.
 - *JavaScript* (`gremlin-javascript`): adopted `undici` as a pinned dependency providing the default dispatcher built from the
-  options above. New: `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`, `proxy`, `compression`, `batchSize`,
-  `bulkResults`, `logger`. Removed `headers` (use interceptors) and the `ca`/`cert`/`pfx`/`rejectUnauthorized`/`agent` options
-  (TLS is configured through the Node/undici runtime). undici is swapped out in browser bundles, where these connection-pool
-  options are managed by the browser.
+  options above. Renamed `reader`->`responseSerializer`. New: `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`,
+  `proxy`, `compression`, `batchSize`, `bulkResults`, `logger`. Removed `headers` (use interceptors) and the
+  `ca`/`cert`/`pfx`/`rejectUnauthorized`/`agent` options (TLS is configured through the Node/undici runtime). undici is swapped
+  out in browser bundles, where these connection-pool options are managed by the browser.
 
 See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
 

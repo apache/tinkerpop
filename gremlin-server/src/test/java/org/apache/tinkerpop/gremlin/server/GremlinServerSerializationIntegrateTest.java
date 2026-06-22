@@ -87,7 +87,7 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
 
     @Before
     public void openConnection() {
-        cluster = TestClientFactory.build().serializer(serializer).create();
+        cluster = TestClientFactory.build().responseSerializer(serializer).create();
         client = cluster.connect();
 
         // VertexProperty related test tun on crew graph
