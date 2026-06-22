@@ -580,7 +580,6 @@ export const column = toEnum('Column', 'keys values');
 export const direction = toDirectionEnum('Direction', 'BOTH IN OUT from_ to');
 export const dt = toEnum('DT', 'second minute hour day');
 export const gType = toGTypeEnum('GType', 'bigDecimal bigInt binary boolean byte char datetime double duration edge float graph int list long map null number path property set short string tree uuid vertex vproperty');
-export const graphSONVersion = toEnum('GraphSONVersion', 'V1_0 V2_0 V3_0');
 export const gryoVersion = toEnum('GryoVersion', 'V1_0 V3_0');
 export const merge = toEnum('Merge', 'onCreate onMatch outV inV');
 export const operator = toEnum('Operator', 'addAll and assign div max min minus mult or sum sumLong');
