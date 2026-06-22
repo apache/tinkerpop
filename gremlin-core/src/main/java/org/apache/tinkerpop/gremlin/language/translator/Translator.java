@@ -44,22 +44,12 @@ public enum Translator {
     ANONYMIZED("Anonymized", AnonymizedTranslatorVisitor::new),
 
     /**
-     * Translates to gremlin-dotnet.
+     * Translates to gremlin-dotnet. Note that variable arguments are translated to bare literals. To instead preserve
+     * variables as strongly-typed {@code GValue<T>} instances in the translated output, construct a
+     * {@link DotNetTranslateVisitor#DotNetTranslateVisitor(String, boolean)} with {@code parameterize} set to
+     * {@code true} and translate via {@link GremlinTranslator#translate(String, TranslateVisitor)}.
      */
     DOTNET("DotNet", DotNetTranslateVisitor::new),
-
-    /**
-     * Translates to gremlin-dotnet, wrapping variable arguments in strongly-typed {@code GValue<T>} instances so that
-     * parameters are preserved in the generated C# source (e.g. {@code new GValue<string>("x", (string) x)}).
-     * <p>
-     * This option exists only for .NET. Unlike the other variants, gremlin-dotnet is statically typed and exposes
-     * strongly-typed {@code GValue} overloads, so whether an argument is passed as a literal value or as a
-     * {@code GValue} is a compile-time overload choice that must be decided during translation rather than at runtime.
-     * The other language variants parameterize at runtime, so there is intentionally no analogous
-     * {@code *_PARAMETERIZE} constant for them. See
-     * {@link DotNetTranslateVisitor#DotNetTranslateVisitor(String, boolean)}.
-     */
-    DOTNET_PARAMETERIZE("DotNetParameterize", name -> new DotNetTranslateVisitor(name, true)),
 
     /**
      * Translates to gremlin-groovy.

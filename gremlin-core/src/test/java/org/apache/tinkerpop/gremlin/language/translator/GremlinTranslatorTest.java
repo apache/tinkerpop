@@ -71,7 +71,7 @@ public class GremlinTranslatorTest {
 
         @Test
         public void shouldExtractVariablesFromDotNetParameterize() {
-            final Translation translation = GremlinTranslator.translate(query, Translator.DOTNET_PARAMETERIZE);
+            final Translation translation = GremlinTranslator.translate(query, new DotNetTranslateVisitor("g", true));
             assertEquals(expectedVariables.size(), translation.getParameters().size());
             assertThat(translation.getParameters().toArray(), arrayContainingInAnyOrder(expectedVariables.toArray()));
         }
@@ -1566,7 +1566,7 @@ public class GremlinTranslatorTest {
             // output must be identical to the plain DotNet translation. Queries that actually contain variables are
             // covered with explicit expected output in DotNetParameterizeTranslationTest.
             try {
-                final Translation translation = GremlinTranslator.translate(query, "g", Translator.DOTNET_PARAMETERIZE);
+                final Translation translation = GremlinTranslator.translate(query, new DotNetTranslateVisitor("g", true));
                 if (translation.getParameters().isEmpty()) {
                     assertEquals(expectedForDotNet, translation.getTranslated());
                 }
@@ -1627,9 +1627,10 @@ public class GremlinTranslatorTest {
     }
 
     /**
-     * Dedicated coverage for the {@link Translator#DOTNET_PARAMETERIZE} translator, which is unique in that it wraps
-     * variable arguments in strongly-typed {@code GValue<T>} instances rather than emitting bare parameters. These
-     * cases exercise the common argument types as well as the all-or-none behavior of multi-argument {@code hasLabel}.
+     * Dedicated coverage for the parameterized .NET translation ({@code new DotNetTranslateVisitor(name, true)}), which
+     * is unique in that it wraps variable arguments in strongly-typed {@code GValue<T>} instances rather than emitting
+     * bare parameters. These cases exercise the common argument types as well as the all-or-none behavior of
+     * multi-argument {@code hasLabel}.
      */
     @RunWith(Parameterized.class)
     public static class DotNetParameterizeTranslationTest {
@@ -1660,7 +1661,7 @@ public class GremlinTranslatorTest {
 
         @Test
         public void shouldTranslateForDotNetParameterize() {
-            final String translatedQuery = GremlinTranslator.translate(query, "g", Translator.DOTNET_PARAMETERIZE).getTranslated();
+            final String translatedQuery = GremlinTranslator.translate(query, new DotNetTranslateVisitor("g", true)).getTranslated();
             assertEquals(expected, translatedQuery);
         }
     }

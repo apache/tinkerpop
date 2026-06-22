@@ -65,7 +65,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
      * rather than bare parameters. This is required because .NET is the only language variant that is both
      * statically typed and exposes strongly-typed {@code GValue} overloads, so whether an argument is a value or a
      * {@code GValue} is a compile-time overload choice that must be resolved during translation. All other variants
-     * parameterize at runtime and therefore do not need this distinction. See {@link Translator#DOTNET_PARAMETERIZE}.
+     * parameterize at runtime and therefore do not need this distinction. See {@link Translator#DOTNET}.
      *
      * @param graphTraversalSourceName the name of the {@code GraphTraversalSource} (typically {@code "g"})
      * @param parameterize when {@code true}, wrap variable arguments in typed {@code GValue<T>} instances

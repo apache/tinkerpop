@@ -19,6 +19,7 @@
 
 import org.apache.tinkerpop.gremlin.language.translator.GremlinTranslator
 import org.apache.tinkerpop.gremlin.language.translator.Translator
+import org.apache.tinkerpop.gremlin.language.translator.DotNetTranslateVisitor
 import org.apache.tinkerpop.gremlin.language.corpus.FeatureReader
 
 import java.nio.file.Paths
@@ -160,7 +161,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
             writer.write("               {\"")
             writer.write(k)
             writer.write("\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {")
-            def collected = v.collect { GremlinTranslator.translate(it, Translator.DOTNET_PARAMETERIZE) }
+            def collected = v.collect { GremlinTranslator.translate(it, new DotNetTranslateVisitor("g", true)) }
             def gremlinItty = collected.iterator()
             while (gremlinItty.hasNext()) {
                 def t = gremlinItty.next()
