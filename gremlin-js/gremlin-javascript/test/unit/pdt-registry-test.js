@@ -150,7 +150,7 @@ describe('pdtRegistry wiring through Client/Connection', () => {
     });
 
     const conn = new Connection('http://localhost:8182', { pdtRegistry: registry });
-    assert.strictEqual(conn._reader.pdtRegistry, registry);
+    assert.strictEqual(conn._responseSerializer.pdtRegistry, registry);
   });
 
   it('should set pdtRegistry on the reader when passed via Client options', () => {
@@ -161,14 +161,14 @@ describe('pdtRegistry wiring through Client/Connection', () => {
     });
 
     const client = new Client('http://localhost:8182', { pdtRegistry: registry });
-    assert.strictEqual(client._connection._reader.pdtRegistry, registry);
+    assert.strictEqual(client._connection._responseSerializer.pdtRegistry, registry);
   });
 
   it('should not leak pdtRegistry between connections', () => {
     const registry = new ProviderDefinedTypeRegistry();
     const conn1 = new Connection('http://localhost:8182', { pdtRegistry: registry });
     const conn2 = new Connection('http://localhost:8182');
-    assert.isNull(conn2._reader.pdtRegistry);
-    assert.strictEqual(conn1._reader.pdtRegistry, registry);
+    assert.isNull(conn2._responseSerializer.pdtRegistry);
+    assert.strictEqual(conn1._responseSerializer.pdtRegistry, registry);
   });
 });

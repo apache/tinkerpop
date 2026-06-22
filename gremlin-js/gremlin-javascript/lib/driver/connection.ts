@@ -46,7 +46,7 @@ export type ConnectionOptions = {
   pfx?: string | Buffer;
   preciseNumbers?: boolean;
   pdtRegistry?: any;
-  reader?: any;
+  responseSerializer?: any;
   rejectUnauthorized?: boolean;
   traversalSource?: string;
   headers?: Record<string, string | string[]>;
@@ -62,7 +62,7 @@ export type ConnectionOptions = {
  * Represents a single connection to a Gremlin Server.
  */
 export default class Connection extends EventEmitter {
-  private readonly _reader: any;
+  private readonly _responseSerializer: any;
 
   isOpen = true;
   traversalSource: string;
@@ -81,9 +81,10 @@ export default class Connection extends EventEmitter {
   ) {
     super();
 
-    this._reader = options.reader || (options.preciseNumbers === true ? createPreciseReader() : new GraphBinaryReader(ioc));
+    this._responseSerializer =
+      options.responseSerializer || (options.preciseNumbers === true ? createPreciseReader() : new GraphBinaryReader(ioc));
     if (options.pdtRegistry) {
-      this._reader.pdtRegistry = options.pdtRegistry;
+      this._responseSerializer.pdtRegistry = options.pdtRegistry;
     }
     this.traversalSource = options.traversalSource || 'g';
     this._enableUserAgentOnConnect = options.enableUserAgentOnConnect !== false;
@@ -186,7 +187,7 @@ export default class Connection extends EventEmitter {
 
     let completed = false;
     try {
-      yield* this._reader.readResponseStream(streamReader);
+      yield* this._responseSerializer.readResponseStream(streamReader);
       completed = true;
     } finally {
       if (!completed) {
@@ -198,11 +199,11 @@ export default class Connection extends EventEmitter {
 
   #getReaderForContentType(contentType: string | null) {
     if (!contentType) {
-      return this._reader;
+      return this._responseSerializer;
     }
 
-    if (contentType === this._reader.mimeType) {
-      return this._reader;
+    if (contentType === this._responseSerializer.mimeType) {
+      return this._responseSerializer;
     }
 
     return null;
@@ -210,7 +211,7 @@ export default class Connection extends EventEmitter {
 
   async #makeHttpRequest(request: RequestMessage, signal?: AbortSignal): Promise<Response> {
     const headers: Record<string, string> = {
-      'Accept': this._reader.mimeType,
+      'Accept': this._responseSerializer.mimeType,
     };
 
     if (this._enableUserAgentOnConnect) {
@@ -293,7 +294,7 @@ export default class Connection extends EventEmitter {
     }
 
     if (!reader) {
-      throw new Error(`Response Content-Type '${contentType}' does not match the configured reader (expected '${this._reader.mimeType}')`);
+      throw new Error(`Response Content-Type '${contentType}' does not match the configured response serializer (expected '${this._responseSerializer.mimeType}')`);
     }
 
     const deserialized = await reader.readResponse(buffer);

@@ -183,6 +183,7 @@ names:
 - `idleConnectionTimeoutMillis` is now `idleTimeout` (default 180000 ms), settable as `idleTimeout(Duration)` or `idleTimeoutMillis(long)` (YAML key `connectionPool.idleTimeoutMillis`).
 - `connectionSetupTimeoutMillis` is now `connectTimeout`, settable as `connectTimeout(Duration)` or `connectTimeoutMillis(int)` (YAML key `connectionPool.connectTimeoutMillis`).
 - `resultIterationBatchSize` is now `batchSize` (default 64); it sets the connection-level default that fills a request's per-request `batchSize` when unset (mirroring how `bulkResults` shares one name across connection and per-request scopes).
+- `serializer` is now `responseSerializer`, to match the other GLVs and to make clear it only controls response deserialization.
 - A new `ssl(SslContext)` builder accepts a fully configured Netty `SslContext`.
 - On `RequestOptions`, `addG` is now `traversalSource`.
 

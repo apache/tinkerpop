@@ -289,7 +289,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldWorkWithGraphSONResponse() throws Exception {
         final Cluster cluster = TestClientFactory.build()
-                .serializer(Serializers.GRAPHSON_V4.simpleInstance()).create();
+                .responseSerializer(Serializers.GRAPHSON_V4.simpleInstance()).create();
 
         try {
             final Client client = cluster.connect();
@@ -307,7 +307,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldWorkWithJsonRequestAndGraphBinaryResponse() throws Exception {
         final Cluster cluster = TestClientFactory.build()
-                .serializer(Serializers.GRAPHBINARY_V4.simpleInstance()).create();
+                .responseSerializer(Serializers.GRAPHBINARY_V4.simpleInstance()).create();
 
         try {
             final Client client = cluster.connect();
@@ -320,7 +320,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldWorkWithJsonRequestAndGraphSONResponse() throws Exception {
         final Cluster cluster = TestClientFactory.build()
-                .serializer(Serializers.GRAPHSON_V4.simpleInstance()).create();
+                .responseSerializer(Serializers.GRAPHSON_V4.simpleInstance()).create();
 
         try {
             final Client client = cluster.connect();
@@ -355,7 +355,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Ignore("Reading for streaming GraphSON is not supported")
     @Test
     public void shouldReportErrorWhenRequestCantBeSerialized() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V4).create();
+        final Cluster cluster = TestClientFactory.build().responseSerializer(Serializers.GRAPHSON_V4).create();
         try {
             final Client client = cluster.connect().alias("g");
 
@@ -900,7 +900,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldWorkWithGraphBinaryV4Serialization() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V4).create();
+        final Cluster cluster = TestClientFactory.build().responseSerializer(Serializers.GRAPHBINARY_V4).create();
         final Client client = cluster.connect();
 
         try {
@@ -1117,7 +1117,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldAliasTraversalSourceVariables() throws Exception {
-        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V4).create();
+        final Cluster cluster = TestClientFactory.build().responseSerializer(Serializers.GRAPHBINARY_V4).create();
         final Client client = cluster.connect();
         try {
             try {
@@ -1342,7 +1342,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         registry.register(new TestPointAdapter());
 
         final Cluster cluster = TestClientFactory.build()
-                .serializer(new GraphBinaryMessageSerializerV4(TypeSerializerRegistry.INSTANCE, registry))
+                .responseSerializer(new GraphBinaryMessageSerializerV4(TypeSerializerRegistry.INSTANCE, registry))
                 .create();
         try {
             final DriverRemoteConnection connection = DriverRemoteConnection.using(cluster);
@@ -1365,7 +1365,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         registry.register(TestAnnotatedPoint.class);
 
         final Cluster cluster = TestClientFactory.build()
-                .serializer(new GraphBinaryMessageSerializerV4(TypeSerializerRegistry.INSTANCE, registry))
+                .responseSerializer(new GraphBinaryMessageSerializerV4(TypeSerializerRegistry.INSTANCE, registry))
                 .create();
         try {
             final DriverRemoteConnection connection = DriverRemoteConnection.using(cluster);
