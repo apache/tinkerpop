@@ -494,15 +494,6 @@ def test_asyncio(client):
 # TODO: tests pass because requestID is now generated on HTTP server and this option gets ignored, tests to be removed
 #  or updated depending on if we still want to use requestID or not
 @pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
-def test_client_custom_invalid_request_id_graphson_script(client):
-    client = Client(test_no_auth_url, 'gmodern')
-    try:
-        client.submit('g.V()', request_options={"requestId": "malformed"}).all().result()
-    except Exception as ex:
-        assert "badly formed hexadecimal UUID string" in str(ex)
-
-
-@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
 def test_client_custom_invalid_request_id_graphbinary_script(client):
     client = Client(test_no_auth_url, 'gmodern')
     try:
@@ -519,16 +510,6 @@ def test_client_custom_valid_request_id_script_uuid(client):
 @pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
 def test_client_custom_valid_request_id_script_string(client):
     assert len(client.submit('g.V()', request_options={"requestId": str(uuid.uuid4())}).all().result()) == 6
-
-
-@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
-def test_client_custom_invalid_request_id_graphson_bytecode(client):
-    client = Client(test_no_auth_url, 'gmodern')
-    query = GraphTraversalSource(Graph(), TraversalStrategies()).V().bytecode
-    try:
-        client.submit(query, request_options={"requestId": "malformed"}).all().result()
-    except Exception as ex:
-        assert "badly formed hexadecimal UUID string" in str(ex)
 
 
 @pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
