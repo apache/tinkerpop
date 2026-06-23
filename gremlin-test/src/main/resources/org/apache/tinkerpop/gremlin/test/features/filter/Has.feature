@@ -874,7 +874,8 @@ Feature: Step - has()
     And using the parameter vid3 defined as "v[josh].id"
     And the traversal of
       """
-      g.V().has("name", P.within(__.V(vid1).out("knows").values("name").fold(), __.V(vid3).out("created").values("name").fold()))
+      g.V().has("name", P.within(__.V(vid1).out("knows").values("name").fold(),
+                                __.V(vid3).out("created").values("name").fold()))
       """
     When iterated to list
     Then the result should be unordered
@@ -892,7 +893,9 @@ Feature: Step - has()
     And using the parameter vid3 defined as "v[josh].id"
     And the traversal of
       """
-      g.V().hasLabel("software").has("name", P.without(__.V(vid1).out("created").values("name").fold(), __.V(vid3).out("created").values("name").fold()))
+      g.V().hasLabel("software").
+        has("name", P.without(__.V(vid1).out("created").values("name").fold(),
+                              __.V(vid3).out("created").values("name").fold()))
       """
     When iterated to list
     Then the result should be empty
@@ -904,7 +907,9 @@ Feature: Step - has()
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().hasLabel("person").values("age").is(P.within(__.V(vid1).values("age").fold(), __.V().has("name","lop").in("created").values("age").fold()))
+      g.V().hasLabel("person").values("age").
+        is(P.within(__.V(vid1).values("age").fold(),
+                    __.V().has("name","lop").in("created").values("age").fold()))
       """
     When iterated to list
     Then the result should be unordered
@@ -920,7 +925,9 @@ Feature: Step - has()
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(vid1).outE("knows").filter(__.inV().has("name", P.within(__.V().has("name","lop").in("created").values("name").fold(), __.V().has("name","ripple").in("created").values("name").fold())))
+      g.V(vid1).outE("knows").
+        filter(__.inV().has("name", P.within(__.V().has("name","lop").in("created").values("name").fold(),
+                                             __.V().has("name","ripple").in("created").values("name").fold())))
       """
     When iterated to list
     Then the result should be unordered

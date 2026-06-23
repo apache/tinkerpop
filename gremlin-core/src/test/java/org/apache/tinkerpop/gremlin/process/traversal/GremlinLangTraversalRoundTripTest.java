@@ -22,96 +22,111 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinAntlrToJava;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinQueryParser;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.util.Arrays;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests that GremlinLang serialization round-trips preserve traversal arguments.
- * For any step containing a child traversal argument, serializing to GremlinLang and parsing back
- * produces a structurally equivalent traversal.
+ * Parameterized round-trip test for GremlinLang serialization of traversal-bearing arguments.
+ * Each test case serializes a traversal to GremlinLang, parses it back via the ANTLR grammar,
+ * and verifies the resulting GremlinLang string is structurally identical.
+ * <p>
+ * This complements the Gherkin feature tests (which verify execution semantics) by ensuring that
+ * the serialization/deserialization layer preserves all traversal argument forms correctly.
  */
+@RunWith(Parameterized.class)
 public class GremlinLangTraversalRoundTripTest {
 
     private static final GraphTraversalSource g = traversal().with(EmptyGraph.instance());
 
-    /**
-     * Serializes a traversal to GremlinLang, parses it back, and verifies structural equivalence
-     * by comparing the GremlinLang output of both the original and the round-tripped traversal.
-     */
-    private void assertRoundTrip(final Traversal<?, ?> traversal) {
-        final String originalGremlin = traversal.asAdmin().getGremlinLang().getGremlin();
+    @Parameterized.Parameter
+    public Traversal<?, ?> traversal;
 
-        // Parse the GremlinLang string back into a traversal
+    @Parameterized.Parameters(name = "{0}")
+    public static Iterable<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                // === has() with traversal values ===
+                {g.V().has("name", __.values("x"))},
+                {g.V().has("name", __.constant("marko"))},
+                {g.V().has("name", __.V().values("name"))},
+                {g.V().has("person", "name", __.values("x"))},
+
+                // === has() with predicate-wrapped traversals ===
+                {g.V().has("name", P.eq(__.values("x").asAdmin()))},
+                {g.V().has("age", P.gt(__.constant(30).asAdmin()))},
+                {g.V().has("age", P.lt(__.V().values("age").asAdmin()))},
+                {g.V().has("age", P.gte(__.constant(18).asAdmin()))},
+                {g.V().has("age", P.lte(__.constant(65).asAdmin()))},
+                {g.V().has("age", P.neq(__.constant(0).asAdmin()))},
+
+                // === ConnectiveP with traversals ===
+                {g.V().has("age", P.gt(__.constant(10).asAdmin()).and(P.lt(__.constant(30).asAdmin())))},
+                {g.V().has("age", P.lt(__.constant(20).asAdmin()).or(P.gt(__.constant(50).asAdmin())))},
+                {g.V().has("age", P.gt(__.constant(10).asAdmin()).and(P.lt(__.constant(30).asAdmin())).or(P.eq(__.constant(99).asAdmin())))},
+
+                // === within/without with traversals ===
+                {g.V().has("name", P.within(__.V().values("name").fold().asAdmin()))},
+                {g.V().has("name", P.without(__.V().values("name").fold().asAdmin()))},
+                {g.V().has("name", P.within(__.constant("a").asAdmin(), __.constant("b").asAdmin()))},
+
+                // === not() with traversal ===
+                {g.V().has("name", __.not(__.identity()))},
+
+                // === hasId/hasLabel/hasKey/hasValue with traversals ===
+                {g.V().hasId(__.V().id())},
+                {g.V().hasId(P.eq(__.V().id().asAdmin()))},
+                {g.V().hasLabel(__.V().label())},
+                {g.V().properties("age").hasKey(__.constant("age"))},
+                {g.V().properties("age").hasValue(__.constant(29))},
+
+                // === is() with traversals ===
+                {g.V().values("age").is(__.constant(29))},
+                {g.V().values("age").is(P.gt(__.V().values("age").asAdmin()))},
+                {g.V().values("age").is(P.within(__.V().values("age").fold().asAdmin()))},
+
+                // === V() and E() with traversals ===
+                {g.V().V(__.select("ids"))},
+                {g.V().V(__.out("knows").id())},
+                {g.V().E(__.select("edgeIds"))},
+                {g.V().E(__.outE().id())},
+                {g.V(__.V().id())},
+                {g.E(__.V().outE().id())},
+
+                // === property() with traversals ===
+                {g.V().property("key", __.select("val"))},
+                {g.V().property("key", __.V().values("name"))},
+                {g.V().property("count", __.out().count())},
+                {g.V().property(Cardinality.list, "x", __.out().values("name"))},
+                {g.V().property(__.V().project("a").by("name"))},
+
+                // === where() with traversal predicates ===
+                {g.V().values("age").where(P.gt(__.V().values("age").asAdmin()))},
+                {g.V().values("age").where(P.within(__.V().values("age").fold().asAdmin()))},
+
+                // === Backward compatibility: literal arguments still round-trip ===
+                {g.V().has("name", "marko")},
+                {g.V().has("name", P.eq("marko"))},
+                {g.V().has("age", P.gt(30))},
+                {g.V().has("name", P.within("a", "b", "c"))},
+                {g.V(1)},
+                {g.V(1, 2, 3)},
+        });
+    }
+
+    @Test
+    public void shouldRoundTrip() {
+        final String originalGremlin = traversal.asAdmin().getGremlinLang().getGremlin();
         final GremlinAntlrToJava antlr = new GremlinAntlrToJava();
         final Object parsed = GremlinQueryParser.parse(originalGremlin, antlr);
-
-        // Get the GremlinLang of the parsed traversal
         final String roundTrippedGremlin = ((Traversal<?, ?>) parsed).asAdmin().getGremlinLang().getGremlin();
-
-        assertEquals("GremlinLang round-trip should preserve traversal structure for: " + originalGremlin,
+        assertEquals("GremlinLang round-trip failed for: " + originalGremlin,
                 originalGremlin, roundTrippedGremlin);
-    }
-
-    @Test
-    public void shouldRoundTripHasWithTraversalValue() {
-        // g.V().has("name", __.values("x"))
-        assertRoundTrip(g.V().has("name", __.values("x")));
-    }
-
-    @Test
-    public void shouldRoundTripHasWithPredicateTraversal() {
-        // g.V().has("name", P.eq(__.values("x")))
-        assertRoundTrip(g.V().has("name", P.eq(__.values("x").asAdmin())));
-    }
-
-    @Test
-    public void shouldRoundTripVWithTraversal() {
-        // g.V().V(__.select("ids"))
-        assertRoundTrip(g.V().V(__.select("ids")));
-    }
-
-    @Test
-    public void shouldRoundTripPropertyWithTraversal() {
-        // g.V().property("key", __.select("val"))
-        assertRoundTrip(g.V().property("key", __.select("val")));
-    }
-
-    @Test
-    public void shouldRoundTripHasWithConstantTraversal() {
-        // g.V().has("name", __.constant("marko"))
-        assertRoundTrip(g.V().has("name", __.constant("marko")));
-    }
-
-    @Test
-    public void shouldRoundTripLiteralHasUnchanged() {
-        // Backward compatibility: literal has() should still round-trip correctly
-        assertRoundTrip(g.V().has("name", "marko"));
-    }
-
-    @Test
-    public void shouldRoundTripLiteralPredicateUnchanged() {
-        // Backward compatibility: literal P.eq() should still round-trip correctly
-        assertRoundTrip(g.V().has("name", P.eq("marko")));
-    }
-
-    @Test
-    public void shouldRoundTripHasWithPGtTraversal() {
-        // g.V().has("age", P.gt(__.constant(30)))
-        assertRoundTrip(g.V().has("age", P.gt(__.constant(30).asAdmin())));
-    }
-
-    @Test
-    public void shouldRoundTripEWithTraversal() {
-        // g.V().E(__.select("edgeIds"))
-        assertRoundTrip(g.V().E(__.select("edgeIds")));
-    }
-
-    @Test
-    public void shouldRoundTripPropertyWithMapTraversal() {
-        // g.V().property(__.V().project("a").by("name")) - the Map-producing form
-        assertRoundTrip(g.V().property(__.V().project("a").by("name")));
     }
 }

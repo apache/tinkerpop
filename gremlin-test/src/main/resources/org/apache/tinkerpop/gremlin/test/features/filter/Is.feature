@@ -213,7 +213,10 @@ Feature: Step - is()
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().hasLabel("person").values("age").choose(__.is(P.gt(__.V(vid1).values("age"))), __.constant("older than marko"), __.constant("not older"))
+      g.V().hasLabel("person").values("age").
+        choose(__.is(P.gt(__.V(vid1).values("age"))),
+               __.constant("older than marko"),
+               __.constant("not older"))
       """
     When iterated to list
     Then the result should be unordered
@@ -228,7 +231,10 @@ Feature: Step - is()
     Given the modern graph
     And the traversal of
       """
-      g.V().hasLabel("person").values("age").choose(__.is(P.gte(__.V().hasLabel("person").values("age").mean())), __.constant("above average"), __.constant("below average"))
+      g.V().hasLabel("person").values("age").
+        choose(__.is(P.gte(__.V().hasLabel("person").values("age").mean())),
+               __.constant("above average"),
+               __.constant("below average"))
       """
     When iterated to list
     Then the result should be unordered
