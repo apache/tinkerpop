@@ -40,9 +40,9 @@ public final class ReadOnlyChildValidator {
      * Throws {@link IllegalArgumentException} if one is found.
      */
     public static void validate(final Traversal.Admin<?, ?> child) {
-        final List<Step> mutatingSteps = TraversalHelper.getStepsOfAssignableClassRecursively(Mutating.class, child);
+        final List<Mutating> mutatingSteps = TraversalHelper.getStepsOfAssignableClassRecursively(Mutating.class, child);
         if (!mutatingSteps.isEmpty()) {
-            final Step<?, ?> found = mutatingSteps.get(0);
+            final Step<?, ?> found = (Step<?, ?>) mutatingSteps.get(0);
             throw new IllegalArgumentException(String.format(
                     "Child traversal contains a mutating step '%s' in '%s'. " +
                     "Mutating steps are not allowed in child traversals.",

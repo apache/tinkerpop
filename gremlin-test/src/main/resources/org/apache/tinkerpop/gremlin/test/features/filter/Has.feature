@@ -1040,3 +1040,33 @@ Feature: Step - has()
     Then the result should be unordered
       | result |
       | vp[marko-age->d[29].i] |
+
+  # Child traversal using select() to reference a labeled step value
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_VXvid1X_asXaX_V_hasXage_gtXselectXaX_valuesXageXXX_valuesXnameX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).as("a").V().has("age", P.gt(__.select("a").values("age"))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | josh |
+      | peter |
+
+  # Child traversal using sack() to filter against a sack value
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_withSackX0X_V_sackXsumX_byXageX_V_hasXage_gtXsackXX_valuesXnameX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).values("age").as("threshold").V().has("age", P.gt(__.select("threshold"))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | josh |
+      | peter |

@@ -1590,7 +1590,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#element-step[reference]
 
 *Description:* Reads edges from the graph by their identifiers. Can be used as a start step or mid-traversal.
 
-*Syntax:* `E(Object... edgeIds)` | `E(Traversal idTraversal)`
+*Syntax:* `E(Object... edgeIds)` | `E(List edgeIds)` | `E(Traversal idTraversal)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1600,7 +1600,8 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#element-step[reference]
 
 *Arguments:*
 
-* `edgeIds` - Zero or more edge identifiers. If none are provided, all edges are returned.
+* `edgeIds` - Zero or more edge identifiers. If none are provided, all edges are returned. A `List` may be provided
+  as a single argument and will be expanded to look up each contained identifier.
 * `idTraversal` - A child traversal which supplies edge identifiers. The child traversal must be read-only (no mutating steps).
 
 *Modulation:*
@@ -1739,7 +1740,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#groupcount-step[referenc
 
 *Description:* Filters traversers by property existence, property value, or label.
 
-*Syntax:* `has(String key)` | `has(String key, Object value)` | `has(String key, P predicate)` | `has(String key, Traversal traversal)` | `has(String label, String key, Object value)` | `has(String label, String key, P predicate)`
+*Syntax:* `has(String key)` | `has(String key, Object value)` | `has(String key, P predicate)` | `has(String key, Traversal traversal)` | `has(T accessor, Object value)` | `has(T accessor, P predicate)` | `has(String label, String key, Object value)` | `has(String label, String key, P predicate)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1749,12 +1750,12 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#groupcount-step[referenc
 
 *Arguments:*
 
-* `key` - The property key to check.
+* `key` - The property key to check (or a `T` accessor for `id` or `label`).
 * `value` - The value to compare against using equality. May be a literal or a `Traversal`.
 * `predicate` - A `P` predicate for comparison. The predicate value may be a literal or a `Traversal`.
 * `traversal` - A child traversal whose first result is used as the comparison value (implicitly wrapped in `P.eq()`).
   Must be read-only.
-* `label` - A label filter applied before the property check.
+* `label` - A label filter applied before the property check (three-argument form).
 
 *Modulation:*
 
@@ -1762,10 +1763,13 @@ None
 
 *Considerations:*
 
-* `has(key)` filters to elements that have the specified property (existence check).
+* `has(key)` filters to elements that have the specified property (existence check). `hasNot(key)` is the inverse.
+* `has(T.label, value)` is equivalent to `hasLabel(value)`. `has(T.id, value)` is equivalent to `hasId(value)`.
+* When the domain is a `Map` (e.g., from `elementMap()` or `valueMap()`), `has()` filters by map key/value.
 * When a `Traversal` is supplied as a value or inside a `P`, it is resolved per-traverser and its first result is used.
-* Child traversals must be read-only; mutating steps are rejected with `IllegalArgumentException`.
+* Child traversals must be read-only. Mutating steps are rejected with `IllegalArgumentException`.
 * For `within()`/`without()` predicates with traversal arguments, use `fold()` to collect multiple results into a list.
+* `has(key, null)` filters to elements where the property value is `null` (not existence check).
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/HasStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
@@ -1775,7 +1779,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
 
 *Description:* Filters elements by their identifier.
 
-*Syntax:* `hasId(Object id, Object... otherIds)` | `hasId(P predicate)` | `hasId(Traversal traversal)`
+*Syntax:* `hasId(Object id, Object... otherIds)` | `hasId(List ids)` | `hasId(P predicate)` | `hasId(Traversal traversal)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1785,7 +1789,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
 
 *Arguments:*
 
-* `id` - One or more identifiers to match against.
+* `id` - One or more identifiers to match against. A `List` may be provided as a single argument and will be expanded.
 * `predicate` - A `P` predicate for identifier comparison. The predicate value may contain a `Traversal`.
 * `traversal` - A child traversal whose first result is used as the identifier (implicitly wrapped in `P.eq()`).
   Must be read-only.
@@ -1797,7 +1801,7 @@ None
 *Considerations:*
 
 * Equivalent to `has(T.id, ...)`.
-* Child traversals must be read-only; mutating steps are rejected with `IllegalArgumentException`.
+* Child traversals must be read-only. Mutating steps are rejected with `IllegalArgumentException`.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/HasStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
@@ -2930,7 +2934,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[reference]
 
 *Description:* Reads vertices from the graph by their identifiers. Can be used as a start step or mid-traversal.
 
-*Syntax:* `V(Object... vertexIds)` | `V(Traversal idTraversal)`
+*Syntax:* `V(Object... vertexIds)` | `V(List vertexIds)` | `V(Traversal idTraversal)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -2940,7 +2944,8 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[reference]
 
 *Arguments:*
 
-* `vertexIds` - Zero or more vertex identifiers. If none are provided, all vertices are returned.
+* `vertexIds` - Zero or more vertex identifiers. If none are provided, all vertices are returned. A `List` may be
+  provided as a single argument and will be expanded to look up each contained identifier.
 * `idTraversal` - A child traversal which supplies vertex identifiers. The child traversal must be read-only (no mutating steps).
 
 *Modulation:*

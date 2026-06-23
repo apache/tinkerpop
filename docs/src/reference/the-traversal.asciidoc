@@ -2192,7 +2192,7 @@ the key,value pairs for those vertices.
 
 In addition to literal values, `has()` accepts child traversals for dynamic comparisons. The child traversal is
 evaluated per-traverser and its first result becomes the comparison value, consistent with `by(traversal)` semantics.
-The child traversal cannot include mutating steps like `addV()` or `property()`; if present, they are rejected with
+The child traversal cannot include mutating steps like `addV()` or `property()`. If present, they are rejected with
 an `IllegalArgumentException`.
 
 [gremlin-groovy,modern]

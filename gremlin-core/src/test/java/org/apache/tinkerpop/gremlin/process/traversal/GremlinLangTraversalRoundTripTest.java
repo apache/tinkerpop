@@ -39,7 +39,7 @@ import static org.junit.Assert.assertEquals;
  * and verifies the resulting GremlinLang string is structurally identical.
  * <p>
  * This complements the Gherkin feature tests (which verify execution semantics) by ensuring that
- * the serialization/deserialization layer preserves all traversal argument forms correctly.
+ * the stringification/parsing layer preserves all traversal argument forms correctly.
  */
 @RunWith(Parameterized.class)
 public class GremlinLangTraversalRoundTripTest {
@@ -110,7 +110,7 @@ public class GremlinLangTraversalRoundTripTest {
                 {g.V().values("age").where(P.gt(__.V().values("age").asAdmin()))},
                 {g.V().values("age").where(P.within(__.V().values("age").fold().asAdmin()))},
 
-                // === Backward compatibility: literal arguments still round-trip ===
+                // === literal arguments ===
                 {g.V().has("name", "marko")},
                 {g.V().has("name", P.eq("marko"))},
                 {g.V().has("age", P.gt(30))},

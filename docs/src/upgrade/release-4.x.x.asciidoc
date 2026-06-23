@@ -405,8 +405,8 @@ configuring close behavior and always rollback.
 
 ==== Expanding Dynamic Arguments to Additional Steps
 
-Prior to 4.0, comparing a traverser's value against a dynamically computed reference required verbose workarounds with
-`where()`, `select()`, and labeled steps. For example, finding all people older than "marko" previously required:
+Prior to 4.0, comparing a traverser's value against a dynamically computed reference required several coordinated
+step labels and `where()` comparison. For example, finding all people older than "marko" previously required:
 
 [source,groovy]
 ----
@@ -418,8 +418,8 @@ g.V(1).values("age").as("markosAge").
   select("p").values("name")
 ----
 
-This pattern was unintuitive and could not easily compose with other predicates. With traversal-accepting arguments,
-the same query becomes a single, readable step:
+This pattern required several coordinated step labels and could not easily compose with other predicates. With
+traversal-accepting arguments, the same query becomes a single, readable step:
 
 [source,groovy]
 ----
@@ -442,6 +442,11 @@ g.V(4).property(__.V(1).project("friendCount").by(__.out("knows").count()))
 
 See <<has-step,has()>>, <<v-step,V()>>, <<property-step,property()>>, <<is-step,is()>>, and
 <<where-step,where()>> in the Reference Documentation for full details and additional examples.
+
+Users should look to simplify existing traversals that use `as()`/`where()`/`select()` patterns solely to compare
+a traverser against a dynamically computed value. In particular, patterns of the form
+`__.as("x")...where("x", P.gt("y"))` can often be replaced with a single `has()` or `is()` step containing
+a traversal predicate.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2586[TINKERPOP-2586],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2777[TINKERPOP-2777],
