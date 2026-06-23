@@ -363,6 +363,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | result |
       | d[0.5].d |
       | d[1.0].d |
+
   @GraphComputerVerificationMidENotSupported
   Scenario: g_VXvid1X_EXoutE_idX
     Given the modern graph
@@ -400,8 +401,6 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       """
     When iterated to list
     Then the result should be empty
-
-      | marko |
 
   Scenario: g_EXVXvid1X_outE_idX
     Given the modern graph

@@ -1056,14 +1056,13 @@ Feature: Step - has()
       | josh |
       | peter |
 
-  # Child traversal using sack() to filter against a sack value
+  # Child traversal using sack() to filter against the traverser's sack value
   @GraphComputerVerificationMidVNotSupported
-  Scenario: g_withSackX0X_V_sackXsumX_byXageX_V_hasXage_gtXsackXX_valuesXnameX
+  Scenario: g_withSackX29X_V_hasXage_gtXsackXX_valuesXnameX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(vid1).values("age").as("threshold").V().has("age", P.gt(__.select("threshold"))).values("name")
+      g.withSack(29).V().has("age", P.gt(__.sack())).values("name")
       """
     When iterated to list
     Then the result should be unordered

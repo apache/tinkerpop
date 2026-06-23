@@ -541,6 +541,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
     And the graph should return 2 for count of "g.V(vid4).outE(\"uses\")"
     And the graph should return 4 for count of "g.V(vid5).inE(\"uses\")"
     And the graph should return 2 for count of "g.V(vid6).outE(\"uses\")"
+
   @GraphComputerVerificationMidVNotSupported
   Scenario: g_VXvid1X_id_VXidentityX_name
     Given the modern graph
@@ -597,8 +598,6 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       | vadas |
       | josh |
 
-  @GraphComputerVerificationMidENotSupported
-
   @GraphComputerVerificationMidVNotSupported
   Scenario: g_injectX9999X_VXidentityX
     Given the modern graph
@@ -607,9 +606,6 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
       g.inject(9999).V(__.identity())
       """
     When iterated to list
-    Then the result should be empty
-
-  @GraphComputerVerificationMidENotSupported
     Then the result should be empty
 
   Scenario: g_VXVXvid1X_idX_name
