@@ -35,8 +35,8 @@ complete list of all the modifications that are part of this release.
 ==== Standardizing Java Connection Options
 
 TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In the Java reference driver
-(`gremlin-driver`), several `Cluster.Builder` options have been renamed for consistency, with the old names retained
-as deprecated aliases so that existing code keeps compiling, and a number of new options have been added. The notes
+(`gremlin-driver`), several `Cluster.Builder` options have been renamed for consistency. As this is a major version,
+the old names have been removed rather than retained as aliases, and a number of new options have been added. The notes
 below describe the Java changes. See <<glv-driver-changes, GLV Driver Changes>> for the equivalent changes in the
 other drivers.
 

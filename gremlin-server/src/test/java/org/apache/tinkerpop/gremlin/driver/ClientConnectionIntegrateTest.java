@@ -280,26 +280,6 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
         }
     }
 
-    @Test
-    public void shouldThrowErrorWithHelpfulMessageWhenIdleTimeoutReachedBeforeResponseReceived() throws InterruptedException {
-        int idleMillis = 1000;
-        final Cluster cluster = TestClientFactory.build()
-                .idleTimeoutMillis(idleMillis)
-                .create();
-        final Client.ClusteredClient client = cluster.connect();
-        final RequestOptions ro = RequestOptions.build().language("gremlin-groovy").create();
-
-        try {
-            client.submit("Thread.sleep(" + idleMillis * 3 + ")", ro).all().get();
-            fail("Expected exception due to idle timeout");
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("Idle timeout occurred before response could be received from server - consider increasing idleConnectionTimeout"));
-        } finally {
-            client.close();
-            cluster.close();
-        }
-    }
-
     /**
      * Verifies that the {@code readTimeout} connection option fires end-to-end when the server stalls while producing
      * a response and that the per-request timeout cleans up the dead connection without taking the host down or

@@ -423,11 +423,12 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             try {
-                client.submit("g.inject('x').repeat(concat('x')).times(512)").all().get();
+                // sleep on the server longer than the readTimeout so no response chunk arrives in time
+                client.submit("Thread.sleep(" + readMillis * 3 + ")", groovyRequestOptions).all().get();
                 fail("Request should have failed because the readTimeout fired before a response was received");
             } catch (Exception ex) {
                 final Throwable root = ExceptionHelper.getRootCause(ex);
-                assertThat(root.getMessage(), containsString("Response entity too large"));
+                assertThat(root, instanceOf(ReadTimeoutException.class));
             }
 
             assertEquals(2, client.submit("g.inject(2)").all().join().get(0).getInt());

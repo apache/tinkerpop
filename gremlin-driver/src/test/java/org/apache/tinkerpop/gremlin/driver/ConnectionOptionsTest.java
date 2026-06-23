@@ -34,8 +34,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Verifies the standardized GLV connection options on the {@link Cluster.Builder}: canonical names, defaults, and
- * the deprecated aliases that must keep working.
+ * Verifies the standardized GLV connection options on the {@link Cluster.Builder}: canonical names and defaults.
  */
 public class ConnectionOptionsTest {
 
