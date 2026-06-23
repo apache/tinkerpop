@@ -70,6 +70,33 @@ def test_client_simple_eval(client):
     assert client.submit('g.inject(2)').all().result()[0] == 2
 
 
+def test_client_deflate_compression_round_trip():
+    # With compression enabled the driver must (1) advertise Accept-Encoding: deflate
+    # on the request and (2) transparently decompress the server's deflate-compressed
+    # response. The interceptor captures a reference to the outgoing headers dict, which
+    # the transport mutates in place to add Accept-Encoding before sending. Use a large,
+    # repetitive payload so the response is actually compressed and spans multiple buffer fills.
+    captured_headers = {}
+
+    def capture(http_request):
+        # keep a reference; the transport adds Accept-Encoding to this same dict at send time
+        captured_headers['ref'] = http_request.headers
+
+    client = Client(test_no_auth_url, 'g', compression='deflate', interceptors=capture)
+    try:
+        result = client.submit('[" ".repeat(200000), " ".repeat(100000)]',
+                               request_options={'language': 'gremlin-groovy'}).all().result()
+        # (2) decompression succeeded end to end
+        assert len(result[0]) == 200000
+        assert len(result[1]) == 100000
+        # (1) the request advertised deflate
+        sent = captured_headers.get('ref', {})
+        assert sent.get('accept-encoding') == 'deflate', \
+            "expected Accept-Encoding: deflate on the request, got %r" % sent.get('accept-encoding')
+    finally:
+        client.close()
+
+
 def test_client_simple_eval_bindings(client):
     assert client.submit('g.V(x).values("age")', {'x': 1}).all().result()[0] == 29
 
@@ -121,8 +148,8 @@ def test_bad_serialization(client):
 
 
 def test_client_connection_pool_after_error(client):
-    # Overwrite fixture with pool_size=1 client
-    client = Client(test_no_auth_url, 'gmodern', pool_size=1)
+    # Overwrite fixture with max_connections=1 client
+    client = Client(test_no_auth_url, 'gmodern', max_connections=1)
 
     try:
         # should fire an exception
@@ -149,7 +176,7 @@ def test_client_no_hang_if_submit_on_closed(client):
 
 
 def test_client_close_all_connection_in_pool(client):
-    client = Client(test_no_auth_url, 'g', pool_size=1)
+    client = Client(test_no_auth_url, 'g', max_connections=1)
     assert client.available_pool_size == 1
     client.submit('g.inject(4)').all().result()
     client.close()
@@ -158,7 +185,7 @@ def test_client_close_all_connection_in_pool(client):
 
 def test_client_side_timeout_set_for_aiohttp(client):
     client = Client(test_no_auth_url, 'gmodern',
-                    read_timeout=1, write_timeout=1)
+                    read_timeout_millis=1000, write_timeout=1)
 
     try:
         # should fire an exception
@@ -282,8 +309,8 @@ def test_client_async(client):
 
 
 def test_connection_share(client):
-    # Overwrite fixture with pool_size=1 client
-    client = Client(test_no_auth_url, 'gmodern', pool_size=1)
+    # Overwrite fixture with max_connections=1 client
+    client = Client(test_no_auth_url, 'gmodern', max_connections=1)
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     t = g.V()
     message = create_basic_request_message(t)
@@ -294,7 +321,7 @@ def test_connection_share(client):
     result_set2 = future2.result()
     assert len(result_set2.all().result()) == 6
 
-    # This future has to finish for the second to yield result - pool_size=1
+    # This future has to finish for the second to yield result - max_connections=1
     assert future.done()
     result_set = future.result()
     assert len(result_set.all().result()) == 6
@@ -305,7 +332,7 @@ def test_multi_conn_pool(client):
     t = g.V()
     message = create_basic_request_message(t)
     message2 = create_basic_request_message(t)
-    client = Client(test_no_auth_url, 'g', pool_size=1)
+    client = Client(test_no_auth_url, 'g', max_connections=1)
     future = client.submit_async(message)
     future2 = client.submit_async(message2)
 
@@ -604,7 +631,7 @@ def test_auto_serializes_request_message_with_interceptor_mutation():
             http_request.body = RequestMessage(fields={"g": "gmodern"}, gremlin="g.inject(99)")
 
     client = Client(test_no_auth_url, 'gmodern',
-                    pool_size=1, interceptors=swap_query)
+                    max_connections=1, interceptors=swap_query)
     try:
         result = client.submit("g.inject(1)").next()
         assert 99 == result
@@ -623,7 +650,7 @@ def test_interceptor_errors_propagate():
             raise RuntimeError("interceptor broke")
 
     client = Client(test_no_auth_url, 'gmodern',
-                    pool_size=1, interceptors=failing_interceptor)
+                    max_connections=1, interceptors=failing_interceptor)
     try:
         # First request should fail with interceptor error
         try:

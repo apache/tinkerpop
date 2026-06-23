@@ -87,10 +87,10 @@ def with_configs():
     rc = DriverRemoteConnection(
         server_url, 'g',
         max_connections=8,
-        connect_timeout=5,
-        idle_timeout=180,
-        keep_alive_time=30,
-        default_batch_size=64,
+        connect_timeout_millis=5000,
+        idle_timeout_millis=180000,
+        keep_alive_time_millis=30000,
+        batch_size=64,
         compression='none',
         interceptors=[add_headers],
     )

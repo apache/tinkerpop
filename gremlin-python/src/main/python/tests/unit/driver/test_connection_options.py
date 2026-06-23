@@ -114,8 +114,8 @@ class TestTransportDefaults:
         t.close()
 
     def test_explicit_values(self):
-        t = AiohttpHTTPTransport(connect_timeout=2, idle_timeout=60,
-                                 keep_alive_time=15, compression='deflate',
+        t = AiohttpHTTPTransport(connect_timeout_millis=2000, idle_timeout_millis=60000,
+                                 keep_alive_time_millis=15000, compression='deflate',
                                  proxy='http://proxy:3128', trust_env=True)
         assert t._connect_timeout == 2
         assert t._idle_timeout == 60
@@ -125,23 +125,28 @@ class TestTransportDefaults:
         assert t._trust_env is True
         t.close()
 
+    def test_timeouts_via_seconds(self):
+        t = AiohttpHTTPTransport(connect_timeout=2,
+                                 idle_timeout=60,
+                                 read_timeout=30,
+                                 keep_alive_time=15)
+        # the unsuffixed seconds form sets the same internal seconds values as the *_millis form
+        assert t._connect_timeout == 2
+        assert t._idle_timeout == 60
+        assert t._read_timeout == 30
+        assert t._keep_alive_time == 15
+        t.close()
+
+    def test_timeout_rejects_both_millis_and_seconds(self):
+        with pytest.raises(ValueError):
+            AiohttpHTTPTransport(connect_timeout_millis=2000, connect_timeout=2)
+
     def test_ssl_canonical_option(self):
         import ssl as ssl_module
         ctx = ssl_module.SSLContext(ssl_module.PROTOCOL_TLS_CLIENT)
         t = AiohttpHTTPTransport(ssl=ctx)
         assert t._enable_ssl is True
         assert t._ssl_context is ctx
-        t.close()
-
-    def test_ssl_options_deprecated_alias(self):
-        import ssl as ssl_module
-        ctx = ssl_module.SSLContext(ssl_module.PROTOCOL_TLS_CLIENT)
-        with warnings.catch_warnings(record=True) as caught:
-            warnings.simplefilter("always")
-            t = AiohttpHTTPTransport(ssl_options=ctx)
-        assert t._enable_ssl is True
-        assert t._ssl_context is ctx
-        assert any(issubclass(w.category, DeprecationWarning) for w in caught)
         t.close()
 
     def test_max_content_length_removed(self):
@@ -175,18 +180,18 @@ class TestTransportConnectWiring:
         return captured, t
 
     def test_idle_timeout_maps_to_keepalive_timeout(self):
-        captured, t = self._connect_capture(idle_timeout=90)
+        captured, t = self._connect_capture(idle_timeout_millis=90000)
         assert captured['connector']['keepalive_timeout'] == 90
         t.close()
 
     def test_connect_timeout_sets_sock_connect(self):
-        captured, t = self._connect_capture(connect_timeout=3)
+        captured, t = self._connect_capture(connect_timeout_millis=3000)
         timeout = captured['session']['timeout']
         assert timeout.sock_connect == 3
         t.close()
 
     def test_keep_alive_wires_socket_factory(self):
-        captured, t = self._connect_capture(keep_alive_time=30)
+        captured, t = self._connect_capture(keep_alive_time_millis=30000)
         # aiohttp >= 3.11 is the declared floor, so socket_factory is always used.
         assert 'socket_factory' in captured['connector']
         assert 'socket_options' not in captured['connector']
@@ -203,7 +208,7 @@ class TestTransportConnectWiring:
         t.close()
 
     def test_read_timeout_sets_sock_read(self):
-        captured, t = self._connect_capture(connect_timeout=3, read_timeout=11)
+        captured, t = self._connect_capture(connect_timeout_millis=3000, read_timeout_millis=11000)
         timeout = captured['session']['timeout']
         assert timeout.sock_connect == 3
         assert timeout.sock_read == 11

@@ -98,7 +98,7 @@ def authenticated_client(request):
             ssl_opts.verify_mode = ssl.CERT_NONE
             client = Client(basic_url, 'gmodern',
                             auth=basic('stephen', 'password'),
-                            ssl_options=ssl_opts)
+                            ssl=ssl_opts)
         else:
             raise ValueError("Invalid authentication option - " + request.param)
     except OSError:
@@ -155,7 +155,7 @@ def remote_connection_authenticated(request):
             ssl_opts.verify_mode = ssl.CERT_NONE
             remote_conn = DriverRemoteConnection(basic_url, 'gmodern',
                                                  auth=basic('stephen', 'password'),
-                                                 ssl_options=ssl_opts)
+                                                 ssl=ssl_opts)
         else:
             raise ValueError("Invalid authentication option - " + request.param)
     except OSError:

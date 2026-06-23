@@ -38,22 +38,12 @@ __author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitqui
 
 class Client:
 
-    def __init__(self, url, traversal_source, max_connections=None, max_workers=None,
+    def __init__(self, url, traversal_source, max_connections=128, max_workers=None,
                  response_serializer=None, interceptors=None, auth=None,
                  enable_user_agent_on_connect=True,
-                 bulk_results=False, pdt_registry=None, default_batch_size=None,
+                 bulk_results=False, pdt_registry=None, batch_size=None,
                  **transport_kwargs):
         log.info("Creating Client with url '%s'", url)
-
-        # pool_size is a deprecated alias for max_connections (deprecated as of 4.0.0), retained for one release.
-        if 'pool_size' in transport_kwargs:
-            warnings.warn(
-                "As of release 4.0.0, the 'pool_size' option is deprecated and will be "
-                "removed in a future release. Use 'max_connections' instead.",
-                DeprecationWarning)
-            pool_size = transport_kwargs.pop('pool_size')
-            if max_connections is None:
-                max_connections = pool_size
 
         self._closed = False
         self._url = url
@@ -63,9 +53,9 @@ class Client:
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         self._bulk_results = bulk_results
         self._traversal_source = traversal_source
-        if default_batch_size is None:
-            default_batch_size = 64
-        self._default_batch_size = default_batch_size
+        if batch_size is None:
+            batch_size = 64
+        self._batch_size = batch_size
         if response_serializer is None:
             response_serializer = serializer.GraphBinarySerializersV4()
         if pdt_registry is not None:
@@ -77,8 +67,6 @@ class Client:
 
         self._transport_kwargs = transport_kwargs
 
-        if max_connections is None:
-            max_connections = 128
         self._max_connections = max_connections
         # This is until concurrent.futures backport 3.1.0 release
         if max_workers is None:
@@ -216,7 +204,7 @@ class Client:
 
         # Fill in the connection-level default batch size when the caller did
         # not set a per-request batchSize.
-        if self._default_batch_size is not None and 'batchSize' not in message.fields:
-            message.fields['batchSize'] = self._default_batch_size
+        if self._batch_size is not None and 'batchSize' not in message.fields:
+            message.fields['batchSize'] = self._batch_size
 
         return conn.write(message)

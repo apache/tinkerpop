@@ -136,7 +136,7 @@ def test_should_handle_slow_response(socket_server_client):
 def test_should_timeout_when_server_never_responds():
     # Use a short read_timeout so the test fails fast instead of waiting for
     # aiohttp's 5-minute default. aiohttp surfaces this as asyncio.TimeoutError.
-    client = Client(url, 'g', read_timeout=2)
+    client = Client(url, 'g', read_timeout_millis=2000)
     try:
         with pytest.raises(asyncio.TimeoutError):
             client.submit(GREMLIN_NO_RESPONSE).all().result()

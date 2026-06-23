@@ -46,38 +46,19 @@ class TestMaxConnections:
         client = _make_client(max_connections=4)
         assert client._max_connections == 4
 
-    def test_pool_size_deprecated_alias(self):
-        with warnings.catch_warnings(record=True) as caught:
-            warnings.simplefilter("always")
-            client = _make_client(pool_size=3)
-        assert client._max_connections == 3
-        assert any(issubclass(w.category, DeprecationWarning) for w in caught)
 
-    def test_max_connections_takes_precedence_over_pool_size(self):
-        with warnings.catch_warnings(record=True):
-            warnings.simplefilter("always")
-            client = _make_client(max_connections=10, pool_size=3)
-        assert client._max_connections == 10
-
-    def test_pool_size_not_leaked_to_transport(self):
-        with warnings.catch_warnings(record=True):
-            warnings.simplefilter("always")
-            client = _make_client(pool_size=2)
-        assert 'pool_size' not in client._transport_kwargs
-
-
-class TestDefaultBatchSize:
+class TestBatchSize:
 
     def test_default_is_64(self):
         client = _make_client()
-        assert client._default_batch_size == 64
+        assert client._batch_size == 64
 
     def test_explicit_value(self):
-        client = _make_client(default_batch_size=200)
-        assert client._default_batch_size == 200
+        client = _make_client(batch_size=200)
+        assert client._batch_size == 200
 
     def test_fills_batch_size_when_unset(self):
-        client = _make_client(default_batch_size=64)
+        client = _make_client(batch_size=64)
         conn = MagicMock()
         client._pool.get = MagicMock(return_value=conn)
         client.submit_async('g.V()')
@@ -85,7 +66,7 @@ class TestDefaultBatchSize:
         assert sent.fields['batchSize'] == 64
 
     def test_does_not_override_per_request_batch_size(self):
-        client = _make_client(default_batch_size=64)
+        client = _make_client(batch_size=64)
         conn = MagicMock()
         client._pool.get = MagicMock(return_value=conn)
         client.submit_async('g.V()', request_options={'batchSize': 10})
@@ -128,7 +109,7 @@ class TestRequestMessageNoMutation:
         # A caller-supplied RequestMessage must not be mutated in place: the
         # second submit with different options must not see the first submit's
         # batchSize/request_options leak in.
-        client = _make_client(default_batch_size=64)
+        client = _make_client(batch_size=64)
         conn = MagicMock()
         client._pool.get = MagicMock(return_value=conn)
 
@@ -149,10 +130,10 @@ class TestRequestMessageNoMutation:
         # And the original is still pristine.
         assert original.fields == {'g': 'g'}
 
-    def test_default_batch_size_not_written_to_caller_message(self):
+    def test_batch_size_not_written_to_caller_message(self):
         # Use a non-default value so the assertion proves the configured
-        # default_batch_size flowed through, not the library default (64).
-        client = _make_client(default_batch_size=32)
+        # batch_size flowed through, not the library default (64).
+        client = _make_client(batch_size=32)
         conn = MagicMock()
         client._pool.get = MagicMock(return_value=conn)
         original = RequestMessage(fields={'g': 'g'}, gremlin='g.V()')
@@ -196,10 +177,10 @@ class TestDriverRemoteConnectionOptions:
             instance._url = 'http://localhost:8182/gremlin'
             instance._traversal_source = 'g'
             DriverRemoteConnection('http://localhost:8182/gremlin', 'g',
-                                   max_connections=16, default_batch_size=32)
+                                   max_connections=16, batch_size=32)
         _, kwargs = MockClient.call_args
         assert kwargs['max_connections'] == 16
-        assert kwargs['default_batch_size'] == 32
+        assert kwargs['batch_size'] == 32
 
     def test_no_headers_param(self):
         import inspect

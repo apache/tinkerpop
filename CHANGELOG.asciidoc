@@ -26,17 +26,19 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 4.0.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Standardized `gremlin-python` connection options per the TinkerPop 4.x GLV proposal:
-** Renamed `pool_size` to `max_connections` and changed the default from 8 to 128 (`pool_size` retained as a deprecated alias); `max_connections` is now also applied to the aiohttp `TCPConnector` `limit` so the transport layer reflects the option in addition to sizing the Connection pool.
-** Renamed `ssl_options` to `ssl` accepting an `ssl.SSLContext` (`ssl_options` retained as a deprecated alias).
+** Renamed `pool_size` to `max_connections` (breaking; the old name has been removed) and changed the default from 8 to 128; `max_connections` is now also applied to the aiohttp `TCPConnector` `limit` so the transport layer reflects the option in addition to sizing the Connection pool.
+** Renamed `ssl_options` to `ssl` accepting an `ssl.SSLContext` (breaking; the old name has been removed).
 ** Added `connect_timeout` (default 5s) and rewired the existing `read_timeout` into a single aiohttp `ClientTimeout` (`sock_connect`/`sock_read`); the socket-level knobs are used rather than a whole-request `total` so long but legitimate streaming responses are not aborted, while a stalled server no longer hangs forever.
 ** Added `idle_timeout` (default 180s) mapped to the aiohttp `TCPConnector` keep-alive timeout.
 ** Added `keep_alive_time` (default 30s) enabling TCP keep-alive probes via the connector socket factory (`TCP_KEEPIDLE`/`TCP_KEEPALIVE` guarded by platform availability); this required raising the minimum `aiohttp` to `3.11` (the `socket_factory` floor). *(breaking)*
+** Each timeout option is named with a millisecond suffix as the primary form (`connect_timeout_millis`, `idle_timeout_millis`, `read_timeout_millis`, `keep_alive_time_millis`); the unsuffixed canonical name (`connect_timeout`, etc.) accepts the idiomatic seconds value. Both resolve to seconds internally for aiohttp.
 ** Added `compression` accepting `'none'`/`'deflate'`, default `'deflate'` (on), advertising `Accept-Encoding: deflate` by default; when set to `'none'`, aiohttp's automatic `Accept-Encoding` injection is suppressed so compression is not silently negotiated.
-** Added `default_batch_size` (default 64) connection-level default that fills the per-request `batchSize` when unset.
+** Added `batch_size` (default 64) connection-level default that fills the per-request `batchSize` when unset.
 ** Added explicit HTTP `proxy` and `trust_env` options surfaced on the aiohttp `ClientSession`.
 ** Added a credentials-provider variant to `auth.sigv4` that accepts an optional credentials provider or callable, falling back to the AWS environment variables.
 ** Removed the `max_content_length` kwarg from the `gremlin-python` driver (previously accepted but discarded).
 ** Removed the standalone `headers` kwarg from `gremlin-python` `Client`/`DriverRemoteConnection`; custom headers must now be set via interceptors.
+** Fixed `gremlin-python` `Client.submit`/`submit_async` mutating a caller-supplied `RequestMessage` in place; the message fields are now cloned before applying `request_options`/`batch_size`, so resubmitting the same message no longer accumulates state, matching the no-mutate contract of the .NET/JS drivers.
 ** Fixed `gremlin-python` `Client.submit`/`submit_async` mutating a caller-supplied `RequestMessage` in place; the message fields are now cloned before applying `request_options`/`default_batch_size`, so resubmitting the same message no longer accumulates state, matching the no-mutate contract of the .NET/JS drivers.
 * Standardized `gremlin-driver` (Java) connection options
 ** Renamed the `connectionSetupTimeoutMillis` builder option to `connectTimeout` (default lowered from 15s to 5s) and actually wired it to `ChannelOption.CONNECT_TIMEOUT_MILLIS` on the connection bootstrap; it previously was validated but never applied. The old name is removed. Settable as `connectTimeout(Duration)` or `connectTimeoutMillis(int)` (YAML key `connectionPool.connectTimeoutMillis`). *(breaking)*

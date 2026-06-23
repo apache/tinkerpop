@@ -20,7 +20,6 @@ import aiohttp
 import asyncio
 import socket
 import sys
-import warnings
 
 if sys.version_info >= (3, 11):
     import asyncio as async_timeout
@@ -29,11 +28,32 @@ else:
 
 __author__ = 'Lyndon Bauto (lyndonb@bitquilltech.com)'
 
-# Default connection option values (canonical TinkerPop 4.x GLV defaults).
-DEFAULT_CONNECT_TIMEOUT = 5
-DEFAULT_IDLE_TIMEOUT = 180
-DEFAULT_KEEP_ALIVE_TIME = 30
+# Default connection option values (canonical TinkerPop 4.x GLV defaults). The millisecond-suffixed
+# options are the primary form (mirroring the other GLVs); aiohttp itself works in seconds, so the
+# values are converted internally.
+DEFAULT_CONNECT_TIMEOUT_MILLIS = 5000
+DEFAULT_IDLE_TIMEOUT_MILLIS = 180000
+DEFAULT_KEEP_ALIVE_TIME_MILLIS = 30000
+# Seconds equivalents retained for internal use / backwards reference.
+DEFAULT_CONNECT_TIMEOUT = DEFAULT_CONNECT_TIMEOUT_MILLIS / 1000
+DEFAULT_IDLE_TIMEOUT = DEFAULT_IDLE_TIMEOUT_MILLIS / 1000
+DEFAULT_KEEP_ALIVE_TIME = DEFAULT_KEEP_ALIVE_TIME_MILLIS / 1000
 DEFAULT_COMPRESSION = 'deflate'
+
+def _resolve_timeout_seconds(millis, seconds, default_millis):
+    """Resolve a timeout to seconds (aiohttp's unit) from the ``*_millis`` number or the idiomatic
+    unsuffixed seconds number (``None`` means not supplied for either). Supplying both raises
+    ``ValueError``; if neither is given, ``default_millis`` is used (``None`` leaves it unset).
+    """
+    if millis is not None and seconds is not None:
+        raise ValueError("provide only one of the milliseconds option or the seconds option, not both")
+    if seconds is not None:
+        return seconds
+    if millis is not None:
+        return millis / 1000
+    if default_millis is None:
+        return None
+    return default_millis / 1000
 
 
 def _normalize_compression(compression):
@@ -134,9 +154,11 @@ class AiohttpSyncStream:
 class AiohttpHTTPTransport:
     nest_asyncio_applied = False
 
-    def __init__(self, call_from_event_loop=None, read_timeout=None, write_timeout=None,
-                 connect_timeout=DEFAULT_CONNECT_TIMEOUT,
-                 idle_timeout=DEFAULT_IDLE_TIMEOUT, keep_alive_time=DEFAULT_KEEP_ALIVE_TIME,
+    def __init__(self, call_from_event_loop=None, write_timeout=None,
+                 connect_timeout_millis=None, connect_timeout=None,
+                 idle_timeout_millis=None, idle_timeout=None,
+                 read_timeout_millis=None, read_timeout=None,
+                 keep_alive_time_millis=None, keep_alive_time=None,
                  compression=DEFAULT_COMPRESSION, proxy=None, trust_env=False,
                  max_connections=None, **kwargs):
         if call_from_event_loop is not None and call_from_event_loop and not AiohttpHTTPTransport.nest_asyncio_applied:
@@ -161,12 +183,15 @@ class AiohttpHTTPTransport:
         # Set all inner variables to parameters passed in.
         self._aiohttp_kwargs = kwargs
         self._write_timeout = write_timeout
-        self._read_timeout = read_timeout
+
+        # Timeouts accept a millisecond number (*_millis, primary form) or the idiomatic seconds number
+        # (unsuffixed). read_timeout defaults off; the others use the canonical millisecond defaults.
+        self._read_timeout = _resolve_timeout_seconds(read_timeout_millis, read_timeout, None)
 
         # Connection-level pooling / lifecycle options.
-        self._connect_timeout = connect_timeout
-        self._idle_timeout = idle_timeout
-        self._keep_alive_time = keep_alive_time
+        self._connect_timeout = _resolve_timeout_seconds(connect_timeout_millis, connect_timeout, DEFAULT_CONNECT_TIMEOUT_MILLIS)
+        self._idle_timeout = _resolve_timeout_seconds(idle_timeout_millis, idle_timeout, DEFAULT_IDLE_TIMEOUT_MILLIS)
+        self._keep_alive_time = _resolve_timeout_seconds(keep_alive_time_millis, keep_alive_time, DEFAULT_KEEP_ALIVE_TIME_MILLIS)
         # Caps the aiohttp connector's simultaneous connections per Connection
         # (the Client also sizes its Connection pool by this value).
         self._max_connections = max_connections
@@ -179,15 +204,7 @@ class AiohttpHTTPTransport:
         self._proxy = proxy
         self._trust_env = trust_env
 
-        # ssl: canonical name accepting an ssl.SSLContext. ssl_options is a
-        # deprecated alias retained for one release.
-        if "ssl_options" in self._aiohttp_kwargs:
-            warnings.warn(
-                "As of release 4.0.0, the 'ssl_options' option is deprecated and will be removed in a future "
-                "release. Use 'ssl' instead.",
-                DeprecationWarning)
-            self._ssl_context = self._aiohttp_kwargs.pop("ssl_options")
-            self._enable_ssl = True
+        # ssl: canonical name accepting an ssl.SSLContext.
         if "ssl" in self._aiohttp_kwargs:
             self._ssl_context = self._aiohttp_kwargs.pop("ssl")
             self._enable_ssl = True
