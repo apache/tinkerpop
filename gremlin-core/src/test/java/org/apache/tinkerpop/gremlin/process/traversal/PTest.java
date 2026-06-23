@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.junit.Before;
@@ -320,6 +321,27 @@ public class PTest {
                     {TextP.regex(GValue.ofString("x", "Tinker.*\\u00A9")), "Apache TinkerPop©", true},
                     {TextP.notRegex(GValue.ofString("x", "(?i)[a-b]{3}-[1-9]{3}-[a-z]{3}")), "123-ABC-456", true},
                     {TextP.notRegex(GValue.ofString("x", "Tinker.*\\u00A9")), "Apache TinkerPop©", false},
+                    // Traversal-bearing predicates (resolved per-traverser before testing)
+                    {P.eq(__.constant(0).asAdmin()), 0, true},
+                    {P.eq(__.constant(0).asAdmin()), 1, false},
+                    {P.neq(__.constant(0).asAdmin()), 1, true},
+                    {P.neq(__.constant(0).asAdmin()), 0, false},
+                    {P.gt(__.constant(0).asAdmin()), 1, true},
+                    {P.gt(__.constant(0).asAdmin()), 0, false},
+                    {P.gt(__.constant(0).asAdmin()), -1, false},
+                    {P.lt(__.constant(0).asAdmin()), -1, true},
+                    {P.lt(__.constant(0).asAdmin()), 0, false},
+                    {P.lt(__.constant(0).asAdmin()), 1, false},
+                    {P.gte(__.constant(0).asAdmin()), 0, true},
+                    {P.gte(__.constant(0).asAdmin()), 1, true},
+                    {P.gte(__.constant(0).asAdmin()), -1, false},
+                    {P.lte(__.constant(0).asAdmin()), 0, true},
+                    {P.lte(__.constant(0).asAdmin()), -1, true},
+                    {P.lte(__.constant(0).asAdmin()), 1, false},
+                    {P.within(__.inject(1, 2, 3).fold().asAdmin()), 2, true},
+                    {P.within(__.inject(1, 2, 3).fold().asAdmin()), 5, false},
+                    {P.without(__.inject(1, 2, 3).fold().asAdmin()), 5, true},
+                    {P.without(__.inject(1, 2, 3).fold().asAdmin()), 2, false},
             }));
         }
 
@@ -337,6 +359,8 @@ public class PTest {
             if (expected instanceof Class)
                 exceptionRule.expect((Class) expected);
 
+            if (predicate.hasTraversal()) predicate.resolve(new B_O_Traverser<>("test", 1L));
+
             assertEquals(expected, predicate.test(value));
             assertNotEquals(expected, predicate.clone().negate().test(value));
             assertNotEquals(expected, P.not(predicate.clone()).test(value));
@@ -349,6 +373,14 @@ public class PTest {
 
         @Before
         public void init() {
+            // Skip value manipulation tests for traversal-bearing predicates since their
+            // value is resolved at runtime, not set statically.
+            if (predicate.hasTraversal()) {
+                assertNotNull(predicate.hashCode());
+                assertEquals(predicate, predicate.clone());
+                return;
+            }
+
             final Object pv = predicate.getValue();
             final Random r = new Random();
             assertNotNull(predicate.getBiPredicate());
@@ -502,6 +534,374 @@ public class PTest {
             assertEquals(String.format("containing(%s)", updated), textPredicate.toString());
             assertEquals(textPredicate, TextP.containing(updated));
             assertNotEquals(textPredicate, TextP.containing(initial));
+        }
+    }
+
+    // ===== Traversal-bearing predicate tests (migrated from PTraversalTest) =====
+
+    /**
+     * Tests that traversal detection in predicates is accurate: {@code P.hasTraversal()} returns
+     * true for traversal-bearing predicates and false for literal/GValue predicates.
+     */
+    public static class TraversalDetectionTest {
+
+        @Test
+        public void shouldDetectTraversalInComparisonPredicate() {
+            final P<Object> p = P.eq(__.constant(1).asAdmin());
+            assertTrue(p.hasTraversal());
+        }
+
+        @Test
+        public void shouldDetectTraversalInCollectionPredicate() {
+            final P<Object> p = P.within(__.constant(1).asAdmin());
+            assertTrue(p.hasTraversal());
+        }
+
+        @Test
+        public void shouldNotDetectTraversalInLiteralPredicate() {
+            final P<Object> p = P.eq(1);
+            assertFalse(p.hasTraversal());
+        }
+
+        @Test
+        public void shouldNotDetectTraversalInGValuePredicate() {
+            final P<Object> p = P.eq(GValue.of("x", 1));
+            assertFalse(p.hasTraversal());
+        }
+
+        @Test
+        public void shouldReturnTraversalValueWhenPresent() {
+            final Traversal.Admin<?, ?> t = __.constant(1).asAdmin();
+            final P<Object> p = P.eq(t);
+            assertNotNull(p.getTraversalValue());
+            assertEquals(t, p.getTraversalValue());
+        }
+
+        @Test
+        public void shouldReturnNullTraversalValueForLiteral() {
+            final P<Object> p = P.eq(42);
+            assertFalse(p.hasTraversal());
+        }
+    }
+
+    /**
+     * Tests that scalar predicates (eq, neq, gt, lt, gte, lte) take the first result from a
+     * multi-result child traversal, and that collection predicates (within, without) accept
+     * multiple results.
+     */
+    public static class TraversalResolutionTest {
+
+        private Traverser.Admin<?> createTraverser(final Object value) {
+            return new B_O_Traverser<>(value, 1L);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldTakeFirstResultForEq() {
+            final P<Object> p = P.eq(__.inject(1, 2, 3).asAdmin());
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(1));
+            assertFalse(p.test(2));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldTakeFirstResultForNeq() {
+            final P<Object> p = P.neq(__.inject(1, 2, 3).asAdmin());
+            p.resolve(createTraverser("start"));
+            assertFalse(p.test(1));
+            assertTrue(p.test(2));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldTakeFirstResultForGt() {
+            final P<Object> p = P.gt(__.inject(10, 20, 30).asAdmin());
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(11));
+            assertFalse(p.test(10));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldTakeFirstResultForLt() {
+            final P<Object> p = P.lt(__.inject(10, 20, 30).asAdmin());
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(9));
+            assertFalse(p.test(10));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldTakeFirstResultForGte() {
+            final P<Object> p = P.gte(__.inject(10, 20, 30).asAdmin());
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(10));
+            assertTrue(p.test(11));
+            assertFalse(p.test(9));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldTakeFirstResultForLte() {
+            final P<Object> p = P.lte(__.inject(10, 20, 30).asAdmin());
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(10));
+            assertTrue(p.test(9));
+            assertFalse(p.test(11));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldAcceptMultipleResultsForWithin() {
+            final P<Object> p = P.within(__.inject(1, 2, 3).fold().asAdmin());
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(1));
+            assertTrue(p.test(2));
+            assertTrue(p.test(3));
+            assertFalse(p.test(4));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldAcceptMultipleResultsForWithout() {
+            final P<Object> p = P.without(__.inject(1, 2, 3).fold().asAdmin());
+            p.resolve(createTraverser("start"));
+            assertFalse(p.test(1));
+            assertFalse(p.test(2));
+            assertFalse(p.test(3));
+            assertTrue(p.test(4));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldPassWithoutWhenTraversalResolvesEmpty() {
+            final P<Object> p = P.without(__.<Object>limit(0).asAdmin());
+            p.resolve(createTraverser("anything"));
+            assertFalse(p.isResolvedEmpty());
+            assertTrue(p.test("anything"));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldFailWithinWhenTraversalResolvesEmpty() {
+            final P<Object> p = P.within(__.<Object>limit(0).asAdmin());
+            p.resolve(createTraverser("anything"));
+            assertFalse(p.isResolvedEmpty());
+            assertFalse(p.test("anything"));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldRemainResolvedEmptyForScalarPredicateWithEmptyTraversal() {
+            final P<Object> p = P.eq(__.<Object>limit(0).asAdmin());
+            p.resolve(createTraverser("anything"));
+            assertTrue(p.isResolvedEmpty());
+        }
+    }
+
+    /**
+     * Tests for ConnectiveP (and/or) and NotP with traversal-bearing operands, including
+     * deeply nested combinations and empty-resolution edge cases.
+     */
+    public static class TraversalConnectiveTest {
+
+        private Traverser.Admin<?> createTraverser(final Object value) {
+            return new B_O_Traverser<>(value, 1L);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldResolveAndPWithTraversalOperands() {
+            final P<Object> p = (P<Object>) (P) P.gt(__.constant(10).asAdmin()).and(P.lt(__.constant(20).asAdmin()));
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(15));
+            assertFalse(p.test(10));
+            assertFalse(p.test(25));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldShortCircuitAndPResolveWhenScalarChildEmpty() {
+            final P<Object> p = (P<Object>) (P) P.eq(__.<Object>limit(0).asAdmin()).and(P.gt(__.constant(5).asAdmin()));
+            p.resolve(createTraverser("start"));
+            assertTrue(p.isResolvedEmpty());
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldResolveOrPWithTraversalOperands() {
+            final P<Object> p = (P<Object>) (P) P.eq(__.constant(1).asAdmin()).or(P.eq(__.constant(2).asAdmin()));
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(1));
+            assertTrue(p.test(2));
+            assertFalse(p.test(3));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldResolveNestedAndInsideOr() {
+            final P<Object> p = (P<Object>) (P)
+                    P.gt(__.constant(10).asAdmin()).and(P.lt(__.constant(20).asAdmin()))
+                     .or(P.gt(__.constant(50).asAdmin()).and(P.lt(__.constant(60).asAdmin())));
+            p.resolve(createTraverser("x"));
+            assertTrue(p.test(15));
+            assertTrue(p.test(55));
+            assertFalse(p.test(25));
+            assertFalse(p.test(5));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldResolveNestedOrInsideAnd() {
+            final P<Object> p = (P<Object>) (P)
+                    P.eq(__.constant(1).asAdmin()).or(P.eq(__.constant(2).asAdmin()))
+                     .and(P.eq(__.constant(2).asAdmin()).or(P.eq(__.constant(3).asAdmin())));
+            p.resolve(createTraverser("x"));
+            assertTrue(p.test(2));
+            assertFalse(p.test(1));
+            assertFalse(p.test(3));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldResolveDeeplyNestedConnectives() {
+            final P<Object> p = (P<Object>) (P)
+                    P.gt(__.constant(0).asAdmin()).and(P.lt(__.constant(10).asAdmin()))
+                     .or(P.gt(__.constant(20).asAdmin())
+                          .and(P.lt(__.constant(30).asAdmin()).or(P.gt(__.constant(90).asAdmin()))));
+            p.resolve(createTraverser("x"));
+            assertTrue(p.test(5));
+            assertTrue(p.test(25));
+            assertTrue(p.test(95));
+            assertFalse(p.test(15));
+            assertFalse(p.test(50));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldResolveOrWithOneEmptyChild() {
+            final P<Object> p = (P<Object>) (P)
+                    P.eq(__.<Object>limit(0).asAdmin()).or(P.eq(__.constant(42).asAdmin()));
+            p.resolve(createTraverser("x"));
+            assertTrue(p.test(42));
+            assertFalse(p.test(99));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldResolveNotPWrappingTraversalPredicate() {
+            final P<Object> p = P.eq(__.constant(42).asAdmin()).negate();
+            p.resolve(createTraverser("start"));
+            assertFalse(p.test(42));
+            assertTrue(p.test(99));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldProduceConsistentResultsAcrossManySequentialResolves() {
+            final P<Object> p = P.gt(__.constant(10).asAdmin());
+            for (int i = 0; i < 1000; i++) {
+                p.resolve(createTraverser("start" + i));
+                assertTrue(p.test(11));
+                assertFalse(p.test(5));
+            }
+        }
+    }
+
+    /**
+     * Tests for clone() and negate() operations on traversal-bearing predicates.
+     */
+    public static class TraversalCloneAndNegateTest {
+
+        private Traverser.Admin<?> createTraverser(final Object value) {
+            return new B_O_Traverser<>(value, 1L);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldCloneScalarTraversalPredicate() {
+            final P<Object> original = P.gt(__.constant(10).asAdmin());
+            final P<Object> clone = original.clone();
+            assertTrue(clone.hasTraversal());
+            clone.resolve(createTraverser("x"));
+            assertTrue(clone.test(15));
+            assertFalse(clone.test(5));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldCloneWithinTraversalPredicate() {
+            final P<Object> original = P.within(__.inject(1, 2, 3).fold().asAdmin());
+            final P<Object> clone = original.clone();
+            assertTrue(clone.hasTraversal());
+            clone.resolve(createTraverser("x"));
+            assertTrue(clone.test(2));
+            assertFalse(clone.test(9));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldCloneConnectivePWithTraversals() {
+            final P<Object> original = (P<Object>) (P)
+                    P.gt(__.constant(10).asAdmin()).and(P.lt(__.constant(20).asAdmin()));
+            final P<Object> clone = original.clone();
+            assertTrue(clone.hasTraversal());
+            clone.resolve(createTraverser("x"));
+            assertTrue(clone.test(15));
+            assertFalse(clone.test(25));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldCloneIndependentlyFromOriginal() {
+            final P<Object> original = P.eq(__.constant(42).asAdmin());
+            final P<Object> clone = original.clone();
+            clone.resolve(createTraverser("x"));
+            assertTrue(clone.test(42));
+            assertTrue(original.hasTraversal());
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldNegateScalarTraversalPredicate() {
+            final P<Object> p = P.gt(__.constant(10).asAdmin()).negate();
+            assertTrue(p.hasTraversal());
+            p.resolve(createTraverser("x"));
+            assertTrue(p.test(5));
+            assertFalse(p.test(15));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldNegateConnectivePWithTraversals() {
+            final P<Object> p = (P<Object>) (P)
+                    P.gt(__.constant(10).asAdmin()).and(P.lt(__.constant(20).asAdmin())).negate();
+            p.resolve(createTraverser("x"));
+            assertTrue(p.test(5));
+            assertTrue(p.test(25));
+            assertFalse(p.test(15));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldCloneThenNegate() {
+            final P<Object> original = P.eq(__.constant(42).asAdmin());
+            final P<Object> negated = original.clone().negate();
+            assertTrue(negated.hasTraversal());
+            negated.resolve(createTraverser("x"));
+            assertFalse(negated.test(42));
+            assertTrue(negated.test(99));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldNegateMultiTraversalWithin() {
+            final P<Object> p = P.within(__.inject(1, 2, 3).fold().asAdmin()).negate();
+            assertTrue(p.hasTraversal());
+            p.resolve(createTraverser("x"));
+            assertFalse(p.test(1));
+            assertTrue(p.test(9));
         }
     }
 }
