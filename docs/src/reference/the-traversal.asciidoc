@@ -5769,22 +5769,26 @@ engine. Other implementations may decide to use a different regular expression e
 the documentation for the implementation you are using to verify the allowed regular expression syntax.
 
 In addition to literal values, most predicates also accept a `Traversal` argument. When a traversal is provided, it is
-evaluated and only its first result is used for comparison - consistent with `by(traversal)` first-result semantics.
-The child traversal must be read-only; mutating steps are rejected.
+evaluated and only its first result is used for comparison, consistent with `by(traversal)` first-result semantics.
+The child traversal must be read-only. Mutating steps are rejected.
 
-* For `within()` and `without()`, the first result should be a `Collection`. Use `fold()` in the child traversal to
-  produce one.
-* The multi-traversal form `within(trav1, trav2, ...)` takes the first result from each traversal and combines them
-  into a collection for membership testing.
+* For `within()` and `without()` with a single traversal, the first result mirrors the single-collection form
+  `within(Collection)`: if it is a `Collection` its elements form the membership set, otherwise it is treated as one
+  value. Use `fold()` in the child traversal to produce a collection.
+* The multi-traversal form `within(trav1, trav2, ...)` mirrors the literal varargs form `within(v1, v2, ...)`: each
+  traversal contributes its first result as a single membership element (no unfolding). To build one flat set from
+  several sources, combine them in a single child traversal with `union(...).fold()`.
 
 [gremlin-groovy,modern]
 ----
 g.V().has('age', P.gt(__.V(1).values('age'))) <1>
 g.V().has('age', P.within(__.V(1).out('knows').values('age').fold())) <2>
+g.V().has('name', P.within(__.union(__.V(1).out('knows').values('name'), __.constant('peter')).fold())) <3>
 ----
 
 <1> Find vertices whose age is greater than marko's age using a traversal inside the predicate.
 <2> Find vertices whose age is in the set of ages of marko's friends, using `fold()` to produce a collection.
+<3> Combine multiple sources into one membership set with `union(...).fold()`.
 
 [gremlin-groovy]
 ----

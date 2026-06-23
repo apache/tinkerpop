@@ -99,10 +99,10 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
-     * Constructs a {@code P} with multiple child traversals whose results are unioned at runtime against the
-     * current traverser. Only valid for collection predicates ({@link Contains#within}, {@link Contains#without}).
-     * The literals and variables are left at their defaults and will be populated when
-     * {@link #resolve(Traverser.Admin)} is called.
+     * Constructs a {@code P} with multiple child traversals resolved at runtime against the current traverser.
+     * Only valid for collection predicates ({@link Contains#within}, {@link Contains#without}). Each traversal
+     * contributes its first result only. The literals and variables are left at their defaults and will be
+     * populated when {@link #resolve(Traverser.Admin)} is called.
      *
      * @since 4.0.0
      */
@@ -358,16 +358,19 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         this.literals = Collections.EMPTY_LIST;
 
         if (this.isCollection) {
-            // Collection predicate (within, without) — flatten any Collection results into one list.
-            final List<Object> flattened = new ArrayList<>();
-            for (final Object r : results) {
+            // Collection predicate (within, without). Unfold if there is only a single
+            // child traversal which yields a list.
+            if (this.childTraversals.size() == 1) {
+                final Object r = results.get(0);
                 if (r instanceof Collection) {
-                    flattened.addAll((Collection<?>) r);
+                    applyValue((V) new ArrayList<>((Collection<?>) r));
                 } else {
-                    flattened.add(r);
+                    applyValue((V) Collections.singletonList(r));
                 }
+            } else {
+                // Multiple child traversals — each contributes its first result as one element, as-is.
+                applyValue((V) new ArrayList<>(results));
             }
-            applyValue((V) flattened);
         } else {
             // Scalar predicate (eq, gt, etc.) — pass single result directly.
             applyValue((V) results.get(0));

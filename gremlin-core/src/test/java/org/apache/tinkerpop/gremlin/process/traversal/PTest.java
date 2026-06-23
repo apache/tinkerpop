@@ -654,6 +654,48 @@ public class PTest {
         }
 
         @Test
+        public void shouldUnfoldSingleTraversalCollectionResultForWithin() {
+            // A single child traversal whose result is a Collection unfolds into the membership set,
+            // mirroring within(Collection).
+            final P p = P.within(__.inject(1, 2, 3).fold());
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(1));
+            assertTrue(p.test(3));
+            assertFalse(p.test(4));
+        }
+
+        @Test
+        public void shouldNotUnfoldMultiTraversalCollectionResultsForWithin() {
+            // Multiple child traversals mirror within(v1, v2, ...): each first result is a single membership
+            // element with no unfolding. A folded list therefore compares as a list, not its elements.
+            final P p = P.within(__.inject(1, 2).fold(), __.constant(3));
+            p.resolve(createTraverser("start"));
+            assertFalse(p.test(1));            // 1 is inside the list [1,2], but the list is one element (not unfolded)
+            assertFalse(p.test(2));
+            assertTrue(p.test(3));             // 3 was supplied as its own element
+        }
+
+        @Test
+        public void shouldTreatMultiTraversalScalarResultsAsElementsForWithin() {
+            // Multiple traversals producing scalars — each first result is one membership element.
+            final P p = P.within(__.constant(1), __.constant(2), __.constant(3));
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(1));
+            assertTrue(p.test(2));
+            assertTrue(p.test(3));
+            assertFalse(p.test(4));
+        }
+
+        @Test
+        public void shouldNotUnfoldMultiTraversalResultsForWithout() {
+            final P p = P.without(__.inject(1, 2).fold(), __.constant(3));
+            p.resolve(createTraverser("start"));
+            assertTrue(p.test(1));             // not excluded: the exclusion list element is [1,2], not 1
+            assertTrue(p.test(2));
+            assertFalse(p.test(3));            // excluded
+        }
+
+        @Test
         public void shouldPassWithoutWhenTraversalResolvesEmpty() {
             final P p = P.without(__.limit(0).asAdmin());
             p.resolve(createTraverser("anything"));

@@ -806,14 +806,14 @@ Feature: Step - has()
       | result |
       | d[29].i |
 
-  # Multi-traversal within() where one traversal produces multiple results - use fold() to collect
+  # within() over a union of relationship results collected with fold() - one traversal, one collection
   @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasXname_withinXVXvid1X_outXknowsX_valuesXnameX_constantXpeterXXX
+  Scenario: g_V_hasXname_withinXunionXVXvid1X_outXknowsX_valuesXnameX_constantXpeterXX_foldXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().has("name", P.within(__.V(vid1).out("knows").values("name").fold(), __.constant("peter")))
+      g.V().has("name", P.within(__.union(__.V(vid1).out("knows").values("name"), __.constant("peter")).fold()))
       """
     When iterated to list
     Then the result should be unordered
@@ -866,16 +866,16 @@ Feature: Step - has()
       | v[lop] |
       | v[ripple] |
 
-  # Multi-traversal within() - union of relationship traversals from different sources
+  # within() over a union of relationship traversals from different sources, collected with fold()
   @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasXname_withinXVXvid1X_outXknowsX_valuesXnameX_VXvid3X_outXcreatedX_valuesXnameXXX
+  Scenario: g_V_hasXname_withinXunionXVXvid1X_outXknowsX_valuesXnameX_VXvid3X_outXcreatedX_valuesXnameXX_foldXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
     And using the parameter vid3 defined as "v[josh].id"
     And the traversal of
       """
-      g.V().has("name", P.within(__.V(vid1).out("knows").values("name").fold(),
-                                __.V(vid3).out("created").values("name").fold()))
+      g.V().has("name", P.within(__.union(__.V(vid1).out("knows").values("name"),
+                                          __.V(vid3).out("created").values("name")).fold()))
       """
     When iterated to list
     Then the result should be unordered
@@ -885,31 +885,31 @@ Feature: Step - has()
       | v[ripple] |
       | v[lop] |
 
-  # Multi-traversal without() - exclusion from multiple relationship sources
+  # without() over a union of relationship sources collected with fold()
   @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasLabelXsoftwareX_hasXname_withoutXVXvid1X_outXcreatedX_valuesXnameX_VXvid3X_outXcreatedX_valuesXnameXXX
+  Scenario: g_V_hasLabelXsoftwareX_hasXname_withoutXunionXVXvid1X_outXcreatedX_valuesXnameX_VXvid3X_outXcreatedX_valuesXnameXX_foldXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
     And using the parameter vid3 defined as "v[josh].id"
     And the traversal of
       """
       g.V().hasLabel("software").
-        has("name", P.without(__.V(vid1).out("created").values("name").fold(),
-                              __.V(vid3).out("created").values("name").fold()))
+        has("name", P.without(__.union(__.V(vid1).out("created").values("name"),
+                                       __.V(vid3).out("created").values("name")).fold()))
       """
     When iterated to list
     Then the result should be empty
 
-  # Multi-traversal within() with is() - cross-label dynamic filtering, use fold() for multi-result
+  # within() with is() - cross-label dynamic filtering using a union collected with fold()
   @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasLabelXpersonX_valuesXageX_isXwithinXVXvid1X_valuesXageX_V_hasXname_lopX_inXcreatedX_valuesXageXXX
+  Scenario: g_V_hasLabelXpersonX_valuesXageX_isXwithinXunionXVXvid1X_valuesXageX_V_hasXname_lopX_inXcreatedX_valuesXageXX_foldXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
       g.V().hasLabel("person").values("age").
-        is(P.within(__.V(vid1).values("age").fold(),
-                    __.V().has("name","lop").in("created").values("age").fold()))
+        is(P.within(__.union(__.V(vid1).values("age"),
+                             __.V().has("name","lop").in("created").values("age")).fold()))
       """
     When iterated to list
     Then the result should be unordered
@@ -918,16 +918,16 @@ Feature: Step - has()
       | d[32].i |
       | d[35].i |
 
-  # Multi-traversal within() - dynamic edge filtering via inV property check
+  # within() - dynamic edge filtering via inV property check using a union collected with fold()
   @GraphComputerVerificationMidVNotSupported
-  Scenario: g_VXvid1X_outEXknowsX_filterXinV_hasXname_withinXV_hasXname_lopX_inXcreatedX_valuesXnameX_V_hasXname_rippleX_inXcreatedX_valuesXnameXXXX
+  Scenario: g_VXvid1X_outEXknowsX_filterXinV_hasXname_withinXunionXV_hasXname_lopX_inXcreatedX_valuesXnameX_V_hasXname_rippleX_inXcreatedX_valuesXnameXX_foldXXXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
       g.V(vid1).outE("knows").
-        filter(__.inV().has("name", P.within(__.V().has("name","lop").in("created").values("name").fold(),
-                                             __.V().has("name","ripple").in("created").values("name").fold())))
+        filter(__.inV().has("name", P.within(__.union(__.V().has("name","lop").in("created").values("name"),
+                                                      __.V().has("name","ripple").in("created").values("name")).fold())))
       """
     When iterated to list
     Then the result should be unordered

@@ -8423,6 +8423,533 @@
         ]
     },
     {
+        "scenario": "g_V_hasXname_VXvid1X_valuesXnameXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
+                "language": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
+                "canonical": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
+                "anonymized": "g.V().has(string0, __.V(vid1).values(string0))",
+                "dotnet": "g.V().Has(\"name\", __.V(vid1).Values<object>(\"name\"))",
+                "go": "g.V().Has(\"name\", gremlingo.T__.V(vid1).Values(\"name\"))",
+                "groovy": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
+                "java": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
+                "javascript": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
+                "python": "g.V().has('name', __.V(vid1).values('name'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_VXvid1X_outXknowsX_valuesXnameXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", __.V(vid1).out(\"knows\").values(\"name\"))",
+                "language": "g.V().has(\"name\", __.V(vid1).out(\"knows\").values(\"name\"))",
+                "canonical": "g.V().has(\"name\", __.V(vid1).out(\"knows\").values(\"name\"))",
+                "anonymized": "g.V().has(string0, __.V(vid1).out(string1).values(string0))",
+                "dotnet": "g.V().Has(\"name\", __.V(vid1).Out(\"knows\").Values<object>(\"name\"))",
+                "go": "g.V().Has(\"name\", gremlingo.T__.V(vid1).Out(\"knows\").Values(\"name\"))",
+                "groovy": "g.V().has(\"name\", __.V(vid1).out(\"knows\").values(\"name\"))",
+                "java": "g.V().has(\"name\", __.V(vid1).out(\"knows\").values(\"name\"))",
+                "javascript": "g.V().has(\"name\", __.V(vid1).out(\"knows\").values(\"name\"))",
+                "python": "g.V().has('name', __.V(vid1).out('knows').values('name'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXage_VXvid1X_outXknowsX_valuesXageXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"age\", __.V(vid1).out(\"knows\").values(\"age\"))",
+                "language": "g.V().has(\"age\", __.V(vid1).out(\"knows\").values(\"age\"))",
+                "canonical": "g.V().has(\"age\", __.V(vid1).out(\"knows\").values(\"age\"))",
+                "anonymized": "g.V().has(string0, __.V(vid1).out(string1).values(string0))",
+                "dotnet": "g.V().Has(\"age\", __.V(vid1).Out(\"knows\").Values<object>(\"age\"))",
+                "go": "g.V().Has(\"age\", gremlingo.T__.V(vid1).Out(\"knows\").Values(\"age\"))",
+                "groovy": "g.V().has(\"age\", __.V(vid1).out(\"knows\").values(\"age\"))",
+                "java": "g.V().has(\"age\", __.V(vid1).out(\"knows\").values(\"age\"))",
+                "javascript": "g.V().has(\"age\", __.V(vid1).out(\"knows\").values(\"age\"))",
+                "python": "g.V().has('age', __.V(vid1).out('knows').values('age'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_VXvid1X_valuesXnonexistentXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", __.V(vid1).values(\"nonexistent\"))",
+                "language": "g.V().has(\"name\", __.V(vid1).values(\"nonexistent\"))",
+                "canonical": "g.V().has(\"name\", __.V(vid1).values(\"nonexistent\"))",
+                "anonymized": "g.V().has(string0, __.V(vid1).values(string1))",
+                "dotnet": "g.V().Has(\"name\", __.V(vid1).Values<object>(\"nonexistent\"))",
+                "go": "g.V().Has(\"name\", gremlingo.T__.V(vid1).Values(\"nonexistent\"))",
+                "groovy": "g.V().has(\"name\", __.V(vid1).values(\"nonexistent\"))",
+                "java": "g.V().has(\"name\", __.V(vid1).values(\"nonexistent\"))",
+                "javascript": "g.V().has(\"name\", __.V(vid1).values(\"nonexistent\"))",
+                "python": "g.V().has('name', __.V(vid1).values('nonexistent'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_notXidentityXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", __.not(__.identity()))",
+                "language": "g.V().has(\"name\", __.not(__.identity()))",
+                "canonical": "g.V().has(\"name\", __.not(__.identity()))",
+                "anonymized": "g.V().has(string0, __.not(__.identity()))",
+                "dotnet": "g.V().Has(\"name\", __.Not(__.Identity()))",
+                "go": "g.V().Has(\"name\", gremlingo.T__.Not(gremlingo.T__.Identity()))",
+                "groovy": "g.V().has(\"name\", __.not(__.identity()))",
+                "java": "g.V().has(\"name\", __.not(__.identity()))",
+                "javascript": "g.V().has(\"name\", __.not(__.identity()))",
+                "python": "g.V().has('name', __.not_(__.identity()))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXage_gtXVXvid1X_valuesXageXXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
+                "language": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
+                "canonical": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
+                "anonymized": "g.V().has(string0, P.gt(__.V(vid1).values(string0)))",
+                "dotnet": "g.V().Has(\"age\", P.Gt(__.V(vid1).Values<object>(\"age\")))",
+                "go": "g.V().Has(\"age\", gremlingo.P.Gt(gremlingo.T__.V(vid1).Values(\"age\")))",
+                "groovy": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
+                "java": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
+                "javascript": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
+                "python": "g.V().has('age', P.gt(__.V(vid1).values('age')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXage_lteXVXvid2X_valuesXageXXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"age\", P.lte(__.V(vid2).values(\"age\")))",
+                "language": "g.V().has(\"age\", P.lte(__.V(vid2).values(\"age\")))",
+                "canonical": "g.V().has(\"age\", P.lte(__.V(vid2).values(\"age\")))",
+                "anonymized": "g.V().has(string0, P.lte(__.V(vid2).values(string0)))",
+                "dotnet": "g.V().Has(\"age\", P.Lte(__.V(vid2).Values<object>(\"age\")))",
+                "go": "g.V().Has(\"age\", gremlingo.P.Lte(gremlingo.T__.V(vid2).Values(\"age\")))",
+                "groovy": "g.V().has(\"age\", P.lte(__.V(vid2).values(\"age\")))",
+                "java": "g.V().has(\"age\", P.lte(__.V(vid2).values(\"age\")))",
+                "javascript": "g.V().has(\"age\", P.lte(__.V(vid2).values(\"age\")))",
+                "python": "g.V().has('age', P.lte(__.V(vid2).values('age')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXage_neqXVXvid3X_valuesXageXXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"age\", P.neq(__.V(vid3).values(\"age\")))",
+                "language": "g.V().has(\"age\", P.neq(__.V(vid3).values(\"age\")))",
+                "canonical": "g.V().has(\"age\", P.neq(__.V(vid3).values(\"age\")))",
+                "anonymized": "g.V().has(string0, P.neq(__.V(vid3).values(string0)))",
+                "dotnet": "g.V().Has(\"age\", P.Neq(__.V(vid3).Values<object>(\"age\")))",
+                "go": "g.V().Has(\"age\", gremlingo.P.Neq(gremlingo.T__.V(vid3).Values(\"age\")))",
+                "groovy": "g.V().has(\"age\", P.neq(__.V(vid3).values(\"age\")))",
+                "java": "g.V().has(\"age\", P.neq(__.V(vid3).values(\"age\")))",
+                "javascript": "g.V().has(\"age\", P.neq(__.V(vid3).values(\"age\")))",
+                "python": "g.V().has('age', P.neq(__.V(vid3).values('age')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_eqXVXvid1X_valuesXnameXXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", P.eq(__.V(vid1).values(\"name\")))",
+                "language": "g.V().has(\"name\", P.eq(__.V(vid1).values(\"name\")))",
+                "canonical": "g.V().has(\"name\", P.eq(__.V(vid1).values(\"name\")))",
+                "anonymized": "g.V().has(string0, P.eq(__.V(vid1).values(string0)))",
+                "dotnet": "g.V().Has(\"name\", P.Eq(__.V(vid1).Values<object>(\"name\")))",
+                "go": "g.V().Has(\"name\", gremlingo.P.Eq(gremlingo.T__.V(vid1).Values(\"name\")))",
+                "groovy": "g.V().has(\"name\", P.eq(__.V(vid1).values(\"name\")))",
+                "java": "g.V().has(\"name\", P.eq(__.V(vid1).values(\"name\")))",
+                "javascript": "g.V().has(\"name\", P.eq(__.V(vid1).values(\"name\")))",
+                "python": "g.V().has('name', P.eq(__.V(vid1).values('name')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXage_ltXVXvid1X_valuesXageXXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"age\", P.lt(__.V(vid1).values(\"age\")))",
+                "language": "g.V().has(\"age\", P.lt(__.V(vid1).values(\"age\")))",
+                "canonical": "g.V().has(\"age\", P.lt(__.V(vid1).values(\"age\")))",
+                "anonymized": "g.V().has(string0, P.lt(__.V(vid1).values(string0)))",
+                "dotnet": "g.V().Has(\"age\", P.Lt(__.V(vid1).Values<object>(\"age\")))",
+                "go": "g.V().Has(\"age\", gremlingo.P.Lt(gremlingo.T__.V(vid1).Values(\"age\")))",
+                "groovy": "g.V().has(\"age\", P.lt(__.V(vid1).values(\"age\")))",
+                "java": "g.V().has(\"age\", P.lt(__.V(vid1).values(\"age\")))",
+                "javascript": "g.V().has(\"age\", P.lt(__.V(vid1).values(\"age\")))",
+                "python": "g.V().has('age', P.lt(__.V(vid1).values('age')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXage_gteXVXvid3X_valuesXageXXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"age\", P.gte(__.V(vid3).values(\"age\")))",
+                "language": "g.V().has(\"age\", P.gte(__.V(vid3).values(\"age\")))",
+                "canonical": "g.V().has(\"age\", P.gte(__.V(vid3).values(\"age\")))",
+                "anonymized": "g.V().has(string0, P.gte(__.V(vid3).values(string0)))",
+                "dotnet": "g.V().Has(\"age\", P.Gte(__.V(vid3).Values<object>(\"age\")))",
+                "go": "g.V().Has(\"age\", gremlingo.P.Gte(gremlingo.T__.V(vid3).Values(\"age\")))",
+                "groovy": "g.V().has(\"age\", P.gte(__.V(vid3).values(\"age\")))",
+                "java": "g.V().has(\"age\", P.gte(__.V(vid3).values(\"age\")))",
+                "javascript": "g.V().has(\"age\", P.gte(__.V(vid3).values(\"age\")))",
+                "python": "g.V().has('age', P.gte(__.V(vid3).values('age')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXage_eqXVXvid1X_valuesXnonexistentXXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"age\", P.eq(__.V(vid1).values(\"nonexistent\")))",
+                "language": "g.V().has(\"age\", P.eq(__.V(vid1).values(\"nonexistent\")))",
+                "canonical": "g.V().has(\"age\", P.eq(__.V(vid1).values(\"nonexistent\")))",
+                "anonymized": "g.V().has(string0, P.eq(__.V(vid1).values(string1)))",
+                "dotnet": "g.V().Has(\"age\", P.Eq(__.V(vid1).Values<object>(\"nonexistent\")))",
+                "go": "g.V().Has(\"age\", gremlingo.P.Eq(gremlingo.T__.V(vid1).Values(\"nonexistent\")))",
+                "groovy": "g.V().has(\"age\", P.eq(__.V(vid1).values(\"nonexistent\")))",
+                "java": "g.V().has(\"age\", P.eq(__.V(vid1).values(\"nonexistent\")))",
+                "javascript": "g.V().has(\"age\", P.eq(__.V(vid1).values(\"nonexistent\")))",
+                "python": "g.V().has('age', P.eq(__.V(vid1).values('nonexistent')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXlabel_VXvid1X_labelXX",
+        "traversals": [
+            {
+                "original": "g.V().has(T.label, __.V(vid1).label())",
+                "language": "g.V().has(T.label, __.V(vid1).label())",
+                "canonical": "g.V().has(T.label, __.V(vid1).label())",
+                "anonymized": "g.V().has(T.label, __.V(vid1).label())",
+                "dotnet": "g.V().Has(T.Label, __.V(vid1).Label())",
+                "go": "g.V().Has(gremlingo.T.Label, gremlingo.T__.V(vid1).Label())",
+                "groovy": "g.V().has(T.label, __.V(vid1).label())",
+                "java": "g.V().has(T.label, __.V(vid1).label())",
+                "javascript": "g.V().has(T.label, __.V(vid1).label())",
+                "python": "g.V().has(T.label, __.V(vid1).label())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXperson_name_VXvid1X_valuesXnameXX_age",
+        "traversals": [
+            {
+                "original": "g.V().has(\"person\", \"name\", __.V(vid1).values(\"name\")).values(\"age\")",
+                "language": "g.V().has(\"person\", \"name\", __.V(vid1).values(\"name\")).values(\"age\")",
+                "canonical": "g.V().has(\"person\", \"name\", __.V(vid1).values(\"name\")).values(\"age\")",
+                "anonymized": "g.V().has(string0, string1, __.V(vid1).values(string1)).values(string2)",
+                "dotnet": "g.V().Has(\"person\", \"name\", __.V(vid1).Values<object>(\"name\")).Values<object>(\"age\")",
+                "go": "g.V().Has(\"person\", \"name\", gremlingo.T__.V(vid1).Values(\"name\")).Values(\"age\")",
+                "groovy": "g.V().has(\"person\", \"name\", __.V(vid1).values(\"name\")).values(\"age\")",
+                "java": "g.V().has(\"person\", \"name\", __.V(vid1).values(\"name\")).values(\"age\")",
+                "javascript": "g.V().has(\"person\", \"name\", __.V(vid1).values(\"name\")).values(\"age\")",
+                "python": "g.V().has('person', 'name', __.V(vid1).values('name')).values('age')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_withinXunionXVXvid1X_outXknowsX_valuesXnameX_constantXpeterXX_foldXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", P.within(__.union(__.V(vid1).out(\"knows\").values(\"name\"), __.constant(\"peter\")).fold()))",
+                "language": "g.V().has(\"name\", P.within(__.union(__.V(vid1).out(\"knows\").values(\"name\"), __.constant(\"peter\")).fold()))",
+                "canonical": "g.V().has(\"name\", P.within(__.union(__.V(vid1).out(\"knows\").values(\"name\"), __.constant(\"peter\")).fold()))",
+                "anonymized": "g.V().has(string0, P.within(__.union(__.V(vid1).out(string1).values(string0), __.constant(string2)).fold()))",
+                "dotnet": "g.V().Has(\"name\", P.Within(__.Union<object>(__.V(vid1).Out(\"knows\").Values<object>(\"name\"), __.Constant<object>(\"peter\")).Fold()))",
+                "go": "g.V().Has(\"name\", gremlingo.P.Within(gremlingo.T__.Union(gremlingo.T__.V(vid1).Out(\"knows\").Values(\"name\"), gremlingo.T__.Constant(\"peter\")).Fold()))",
+                "groovy": "g.V().has(\"name\", P.within(__.union(__.V(vid1).out(\"knows\").values(\"name\"), __.constant(\"peter\")).fold()))",
+                "java": "g.V().has(\"name\", P.within(__.union(__.V(vid1).out(\"knows\").values(\"name\"), __.constant(\"peter\")).fold()))",
+                "javascript": "g.V().has(\"name\", P.within(__.union(__.V(vid1).out(\"knows\").values(\"name\"), __.constant(\"peter\")).fold()))",
+                "python": "g.V().has('name', P.within(__.union(__.V(vid1).out('knows').values('name'), __.constant('peter')).fold()))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_withinXVXvid1X_valuesXnonexistentX_constantXmarkoXXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.constant(\"marko\")))",
+                "language": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.constant(\"marko\")))",
+                "canonical": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.constant(\"marko\")))",
+                "anonymized": "g.V().has(string0, P.within(__.V(vid1).values(string1), __.constant(string2)))",
+                "dotnet": "g.V().Has(\"name\", P.Within(__.V(vid1).Values<object>(\"nonexistent\"), __.Constant<object>(\"marko\")))",
+                "go": "g.V().Has(\"name\", gremlingo.P.Within(gremlingo.T__.V(vid1).Values(\"nonexistent\"), gremlingo.T__.Constant(\"marko\")))",
+                "groovy": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.constant(\"marko\")))",
+                "java": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.constant(\"marko\")))",
+                "javascript": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.constant(\"marko\")))",
+                "python": "g.V().has('name', P.within(__.V(vid1).values('nonexistent'), __.constant('marko')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_withinXVXvid1X_valuesXnonexistentX_VXvid1X_valuesXnonexistentXXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.V(vid1).values(\"nonexistent\")))",
+                "language": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.V(vid1).values(\"nonexistent\")))",
+                "canonical": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.V(vid1).values(\"nonexistent\")))",
+                "anonymized": "g.V().has(string0, P.within(__.V(vid1).values(string1), __.V(vid1).values(string1)))",
+                "dotnet": "g.V().Has(\"name\", P.Within(__.V(vid1).Values<object>(\"nonexistent\"), __.V(vid1).Values<object>(\"nonexistent\")))",
+                "go": "g.V().Has(\"name\", gremlingo.P.Within(gremlingo.T__.V(vid1).Values(\"nonexistent\"), gremlingo.T__.V(vid1).Values(\"nonexistent\")))",
+                "groovy": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.V(vid1).values(\"nonexistent\")))",
+                "java": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.V(vid1).values(\"nonexistent\")))",
+                "javascript": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.V(vid1).values(\"nonexistent\")))",
+                "python": "g.V().has('name', P.within(__.V(vid1).values('nonexistent'), __.V(vid1).values('nonexistent')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_withoutXVXvid1X_valuesXnameX_VXvid2X_valuesXnameX_VXvid3X_valuesXnameXXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", P.without(__.V(vid1).values(\"name\"), __.V(vid2).values(\"name\"), __.V(vid3).values(\"name\")))",
+                "language": "g.V().has(\"name\", P.without(__.V(vid1).values(\"name\"), __.V(vid2).values(\"name\"), __.V(vid3).values(\"name\")))",
+                "canonical": "g.V().has(\"name\", P.without(__.V(vid1).values(\"name\"), __.V(vid2).values(\"name\"), __.V(vid3).values(\"name\")))",
+                "anonymized": "g.V().has(string0, P.without(__.V(vid1).values(string0), __.V(vid2).values(string0), __.V(vid3).values(string0)))",
+                "dotnet": "g.V().Has(\"name\", P.Without(__.V(vid1).Values<object>(\"name\"), __.V(vid2).Values<object>(\"name\"), __.V(vid3).Values<object>(\"name\")))",
+                "go": "g.V().Has(\"name\", gremlingo.P.Without(gremlingo.T__.V(vid1).Values(\"name\"), gremlingo.T__.V(vid2).Values(\"name\"), gremlingo.T__.V(vid3).Values(\"name\")))",
+                "groovy": "g.V().has(\"name\", P.without(__.V(vid1).values(\"name\"), __.V(vid2).values(\"name\"), __.V(vid3).values(\"name\")))",
+                "java": "g.V().has(\"name\", P.without(__.V(vid1).values(\"name\"), __.V(vid2).values(\"name\"), __.V(vid3).values(\"name\")))",
+                "javascript": "g.V().has(\"name\", P.without(__.V(vid1).values(\"name\"), __.V(vid2).values(\"name\"), __.V(vid3).values(\"name\")))",
+                "python": "g.V().has('name', P.without(__.V(vid1).values('name'), __.V(vid2).values('name'), __.V(vid3).values('name')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_withinXunionXVXvid1X_outXknowsX_valuesXnameX_VXvid3X_outXcreatedX_valuesXnameXX_foldXX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", P.within(__.union(__.V(vid1).out(\"knows\").values(\"name\"),__.V(vid3).out(\"created\").values(\"name\")).fold()))",
+                "language": "g.V().has(\"name\", P.within(__.union(__.V(vid1).out(\"knows\").values(\"name\"), __.V(vid3).out(\"created\").values(\"name\")).fold()))",
+                "canonical": "g.V().has(\"name\", P.within(__.union(__.V(vid1).out(\"knows\").values(\"name\"), __.V(vid3).out(\"created\").values(\"name\")).fold()))",
+                "anonymized": "g.V().has(string0, P.within(__.union(__.V(vid1).out(string1).values(string0), __.V(vid3).out(string2).values(string0)).fold()))",
+                "dotnet": "g.V().Has(\"name\", P.Within(__.Union<object>(__.V(vid1).Out(\"knows\").Values<object>(\"name\"), __.V(vid3).Out(\"created\").Values<object>(\"name\")).Fold()))",
+                "go": "g.V().Has(\"name\", gremlingo.P.Within(gremlingo.T__.Union(gremlingo.T__.V(vid1).Out(\"knows\").Values(\"name\"), gremlingo.T__.V(vid3).Out(\"created\").Values(\"name\")).Fold()))",
+                "groovy": "g.V().has(\"name\", P.within(__.union(__.V(vid1).out(\"knows\").values(\"name\"), __.V(vid3).out(\"created\").values(\"name\")).fold()))",
+                "java": "g.V().has(\"name\", P.within(__.union(__.V(vid1).out(\"knows\").values(\"name\"), __.V(vid3).out(\"created\").values(\"name\")).fold()))",
+                "javascript": "g.V().has(\"name\", P.within(__.union(__.V(vid1).out(\"knows\").values(\"name\"), __.V(vid3).out(\"created\").values(\"name\")).fold()))",
+                "python": "g.V().has('name', P.within(__.union(__.V(vid1).out('knows').values('name'), __.V(vid3).out('created').values('name')).fold()))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasLabelXsoftwareX_hasXname_withoutXunionXVXvid1X_outXcreatedX_valuesXnameX_VXvid3X_outXcreatedX_valuesXnameXX_foldXX",
+        "traversals": [
+            {
+                "original": "g.V().hasLabel(\"software\").has(\"name\", P.without(__.union(__.V(vid1).out(\"created\").values(\"name\"),__.V(vid3).out(\"created\").values(\"name\")).fold()))",
+                "language": "g.V().hasLabel(\"software\").has(\"name\", P.without(__.union(__.V(vid1).out(\"created\").values(\"name\"), __.V(vid3).out(\"created\").values(\"name\")).fold()))",
+                "canonical": "g.V().hasLabel(\"software\").has(\"name\", P.without(__.union(__.V(vid1).out(\"created\").values(\"name\"), __.V(vid3).out(\"created\").values(\"name\")).fold()))",
+                "anonymized": "g.V().hasLabel(string0).has(string1, P.without(__.union(__.V(vid1).out(string2).values(string1), __.V(vid3).out(string2).values(string1)).fold()))",
+                "dotnet": "g.V().HasLabel(\"software\").Has(\"name\", P.Without(__.Union<object>(__.V(vid1).Out(\"created\").Values<object>(\"name\"), __.V(vid3).Out(\"created\").Values<object>(\"name\")).Fold()))",
+                "go": "g.V().HasLabel(\"software\").Has(\"name\", gremlingo.P.Without(gremlingo.T__.Union(gremlingo.T__.V(vid1).Out(\"created\").Values(\"name\"), gremlingo.T__.V(vid3).Out(\"created\").Values(\"name\")).Fold()))",
+                "groovy": "g.V().hasLabel(\"software\").has(\"name\", P.without(__.union(__.V(vid1).out(\"created\").values(\"name\"), __.V(vid3).out(\"created\").values(\"name\")).fold()))",
+                "java": "g.V().hasLabel(\"software\").has(\"name\", P.without(__.union(__.V(vid1).out(\"created\").values(\"name\"), __.V(vid3).out(\"created\").values(\"name\")).fold()))",
+                "javascript": "g.V().hasLabel(\"software\").has(\"name\", P.without(__.union(__.V(vid1).out(\"created\").values(\"name\"), __.V(vid3).out(\"created\").values(\"name\")).fold()))",
+                "python": "g.V().has_label('software').has('name', P.without(__.union(__.V(vid1).out('created').values('name'), __.V(vid3).out('created').values('name')).fold()))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasLabelXpersonX_valuesXageX_isXwithinXunionXVXvid1X_valuesXageX_V_hasXname_lopX_inXcreatedX_valuesXageXX_foldXX",
+        "traversals": [
+            {
+                "original": "g.V().hasLabel(\"person\").values(\"age\").is(P.within(__.union(__.V(vid1).values(\"age\"),__.V().has(\"name\",\"lop\").in(\"created\").values(\"age\")).fold()))",
+                "language": "g.V().hasLabel(\"person\").values(\"age\").is(P.within(__.union(__.V(vid1).values(\"age\"), __.V().has(\"name\", \"lop\").in(\"created\").values(\"age\")).fold()))",
+                "canonical": "g.V().hasLabel(\"person\").values(\"age\").is(P.within(__.union(__.V(vid1).values(\"age\"), __.V().has(\"name\", \"lop\").in(\"created\").values(\"age\")).fold()))",
+                "anonymized": "g.V().hasLabel(string0).values(string1).is(P.within(__.union(__.V(vid1).values(string1), __.V().has(string2, string3).in(string4).values(string1)).fold()))",
+                "dotnet": "g.V().HasLabel(\"person\").Values<object>(\"age\").Is(P.Within(__.Union<object>(__.V(vid1).Values<object>(\"age\"), __.V().Has(\"name\", \"lop\").In(\"created\").Values<object>(\"age\")).Fold()))",
+                "go": "g.V().HasLabel(\"person\").Values(\"age\").Is(gremlingo.P.Within(gremlingo.T__.Union(gremlingo.T__.V(vid1).Values(\"age\"), gremlingo.T__.V().Has(\"name\", \"lop\").In(\"created\").Values(\"age\")).Fold()))",
+                "groovy": "g.V().hasLabel(\"person\").values(\"age\").is(P.within(__.union(__.V(vid1).values(\"age\"), __.V().has(\"name\", \"lop\").in(\"created\").values(\"age\")).fold()))",
+                "java": "g.V().hasLabel(\"person\").values(\"age\").is(P.within(__.union(__.V(vid1).values(\"age\"), __.V().has(\"name\", \"lop\").in(\"created\").values(\"age\")).fold()))",
+                "javascript": "g.V().hasLabel(\"person\").values(\"age\").is(P.within(__.union(__.V(vid1).values(\"age\"), __.V().has(\"name\", \"lop\").in_(\"created\").values(\"age\")).fold()))",
+                "python": "g.V().has_label('person').values('age').is_(P.within(__.union(__.V(vid1).values('age'), __.V().has('name', 'lop').in_('created').values('age')).fold()))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_VXvid1X_outEXknowsX_filterXinV_hasXname_withinXunionXV_hasXname_lopX_inXcreatedX_valuesXnameX_V_hasXname_rippleX_inXcreatedX_valuesXnameXX_foldXXXX",
+        "traversals": [
+            {
+                "original": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", P.within(__.union(__.V().has(\"name\",\"lop\").in(\"created\").values(\"name\"),__.V().has(\"name\",\"ripple\").in(\"created\").values(\"name\")).fold())))",
+                "language": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", P.within(__.union(__.V().has(\"name\", \"lop\").in(\"created\").values(\"name\"), __.V().has(\"name\", \"ripple\").in(\"created\").values(\"name\")).fold())))",
+                "canonical": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", P.within(__.union(__.V().has(\"name\", \"lop\").in(\"created\").values(\"name\"), __.V().has(\"name\", \"ripple\").in(\"created\").values(\"name\")).fold())))",
+                "anonymized": "g.V(vid1).outE(string0).filter(__.inV().has(string1, P.within(__.union(__.V().has(string1, string2).in(string3).values(string1), __.V().has(string1, string4).in(string3).values(string1)).fold())))",
+                "dotnet": "g.V(vid1).OutE(\"knows\").Filter(__.InV().Has(\"name\", P.Within(__.Union<object>(__.V().Has(\"name\", \"lop\").In(\"created\").Values<object>(\"name\"), __.V().Has(\"name\", \"ripple\").In(\"created\").Values<object>(\"name\")).Fold())))",
+                "go": "g.V(vid1).OutE(\"knows\").Filter(gremlingo.T__.InV().Has(\"name\", gremlingo.P.Within(gremlingo.T__.Union(gremlingo.T__.V().Has(\"name\", \"lop\").In(\"created\").Values(\"name\"), gremlingo.T__.V().Has(\"name\", \"ripple\").In(\"created\").Values(\"name\")).Fold())))",
+                "groovy": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", P.within(__.union(__.V().has(\"name\", \"lop\").in(\"created\").values(\"name\"), __.V().has(\"name\", \"ripple\").in(\"created\").values(\"name\")).fold())))",
+                "java": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", P.within(__.union(__.V().has(\"name\", \"lop\").in(\"created\").values(\"name\"), __.V().has(\"name\", \"ripple\").in(\"created\").values(\"name\")).fold())))",
+                "javascript": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", P.within(__.union(__.V().has(\"name\", \"lop\").in_(\"created\").values(\"name\"), __.V().has(\"name\", \"ripple\").in_(\"created\").values(\"name\")).fold())))",
+                "python": "g.V(vid1).out_e('knows').filter_(__.in_v().has('name', P.within(__.union(__.V().has('name', 'lop').in_('created').values('name'), __.V().has('name', 'ripple').in_('created').values('name')).fold())))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasLabelXVXvid1X_labelXX",
+        "traversals": [
+            {
+                "original": "g.V().hasLabel(__.V(vid1).label())",
+                "language": "g.V().hasLabel(__.V(vid1).label())",
+                "canonical": "g.V().hasLabel(__.V(vid1).label())",
+                "anonymized": "g.V().hasLabel(__.V(vid1).label())",
+                "dotnet": "g.V().HasLabel(__.V(vid1).Label())",
+                "go": "g.V().HasLabel(gremlingo.T__.V(vid1).Label())",
+                "groovy": "g.V().hasLabel(__.V(vid1).label())",
+                "java": "g.V().hasLabel(__.V(vid1).label())",
+                "javascript": "g.V().hasLabel(__.V(vid1).label())",
+                "python": "g.V().has_label(__.V(vid1).label())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasIdXeqXVXvid1X_idXX",
+        "traversals": [
+            {
+                "original": "g.V().hasId(P.eq(__.V(vid1).id()))",
+                "language": "g.V().hasId(P.eq(__.V(vid1).id()))",
+                "canonical": "g.V().hasId(P.eq(__.V(vid1).id()))",
+                "anonymized": "g.V().hasId(P.eq(__.V(vid1).id()))",
+                "dotnet": "g.V().HasId(P.Eq(__.V(vid1).Id()))",
+                "go": "g.V().HasId(gremlingo.P.Eq(gremlingo.T__.V(vid1).Id()))",
+                "groovy": "g.V().hasId(P.eq(__.V(vid1).id()))",
+                "java": "g.V().hasId(P.eq(__.V(vid1).id()))",
+                "javascript": "g.V().hasId(P.eq(__.V(vid1).id()))",
+                "python": "g.V().has_id(P.eq(__.V(vid1).id_()))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasIdXVXvid1X_idXX",
+        "traversals": [
+            {
+                "original": "g.V().hasId(__.V(vid1).id())",
+                "language": "g.V().hasId(__.V(vid1).id())",
+                "canonical": "g.V().hasId(__.V(vid1).id())",
+                "anonymized": "g.V().hasId(__.V(vid1).id())",
+                "dotnet": "g.V().HasId(__.V(vid1).Id())",
+                "go": "g.V().HasId(gremlingo.T__.V(vid1).Id())",
+                "groovy": "g.V().hasId(__.V(vid1).id())",
+                "java": "g.V().hasId(__.V(vid1).id())",
+                "javascript": "g.V().hasId(__.V(vid1).id())",
+                "python": "g.V().has_id(__.V(vid1).id_())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_propertiesXageX_hasKeyXVXvid1X_propertiesXageX_keyXX",
+        "traversals": [
+            {
+                "original": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
+                "language": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
+                "canonical": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
+                "anonymized": "g.V().properties(string0).hasKey(__.V(vid1).properties(string0).key())",
+                "dotnet": "g.V().Properties<object>(\"age\").HasKey(__.V(vid1).Properties<object>(\"age\").Key())",
+                "go": "g.V().Properties(\"age\").HasKey(gremlingo.T__.V(vid1).Properties(\"age\").Key())",
+                "groovy": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
+                "java": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
+                "javascript": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
+                "python": "g.V().properties('age').has_key(__.V(vid1).properties('age').key())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_propertiesXageX_hasKeyXeqXVXvid1X_propertiesXageX_keyXX",
+        "traversals": [
+            {
+                "original": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
+                "language": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
+                "canonical": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
+                "anonymized": "g.V().properties(string0).hasKey(P.eq(__.V(vid1).properties(string0).key()))",
+                "dotnet": "g.V().Properties<object>(\"age\").HasKey(P.Eq(__.V(vid1).Properties<object>(\"age\").Key()))",
+                "go": "g.V().Properties(\"age\").HasKey(gremlingo.P.Eq(gremlingo.T__.V(vid1).Properties(\"age\").Key()))",
+                "groovy": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
+                "java": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
+                "javascript": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
+                "python": "g.V().properties('age').has_key(P.eq(__.V(vid1).properties('age').key()))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_propertiesXageX_hasValueXVXvid1X_valuesXageXX",
+        "traversals": [
+            {
+                "original": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
+                "language": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
+                "canonical": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
+                "anonymized": "g.V().properties(string0).hasValue(__.V(vid1).values(string0))",
+                "dotnet": "g.V().Properties<object>(\"age\").HasValue(__.V(vid1).Values<object>(\"age\"))",
+                "go": "g.V().Properties(\"age\").HasValue(gremlingo.T__.V(vid1).Values(\"age\"))",
+                "groovy": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
+                "java": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
+                "javascript": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
+                "python": "g.V().properties('age').has_value(__.V(vid1).values('age'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_propertiesXageX_hasValueXeqXVXvid1X_valuesXageXXX",
+        "traversals": [
+            {
+                "original": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
+                "language": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
+                "canonical": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
+                "anonymized": "g.V().properties(string0).hasValue(P.eq(__.V(vid1).values(string0)))",
+                "dotnet": "g.V().Properties<object>(\"age\").HasValue(P.Eq(__.V(vid1).Values<object>(\"age\")))",
+                "go": "g.V().Properties(\"age\").HasValue(gremlingo.P.Eq(gremlingo.T__.V(vid1).Values(\"age\")))",
+                "groovy": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
+                "java": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
+                "javascript": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
+                "python": "g.V().properties('age').has_value(P.eq(__.V(vid1).values('age')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_VXvid1X_asXaX_V_hasXage_gtXselectXaX_valuesXageXXX_valuesXnameX",
+        "traversals": [
+            {
+                "original": "g.V(vid1).as(\"a\").V().has(\"age\", P.gt(__.select(\"a\").values(\"age\"))).values(\"name\")",
+                "language": "g.V(vid1).as(\"a\").V().has(\"age\", P.gt(__.select(\"a\").values(\"age\"))).values(\"name\")",
+                "canonical": "g.V(vid1).as(\"a\").V().has(\"age\", P.gt(__.select(\"a\").values(\"age\"))).values(\"name\")",
+                "anonymized": "g.V(vid1).as(string0).V().has(string1, P.gt(__.select(string0).values(string1))).values(string2)",
+                "dotnet": "g.V(vid1).As(\"a\").V().Has(\"age\", P.Gt(__.Select<object>(\"a\").Values<object>(\"age\"))).Values<object>(\"name\")",
+                "go": "g.V(vid1).As(\"a\").V().Has(\"age\", gremlingo.P.Gt(gremlingo.T__.Select(\"a\").Values(\"age\"))).Values(\"name\")",
+                "groovy": "g.V(vid1).as(\"a\").V().has(\"age\", P.gt(__.select(\"a\").values(\"age\"))).values(\"name\")",
+                "java": "g.V(vid1).as(\"a\").V().has(\"age\", P.gt(__.select(\"a\").values(\"age\"))).values(\"name\")",
+                "javascript": "g.V(vid1).as(\"a\").V().has(\"age\", P.gt(__.select(\"a\").values(\"age\"))).values(\"name\")",
+                "python": "g.V(vid1).as_('a').V().has('age', P.gt(__.select('a').values('age'))).values('name')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withSackX29X_V_hasXage_gtXsackXX_valuesXnameX",
+        "traversals": [
+            {
+                "original": "g.withSack(29).V().has(\"age\", P.gt(__.sack())).values(\"name\")",
+                "language": "g.withSack(29).V().has(\"age\", P.gt(__.sack())).values(\"name\")",
+                "canonical": "g.withSack(29).V().has(\"age\", P.gt(__.sack())).values(\"name\")",
+                "anonymized": "g.withSack(number0).V().has(string0, P.gt(__.sack())).values(string1)",
+                "dotnet": "g.WithSack(29).V().Has(\"age\", P.Gt(__.Sack<object>())).Values<object>(\"name\")",
+                "go": "g.WithSack(29).V().Has(\"age\", gremlingo.P.Gt(gremlingo.T__.Sack())).Values(\"name\")",
+                "groovy": "g.withSack(29).V().has(\"age\", P.gt(__.sack())).values(\"name\")",
+                "java": "g.withSack(29).V().has(\"age\", P.gt(__.sack())).values(\"name\")",
+                "javascript": "g.withSack(29).V().has(\"age\", P.gt(__.sack())).values(\"name\")",
+                "python": "g.with_sack(29).V().has('age', P.gt(__.sack())).values('name')"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_hasIdXemptyX_count",
         "traversals": [
             {
@@ -9263,499 +9790,6 @@
         ]
     },
     {
-        "scenario": "g_V_hasXname_VXvid1X_valuesXnameXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
-                "language": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
-                "canonical": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
-                "anonymized": "g.V().has(string0, __.V(vid1).values(string0))",
-                "dotnet": "g.V().Has(\"name\", __.V(vid1).Values<object>(\"name\"))",
-                "go": "g.V().Has(\"name\", gremlingo.T__.V(vid1).Values(\"name\"))",
-                "groovy": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
-                "java": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
-                "javascript": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
-                "python": "g.V().has('name', __.V(vid1).values('name'))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXname_VXvid1X_outXknowsX_valuesXnameXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"name\", __.V(vid1).out(\"knows\").values(\"name\"))",
-                "language": "g.V().has(\"name\", __.V(vid1).out(\"knows\").values(\"name\"))",
-                "canonical": "g.V().has(\"name\", __.V(vid1).out(\"knows\").values(\"name\"))",
-                "anonymized": "g.V().has(string0, __.V(vid1).out(string1).values(string0))",
-                "dotnet": "g.V().Has(\"name\", __.V(vid1).Out(\"knows\").Values<object>(\"name\"))",
-                "go": "g.V().Has(\"name\", gremlingo.T__.V(vid1).Out(\"knows\").Values(\"name\"))",
-                "groovy": "g.V().has(\"name\", __.V(vid1).out(\"knows\").values(\"name\"))",
-                "java": "g.V().has(\"name\", __.V(vid1).out(\"knows\").values(\"name\"))",
-                "javascript": "g.V().has(\"name\", __.V(vid1).out(\"knows\").values(\"name\"))",
-                "python": "g.V().has('name', __.V(vid1).out('knows').values('name'))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXage_VXvid1X_outXknowsX_valuesXageXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"age\", __.V(vid1).out(\"knows\").values(\"age\"))",
-                "language": "g.V().has(\"age\", __.V(vid1).out(\"knows\").values(\"age\"))",
-                "canonical": "g.V().has(\"age\", __.V(vid1).out(\"knows\").values(\"age\"))",
-                "anonymized": "g.V().has(string0, __.V(vid1).out(string1).values(string0))",
-                "dotnet": "g.V().Has(\"age\", __.V(vid1).Out(\"knows\").Values<object>(\"age\"))",
-                "go": "g.V().Has(\"age\", gremlingo.T__.V(vid1).Out(\"knows\").Values(\"age\"))",
-                "groovy": "g.V().has(\"age\", __.V(vid1).out(\"knows\").values(\"age\"))",
-                "java": "g.V().has(\"age\", __.V(vid1).out(\"knows\").values(\"age\"))",
-                "javascript": "g.V().has(\"age\", __.V(vid1).out(\"knows\").values(\"age\"))",
-                "python": "g.V().has('age', __.V(vid1).out('knows').values('age'))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXname_VXvid1X_valuesXnonexistentXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"name\", __.V(vid1).values(\"nonexistent\"))",
-                "language": "g.V().has(\"name\", __.V(vid1).values(\"nonexistent\"))",
-                "canonical": "g.V().has(\"name\", __.V(vid1).values(\"nonexistent\"))",
-                "anonymized": "g.V().has(string0, __.V(vid1).values(string1))",
-                "dotnet": "g.V().Has(\"name\", __.V(vid1).Values<object>(\"nonexistent\"))",
-                "go": "g.V().Has(\"name\", gremlingo.T__.V(vid1).Values(\"nonexistent\"))",
-                "groovy": "g.V().has(\"name\", __.V(vid1).values(\"nonexistent\"))",
-                "java": "g.V().has(\"name\", __.V(vid1).values(\"nonexistent\"))",
-                "javascript": "g.V().has(\"name\", __.V(vid1).values(\"nonexistent\"))",
-                "python": "g.V().has('name', __.V(vid1).values('nonexistent'))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXname_notXidentityXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"name\", __.not(__.identity()))",
-                "language": "g.V().has(\"name\", __.not(__.identity()))",
-                "canonical": "g.V().has(\"name\", __.not(__.identity()))",
-                "anonymized": "g.V().has(string0, __.not(__.identity()))",
-                "dotnet": "g.V().Has(\"name\", __.Not(__.Identity()))",
-                "go": "g.V().Has(\"name\", gremlingo.T__.Not(gremlingo.T__.Identity()))",
-                "groovy": "g.V().has(\"name\", __.not(__.identity()))",
-                "java": "g.V().has(\"name\", __.not(__.identity()))",
-                "javascript": "g.V().has(\"name\", __.not(__.identity()))",
-                "python": "g.V().has('name', __.not_(__.identity()))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXage_gtXVXvid1X_valuesXageXXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
-                "language": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
-                "canonical": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
-                "anonymized": "g.V().has(string0, P.gt(__.V(vid1).values(string0)))",
-                "dotnet": "g.V().Has(\"age\", P.Gt(__.V(vid1).Values<object>(\"age\")))",
-                "go": "g.V().Has(\"age\", gremlingo.P.Gt(gremlingo.T__.V(vid1).Values(\"age\")))",
-                "groovy": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
-                "java": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
-                "javascript": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
-                "python": "g.V().has('age', P.gt(__.V(vid1).values('age')))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXage_lteXVXvid2X_valuesXageXXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"age\", P.lte(__.V(vid2).values(\"age\")))",
-                "language": "g.V().has(\"age\", P.lte(__.V(vid2).values(\"age\")))",
-                "canonical": "g.V().has(\"age\", P.lte(__.V(vid2).values(\"age\")))",
-                "anonymized": "g.V().has(string0, P.lte(__.V(vid2).values(string0)))",
-                "dotnet": "g.V().Has(\"age\", P.Lte(__.V(vid2).Values<object>(\"age\")))",
-                "go": "g.V().Has(\"age\", gremlingo.P.Lte(gremlingo.T__.V(vid2).Values(\"age\")))",
-                "groovy": "g.V().has(\"age\", P.lte(__.V(vid2).values(\"age\")))",
-                "java": "g.V().has(\"age\", P.lte(__.V(vid2).values(\"age\")))",
-                "javascript": "g.V().has(\"age\", P.lte(__.V(vid2).values(\"age\")))",
-                "python": "g.V().has('age', P.lte(__.V(vid2).values('age')))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXage_neqXVXvid3X_valuesXageXXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"age\", P.neq(__.V(vid3).values(\"age\")))",
-                "language": "g.V().has(\"age\", P.neq(__.V(vid3).values(\"age\")))",
-                "canonical": "g.V().has(\"age\", P.neq(__.V(vid3).values(\"age\")))",
-                "anonymized": "g.V().has(string0, P.neq(__.V(vid3).values(string0)))",
-                "dotnet": "g.V().Has(\"age\", P.Neq(__.V(vid3).Values<object>(\"age\")))",
-                "go": "g.V().Has(\"age\", gremlingo.P.Neq(gremlingo.T__.V(vid3).Values(\"age\")))",
-                "groovy": "g.V().has(\"age\", P.neq(__.V(vid3).values(\"age\")))",
-                "java": "g.V().has(\"age\", P.neq(__.V(vid3).values(\"age\")))",
-                "javascript": "g.V().has(\"age\", P.neq(__.V(vid3).values(\"age\")))",
-                "python": "g.V().has('age', P.neq(__.V(vid3).values('age')))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXname_eqXVXvid1X_valuesXnameXXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"name\", P.eq(__.V(vid1).values(\"name\")))",
-                "language": "g.V().has(\"name\", P.eq(__.V(vid1).values(\"name\")))",
-                "canonical": "g.V().has(\"name\", P.eq(__.V(vid1).values(\"name\")))",
-                "anonymized": "g.V().has(string0, P.eq(__.V(vid1).values(string0)))",
-                "dotnet": "g.V().Has(\"name\", P.Eq(__.V(vid1).Values<object>(\"name\")))",
-                "go": "g.V().Has(\"name\", gremlingo.P.Eq(gremlingo.T__.V(vid1).Values(\"name\")))",
-                "groovy": "g.V().has(\"name\", P.eq(__.V(vid1).values(\"name\")))",
-                "java": "g.V().has(\"name\", P.eq(__.V(vid1).values(\"name\")))",
-                "javascript": "g.V().has(\"name\", P.eq(__.V(vid1).values(\"name\")))",
-                "python": "g.V().has('name', P.eq(__.V(vid1).values('name')))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXage_ltXVXvid1X_valuesXageXXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"age\", P.lt(__.V(vid1).values(\"age\")))",
-                "language": "g.V().has(\"age\", P.lt(__.V(vid1).values(\"age\")))",
-                "canonical": "g.V().has(\"age\", P.lt(__.V(vid1).values(\"age\")))",
-                "anonymized": "g.V().has(string0, P.lt(__.V(vid1).values(string0)))",
-                "dotnet": "g.V().Has(\"age\", P.Lt(__.V(vid1).Values<object>(\"age\")))",
-                "go": "g.V().Has(\"age\", gremlingo.P.Lt(gremlingo.T__.V(vid1).Values(\"age\")))",
-                "groovy": "g.V().has(\"age\", P.lt(__.V(vid1).values(\"age\")))",
-                "java": "g.V().has(\"age\", P.lt(__.V(vid1).values(\"age\")))",
-                "javascript": "g.V().has(\"age\", P.lt(__.V(vid1).values(\"age\")))",
-                "python": "g.V().has('age', P.lt(__.V(vid1).values('age')))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXage_gteXVXvid3X_valuesXageXXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"age\", P.gte(__.V(vid3).values(\"age\")))",
-                "language": "g.V().has(\"age\", P.gte(__.V(vid3).values(\"age\")))",
-                "canonical": "g.V().has(\"age\", P.gte(__.V(vid3).values(\"age\")))",
-                "anonymized": "g.V().has(string0, P.gte(__.V(vid3).values(string0)))",
-                "dotnet": "g.V().Has(\"age\", P.Gte(__.V(vid3).Values<object>(\"age\")))",
-                "go": "g.V().Has(\"age\", gremlingo.P.Gte(gremlingo.T__.V(vid3).Values(\"age\")))",
-                "groovy": "g.V().has(\"age\", P.gte(__.V(vid3).values(\"age\")))",
-                "java": "g.V().has(\"age\", P.gte(__.V(vid3).values(\"age\")))",
-                "javascript": "g.V().has(\"age\", P.gte(__.V(vid3).values(\"age\")))",
-                "python": "g.V().has('age', P.gte(__.V(vid3).values('age')))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXage_eqXVXvid1X_valuesXnonexistentXXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"age\", P.eq(__.V(vid1).values(\"nonexistent\")))",
-                "language": "g.V().has(\"age\", P.eq(__.V(vid1).values(\"nonexistent\")))",
-                "canonical": "g.V().has(\"age\", P.eq(__.V(vid1).values(\"nonexistent\")))",
-                "anonymized": "g.V().has(string0, P.eq(__.V(vid1).values(string1)))",
-                "dotnet": "g.V().Has(\"age\", P.Eq(__.V(vid1).Values<object>(\"nonexistent\")))",
-                "go": "g.V().Has(\"age\", gremlingo.P.Eq(gremlingo.T__.V(vid1).Values(\"nonexistent\")))",
-                "groovy": "g.V().has(\"age\", P.eq(__.V(vid1).values(\"nonexistent\")))",
-                "java": "g.V().has(\"age\", P.eq(__.V(vid1).values(\"nonexistent\")))",
-                "javascript": "g.V().has(\"age\", P.eq(__.V(vid1).values(\"nonexistent\")))",
-                "python": "g.V().has('age', P.eq(__.V(vid1).values('nonexistent')))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXlabel_VXvid1X_labelXX",
-        "traversals": [
-            {
-                "original": "g.V().has(T.label, __.V(vid1).label())",
-                "language": "g.V().has(T.label, __.V(vid1).label())",
-                "canonical": "g.V().has(T.label, __.V(vid1).label())",
-                "anonymized": "g.V().has(T.label, __.V(vid1).label())",
-                "dotnet": "g.V().Has(T.Label, __.V(vid1).Label())",
-                "go": "g.V().Has(gremlingo.T.Label, gremlingo.T__.V(vid1).Label())",
-                "groovy": "g.V().has(T.label, __.V(vid1).label())",
-                "java": "g.V().has(T.label, __.V(vid1).label())",
-                "javascript": "g.V().has(T.label, __.V(vid1).label())",
-                "python": "g.V().has(T.label, __.V(vid1).label())"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXperson_name_VXvid1X_valuesXnameXX_age",
-        "traversals": [
-            {
-                "original": "g.V().has(\"person\", \"name\", __.V(vid1).values(\"name\")).values(\"age\")",
-                "language": "g.V().has(\"person\", \"name\", __.V(vid1).values(\"name\")).values(\"age\")",
-                "canonical": "g.V().has(\"person\", \"name\", __.V(vid1).values(\"name\")).values(\"age\")",
-                "anonymized": "g.V().has(string0, string1, __.V(vid1).values(string1)).values(string2)",
-                "dotnet": "g.V().Has(\"person\", \"name\", __.V(vid1).Values<object>(\"name\")).Values<object>(\"age\")",
-                "go": "g.V().Has(\"person\", \"name\", gremlingo.T__.V(vid1).Values(\"name\")).Values(\"age\")",
-                "groovy": "g.V().has(\"person\", \"name\", __.V(vid1).values(\"name\")).values(\"age\")",
-                "java": "g.V().has(\"person\", \"name\", __.V(vid1).values(\"name\")).values(\"age\")",
-                "javascript": "g.V().has(\"person\", \"name\", __.V(vid1).values(\"name\")).values(\"age\")",
-                "python": "g.V().has('person', 'name', __.V(vid1).values('name')).values('age')"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXname_withinXVXvid1X_outXknowsX_valuesXnameX_constantXpeterXXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"name\", P.within(__.V(vid1).out(\"knows\").values(\"name\").fold(), __.constant(\"peter\")))",
-                "language": "g.V().has(\"name\", P.within(__.V(vid1).out(\"knows\").values(\"name\").fold(), __.constant(\"peter\")))",
-                "canonical": "g.V().has(\"name\", P.within(__.V(vid1).out(\"knows\").values(\"name\").fold(), __.constant(\"peter\")))",
-                "anonymized": "g.V().has(string0, P.within(__.V(vid1).out(string1).values(string0).fold(), __.constant(string2)))",
-                "dotnet": "g.V().Has(\"name\", P.Within(__.V(vid1).Out(\"knows\").Values<object>(\"name\").Fold(), __.Constant<object>(\"peter\")))",
-                "go": "g.V().Has(\"name\", gremlingo.P.Within(gremlingo.T__.V(vid1).Out(\"knows\").Values(\"name\").Fold(), gremlingo.T__.Constant(\"peter\")))",
-                "groovy": "g.V().has(\"name\", P.within(__.V(vid1).out(\"knows\").values(\"name\").fold(), __.constant(\"peter\")))",
-                "java": "g.V().has(\"name\", P.within(__.V(vid1).out(\"knows\").values(\"name\").fold(), __.constant(\"peter\")))",
-                "javascript": "g.V().has(\"name\", P.within(__.V(vid1).out(\"knows\").values(\"name\").fold(), __.constant(\"peter\")))",
-                "python": "g.V().has('name', P.within(__.V(vid1).out('knows').values('name').fold(), __.constant('peter')))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXname_withinXVXvid1X_valuesXnonexistentX_constantXmarkoXXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.constant(\"marko\")))",
-                "language": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.constant(\"marko\")))",
-                "canonical": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.constant(\"marko\")))",
-                "anonymized": "g.V().has(string0, P.within(__.V(vid1).values(string1), __.constant(string2)))",
-                "dotnet": "g.V().Has(\"name\", P.Within(__.V(vid1).Values<object>(\"nonexistent\"), __.Constant<object>(\"marko\")))",
-                "go": "g.V().Has(\"name\", gremlingo.P.Within(gremlingo.T__.V(vid1).Values(\"nonexistent\"), gremlingo.T__.Constant(\"marko\")))",
-                "groovy": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.constant(\"marko\")))",
-                "java": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.constant(\"marko\")))",
-                "javascript": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.constant(\"marko\")))",
-                "python": "g.V().has('name', P.within(__.V(vid1).values('nonexistent'), __.constant('marko')))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXname_withinXVXvid1X_valuesXnonexistentX_VXvid1X_valuesXnonexistentXXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.V(vid1).values(\"nonexistent\")))",
-                "language": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.V(vid1).values(\"nonexistent\")))",
-                "canonical": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.V(vid1).values(\"nonexistent\")))",
-                "anonymized": "g.V().has(string0, P.within(__.V(vid1).values(string1), __.V(vid1).values(string1)))",
-                "dotnet": "g.V().Has(\"name\", P.Within(__.V(vid1).Values<object>(\"nonexistent\"), __.V(vid1).Values<object>(\"nonexistent\")))",
-                "go": "g.V().Has(\"name\", gremlingo.P.Within(gremlingo.T__.V(vid1).Values(\"nonexistent\"), gremlingo.T__.V(vid1).Values(\"nonexistent\")))",
-                "groovy": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.V(vid1).values(\"nonexistent\")))",
-                "java": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.V(vid1).values(\"nonexistent\")))",
-                "javascript": "g.V().has(\"name\", P.within(__.V(vid1).values(\"nonexistent\"), __.V(vid1).values(\"nonexistent\")))",
-                "python": "g.V().has('name', P.within(__.V(vid1).values('nonexistent'), __.V(vid1).values('nonexistent')))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXname_withoutXVXvid1X_valuesXnameX_VXvid2X_valuesXnameX_VXvid3X_valuesXnameXXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"name\", P.without(__.V(vid1).values(\"name\"), __.V(vid2).values(\"name\"), __.V(vid3).values(\"name\")))",
-                "language": "g.V().has(\"name\", P.without(__.V(vid1).values(\"name\"), __.V(vid2).values(\"name\"), __.V(vid3).values(\"name\")))",
-                "canonical": "g.V().has(\"name\", P.without(__.V(vid1).values(\"name\"), __.V(vid2).values(\"name\"), __.V(vid3).values(\"name\")))",
-                "anonymized": "g.V().has(string0, P.without(__.V(vid1).values(string0), __.V(vid2).values(string0), __.V(vid3).values(string0)))",
-                "dotnet": "g.V().Has(\"name\", P.Without(__.V(vid1).Values<object>(\"name\"), __.V(vid2).Values<object>(\"name\"), __.V(vid3).Values<object>(\"name\")))",
-                "go": "g.V().Has(\"name\", gremlingo.P.Without(gremlingo.T__.V(vid1).Values(\"name\"), gremlingo.T__.V(vid2).Values(\"name\"), gremlingo.T__.V(vid3).Values(\"name\")))",
-                "groovy": "g.V().has(\"name\", P.without(__.V(vid1).values(\"name\"), __.V(vid2).values(\"name\"), __.V(vid3).values(\"name\")))",
-                "java": "g.V().has(\"name\", P.without(__.V(vid1).values(\"name\"), __.V(vid2).values(\"name\"), __.V(vid3).values(\"name\")))",
-                "javascript": "g.V().has(\"name\", P.without(__.V(vid1).values(\"name\"), __.V(vid2).values(\"name\"), __.V(vid3).values(\"name\")))",
-                "python": "g.V().has('name', P.without(__.V(vid1).values('name'), __.V(vid2).values('name'), __.V(vid3).values('name')))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXname_withinXVXvid1X_outXknowsX_valuesXnameX_VXvid3X_outXcreatedX_valuesXnameXXX",
-        "traversals": [
-            {
-                "original": "g.V().has(\"name\", P.within(__.V(vid1).out(\"knows\").values(\"name\").fold(), __.V(vid3).out(\"created\").values(\"name\").fold()))",
-                "language": "g.V().has(\"name\", P.within(__.V(vid1).out(\"knows\").values(\"name\").fold(), __.V(vid3).out(\"created\").values(\"name\").fold()))",
-                "canonical": "g.V().has(\"name\", P.within(__.V(vid1).out(\"knows\").values(\"name\").fold(), __.V(vid3).out(\"created\").values(\"name\").fold()))",
-                "anonymized": "g.V().has(string0, P.within(__.V(vid1).out(string1).values(string0).fold(), __.V(vid3).out(string2).values(string0).fold()))",
-                "dotnet": "g.V().Has(\"name\", P.Within(__.V(vid1).Out(\"knows\").Values<object>(\"name\").Fold(), __.V(vid3).Out(\"created\").Values<object>(\"name\").Fold()))",
-                "go": "g.V().Has(\"name\", gremlingo.P.Within(gremlingo.T__.V(vid1).Out(\"knows\").Values(\"name\").Fold(), gremlingo.T__.V(vid3).Out(\"created\").Values(\"name\").Fold()))",
-                "groovy": "g.V().has(\"name\", P.within(__.V(vid1).out(\"knows\").values(\"name\").fold(), __.V(vid3).out(\"created\").values(\"name\").fold()))",
-                "java": "g.V().has(\"name\", P.within(__.V(vid1).out(\"knows\").values(\"name\").fold(), __.V(vid3).out(\"created\").values(\"name\").fold()))",
-                "javascript": "g.V().has(\"name\", P.within(__.V(vid1).out(\"knows\").values(\"name\").fold(), __.V(vid3).out(\"created\").values(\"name\").fold()))",
-                "python": "g.V().has('name', P.within(__.V(vid1).out('knows').values('name').fold(), __.V(vid3).out('created').values('name').fold()))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasLabelXsoftwareX_hasXname_withoutXVXvid1X_outXcreatedX_valuesXnameX_VXvid3X_outXcreatedX_valuesXnameXXX",
-        "traversals": [
-            {
-                "original": "g.V().hasLabel(\"software\").has(\"name\", P.without(__.V(vid1).out(\"created\").values(\"name\").fold(), __.V(vid3).out(\"created\").values(\"name\").fold()))",
-                "language": "g.V().hasLabel(\"software\").has(\"name\", P.without(__.V(vid1).out(\"created\").values(\"name\").fold(), __.V(vid3).out(\"created\").values(\"name\").fold()))",
-                "canonical": "g.V().hasLabel(\"software\").has(\"name\", P.without(__.V(vid1).out(\"created\").values(\"name\").fold(), __.V(vid3).out(\"created\").values(\"name\").fold()))",
-                "anonymized": "g.V().hasLabel(string0).has(string1, P.without(__.V(vid1).out(string2).values(string1).fold(), __.V(vid3).out(string2).values(string1).fold()))",
-                "dotnet": "g.V().HasLabel(\"software\").Has(\"name\", P.Without(__.V(vid1).Out(\"created\").Values<object>(\"name\").Fold(), __.V(vid3).Out(\"created\").Values<object>(\"name\").Fold()))",
-                "go": "g.V().HasLabel(\"software\").Has(\"name\", gremlingo.P.Without(gremlingo.T__.V(vid1).Out(\"created\").Values(\"name\").Fold(), gremlingo.T__.V(vid3).Out(\"created\").Values(\"name\").Fold()))",
-                "groovy": "g.V().hasLabel(\"software\").has(\"name\", P.without(__.V(vid1).out(\"created\").values(\"name\").fold(), __.V(vid3).out(\"created\").values(\"name\").fold()))",
-                "java": "g.V().hasLabel(\"software\").has(\"name\", P.without(__.V(vid1).out(\"created\").values(\"name\").fold(), __.V(vid3).out(\"created\").values(\"name\").fold()))",
-                "javascript": "g.V().hasLabel(\"software\").has(\"name\", P.without(__.V(vid1).out(\"created\").values(\"name\").fold(), __.V(vid3).out(\"created\").values(\"name\").fold()))",
-                "python": "g.V().has_label('software').has('name', P.without(__.V(vid1).out('created').values('name').fold(), __.V(vid3).out('created').values('name').fold()))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasLabelXpersonX_valuesXageX_isXwithinXVXvid1X_valuesXageX_V_hasXname_lopX_inXcreatedX_valuesXageXXX",
-        "traversals": [
-            {
-                "original": "g.V().hasLabel(\"person\").values(\"age\").is(P.within(__.V(vid1).values(\"age\").fold(), __.V().has(\"name\",\"lop\").in(\"created\").values(\"age\").fold()))",
-                "language": "g.V().hasLabel(\"person\").values(\"age\").is(P.within(__.V(vid1).values(\"age\").fold(), __.V().has(\"name\", \"lop\").in(\"created\").values(\"age\").fold()))",
-                "canonical": "g.V().hasLabel(\"person\").values(\"age\").is(P.within(__.V(vid1).values(\"age\").fold(), __.V().has(\"name\", \"lop\").in(\"created\").values(\"age\").fold()))",
-                "anonymized": "g.V().hasLabel(string0).values(string1).is(P.within(__.V(vid1).values(string1).fold(), __.V().has(string2, string3).in(string4).values(string1).fold()))",
-                "dotnet": "g.V().HasLabel(\"person\").Values<object>(\"age\").Is(P.Within(__.V(vid1).Values<object>(\"age\").Fold(), __.V().Has(\"name\", \"lop\").In(\"created\").Values<object>(\"age\").Fold()))",
-                "go": "g.V().HasLabel(\"person\").Values(\"age\").Is(gremlingo.P.Within(gremlingo.T__.V(vid1).Values(\"age\").Fold(), gremlingo.T__.V().Has(\"name\", \"lop\").In(\"created\").Values(\"age\").Fold()))",
-                "groovy": "g.V().hasLabel(\"person\").values(\"age\").is(P.within(__.V(vid1).values(\"age\").fold(), __.V().has(\"name\", \"lop\").in(\"created\").values(\"age\").fold()))",
-                "java": "g.V().hasLabel(\"person\").values(\"age\").is(P.within(__.V(vid1).values(\"age\").fold(), __.V().has(\"name\", \"lop\").in(\"created\").values(\"age\").fold()))",
-                "javascript": "g.V().hasLabel(\"person\").values(\"age\").is(P.within(__.V(vid1).values(\"age\").fold(), __.V().has(\"name\", \"lop\").in_(\"created\").values(\"age\").fold()))",
-                "python": "g.V().has_label('person').values('age').is_(P.within(__.V(vid1).values('age').fold(), __.V().has('name', 'lop').in_('created').values('age').fold()))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_VXvid1X_outEXknowsX_filterXinV_hasXname_withinXV_hasXname_lopX_inXcreatedX_valuesXnameX_V_hasXname_rippleX_inXcreatedX_valuesXnameXXXX",
-        "traversals": [
-            {
-                "original": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", P.within(__.V().has(\"name\",\"lop\").in(\"created\").values(\"name\").fold(), __.V().has(\"name\",\"ripple\").in(\"created\").values(\"name\").fold())))",
-                "language": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", P.within(__.V().has(\"name\", \"lop\").in(\"created\").values(\"name\").fold(), __.V().has(\"name\", \"ripple\").in(\"created\").values(\"name\").fold())))",
-                "canonical": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", P.within(__.V().has(\"name\", \"lop\").in(\"created\").values(\"name\").fold(), __.V().has(\"name\", \"ripple\").in(\"created\").values(\"name\").fold())))",
-                "anonymized": "g.V(vid1).outE(string0).filter(__.inV().has(string1, P.within(__.V().has(string1, string2).in(string3).values(string1).fold(), __.V().has(string1, string4).in(string3).values(string1).fold())))",
-                "dotnet": "g.V(vid1).OutE(\"knows\").Filter(__.InV().Has(\"name\", P.Within(__.V().Has(\"name\", \"lop\").In(\"created\").Values<object>(\"name\").Fold(), __.V().Has(\"name\", \"ripple\").In(\"created\").Values<object>(\"name\").Fold())))",
-                "go": "g.V(vid1).OutE(\"knows\").Filter(gremlingo.T__.InV().Has(\"name\", gremlingo.P.Within(gremlingo.T__.V().Has(\"name\", \"lop\").In(\"created\").Values(\"name\").Fold(), gremlingo.T__.V().Has(\"name\", \"ripple\").In(\"created\").Values(\"name\").Fold())))",
-                "groovy": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", P.within(__.V().has(\"name\", \"lop\").in(\"created\").values(\"name\").fold(), __.V().has(\"name\", \"ripple\").in(\"created\").values(\"name\").fold())))",
-                "java": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", P.within(__.V().has(\"name\", \"lop\").in(\"created\").values(\"name\").fold(), __.V().has(\"name\", \"ripple\").in(\"created\").values(\"name\").fold())))",
-                "javascript": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", P.within(__.V().has(\"name\", \"lop\").in_(\"created\").values(\"name\").fold(), __.V().has(\"name\", \"ripple\").in_(\"created\").values(\"name\").fold())))",
-                "python": "g.V(vid1).out_e('knows').filter_(__.in_v().has('name', P.within(__.V().has('name', 'lop').in_('created').values('name').fold(), __.V().has('name', 'ripple').in_('created').values('name').fold())))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasLabelXVXvid1X_labelXX",
-        "traversals": [
-            {
-                "original": "g.V().hasLabel(__.V(vid1).label())",
-                "language": "g.V().hasLabel(__.V(vid1).label())",
-                "canonical": "g.V().hasLabel(__.V(vid1).label())",
-                "anonymized": "g.V().hasLabel(__.V(vid1).label())",
-                "dotnet": "g.V().HasLabel(__.V(vid1).Label())",
-                "go": "g.V().HasLabel(gremlingo.T__.V(vid1).Label())",
-                "groovy": "g.V().hasLabel(__.V(vid1).label())",
-                "java": "g.V().hasLabel(__.V(vid1).label())",
-                "javascript": "g.V().hasLabel(__.V(vid1).label())",
-                "python": "g.V().has_label(__.V(vid1).label())"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasIdXeqXVXvid1X_idXX",
-        "traversals": [
-            {
-                "original": "g.V().hasId(P.eq(__.V(vid1).id()))",
-                "language": "g.V().hasId(P.eq(__.V(vid1).id()))",
-                "canonical": "g.V().hasId(P.eq(__.V(vid1).id()))",
-                "anonymized": "g.V().hasId(P.eq(__.V(vid1).id()))",
-                "dotnet": "g.V().HasId(P.Eq(__.V(vid1).Id()))",
-                "go": "g.V().HasId(gremlingo.P.Eq(gremlingo.T__.V(vid1).Id()))",
-                "groovy": "g.V().hasId(P.eq(__.V(vid1).id()))",
-                "java": "g.V().hasId(P.eq(__.V(vid1).id()))",
-                "javascript": "g.V().hasId(P.eq(__.V(vid1).id()))",
-                "python": "g.V().has_id(P.eq(__.V(vid1).id_()))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasIdXVXvid1X_idXX",
-        "traversals": [
-            {
-                "original": "g.V().hasId(__.V(vid1).id())",
-                "language": "g.V().hasId(__.V(vid1).id())",
-                "canonical": "g.V().hasId(__.V(vid1).id())",
-                "anonymized": "g.V().hasId(__.V(vid1).id())",
-                "dotnet": "g.V().HasId(__.V(vid1).Id())",
-                "go": "g.V().HasId(gremlingo.T__.V(vid1).Id())",
-                "groovy": "g.V().hasId(__.V(vid1).id())",
-                "java": "g.V().hasId(__.V(vid1).id())",
-                "javascript": "g.V().hasId(__.V(vid1).id())",
-                "python": "g.V().has_id(__.V(vid1).id_())"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_propertiesXageX_hasKeyXVXvid1X_propertiesXageX_keyXX",
-        "traversals": [
-            {
-                "original": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
-                "language": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
-                "canonical": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
-                "anonymized": "g.V().properties(string0).hasKey(__.V(vid1).properties(string0).key())",
-                "dotnet": "g.V().Properties<object>(\"age\").HasKey(__.V(vid1).Properties<object>(\"age\").Key())",
-                "go": "g.V().Properties(\"age\").HasKey(gremlingo.T__.V(vid1).Properties(\"age\").Key())",
-                "groovy": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
-                "java": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
-                "javascript": "g.V().properties(\"age\").hasKey(__.V(vid1).properties(\"age\").key())",
-                "python": "g.V().properties('age').has_key(__.V(vid1).properties('age').key())"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_propertiesXageX_hasKeyXeqXVXvid1X_propertiesXageX_keyXX",
-        "traversals": [
-            {
-                "original": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
-                "language": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
-                "canonical": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
-                "anonymized": "g.V().properties(string0).hasKey(P.eq(__.V(vid1).properties(string0).key()))",
-                "dotnet": "g.V().Properties<object>(\"age\").HasKey(P.Eq(__.V(vid1).Properties<object>(\"age\").Key()))",
-                "go": "g.V().Properties(\"age\").HasKey(gremlingo.P.Eq(gremlingo.T__.V(vid1).Properties(\"age\").Key()))",
-                "groovy": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
-                "java": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
-                "javascript": "g.V().properties(\"age\").hasKey(P.eq(__.V(vid1).properties(\"age\").key()))",
-                "python": "g.V().properties('age').has_key(P.eq(__.V(vid1).properties('age').key()))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_propertiesXageX_hasValueXVXvid1X_valuesXageXX",
-        "traversals": [
-            {
-                "original": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
-                "language": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
-                "canonical": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
-                "anonymized": "g.V().properties(string0).hasValue(__.V(vid1).values(string0))",
-                "dotnet": "g.V().Properties<object>(\"age\").HasValue(__.V(vid1).Values<object>(\"age\"))",
-                "go": "g.V().Properties(\"age\").HasValue(gremlingo.T__.V(vid1).Values(\"age\"))",
-                "groovy": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
-                "java": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
-                "javascript": "g.V().properties(\"age\").hasValue(__.V(vid1).values(\"age\"))",
-                "python": "g.V().properties('age').has_value(__.V(vid1).values('age'))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_propertiesXageX_hasValueXeqXVXvid1X_valuesXageXXX",
-        "traversals": [
-            {
-                "original": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
-                "language": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
-                "canonical": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
-                "anonymized": "g.V().properties(string0).hasValue(P.eq(__.V(vid1).values(string0)))",
-                "dotnet": "g.V().Properties<object>(\"age\").HasValue(P.Eq(__.V(vid1).Values<object>(\"age\")))",
-                "go": "g.V().Properties(\"age\").HasValue(gremlingo.P.Eq(gremlingo.T__.V(vid1).Values(\"age\")))",
-                "groovy": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
-                "java": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
-                "javascript": "g.V().properties(\"age\").hasValue(P.eq(__.V(vid1).values(\"age\")))",
-                "python": "g.V().properties('age').has_value(P.eq(__.V(vid1).values('age')))"
-            }
-        ]
-    },
-    {
         "scenario": "g_V_properties_hasValueXnullX",
         "traversals": [
             {
@@ -10065,7 +10099,7 @@
         "scenario": "g_V_hasLabelXpersonX_valuesXageX_chooseXgtXVXvid1X_valuesXageXX_olderX",
         "traversals": [
             {
-                "original": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gt(__.V(vid1).values(\"age\"))), __.constant(\"older than marko\"), __.constant(\"not older\"))",
+                "original": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gt(__.V(vid1).values(\"age\"))),__.constant(\"older than marko\"),__.constant(\"not older\"))",
                 "language": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gt(__.V(vid1).values(\"age\"))), __.constant(\"older than marko\"), __.constant(\"not older\"))",
                 "canonical": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gt(__.V(vid1).values(\"age\"))), __.constant(\"older than marko\"), __.constant(\"not older\"))",
                 "anonymized": "g.V().hasLabel(string0).values(string1).choose(__.is(P.gt(__.V(vid1).values(string1))), __.constant(string2), __.constant(string3))",
@@ -10082,7 +10116,7 @@
         "scenario": "g_V_hasLabelXpersonX_valuesXageX_chooseXgteXmeanAgeX_aboveX",
         "traversals": [
             {
-                "original": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gte(__.V().hasLabel(\"person\").values(\"age\").mean())), __.constant(\"above average\"), __.constant(\"below average\"))",
+                "original": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gte(__.V().hasLabel(\"person\").values(\"age\").mean())),__.constant(\"above average\"),__.constant(\"below average\"))",
                 "language": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gte(__.V().hasLabel(\"person\").values(\"age\").mean())), __.constant(\"above average\"), __.constant(\"below average\"))",
                 "canonical": "g.V().hasLabel(\"person\").values(\"age\").choose(__.is(P.gte(__.V().hasLabel(\"person\").values(\"age\").mean())), __.constant(\"above average\"), __.constant(\"below average\"))",
                 "anonymized": "g.V().hasLabel(string0).values(string1).choose(__.is(P.gte(__.V().hasLabel(string0).values(string1).mean())), __.constant(string2), __.constant(string3))",
@@ -11469,295 +11503,6 @@
                 "java": "g.V().has(\"name\", \"HEY BO DIDDLEY\").repeat(__.union(__.out(\"followedBy\").order().by(\"name\").limit(2), __.out(\"sungBy\").order().by(\"name\").limit(1))).times(2)",
                 "javascript": "g.V().has(\"name\", \"HEY BO DIDDLEY\").repeat(__.union(__.out(\"followedBy\").order().by(\"name\").limit(2), __.out(\"sungBy\").order().by(\"name\").limit(1))).times(2)",
                 "python": "g.V().has('name', 'HEY BO DIDDLEY').repeat(__.union(__.out('followedBy').order().by('name').limit(2), __.out('sungBy').order().by('name').limit(1))).times(2)"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXname_addVXxX_valuesXnameXX_rejected",
-        "traversals": [
-            {
-                "original": "g.V().has(\"name\", __.addV(\"x\").values(\"name\"))",
-                "language": "g.V().has(\"name\", __.addV(\"x\").values(\"name\"))",
-                "canonical": "g.V().has(\"name\", __.addV(\"x\").values(\"name\"))",
-                "anonymized": "g.V().has(string0, __.addV(string1).values(string0))",
-                "dotnet": "g.V().Has(\"name\", __.AddV((string) \"x\").Values<object>(\"name\"))",
-                "go": "g.V().Has(\"name\", gremlingo.T__.AddV(\"x\").Values(\"name\"))",
-                "groovy": "g.V().has(\"name\", __.addV(\"x\").values(\"name\"))",
-                "java": "g.V().has(\"name\", __.addV(\"x\").values(\"name\"))",
-                "javascript": "g.V().has(\"name\", __.addV(\"x\").values(\"name\"))",
-                "python": "g.V().has('name', __.add_v('x').values('name'))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXname_V_drop_constantXxXX_rejected",
-        "traversals": [
-            {
-                "original": "g.V().has(\"name\", __.V().drop().constant(\"x\"))",
-                "language": "g.V().has(\"name\", __.V().drop().constant(\"x\"))",
-                "canonical": "g.V().has(\"name\", __.V().drop().constant(\"x\"))",
-                "anonymized": "g.V().has(string0, __.V().drop().constant(string1))",
-                "dotnet": "g.V().Has(\"name\", __.V().Drop().Constant<object>(\"x\"))",
-                "go": "g.V().Has(\"name\", gremlingo.T__.V().Drop().Constant(\"x\"))",
-                "groovy": "g.V().has(\"name\", __.V().drop().constant(\"x\"))",
-                "java": "g.V().has(\"name\", __.V().drop().constant(\"x\"))",
-                "javascript": "g.V().has(\"name\", __.V().drop().constant(\"x\"))",
-                "python": "g.V().has('name', __.V().drop().constant('x'))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXname_V_mapXaddVXxXX_valuesXnameXX_rejected",
-        "traversals": [
-            {
-                "original": "g.V().has(\"name\", __.V().map(__.addV(\"x\")).values(\"name\"))",
-                "language": "g.V().has(\"name\", __.V().map(__.addV(\"x\")).values(\"name\"))",
-                "canonical": "g.V().has(\"name\", __.V().map(__.addV(\"x\")).values(\"name\"))",
-                "anonymized": "g.V().has(string0, __.V().map(__.addV(string1)).values(string0))",
-                "dotnet": "g.V().Has(\"name\", __.V().Map<object>(__.AddV((string) \"x\")).Values<object>(\"name\"))",
-                "go": "g.V().Has(\"name\", gremlingo.T__.V().Map(gremlingo.T__.AddV(\"x\")).Values(\"name\"))",
-                "groovy": "g.V().has(\"name\", __.V().map(__.addV(\"x\")).values(\"name\"))",
-                "java": "g.V().has(\"name\", __.V().map(__.addV(\"x\")).values(\"name\"))",
-                "javascript": "g.V().has(\"name\", __.V().map(__.addV(\"x\")).values(\"name\"))",
-                "python": "g.V().has('name', __.V().map(__.add_v('x')).values('name'))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXname_eqXaddVXxX_valuesXnameXXX_rejected",
-        "traversals": [
-            {
-                "original": "g.V().has(\"name\", P.eq(__.addV(\"x\").values(\"name\")))",
-                "language": "g.V().has(\"name\", P.eq(__.addV(\"x\").values(\"name\")))",
-                "canonical": "g.V().has(\"name\", P.eq(__.addV(\"x\").values(\"name\")))",
-                "anonymized": "g.V().has(string0, P.eq(__.addV(string1).values(string0)))",
-                "dotnet": "g.V().Has(\"name\", P.Eq(__.AddV((string) \"x\").Values<object>(\"name\")))",
-                "go": "g.V().Has(\"name\", gremlingo.P.Eq(gremlingo.T__.AddV(\"x\").Values(\"name\")))",
-                "groovy": "g.V().has(\"name\", P.eq(__.addV(\"x\").values(\"name\")))",
-                "java": "g.V().has(\"name\", P.eq(__.addV(\"x\").values(\"name\")))",
-                "javascript": "g.V().has(\"name\", P.eq(__.addV(\"x\").values(\"name\")))",
-                "python": "g.V().has('name', P.eq(__.add_v('x').values('name')))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXname_withinXaddVXxX_valuesXnameXXX_rejected",
-        "traversals": [
-            {
-                "original": "g.V().has(\"name\", P.within(__.addV(\"x\").values(\"name\")))",
-                "language": "g.V().has(\"name\", P.within(__.addV(\"x\").values(\"name\")))",
-                "canonical": "g.V().has(\"name\", P.within(__.addV(\"x\").values(\"name\")))",
-                "anonymized": "g.V().has(string0, P.within(__.addV(string1).values(string0)))",
-                "dotnet": "g.V().Has(\"name\", P.Within(__.AddV((string) \"x\").Values<object>(\"name\")))",
-                "go": "g.V().Has(\"name\", gremlingo.P.Within(gremlingo.T__.AddV(\"x\").Values(\"name\")))",
-                "groovy": "g.V().has(\"name\", P.within(__.addV(\"x\").values(\"name\")))",
-                "java": "g.V().has(\"name\", P.within(__.addV(\"x\").values(\"name\")))",
-                "javascript": "g.V().has(\"name\", P.within(__.addV(\"x\").values(\"name\")))",
-                "python": "g.V().has('name', P.within(__.add_v('x').values('name')))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXage_gtXaddVXxX_valuesXageXXX_rejected",
-        "traversals": [
-            {
-                "original": "g.V().has(\"age\", P.gt(__.addV(\"x\").values(\"age\")))",
-                "language": "g.V().has(\"age\", P.gt(__.addV(\"x\").values(\"age\")))",
-                "canonical": "g.V().has(\"age\", P.gt(__.addV(\"x\").values(\"age\")))",
-                "anonymized": "g.V().has(string0, P.gt(__.addV(string1).values(string0)))",
-                "dotnet": "g.V().Has(\"age\", P.Gt(__.AddV((string) \"x\").Values<object>(\"age\")))",
-                "go": "g.V().Has(\"age\", gremlingo.P.Gt(gremlingo.T__.AddV(\"x\").Values(\"age\")))",
-                "groovy": "g.V().has(\"age\", P.gt(__.addV(\"x\").values(\"age\")))",
-                "java": "g.V().has(\"age\", P.gt(__.addV(\"x\").values(\"age\")))",
-                "javascript": "g.V().has(\"age\", P.gt(__.addV(\"x\").values(\"age\")))",
-                "python": "g.V().has('age', P.gt(__.add_v('x').values('age')))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_valuesXageX_isXaddVXxX_valuesXageXX_rejected",
-        "traversals": [
-            {
-                "original": "g.V().values(\"age\").is(__.addV(\"x\").values(\"age\"))",
-                "language": "g.V().values(\"age\").is(__.addV(\"x\").values(\"age\"))",
-                "canonical": "g.V().values(\"age\").is(__.addV(\"x\").values(\"age\"))",
-                "anonymized": "g.V().values(string0).is(__.addV(string1).values(string0))",
-                "dotnet": "g.V().Values<object>(\"age\").Is(__.AddV((string) \"x\").Values<object>(\"age\"))",
-                "go": "g.V().Values(\"age\").Is(gremlingo.T__.AddV(\"x\").Values(\"age\"))",
-                "groovy": "g.V().values(\"age\").is(__.addV(\"x\").values(\"age\"))",
-                "java": "g.V().values(\"age\").is(__.addV(\"x\").values(\"age\"))",
-                "javascript": "g.V().values(\"age\").is(__.addV(\"x\").values(\"age\"))",
-                "python": "g.V().values('age').is_(__.add_v('x').values('age'))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_valuesXageX_isXgtXaddVXxX_valuesXageXXX_rejected",
-        "traversals": [
-            {
-                "original": "g.V().values(\"age\").is(P.gt(__.addV(\"x\").values(\"age\")))",
-                "language": "g.V().values(\"age\").is(P.gt(__.addV(\"x\").values(\"age\")))",
-                "canonical": "g.V().values(\"age\").is(P.gt(__.addV(\"x\").values(\"age\")))",
-                "anonymized": "g.V().values(string0).is(P.gt(__.addV(string1).values(string0)))",
-                "dotnet": "g.V().Values<object>(\"age\").Is(P.Gt(__.AddV((string) \"x\").Values<object>(\"age\")))",
-                "go": "g.V().Values(\"age\").Is(gremlingo.P.Gt(gremlingo.T__.AddV(\"x\").Values(\"age\")))",
-                "groovy": "g.V().values(\"age\").is(P.gt(__.addV(\"x\").values(\"age\")))",
-                "java": "g.V().values(\"age\").is(P.gt(__.addV(\"x\").values(\"age\")))",
-                "javascript": "g.V().values(\"age\").is(P.gt(__.addV(\"x\").values(\"age\")))",
-                "python": "g.V().values('age').is_(P.gt(__.add_v('x').values('age')))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_VXaddVXxX_idX_rejected",
-        "traversals": [
-            {
-                "original": "g.V().V(__.addV(\"x\").id())",
-                "language": "g.V().V(__.addV(\"x\").id())",
-                "canonical": "g.V().V(__.addV(\"x\").id())",
-                "anonymized": "g.V().V(__.addV(string0).id())",
-                "dotnet": "g.V().V(__.AddV((string) \"x\").Id())",
-                "go": "g.V().V(gremlingo.T__.AddV(\"x\").Id())",
-                "groovy": "g.V().V(__.addV(\"x\").id())",
-                "java": "g.V().V(__.addV(\"x\").id())",
-                "javascript": "g.V().V(__.addV(\"x\").id())",
-                "python": "g.V().V(__.add_v('x').id_())"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_EXaddVXxX_idX_rejected",
-        "traversals": [
-            {
-                "original": "g.V().E(__.addV(\"x\").id())",
-                "language": "g.V().E(__.addV(\"x\").id())",
-                "canonical": "g.V().E(__.addV(\"x\").id())",
-                "anonymized": "g.V().E(__.addV(string0).id())",
-                "dotnet": "g.V().E(__.AddV((string) \"x\").Id())",
-                "go": "g.V().E(gremlingo.T__.AddV(\"x\").Id())",
-                "groovy": "g.V().E(__.addV(\"x\").id())",
-                "java": "g.V().E(__.addV(\"x\").id())",
-                "javascript": "g.V().E(__.addV(\"x\").id())",
-                "python": "g.V().E(__.add_v('x').id_())"
-            }
-        ]
-    },
-    {
-        "scenario": "g_VXaddVXxX_idX_rejected",
-        "traversals": [
-            {
-                "original": "g.V(__.addV(\"x\").id())",
-                "language": "g.V(__.addV(\"x\").id())",
-                "canonical": "g.V(__.addV(\"x\").id())",
-                "anonymized": "g.V(__.addV(string0).id())",
-                "dotnet": "g.V(__.AddV((string) \"x\").Id())",
-                "go": "g.V(gremlingo.T__.AddV(\"x\").Id())",
-                "groovy": "g.V(__.addV(\"x\").id())",
-                "java": "g.V(__.addV(\"x\").id())",
-                "javascript": "g.V(__.addV(\"x\").id())",
-                "python": "g.V(__.add_v('x').id_())"
-            }
-        ]
-    },
-    {
-        "scenario": "g_EXaddVXxX_idX_rejected",
-        "traversals": [
-            {
-                "original": "g.E(__.addV(\"x\").id())",
-                "language": "g.E(__.addV(\"x\").id())",
-                "canonical": "g.E(__.addV(\"x\").id())",
-                "anonymized": "g.E(__.addV(string0).id())",
-                "dotnet": "g.E(__.AddV((string) \"x\").Id())",
-                "go": "g.E(gremlingo.T__.AddV(\"x\").Id())",
-                "groovy": "g.E(__.addV(\"x\").id())",
-                "java": "g.E(__.addV(\"x\").id())",
-                "javascript": "g.E(__.addV(\"x\").id())",
-                "python": "g.E(__.add_v('x').id_())"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_propertyXV_mapXdropX_projectXxX_byXnameXX_rejected",
-        "traversals": [
-            {
-                "original": "g.V().property(__.V().map(__.drop()).project(\"x\").by(\"name\"))",
-                "language": "g.V().property(__.V().map(__.drop()).project(\"x\").by(\"name\"))",
-                "canonical": "g.V().property(__.V().map(__.drop()).project(\"x\").by(\"name\"))",
-                "anonymized": "g.V().property(__.V().map(__.drop()).project(string0).by(string1))",
-                "dotnet": "g.V().Property((ITraversal) __.V().Map<object>(__.Drop()).Project<object>(\"x\").By(\"name\"))",
-                "go": "g.V().Property(gremlingo.T__.V().Map(gremlingo.T__.Drop()).Project(\"x\").By(\"name\"))",
-                "groovy": "g.V().property(__.V().map(__.drop()).project(\"x\").by(\"name\"))",
-                "java": "g.V().property(__.V().map(__.drop()).project(\"x\").by(\"name\"))",
-                "javascript": "g.V().property(__.V().map(__.drop()).project(\"x\").by(\"name\"))",
-                "python": "g.V().property(__.V().map(__.drop()).project('x').by('name'))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_propertyXaddVXtempX_projectXkX_byXnameXX_rejected",
-        "traversals": [
-            {
-                "original": "g.V().property(__.addV(\"temp\").project(\"k\").by(\"name\"))",
-                "language": "g.V().property(__.addV(\"temp\").project(\"k\").by(\"name\"))",
-                "canonical": "g.V().property(__.addV(\"temp\").project(\"k\").by(\"name\"))",
-                "anonymized": "g.V().property(__.addV(string0).project(string1).by(string2))",
-                "dotnet": "g.V().Property((ITraversal) __.AddV((string) \"temp\").Project<object>(\"k\").By(\"name\"))",
-                "go": "g.V().Property(gremlingo.T__.AddV(\"temp\").Project(\"k\").By(\"name\"))",
-                "groovy": "g.V().property(__.addV(\"temp\").project(\"k\").by(\"name\"))",
-                "java": "g.V().property(__.addV(\"temp\").project(\"k\").by(\"name\"))",
-                "javascript": "g.V().property(__.addV(\"temp\").project(\"k\").by(\"name\"))",
-                "python": "g.V().property(__.add_v('temp').project('k').by('name'))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXname_VXvid1X_valuesXnameXX_passes_verification",
-        "traversals": [
-            {
-                "original": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
-                "language": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
-                "canonical": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
-                "anonymized": "g.V().has(string0, __.V(vid1).values(string0))",
-                "dotnet": "g.V().Has(\"name\", __.V(vid1).Values<object>(\"name\"))",
-                "go": "g.V().Has(\"name\", gremlingo.T__.V(vid1).Values(\"name\"))",
-                "groovy": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
-                "java": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
-                "javascript": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
-                "python": "g.V().has('name', __.V(vid1).values('name'))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_hasXage_gtXVXvid1X_valuesXageXXX_passes_verification",
-        "traversals": [
-            {
-                "original": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
-                "language": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
-                "canonical": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
-                "anonymized": "g.V().has(string0, P.gt(__.V(vid1).values(string0)))",
-                "dotnet": "g.V().Has(\"age\", P.Gt(__.V(vid1).Values<object>(\"age\")))",
-                "go": "g.V().Has(\"age\", gremlingo.P.Gt(gremlingo.T__.V(vid1).Values(\"age\")))",
-                "groovy": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
-                "java": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
-                "javascript": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
-                "python": "g.V().has('age', P.gt(__.V(vid1).values('age')))"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_VXoutXknowsX_idX_valuesXnameX_passes_verification",
-        "traversals": [
-            {
-                "original": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
-                "language": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
-                "canonical": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
-                "anonymized": "g.V(vid1).V(__.out(string0).id()).values(string1)",
-                "dotnet": "g.V(vid1).V(__.Out(\"knows\").Id()).Values<object>(\"name\")",
-                "go": "g.V(vid1).V(gremlingo.T__.Out(\"knows\").Id()).Values(\"name\")",
-                "groovy": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
-                "java": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
-                "javascript": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
-                "python": "g.V(vid1).V(__.out('knows').id_()).values('name')"
             }
         ]
     },
@@ -15628,6 +15373,295 @@
                 "java": "g.withoutStrategies(ProfileStrategy.class).V()",
                 "javascript": "g.withoutStrategies(ProfileStrategy).V()",
                 "python": "g.without_strategies(ProfileStrategy).V()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_addVXxX_valuesXnameXX_rejected",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", __.addV(\"x\").values(\"name\"))",
+                "language": "g.V().has(\"name\", __.addV(\"x\").values(\"name\"))",
+                "canonical": "g.V().has(\"name\", __.addV(\"x\").values(\"name\"))",
+                "anonymized": "g.V().has(string0, __.addV(string1).values(string0))",
+                "dotnet": "g.V().Has(\"name\", __.AddV((string) \"x\").Values<object>(\"name\"))",
+                "go": "g.V().Has(\"name\", gremlingo.T__.AddV(\"x\").Values(\"name\"))",
+                "groovy": "g.V().has(\"name\", __.addV(\"x\").values(\"name\"))",
+                "java": "g.V().has(\"name\", __.addV(\"x\").values(\"name\"))",
+                "javascript": "g.V().has(\"name\", __.addV(\"x\").values(\"name\"))",
+                "python": "g.V().has('name', __.add_v('x').values('name'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_V_drop_constantXxXX_rejected",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", __.V().drop().constant(\"x\"))",
+                "language": "g.V().has(\"name\", __.V().drop().constant(\"x\"))",
+                "canonical": "g.V().has(\"name\", __.V().drop().constant(\"x\"))",
+                "anonymized": "g.V().has(string0, __.V().drop().constant(string1))",
+                "dotnet": "g.V().Has(\"name\", __.V().Drop().Constant<object>(\"x\"))",
+                "go": "g.V().Has(\"name\", gremlingo.T__.V().Drop().Constant(\"x\"))",
+                "groovy": "g.V().has(\"name\", __.V().drop().constant(\"x\"))",
+                "java": "g.V().has(\"name\", __.V().drop().constant(\"x\"))",
+                "javascript": "g.V().has(\"name\", __.V().drop().constant(\"x\"))",
+                "python": "g.V().has('name', __.V().drop().constant('x'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_V_mapXaddVXxXX_valuesXnameXX_rejected",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", __.V().map(__.addV(\"x\")).values(\"name\"))",
+                "language": "g.V().has(\"name\", __.V().map(__.addV(\"x\")).values(\"name\"))",
+                "canonical": "g.V().has(\"name\", __.V().map(__.addV(\"x\")).values(\"name\"))",
+                "anonymized": "g.V().has(string0, __.V().map(__.addV(string1)).values(string0))",
+                "dotnet": "g.V().Has(\"name\", __.V().Map<object>(__.AddV((string) \"x\")).Values<object>(\"name\"))",
+                "go": "g.V().Has(\"name\", gremlingo.T__.V().Map(gremlingo.T__.AddV(\"x\")).Values(\"name\"))",
+                "groovy": "g.V().has(\"name\", __.V().map(__.addV(\"x\")).values(\"name\"))",
+                "java": "g.V().has(\"name\", __.V().map(__.addV(\"x\")).values(\"name\"))",
+                "javascript": "g.V().has(\"name\", __.V().map(__.addV(\"x\")).values(\"name\"))",
+                "python": "g.V().has('name', __.V().map(__.add_v('x')).values('name'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_eqXaddVXxX_valuesXnameXXX_rejected",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", P.eq(__.addV(\"x\").values(\"name\")))",
+                "language": "g.V().has(\"name\", P.eq(__.addV(\"x\").values(\"name\")))",
+                "canonical": "g.V().has(\"name\", P.eq(__.addV(\"x\").values(\"name\")))",
+                "anonymized": "g.V().has(string0, P.eq(__.addV(string1).values(string0)))",
+                "dotnet": "g.V().Has(\"name\", P.Eq(__.AddV((string) \"x\").Values<object>(\"name\")))",
+                "go": "g.V().Has(\"name\", gremlingo.P.Eq(gremlingo.T__.AddV(\"x\").Values(\"name\")))",
+                "groovy": "g.V().has(\"name\", P.eq(__.addV(\"x\").values(\"name\")))",
+                "java": "g.V().has(\"name\", P.eq(__.addV(\"x\").values(\"name\")))",
+                "javascript": "g.V().has(\"name\", P.eq(__.addV(\"x\").values(\"name\")))",
+                "python": "g.V().has('name', P.eq(__.add_v('x').values('name')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_withinXaddVXxX_valuesXnameXXX_rejected",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", P.within(__.addV(\"x\").values(\"name\")))",
+                "language": "g.V().has(\"name\", P.within(__.addV(\"x\").values(\"name\")))",
+                "canonical": "g.V().has(\"name\", P.within(__.addV(\"x\").values(\"name\")))",
+                "anonymized": "g.V().has(string0, P.within(__.addV(string1).values(string0)))",
+                "dotnet": "g.V().Has(\"name\", P.Within(__.AddV((string) \"x\").Values<object>(\"name\")))",
+                "go": "g.V().Has(\"name\", gremlingo.P.Within(gremlingo.T__.AddV(\"x\").Values(\"name\")))",
+                "groovy": "g.V().has(\"name\", P.within(__.addV(\"x\").values(\"name\")))",
+                "java": "g.V().has(\"name\", P.within(__.addV(\"x\").values(\"name\")))",
+                "javascript": "g.V().has(\"name\", P.within(__.addV(\"x\").values(\"name\")))",
+                "python": "g.V().has('name', P.within(__.add_v('x').values('name')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXage_gtXaddVXxX_valuesXageXXX_rejected",
+        "traversals": [
+            {
+                "original": "g.V().has(\"age\", P.gt(__.addV(\"x\").values(\"age\")))",
+                "language": "g.V().has(\"age\", P.gt(__.addV(\"x\").values(\"age\")))",
+                "canonical": "g.V().has(\"age\", P.gt(__.addV(\"x\").values(\"age\")))",
+                "anonymized": "g.V().has(string0, P.gt(__.addV(string1).values(string0)))",
+                "dotnet": "g.V().Has(\"age\", P.Gt(__.AddV((string) \"x\").Values<object>(\"age\")))",
+                "go": "g.V().Has(\"age\", gremlingo.P.Gt(gremlingo.T__.AddV(\"x\").Values(\"age\")))",
+                "groovy": "g.V().has(\"age\", P.gt(__.addV(\"x\").values(\"age\")))",
+                "java": "g.V().has(\"age\", P.gt(__.addV(\"x\").values(\"age\")))",
+                "javascript": "g.V().has(\"age\", P.gt(__.addV(\"x\").values(\"age\")))",
+                "python": "g.V().has('age', P.gt(__.add_v('x').values('age')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_valuesXageX_isXaddVXxX_valuesXageXX_rejected",
+        "traversals": [
+            {
+                "original": "g.V().values(\"age\").is(__.addV(\"x\").values(\"age\"))",
+                "language": "g.V().values(\"age\").is(__.addV(\"x\").values(\"age\"))",
+                "canonical": "g.V().values(\"age\").is(__.addV(\"x\").values(\"age\"))",
+                "anonymized": "g.V().values(string0).is(__.addV(string1).values(string0))",
+                "dotnet": "g.V().Values<object>(\"age\").Is(__.AddV((string) \"x\").Values<object>(\"age\"))",
+                "go": "g.V().Values(\"age\").Is(gremlingo.T__.AddV(\"x\").Values(\"age\"))",
+                "groovy": "g.V().values(\"age\").is(__.addV(\"x\").values(\"age\"))",
+                "java": "g.V().values(\"age\").is(__.addV(\"x\").values(\"age\"))",
+                "javascript": "g.V().values(\"age\").is(__.addV(\"x\").values(\"age\"))",
+                "python": "g.V().values('age').is_(__.add_v('x').values('age'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_valuesXageX_isXgtXaddVXxX_valuesXageXXX_rejected",
+        "traversals": [
+            {
+                "original": "g.V().values(\"age\").is(P.gt(__.addV(\"x\").values(\"age\")))",
+                "language": "g.V().values(\"age\").is(P.gt(__.addV(\"x\").values(\"age\")))",
+                "canonical": "g.V().values(\"age\").is(P.gt(__.addV(\"x\").values(\"age\")))",
+                "anonymized": "g.V().values(string0).is(P.gt(__.addV(string1).values(string0)))",
+                "dotnet": "g.V().Values<object>(\"age\").Is(P.Gt(__.AddV((string) \"x\").Values<object>(\"age\")))",
+                "go": "g.V().Values(\"age\").Is(gremlingo.P.Gt(gremlingo.T__.AddV(\"x\").Values(\"age\")))",
+                "groovy": "g.V().values(\"age\").is(P.gt(__.addV(\"x\").values(\"age\")))",
+                "java": "g.V().values(\"age\").is(P.gt(__.addV(\"x\").values(\"age\")))",
+                "javascript": "g.V().values(\"age\").is(P.gt(__.addV(\"x\").values(\"age\")))",
+                "python": "g.V().values('age').is_(P.gt(__.add_v('x').values('age')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_VXaddVXxX_idX_rejected",
+        "traversals": [
+            {
+                "original": "g.V().V(__.addV(\"x\").id())",
+                "language": "g.V().V(__.addV(\"x\").id())",
+                "canonical": "g.V().V(__.addV(\"x\").id())",
+                "anonymized": "g.V().V(__.addV(string0).id())",
+                "dotnet": "g.V().V(__.AddV((string) \"x\").Id())",
+                "go": "g.V().V(gremlingo.T__.AddV(\"x\").Id())",
+                "groovy": "g.V().V(__.addV(\"x\").id())",
+                "java": "g.V().V(__.addV(\"x\").id())",
+                "javascript": "g.V().V(__.addV(\"x\").id())",
+                "python": "g.V().V(__.add_v('x').id_())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_EXaddVXxX_idX_rejected",
+        "traversals": [
+            {
+                "original": "g.V().E(__.addV(\"x\").id())",
+                "language": "g.V().E(__.addV(\"x\").id())",
+                "canonical": "g.V().E(__.addV(\"x\").id())",
+                "anonymized": "g.V().E(__.addV(string0).id())",
+                "dotnet": "g.V().E(__.AddV((string) \"x\").Id())",
+                "go": "g.V().E(gremlingo.T__.AddV(\"x\").Id())",
+                "groovy": "g.V().E(__.addV(\"x\").id())",
+                "java": "g.V().E(__.addV(\"x\").id())",
+                "javascript": "g.V().E(__.addV(\"x\").id())",
+                "python": "g.V().E(__.add_v('x').id_())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_VXaddVXxX_idX_rejected",
+        "traversals": [
+            {
+                "original": "g.V(__.addV(\"x\").id())",
+                "language": "g.V(__.addV(\"x\").id())",
+                "canonical": "g.V(__.addV(\"x\").id())",
+                "anonymized": "g.V(__.addV(string0).id())",
+                "dotnet": "g.V(__.AddV((string) \"x\").Id())",
+                "go": "g.V(gremlingo.T__.AddV(\"x\").Id())",
+                "groovy": "g.V(__.addV(\"x\").id())",
+                "java": "g.V(__.addV(\"x\").id())",
+                "javascript": "g.V(__.addV(\"x\").id())",
+                "python": "g.V(__.add_v('x').id_())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_EXaddVXxX_idX_rejected",
+        "traversals": [
+            {
+                "original": "g.E(__.addV(\"x\").id())",
+                "language": "g.E(__.addV(\"x\").id())",
+                "canonical": "g.E(__.addV(\"x\").id())",
+                "anonymized": "g.E(__.addV(string0).id())",
+                "dotnet": "g.E(__.AddV((string) \"x\").Id())",
+                "go": "g.E(gremlingo.T__.AddV(\"x\").Id())",
+                "groovy": "g.E(__.addV(\"x\").id())",
+                "java": "g.E(__.addV(\"x\").id())",
+                "javascript": "g.E(__.addV(\"x\").id())",
+                "python": "g.E(__.add_v('x').id_())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_propertyXV_mapXdropX_projectXxX_byXnameXX_rejected",
+        "traversals": [
+            {
+                "original": "g.V().property(__.V().map(__.drop()).project(\"x\").by(\"name\"))",
+                "language": "g.V().property(__.V().map(__.drop()).project(\"x\").by(\"name\"))",
+                "canonical": "g.V().property(__.V().map(__.drop()).project(\"x\").by(\"name\"))",
+                "anonymized": "g.V().property(__.V().map(__.drop()).project(string0).by(string1))",
+                "dotnet": "g.V().Property((ITraversal) __.V().Map<object>(__.Drop()).Project<object>(\"x\").By(\"name\"))",
+                "go": "g.V().Property(gremlingo.T__.V().Map(gremlingo.T__.Drop()).Project(\"x\").By(\"name\"))",
+                "groovy": "g.V().property(__.V().map(__.drop()).project(\"x\").by(\"name\"))",
+                "java": "g.V().property(__.V().map(__.drop()).project(\"x\").by(\"name\"))",
+                "javascript": "g.V().property(__.V().map(__.drop()).project(\"x\").by(\"name\"))",
+                "python": "g.V().property(__.V().map(__.drop()).project('x').by('name'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_propertyXaddVXtempX_projectXkX_byXnameXX_rejected",
+        "traversals": [
+            {
+                "original": "g.V().property(__.addV(\"temp\").project(\"k\").by(\"name\"))",
+                "language": "g.V().property(__.addV(\"temp\").project(\"k\").by(\"name\"))",
+                "canonical": "g.V().property(__.addV(\"temp\").project(\"k\").by(\"name\"))",
+                "anonymized": "g.V().property(__.addV(string0).project(string1).by(string2))",
+                "dotnet": "g.V().Property((ITraversal) __.AddV((string) \"temp\").Project<object>(\"k\").By(\"name\"))",
+                "go": "g.V().Property(gremlingo.T__.AddV(\"temp\").Project(\"k\").By(\"name\"))",
+                "groovy": "g.V().property(__.addV(\"temp\").project(\"k\").by(\"name\"))",
+                "java": "g.V().property(__.addV(\"temp\").project(\"k\").by(\"name\"))",
+                "javascript": "g.V().property(__.addV(\"temp\").project(\"k\").by(\"name\"))",
+                "python": "g.V().property(__.add_v('temp').project('k').by('name'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_VXvid1X_valuesXnameXX_passes_verification",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
+                "language": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
+                "canonical": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
+                "anonymized": "g.V().has(string0, __.V(vid1).values(string0))",
+                "dotnet": "g.V().Has(\"name\", __.V(vid1).Values<object>(\"name\"))",
+                "go": "g.V().Has(\"name\", gremlingo.T__.V(vid1).Values(\"name\"))",
+                "groovy": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
+                "java": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
+                "javascript": "g.V().has(\"name\", __.V(vid1).values(\"name\"))",
+                "python": "g.V().has('name', __.V(vid1).values('name'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXage_gtXVXvid1X_valuesXageXXX_passes_verification",
+        "traversals": [
+            {
+                "original": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
+                "language": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
+                "canonical": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
+                "anonymized": "g.V().has(string0, P.gt(__.V(vid1).values(string0)))",
+                "dotnet": "g.V().Has(\"age\", P.Gt(__.V(vid1).Values<object>(\"age\")))",
+                "go": "g.V().Has(\"age\", gremlingo.P.Gt(gremlingo.T__.V(vid1).Values(\"age\")))",
+                "groovy": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
+                "java": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
+                "javascript": "g.V().has(\"age\", P.gt(__.V(vid1).values(\"age\")))",
+                "python": "g.V().has('age', P.gt(__.V(vid1).values('age')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_VXoutXknowsX_idX_valuesXnameX_passes_verification",
+        "traversals": [
+            {
+                "original": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
+                "language": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
+                "canonical": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
+                "anonymized": "g.V(vid1).V(__.out(string0).id()).values(string1)",
+                "dotnet": "g.V(vid1).V(__.Out(\"knows\").Id()).Values<object>(\"name\")",
+                "go": "g.V(vid1).V(gremlingo.T__.Out(\"knows\").Id()).Values(\"name\")",
+                "groovy": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
+                "java": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
+                "javascript": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
+                "python": "g.V(vid1).V(__.out('knows').id_()).values('name')"
             }
         ]
     },
@@ -24624,6 +24658,74 @@
                 "java": "g.V().toE(Direction.OUT, xx1).values(\"weight\")",
                 "javascript": "g.V().toE(Direction.OUT, xx1).values(\"weight\")",
                 "python": "g.V().to_e(Direction.OUT, xx1).values('weight')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_VXvid1X_EXoutE_idX",
+        "traversals": [
+            {
+                "original": "g.V(vid1).E(__.outE().id())",
+                "language": "g.V(vid1).E(__.outE().id())",
+                "canonical": "g.V(vid1).E(__.outE().id())",
+                "anonymized": "g.V(vid1).E(__.outE().id())",
+                "dotnet": "g.V(vid1).E(__.OutE().Id())",
+                "go": "g.V(vid1).E(gremlingo.T__.OutE().Id())",
+                "groovy": "g.V(vid1).E(__.outE().id())",
+                "java": "g.V(vid1).E(__.outE().id())",
+                "javascript": "g.V(vid1).E(__.outE().id())",
+                "python": "g.V(vid1).E(__.out_e().id_())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_VXvid1X_outEXknowsX_hasXinV_name_vadasX_id_EXidentityX",
+        "traversals": [
+            {
+                "original": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\",\"vadas\")).id().E(__.identity())",
+                "language": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", \"vadas\")).id().E(__.identity())",
+                "canonical": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", \"vadas\")).id().E(__.identity())",
+                "anonymized": "g.V(vid1).outE(string0).filter(__.inV().has(string1, string2)).id().E(__.identity())",
+                "dotnet": "g.V(vid1).OutE(\"knows\").Filter(__.InV().Has(\"name\", \"vadas\")).Id().E(__.Identity())",
+                "go": "g.V(vid1).OutE(\"knows\").Filter(gremlingo.T__.InV().Has(\"name\", \"vadas\")).Id().E(gremlingo.T__.Identity())",
+                "groovy": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", \"vadas\")).id().E(__.identity())",
+                "java": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", \"vadas\")).id().E(__.identity())",
+                "javascript": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", \"vadas\")).id().E(__.identity())",
+                "python": "g.V(vid1).out_e('knows').filter_(__.in_v().has('name', 'vadas')).id_().E(__.identity())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectX9999X_EXidentityX",
+        "traversals": [
+            {
+                "original": "g.inject(9999).E(__.identity())",
+                "language": "g.inject(9999).E(__.identity())",
+                "canonical": "g.inject(9999).E(__.identity())",
+                "anonymized": "g.inject(number0).E(__.identity())",
+                "dotnet": "g.Inject<object>(9999).E(__.Identity())",
+                "go": "g.Inject(9999).E(gremlingo.T__.Identity())",
+                "groovy": "g.inject(9999).E(__.identity())",
+                "java": "g.inject(9999).E(__.identity())",
+                "javascript": "g.inject(9999).E(__.identity())",
+                "python": "g.inject(9999).E(__.identity())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_EXVXvid1X_outE_idX",
+        "traversals": [
+            {
+                "original": "g.E(__.V(vid1).outE().id())",
+                "language": "g.E(__.V(vid1).outE().id())",
+                "canonical": "g.E(__.V(vid1).outE().id())",
+                "anonymized": "g.E(__.V(vid1).outE().id())",
+                "dotnet": "g.E(__.V(vid1).OutE().Id())",
+                "go": "g.E(gremlingo.T__.V(vid1).OutE().Id())",
+                "groovy": "g.E(__.V(vid1).outE().id())",
+                "java": "g.E(__.V(vid1).outE().id())",
+                "javascript": "g.E(__.V(vid1).outE().id())",
+                "python": "g.E(__.V(vid1).out_e().id_())"
             }
         ]
     },
@@ -39007,176 +39109,6 @@
         ]
     },
     {
-        "scenario": "g_VXvid1X_id_VXidentityX_name",
-        "traversals": [
-            {
-                "original": "g.V(vid1).id().V(__.identity()).values(\"name\")",
-                "language": "g.V(vid1).id().V(__.identity()).values(\"name\")",
-                "canonical": "g.V(vid1).id().V(__.identity()).values(\"name\")",
-                "anonymized": "g.V(vid1).id().V(__.identity()).values(string0)",
-                "dotnet": "g.V(vid1).Id().V(__.Identity()).Values<object>(\"name\")",
-                "go": "g.V(vid1).Id().V(gremlingo.T__.Identity()).Values(\"name\")",
-                "groovy": "g.V(vid1).id().V(__.identity()).values(\"name\")",
-                "java": "g.V(vid1).id().V(__.identity()).values(\"name\")",
-                "javascript": "g.V(vid1).id().V(__.identity()).values(\"name\")",
-                "python": "g.V(vid1).id_().V(__.identity()).values('name')"
-            }
-        ]
-    },
-    {
-        "scenario": "g_VXvid1_vid2X_id_VXidentityX_name",
-        "traversals": [
-            {
-                "original": "g.V(vid1, vid2).id().V(__.identity()).values(\"name\")",
-                "language": "g.V(vid1, vid2).id().V(__.identity()).values(\"name\")",
-                "canonical": "g.V(vid1, vid2).id().V(__.identity()).values(\"name\")",
-                "anonymized": "g.V(vid1, vid2).id().V(__.identity()).values(string0)",
-                "dotnet": "g.V(vid1, vid2).Id().V(__.Identity()).Values<object>(\"name\")",
-                "go": "g.V(vid1, vid2).Id().V(gremlingo.T__.Identity()).Values(\"name\")",
-                "groovy": "g.V(vid1, vid2).id().V(__.identity()).values(\"name\")",
-                "java": "g.V(vid1, vid2).id().V(__.identity()).values(\"name\")",
-                "javascript": "g.V(vid1, vid2).id().V(__.identity()).values(\"name\")",
-                "python": "g.V(vid1, vid2).id_().V(__.identity()).values('name')"
-            }
-        ]
-    },
-    {
-        "scenario": "g_VXvid1X_id_asXbookmarkX_V_hasXname_joshX_VXselectXbookmarkXX_name",
-        "traversals": [
-            {
-                "original": "g.V(vid1).id().as(\"bookmark\").V().has(\"name\",\"josh\").V(__.select(\"bookmark\")).values(\"name\")",
-                "language": "g.V(vid1).id().as(\"bookmark\").V().has(\"name\", \"josh\").V(__.select(\"bookmark\")).values(\"name\")",
-                "canonical": "g.V(vid1).id().as(\"bookmark\").V().has(\"name\", \"josh\").V(__.select(\"bookmark\")).values(\"name\")",
-                "anonymized": "g.V(vid1).id().as(string0).V().has(string1, string2).V(__.select(string0)).values(string1)",
-                "dotnet": "g.V(vid1).Id().As(\"bookmark\").V().Has(\"name\", \"josh\").V(__.Select<object>(\"bookmark\")).Values<object>(\"name\")",
-                "go": "g.V(vid1).Id().As(\"bookmark\").V().Has(\"name\", \"josh\").V(gremlingo.T__.Select(\"bookmark\")).Values(\"name\")",
-                "groovy": "g.V(vid1).id().as(\"bookmark\").V().has(\"name\", \"josh\").V(__.select(\"bookmark\")).values(\"name\")",
-                "java": "g.V(vid1).id().as(\"bookmark\").V().has(\"name\", \"josh\").V(__.select(\"bookmark\")).values(\"name\")",
-                "javascript": "g.V(vid1).id().as(\"bookmark\").V().has(\"name\", \"josh\").V(__.select(\"bookmark\")).values(\"name\")",
-                "python": "g.V(vid1).id_().as_('bookmark').V().has('name', 'josh').V(__.select('bookmark')).values('name')"
-            }
-        ]
-    },
-    {
-        "scenario": "g_VXvid1X_VXoutXknowsX_idX_name",
-        "traversals": [
-            {
-                "original": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
-                "language": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
-                "canonical": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
-                "anonymized": "g.V(vid1).V(__.out(string0).id()).values(string1)",
-                "dotnet": "g.V(vid1).V(__.Out(\"knows\").Id()).Values<object>(\"name\")",
-                "go": "g.V(vid1).V(gremlingo.T__.Out(\"knows\").Id()).Values(\"name\")",
-                "groovy": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
-                "java": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
-                "javascript": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
-                "python": "g.V(vid1).V(__.out('knows').id_()).values('name')"
-            }
-        ]
-    },
-    {
-        "scenario": "g_VXvid1X_EXoutE_idX",
-        "traversals": [
-            {
-                "original": "g.V(vid1).E(__.outE().id())",
-                "language": "g.V(vid1).E(__.outE().id())",
-                "canonical": "g.V(vid1).E(__.outE().id())",
-                "anonymized": "g.V(vid1).E(__.outE().id())",
-                "dotnet": "g.V(vid1).E(__.OutE().Id())",
-                "go": "g.V(vid1).E(gremlingo.T__.OutE().Id())",
-                "groovy": "g.V(vid1).E(__.outE().id())",
-                "java": "g.V(vid1).E(__.outE().id())",
-                "javascript": "g.V(vid1).E(__.outE().id())",
-                "python": "g.V(vid1).E(__.out_e().id_())"
-            }
-        ]
-    },
-    {
-        "scenario": "g_injectX9999X_VXidentityX",
-        "traversals": [
-            {
-                "original": "g.inject(9999).V(__.identity())",
-                "language": "g.inject(9999).V(__.identity())",
-                "canonical": "g.inject(9999).V(__.identity())",
-                "anonymized": "g.inject(number0).V(__.identity())",
-                "dotnet": "g.Inject<object>(9999).V(__.Identity())",
-                "go": "g.Inject(9999).V(gremlingo.T__.Identity())",
-                "groovy": "g.inject(9999).V(__.identity())",
-                "java": "g.inject(9999).V(__.identity())",
-                "javascript": "g.inject(9999).V(__.identity())",
-                "python": "g.inject(9999).V(__.identity())"
-            }
-        ]
-    },
-    {
-        "scenario": "g_VXvid1X_outEXknowsX_hasXinV_name_vadasX_id_EXidentityX",
-        "traversals": [
-            {
-                "original": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\",\"vadas\")).id().E(__.identity())",
-                "language": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", \"vadas\")).id().E(__.identity())",
-                "canonical": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", \"vadas\")).id().E(__.identity())",
-                "anonymized": "g.V(vid1).outE(string0).filter(__.inV().has(string1, string2)).id().E(__.identity())",
-                "dotnet": "g.V(vid1).OutE(\"knows\").Filter(__.InV().Has(\"name\", \"vadas\")).Id().E(__.Identity())",
-                "go": "g.V(vid1).OutE(\"knows\").Filter(gremlingo.T__.InV().Has(\"name\", \"vadas\")).Id().E(gremlingo.T__.Identity())",
-                "groovy": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", \"vadas\")).id().E(__.identity())",
-                "java": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", \"vadas\")).id().E(__.identity())",
-                "javascript": "g.V(vid1).outE(\"knows\").filter(__.inV().has(\"name\", \"vadas\")).id().E(__.identity())",
-                "python": "g.V(vid1).out_e('knows').filter_(__.in_v().has('name', 'vadas')).id_().E(__.identity())"
-            }
-        ]
-    },
-    {
-        "scenario": "g_injectX9999X_EXidentityX",
-        "traversals": [
-            {
-                "original": "g.inject(9999).E(__.identity())",
-                "language": "g.inject(9999).E(__.identity())",
-                "canonical": "g.inject(9999).E(__.identity())",
-                "anonymized": "g.inject(number0).E(__.identity())",
-                "dotnet": "g.Inject<object>(9999).E(__.Identity())",
-                "go": "g.Inject(9999).E(gremlingo.T__.Identity())",
-                "groovy": "g.inject(9999).E(__.identity())",
-                "java": "g.inject(9999).E(__.identity())",
-                "javascript": "g.inject(9999).E(__.identity())",
-                "python": "g.inject(9999).E(__.identity())"
-            }
-        ]
-    },
-    {
-        "scenario": "g_VXVXvid1X_idX_name",
-        "traversals": [
-            {
-                "original": "g.V(__.V(vid1).id()).values(\"name\")",
-                "language": "g.V(__.V(vid1).id()).values(\"name\")",
-                "canonical": "g.V(__.V(vid1).id()).values(\"name\")",
-                "anonymized": "g.V(__.V(vid1).id()).values(string0)",
-                "dotnet": "g.V(__.V(vid1).Id()).Values<object>(\"name\")",
-                "go": "g.V(gremlingo.T__.V(vid1).Id()).Values(\"name\")",
-                "groovy": "g.V(__.V(vid1).id()).values(\"name\")",
-                "java": "g.V(__.V(vid1).id()).values(\"name\")",
-                "javascript": "g.V(__.V(vid1).id()).values(\"name\")",
-                "python": "g.V(__.V(vid1).id_()).values('name')"
-            }
-        ]
-    },
-    {
-        "scenario": "g_EXVXvid1X_outE_idX",
-        "traversals": [
-            {
-                "original": "g.E(__.V(vid1).outE().id())",
-                "language": "g.E(__.V(vid1).outE().id())",
-                "canonical": "g.E(__.V(vid1).outE().id())",
-                "anonymized": "g.E(__.V(vid1).outE().id())",
-                "dotnet": "g.E(__.V(vid1).OutE().Id())",
-                "go": "g.E(gremlingo.T__.V(vid1).OutE().Id())",
-                "groovy": "g.E(__.V(vid1).outE().id())",
-                "java": "g.E(__.V(vid1).outE().id())",
-                "javascript": "g.E(__.V(vid1).outE().id())",
-                "python": "g.E(__.V(vid1).out_e().id_())"
-            }
-        ]
-    },
-    {
         "scenario": "g_V_valueMap",
         "traversals": [
             {
@@ -40126,6 +40058,108 @@
                 "java": "g.V(vid6).outE(\"uses\")",
                 "javascript": "g.V(vid6).outE(\"uses\")",
                 "python": "g.V(vid6).out_e('uses')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_VXvid1X_id_VXidentityX_name",
+        "traversals": [
+            {
+                "original": "g.V(vid1).id().V(__.identity()).values(\"name\")",
+                "language": "g.V(vid1).id().V(__.identity()).values(\"name\")",
+                "canonical": "g.V(vid1).id().V(__.identity()).values(\"name\")",
+                "anonymized": "g.V(vid1).id().V(__.identity()).values(string0)",
+                "dotnet": "g.V(vid1).Id().V(__.Identity()).Values<object>(\"name\")",
+                "go": "g.V(vid1).Id().V(gremlingo.T__.Identity()).Values(\"name\")",
+                "groovy": "g.V(vid1).id().V(__.identity()).values(\"name\")",
+                "java": "g.V(vid1).id().V(__.identity()).values(\"name\")",
+                "javascript": "g.V(vid1).id().V(__.identity()).values(\"name\")",
+                "python": "g.V(vid1).id_().V(__.identity()).values('name')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_VXvid1_vid2X_id_VXidentityX_name",
+        "traversals": [
+            {
+                "original": "g.V(vid1, vid2).id().V(__.identity()).values(\"name\")",
+                "language": "g.V(vid1, vid2).id().V(__.identity()).values(\"name\")",
+                "canonical": "g.V(vid1, vid2).id().V(__.identity()).values(\"name\")",
+                "anonymized": "g.V(vid1, vid2).id().V(__.identity()).values(string0)",
+                "dotnet": "g.V(vid1, vid2).Id().V(__.Identity()).Values<object>(\"name\")",
+                "go": "g.V(vid1, vid2).Id().V(gremlingo.T__.Identity()).Values(\"name\")",
+                "groovy": "g.V(vid1, vid2).id().V(__.identity()).values(\"name\")",
+                "java": "g.V(vid1, vid2).id().V(__.identity()).values(\"name\")",
+                "javascript": "g.V(vid1, vid2).id().V(__.identity()).values(\"name\")",
+                "python": "g.V(vid1, vid2).id_().V(__.identity()).values('name')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_VXvid1X_id_asXbookmarkX_V_hasXname_joshX_VXselectXbookmarkXX_name",
+        "traversals": [
+            {
+                "original": "g.V(vid1).id().as(\"bookmark\").V().has(\"name\",\"josh\").V(__.select(\"bookmark\")).values(\"name\")",
+                "language": "g.V(vid1).id().as(\"bookmark\").V().has(\"name\", \"josh\").V(__.select(\"bookmark\")).values(\"name\")",
+                "canonical": "g.V(vid1).id().as(\"bookmark\").V().has(\"name\", \"josh\").V(__.select(\"bookmark\")).values(\"name\")",
+                "anonymized": "g.V(vid1).id().as(string0).V().has(string1, string2).V(__.select(string0)).values(string1)",
+                "dotnet": "g.V(vid1).Id().As(\"bookmark\").V().Has(\"name\", \"josh\").V(__.Select<object>(\"bookmark\")).Values<object>(\"name\")",
+                "go": "g.V(vid1).Id().As(\"bookmark\").V().Has(\"name\", \"josh\").V(gremlingo.T__.Select(\"bookmark\")).Values(\"name\")",
+                "groovy": "g.V(vid1).id().as(\"bookmark\").V().has(\"name\", \"josh\").V(__.select(\"bookmark\")).values(\"name\")",
+                "java": "g.V(vid1).id().as(\"bookmark\").V().has(\"name\", \"josh\").V(__.select(\"bookmark\")).values(\"name\")",
+                "javascript": "g.V(vid1).id().as(\"bookmark\").V().has(\"name\", \"josh\").V(__.select(\"bookmark\")).values(\"name\")",
+                "python": "g.V(vid1).id_().as_('bookmark').V().has('name', 'josh').V(__.select('bookmark')).values('name')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_VXvid1X_VXoutXknowsX_idX_name",
+        "traversals": [
+            {
+                "original": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
+                "language": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
+                "canonical": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
+                "anonymized": "g.V(vid1).V(__.out(string0).id()).values(string1)",
+                "dotnet": "g.V(vid1).V(__.Out(\"knows\").Id()).Values<object>(\"name\")",
+                "go": "g.V(vid1).V(gremlingo.T__.Out(\"knows\").Id()).Values(\"name\")",
+                "groovy": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
+                "java": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
+                "javascript": "g.V(vid1).V(__.out(\"knows\").id()).values(\"name\")",
+                "python": "g.V(vid1).V(__.out('knows').id_()).values('name')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectX9999X_VXidentityX",
+        "traversals": [
+            {
+                "original": "g.inject(9999).V(__.identity())",
+                "language": "g.inject(9999).V(__.identity())",
+                "canonical": "g.inject(9999).V(__.identity())",
+                "anonymized": "g.inject(number0).V(__.identity())",
+                "dotnet": "g.Inject<object>(9999).V(__.Identity())",
+                "go": "g.Inject(9999).V(gremlingo.T__.Identity())",
+                "groovy": "g.inject(9999).V(__.identity())",
+                "java": "g.inject(9999).V(__.identity())",
+                "javascript": "g.inject(9999).V(__.identity())",
+                "python": "g.inject(9999).V(__.identity())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_VXVXvid1X_idX_name",
+        "traversals": [
+            {
+                "original": "g.V(__.V(vid1).id()).values(\"name\")",
+                "language": "g.V(__.V(vid1).id()).values(\"name\")",
+                "canonical": "g.V(__.V(vid1).id()).values(\"name\")",
+                "anonymized": "g.V(__.V(vid1).id()).values(string0)",
+                "dotnet": "g.V(__.V(vid1).Id()).Values<object>(\"name\")",
+                "go": "g.V(gremlingo.T__.V(vid1).Id()).Values(\"name\")",
+                "groovy": "g.V(__.V(vid1).id()).values(\"name\")",
+                "java": "g.V(__.V(vid1).id()).values(\"name\")",
+                "javascript": "g.V(__.V(vid1).id()).values(\"name\")",
+                "python": "g.V(__.V(vid1).id_()).values('name')"
             }
         ]
     },
