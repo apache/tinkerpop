@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.server.util.GremlinError;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
-import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,8 +132,12 @@ final class HttpResponseCoordinator {
                 if (firstChunk && terminal) {
                     chunk = serializer.serializeResponseAsBinary(responseMessage, nettyContext.alloc());
                 } else if (firstChunk) {
-                    state = State.STREAMING;
+                    // Serialize the header chunk BEFORE transitioning to STREAMING. If writeHeader throws (the very
+                    // first streamed element fails to serialize), state stays NOT_STARTED so the catch below routes to
+                    // writeError while still pre-stream — which serializes a full, parseable error message rather than
+                    // a footer-only body with no preceding header bytes.
                     chunk = serializer.writeHeader(responseMessage, nettyContext.alloc());
+                    state = State.STREAMING;
                 } else {
                     chunk = serializer.writeFooter(responseMessage, nettyContext.alloc());
                 }
@@ -165,19 +168,29 @@ final class HttpResponseCoordinator {
 
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         try {
+            // Send the header before serializing the body. An error response that has not yet emitted a header carries
+            // the error status code on the header line, matching the prior behavior of HttpHandlerUtil.writeError. Doing
+            // this first means that if serialization then throws, the finally below still terminates with a well-formed
+            // (body-less) error rather than a bare LastHttpContent with no header line. Mid-stream this is a no-op since
+            // the header was already sent during the data phase.
+            ensureHeaderSent(responseMessage.getStatus().getCode(), HttpHeaderNames.CONTENT_TYPE, contentType);
+
             final ByteBuf byteBuf = state == State.STREAMING
                     ? serializer.writeErrorFooter(responseMessage, ctx.alloc())
                     : serializer.serializeResponseAsBinary(responseMessage, ctx.alloc());
-
-            // an error response that has not yet emitted a header carries the error status code on the header line,
-            // matching the prior behavior of HttpHandlerUtil.writeError.
-            ensureHeaderSent(responseMessage.getStatus().getCode(), HttpHeaderNames.CONTENT_TYPE, contentType);
-
             ctx.writeAndFlush(new DefaultHttpContent(byteBuf));
+        } catch (Throwable t) {
+            // Catch Throwable (not just SerializationException) and swallow it: a custom TypeSerializer throwing an
+            // unchecked RuntimeException/Error must not propagate out of writeError (it would be uncaught on the
+            // timeout/scheduler thread) nor skip the terminal write in the finally. The error body could not be
+            // serialized, but the stream is still terminated so the client does not hang and the keep-alive channel's
+            // in-use flag clears.
+            logger.warn("Unable to serialize ResponseMessage: {} ", responseMessage, t);
+        } finally {
+            // Idempotent terminal write: runs whether or not the body serialized, so the chunked stream is always
+            // ended. Mirrors complete()'s finally-based backstop in the eval task.
             writeTerminal(responseMessage.getStatus().getCode(), responseMessage.getStatus().getException());
             state = State.COMPLETED;
-        } catch (SerializationException se) {
-            logger.warn("Unable to serialize ResponseMessage: {} ", responseMessage);
         }
     }
 

@@ -272,12 +272,16 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 // failures that follow this will show up in the response body instead.
                 coordinator.writeHeader(createResponseHeaders(ctx, serializer, requestCtx).toArray(CharSequence[]::new));
                 sendHttpContents(ctx, requestCtx, coordinator);
-                // Idempotent terminal call: if the data path already terminated the response, complete() is a no-op
-                // via its COMPLETED short-circuit. Otherwise it writes the terminal LastHttpContent.
-                coordinator.complete(HttpResponseStatus.OK, "");
             } catch (Throwable t) {
                 coordinator.writeError(formErrorResponseMessage(t, requestMessage));
             } finally {
+                // Idempotent terminal backstop: if the data or error path already terminated the response, complete()
+                // is a no-op via its COMPLETED short-circuit. It runs in finally — not at the end of the try — so the
+                // chunked stream is still terminated if an unchecked throwable escaped the catch block itself (for
+                // example formErrorResponseMessage throwing while building the error). This guarantees the terminal
+                // LastHttpContent is always written, so the client never hangs and the keep-alive channel clears.
+                coordinator.complete(HttpResponseStatus.OK, "");
+
                 timerContext.stop();
 
                 // There is a race condition that this query may have finished before the timeoutFuture was created,
