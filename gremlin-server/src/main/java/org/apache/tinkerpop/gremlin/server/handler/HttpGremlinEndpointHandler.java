@@ -178,6 +178,10 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final Context requestCtx = new Context(requestMessage, ctx, settings, graphManager, gremlinExecutor,
                 gremlinExecutor.getScheduledExecutorService());
         final HttpResponseCoordinator coordinator = new HttpResponseCoordinator(requestCtx, serializer.getValue0(), serializer.getValue1());
+        // Publish the coordinator so exceptionCaught can route a late pipeline error through it (terminating an
+        // in-flight chunked response) instead of writing a second, conflicting response. Cleared at the next
+        // request's start in HttpRequestIdHandler.
+        ctx.channel().attr(StateKey.RESPONSE_COORDINATOR).set(coordinator);
 
         final Timer.Context timerContext = evalOpTimer.time();
         // timeout override - handle both deprecated and newly named configuration. earlier logic should prevent
@@ -476,7 +480,17 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
         logger.error("Error processing HTTP Request", cause);
 
-        if (ctx.channel().isActive()) {
+        if (!ctx.channel().isActive()) return;
+
+        // If a request reached the endpoint and started a response, route the error through its coordinator so the
+        // single-owner-of-writes guarantee holds: it terminates an in-flight chunked stream (or no-ops if the response
+        // already completed) instead of writing a second, conflicting full response onto the channel. When no
+        // coordinator is set, the error came from an upstream handler before the endpoint ran (no response started, and
+        // possibly no serializer negotiated), so fall back to a self-contained sendError.
+        final HttpResponseCoordinator coordinator = ctx.channel().attr(StateKey.RESPONSE_COORDINATOR).get();
+        if (coordinator != null) {
+            coordinator.writeError(GremlinError.general(cause));
+        } else {
             HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, cause.getMessage());
         }
     }

@@ -54,4 +54,14 @@ public final class StateKey {
      * The key for the current {@link AuthenticatedUser}.
      */
     public static final AttributeKey<AuthenticatedUser> AUTHENTICATED_USER = AttributeKey.valueOf("authenticatedUser");
+
+    /**
+     * The key for the in-flight request's {@link HttpResponseCoordinator}. Cleared at request start (alongside the
+     * in-use flag) and set by {@code HttpGremlinEndpointHandler} once a request reaches the endpoint and a coordinator
+     * is created. It lets {@code exceptionCaught} route a late pipeline error through the coordinator so it terminates
+     * an already-started chunked stream rather than writing a second, conflicting response. When absent — the error
+     * arrived before the endpoint ran, so no response has started — the error path falls back to a self-contained
+     * {@code sendError}.
+     */
+    public static final AttributeKey<HttpResponseCoordinator> RESPONSE_COORDINATOR = AttributeKey.valueOf("responseCoordinator");
 }

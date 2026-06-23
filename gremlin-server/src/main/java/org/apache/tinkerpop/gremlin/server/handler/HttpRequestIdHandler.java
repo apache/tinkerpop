@@ -57,6 +57,10 @@ public class HttpRequestIdHandler extends ChannelDuplexHandler {
 
             ctx.channel().attr(StateKey.REQUEST_ID).set(UUID.randomUUID());
             ctx.channel().attr(IN_USE).set(true);
+            // Clear any coordinator left over from the previous request on this keep-alive connection so that an
+            // exception from an upstream handler (before the endpoint creates this request's coordinator) falls back
+            // to sendError rather than no-opping on the prior, already-completed coordinator.
+            ctx.channel().attr(StateKey.RESPONSE_COORDINATOR).set(null);
         }
 
         ctx.fireChannelRead(msg);
