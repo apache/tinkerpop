@@ -411,11 +411,13 @@ step labels and `where()` comparison. For example, finding all people older than
 [source,groovy]
 ----
 // Old way: label marko's age, compare via where()
-g.V(1).values("age").as("markosAge").
-  V().hasLabel("person").as("p").
-  values("age").as("otherAge").
-  where("otherAge", gt("markosAge")).
-  select("p").values("name")
+gremlin> g.V(1).values("age").as("markosAge").
+......1>   V().hasLabel("person").as("p").
+......2>   values("age").as("otherAge").
+......3>   where("otherAge", gt("markosAge")).
+......4>   select("p").values("name")
+==>josh
+==>peter
 ----
 
 This pattern required several coordinated step labels and could not easily compose with other predicates. With
@@ -424,7 +426,9 @@ traversal-accepting arguments, the same query becomes a single, readable step:
 [source,groovy]
 ----
 // New way: traversal inside the predicate
-g.V().has("age", P.gt(__.V(1).values("age"))).values("name")
+gremlin> g.V().has("age", P.gt(__.V(1).values("age"))).values("name")
+==>josh
+==>peter
 ----
 
 Steps and predicates that previously only accepted literal values now accept child traversals resolved per-traverser
@@ -433,11 +437,15 @@ at runtime. Affected steps: `has()`, `hasId()`, `hasKey()`, `hasLabel()`, `hasVa
 
 [source,groovy]
 ----
-// Multi-source filtering with within()
-g.V().has("name", P.within(__.V(1).out("knows").values("name").fold(), __.constant("peter")))
+// Multi-source filtering with within() - combine sources in one traversal with union().fold()
+gremlin> g.V().has("name", P.within(__.union(__.V(1).out("knows").values("name"), __.constant("peter")).fold()))
+==>v[2]
+==>v[4]
+==>v[6]
 
 // Set multiple properties from a computed Map
-g.V(4).property(__.V(1).project("friendCount").by(__.out("knows").count()))
+gremlin> g.V(4).property(__.V(1).project("friendCount").by(__.out("knows").count()))
+==>v[4]
 ----
 
 See <<has-step,has()>>, <<v-step,V()>>, <<property-step,property()>>, <<is-step,is()>>, and
