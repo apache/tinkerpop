@@ -608,6 +608,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
     When iterated to list
     Then the result should be empty
 
+  @GraphComputerVerificationMidVNotSupported
   Scenario: g_VXVXvid1X_idX_name
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"

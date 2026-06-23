@@ -402,6 +402,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
     When iterated to list
     Then the result should be empty
 
+  @GraphComputerVerificationMidVNotSupported
   Scenario: g_EXVXvid1X_outE_idX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
