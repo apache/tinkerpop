@@ -202,9 +202,10 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
                 // Nullable exception
                 writer.writeValue(status.getException(), buffer, true);
             }
-        } catch (IOException e) {
+        } catch (Throwable t) {
+            // Catch Throwable so a TypeSerializer throwing an unchecked exception can't leak the pooled byteBuf.
             byteBuf.release();
-            throw new SerializationException(e);
+            throw new SerializationException(t);
         }
         return byteBuf;
     }
