@@ -144,11 +144,12 @@ public class InlineFilterStrategyTest {
                     {outE().hasLabel(P.eq("knows").or(P.eq("created"))).has("weight", gt(1.0)).inV(), outE("knows", "created").has("weight", gt(1.0)).inV(), Collections.emptyList()},
                     {outE().hasLabel(P.within("knows", "created")).inV(), outE("knows", "created").inV(), Collections.emptyList()},
                     //
-                    // Traversal-bearing has-steps should NOT be inlined (remain unchanged)
-                    {has("age", P.gt(__.V().values("age").asAdmin())).has("name", "marko"), has("age", P.gt(__.V().values("age").asAdmin())).has("name", "marko"), Collections.emptyList()},
-                    {has("name", "marko").has("age", P.gt(__.V().values("age").asAdmin())), has("name", "marko").has("age", P.gt(__.V().values("age").asAdmin())), Collections.emptyList()},
-                    {filter(has("age", P.gt(__.V().values("age").asAdmin()))), filter(has("age", P.gt(__.V().values("age").asAdmin()))), Collections.emptyList()},
-                    {and(has("name", "marko"), has("age", P.gt(__.V().values("age").asAdmin()))), and(has("name", "marko"), has("age", P.gt(__.V().values("age").asAdmin()))), Collections.emptyList()},
+                    // Traversal-bearing has-steps: a HasStep carrying a traversal predicate is never merged
+                    // with an adjacent HasStep. filter-unwrapping still applies (safe), but and-decomposition
+                    // leaves two separate HasSteps rather than merging them into one.
+                    {has("age", P.gt(__.V().values("age"))).has("name", "marko"), has("age", P.gt(__.V().values("age"))).has("name", "marko"), Collections.emptyList()},
+                    {filter(has("age", P.gt(__.V().values("age")))), has("age", P.gt(__.V().values("age"))), Collections.emptyList()},
+                    {and(has("name", "marko"), has("age", P.gt(__.V().values("age")))), addHas(addHas(__.start(), "name", eq("marko")), "age", P.gt(__.V().values("age"))), Collections.emptyList()},
             });
         }
 

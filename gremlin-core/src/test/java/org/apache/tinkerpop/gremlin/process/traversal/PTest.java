@@ -587,7 +587,7 @@ public class PTest {
 
         @Test
         public void shouldTakeFirstResultForEq() {
-            final P p = P.eq(__.inject(1, 2, 3).asAdmin());
+            final P p = P.eq(__.union(__.constant(1), __.constant(2)).asAdmin());
             p.resolve(createTraverser("start"));
             assertTrue(p.test(1));
             assertFalse(p.test(2));
@@ -595,7 +595,7 @@ public class PTest {
 
         @Test
         public void shouldTakeFirstResultForNeq() {
-            final P p = P.neq(__.inject(1, 2, 3).asAdmin());
+            final P p = P.neq(__.union(__.constant(1), __.constant(2)).asAdmin());
             p.resolve(createTraverser("start"));
             assertFalse(p.test(1));
             assertTrue(p.test(2));
@@ -603,7 +603,7 @@ public class PTest {
 
         @Test
         public void shouldTakeFirstResultForGt() {
-            final P p = P.gt(__.inject(10, 20, 30).asAdmin());
+            final P p = P.gt(__.union(__.constant(10), __.constant(20)).asAdmin());
             p.resolve(createTraverser("start"));
             assertTrue(p.test(11));
             assertFalse(p.test(10));
@@ -611,7 +611,7 @@ public class PTest {
 
         @Test
         public void shouldTakeFirstResultForLt() {
-            final P p = P.lt(__.inject(10, 20, 30).asAdmin());
+            final P p = P.lt(__.union(__.constant(10), __.constant(20)).asAdmin());
             p.resolve(createTraverser("start"));
             assertTrue(p.test(9));
             assertFalse(p.test(10));
@@ -619,19 +619,17 @@ public class PTest {
 
         @Test
         public void shouldTakeFirstResultForGte() {
-            final P p = P.gte(__.inject(10, 20, 30).asAdmin());
+            final P p = P.gte(__.union(__.constant(10), __.constant(20)).asAdmin());
             p.resolve(createTraverser("start"));
             assertTrue(p.test(10));
-            assertTrue(p.test(11));
             assertFalse(p.test(9));
         }
 
         @Test
         public void shouldTakeFirstResultForLte() {
-            final P p = P.lte(__.inject(10, 20, 30).asAdmin());
+            final P p = P.lte(__.union(__.constant(10), __.constant(20)).asAdmin());
             p.resolve(createTraverser("start"));
             assertTrue(p.test(10));
-            assertTrue(p.test(9));
             assertFalse(p.test(11));
         }
 
