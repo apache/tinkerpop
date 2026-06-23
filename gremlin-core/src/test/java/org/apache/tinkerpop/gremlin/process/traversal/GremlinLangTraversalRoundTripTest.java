@@ -59,37 +59,37 @@ public class GremlinLangTraversalRoundTripTest {
                 {g.V().has("person", "name", __.values("x"))},
 
                 // === has() with predicate-wrapped traversals ===
-                {g.V().has("name", P.eq(__.values("x").asAdmin()))},
-                {g.V().has("age", P.gt(__.constant(30).asAdmin()))},
-                {g.V().has("age", P.lt(__.V().values("age").asAdmin()))},
-                {g.V().has("age", P.gte(__.constant(18).asAdmin()))},
-                {g.V().has("age", P.lte(__.constant(65).asAdmin()))},
-                {g.V().has("age", P.neq(__.constant(0).asAdmin()))},
+                {g.V().has("name", P.eq(__.values("x")))},
+                {g.V().has("age", P.gt(__.constant(30)))},
+                {g.V().has("age", P.lt(__.V().values("age")))},
+                {g.V().has("age", P.gte(__.constant(18)))},
+                {g.V().has("age", P.lte(__.constant(65)))},
+                {g.V().has("age", P.neq(__.constant(0)))},
 
                 // === ConnectiveP with traversals ===
-                {g.V().has("age", P.gt(__.constant(10).asAdmin()).and(P.lt(__.constant(30).asAdmin())))},
-                {g.V().has("age", P.lt(__.constant(20).asAdmin()).or(P.gt(__.constant(50).asAdmin())))},
-                {g.V().has("age", P.gt(__.constant(10).asAdmin()).and(P.lt(__.constant(30).asAdmin())).or(P.eq(__.constant(99).asAdmin())))},
+                {g.V().has("age", P.gt(__.constant(10)).and(P.lt(__.constant(30))))},
+                {g.V().has("age", P.lt(__.constant(20)).or(P.gt(__.constant(50))))},
+                {g.V().has("age", P.gt(__.constant(10)).and(P.lt(__.constant(30))).or(P.eq(__.constant(99))))},
 
                 // === within/without with traversals ===
-                {g.V().has("name", P.within(__.V().values("name").fold().asAdmin()))},
-                {g.V().has("name", P.without(__.V().values("name").fold().asAdmin()))},
-                {g.V().has("name", P.within(__.constant("a").asAdmin(), __.constant("b").asAdmin()))},
+                {g.V().has("name", P.within(__.V().values("name").fold()))},
+                {g.V().has("name", P.without(__.V().values("name").fold()))},
+                {g.V().has("name", P.within(__.constant("a"), __.constant("b")))},
 
                 // === not() with traversal ===
                 {g.V().has("name", __.not(__.identity()))},
 
                 // === hasId/hasLabel/hasKey/hasValue with traversals ===
                 {g.V().hasId(__.V().id())},
-                {g.V().hasId(P.eq(__.V().id().asAdmin()))},
+                {g.V().hasId(P.eq(__.V().id()))},
                 {g.V().hasLabel(__.V().label())},
                 {g.V().properties("age").hasKey(__.constant("age"))},
                 {g.V().properties("age").hasValue(__.constant(29))},
 
                 // === is() with traversals ===
                 {g.V().values("age").is(__.constant(29))},
-                {g.V().values("age").is(P.gt(__.V().values("age").asAdmin()))},
-                {g.V().values("age").is(P.within(__.V().values("age").fold().asAdmin()))},
+                {g.V().values("age").is(P.gt(__.V().values("age")))},
+                {g.V().values("age").is(P.within(__.V().values("age").fold()))},
 
                 // === V() and E() with traversals ===
                 {g.V().V(__.select("ids"))},
@@ -107,8 +107,8 @@ public class GremlinLangTraversalRoundTripTest {
                 {g.V().property(__.V().project("a").by("name"))},
 
                 // === where() with traversal predicates ===
-                {g.V().values("age").where(P.gt(__.V().values("age").asAdmin()))},
-                {g.V().values("age").where(P.within(__.V().values("age").fold().asAdmin()))},
+                {g.V().values("age").where(P.gt(__.V().values("age")))},
+                {g.V().values("age").where(P.within(__.V().values("age").fold()))},
 
                 // === literal arguments ===
                 {g.V().has("name", "marko")},

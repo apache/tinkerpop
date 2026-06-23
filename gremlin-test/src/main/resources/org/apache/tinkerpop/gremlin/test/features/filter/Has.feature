@@ -887,15 +887,15 @@ Feature: Step - has()
 
   # without() over a union of relationship sources collected with fold()
   @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasLabelXsoftwareX_hasXname_withoutXunionXVXvid1X_outXcreatedX_valuesXnameX_VXvid3X_outXcreatedX_valuesXnameXX_foldXX
+  Scenario: g_V_hasLabelXsoftwareX_hasXname_withoutXunionXVXvid1X_outXcreatedX_valuesXnameX_VXvid4X_outXcreatedX_valuesXnameXX_foldXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter vid3 defined as "v[josh].id"
+    And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
       g.V().hasLabel("software").
         has("name", P.without(__.union(__.V(vid1).out("created").values("name"),
-                                       __.V(vid3).out("created").values("name")).fold()))
+                                       __.V(vid4).out("created").values("name")).fold()))
       """
     When iterated to list
     Then the result should be empty

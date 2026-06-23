@@ -120,7 +120,7 @@ public class TinkerGraphStepStrategyTraversalTest {
     public void shouldNotFoldPredicateWithTraversalIntoGraphStep() {
         // g.V().has("name", P.eq(__.constant("marko"))) - predicate with traversal
         final GraphTraversal<Vertex, Vertex> traversal =
-                g.V().has("name", org.apache.tinkerpop.gremlin.process.traversal.P.eq(__.constant("marko").asAdmin()));
+                g.V().has("name", org.apache.tinkerpop.gremlin.process.traversal.P.eq(__.constant("marko")));
         final List<Step> steps = applyStrategy(traversal.asAdmin());
 
         // The HasStep should remain as a separate step
