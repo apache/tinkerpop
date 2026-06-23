@@ -24,6 +24,8 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import org.junit.Test;
 
+import java.time.Duration;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -41,8 +43,8 @@ public class ConnectionOptionsTest {
     public void shouldUseCanonicalDefaults() {
         final Cluster cluster = Cluster.build("localhost").create();
         assertEquals(128, cluster.maxConnections());
-        assertEquals(64, cluster.getDefaultBatchSize());
-        assertEquals(5000L, cluster.getConnectTimeout());
+        assertEquals(64, cluster.getBatchSize());
+        assertEquals(5000, cluster.getConnectTimeout());
         assertEquals(180000L, cluster.getIdleTimeout());
         assertEquals(30000L, cluster.getKeepAliveTime());
         assertEquals(0L, cluster.getReadTimeout());
@@ -56,15 +58,15 @@ public class ConnectionOptionsTest {
     public void shouldSetCanonicalConnectionOptions() {
         final Cluster cluster = Cluster.build("localhost")
                 .maxConnections(8)
-                .defaultBatchSize(100)
-                .connectTimeout(2500)
-                .idleTimeout(120000)
-                .readTimeout(30000)
+                .batchSize(100)
+                .connectTimeoutMillis(2500)
+                .idleTimeoutMillis(120000)
+                .readTimeoutMillis(30000)
                 .maxResponseHeaderBytes(16384)
                 .create();
         assertEquals(8, cluster.maxConnections());
-        assertEquals(100, cluster.getDefaultBatchSize());
-        assertEquals(2500L, cluster.getConnectTimeout());
+        assertEquals(100, cluster.getBatchSize());
+        assertEquals(2500, cluster.getConnectTimeout());
         assertEquals(120000L, cluster.getIdleTimeout());
         assertEquals(30000L, cluster.getReadTimeout());
         assertEquals(16384, cluster.getMaxResponseHeaderBytes());
@@ -72,21 +74,24 @@ public class ConnectionOptionsTest {
     }
 
     @Test
-    public void shouldHonorDeprecatedAliases() {
+    public void shouldSetTimeoutsViaDuration() {
         final Cluster cluster = Cluster.build("localhost")
-                .maxConnectionPoolSize(8)
-                .resultIterationBatchSize(100)
-                .connectionSetupTimeoutMillis(2500)
-                .idleConnectionTimeoutMillis(120000)
+                .connectTimeout(Duration.ofSeconds(2))
+                .idleTimeout(Duration.ofMinutes(2))
+                .readTimeout(Duration.ofSeconds(30))
+                .keepAliveTime(Duration.ofSeconds(45))
                 .create();
-        assertEquals(8, cluster.maxConnections());
-        assertEquals(8, cluster.maxConnectionPoolSize());
-        assertEquals(100, cluster.getDefaultBatchSize());
-        assertEquals(100, cluster.getResultIterationBatchSize());
-        assertEquals(2500L, cluster.getConnectTimeout());
+        // Duration overloads convert to the same millisecond values as the *Millis setters.
+        assertEquals(2000, cluster.getConnectTimeout());
         assertEquals(120000L, cluster.getIdleTimeout());
-        assertEquals(120000L, cluster.getIdleConnectionTimeout());
+        assertEquals(30000L, cluster.getReadTimeout());
+        assertEquals(45000L, cluster.getKeepAliveTime());
         cluster.close();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldRejectConnectTimeoutDurationExceedingIntMillis() {
+        Cluster.build("localhost").connectTimeout(Duration.ofMillis((long) Integer.MAX_VALUE + 1));
     }
 
     @Test
@@ -141,21 +146,20 @@ public class ConnectionOptionsTest {
     }
 
     @Test
-    public void shouldSetTraversalSourceCanonicalAndAlias() {
+    public void shouldSetTraversalSource() {
         assertEquals("gmodern", RequestOptions.build().traversalSource("gmodern").create().getG().get());
-        assertEquals("gmodern", RequestOptions.build().addG("gmodern").create().getG().get());
     }
 
     @Test
     public void shouldSetKeepAliveTime() {
-        final Cluster cluster = Cluster.build("localhost").keepAliveTime(45000).create();
+        final Cluster cluster = Cluster.build("localhost").keepAliveTimeMillis(45000).create();
         assertEquals(45000L, cluster.getKeepAliveTime());
         cluster.close();
     }
 
     @Test
     public void shouldDisableKeepAliveTimeWithZero() {
-        final Cluster cluster = Cluster.build("localhost").keepAliveTime(0).create();
+        final Cluster cluster = Cluster.build("localhost").keepAliveTimeMillis(0).create();
         assertEquals(0L, cluster.getKeepAliveTime());
         cluster.close();
     }
@@ -214,5 +218,15 @@ public class ConnectionOptionsTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldRejectUrlWithUnsupportedScheme() {
         Cluster.build().url("ws://localhost:8182/gremlin");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldRejectUrlWhenContactPointAlreadyAdded() {
+        Cluster.build().addContactPoint("localhost").url("http://localhost:8182/gremlin");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldRejectUrlWhenContactPointsAlreadyAdded() {
+        Cluster.build().addContactPoints("host1", "host2").url("http://localhost:8182/gremlin");
     }
 }

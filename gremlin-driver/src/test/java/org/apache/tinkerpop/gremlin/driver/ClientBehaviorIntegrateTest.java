@@ -263,7 +263,7 @@ public class ClientBehaviorIntegrateTest {
     @Test
     public void shouldTimeoutWhenServerNeverResponds() throws Exception {
         final Cluster timeoutCluster = buildCluster()
-                .idleConnectionTimeoutMillis(2000)
+                .idleTimeoutMillis(2000)
                 .create();
         final Client timeoutClient = timeoutCluster.connect();
         try {
@@ -329,7 +329,7 @@ public class ClientBehaviorIntegrateTest {
         final ExecutorService executor = Executors.newFixedThreadPool(count * 2);
 
         // Use a fresh cluster with enough pool size
-        final Cluster concurrentCluster = buildCluster().maxConnectionPoolSize(count * 2).create();
+        final Cluster concurrentCluster = buildCluster().maxConnections(count * 2).create();
         final Client concurrentClient = concurrentCluster.connect();
 
         try {

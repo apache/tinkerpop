@@ -1078,11 +1078,11 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             // should handle traversal with no explicit language
-            final RequestOptions withAlias = RequestOptions.build().addG("gmodern").create();
+            final RequestOptions withAlias = RequestOptions.build().traversalSource("gmodern").create();
             assertEquals(6L, client.submit("g.V().count()", withAlias).one().getLong());
 
             // should handle script with explicit gremlin-lang
-            final RequestOptions langOptions = RequestOptions.build().language("gremlin-lang").addG("gmodern").create();
+            final RequestOptions langOptions = RequestOptions.build().language("gremlin-lang").traversalSource("gmodern").create();
             assertEquals(6L, client.submit("g.V().count()", langOptions).one().getLong());
 
             // should reject non-Gremlin expressions

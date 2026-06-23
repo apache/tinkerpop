@@ -65,6 +65,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -164,14 +165,14 @@ public final class Cluster {
                 .nioPoolSize(settings.nioPoolSize)
                 .workerPoolSize(settings.workerPoolSize)
                 .reconnectInterval(settings.connectionPool.reconnectInterval)
-                .defaultBatchSize(settings.connectionPool.defaultBatchSize)
+                .batchSize(settings.connectionPool.batchSize)
                 .maxResponseHeaderBytes(settings.connectionPool.maxResponseHeaderBytes)
                 .maxWaitForConnection(settings.connectionPool.maxWaitForConnection)
                 .maxConnections(settings.connectionPool.maxConnections)
-                .connectTimeout(settings.connectionPool.connectTimeout)
-                .idleTimeout(settings.connectionPool.idleTimeout)
-                .keepAliveTime(settings.connectionPool.keepAliveTime)
-                .readTimeout(settings.connectionPool.readTimeout)
+                .connectTimeoutMillis(settings.connectionPool.connectTimeout)
+                .idleTimeoutMillis(settings.connectionPool.idleTimeout)
+                .keepAliveTimeMillis(settings.connectionPool.keepAliveTime)
+                .readTimeoutMillis(settings.connectionPool.readTimeout)
                 .compression(settings.connectionPool.compression)
                 .enableUserAgentOnConnect(settings.enableUserAgentOnConnect)
                 .bulkResults(settings.bulkResults)
@@ -295,30 +296,10 @@ public final class Cluster {
     }
 
     /**
-     * Gets the maximum size that the {@link ConnectionPool} can grow.
-     *
-     * @deprecated As of release 4.0.0, replaced by {@link #maxConnections()}.
-     */
-    @Deprecated
-    public int maxConnectionPoolSize() {
-        return maxConnections();
-    }
-
-    /**
      * Gets the default for the per-request batch size used when the request does not specify one.
      */
-    public int getDefaultBatchSize() {
-        return manager.connectionPoolSettings.defaultBatchSize;
-    }
-
-    /**
-     * Gets the default for the per-request batch size used when the request does not specify one.
-     *
-     * @deprecated As of release 4.0.0, replaced by {@link #getDefaultBatchSize()}.
-     */
-    @Deprecated
-    public int getResultIterationBatchSize() {
-        return getDefaultBatchSize();
+    public int getBatchSize() {
+        return manager.connectionPoolSettings.batchSize;
     }
 
     /**
@@ -350,19 +331,9 @@ public final class Cluster {
     }
 
     /**
-     * Get time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes.
-     *
-     * @deprecated As of release 4.0.0, replaced by {@link #getIdleTimeout()}.
-     */
-    @Deprecated
-    public long getIdleConnectionTimeout() {
-        return getIdleTimeout();
-    }
-
-    /**
      * Gets the duration in milliseconds that bounds TCP connection establishment (including the SSL handshake).
      */
-    public long getConnectTimeout() {
+    public int getConnectTimeout() {
         return manager.connectionPoolSettings.connectTimeout;
     }
 
@@ -558,7 +529,7 @@ public final class Cluster {
         private int maxWaitForClose = Connection.MAX_WAIT_FOR_CLOSE;
         private int maxResponseHeaderBytes = Connection.MAX_RESPONSE_HEADER_BYTES;
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
-        private int defaultBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
+        private int batchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
         private boolean enableSsl = false;
         private String keyStore = null;
         private String keyStorePassword = null;
@@ -574,7 +545,7 @@ public final class Cluster {
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
         private List<RequestInterceptor> interceptors = new ArrayList<>();
         private Auth auth = null;
-        private long connectTimeout = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
+        private int connectTimeout = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
         private long idleTimeout = Connection.CONNECTION_IDLE_TIMEOUT_MILLIS;
         private long keepAliveTime = Connection.KEEP_ALIVE_TIME_MILLIS;
         private long readTimeout = Connection.READ_TIMEOUT_MILLIS;
@@ -645,11 +616,7 @@ public final class Cluster {
         /**
          * Enables connectivity over SSL - note that the server should be configured with SSL turned on for this
          * setting to work properly.
-         *
-         * @deprecated As of release 4.0.0, prefer {@link #ssl(SslContext)} which accepts a fully configured Netty
-         * {@code SslContext}. Using the {@code https} scheme on a contact point also enables SSL.
          */
-        @Deprecated
         public Builder enableSsl(final boolean enable) {
             this.enableSsl = enable;
             return this;
@@ -666,25 +633,8 @@ public final class Cluster {
         }
 
         /**
-         * Explicitly set the {@code SslContext} for when more flexibility is required in the configuration than is
-         * allowed by the {@link Builder}. If this value is set to something other than {@code null} then all other
-         * related SSL settings are ignored. The {@link #enableSsl} setting should still be set to {@code true} for
-         * this setting to take effect.
-         *
-         * @deprecated As of release 4.0.0, replaced by {@link #ssl(SslContext)}.
-         */
-        @Deprecated
-        public Builder sslContext(final SslContext sslContext) {
-            this.sslContext = sslContext;
-            return this;
-        }
-
-        /**
          * The file location of the private key in JKS or PKCS#12 format.
-         *
-         * @deprecated As of release 4.0.0, prefer building an {@code SslContext} and passing it to {@link #ssl(SslContext)}.
          */
-        @Deprecated
         public Builder keyStore(final String keyStore) {
             this.keyStore = keyStore;
             return this;
@@ -692,10 +642,7 @@ public final class Cluster {
 
         /**
          * The password of the {@link #keyStore}, or {@code null} if it's not password-protected.
-         *
-         * @deprecated As of release 4.0.0, prefer building an {@code SslContext} and passing it to {@link #ssl(SslContext)}.
          */
-        @Deprecated
         public Builder keyStorePassword(final String keyStorePassword) {
             this.keyStorePassword = keyStorePassword;
             return this;
@@ -705,10 +652,7 @@ public final class Cluster {
          * The file location for a SSL Certificate Chain to use when SSL is enabled. If
          * this value is not provided and SSL is enabled, the default {@code TrustManager} will be used, which will
          * have a set of common public certificates installed to it.
-         *
-         * @deprecated As of release 4.0.0, prefer building an {@code SslContext} and passing it to {@link #ssl(SslContext)}.
          */
-        @Deprecated
         public Builder trustStore(final String trustStore) {
             this.trustStore = trustStore;
             return this;
@@ -716,10 +660,7 @@ public final class Cluster {
 
         /**
          * The password of the {@link #trustStore}, or {@code null} if it's not password-protected.
-         *
-         * @deprecated As of release 4.0.0, prefer building an {@code SslContext} and passing it to {@link #ssl(SslContext)}.
          */
-        @Deprecated
         public Builder trustStorePassword(final String trustStorePassword) {
             this.trustStorePassword = trustStorePassword;
             return this;
@@ -727,10 +668,7 @@ public final class Cluster {
 
         /**
          * The format of the {@link #keyStore}, either {@code JKS} or {@code PKCS12}
-         *
-         * @deprecated As of release 4.0.0, prefer building an {@code SslContext} and passing it to {@link #ssl(SslContext)}.
          */
-        @Deprecated
         public Builder keyStoreType(final String keyStoreType) {
             this.keyStoreType = keyStoreType;
             return this;
@@ -738,10 +676,7 @@ public final class Cluster {
 
         /**
          * The format of the {@link #trustStore}, either {@code JKS} or {@code PKCS12}
-         *
-         * @deprecated As of release 4.0.0, prefer building an {@code SslContext} and passing it to {@link #ssl(SslContext)}.
          */
-        @Deprecated
         public Builder trustStoreType(final String trustStoreType) {
             this.trustStoreType = trustStoreType;
             return this;
@@ -751,10 +686,7 @@ public final class Cluster {
          * A list of SSL protocols to enable. @see <a href=
          *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSE_Protocols">JSSE
          *      Protocols</a>
-         *
-         * @deprecated As of release 4.0.0, prefer building an {@code SslContext} and passing it to {@link #ssl(SslContext)}.
          */
-        @Deprecated
         public Builder sslEnabledProtocols(final List<String> sslEnabledProtocols) {
             this.sslEnabledProtocols = sslEnabledProtocols;
             return this;
@@ -764,10 +696,7 @@ public final class Cluster {
          * A list of cipher suites to enable. @see <a href=
          *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SupportedCipherSuites">Cipher
          *      Suites</a>
-         *
-         * @deprecated As of release 4.0.0, prefer building an {@code SslContext} and passing it to {@link #ssl(SslContext)}.
          */
-        @Deprecated
         public Builder sslCipherSuites(final List<String> sslCipherSuites) {
             this.sslCipherSuites = sslCipherSuites;
             return this;
@@ -775,11 +704,7 @@ public final class Cluster {
 
         /**
          * If true, trust all certificates and do not perform any validation.
-         *
-         * @deprecated As of release 4.0.0, prefer building an {@code SslContext} (e.g. with an
-         * {@code InsecureTrustManagerFactory}) and passing it to {@link #ssl(SslContext)}.
          */
-        @Deprecated
         public Builder sslSkipCertValidation(final boolean sslSkipCertValidation) {
             this.sslSkipCertValidation = sslSkipCertValidation;
             return this;
@@ -794,33 +719,11 @@ public final class Cluster {
         }
 
         /**
-         * The maximum size that the {@link ConnectionPool} can grow.
-         *
-         * @deprecated As of release 4.0.0, replaced by {@link #maxConnections(int)}.
-         */
-        @Deprecated
-        public Builder maxConnectionPoolSize(final int maxSize) {
-            this.maxConnections = maxSize;
-            return this;
-        }
-
-        /**
          * Sets the default for the per-request batch size, used when a request does not specify its own
-         * {@code batchSize}. Defaults to 64.
+         * {@code batchSize} via {@link RequestOptions}. Defaults to 64.
          */
-        public Builder defaultBatchSize(final int size) {
-            this.defaultBatchSize = size;
-            return this;
-        }
-
-        /**
-         * Override the server setting that determines how many results are returned per batch.
-         *
-         * @deprecated As of release 4.0.0, replaced by {@link #defaultBatchSize(int)}.
-         */
-        @Deprecated
-        public Builder resultIterationBatchSize(final int size) {
-            this.defaultBatchSize = size;
+        public Builder batchSize(final int size) {
+            this.batchSize = size;
             return this;
         }
 
@@ -856,9 +759,18 @@ public final class Cluster {
          * is reset on each chunk received, so it bounds idle gaps rather than the total response time. A value of
          * {@code 0} (the default) disables the feature.
          */
-        public Builder readTimeout(final long readTimeout) {
+        public Builder readTimeoutMillis(final long readTimeout) {
             this.readTimeout = readTimeout;
             return this;
+        }
+
+        /**
+         * Sets the idle-read timeout that bounds the time between inbound response chunks. Equivalent to
+         * {@link #readTimeoutMillis(long)} with the duration expressed as a {@link Duration}. {@link Duration#ZERO}
+         * disables the feature.
+         */
+        public Builder readTimeout(final Duration readTimeout) {
+            return readTimeoutMillis(readTimeout.toMillis());
         }
 
         /**
@@ -971,11 +883,19 @@ public final class Cluster {
          * {@link #port(int)}, and a non-empty path is applied via {@link #path(String)}. This is a convenience for the
          * common single-host case; use {@link #addContactPoint(String)} / {@link #addContactPoints(String...)} along
          * with {@link #port(int)} and {@link #path(String)} for multi-host configurations.
+         * <p>
+         * Because this is a single-endpoint convenience, it must not be combined with the multi-host contact point
+         * methods: calling it after a contact point has already been added throws {@link IllegalArgumentException}.
          *
          * @param url a full URL such as {@code https://gremlin.example.com:8182/gremlin}
-         * @throws IllegalArgumentException if the URL cannot be parsed or has no host
+         * @throws IllegalArgumentException if the URL cannot be parsed, has no host, or a contact point already exists
          */
         public Builder url(final String url) {
+            if (!this.addresses.isEmpty())
+                throw new IllegalArgumentException(
+                        "url(String) configures a single endpoint and cannot be combined with addContactPoint(s); " +
+                        "use addContactPoint(s) with port(int) and path(String) for multi-host configurations");
+
             final URI uri;
             try {
                 uri = new URI(url);
@@ -1014,41 +934,38 @@ public final class Cluster {
          * including the SSL handshake). Beyond this duration an exception would be thrown. This is a transport
          * establishment timeout, not an HTTP request/response timeout. Defaults to 5000.
          */
-        public Builder connectTimeout(final long connectTimeout) {
+        public Builder connectTimeoutMillis(final int connectTimeout) {
             this.connectTimeout = connectTimeout;
             return this;
         }
 
         /**
-         * Sets the duration of time in milliseconds provided for connection setup to complete which includes WebSocket
-         * handshake and SSL handshake. Beyond this duration an exception would be thrown.
-         *
-         * @deprecated As of release 4.0.0, replaced by {@link #connectTimeout(long)}.
+         * Sets the TCP connection-establishment timeout. Equivalent to {@link #connectTimeoutMillis(int)} with the
+         * duration expressed as a {@link Duration}. The value is applied via Netty's int-typed
+         * {@code CONNECT_TIMEOUT_MILLIS}, so it must not exceed {@link Integer#MAX_VALUE} milliseconds.
          */
-        @Deprecated
-        public Builder connectionSetupTimeoutMillis(final long connectionSetupTimeoutMillis) {
-            this.connectTimeout = connectionSetupTimeoutMillis;
-            return this;
+        public Builder connectTimeout(final Duration connectTimeout) {
+            final long millis = connectTimeout.toMillis();
+            if (millis > Integer.MAX_VALUE)
+                throw new IllegalArgumentException("connectTimeout must not exceed " + Integer.MAX_VALUE + " ms");
+            return connectTimeoutMillis((int) millis);
         }
 
         /**
          * Sets the time in milliseconds that the driver will allow a channel to not receive read or writes before it
          * automatically closes.
          */
-        public Builder idleTimeout(final long idleTimeout) {
+        public Builder idleTimeoutMillis(final long idleTimeout) {
             this.idleTimeout = idleTimeout;
             return this;
         }
 
         /**
-         * Sets the time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes.
-         *
-         * @deprecated As of release 4.0.0, replaced by {@link #idleTimeout(long)}.
+         * Sets the idle-connection pool timeout. Equivalent to {@link #idleTimeoutMillis(long)} with the duration
+         * expressed as a {@link Duration}. {@link Duration#ZERO} disables idle-connection detection.
          */
-        @Deprecated
-        public Builder idleConnectionTimeoutMillis(final long idleConnectionTimeoutMillis) {
-            this.idleTimeout = idleConnectionTimeoutMillis;
-            return this;
+        public Builder idleTimeout(final Duration idleTimeout) {
+            return idleTimeoutMillis(idleTimeout.toMillis());
         }
 
         /**
@@ -1058,9 +975,17 @@ public final class Cluster {
          * platforms/JDKs where the per-socket idle time cannot be set, {@code SO_KEEPALIVE} is still enabled and the
          * OS default idle time is used. Defaults to 30000. Set this value to {@code 0} to disable the feature.
          */
-        public Builder keepAliveTime(final long keepAliveTime) {
+        public Builder keepAliveTimeMillis(final long keepAliveTime) {
             this.keepAliveTime = keepAliveTime;
             return this;
+        }
+
+        /**
+         * Sets the idle time before TCP keep-alive probes begin. Equivalent to {@link #keepAliveTimeMillis(long)}
+         * with the duration expressed as a {@link Duration}. {@link Duration#ZERO} disables the feature.
+         */
+        public Builder keepAliveTime(final Duration keepAliveTime) {
+            return keepAliveTimeMillis(keepAliveTime.toMillis());
         }
 
         /**
@@ -1180,7 +1105,7 @@ public final class Cluster {
             connectionPoolSettings.maxWaitForClose = builder.maxWaitForClose;
             connectionPoolSettings.maxResponseHeaderBytes = builder.maxResponseHeaderBytes;
             connectionPoolSettings.reconnectInterval = builder.reconnectInterval;
-            connectionPoolSettings.defaultBatchSize = builder.defaultBatchSize;
+            connectionPoolSettings.batchSize = builder.batchSize;
             connectionPoolSettings.enableSsl = builder.enableSsl;
             connectionPoolSettings.keyStore = builder.keyStore;
             connectionPoolSettings.keyStorePassword = builder.keyStorePassword;
@@ -1248,8 +1173,8 @@ public final class Cluster {
             if (builder.reconnectInterval < 1)
                 throw new IllegalArgumentException("reconnectInterval must be greater than zero");
 
-            if (builder.defaultBatchSize < 1)
-                throw new IllegalArgumentException("defaultBatchSize must be greater than zero");
+            if (builder.batchSize < 1)
+                throw new IllegalArgumentException("batchSize must be greater than zero");
 
             if (builder.nioPoolSize < 1)
                 throw new IllegalArgumentException("nioPoolSize must be greater than zero");

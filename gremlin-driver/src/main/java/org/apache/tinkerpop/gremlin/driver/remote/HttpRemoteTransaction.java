@@ -306,7 +306,7 @@ public class HttpRemoteTransaction implements RemoteTransaction {
         final RequestOptions.Builder builder = RequestOptions.Builder.from(options);
         if (graphAlias != null) {
             // Don't allow per-request override of "g" as transactions should only target a single Graph instance.
-            builder.addG(graphAlias);
+            builder.traversalSource(graphAlias);
         }
 
         // Attach txId if we have one (not present for begin())

@@ -105,14 +105,14 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandleEmptyResult() throws Exception {
-        RequestOptions options = RequestOptions.build().addG("gmodern").create();
+        RequestOptions options = RequestOptions.build().traversalSource("gmodern").create();
         final ResultSet results = client.submit("g.V(100,1000,1000)", options);
         assertEquals(0, results.all().get().size());
     }
 
     @Test
     public void shouldHandleVertexResult() throws Exception {
-        RequestOptions options = RequestOptions.build().addG("gmodern").create();
+        RequestOptions options = RequestOptions.build().traversalSource("gmodern").create();
         final ResultSet results = client.submit("g.V(1).next()", options);
         final Vertex v = results.all().get().get(0).getVertex();
         assertThat(v, instanceOf(DetachedVertex.class));
@@ -120,7 +120,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandleVertexPropertyResult() throws Exception {
-        RequestOptions options = RequestOptions.build().addG("gmodern").create();
+        RequestOptions options = RequestOptions.build().traversalSource("gmodern").create();
         final ResultSet results = client.submit("g.V().properties('name').next()", options);
         final VertexProperty<String> v = results.all().get().get(0).getVertexProperty();
         assertThat(v, instanceOf(DetachedVertexProperty.class));
@@ -128,7 +128,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandleEdgeResult() throws Exception {
-        RequestOptions options = RequestOptions.build().addG("gmodern").create();
+        RequestOptions options = RequestOptions.build().traversalSource("gmodern").create();
         final ResultSet results = client.submit("g.E().next()", options);
         final Edge e = results.all().get().get(0).getEdge();
         assertThat(e, instanceOf(DetachedEdge.class));
@@ -136,7 +136,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandlePropertyResult() throws Exception {
-        RequestOptions options = RequestOptions.build().addG("gmodern").create();
+        RequestOptions options = RequestOptions.build().traversalSource("gmodern").create();
         final ResultSet results = client.submit("g.E().properties('weight').next()", options);
         final Property<Double> p = results.all().get().get(0).getProperty();
         assertThat(p, instanceOf(ReferenceProperty.class));
@@ -144,7 +144,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandlePathResult() throws Exception {
-        RequestOptions options = RequestOptions.build().addG("gmodern").create();
+        RequestOptions options = RequestOptions.build().traversalSource("gmodern").create();
         final ResultSet results = client.submit("g.V().out().path()", options);
         final Path p = results.all().get().get(0).getPath();
         assertThat(p, instanceOf(Path.class));
@@ -164,7 +164,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandleMapIteratedResult() throws Exception {
-        RequestOptions options = RequestOptions.build().addG("gmodern").create();
+        RequestOptions options = RequestOptions.build().traversalSource("gmodern").create();
         final ResultSet results = client.submit("g.V().groupCount().by(bothE().count())", options);
         final List<Result> resultList = results.all().get();
         final Map m = resultList.get(0).get(HashMap.class);

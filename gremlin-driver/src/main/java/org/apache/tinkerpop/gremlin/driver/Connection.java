@@ -51,7 +51,7 @@ final class Connection {
     public static final int MAX_WAIT_FOR_CLOSE = 3000;
     public static final int RECONNECT_INTERVAL = 1000;
     public static final int RESULT_ITERATION_BATCH_SIZE = 64;
-    public static final long CONNECTION_SETUP_TIMEOUT_MILLIS = 5000;
+    public static final int CONNECTION_SETUP_TIMEOUT_MILLIS = 5000;
     public static final long CONNECTION_IDLE_TIMEOUT_MILLIS = 180000;
     /**
      * Default idle time in milliseconds before TCP keep-alive probes begin on an otherwise idle connection.
@@ -166,8 +166,8 @@ final class Connection {
      * is expressed in milliseconds and bounds the TCP connection setup (including the SSL handshake) performed by
      * {@code b.connect()}. It is applied via Netty's {@link ChannelOption#CONNECT_TIMEOUT_MILLIS}.
      */
-    static void configureConnectTimeout(final Bootstrap b, final long connectTimeout) {
-        b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) connectTimeout);
+    static void configureConnectTimeout(final Bootstrap b, final int connectTimeout) {
+        b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout);
     }
 
     /**

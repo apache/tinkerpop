@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server;
 
 import ch.qos.logback.classic.Level;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.timeout.ReadTimeoutException;
 import nl.altindag.log.LogCaptor;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
@@ -293,7 +294,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         try {
             final Client client = cluster.connect();
             final RequestOptions ro = RequestOptions.build()
-                    .addG("gmodern")
+                    .traversalSource("gmodern")
                     .language("gremlin-lang")
                     .bulkResults(true)
                     .create();
@@ -335,7 +336,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final AtomicInteger handshakeRequests = new AtomicInteger(0);
 
         final Cluster cluster = TestClientFactory.build().
-                maxConnectionPoolSize(1).
+                maxConnections(1).
                 interceptors(r -> handshakeRequests.incrementAndGet()).create();
 
         try {
@@ -407,6 +408,30 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final ResponseException re = (ResponseException) ex.getCause();
             assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
             assertEquals("ServerTimeoutExceededException", re.getRemoteException());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldEventuallySucceedAfterChannelLevelError() {
+        final int readMillis = 1000;
+        final Cluster cluster = TestClientFactory.build()
+                .reconnectInterval(500)
+                .readTimeoutMillis(readMillis).create();
+        final Client client = cluster.connect();
+
+        try {
+            try {
+                client.submit("g.inject('x').repeat(concat('x')).times(512)").all().get();
+                fail("Request should have failed because the readTimeout fired before a response was received");
+            } catch (Exception ex) {
+                final Throwable root = ExceptionHelper.getRootCause(ex);
+                assertThat(root.getMessage(), containsString("Response entity too large"));
+            }
+
+            assertEquals(2, client.submit("g.inject(2)").all().join().get(0).getInt());
+
         } finally {
             cluster.close();
         }
@@ -757,7 +782,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         // described above in the javadoc of the test (though an equivalent number also produced it), but this has
         // been tested to much higher multiples and passes.  note that the maxWaitForConnection setting is high so
         // that the client doesn't timeout waiting for an available connection. obviously this can also be fixed
-        // by increasing the maxConnectionPoolSize.
+        // by increasing the maxConnections.
         final int requests = workerPoolSizeForDriver * 4;
         final Cluster cluster = TestClientFactory.build()
                 .workerPoolSize(workerPoolSizeForDriver)
@@ -991,7 +1016,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldBeThreadSafeToUseOneClient() throws Exception {
         final Cluster cluster = TestClientFactory.build().workerPoolSize(2)
-                .maxConnectionPoolSize(16).create();
+                .maxConnections(16).create();
         final Client client = cluster.connect();
 
         final Map<Integer, Integer> results = new ConcurrentHashMap<>();
@@ -1196,8 +1221,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldReturnClearExceptionCauseWhenClientIsTooBusyAndConnectionPoolIsFull() throws InterruptedException {
         int maxSize = 1;
         final Cluster cluster = TestClientFactory.build()
-                .maxConnectionPoolSize(1)
-                .connectionSetupTimeoutMillis(100)
+                .maxConnections(1)
+                .connectTimeoutMillis(100)
                 .maxWaitForConnection(150)
                 .create();
 

@@ -159,17 +159,6 @@ public final class RequestOptions {
         }
 
         /**
-         * The aliases to set on the request.
-         *
-         * @deprecated As of release 4.0.0, replaced by {@link #traversalSource(String)}.
-         */
-        @Deprecated
-        public Builder addG(final String graphOrTraversalSource) {
-            this.graphOrTraversalSource = graphOrTraversalSource;
-            return this;
-        }
-
-        /**
          * Adds a parameter to the request. The parameter map is converted to a gremlin-lang map literal string when the
          * request is built. This method accumulates parameters into an internal map which is converted on
          * {@link #create()}.

@@ -40,21 +40,22 @@ as deprecated aliases so that existing code keeps compiling, and a number of new
 below describe the Java changes. See <<glv-driver-changes, GLV Driver Changes>> for the equivalent changes in the
 other drivers.
 
-Renames (deprecated aliases). The following builder methods have been renamed. The old names still work but are
-deprecated and should be migrated to the new names:
+Renames (breaking). The following builder methods have been renamed and the old names removed; migrate to the new
+names:
 
 - `maxConnectionPoolSize` is now `maxConnections` (default 128).
-- `idleConnectionTimeoutMillis` is now `idleTimeout` (default 180000 ms).
-- `connectionSetupTimeoutMillis` is now `connectTimeout`.
-- `resultIterationBatchSize` is now `defaultBatchSize` (default 64).
-- The individual SSL builders (`enableSsl`, `keyStore`, `keyStorePassword`, `keyStoreType`, `trustStore`,
-  `trustStorePassword`, `trustStoreType`, `sslCipherSuites`, `sslEnabledProtocols`, `sslSkipCertValidation`, and
-  `sslContext`) are superseded by a single `ssl(SslContext)` option that accepts a fully configured Netty
-  `SslContext`. The old SSL builders are deprecated.
-- On `RequestOptions`, `addG` is now `traversalSource` (deprecated alias).
+- `idleConnectionTimeoutMillis` is now `idleTimeout` (default 180000 ms), settable as `idleTimeout(Duration)` or `idleTimeoutMillis(long)` (YAML key `connectionPool.idleTimeoutMillis`).
+- `connectionSetupTimeoutMillis` is now `connectTimeout`, settable as `connectTimeout(Duration)` or `connectTimeoutMillis(int)` (YAML key `connectionPool.connectTimeoutMillis`).
+- `resultIterationBatchSize` is now `batchSize` (default 64); it sets the connection-level default that fills a request's per-request `batchSize` when unset (mirroring how `bulkResults` shares one name across connection and per-request scopes).
+- A new `ssl(SslContext)` builder accepts a fully configured Netty `SslContext`.
+- On `RequestOptions`, `addG` is now `traversalSource`.
 
 Behavior changes. These change runtime behavior on upgrade, even if you do not change your configuration:
 
+- `idleTimeout` now applies only to connections sitting idle in the pool between requests. Previously its underlying
+  Netty `IdleStateHandler` also watched the in-flight read window, so a stalled in-flight response could be closed
+  by `idleTimeout` even with `readTimeout` disabled. That in-flight coverage is now solely `readTimeout`'s job, so
+  if you relied on `idleTimeout` to bound a hung in-flight request, set `readTimeout` explicitly.
 - `connectTimeout` now defaults to 5s (lowered from 15s) and is now actually applied to the connection bootstrap.
   Previously `connectionSetupTimeoutMillis` was validated but never enforced, so the connection setup was effectively
   unbounded. A slow TCP or TLS setup now fails after 5s where it previously did not time out. If you rely on the old
@@ -67,9 +68,11 @@ Behavior changes. These change runtime behavior on upgrade, even if you do not c
 New options:
 
 - `readTimeout` (default 0, disabled): a streaming-safe idle-read timeout that fires only if no response chunk arrives
-  within the interval. It is armed per request and does not affect idle pooled connections.
+  within the interval. It is armed per request and does not affect idle pooled connections. Settable as
+  `readTimeout(Duration)` or `readTimeoutMillis(long)` (YAML key `connectionPool.readTimeoutMillis`).
 - `keepAliveTime` (default 30000 ms): the idle time before TCP keep-alive probes begin. It enables `SO_KEEPALIVE` and
-  sets `TCP_KEEPIDLE` where supported (JDK 11+ on Linux and macOS). Set 0 to disable.
+  sets `TCP_KEEPIDLE` where supported (JDK 11+ on Linux and macOS). Set 0 to disable. Settable as
+  `keepAliveTime(Duration)` or `keepAliveTimeMillis(long)` (YAML key `connectionPool.keepAliveTimeMillis`).
 - `maxResponseHeaderBytes` (default 8192): the maximum response header size, which was previously hardcoded.
 - `proxy(ProxyOptions)`: routes connections through an HTTP proxy.
 - `url(String)`: configures the endpoint from a single URL (scheme, host, port, and path). The existing
@@ -78,7 +81,8 @@ New options:
 The `maxResponseContentLength` setting has been removed. Responses are now streamed rather than aggregated
 and size-capped. The new idle `readTimeout` is the partial mitigation for unbounded or slow responses.
 
-See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[dev list discussion on standardizing GLV connection options].
+See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4
+].
 
 ==== Declarative Pattern Matching
 

@@ -196,7 +196,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
         builder.sslProvider(SslProvider.JDK);
 
-        final Cluster cluster = TestClientFactory.build().enableSsl(true).sslContext(builder.build()).create();
+        final Cluster cluster = TestClientFactory.build().enableSsl(true).ssl(builder.build()).create();
         final Client client = cluster.connect();
 
         try {

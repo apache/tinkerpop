@@ -100,7 +100,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
     public void shouldBalanceConcurrentRequestsAcrossConnections() throws InterruptedException {
         final int connPoolSize = 16;
         final Cluster cluster = TestClientFactory.build()
-                .maxConnectionPoolSize(connPoolSize)
+                .maxConnections(connPoolSize)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
         client.init();
@@ -145,7 +145,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
     public void shouldCreateNewHttpConnectionPerRequestAsNeeded() throws InterruptedException {
         final int operations = 6;
         final Cluster cluster = TestClientFactory.build()
-                .maxConnectionPoolSize(operations)
+                .maxConnections(operations)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
         client.init();
@@ -194,7 +194,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
      */
     @Test
     public void shouldSucceedWithJitteryConnection() throws Exception {
-        final Cluster cluster = TestClientFactory.build().maxConnectionPoolSize(128).
+        final Cluster cluster = TestClientFactory.build().maxConnections(128).
                 reconnectInterval(1000).
                 maxWaitForConnection(4000).validationRequest("g.inject()").create();
         final Client.ClusteredClient client = cluster.connect();
@@ -254,7 +254,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
     public void shouldCloseIdleConnectionsAndRecreateNewConnections() throws InterruptedException {
         int idleMillis = 3000;
         final Cluster cluster = TestClientFactory.build()
-                .idleConnectionTimeoutMillis(idleMillis)
+                .idleTimeoutMillis(idleMillis)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
         client.init();
@@ -284,7 +284,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
     public void shouldThrowErrorWithHelpfulMessageWhenIdleTimeoutReachedBeforeResponseReceived() throws InterruptedException {
         int idleMillis = 1000;
         final Cluster cluster = TestClientFactory.build()
-                .idleConnectionTimeoutMillis(idleMillis)
+                .idleTimeoutMillis(idleMillis)
                 .create();
         final Client.ClusteredClient client = cluster.connect();
         final RequestOptions ro = RequestOptions.build().language("gremlin-groovy").create();
@@ -311,7 +311,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
     public void shouldTimeoutAndCleanUpConnectionWhenReadTimeoutReachedBeforeResponseReceived() throws Exception {
         final int readMillis = 1000;
         final Cluster cluster = TestClientFactory.build()
-                .readTimeout(readMillis)
+                .readTimeoutMillis(readMillis)
                 .maxConnections(2)
                 .create();
         final Client.ClusteredClient client = cluster.connect();

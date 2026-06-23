@@ -992,20 +992,20 @@ The following table describes the various configuration options for the Gremlin 
 |auth.region |The region setting for sigv4 authentication. |_none_
 |auth.serviceName |The service name setting for sigv4 authentication. |_none_
 |connectionPool.compression |The wire compression algorithm negotiated with the server. Can be: `NONE` or `DEFLATE`. |DEFLATE
-|connectionPool.connectTimeout | Duration of time in milliseconds that bounds TCP connection establishment (transport setup, including the SSL handshake). Formerly `connectionSetupTimeoutMillis`, which is still accepted as a deprecated alias. |5000
+|connectionPool.connectTimeoutMillis | Duration of time in milliseconds that bounds TCP connection establishment (transport setup, including the SSL handshake). On `Cluster.Builder` also settable as `connectTimeout(Duration)`. |5000
 |connectionPool.enableSsl |Determines if SSL should be enabled or not. If enabled on the server then it must be enabled on the client. |false
-|connectionPool.idleTimeout | Duration of time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes. Formerly `idleConnectionTimeoutMillis`, which is still accepted as a deprecated alias. |180000
-|connectionPool.keepAliveTime | Idle time in milliseconds before TCP keep-alive probes begin on an otherwise idle connection. Enables `SO_KEEPALIVE` on the socket and, where supported (JDK 11+ on Linux/macOS via `TCP_KEEPIDLE`), sets the per-socket idle time. Set to `0` to disable. |30000
+|connectionPool.idleTimeoutMillis | Duration of time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes. On `Cluster.Builder` also settable as `idleTimeout(Duration)`. |180000
+|connectionPool.keepAliveTimeMillis | Idle time in milliseconds before TCP keep-alive probes begin on an otherwise idle connection. Enables `SO_KEEPALIVE` on the socket and, where supported (JDK 11+ on Linux/macOS via `TCP_KEEPIDLE`), sets the per-socket idle time. Set to `0` to disable. On `Cluster.Builder` also settable as `keepAliveTime(Duration)`. |30000
 |connectionPool.keyStore |The private key in JKS or PKCS#12 format. |_none_
 |connectionPool.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
 |connectionPool.keyStoreType |`PKCS12` |_none_
-|connectionPool.maxConnections |The maximum size of a connection pool for a host. Formerly `maxConnectionPoolSize`, which is still accepted as a deprecated alias. |128
+|connectionPool.maxConnections |The maximum size of a connection pool for a host. |128
 |connectionPool.maxResponseHeaderBytes |The maximum size in bytes allowed for the HTTP response headers. |8192
 |connectionPool.maxWaitForConnection |The amount of time in milliseconds to wait for a new connection before timing out. |16000
 |connectionPool.maxWaitForClose |The amount of time in milliseconds to wait for pending messages to be returned from the server before closing the connection. |3000
 |connectionPool.reconnectInterval |The amount of time in milliseconds to wait before trying to reconnect to a dead host. |1000
-|connectionPool.defaultBatchSize |The default value for the per-request batch size used when a request does not specify one. Formerly `resultIterationBatchSize`, which is still accepted as a deprecated alias. |64
-|connectionPool.readTimeout |Idle-read timeout in milliseconds that bounds the time between inbound response chunks. Set to `0` to disable. |0
+|connectionPool.batchSize |The default value for the per-request batch size used when a request does not specify one. |64
+|connectionPool.readTimeoutMillis |Idle-read timeout in milliseconds that bounds the time between inbound response chunks. Set to `0` to disable. On `Cluster.Builder` also settable as `readTimeout(Duration)`. |0
 |connectionPool.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
 |connectionPool.sslEnabledProtocols |The list of SSL protocols to support for SSL connections. If specified, only the protocols that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
 |connectionPool.sslSkipCertValidation |Configures the `TrustManager` to trust all certs without any validation. Should not be used in production.|false

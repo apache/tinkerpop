@@ -70,8 +70,8 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
     private Client client = null;
     private GraphTraversalSource g = null;
 
-    private final RequestOptions gmodern = RequestOptions.build().addG("gmodern").create();
-    private final RequestOptions gcrew = RequestOptions.build().addG("gcrew").create();
+    private final RequestOptions gmodern = RequestOptions.build().traversalSource("gmodern").create();
+    private final RequestOptions gcrew = RequestOptions.build().traversalSource("gcrew").create();
 
 
     public GremlinServerSerializationIntegrateTest(AbstractMessageSerializer serializer) {

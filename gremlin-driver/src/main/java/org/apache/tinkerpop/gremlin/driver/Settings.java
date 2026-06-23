@@ -192,8 +192,6 @@ public final class Settings {
 
             if (connectionPoolConf.containsKey("maxConnections"))
                 cpSettings.maxConnections = connectionPoolConf.getInt("maxConnections");
-            else if (connectionPoolConf.containsKey("maxSize"))
-                cpSettings.maxConnections = connectionPoolConf.getInt("maxSize");
 
             if (connectionPoolConf.containsKey("maxWaitForConnection"))
                 cpSettings.maxWaitForConnection = connectionPoolConf.getInt("maxWaitForConnection");
@@ -207,29 +205,23 @@ public final class Settings {
             if (connectionPoolConf.containsKey("reconnectInterval"))
                 cpSettings.reconnectInterval = connectionPoolConf.getInt("reconnectInterval");
 
-            if (connectionPoolConf.containsKey("defaultBatchSize"))
-                cpSettings.defaultBatchSize = connectionPoolConf.getInt("defaultBatchSize");
-            else if (connectionPoolConf.containsKey("resultIterationBatchSize"))
-                cpSettings.defaultBatchSize = connectionPoolConf.getInt("resultIterationBatchSize");
+            if (connectionPoolConf.containsKey("batchSize"))
+                cpSettings.batchSize = connectionPoolConf.getInt("batchSize");
 
             if (connectionPoolConf.containsKey("validationRequest"))
                 cpSettings.validationRequest = connectionPoolConf.getString("validationRequest");
 
-            if (connectionPoolConf.containsKey("connectTimeout"))
-                cpSettings.connectTimeout = connectionPoolConf.getLong("connectTimeout");
-            else if (connectionPoolConf.containsKey("connectionSetupTimeoutMillis"))
-                cpSettings.connectTimeout = connectionPoolConf.getLong("connectionSetupTimeoutMillis");
+            if (connectionPoolConf.containsKey("connectTimeoutMillis"))
+                cpSettings.connectTimeout = connectionPoolConf.getInt("connectTimeoutMillis");
 
-            if (connectionPoolConf.containsKey("idleTimeout"))
-                cpSettings.idleTimeout = connectionPoolConf.getLong("idleTimeout");
-            else if (connectionPoolConf.containsKey("idleConnectionTimeout"))
-                cpSettings.idleTimeout = connectionPoolConf.getLong("idleConnectionTimeout");
+            if (connectionPoolConf.containsKey("idleTimeoutMillis"))
+                cpSettings.idleTimeout = connectionPoolConf.getLong("idleTimeoutMillis");
 
-            if (connectionPoolConf.containsKey("keepAliveTime"))
-                cpSettings.keepAliveTime = connectionPoolConf.getLong("keepAliveTime");
+            if (connectionPoolConf.containsKey("keepAliveTimeMillis"))
+                cpSettings.keepAliveTime = connectionPoolConf.getLong("keepAliveTimeMillis");
 
-            if (connectionPoolConf.containsKey("readTimeout"))
-                cpSettings.readTimeout = connectionPoolConf.getLong("readTimeout");
+            if (connectionPoolConf.containsKey("readTimeoutMillis"))
+                cpSettings.readTimeout = connectionPoolConf.getLong("readTimeoutMillis");
 
             if (connectionPoolConf.containsKey("compression"))
                 cpSettings.compression = Compression.valueOf(connectionPoolConf.getString("compression").toUpperCase());
@@ -350,7 +342,7 @@ public final class Settings {
          * The default value for the per-request batch size used when a request does not specify one. This value is set
          * to 64 by default.
          */
-        public int defaultBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
+        public int batchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
 
         /**
          * A valid Gremlin script that can be used to test remote operations.
@@ -362,7 +354,7 @@ public final class Settings {
          * SSL handshake). Beyond this duration an exception would be thrown if the connection is not established by
          * then. The default value is 5000.
          */
-        public long connectTimeout = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
+        public int connectTimeout = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
 
         /**
          * Time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes.

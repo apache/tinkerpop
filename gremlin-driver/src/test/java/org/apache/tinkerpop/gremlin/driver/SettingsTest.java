@@ -58,7 +58,7 @@ public class SettingsTest {
         conf.setProperty("connectionPool.sslEnabledProtocols", Arrays.asList("TLSv1.1","TLSv1.2"));
         conf.setProperty("connectionPool.sslCipherSuites", Arrays.asList("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"));
         conf.setProperty("connectionPool.sslSkipCertValidation", true);
-        conf.setProperty("connectionPool.maxSize", 200);
+        conf.setProperty("connectionPool.maxConnections", 200);
         conf.setProperty("connectionPool.minSimultaneousUsagePerConnection", 300);
         conf.setProperty("connectionPool.maxSimultaneousUsagePerConnection", 400);
         conf.setProperty("connectionPool.maxInProcessPerConnection", 500);
@@ -66,13 +66,13 @@ public class SettingsTest {
         conf.setProperty("connectionPool.maxWaitForConnection", 700);
         conf.setProperty("connectionPool.maxResponseHeaderBytes", 800);
         conf.setProperty("connectionPool.reconnectInterval", 900);
-        conf.setProperty("connectionPool.defaultBatchSize", 1100);
+        conf.setProperty("connectionPool.batchSize", 1100);
         conf.setProperty("connectionPool.channelizer", "channelizer0");
         conf.setProperty("connectionPool.validationRequest", "g.inject()");
-        conf.setProperty("connectionPool.connectTimeout", 15000);
-        conf.setProperty("connectionPool.idleTimeout", 160000);
-        conf.setProperty("connectionPool.keepAliveTime", 45000);
-        conf.setProperty("connectionPool.readTimeout", 5000);
+        conf.setProperty("connectionPool.connectTimeoutMillis", 15000);
+        conf.setProperty("connectionPool.idleTimeoutMillis", 160000);
+        conf.setProperty("connectionPool.keepAliveTimeMillis", 45000);
+        conf.setProperty("connectionPool.readTimeoutMillis", 5000);
         conf.setProperty("connectionPool.compression", "deflate");
 
         final Settings settings = Settings.from(conf);
@@ -107,7 +107,7 @@ public class SettingsTest {
         assertEquals(45000, settings.connectionPool.keepAliveTime);
         assertEquals(5000, settings.connectionPool.readTimeout);
         assertEquals(Compression.DEFLATE, settings.connectionPool.compression);
-        assertEquals(1100, settings.connectionPool.defaultBatchSize);
+        assertEquals(1100, settings.connectionPool.batchSize);
         assertEquals("g.inject()", settings.connectionPool.validationRequest);
     }
 }

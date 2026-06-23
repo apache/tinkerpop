@@ -512,11 +512,11 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
 
         // vertex should exist in the transactional graph (gtx)
         assertEquals(1L, client.submit("g.V().hasLabel('routed').count()",
-                RequestOptions.build().addG(GTX).create()).all().get().get(0).getLong());
+                RequestOptions.build().traversalSource(GTX).create()).all().get().get(0).getLong());
 
         // vertex should NOT exist in the classic graph (gclassic)
         assertEquals(0L, client.submit("g.V().hasLabel('routed').count()",
-                RequestOptions.build().addG("gclassic").create()).all().get().get(0).getLong());
+                RequestOptions.build().traversalSource("gclassic").create()).all().get().get(0).getLong());
     }
 
     @Test

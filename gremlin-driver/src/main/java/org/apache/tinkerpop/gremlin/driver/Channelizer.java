@@ -236,7 +236,7 @@ public interface Channelizer extends ChannelHandler {
             if (cluster.getIdleTimeout() > 0) {
                 final int idleConnectionTimeout = (int) (cluster.getIdleTimeout() / 1000);
                 idleStateHandler = new IdleStateHandler(idleConnectionTimeout, idleConnectionTimeout, 0);
-                idleConnectionHandler = new IdleConnectionHandler();
+                idleConnectionHandler = new IdleConnectionHandler(() -> pending.get() != null);
             }
         }
 
