@@ -18,9 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary;
 
+import org.apache.tinkerpop.gremlin.structure.io.binary.types.PrimitiveProviderDefinedTypeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.ProviderDefinedTypeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TransformSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
@@ -91,6 +94,10 @@ public class GraphBinaryWriter {
             serializer.writeValue((T) dehydrateToPdt(value, objectClass), buffer, this, nullable);
             return;
         }
+        if (serializer instanceof PrimitiveProviderDefinedTypeSerializer && !(value instanceof PrimitiveProviderDefinedType)) {
+            serializer.writeValue((T) dehydrateToPrimitivePdt(value, objectClass), buffer, this, nullable);
+            return;
+        }
         serializer.writeValue(value, buffer, this, nullable);
     }
 
@@ -108,16 +115,16 @@ public class GraphBinaryWriter {
         final TypeSerializer<T> serializer = (TypeSerializer<T>) getSerializerOrAdapterFallback(objectClass);
 
         if (serializer instanceof ProviderDefinedTypeSerializer && !(value instanceof ProviderDefinedType)) {
-            // Convert to ProviderDefinedType (via annotation or adapter), then re-enter write().
-            // On re-entry, ProviderDefinedType.class is directly registered in the registry,
-            // and the instanceof guard prevents double-wrapping.
             write((T) dehydrateToPdt(value, objectClass), buffer);
             return;
         }
 
+        if (serializer instanceof PrimitiveProviderDefinedTypeSerializer && !(value instanceof PrimitiveProviderDefinedType)) {
+            write((T) dehydrateToPrimitivePdt(value, objectClass), buffer);
+            return;
+        }
+
         if (serializer instanceof TransformSerializer) {
-            // For historical reasons, there are types that need to be transformed into another type
-            // before serialization, e.g., Map.Entry
             final TransformSerializer<T> transformSerializer = (TransformSerializer<T>) serializer;
             write(transformSerializer.transform(value), buffer);
             return;
@@ -168,15 +175,20 @@ public class GraphBinaryWriter {
 
     /**
      * Attempts to get a serializer for the given class. If no serializer is found and the pdtRegistry
-     * has an adapter for the class, returns the CompositePDT serializer.
+     * has an adapter for the class (composite or primitive), returns the appropriate PDT serializer.
      */
     @SuppressWarnings("unchecked")
     private <DT> TypeSerializer<DT> getSerializerOrAdapterFallback(final Class<?> type) throws IOException {
         try {
             return (TypeSerializer<DT>) registry.getSerializer(type);
         } catch (final IOException e) {
-            if (pdtRegistry != null && pdtRegistry.getAdapterByClass(type).isPresent()) {
-                return (TypeSerializer<DT>) registry.getSerializer(DataType.COMPOSITE_PDT);
+            if (pdtRegistry != null) {
+                if (pdtRegistry.getAdapterByClass(type).isPresent()) {
+                    return (TypeSerializer<DT>) registry.getSerializer(DataType.COMPOSITE_PDT);
+                }
+                if (pdtRegistry.getPrimitiveAdapterByClass(type).isPresent()) {
+                    return (TypeSerializer<DT>) registry.getSerializer(DataType.PRIMITIVE_PDT);
+                }
             }
             throw e;
         }
@@ -203,6 +215,16 @@ public class GraphBinaryWriter {
         }
         // Should not reach here since getSerializerOrAdapterFallback already validated
         return ProviderDefinedType.from(value);
+    }
+
+    /**
+     * Dehydrates a value to a {@link PrimitiveProviderDefinedType} using a {@link PrimitivePDTAdapter} from the
+     * pdtRegistry.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private PrimitiveProviderDefinedType dehydrateToPrimitivePdt(final Object value, final Class<?> objectClass) {
+        final PrimitivePDTAdapter adapter = (PrimitivePDTAdapter) pdtRegistry.getPrimitiveAdapterByClass(objectClass).get();
+        return new PrimitiveProviderDefinedType(adapter.typeName(), adapter.toValue(value));
     }
 
 }

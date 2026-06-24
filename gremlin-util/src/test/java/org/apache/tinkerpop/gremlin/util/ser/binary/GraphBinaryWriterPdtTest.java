@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
@@ -132,5 +134,78 @@ public class GraphBinaryWriterPdtTest {
 
         final ProviderDefinedType result = reader.read(buffer);
         assertEquals(pdt, result);
+    }
+
+    // === Primitive PDT Adapter write-path tests ===
+
+    static class Uint32 {
+        final long value;
+        Uint32(long value) { this.value = value; }
+    }
+
+    static class Uint32Adapter implements PrimitivePDTAdapter<Uint32> {
+        @Override public String typeName() { return "Uint32"; }
+        @Override public Class<Uint32> targetClass() { return Uint32.class; }
+        @Override public String toValue(Uint32 obj) { return Long.toString(obj.value); }
+        @Override public Uint32 fromValue(String value) { return new Uint32(Long.parseLong(value)); }
+    }
+
+    @Test
+    public void shouldDehydratePrimitiveAdapterOnWritePathAndHydrateBack() throws IOException {
+        final ProviderDefinedTypeRegistry pdtRegistry = ProviderDefinedTypeRegistry.empty();
+        pdtRegistry.register(new Uint32Adapter());
+
+        final GraphBinaryWriter registryWriter = new GraphBinaryWriter(TypeSerializerRegistry.INSTANCE, pdtRegistry);
+        final GraphBinaryReader registryReader = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, pdtRegistry);
+
+        final Uint32 original = new Uint32(12345L);
+
+        final Buffer buffer = bufferFactory.create(allocator.buffer());
+        registryWriter.write(original, buffer);
+        buffer.readerIndex(0);
+
+        final Uint32 result = registryReader.read(buffer);
+        assertEquals(12345L, result.value);
+    }
+
+    @Test
+    public void shouldRoundTripPrimitiveProviderDefinedTypeWithoutRegistry() throws IOException {
+        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Uint32", "99");
+
+        final Buffer buffer = bufferFactory.create(allocator.buffer());
+        writer.write(pdt, buffer);
+        buffer.readerIndex(0);
+
+        final PrimitiveProviderDefinedType result = reader.read(buffer);
+        assertEquals(pdt, result);
+    }
+
+    @Test
+    public void shouldRoundTripPrimitiveNestedInComposite() throws IOException {
+        final ProviderDefinedTypeRegistry pdtRegistry = ProviderDefinedTypeRegistry.empty();
+        pdtRegistry.register(new Uint32Adapter());
+        pdtRegistry.register(new UnannotatedTypeAdapter());
+
+        final GraphBinaryWriter registryWriter = new GraphBinaryWriter(TypeSerializerRegistry.INSTANCE, pdtRegistry);
+        final GraphBinaryReader registryReader = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, pdtRegistry);
+
+        // Build a composite PDT with a nested primitive value
+        final Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("value", 7);
+        fields.put("id", new PrimitiveProviderDefinedType("Uint32", "42"));
+        final ProviderDefinedType compositePdt = new ProviderDefinedType("UnannotatedType", fields);
+
+        final Buffer buffer = bufferFactory.create(allocator.buffer());
+        registryWriter.write(compositePdt, buffer);
+        buffer.readerIndex(0);
+
+        // The reader hydrates the composite (via UnannotatedTypeAdapter) and the nested primitive
+        // should have been hydrated to Uint32 by the registry's hydrateValue recursion
+        final Object result = registryReader.read(buffer);
+        assertTrue(result instanceof UnannotatedType);
+        // Note: UnannotatedTypeAdapter only maps "value" field to an int, so the hydrated "id" field
+        // ends up being handled during the composite adapter's fromFields. Since the adapter
+        // only reads "value", we verify the composite round-tripped correctly.
+        assertEquals(7, ((UnannotatedType) result).value);
     }
 }

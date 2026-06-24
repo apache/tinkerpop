@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure.io.binary;
 
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 
@@ -107,6 +108,9 @@ public class GraphBinaryReader {
         final T result = serializer.read(buffer, this);
         if (pdtRegistry != null && result instanceof ProviderDefinedType) {
             return (T) pdtRegistry.hydrate((ProviderDefinedType) result);
+        }
+        if (pdtRegistry != null && result instanceof PrimitiveProviderDefinedType) {
+            return (T) pdtRegistry.hydratePrimitive((PrimitiveProviderDefinedType) result);
         }
         return result;
     }
