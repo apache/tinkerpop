@@ -39,7 +39,7 @@ import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
@@ -1402,7 +1402,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         TestPoint(final int x, final int y) { this.x = x; this.y = y; }
     }
 
-    static class TestPointAdapter implements ProviderDefinedTypeAdapter<TestPoint> {
+    static class TestPointAdapter implements CompositePDTAdapter<TestPoint> {
         // TestPoint is the client-side representation of the server-side @ProviderDefined "Point" type,
         // so the adapter's type name matches the server type name "Point".
         @Override public String typeName() { return "Point"; }

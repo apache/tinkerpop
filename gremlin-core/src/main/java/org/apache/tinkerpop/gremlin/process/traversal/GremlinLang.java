@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.gremlin.util.NumberHelper;
@@ -273,7 +274,7 @@ public class GremlinLang implements Cloneable, Serializable {
             final Optional<ProviderDefinedTypeAdapter<?>> adapter = pdtRegistry.getAdapterByClass(arg.getClass());
             if (adapter.isPresent()) {
                 @SuppressWarnings("unchecked")
-                final Map<String, Object> fields = ((ProviderDefinedTypeAdapter) adapter.get()).toFields(arg);
+                final Map<String, Object> fields = ((CompositePDTAdapter) adapter.get()).toFields(arg);
                 return argAsString(new ProviderDefinedType(adapter.get().typeName(), fields));
             }
         }

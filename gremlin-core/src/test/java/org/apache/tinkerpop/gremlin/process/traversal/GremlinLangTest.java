@@ -30,7 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
@@ -470,7 +470,7 @@ public class GremlinLangTest {
         @Test
         public void shouldUseAdapterOverAnnotation() {
             final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
-            registry.register(new ProviderDefinedTypeAdapter<DualType>() {
+            registry.register(new CompositePDTAdapter<DualType>() {
                 @Override public String typeName() { return "AdapterName"; }
                 @Override public Class<DualType> targetClass() { return DualType.class; }
                 @Override public Map<String, Object> toFields(final DualType obj) {
@@ -500,7 +500,7 @@ public class GremlinLangTest {
         @Test
         public void shouldDehydrateRegisteredTypeNestedInsideUnregisteredOuterPdt() {
             final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
-            registry.register(new ProviderDefinedTypeAdapter<TestPoint>() {
+            registry.register(new CompositePDTAdapter<TestPoint>() {
                 @Override public String typeName() { return "Point"; }
                 @Override public Class<TestPoint> targetClass() { return TestPoint.class; }
                 @Override public Map<String, Object> toFields(final TestPoint obj) {

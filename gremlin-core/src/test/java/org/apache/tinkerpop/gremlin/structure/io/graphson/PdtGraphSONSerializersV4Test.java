@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -152,7 +152,7 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
         Point(int x, int y) { this.x = x; this.y = y; }
     }
 
-    static class PointAdapter implements ProviderDefinedTypeAdapter<Point> {
+    static class PointAdapter implements CompositePDTAdapter<Point> {
         @Override public String typeName() { return "Point"; }
         @Override public Class<Point> targetClass() { return Point.class; }
         @Override public Map<String, Object> toFields(Point obj) {

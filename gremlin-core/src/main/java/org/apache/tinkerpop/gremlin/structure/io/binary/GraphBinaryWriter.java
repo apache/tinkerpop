@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io.binary;
 
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.ProviderDefinedTypeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TransformSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
@@ -195,7 +196,7 @@ public class GraphBinaryWriter {
         if (pdtRegistry != null) {
             final Optional<ProviderDefinedTypeAdapter<?>> opt = pdtRegistry.getAdapterByClass(objectClass);
             if (opt.isPresent()) {
-                final ProviderDefinedTypeAdapter adapter = opt.get();
+                final CompositePDTAdapter adapter = (CompositePDTAdapter) opt.get();
                 final Map<String, Object> fields = adapter.toFields(value);
                 return new ProviderDefinedType(adapter.typeName(), fields);
             }
