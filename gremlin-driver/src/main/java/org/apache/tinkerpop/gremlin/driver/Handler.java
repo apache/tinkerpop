@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.util.AttributeMap;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.driver.exception.FailResponseException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
@@ -242,8 +243,16 @@ final class Handler {
                             (String) attributes.get(Tokens.STATUS_ATTRIBUTE_STACK_TRACE) : null;
                     final List<String> exceptions = attributes.containsKey(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) ?
                             (List<String>) attributes.get(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS) : null;
-                    queue.markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage(),
-                            exceptions, stackTrace, cleanStatusAttributes(attributes)));
+
+                    // a SERVER_ERROR_FAIL_STEP indicates that the traversal triggered a fail() step on the server.
+                    // throw the more specific FailResponseException which implements Failure so that handling can
+                    // be made more consistent with the local fail() behavior.
+                    final ResponseException responseException = statusCode == ResponseStatusCode.SERVER_ERROR_FAIL_STEP ?
+                            new FailResponseException(response.getStatus().getMessage(), exceptions, stackTrace,
+                                    cleanStatusAttributes(attributes)) :
+                            new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage(),
+                                    exceptions, stackTrace, cleanStatusAttributes(attributes));
+                    queue.markError(responseException);
                 }
             }
 

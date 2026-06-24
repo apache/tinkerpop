@@ -1855,6 +1855,20 @@ rollback. Moreover, the ability to rollback at all is graph provider dependent. 
 configured without transaction support, will simply be left in a partially mutated state whether the action to rollback
 on `fail()` was implemented or not.
 
+The type of exception that `fail()` produces depends on how the traversal is executed:
+
+* *Embedded* - When executed directly against a `Graph` instance in the same JVM, `fail()` throws a
+`FailStep.FailException` which implements the `Failure` interface. The `Failure` provides programmatic access to the
+failure `Message`, `Traverser`, `Traversal` and `Metadata` as shown in the formatted output above.
+* *Remote (HTTP)* - When executed against Gremlin Server over HTTP, the server returns a `500` error with a message that
+indicates that the `fail()` step was triggered. The richer `Failure` data described above is not retained.
+* *Remote (WebSockets)* - When executed against Gremlin Server over WebSockets, the server returns the
+`595`/`SERVER_ERROR_FAIL_STEP` status code. In the Java driver this surfaces as a `FailResponseException`, a subclass of
+`ResponseException` that also implements the `Failure` interface so that the failure can be caught and handled in a
+manner more consistent with the embedded case. Note that the `Failure` data (e.g. `Traverser`, `Traversal`, `Metadata`)
+is not transmitted from the server, so those accessors return empty or `null` values. Other Gremlin Language Variants
+continue to surface this condition as their standard remote exception type.
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#fail()++[`fail()`],

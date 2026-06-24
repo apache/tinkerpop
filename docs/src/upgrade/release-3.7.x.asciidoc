@@ -57,7 +57,24 @@ an empty string instead.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3225[TINKERPOP-3225]
 
+==== FailResponseException for fail() Step
 
+The purpose of `fail()` step is to allow the user to raise error conditions when a traversal takes a particular path.
+It provides exception feedback to the user while immediately stopping the traversal in an error state. In embedded
+cases, it raises a `FailException` which implements the `Failure` interface and provides more details about the failure
+itself. Unfortunately, remote cases behaved differently and returned the common `ResponseException`. While it was
+possible to check the response code on this exception, it was not possible to catch the exception in quite the same way
+as embedded.
+
+To remedy this shortcoming, this version introduces a new `FailResponseException` which extends `ResponseException` and
+implements the `Failure` interface. When the driver encounters a 595 status code, an indicator that the `fail()` step
+was triggered on the server, it will throw a `FailResponseException` instead of the generic `ResponseException`. Note
+that the server does not send back many of the internal details needed to fully form a `Failure`, so the
+`FailResponseException` is really just a marker that makes it easier to trap these types of errors.
+
+Note that this change is for Java only and designed to better align embedded and remote use cases.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3238[TINKERPOP-3238]
 
 == TinkerPop 3.7.6
 
