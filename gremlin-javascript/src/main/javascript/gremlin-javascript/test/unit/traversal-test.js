@@ -157,6 +157,75 @@ describe('Traversal', function () {
     });
   });
 
+  describe('#next(amount)', function () {
+    function createTraversal(traversers) {
+      const strategyMock = {
+        apply: function (traversal) {
+          traversal.traversers = traversers;
+          return Promise.resolve();
+        }
+      };
+      const strategies = new TraversalStrategies();
+      strategies.addStrategy(strategyMock);
+      return new t.Traversal(null, strategies, null);
+    }
+
+    it('should return a Promise with an array of up to amount values', function () {
+      const traversal = createTraversal([ new t.Traverser(1, 1), new t.Traverser(2, 1), new t.Traverser(3, 1) ]);
+      return traversal.next(2)
+        .then(function (batch) {
+          assert.deepStrictEqual(batch, [ 1, 2 ]);
+          return traversal.next(2);
+        })
+        .then(function (batch) {
+          assert.deepStrictEqual(batch, [ 3 ]);
+        });
+    });
+
+    it('should return an array of one when amount is one', function () {
+      const traversal = createTraversal([ new t.Traverser(1, 1), new t.Traverser(2, 1) ]);
+      return traversal.next(1).then(function (batch) {
+        assert.deepStrictEqual(batch, [ 1 ]);
+      });
+    });
+
+    it('should expand bulk into separate values', function () {
+      const traversal = createTraversal([ new t.Traverser(1, 2), new t.Traverser(2, 1) ]);
+      return traversal.next(2).then(function (batch) {
+        assert.deepStrictEqual(batch, [ 1, 1 ]);
+      });
+    });
+
+    it('should return only the remaining values when fewer than amount exist', function () {
+      const traversal = createTraversal([ new t.Traverser(1, 1), new t.Traverser(2, 1) ]);
+      return traversal.next(5).then(function (batch) {
+        assert.deepStrictEqual(batch, [ 1, 2 ]);
+      });
+    });
+
+    it('should return an empty array when amount is zero', function () {
+      const traversal = createTraversal([ new t.Traverser(1, 1) ]);
+      return traversal.next(0).then(function (batch) {
+        assert.deepStrictEqual(batch, []);
+      });
+    });
+
+    it('should return an empty array when amount is negative', function () {
+      const traversal = createTraversal([ new t.Traverser(1, 1) ]);
+      return traversal.next(-1).then(function (batch) {
+        assert.deepStrictEqual(batch, []);
+      });
+    });
+
+    it('should still return an iterator item when called without an amount', function () {
+      const traversal = createTraversal([ new t.Traverser(1, 1) ]);
+      return traversal.next().then(function (item) {
+        assert.strictEqual(item.value, 1);
+        assert.strictEqual(item.done, false);
+      });
+    });
+  });
+
   if (Symbol.asyncIterator) {
     describe('@@asyncIterator', function () {
       it('should expose the async iterator', function () {

@@ -131,6 +131,26 @@ describe('Traversal', function () {
         });
     });
   });
+  describe('#next(amount)', function () {
+    it('should submit the traversal and return a batch of up to amount results', function () {
+      var g = traversal().withRemote(connection);
+      var t = g.V();
+      return t.next(2)
+        .then(function (batch) {
+          assert.ok(Array.isArray(batch));
+          assert.strictEqual(batch.length, 2);
+          batch.forEach(v => assert.ok(v instanceof Vertex));
+          return t.next(10);
+        }).then(function (batch) {
+          // gmodern has 6 vertices, 2 already consumed, so only 4 remain
+          assert.strictEqual(batch.length, 4);
+          batch.forEach(v => assert.ok(v instanceof Vertex));
+          return t.next(2);
+        }).then(function (batch) {
+          assert.deepStrictEqual(batch, []);
+        });
+    });
+  });
   describe('#materializeProperties()', function () {
     it('should skip vertex properties when tokens is set', function () {
       var g = traversal().withRemote(connection);
