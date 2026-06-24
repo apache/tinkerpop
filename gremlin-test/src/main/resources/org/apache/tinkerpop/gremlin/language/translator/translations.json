@@ -15411,57 +15411,6 @@
         ]
     },
     {
-        "scenario": "g_withStrategiesXReadOnlyChildVerificationStrategyX_V",
-        "traversals": [
-            {
-                "original": "g.withStrategies(ReadOnlyChildVerificationStrategy).V()",
-                "language": "g.withStrategies(ReadOnlyChildVerificationStrategy).V()",
-                "canonical": "g.withStrategies(ReadOnlyChildVerificationStrategy).V()",
-                "anonymized": "g.withStrategies(ReadOnlyChildVerificationStrategy).V()",
-                "dotnet": "g.WithStrategies(new ReadOnlyChildVerificationStrategy()).V()",
-                "go": "g.WithStrategies(gremlingo.ReadOnlyChildVerificationStrategy()).V()",
-                "groovy": "g.withStrategies(ReadOnlyChildVerificationStrategy).V()",
-                "java": "g.withStrategies(ReadOnlyChildVerificationStrategy.instance()).V()",
-                "javascript": "g.withStrategies(new ReadOnlyChildVerificationStrategy()).V()",
-                "python": "g.with_strategies(ReadOnlyChildVerificationStrategy()).V()"
-            }
-        ]
-    },
-    {
-        "scenario": "g_withStrategiesXReadOnlyChildVerificationStrategyX_V_hasXage_gtXVXvid1X_valuesXageXXX",
-        "traversals": [
-            {
-                "original": "g.withStrategies(ReadOnlyChildVerificationStrategy).V().has(\"age\", P.gt(__.V(vid1).values(\"age\"))).values(\"name\")",
-                "language": "g.withStrategies(ReadOnlyChildVerificationStrategy).V().has(\"age\", P.gt(__.V(vid1).values(\"age\"))).values(\"name\")",
-                "canonical": "g.withStrategies(ReadOnlyChildVerificationStrategy).V().has(\"age\", P.gt(__.V(vid1).values(\"age\"))).values(\"name\")",
-                "anonymized": "g.withStrategies(ReadOnlyChildVerificationStrategy).V().has(string0, P.gt(__.V(vid1).values(string0))).values(string1)",
-                "dotnet": "g.WithStrategies(new ReadOnlyChildVerificationStrategy()).V().Has(\"age\", P.Gt(__.V(vid1).Values<object>(\"age\"))).Values<object>(\"name\")",
-                "go": "g.WithStrategies(gremlingo.ReadOnlyChildVerificationStrategy()).V().Has(\"age\", gremlingo.P.Gt(gremlingo.T__.V(vid1).Values(\"age\"))).Values(\"name\")",
-                "groovy": "g.withStrategies(ReadOnlyChildVerificationStrategy).V().has(\"age\", P.gt(__.V(vid1).values(\"age\"))).values(\"name\")",
-                "java": "g.withStrategies(ReadOnlyChildVerificationStrategy.instance()).V().has(\"age\", P.gt(__.V(vid1).values(\"age\"))).values(\"name\")",
-                "javascript": "g.withStrategies(new ReadOnlyChildVerificationStrategy()).V().has(\"age\", P.gt(__.V(vid1).values(\"age\"))).values(\"name\")",
-                "python": "g.with_strategies(ReadOnlyChildVerificationStrategy()).V().has('age', P.gt(__.V(vid1).values('age'))).values('name')"
-            }
-        ]
-    },
-    {
-        "scenario": "g_withStrategiesXReadOnlyChildVerificationStrategyX_V_hasXname_addVXxX_valuesXnameXX",
-        "traversals": [
-            {
-                "original": "g.withStrategies(ReadOnlyChildVerificationStrategy).V().has(\"name\", __.addV(\"x\").values(\"name\"))",
-                "language": "g.withStrategies(ReadOnlyChildVerificationStrategy).V().has(\"name\", __.addV(\"x\").values(\"name\"))",
-                "canonical": "g.withStrategies(ReadOnlyChildVerificationStrategy).V().has(\"name\", __.addV(\"x\").values(\"name\"))",
-                "anonymized": "g.withStrategies(ReadOnlyChildVerificationStrategy).V().has(string0, __.addV(string1).values(string0))",
-                "dotnet": "g.WithStrategies(new ReadOnlyChildVerificationStrategy()).V().Has(\"name\", __.AddV((string) \"x\").Values<object>(\"name\"))",
-                "go": "g.WithStrategies(gremlingo.ReadOnlyChildVerificationStrategy()).V().Has(\"name\", gremlingo.T__.AddV(\"x\").Values(\"name\"))",
-                "groovy": "g.withStrategies(ReadOnlyChildVerificationStrategy).V().has(\"name\", __.addV(\"x\").values(\"name\"))",
-                "java": "g.withStrategies(ReadOnlyChildVerificationStrategy.instance()).V().has(\"name\", __.addV(\"x\").values(\"name\"))",
-                "javascript": "g.withStrategies(new ReadOnlyChildVerificationStrategy()).V().has(\"name\", __.addV(\"x\").values(\"name\"))",
-                "python": "g.with_strategies(ReadOnlyChildVerificationStrategy()).V().has('name', __.add_v('x').values('name'))"
-            }
-        ]
-    },
-    {
         "scenario": "g_V_hasXname_addVXxX_valuesXnameXX_rejected",
         "traversals": [
             {
