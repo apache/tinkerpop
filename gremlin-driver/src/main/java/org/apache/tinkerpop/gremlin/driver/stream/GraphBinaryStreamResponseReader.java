@@ -92,7 +92,7 @@ public class GraphBinaryStreamResponseReader implements Runnable {
             if (statusCode == 0 || statusCode == HttpResponseStatus.OK.code()) {
                 resultSet.markComplete();
             } else {
-                resultSet.markError(new ResponseException(HttpResponseStatus.valueOf(statusCode), message, exception));
+                resultSet.markError(ResponseException.create(HttpResponseStatus.valueOf(statusCode), message, exception));
             }
         } catch (Throwable t) {
             logger.warn("Error reading streaming response", t);
