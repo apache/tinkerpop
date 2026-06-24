@@ -448,15 +448,14 @@ gremlin> g.V(4).property(__.V(1).project("friendCount").by(__.out("knows").count
 ==>v[4]
 ----
 
-See <<has-step,has()>>, <<v-step,V()>>, <<property-step,property()>>, <<is-step,is()>>, and
-<<where-step,where()>> in the Reference Documentation for full details and additional examples.
-
 Users should look to simplify existing traversals that use `as()`/`where()`/`select()` patterns solely to compare
 a traverser against a dynamically computed value. In particular, patterns of the form
 `__.as("x")...where("x", P.gt("y"))` can often be replaced with a single `has()` or `is()` step containing
 a traversal predicate.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2586[TINKERPOP-2586],
+See: <<has-step,has()>>, <<v-step,V()>>, <<property-step,property()>>, <<is-step,is()>>,
+<<where-step,where()>>,
+link:https://issues.apache.org/jira/browse/TINKERPOP-2586[TINKERPOP-2586],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2777[TINKERPOP-2777],
 link:https://issues.apache.org/jira/browse/TINKERPOP-3005[TINKERPOP-3005],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1463[TINKERPOP-1463]
