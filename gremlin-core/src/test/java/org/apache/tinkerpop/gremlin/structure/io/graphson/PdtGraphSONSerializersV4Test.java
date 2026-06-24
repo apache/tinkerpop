@@ -206,6 +206,27 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
     }
 
     @Test
+    public void shouldDehydrateRegisteredButUnannotatedTypeViaAdapterOnWritePath() throws Exception {
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(new PointAdapter());
+
+        final ObjectMapper adapterMapper = GraphSONMapper.build()
+                .version(GraphSONVersion.V4_0)
+                .addCustomModule(GraphSONXModuleV4.build())
+                .typeInfo(TypeInfo.PARTIAL_TYPES)
+                .pdtRegistry(registry)
+                .create().createMapper();
+
+        final Point original = new Point(5, 9);
+        final ProviderDefinedType result = serializeDeserialize(adapterMapper, original, ProviderDefinedType.class);
+
+        assertNotNull(result.getHydrated());
+        assertTrue(result.getHydrated() instanceof Point);
+        assertEquals(5, ((Point) result.getHydrated()).x);
+        assertEquals(9, ((Point) result.getHydrated()).y);
+    }
+
+    @Test
     public void shouldReturnRawPdtWhenTypeNotRegistered() throws Exception {
         final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
         // No adapter registered for "Unknown"

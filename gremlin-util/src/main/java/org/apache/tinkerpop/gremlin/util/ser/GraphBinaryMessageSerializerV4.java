@@ -68,7 +68,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
 
     public GraphBinaryMessageSerializerV4(final TypeSerializerRegistry registry, final ProviderDefinedTypeRegistry pdtRegistry) {
         reader = new GraphBinaryReader(registry, pdtRegistry);
-        writer = new GraphBinaryWriter(registry);
+        writer = new GraphBinaryWriter(registry, pdtRegistry);
         mapper = new GraphBinaryMapper(writer, reader);
 
         requestSerializer = new RequestMessageSerializer();
@@ -102,7 +102,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
 
         final TypeSerializerRegistry registry = builder.create();
         reader = new GraphBinaryReader(registry, ProviderDefinedTypeRegistry.create());
-        writer = new GraphBinaryWriter(registry);
+        writer = new GraphBinaryWriter(registry, ProviderDefinedTypeRegistry.create());
 
         requestSerializer = new RequestMessageSerializer();
     }
