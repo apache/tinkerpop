@@ -88,6 +88,9 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
             if (pdtRegistry != null && pdtRegistry.getAdapterByClass(aClass).isPresent()) {
                 return typeToId.get(org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType.class);
             }
+            if (pdtRegistry != null && pdtRegistry.getPrimitiveAdapterByClass(aClass).isPresent()) {
+                return typeToId.get(org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType.class);
+            }
             // If one wants to serialize an object with a type, but hasn't registered
             // a typeID for that class, fail.
             throw new IllegalArgumentException(String.format("Could not find a type identifier for the class : %s. " +
