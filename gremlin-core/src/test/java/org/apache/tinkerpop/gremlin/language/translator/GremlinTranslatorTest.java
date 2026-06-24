@@ -1489,6 +1489,15 @@ public class GremlinTranslatorTest {
                             "g.inject(new ProviderDefinedType(\"Point\", new LinkedHashMap<Object, Object>() {{ put(\"x\", 1); put(\"y\", 2); }}))",
                             "g.inject(new ProviderDefinedType(\"Point\", new Map([[\"x\", 1], [\"y\", 2]])))",
                             "g.inject(ProviderDefinedType('Point', { 'x': 1, 'y': 2 }))"},
+                    {"g.inject(PDT(\"Uint32\",\"42\"))",
+                            null,
+                            "g.inject(primitiveproviderdefinedtype0)",
+                            "g.Inject<object>(new PrimitiveProviderDefinedType(\"Uint32\", \"42\"))",
+                            "g.Inject(&gremlingo.PrimitiveProviderDefinedType{Name: \"Uint32\", Value: \"42\"})",
+                            "g.inject(new PrimitiveProviderDefinedType(\"Uint32\", \"42\"))",
+                            "g.inject(new PrimitiveProviderDefinedType(\"Uint32\", \"42\"))",
+                            "g.inject(new PrimitiveProviderDefinedType(\"Uint32\", \"42\"))",
+                            "g.inject(PrimitiveProviderDefinedType('Uint32', '42'))"},
             });
         }
 

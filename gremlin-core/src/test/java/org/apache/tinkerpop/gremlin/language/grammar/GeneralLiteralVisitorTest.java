@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -1088,6 +1089,30 @@ public class GeneralLiteralVisitorTest {
             } catch (final IllegalArgumentException e) {
                 assertTrue(e.getMessage().contains("PDT fields map must have String keys, found: java.lang.Integer"));
             }
+        }
+
+        @Test
+        public void shouldParsePrimitivePdtLiteral() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("PDT(\"Uint32\",\"42\")"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.PdtLiteralContext ctx = parser.pdtLiteral();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitPdtLiteral(ctx);
+            assertThat(result, instanceOf(PrimitiveProviderDefinedType.class));
+            final PrimitiveProviderDefinedType pdt = (PrimitiveProviderDefinedType) result;
+            assertEquals("Uint32", pdt.getName());
+            assertEquals("42", pdt.getValue());
+        }
+
+        @Test
+        public void shouldParsePrimitivePdtLiteralWithEmptyValue() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("PDT(\"Empty\",\"\")"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.PdtLiteralContext ctx = parser.pdtLiteral();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitPdtLiteral(ctx);
+            assertThat(result, instanceOf(PrimitiveProviderDefinedType.class));
+            final PrimitiveProviderDefinedType pdt = (PrimitiveProviderDefinedType) result;
+            assertEquals("Empty", pdt.getName());
+            assertEquals("", pdt.getValue());
         }
     }
 }

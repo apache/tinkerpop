@@ -242,11 +242,19 @@ public class JavascriptTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) {
-        sb.append("new ProviderDefinedType(");
-        visitStringLiteral(ctx.stringLiteral());
-        sb.append(", ");
-        visitGenericMapLiteral(ctx.genericMapLiteral());
-        sb.append(")");
+        if (ctx.genericMapLiteral() != null) {
+            sb.append("new ProviderDefinedType(");
+            visitStringLiteral(ctx.stringLiteral(0));
+            sb.append(", ");
+            visitGenericMapLiteral(ctx.genericMapLiteral());
+            sb.append(")");
+        } else {
+            sb.append("new PrimitiveProviderDefinedType(");
+            visitStringLiteral(ctx.stringLiteral(0));
+            sb.append(", ");
+            visitStringLiteral(ctx.stringLiteral(1));
+            sb.append(")");
+        }
         return null;
     }
 

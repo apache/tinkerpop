@@ -1731,6 +1731,7 @@ binaryLiteral
 
 pdtLiteral
     : K_PDT LPAREN stringLiteral COMMA genericMapLiteral RPAREN
+    | K_PDT LPAREN stringLiteral COMMA stringLiteral RPAREN
     ;
 
 

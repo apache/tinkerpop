@@ -29,6 +29,8 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
@@ -157,6 +159,11 @@ public class GremlinLangTest {
                 // Nested PDT
                 {g.inject(new ProviderDefinedType("Outer", asMap("inner", new ProviderDefinedType("Inner", asMap("v", 1))))),
                         "g.inject(PDT(\"Outer\",[\"inner\":PDT(\"Inner\",[\"v\":1])]))"},
+                // Primitive PDT
+                {g.inject(new PrimitiveProviderDefinedType("Uint32", "42")),
+                        "g.inject(PDT(\"Uint32\",\"42\"))"},
+                {g.inject(new PrimitiveProviderDefinedType("Empty", "")),
+                        "g.inject(PDT(\"Empty\",\"\"))"},
         });
     }
 
@@ -524,6 +531,28 @@ public class GremlinLangTest {
             final String gremlin = g2.inject(outerPdt).asAdmin().getGremlinLang().getGremlin();
 
             assertEquals("g.inject(PDT(\"Container\",[\"location\":PDT(\"Point\",[\"x\":3,\"y\":7])]))", gremlin);
+        }
+
+        private static class Uint32 {
+            final long value;
+            Uint32(final long value) { this.value = value; }
+        }
+
+        @Test
+        public void shouldDehydratePrimitiveRegisteredType() {
+            final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+            registry.register(new PrimitivePDTAdapter<Uint32>() {
+                @Override public String typeName() { return "Uint32"; }
+                @Override public Class<Uint32> targetClass() { return Uint32.class; }
+                @Override public String toValue(final Uint32 obj) { return String.valueOf(obj.value); }
+                @Override public Uint32 fromValue(final String value) { return new Uint32(Long.parseLong(value)); }
+            });
+
+            final GraphTraversalSource g2 = traversal().with(EmptyGraph.instance());
+            g2.getGremlinLang().setPdtRegistry(registry);
+            final String gremlin = g2.inject(new Uint32(99)).asAdmin().getGremlinLang().getGremlin();
+
+            assertEquals("g.inject(PDT(\"Uint32\",\"99\"))", gremlin);
         }
     }
 
