@@ -407,12 +407,9 @@ func (tg *tinkerPopGraph) chooseGraph(graphName string) error {
 		}
 	}
 
-	// TODO: Uncoment code here to use WithComputer once this is implemented.
-	// In this version strategies are not implemented (and therefore WithComputer also isn't implmented).
 	for _, tag := range tg.scenario.Tags {
 		if tag.Name == "@GraphComputerOnly" {
-			return godog.ErrPending
-			// tg.g.WithComputer()
+			tg.g = tg.g.WithComputer()
 		} else if tag.Name == "@AllowNullPropertyValues" {
 			// The GLV suite does not test against a graph that has null property values enabled, skipping via Pending Error
 			return godog.ErrPending
