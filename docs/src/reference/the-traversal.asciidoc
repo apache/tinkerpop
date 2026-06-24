@@ -2179,6 +2179,7 @@ g.V().has('person', 'name', regex('r')).values('name') <10>
 g.V().has('age', P.gt(__.V(1).values('age'))) <11>
 g.V().has('name', __.V(1).values('name')) <12>
 g.V().hasLabel(__.V(1).label()) <13>
+g.withSack(30).V().has('age', P.gt(__.sack())).values('name') <14>
 ----
 
 <1> Find all vertices whose ages are between 20 (exclusive) and 30 (exclusive). In other words, the age must be greater than 20 and less than 30.
@@ -2192,10 +2193,11 @@ the key,value pairs for those vertices.
 <8> Find all "person" vertices that have a name property that starts with the letter "m".
 <9> Property key is always stored as `String` and therefore an equality check with `null` will produce no result.
 <10> An example of using `has()` with regular expression predicate.
-<11> Find all vertices whose age is greater than marko's age using a traversal inside a predicate. The child traversal
-is evaluated per-traverser and its first result becomes the comparison value, consistent with `by(traversal)` semantics.
+<11> Find all vertices whose age is greater than marko's age using a traversal for dynamic resolution. The child traversal
+is evaluated per-traverser and its first result becomes the comparison value.
 <12> Find all vertices whose name equals marko's name using a traversal as the value argument.
 <13> Find all vertices whose label equals the label of vertex 1.
+<14> Find all people older than a threshold carried in the traverser's `sack()` rather than read from the graph.
 
 NOTE: When a `Traversal` is provided directly as the value argument (not inside a `P`), it is internally wrapped in
 `P.eq(traversal)`. Child traversals must be read-only. Mutating steps like `addV()` or `property()` are rejected with
@@ -2548,16 +2550,19 @@ g.V().values('age').is(32)
 g.V().values('age').is(lte(30))
 g.V().values('age').is(inside(30, 40))
 g.V().values('age').is(P.gt(__.V(1).values('age'))) <1>
-g.V().where(__.in('created').count().is(1)).values('name') <2>
-g.V().where(__.in('created').count().is(gte(2))).values('name') <3>
+g.V().hasLabel('person').values('age').
+                           is(P.gt(__.V().hasLabel('person').values('age').mean())) <2>
+g.V().where(__.in('created').count().is(1)).values('name') <3>
+g.V().where(__.in('created').count().is(gte(2))).values('name') <4>
 g.V().where(__.in('created').values('age').
-                           mean().is(inside(30d, 35d))).values('name') <4>
+                           mean().is(inside(30d, 35d))).values('name') <5>
 ----
 
 <1> Find all age values that are greater than marko's age using a traversal inside the predicate.
-<2> Find projects having exactly one contributor.
-<3> Find projects having two or more contributors.
-<4> Find projects whose contributors average age is between 30 and 35.
+<2> Find all ages greater than the average person's age, where the threshold is computed dynamically by a child traversal.
+<3> Find projects having exactly one contributor.
+<4> Find projects having two or more contributors.
+<5> Find projects whose contributors average age is between 30 and 35.
 
 NOTE: When `is(traversal)` is used directly (without an explicit predicate), it is internally wrapped in
 `P.eq(traversal)`.
