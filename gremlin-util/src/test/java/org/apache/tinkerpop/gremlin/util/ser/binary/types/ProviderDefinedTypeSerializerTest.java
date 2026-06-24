@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.junit.Test;
@@ -183,7 +183,7 @@ public class ProviderDefinedTypeSerializerTest {
     @Test
     public void shouldAutoHydrateWhenRegistryConfigured() throws IOException {
         final ProviderDefinedTypeRegistry pdtRegistry = ProviderDefinedTypeRegistry.empty();
-        pdtRegistry.register(new ProviderDefinedTypeAdapter<Map<String, Object>>() {
+        pdtRegistry.register(new CompositePDTAdapter<Map<String, Object>>() {
             @Override
             public String typeName() { return "com.example.Point"; }
 

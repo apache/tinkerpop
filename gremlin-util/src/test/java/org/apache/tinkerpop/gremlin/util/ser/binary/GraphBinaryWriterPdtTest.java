@@ -23,9 +23,9 @@ import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.junit.Test;
@@ -60,7 +60,7 @@ public class GraphBinaryWriterPdtTest {
         int value = 1;
     }
 
-    static class UnannotatedTypeAdapter implements ProviderDefinedTypeAdapter<UnannotatedType> {
+    static class UnannotatedTypeAdapter implements CompositePDTAdapter<UnannotatedType> {
         @Override public String typeName() { return "UnannotatedType"; }
         @Override public Class<UnannotatedType> targetClass() { return UnannotatedType.class; }
         @Override public Map<String, Object> toFields(final UnannotatedType obj) {

@@ -40,7 +40,7 @@ public class ProviderDefinedTypeRegistryTest {
         Point(int x, int y) { this.x = x; this.y = y; }
     }
 
-    static class PointAdapter implements ProviderDefinedTypeAdapter<Point> {
+    static class PointAdapter implements CompositePDTAdapter<Point> {
         @Override public String typeName() { return "Point"; }
         @Override public Class<Point> targetClass() { return Point.class; }
         @Override public Map<String, Object> toFields(Point obj) {
@@ -61,7 +61,7 @@ public class ProviderDefinedTypeRegistryTest {
         Line(Point start, Point end) { this.start = start; this.end = end; }
     }
 
-    static class LineAdapter implements ProviderDefinedTypeAdapter<Line> {
+    static class LineAdapter implements CompositePDTAdapter<Line> {
         @Override public String typeName() { return "Line"; }
         @Override public Class<Line> targetClass() { return Line.class; }
         @Override public Map<String, Object> toFields(Line obj) {
@@ -76,7 +76,7 @@ public class ProviderDefinedTypeRegistryTest {
     }
 
     // Adapter that always throws
-    static class FailingAdapter implements ProviderDefinedTypeAdapter<Point> {
+    static class FailingAdapter implements CompositePDTAdapter<Point> {
         @Override public String typeName() { return "Failing"; }
         @Override public Class<Point> targetClass() { return Point.class; }
         @Override public Map<String, Object> toFields(Point obj) { return new HashMap<>(); }
@@ -199,7 +199,7 @@ public class ProviderDefinedTypeRegistryTest {
         Polygon(List<Point> vertices) { this.vertices = vertices; }
     }
 
-    static class PolygonAdapter implements ProviderDefinedTypeAdapter<Polygon> {
+    static class PolygonAdapter implements CompositePDTAdapter<Polygon> {
         @Override public String typeName() { return "Polygon"; }
         @Override public Class<Polygon> targetClass() { return Polygon.class; }
         @Override public Map<String, Object> toFields(Polygon obj) {
@@ -246,7 +246,7 @@ public class ProviderDefinedTypeRegistryTest {
         registry.register(new PointAdapter());
 
         // A simple adapter that receives a map of named points
-        registry.register(new ProviderDefinedTypeAdapter<Map>() {
+        registry.register(new CompositePDTAdapter<Map>() {
             @Override public String typeName() { return "PointMap"; }
             @Override public Class<Map> targetClass() { return Map.class; }
             @Override public Map<String, Object> toFields(Map obj) { return new HashMap<>(); }

@@ -40,8 +40,8 @@ public final class ProviderDefinedTypeRegistry {
 
     private static final Logger logger = LoggerFactory.getLogger(ProviderDefinedTypeRegistry.class);
 
-    private final Map<String, ProviderDefinedTypeAdapter<?>> adaptersByName = new ConcurrentHashMap<>();
-    private final Map<Class<?>, ProviderDefinedTypeAdapter<?>> adaptersByClass = new ConcurrentHashMap<>();
+    private final Map<String, CompositePDTAdapter<?>> adaptersByName = new ConcurrentHashMap<>();
+    private final Map<Class<?>, CompositePDTAdapter<?>> adaptersByClass = new ConcurrentHashMap<>();
 
     private ProviderDefinedTypeRegistry() {}
 
@@ -64,9 +64,16 @@ public final class ProviderDefinedTypeRegistry {
         return new ProviderDefinedTypeRegistry();
     }
 
+    /**
+     * Registers an adapter. Composite adapters ({@link CompositePDTAdapter}) are stored for
+     * hydration/dehydration; other adapter kinds are routed to their respective maps in future beads.
+     */
     public void register(final ProviderDefinedTypeAdapter<?> adapter) {
-        adaptersByName.put(adapter.typeName(), adapter);
-        adaptersByClass.put(adapter.targetClass(), adapter);
+        if (adapter instanceof CompositePDTAdapter) {
+            final CompositePDTAdapter<?> composite = (CompositePDTAdapter<?>) adapter;
+            adaptersByName.put(composite.typeName(), composite);
+            adaptersByClass.put(composite.targetClass(), composite);
+        }
     }
 
     /**
@@ -90,7 +97,6 @@ public final class ProviderDefinedTypeRegistry {
     }
 
     /**
-    /**
      * Attempts to hydrate a {@link ProviderDefinedType} into a typed object using a registered adapter.
      * Recursively hydrates nested PDT values in the fields map (including those inside Lists, Sets,
      * and Maps) regardless of whether the outer type itself has a registered adapter — so a registered
@@ -110,7 +116,7 @@ public final class ProviderDefinedTypeRegistry {
             hydrated.put(entry.getKey(), value);
         }
 
-        final ProviderDefinedTypeAdapter adapter = adaptersByName.get(pdt.getName());
+        final CompositePDTAdapter adapter = adaptersByName.get(pdt.getName());
         if (adapter == null) {
             // No adapter for the outer type: return it raw, but with any registered nested types hydrated.
             // Preserve identity when nothing nested was hydrated.
@@ -155,7 +161,7 @@ public final class ProviderDefinedTypeRegistry {
      * A reflective adapter synthesized from a {@link ProviderDefined}-annotated class.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static final class AnnotatedTypeAdapter<T> implements ProviderDefinedTypeAdapter<T> {
+    private static final class AnnotatedTypeAdapter<T> implements CompositePDTAdapter<T> {
         private final String typeName;
         private final Class<T> targetClass;
         private final Field[] fields;

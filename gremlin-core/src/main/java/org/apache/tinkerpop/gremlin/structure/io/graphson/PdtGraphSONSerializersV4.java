@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
@@ -162,7 +163,7 @@ final class PdtGraphSONSerializersV4 {
             if (!opt.isPresent()) {
                 throw new IOException("No adapter found for " + value.getClass().getName());
             }
-            final ProviderDefinedTypeAdapter adapter = opt.get();
+            final CompositePDTAdapter adapter = (CompositePDTAdapter) opt.get();
             final Map<String, Object> fields = adapter.toFields(value);
             return new ProviderDefinedType(adapter.typeName(), fields);
         }

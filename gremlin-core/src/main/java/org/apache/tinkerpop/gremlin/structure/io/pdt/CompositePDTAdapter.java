@@ -18,11 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.pdt;
 
+import java.util.Map;
+
 /**
- * Common supertype for all PDT adapters. Exposes the type name and target class;
- * serialization-specific methods live in subtypes ({@link CompositePDTAdapter}).
+ * Adapter for converting between a typed object and a {@link ProviderDefinedType} field map.
+ * Used for composite (multi-field) provider-defined types.
  */
-public interface ProviderDefinedTypeAdapter<T> {
-    String typeName();
-    Class<T> targetClass();
+public interface CompositePDTAdapter<T> extends ProviderDefinedTypeAdapter<T> {
+    Map<String, Object> toFields(T obj);
+    T fromFields(Map<String, Object> fields);
 }
