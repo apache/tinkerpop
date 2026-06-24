@@ -51,6 +51,8 @@ class GraphBinarySerializersV4(object):
         else:
             self._graphbinary_reader.pdt_registry._adapters_by_name.update(pdt_registry._adapters_by_name)
             self._graphbinary_reader.pdt_registry._adapters_by_class.update(pdt_registry._adapters_by_class)
+            self._graphbinary_reader.pdt_registry._primitive_adapters_by_name.update(pdt_registry._primitive_adapters_by_name)
+            self._graphbinary_reader.pdt_registry._primitive_adapters_by_class.update(pdt_registry._primitive_adapters_by_class)
 
     @property
     def version(self):

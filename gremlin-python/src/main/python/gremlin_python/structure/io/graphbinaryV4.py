@@ -31,7 +31,7 @@ from gremlin_python.process.traversal import Direction, T, Merge, GType
 from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, BigIntType, \
     DictType, SetType, SingleByte, SingleChar
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path, ProviderDefinedType, \
-    _pdt_decorated_types
+    PrimitiveProviderDefinedType, _pdt_decorated_types
 from gremlin_python.structure.io.util import HashableDict, SymbolUtil, Marker
 
 log = logging.getLogger(__name__)
@@ -75,6 +75,7 @@ class DataType(Enum):
     char = 0x80
     duration = 0x81
     composite_pdt = 0xf0
+    primitive_pdt = 0xf1
     marker = 0xfd
 
 
@@ -168,6 +169,11 @@ class GraphBinaryReader(object):
             result = self.deserializers[DataType(bt)].objectify(buff, self, nullable)
         else:
             result = self.deserializers[data_type].objectify(buff, self, nullable)
+        if self.pdt_registry is not None and isinstance(result, PrimitiveProviderDefinedType):
+            hydrated = self.pdt_registry.hydrate_primitive(result)
+            if not isinstance(hydrated, PrimitiveProviderDefinedType):
+                return hydrated
+            result = hydrated
         if self.pdt_registry is not None and isinstance(result, ProviderDefinedType):
             hydrated = self.pdt_registry.hydrate(result)
             if not isinstance(hydrated, ProviderDefinedType):
@@ -970,3 +976,25 @@ class ProviderDefinedTypeIO(_GraphBinaryTypeIO):
         name = r.read_object(b)
         fields = r.read_object(b)
         return ProviderDefinedType(name, fields)
+
+
+class PrimitiveProviderDefinedTypeIO(_GraphBinaryTypeIO):
+    python_type = PrimitiveProviderDefinedType
+    graphbinary_type = DataType.primitive_pdt
+
+    @classmethod
+    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
+        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
+        StringIO.dictify(obj.name, writer, to_extend)
+        StringIO.dictify(obj.value, writer, to_extend)
+        return to_extend
+
+    @classmethod
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_primitive_pdt, nullable)
+
+    @classmethod
+    def _read_primitive_pdt(cls, b, r):
+        name = r.read_object(b)
+        value = r.read_object(b)
+        return PrimitiveProviderDefinedType(name, value)
