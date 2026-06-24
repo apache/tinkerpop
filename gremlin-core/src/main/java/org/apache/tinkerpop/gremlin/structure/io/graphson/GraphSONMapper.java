@@ -105,6 +105,9 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         if ((version == GraphSONVersion.V4_0 || version == GraphSONVersion.V3_0 || version == GraphSONVersion.V2_0) &&
                 typeInfo != TypeInfo.NO_TYPES) {
             final GraphSONTypeIdResolver graphSONTypeIdResolver = new GraphSONTypeIdResolver();
+            if (pdtRegistry != null && version == GraphSONVersion.V4_0) {
+                graphSONTypeIdResolver.setPdtRegistry(pdtRegistry);
+            }
             final TypeResolverBuilder typer = new GraphSONTypeResolverBuilder(version)
                     .typesEmbedding(this.typeInfo)
                     .valuePropertyName(GraphSONTokens.VALUEPROP)
@@ -160,6 +163,10 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         if (version != GraphSONVersion.V4_0) {
             // this provider toStrings all unknown classes and converts keys in Map objects that are Object to String.
             final DefaultSerializerProvider provider = new GraphSONSerializerProvider(version);
+            om.setSerializerProvider(provider);
+        } else if (pdtRegistry != null) {
+            // For V4 with a pdtRegistry, set a provider that converts adapter-registered types to PDT
+            final DefaultSerializerProvider provider = new PdtGraphSONSerializerProviderV4(pdtRegistry);
             om.setSerializerProvider(provider);
         }
 

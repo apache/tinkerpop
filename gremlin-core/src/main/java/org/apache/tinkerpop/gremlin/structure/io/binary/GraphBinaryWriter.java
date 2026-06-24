@@ -21,9 +21,13 @@ package org.apache.tinkerpop.gremlin.structure.io.binary;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.ProviderDefinedTypeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TransformSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Writes a value to a buffer using the {@link TypeSerializer} instances configured in the
@@ -44,6 +48,7 @@ import java.io.IOException;
  */
 public class GraphBinaryWriter {
     private final TypeSerializerRegistry registry;
+    private final ProviderDefinedTypeRegistry pdtRegistry;
     private final static byte VALUE_FLAG_NULL = 1;
     private final static byte VALUE_FLAG_NONE = 0;
     private final static byte VALUE_FLAG_ORDERED = 2;
@@ -57,7 +62,12 @@ public class GraphBinaryWriter {
     }
 
     public GraphBinaryWriter(final TypeSerializerRegistry registry) {
+        this(registry, null);
+    }
+
+    public GraphBinaryWriter(final TypeSerializerRegistry registry, final ProviderDefinedTypeRegistry pdtRegistry) {
         this.registry = registry;
+        this.pdtRegistry = pdtRegistry;
     }
 
     /**
@@ -75,9 +85,9 @@ public class GraphBinaryWriter {
 
         final Class<?> objectClass = value.getClass();
 
-        final TypeSerializer<T> serializer = (TypeSerializer<T>) registry.getSerializer(objectClass);
+        final TypeSerializer<T> serializer = (TypeSerializer<T>) getSerializerOrAdapterFallback(objectClass);
         if (serializer instanceof ProviderDefinedTypeSerializer && !(value instanceof ProviderDefinedType)) {
-            serializer.writeValue((T) ProviderDefinedType.from(value), buffer, this, nullable);
+            serializer.writeValue((T) dehydrateToPdt(value, objectClass), buffer, this, nullable);
             return;
         }
         serializer.writeValue(value, buffer, this, nullable);
@@ -94,13 +104,13 @@ public class GraphBinaryWriter {
         }
 
         final Class<?> objectClass = value.getClass();
-        final TypeSerializer<T> serializer = (TypeSerializer<T>) registry.getSerializer(objectClass);
+        final TypeSerializer<T> serializer = (TypeSerializer<T>) getSerializerOrAdapterFallback(objectClass);
 
         if (serializer instanceof ProviderDefinedTypeSerializer && !(value instanceof ProviderDefinedType)) {
-            // Convert @ProviderDefined-annotated object to ProviderDefinedType, then re-enter write().
+            // Convert to ProviderDefinedType (via annotation or adapter), then re-enter write().
             // On re-entry, ProviderDefinedType.class is directly registered in the registry,
             // and the instanceof guard prevents double-wrapping.
-            write((T) ProviderDefinedType.from(value), buffer);
+            write((T) dehydrateToPdt(value, objectClass), buffer);
             return;
         }
 
@@ -153,6 +163,45 @@ public class GraphBinaryWriter {
      */
     public void writeValueFlagBulk(Buffer buffer) {
         buffer.writeByte(VALUE_FLAG_BULK);
+    }
+
+    /**
+     * Attempts to get a serializer for the given class. If no serializer is found and the pdtRegistry
+     * has an adapter for the class, returns the CompositePDT serializer.
+     */
+    @SuppressWarnings("unchecked")
+    private <DT> TypeSerializer<DT> getSerializerOrAdapterFallback(final Class<?> type) throws IOException {
+        try {
+            return (TypeSerializer<DT>) registry.getSerializer(type);
+        } catch (final IOException e) {
+            if (pdtRegistry != null && pdtRegistry.getAdapterByClass(type).isPresent()) {
+                return (TypeSerializer<DT>) registry.getSerializer(DataType.COMPOSITE_PDT);
+            }
+            throw e;
+        }
+    }
+
+    /**
+     * Dehydrates a value to a {@link ProviderDefinedType} using annotation reflection or an adapter from the
+     * pdtRegistry.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private ProviderDefinedType dehydrateToPdt(final Object value, final Class<?> objectClass) {
+        // Prefer annotation-based conversion
+        if (objectClass.isAnnotationPresent(org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined.class)) {
+            return ProviderDefinedType.from(value);
+        }
+        // Fall back to adapter-based conversion
+        if (pdtRegistry != null) {
+            final Optional<ProviderDefinedTypeAdapter<?>> opt = pdtRegistry.getAdapterByClass(objectClass);
+            if (opt.isPresent()) {
+                final ProviderDefinedTypeAdapter adapter = opt.get();
+                final Map<String, Object> fields = adapter.toFields(value);
+                return new ProviderDefinedType(adapter.typeName(), fields);
+            }
+        }
+        // Should not reach here since getSerializerOrAdapterFallback already validated
+        return ProviderDefinedType.from(value);
     }
 
 }

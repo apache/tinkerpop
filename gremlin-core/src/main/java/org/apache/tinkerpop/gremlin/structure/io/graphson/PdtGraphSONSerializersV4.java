@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
@@ -27,10 +28,12 @@ import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
+import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * GraphSON V4 serializers for {@link ProviderDefinedType}.
@@ -111,6 +114,57 @@ final class PdtGraphSONSerializersV4 {
         @Override
         public boolean isCachable() {
             return true;
+        }
+    }
+
+    /**
+     * A serializer that converts raw objects to {@link ProviderDefinedType} using a registered adapter,
+     * then serializes the resulting PDT in the standard CompositePdt format.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    static class PdtAdapterJacksonSerializer extends StdSerializer<Object> {
+
+        private final ProviderDefinedTypeRegistry registry;
+
+        PdtAdapterJacksonSerializer(final ProviderDefinedTypeRegistry registry) {
+            super(Object.class);
+            this.registry = registry;
+        }
+
+        @Override
+        public void serialize(final Object value, final JsonGenerator jsonGenerator,
+                              final SerializerProvider serializerProvider) throws IOException {
+            final ProviderDefinedType pdt = toPdt(value);
+            jsonGenerator.writeStartObject();
+            jsonGenerator.writeStringField("type", pdt.getName());
+            jsonGenerator.writeFieldName("fields");
+            jsonGenerator.writeStartObject();
+            for (final Map.Entry<String, Object> entry : pdt.getFields().entrySet()) {
+                jsonGenerator.writeFieldName(entry.getKey());
+                jsonGenerator.writeObject(entry.getValue());
+            }
+            jsonGenerator.writeEndObject();
+            jsonGenerator.writeEndObject();
+        }
+
+        @Override
+        public void serializeWithType(final Object value, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider,
+                                      final org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer typeSerializer) throws IOException {
+            // Convert to ProviderDefinedType and delegate to its registered typed serializer
+            final ProviderDefinedType pdt = toPdt(value);
+            serializerProvider.findTypedValueSerializer(ProviderDefinedType.class, true, null)
+                    .serialize(pdt, jsonGenerator, serializerProvider);
+        }
+
+        private ProviderDefinedType toPdt(final Object value) throws IOException {
+            final Optional<ProviderDefinedTypeAdapter<?>> opt = registry.getAdapterByClass(value.getClass());
+            if (!opt.isPresent()) {
+                throw new IOException("No adapter found for " + value.getClass().getName());
+            }
+            final ProviderDefinedTypeAdapter adapter = opt.get();
+            final Map<String, Object> fields = adapter.toFields(value);
+            return new ProviderDefinedType(adapter.typeName(), fields);
         }
     }
 }
