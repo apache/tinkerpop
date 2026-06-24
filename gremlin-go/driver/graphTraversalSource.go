@@ -145,6 +145,17 @@ func (gts *GraphTraversalSource) With(key interface{}, value interface{}) *Graph
 	return source
 }
 
+// WithComputer adds a GraphComputer to be used to process the Traversal as an OLAP job. It applies a
+// VertexProgramStrategy to the traversal source configured with the supplied options. Calling it with no
+// configuration submits the Traversal for OLAP execution using the server's default GraphComputer.
+func (gts *GraphTraversalSource) WithComputer(config ...VertexProgramStrategyConfig) *GraphTraversalSource {
+	var c VertexProgramStrategyConfig
+	if len(config) > 0 {
+		c = config[0]
+	}
+	return gts.WithStrategies(VertexProgramStrategy(c))
+}
+
 // WithRemote adds a remote to be used throughout the life of a spawned Traversal.
 func (gts *GraphTraversalSource) WithRemote(remoteConnection *DriverRemoteConnection) *GraphTraversalSource {
 	gts.remoteConnection = remoteConnection
