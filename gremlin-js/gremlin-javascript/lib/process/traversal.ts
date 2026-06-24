@@ -125,13 +125,36 @@ export class Traversal {
   }
 
   /**
-   * Async iterator method implementation.
-   * Returns a promise containing an iterator item.
-   * @returns {Promise.<{value, done}>}
+   * Returns the next result from the traversal.
+   *
+   * When called without an argument, returns a Promise that resolves to an iterator
+   * item ({value, done}), following the async iterator protocol.
+   *
+   * When called with an amount, returns a Promise that resolves to an Array containing
+   * up to {@code amount} result values. The Array form is always used when an amount is
+   * supplied, including {@code next(1)}, which resolves to an Array of one value rather
+   * than a bare value, matching the behavior of next(n) in the other Gremlin language
+   * variants. If fewer results remain, the Array contains only those that remain, and an
+   * amount of zero or less yields an empty Array.
+   * @param {Number} [amount] The number of results to retrieve.
+   * @returns {Promise.<{value, done}>|Promise.<Array>}
    */
-  async next<T>(): Promise<IteratorResult<T, null>> {
+  next<T>(): Promise<IteratorResult<T, null>>;
+  next<T>(amount: number): Promise<T[]>;
+  async next<T>(amount?: number): Promise<IteratorResult<T, null> | T[]> {
     await this._applyStrategies();
-    return this._getNext<T>();
+    if (amount === undefined || amount === null) {
+      return this._getNext<T>();
+    }
+    const result: T[] = [];
+    for (let i = 0; i < amount; i++) {
+      const it = await this._getNext<T>();
+      if (it.done) {
+        break;
+      }
+      result.push(it.value);
+    }
+    return result;
   }
 
   /**
