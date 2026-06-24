@@ -31,6 +31,8 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
@@ -190,6 +192,11 @@ public class GremlinLang implements Cloneable, Serializable {
             return String.format("Binary(\"%s\")", Base64.getEncoder().encodeToString((byte[]) arg));
         }
 
+        if (arg instanceof PrimitiveProviderDefinedType) {
+            final PrimitiveProviderDefinedType pdt = (PrimitiveProviderDefinedType) arg;
+            return "PDT(" + argAsString(pdt.getName()) + "," + argAsString(pdt.getValue()) + ")";
+        }
+
         if (arg instanceof ProviderDefinedType) {
             final ProviderDefinedType pdt = (ProviderDefinedType) arg;
             return "PDT(" + argAsString(pdt.getName()) + "," + asString((Map<?, ?>) pdt.getFields()) + ")";
@@ -271,6 +278,12 @@ public class GremlinLang implements Cloneable, Serializable {
         // Intentional precedence: a registered adapter takes priority over @ProviderDefined annotation
         // so that providers/users can override annotation-derived behavior with an explicit adapter.
         if (pdtRegistry != null) {
+            final Optional<PrimitivePDTAdapter<?>> primitiveAdapter = pdtRegistry.getPrimitiveAdapterByClass(arg.getClass());
+            if (primitiveAdapter.isPresent()) {
+                @SuppressWarnings("unchecked")
+                final String value = ((PrimitivePDTAdapter) primitiveAdapter.get()).toValue(arg);
+                return argAsString(new PrimitiveProviderDefinedType(primitiveAdapter.get().typeName(), value));
+            }
             final Optional<ProviderDefinedTypeAdapter<?>> adapter = pdtRegistry.getAdapterByClass(arg.getClass());
             if (adapter.isPresent()) {
                 @SuppressWarnings("unchecked")

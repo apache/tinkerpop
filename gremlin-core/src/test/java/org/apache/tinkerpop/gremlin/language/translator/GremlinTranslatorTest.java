@@ -1514,6 +1514,15 @@ public class GremlinTranslatorTest {
                             null,
                             null,
                             "g.inject(1).match('MATCH (a:person)-[:knows]->(b:person)')"},
+                    {"g.inject(PDT(\"Uint32\",\"42\"))",
+                            null,
+                            "g.inject(primitiveproviderdefinedtype0)",
+                            "g.Inject<object>(new PrimitiveProviderDefinedType(\"Uint32\", \"42\"))",
+                            "g.Inject(&gremlingo.PrimitiveProviderDefinedType{Name: \"Uint32\", Value: \"42\"})",
+                            "g.inject(new PrimitiveProviderDefinedType(\"Uint32\", \"42\"))",
+                            "g.inject(new PrimitiveProviderDefinedType(\"Uint32\", \"42\"))",
+                            "g.inject(new PrimitiveProviderDefinedType(\"Uint32\", \"42\"))",
+                            "g.inject(PrimitiveProviderDefinedType('Uint32', '42'))"},
             });
         }
 
