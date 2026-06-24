@@ -241,8 +241,5 @@ namespace Gremlin.Net.UnitTest.Driver
 
             Assert.Contains("byte[]", ex.Message);
         }
-
-        // --- Deprecated alias tests ---
-
     }
 }

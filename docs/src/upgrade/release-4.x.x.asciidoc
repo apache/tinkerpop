@@ -56,8 +56,8 @@ Behavior changes. These change runtime behavior on upgrade, even if you do not c
 enables `SO_KEEPALIVE` and sets the per-socket idle time on Windows, Linux, and macOS; on other platforms keep-alive
 stays enabled at the OS default idle time.
 - `Compression` is now a `{None, Deflate}` enum defaulting to `Deflate` (compression on by default), so the driver
-sends `Accept-Encoding: deflate` by default. Set `Compression.None` to disable. The deprecated `EnableCompression`
-`bool` is preserved only as a compatibility shim mapping `true`/`false` to `Compression.Deflate`/`Compression.None`.
+sends `Accept-Encoding: deflate` by default. Set `Compression.None` to disable. The old `EnableCompression` `bool`
+has been removed.
 
 New options:
 
