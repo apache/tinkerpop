@@ -260,14 +260,14 @@ can be passed to the `NewClient` or `NewDriverRemoteConnection` functions as con
 |Logger |Instance of logger. |log
 |Language |Language used for logging messages. |language.English
 |Ssl |TLS configuration. |empty
-|ConnectTimeout | Timeout for establishing the connection (TCP connect plus TLS handshake). |5 seconds
+|ConnectTimeoutMillis | Timeout in milliseconds for establishing the connection (TCP connect plus TLS handshake). Also settable as `ConnectTimeout` (a `time.Duration`); set only one. |5000
 |MaxConnections | Maximum number of concurrent TCP connections to the server. |128
 |MaxIdleConnections | Maximum number of idle (keep-alive) connections in the pool. |8
-|IdleTimeout | How long idle connections remain in the pool before being closed. |180 seconds
-|KeepAliveTime | Idle time before TCP keep-alive probes begin. |30 seconds
-|ReadTimeout | Idle-read timeout reset on each read of the response body. Set to `0` to disable. |0
+|IdleTimeoutMillis | How long in milliseconds idle connections remain in the pool before being closed. Also settable as `IdleTimeout` (a `time.Duration`); set only one. |180000
+|KeepAliveTimeMillis | Idle time in milliseconds before TCP keep-alive probes begin. Also settable as `KeepAliveTime` (a `time.Duration`); set only one. |30000
+|ReadTimeoutMillis | Idle-read timeout in milliseconds reset on each read of the response body. Set to `0` to disable. Also settable as `ReadTimeout` (a `time.Duration`); set only one. |0
 |Compression |The wire compression negotiated with the server (`gremlingo.CompressionNone` or `gremlingo.CompressionDeflate`). |gremlingo.CompressionDeflate
-|DefaultBatchSize |The connection-level default batch size used when a request does not specify one. |64
+|BatchSize |The connection-level default batch size used when a request does not specify one. |64
 |BulkResults |Connection-level default for `bulkResults`, applied to every request unless overridden per-request. The `DriverRemoteConnection` traversal path defaults to `true` regardless of this setting. |false
 |MaxResponseHeaderBytes |Limit on the number of response header bytes the client will read. Maps to `http.Transport.MaxResponseHeaderBytes`. |0 (net/http default)
 |Proxy |Function returning the proxy URL to use for a request. When `nil`, uses `http.ProxyFromEnvironment`. |nil
@@ -278,6 +278,38 @@ link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provide
 |PDTRegistry |A `*PDTRegistry` for hydrating and dehydrating <<gremlin-go-pdt,Provider Defined Types>>. |`nil`
 |Auth |A single RequestInterceptor for authentication (e.g. `auth.Basic`). Always appended to the end of the interceptor list so it runs last. |nil
 |=========================================================
+
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `ReadTimeout` only bounds
+the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
+runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
+your application around the call. Because `Submit` does not accept a `context.Context`, run it in a goroutine and
+bound it with a `select`:
+
+[source,go]
+----
+// bound the entire request (submit plus full result iteration) to 30 seconds
+type outcome struct {
+	results []*gremlingo.Result
+	err     error
+}
+done := make(chan outcome, 1)
+go func() {
+	rs, err := client.Submit("g.V().out().out()")
+	if err != nil {
+		done <- outcome{nil, err}
+		return
+	}
+	results, err := rs.All()
+	done <- outcome{results, err}
+}()
+
+select {
+case o := <-done:
+	// use o.results / o.err
+case <-time.After(30 * time.Second):
+	// deadline exceeded; stop waiting on the request
+}
+----
 
 [[gremlin-go-interceptors]]
 === RequestInterceptor

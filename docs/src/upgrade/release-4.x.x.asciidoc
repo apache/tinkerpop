@@ -44,17 +44,15 @@ Renames (breaking). The following settings fields have been renamed. Because the
 aliased, so existing code must be updated to the new names:
 
 - `MaximumConcurrentConnections` is now `MaxConnections` (default 128).
-- `IdleConnectionTimeout` is now `IdleTimeout` (default 180s).
-- `KeepAliveInterval` is now `KeepAliveTime` (default 30s).
-- `ConnectionTimeout` is now `ConnectTimeout` (default 5s).
+- `IdleConnectionTimeout` is now `IdleTimeoutMillis` (default 180000), an `int` of milliseconds. The `time.Duration` companion `IdleTimeout` may be set instead (set only one).
+- `KeepAliveInterval` is now `KeepAliveTimeMillis` (default 30000), an `int` of milliseconds. The `time.Duration` companion `KeepAliveTime` may be set instead (set only one).
+- `ConnectionTimeout` is now `ConnectTimeoutMillis` (default 5000), an `int` of milliseconds. The `time.Duration` companion `ConnectTimeout` may be set instead (set only one).
 - `TlsConfig` (`*tls.Config`) is now `Ssl`.
 - `RequestInterceptors` is now `Interceptors`.
 - `EnableCompression` is now `Compression`.
 - The `BasicAuth`, `SigV4Auth`, and `SigV4AuthWithCredentials` functions have moved out of package `gremlingo` into a
 new `auth` sub-package (`github.com/apache/tinkerpop/gremlin-go/v4/driver/auth`) as `auth.Basic`, `auth.SigV4`, and
-`auth.SigV4WithCredentials`. The flat `gremlingo` functions are retained as deprecated delegators (marked with
-idiomatic Go `// Deprecated:` doc comments) so existing code keeps compiling; new code should use the `auth`
-sub-package.
+`auth.SigV4WithCredentials`. The flat `gremlingo` functions have been removed; use the `auth` sub-package.
 
 Behavior changes. These change runtime behavior on upgrade, even if you do not change your configuration:
 
@@ -67,16 +65,17 @@ any environment proxy configuration.
 
 New options:
 
-- `ReadTimeout` (default 0, disabled): a per-read idle timeout reset on each read of the response body and re-armed
-across pooled-connection reuse, so it never fires while a pooled connection is idle between requests.
+- `ReadTimeoutMillis` (default 0, disabled), an `int` of milliseconds: a per-read idle timeout reset on each read of
+the response body and re-armed across pooled-connection reuse, so it never fires while a pooled connection is idle
+between requests. The `time.Duration` companion `ReadTimeout` may be set instead (set only one).
 - `MaxResponseHeaderBytes`: exposes `http.Transport.MaxResponseHeaderBytes` (native bytes).
 - `Proxy`: an explicit `func(*http.Request) (*url.URL, error)` proxy override for the transport.
-- `DefaultBatchSize` (default 64): a connection-level default that fills a request's `batchSize` when it is left
+- `BatchSize` (default 64): a connection-level default that fills a request's `batchSize` when it is left
 unset.
 - `BulkResults` (default false): a connection-level default for `bulkResults` applied to every request unless
 overridden per-request. The `DriverRemoteConnection` traversal path defaults to `true` regardless of this setting.
 
-See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[dev list discussion on standardizing GLV connection options].
+See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
 
 ==== Standardizing Python Connection Options
 

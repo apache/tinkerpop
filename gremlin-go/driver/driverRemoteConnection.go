@@ -39,15 +39,24 @@ type DriverRemoteConnectionSettings struct {
 	// Ssl is the TLS configuration used for secure (wss/https) connections.
 	Ssl *tls.Config
 
-	// ConnectTimeout is the TCP/transport-establishment timeout (TCP connect plus
-	// TLS handshake where applicable), not an HTTP request timeout.
-	// Default: 5 seconds. Set to 0 to use the default.
+	// ConnectTimeoutMillis is the TCP/transport-establishment timeout in milliseconds
+	// (TCP connect plus TLS handshake where applicable), not an HTTP request timeout.
+	// This is the canonical form; ConnectTimeout is the time.Duration companion. Set
+	// only one of the two.
+	// Default: 5000 (5 seconds). Set to 0 to use the default.
+	ConnectTimeoutMillis int
+
+	// ConnectTimeout is the time.Duration companion to ConnectTimeoutMillis.
 	ConnectTimeout time.Duration
 
-	// ReadTimeout is an idle-read timeout: it is reset on each read of the response
-	// body rather than bounding the whole request. Streaming-safe. The deadline is
-	// re-armed across pooled-connection reuse.
+	// ReadTimeoutMillis is an idle-read timeout in milliseconds: it is reset on each
+	// read of the response body rather than bounding the whole request. Streaming-safe.
+	// The deadline is re-armed across pooled-connection reuse. This is the canonical
+	// form; ReadTimeout is the time.Duration companion. Set only one of the two.
 	// Default: 0 (disabled).
+	ReadTimeoutMillis int
+
+	// ReadTimeout is the time.Duration companion to ReadTimeoutMillis.
 	ReadTimeout time.Duration
 
 	// Compression selects the content-encoding negotiated with the server.
@@ -64,20 +73,30 @@ type DriverRemoteConnectionSettings struct {
 	// Default: 8. Set to 0 to use the default.
 	MaxIdleConnections int
 
-	// IdleTimeout is how long an idle connection remains in the pool before
-	// being closed. Set this to match your server's idle timeout if needed.
-	// Default: 180 seconds (3 minutes). Set to 0 to use the default.
+	// IdleTimeoutMillis is how long in milliseconds an idle connection remains in the
+	// pool before being closed. Set this to match your server's idle timeout if needed.
+	// This is the canonical form; IdleTimeout is the time.Duration companion. Set only
+	// one of the two.
+	// Default: 180000 (180 seconds). Set to 0 to use the default.
+	IdleTimeoutMillis int
+
+	// IdleTimeout is the time.Duration companion to IdleTimeoutMillis.
 	IdleTimeout time.Duration
 
-	// KeepAliveTime is the TCP keep-alive idle-before-probe interval on connections.
-	// This helps detect dead connections and keeps connections alive through firewalls.
-	// Default: 30 seconds. Set to 0 to use the default.
+	// KeepAliveTimeMillis is the TCP keep-alive idle-before-probe interval in
+	// milliseconds on connections. This helps detect dead connections and keeps
+	// connections alive through firewalls. This is the canonical form; KeepAliveTime is
+	// the time.Duration companion. Set only one of the two.
+	// Default: 30000 (30 seconds). Set to 0 to use the default.
+	KeepAliveTimeMillis int
+
+	// KeepAliveTime is the time.Duration companion to KeepAliveTimeMillis.
 	KeepAliveTime time.Duration
 
-	// DefaultBatchSize is the connection-level default that fills a request's batchSize
+	// BatchSize is the connection-level default that fills a request's batchSize
 	// when it is not set per-request.
 	// Default: 64. Set to 0 to use the default.
-	DefaultBatchSize int
+	BatchSize int
 
 	// BulkResults is the connection-level default for bulkResults. When true, requests
 	// submitted on this connection bulk results unless overridden per-request via
@@ -127,7 +146,6 @@ func NewDriverRemoteConnection(
 		Logger:                   &defaultLogger{},
 		Language:                 language.English,
 		Ssl:                      &tls.Config{},
-		ConnectTimeout:           defaultConnectTimeout,
 		Compression:              CompressionDeflate,
 		EnableUserAgentOnConnect: true,
 
@@ -135,23 +153,40 @@ func NewDriverRemoteConnection(
 		MaxIdleConnections: 0, // Use default (8)
 		IdleTimeout:        0, // Use default (180s)
 		KeepAliveTime:      0, // Use default (30s)
-		DefaultBatchSize:   0, // Use default (64)
+		BatchSize:          0, // Use default (64)
 	}
 	for _, configuration := range configurations {
 		configuration(settings)
 	}
 
+	connectTimeout, err := resolveTimeout(settings.ConnectTimeoutMillis, settings.ConnectTimeout, "ConnectTimeout")
+	if err != nil {
+		return nil, err
+	}
+	readTimeout, err := resolveTimeout(settings.ReadTimeoutMillis, settings.ReadTimeout, "ReadTimeout")
+	if err != nil {
+		return nil, err
+	}
+	idleTimeout, err := resolveTimeout(settings.IdleTimeoutMillis, settings.IdleTimeout, "IdleTimeout")
+	if err != nil {
+		return nil, err
+	}
+	keepAliveTime, err := resolveTimeout(settings.KeepAliveTimeMillis, settings.KeepAliveTime, "KeepAliveTime")
+	if err != nil {
+		return nil, err
+	}
+
 	connSettings := &connectionSettings{
 		ssl:                      settings.Ssl,
-		connectTimeout:           settings.ConnectTimeout,
-		readTimeout:              settings.ReadTimeout,
+		connectTimeout:           connectTimeout,
+		readTimeout:              readTimeout,
 		maxConnsPerHost:          settings.MaxConnections,
 		maxIdleConnsPerHost:      settings.MaxIdleConnections,
-		idleTimeout:              settings.IdleTimeout,
-		keepAliveTime:            settings.KeepAliveTime,
+		idleTimeout:              idleTimeout,
+		keepAliveTime:            keepAliveTime,
 		compression:              settings.Compression,
 		maxResponseHeaderBytes:   settings.MaxResponseHeaderBytes,
-		defaultBatchSize:         settings.DefaultBatchSize,
+		batchSize:                settings.BatchSize,
 		proxy:                    settings.Proxy,
 		enableUserAgentOnConnect: settings.EnableUserAgentOnConnect,
 		pdtRegistry:              settings.PDTRegistry,

@@ -1304,7 +1304,7 @@ func TestConnectionNewOptions(t *testing.T) {
 
 	t.Run("custom default batch size fills unset request batchSize", func(t *testing.T) {
 		conn := newConnection(newTestLogHandler(), "http://localhost/gremlin", &connectionSettings{
-			defaultBatchSize: 256,
+			batchSize: 256,
 		})
 		msg := &RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}}
 		conn.applyDefaultBatchSize(msg)
@@ -1313,7 +1313,7 @@ func TestConnectionNewOptions(t *testing.T) {
 
 	t.Run("default batch size does not override an explicit request batchSize", func(t *testing.T) {
 		conn := newConnection(newTestLogHandler(), "http://localhost/gremlin", &connectionSettings{
-			defaultBatchSize: 256,
+			batchSize: 256,
 		})
 		msg := &RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{"batchSize": 10}}
 		conn.applyDefaultBatchSize(msg)
@@ -1437,6 +1437,54 @@ func TestDriverRemoteConnectionSettingsWiring(t *testing.T) {
 		assert.Equal(t, 128, transport.MaxConnsPerHost)
 		assert.Equal(t, 8, transport.MaxIdleConnsPerHost)
 		assert.Equal(t, 180*time.Second, transport.IdleConnTimeout)
+	})
+}
+
+func TestTimeoutMillisOptions(t *testing.T) {
+	t.Run("Millis companions map to the duration connection settings", func(t *testing.T) {
+		client, err := NewClient("http://localhost:8182/gremlin",
+			func(settings *ClientSettings) {
+				settings.ConnectTimeoutMillis = 1500
+				settings.ReadTimeoutMillis = 2500
+				settings.IdleTimeoutMillis = 90000
+				settings.KeepAliveTimeMillis = 15000
+			})
+		require.NoError(t, err)
+		defer client.Close()
+
+		assert.Equal(t, 1500*time.Millisecond, client.connectionSettings.connectTimeout)
+		assert.Equal(t, 2500*time.Millisecond, client.connectionSettings.readTimeout)
+		assert.Equal(t, 90*time.Second, client.connectionSettings.idleTimeout)
+		assert.Equal(t, 15*time.Second, client.connectionSettings.keepAliveTime)
+	})
+
+	t.Run("Duration companions are honored when Millis is unset", func(t *testing.T) {
+		client, err := NewClient("http://localhost:8182/gremlin",
+			func(settings *ClientSettings) {
+				settings.ReadTimeout = 7 * time.Second
+			})
+		require.NoError(t, err)
+		defer client.Close()
+
+		assert.Equal(t, 7*time.Second, client.connectionSettings.readTimeout)
+	})
+
+	t.Run("setting both Millis and Duration for the same option is an error", func(t *testing.T) {
+		_, err := NewClient("http://localhost:8182/gremlin",
+			func(settings *ClientSettings) {
+				settings.ReadTimeoutMillis = 2500
+				settings.ReadTimeout = 7 * time.Second
+			})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "ReadTimeout")
+
+		_, err = NewDriverRemoteConnection("http://localhost:8182/gremlin",
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.IdleTimeoutMillis = 90000
+				settings.IdleTimeout = 90 * time.Second
+			})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "IdleTimeout")
 	})
 }
 

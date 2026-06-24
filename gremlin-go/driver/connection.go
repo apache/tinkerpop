@@ -56,7 +56,7 @@ type connectionSettings struct {
 	keepAliveTime            time.Duration
 	compression              Compression
 	maxResponseHeaderBytes   int64
-	defaultBatchSize         int
+	batchSize                int
 	proxy                    func(*http.Request) (*url.URL, error)
 	enableUserAgentOnConnect bool
 	pdtRegistry              *PDTRegistry
@@ -82,6 +82,20 @@ const (
 	defaultKeepAliveTime       = 30 * time.Second  // TCP keep-alive idle-before-probe interval
 	defaultBatchSizeValue      = 64                // Java: resultIterationBatchSize default
 )
+
+// resolveTimeout reconciles a duration option with its millisecond companion. The
+// *Millis form is the canonical/documented option; the time.Duration form is the
+// idiomatic Go companion. Supplying both (each non-zero) is a configuration error.
+// A zero result means "unset", letting the caller apply its default.
+func resolveTimeout(millis int, duration time.Duration, name string) (time.Duration, error) {
+	if millis != 0 && duration != 0 {
+		return 0, fmt.Errorf("set only one of %sMillis or %s, not both", name, name)
+	}
+	if millis != 0 {
+		return time.Duration(millis) * time.Millisecond, nil
+	}
+	return duration, nil
+}
 
 func newConnection(handler *logHandler, url string, connSettings *connectionSettings) *connection {
 	// Apply defaults for zero values
@@ -173,7 +187,7 @@ func (c *connection) applyDefaultBatchSize(req *RequestMessage) {
 	if req == nil || c.connSettings == nil {
 		return
 	}
-	batchSize := c.connSettings.defaultBatchSize
+	batchSize := c.connSettings.batchSize
 	if batchSize == 0 {
 		batchSize = defaultBatchSizeValue
 	}
