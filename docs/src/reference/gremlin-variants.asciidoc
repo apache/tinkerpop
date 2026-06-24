@@ -3348,6 +3348,25 @@ g = traversal().with_(
                          read_timeout=30))
 ----
 
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `read_timeout` only bounds
+the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
+runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
+your application. `submit_async()` and `ResultSet.all()` return `concurrent.futures.Future` objects, so pass a
+`timeout` to `result()`:
+
+[source,python]
+----
+from concurrent.futures import TimeoutError
+
+# bound the entire request (submit plus full result iteration) to 30 seconds
+try:
+    result_set = client.submit_async("g.V().out().out()").result(timeout=30)
+    results = result_set.all().result(timeout=30)
+except TimeoutError:
+    # deadline exceeded; stop waiting on the request
+    ...
+----
+
 [[gremlin-python-interceptors]]
 === RequestInterceptor
 
