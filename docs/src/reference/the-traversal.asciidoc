@@ -2176,6 +2176,9 @@ g.V().hasNot('age').values('name') <7>
 g.V().has('person','name', startingWith('m')) <8>
 g.V().has(null, 'vadas') <9>
 g.V().has('person', 'name', regex('r')).values('name') <10>
+g.V().has('age', P.gt(__.V(1).values('age'))) <11>
+g.V().has('name', __.V(1).values('name')) <12>
+g.V().hasLabel(__.V(1).label()) <13>
 ----
 
 <1> Find all vertices whose ages are between 20 (exclusive) and 30 (exclusive). In other words, the age must be greater than 20 and less than 30.
@@ -2189,25 +2192,15 @@ the key,value pairs for those vertices.
 <8> Find all "person" vertices that have a name property that starts with the letter "m".
 <9> Property key is always stored as `String` and therefore an equality check with `null` will produce no result.
 <10> An example of using `has()` with regular expression predicate.
-
-In addition to literal values, `has()` accepts child traversals for dynamic comparisons. The child traversal is
-evaluated per-traverser and its first result becomes the comparison value, consistent with `by(traversal)` semantics.
-The child traversal cannot include mutating steps like `addV()` or `property()`. If present, they are rejected with
-an `IllegalArgumentException`.
-
-[gremlin-groovy,modern]
-----
-g.V().has('age', P.gt(__.V(1).values('age'))) <1>
-g.V().has('name', __.V(1).values('name')) <2>
-g.V().hasLabel(__.V(1).label()) <3>
-----
-
-<1> Find all vertices whose age is greater than marko's age using a traversal inside a predicate.
-<2> Find all vertices whose name equals marko's name using a traversal as the value argument.
-<3> Find all vertices whose label equals the label of vertex 1.
+<11> Find all vertices whose age is greater than marko's age using a traversal inside a predicate. The child traversal
+is evaluated per-traverser and its first result becomes the comparison value, consistent with `by(traversal)` semantics.
+<12> Find all vertices whose name equals marko's name using a traversal as the value argument.
+<13> Find all vertices whose label equals the label of vertex 1.
 
 NOTE: When a `Traversal` is provided directly as the value argument (not inside a `P`), it is internally wrapped in
-`P.eq(traversal)`. See <<a-note-on-predicates,A Note on Predicates>> for more details on traversal-bearing predicates.
+`P.eq(traversal)`. Child traversals must be read-only. Mutating steps like `addV()` or `property()` are rejected with
+an `IllegalArgumentException`. See <<a-note-on-predicates,A Note on Predicates>> for more details on traversal-bearing
+predicates.
 
 *Additional References*
 
