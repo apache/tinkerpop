@@ -1057,7 +1057,6 @@ Feature: Step - has()
       | peter |
 
   # Child traversal using sack() to filter against the traverser's sack value
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_withSackX29X_V_hasXage_gtXsackXX_valuesXnameX
     Given the modern graph
     And the traversal of

@@ -16,13 +16,50 @@
 # under the License.
 
 @StepClassIntegrated
-Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup contexts
+Feature: Step - ReadOnlyChildVerificationStrategy
 
-  # ===== FILTER CONTEXT: has() with mutating child traversals =====
-  # All error scenarios use addV()/drop() which ComputerVerificationStrategy also rejects on OLAP
-  # with a different message, so we exclude them from GraphComputer runs.
+  @WithReadOnlyChildVerificationStrategy
+  Scenario: g_withStrategiesXReadOnlyChildVerificationStrategyX_V
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ReadOnlyChildVerificationStrategy).V()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[lop] |
+      | v[josh] |
+      | v[ripple] |
+      | v[peter] |
 
+  @WithReadOnlyChildVerificationStrategy
   @GraphComputerVerificationMidVNotSupported
+  Scenario: g_withStrategiesXReadOnlyChildVerificationStrategyX_V_hasXage_gtXVXvid1X_valuesXageXXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.withStrategies(ReadOnlyChildVerificationStrategy).V().has("age", P.gt(__.V(vid1).values("age"))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | josh |
+      | peter |
+
+  @WithReadOnlyChildVerificationStrategy
+  Scenario: g_withStrategiesXReadOnlyChildVerificationStrategyX_V_hasXname_addVXxX_valuesXnameXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ReadOnlyChildVerificationStrategy).V().has("name", __.addV("x").values("name"))
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "mutating step"
+
   Scenario: g_V_hasXname_addVXxX_valuesXnameXX_rejected
     Given the modern graph
     And the traversal of
@@ -32,7 +69,6 @@ Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup 
     When iterated to list
     Then the traversal will raise an error with message containing text of "mutating step"
 
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_hasXname_V_drop_constantXxXX_rejected
     Given the modern graph
     And the traversal of
@@ -42,7 +78,6 @@ Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup 
     When iterated to list
     Then the traversal will raise an error with message containing text of "mutating step"
 
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_hasXname_V_mapXaddVXxXX_valuesXnameXX_rejected
     Given the modern graph
     And the traversal of
@@ -52,7 +87,6 @@ Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup 
     When iterated to list
     Then the traversal will raise an error with message containing text of "mutating step"
 
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_hasXname_eqXaddVXxX_valuesXnameXXX_rejected
     Given the modern graph
     And the traversal of
@@ -62,7 +96,6 @@ Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup 
     When iterated to list
     Then the traversal will raise an error with message containing text of "mutating step"
 
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_hasXname_withinXaddVXxX_valuesXnameXXX_rejected
     Given the modern graph
     And the traversal of
@@ -72,7 +105,6 @@ Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup 
     When iterated to list
     Then the traversal will raise an error with message containing text of "mutating step"
 
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_hasXage_gtXaddVXxX_valuesXageXXX_rejected
     Given the modern graph
     And the traversal of
@@ -84,7 +116,6 @@ Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup 
 
   # ===== FILTER CONTEXT: is() with mutating child traversals =====
 
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_valuesXageX_isXaddVXxX_valuesXageXX_rejected
     Given the modern graph
     And the traversal of
@@ -94,7 +125,6 @@ Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup 
     When iterated to list
     Then the traversal will raise an error with message containing text of "mutating step"
 
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_valuesXageX_isXgtXaddVXxX_valuesXageXXX_rejected
     Given the modern graph
     And the traversal of
@@ -106,7 +136,6 @@ Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup 
 
   # ===== LOOKUP CONTEXT: V()/E() with mutating child traversals =====
 
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_VXaddVXxX_idX_rejected
     Given the modern graph
     And the traversal of
@@ -116,7 +145,6 @@ Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup 
     When iterated to list
     Then the traversal will raise an error with message containing text of "mutating step"
 
-  @GraphComputerVerificationMidENotSupported
   Scenario: g_V_EXaddVXxX_idX_rejected
     Given the modern graph
     And the traversal of
@@ -126,7 +154,6 @@ Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup 
     When iterated to list
     Then the traversal will raise an error with message containing text of "mutating step"
 
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_VXaddVXxX_idX_rejected
     Given the modern graph
     And the traversal of
@@ -136,7 +163,6 @@ Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup 
     When iterated to list
     Then the traversal will raise an error with message containing text of "mutating step"
 
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_EXaddVXxX_idX_rejected
     Given the modern graph
     And the traversal of
@@ -146,9 +172,6 @@ Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup 
     When iterated to list
     Then the traversal will raise an error with message containing text of "mutating step"
 
-  # ===== MUTATION CONTEXT: property(traversal) blocks ALL mutating steps =====
-
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_propertyXV_mapXdropX_projectXxX_byXnameXX_rejected
     Given the modern graph
     And the traversal of
@@ -158,7 +181,6 @@ Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup 
     When iterated to list
     Then the traversal will raise an error with message containing text of "mutating step"
 
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_propertyXaddVXtempX_projectXkX_byXnameXX_rejected
     Given the modern graph
     And the traversal of
@@ -167,8 +189,6 @@ Feature: Read-Only Child Verification - mutating steps blocked in filter/lookup 
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "mutating step"
-
-  # ===== VALID TRAVERSALS: should NOT be rejected =====
 
   @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_hasXname_VXvid1X_valuesXnameXX_passes_verification

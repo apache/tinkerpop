@@ -1745,7 +1745,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#groupcount-step[referenc
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`Element` / `Map` |`Element` / `Map`
+|N |Y |N |`Element`|`Element`
 |=========================================================
 
 *Arguments:*

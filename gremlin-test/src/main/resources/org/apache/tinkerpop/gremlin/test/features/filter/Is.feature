@@ -372,3 +372,31 @@ Feature: Step - is()
       | result |
       | d[27].i |
       | d[35].i |
+
+  # Child traversal using select() to reference a labeled step value
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_VXvid1X_asXaX_V_valuesXageX_isXgtXselectXaX_valuesXageXXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).as("a").V().values("age").is(P.gt(__.select("a").values("age")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[32].i |
+      | d[35].i |
+
+  # Child traversal using sack() to filter against the traverser's sack value
+  Scenario: g_withSackX30X_V_valuesXageX_isXgtXsackXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withSack(30).V().values("age").is(P.gt(__.sack()))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[32].i |
+      | d[35].i |
