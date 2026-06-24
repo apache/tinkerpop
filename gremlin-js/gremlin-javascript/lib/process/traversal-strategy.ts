@@ -353,6 +353,12 @@ export class StandardVerificationStrategy extends TraversalStrategy {
   }
 }
 
+export class ReadOnlyChildVerificationStrategy extends TraversalStrategy {
+  constructor() {
+    super();
+  }
+}
+
 export type SeedStrategyOptions = { seed: number };
 
 export class SeedStrategy extends TraversalStrategy {

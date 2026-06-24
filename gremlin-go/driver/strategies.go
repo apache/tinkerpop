@@ -302,6 +302,10 @@ func StandardVerificationStrategy() TraversalStrategy {
 	return &traversalStrategy{name: "StandardVerificationStrategy"}
 }
 
+func ReadOnlyChildVerificationStrategy() TraversalStrategy {
+	return &traversalStrategy{name: "ReadOnlyChildVerificationStrategy"}
+}
+
 func VertexProgramRestrictionStrategy() TraversalStrategy {
 	return &traversalStrategy{name: "VertexProgramRestrictionStrategy"}
 }

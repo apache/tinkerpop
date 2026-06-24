@@ -18,8 +18,52 @@
 @StepClassIntegrated
 Feature: Step - ReadOnlyChildVerificationStrategy
 
-  # ReadOnlyChildVerificationStrategy is a default strategy, so it applies to every traversal. These scenarios
-  # exercise it as applied by default across the filter, lookup, and mutation contexts that accept child traversals.
+  # ReadOnlyChildVerificationStrategy is a default strategy, so it applies to every traversal. The scenarios below
+  # invoke it explicitly via withStrategies() to mirror the common pattern used by other strategy features. The
+  # remaining sections exercise the strategy as applied by default across the filter, lookup, and mutation contexts
+  # that accept child traversals.
+
+  @WithReadOnlyChildVerificationStrategy
+  Scenario: g_withStrategiesXReadOnlyChildVerificationStrategyX_V
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ReadOnlyChildVerificationStrategy).V()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[lop] |
+      | v[josh] |
+      | v[ripple] |
+      | v[peter] |
+
+  @WithReadOnlyChildVerificationStrategy
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_withStrategiesXReadOnlyChildVerificationStrategyX_V_hasXage_gtXVXvid1X_valuesXageXXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.withStrategies(ReadOnlyChildVerificationStrategy).V().has("age", P.gt(__.V(vid1).values("age"))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | josh |
+      | peter |
+
+  @WithReadOnlyChildVerificationStrategy
+  Scenario: g_withStrategiesXReadOnlyChildVerificationStrategyX_V_hasXname_addVXxX_valuesXnameXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ReadOnlyChildVerificationStrategy).V().has("name", __.addV("x").values("name"))
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "mutating step"
 
   # ===== FILTER CONTEXT: has() with mutating child traversals =====
   # The strategy rejects these at strategy-application time with the same "mutating step" message under both

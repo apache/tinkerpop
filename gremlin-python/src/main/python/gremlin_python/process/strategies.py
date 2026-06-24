@@ -247,6 +247,11 @@ class ReadOnlyStrategy(TraversalStrategy):
         TraversalStrategy.__init__(self, fqcn=verification_namespace + 'ReadOnlyStrategy')
 
 
+class ReadOnlyChildVerificationStrategy(TraversalStrategy):
+    def __init__(self):
+        TraversalStrategy.__init__(self, fqcn=verification_namespace + 'ReadOnlyChildVerificationStrategy')
+
+
 class EdgeLabelVerificationStrategy(TraversalStrategy):
     def __init__(self, log_warning=False, throw_exception=False):
         TraversalStrategy.__init__(self, fqcn=verification_namespace + 'EdgeLabelVerificationStrategy')
