@@ -35,13 +35,12 @@ complete list of all the modifications that are part of this release.
 ==== Standardizing .NET Connection Options
 
 TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In `gremlin-dotnet`, several
-`ConnectionSettings` properties and the `Auth` factory methods have been renamed for consistency, with the old names
-retained as `[Obsolete]` deprecated aliases so that existing code keeps compiling, and a number of new options have
-been added. The notes below describe the .NET changes. See <<glv-driver-changes, GLV Driver Changes>> for the
+`ConnectionSettings` properties and the `Auth` factory methods have been renamed for consistency. Because this is a
+major version, the old names have been removed rather than retained as aliases, and a number of new options have been
+added. The notes below describe the .NET changes. See <<glv-driver-changes, GLV Driver Changes>> for the
 equivalent changes in the other drivers.
 
-Renames (deprecated aliases). The following members have been renamed. The old names still work but are deprecated
-and should be migrated to the new names:
+Renames (breaking). The following members have been renamed and the old names removed. Migrate to the new names:
 
 - `ConnectionTimeout` is now `ConnectTimeout`.
 - `MaxConnectionsPerServer` is now `MaxConnections`.
@@ -64,12 +63,14 @@ New options:
 
 - `Ssl` (an `SslClientAuthenticationOptions` for client certificates and custom CAs; `SkipCertificateValidation` is
 applied to an internal copy rather than mutating the supplied options).
-- `DefaultBatchSize` (default 64): a connection-level default that fills the per-request batch size when unset.
+- `BatchSize` (default 64): a connection-level default that fills the per-request batch size when unset.
 - `MaxResponseHeaderBytes`: the maximum allowed size, in bytes, of the response headers.
 - `ReadTimeout`: a per-read idle timeout applied to each individual read of the response stream.
+- Each timeout is also settable in milliseconds via an `int` companion property (`ConnectTimeoutMillis`, `IdleTimeoutMillis`,
+  `ReadTimeoutMillis`, `KeepAliveTimeMillis`); the unsuffixed `TimeSpan` property is the idiomatic form.
 - `Proxy`: routes connections through an `IWebProxy`.
 
-See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[dev list discussion on standardizing GLV connection options].
+See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
 
 ==== Standardizing Go Connection Options
 

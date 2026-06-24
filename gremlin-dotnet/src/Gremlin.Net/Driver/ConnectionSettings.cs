@@ -49,13 +49,6 @@ namespace Gremlin.Net.Driver
         public const int DefaultMaxConnections = 128;
 
         /// <summary>
-        ///     The default maximum concurrent connections to a single server.
-        /// </summary>
-        /// <remarks>Deprecated compatibility alias; use <see cref="DefaultMaxConnections"/>.</remarks>
-        [Obsolete("As of release 4.0.0, replaced by DefaultMaxConnections.")]
-        public const int DefaultMaxConnectionsPerServer = DefaultMaxConnections;
-
-        /// <summary>
         ///     The default TCP keep-alive idle time (how long a connection is idle before the
         ///     first keep-alive probe is sent).
         /// </summary>
@@ -73,9 +66,29 @@ namespace Gremlin.Net.Driver
         public TimeSpan ConnectTimeout { get; set; } = DefaultConnectTimeout;
 
         /// <summary>
+        ///     Gets or sets <see cref="ConnectTimeout"/> in whole milliseconds. This is the millisecond
+        ///     view of the same setting; <see cref="ConnectTimeout"/> is the idiomatic <see cref="TimeSpan"/> form.
+        /// </summary>
+        public int ConnectTimeoutMillis
+        {
+            get => (int) ConnectTimeout.TotalMilliseconds;
+            set => ConnectTimeout = TimeSpan.FromMilliseconds(value);
+        }
+
+        /// <summary>
         ///     Gets or sets how long idle connections stay in the pool before being closed.
         /// </summary>
         public TimeSpan IdleTimeout { get; set; } = DefaultIdleTimeout;
+
+        /// <summary>
+        ///     Gets or sets <see cref="IdleTimeout"/> in whole milliseconds. This is the millisecond
+        ///     view of the same setting; <see cref="IdleTimeout"/> is the idiomatic <see cref="TimeSpan"/> form.
+        /// </summary>
+        public int IdleTimeoutMillis
+        {
+            get => (int) IdleTimeout.TotalMilliseconds;
+            set => IdleTimeout = TimeSpan.FromMilliseconds(value);
+        }
 
         /// <summary>
         ///     Gets or sets the maximum concurrent connections to a single server.
@@ -88,6 +101,16 @@ namespace Gremlin.Net.Driver
         ///     defaults.
         /// </summary>
         public TimeSpan KeepAliveTime { get; set; } = DefaultKeepAliveTime;
+
+        /// <summary>
+        ///     Gets or sets <see cref="KeepAliveTime"/> in whole milliseconds. This is the millisecond
+        ///     view of the same setting; <see cref="KeepAliveTime"/> is the idiomatic <see cref="TimeSpan"/> form.
+        /// </summary>
+        public int KeepAliveTimeMillis
+        {
+            get => (int) KeepAliveTime.TotalMilliseconds;
+            set => KeepAliveTime = TimeSpan.FromMilliseconds(value);
+        }
 
         /// <summary>
         ///     Gets or sets the response compression algorithm. Defaults to
@@ -107,10 +130,10 @@ namespace Gremlin.Net.Driver
         public bool BulkResults { get; set; } = false;
 
         /// <summary>
-        ///     Gets or sets the default batch size that fills the per-request batch size when it
-        ///     is not set on the request (client-side default-filling; no wire change).
+        ///     Gets or sets the connection-level default batch size that fills the per-request batch size
+        ///     when it is not set on the request (client-side default-filling; no wire change).
         /// </summary>
-        public int DefaultBatchSize { get; set; } = DefaultBatchSizeValue;
+        public int BatchSize { get; set; } = DefaultBatchSizeValue;
 
         /// <summary>
         ///     Gets or sets the SSL/TLS options used for HTTPS connections (client certificates,
@@ -145,68 +168,21 @@ namespace Gremlin.Net.Driver
         public TimeSpan ReadTimeout { get; set; } = System.Threading.Timeout.InfiniteTimeSpan;
 
         /// <summary>
+        ///     Gets or sets <see cref="ReadTimeout"/> in whole milliseconds, where <c>0</c> disables it
+        ///     (mapping to <see cref="System.Threading.Timeout.InfiniteTimeSpan"/>). This is the millisecond
+        ///     view of the same setting; <see cref="ReadTimeout"/> is the idiomatic <see cref="TimeSpan"/> form.
+        /// </summary>
+        public int ReadTimeoutMillis
+        {
+            get => ReadTimeout <= TimeSpan.Zero ? 0 : (int) ReadTimeout.TotalMilliseconds;
+            set => ReadTimeout = value <= 0 ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromMilliseconds(value);
+        }
+
+        /// <summary>
         ///     Gets or sets the HTTP proxy used for connections. When set, it is applied to the
         ///     underlying handler explicitly.
         /// </summary>
         public IWebProxy? Proxy { get; set; }
 
-        /// <summary>
-        ///     Gets or sets the maximum concurrent connections to a single server.
-        /// </summary>
-        /// <remarks>Deprecated compatibility alias; delegates to <see cref="MaxConnections"/>.</remarks>
-        [Obsolete("As of release 4.0.0, replaced by MaxConnections.")]
-        public int MaxConnectionsPerServer
-        {
-            get => MaxConnections;
-            set => MaxConnections = value;
-        }
-
-        /// <summary>
-        ///     Gets or sets the TCP connect timeout.
-        /// </summary>
-        /// <remarks>Deprecated compatibility alias; delegates to <see cref="ConnectTimeout"/>.</remarks>
-        [Obsolete("As of release 4.0.0, replaced by ConnectTimeout.")]
-        public TimeSpan ConnectionTimeout
-        {
-            get => ConnectTimeout;
-            set => ConnectTimeout = value;
-        }
-
-        /// <summary>
-        ///     Gets or sets how long idle connections stay in the pool before being closed.
-        /// </summary>
-        /// <remarks>Deprecated compatibility alias; delegates to <see cref="IdleTimeout"/>.</remarks>
-        [Obsolete("As of release 4.0.0, replaced by IdleTimeout.")]
-        public TimeSpan IdleConnectionTimeout
-        {
-            get => IdleTimeout;
-            set => IdleTimeout = value;
-        }
-
-        /// <summary>
-        ///     Gets or sets the TCP keep-alive idle time.
-        /// </summary>
-        /// <remarks>Deprecated compatibility alias; delegates to <see cref="KeepAliveTime"/>.</remarks>
-        [Obsolete("As of release 4.0.0, replaced by KeepAliveTime.")]
-        public TimeSpan KeepAliveInterval
-        {
-            get => KeepAliveTime;
-            set => KeepAliveTime = value;
-        }
-
-        /// <summary>
-        ///     Gets or sets whether response compression is enabled.
-        /// </summary>
-        /// <remarks>
-        ///     Deprecated compatibility shim; delegates to <see cref="Compression"/>
-        ///     (<c>true</c> = <see cref="Driver.Compression.Deflate"/>,
-        ///     <c>false</c> = <see cref="Driver.Compression.None"/>).
-        /// </remarks>
-        [Obsolete("As of release 4.0.0, replaced by Compression.")]
-        public bool EnableCompression
-        {
-            get => Compression.Type == CompressionType.Deflate;
-            set => Compression = value ? Compression.Deflate : Compression.None;
-        }
     }
 }

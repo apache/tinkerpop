@@ -226,7 +226,7 @@ namespace Gremlin.Net.Driver
             if (!outgoingMessage.Fields.ContainsKey(Tokens.ArgsBatchSize))
             {
                 outgoingMessage = outgoingMessage.CloneWithField(
-                    Tokens.ArgsBatchSize, _settings.DefaultBatchSize);
+                    Tokens.ArgsBatchSize, _settings.BatchSize);
             }
 
             if (_settings.Compression.Type == CompressionType.Deflate)

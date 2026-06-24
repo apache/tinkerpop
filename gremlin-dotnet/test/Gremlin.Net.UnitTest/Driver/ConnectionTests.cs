@@ -1067,7 +1067,7 @@ namespace Gremlin.Net.UnitTest.Driver
         {
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
-            var settings = new ConnectionSettings { DefaultBatchSize = 42 };
+            var settings = new ConnectionSettings { BatchSize = 42 };
             using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             var request = CreateTestRequest();
@@ -1084,7 +1084,7 @@ namespace Gremlin.Net.UnitTest.Driver
         {
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
-            var settings = new ConnectionSettings { DefaultBatchSize = 42 };
+            var settings = new ConnectionSettings { BatchSize = 42 };
             using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             var request = RequestMessage.Build("g.V()").AddG("g").AddBatchSize(100).Create();
@@ -1115,7 +1115,7 @@ namespace Gremlin.Net.UnitTest.Driver
         {
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
-            var settings = new ConnectionSettings { DefaultBatchSize = 42 };
+            var settings = new ConnectionSettings { BatchSize = 42 };
             using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
             // Resubmitting the same message must not carry over a previously injected default.

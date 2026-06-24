@@ -105,31 +105,6 @@ namespace Gremlin.Net.Driver
             };
         }
 
-        /// <summary>
-        ///     Returns a request interceptor that adds an HTTP Basic Authentication header.
-        /// </summary>
-        /// <param name="username">The username.</param>
-        /// <param name="password">The password.</param>
-        /// <returns>A request interceptor delegate.</returns>
-        /// <remarks>Deprecated compatibility alias; delegates to <see cref="Basic"/>.</remarks>
-        [Obsolete("As of release 4.0.0, replaced by Basic.")]
-        public static Func<HttpRequestContext, Task> BasicAuth(string username, string password) =>
-            Basic(username, password);
-
-        /// <summary>
-        ///     Returns a request interceptor that signs requests using AWS Signature Version 4.
-        /// </summary>
-        /// <param name="region">The AWS region (e.g. "us-east-1").</param>
-        /// <param name="service">The AWS service name (e.g. "neptune-db").</param>
-        /// <param name="credentials">
-        ///     Optional AWS credentials. When null, the default credential chain is used.
-        /// </param>
-        /// <returns>A request interceptor delegate.</returns>
-        /// <remarks>Deprecated compatibility alias; delegates to <see cref="Sigv4"/>.</remarks>
-        [Obsolete("As of release 4.0.0, replaced by Sigv4.")]
-        public static Func<HttpRequestContext, Task> SigV4Auth(
-            string region, string service, AWSCredentials? credentials = null) =>
-            Sigv4(region, service, credentials);
 
         private static void SignRequest(HttpRequestContext context,
             ImmutableCredentials credentials, AWS4Signer signer, SigningClientConfig clientConfig)

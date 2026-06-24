@@ -2658,15 +2658,15 @@ constructor:
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|ConnectTimeout |The TCP connect timeout (transport establishment, i.e. TCP connect plus TLS handshake where applicable, not an HTTP request timeout). |5 s
-|IdleTimeout |How long idle connections stay in the pool before being closed. |180 s
+|ConnectTimeoutMillis |The TCP connect timeout in milliseconds (transport establishment, i.e. TCP connect plus TLS handshake where applicable, not an HTTP request timeout). Also settable as `ConnectTimeout` (a `TimeSpan`). |5000
+|IdleTimeoutMillis |How long in milliseconds idle connections stay in the pool before being closed. Also settable as `IdleTimeout` (a `TimeSpan`). |180000
 |MaxConnections |The maximum concurrent connections to a single server. |128
-|KeepAliveTime |Idle time before TCP keep-alive probes begin on an otherwise idle connection. Enables `SO_KEEPALIVE` on the socket and sets the per-socket idle time on Windows, Linux, and macOS; on other platforms keep-alive stays enabled at the OS default idle time. |30 s
+|KeepAliveTimeMillis |Idle time in milliseconds before TCP keep-alive probes begin on an otherwise idle connection. Enables `SO_KEEPALIVE` on the socket and sets the per-socket idle time on Windows, Linux, and macOS; on other platforms keep-alive stays enabled at the OS default idle time. Also settable as `KeepAliveTime` (a `TimeSpan`). |30000
 |Compression |The response compression algorithm (`Compression.None` or `Compression.Deflate`). |`Compression.Deflate`
-|DefaultBatchSize |The default batch size used to fill the per-request batch size when it is unset. |64
+|BatchSize |The connection-level default batch size used to fill the per-request batch size when it is unset. |64
 |Ssl |The `SslClientAuthenticationOptions` used for HTTPS connections (client certificates, custom CA, protocols, etc.). `SkipCertificateValidation` is applied to an internal copy of these options rather than mutating the object you provide. |`null`
 |MaxResponseHeaderBytes |The maximum allowed size, in bytes, of the response headers. `0` leaves the handler default unchanged (converted internally to the handler's native kilobyte unit). |0
-|ReadTimeout |The idle-read timeout applied to each individual read of the response stream. It resets per chunk. `Timeout.InfiniteTimeSpan` disables it. |`Timeout.InfiniteTimeSpan`
+|ReadTimeoutMillis |The idle-read timeout in milliseconds applied to each individual read of the response stream. It resets per chunk. `0` (the default) disables it. Also settable as `ReadTimeout` (a `TimeSpan`; `Timeout.InfiniteTimeSpan` disables). |0
 |Proxy |The `IWebProxy` used for connections. |`null`
 |EnableUserAgentOnConnect |Enables sending a user agent to the server on requests.
 More details can be found in provider docs

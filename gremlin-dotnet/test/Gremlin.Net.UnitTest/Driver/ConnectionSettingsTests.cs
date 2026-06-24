@@ -40,7 +40,7 @@ namespace Gremlin.Net.UnitTest.Driver
             Assert.Equal(TimeSpan.FromSeconds(180), settings.IdleTimeout);
             Assert.Equal(128, settings.MaxConnections);
             Assert.Equal(TimeSpan.FromSeconds(30), settings.KeepAliveTime);
-            Assert.Equal(64, settings.DefaultBatchSize);
+            Assert.Equal(64, settings.BatchSize);
             Assert.Equal(Compression.Deflate, settings.Compression);
             Assert.False(settings.SkipCertificateValidation);
             Assert.Null(settings.Ssl);
@@ -83,83 +83,43 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
-        public void ObsoleteAliasesShouldMapToCanonicalProperties()
-        {
-#pragma warning disable 618
-            var settings = new ConnectionSettings
-            {
-                MaxConnectionsPerServer = 42,
-                ConnectionTimeout = TimeSpan.FromSeconds(7),
-                IdleConnectionTimeout = TimeSpan.FromSeconds(99),
-                KeepAliveInterval = TimeSpan.FromSeconds(11),
-            };
-
-            // Reading the obsolete alias returns the canonical value.
-            Assert.Equal(42, settings.MaxConnectionsPerServer);
-            Assert.Equal(TimeSpan.FromSeconds(7), settings.ConnectionTimeout);
-            Assert.Equal(TimeSpan.FromSeconds(99), settings.IdleConnectionTimeout);
-            Assert.Equal(TimeSpan.FromSeconds(11), settings.KeepAliveInterval);
-#pragma warning restore 618
-
-            // The canonical property reflects the same backing value.
-            Assert.Equal(42, settings.MaxConnections);
-            Assert.Equal(TimeSpan.FromSeconds(7), settings.ConnectTimeout);
-            Assert.Equal(TimeSpan.FromSeconds(99), settings.IdleTimeout);
-            Assert.Equal(TimeSpan.FromSeconds(11), settings.KeepAliveTime);
-        }
-
-        [Fact]
-        public void ObsoleteAliasesShouldReflectCanonicalWrites()
+        public void MillisOptionsShouldSetTheTimeSpanProperties()
         {
             var settings = new ConnectionSettings
             {
-                MaxConnections = 256,
-                ConnectTimeout = TimeSpan.FromSeconds(3),
-                IdleTimeout = TimeSpan.FromSeconds(60),
-                KeepAliveTime = TimeSpan.FromSeconds(15),
+                ConnectTimeoutMillis = 2000,
+                IdleTimeoutMillis = 60000,
+                KeepAliveTimeMillis = 15000,
+                ReadTimeoutMillis = 30000
             };
 
-#pragma warning disable 618
-            Assert.Equal(256, settings.MaxConnectionsPerServer);
-            Assert.Equal(TimeSpan.FromSeconds(3), settings.ConnectionTimeout);
-            Assert.Equal(TimeSpan.FromSeconds(60), settings.IdleConnectionTimeout);
-            Assert.Equal(TimeSpan.FromSeconds(15), settings.KeepAliveInterval);
-#pragma warning restore 618
+            Assert.Equal(TimeSpan.FromMilliseconds(2000), settings.ConnectTimeout);
+            Assert.Equal(TimeSpan.FromMilliseconds(60000), settings.IdleTimeout);
+            Assert.Equal(TimeSpan.FromMilliseconds(15000), settings.KeepAliveTime);
+            Assert.Equal(TimeSpan.FromMilliseconds(30000), settings.ReadTimeout);
         }
 
         [Fact]
-        public void ObsoleteEnableCompressionShouldMapToCompression()
+        public void MillisOptionsShouldReflectTheTimeSpanProperties()
         {
-            var settings = new ConnectionSettings();
+            var settings = new ConnectionSettings
+            {
+                ConnectTimeout = TimeSpan.FromSeconds(2),
+                ReadTimeout = TimeSpan.FromSeconds(30)
+            };
 
-#pragma warning disable 618
-            // Default is Deflate, so the bool shim reads true.
-            Assert.True(settings.EnableCompression);
-
-            settings.EnableCompression = false;
-            Assert.Equal(Compression.None, settings.Compression);
-            Assert.False(settings.EnableCompression);
-
-            settings.EnableCompression = true;
-            Assert.Equal(Compression.Deflate, settings.Compression);
-            Assert.True(settings.EnableCompression);
-#pragma warning restore 618
+            Assert.Equal(2000, settings.ConnectTimeoutMillis);
+            Assert.Equal(30000, settings.ReadTimeoutMillis);
         }
 
         [Fact]
-        public void ObsoleteEnableCompressionShouldReflectCanonicalCompression()
+        public void ReadTimeoutMillisZeroShouldDisableTheReadTimeout()
         {
-            var settings = new ConnectionSettings { Compression = Compression.None };
+            var settings = new ConnectionSettings { ReadTimeoutMillis = 0 };
 
-#pragma warning disable 618
-            Assert.False(settings.EnableCompression);
-#pragma warning restore 618
-
-            settings.Compression = Compression.Deflate;
-
-#pragma warning disable 618
-            Assert.True(settings.EnableCompression);
-#pragma warning restore 618
+            Assert.Equal(Timeout.InfiniteTimeSpan, settings.ReadTimeout);
+            Assert.Equal(0, settings.ReadTimeoutMillis);
         }
+
     }
 }

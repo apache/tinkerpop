@@ -244,34 +244,5 @@ namespace Gremlin.Net.UnitTest.Driver
 
         // --- Deprecated alias tests ---
 
-        [Fact]
-        public async Task BasicAuthAliasShouldBehaveLikeBasic()
-        {
-#pragma warning disable 618
-            var interceptor = Auth.BasicAuth("user", "pass");
-#pragma warning restore 618
-            var context = CreateTestContext();
-
-            await interceptor(context);
-
-            var expected = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("user:pass"));
-            Assert.Equal(expected, context.Headers["Authorization"]);
-        }
-
-        [Fact]
-        public async Task SigV4AuthAliasShouldBehaveLikeSigv4()
-        {
-#pragma warning disable 618
-            var interceptor = Auth.SigV4Auth("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
-#pragma warning restore 618
-            var context = CreateSigv4TestContext();
-
-            await interceptor(context);
-
-            Assert.True(context.Headers.ContainsKey("Authorization"));
-            Assert.True(context.Headers.ContainsKey("X-Amz-Date"));
-            Assert.True(context.Headers.ContainsKey("x-amz-content-sha256"));
-            Assert.StartsWith("AWS4-HMAC-SHA256 Credential=MOCK_ID", context.Headers["Authorization"]);
-        }
     }
 }
