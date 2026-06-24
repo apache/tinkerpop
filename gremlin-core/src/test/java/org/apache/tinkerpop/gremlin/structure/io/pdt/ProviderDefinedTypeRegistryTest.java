@@ -413,4 +413,145 @@ public class ProviderDefinedTypeRegistryTest {
         assertEquals(10, ((Point) innerValue).x);
         assertEquals(20, ((Point) innerValue).y);
     }
+
+    // === Primitive PDT Adapter tests ===
+
+    static class Uint32 {
+        final long value;
+        Uint32(long value) { this.value = value; }
+    }
+
+    static class Uint32Adapter implements PrimitivePDTAdapter<Uint32> {
+        @Override public String typeName() { return "Uint32"; }
+        @Override public Class<Uint32> targetClass() { return Uint32.class; }
+        @Override public String toValue(Uint32 obj) { return Long.toString(obj.value); }
+        @Override public Uint32 fromValue(String value) { return new Uint32(Long.parseLong(value)); }
+    }
+
+    static class FailingPrimitiveAdapter implements PrimitivePDTAdapter<Uint32> {
+        @Override public String typeName() { return "FailPrim"; }
+        @Override public Class<Uint32> targetClass() { return Uint32.class; }
+        @Override public String toValue(Uint32 obj) { return "0"; }
+        @Override public Uint32 fromValue(String value) { throw new RuntimeException("intentional primitive failure"); }
+    }
+
+    @Test
+    public void shouldRegisterAndLookUpPrimitiveAdapterByName() {
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(new Uint32Adapter());
+
+        final Optional<PrimitivePDTAdapter<?>> found = registry.getPrimitiveAdapterByName("Uint32");
+        assertTrue(found.isPresent());
+        assertEquals("Uint32", found.get().typeName());
+    }
+
+    @Test
+    public void shouldRegisterAndLookUpPrimitiveAdapterByClass() {
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(new Uint32Adapter());
+
+        final Optional<PrimitivePDTAdapter<?>> found = registry.getPrimitiveAdapterByClass(Uint32.class);
+        assertTrue(found.isPresent());
+        assertEquals(Uint32.class, found.get().targetClass());
+    }
+
+    @Test
+    public void shouldHydratePrimitive() {
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(new Uint32Adapter());
+
+        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Uint32", "42");
+        final Object result = registry.hydratePrimitive(pdt);
+        assertTrue(result instanceof Uint32);
+        assertEquals(42L, ((Uint32) result).value);
+    }
+
+    @Test
+    public void shouldReturnRawPrimitivePdtWhenNoAdapterRegistered() {
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+
+        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Unknown", "x");
+        final Object result = registry.hydratePrimitive(pdt);
+        assertSame(pdt, result);
+    }
+
+    @Test
+    public void shouldReturnRawPrimitivePdtWhenAdapterThrows() {
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(new FailingPrimitiveAdapter());
+
+        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("FailPrim", "42");
+        final Object result = registry.hydratePrimitive(pdt);
+        assertSame(pdt, result);
+    }
+
+    @Test
+    public void shouldThrowOnDualRegistrationPrimitiveAfterComposite() {
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(new PointAdapter());
+
+        // Attempt to register Point.class as a primitive (already registered as composite)
+        final PrimitivePDTAdapter<Point> primitivePoint = new PrimitivePDTAdapter<Point>() {
+            @Override public String typeName() { return "PointPrim"; }
+            @Override public Class<Point> targetClass() { return Point.class; }
+            @Override public String toValue(Point obj) { return obj.x + "," + obj.y; }
+            @Override public Point fromValue(String value) { return new Point(0, 0); }
+        };
+
+        try {
+            registry.register(primitivePoint);
+            fail("Expected IllegalArgumentException for dual registration");
+        } catch (final IllegalArgumentException e) {
+            assertTrue(e.getMessage().contains("already registered as a composite"));
+        }
+    }
+
+    @Test
+    public void shouldThrowOnDualRegistrationCompositeAfterPrimitive() {
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(new Uint32Adapter());
+
+        // Attempt to register Uint32.class as a composite (already registered as primitive)
+        final CompositePDTAdapter<Uint32> compositeUint32 = new CompositePDTAdapter<Uint32>() {
+            @Override public String typeName() { return "Uint32Comp"; }
+            @Override public Class<Uint32> targetClass() { return Uint32.class; }
+            @Override public Map<String, Object> toFields(Uint32 obj) { return new HashMap<>(); }
+            @Override public Uint32 fromFields(Map<String, Object> fields) { return new Uint32(0); }
+        };
+
+        try {
+            registry.register(compositeUint32);
+            fail("Expected IllegalArgumentException for dual registration");
+        } catch (final IllegalArgumentException e) {
+            assertTrue(e.getMessage().contains("already registered as a primitive"));
+        }
+    }
+
+    @Test
+    public void shouldHydratePrimitiveNestedInsideComposite() {
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(new Uint32Adapter());
+
+        // A composite type "Container" with a primitive nested field
+        registry.register(new CompositePDTAdapter<Map>() {
+            @Override public String typeName() { return "Container"; }
+            @Override public Class<Map> targetClass() { return Map.class; }
+            @Override public Map<String, Object> toFields(Map obj) { return new HashMap<>(); }
+            @SuppressWarnings("unchecked")
+            @Override public Map fromFields(Map<String, Object> fields) { return fields; }
+        });
+
+        final Map<String, Object> containerFields = new HashMap<>();
+        containerFields.put("id", new PrimitiveProviderDefinedType("Uint32", "99"));
+        containerFields.put("label", "test");
+        final ProviderDefinedType containerPdt = new ProviderDefinedType("Container", containerFields);
+
+        final Object result = registry.hydrate(containerPdt);
+        assertTrue(result instanceof Map);
+        @SuppressWarnings("unchecked")
+        final Map<String, Object> resultMap = (Map<String, Object>) result;
+        assertTrue(resultMap.get("id") instanceof Uint32);
+        assertEquals(99L, ((Uint32) resultMap.get("id")).value);
+        assertEquals("test", resultMap.get("label"));
+    }
 }
