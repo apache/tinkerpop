@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.BigDecimalSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.BigIntegerSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.BulkSetSerializer;
@@ -49,6 +50,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.types.DateTimeSerializer
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.PathSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.PropertySerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.ProviderDefinedTypeSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.types.PrimitiveProviderDefinedTypeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.SetSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.SingleTypeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.StringSerializer;
@@ -121,7 +123,8 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(Character.class, new CharSerializer()),
             new RegistryEntry<>(Duration.class, new DurationSerializer()),
             new RegistryEntry<>(OffsetDateTime.class, new DateTimeSerializer()),
-            new RegistryEntry<>(ProviderDefinedType.class, new ProviderDefinedTypeSerializer())
+            new RegistryEntry<>(ProviderDefinedType.class, new ProviderDefinedTypeSerializer()),
+            new RegistryEntry<>(PrimitiveProviderDefinedType.class, new PrimitiveProviderDefinedTypeSerializer())
     };
 
     public static final TypeSerializerRegistry INSTANCE = build().create();
