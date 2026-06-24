@@ -2675,6 +2675,19 @@ link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provide
 |SkipCertificateValidation |Whether to skip SSL certificate validation. Only use for testing with self-signed certificates. When `Ssl` is also provided, the accept-all callback is set on an internal copy so the supplied options object is never mutated. |false
 |=========================================================
 
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `ReadTimeout` only bounds
+the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
+runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
+your application by passing a cancellation token that cancels after the deadline:
+
+[source,csharp]
+----
+// bound the entire request (submit plus full result iteration) to 30 seconds
+using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+var results = await client.SubmitAsync<Vertex>(
+    "g.V().out().out()", cancellationToken: cts.Token);
+----
+
 ==== GremlinClient Settings
 
 The following options can be passed to the `GremlinClient` constructor:
