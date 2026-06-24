@@ -20,6 +20,7 @@ under the License.
 import pytest
 
 from gremlin_python.structure.graph import ProviderDefinedType, ProviderDefinedTypeRegistry, provider_defined
+from gremlin_python.structure.graph import PrimitiveProviderDefinedType
 from gremlin_python.structure.io.graphbinaryV4 import GraphBinaryWriter, GraphBinaryReader
 
 
@@ -241,3 +242,181 @@ class TestPdtRegistryWiring(object):
         with patch.object(Client, '_fill_pool'):
             drc = DriverRemoteConnection("ws://localhost:8182/gremlin", "g", pdt_registry=registry)
             assert drc._client._response_serializer._graphbinary_reader.pdt_registry is registry
+
+
+class TestPrimitiveProviderDefinedType(object):
+
+    def test_empty_name_rejected(self):
+        with pytest.raises(ValueError):
+            PrimitiveProviderDefinedType("", "123")
+
+    def test_none_name_rejected(self):
+        with pytest.raises(ValueError):
+            PrimitiveProviderDefinedType(None, "123")
+
+    def test_none_value_rejected(self):
+        with pytest.raises(ValueError):
+            PrimitiveProviderDefinedType("Uint32", None)
+
+    def test_equality(self):
+        a = PrimitiveProviderDefinedType("Uint32", "42")
+        b = PrimitiveProviderDefinedType("Uint32", "42")
+        assert a == b
+        assert hash(a) == hash(b)
+
+    def test_inequality(self):
+        a = PrimitiveProviderDefinedType("Uint32", "42")
+        b = PrimitiveProviderDefinedType("Uint32", "43")
+        assert a != b
+
+    def test_repr(self):
+        pdt = PrimitiveProviderDefinedType("Uint32", "42")
+        assert "Uint32" in repr(pdt)
+        assert "42" in repr(pdt)
+
+
+class TestPrimitiveProviderDefinedTypeGraphBinary(object):
+    graphbinary_writer = GraphBinaryWriter()
+    graphbinary_reader = GraphBinaryReader()
+
+    def test_round_trip_simple(self):
+        pdt = PrimitiveProviderDefinedType("Uint32", "42")
+        ba = self.graphbinary_writer.write_object(pdt)
+        result = self.graphbinary_reader.read_object(ba)
+        assert isinstance(result, PrimitiveProviderDefinedType)
+        assert result == pdt
+
+    def test_round_trip_leading_zeros(self):
+        """Opaque value: leading zeros must be preserved."""
+        pdt = PrimitiveProviderDefinedType("Uint32", "007")
+        ba = self.graphbinary_writer.write_object(pdt)
+        result = self.graphbinary_reader.read_object(ba)
+        assert result.value == "007"
+
+    def test_round_trip_large_number(self):
+        """Opaque value: large numbers preserved as string."""
+        pdt = PrimitiveProviderDefinedType("BigNum", "99999999999999999999999999999")
+        ba = self.graphbinary_writer.write_object(pdt)
+        result = self.graphbinary_reader.read_object(ba)
+        assert result.value == "99999999999999999999999999999"
+
+    def test_round_trip_non_numeric(self):
+        """Opaque value: non-numeric strings work."""
+        pdt = PrimitiveProviderDefinedType("TinkerId", "abc-def-123")
+        ba = self.graphbinary_writer.write_object(pdt)
+        result = self.graphbinary_reader.read_object(ba)
+        assert result.value == "abc-def-123"
+
+    def test_round_trip_empty_value(self):
+        """Edge case: empty string value."""
+        pdt = PrimitiveProviderDefinedType("Empty", "")
+        ba = self.graphbinary_writer.write_object(pdt)
+        result = self.graphbinary_reader.read_object(ba)
+        assert result.value == ""
+
+
+class TestPrimitiveRegistryHydration(object):
+
+    def test_hydrate_simple(self):
+        registry = ProviderDefinedTypeRegistry()
+        registry.register_primitive("Uint32", lambda v: int(v))
+        pdt = PrimitiveProviderDefinedType("Uint32", "42")
+        result = registry.hydrate_primitive(pdt)
+        assert result == 42
+
+    def test_hydrate_no_adapter_returns_raw(self):
+        registry = ProviderDefinedTypeRegistry()
+        pdt = PrimitiveProviderDefinedType("Unknown", "hello")
+        result = registry.hydrate_primitive(pdt)
+        assert result is pdt
+
+    def test_hydrate_adapter_throws_falls_back(self):
+        registry = ProviderDefinedTypeRegistry()
+        registry.register_primitive("Bad", lambda v: 1 / 0)
+        pdt = PrimitiveProviderDefinedType("Bad", "x")
+        result = registry.hydrate_primitive(pdt)
+        assert result is pdt
+
+    def test_reader_auto_hydrates_primitive(self):
+        registry = ProviderDefinedTypeRegistry()
+        registry.register_primitive("Uint32", lambda v: int(v))
+        writer = GraphBinaryWriter()
+        reader = GraphBinaryReader(pdt_registry=registry)
+
+        pdt = PrimitiveProviderDefinedType("Uint32", "42")
+        result = reader.read_object(writer.write_object(pdt))
+        assert result == 42
+
+    def test_reader_no_registry_returns_raw(self):
+        writer = GraphBinaryWriter()
+        reader = GraphBinaryReader()
+
+        pdt = PrimitiveProviderDefinedType("Uint32", "42")
+        result = reader.read_object(writer.write_object(pdt))
+        assert isinstance(result, PrimitiveProviderDefinedType)
+        assert result == pdt
+
+
+class TestPrimitiveNestedInComposite(object):
+
+    def test_primitive_nested_in_composite_hydrates(self):
+        """A PrimitiveProviderDefinedType nested as a field value in a composite PDT is hydrated."""
+        registry = ProviderDefinedTypeRegistry()
+        registry.register_primitive("Uint32", lambda v: int(v))
+        registry.register("com.example.Wrapper", lambda fields: {"id": fields["id"], "count": fields["count"]})
+
+        inner = PrimitiveProviderDefinedType("Uint32", "99")
+        outer = ProviderDefinedType("com.example.Wrapper", {"id": "abc", "count": inner})
+        result = registry.hydrate(outer)
+        assert result == {"id": "abc", "count": 99}
+
+    def test_primitive_nested_in_unregistered_composite_hydrates(self):
+        """Primitive nested inside an unregistered composite still hydrates."""
+        registry = ProviderDefinedTypeRegistry()
+        registry.register_primitive("Uint32", lambda v: int(v))
+
+        inner = PrimitiveProviderDefinedType("Uint32", "7")
+        outer = ProviderDefinedType("com.example.Unregistered", {"val": inner})
+        result = registry.hydrate(outer)
+        assert isinstance(result, ProviderDefinedType)
+        assert result.fields["val"] == 7
+
+    def test_graphbinary_primitive_nested_in_composite(self):
+        """Round-trip a composite PDT containing a primitive PDT field via GraphBinary."""
+        registry = ProviderDefinedTypeRegistry()
+        registry.register_primitive("Uint32", lambda v: int(v))
+        registry.register("com.example.Outer",
+                          lambda fields: {"name": fields["name"], "count": fields["count"]})
+        writer = GraphBinaryWriter()
+        reader = GraphBinaryReader(pdt_registry=registry)
+
+        inner = PrimitiveProviderDefinedType("Uint32", "5")
+        outer = ProviderDefinedType("com.example.Outer", {"name": "test", "count": inner})
+        ba = writer.write_object(outer)
+        result = reader.read_object(ba)
+        assert result == {"name": "test", "count": 5}
+
+
+class TestPrimitiveRegistryEntryPoints(object):
+
+    def test_entry_points_can_register_primitives(self):
+        """Verifies that the entry_points 'tinkerpop.pdt' mechanism works for primitives."""
+        from unittest.mock import patch, MagicMock
+
+        def register_primitives(registry):
+            registry.register_primitive("Uint32", lambda v: int(v))
+
+        mock_ep = MagicMock()
+        mock_ep.name = "mock_primitive"
+        mock_ep.load.return_value = register_primitives
+
+        with patch("importlib.metadata.entry_points") as mock_entry_points:
+            import sys
+            if sys.version_info >= (3, 10):
+                mock_entry_points.return_value = [mock_ep]
+            else:
+                mock_entry_points.return_value = {'tinkerpop.pdt': [mock_ep]}
+
+            registry = ProviderDefinedTypeRegistry.create()
+            pdt = PrimitiveProviderDefinedType("Uint32", "123")
+            assert registry.hydrate_primitive(pdt) == 123
