@@ -1494,6 +1494,20 @@ Responses are now streamed rather than buffered to a fixed size, so this client-
 responses are causing timeouts, increase the `readTimeout` on the driver and consider applying server-side limits
 (such as result iteration or serialization limits) to constrain the size of responses being returned.
 
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `readTimeout` only bounds
+the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
+runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
+your application around the asynchronous API, for example by wrapping a `CompletableFuture` with a timeout:
+
+[source,java]
+----
+// bound the entire request (submit plus full result iteration) to 30 seconds
+final List<Result> results = client.submitAsync("g.V().out().out()")
+        .thenCompose(ResultSet::all)
+        .orTimeout(30, TimeUnit.SECONDS)
+        .get();
+----
+
 *TimeoutException*
 
 A `TimeoutException` is thrown by the driver when the time limit assigned by the `maxWaitForConnection` is exceeded

@@ -81,6 +81,20 @@ New options:
 The `maxResponseContentLength` setting has been removed. Responses are now streamed rather than aggregated
 and size-capped. The new idle `readTimeout` is the partial mitigation for unbounded or slow responses.
 
+Note that none of the driver timeouts bound the *total* time of a request: `readTimeout` only bounds the gap between
+response chunks, so a response that keeps producing chunks will not time out no matter how long it runs overall. If
+you need an overall deadline, impose it in your application around the asynchronous API, for example by wrapping a
+`CompletableFuture` with a timeout:
+
+[source,java]
+----
+// bound the entire request (submit plus full result iteration) to 30 seconds
+final List<Result> results = client.submitAsync("g.V().out().out()")
+        .thenCompose(ResultSet::all)
+        .orTimeout(30, TimeUnit.SECONDS)
+        .get();
+----
+
 See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4
 ].
 
