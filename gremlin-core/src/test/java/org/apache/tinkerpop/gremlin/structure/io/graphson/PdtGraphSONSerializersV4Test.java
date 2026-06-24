@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
@@ -247,5 +249,104 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
         assertNull(result.getHydrated());
         assertEquals("Unknown", result.getName());
         assertEquals(1, result.getFields().get("a"));
+    }
+
+    // --- PrimitivePDT tests ---
+
+    @Test
+    public void shouldSerializePrimitivePdt() throws Exception {
+        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Duration", "PT5M");
+
+        final String json = mapper.writeValueAsString(pdt);
+        final JsonNode node = plainMapper.readTree(json);
+
+        assertEquals("g:PrimitivePdt", node.get("@type").asText());
+        final JsonNode value = node.get("@value");
+        assertEquals("Duration", value.get("type").asText());
+        // value must be an untyped JSON string (no @type/@value wrapping)
+        assertTrue(value.get("value").isTextual());
+        assertEquals("PT5M", value.get("value").asText());
+    }
+
+    @Test
+    public void shouldDeserializePrimitivePdt() throws Exception {
+        final String json = "{\"@type\":\"g:PrimitivePdt\",\"@value\":{\"type\":\"Duration\",\"value\":\"PT5M\"}}";
+        final PrimitiveProviderDefinedType pdt = mapper.readValue(json, PrimitiveProviderDefinedType.class);
+
+        assertEquals("Duration", pdt.getName());
+        assertEquals("PT5M", pdt.getValue());
+    }
+
+    @Test
+    public void shouldRoundTripPrimitivePdt() throws Exception {
+        final PrimitiveProviderDefinedType original = new PrimitiveProviderDefinedType("Duration", "PT5M");
+        final PrimitiveProviderDefinedType result = serializeDeserialize(mapper, original, PrimitiveProviderDefinedType.class);
+
+        assertEquals(original.getName(), result.getName());
+        assertEquals(original.getValue(), result.getValue());
+    }
+
+    @Test
+    public void shouldHydratePrimitivePdtWhenRegistryConfigured() throws Exception {
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(new DurationAdapter());
+
+        final ObjectMapper hydratingMapper = GraphSONMapper.build()
+                .version(GraphSONVersion.V4_0)
+                .addCustomModule(GraphSONXModuleV4.build())
+                .typeInfo(TypeInfo.PARTIAL_TYPES)
+                .pdtRegistry(registry)
+                .create().createMapper();
+
+        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Duration", "PT10S");
+        final PrimitiveProviderDefinedType result = serializeDeserialize(hydratingMapper, pdt, PrimitiveProviderDefinedType.class);
+
+        assertNotNull(result.getHydrated());
+        assertTrue(result.getHydrated() instanceof MyDuration);
+        assertEquals(10, ((MyDuration) result.getHydrated()).seconds);
+    }
+
+    @Test
+    public void shouldNestPrimitivePdtInsideCompositePdt() throws Exception {
+        final PrimitiveProviderDefinedType inner = new PrimitiveProviderDefinedType("Duration", "PT1H");
+        final Map<String, Object> outerFields = new LinkedHashMap<>();
+        outerFields.put("name", "timeout");
+        outerFields.put("dur", inner);
+        final ProviderDefinedType outer = new ProviderDefinedType("Config", outerFields);
+
+        final String json = mapper.writeValueAsString(outer);
+        final JsonNode node = plainMapper.readTree(json);
+
+        assertEquals("g:CompositePdt", node.get("@type").asText());
+        final JsonNode durNode = node.get("@value").get("fields").get("dur");
+        assertEquals("g:PrimitivePdt", durNode.get("@type").asText());
+        assertEquals("Duration", durNode.get("@value").get("type").asText());
+        assertEquals("PT1H", durNode.get("@value").get("value").asText());
+
+        // round-trip
+        final ProviderDefinedType result = serializeDeserialize(mapper, outer, ProviderDefinedType.class);
+        assertEquals("Config", result.getName());
+        assertTrue(result.getFields().get("dur") instanceof PrimitiveProviderDefinedType);
+        final PrimitiveProviderDefinedType nestedResult = (PrimitiveProviderDefinedType) result.getFields().get("dur");
+        assertEquals("Duration", nestedResult.getName());
+        assertEquals("PT1H", nestedResult.getValue());
+    }
+
+    // helper types for primitive PDT hydration tests
+
+    static class MyDuration {
+        final int seconds;
+        MyDuration(int seconds) { this.seconds = seconds; }
+    }
+
+    static class DurationAdapter implements PrimitivePDTAdapter<MyDuration> {
+        @Override public String typeName() { return "Duration"; }
+        @Override public Class<MyDuration> targetClass() { return MyDuration.class; }
+        @Override public String toValue(MyDuration obj) { return "PT" + obj.seconds + "S"; }
+        @Override public MyDuration fromValue(String value) {
+            // parse PTnS
+            final String stripped = value.replaceAll("[PTS]", "").replace("H", "").replace("M", "");
+            return new MyDuration(Integer.parseInt(stripped));
+        }
     }
 }

@@ -33,20 +33,24 @@ final class PdtGraphSONSerializerProviderV4 extends DefaultSerializerProvider {
     private static final long serialVersionUID = 1L;
     private final ProviderDefinedTypeRegistry pdtRegistry;
     private final JsonSerializer<Object> pdtAdapterSerializer;
+    private final JsonSerializer<Object> primitivePdtAdapterSerializer;
 
     PdtGraphSONSerializerProviderV4(final ProviderDefinedTypeRegistry pdtRegistry) {
         super();
         this.pdtRegistry = pdtRegistry;
         this.pdtAdapterSerializer = new PdtGraphSONSerializersV4.PdtAdapterJacksonSerializer(pdtRegistry);
+        this.primitivePdtAdapterSerializer = new PdtGraphSONSerializersV4.PrimitivePdtAdapterJacksonSerializer(pdtRegistry);
     }
 
     private PdtGraphSONSerializerProviderV4(final SerializerProvider src,
                                             final SerializationConfig config, final SerializerFactory f,
                                             final ProviderDefinedTypeRegistry pdtRegistry,
-                                            final JsonSerializer<Object> pdtAdapterSerializer) {
+                                            final JsonSerializer<Object> pdtAdapterSerializer,
+                                            final JsonSerializer<Object> primitivePdtAdapterSerializer) {
         super(src, config, f);
         this.pdtRegistry = pdtRegistry;
         this.pdtAdapterSerializer = pdtAdapterSerializer;
+        this.primitivePdtAdapterSerializer = primitivePdtAdapterSerializer;
     }
 
     @Override
@@ -54,12 +58,15 @@ final class PdtGraphSONSerializerProviderV4 extends DefaultSerializerProvider {
         if (pdtRegistry != null && pdtRegistry.getAdapterByClass(aClass).isPresent()) {
             return pdtAdapterSerializer;
         }
+        if (pdtRegistry != null && pdtRegistry.getPrimitiveAdapterByClass(aClass).isPresent()) {
+            return primitivePdtAdapterSerializer;
+        }
         return super.getUnknownTypeSerializer(aClass);
     }
 
     @Override
     public PdtGraphSONSerializerProviderV4 createInstance(final SerializationConfig config,
                                                           final SerializerFactory jsf) {
-        return new PdtGraphSONSerializerProviderV4(this, config, jsf, pdtRegistry, pdtAdapterSerializer);
+        return new PdtGraphSONSerializerProviderV4(this, config, jsf, pdtRegistry, pdtAdapterSerializer, primitivePdtAdapterSerializer);
     }
 }

@@ -82,6 +82,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.star.DirectionalStarGraph;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializerV1;
@@ -159,6 +160,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(VertexProperty.class, "VertexProperty");
                     put(Tree.class, "Tree");
                     put(ProviderDefinedType.class, "CompositePdt");
+                    put(PrimitiveProviderDefinedType.class, "PrimitivePdt");
                     Stream.of(
                             Direction.class,
                             Merge.class,
@@ -166,6 +168,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                 }});
 
         private final PdtGraphSONSerializersV4.ProviderDefinedTypeJacksonDeserializer pdtDeserializer;
+        private final PdtGraphSONSerializersV4.PrimitiveProviderDefinedTypeJacksonDeserializer primitivePdtDeserializer;
 
         /**
          * Constructs a new object.
@@ -184,6 +187,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addSerializer(DirectionalStarGraph.class, new StarGraphGraphSONSerializerV4(normalize));
             addSerializer(Tree.class, new GraphSONSerializersV4.TreeJacksonSerializer());
             addSerializer(ProviderDefinedType.class, new PdtGraphSONSerializersV4.ProviderDefinedTypeJacksonSerializer());
+            addSerializer(PrimitiveProviderDefinedType.class, new PdtGraphSONSerializersV4.PrimitiveProviderDefinedTypeJacksonSerializer());
 
             // java.util - use the standard jackson serializers for collections when types aren't embedded
             if (typeInfo != TypeInfo.NO_TYPES) {
@@ -216,6 +220,8 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(Tree.class, new GraphSONSerializersV4.TreeJacksonDeserializer());
             pdtDeserializer = new PdtGraphSONSerializersV4.ProviderDefinedTypeJacksonDeserializer();
             addDeserializer(ProviderDefinedType.class, pdtDeserializer);
+            primitivePdtDeserializer = new PdtGraphSONSerializersV4.PrimitiveProviderDefinedTypeJacksonDeserializer();
+            addDeserializer(PrimitiveProviderDefinedType.class, primitivePdtDeserializer);
 
             // java.util - use the standard jackson serializers for collections when types aren't embedded
             if (typeInfo != TypeInfo.NO_TYPES) {
@@ -242,6 +248,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
 
         void setPdtRegistry(final ProviderDefinedTypeRegistry registry) {
             pdtDeserializer.setRegistry(registry);
+            primitivePdtDeserializer.setRegistry(registry);
         }
 
         @Override

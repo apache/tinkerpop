@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
@@ -118,6 +120,66 @@ final class PdtGraphSONSerializersV4 {
         }
     }
 
+    final static class PrimitiveProviderDefinedTypeJacksonSerializer extends StdScalarSerializer<PrimitiveProviderDefinedType> {
+
+        public PrimitiveProviderDefinedTypeJacksonSerializer() {
+            super(PrimitiveProviderDefinedType.class);
+        }
+
+        @Override
+        public void serialize(final PrimitiveProviderDefinedType pdt, final JsonGenerator jsonGenerator,
+                              final SerializerProvider serializerProvider) throws IOException {
+            jsonGenerator.writeStartObject();
+            jsonGenerator.writeStringField("type", pdt.getName());
+            jsonGenerator.writeStringField("value", pdt.getValue());
+            jsonGenerator.writeEndObject();
+        }
+    }
+
+    static class PrimitiveProviderDefinedTypeJacksonDeserializer extends StdDeserializer<PrimitiveProviderDefinedType> {
+
+        private ProviderDefinedTypeRegistry registry;
+
+        public PrimitiveProviderDefinedTypeJacksonDeserializer() {
+            super(PrimitiveProviderDefinedType.class);
+        }
+
+        void setRegistry(final ProviderDefinedTypeRegistry registry) {
+            this.registry = registry;
+        }
+
+        @Override
+        public PrimitiveProviderDefinedType deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext)
+                throws IOException {
+            String typeName = null;
+            String value = null;
+
+            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+                final String fieldName = jsonParser.getCurrentName();
+                jsonParser.nextToken();
+                if ("type".equals(fieldName)) {
+                    typeName = jsonParser.getText();
+                } else if ("value".equals(fieldName)) {
+                    value = jsonParser.getText();
+                }
+            }
+
+            final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType(typeName, value);
+            if (registry != null) {
+                final Object hydrated = registry.hydratePrimitive(pdt);
+                if (hydrated instanceof PrimitiveProviderDefinedType)
+                    return (PrimitiveProviderDefinedType) hydrated;
+                return pdt.withHydrated(hydrated);
+            }
+            return pdt;
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
+        }
+    }
+
     /**
      * A serializer that converts raw objects to {@link ProviderDefinedType} using a registered adapter,
      * then serializes the resulting PDT in the standard CompositePdt format.
@@ -166,6 +228,50 @@ final class PdtGraphSONSerializersV4 {
             final CompositePDTAdapter adapter = (CompositePDTAdapter) opt.get();
             final Map<String, Object> fields = adapter.toFields(value);
             return new ProviderDefinedType(adapter.typeName(), fields);
+        }
+    }
+
+    /**
+     * A serializer that converts raw objects to {@link PrimitiveProviderDefinedType} using a registered
+     * {@link PrimitivePDTAdapter}, then serializes the result in the standard PrimitivePdt format.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    static class PrimitivePdtAdapterJacksonSerializer extends StdSerializer<Object> {
+
+        private final ProviderDefinedTypeRegistry registry;
+
+        PrimitivePdtAdapterJacksonSerializer(final ProviderDefinedTypeRegistry registry) {
+            super(Object.class);
+            this.registry = registry;
+        }
+
+        @Override
+        public void serialize(final Object value, final JsonGenerator jsonGenerator,
+                              final SerializerProvider serializerProvider) throws IOException {
+            final PrimitiveProviderDefinedType pdt = toPrimitivePdt(value);
+            jsonGenerator.writeStartObject();
+            jsonGenerator.writeStringField("type", pdt.getName());
+            jsonGenerator.writeStringField("value", pdt.getValue());
+            jsonGenerator.writeEndObject();
+        }
+
+        @Override
+        public void serializeWithType(final Object value, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider,
+                                      final org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer typeSerializer) throws IOException {
+            final PrimitiveProviderDefinedType pdt = toPrimitivePdt(value);
+            serializerProvider.findTypedValueSerializer(PrimitiveProviderDefinedType.class, true, null)
+                    .serialize(pdt, jsonGenerator, serializerProvider);
+        }
+
+        private PrimitiveProviderDefinedType toPrimitivePdt(final Object value) throws IOException {
+            final Optional<PrimitivePDTAdapter<?>> opt = registry.getPrimitiveAdapterByClass(value.getClass());
+            if (!opt.isPresent()) {
+                throw new IOException("No primitive adapter found for " + value.getClass().getName());
+            }
+            final PrimitivePDTAdapter adapter = opt.get();
+            final String strValue = adapter.toValue(value);
+            return new PrimitiveProviderDefinedType(adapter.typeName(), strValue);
         }
     }
 }
