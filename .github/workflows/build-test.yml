@@ -106,7 +106,7 @@ jobs:
         - name: Save Docker image
           working-directory: ./gremlin-server
           run: docker save --output gremlin-server.tar tinkerpop/gremlin-server
-        - uses: actions/cache@v5
+        - uses: actions/cache@v6
           id: gremlin-server-test-docker-image
           with:
             path: |
@@ -253,7 +253,7 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
       - name: Get Cached Server Base Image
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         id: gremlin-server-test-docker-image
         with:
           path: |
@@ -313,7 +313,7 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       - name: Get Cached Server Base Image
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         id: gremlin-server-test-docker-image
         with:
           path: |
@@ -359,7 +359,7 @@ jobs:
         with:
           go-version: '1.25'
       - name: Get Cached Server Base Image
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         id: gremlin-server-test-docker-image
         with:
           path: |
