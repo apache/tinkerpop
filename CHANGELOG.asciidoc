@@ -36,7 +36,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 ** Added `batchSize` (default 64), a connection-level default that fills a request's `batchSize` when it is left unset.
 ** Added a connection-level `bulkResults` default, applied to every request unless overridden per-request.
 ** Added `logger`, a logger object or callback (logging is disabled when unset).
-** Removed the dead `agent`, `ca`, `cert`, `pfx`, and `rejectUnauthorized` TLS fields; TLS is now configured via the Node/undici runtime. *(breaking)*
+** Removed the `ca`, `cert`, `pfx`, `rejectUnauthorized`, and `agent` options; TLS is now configured via the Node/undici runtime and the HTTP agent is owned by the driver's dispatcher. *(breaking)*
 ** Removed the standalone `headers` option; set custom headers via an interceptor instead.
 * Fixed `gremlin-javascript` `Client.submit()` so that an explicit `bulkResults: false` request option is forwarded to the server instead of being silently dropped.
 * Standardized `gremlin-dotnet` connection options per the TinkerPop 4.x GLV proposal:

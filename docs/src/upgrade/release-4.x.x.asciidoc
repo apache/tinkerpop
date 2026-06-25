@@ -35,8 +35,8 @@ complete list of all the modifications that are part of this release.
 ==== Standardizing JavaScript Connection Options
 
 TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In `gremlin-javascript`, the driver
-now adopts `undici` as a pinned dependency that ships a default dispatcher, several dead options have been removed, the
-standalone `headers` option has been removed, and a number of new options have been added. The notes below describe
+now adopts `undici` as a pinned dependency that ships a default dispatcher, several options have been removed
+(including the standalone `headers` option), and a number of new options have been added. The notes below describe
 the JavaScript changes. See <<glv-driver-changes, GLV Driver Changes>> for the equivalent changes in the other
 drivers.
 
@@ -68,9 +68,9 @@ overridden per-request. The `DriverRemoteConnection` traversal path defaults to 
 - `logger`: a logger object (with `debug`/`info`/`warn`/`error` methods) or a `(level, message, ...args)` callback.
 Logging is disabled when unset.
 
-The dead `agent`, `ca`, `cert`, `pfx`, and `rejectUnauthorized` fields have been removed. They were declared but never
-wired. TLS is now configured through the Node/undici runtime (for example `NODE_EXTRA_CA_CERTS` or
-`NODE_TLS_REJECT_UNAUTHORIZED`). *(breaking)*
+The `ca`, `cert`, `pfx`, `rejectUnauthorized`, and `agent` options have been removed. TLS is now configured through the
+Node/undici runtime (for example `NODE_EXTRA_CA_CERTS` or `NODE_TLS_REJECT_UNAUTHORIZED`) and the HTTP agent is owned
+by the driver's dispatcher. *(breaking)*
 
 See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
 
