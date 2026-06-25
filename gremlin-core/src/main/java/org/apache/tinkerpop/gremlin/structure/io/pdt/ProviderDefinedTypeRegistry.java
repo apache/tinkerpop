@@ -40,8 +40,8 @@ public final class ProviderDefinedTypeRegistry {
 
     private static final Logger logger = LoggerFactory.getLogger(ProviderDefinedTypeRegistry.class);
 
-    private final Map<String, CompositePDTAdapter<?>> adaptersByName = new ConcurrentHashMap<>();
-    private final Map<Class<?>, CompositePDTAdapter<?>> adaptersByClass = new ConcurrentHashMap<>();
+    private final Map<String, CompositePDTAdapter<?>> compositeAdaptersByName = new ConcurrentHashMap<>();
+    private final Map<Class<?>, CompositePDTAdapter<?>> compositeAdaptersByClass = new ConcurrentHashMap<>();
     private final Map<String, PrimitivePDTAdapter<?>> primitiveAdaptersByName = new ConcurrentHashMap<>();
     private final Map<Class<?>, PrimitivePDTAdapter<?>> primitiveAdaptersByClass = new ConcurrentHashMap<>();
 
@@ -50,7 +50,6 @@ public final class ProviderDefinedTypeRegistry {
     /**
      * Creates a registry populated via {@link ServiceLoader} discovery.
      */
-    @SuppressWarnings("rawtypes")
     public static ProviderDefinedTypeRegistry create() {
         final ProviderDefinedTypeRegistry registry = new ProviderDefinedTypeRegistry();
         for (final ProviderDefinedTypeAdapter adapter : ServiceLoader.load(ProviderDefinedTypeAdapter.class)) {
@@ -75,7 +74,7 @@ public final class ProviderDefinedTypeRegistry {
     public void register(final ProviderDefinedTypeAdapter<?> adapter) {
         if (adapter instanceof PrimitivePDTAdapter) {
             final PrimitivePDTAdapter<?> primitive = (PrimitivePDTAdapter<?>) adapter;
-            if (adaptersByClass.containsKey(primitive.targetClass()))
+            if (compositeAdaptersByClass.containsKey(primitive.targetClass()))
                 throw new IllegalArgumentException("Class " + primitive.targetClass().getName() +
                         " is already registered as a composite PDT adapter");
             primitiveAdaptersByName.put(primitive.typeName(), primitive);
@@ -85,8 +84,8 @@ public final class ProviderDefinedTypeRegistry {
             if (primitiveAdaptersByClass.containsKey(composite.targetClass()))
                 throw new IllegalArgumentException("Class " + composite.targetClass().getName() +
                         " is already registered as a primitive PDT adapter");
-            adaptersByName.put(composite.typeName(), composite);
-            adaptersByClass.put(composite.targetClass(), composite);
+            compositeAdaptersByName.put(composite.typeName(), composite);
+            compositeAdaptersByClass.put(composite.targetClass(), composite);
         }
     }
 
@@ -102,12 +101,12 @@ public final class ProviderDefinedTypeRegistry {
         }
     }
 
-    public Optional<ProviderDefinedTypeAdapter<?>> getAdapterByName(final String name) {
-        return Optional.ofNullable(adaptersByName.get(name));
+    public Optional<CompositePDTAdapter<?>> getCompositeAdapterByName(final String name) {
+        return Optional.ofNullable(compositeAdaptersByName.get(name));
     }
 
-    public Optional<ProviderDefinedTypeAdapter<?>> getAdapterByClass(final Class<?> clazz) {
-        return Optional.ofNullable(adaptersByClass.get(clazz));
+    public Optional<CompositePDTAdapter<?>> getCompositeAdapterByClass(final Class<?> clazz) {
+        return Optional.ofNullable(compositeAdaptersByClass.get(clazz));
     }
 
     public Optional<PrimitivePDTAdapter<?>> getPrimitiveAdapterByName(final String name) {
@@ -126,7 +125,6 @@ public final class ProviderDefinedTypeRegistry {
      * Returns the original PDT (with nested values hydrated) if no adapter is found for the outer type,
      * or if the adapter throws an exception.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public Object hydrate(final ProviderDefinedType pdt) {
         // recursively hydrate nested PDTs in the fields map, whether or not the outer has an adapter
         boolean nestedChanged = false;
@@ -138,7 +136,7 @@ public final class ProviderDefinedTypeRegistry {
             hydrated.put(entry.getKey(), value);
         }
 
-        final CompositePDTAdapter adapter = adaptersByName.get(pdt.getName());
+        final CompositePDTAdapter adapter = compositeAdaptersByName.get(pdt.getName());
         if (adapter == null) {
             // No adapter for the outer type: return it raw, but with any registered nested types hydrated.
             // Preserve identity when nothing nested was hydrated.
@@ -154,7 +152,6 @@ public final class ProviderDefinedTypeRegistry {
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     private Object hydrateValue(final Object value) {
         if (value instanceof ProviderDefinedType)
             return hydrate((ProviderDefinedType) value);
@@ -186,7 +183,6 @@ public final class ProviderDefinedTypeRegistry {
      * {@link PrimitivePDTAdapter}. Returns the original primitive PDT if no adapter is found or if the
      * adapter throws an exception.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public Object hydratePrimitive(final PrimitiveProviderDefinedType pdt) {
         final PrimitivePDTAdapter adapter = primitiveAdaptersByName.get(pdt.getName());
         if (adapter == null) {
@@ -206,7 +202,6 @@ public final class ProviderDefinedTypeRegistry {
     /**
      * A reflective adapter synthesized from a {@link ProviderDefined}-annotated class.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     private static final class AnnotatedTypeAdapter<T> implements CompositePDTAdapter<T> {
         private final String typeName;
         private final Class<T> targetClass;

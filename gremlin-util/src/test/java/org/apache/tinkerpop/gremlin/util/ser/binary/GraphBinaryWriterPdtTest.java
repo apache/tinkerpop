@@ -23,12 +23,7 @@ import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.*;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.junit.Test;
 
@@ -37,6 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -74,6 +70,24 @@ public class GraphBinaryWriterPdtTest {
             final UnannotatedType t = new UnannotatedType();
             t.value = (int) fields.get("value");
             return t;
+        }
+    }
+
+    @ProviderDefined(name = "AnnotatedName")
+    static class AnnotatedDual {
+        int x = 7;
+    }
+
+    static class AnnotatedDualAdapter implements CompositePDTAdapter<AnnotatedDual> {
+        @Override public String typeName() { return "AdapterName"; }
+        @Override public Class<AnnotatedDual> targetClass() { return AnnotatedDual.class; }
+        @Override public Map<String, Object> toFields(final AnnotatedDual obj) {
+            final Map<String, Object> m = new LinkedHashMap<>();
+            m.put("viaAdapter", obj.x * 10);
+            return m;
+        }
+        @Override public AnnotatedDual fromFields(final Map<String, Object> fields) {
+            return new AnnotatedDual();
         }
     }
 
@@ -119,6 +133,29 @@ public class GraphBinaryWriterPdtTest {
 
         final UnannotatedType result = registryReader.read(buffer);
         assertEquals(42, result.value);
+    }
+
+    /**
+     * A registered adapter takes precedence over the {@link ProviderDefined} annotation when dehydrating on
+     * the write path, consistent with GremlinLang.argAsString. AnnotatedDual is both annotated and has a
+     * registered CompositePDTAdapter; the adapter's type name and fields must win.
+     */
+    @Test
+    public void shouldPreferRegisteredAdapterOverAnnotationOnWritePath() throws IOException {
+        final ProviderDefinedTypeRegistry pdtRegistry = ProviderDefinedTypeRegistry.empty();
+        pdtRegistry.register(new AnnotatedDualAdapter());
+
+        final GraphBinaryWriter registryWriter = new GraphBinaryWriter(TypeSerializerRegistry.INSTANCE, pdtRegistry);
+
+        final Buffer buffer = bufferFactory.create(allocator.buffer());
+        registryWriter.write(new AnnotatedDual(), buffer);
+        buffer.readerIndex(0);
+
+        // Read with a registry-free reader to inspect the raw serialized form (no hydration).
+        final ProviderDefinedType result = reader.read(buffer);
+        assertEquals("AdapterName", result.getName());
+        assertEquals(70, result.getFields().get("viaAdapter"));
+        assertFalse(result.getFields().containsKey("x"));
     }
 
     @Test

@@ -188,7 +188,7 @@ public class ProviderDefinedTypeRegistryTest {
         final PointAdapter adapter = new PointAdapter();
         registry.register(adapter);
 
-        final Optional<ProviderDefinedTypeAdapter<?>> found = registry.getAdapterByClass(Point.class);
+        final Optional<CompositePDTAdapter<?>> found = registry.getCompositeAdapterByClass(Point.class);
         assertTrue(found.isPresent());
         assertEquals("Point", found.get().typeName());
     }
@@ -338,7 +338,7 @@ public class ProviderDefinedTypeRegistryTest {
         final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
         registry.register(AnnotatedPoint.class);
 
-        final Optional<ProviderDefinedTypeAdapter<?>> adapter = registry.getAdapterByClass(AnnotatedPoint.class);
+        final Optional<CompositePDTAdapter<?>> adapter = registry.getCompositeAdapterByClass(AnnotatedPoint.class);
         assertTrue(adapter.isPresent());
         assertEquals("AnnotatedPoint", adapter.get().typeName());
     }
@@ -537,7 +537,6 @@ public class ProviderDefinedTypeRegistryTest {
             @Override public String typeName() { return "Container"; }
             @Override public Class<Map> targetClass() { return Map.class; }
             @Override public Map<String, Object> toFields(Map obj) { return new HashMap<>(); }
-            @SuppressWarnings("unchecked")
             @Override public Map fromFields(Map<String, Object> fields) { return fields; }
         });
 
@@ -548,7 +547,6 @@ public class ProviderDefinedTypeRegistryTest {
 
         final Object result = registry.hydrate(containerPdt);
         assertTrue(result instanceof Map);
-        @SuppressWarnings("unchecked")
         final Map<String, Object> resultMap = (Map<String, Object>) result;
         assertTrue(resultMap.get("id") instanceof Uint32);
         assertEquals(99L, ((Uint32) resultMap.get("id")).value);

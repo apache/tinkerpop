@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.server.pdt.TinkerId;
 import org.apache.tinkerpop.gremlin.server.pdt.Uint32;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.junit.After;
 import org.junit.Before;
@@ -32,7 +31,6 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 

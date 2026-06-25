@@ -26,7 +26,7 @@ from gremlin_python.driver.client import Client
 from gremlin_python.driver.connection import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
 from gremlin_python.driver.serializer import GraphBinarySerializersV4
-from gremlin_python.structure.graph import ProviderDefinedType
+from gremlin_python.structure.graph import ProviderDefinedType, PrimitiveProviderDefinedType
 from gremlin_python.process.graph_traversal import __, GraphTraversalSource
 from gremlin_python.process.traversal import TraversalStrategies, GValue
 from gremlin_python.process.strategies import OptionsStrategy
@@ -612,3 +612,54 @@ def test_pdt_in_collection(client):
     assert pdt_list[1].name == 'Point'
     assert pdt_list[1].fields['x'] == 3
     assert pdt_list[1].fields['y'] == 4
+
+
+def test_primitive_pdt_round_trip(client):
+    """Inject and retrieve a primitive Uint32 PDT (opaque string value)."""
+    results = client.submit(
+        "g.inject(PDT(\"Uint32\", \"4294967295\"))"
+    ).all().result()
+
+    assert len(results) == 1
+    pdt = results[0]
+    assert isinstance(pdt, PrimitiveProviderDefinedType)
+    assert pdt.name == 'Uint32'
+    assert pdt.value == '4294967295'
+
+
+def test_primitive_pdt_in_collection(client):
+    """Retrieve multiple primitive PDTs of different kinds as a list."""
+    results = client.submit(
+        "g.inject([PDT(\"Uint32\", \"42\"), PDT(\"TinkerId\", \"abc-123\")])"
+    ).all().result()
+
+    assert len(results) == 1
+    pdt_list = results[0]
+    assert isinstance(pdt_list, list)
+    assert len(pdt_list) == 2
+
+    assert isinstance(pdt_list[0], PrimitiveProviderDefinedType)
+    assert pdt_list[0].name == 'Uint32'
+    assert pdt_list[0].value == '42'
+
+    assert isinstance(pdt_list[1], PrimitiveProviderDefinedType)
+    assert pdt_list[1].name == 'TinkerId'
+    assert pdt_list[1].value == 'abc-123'
+
+
+def test_primitive_pdt_nested_in_composite(client):
+    """Inject and retrieve a composite PDT containing a nested primitive PDT."""
+    results = client.submit(
+        "g.inject(PDT(\"Measurement\", [\"unit\":\"meters\", \"quantity\":PDT(\"Uint32\", \"100\")]))"
+    ).all().result()
+
+    assert len(results) == 1
+    pdt = results[0]
+    assert isinstance(pdt, ProviderDefinedType)
+    assert pdt.name == 'Measurement'
+    assert pdt.fields['unit'] == 'meters'
+
+    quantity = pdt.fields['quantity']
+    assert isinstance(quantity, PrimitiveProviderDefinedType)
+    assert quantity.name == 'Uint32'
+    assert quantity.value == '100'

@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
@@ -221,11 +220,11 @@ final class PdtGraphSONSerializersV4 {
         }
 
         private ProviderDefinedType toPdt(final Object value) throws IOException {
-            final Optional<ProviderDefinedTypeAdapter<?>> opt = registry.getAdapterByClass(value.getClass());
+            final Optional<CompositePDTAdapter<?>> opt = registry.getCompositeAdapterByClass(value.getClass());
             if (!opt.isPresent()) {
                 throw new IOException("No adapter found for " + value.getClass().getName());
             }
-            final CompositePDTAdapter adapter = (CompositePDTAdapter) opt.get();
+            final CompositePDTAdapter adapter = opt.get();
             final Map<String, Object> fields = adapter.toFields(value);
             return new ProviderDefinedType(adapter.typeName(), fields);
         }

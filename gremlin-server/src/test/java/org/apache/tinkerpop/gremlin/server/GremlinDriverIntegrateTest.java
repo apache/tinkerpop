@@ -41,6 +41,10 @@ import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
+import org.apache.tinkerpop.gremlin.server.pdt.Measurement;
+import org.apache.tinkerpop.gremlin.server.pdt.Uint32;
+import org.apache.tinkerpop.gremlin.server.pdt.Uint32Adapter;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
@@ -1395,6 +1399,80 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
+    @Test
+    public void shouldRoundTripRawPrimitivePdtViaTraversal() {
+        // Unregistered base case: with no adapter, a PrimitiveProviderDefinedType round-trips as-is.
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+            final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("UnregisteredPrimitive", "4294967295");
+            final Object result = g.inject(pdt).next();
+
+            assertTrue("Expected PrimitiveProviderDefinedType but got: " + result.getClass().getName(),
+                    result instanceof PrimitiveProviderDefinedType);
+            final PrimitiveProviderDefinedType r = (PrimitiveProviderDefinedType) result;
+            assertEquals("UnregisteredPrimitive", r.getName());
+            assertEquals("4294967295", r.getValue());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripRegisteredPrimitivePdtViaTraversal() {
+        // Registered case: a raw provider object auto-dehydrates on send and auto-hydrates on receive.
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(new Uint32Adapter());
+
+        final Cluster cluster = TestClientFactory.build()
+                .serializer(new GraphBinaryMessageSerializerV4(TypeSerializerRegistry.INSTANCE, registry))
+                .create();
+        try {
+            final DriverRemoteConnection connection = DriverRemoteConnection.using(cluster);
+            connection.setPdtRegistry(registry);
+            final GraphTraversalSource g = traversal().with(connection);
+
+            final Object result = g.inject(new Uint32(42L)).next();
+
+            assertTrue("Expected Uint32 but got: " + result.getClass().getName(), result instanceof Uint32);
+            assertEquals(42L, ((Uint32) result).getValue());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripRegistryNestedPrimitivePdtViaTraversal() {
+        // Registered nested case: a composite containing a primitive PDT field, both adapters registered,
+        // auto-dehydrates recursively on send and auto-hydrates recursively on receive.
+        // Outer composite is the @ProviderDefined "Measurement" (registered by class); inner primitive
+        // uses the Uint32 adapter. Exercises recursive de/hydration across both PDT kinds.
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(new Uint32Adapter());
+        registry.register(Measurement.class);
+
+        final Cluster cluster = TestClientFactory.build()
+                .serializer(new GraphBinaryMessageSerializerV4(TypeSerializerRegistry.INSTANCE, registry))
+                .create();
+        try {
+            final DriverRemoteConnection connection = DriverRemoteConnection.using(cluster);
+            connection.setPdtRegistry(registry);
+            final GraphTraversalSource g = traversal().with(connection);
+
+            final Object result = g.inject(new Measurement("meters", new Uint32(100L))).next();
+
+            assertTrue("Expected Measurement but got: " + result.getClass().getName(),
+                    result instanceof Measurement);
+            final Measurement m = (Measurement) result;
+            assertEquals("meters", m.unit);
+            assertTrue("Expected nested Uint32 but got: " + m.quantity.getClass().getName(),
+                    m.quantity instanceof Uint32);
+            assertEquals(100L, m.quantity.getValue());
+        } finally {
+            cluster.close();
+        }
+    }
+
     // --- PDT helper types ---
 
     static class TestPoint {
@@ -1424,4 +1502,5 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         public TestAnnotatedPoint() {}
         TestAnnotatedPoint(final int x, final int y) { this.x = x; this.y = y; }
     }
+
 }

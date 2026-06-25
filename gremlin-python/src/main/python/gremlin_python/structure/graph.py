@@ -204,19 +204,19 @@ class PrimitiveProviderDefinedType(object):
 
 class ProviderDefinedTypeRegistry(object):
     def __init__(self):
-        self._adapters_by_name = {}
-        self._adapters_by_class = {}
+        self._composite_adapters_by_name = {}
+        self._composite_adapters_by_class = {}
         self._primitive_adapters_by_name = {}
         self._primitive_adapters_by_class = {}
 
     def register(self, type_name, deserialize_fn, serialize_fn=None, target_class=None):
-        self._adapters_by_name[type_name] = {
+        self._composite_adapters_by_name[type_name] = {
             'deserialize': deserialize_fn,
             'serialize': serialize_fn,
             'target_class': target_class
         }
         if target_class is not None:
-            self._adapters_by_class[target_class] = {
+            self._composite_adapters_by_class[target_class] = {
                 'type_name': type_name,
                 'serialize': serialize_fn,
             }
@@ -293,7 +293,7 @@ class ProviderDefinedTypeRegistry(object):
             else:
                 hydrated_fields[k] = v
 
-        adapter = self._adapters_by_name.get(pdt.name)
+        adapter = self._composite_adapters_by_name.get(pdt.name)
         if adapter is None:
             return ProviderDefinedType(pdt.name, hydrated_fields) if changed else pdt
         try:
@@ -317,9 +317,9 @@ class ProviderDefinedTypeRegistry(object):
             logging.getLogger(__name__).warning(f"Primitive PDT hydration failed for '{pdt.name}': {e}")
             return pdt
 
-    def get_adapter_by_class(self, cls):
+    def get_composite_adapter_by_class(self, cls):
         """Return (type_name, serialize_fn) tuple for the given class, or None."""
-        return self._adapters_by_class.get(cls)
+        return self._composite_adapters_by_class.get(cls)
 
     def get_primitive_adapter_by_class(self, cls):
         """Return adapter dict for the given class, or None."""

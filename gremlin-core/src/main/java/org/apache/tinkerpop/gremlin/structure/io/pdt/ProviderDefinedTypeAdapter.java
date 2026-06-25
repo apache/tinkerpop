@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io.pdt;
 
 /**
  * Common supertype for all PDT adapters. Exposes the type name and target class;
- * serialization-specific methods live in subtypes ({@link CompositePDTAdapter}).
+ * serialization-specific methods live in subtypes ({@link CompositePDTAdapter} and {@link PrimitivePDTAdapter}).
  */
 public interface ProviderDefinedTypeAdapter<T> {
     String typeName();
