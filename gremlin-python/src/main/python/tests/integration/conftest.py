@@ -42,11 +42,18 @@ verbose_logging = False
 
 # Shared namedtuple used by remote_connection_with_registry fixture and its tests.
 RegistryPoint = namedtuple('RegistryPoint', ['x', 'y'])
+# Shared namedtuple used by remote_connection_with_primitive_registry fixture and its tests.
+RegistryUint32 = namedtuple('RegistryUint32', ['value'])
 
 
 @pytest.fixture
 def registry_point_class():
     return RegistryPoint
+
+
+@pytest.fixture
+def registry_uint32_class():
+    return RegistryUint32
 
 logging.basicConfig(format='%(asctime)s [%(levelname)8s] [%(filename)15s:%(lineno)d - %(funcName)10s()] - %(message)s',
                     level=logging.DEBUG if verbose_logging else logging.INFO)
@@ -241,3 +248,30 @@ def mutating_interceptor(http_request):
     from gremlin_python.driver.request import RequestMessage
     if isinstance(http_request.body, RequestMessage):
         http_request.body = RequestMessage(fields={"g": "g"}, gremlin="g.inject(2)")
+
+
+@pytest.fixture
+def remote_connection_with_primitive_registry(request):
+    from gremlin_python.structure.graph import ProviderDefinedTypeRegistry
+
+    registry = ProviderDefinedTypeRegistry()
+    registry.register_primitive('Uint32',
+                                from_value=lambda v: RegistryUint32(value=int(v)),
+                                to_value=lambda u: str(u.value),
+                                target_class=RegistryUint32)
+    try:
+        remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern', pdt_registry=registry)
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            remote_conn.close()
+
+        request.addfinalizer(fin)
+        return remote_conn
+
+
+def json_interceptor(request):
+        request['headers']['content-type'] = "application/json"
+        request['payload'] = dumps({"gremlin": "g.inject(2)", "g": "g"})
+        return request

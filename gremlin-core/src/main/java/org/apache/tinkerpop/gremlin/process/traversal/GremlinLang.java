@@ -35,7 +35,6 @@ import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.gremlin.util.NumberHelper;
 
@@ -280,13 +279,11 @@ public class GremlinLang implements Cloneable, Serializable {
         if (pdtRegistry != null) {
             final Optional<PrimitivePDTAdapter<?>> primitiveAdapter = pdtRegistry.getPrimitiveAdapterByClass(arg.getClass());
             if (primitiveAdapter.isPresent()) {
-                @SuppressWarnings("unchecked")
                 final String value = ((PrimitivePDTAdapter) primitiveAdapter.get()).toValue(arg);
                 return argAsString(new PrimitiveProviderDefinedType(primitiveAdapter.get().typeName(), value));
             }
-            final Optional<ProviderDefinedTypeAdapter<?>> adapter = pdtRegistry.getAdapterByClass(arg.getClass());
+            final Optional<CompositePDTAdapter<?>> adapter = pdtRegistry.getCompositeAdapterByClass(arg.getClass());
             if (adapter.isPresent()) {
-                @SuppressWarnings("unchecked")
                 final Map<String, Object> fields = ((CompositePDTAdapter) adapter.get()).toFields(arg);
                 return argAsString(new ProviderDefinedType(adapter.get().typeName(), fields));
             }

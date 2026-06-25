@@ -85,7 +85,7 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
     public String idFromValueAndType(final Object o, final Class<?> aClass) {
         if (!typeToId.containsKey(aClass)) {
             // Check if pdtRegistry has an adapter for this class
-            if (pdtRegistry != null && pdtRegistry.getAdapterByClass(aClass).isPresent()) {
+            if (pdtRegistry != null && pdtRegistry.getCompositeAdapterByClass(aClass).isPresent()) {
                 return typeToId.get(org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType.class);
             }
             if (pdtRegistry != null && pdtRegistry.getPrimitiveAdapterByClass(aClass).isPresent()) {

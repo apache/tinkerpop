@@ -55,7 +55,7 @@ final class PdtGraphSONSerializerProviderV4 extends DefaultSerializerProvider {
 
     @Override
     public JsonSerializer<Object> getUnknownTypeSerializer(final Class<?> aClass) {
-        if (pdtRegistry != null && pdtRegistry.getAdapterByClass(aClass).isPresent()) {
+        if (pdtRegistry != null && pdtRegistry.getCompositeAdapterByClass(aClass).isPresent()) {
             return pdtAdapterSerializer;
         }
         if (pdtRegistry != null && pdtRegistry.getPrimitiveAdapterByClass(aClass).isPresent()) {

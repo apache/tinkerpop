@@ -88,18 +88,18 @@ class TestProviderDefinedTypeRegistry(object):
                           deserialize_fn=lambda fields: Point(fields["x"], fields["y"]),
                           serialize_fn=lambda p: {"x": p.x, "y": p.y},
                           target_class=Point)
-        adapter = registry.get_adapter_by_class(Point)
+        adapter = registry.get_composite_adapter_by_class(Point)
         fields = adapter['serialize'](Point(1.0, 2.0))
         assert fields == {"x": 1.0, "y": 2.0}
 
     def test_dehydrate_no_adapter_returns_none(self):
         registry = ProviderDefinedTypeRegistry()
-        assert registry.get_adapter_by_class(str) is None
+        assert registry.get_composite_adapter_by_class(str) is None
 
     def test_dehydrate_no_serialize_fn_returns_none(self):
         registry = ProviderDefinedTypeRegistry()
         registry.register("com.example.Thing", deserialize_fn=lambda fields: fields, target_class=dict)
-        adapter = registry.get_adapter_by_class(dict)
+        adapter = registry.get_composite_adapter_by_class(dict)
         assert adapter['serialize'] is None
 
     def test_hydrate_inner_registered_in_unregistered_outer(self):
@@ -144,7 +144,7 @@ class TestProviderDefinedTypeRegistryBuild(object):
                 mock_entry_points.return_value = {'tinkerpop.pdt': [mock_ep]}
 
             registry = ProviderDefinedTypeRegistry.create()
-            assert "com.mock.Type" in registry._adapters_by_name
+            assert "com.mock.Type" in registry._composite_adapters_by_name
 
     def test_build_handles_failing_entry_point(self):
         from unittest.mock import patch, MagicMock
@@ -162,7 +162,7 @@ class TestProviderDefinedTypeRegistryBuild(object):
 
             registry = ProviderDefinedTypeRegistry.create()
             assert isinstance(registry, ProviderDefinedTypeRegistry)
-            assert len(registry._adapters_by_name) == 0
+            assert len(registry._composite_adapters_by_name) == 0
 
 
 class TestReaderAutoHydration(object):
