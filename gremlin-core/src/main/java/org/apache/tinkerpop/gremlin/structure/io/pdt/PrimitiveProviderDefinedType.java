@@ -27,7 +27,7 @@ public final class PrimitiveProviderDefinedType {
 
     private final String name;
     private final String value;
-    private transient Object hydrated;
+    private Object hydrated;
 
     public PrimitiveProviderDefinedType(final String name, final String value) {
         if (name == null || name.isEmpty())
@@ -62,6 +62,12 @@ public final class PrimitiveProviderDefinedType {
         return hydrated;
     }
 
+    /**
+     * Equality is based solely on {@code name} and {@code value} (the serialized wire form).
+     * The {@code hydrated} field is intentionally excluded — it is a transient, derived view
+     * cached by the deserializer via {@link #withHydrated(Object)} and is not part of the
+     * type's logical identity.
+     */
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
