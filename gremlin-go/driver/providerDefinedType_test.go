@@ -34,3 +34,13 @@ func TestProviderDefinedType(t *testing.T) {
 		assert.Contains(t, pdt.String(), "pdt[com.example.Test]")
 	})
 }
+
+func TestPrimitiveProviderDefinedType(t *testing.T) {
+	t.Run("String method", func(t *testing.T) {
+		pdt := &PrimitiveProviderDefinedType{
+			Name:  "x:Uint32",
+			Value: "42",
+		}
+		assert.Contains(t, pdt.String(), "pdt[x:Uint32]42")
+	})
+}

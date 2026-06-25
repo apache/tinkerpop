@@ -278,6 +278,8 @@ func (d *GraphBinaryDeserializer) readValue(dt dataType, flag byte) (interface{}
 		return d.readEnum(dt)
 	case compositePDTType:
 		return d.readCompositePDT()
+	case primitivePDTType:
+		return d.readPrimitivePDT()
 	default:
 		return nil, newError(err0408GetSerializerToReadUnknownTypeError, dt)
 	}
@@ -836,6 +838,33 @@ func (d *GraphBinaryDeserializer) readCompositePDT() (interface{}, error) {
 	pdt := &ProviderDefinedType{Name: name, Fields: fields}
 	if d.pdtRegistry != nil {
 		hydrated := d.pdtRegistry.Hydrate(pdt)
+		if hydrated != pdt {
+			return hydrated, nil
+		}
+	}
+	return pdt, nil
+}
+
+func (d *GraphBinaryDeserializer) readPrimitivePDT() (interface{}, error) {
+	nameObj, err := d.ReadFullyQualified()
+	if err != nil {
+		return nil, err
+	}
+	name, ok := nameObj.(string)
+	if !ok || name == "" {
+		return nil, fmt.Errorf("PrimitiveProviderDefinedType name must be a non-empty string")
+	}
+	valueObj, err := d.ReadFullyQualified()
+	if err != nil {
+		return nil, err
+	}
+	value, ok := valueObj.(string)
+	if !ok {
+		return nil, fmt.Errorf("PrimitiveProviderDefinedType value must be a string")
+	}
+	pdt := &PrimitiveProviderDefinedType{Name: name, Value: value}
+	if d.pdtRegistry != nil {
+		hydrated := d.pdtRegistry.HydratePrimitive(pdt)
 		if hydrated != pdt {
 			return hydrated, nil
 		}

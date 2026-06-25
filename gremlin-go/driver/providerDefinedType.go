@@ -49,3 +49,23 @@ func pdtWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSe
 	}
 	return typeSerializer.write(m, w)
 }
+
+// PrimitiveProviderDefinedType represents a primitive provider-defined type (PDT) in GraphBinary serialization.
+// Wire format 0xf1: two fully-qualified Strings {name}{value}.
+type PrimitiveProviderDefinedType struct {
+	Name  string
+	Value string
+}
+
+func (p *PrimitiveProviderDefinedType) String() string {
+	return fmt.Sprintf("pdt[%s]%s", p.Name, p.Value)
+}
+
+// primitivePdtWriter serializes a PrimitiveProviderDefinedType as two fully-qualified strings.
+func primitivePdtWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
+	pdt := value.(*PrimitiveProviderDefinedType)
+	if err := typeSerializer.write(pdt.Name, w); err != nil {
+		return err
+	}
+	return typeSerializer.write(pdt.Value, w)
+}

@@ -65,6 +65,7 @@ const (
 	gTypeType          dataType = 0x30
 	durationType       dataType = 0x81
 	compositePDTType   dataType = 0xf0
+	primitivePDTType   dataType = 0xf1
 	markerType         dataType = 0xfd
 	nullType           dataType = 0xFE
 )
@@ -623,6 +624,8 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return byteBuffer, nil
 	case *ProviderDefinedType:
 		return compositePDTType, nil
+	case *PrimitiveProviderDefinedType:
+		return primitivePDTType, nil
 	default:
 		switch reflect.TypeOf(val).Kind() {
 		case reflect.Map:

@@ -975,3 +975,89 @@ func TestPDT_GremlinLang_NestedRegisteredInUnregisteredOuter(t *testing.T) {
 		t.Errorf("nested dehydration: got %v, expected %v", gremlin, expected)
 	}
 }
+
+func Test_PrimitivePDT_GremlinLang(t *testing.T) {
+	t.Run("basic primitive PDT", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &PrimitiveProviderDefinedType{Name: "x:Uint32", Value: "42"}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("x:Uint32","42"))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+
+	t.Run("primitive PDT with special chars in value", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &PrimitiveProviderDefinedType{Name: "x:Label", Value: `say"hello"`}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("x:Label","say\"hello\""))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+
+	t.Run("primitive PDT leading zeros preserved", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &PrimitiveProviderDefinedType{Name: "x:ZipCode", Value: "00123"}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("x:ZipCode","00123"))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+
+	t.Run("primitive PDT empty value", func(t *testing.T) {
+		g := NewGraphTraversalSource(nil, nil)
+		pdt := &PrimitiveProviderDefinedType{Name: "x:Empty", Value: ""}
+		gremlin := g.Inject(pdt).GremlinLang.GetGremlin()
+		expected := `g.inject(PDT("x:Empty",""))`
+		if gremlin != expected {
+			t.Errorf("got %v, expected %v", gremlin, expected)
+		}
+	})
+}
+
+// primitiveAdapterUint32 is a test type for primitive PDT dehydration.
+type primitiveAdapterUint32 uint32
+
+func Test_PrimitivePDT_AdapterDehydration(t *testing.T) {
+	registry := NewPDTRegistry()
+	registry.RegisterPrimitiveFuncsWithType("x:Uint32", reflect.TypeOf(primitiveAdapterUint32(0)),
+		func(s string) (interface{}, error) {
+			return primitiveAdapterUint32(42), nil
+		},
+		func(obj interface{}) (string, error) {
+			return fmt.Sprintf("%d", obj.(primitiveAdapterUint32)), nil
+		})
+
+	g := NewGraphTraversalSource(nil, nil)
+	g.GetGremlinLang().pdtRegistry = registry
+
+	gremlin := g.Inject(primitiveAdapterUint32(99)).GremlinLang.GetGremlin()
+	expected := `g.inject(PDT("x:Uint32","99"))`
+	if gremlin != expected {
+		t.Errorf("primitive adapter dehydration: got %v, expected %v", gremlin, expected)
+	}
+}
+
+func Test_PrimitivePDT_PrimitiveAdapterTakesPrecedenceOverComposite(t *testing.T) {
+	type dualType struct{ V int }
+	registry := NewPDTRegistry()
+	// Register both primitive and composite for the same Go type — primitive must win.
+	registry.RegisterPrimitiveFuncsWithType("x:Dual", reflect.TypeOf(dualType{}),
+		func(s string) (interface{}, error) { return dualType{V: 1}, nil },
+		func(obj interface{}) (string, error) { return "prim", nil })
+	registry.RegisterFuncsWithType("x:Dual", reflect.TypeOf(dualType{}),
+		nil,
+		func(obj interface{}) (map[string]interface{}, error) { return map[string]interface{}{"v": 1}, nil })
+
+	g := NewGraphTraversalSource(nil, nil)
+	g.GetGremlinLang().pdtRegistry = registry
+
+	gremlin := g.Inject(dualType{V: 1}).GremlinLang.GetGremlin()
+	expected := `g.inject(PDT("x:Dual","prim"))`
+	if gremlin != expected {
+		t.Errorf("primitive adapter should take precedence over composite: got %v, expected %v", gremlin, expected)
+	}
+}
