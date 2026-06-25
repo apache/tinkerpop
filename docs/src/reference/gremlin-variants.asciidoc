@@ -116,6 +116,27 @@ string is valid within the ANTLR grammar:
 
 For example, a string value `say "hello"` would be serialized as `"say \"hello\""` in the canonical Gremlin string.
 
+==== PDT Literals
+
+The gremlin-lang grammar supports Provider Defined Type literals in two forms:
+
+* Composite: `PDT("typeName",[key:"value",...])`  — creates a `ProviderDefinedType` with a map of fields.
+* Primitive: `PDT("typeName","value")` — creates a `PrimitiveProviderDefinedType` with an opaque string value.
+
+Both forms share the `PDT(` prefix. The second argument determines the variant: a map literal produces a composite PDT,
+a string literal produces a primitive PDT.
+
+Examples:
+
+[source,groovy]
+----
+// Composite PDT — a Point with x and y fields
+g.inject(PDT("mygraph:Point",["x":1.0,"y":2.0]))
+
+// Primitive PDT — an unsigned 32-bit integer as a stringified value
+g.inject(PDT("mygraph:Uint32","4294967295"))
+----
+
 The following sections describe each language variant and driver that is officially TinkerPop a part of the project,
 providing more detailed information about usage, configuration and known limitations.
 
