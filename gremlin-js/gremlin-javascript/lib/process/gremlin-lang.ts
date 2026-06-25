@@ -132,6 +132,8 @@ export default class GremlinLang {
       return arg.name;
     }
     if (arg instanceof PrimitiveProviderDefinedType) {
+      // PDT literals use double-quoted strings (consistent with the composite PDT form below);
+      // JSON.stringify handles special-character escaping, then the outer quotes are stripped.
       const escapedName = JSON.stringify(arg.name).slice(1, -1);
       const escapedValue = JSON.stringify(arg.value).slice(1, -1);
       return `PDT("${escapedName}","${escapedValue}")`;
