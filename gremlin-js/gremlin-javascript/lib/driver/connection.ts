@@ -105,7 +105,7 @@ export default class Connection extends EventEmitter {
 
   private readonly _enableUserAgentOnConnect: boolean;
   private readonly _interceptors: RequestInterceptor[];
-  private readonly _dispatcher: Dispatcher;
+  private readonly _dispatcher: Dispatcher | undefined;
   private readonly _compression: Compression;
   private readonly _defaultBatchSize: number;
   private readonly _bulkResults: boolean;
@@ -347,8 +347,9 @@ export default class Connection extends EventEmitter {
       headers: httpRequest.headers,
       body: httpRequest.body,
       signal,
-      // undici transparently decodes the deflate response based on the Content-Encoding header.
-      dispatcher: this._dispatcher,
+      // Node only: the undici dispatcher carries the connection-pool options. In the browser
+      // it is undefined and the field is omitted, letting the user agent manage the transport.
+      ...(this._dispatcher ? { dispatcher: this._dispatcher } : {}),
     } as RequestInit);
   }
 
@@ -418,6 +419,6 @@ export default class Connection extends EventEmitter {
    */
   async close() {
     this._log('debug', `Closing connection to ${this.url}`);
-    await this._dispatcher.close();
+    await this._dispatcher?.close();
   }
 }

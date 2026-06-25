@@ -20,6 +20,10 @@
   "type": "module",
   "main": "./build/cjs/index.cjs",
   "types": "./build/esm/index.d.ts",
+  "browser": {
+    "./build/esm/driver/dispatcher.js": "./build/esm/driver/dispatcher.browser.js",
+    "./build/cjs/driver/dispatcher.cjs": "./build/cjs/driver/dispatcher.browser.cjs"
+  },
   "exports": {
     ".": {
       "import": "./build/esm/index.js",
