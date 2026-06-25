@@ -1778,6 +1778,117 @@ serialization and the registry handles inbound reconstruction.
 For driver users consuming PDTs, see the <<gremlin-variants,Gremlin Variants>> reference documentation for
 each language driver.
 
+[[primitive-provider-defined-types]]
+==== Primitive Provider Defined Types
+
+When a custom type is best represented as a single opaque stringified value rather than a map of fields — for example,
+an unsigned 32-bit integer, a WKT geometry string, or a provider-specific identifier — use a *Primitive PDT* instead of
+a Composite PDT. A Primitive PDT carries only a type name and a string value; TinkerPop never parses or interprets the
+value.
+
+On the wire, a Primitive PDT is serialized as GraphBinary type `0xf1` (two fully-qualified Strings: type and value) or
+GraphSON type `g:PrimitivePdt` (with an untyped JSON string value). In gremlin-lang, the literal form is
+`PDT("name","value")` — an overload of the composite `PDT("name",[map])` literal where the second argument is a string
+instead of a map.
+
+A type may be registered as composite *or* primitive, not both — attempting to register a type for both forms throws an
+error.
+
+===== Adapter Precedence
+
+A registered adapter always takes precedence over annotation/attribute-based handling on dehydration. This is consistent
+across all GLVs: if an adapter is registered for a type, it controls serialization regardless of whether the class is
+also annotated.
+
+===== Java
+
+Implement `PrimitivePDTAdapter<T>`:
+
+[source,java]
+----
+public class Uint32Adapter implements PrimitivePDTAdapter<Uint32> {
+    @Override public String typeName() { return "mygraph:Uint32"; }
+    @Override public Class<Uint32> targetClass() { return Uint32.class; }
+    @Override public String toValue(Uint32 obj) { return Long.toUnsignedString(obj.getValue()); }
+    @Override public Uint32 fromValue(String value) { return new Uint32(Integer.parseUnsignedInt(value)); }
+}
+----
+
+Register via ServiceLoader in the same way as composite adapters — add the fully qualified class name to
+`META-INF/services/org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter`.
+
+===== Python
+
+Use `register_primitive` on the registry:
+
+[source,python]
+----
+from gremlin_python.structure.graph import ProviderDefinedTypeRegistry
+
+registry = ProviderDefinedTypeRegistry()
+registry.register_primitive('mygraph:Uint32',
+    from_value=lambda s: Uint32(int(s)),
+    to_value=lambda obj: str(obj.value),
+    target_class=Uint32)
+----
+
+===== JavaScript
+
+Use `registerPrimitive` with a `PrimitivePdtAdapter`:
+
+[source,javascript]
+----
+const { ProviderDefinedTypeRegistry, PrimitivePdtAdapter } = require('gremlin');
+
+const registry = new ProviderDefinedTypeRegistry();
+registry.registerPrimitive('mygraph:Uint32', new PrimitivePdtAdapter(
+    (str) => new Uint32(parseInt(str)),   // fromValue
+    (obj) => obj.value.toString()          // toValue
+), Uint32);
+----
+
+===== Go
+
+Use `RegisterPrimitiveFuncs` or `RegisterPrimitiveFuncsWithType`:
+
+[source,go]
+----
+registry := gremlingo.NewPDTRegistry()
+registry.RegisterPrimitiveFuncsWithType("mygraph:Uint32", reflect.TypeOf(Uint32{}),
+    // hydrate: string -> Go type
+    func(value string) (interface{}, error) {
+        v, err := strconv.ParseUint(value, 10, 32)
+        return Uint32{Value: uint32(v)}, err
+    },
+    // dehydrate: Go type -> string
+    func(obj interface{}) (string, error) {
+        return strconv.FormatUint(uint64(obj.(Uint32).Value), 10), nil
+    },
+)
+----
+
+===== .NET
+
+Implement `IPrimitivePdtAdapter<T>`:
+
+[source,csharp]
+----
+public class Uint32Adapter : IPrimitivePdtAdapter<Uint32>
+{
+    public string TypeName => "mygraph:Uint32";
+    public Uint32 FromString(string value) => new Uint32(uint.Parse(value));
+    public string ToString(Uint32 obj) => obj.Value.ToString();
+}
+----
+
+Register on the `ProviderDefinedTypeRegistry` in the same way as composite adapters.
+
+===== Value Type
+
+Across all GLVs, unhydrated primitive PDT values are represented as `PrimitiveProviderDefinedType` objects containing a
+`name` (or `Name`) and a string `value` (or `Value`). When no adapter is registered for a given type name, the driver
+returns this generic value object.
+
 [[gremlin-plugins]]
 == Gremlin Plugins
 

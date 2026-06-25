@@ -823,6 +823,10 @@ effort to the old custom serializer approach but is entirely optional for basic 
 * <<gremlin-dotnet-pdt,Gremlin.Net>>
 * <<gremlin-go-pdt,Gremlin-Go>>
 
+PDTs come in two flavors: *Composite* (a type name plus a map of fields, for structured types) and *Primitive* (a type
+name plus a single opaque string value, for types expressible as a single stringified value). The gremlin-lang grammar
+supports both forms via the `PDT("name",[map])` and `PDT("name","value")` literals respectively.
+
 
 ==== Tree No Longer Extends HashMap
 
@@ -877,6 +881,16 @@ benefiting all driver users transparently.
 
 See <<provider-defined-types>> for full details on annotation usage, field filtering, nested types, and ServiceLoader
 registration.
+
+===== Primitive Provider Defined Types
+
+In addition to composite PDTs (which carry a map of fields), providers can now expose *Primitive PDTs* — types
+represented as a single opaque stringified value (GraphBinary type `0xf1`, GraphSON type `g:PrimitivePdt`). This is
+ideal for types with no native TinkerPop representation that can be expressed as a single string, such as unsigned
+integers or WKT geometry strings. Each GLV provides an adapter interface for primitive PDTs
+(`PrimitivePDTAdapter` in Java, `register_primitive` in Python, `registerPrimitive` in JavaScript,
+`RegisterPrimitiveFuncs` in Go, `IPrimitivePdtAdapter<T>` in .NET). A type may be registered as composite or
+primitive, not both. See <<primitive-provider-defined-types>> for details.
 
 `Tree` no longer extends `HashMap`. Provider code that inspected or rebuilt a `Tree` via `Map` methods
 (`get`, `put`, `keySet`, `entrySet`, `size`) must use the tree-shaped API instead: read with `rootNodes()` +
