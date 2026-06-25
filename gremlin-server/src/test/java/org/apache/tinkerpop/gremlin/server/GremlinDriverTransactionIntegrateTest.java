@@ -86,10 +86,10 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
             case "shouldTimeoutIdleTransaction":
             case "shouldTimeoutIdleTransactionWithNoOperations":
             case "shouldRejectLateCommitAfterTimeout":
-                settings.transactionTimeout = 1000;
+                settings.idleTransactionTimeout = 1000;
                 break;
             case "shouldTimeoutOnlyIdleTransactionNotActiveOne":
-                settings.transactionTimeout = 2000;
+                settings.idleTransactionTimeout = 2000;
                 break;
         }
         return settings;

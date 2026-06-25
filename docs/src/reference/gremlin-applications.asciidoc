@@ -930,6 +930,7 @@ The following table describes the various YAML configuration options that Gremli
 |gremlinPool |The number of "Gremlin" threads available to execute actual scripts in a `ScriptEngine`. This pool represents the workers available to handle blocking operations in Gremlin Server. When set to `0`, Gremlin Server will use the value provided by `Runtime.availableProcessors()`. |0
 |host |The name of the host to bind the server to. |localhost
 |idleConnectionTimeout |Time in milliseconds that the server will allow a channel to not receive requests from a client before it automatically closes. If enabled, the value provided should typically exceed the amount of time given to `keepAliveInterval`. Note that while this value is to be provided as milliseconds it will resolve to second precision. Set this value to `0` to disable this feature. |0
+|idleTransactionTimeout |Time in milliseconds that a transaction can sit idle (no requests) before the server forcibly rolls it back and removes it. The timeout resets on each request received for that transaction. Set to `0` to disable this feature. |600000
 |keepAliveInterval |Time in milliseconds that the server will allow a channel to not send responses to a client before it sends a "ping" to see if it is still present. If it is present, the client should respond with a "pong" which will thus reset the `idleConnectionTimeout` and keep the channel open. If enabled, this number should be smaller than the value provided to the `idleConnectionTimeout`. Note that while this value is to be provided as milliseconds it will resolve to second precision. Set this value to `0` to disable this feature. |0
 |maxAccumulationBufferComponents |Maximum number of request components that can be aggregated for a message. |1024
 |maxChunkSize |The maximum length of the content or each chunk.  If the content length exceeds this value, the transfer encoding of the decoded request will be converted to 'chunked' and the content will be split into multiple `HttpContent` objects.  If the transfer encoding of the HTTP request is 'chunked' already, each chunk will be split into smaller chunks if the length of the chunk exceeds this value. |8192
@@ -983,7 +984,6 @@ The following table describes the various YAML configuration options that Gremli
 |strictTransactionManagement |Set to `true` to require `aliases` to be submitted on every requests, where the `aliases` become the scope of transaction management. |false
 |threadPoolBoss |The number of threads available to Gremlin Server for accepting connections. Should always be set to `1`. |1
 |threadPoolWorker |The number of threads available to Gremlin Server for processing non-blocking reads and writes. |1
-|transactionTimeout |Time in milliseconds that a transaction can sit idle (no requests) before the server forcibly rolls it back and removes it. The timeout resets on each request received for that transaction. Set to `0` to disable this feature. |600000
 |useEpollEventLoop |Try to use epoll event loops (works only on Linux os) instead of netty NIO. |false
 |writeBufferHighWaterMark | If the number of bytes in the network send buffer exceeds this value then the channel is no longer writeable, accepting no additional writes until buffer is drained and the `writeBufferLowWaterMark` is met. |65536
 |writeBufferLowWaterMark | Once the number of bytes queued in the network send buffer exceeds the `writeBufferHighWaterMark`, the channel will not become writeable again until the buffer is drained and it drops below this value. |32768
@@ -2261,14 +2261,14 @@ an explicit transaction on a graph that does not support them will result in an 
 
 Two settings in the Gremlin Server YAML control transaction resource usage:
 
-* `transactionTimeout` (default: 600000ms) -- How long a transaction can sit idle before the server forcibly rolls it
-  back. The timeout resets on each request received for that transaction.
+* `idleTransactionTimeout` (default: 600000ms) -- How long a transaction can sit idle before the server forcibly rolls
+   it back. The timeout resets on each request received for that transaction.
 * `maxConcurrentTransactions` (default: 1000) -- The maximum number of open transactions allowed. When the limit is
   reached, new begin requests are rejected with HTTP 503.
 
 Each open transaction consumes a dedicated thread on the server to maintain thread-local transaction state for the
-underlying graph. Ensure that clients close transactions promptly and that the `transactionTimeout` is set to reclaim
-abandoned ones. The `transactions` gauge metric can be used to monitor usage.
+underlying graph. Ensure that clients close transactions promptly and that the `idleTransactionTimeout` is set to
+reclaim abandoned ones. The `transactions` gauge metric can be used to monitor usage.
 
 In load-balanced deployments, all requests within a transaction must reach the same server instance because
 transaction state is local to the server that created it. The `X-Transaction-Id` header is available for load

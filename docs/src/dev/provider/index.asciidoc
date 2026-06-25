@@ -1430,14 +1430,14 @@ rejects it with HTTP 400. This prevents cross-graph operations within a single t
 
 ==== Transaction Timeout and Idle Reclamation
 
-Servers implement a configurable transaction timeout (`transactionTimeout`, default 600000ms). The timeout represents
-how long a transaction can sit idle with no requests before the server forcibly rolls it back and removes it. The
-timeout resets on each request received for that transaction, so active transactions are not affected. After a timeout
-fires, any subsequent request with that transaction ID receives a 404 response.
+Servers implement a configurable transaction timeout (`idleTransactionTimeout`, default 600000ms). The timeout
+represents how long a transaction can sit idle with no requests before the server forcibly rolls it back and removes it.
+The timeout resets on each request received for that transaction, so active transactions are not affected. After a
+timeout fires, any subsequent request with that transaction ID receives a 404 response.
 
 ==== Transaction Capacity Limits
 
-Servers enforce a configurable maximum number of concurrent open transactions (`maxConcurrentTransactions`, default
+Servers may enforce a configurable maximum number of concurrent open transactions (`maxConcurrentTransactions`, default
 1000). When the limit is reached, new begin requests are rejected with HTTP 503. Slots are freed when transactions
 close via commit, rollback, or timeout.
 

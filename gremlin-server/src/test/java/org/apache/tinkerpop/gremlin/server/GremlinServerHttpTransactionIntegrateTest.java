@@ -93,17 +93,21 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
                 break;
             case "shouldTimeoutFreeSlotUnderMaxConcurrentTransactions":
                 settings.maxConcurrentTransactions = 1;
-                settings.transactionTimeout = 1000;
+                settings.idleTransactionTimeout = 1000;
                 break;
             case "shouldTimeoutIdleTransactionWithNoOperations":
-                settings.transactionTimeout = 500;
+                settings.idleTransactionTimeout = 500;
                 break;
             case "shouldTimeoutAndRejectLateCommit":
             case "shouldTrackTransactionCountAccurately":
-                settings.transactionTimeout = 1000;
+                settings.idleTransactionTimeout = 1000;
                 break;
             case "shouldRollbackAbandonedTransaction":
-                settings.transactionTimeout = 300;
+                settings.idleTransactionTimeout = 300;
+                break;
+            case "shouldNotIdleTimeoutLongRunningOperation":
+                // Short idle timeout, but a single long operation must NOT trip it (idle suspended while busy).
+                settings.idleTransactionTimeout = 500;
                 break;
             case "shouldRejectMismatchedGraphAliasInTransaction": {
                 final Settings.GraphSettings gs = new Settings.GraphSettings();
@@ -525,6 +529,47 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
         // reconnect and verify data was not persisted
         try (final CloseableHttpResponse r = submitNonTx(client, "g.V().count()", GTX)) {
             assertEquals(0, extractCount(r));
+        }
+    }
+
+    @Test
+    public void shouldNotIdleTimeoutLongRunningOperation() throws Exception {
+        // With a short idle timeout (500ms), a single operation that runs LONGER than the idle timeout must still
+        // succeed -- the idle timer is suspended while an operation is in progress, so a long-running op is not
+        // reclaimed mid-execution (it is instead bounded by evaluationTimeout, left at its default here).
+        final String txId = beginTx(client, GTX);
+
+        // Seed two vertices and an edge so repeat(both()) has something to traverse and keeps the executor busy. Each
+        // response body is fully consumed before the next request is sent: the chunked stream is only complete once the
+        // server has finished processing, so consuming guarantees these requests are strictly ordered.
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.addV().property(T.id, 1)", GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            EntityUtils.consume(r.getEntity());
+        }
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.addV().property(T.id, 2)", GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            EntityUtils.consume(r.getEntity());
+        }
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.V(1).addE('self').to(__.V(2))", GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            EntityUtils.consume(r.getEntity());
+        }
+
+        // A traversal that runs well past the 500ms idle timeout. Under the old arm-on-arrival behavior the idle timer
+        // would have fired mid-execution; under suspend-while-busy it does not.
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.V().repeat(both()).times(2000)", GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            EntityUtils.consume(r.getEntity());
+        }
+
+        // The transaction is still alive and usable after the long op (it was not reclaimed mid-flight).
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.V().count()", GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            assertEquals(2, extractCount(r)); // extractCount fully reads the body
+        }
+        try (final CloseableHttpResponse r = commitTx(client, txId, GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            EntityUtils.consume(r.getEntity());
         }
     }
 

@@ -43,7 +43,7 @@ public class TransactionManager {
     private final ConcurrentMap<String, UnmanagedTransaction> transactions = new ConcurrentHashMap<>();
     private final ScheduledExecutorService scheduledExecutorService;
     private final GraphManager graphManager;
-    private final long transactionTimeoutMs;
+    private final long idleTransactionTimeoutMs;
     private final int maxConcurrentTransactions;
     private final long perGraphCloseMs;
 
@@ -52,23 +52,23 @@ public class TransactionManager {
      *
      * @param scheduledExecutorService Scheduler for timeout management
      * @param graphManager The graph manager for accessing traversal sources
-     * @param transactionTimeoutMs Timeout in milliseconds before auto-rollback
+     * @param idleTransactionTimeoutMs Inactivity timeout in milliseconds before auto-rollback; {@code 0} disables it
      * @param maxConcurrentTransactions Maximum number of concurrent transactions allowed
      */
     public TransactionManager(final ScheduledExecutorService scheduledExecutorService,
                               final GraphManager graphManager,
-                              final long transactionTimeoutMs,
+                              final long idleTransactionTimeoutMs,
                               final int maxConcurrentTransactions,
                               final long perGraphCloseMs) {
         this.scheduledExecutorService = scheduledExecutorService;
         this.graphManager = graphManager;
-        this.transactionTimeoutMs = transactionTimeoutMs;
+        this.idleTransactionTimeoutMs = idleTransactionTimeoutMs;
         this.maxConcurrentTransactions = maxConcurrentTransactions;
         this.perGraphCloseMs = perGraphCloseMs;
 
         MetricManager.INSTANCE.getGauge(transactions::size, name(GremlinServer.class, "transactions"));
-        logger.info("TransactionManager initialized with timeout={}ms, maxTransactions={}",
-                transactionTimeoutMs, maxConcurrentTransactions);
+        logger.info("TransactionManager initialized with idleTransactionTimeout={}ms, maxTransactions={}",
+                idleTransactionTimeoutMs, maxConcurrentTransactions);
     }
 
     /**
@@ -123,7 +123,7 @@ public class TransactionManager {
                     traversalSourceName,
                     graph,
                     scheduledExecutorService,
-                    transactionTimeoutMs,
+                    idleTransactionTimeoutMs,
                     perGraphCloseMs
             );
         } while (transactions.putIfAbsent(txId, ctx) != null);

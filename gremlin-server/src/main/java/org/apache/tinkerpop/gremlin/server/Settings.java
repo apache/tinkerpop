@@ -185,10 +185,13 @@ public class Settings {
     public boolean strictTransactionManagement = false;
 
     /**
-     * Time in milliseconds that a transaction can remain idle before it is automatically rolled back.
-     * This prevents resource leaks from abandoned transactions. Default is 600000 (10 minutes).
+     * Time in milliseconds that a transaction can remain idle (no operation running or queued) before it is
+     * automatically rolled back. This prevents resource leaks from abandoned transactions. The idle timer is suspended
+     * while an operation is in progress, so a long-running operation does not trip it (its duration is instead bounded
+     * by {@link #evaluationTimeout}). Set to {@code 0} to disable idle reclamation entirely. Default is 600000
+     * (10 minutes).
      */
-    public long transactionTimeout = 600000L;
+    public long idleTransactionTimeout = 600000L;
 
     /**
      * Time in milliseconds to wait for a transaction commit or rollback operation to complete.
