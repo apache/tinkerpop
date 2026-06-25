@@ -25,10 +25,11 @@ import { P, TextP, t as T, order as Order, scope as Scope, column as Column,
          withOptions as WithOptions, direction } from '../../lib/process/traversal.js';
 import { ReadOnlyStrategy, SubgraphStrategy, OptionsStrategy,
          PartitionStrategy, SeedStrategy } from '../../lib/process/traversal-strategy.js';
-import { Graph, Vertex, ProviderDefinedType } from '../../lib/structure/graph.js';
+import { Graph, Vertex, ProviderDefinedType, PrimitiveProviderDefinedType } from '../../lib/structure/graph.js';
 import { TraversalStrategies } from '../../lib/process/traversal-strategy.js';
 import { Long, toFloat, toDouble, toShort, toByte, toInt, toLong } from '../../lib/utils.js';
 import GremlinLang from '../../lib/process/gremlin-lang.js';
+import { ProviderDefinedTypeRegistry } from '../../lib/structure/ProviderDefinedTypeRegistry.js';
 
 const g = new GraphTraversalSource(new Graph(), new TraversalStrategies());
 
@@ -659,6 +660,101 @@ describe('GremlinLang', function () {
         g.inject(pdt).getGremlinLang().getGremlin(),
         "g.inject(PDT(\"Empty\",[:]))"
       );
+    });
+  });
+
+  describe('Primitive PDT gremlin-lang tests', function () {
+    it('should handle basic primitive PDT', function () {
+      const pdt = new PrimitiveProviderDefinedType('Uint32', '42');
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        'g.inject(PDT("Uint32","42"))'
+      );
+    });
+
+    it('should handle primitive PDT with leading zeros', function () {
+      const pdt = new PrimitiveProviderDefinedType('TinkerId', '007');
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        'g.inject(PDT("TinkerId","007"))'
+      );
+    });
+
+    it('should handle primitive PDT with large number', function () {
+      const pdt = new PrimitiveProviderDefinedType('BigNum', '99999999999999999999');
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        'g.inject(PDT("BigNum","99999999999999999999"))'
+      );
+    });
+
+    it('should handle primitive PDT with non-numeric value', function () {
+      const pdt = new PrimitiveProviderDefinedType('CustomId', 'abc-def-123');
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        'g.inject(PDT("CustomId","abc-def-123"))'
+      );
+    });
+
+    it('should handle primitive PDT with empty value', function () {
+      const pdt = new PrimitiveProviderDefinedType('Empty', '');
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        'g.inject(PDT("Empty",""))'
+      );
+    });
+
+    it('should handle primitive PDT with special chars in name', function () {
+      const pdt = new PrimitiveProviderDefinedType('my"type', '1');
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        'g.inject(PDT("my\\"type","1"))'
+      );
+    });
+
+    it('should handle primitive PDT with special chars in value', function () {
+      const pdt = new PrimitiveProviderDefinedType('Str', 'hello"world');
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        'g.inject(PDT("Str","hello\\"world"))'
+      );
+    });
+
+    it('should auto-dehydrate registered primitive types', function () {
+      class Uint32 {
+        constructor(v) { this.v = v; }
+      }
+      const registry = new ProviderDefinedTypeRegistry();
+      registry.registerPrimitive('Uint32', {
+        toValue: (obj) => String(obj.v),
+        fromValue: (value) => new Uint32(parseInt(value, 10)),
+      }, Uint32);
+
+      const gl = new GremlinLang();
+      gl.pdtRegistry = registry;
+      gl.addStep('inject', [new Uint32(99)]);
+      assert.strictEqual(gl.getGremlin(), 'g.inject(PDT("Uint32","99"))');
+    });
+
+    it('should prefer primitive adapter over composite when both are registered', function () {
+      class DualType {
+        constructor(v) { this.v = v; }
+      }
+      const registry = new ProviderDefinedTypeRegistry();
+      registry.registerPrimitive('DualType', {
+        toValue: (obj) => String(obj.v),
+        fromValue: (value) => new DualType(value),
+      }, DualType);
+      registry.register('DualType', {
+        serialize: (obj) => ({ v: obj.v }),
+        deserialize: (fields) => new DualType(fields.v),
+      }, DualType);
+
+      const gl = new GremlinLang();
+      gl.pdtRegistry = registry;
+      gl.addStep('inject', [new DualType('hello')]);
+      // primitive should win
+      assert.strictEqual(gl.getGremlin(), 'g.inject(PDT("DualType","hello"))');
     });
   });
 });
