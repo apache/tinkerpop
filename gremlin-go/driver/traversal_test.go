@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -577,4 +578,143 @@ func TestProviderDefinedTypeTraversalAPIIntegration(t *testing.T) {
 type regPoint struct {
 	X int32
 	Y int32
+}
+
+func TestPrimitiveProviderDefinedTypeTraversalAPIIntegration(t *testing.T) {
+	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
+	testNoAuthEnable := getEnvOrDefaultBool("RUN_INTEGRATION_TESTS", true)
+
+	t.Run("unregistered raw primitive PDT round-trip", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		remote, err := NewDriverRemoteConnection(testNoAuthUrl,
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.TlsConfig = &tls.Config{}
+				settings.TraversalSource = testServerModernGraphAlias
+			})
+		require.NoError(t, err)
+		defer remote.Close()
+
+		g := Traversal_().With(remote)
+		pdt := &PrimitiveProviderDefinedType{Name: "UnregisteredPrim", Value: "00123"}
+
+		results, err := g.Inject(pdt).ToList()
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+
+		result, ok := results[0].GetInterface().(*PrimitiveProviderDefinedType)
+		require.True(t, ok, "expected *PrimitiveProviderDefinedType, got %T", results[0].GetInterface())
+		assert.Equal(t, "UnregisteredPrim", result.Name)
+		assert.Equal(t, "00123", result.Value)
+	})
+
+	t.Run("registered primitive PDT auto-dehydrate and hydrate", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		type tinkerId string
+		registry := NewPDTRegistry()
+		registry.RegisterPrimitiveFuncsWithType("x:TinkerId", reflect.TypeOf(tinkerId("")),
+			func(s string) (interface{}, error) { return tinkerId(s), nil },
+			func(obj interface{}) (string, error) { return string(obj.(tinkerId)), nil })
+
+		remote, err := NewDriverRemoteConnection(testNoAuthUrl,
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.TlsConfig = &tls.Config{}
+				settings.TraversalSource = testServerModernGraphAlias
+				settings.PDTRegistry = registry
+			})
+		require.NoError(t, err)
+		defer remote.Close()
+
+		g := Traversal_().With(remote)
+		id := tinkerId("abc-123")
+
+		results, err := g.Inject(id).ToList()
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+
+		result, ok := results[0].GetInterface().(tinkerId)
+		require.True(t, ok, "expected tinkerId, got %T", results[0].GetInterface())
+		assert.Equal(t, tinkerId("abc-123"), result)
+	})
+
+	t.Run("registered primitive nested in composite", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		type myUint32 uint32
+		registry := NewPDTRegistry()
+		registry.RegisterPrimitiveFuncsWithType("x:MyUint32", reflect.TypeOf(myUint32(0)),
+			func(s string) (interface{}, error) {
+				var v uint32
+				fmt.Sscanf(s, "%d", &v)
+				return myUint32(v), nil
+			},
+			func(obj interface{}) (string, error) {
+				return fmt.Sprintf("%d", obj.(myUint32)), nil
+			})
+
+		remote, err := NewDriverRemoteConnection(testNoAuthUrl,
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.TlsConfig = &tls.Config{}
+				settings.TraversalSource = testServerModernGraphAlias
+				settings.PDTRegistry = registry
+			})
+		require.NoError(t, err)
+		defer remote.Close()
+
+		g := Traversal_().With(remote)
+		// Use a composite PDT with a primitive field
+		pdt := &ProviderDefinedType{
+			Name: "Measurement",
+			Fields: map[string]interface{}{
+				"unit":  "kg",
+				"value": &PrimitiveProviderDefinedType{Name: "x:MyUint32", Value: "100"},
+			},
+		}
+
+		results, err := g.Inject(pdt).ToList()
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+
+		result, ok := results[0].GetInterface().(*ProviderDefinedType)
+		require.True(t, ok, "expected *ProviderDefinedType, got %T", results[0].GetInterface())
+		assert.Equal(t, "Measurement", result.Name)
+		assert.Equal(t, "kg", result.Fields["unit"])
+		// The primitive value should be hydrated to myUint32
+		hydrated, ok := result.Fields["value"].(myUint32)
+		require.True(t, ok, "expected myUint32, got %T", result.Fields["value"])
+		assert.Equal(t, myUint32(100), hydrated)
+	})
+
+	t.Run("primitive PDT in collection", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		remote, err := NewDriverRemoteConnection(testNoAuthUrl,
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.TlsConfig = &tls.Config{}
+				settings.TraversalSource = testServerModernGraphAlias
+			})
+		require.NoError(t, err)
+		defer remote.Close()
+
+		g := Traversal_().With(remote)
+		list := []interface{}{
+			&PrimitiveProviderDefinedType{Name: "x:Val", Value: "one"},
+			&PrimitiveProviderDefinedType{Name: "x:Val", Value: "two"},
+		}
+
+		results, err := g.Inject(list).ToList()
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+
+		resultList, ok := results[0].GetInterface().([]interface{})
+		require.True(t, ok, "expected []interface{}, got %T", results[0].GetInterface())
+		require.Len(t, resultList, 2)
+
+		p1, ok := resultList[0].(*PrimitiveProviderDefinedType)
+		require.True(t, ok)
+		assert.Equal(t, "one", p1.Value)
+
+		p2, ok := resultList[1].(*PrimitiveProviderDefinedType)
+		require.True(t, ok)
+		assert.Equal(t, "two", p2.Value)
+	})
 }

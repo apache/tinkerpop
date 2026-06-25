@@ -114,3 +114,68 @@ func TestPDTRegistryNestedHydration_UnregisteredOuter(t *testing.T) {
 	// Non-PDT fields remain unchanged.
 	assert.Equal(t, "test", pdt.Fields["label"])
 }
+
+func TestPDTRegistryPrimitiveRegisterFuncsAndHydrate(t *testing.T) {
+	reg := NewPDTRegistry()
+	reg.RegisterPrimitiveFuncs("x:Uint32", func(s string) (interface{}, error) {
+		return "uint32:" + s, nil
+	}, nil)
+
+	pdt := &PrimitiveProviderDefinedType{Name: "x:Uint32", Value: "42"}
+	result := reg.HydratePrimitive(pdt)
+	assert.Equal(t, "uint32:42", result)
+}
+
+func TestPDTRegistryPrimitiveNoAdapterReturnsRawPDT(t *testing.T) {
+	reg := NewPDTRegistry()
+	pdt := &PrimitiveProviderDefinedType{Name: "x:Unknown", Value: "val"}
+	result := reg.HydratePrimitive(pdt)
+	assert.Equal(t, pdt, result)
+}
+
+func TestPDTRegistryPrimitiveAdapterErrorReturnsRawPDT(t *testing.T) {
+	reg := NewPDTRegistry()
+	reg.RegisterPrimitiveFuncs("x:Bad", func(s string) (interface{}, error) {
+		return nil, errors.New("fail")
+	}, nil)
+
+	pdt := &PrimitiveProviderDefinedType{Name: "x:Bad", Value: "val"}
+	result := reg.HydratePrimitive(pdt)
+	assert.Equal(t, pdt, result)
+}
+
+func TestPDTRegistryPrimitiveHydrateNil(t *testing.T) {
+	reg := NewPDTRegistry()
+	assert.Nil(t, reg.HydratePrimitive(nil))
+}
+
+func TestPDTRegistryPrimitiveInsideComposite(t *testing.T) {
+	reg := NewPDTRegistry()
+	reg.RegisterPrimitiveFuncs("x:Uint32", func(s string) (interface{}, error) {
+		return "uint32:" + s, nil
+	}, nil)
+
+	inner := &PrimitiveProviderDefinedType{Name: "x:Uint32", Value: "7"}
+	outer := &ProviderDefinedType{Name: "x:Outer", Fields: map[string]interface{}{"id": inner}}
+	result := reg.Hydrate(outer)
+
+	pdt, ok := result.(*ProviderDefinedType)
+	assert.True(t, ok)
+	assert.Equal(t, "uint32:7", pdt.Fields["id"])
+}
+
+func TestPDTRegistryPrimitiveWithType(t *testing.T) {
+	type myID string
+	reg := NewPDTRegistry()
+	reg.RegisterPrimitiveFuncsWithType("x:MyID", reflect.TypeOf(myID("")),
+		func(s string) (interface{}, error) {
+			return myID(s), nil
+		},
+		func(obj interface{}) (string, error) {
+			return string(obj.(myID)), nil
+		})
+
+	adapter := reg.GetPrimitiveAdapterByType(reflect.TypeOf(myID("")))
+	assert.NotNil(t, adapter)
+	assert.Equal(t, "x:MyID", adapter.TypeName)
+}

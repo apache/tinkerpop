@@ -231,6 +231,8 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 			return "", err
 		}
 		return fmt.Sprintf("PDT(\"%s\",%s)", escapeString(v.Name), mapStr), nil
+	case *PrimitiveProviderDefinedType:
+		return fmt.Sprintf("PDT(\"%s\",\"%s\")", escapeString(v.Name), escapeString(v.Value)), nil
 	case *Vertex:
 		return gl.argAsString(v.Id)
 	case textP:
@@ -314,6 +316,15 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		// over any reflection/struct-based fallback, allowing explicit adapters to override
 		// default behavior for a given Go type.
 		if gl.pdtRegistry != nil {
+			// Check primitive adapter before composite (mandatory per Python review lesson).
+			primitiveAdapter := gl.pdtRegistry.GetPrimitiveAdapterByType(reflect.TypeOf(arg))
+			if primitiveAdapter != nil && primitiveAdapter.ToString != nil {
+				s, err := primitiveAdapter.ToString(arg)
+				if err == nil {
+					pdt := &PrimitiveProviderDefinedType{Name: primitiveAdapter.TypeName, Value: s}
+					return gl.argAsString(pdt)
+				}
+			}
 			adapter := gl.pdtRegistry.GetAdapterByType(reflect.TypeOf(arg))
 			if adapter != nil && adapter.ToFields != nil {
 				fields, err := adapter.ToFields(arg)
