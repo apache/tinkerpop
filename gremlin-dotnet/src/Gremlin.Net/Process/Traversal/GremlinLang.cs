@@ -356,6 +356,11 @@ namespace Gremlin.Net.Process.Traversal
                 sb2.Append(']');
                 return $"PDT(\"{EscapeJava(pdt.Name)}\",{sb2})";
             }
+
+            if (arg is PrimitiveProviderDefinedType primitivePdt)
+            {
+                return $"PDT(\"{EscapeJava(primitivePdt.Name)}\",\"{EscapeJava(primitivePdt.Value)}\")";
+            }
             if (arg is IDictionary dict)
                 return AsString(dict);
 
@@ -377,9 +382,17 @@ namespace Gremlin.Net.Process.Traversal
 
             // Precedence: a registered adapter intentionally takes priority over the [ProviderDefined]
             // attribute so that explicit adapters can override attribute-derived dehydration behavior.
+            // Check primitive adapter first, then composite.
             if (PdtRegistry != null)
             {
-                var adapterInfo = PdtRegistry.GetAdapterByType(arg.GetType());
+                var primitiveInfo = PdtRegistry.GetPrimitiveAdapterByType(arg.GetType());
+                if (primitiveInfo != null)
+                {
+                    var (adapterTypeName, toStr) = primitiveInfo.Value;
+                    return ArgAsString(new PrimitiveProviderDefinedType(adapterTypeName, toStr(arg)));
+                }
+
+                var adapterInfo = PdtRegistry.GetCompositeAdapterByType(arg.GetType());
                 if (adapterInfo != null)
                 {
                     var (adapterTypeName, toFields) = adapterInfo.Value;

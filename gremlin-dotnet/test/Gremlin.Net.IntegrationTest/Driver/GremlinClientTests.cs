@@ -272,5 +272,77 @@ namespace Gremlin.Net.IntegrationTest.Driver
             Assert.Equal(3, p2.Fields["x"]);
             Assert.Equal(4, p2.Fields["y"]);
         }
+
+        [Fact]
+        public async Task ShouldRoundTripSimplePrimitivePdt()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+
+            var response = await gremlinClient.SubmitAsync<object>(
+                "g.inject(PDT(\"Uint32\", \"42\"))");
+            var results = await response.ToListAsync();
+
+            Assert.Single(results);
+            var pdt = Assert.IsType<PrimitiveProviderDefinedType>(results[0]);
+            Assert.Equal("Uint32", pdt.Name);
+            Assert.Equal("42", pdt.Value);
+        }
+
+        [Fact]
+        public async Task ShouldRoundTripPrimitivePdtWithOpaqueValue()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+
+            var response = await gremlinClient.SubmitAsync<object>(
+                "g.inject(PDT(\"Token\", \"007-abc\"))");
+            var results = await response.ToListAsync();
+
+            Assert.Single(results);
+            var pdt = Assert.IsType<PrimitiveProviderDefinedType>(results[0]);
+            Assert.Equal("Token", pdt.Name);
+            Assert.Equal("007-abc", pdt.Value);
+        }
+
+        [Fact]
+        public async Task ShouldHandlePrimitivePdtInCollection()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+
+            var response = await gremlinClient.SubmitAsync<object>(
+                "g.inject([PDT(\"Uint32\", \"1\"), PDT(\"Uint32\", \"2\")])");
+            var results = await response.ToListAsync();
+
+            Assert.Single(results);
+            var list = Assert.IsType<List<object>>(results[0]);
+            Assert.Equal(2, list.Count);
+
+            var p1 = Assert.IsType<PrimitiveProviderDefinedType>(list[0]);
+            Assert.Equal("1", p1.Value);
+
+            var p2 = Assert.IsType<PrimitiveProviderDefinedType>(list[1]);
+            Assert.Equal("2", p2.Value);
+        }
+
+        [Fact]
+        public async Task ShouldRoundTripPrimitivePdtNestedInComposite()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+
+            var response = await gremlinClient.SubmitAsync<object>(
+                "g.inject(PDT(\"Measurement\", [\"unit\":\"kg\", \"value\":PDT(\"Uint32\", \"100\")]))");
+            var results = await response.ToListAsync();
+
+            Assert.Single(results);
+            var pdt = Assert.IsType<ProviderDefinedType>(results[0]);
+            Assert.Equal("Measurement", pdt.Name);
+            Assert.Equal("kg", pdt.Fields["unit"]);
+            var inner = Assert.IsType<PrimitiveProviderDefinedType>(pdt.Fields["value"]);
+            Assert.Equal("Uint32", inner.Name);
+            Assert.Equal("100", inner.Value);
+        }
     }
 }
