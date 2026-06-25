@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
@@ -56,37 +57,27 @@ func TestGraphTraversalSource(t *testing.T) {
 	})
 
 	t.Run("GraphTraversalSource.WithComputer tests", func(t *testing.T) {
-		const vertexProgramStrategyName = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy"
-
 		t.Run("Test for no configuration", func(t *testing.T) {
-			g := &GraphTraversalSource{graph: &Graph{}, bytecode: NewBytecode(nil), remoteConnection: nil}
+			g := &GraphTraversalSource{graph: &Graph{}, gremlinLang: NewGremlinLang(nil), remoteConnection: nil}
 			source := g.WithComputer()
 			assert.NotNil(t, source)
-			assert.Equal(t, 1, len(source.bytecode.sourceInstructions))
-			instruction := source.bytecode.sourceInstructions[0]
-			assert.Equal(t, "withStrategies", instruction.operator)
-			strategy := instruction.arguments[0].(*traversalStrategy)
-			assert.Equal(t, vertexProgramStrategyName, strategy.name)
-			// An empty configuration causes the server to fall back to its default GraphComputer via instance().
-			assert.Equal(t, map[string]interface{}{}, strategy.configuration)
+			// An empty configuration renders without arguments, causing the server to fall back to its
+			// default GraphComputer via instance().
+			assert.True(t, strings.Contains(source.gremlinLang.GetGremlin(), "withStrategies(VertexProgramStrategy)"))
 		})
 
 		t.Run("Test for configured computer", func(t *testing.T) {
-			g := &GraphTraversalSource{graph: &Graph{}, bytecode: NewBytecode(nil), remoteConnection: nil}
+			g := &GraphTraversalSource{graph: &Graph{}, gremlinLang: NewGremlinLang(nil), remoteConnection: nil}
 			source := g.WithComputer(VertexProgramStrategyConfig{
 				GraphComputer: "org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer",
 				Workers:       4,
 			})
 			assert.NotNil(t, source)
-			assert.Equal(t, 1, len(source.bytecode.sourceInstructions))
-			instruction := source.bytecode.sourceInstructions[0]
-			assert.Equal(t, "withStrategies", instruction.operator)
-			strategy := instruction.arguments[0].(*traversalStrategy)
-			assert.Equal(t, vertexProgramStrategyName, strategy.name)
-			assert.Equal(t, map[string]interface{}{
-				"graphComputer": "org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer",
-				"workers":       4,
-			}, strategy.configuration)
+			gremlin := source.gremlinLang.GetGremlin()
+			// Note that config map doesn't guarantee order, so assert individually
+			assert.True(t, strings.Contains(gremlin, "withStrategies(new VertexProgramStrategy("))
+			assert.True(t, strings.Contains(gremlin, "graphComputer:\"org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer\""))
+			assert.True(t, strings.Contains(gremlin, "workers:4"))
 		})
 	})
 }
