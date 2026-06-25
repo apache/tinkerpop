@@ -214,6 +214,25 @@ export class ProviderDefinedType {
   }
 }
 
+/**
+ * Represents a primitive Provider Defined Type (PDT).
+ */
+export class PrimitiveProviderDefinedType {
+  readonly name: string;
+  readonly value: string;
+
+  constructor(name: string, value: string) {
+    if (!name) throw new Error('PrimitiveProviderDefinedType name cannot be null or empty');
+    if (value === null || value === undefined) throw new Error('PrimitiveProviderDefinedType value cannot be null');
+    this.name = name;
+    this.value = value;
+  }
+
+  toString() {
+    return `pdt[${this.name}:${this.value}]`;
+  }
+}
+
 function summarize(value: any) {
   if (value === null || value === undefined) {
     return value;

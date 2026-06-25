@@ -67,6 +67,7 @@ import UnspecifiedNullSerializer from './internals/UnspecifiedNullSerializer.js'
 import EnumSerializer from './internals/EnumSerializer.js';
 import StubSerializer from './internals/StubSerializer.js';
 import CompositePDTSerializer from './internals/CompositePDTSerializer.js';
+import PrimitivePDTSerializer from './internals/PrimitivePDTSerializer.js';
 import NumberSerializationStrategy from './internals/NumberSerializationStrategy.js';
 import AnySerializer from './internals/AnySerializer.js';
 import GraphBinaryReader from './internals/GraphBinaryReader.js';
@@ -107,10 +108,10 @@ function createIoc(anySerializerOptions) {
   ioc.unspecifiedNullSerializer = new UnspecifiedNullSerializer(ioc);
   ioc.enumSerializer = new EnumSerializer(ioc);
   ioc.compositePDTSerializer = new CompositePDTSerializer(ioc);
+  ioc.primitivePDTSerializer = new PrimitivePDTSerializer(ioc);
 
   // Register stub serializers for unimplemented v4 types
   new StubSerializer(ioc, ioc.DataType.TREE, 'Tree');
-  new StubSerializer(ioc, ioc.DataType.PRIMITIVEPDT, 'PrimitivePDT');
 
   ioc.pdtRegistry = null;
 
@@ -177,6 +178,7 @@ export const {
   unspecifiedNullSerializer,
   enumSerializer,
   compositePDTSerializer,
+  primitivePDTSerializer,
   numberSerializationStrategy,
   anySerializer,
   graphBinaryReader,

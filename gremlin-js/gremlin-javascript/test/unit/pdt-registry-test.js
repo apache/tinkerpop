@@ -18,7 +18,7 @@
  */
 
 import { assert } from 'chai';
-import { ProviderDefinedType } from '../../lib/structure/graph.js';
+import { ProviderDefinedType, PrimitiveProviderDefinedType } from '../../lib/structure/graph.js';
 import { ProviderDefinedTypeRegistry } from '../../lib/structure/ProviderDefinedTypeRegistry.js';
 import Client from '../../lib/driver/client.js';
 import Connection from '../../lib/driver/connection.js';
@@ -170,5 +170,122 @@ describe('pdtRegistry wiring through Client/Connection', () => {
     const conn2 = new Connection('http://localhost:8182');
     assert.isNull(conn2._reader.pdtRegistry);
     assert.strictEqual(conn1._reader.pdtRegistry, registry);
+  });
+});
+
+describe('ProviderDefinedTypeRegistry - Primitive', () => {
+  describe('#hydratePrimitive()', () => {
+    it('should return a typed value when a primitive adapter is registered', () => {
+      const registry = new ProviderDefinedTypeRegistry();
+      registry.registerPrimitive('Uint32', {
+        toValue: (obj) => String(obj),
+        fromValue: (value) => parseInt(value, 10),
+      });
+
+      const pdt = new PrimitiveProviderDefinedType('Uint32', '42');
+      const result = registry.hydratePrimitive(pdt);
+
+      assert.strictEqual(result, 42);
+    });
+
+    it('should return the raw primitive PDT when no adapter is registered', () => {
+      const registry = new ProviderDefinedTypeRegistry();
+      const pdt = new PrimitiveProviderDefinedType('Unknown', 'xyz');
+      const result = registry.hydratePrimitive(pdt);
+
+      assert.strictEqual(result, pdt);
+      assert.instanceOf(result, PrimitiveProviderDefinedType);
+    });
+
+    it('should fall back gracefully when adapter throws', () => {
+      const registry = new ProviderDefinedTypeRegistry();
+      registry.registerPrimitive('Broken', {
+        toValue: () => '',
+        fromValue: () => { throw new Error('adapter error'); },
+      });
+
+      const pdt = new PrimitiveProviderDefinedType('Broken', '1');
+      const warnings = [];
+      const origWarn = console.warn;
+      console.warn = (msg) => warnings.push(msg);
+      try {
+        const result = registry.hydratePrimitive(pdt);
+        assert.strictEqual(result, pdt);
+        assert.lengthOf(warnings, 1);
+        assert.include(warnings[0], 'adapter error');
+        assert.include(warnings[0], 'Broken');
+      } finally {
+        console.warn = origWarn;
+      }
+    });
+
+    it('should return non-PrimitiveProviderDefinedType values unchanged', () => {
+      const registry = new ProviderDefinedTypeRegistry();
+      assert.strictEqual(registry.hydratePrimitive('hello'), 'hello');
+      assert.strictEqual(registry.hydratePrimitive(42), 42);
+      assert.strictEqual(registry.hydratePrimitive(null), null);
+    });
+
+    it('should preserve leading zeros in opaque string value', () => {
+      const registry = new ProviderDefinedTypeRegistry();
+      registry.registerPrimitive('PaddedId', {
+        toValue: (obj) => obj.id,
+        fromValue: (value) => ({ id: value }),
+      });
+
+      const pdt = new PrimitiveProviderDefinedType('PaddedId', '007');
+      const result = registry.hydratePrimitive(pdt);
+      assert.deepStrictEqual(result, { id: '007' });
+    });
+  });
+
+  describe('#hasPrimitiveAdapter()', () => {
+    it('should return true for registered primitive types', () => {
+      const registry = new ProviderDefinedTypeRegistry();
+      registry.registerPrimitive('Uint32', { toValue: () => '', fromValue: (v) => v });
+      assert.isTrue(registry.hasPrimitiveAdapter('Uint32'));
+      assert.isFalse(registry.hasPrimitiveAdapter('Missing'));
+    });
+  });
+
+  describe('#getPrimitiveAdapterByClass()', () => {
+    it('should return the adapter entry for registered class', () => {
+      const registry = new ProviderDefinedTypeRegistry();
+      class Uint32 { constructor(v) { this.v = v; } }
+      registry.registerPrimitive('Uint32', {
+        toValue: (obj) => String(obj.v),
+        fromValue: (value) => new Uint32(parseInt(value, 10)),
+      }, Uint32);
+      const entry = registry.getPrimitiveAdapterByClass(Uint32);
+      assert.isNotNull(entry);
+      assert.strictEqual(entry.typeName, 'Uint32');
+      assert.strictEqual(entry.toValue(new Uint32(5)), '5');
+    });
+
+    it('should return null for unregistered class', () => {
+      const registry = new ProviderDefinedTypeRegistry();
+      class Unknown {}
+      assert.isNull(registry.getPrimitiveAdapterByClass(Unknown));
+    });
+  });
+
+  describe('composite hydrate with nested primitive PDT', () => {
+    it('should hydrate nested primitive PDT inside composite fields', () => {
+      const registry = new ProviderDefinedTypeRegistry();
+      registry.registerPrimitive('Uint32', {
+        toValue: (obj) => String(obj),
+        fromValue: (value) => parseInt(value, 10),
+      });
+      registry.register('Measurement', {
+        serialize: (obj) => obj,
+        deserialize: (fields) => ({ type: 'Measurement', unit: fields.unit, value: fields.value }),
+      });
+
+      const primPdt = new PrimitiveProviderDefinedType('Uint32', '99');
+      const compPdt = new ProviderDefinedType('Measurement', { unit: 'kg', value: primPdt });
+      const result = registry.hydrate(compPdt);
+
+      assert.deepStrictEqual(result, { type: 'Measurement', unit: 'kg', value: 99 });
+    });
   });
 });

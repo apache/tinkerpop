@@ -89,6 +89,7 @@ export const structure = {
   Graph: graph.Graph,
   Path: graph.Path,
   Property: graph.Property,
+  PrimitiveProviderDefinedType: graph.PrimitiveProviderDefinedType,
   ProviderDefinedType: graph.ProviderDefinedType,
   ProviderDefinedTypeRegistry,
   Vertex: graph.Vertex,

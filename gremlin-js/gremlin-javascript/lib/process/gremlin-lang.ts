@@ -20,7 +20,7 @@
 import { P, TextP, EnumValue } from './traversal.js';
 import { OptionsStrategy, TraversalStrategy } from './traversal-strategy.js';
 import { Long, Int, Float, Double, Short, Byte, INT32_MIN, INT32_MAX } from '../utils.js';
-import { Vertex, ProviderDefinedType } from '../structure/graph.js';
+import { Vertex, ProviderDefinedType, PrimitiveProviderDefinedType } from '../structure/graph.js';
 import { ProviderDefinedTypeRegistry } from '../structure/ProviderDefinedTypeRegistry.js';
 import { GValue } from './gvalue.js';
 import { isDeepStrictEqual } from 'node:util';
@@ -156,6 +156,11 @@ export default class GremlinLang {
     if (typeof arg === 'function' && arg.prototype instanceof TraversalStrategy) {
       return arg.name;
     }
+    if (arg instanceof PrimitiveProviderDefinedType) {
+      const escapedName = JSON.stringify(arg.name).slice(1, -1);
+      const escapedValue = JSON.stringify(arg.value).slice(1, -1);
+      return `PDT("${escapedName}","${escapedValue}")`;
+    }
     if (arg instanceof ProviderDefinedType) {
       const fields = arg.fields;
       const keys = Object.keys(fields);
@@ -212,6 +217,11 @@ export default class GremlinLang {
     }
     // Registry-based dehydration
     if (this.pdtRegistry && typeof arg === 'object' && arg.constructor) {
+      const primitiveEntry = this.pdtRegistry.getPrimitiveAdapterByClass(arg.constructor);
+      if (primitiveEntry) {
+        const value = primitiveEntry.toValue(arg);
+        return this._argAsString(new PrimitiveProviderDefinedType(primitiveEntry.typeName, value));
+      }
       const entry = this.pdtRegistry.getAdapterByClass(arg.constructor);
       if (entry) {
         const fields = entry.serialize(arg);

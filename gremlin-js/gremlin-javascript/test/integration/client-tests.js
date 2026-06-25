@@ -18,7 +18,7 @@
  */
 
 import assert from 'assert';
-import { Vertex, Edge, VertexProperty, ProviderDefinedType } from '../../lib/structure/graph.js';
+import { Vertex, Edge, VertexProperty, ProviderDefinedType, PrimitiveProviderDefinedType } from '../../lib/structure/graph.js';
 import { getClient, serverUrl } from '../helper.js';
 import { cardinality } from '../../lib/process/traversal.js';
 import Client from '../../lib/driver/client.js';
@@ -358,5 +358,52 @@ describe('Client interceptor integration', function () {
     } finally {
       await interceptorClient.close();
     }
+  });
+});
+
+describe('PrimitiveProviderDefinedType - Client', function () {
+  let pdtClient;
+  before(function () {
+    pdtClient = getClient('gmodern');
+    return pdtClient.open();
+  });
+  after(function () {
+    return pdtClient.close();
+  });
+
+  it('should round-trip a simple primitive PDT', function () {
+    return pdtClient.submit('g.inject(PDT("Uint32","42"))')
+      .then(function (result) {
+        assert.strictEqual(result.length, 1);
+        const pdt = result.first();
+        assert.ok(pdt instanceof PrimitiveProviderDefinedType);
+        assert.strictEqual(pdt.name, 'Uint32');
+        assert.strictEqual(pdt.value, '42');
+      });
+  });
+
+  it('should round-trip a primitive PDT with leading zeros', function () {
+    return pdtClient.submit('g.inject(PDT("TinkerId","007"))')
+      .then(function (result) {
+        assert.strictEqual(result.length, 1);
+        const pdt = result.first();
+        assert.ok(pdt instanceof PrimitiveProviderDefinedType);
+        assert.strictEqual(pdt.name, 'TinkerId');
+        assert.strictEqual(pdt.value, '007');
+      });
+  });
+
+  it('should handle primitive PDTs in a collection', function () {
+    return pdtClient.submit('g.inject([PDT("Uint32","1"), PDT("Uint32","2")])')
+      .then(function (result) {
+        assert.strictEqual(result.length, 1);
+        const list = result.first();
+        assert.ok(Array.isArray(list));
+        assert.strictEqual(list.length, 2);
+        assert.ok(list[0] instanceof PrimitiveProviderDefinedType);
+        assert.strictEqual(list[0].value, '1');
+        assert.ok(list[1] instanceof PrimitiveProviderDefinedType);
+        assert.strictEqual(list[1].value, '2');
+      });
   });
 });
