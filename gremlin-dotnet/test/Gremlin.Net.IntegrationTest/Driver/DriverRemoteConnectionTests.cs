@@ -156,43 +156,6 @@ public class DriverRemoteConnectionTests
         Assert.Equal(7, result.Y);
     }
 
-    #region Test helpers
-
-    private class TestPointClass
-    {
-        public int X { get; set; }
-        public int Y { get; set; }
-    }
-
-    private class TestPointAdapter : IProviderDefinedTypeAdapter<TestPointClass>
-    {
-        public string TypeName => "TestPoint";
-
-        public TestPointClass FromFields(IReadOnlyDictionary<string, object?> fields)
-        {
-            return new TestPointClass
-            {
-                X = Convert.ToInt32(fields["x"]),
-                Y = Convert.ToInt32(fields["y"])
-            };
-        }
-
-        public IReadOnlyDictionary<string, object?> ToFields(TestPointClass obj)
-        {
-            return new ReadOnlyDictionary<string, object?>(
-                new Dictionary<string, object?> { { "x", obj.X }, { "y", obj.Y } });
-        }
-    }
-
-    [ProviderDefined(Name = "TestPoint")]
-    private class AnnotatedTestPoint
-    {
-        public int X { get; set; }
-        public int Y { get; set; }
-    }
-
-    #endregion
-
     [Fact]
     public void ShouldRoundTripPrimitivePdtViaTraversalApi()
     {
@@ -231,7 +194,40 @@ public class DriverRemoteConnectionTests
         Assert.Equal(42u, (uint)results[0]);
     }
 
-    #region Test helpers (primitive)
+    #region Test helpers
+
+    private class TestPointClass
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+    }
+
+    private class TestPointAdapter : IProviderDefinedTypeAdapter<TestPointClass>
+    {
+        public string TypeName => "TestPoint";
+
+        public TestPointClass FromFields(IReadOnlyDictionary<string, object?> fields)
+        {
+            return new TestPointClass
+            {
+                X = Convert.ToInt32(fields["x"]),
+                Y = Convert.ToInt32(fields["y"])
+            };
+        }
+
+        public IReadOnlyDictionary<string, object?> ToFields(TestPointClass obj)
+        {
+            return new ReadOnlyDictionary<string, object?>(
+                new Dictionary<string, object?> { { "x", obj.X }, { "y", obj.Y } });
+        }
+    }
+
+    [ProviderDefined(Name = "TestPoint")]
+    private class AnnotatedTestPoint
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+    }
 
     private class TestUint32Adapter : IPrimitivePdtAdapter<uint>
     {
