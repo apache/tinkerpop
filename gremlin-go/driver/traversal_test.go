@@ -640,6 +640,12 @@ func TestPrimitiveProviderDefinedTypeTraversalAPIIntegration(t *testing.T) {
 	t.Run("registered primitive nested in composite", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
+		// A distinct named type is required to route a value through the PrimitivePDT registry.
+		// Go natively serializes the built-in uint32 (argAsString emits it as a Gremlin Long), and
+		// that native type-switch runs before the PDT registry lookup — so a bare uint32 would never
+		// reach a primitive adapter. Defining myUint32 (a named type based on uint32) opts the type
+		// into PDT handling. This differs from .NET, where System.UInt32 is not natively serialized
+		// and can be registered directly. See tinkerpop-kof for the adapter-vs-native-type precedence follow-up.
 		type myUint32 uint32
 		registry := NewPDTRegistry()
 		registry.RegisterPrimitiveFuncsWithType("x:MyUint32", reflect.TypeOf(myUint32(0)),
