@@ -203,7 +203,6 @@ func initSerializers() {
 		datetimeType:       dateTimeWriter,
 		durationType:       durationWriter,
 		directionType:      enumWriter,
-		gTypeType:          enumWriter,
 		tType:              enumWriter,
 		mergeType:          enumWriter,
 		mapType:            mapWriter,
@@ -214,5 +213,3 @@ func initSerializers() {
 		compositePDTType:   pdtWriter,
 	}
 }
-
-

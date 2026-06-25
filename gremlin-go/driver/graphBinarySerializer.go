@@ -62,7 +62,6 @@ const (
 	shortType          dataType = 0x26
 	booleanType        dataType = 0x27
 	mergeType          dataType = 0x2e
-	gTypeType          dataType = 0x30
 	durationType       dataType = 0x81
 	compositePDTType   dataType = 0xf0
 	markerType         dataType = 0xfd
@@ -615,8 +614,6 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return tType, nil
 	case merge:
 		return mergeType, nil
-	case gType:
-		return gTypeType, nil
 	case *BigDecimal, BigDecimal:
 		return bigDecimalType, nil
 	case *ByteBuffer, ByteBuffer:

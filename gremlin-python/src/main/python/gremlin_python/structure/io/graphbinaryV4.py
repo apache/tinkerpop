@@ -27,7 +27,7 @@ from datetime import datetime, timedelta, timezone
 from struct import pack, unpack
 
 from aenum import Enum
-from gremlin_python.process.traversal import Direction, T, Merge, GType
+from gremlin_python.process.traversal import Direction, T, Merge
 from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, BigIntType, \
     DictType, SetType, SingleByte, SingleChar
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path, ProviderDefinedType, \
@@ -71,7 +71,6 @@ class DataType(Enum):
     short = 0x26
     boolean = 0x27
     tree = 0x2b                   # not supported - no tree object in Python yet
-    gtype = 0x30
     char = 0x80
     duration = 0x81
     composite_pdt = 0xf0
@@ -849,11 +848,6 @@ class TIO(_EnumIO):
 class MergeIO(_EnumIO):
     graphbinary_type = DataType.merge
     python_type = Merge
-
-
-class GTYPEIO(_EnumIO):
-    graphbinary_type = DataType.gtype
-    python_type = GType
 
 
 class ByteIO(_GraphBinaryTypeIO):

@@ -453,26 +453,6 @@ func TestGraphBinaryDeserializerComplexTypes(t *testing.T) {
 		assert.Equal(t, "matched", m[Merge.OnMatch], "Merge.OnMatch key should survive round-trip")
 	})
 
-	t.Run("round-trip map with GType enum keys preserves types", func(t *testing.T) {
-		original := map[interface{}]interface{}{
-			GType.Int:    "integer",
-			GType.String: "string",
-		}
-
-		var buf bytes.Buffer
-		ser := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
-		err := ser.ser.write(original, &buf)
-		assert.Nil(t, err)
-
-		d := NewGraphBinaryDeserializer(&buf)
-		val, err := d.ReadFullyQualified()
-		assert.Nil(t, err)
-
-		m := val.(map[interface{}]interface{})
-		assert.Equal(t, "integer", m[GType.Int], "GType.Int key should survive round-trip")
-		assert.Equal(t, "string", m[GType.String], "GType.String key should survive round-trip")
-	})
-
 	t.Run("reads list of integers from chunked stream", func(t *testing.T) {
 		// List type split across chunks
 		chunk1 := []byte{

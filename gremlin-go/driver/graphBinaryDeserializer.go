@@ -274,7 +274,7 @@ func (d *GraphBinaryDeserializer) readValue(dt dataType, flag byte) (interface{}
 		return Of(b)
 	case byteBuffer:
 		return d.readByteBuffer()
-	case tType, directionType, mergeType, gTypeType:
+	case tType, directionType, mergeType:
 		return d.readEnum(dt)
 	case compositePDTType:
 		return d.readCompositePDT()
@@ -802,8 +802,6 @@ func (d *GraphBinaryDeserializer) readEnum(dt dataType) (interface{}, error) {
 		return direction(s), nil
 	case mergeType:
 		return merge(s), nil
-	case gTypeType:
-		return gType(s), nil
 	default:
 		return s, nil
 	}
