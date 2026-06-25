@@ -192,4 +192,53 @@ public class DriverRemoteConnectionTests
     }
 
     #endregion
+
+    [Fact]
+    public void ShouldRoundTripPrimitivePdtViaTraversalApi()
+    {
+        var gremlinServer = new GremlinServer(TestHost, TestPort);
+        using var gremlinClient = new GremlinClient(gremlinServer);
+        using var connection = new DriverRemoteConnection(gremlinClient, "gmodern");
+        var g = AnonymousTraversalSource.Traversal().With(connection);
+
+        var pdt = new PrimitiveProviderDefinedType("TestToken", "abc123");
+
+        var results = g.Inject<object>(pdt).ToList();
+
+        Assert.Single(results);
+        var result = Assert.IsType<PrimitiveProviderDefinedType>(results[0]);
+        Assert.Equal("TestToken", result.Name);
+        Assert.Equal("abc123", result.Value);
+    }
+
+    [Fact]
+    public void ShouldRoundTripPrimitiveTypedObjectViaRegistry()
+    {
+        var registry = new ProviderDefinedTypeRegistry();
+        registry.RegisterPrimitive(new TestUint32Adapter());
+
+        var gremlinServer = new GremlinServer(TestHost, TestPort);
+        using var gremlinClient = new GremlinClient(gremlinServer, pdtRegistry: registry);
+        using var connection = new DriverRemoteConnection(gremlinClient, "gmodern", pdtRegistry: registry);
+        var g = AnonymousTraversalSource.Traversal().With(connection);
+
+        var val = 42u;
+
+        var results = g.Inject<object>(val).ToList();
+
+        Assert.Single(results);
+        Assert.IsType<uint>(results[0]);
+        Assert.Equal(42u, (uint)results[0]);
+    }
+
+    #region Test helpers (primitive)
+
+    private class TestUint32Adapter : IPrimitivePdtAdapter<uint>
+    {
+        public string TypeName => "TestToken";
+        public uint FromString(string value) => uint.Parse(value);
+        public string ToString(uint obj) => obj.ToString();
+    }
+
+    #endregion
 }

@@ -99,11 +99,21 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
             {
                 if (_pdtRegistry != null)
                 {
-                    var hydrated = _pdtRegistry.Hydrate(pdt);
+                    var hydrated = _pdtRegistry.HydrateComposite(pdt);
                     if (hydrated is not ProviderDefinedType)
                         return hydrated;
                 }
                 return ProviderDefinedAttribute.HydrateIfRegistered(pdt);
+            }
+            if (result is PrimitiveProviderDefinedType primitivePdt)
+            {
+                if (_pdtRegistry != null)
+                {
+                    var hydrated = _pdtRegistry.HydratePrimitive(primitivePdt);
+                    if (hydrated is not PrimitiveProviderDefinedType)
+                        return hydrated;
+                }
+                return primitivePdt;
             }
             return result;
         }

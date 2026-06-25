@@ -1361,5 +1361,78 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             var ex = Assert.Throws<ArgumentException>(() => _g.V(gval).GremlinLang.GetGremlin());
             Assert.Contains("Invalid parameter name", ex.Message);
         }
+
+        [Fact]
+        public void g_Inject_PrimitivePDT_basic()
+        {
+            var pdt = new PrimitiveProviderDefinedType("Uint32", "42");
+            var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"Uint32\",\"42\"))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PrimitivePDT_special_chars_in_value()
+        {
+            var pdt = new PrimitiveProviderDefinedType("Token", "hello\"world");
+            var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"Token\",\"hello\\\"world\"))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PrimitivePDT_leading_zeros()
+        {
+            var pdt = new PrimitiveProviderDefinedType("Padded", "007");
+            var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"Padded\",\"007\"))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PrimitivePDT_auto_dehydration_via_primitive_adapter()
+        {
+            var registry = new ProviderDefinedTypeRegistry();
+            registry.RegisterPrimitive(new TestUint32Adapter());
+
+            var g = new GraphTraversalSource();
+            g.GremlinLang.PdtRegistry = registry;
+
+            var result = g.Inject((object)99u).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"test:Uint32\",\"99\"))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PrimitivePDT_adapter_takes_precedence_over_attribute()
+        {
+            var registry = new ProviderDefinedTypeRegistry();
+            registry.RegisterPrimitive(new PrimitiveAdapterForAnnotatedType());
+
+            var g = new GraphTraversalSource();
+            g.GremlinLang.PdtRegistry = registry;
+
+            var obj = new AnnotatedButPrimitiveAdapted { Data = "hello" };
+            var result = g.Inject((object)obj).GremlinLang.GetGremlin();
+
+            // The primitive adapter should win over [ProviderDefined] attribute
+            Assert.Equal("g.inject(PDT(\"prim:Adapted\",\"hello\"))", result);
+        }
+
+        [ProviderDefined(Name = "attr.Annotated")]
+        private class AnnotatedButPrimitiveAdapted
+        {
+            public string Data { get; set; } = "";
+        }
+
+        private class PrimitiveAdapterForAnnotatedType : IPrimitivePdtAdapter<AnnotatedButPrimitiveAdapted>
+        {
+            public string TypeName => "prim:Adapted";
+            public AnnotatedButPrimitiveAdapted FromString(string value) => new() { Data = value };
+            public string ToString(AnnotatedButPrimitiveAdapted obj) => obj.Data;
+        }
+
+        private class TestUint32Adapter : IPrimitivePdtAdapter<uint>
+        {
+            public string TypeName => "test:Uint32";
+            public uint FromString(string value) => uint.Parse(value);
+            public string ToString(uint obj) => obj.ToString();
+        }
     }
 }

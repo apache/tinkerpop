@@ -30,27 +30,39 @@ using System.Reflection;
 namespace Gremlin.Net.Structure
 {
     /// <summary>
-    /// Registry for <see cref="IProviderDefinedTypeAdapter{T}"/> instances that hydrate
-    /// <see cref="ProviderDefinedType"/> values into strongly-typed objects.
+    /// Registry for <see cref="IProviderDefinedTypeAdapter{T}"/> and <see cref="IPrimitivePdtAdapter{T}"/>
+    /// instances that hydrate provider-defined types into strongly-typed objects.
     /// </summary>
     public class ProviderDefinedTypeRegistry
     {
-        private readonly Dictionary<string, object> _adaptersByName = new();
-        private readonly Dictionary<Type, (string typeName, object adapter)> _adaptersByType = new();
+        private readonly Dictionary<string, object> _compositeAdaptersByName = new();
+        private readonly Dictionary<Type, (string typeName, object adapter)> _compositeAdaptersByType = new();
+        private readonly Dictionary<string, object> _primitiveAdaptersByName = new();
+        private readonly Dictionary<Type, (string typeName, object adapter)> _primitiveAdaptersByType = new();
 
         /// <summary>
-        /// Registers an adapter for a specific provider-defined type name.
+        /// Registers a composite adapter for a specific provider-defined type name.
         /// </summary>
         public void Register<T>(IProviderDefinedTypeAdapter<T> adapter)
         {
-            _adaptersByName[adapter.TypeName] = adapter;
-            _adaptersByType[typeof(T)] = (adapter.TypeName, adapter);
+            _compositeAdaptersByName[adapter.TypeName] = adapter;
+            _compositeAdaptersByType[typeof(T)] = (adapter.TypeName, adapter);
+        }
+
+        /// <summary>
+        /// Registers a primitive adapter for a specific provider-defined type name.
+        /// </summary>
+        public void RegisterPrimitive<T>(IPrimitivePdtAdapter<T> adapter)
+        {
+            _primitiveAdaptersByName[adapter.TypeName] = adapter;
+            _primitiveAdaptersByType[typeof(T)] = (adapter.TypeName, adapter);
         }
 
         /// <summary>
         /// Creates a registry populated by scanning loaded assemblies for:
         /// <list type="bullet">
-        /// <item>Types implementing <see cref="IProviderDefinedTypeAdapter{T}"/> (adapter-based hydration)</item>
+        /// <item>Types implementing <see cref="IProviderDefinedTypeAdapter{T}"/> (composite adapter-based hydration)</item>
+        /// <item>Types implementing <see cref="IPrimitivePdtAdapter{T}"/> (primitive adapter-based hydration)</item>
         /// <item>Types annotated with <see cref="ProviderDefinedAttribute"/> (annotation-based round-trip)</item>
         /// </list>
         /// </summary>
@@ -64,18 +76,38 @@ namespace Gremlin.Net.Structure
                 {
                     foreach (var type in assembly.GetTypes())
                     {
-                        // Register adapter implementations
-                        var adapterInterface = type.GetInterfaces()
+                        // Register composite adapter implementations
+                        var compositeInterface = type.GetInterfaces()
                             .FirstOrDefault(i => i.IsGenericType &&
                                 i.GetGenericTypeDefinition() == typeof(IProviderDefinedTypeAdapter<>));
-                        if (adapterInterface != null && !type.IsAbstract && !type.IsInterface)
+                        if (compositeInterface != null && !type.IsAbstract && !type.IsInterface)
                         {
                             try
                             {
                                 var adapter = Activator.CreateInstance(type);
                                 var registerMethod = typeof(ProviderDefinedTypeRegistry)
                                     .GetMethod(nameof(Register))!
-                                    .MakeGenericMethod(adapterInterface.GetGenericArguments()[0]);
+                                    .MakeGenericMethod(compositeInterface.GetGenericArguments()[0]);
+                                registerMethod.Invoke(registry, new[] { adapter });
+                            }
+                            catch
+                            {
+                                // skip types that can't be instantiated
+                            }
+                        }
+
+                        // Register primitive adapter implementations
+                        var primitiveInterface = type.GetInterfaces()
+                            .FirstOrDefault(i => i.IsGenericType &&
+                                i.GetGenericTypeDefinition() == typeof(IPrimitivePdtAdapter<>));
+                        if (primitiveInterface != null && !type.IsAbstract && !type.IsInterface)
+                        {
+                            try
+                            {
+                                var adapter = Activator.CreateInstance(type);
+                                var registerMethod = typeof(ProviderDefinedTypeRegistry)
+                                    .GetMethod(nameof(RegisterPrimitive))!
+                                    .MakeGenericMethod(primitiveInterface.GetGenericArguments()[0]);
                                 registerMethod.Invoke(registry, new[] { adapter });
                             }
                             catch
@@ -103,11 +135,11 @@ namespace Gremlin.Net.Structure
         }
 
         /// <summary>
-        /// Returns the type name and ToFields method for the given CLR type, or null if not registered.
+        /// Returns the type name and ToFields method for the given CLR type, or null if not registered as composite.
         /// </summary>
-        internal (string typeName, Func<object, IReadOnlyDictionary<string, object?>>)? GetAdapterByType(Type type)
+        internal (string typeName, Func<object, IReadOnlyDictionary<string, object?>>)? GetCompositeAdapterByType(Type type)
         {
-            if (!_adaptersByType.TryGetValue(type, out var entry))
+            if (!_compositeAdaptersByType.TryGetValue(type, out var entry))
                 return null;
             var method = entry.adapter.GetType().GetMethod("ToFields");
             if (method == null) return null;
@@ -115,25 +147,50 @@ namespace Gremlin.Net.Structure
         }
 
         /// <summary>
-        /// Hydrates a <see cref="ProviderDefinedType"/> into a typed object using a registered adapter.
+        /// Returns the type name and ToString method for the given CLR type, or null if not registered as primitive.
+        /// </summary>
+        internal (string typeName, Func<object, string>)? GetPrimitiveAdapterByType(Type type)
+        {
+            if (!_primitiveAdaptersByType.TryGetValue(type, out var entry))
+                return null;
+            var method = entry.adapter.GetType().GetMethod("ToString", new[] { type });
+            if (method == null) return null;
+            return (entry.typeName, obj => (string)method.Invoke(entry.adapter, new[] { obj })!);
+        }
+
+        /// <summary>
+        /// Returns the type name and ToFields method for the given CLR type (composite),
+        /// or type name and ToString method (primitive). Checks primitive first, then composite.
+        /// Returns null if not registered.
+        /// </summary>
+        internal (string typeName, Func<object, IReadOnlyDictionary<string, object?>>)? GetAdapterByType(Type type)
+        {
+            // Check composite adapters (backward compatibility with existing callers)
+            return GetCompositeAdapterByType(type);
+        }
+
+        /// <summary>
+        /// Hydrates a <see cref="ProviderDefinedType"/> into a typed object using a registered composite adapter.
         /// Returns the original PDT if no adapter is registered or if hydration fails.
         /// </summary>
-        public object Hydrate(ProviderDefinedType pdt)
+        public object HydrateComposite(ProviderDefinedType pdt)
         {
-            if (!_adaptersByName.TryGetValue(pdt.Name, out var adapterObj))
+            if (!_compositeAdaptersByName.TryGetValue(pdt.Name, out var adapterObj))
             {
                 // No adapter for outer — still recurse into nested PDT fields
                 Dictionary<string, object?>? resolved = null;
                 foreach (var (key, value) in pdt.Fields)
                 {
+                    object? hydrated = value;
                     if (value is ProviderDefinedType nested)
+                        hydrated = HydrateComposite(nested);
+                    else if (value is PrimitiveProviderDefinedType nestedPrim)
+                        hydrated = HydratePrimitive(nestedPrim);
+
+                    if (!ReferenceEquals(hydrated, value))
                     {
-                        var hydrated = Hydrate(nested);
-                        if (!ReferenceEquals(hydrated, nested))
-                        {
-                            resolved ??= new Dictionary<string, object?>(pdt.Fields);
-                            resolved[key] = hydrated;
-                        }
+                        resolved ??= new Dictionary<string, object?>(pdt.Fields);
+                        resolved[key] = hydrated;
                     }
                 }
                 return resolved != null ? new ProviderDefinedType(pdt.Name, resolved) : pdt;
@@ -143,7 +200,12 @@ namespace Gremlin.Net.Structure
                 var hydratedFields = new Dictionary<string, object?>();
                 foreach (var (key, value) in pdt.Fields)
                 {
-                    hydratedFields[key] = value is ProviderDefinedType nested ? Hydrate(nested) : value;
+                    if (value is ProviderDefinedType nested)
+                        hydratedFields[key] = HydrateComposite(nested);
+                    else if (value is PrimitiveProviderDefinedType nestedPrim)
+                        hydratedFields[key] = HydratePrimitive(nestedPrim);
+                    else
+                        hydratedFields[key] = value;
                 }
 
                 var readOnlyFields = new ReadOnlyDictionary<string, object?>(hydratedFields);
@@ -155,5 +217,31 @@ namespace Gremlin.Net.Structure
                 return pdt;
             }
         }
+
+        /// <summary>
+        /// Hydrates a <see cref="PrimitiveProviderDefinedType"/> into a typed object using a registered primitive adapter.
+        /// Returns the original primitive PDT if no adapter is registered or if hydration fails.
+        /// </summary>
+        public object HydratePrimitive(PrimitiveProviderDefinedType pdt)
+        {
+            if (!_primitiveAdaptersByName.TryGetValue(pdt.Name, out var adapterObj))
+                return pdt;
+            try
+            {
+                var method = adapterObj.GetType().GetMethod("FromString");
+                return method!.Invoke(adapterObj, new object[] { pdt.Value })!;
+            }
+            catch (Exception)
+            {
+                return pdt;
+            }
+        }
+
+        /// <summary>
+        /// Hydrates a <see cref="ProviderDefinedType"/> into a typed object using a registered composite adapter.
+        /// Returns the original PDT if no adapter is registered or if hydration fails.
+        /// </summary>
+        [Obsolete("Use HydrateComposite instead.")]
+        public object Hydrate(ProviderDefinedType pdt) => HydrateComposite(pdt);
     }
 }
