@@ -190,12 +190,12 @@ describe('Connection (request pipeline)', function () {
 
   it('exposes the default batch size of 64', function () {
     const conn = makeConnection();
-    assert.strictEqual(conn.defaultBatchSize, 64);
+    assert.strictEqual(conn.batchSize, 64);
   });
 
-  it('honors a custom defaultBatchSize', function () {
-    const conn = makeConnection({ defaultBatchSize: 250 });
-    assert.strictEqual(conn.defaultBatchSize, 250);
+  it('honors a custom batchSize', function () {
+    const conn = makeConnection({ batchSize: 250 });
+    assert.strictEqual(conn.batchSize, 250);
   });
 
   it('invokes a logger callback during the request lifecycle', async function () {
@@ -204,44 +204,5 @@ describe('Connection (request pipeline)', function () {
     await submitAndIgnoreError(conn, RequestMessage.build('g.V()').addG('g').create());
 
     assert.ok(lines.some(([, m]) => /Sending POST request/.test(m)), 'should log the outgoing request');
-  });
-
-  it('applies the deprecated headers option to the outgoing request via a synthesized interceptor', async function () {
-    const conn = makeConnection({ headers: { 'X-Custom': 'value', 'X-Another': 'two' } });
-    await submitAndIgnoreError(conn, RequestMessage.build('g.V()').addG('g').create());
-
-    assert.strictEqual(captured.init.headers['X-Custom'], 'value');
-    assert.strictEqual(captured.init.headers['X-Another'], 'two');
-  });
-
-  it('emits a one-time deprecation warning for the headers option', function () {
-    const lines = [];
-    makeConnection({ headers: { 'X-Custom': 'value' }, logger: (level, message) => lines.push([level, message]) });
-
-    const warnings = lines.filter(([level, m]) => level === 'warn' && /headers.*deprecated/i.test(m));
-    assert.strictEqual(warnings.length, 1, 'should warn exactly once about the deprecated headers option');
-  });
-
-  it('composes the deprecated headers option with explicit interceptors and auth', async function () {
-    const order = [];
-    const conn = makeConnection({
-      headers: { 'X-Headers-Option': 'h' },
-      interceptors: [
-        (req) => { order.push('interceptor'); req.headers['X-Interceptor'] = 'i'; },
-      ],
-      auth: (req) => {
-        order.push('auth');
-        // Auth runs last, so the headers-option header is already present and visible to signing.
-        req.headers['X-Auth-Saw-Headers-Option'] = String(req.headers['X-Headers-Option'] === 'h');
-      },
-    });
-    await submitAndIgnoreError(conn, RequestMessage.build('g.V()').addG('g').create());
-
-    // Explicit interceptor runs first, then the synthesized headers interceptor, then auth last.
-    assert.deepStrictEqual(order, ['interceptor', 'auth']);
-    assert.strictEqual(captured.init.headers['X-Interceptor'], 'i');
-    assert.strictEqual(captured.init.headers['X-Headers-Option'], 'h');
-    assert.strictEqual(captured.init.headers['X-Auth-Saw-Headers-Option'], 'true',
-      'auth should run after the headers option is applied');
   });
 });

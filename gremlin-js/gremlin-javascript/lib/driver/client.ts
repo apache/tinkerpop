@@ -134,7 +134,7 @@ export default class Client {
       requestBuilder.addBulkResults(true);
     }
     // Fill the per-request batchSize from the connection-level default when unset.
-    const batchSize = requestOptions?.batchSize ?? this._connection.defaultBatchSize;
+    const batchSize = requestOptions?.batchSize ?? this._connection.batchSize;
     if (batchSize !== undefined) {
       requestBuilder.addBatchSize(batchSize);
     }

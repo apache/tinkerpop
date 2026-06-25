@@ -30,11 +30,11 @@ export type DispatcherOptions = {
   /** Max concurrent connections per origin. Defaults to {@link DEFAULT_MAX_CONNECTIONS}. */
   maxConnections?: number;
   /** Idle-read (body) timeout in ms. Maps to undici `bodyTimeout`. */
-  readTimeout?: number;
+  readTimeoutMillis?: number;
   /** Max response header size in bytes. Maps to undici `maxHeaderSize`. */
   maxResponseHeaderBytes?: number;
   /** Idle ms before TCP keep-alive probes begin. Defaults to 30s; `0` disables keep-alive. */
-  keepAliveTime?: number;
+  keepAliveTimeMillis?: number;
   /** HTTP proxy URI. When set, a {@link ProxyAgent} is built instead of an {@link Agent}. */
   proxy?: string;
 };
@@ -83,14 +83,14 @@ export function buildAgentOptions(options: DispatcherOptions = {}): Agent.Option
 
   // Connect/idle timeouts are intentionally left to undici defaults (the GLV spec marks the JS
   // connect/idle timeout as N/A), not exposed as driver options.
-  if (options.readTimeout !== undefined) {
-    agentOptions.bodyTimeout = options.readTimeout;
+  if (options.readTimeoutMillis !== undefined) {
+    agentOptions.bodyTimeout = options.readTimeoutMillis;
   }
   if (options.maxResponseHeaderBytes !== undefined) {
     agentOptions.maxHeaderSize = options.maxResponseHeaderBytes;
   }
 
-  const keepAliveDelay = resolveKeepAliveTime(options.keepAliveTime);
+  const keepAliveDelay = resolveKeepAliveTime(options.keepAliveTimeMillis);
   if (keepAliveDelay !== null) {
     agentOptions.connect = buildKeepAliveConnector(keepAliveDelay);
   }

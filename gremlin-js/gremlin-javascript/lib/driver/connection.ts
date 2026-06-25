@@ -58,34 +58,25 @@ export type ConnectionOptions = {
   /** Maximum number of concurrent connections per origin. Defaults to 128. */
   maxConnections?: number;
   /** Idle-read (body) timeout in milliseconds, applied to the default dispatcher. */
-  readTimeout?: number;
+  readTimeoutMillis?: number;
   /** Maximum size of the response headers in bytes, applied to the default dispatcher. */
   maxResponseHeaderBytes?: number;
   /**
    * Idle time in milliseconds before TCP keep-alive probes begin on a connection. Defaults to
    * 30000 (30s) when unset. Set to `0` to disable keep-alive entirely.
    */
-  keepAliveTime?: number;
+  keepAliveTimeMillis?: number;
   /** HTTP proxy URI. When set, requests are routed through an undici `ProxyAgent`. */
   proxy?: string;
   /** Response compression codec. Defaults to `'deflate'` (on). */
   compression?: Compression;
   /** Connection-level default that fills a request's `batchSize` when it is left unset. Defaults to 64. */
-  defaultBatchSize?: number;
+  batchSize?: number;
   /** Connection-level default for `bulkResults`, applied to every request unless overridden per-request. Defaults to `false`. */
   bulkResults?: boolean;
   /** An optional logger (a logger object or a callback). Logging is disabled when unset. */
   logger?: Logger;
   interceptors?: RequestInterceptor | RequestInterceptor[];
-  /**
-   * Custom headers to attach to every outgoing request.
-   *
-   * @deprecated As of release 4.0.0, use an interceptor to set custom headers, e.g.
-   *   `interceptors: (req) => { req.headers['X-Custom'] = 'value'; }`. When set, these headers
-   *   are applied via a synthesized interceptor that runs before any auth interceptor, so they
-   *   compose with explicit interceptors and remain visible to request signing.
-   */
-  headers?: Record<string, string>;
   /** An optional auth interceptor. As a convenience, this is always appended to the end of the
    *  interceptor list so it runs last, after any user interceptors have modified the request. */
   auth?: RequestInterceptor;
@@ -107,7 +98,7 @@ export default class Connection extends EventEmitter {
   private readonly _interceptors: RequestInterceptor[];
   private readonly _dispatcher: Dispatcher | undefined;
   private readonly _compression: Compression;
-  private readonly _defaultBatchSize: number;
+  private readonly _batchSize: number;
   private readonly _bulkResults: boolean;
   private readonly _log: LoggerCallback;
 
@@ -138,7 +129,7 @@ export default class Connection extends EventEmitter {
       throw new TypeError(`compression must be 'none' or 'deflate'`);
     }
 
-    this._defaultBatchSize = options.defaultBatchSize ?? DEFAULT_BATCH_SIZE;
+    this._batchSize = options.batchSize ?? DEFAULT_BATCH_SIZE;
     this._bulkResults = options.bulkResults ?? false;
 
     // The driver builds and owns the undici dispatcher from the discrete options.
@@ -146,9 +137,9 @@ export default class Connection extends EventEmitter {
     // not through a driver option.
     this._dispatcher = buildDispatcher({
       maxConnections: options.maxConnections,
-      readTimeout: options.readTimeout,
+      readTimeoutMillis: options.readTimeoutMillis,
       maxResponseHeaderBytes: options.maxResponseHeaderBytes,
-      keepAliveTime: options.keepAliveTime,
+      keepAliveTimeMillis: options.keepAliveTimeMillis,
       proxy: options.proxy,
     });
 
@@ -163,18 +154,6 @@ export default class Connection extends EventEmitter {
       throw new TypeError('interceptors must be a function, array, or undefined');
     }
 
-    // The deprecated `headers` option is implemented as a synthesized interceptor so custom
-    // headers still work without re-introducing dead configuration. It is appended after user
-    // interceptors (and before auth, which is always last) so it behaves like a user interceptor:
-    // explicit interceptors run first, then these headers are merged, then auth signs over them.
-    if (options.headers) {
-      const headers = { ...options.headers };
-      this._log('warn', "The 'headers' connection option is deprecated; set custom headers via an interceptor instead.");
-      this._interceptors.push((request) => {
-        Object.assign(request.headers, headers);
-      });
-    }
-
     // Auth interceptor is always last so it runs after user interceptors
     if (options.auth) {
       this._interceptors.push(options.auth);
@@ -186,8 +165,8 @@ export default class Connection extends EventEmitter {
   /**
    * The connection-level default batch size, used to fill a request's `batchSize` when unset.
    */
-  get defaultBatchSize(): number {
-    return this._defaultBatchSize;
+  get batchSize(): number {
+    return this._batchSize;
   }
 
   /**

@@ -1986,17 +1986,16 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options |Object |The connection options. |{}
 |options.traversalSource |String |The name of the remote `GraphTraversalSource`. |'g'
 |options.maxConnections |Number |Caps the number of concurrent connections per origin on the default dispatcher. |128
-|options.readTimeout |Number |A per-read idle timeout in milliseconds (undici `bodyTimeout`). It resets per chunk, so it is safe for streaming. |runtime default
+|options.readTimeoutMillis |Number |A per-read idle timeout in milliseconds (undici `bodyTimeout`). It resets per chunk, so it is safe for streaming. |runtime default
 |options.maxResponseHeaderBytes |Number |The maximum size of the response headers in bytes (undici `maxHeaderSize`). |runtime default
-|options.keepAliveTime |Number |Idle time in milliseconds before TCP keep-alive probes begin. Enables `SO_KEEPALIVE` on the socket. Set to `0` to disable. |30000
+|options.keepAliveTimeMillis |Number |Idle time in milliseconds before TCP keep-alive probes begin. Enables `SO_KEEPALIVE` on the socket. Set to `0` to disable. |30000
 |options.proxy |String |An HTTP proxy URI. When set, requests are routed through an undici `ProxyAgent`. |undefined
 |options.compression |String |Response compression codec, `'none'` or `'deflate'`. |'deflate'
-|options.defaultBatchSize |Number |Connection-level default that fills a request's `batchSize` when it is left unset. |64
+|options.batchSize |Number |Connection-level default that fills a request's `batchSize` when it is left unset. |64
 |options.bulkResults |Boolean |Connection-level default for `bulkResults`, applied to every request unless overridden per-request. The `DriverRemoteConnection` traversal path defaults to `true` regardless of this setting. |false
 |options.logger |Object/Function |A logger object (with `debug`/`info`/`warn`/`error` methods, e.g. `console`) or a `(level, message, ...args)` callback. |none (disabled)
 |options.interceptors |RequestInterceptor/RequestInterceptor[] |One or more functions that can modify the HTTP request before it is sent, run in order. |undefined
 |options.auth |RequestInterceptor |An auth interceptor that is always appended to the end of the interceptor list so it runs last. |undefined
-|options.headers |Object |Deprecated: set custom headers via an interceptor instead. Additional HTTP header key/values included with each request. |undefined
 |options.preciseNumbers |Boolean |When `true`, wraps deserialized numbers in typed wrappers that preserve the server's original type. |undefined
 |options.reader |GraphBinaryReader |The reader to use for deserializing responses. |GraphBinaryReader
 |options.enableUserAgentOnConnect |Boolean |Determines if a user agent header will be sent with requests. |true
@@ -2006,6 +2005,20 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 TLS is configured through the Node.js/undici runtime (for example the `NODE_EXTRA_CA_CERTS` or
 `NODE_TLS_REJECT_UNAUTHORIZED` environment variables), not through driver options. Custom headers are set via an
 interceptor rather than a `headers` option, for example `interceptors: (req) => { req.headers['X-Custom'] = 'value'; }`.
+
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `readTimeoutMillis` only bounds
+the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
+runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
+your application around the call by racing the `submit` promise against a timeout:
+
+[source,javascript]
+----
+// bound the entire request to 30 seconds
+const results = await Promise.race([
+  client.submit('g.V().out().out()'),
+  new Promise((_, reject) => setTimeout(() => reject(new Error('request timed out')), 30000)),
+]);
+----
 
 [[gremlin-javascript-interceptors]]
 === RequestInterceptor

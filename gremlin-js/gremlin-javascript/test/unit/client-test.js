@@ -54,7 +54,7 @@ describe('Client', function () {
 
   it('should fill batchSize from the connection default when unset', function () {
     const connectionMock = {
-      defaultBatchSize: 64,
+      batchSize: 64,
       submit: function (requestMessage) {
         assert.strictEqual(requestMessage.getBatchSize(), 64);
         return Promise.resolve();
@@ -68,7 +68,7 @@ describe('Client', function () {
 
   it('should let a per-request batchSize override the connection default', function () {
     const connectionMock = {
-      defaultBatchSize: 64,
+      batchSize: 64,
       submit: function (requestMessage) {
         assert.strictEqual(requestMessage.getBatchSize(), 10);
         return Promise.resolve();

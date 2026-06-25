@@ -26,13 +26,13 @@ describe('dispatcher (browser)', function () {
     assert.strictEqual(buildDispatcher({}), undefined);
   });
 
-  it('returns undefined when only readTimeout is set (handled by the connection, not the dispatcher)', function () {
-    assert.strictEqual(buildDispatcher({ readTimeout: 5000 }), undefined);
+  it('returns undefined when only readTimeoutMillis is set (handled by the connection, not the dispatcher)', function () {
+    assert.strictEqual(buildDispatcher({ readTimeoutMillis: 5000 }), undefined);
   });
 
   for (const [key, value] of [
     ['maxConnections', 10],
-    ['keepAliveTime', 15000],
+    ['keepAliveTimeMillis', 15000],
     ['maxResponseHeaderBytes', 8192],
     ['proxy', 'http://proxy.local:8080'],
   ]) {
@@ -47,11 +47,11 @@ describe('dispatcher (browser)', function () {
 
   it('lists every unsupported option that was set', function () {
     assert.throws(
-      () => buildDispatcher({ maxConnections: 10, proxy: 'http://p:1', readTimeout: 1000 }),
+      () => buildDispatcher({ maxConnections: 10, proxy: 'http://p:1', readTimeoutMillis: 1000 }),
       (err) => {
         assert.ok(err.message.includes('maxConnections'));
         assert.ok(err.message.includes('proxy'));
-        assert.ok(!err.message.includes('readTimeout'), 'readTimeout is supported and must not be listed');
+        assert.ok(!err.message.includes('readTimeoutMillis'), 'readTimeoutMillis is supported and must not be listed');
         return true;
       },
     );

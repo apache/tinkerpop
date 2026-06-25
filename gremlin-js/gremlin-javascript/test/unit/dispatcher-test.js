@@ -45,7 +45,7 @@ describe('dispatcher', function () {
   });
 
   it('builds a plain Agent when only timeouts and header size are set', async function () {
-    const d = buildDispatcher({ readTimeout: 1000, maxResponseHeaderBytes: 16384, maxConnections: 8 });
+    const d = buildDispatcher({ readTimeoutMillis: 1000, maxResponseHeaderBytes: 16384, maxConnections: 8 });
     assert.ok(d instanceof Agent);
     assert.ok(!(d instanceof ProxyAgent));
     await d.close();
@@ -58,7 +58,7 @@ describe('dispatcher', function () {
   });
 
   it('builds a single dispatcher with keep-alive wired through a custom connector', async function () {
-    const d = buildDispatcher({ keepAliveTime: 30000 });
+    const d = buildDispatcher({ keepAliveTimeMillis: 30000 });
     assert.ok(d instanceof Agent);
     await d.close();
   });
@@ -66,8 +66,8 @@ describe('dispatcher', function () {
   it('builds a ProxyAgent with keep-alive and timeouts together', async function () {
     const d = buildDispatcher({
       proxy: 'http://localhost:3128',
-      keepAliveTime: 5000,
-      readTimeout: 2000,
+      keepAliveTimeMillis: 5000,
+      readTimeoutMillis: 2000,
       maxResponseHeaderBytes: 8192,
       maxConnections: 64,
     });
@@ -76,8 +76,8 @@ describe('dispatcher', function () {
   });
 
   describe('buildAgentOptions (undici option mapping)', function () {
-    it('maps readTimeout to the undici Agent bodyTimeout', function () {
-      const opts = buildAgentOptions({ readTimeout: 1234 });
+    it('maps readTimeoutMillis to the undici Agent bodyTimeout', function () {
+      const opts = buildAgentOptions({ readTimeoutMillis: 1234 });
       assert.strictEqual(opts.bodyTimeout, 1234);
     });
 
@@ -102,8 +102,8 @@ describe('dispatcher', function () {
       assert.strictEqual(opts.maxHeaderSize, undefined);
     });
 
-    it('maps both readTimeout and maxResponseHeaderBytes together', function () {
-      const opts = buildAgentOptions({ readTimeout: 2000, maxResponseHeaderBytes: 8192 });
+    it('maps both readTimeoutMillis and maxResponseHeaderBytes together', function () {
+      const opts = buildAgentOptions({ readTimeoutMillis: 2000, maxResponseHeaderBytes: 8192 });
       assert.strictEqual(opts.bodyTimeout, 2000);
       assert.strictEqual(opts.maxHeaderSize, 8192);
     });
@@ -113,8 +113,8 @@ describe('dispatcher', function () {
       assert.strictEqual(typeof opts.connect, 'function', 'keep-alive should install a connect connector');
     });
 
-    it('omits the connect connector when keep-alive is disabled (keepAliveTime 0)', function () {
-      const opts = buildAgentOptions({ keepAliveTime: 0 });
+    it('omits the connect connector when keep-alive is disabled (keepAliveTimeMillis 0)', function () {
+      const opts = buildAgentOptions({ keepAliveTimeMillis: 0 });
       assert.strictEqual(opts.connect, undefined);
     });
   });

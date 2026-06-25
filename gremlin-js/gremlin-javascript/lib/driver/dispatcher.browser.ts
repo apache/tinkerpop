@@ -32,21 +32,21 @@
 /** Transport options accepted by {@link buildDispatcher}; mirrors the Node dispatcher's options. */
 type DispatcherOptions = {
   maxConnections?: number;
-  readTimeout?: number;
+  readTimeoutMillis?: number;
   maxResponseHeaderBytes?: number;
-  keepAliveTime?: number;
+  keepAliveTimeMillis?: number;
   proxy?: string;
 };
 
 /**
  * Connection-pool / transport options that only the Node (`undici`) dispatcher can honor. The
  * browser's HTTP stack owns these concerns and exposes no `fetch` API to configure them, so they
- * are rejected here rather than silently ignored. `readTimeout` is intentionally not in this list:
+ * are rejected here rather than silently ignored. `readTimeoutMillis` is intentionally not in this list:
  * it has a browser analog (an `AbortSignal`-based timeout) and is handled by the connection.
  */
 const NODE_ONLY_OPTIONS: (keyof DispatcherOptions)[] = [
   'maxConnections',
-  'keepAliveTime',
+  'keepAliveTimeMillis',
   'maxResponseHeaderBytes',
   'proxy',
 ];
