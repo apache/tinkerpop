@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.transaction;
 
+import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.util.ManualScheduledExecutorService;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -82,7 +83,7 @@ public class UnmanagedTransactionTest {
      * Submits a no-op task and blocks until it has finished running on the worker thread.
      */
     private void runOp() throws Exception {
-        tx.submit(new FutureTask<>(() -> null)).get(AWAIT_MS, TimeUnit.MILLISECONDS);
+        tx.submit(new FutureTask<>(() -> null), null).get(AWAIT_MS, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -123,7 +124,7 @@ public class UnmanagedTransactionTest {
             started.countDown();
             release.await();
             return null;
-        }));
+        }), null);
 
         assertTrue(started.await(AWAIT_MS, MILLISECONDS));
         // While the op runs, the idle timer must not be armed (a long op must not trip the idle timeout).
@@ -147,7 +148,7 @@ public class UnmanagedTransactionTest {
             started.countDown();
             release.await();
             return null;
-        }));
+        }), null);
         assertTrue(started.await(AWAIT_MS, MILLISECONDS));
 
         scheduler.advanceTimeBy(TIMEOUT_MS * 2, MILLISECONDS);
@@ -200,7 +201,7 @@ public class UnmanagedTransactionTest {
         final UnmanagedTransaction disabledTx =
                 new UnmanagedTransaction(TX_ID, manager, "g", graph, scheduler, 0L, PER_GRAPH_CLOSE_MS);
 
-        disabledTx.submit(new FutureTask<>(() -> null)).get(AWAIT_MS, TimeUnit.MILLISECONDS);
+        disabledTx.submit(new FutureTask<>(() -> null), null).get(AWAIT_MS, TimeUnit.MILLISECONDS);
 
         awaitPendingTimer(false);
         assertEquals(0, scheduler.getPendingTaskCount());
@@ -231,8 +232,6 @@ public class UnmanagedTransactionTest {
         assertEquals(0, scheduler.getPendingTaskCount());
     }
 
-    // ---- Step 2: SingleThreadTransactionExecutor invariants (executor swap) ----
-
     @Test
     public void shouldRunSubmittedTasksOnASingleNamedTransactionThreadInOrder() throws Exception {
         final List<String> executionOrder = new CopyOnWriteArrayList<>();
@@ -245,7 +244,7 @@ public class UnmanagedTransactionTest {
                 threadNames.add(Thread.currentThread().getName());
                 executionOrder.add("task-" + n);
                 return null;
-            }));
+            }), null);
         }
         last.get(5, TimeUnit.SECONDS); // FIFO single thread: the last task completing means all ran
 
@@ -275,7 +274,7 @@ public class UnmanagedTransactionTest {
                 unexpected.set(t);
             }
             return null;
-        }));
+        }), null);
 
         assertTrue("task did not start", started.await(5, TimeUnit.SECONDS));
         running.cancel(true);
@@ -287,5 +286,95 @@ public class UnmanagedTransactionTest {
         }
         assertTrue("cancel(true) did not interrupt the running task", interrupted.get());
         assertEquals(null, unexpected.get());
+    }
+
+    @Test
+    public void shouldCloseTransactionWhenLifetimeCapFiresWhileIdle() {
+        // The lifetime timer itself is scheduled/cancelled by the TransactionManager (see TransactionManagerTest); this
+        // and the other onLifetimeCap() tests cover what the cap does when it fires, by invoking it directly as the
+        // manager's timer would. Here: the cap tears the transaction down even when nothing is running.
+        tx.onLifetimeCap();
+
+        verify(manager).destroy(TX_ID);
+    }
+
+    @Test
+    public void shouldInterruptRunningOperationAndFlagContextWhenLifetimeCapFires() throws Exception {
+        final Context ctx = mock(Context.class);
+        final CountDownLatch started = new CountDownLatch(1);
+        final AtomicBoolean interrupted = new AtomicBoolean(false);
+        tx.submit(new FutureTask<>(() -> {
+            started.countDown();
+            try {
+                Thread.sleep(30000); // block until the cap interrupts it
+            } catch (InterruptedException e) {
+                interrupted.set(true);
+            }
+            return null;
+        }), ctx);
+        assertTrue("operation did not start", started.await(AWAIT_MS, MILLISECONDS));
+
+        tx.onLifetimeCap();
+
+        // The cap flagged the running request's Context (before interrupting) so the unwinding op reports a 504,
+        // interrupted the running operation, and tore the transaction down.
+        verify(ctx).setClosedByLifetimeCap(true);
+        final long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(AWAIT_MS);
+        while (!interrupted.get() && System.nanoTime() < deadline) {
+            Thread.sleep(10);
+        }
+        assertTrue("lifetime cap did not interrupt the running operation", interrupted.get());
+        verify(manager).destroy(TX_ID);
+    }
+
+    @Test
+    public void shouldFlagAndInterruptTheSameOperationWhenLifetimeCapFires() throws Exception {
+        // Guards against a mismatched (future, context) pair: the cap must flag the Context of the very operation whose
+        // future it interrupts. op1 completes (clearing its tracking), then op2 runs; when the cap fires it must flag
+        // op2's Context and never op1's, and interrupt op2.
+        final Context ctx1 = mock(Context.class);
+        final Context ctx2 = mock(Context.class);
+
+        tx.submit(new FutureTask<>(() -> null), ctx1).get(AWAIT_MS, MILLISECONDS); // op1 runs to completion
+
+        final CountDownLatch started = new CountDownLatch(1);
+        final AtomicBoolean interrupted = new AtomicBoolean(false);
+        tx.submit(new FutureTask<>(() -> {
+            started.countDown();
+            try {
+                Thread.sleep(30000);
+            } catch (InterruptedException e) {
+                interrupted.set(true);
+            }
+            return null;
+        }), ctx2); // op2 is the running op when the cap fires
+        assertTrue("op2 did not start", started.await(AWAIT_MS, MILLISECONDS));
+
+        tx.onLifetimeCap();
+
+        verify(ctx2).setClosedByLifetimeCap(true);
+        verify(ctx1, never()).setClosedByLifetimeCap(true);
+        final long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(AWAIT_MS);
+        while (!interrupted.get() && System.nanoTime() < deadline) {
+            Thread.sleep(10);
+        }
+        assertTrue("the running op (op2) was not interrupted", interrupted.get());
+    }
+
+    @Test
+    public void shouldClearTrackedExecutionAfterOperationCompletesSoLaterCapFlagsNothing() throws Exception {
+        // Compare-and-clear guard: once an operation completes its tracking is cleared, so a cap firing while the
+        // transaction is idle finds no running op to flag/interrupt. The tracking is cleared on the worker thread in
+        // afterExecute, which races a bare get() on the completed future; the executor is FIFO with one worker, so a
+        // second submitted-and-awaited op guarantees the first op's afterExecute (and thus its clear) has already run.
+        final Context ctx = mock(Context.class);
+        tx.submit(new FutureTask<>(() -> null), ctx);                              // op1 tracks ctx
+        tx.submit(new FutureTask<>(() -> null), null).get(AWAIT_MS, MILLISECONDS); // op2 awaited -> op1 cleared
+
+        // The cap still closes the transaction, but op1's Context was cleared (and op2 carried none), so nothing is
+        // flagged: a quiet, completed transaction reaching its cap reports no in-flight cap-kill.
+        tx.onLifetimeCap();
+        verify(ctx, never()).setClosedByLifetimeCap(true);
+        verify(manager).destroy(TX_ID);
     }
 }

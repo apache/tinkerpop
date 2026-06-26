@@ -184,6 +184,14 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         ctx.channel().attr(StateKey.RESPONSE_COORDINATOR).set(coordinator);
 
         final Timer.Context timerContext = evalOpTimer.time();
+
+        // Resolve the target transaction once for a transactional (non-begin) request and reuse it at submit below, so
+        // the work runs against exactly the transaction resolved here. Empty for begins / non-transactional requests,
+        // and also when the id is unknown (the submit path turns that into a 404).
+        final boolean isTransactionalOp = (requestCtx.getTransactionId() != null) && !requestCtx.isTransactionBegin();
+        final Optional<UnmanagedTransaction> txForRequest =
+                isTransactionalOp ? transactionManager.get(requestCtx.getTransactionId()) : Optional.empty();
+
         // timeout override - handle both deprecated and newly named configuration. earlier logic should prevent
         // both configurations from being submitted at the same time
         final Long timeoutMs = requestMessage.getField(Tokens.TIMEOUT_MS);
@@ -277,7 +285,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 coordinator.writeHeader(createResponseHeaders(ctx, serializer, requestCtx).toArray(CharSequence[]::new));
                 sendHttpContents(ctx, requestCtx, coordinator);
             } catch (Throwable t) {
-                coordinator.writeError(formErrorResponseMessage(t, requestMessage));
+                coordinator.writeError(formErrorResponseMessage(t, requestMessage, requestCtx));
             } finally {
                 // Idempotent terminal backstop: if the data or error path already terminated the response, complete()
                 // is a no-op via its COMPLETED short-circuit. It runs in finally — not at the end of the try — so the
@@ -301,9 +309,11 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         });
 
         try {
-            final boolean isBeginTransactionRequest = requestCtx.isTransactionBegin();
-            final Future<?> executionFuture = ((requestCtx.getTransactionId() != null) && !isBeginTransactionRequest) ?
-                    transactionManager.get(requestCtx.getTransactionId()).get().submit(evalFuture) :
+            // Reuse the transaction resolved above (txForRequest) rather than looking it up again. For a transactional
+            // op an empty Optional means the id is unknown/reclaimed: get() throws NoSuchElementException, caught below
+            // and reported as a 404, preserving the prior behavior.
+            final Future<?> executionFuture = isTransactionalOp ?
+                    txForRequest.get().submit(evalFuture, requestCtx) :
                     requestCtx.getGremlinExecutor().getExecutorService().submit(evalFuture);
             if (seto > 0) {
                 // Schedule a timeout in the thread pool for future execution. The coordinator's monitor guarantees
@@ -311,7 +321,12 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 // first wins, and the other's write becomes a no-op.
                 requestCtx.setTimeoutExecutor(requestCtx.getScheduledExecutorService().schedule(() -> {
                     executionFuture.cancel(true);
-                    coordinator.writeError(GremlinError.timeout(requestMessage));
+                    // If the lifetime cap fired for this same operation (it flags the Context before interrupting),
+                    // report the cap's 504 even when this eval-timeout task is the one that writes - so a cap-kill is
+                    // never mislabeled as a generic "increase evaluationTimeout" 500 just because of writer ordering.
+                    coordinator.writeError(requestCtx.isClosedByLifetimeCap()
+                            ? GremlinError.transactionTimeout(requestCtx.getTransactionId(), "execute")
+                            : GremlinError.timeout(requestMessage));
                 }, seto, TimeUnit.MILLISECONDS));
             }
         } catch (RejectedExecutionException ree) {
@@ -360,7 +375,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         }
     }
 
-    private GremlinError formErrorResponseMessage(Throwable t, RequestMessage requestMessage) {
+    GremlinError formErrorResponseMessage(Throwable t, RequestMessage requestMessage, final Context requestCtx) {
         if (t instanceof UndeclaredThrowableException) t = t.getCause();
 
         // if any exception in the chain is TemporaryException or Failure then we should respond with the
@@ -385,6 +400,13 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             return GremlinError.longFrame(t);
         }
         if (t instanceof InterruptedException || t instanceof TraversalInterruptedException) {
+            // An interrupt here is normally an evaluation timeout, but it is also how a transaction's absolute lifetime
+            // cap stops a running operation. In the cap case the transaction flagged this request's Context before
+            // interrupting, so report an accurate transaction-timeout (504) rather than the generic "increase
+            // evaluationTimeout" error (500), whose advice would be misleading for a lifetime-cap kill.
+            if (requestCtx != null && requestCtx.isClosedByLifetimeCap()) {
+                return GremlinError.transactionTimeout(requestCtx.getTransactionId(), "execute");
+            }
             return GremlinError.timeout(requestMessage);
         }
         if (t instanceof TimedInterruptTimeoutException) {
@@ -509,7 +531,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             txCtx.submit(new FutureTask<>(() -> {
                 graph.tx().begin();
                 return null;
-            })).get(5000, TimeUnit.MILLISECONDS); // Not an option for now, but 5s should be plenty.
+            }), ctx).get(5000, TimeUnit.MILLISECONDS); // Not an option for now, but 5s should be plenty.
         } catch (IllegalStateException ise) {
             throw new ProcessingException(GremlinError.maxTransactionsExceeded(ise.getMessage()));
         } catch (IllegalArgumentException iae) {

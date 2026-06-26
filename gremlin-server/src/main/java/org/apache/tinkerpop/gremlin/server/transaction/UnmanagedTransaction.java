@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.transaction;
 
+import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +62,15 @@ public class UnmanagedTransaction {
     private final long idleTimeout;
     private final long perGraphClose;
     private final AtomicReference<ScheduledFuture<?>> idleFuture = new AtomicReference<>();
+    /**
+     * The operation currently executing on the worker thread (or most recently submitted) paired with its request
+     * {@link Context}, held as a single immutable {@link Running} so the lifetime cap reads a consistent pair — it can
+     * never flag one operation's {@code Context} while interrupting another's {@link Future}. The future is the exact
+     * same object the per-request evaluation timeout cancels in the handler. Set in {@link #submit} and compare-and-
+     * cleared in {@link SingleThreadTransactionExecutor#afterExecute} so a fast next operation is not un-tracked by the
+     * previous one's completion.
+     */
+    private final AtomicReference<Running> current = new AtomicReference<>();
     // Controls whether the executor is still accepting tasks.
     private final AtomicBoolean accepting = new AtomicBoolean(true);
     /**
@@ -173,17 +183,28 @@ public class UnmanagedTransaction {
      * error handling, and response writing.
      *
      * @param task The FutureTask to execute on the transaction thread
+     * @param context The request context driving this task, recorded so the lifetime cap can flag it before
+     *                interrupting; may be {@code null} for internal operations (such as the begin's tx open) where no
+     *                user-facing error needs to be tailored
      * @return Future that can be used for timeout cancellation
      * @throws IllegalStateException if the transaction is closed
      */
-    public Future<?> submit(final FutureTask<Void> task) {
+    public Future<?> submit(final FutureTask<Void> task, final Context context) {
         if (!accepting.get()) throw new IllegalStateException("Transaction " + transactionId + " is closed");
 
         // Insurance backstop: cancel (do NOT arm) the idle timer on submit. Arming is the executor's job, done in
         // afterExecute once the worker parks with an empty queue. beforeExecute will also cancel when the task starts;
         // cancelling here too closes the small window between accepting a task and the worker picking it up.
         cancelIdleTimer();
-        return executor.submit(task);
+
+        // Track the running operation BEFORE dispatching it, so the lifetime cap can never miss a worker that starts
+        // running between dispatch and tracking. The submitted FutureTask is itself the Future we track and return:
+        // cancel(true) on it interrupts the real work (the same future the handler's evaluation timeout cancels), and
+        // afterExecute receives this same object to compare-and-clear. Pairing the future with its Context in one
+        // immutable Running means the cap always reads a consistent pair (never flags op1 while interrupting op2).
+        current.set(new Running(task, context));
+        executor.execute(task);
+        return task;
     }
 
     /**
@@ -231,6 +252,55 @@ public class UnmanagedTransaction {
     }
 
     /**
+     * Forcibly tears the transaction down because it has reached its absolute lifetime cap. Invoked by the
+     * {@link TransactionManager}'s lifetime timer (the manager owns scheduling and cancelling that timer; this method is
+     * the behavior it triggers). Unlike the idle timer, the cap fires regardless of activity, so it may interrupt an
+     * operation that is still running.
+     * <p>
+     * It flags the running operation's {@link Context} <em>before</em> interrupting it so that, as the interrupt unwinds
+     * the operation on the worker thread, the error it reports is an accurate transaction-timeout (504) rather than the
+     * generic evaluation timeout. It then interrupts only the currently-running operation via
+     * {@link Future#cancel(boolean) cancel(true)} (any siblings already queued behind it continue to fail fast with a
+     * 404 via the destroy-before-shutdown guard in {@link #close(boolean)}), and finally runs {@code close(false)} to
+     * roll back and tear the transaction down. Logged at {@code warn} because this is a forced teardown of active work.
+     */
+    void onLifetimeCap() {
+        // Read the running (future, context) pair once, as a unit, so the Context we flag always belongs to the same
+        // operation whose future we interrupt.
+        final Running running = current.get();
+        if (running != null) {
+            if (running.context != null) running.context.setClosedByLifetimeCap(true); // flag BEFORE interrupting
+            running.future.cancel(true);                                                // interrupt only the running op
+        }
+
+        logger.warn("Transaction {} exceeded its maximum lifetime and is being closed", transactionId);
+        close(false);
+    }
+
+    /**
+     * Compare-and-clears the tracked running operation once it completes. Only clears when the completed future is still
+     * the one tracked, so a fast next operation submitted between this one finishing and this clearing is not lost.
+     */
+    private void clearCurrentExecution(final Future<?> completed) {
+        current.updateAndGet(running -> (running != null && running.future == completed) ? null : running);
+    }
+
+    /**
+     * An in-flight operation paired with the request {@link Context} that drove it, tracked as one immutable unit so the
+     * lifetime cap reads a consistent pair. {@code context} may be {@code null} for internal operations (e.g. begin's tx
+     * open) that need no tailored client error.
+     */
+    private static final class Running {
+        private final Future<?> future;
+        private final Context context;
+
+        private Running(final Future<?> future, final Context context) {
+            this.future = future;
+            this.context = context;
+        }
+    }
+
+    /**
      * A single-threaded {@link ThreadPoolExecutor} (one core and max thread) that runs all operations for a single
      * transaction on the same worker thread, preserving the ThreadLocal nature of graph transactions.
      * <p>
@@ -255,6 +325,12 @@ public class UnmanagedTransaction {
         @Override
         protected void afterExecute(final Runnable r, final Throwable t) {
             super.afterExecute(r, t);
+            // For operations submitted via submit(), r is the FutureTask that submit() executed and tracked in
+            // `current`, so compare-and-clear by identity un-tracks the operation that just finished without disturbing
+            // a faster sibling that may already have replaced it. Other tasks that complete here (e.g. close()'s
+            // rollback, which ThreadPoolExecutor also wraps in a Future) simply will not match the tracked future, so
+            // the compare-and-clear is a safe no-op for them.
+            if (r instanceof Future) clearCurrentExecution((Future<?>) r);
             maybeScheduleIdleTimer();
         }
     }

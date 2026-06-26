@@ -930,7 +930,7 @@ The following table describes the various YAML configuration options that Gremli
 |gremlinPool |The number of "Gremlin" threads available to execute actual scripts in a `ScriptEngine`. This pool represents the workers available to handle blocking operations in Gremlin Server. When set to `0`, Gremlin Server will use the value provided by `Runtime.availableProcessors()`. |0
 |host |The name of the host to bind the server to. |localhost
 |idleConnectionTimeout |Time in milliseconds that the server will allow a channel to not receive requests from a client before it automatically closes. If enabled, the value provided should typically exceed the amount of time given to `keepAliveInterval`. Note that while this value is to be provided as milliseconds it will resolve to second precision. Set this value to `0` to disable this feature. |0
-|idleTransactionTimeout |Time in milliseconds that a transaction can sit idle (no requests) before the server forcibly rolls it back and removes it. The timeout resets on each request received for that transaction. Set to `0` to disable this feature. |600000
+|idleTransactionTimeout |Time in milliseconds that a transaction can remain idle (no operation running or queued) before the server forcibly rolls it back and removes it. The idle timer is suspended while an operation is running, so a long-running operation does not trip it (its duration is instead bounded by `evaluationTimeout`); the timer is armed only once the transaction returns to idle. Set to `0` to disable idle reclamation. |60000
 |keepAliveInterval |Time in milliseconds that the server will allow a channel to not send responses to a client before it sends a "ping" to see if it is still present. If it is present, the client should respond with a "pong" which will thus reset the `idleConnectionTimeout` and keep the channel open. If enabled, this number should be smaller than the value provided to the `idleConnectionTimeout`. Note that while this value is to be provided as milliseconds it will resolve to second precision. Set this value to `0` to disable this feature. |0
 |maxAccumulationBufferComponents |Maximum number of request components that can be aggregated for a message. |1024
 |maxChunkSize |The maximum length of the content or each chunk.  If the content length exceeds this value, the transfer encoding of the decoded request will be converted to 'chunked' and the content will be split into multiple `HttpContent` objects.  If the transfer encoding of the HTTP request is 'chunked' already, each chunk will be split into smaller chunks if the length of the chunk exceeds this value. |8192
@@ -938,6 +938,7 @@ The following table describes the various YAML configuration options that Gremli
 |maxHeaderSize |The maximum length of all headers. |8192
 |maxInitialLineLength |The maximum length of the initial line (e.g.  "GET / HTTP/1.0") processed in a request, which essentially controls the maximum length of the submitted URI. |4096
 |maxParameters |The maximum number of parameters that can be passed on a request. Larger numbers may impact performance for scripts. This configuration only applies to the `HttpChannelizer`. |16
+|maxTransactionLifetime |Absolute cap in milliseconds on the total age of a transaction regardless of activity. Unlike `idleTransactionTimeout`, it fires even while an operation is running, interrupting it and rolling the transaction back. Set to `0` to disable the cap. |600000
 |maxRequestContentLength |The maximum length of the aggregated content for a request message.  Works in concert with `maxChunkSize` where chunked requests are accumulated back into a single message.  A request exceeding this size will return a `413 - Request Entity Too Large` status code. |10485760
 |maxWorkQueueSize |The maximum size the general processing queue can grow before the `gremlinPool` starts to reject requests. |8192
 |metrics.consoleReporter.enabled |Turns on console reporting of metrics. |false
@@ -2259,12 +2260,22 @@ IMPORTANT: Not all graph implementations support explicit transactions (for exam
 Use `TinkerTransactionGraph` or another graph implementation that supports explicit transactions. Attempting to begin
 an explicit transaction on a graph that does not support them will result in an error.
 
-Two settings in the Gremlin Server YAML control transaction resource usage:
+Several settings in the Gremlin Server YAML control transaction resource usage. The `idleTransactionTimeout`
+(default 60000ms) governs how long a transaction can remain idle (no operation running or queued) before the
+server forcibly rolls it back. The idle timer is suspended while an operation is running, so a long-running operation
+does not trip it; it is armed only once the transaction returns to idle. Set it to `0` to disable idle reclamation. The
+`maxTransactionLifetime` (default 600000ms) is an absolute cap on the total age of a transaction regardless of
+activity. Unlike `idleTransactionTimeout`, it fires even while an operation is running, interrupting it and rolling the
+transaction back. It bounds transaction lifetime and concurrency-slot occupancy absolutely; like `evaluationTimeout`,
+its ability to free the underlying worker thread depends on the operation reaching an interruptible point. Set it to
+`0` to disable the cap. Finally, `maxConcurrentTransactions` (default 1000) caps the number of open transactions
+allowed; when the limit is reached, new begin requests are rejected with HTTP 503.
 
-* `idleTransactionTimeout` (default: 600000ms) -- How long a transaction can sit idle before the server forcibly rolls
-   it back. The timeout resets on each request received for that transaction.
-* `maxConcurrentTransactions` (default: 1000) -- The maximum number of open transactions allowed. When the limit is
-  reached, new begin requests are rejected with HTTP 503.
+These compose with the per-operation `evaluationTimeout` (and its per-request `timeoutMs` override) to bound a
+transaction at three independent scopes: a single operation (`evaluationTimeout`), the gaps between operations
+(`idleTransactionTimeout`), and the transaction as a whole (`maxTransactionLifetime`). The defaults keep a transaction
+bounded out of the box; disabling all of them is a deliberate operator choice, and a per-request `timeoutMs` is always
+honored as sent.
 
 Each open transaction consumes a dedicated thread on the server to maintain thread-local transaction state for the
 underlying graph. Ensure that clients close transactions promptly and that the `idleTransactionTimeout` is set to

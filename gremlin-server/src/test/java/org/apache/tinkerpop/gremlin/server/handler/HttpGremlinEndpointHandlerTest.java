@@ -21,13 +21,20 @@ package org.apache.tinkerpop.gremlin.server.handler;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
+import org.apache.tinkerpop.gremlin.server.Context;
+import org.apache.tinkerpop.gremlin.server.util.GremlinError;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.junit.Test;
 
 import static io.netty.util.CharsetUtil.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link HttpGremlinEndpointHandler#exceptionCaught}. When no {@link HttpResponseCoordinator} has been
@@ -58,5 +65,36 @@ public class HttpGremlinEndpointHandlerTest {
 
         ReferenceCountUtil.release(response);
         channel.finishAndReleaseAll();
+    }
+
+    @Test
+    public void shouldMapInterruptToTransactionTimeoutWhenClosedByLifetimeCap() {
+        // When the lifetime cap interrupts an operation, it first flags the request Context, so the interrupt that
+        // unwinds the operation must be reported as a transaction timeout (504), not the generic evaluation timeout.
+        final RequestMessage message = RequestMessage.build("g.V()").create();
+        final Context ctx = mock(Context.class);
+        when(ctx.isClosedByLifetimeCap()).thenReturn(true);
+        when(ctx.getTransactionId()).thenReturn("tx-1234");
+
+        final GremlinError error = newHandler().formErrorResponseMessage(
+                new TraversalInterruptedException(), message, ctx);
+
+        assertEquals(HttpResponseStatus.GATEWAY_TIMEOUT, error.getCode());
+        assertEquals("TransactionException", error.getException());
+        assertTrue(error.getMessage().contains("tx-1234"));
+    }
+
+    @Test
+    public void shouldMapInterruptToEvaluationTimeoutWhenNotClosedByLifetimeCap() {
+        // An ordinary evaluation-timeout interrupt (cap flag unset) must keep the existing 500 timeout behavior.
+        final RequestMessage message = RequestMessage.build("g.V()").create();
+        final Context ctx = mock(Context.class);
+        when(ctx.isClosedByLifetimeCap()).thenReturn(false);
+
+        final GremlinError error = newHandler().formErrorResponseMessage(
+                new InterruptedException(), message, ctx);
+
+        assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, error.getCode());
+        assertEquals("ServerTimeoutExceededException", error.getException());
     }
 }

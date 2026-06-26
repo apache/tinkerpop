@@ -144,4 +144,23 @@ public class SettingsTest {
         assertThat(settings.lifecycleHooks, is(notNullValue()));
         assertThat(settings.lifecycleHooks.isEmpty(), is(true));
     }
+
+    @Test
+    public void transactionTimeoutsDefaultToReasonableValuesWhenAbsentFromYaml() throws Exception {
+        final Settings settings = Settings.read(getMinimalConfigStream());
+
+        // Out of the box a transaction is bounded without any operator configuration: idle reclamation at 1 minute and
+        // an absolute lifetime cap at 10 minutes.
+        assertEquals(60000L, settings.idleTransactionTimeout);
+        assertEquals(600000L, settings.maxTransactionLifetime);
+    }
+
+    @Test
+    public void maxTransactionLifetimeParsedFromYaml() throws Exception {
+        final InputStream stream = SettingsTest.class.getResourceAsStream("gremlin-server-integration.yaml");
+        final Settings settings = Settings.read(stream);
+
+        // Confirms a YAML-provided value overrides the code default (600000); the resource sets it to 480000.
+        assertEquals(480000L, settings.maxTransactionLifetime);
+    }
 }

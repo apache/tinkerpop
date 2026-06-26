@@ -109,6 +109,17 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
                 // Short idle timeout, but a single long operation must NOT trip it (idle suspended while busy).
                 settings.idleTransactionTimeout = 500;
                 break;
+            case "shouldReclaimTransactionExceedingMaxLifetime":
+                // Short absolute cap with the idle timer disabled, so only the lifetime cap can reclaim the transaction.
+                settings.idleTransactionTimeout = 0;
+                settings.maxTransactionLifetime = 800;
+                break;
+            case "shouldHonorPerRequestTimeoutMsZeroInTransaction":
+                // Both transaction timers disabled: a per-request timeoutMs of 0 is honored (not silently overridden),
+                // so the operation is bounded only by its own request, exactly as on the non-transactional path.
+                settings.idleTransactionTimeout = 0;
+                settings.maxTransactionLifetime = 0;
+                break;
             case "shouldRejectMismatchedGraphAliasInTransaction": {
                 final Settings.GraphSettings gs = new Settings.GraphSettings();
                 gs.configuration = "conf/tinkertransactiongraph-empty.properties";
@@ -567,6 +578,57 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
             assertEquals(200, r.getStatusLine().getStatusCode());
             assertEquals(2, extractCount(r)); // extractCount fully reads the body
         }
+        try (final CloseableHttpResponse r = commitTx(client, txId, GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            EntityUtils.consume(r.getEntity());
+        }
+    }
+
+    @Test
+    public void shouldReclaimTransactionExceedingMaxLifetime() throws Exception {
+        // With a short absolute cap (800ms) and the idle timer disabled, a transaction that simply stays open past the
+        // cap must be reclaimed: the lifetime cap rolls it back and removes it, so a later request gets a 404. The
+        // deterministic mid-operation interrupt and the 504 it yields are covered by the unit tests; here we assert the
+        // guarantee we actually make end-to-end -- the transaction (and its slot) is reclaimed on time.
+        final String txId = beginTx(client, GTX);
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.addV()", GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            EntityUtils.consume(r.getEntity());
+        }
+
+        // wait for the absolute cap to fire
+        Thread.sleep(1500);
+
+        // The transaction is gone: a subsequent request on it is rejected as not found.
+        try (final CloseableHttpResponse r = submitInTx(client, txId, "g.V().count()", GTX)) {
+            assertEquals(404, r.getStatusLine().getStatusCode());
+            assertTrue(extractStatusMessage(r).contains("Transaction not found"));
+        }
+
+        // and the addV was rolled back, not persisted.
+        try (final CloseableHttpResponse r = submitNonTx(client, "g.V().count()", GTX)) {
+            assertEquals(0, extractCount(r));
+        }
+    }
+
+    @Test
+    public void shouldHonorPerRequestTimeoutMsZeroInTransaction() throws Exception {
+        // With both transaction timers disabled, a per-request timeoutMs of 0 is honored rather than overridden: the
+        // server does not reject the begin or silently substitute another timeout - the operation runs as requested.
+        // (Server-side defaults keep transactions bounded out of the box; disabling them is a deliberate operator
+        // choice and must not turn into a client-facing failure.)
+        final String txId = beginTx(client, GTX);
+
+        try (final CloseableHttpResponse r = postJson(client,
+                "{\"gremlin\":\"g.addV()\",\"g\":\"" + GTX +
+                "\",\"transactionId\":\"" + txId + "\",\"timeoutMs\":\"0\"}")) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+            // The operation runs and returns a normal result body, with no timeout error: the request was honored, not
+            // bounded by a substituted timeout or rejected at begin.
+            final String body = EntityUtils.toString(r.getEntity());
+            assertFalse(body.toLowerCase().contains("timeout"));
+        }
+
         try (final CloseableHttpResponse r = commitTx(client, txId, GTX)) {
             assertEquals(200, r.getStatusLine().getStatusCode());
             EntityUtils.consume(r.getEntity());

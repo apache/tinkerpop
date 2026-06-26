@@ -307,6 +307,7 @@ public class ServerGremlinExecutor {
                 scheduledExecutorService,
                 graphManager,
                 settings.idleTransactionTimeout,
+                settings.maxTransactionLifetime,
                 settings.maxConcurrentTransactions,
                 settings.perGraphCloseTimeout
         );

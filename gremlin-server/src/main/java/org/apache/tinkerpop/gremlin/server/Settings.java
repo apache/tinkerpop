@@ -188,10 +188,10 @@ public class Settings {
      * Time in milliseconds that a transaction can remain idle (no operation running or queued) before it is
      * automatically rolled back. This prevents resource leaks from abandoned transactions. The idle timer is suspended
      * while an operation is in progress, so a long-running operation does not trip it (its duration is instead bounded
-     * by {@link #evaluationTimeout}). Set to {@code 0} to disable idle reclamation entirely. Default is 600000
-     * (10 minutes).
+     * by {@link #evaluationTimeout}). Set to {@code 0} to disable idle reclamation entirely. Default is 60000
+     * (1 minute).
      */
-    public long idleTransactionTimeout = 600000L;
+    public long idleTransactionTimeout = 60000L;
 
     /**
      * Time in milliseconds to wait for a transaction commit or rollback operation to complete.
@@ -204,6 +204,17 @@ public class Settings {
      * Default is 1000.
      */
     public int maxConcurrentTransactions = 1000;
+
+    /**
+     * Absolute ceiling, in milliseconds, on the total age of a transaction regardless of activity. Unlike
+     * {@link #idleTransactionTimeout} (which only reclaims idle transactions), this cap fires even while an operation is
+     * running, interrupting it and rolling the transaction back, so it bounds how long a single transaction can hold its
+     * dedicated worker thread and concurrency slot. The bound on transaction lifetime and slot occupancy is absolute;
+     * the bound on thread occupancy is best-effort in the same way {@link #evaluationTimeout} is, since interrupting a
+     * running operation only takes effect when it reaches an interruptible point. Set to {@code 0} to disable the cap.
+     * Default is 600000 (10 minutes).
+     */
+    public long maxTransactionLifetime = 600000L;
 
     /**
      * The full class name of the {@link Channelizer} to use in Gremlin Server.
