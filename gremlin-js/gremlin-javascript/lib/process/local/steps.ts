@@ -19,7 +19,7 @@
 
 import { P, TextP, t, direction } from '../traversal.js';
 import { Graph, Vertex, Edge, VertexProperty, Property, Path } from '../../structure/graph.js';
-import type { Arg } from './types.js';
+import type { Arg, Pipeline } from './types.js';
 
 // ── Traverser helpers ─────────────────────────────────────────────────────────
 
@@ -487,13 +487,51 @@ export function* stepElementMap(
 
 // ── Path step ─────────────────────────────────────────────────────────────────
 
+/**
+ * Sentinel signalling a non-productive by() projection (e.g. by('age') on an element
+ * lacking the 'age' property). Without ProductiveByStrategy — which Tiny Gremlin does not
+ * support — a non-productive by() filters the whole path traverser.
+ */
+export const NON_PRODUCTIVE = Symbol('nonProductive');
+
+/** by(String)/by(T)/natural projection. Returns NON_PRODUCTIVE for an absent property. */
+function projectByKey(el: any, key: string | null | undefined): any {
+  if (key == null) return el;                              // natural / by()
+  if (key === 'T.id' || key === 'id') return el?.id;
+  if (key === 'T.label' || key === 'label') return el?.label;
+  if (el instanceof Vertex || el instanceof Edge) {
+    const vals = getValues(el, key);
+    return vals.length === 0 ? NON_PRODUCTIVE : vals[0];   // first value, multi-valued
+  }
+  return el;
+}
+
+// projections carry one entry per by() modulator, applied round-robin across path
+// elements. An entry is either a key (String/T/null for by(String)/by(T)/natural) or a
+// single-step sub-Pipeline (by(Traversal)), run via runTraversal. Empty when no by()
+// modulators are present, in which case the raw path objects are used.
 export function* stepPath(
-  source: Iterable<StreamItem>, args: Arg[], graph: Graph, trackPaths: boolean,
+  source: Iterable<StreamItem>,
+  projections: Arg[],
+  trackPaths: boolean,
+  runTraversal: (sub: Pipeline, object: any) => any,
 ): Generator<StreamItem> {
   for (const item of source) {
     const pathEntries: PathEntry[] = getPath(item, trackPaths);
     const labels: string[][] = pathEntries.map(e => e.labels);
-    const objects: any[] = pathEntries.map(e => e.object);
+    const objects: any[] = [];
+    let productive = true;
+    for (let idx = 0; idx < pathEntries.length; idx++) {
+      const object = pathEntries[idx].object;
+      if (projections.length === 0) { objects.push(object); continue; }
+      const proj = projections[idx % projections.length];
+      const value = Array.isArray(proj)
+        ? runTraversal(proj as unknown as Pipeline, object)
+        : projectByKey(object, proj as string | null | undefined);
+      if (value === NON_PRODUCTIVE) { productive = false; break; }
+      objects.push(value);
+    }
+    if (!productive) continue;   // default (non-ProductiveBy) semantics: filter the path
     const pathObj = new Path(labels, objects);
     // Yield as a traverser so toAsync's trackPaths unwrap produces the Path value correctly.
     yield trackPaths ? { value: pathObj, path: [] } : pathObj;

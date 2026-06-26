@@ -449,8 +449,16 @@ export class ExecuteVisitor {
     this.push('by', [null, dir]);
   }
 
-  visitTraversalMethod_by_Traversal(_ctx: any): void { this.push('by(Traversal)', []); }
-  visitTraversalMethod_by_Traversal_Comparator(_ctx: any): void { this.push('by(Traversal)', []); }
+  // by(Traversal) — emit the parsed sub-pipeline; the local executor restricts it to a
+  // single value-extraction step (e.g. elementMap()) when used as a path() projection.
+  visitTraversalMethod_by_Traversal(ctx: any): void {
+    this.push('by', [this.visitNestedTraversalAsSubPipeline(ctx.nestedTraversal())]);
+  }
+
+  // by(Traversal, Comparator) — Order is irrelevant for path() projection and is dropped.
+  visitTraversalMethod_by_Traversal_Comparator(ctx: any): void {
+    this.push('by', [this.visitNestedTraversalAsSubPipeline(ctx.nestedTraversal())]);
+  }
 
   /** by(T, Order) — T.id, T.label etc. with a direction, routed through traversalFunction */
   visitTraversalMethod_by_Function(ctx: any): void {

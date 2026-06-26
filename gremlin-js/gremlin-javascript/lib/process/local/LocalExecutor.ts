@@ -22,7 +22,7 @@ import { defaultPasses, type OptimizationPass } from './passes.js';
 import { LocalExecutionError } from './LocalExecutionError.js';
 import { Graph, Vertex, Edge } from '../../structure/graph.js';
 import {
-  wrap, getValue, type StreamItem,
+  wrap, getValue, NON_PRODUCTIVE, type StreamItem,
   stepOut, stepIn, stepBoth, stepOutE, stepInE, stepBothE, stepOutV, stepInV, stepOtherV,
   stepHas, stepHasId, stepHasLabel, stepHasNot,
   stepId, stepLabel, stepValue, stepKey, stepValues, stepValueMap, stepElementMap,
@@ -32,6 +32,11 @@ import {
 } from './steps.js';
 
 type StepFn = (source: Iterable<StreamItem>, args: Arg[], graph: Graph, trackPaths: boolean) => Generator<StreamItem>;
+
+/** Steps allowed inside a by(Traversal) projection on path() — single value extraction only. */
+const VALUE_EXTRACTION_STEPS = new Set<string>([
+  'id', 'label', 'key', 'value', 'values', 'valueMap', 'elementMap',
+]);
 
 /**
  * Executes a Tiny Gremlin Pipeline against a local in-memory Graph, returning
@@ -76,12 +81,37 @@ export class LocalExecutor {
         // Fold a single following by() modulator into the order step args
         const next = pipeline[i + 1];
         if (next?.name === 'by') {
+          if (Array.isArray(next.args[0])) {
+            throw new LocalExecutionError('by(Traversal) is not supported for order() in Tiny Gremlin');
+          }
           result.push({ name: 'order', args: next.args }); // args = [key, direction]
           i += 2;
         } else {
           result.push(step);
           i++;
         }
+      } else if (step.name === 'path') {
+        // Fold all following by() modulators into the path step as a list of projections.
+        // Each projection is a key (String/T/null) or a single-step value-extraction
+        // sub-pipeline (by(Traversal)); they are applied round-robin across path elements.
+        const projections: Arg[] = [];
+        let j = i + 1;
+        while (j < pipeline.length && pipeline[j].name === 'by') {
+          const proj = pipeline[j].args[0];
+          if (Array.isArray(proj)) {
+            const sub = proj as unknown as Pipeline;
+            if (sub.length !== 1 || !VALUE_EXTRACTION_STEPS.has(sub[0].name)) {
+              throw new LocalExecutionError(
+                'Tiny Gremlin only supports by(Traversal) on path() with a single value-extraction ' +
+                'step (id, label, key, value, values, valueMap, elementMap)',
+              );
+            }
+          }
+          projections.push(proj);
+          j++;
+        }
+        result.push({ name: 'path', args: projections });
+        i = j;
       } else {
         result.push(step);
         i++;
@@ -115,9 +145,33 @@ export class LocalExecutor {
 
   private applyStep(step: StepDescriptor, source: Iterable<StreamItem>, graph: Graph, trackPaths: boolean): Iterable<StreamItem> {
     if (step.name === 'addE') return this.applyAddE(source, step, graph, trackPaths);
+    if (step.name === 'path') return this.applyPath(source, step, graph, trackPaths);
     const fn = STEP_REGISTRY.get(step.name);
     if (!fn) throw new LocalExecutionError(`No implementation for step '${step.name}'`);
     return fn(source, step.args, graph, trackPaths);
+  }
+
+  /**
+   * Executes path() with its folded by() projections. Provides stepPath a callback that
+   * runs a single value-extraction sub-step against one path element, taking its first
+   * result (e.g. values('name') yields the first value).
+   */
+  private applyPath(
+    source: Iterable<StreamItem>,
+    step: StepDescriptor,
+    graph: Graph,
+    trackPaths: boolean,
+  ): Iterable<StreamItem> {
+    const runTraversal = (sub: Pipeline, object: any): any => {
+      const sub0 = sub[0];
+      const fn = STEP_REGISTRY.get(sub0.name);
+      if (!fn) throw new LocalExecutionError(`No implementation for step '${sub0.name}'`);
+      for (const out of fn([wrap(object, [], false)], sub0.args, graph, false)) {
+        return getValue(out, false);
+      }
+      return NON_PRODUCTIVE; // non-productive by(Traversal) filters the path traverser
+    };
+    return stepPath(source, step.args, trackPaths, runTraversal);
   }
 
   private applyAddE(
@@ -237,7 +291,7 @@ const STEP_REGISTRY = new Map<string, StepFn>([
   ['values',      stepValues],
   ['valueMap',    stepValueMap],
   ['elementMap',  stepElementMap],
-  ['path',        stepPath],
+  // 'path' is dispatched via applyPath (needs the registry for by(Traversal) projections)
   ['limit',       stepLimit],
   ['range',       stepRange],
   ['skip',        stepSkip],

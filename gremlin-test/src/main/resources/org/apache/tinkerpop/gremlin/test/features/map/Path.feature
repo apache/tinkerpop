@@ -31,7 +31,7 @@ Feature: Step - path()
       | result |
       | p[v[marko],marko] |
 
-  @GraphComputerVerificationReferenceOnly
+  @GraphComputerVerificationReferenceOnly @TinyGremlin
   Scenario: g_VX1X_out_path_byXageX_byXnameX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -59,7 +59,7 @@ Feature: Step - path()
       | p[v[marko],josh,java] |
       | p[v[marko],josh,java] |
 
-  @GraphComputerVerificationReferenceOnly
+  @GraphComputerVerificationReferenceOnly @TinyGremlin
   Scenario: g_V_out_out_path_byXnameX_byXageX
     Given the modern graph
     And the traversal of
@@ -111,7 +111,7 @@ Feature: Step - path()
       | p[josh,ripple] |
       | p[josh,lop] |
 
-  @GraphComputerVerificationReferenceOnly
+  @GraphComputerVerificationReferenceOnly @TinyGremlin
   Scenario: g_VX1X_out_path_byXageX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -124,6 +124,36 @@ Feature: Step - path()
       | result |
       | p[d[29].i,d[27].i] |
       | p[d[29].i,d[32].i] |
+
+  @GraphComputerVerificationReferenceOnly @TinyGremlin
+  Scenario: g_VX1X_out_path_byXlabelX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).out().path().by(T.label)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[person,person] |
+      | p[person,person] |
+      | p[person,software] |
+
+  @GraphComputerVerificationReferenceOnly @TinyGremlin
+  Scenario: g_VX1X_out_path_byXvaluesXnameXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).out().path().by(__.values("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[marko,vadas] |
+      | p[marko,josh] |
+      | p[marko,lop] |
 
   @GraphComputerVerificationReferenceOnly @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_VX1X_out_path_byXageX

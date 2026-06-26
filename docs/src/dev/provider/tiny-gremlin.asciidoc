@@ -304,9 +304,23 @@ Maps an edge to its outgoing vertex (the tail of the arrow).
 
 Maps the current traverser to the `Path` of elements it has visited.
 
+`by()` modulation is supported to project each element in the path. Multiple `by()` modulators are applied
+round-robin across the path elements (the first element uses the first `by()`, the second the second, and so on,
+cycling back to the first). The following forms are supported:
+
+* `by(String)` — project the named property value (the first value for multi-properties).
+* `by(T)` — project `T.id` or `T.label`.
+* `by()` — natural identity (the raw element), equivalent to omitting `by()` for that position.
+* `by(Traversal)` — restricted to a *single value-extraction step*: `id()`, `label()`, `key()`, `value()`,
+  `values()`, `valueMap()`, or `elementMap()`. `values()` projects the first value. Any other traversal shape
+  raises an error.
+
+A non-productive `by()` (for example, `by("age")` on an element without an `age` property) filters the whole
+path traverser, matching default Gremlin semantics. `ProductiveByStrategy` is not supported, so there is no
+null-producing variant.
+
 *Tiny Gremlin limitations:*
 
-* `by()` modulation is not supported. Path objects always contain the raw elements visited.
 * `from()` and `to()` selection within a path is not supported because `as()` step labels are excluded from Tiny
   Gremlin.
 

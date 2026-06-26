@@ -20552,6 +20552,100 @@
         ]
     },
     {
+        "scenario": "g_V_hasXperson_name_aliceX_propertyXage_51X",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"alice\").property(\"age\", 50)",
+                "language": "g.addV(\"person\").property(\"name\", \"alice\").property(\"age\", 50)",
+                "canonical": "g.addV(\"person\").property(\"name\", \"alice\").property(\"age\", 50)",
+                "anonymized": "g.addV(string0).property(string1, string2).property(string3, number0)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"alice\").Property(\"age\", 50)",
+                "go": "g.AddV(\"person\").Property(\"name\", \"alice\").Property(\"age\", 50)",
+                "groovy": "g.addV(\"person\").property(\"name\", \"alice\").property(\"age\", 50)",
+                "java": "g.addV(\"person\").property(\"name\", \"alice\").property(\"age\", 50)",
+                "javascript": "g.addV(\"person\").property(\"name\", \"alice\").property(\"age\", 50)",
+                "python": "g.add_v('person').property('name', 'alice').property('age', 50)"
+            },
+            {
+                "original": "g.V().has(\"person\",\"name\",\"alice\").property(\"age\", 51)",
+                "language": "g.V().has(\"person\", \"name\", \"alice\").property(\"age\", 51)",
+                "canonical": "g.V().has(\"person\", \"name\", \"alice\").property(\"age\", 51)",
+                "anonymized": "g.V().has(string0, string1, string2).property(string3, number0)",
+                "dotnet": "g.V().Has(\"person\", \"name\", \"alice\").Property(\"age\", 51)",
+                "go": "g.V().Has(\"person\", \"name\", \"alice\").Property(\"age\", 51)",
+                "groovy": "g.V().has(\"person\", \"name\", \"alice\").property(\"age\", 51)",
+                "java": "g.V().has(\"person\", \"name\", \"alice\").property(\"age\", 51)",
+                "javascript": "g.V().has(\"person\", \"name\", \"alice\").property(\"age\", 51)",
+                "python": "g.V().has('person', 'name', 'alice').property('age', 51)"
+            },
+            {
+                "original": "g.V().has(\"person\",\"age\",50)",
+                "language": "g.V().has(\"person\", \"age\", 50)",
+                "canonical": "g.V().has(\"person\", \"age\", 50)",
+                "anonymized": "g.V().has(string0, string1, number0)",
+                "dotnet": "g.V().Has(\"person\", \"age\", 50)",
+                "go": "g.V().Has(\"person\", \"age\", 50)",
+                "groovy": "g.V().has(\"person\", \"age\", 50)",
+                "java": "g.V().has(\"person\", \"age\", 50)",
+                "javascript": "g.V().has(\"person\", \"age\", 50)",
+                "python": "g.V().has('person', 'age', 50)"
+            },
+            {
+                "original": "g.V().has(\"person\",\"age\",51)",
+                "language": "g.V().has(\"person\", \"age\", 51)",
+                "canonical": "g.V().has(\"person\", \"age\", 51)",
+                "anonymized": "g.V().has(string0, string1, number0)",
+                "dotnet": "g.V().Has(\"person\", \"age\", 51)",
+                "go": "g.V().Has(\"person\", \"age\", 51)",
+                "groovy": "g.V().has(\"person\", \"age\", 51)",
+                "java": "g.V().has(\"person\", \"age\", 51)",
+                "javascript": "g.V().has(\"person\", \"age\", 51)",
+                "python": "g.V().has('person', 'age', 51)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_addVXpersonX_propertyXname_aliceX_propertyXage_30X_query",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"alice\").property(\"age\", 30)",
+                "language": "g.addV(\"person\").property(\"name\", \"alice\").property(\"age\", 30)",
+                "canonical": "g.addV(\"person\").property(\"name\", \"alice\").property(\"age\", 30)",
+                "anonymized": "g.addV(string0).property(string1, string2).property(string3, number0)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"alice\").Property(\"age\", 30)",
+                "go": "g.AddV(\"person\").Property(\"name\", \"alice\").Property(\"age\", 30)",
+                "groovy": "g.addV(\"person\").property(\"name\", \"alice\").property(\"age\", 30)",
+                "java": "g.addV(\"person\").property(\"name\", \"alice\").property(\"age\", 30)",
+                "javascript": "g.addV(\"person\").property(\"name\", \"alice\").property(\"age\", 30)",
+                "python": "g.add_v('person').property('name', 'alice').property('age', 30)"
+            },
+            {
+                "original": "g.V().has(\"person\",\"name\",\"alice\")",
+                "language": "g.V().has(\"person\", \"name\", \"alice\")",
+                "canonical": "g.V().has(\"person\", \"name\", \"alice\")",
+                "anonymized": "g.V().has(string0, string1, string2)",
+                "dotnet": "g.V().Has(\"person\", \"name\", \"alice\")",
+                "go": "g.V().Has(\"person\", \"name\", \"alice\")",
+                "groovy": "g.V().has(\"person\", \"name\", \"alice\")",
+                "java": "g.V().has(\"person\", \"name\", \"alice\")",
+                "javascript": "g.V().has(\"person\", \"name\", \"alice\")",
+                "python": "g.V().has('person', 'name', 'alice')"
+            },
+            {
+                "original": "g.V().has(\"person\",\"age\",30)",
+                "language": "g.V().has(\"person\", \"age\", 30)",
+                "canonical": "g.V().has(\"person\", \"age\", 30)",
+                "anonymized": "g.V().has(string0, string1, number0)",
+                "dotnet": "g.V().Has(\"person\", \"age\", 30)",
+                "go": "g.V().Has(\"person\", \"age\", 30)",
+                "groovy": "g.V().has(\"person\", \"age\", 30)",
+                "java": "g.V().has(\"person\", \"age\", 30)",
+                "javascript": "g.V().has(\"person\", \"age\", 30)",
+                "python": "g.V().has('person', 'age', 30)"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_hasXperson_name_aliceX_propertyXsingle_age_unionXage_constantX1XX_sumX",
         "traversals": [
             {
@@ -35221,6 +35315,40 @@
                 "java": "g.V(vid1).out().path().by(\"age\")",
                 "javascript": "g.V(vid1).out().path().by(\"age\")",
                 "python": "g.V(vid1).out().path().by('age')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_VX1X_out_path_byXlabelX",
+        "traversals": [
+            {
+                "original": "g.V(vid1).out().path().by(T.label)",
+                "language": "g.V(vid1).out().path().by(T.label)",
+                "canonical": "g.V(vid1).out().path().by(T.label)",
+                "anonymized": "g.V(vid1).out().path().by(T.label)",
+                "dotnet": "g.V(vid1).Out().Path().By(T.Label)",
+                "go": "g.V(vid1).Out().Path().By(gremlingo.T.Label)",
+                "groovy": "g.V(vid1).out().path().by(T.label)",
+                "java": "g.V(vid1).out().path().by(T.label)",
+                "javascript": "g.V(vid1).out().path().by(T.label)",
+                "python": "g.V(vid1).out().path().by(T.label)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_VX1X_out_path_byXvaluesXnameXX",
+        "traversals": [
+            {
+                "original": "g.V(vid1).out().path().by(__.values(\"name\"))",
+                "language": "g.V(vid1).out().path().by(__.values(\"name\"))",
+                "canonical": "g.V(vid1).out().path().by(__.values(\"name\"))",
+                "anonymized": "g.V(vid1).out().path().by(__.values(string0))",
+                "dotnet": "g.V(vid1).Out().Path().By(__.Values<object>(\"name\"))",
+                "go": "g.V(vid1).Out().Path().By(gremlingo.T__.Values(\"name\"))",
+                "groovy": "g.V(vid1).out().path().by(__.values(\"name\"))",
+                "java": "g.V(vid1).out().path().by(__.values(\"name\"))",
+                "javascript": "g.V(vid1).out().path().by(__.values(\"name\"))",
+                "python": "g.V(vid1).out().path().by(__.values('name'))"
             }
         ]
     },

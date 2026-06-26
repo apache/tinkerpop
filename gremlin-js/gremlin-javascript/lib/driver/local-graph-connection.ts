@@ -78,11 +78,13 @@ export class LocalGraphConnection extends RemoteConnection {
     return new RemoteTraversal(generator);
   }
 
-  override async commit(): Promise<void> {
-    // no-op: local graph mutations are in-memory only
+  // commit()/rollback() are not part of the RemoteConnection abstract contract, so they
+  // are plain methods (no 'override'); local graph mutations are in-memory only.
+  async commit(): Promise<void> {
+    // no-op
   }
 
-  override async rollback(): Promise<void> {
+  async rollback(): Promise<void> {
     // no-op
   }
 
