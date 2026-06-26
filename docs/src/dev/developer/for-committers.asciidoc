@@ -672,8 +672,19 @@ TinkerGQL support out of the box and runs these scenarios without any additional
 * `@InsertionOrderingRequired` - The scenario is reliant on the graph system predictably returning results (vertices,
 edges, properties) in the same order in which they were inserted into the graph.
 * `@MetaProperties` - The scenario makes use of meta-properties.
+* `@MultiLabel` - The scenario requires a graph that supports multi-label vertices (i.e.
+`ZERO_OR_MORE` vertex label cardinality). Providers that only support single-label vertices should
+exclude these tests.
+* `@MultiLabelDefault` - The scenario expects multi-label output as the default behavior for
+`valueMap()`/`elementMap()`. The test infrastructure applies `with("multilabel")` to the traversal
+source automatically (similar to how `@GraphComputerOnly` applies `withComputer()`). This simulates
+a provider whose `valueMap()`/`elementMap()` returns labels as a set by default. Combined with
+`@MultiLabel` to require a multi-label graph.
 * `@MultiProperties` - The scenario makes use of multi-properties.
 * `@SupportsChar` - The scenario requires that `char` is completely supported.
+* `@SingleLabelDefault` - The scenario asserts that `valueMap()`/`elementMap()` returns a single
+label string by default (without any `with()` configuration). Providers that override this behavior
+to return labels as a set by default should exclude these tests.
 * `@SupportsDuration` - The scenario requires that `Duration` is completely supported.
 * `@SupportsBinary` - The scenario requires that `Binary` is completely supported.
 * `@UserSuppliedVertexIds` - The scenario relies on the vertex IDs specified in the dataset used by the scenario.
