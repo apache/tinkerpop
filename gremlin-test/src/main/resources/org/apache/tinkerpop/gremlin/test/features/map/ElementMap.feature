@@ -22,7 +22,7 @@ Feature: Step - elementMap()
     Given the modern graph
     And the traversal of
       """
-      g.V().elementMap()
+      g.with("singlelabel").V().elementMap()
       """
     When iterated to list
     Then the result should be unordered
@@ -38,7 +38,7 @@ Feature: Step - elementMap()
     Given the modern graph
     And the traversal of
       """
-      g.V().elementMap("name", "age")
+      g.with("singlelabel").V().elementMap("name", "age")
       """
     When iterated to list
     Then the result should be unordered
@@ -56,7 +56,7 @@ Feature: Step - elementMap()
     And using the parameter eid11 defined as "e[josh-created->lop].id"
     And the traversal of
     """
-      g.E(eid11).elementMap()
+      g.with("singlelabel").E(eid11).elementMap()
       """
     When iterated to list
     Then the result should be unordered
@@ -67,7 +67,7 @@ Feature: Step - elementMap()
     Given the modern graph
     And the traversal of
       """
-      g.V().elementMap("name", "age", null)
+      g.with("singlelabel").V().elementMap("name", "age", null)
       """
     When iterated to list
     Then the result should be unordered
@@ -78,3 +78,78 @@ Feature: Step - elementMap()
       | m[{"t[id]": "v[vadas].id", "t[label]": "person", "name": "vadas", "age": 27}] |
       | m[{"t[id]": "v[lop].id", "t[label]": "software", "name": "lop"}] |
       | m[{"t[id]": "v[ripple].id", "t[label]": "software", "name": "ripple"}] |
+
+  Scenario: g_withXmultilabelX_VXmarkoX_elementMap
+    Given the modern graph
+    And the traversal of
+      """
+      g.with("multilabel").V().has("name", "marko").elementMap()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "t[label]": "s[person]", "name": "marko", "age": 29}] |
+
+  @MultiLabel @SingleLabelDefault
+  Scenario: g_V_elementMap_single_label_default
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").addLabel("employee").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.V().elementMap()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": "marko"}] |
+
+  @MultiLabel
+  Scenario: g_withXmultilabelX_V_elementMap_multilabel
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").addLabel("employee").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.with("multilabel").V().elementMap()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "t[label]": "s[person,employee]", "name": "marko"}] |
+
+  @MultiLabel @MultiLabelDefault
+  Scenario: g_V_elementMap_multi_label_default
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").addLabel("employee").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.V().elementMap()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "t[label]": "s[person,employee]", "name": "marko"}] |
+
+  @MultiLabel @MultiLabelDefault
+  Scenario: g_withXsinglelabelX_V_elementMap_multi_label_default
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").addLabel("employee").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.with("singlelabel").V().elementMap()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": "marko"}] |

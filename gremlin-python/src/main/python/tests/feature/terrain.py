@@ -83,10 +83,23 @@ def prepare_traversal_source(scenario):
     g = traversal().with_(remote)
     g.V().drop().iterate()
 
+    # create a fresh remote for multi-label tests that need ZERO_OR_MORE vertex label cardinality
+    tagset = [tag.name for tag in scenario.all_tags]
+    if "MultiLabel" in tagset:
+        multilabel_remote = __create_remote("gmultilabel")
+        scenario.context.remote_conn["multilabel"] = multilabel_remote
+        scenario.context.lookup_v["multilabel"] = {}
+        scenario.context.lookup_e["multilabel"] = {}
+        scenario.context.lookup_vp["multilabel"] = {}
+        gml = traversal().with_(multilabel_remote)
+        gml.V().drop().iterate()
+
 
 @after.each_scenario
 def close_traversal_source(scenario):
     scenario.context.remote_conn["empty"].close()
+    if "multilabel" in scenario.context.remote_conn:
+        scenario.context.remote_conn["multilabel"].close()
 
 
 @after.all

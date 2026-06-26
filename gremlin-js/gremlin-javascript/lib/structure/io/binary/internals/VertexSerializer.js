@@ -54,7 +54,14 @@ export default class VertexSerializer {
     bufs.push(this.ioc.anySerializer.serialize(item.id));
 
     // {label}
-    const labels = Array.isArray(item.label) ? item.label : item.label ? [item.label] : [];
+    const labels =
+      item.labels instanceof Set
+        ? Array.from(item.labels)
+        : Array.isArray(item.label)
+          ? item.label
+          : item.label
+            ? [item.label]
+            : [];
     bufs.push(this.ioc.listSerializer.serialize(labels, false));
 
     // {properties}
@@ -74,14 +81,15 @@ export default class VertexSerializer {
     // {id} fully qualified
     const id = await this.ioc.anySerializer.deserialize(reader);
 
-    // {label} bare list, extract first element
+    // {label} bare list - full multi-label list
     const labelList = await this.ioc.listSerializer.deserializeValue(reader, 0x00, this.ioc.DataType.LIST);
-    const label = Array.isArray(labelList) && labelList.length > 0 ? labelList[0] : labelList;
+    const labels = Array.isArray(labelList) ? labelList : labelList ? [labelList] : [];
+    const label = labels.length > 0 ? labels[0] : 'vertex';
 
     // {properties} fully qualified
     const properties = await this.ioc.anySerializer.deserialize(reader);
 
-    return new Vertex(id, label, properties || []);
+    return new Vertex(id, label, properties || [], labels);
   }
 
   /**

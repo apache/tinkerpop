@@ -47,6 +47,10 @@ export default class GremlinLang {
     return this.optionsStrategies;
   }
 
+  appendGremlin(text: string): void {
+    this.gremlin += text;
+  }
+
   addG(g: string): void {
     this.parameters.set('g', g);
   }
@@ -250,6 +254,13 @@ export default class GremlinLang {
       for (const strategy of args) {
         if (strategy instanceof OptionsStrategy) {
           this.optionsStrategies.push(strategy);
+          // Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
+          if (strategy.configuration['multilabel'] !== undefined) {
+            this.gremlin += '.with("multilabel")';
+          }
+          if (strategy.configuration['singlelabel'] !== undefined) {
+            this.gremlin += '.with("singlelabel")';
+          }
         } else {
           nonOptionsStrategies.push(strategy);
         }

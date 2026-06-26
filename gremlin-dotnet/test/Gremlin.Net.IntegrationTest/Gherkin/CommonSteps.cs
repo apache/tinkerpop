@@ -108,13 +108,37 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         [Given("the (\\w+) graph")]
         public void ChooseModernGraph(string graphName)
         {
-            if (graphName == "empty")
+            var isMultiLabel = ScenarioData.CurrentScenario != null &&
+                (ScenarioData.CurrentScenario.Tags.Any(t => t.Name == "@MultiLabel") ||
+                 (ScenarioData.CurrentFeature != null && ScenarioData.CurrentFeature.Tags.Any(t => t.Name == "@MultiLabel")));
+            var isMultiLabelDefault = ScenarioData.CurrentScenario != null &&
+                (ScenarioData.CurrentScenario.Tags.Any(t => t.Name == "@MultiLabelDefault") ||
+                 (ScenarioData.CurrentFeature != null && ScenarioData.CurrentFeature.Tags.Any(t => t.Name == "@MultiLabelDefault")));
+
+            if (isMultiLabelDefault && graphName == "empty")
             {
-                ScenarioData.CleanEmptyData();
+                ScenarioData.CleanMultilabelData();
+                var data = ScenarioData.GetByGraphName("multilabel");
+                _graphName = "multilabel";
+                _g = Traversal().With(data.Connection).With("multilabel");
             }
-            var data = ScenarioData.GetByGraphName(graphName);
-            _graphName = graphName;
-            _g = Traversal().With(data.Connection);
+            else if (isMultiLabel && graphName == "empty")
+            {
+                ScenarioData.CleanMultilabelData();
+                var data = ScenarioData.GetByGraphName("multilabel");
+                _graphName = "multilabel";
+                _g = Traversal().With(data.Connection);
+            }
+            else
+            {
+                if (graphName == "empty")
+                {
+                    ScenarioData.CleanEmptyData();
+                }
+                var data = ScenarioData.GetByGraphName(graphName);
+                _graphName = graphName;
+                _g = Traversal().With(data.Connection);
+            }
         }
 
         [Given("using the parameter (\\w+) defined as \"(.*)\"")]
@@ -177,10 +201,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             }
             traversal.Iterate();
             
-            // We may have modified the so-called `empty` graph
+            // We may have modified the so-called `empty` or `multilabel` graph
             if (_graphName == "empty")
             {
                 ScenarioData.ReloadEmptyData();
+            }
+            else if (_graphName == "multilabel")
+            {
+                ScenarioData.ReloadMultilabelData();
             }
         }
 

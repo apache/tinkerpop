@@ -99,16 +99,29 @@ Given(/^the (.+) graph$/, function (graphName) {
   if (ignoredScenarios[this.scenario]) {
     return 'skipped';
   }
-  this.graphName = graphName;
+
+  // Multi-label tests use the gmultilabel traversal source for empty graphs
+  if ((this.isMultiLabelDefault || this.isMultiLabel) && graphName === 'empty') {
+    this.graphName = 'multilabel';
+  } else {
+    this.graphName = graphName;
+  }
   const data = this.getData();
   this.g = anon.traversal().with_(data.connection);
+
+  if (this.isMultiLabelDefault) {
+    this.g = this.g.with_("multilabel");
+  }
 
   if (this.isGraphComputer) {
     this.g = this.g.withComputer();
   }
 
-  if (graphName === 'empty') {
+  if (this.graphName === 'empty') {
     return this.cleanEmptyGraph();
+  }
+  if (this.graphName === 'multilabel') {
+    return this.cleanMultilabelGraph();
   }
 });
 
@@ -116,7 +129,14 @@ Given('the graph initializer of', function (traversalText) {
   const p = Object.assign({}, this.parameters);
   p.g = this.g;
   const traversal = gremlin[this.scenario].shift()(p);
-  return traversal.toList();
+  return traversal.toList().then(() => {
+    // Reload vertex/edge data for dynamic graphs after initializer adds data
+    if (this.graphName === 'empty') {
+      return this.loadEmptyGraphData();
+    } else if (this.graphName === 'multilabel') {
+      return this.loadMultilabelGraphData();
+    }
+  });
 });
 
 Given('an unsupported test', () => {});
@@ -144,6 +164,8 @@ Given(/^using the parameter (.+) defined as "(.+)"$/, function (paramName, strin
   let p = Promise.resolve();
   if (this.graphName === 'empty') {
     p = this.loadEmptyGraphData();
+  } else if (this.graphName === 'multilabel') {
+    p = this.loadMultilabelGraphData();
   }
   return p.then(() => {
     this.parameters[paramName] = parseValue.call(this, stringValue);
@@ -161,6 +183,8 @@ Given(/^using the side effect (.+) defined as "(.+)"$/, function (sideEffectKey,
   let p = Promise.resolve();
   if (this.graphName === 'empty') {
     p = this.loadEmptyGraphData();
+  } else if (this.graphName === 'multilabel') {
+    p = this.loadMultilabelGraphData();
   }
   return p.then(() => {
     this.sideEffects[sideEffectKey] = parseValue.call(this, stringValue);

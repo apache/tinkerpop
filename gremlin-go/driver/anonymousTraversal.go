@@ -63,6 +63,8 @@ type AnonymousTraversal interface {
 	V(args ...interface{}) *GraphTraversal
 	// AddE adds the addE step to the GraphTraversal.
 	AddE(args ...interface{}) *GraphTraversal
+	// AddLabel adds the addLabel step to the GraphTraversal.
+	AddLabel(args ...interface{}) *GraphTraversal
 	// AddV adds the addV step to the GraphTraversal.
 	AddV(args ...interface{}) *GraphTraversal
 	// Aggregate adds the aggregate step to the GraphTraversal.
@@ -133,6 +135,10 @@ type AnonymousTraversal interface {
 	Disjunct(args ...interface{}) *GraphTraversal
 	// Drop adds the drop step to the GraphTraversal.
 	Drop(args ...interface{}) *GraphTraversal
+	// DropLabel adds the dropLabel step to the GraphTraversal.
+	DropLabel(args ...interface{}) *GraphTraversal
+	// DropLabels adds the dropLabels step to the GraphTraversal.
+	DropLabels(args ...interface{}) *GraphTraversal
 	// Element adds the element step to the GraphTraversal.
 	Element(args ...interface{}) *GraphTraversal
 	// ElementMap adds the elementMap step to the GraphTraversal.
@@ -189,6 +195,8 @@ type AnonymousTraversal interface {
 	Key(args ...interface{}) *GraphTraversal
 	// Label adds the label step to the GraphTraversal.
 	Label(args ...interface{}) *GraphTraversal
+	// Labels adds the labels step to the GraphTraversal.
+	Labels(args ...interface{}) *GraphTraversal
 	// Length adds the length step to the GraphTraversal.
 	Length(args ...interface{}) *GraphTraversal
 	// Limit adds the limit step to the GraphTraversal.
@@ -359,6 +367,11 @@ func (anonymousTraversal *anonymousTraversal) V(args ...interface{}) *GraphTrave
 // AddE adds the addE step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) AddE(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().AddE(args...)
+}
+
+// AddLabel adds the addLabel step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) AddLabel(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().AddLabel(args...)
 }
 
 // AddV adds the addV step to the GraphTraversal.
@@ -536,6 +549,16 @@ func (anonymousTraversal *anonymousTraversal) Drop(args ...interface{}) *GraphTr
 	return anonymousTraversal.graphTraversal().Drop(args...)
 }
 
+// DropLabel adds the dropLabel step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) DropLabel(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().DropLabel(args...)
+}
+
+// DropLabels adds the dropLabels step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) DropLabels(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().DropLabels(args...)
+}
+
 // Element adds the element step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) Element(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().Element(args...)
@@ -674,6 +697,11 @@ func (anonymousTraversal *anonymousTraversal) Key(args ...interface{}) *GraphTra
 // Label adds the label step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) Label(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().Label(args...)
+}
+
+// Labels adds the labels step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) Labels(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().Labels(args...)
 }
 
 // Length adds the length step to the GraphTraversal.

@@ -56,8 +56,9 @@ export default class GraphSerializer {
       // {id}
       bufs.push(this.ioc.anySerializer.serialize(v.id));
 
-      // {label} as 1-element list (value-only)
-      bufs.push(this.ioc.listSerializer.serialize([v.label], false));
+      // {label} as list (value-only)
+      const vLabels = v.labels instanceof Set ? Array.from(v.labels) : [v.label];
+      bufs.push(this.ioc.listSerializer.serialize(vLabels, false));
 
       const vps = Array.isArray(v.properties) ? v.properties : [];
 
@@ -91,8 +92,9 @@ export default class GraphSerializer {
       // {id}
       bufs.push(this.ioc.anySerializer.serialize(e.id));
 
-      // {label} as 1-element list (value-only)
-      bufs.push(this.ioc.listSerializer.serialize([e.label], false));
+      // {label} as list (value-only)
+      const eLabels = e.labels instanceof Set ? Array.from(e.labels) : [e.label];
+      bufs.push(this.ioc.listSerializer.serialize(eLabels, false));
 
       // {inV_id}
       bufs.push(this.ioc.anySerializer.serialize(e.inV && e.inV.id));
@@ -133,11 +135,12 @@ export default class GraphSerializer {
       // {id} fully qualified
       const vId = await this.ioc.anySerializer.deserialize(reader);
 
-      // {label} value-only list, first element
+      // {label} value-only list - full multi-label list
       const vLabelList = await this.ioc.listSerializer.deserializeValue(reader, 0x00, this.ioc.DataType.LIST);
-      const vLabel = Array.isArray(vLabelList) && vLabelList.length > 0 ? vLabelList[0] : vLabelList;
+      const vLabels = Array.isArray(vLabelList) ? vLabelList : vLabelList ? [vLabelList] : [];
+      const vLabel = vLabels.length > 0 ? vLabels[0] : 'vertex';
 
-      const vertex = new Vertex(vId, vLabel, []);
+      const vertex = new Vertex(vId, vLabel, [], vLabels);
       graph.vertices.set(vId, vertex);
 
       // {vp_count} bare int
@@ -170,9 +173,10 @@ export default class GraphSerializer {
       // {id} fully qualified
       const eId = await this.ioc.anySerializer.deserialize(reader);
 
-      // {label} value-only list, first element
+      // {label} value-only list - full multi-label list
       const eLabelList = await this.ioc.listSerializer.deserializeValue(reader, 0x00, this.ioc.DataType.LIST);
-      const eLabel = Array.isArray(eLabelList) && eLabelList.length > 0 ? eLabelList[0] : eLabelList;
+      const eLabels = Array.isArray(eLabelList) ? eLabelList : eLabelList ? [eLabelList] : [];
+      const eLabel = eLabels.length > 0 ? eLabels[0] : 'edge';
 
       // {inV_id} fully qualified
       const inVId = await this.ioc.anySerializer.deserialize(reader);
@@ -196,7 +200,7 @@ export default class GraphSerializer {
       const inV = graph.vertices.get(inVId) || new Vertex(inVId, '', []);
       const outV = graph.vertices.get(outVId) || new Vertex(outVId, '', []);
 
-      const edge = new Edge(eId, outV, eLabel, inV, edgeProps || []);
+      const edge = new Edge(eId, outV, eLabel, inV, edgeProps || [], eLabels);
       graph.edges.set(eId, edge);
     }
 

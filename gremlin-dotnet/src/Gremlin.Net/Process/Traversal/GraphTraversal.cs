@@ -150,6 +150,21 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the addE step with multiple labels to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, Edge> AddE (string label1, string label2, params string[] moreLabels)
+        {
+            if (label1 == null) throw new ArgumentNullException(nameof(label1));
+            if (label2 == null) throw new ArgumentNullException(nameof(label2));
+            if (moreLabels == null) throw new ArgumentNullException(nameof(moreLabels));
+
+            var args = new List<object>(2 + moreLabels.Length) { label1, label2 };
+            args.AddRange(moreLabels);
+            GremlinLang.AddStep("addE", args.ToArray());
+            return Wrap<TStart, Edge>(this);
+        }
+
+        /// <summary>
         ///     Adds the addV step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<TStart, Vertex> AddV ()
@@ -182,6 +197,21 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal<TStart, Vertex> AddV (ITraversal vertexLabelTraversal)
         {
             GremlinLang.AddStep("addV", vertexLabelTraversal);
+            return Wrap<TStart, Vertex>(this);
+        }
+
+        /// <summary>
+        ///     Adds the addV step with multiple labels to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, Vertex> AddV (string label1, string label2, params string[] moreLabels)
+        {
+            if (label1 == null) throw new ArgumentNullException(nameof(label1));
+            if (label2 == null) throw new ArgumentNullException(nameof(label2));
+            if (moreLabels == null) throw new ArgumentNullException(nameof(moreLabels));
+
+            var args = new List<object>(2 + moreLabels.Length) { label1, label2 };
+            args.AddRange(moreLabels);
+            GremlinLang.AddStep("addV", args.ToArray());
             return Wrap<TStart, Vertex>(this);
         }
 
@@ -1450,6 +1480,70 @@ namespace Gremlin.Net.Process.Traversal
         {
             GremlinLang.AddStep("label");
             return Wrap<TStart, string>(this);
+        }
+
+        /// <summary>
+        ///     Adds the labels step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, string> Labels ()
+        {
+            GremlinLang.AddStep("labels");
+            return Wrap<TStart, string>(this);
+        }
+
+        /// <summary>
+        ///     Adds the addLabel step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> AddLabel (string label, params string[] moreLabels)
+        {
+            if (label == null) throw new ArgumentNullException(nameof(label));
+            if (moreLabels == null) throw new ArgumentNullException(nameof(moreLabels));
+
+            var args = new List<object>(1 + moreLabels.Length) { label };
+            args.AddRange(moreLabels);
+            GremlinLang.AddStep("addLabel", args.ToArray());
+            return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
+        ///     Adds the addLabel step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> AddLabel (ITraversal labelTraversal)
+        {
+            GremlinLang.AddStep("addLabel", labelTraversal);
+            return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
+        ///     Adds the dropLabels step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> DropLabels ()
+        {
+            GremlinLang.AddStep("dropLabels");
+            return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
+        ///     Adds the dropLabel step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> DropLabel (string label, params string[] moreLabels)
+        {
+            if (label == null) throw new ArgumentNullException(nameof(label));
+            if (moreLabels == null) throw new ArgumentNullException(nameof(moreLabels));
+
+            var args = new List<object>(1 + moreLabels.Length) { label };
+            args.AddRange(moreLabels);
+            GremlinLang.AddStep("dropLabel", args.ToArray());
+            return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
+        ///     Adds the dropLabel step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> DropLabel (ITraversal labelTraversal)
+        {
+            GremlinLang.AddStep("dropLabel", labelTraversal);
+            return Wrap<TStart, TEnd>(this);
         }
         
         /// <summary>

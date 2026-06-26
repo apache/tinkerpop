@@ -1109,3 +1109,5 @@ Feature: Step - mergeE()
     And the graph should return 2 for count of "g.V()"
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\")"
     And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"weight\")"
+
+

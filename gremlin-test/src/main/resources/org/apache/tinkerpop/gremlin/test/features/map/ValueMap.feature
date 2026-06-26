@@ -38,7 +38,7 @@ Feature: Step - valueMap()
     Given the modern graph
     And the traversal of
       """
-      g.V().valueMap(true)
+      g.with("singlelabel").V().valueMap(true)
       """
     When iterated to list
     Then the result should be unordered
@@ -54,7 +54,7 @@ Feature: Step - valueMap()
     Given the modern graph
     And the traversal of
       """
-      g.V().valueMap().with(WithOptions.tokens)
+      g.with("singlelabel").V().valueMap().with(WithOptions.tokens)
       """
     When iterated to list
     Then the result should be unordered
@@ -86,7 +86,7 @@ Feature: Step - valueMap()
     Given the modern graph
     And the traversal of
       """
-      g.V().valueMap(true, "name", "age")
+      g.with("singlelabel").V().valueMap(true, "name", "age")
       """
     When iterated to list
     Then the result should be unordered
@@ -102,7 +102,7 @@ Feature: Step - valueMap()
     Given the modern graph
     And the traversal of
       """
-      g.V().valueMap("name", "age").with(WithOptions.tokens)
+      g.with("singlelabel").V().valueMap("name", "age").with(WithOptions.tokens)
       """
     When iterated to list
     Then the result should be unordered
@@ -118,7 +118,7 @@ Feature: Step - valueMap()
     Given the modern graph
     And the traversal of
       """
-      g.V().valueMap("name", "age").with(WithOptions.tokens, WithOptions.labels).by(__.unfold())
+      g.with("singlelabel").V().valueMap("name", "age").with(WithOptions.tokens, WithOptions.labels).by(__.unfold())
       """
     When iterated to list
     Then the result should be unordered
@@ -162,7 +162,7 @@ Feature: Step - valueMap()
     Given the modern graph
     And the traversal of
       """
-      g.V().hasLabel("person").filter(__.outE("created")).valueMap(true)
+      g.with("singlelabel").V().hasLabel("person").filter(__.outE("created")).valueMap(true)
       """
     When iterated to list
     Then the result should be unordered
@@ -175,7 +175,7 @@ Feature: Step - valueMap()
     Given the modern graph
     And the traversal of
       """
-      g.V().hasLabel("person").filter(__.outE("created")).valueMap().with(WithOptions.tokens)
+      g.with("singlelabel").V().hasLabel("person").filter(__.outE("created")).valueMap().with(WithOptions.tokens)
       """
     When iterated to list
     Then the result should be unordered
@@ -220,3 +220,78 @@ Feature: Step - valueMap()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "step can only have one by modulator"
+
+  Scenario: g_withXmultilabelX_VXmarkoX_valueMap_withXtokensX
+    Given the modern graph
+    And the traversal of
+      """
+      g.with("multilabel").V().has("name", "marko").valueMap().with(WithOptions.tokens)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "t[label]": "s[person]", "name": ["marko"], "age": [29]}] |
+
+  @MultiLabel @SingleLabelDefault
+  Scenario: g_V_valueMap_withXtokensX_single_label_default
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").addLabel("employee").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.V().valueMap().with(WithOptions.tokens)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": ["marko"]}] |
+
+  @MultiLabel
+  Scenario: g_withXmultilabelX_V_valueMap_withXtokensX_multilabel
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").addLabel("employee").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.with("multilabel").V().valueMap().with(WithOptions.tokens)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "t[label]": "s[person,employee]", "name": ["marko"]}] |
+
+  @MultiLabel @MultiLabelDefault
+  Scenario: g_V_valueMap_withXtokensX_multi_label_default
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").addLabel("employee").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.V().valueMap().with(WithOptions.tokens)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "t[label]": "s[person,employee]", "name": ["marko"]}] |
+
+  @MultiLabel @MultiLabelDefault
+  Scenario: g_withXsinglelabelX_V_valueMap_withXtokensX_multi_label_default
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").addLabel("employee").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.with("singlelabel").V().valueMap().with(WithOptions.tokens)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": ["marko"]}] |

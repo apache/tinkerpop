@@ -104,8 +104,14 @@ namespace Gremlin.Net.Process.Traversal
 
             optionsStrategy = existingOptions[existingOptions.Count - 1];
             optionsStrategy.Configuration[key] = value;
-            return new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
+            var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
                 GremlinLang.Clone());
+            // Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
+            if (key == "multilabel" || key == "singlelabel")
+            {
+                source.GremlinLang.Append($".with(\"{key}\")");
+            }
+            return source;
         }
 
 
@@ -473,6 +479,23 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addE step
+        ///     with multiple labels to that traversal.
+        /// </summary>
+        public GraphTraversal<Edge, Edge> AddE(string label1, string label2, params string[] moreLabels)
+        {
+            if (label1 == null) throw new ArgumentNullException(nameof(label1));
+            if (label2 == null) throw new ArgumentNullException(nameof(label2));
+            if (moreLabels == null) throw new ArgumentNullException(nameof(moreLabels));
+
+            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, GremlinLang.Clone());
+            var args = new List<object>(2 + moreLabels.Length) { label1, label2 };
+            args.AddRange(moreLabels);
+            traversal.GremlinLang.AddStep("addE", args.ToArray());
+            return traversal;
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the mergeE step to that
         ///     traversal.
         /// </summary>
@@ -552,6 +575,23 @@ namespace Gremlin.Net.Process.Traversal
         {
             var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("addV", vertexLabelTraversal);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addV step
+        ///     with multiple labels to that traversal.
+        /// </summary>
+        public GraphTraversal<Vertex, Vertex> AddV(string label1, string label2, params string[] moreLabels)
+        {
+            if (label1 == null) throw new ArgumentNullException(nameof(label1));
+            if (label2 == null) throw new ArgumentNullException(nameof(label2));
+            if (moreLabels == null) throw new ArgumentNullException(nameof(moreLabels));
+
+            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
+            var args = new List<object>(2 + moreLabels.Length) { label1, label2 };
+            args.AddRange(moreLabels);
+            traversal.GremlinLang.AddStep("addV", args.ToArray());
             return traversal;
         }
 
