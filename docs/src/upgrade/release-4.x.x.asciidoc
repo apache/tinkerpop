@@ -186,6 +186,93 @@ For full details on the interceptor API for each language variant, refer to the 
 each GLV's documentation in the
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
 reference.
+==== Multi-Label Support
+
+Until now, vertices in the property graph model were limited to a single, immutable label assigned at creation. This
+release introduces configurable label cardinality, allowing vertices to carry multiple labels that can be added and
+removed over their lifetime.
+
+The feature is controlled by `LabelCardinality`, a graph-level setting that defaults to `ONE`, preserving the
+existing single-label behavior. To enable multi-label in TinkerGraph, set the vertex label cardinality in the graph
+properties:
+
+```
+gremlin.tinkergraph.vertexLabelCardinality=ZERO_OR_MORE
+```
+
+The three modes are `ONE` (single, immutable, the 3.x default), `ONE_OR_MORE` (mutable, minimum one), and
+`ZERO_OR_MORE` (fully flexible). Edge labels remain fixed at `ONE`.
+
+With multi-label enabled, several new traversal steps become available:
+
+```text
+gremlin> g.addV('person','employee').property('name','marko')
+==>v[0]
+gremlin> g.V().has('name','marko').addLabel('manager')
+==>v[0]
+gremlin> g.V().has('name','marko').labels()
+==>person
+==>employee
+==>manager
+gremlin> g.V().has('name','marko').dropLabel('employee').labels()
+==>person
+==>manager
+```
+
+The `labels()` step is a flatMap that emits one traverser per label, unlike `label()` which returns a single string.
+For single-label vertices the two behave identically.
+
+The `mergeV()` step accepts a list for `T.label` to match or create multi-label vertices. The `onMatch` option uses
+append-only semantics: new labels are added, existing labels are preserved:
+
+```text
+gremlin> g.mergeV([(T.label): ['person','employee'], name: 'marko'])
+==>v[0]
+gremlin> g.mergeV([(T.label): 'person', name: 'marko']).option(Merge.onMatch, [(T.label): 'director'])
+==>v[0]
+```
+
+By default, `elementMap()` and `valueMap()` continue to return labels as a single string. To receive all labels as a
+set, use `with("multilabel")` either per-traversal or as a persistent source configuration:
+
+```text
+// assuming a vertex with labels [person, employee, manager] and name "marko"
+gremlin> g.with("multilabel").V().has('name','marko').elementMap()
+==>{id=0, label=[manager, person, employee], name=marko}
+gremlin> g.V().has('name','marko').elementMap()
+==>{id=0, label=manager, name=marko}
+```
+
+To avoid repeating `with("multilabel")` on every traversal, create a persistent source:
+
+```text
+gremlin> gml = g.with("multilabel")
+==>graphtraversalsource[tinkergraph[vertices:1 edges:0], standard]
+gremlin> gml.V().has('name','marko').elementMap()
+==>{id=0, label=[manager, person, employee], name=marko}
+gremlin> gml.V().has('name','marko').valueMap(true)
+==>{id=0, label=[manager, person, employee], name=[marko]}
+```
+
+Note the following behavioral details:
+
+* The deprecated `label()` step returns a single, non-deterministic label when multiple labels are present. Always
+  use `labels()` to retrieve the full set reliably.
+* When a source is configured with `with("multilabel")`, the label output can be forced back to a single string
+  per-traversal using `with("singlelabel")`. This is useful for providers that enable multi-label output by default
+  but need an escape hatch for backward compatibility. Note that when both options are present on the same source,
+  `"singlelabel"` always takes precedence regardless of the order in which they were applied.
+* Serialization via GraphSON V1/V2/V3 or Gryo only transmits one label per vertex (using `label()`). Multi-label data
+  will be silently reduced to a single label when passing through these older formats. Only GraphBinary (V4) and
+  GraphSON V4 preserve the full label set.
+* Adding a label that already exists on the vertex is a no-op (when multi-label is enabled). Dropping a label that
+  does not exist is also a no-op. With cardinality `ONE`, both `addLabel()` and `dropLabel()` throw since labels are
+  immutable.
+* `hasLabel()` tests the predicate against each label on the element and returns `true` if at least one label
+  satisfies it. For multi-label vertices, this means `hasLabel(P.neq("person"))` returns `true` when the vertex also
+  carries other labels, a natural consequence of testing a negation predicate against a set of labels, where the
+  non-matching labels will satisfy `neq`. To exclude vertices that carry a specific label, use the negation pattern:
+  `g.V().not(__.hasLabel("person"))`. For single-label vertices the behavior is unchanged.
 
 ==== Gremlator
 
@@ -800,6 +887,37 @@ Kryo's default `Map` serializer because it extended `HashMap`, whereas in 4.x it
 serializer. As a result, Gryo-serialized `Tree` data written by 3.x cannot be read by 4.x and vice versa. The
 Gryo type registration id (`61`) is unchanged and 4.x-to-4.x Gryo round-trips correctly; this Gryo break is
 expected for the 4.0.0 major release.
+===== Multi-Label Support
+
+Providers declare their supported label cardinality via `Graph.Features.getLabelCardinality()`, which defaults to
+`LabelCardinality.ONE` (single label, immutable, the 3.x behavior). To support multi-label, return `ONE_OR_MORE` or
+`ZERO_OR_MORE` from this method.
+
+The `LabelCardinality` enum exposes `min()`, `max()`, and `supportsMutation()` for programmatic introspection of
+constraints. Constraint enforcement is handled by the `LabelCardinalityValidator` utility class, which providers may
+use directly or replace with their own validation logic tailored to their storage backend.
+
+Providers implementing multi-label must:
+
+- Store and return a `Set<String>` from `Element.labels()`
+- Implement `Element.addLabel(String, String...)` and `Element.dropLabel(String, String...)`
+- Ensure `hasLabel("a", "b")` uses OR semantics (matches vertices with label "a" or "b")
+- Serialize/deserialize the label set via the V4 GraphBinary format (which sends labels as a list)
+
+The default `elementMap()` and `valueMap()` implementations determine label output format solely from the
+`with("multilabel")` source option, not from the graph's `LabelCardinality`. This means a multi-label graph still
+returns a single label string from these steps unless `with("multilabel")` is explicitly configured. The intent is
+to eventually deprecate the single-string path entirely and always return labels as a set, aligning `elementMap()`
+and `valueMap()` with `labels()`. Until then, `with("singlelabel")` allows users to override a source-level
+`with("multilabel")` back to single-string output.
+
+Providers who want `elementMap()`/`valueMap()` to return the full label set by default (without requiring users to
+set `with("multilabel")`) should override `PropertyMapStep` and `ElementMapStep` to tie label output to their
+server-side label cardinality configuration. In that case, `with("singlelabel")` should still be respected as an
+explicit user override back to single-string output.
+
+Older serialization formats (GraphSON V1/V2/V3, Gryo) only support a single label and will silently use the value
+from `Element.label()` (the deprecated single-label accessor).
 
 ==== Graph Driver Providers
 

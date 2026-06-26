@@ -640,6 +640,33 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV(java.lang.String)++[`addV(String)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`addV(Traversal)`]
 
+[[addlabel-step]]
+=== AddLabel Step
+
+The `addLabel()`-step (*sideEffect*) adds one or more labels to an element. The graph must be configured with a
+`LabelCardinality` that supports mutation (e.g. `ZERO_OR_MORE` or `ONE_OR_MORE`). Adding a label that already exists
+on the element is a no-op.
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+g.addV('person').property('name','marko').addLabel('employee').labels()
+g.V().has('name','marko').hasLabel('person')
+g.V().has('name','marko').hasLabel('employee')
+----
+
+NOTE: When `LabelCardinality` is set to `ONE` (the default), calling `addLabel()` will throw an
+`IllegalStateException` since labels are immutable in that mode.
+
+See: <<labels-step,labels() step>>, <<droplabel-step,dropLabel() step>>
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addLabel(java.lang.String,java.lang.String...)++[`addLabel(String, String...)`]
+
 [[aggregate-step]]
 === [[store-step]]Aggregate Step
 
@@ -1763,6 +1790,39 @@ g.V()
 
 * link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#drop()++[`drop()`]
 
+[[droplabel-step]]
+=== DropLabel Step
+
+The `dropLabel()`-step (*sideEffect*) removes one or more specific labels from an element. The `dropLabels()`-step
+removes all labels. The graph must be configured with a `LabelCardinality` that supports mutation. Dropping a label
+that does not exist on the element is a no-op.
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+v = g.addV('person').property('name','marko').addLabel('employee').addLabel('manager').next()
+g.V(v).labels()
+g.V(v).dropLabel('manager').labels()
+g.V(v).dropLabels().labels()
+----
+
+NOTE: With `LabelCardinality.ONE_OR_MORE`, `dropLabels()` always throws and `dropLabel()` throws if it would
+leave the element with zero labels.
+
+IMPORTANT: Do not confuse `dropLabel()` with `labels().drop()`. The latter attempts to drop the string traversers
+emitted by `labels()` and is blocked by the `LabelsDropVerificationStrategy`. Use `dropLabel()` or `dropLabels()` to
+remove labels from vertices.
+
+See: <<addlabel-step,addLabel() step>>, <<labels-step,labels() step>>
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dropLabel(java.lang.String,java.lang.String...)++[`dropLabel(String, String...)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dropLabels()++[`dropLabels()`]
+
 [[e-step]]
 === E Step
 
@@ -1829,6 +1889,43 @@ g.V().has('name','marko').properties('location').elementMap()
 
 IMPORTANT: The `elementMap()`-step does not return the vertex labels for incident vertices when using `GraphComputer`
 as the `id` is the only available data to the star graph.
+
+For multi-label graphs, `elementMap()` returns labels as a single string by default. To receive all labels as a
+set, use `with("multilabel")` either per-traversal or on a persistent source:
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+g.addV('person').property('name','marko').addLabel('employee').addLabel('manager').iterate()
+g.V().has('name','marko').elementMap()                         <1>
+g.with("multilabel").V().has('name','marko').elementMap()      <2>
+gml = g.with("multilabel")
+gml.V().has('name','marko').elementMap()                       <3>
+gml.V().has('name','marko').valueMap(true)                     <4>
+----
+
+<1> Without `"multilabel"`, the label entry is a single string.
+<2> Per-traversal `with("multilabel")` returns all labels as a set.
+<3> A persistent source avoids repeating `with("multilabel")` on each traversal.
+<4> `valueMap(true)` also respects the `"multilabel"` configuration.
+
+When a source is configured with `with("multilabel")`, the `with("singlelabel")` option can be used per-traversal to
+force single-string label output:
+
+[gremlin-groovy]
+----
+gml = g.with("multilabel")
+gml.V().has('name','marko').elementMap()
+gml.with("singlelabel").V().has('name','marko').elementMap()
+----
+
+NOTE: The `elementMap()` step determines label format solely from the `with("multilabel")`/`with("singlelabel")` source
+options, not from the graph's `LabelCardinality` setting. When both options are present on the same source,
+`"singlelabel"` always takes precedence regardless of the order in which they were applied. The single-string label
+path is expected to be deprecated in a future release, at which point labels will always be returned as a set.
 
 *Additional References*
 
@@ -2550,9 +2647,36 @@ g.V(1).outE().label()
 g.V(1).properties().label()
 ----
 
+NOTE: For graphs that support multiple labels per vertex, `label()` returns only one label and the choice is
+non-deterministic (implementation-dependent ordering). Use the <<labels-step,labels() step>> to retrieve all labels
+reliably.
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#label()++[`label()`]
+
+[[labels-step]]
+=== Labels Step
+
+The `labels()`-step (*flatMap*) takes an `Element` and emits each of its labels as a separate traverser. For elements
+with a single label this behaves identically to `label()`. For multi-label elements, it emits one traverser per label.
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+g.addV('person').property('name','marko').addLabel('employee').iterate()
+g.V().labels()
+g.V().labels().count()
+----
+
+See: <<label-step,label() step>>, <<addlabel-step,addLabel() step>>, <<droplabel-step,dropLabel() step>>
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#labels()++[`labels()`]
 
 [[length-step]]
 === Length Step
@@ -5431,6 +5555,29 @@ g.V().hasLabel('person').valueMap().with(WithOptions.tokens)
 g.V().hasLabel('person').valueMap('name').with(WithOptions.tokens, WithOptions.labels)
 g.V().hasLabel('person').properties('location').valueMap().with(WithOptions.tokens, WithOptions.values)
 ----
+
+For multi-label graphs, the label value in the map is a single string by default. Use `with("multilabel")` to
+receive all labels as a set:
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+g.addV('person').property('name','marko').addLabel('employee').iterate()
+g.V().has('name','marko').valueMap(true)                       <1>
+g.with("multilabel").V().has('name','marko').valueMap(true)    <2>
+----
+
+<1> Without `"multilabel"`, the label entry is a single string.
+<2> With `"multilabel"`, all labels are returned as a set.
+
+When a source is configured with `with("multilabel")`, the `with("singlelabel")` option can be used per-traversal to
+force single-string label output. When both options are present on the same source, `"singlelabel"` always takes
+precedence regardless of the order in which they were applied. The `valueMap()` step determines label format solely
+from the source options, not from the graph's `LabelCardinality` setting. The single-string label path is expected to
+be deprecated in a future release.
 
 *Additional References*
 
