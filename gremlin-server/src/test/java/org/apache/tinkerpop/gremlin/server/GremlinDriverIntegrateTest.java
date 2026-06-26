@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server;
 
 import ch.qos.logback.classic.Level;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.timeout.ReadTimeoutException;
 import nl.altindag.log.LogCaptor;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
@@ -293,7 +294,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         try {
             final Client client = cluster.connect();
             final RequestOptions ro = RequestOptions.build()
-                    .addG("gmodern")
+                    .traversalSource("gmodern")
                     .language("gremlin-lang")
                     .bulkResults(true)
                     .create();
@@ -335,7 +336,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final AtomicInteger handshakeRequests = new AtomicInteger(0);
 
         final Cluster cluster = TestClientFactory.build().
-                maxConnectionPoolSize(1).
+                maxConnections(1).
                 interceptors(r -> handshakeRequests.incrementAndGet()).create();
 
         try {
@@ -414,18 +415,20 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldEventuallySucceedAfterChannelLevelError() {
+        final int readMillis = 1000;
         final Cluster cluster = TestClientFactory.build()
                 .reconnectInterval(500)
-                .maxResponseContentLength(32).create(); // Warning: compression can change the content length. Adjust as needed.
+                .readTimeoutMillis(readMillis).create();
         final Client client = cluster.connect();
 
         try {
             try {
-                client.submit("g.inject('x').repeat(concat('x')).times(512)").all().get();
-                fail("Request should have failed because it exceeded the max content length allowed");
+                // sleep on the server longer than the readTimeout so no response chunk arrives in time
+                client.submit("Thread.sleep(" + readMillis * 3 + ")", groovyRequestOptions).all().get();
+                fail("Request should have failed because the readTimeout fired before a response was received");
             } catch (Exception ex) {
                 final Throwable root = ExceptionHelper.getRootCause(ex);
-                assertThat(root.getMessage(), containsString("Response entity too large"));
+                assertThat(root, instanceOf(ReadTimeoutException.class));
             }
 
             assertEquals(2, client.submit("g.inject(2)").all().join().get(0).getInt());
@@ -780,7 +783,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         // described above in the javadoc of the test (though an equivalent number also produced it), but this has
         // been tested to much higher multiples and passes.  note that the maxWaitForConnection setting is high so
         // that the client doesn't timeout waiting for an available connection. obviously this can also be fixed
-        // by increasing the maxConnectionPoolSize.
+        // by increasing the maxConnections.
         final int requests = workerPoolSizeForDriver * 4;
         final Cluster cluster = TestClientFactory.build()
                 .workerPoolSize(workerPoolSizeForDriver)
@@ -913,36 +916,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldFailClientSideWithTooLargeAResponse() {
-        final Cluster cluster = TestClientFactory.build().maxResponseContentLength(1).create();
-        final Client client = cluster.connect();
-
-        try {
-            final String fatty = IntStream.range(0, 100).mapToObj(String::valueOf).collect(Collectors.joining());
-            client.submit(String.format("g.inject('%s')", fatty)).all().get();
-            fail("Should throw an exception.");
-        } catch (Exception re) {
-            final Throwable root = ExceptionHelper.getRootCause(re);
-            assertTrue(root.getMessage().contains("Response entity too large"));
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
-    public void shouldSucceedClientSideWithLargeResponseIfMaxResponseContentLengthZero() throws Exception {
-        final Cluster cluster = TestClientFactory.build().maxResponseContentLength(0).create();
-        final Client client = cluster.connect();
-
-        try {
-            final String fatty = IntStream.range(0, 10000).mapToObj(String::valueOf).collect(Collectors.joining());
-            assertEquals(fatty, client.submit(String.format("g.inject('%s')", fatty)).all().get().get(0).getString());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
     public void shouldNotThrowNoSuchElementException() throws Exception {
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
@@ -1044,7 +1017,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldBeThreadSafeToUseOneClient() throws Exception {
         final Cluster cluster = TestClientFactory.build().workerPoolSize(2)
-                .maxConnectionPoolSize(16).create();
+                .maxConnections(16).create();
         final Client client = cluster.connect();
 
         final Map<Integer, Integer> results = new ConcurrentHashMap<>();
@@ -1249,8 +1222,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldReturnClearExceptionCauseWhenClientIsTooBusyAndConnectionPoolIsFull() throws InterruptedException {
         int maxSize = 1;
         final Cluster cluster = TestClientFactory.build()
-                .maxConnectionPoolSize(1)
-                .connectionSetupTimeoutMillis(100)
+                .maxConnections(1)
+                .connectTimeoutMillis(100)
                 .maxWaitForConnection(150)
                 .create();
 

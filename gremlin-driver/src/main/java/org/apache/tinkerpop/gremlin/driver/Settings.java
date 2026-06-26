@@ -190,8 +190,8 @@ public final class Settings {
             if (connectionPoolConf.containsKey("sslSkipCertValidation"))
                 cpSettings.sslSkipCertValidation = connectionPoolConf.getBoolean("sslSkipCertValidation");
 
-            if (connectionPoolConf.containsKey("maxSize"))
-                cpSettings.maxSize = connectionPoolConf.getInt("maxSize");
+            if (connectionPoolConf.containsKey("maxConnections"))
+                cpSettings.maxConnections = connectionPoolConf.getInt("maxConnections");
 
             if (connectionPoolConf.containsKey("maxWaitForConnection"))
                 cpSettings.maxWaitForConnection = connectionPoolConf.getInt("maxWaitForConnection");
@@ -199,23 +199,32 @@ public final class Settings {
             if (connectionPoolConf.containsKey("maxWaitForClose"))
                 cpSettings.maxWaitForClose = connectionPoolConf.getInt("maxWaitForClose");
 
-            if (connectionPoolConf.containsKey("maxResponseContentLength"))
-                cpSettings.maxResponseContentLength = connectionPoolConf.getInt("maxResponseContentLength");
+            if (connectionPoolConf.containsKey("maxResponseHeaderBytes"))
+                cpSettings.maxResponseHeaderBytes = connectionPoolConf.getInt("maxResponseHeaderBytes");
 
             if (connectionPoolConf.containsKey("reconnectInterval"))
                 cpSettings.reconnectInterval = connectionPoolConf.getInt("reconnectInterval");
 
-            if (connectionPoolConf.containsKey("resultIterationBatchSize"))
-                cpSettings.resultIterationBatchSize = connectionPoolConf.getInt("resultIterationBatchSize");
+            if (connectionPoolConf.containsKey("batchSize"))
+                cpSettings.batchSize = connectionPoolConf.getInt("batchSize");
 
             if (connectionPoolConf.containsKey("validationRequest"))
                 cpSettings.validationRequest = connectionPoolConf.getString("validationRequest");
 
-            if (connectionPoolConf.containsKey("connectionSetupTimeoutMillis"))
-                cpSettings.connectionSetupTimeoutMillis = connectionPoolConf.getLong("connectionSetupTimeoutMillis");
+            if (connectionPoolConf.containsKey("connectTimeoutMillis"))
+                cpSettings.connectTimeout = connectionPoolConf.getInt("connectTimeoutMillis");
 
-            if (connectionPoolConf.containsKey("idleConnectionTimeout"))
-                cpSettings.idleConnectionTimeout = connectionPoolConf.getLong("idleConnectionTimeout");
+            if (connectionPoolConf.containsKey("idleTimeoutMillis"))
+                cpSettings.idleTimeout = connectionPoolConf.getLong("idleTimeoutMillis");
+
+            if (connectionPoolConf.containsKey("keepAliveTimeMillis"))
+                cpSettings.keepAliveTime = connectionPoolConf.getLong("keepAliveTimeMillis");
+
+            if (connectionPoolConf.containsKey("readTimeoutMillis"))
+                cpSettings.readTimeout = connectionPoolConf.getLong("readTimeoutMillis");
+
+            if (connectionPoolConf.containsKey("compression"))
+                cpSettings.compression = Compression.valueOf(connectionPoolConf.getString("compression").toUpperCase());
 
             settings.connectionPool = cpSettings;
         }
@@ -303,7 +312,7 @@ public final class Settings {
         /**
          * The maximum size of a connection pool for a {@link Host}. By default this is set to 128.
          */
-        public int maxSize = ConnectionPool.MAX_POOL_SIZE;
+        public int maxConnections = ConnectionPool.MAX_POOL_SIZE;
 
         /**
          * The amount of time in milliseconds to wait for a new connection before timing out where the default value
@@ -319,10 +328,9 @@ public final class Settings {
         public int maxWaitForClose = Connection.MAX_WAIT_FOR_CLOSE;
 
         /**
-         * The maximum length in bytes of a response message that can be received from the server. The default value is
-         * {@link Integer#MAX_VALUE}.
+         * The maximum size in bytes allowed for the HTTP response headers. The default value is 8192.
          */
-        public long maxResponseContentLength = Connection.MAX_RESPONSE_CONTENT_LENGTH;
+        public int maxResponseHeaderBytes = Connection.MAX_RESPONSE_HEADER_BYTES;
 
         /**
          * The amount of time in milliseconds to wait before trying to reconnect to a dead host. The default value is
@@ -331,10 +339,10 @@ public final class Settings {
         public int reconnectInterval = Connection.RECONNECT_INTERVAL;
 
         /**
-         * The override value for the size of the result batches to be returned from the server. This value is set to
-         * 64 by default.
+         * The default value for the per-request batch size used when a request does not specify one. This value is set
+         * to 64 by default.
          */
-        public int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
+        public int batchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
 
         /**
          * A valid Gremlin script that can be used to test remote operations.
@@ -342,18 +350,37 @@ public final class Settings {
         public String validationRequest = "g.inject(0)";
 
         /**
-         * Duration of time in milliseconds provided for connection setup to complete which includes WebSocket
-         * handshake and SSL handshake. Beyond this duration an exception would be thrown if the handshake is not
-         * complete by then.
+         * Duration of time in milliseconds that bounds TCP connection establishment (transport setup, including the
+         * SSL handshake). Beyond this duration an exception would be thrown if the connection is not established by
+         * then. The default value is 5000.
          */
-        public long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
+        public int connectTimeout = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
 
         /**
          * Time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes.
          * Note that while this value is to be provided as milliseconds it will resolve to
          * second precision. Set this value to 0 to disable this feature.
          */
-        public long idleConnectionTimeout = Connection.CONNECTION_IDLE_TIMEOUT_MILLIS;
+        public long idleTimeout = Connection.CONNECTION_IDLE_TIMEOUT_MILLIS;
+
+        /**
+         * Idle time in milliseconds before TCP keep-alive probes begin on an otherwise idle connection. When set to a
+         * positive value the {@code SO_KEEPALIVE} socket option is enabled and, where supported by the platform/JDK,
+         * the per-socket idle time is configured. The default value is 30000. Set this value to {@code 0} to disable
+         * the feature.
+         */
+        public long keepAliveTime = Connection.KEEP_ALIVE_TIME_MILLIS;
+
+        /**
+         * Idle-read timeout in milliseconds that bounds the time between inbound response chunks. The default value is
+         * 0 which disables the feature.
+         */
+        public long readTimeout = Connection.READ_TIMEOUT_MILLIS;
+
+        /**
+         * The wire {@link Compression} algorithm negotiated with the server. The default is {@link Compression#DEFLATE}.
+         */
+        public Compression compression = Compression.DEFLATE;
 
     }
 

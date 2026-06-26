@@ -207,13 +207,13 @@ public abstract class Client implements RequestSubmitter, RequestSubmitterAsync 
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final String graphOrTraversalSource,
                                                     final Map<String, Object> parameters) {
         final RequestOptions.Builder options = RequestOptions.build();
-        options.addG(graphOrTraversalSource);
+        options.traversalSource(graphOrTraversalSource);
 
         if (parameters != null && !parameters.isEmpty()) {
             parameters.forEach(options::addParameter);
         }
 
-        options.batchSize(cluster.connectionPoolSettings().resultIterationBatchSize);
+        options.batchSize(cluster.connectionPoolSettings().batchSize);
 
         return submitAsync(gremlin, options.create());
     }
@@ -226,7 +226,7 @@ public abstract class Client implements RequestSubmitter, RequestSubmitterAsync 
      * @param options the options to supply for this request
      */
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final RequestOptions options) {
-        final int batchSize = options.getBatchSize().orElse(cluster.connectionPoolSettings().resultIterationBatchSize);
+        final int batchSize = options.getBatchSize().orElse(cluster.connectionPoolSettings().batchSize);
 
         // need to call buildMessage() right away to get client specific configurations, that way request specific
         // ones can override as needed

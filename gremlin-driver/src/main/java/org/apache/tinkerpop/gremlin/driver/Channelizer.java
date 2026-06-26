@@ -28,6 +28,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.proxy.HttpProxyHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.handler.GremlinResponseHandler;
@@ -37,6 +38,7 @@ import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseDecoder;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpStreamingResponseHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.IdleConnectionHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.InactiveChannelHandler;
+import org.apache.tinkerpop.gremlin.driver.handler.ReadTimeoutHandler;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
@@ -50,7 +52,6 @@ import static io.netty.handler.codec.http.HttpClientCodec.DEFAULT_FAIL_ON_MISSIN
 import static io.netty.handler.codec.http.HttpClientCodec.DEFAULT_PARSE_HTTP_AFTER_CONNECT_REQUEST;
 import static io.netty.handler.codec.http.HttpObjectDecoder.DEFAULT_ALLOW_DUPLICATE_CONTENT_LENGTHS;
 import static io.netty.handler.codec.http.HttpObjectDecoder.DEFAULT_INITIAL_BUFFER_SIZE;
-import static io.netty.handler.codec.http.HttpObjectDecoder.DEFAULT_MAX_HEADER_SIZE;
 import static io.netty.handler.codec.http.HttpObjectDecoder.DEFAULT_MAX_INITIAL_LINE_LENGTH;
 import static io.netty.handler.codec.http.HttpObjectDecoder.DEFAULT_VALIDATE_HEADERS;
 
@@ -100,6 +101,8 @@ public interface Channelizer extends ChannelHandler {
 
         protected static final String PIPELINE_GREMLIN_HANDLER = "gremlin-handler";
         protected static final String PIPELINE_SSL_HANDLER = "gremlin-ssl-handler";
+        protected static final String PIPELINE_PROXY_HANDLER = "gremlin-proxy-handler";
+        protected static final String PIPELINE_READ_TIMEOUT_HANDLER = "read-timeout-handler";
         protected static final String PIPELINE_IDLE_STATE_HANDLER = "idle-state-handler";
         protected static final String PIPELINE_IDLE_CONNECTION_HANDLER = "idle-connection-handler";
         protected static final String PIPELINE_HTTP_CODEC = "http-codec";
@@ -139,6 +142,17 @@ public interface Channelizer extends ChannelHandler {
         @Override
         protected void initChannel(final SocketChannel socketChannel) {
             final ChannelPipeline pipeline = socketChannel.pipeline();
+
+            // The proxy handler must run before the SSL handler so the CONNECT tunnel is established prior to the
+            // TLS handshake.
+            final ProxyOptions proxy = cluster.getProxy();
+            if (proxy != null) {
+                final HttpProxyHandler proxyHandler = proxy.hasCredentials()
+                        ? new HttpProxyHandler(proxy.getAddress(), proxy.getUsername(), proxy.getPassword())
+                        : new HttpProxyHandler(proxy.getAddress());
+                pipeline.addLast(PIPELINE_PROXY_HANDLER, proxyHandler);
+            }
+
             final Optional<SslContext> sslCtx;
             if (supportsSsl()) {
                 try {
@@ -204,7 +218,8 @@ public interface Channelizer extends ChannelHandler {
 
             httpCompressionDecoder = new HttpContentDecompressionHandler();
             gremlinRequestEncoder = new HttpGremlinRequestEncoder(cluster.getSerializer(), cluster.getRequestInterceptors(),
-                    cluster.isUserAgentOnConnectEnabled(), cluster.isBulkResultsEnabled(), connection.getUri());
+                    cluster.isUserAgentOnConnectEnabled(), cluster.isBulkResultsEnabled(),
+                    cluster.getCompression() == Compression.DEFLATE, connection.getUri());
 
             final MessageSerializer<?> serializer = cluster.getSerializer();
             if (serializer instanceof GraphBinaryMessageSerializerV4) {
@@ -212,16 +227,16 @@ public interface Channelizer extends ChannelHandler {
                 final GraphBinaryReader graphBinaryReader =
                         ((GraphBinaryMessageSerializerV4) serializer).getMapper().getReader();
                 streamingResponseHandler = new HttpStreamingResponseHandler(
-                        graphBinaryReader, pending, cluster.streamingReaderPool(), cluster.getMaxResponseContentLength());
+                        graphBinaryReader, pending, cluster.streamingReaderPool());
             } else {
                 useStreaming = false;
                 gremlinResponseDecoder = new HttpGremlinResponseDecoder(serializer);
             }
 
-            if (cluster.getIdleConnectionTimeout() > 0) {
-                final int idleConnectionTimeout = (int) (cluster.getIdleConnectionTimeout() / 1000);
+            if (cluster.getIdleTimeout() > 0) {
+                final int idleConnectionTimeout = (int) (cluster.getIdleTimeout() / 1000);
                 idleStateHandler = new IdleStateHandler(idleConnectionTimeout, idleConnectionTimeout, 0);
-                idleConnectionHandler = new IdleConnectionHandler();
+                idleConnectionHandler = new IdleConnectionHandler(() -> pending.get() != null);
             }
         }
 
@@ -245,25 +260,32 @@ public interface Channelizer extends ChannelHandler {
             if (!supportsSsl() && "https".equalsIgnoreCase(scheme))
                 throw new IllegalStateException("To use https scheme ensure that enableSsl is set to true in configuration");
 
-            if (cluster.getIdleConnectionTimeout() > 0) {
+            if (cluster.getIdleTimeout() > 0) {
                 // idle connection handling is enabled
                 pipeline.addLast(PIPELINE_IDLE_STATE_HANDLER, idleStateHandler);
                 pipeline.addLast(PIPELINE_IDLE_CONNECTION_HANDLER, idleConnectionHandler);
             }
 
-            final HttpClientCodec handler = new HttpClientCodec(DEFAULT_MAX_INITIAL_LINE_LENGTH, DEFAULT_MAX_HEADER_SIZE,
+            final HttpClientCodec handler = new HttpClientCodec(DEFAULT_MAX_INITIAL_LINE_LENGTH,
+                    cluster.getMaxResponseHeaderBytes(),
                     1024 * 1024, DEFAULT_FAIL_ON_MISSING_RESPONSE,
                     DEFAULT_VALIDATE_HEADERS, DEFAULT_INITIAL_BUFFER_SIZE, DEFAULT_PARSE_HTTP_AFTER_CONNECT_REQUEST,
                     DEFAULT_ALLOW_DUPLICATE_CONTENT_LENGTHS, false);
 
             pipeline.addLast(PIPELINE_HTTP_CODEC, handler);
+
+            // Idle-read timeout, armed per request (not static) so it bounds the gap between
+            // response chunks without firing while a pooled connection sits idle between requests.
+            if (cluster.getReadTimeout() > 0) {
+                pipeline.addLast(PIPELINE_READ_TIMEOUT_HANDLER, new ReadTimeoutHandler(cluster.getReadTimeout()));
+            }
+
             if (useStreaming) {
                 pipeline.addLast(PIPELINE_HTTP_DECOMPRESSION_HANDLER, httpCompressionDecoder);
                 pipeline.addLast(PIPELINE_HTTP_DECODER, streamingResponseHandler);
                 pipeline.addLast(PIPELINE_HTTP_ENCODER, gremlinRequestEncoder);
             } else {
-                pipeline.addLast(PIPELINE_HTTP_AGGREGATOR, new HttpObjectAggregator(cluster.getMaxResponseContentLength() > 0
-                        ? (int) cluster.getMaxResponseContentLength() : Integer.MAX_VALUE));
+                pipeline.addLast(PIPELINE_HTTP_AGGREGATOR, new HttpObjectAggregator(Integer.MAX_VALUE));
                 pipeline.addLast(PIPELINE_HTTP_ENCODER, gremlinRequestEncoder);
                 pipeline.addLast(PIPELINE_HTTP_DECOMPRESSION_HANDLER, httpCompressionDecoder);
                 pipeline.addLast(PIPELINE_HTTP_DECODER, gremlinResponseDecoder);

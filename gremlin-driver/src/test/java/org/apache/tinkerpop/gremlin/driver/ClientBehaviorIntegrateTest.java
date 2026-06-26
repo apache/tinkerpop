@@ -22,6 +22,8 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import nl.altindag.log.LogCaptor;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.timeout.ReadTimeoutException;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.socket.server.SimpleTestServer;
 import org.apache.tinkerpop.gremlin.socket.server.SocketServerConstants;
@@ -262,18 +264,23 @@ public class ClientBehaviorIntegrateTest {
 
     @Test
     public void shouldTimeoutWhenServerNeverResponds() throws Exception {
+        // The server accepts the request but never responds. A per-request readTimeout bounds the in-flight wait
+        // (idleTimeout only reaps connections idle in the pool between requests, not stalled in-flight responses).
         final Cluster timeoutCluster = buildCluster()
-                .idleConnectionTimeoutMillis(2000)
+                .readTimeoutMillis(2000)
                 .create();
         final Client timeoutClient = timeoutCluster.connect();
         try {
             try {
-                timeoutClient.submit(SocketServerConstants.GREMLIN_NO_RESPONSE).all().get(5, TimeUnit.SECONDS);
-                fail("Expected ExecutionException");
+                timeoutClient.submit(SocketServerConstants.GREMLIN_NO_RESPONSE).all().get(10, TimeUnit.SECONDS);
+                fail("Expected ExecutionException due to read timeout");
             } catch (ExecutionException e) {
-                assertThat(e.getCause(), instanceOf(RuntimeException.class));
-                assertTrue(e.getCause().getMessage().contains("Idle timeout occurred before response could be received"));
+                final Throwable root = ExceptionHelper.getRootCause(e);
+                assertThat(root, instanceOf(ReadTimeoutException.class));
             }
+
+            // allow the readTimeout-closed connection to be torn down and replaced before retrying
+            TimeUnit.MILLISECONDS.sleep(Connection.MAX_WAIT_FOR_CLOSE + 1000);
 
             // same client should recover - pool replaces the dead connection
             final List<Result> results = timeoutClient.submit(SocketServerConstants.GREMLIN_SINGLE_VERTEX).all().get();
@@ -329,7 +336,7 @@ public class ClientBehaviorIntegrateTest {
         final ExecutorService executor = Executors.newFixedThreadPool(count * 2);
 
         // Use a fresh cluster with enough pool size
-        final Cluster concurrentCluster = buildCluster().maxConnectionPoolSize(count * 2).create();
+        final Cluster concurrentCluster = buildCluster().maxConnections(count * 2).create();
         final Client concurrentClient = concurrentCluster.connect();
 
         try {

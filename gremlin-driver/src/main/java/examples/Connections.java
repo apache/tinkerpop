@@ -74,7 +74,7 @@ public class Connections {
     // See reference/#gremlin-java-configuration for full list of configurations
     private static void withCluster() throws Exception {
         Cluster cluster = Cluster.build(SERVER_HOST).
-            maxConnectionPoolSize(8).
+            maxConnections(8).
             path("/gremlin").
             port(SERVER_PORT).
             serializer(new GraphBinaryMessageSerializerV4()).

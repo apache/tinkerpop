@@ -151,10 +151,10 @@ public final class RequestOptions {
         }
 
         /**
-         * The aliases to set on the request.
+         * Sets the traversal source (or graph) alias to rebind to "g" on the request.
          */
-        public Builder addG(final String graphOrTraversalSource) {
-            this.graphOrTraversalSource = graphOrTraversalSource;
+        public Builder traversalSource(final String traversalSource) {
+            this.graphOrTraversalSource = traversalSource;
             return this;
         }
 

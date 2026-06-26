@@ -25,6 +25,20 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Standardized `gremlin-driver` (Java) connection options
+** Renamed the `connectionSetupTimeoutMillis` builder option to `connectTimeout` (default lowered from 15s to 5s) and actually wired it to `ChannelOption.CONNECT_TIMEOUT_MILLIS` on the connection bootstrap; it previously was validated but never applied. The old name is removed. Settable as `connectTimeout(Duration)` or `connectTimeoutMillis(int)` (YAML key `connectionPool.connectTimeoutMillis`). *(breaking)*
+** Renamed `maxConnectionPoolSize` to `maxConnections` (default 128), `idleConnectionTimeoutMillis` to `idleTimeout` (default 180s), and `resultIterationBatchSize` to `batchSize` (default 64; the connection-level default that fills a request's per-request `batchSize` when unset, mirroring how `bulkResults` shares one name across scopes); the old builder methods, accessors, and YAML keys are removed. *(breaking)*
+** Added `readTimeout` (default 0/off), a per-request idle-read timeout armed when a request is written and reset on each inbound response chunk via a new `ReadTimeoutHandler` inserted after the HTTP codec, so it never fires while a pooled connection is idle between requests. Settable as `readTimeout(Duration)` or `readTimeoutMillis(long)` (YAML key `connectionPool.readTimeoutMillis`).
+** Scoped `idleTimeout` to pooled connections only: an idle event that fires while a request is in flight is now ignored, so `idleTimeout` reaps only connections idle in the pool and no longer overlaps `readTimeout` on the in-flight window. A stalled in-flight response is bounded solely by `readTimeout`. Settable as `idleTimeout(Duration)` or `idleTimeoutMillis(long)` (YAML key `connectionPool.idleTimeoutMillis`). *(breaking)*
+** Renamed `RequestOptions.Builder.addG` to `traversalSource`; the old name is removed. *(breaking)*
+** Added `keepAliveTime` (default 30s/30000ms), the idle time before TCP keep-alive probes begin, enabling `ChannelOption.SO_KEEPALIVE` on the connection bootstrap and configuring the per-socket idle time via the JDK `TCP_KEEPIDLE` extended socket option where supported (JDK 11+ on Linux/macOS); it is a no-op fallback to the OS default idle time on platforms/JDKs where that option is unavailable. Set to `0` to disable. Settable as `keepAliveTime(Duration)` or `keepAliveTimeMillis(long)` (YAML key `connectionPool.keepAliveTimeMillis`).
+** Added a `url(String)` builder method that configures the endpoint from a single URL, deriving SSL from the scheme (`https` enables, `http` disables), the contact point from the host, and the port and path when present; `addContactPoint(s)`/`port`/`path` remain for multi-host configurations.
+** Added `compression`, a `{NONE, DEFLATE}` enum defaulting to `DEFLATE` (compression on by default; set `NONE` to disable). `Accept-Encoding: deflate` is sent whenever `compression == DEFLATE`.
+** Added `maxResponseHeaderBytes` (default 8192) exposing the Netty `HttpClientCodec` max header size, previously hardcoded.
+** Added an `ssl(SslContext)` builder accepting a fully configured Netty `SslContext`.
+** Added a `proxy(ProxyOptions)` builder that inserts a Netty `HttpProxyHandler` into the pipeline before the SSL handler.
+** Removed the `maxResponseContentLength` connection option and its `HttpObjectAggregator` cap; responses are streamed and the new `readTimeout` is the partial mitigation.
+** Reconciled the `validationRequest` default: the builder default is now `g.inject(0)` to match the `Settings` default (it was previously `''`).
 * Added configurable CORS `allowedOrigins` setting to Gremlin Server; warns when wildcard origin is used alongside authentication.
 * Fixed `ByteBuf` leak in `GraphBinaryMessageSerializerV4` when serialization throws an `IOException`.
 * Changed `Tree` to no longer extend `HashMap`; it is now a final class with a tree-shaped API (`childAt`, `hasChild`, `contains`, `findSubtree`, `getOrCreateChild`, `getNodesAtDepth`, `getLeafNodes`, `nodeCount`) and is no longer a `Map`.

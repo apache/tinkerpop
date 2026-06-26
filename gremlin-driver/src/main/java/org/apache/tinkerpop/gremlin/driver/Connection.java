@@ -26,9 +26,12 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPromise;
+import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
+import java.net.SocketOption;
 import java.net.URI;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
@@ -46,11 +49,23 @@ import java.util.concurrent.atomic.AtomicReference;
 final class Connection {
     public static final int MAX_WAIT_FOR_CONNECTION = 16000;
     public static final int MAX_WAIT_FOR_CLOSE = 3000;
-    public static final long MAX_RESPONSE_CONTENT_LENGTH = Integer.MAX_VALUE;
     public static final int RECONNECT_INTERVAL = 1000;
     public static final int RESULT_ITERATION_BATCH_SIZE = 64;
-    public static final long CONNECTION_SETUP_TIMEOUT_MILLIS = 15000;
+    public static final int CONNECTION_SETUP_TIMEOUT_MILLIS = 5000;
     public static final long CONNECTION_IDLE_TIMEOUT_MILLIS = 180000;
+    /**
+     * Default idle time in milliseconds before TCP keep-alive probes begin on an otherwise idle connection.
+     */
+    public static final long KEEP_ALIVE_TIME_MILLIS = 30000;
+    /**
+     * Default idle-read timeout in milliseconds. A value of {@code 0} disables the feature.
+     */
+    public static final long READ_TIMEOUT_MILLIS = 0;
+    /**
+     * Default maximum size in bytes of the HTTP response headers. Matches Netty's
+     * {@code HttpObjectDecoder.DEFAULT_MAX_HEADER_SIZE}.
+     */
+    public static final int MAX_RESPONSE_HEADER_BYTES = 8192;
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
 
     private final Channel channel;
@@ -103,6 +118,16 @@ final class Connection {
 
         final Bootstrap b = this.cluster.getFactory().createBootstrap();
         try {
+            // Bound the TCP connection establishment (transport setup, including SSL handshake). This is the
+            // connectTimeout option and applies to b.connect() below.
+            configureConnectTimeout(b, cluster.getConnectTimeout());
+
+            // Configure TCP keep-alive. SO_KEEPALIVE turns on OS-level keep-alive probes for the socket. When a
+            // positive keepAliveTime is provided, the per-socket idle time before probes begin is configured via the
+            // JDK extended socket option TCP_KEEPIDLE (JDK 11+, supported on Linux/macOS). That option may be
+            // unavailable on some platforms/JDKs, so it is applied best-effort and is a no-op where unsupported.
+            configureKeepAlive(b, cluster.getKeepAliveTime());
+
             channelizer = new Channelizer.HttpChannelizer();
             channelizer.init(this);
             b.channel(NioSocketChannel.class).handler(channelizer);
@@ -133,6 +158,59 @@ final class Connection {
             logger.debug("Created new connection for {}", uri);
         } catch (Exception ex) {
             throw new ConnectionException(uri, "Could not open " + getConnectionInfo(true), ex);
+        }
+    }
+
+    /**
+     * Configures the connection establishment timeout on the supplied {@link Bootstrap}. The {@code connectTimeout}
+     * is expressed in milliseconds and bounds the TCP connection setup (including the SSL handshake) performed by
+     * {@code b.connect()}. It is applied via Netty's {@link ChannelOption#CONNECT_TIMEOUT_MILLIS}.
+     */
+    static void configureConnectTimeout(final Bootstrap b, final int connectTimeout) {
+        b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout);
+    }
+
+    /**
+     * Configures TCP keep-alive on the supplied {@link Bootstrap}. {@code SO_KEEPALIVE} is enabled whenever a
+     * positive {@code keepAliveTime} is provided. The idle time before keep-alive probes begin is set via the JDK
+     * extended socket option {@code TCP_KEEPIDLE} (available on JDK 11+ on Linux/macOS). When that option is not
+     * available on the running platform/JDK, configuring it is skipped and {@code SO_KEEPALIVE} is still applied, so
+     * the OS default idle time is used. A {@code keepAliveTime} of {@code 0} disables keep-alive entirely.
+     */
+    static void configureKeepAlive(final Bootstrap b, final long keepAliveTime) {
+        if (keepAliveTime <= 0)
+            return;
+
+        b.option(ChannelOption.SO_KEEPALIVE, true);
+
+        final SocketOption<Integer> tcpKeepIdle = getTcpKeepIdleOption();
+        if (tcpKeepIdle != null) {
+            try {
+                // TCP_KEEPIDLE is expressed in seconds; resolve from milliseconds with a one second floor.
+                final int keepIdleSeconds = (int) Math.max(1, keepAliveTime / 1000);
+                b.option(NioChannelOption.of(tcpKeepIdle), keepIdleSeconds);
+            } catch (Exception | NoClassDefFoundError ex) {
+                // best-effort - leave SO_KEEPALIVE enabled with the OS default idle time
+                logger.debug("Unable to configure TCP_KEEPIDLE; falling back to OS default keep-alive idle time", ex);
+            }
+        } else {
+            logger.debug("TCP_KEEPIDLE socket option is not available on this platform/JDK; using OS default " +
+                    "keep-alive idle time with SO_KEEPALIVE enabled");
+        }
+    }
+
+    /**
+     * Resolves the JDK {@code jdk.net.ExtendedSocketOptions.TCP_KEEPIDLE} socket option reflectively so that the
+     * driver compiles and runs on platforms/JDKs where it is unavailable. Returns {@code null} when it cannot be
+     * resolved.
+     */
+    @SuppressWarnings("unchecked")
+    private static SocketOption<Integer> getTcpKeepIdleOption() {
+        try {
+            final Class<?> extendedSocketOptions = Class.forName("jdk.net.ExtendedSocketOptions");
+            return (SocketOption<Integer>) extendedSocketOptions.getField("TCP_KEEPIDLE").get(null);
+        } catch (Throwable t) {
+            return null;
         }
     }
 

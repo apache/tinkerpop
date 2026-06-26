@@ -206,7 +206,7 @@ public class ProfilingApplication {
         final String script = options.getOrDefault("script", "g.inject(1)").toString();
 
         final Cluster cluster = Cluster.build(host)
-                .maxConnectionPoolSize(maxConnectionPoolSize)
+                .maxConnections(maxConnectionPoolSize)
                 .nioPoolSize(nioPoolSize)
                 .maxWaitForConnection(maxWaitForConnection)
                 .serializer(Serializers.valueOf(serializer))
