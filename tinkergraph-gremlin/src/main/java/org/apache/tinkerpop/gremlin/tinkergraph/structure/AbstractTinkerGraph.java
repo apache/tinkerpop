@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.LabelCardinality;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -64,6 +65,7 @@ public abstract class AbstractTinkerGraph implements Graph {
     public static final String GREMLIN_TINKERGRAPH_GRAPH_FORMAT = "gremlin.tinkergraph.graphFormat";
     public static final String GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES = "gremlin.tinkergraph.allowNullPropertyValues";
     public static final String GREMLIN_TINKERGRAPH_SERVICE = "gremlin.tinkergraph.service";
+    public static final String GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY = "gremlin.tinkergraph.vertexLabelCardinality";
 
     protected AtomicLong currentId = new AtomicLong(-1L);
     protected Map<Object, VertexProperty> vertexProperties = new ConcurrentHashMap<>();
@@ -78,6 +80,10 @@ public abstract class AbstractTinkerGraph implements Graph {
     protected IdManager<VertexProperty> vertexPropertyIdManager;
     protected VertexProperty.Cardinality defaultVertexPropertyCardinality;
     protected boolean allowNullPropertyValues;
+    protected LabelCardinality vertexLabelCardinality;
+    protected LabelCardinality edgeLabelCardinality;
+    protected String defaultVertexLabel;
+    protected String defaultEdgeLabel;
 
     protected TinkerServiceRegistry serviceRegistry;
 
@@ -354,12 +360,56 @@ public abstract class AbstractTinkerGraph implements Graph {
 
     protected abstract void addInEdge(final TinkerVertex vertex, final String label, final Edge edge);
 
+    /**
+     * Add an edge to the per-vertex adjacency maps under the given label.
+     * Used when labels are added to an existing edge.
+     *
+     * @param edge  the edge to register
+     * @param label the label under which to register the edge
+     * @since 4.0.0
+     */
+    public abstract void addEdgeToAdjacency(final TinkerEdge edge, final String label);
+
+    /**
+     * Remove an edge from the per-vertex adjacency maps for the given label.
+     * Used when labels are removed from an existing edge.
+     *
+     * @param edge  the edge to unregister
+     * @param label the label from which to unregister the edge
+     * @since 4.0.0
+     */
+    public abstract void removeEdgeFromAdjacency(final TinkerEdge edge, final String label);
+
+    /**
+     * Called when a vertex's labels are modified to allow the graph to update any internal label indices.
+     * The default implementation is a no-op since TinkerGraph does not maintain a separate label index.
+     *
+     * @param vertex the vertex whose labels have changed
+     * @since 4.0.0
+     */
+    public void updateVertexLabelIndex(final TinkerVertex vertex) {
+        // no-op by default - TinkerGraph does not maintain a separate label index
+    }
+
     protected TinkerVertex createTinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph) {
         return new TinkerVertex(id, label, graph);
     }
 
     protected TinkerVertex createTinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph, final long currentVersion) {
         return new TinkerVertex(id, label, graph, currentVersion);
+    }
+
+    /**
+     * Creates a TinkerVertex with multiple labels.
+     *
+     * @param id     the vertex id
+     * @param labels the set of labels for the vertex
+     * @param graph  the graph instance
+     * @return a new TinkerVertex
+     * @since 4.0.0
+     */
+    protected TinkerVertex createTinkerVertex(final Object id, final Set<String> labels, final AbstractTinkerGraph graph) {
+        return new TinkerVertex(id, labels, graph);
     }
 
     protected TinkerEdge createTinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex) {
@@ -402,6 +452,16 @@ public abstract class AbstractTinkerGraph implements Graph {
         @Override
         public VertexProperty.Cardinality getCardinality(final String key) {
             return defaultVertexPropertyCardinality;
+        }
+
+        @Override
+        public LabelCardinality getLabelCardinality() {
+            return vertexLabelCardinality;
+        }
+
+        @Override
+        public String getDefaultLabel() {
+            return defaultVertexLabel;
         }
     }
 

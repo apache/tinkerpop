@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.LabelCardinality;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -92,6 +93,12 @@ public class TinkerGraph extends AbstractTinkerGraph {
                 configuration.getString(GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.single.name()));
         allowNullPropertyValues = configuration.getBoolean(GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, false);
 
+        vertexLabelCardinality = LabelCardinality.valueOf(
+                configuration.getString(GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, LabelCardinality.ONE.name()));
+        edgeLabelCardinality = LabelCardinality.ONE;
+        defaultVertexLabel = Vertex.DEFAULT_LABEL;
+        defaultEdgeLabel = Edge.DEFAULT_LABEL;
+
         graphLocation = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
         graphFormat = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_FORMAT, null);
 
@@ -141,7 +148,7 @@ public class TinkerGraph extends AbstractTinkerGraph {
     public Vertex addVertex(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         Object idValue = vertexIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
-        final String label = ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL);
+        final Set<String> labels = ElementHelper.getLabelsValue(keyValues).orElse(null);
 
         if (null != idValue) {
             if (this.vertices.containsKey(idValue))
@@ -150,10 +157,12 @@ public class TinkerGraph extends AbstractTinkerGraph {
             idValue = vertexIdManager.getNextId(this);
         }
 
-        final Vertex vertex = createTinkerVertex(idValue, label, this);
+        final Vertex vertex = createTinkerVertex(idValue, labels, this);
         ElementHelper.attachProperties(vertex, VertexProperty.Cardinality.list, keyValues);
         this.vertices.put(vertex.id(), vertex);
-        vertexLabelCounts.computeIfAbsent(label, l -> new AtomicInteger()).incrementAndGet();
+        for (final String l : vertex.labels()) {
+            vertexLabelCounts.computeIfAbsent(l, k -> new AtomicInteger()).incrementAndGet();
+        }
 
         return vertex;
     }
@@ -162,8 +171,11 @@ public class TinkerGraph extends AbstractTinkerGraph {
     public void removeVertex(final Object vertexId)
     {
         final Vertex removed = this.vertices.remove(vertexId);
-        if (removed != null)
-            vertexLabelCounts.computeIfPresent(removed.label(), (l, c) -> { c.decrementAndGet(); return c; });
+        if (removed != null) {
+            for (final String l : removed.labels()) {
+                vertexLabelCounts.computeIfPresent(l, (k, c) -> { c.decrementAndGet(); return c; });
+            }
+        }
     }
 
     @Override
@@ -327,6 +339,36 @@ public class TinkerGraph extends AbstractTinkerGraph {
             vertex.inEdges.put(label, edges);
         }
         edges.add(edge);
+    }
+
+    @Override
+    public void addEdgeToAdjacency(final TinkerEdge edge, final String label) {
+        final TinkerVertex outV = (TinkerVertex) edge.outVertex();
+        final TinkerVertex inV = (TinkerVertex) edge.inVertex();
+        if (null == outV.outEdges) outV.outEdges = new HashMap<>();
+        outV.outEdges.computeIfAbsent(label, k -> new HashSet<>()).add(edge);
+        if (null == inV.inEdges) inV.inEdges = new HashMap<>();
+        inV.inEdges.computeIfAbsent(label, k -> new HashSet<>()).add(edge);
+    }
+
+    @Override
+    public void removeEdgeFromAdjacency(final TinkerEdge edge, final String label) {
+        final TinkerVertex outV = (TinkerVertex) edge.outVertex();
+        final TinkerVertex inV = (TinkerVertex) edge.inVertex();
+        if (outV.outEdges != null) {
+            final Set<Edge> edges = outV.outEdges.get(label);
+            if (edges != null) {
+                edges.remove(edge);
+                if (edges.isEmpty()) outV.outEdges.remove(label);
+            }
+        }
+        if (inV.inEdges != null) {
+            final Set<Edge> edges = inV.inEdges.get(label);
+            if (edges != null) {
+                edges.remove(edge);
+                if (edges.isEmpty()) inV.inEdges.remove(label);
+            }
+        }
     }
 
     /**
