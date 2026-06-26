@@ -82,6 +82,74 @@ export class GraphTraversalSource {
   }
 
   /**
+   * Runs a unit of work inside a transaction, owning the full lifecycle.
+   *
+   * The transaction is begun automatically and the resulting transaction-bound
+   * <code>GraphTraversalSource</code> (<code>gtx</code>) is passed to the
+   * callback as its sole argument. Only <code>gtx</code> is in scope inside the
+   * callback, which avoids accidentally issuing traversals against the
+   * non-transactional <code>g</code>.
+   *
+   * On normal completion of the callback the transaction is committed; on any
+   * abnormal exit (a thrown error or a rejected promise) the transaction is
+   * rolled back. This is a single-shot operation: there is exactly one attempt
+   * (begin -> run -> commit/rollback) and no retry. A second transaction may not
+   * be opened from inside the callback (calling <code>gtx.tx().begin()</code>
+   * throws via the existing double-begin guard).
+   *
+   * The callback may be synchronous or asynchronous; its return value (or the
+   * value its promise resolves to) is awaited and returned from
+   * <code>executeInTx</code>. If the callback returns nothing the result is
+   * <code>undefined</code>.
+   *
+   * Error handling: if the callback throws/rejects, the original error is
+   * re-raised unchanged after rollback is attempted. If the commit itself fails,
+   * the commit error propagates and a rollback is still attempted afterward for
+   * server-side hygiene. In both cases a failed rollback during cleanup is logged
+   * as a warning and never replaces the primary error.
+   *
+   * @param txWork callback that receives the transaction-bound GraphTraversalSource
+   * @returns {Promise<T>} resolves to the callback's value (undefined if none)
+   */
+  async executeInTx<T>(txWork: (gtx: GraphTraversalSource) => T | Promise<T>): Promise<T> {
+    const tx = this.tx();
+    const gtx = await tx.begin();
+
+    let result: T;
+    // Phase 1: run the user's work. If it throws, roll back and rethrow the body error - the
+    // throw below exits the method, so a failed body never reaches the commit in phase 2.
+    try {
+      result = await txWork(gtx);
+    } catch (bodyError) {
+      try {
+        await tx.rollback();
+      } catch (rollbackError) {
+        console.warn('Rollback failed after transaction body error', rollbackError);
+      }
+      // Re-raise the exact original error; rollback failures never replace it.
+      throw bodyError;
+    }
+
+    // Phase 2: the body succeeded, so commit. A separate try because this failure mode is
+    // distinct (commit, not body): we still roll back for server hygiene, then rethrow the
+    // commit error as the primary error.
+    try {
+      await tx.commit();
+    } catch (commitError) {
+      try {
+        // Attempt rollback so the server does not keep the transaction around.
+        await tx.rollback();
+      } catch (rollbackError) {
+        console.warn('Rollback failed after commit failure', rollbackError);
+      }
+      // The commit error stays primary; rollback was only for server hygiene.
+      throw commitError;
+    }
+
+    return result;
+  }
+
+  /**
    * @param graphComputer
    * @param workers
    * @param result

@@ -172,6 +172,19 @@ func (t *Transaction) Submit(gremlin string, options ...RequestOptions) (ResultS
 	return t.client.SubmitWithOptions(gremlin, opts)
 }
 
+// logRollbackWarning logs a warning that a rollback attempted during transaction
+// cleanup failed. The rollback failure is non-fatal: the primary body or commit
+// error still propagates to the caller.
+//
+// It backs the rollback-cleanup handling in the GraphTraversalSource transaction
+// closure helpers (ExecuteInTx / EvaluateInTx); those callers live in the same
+// package and reach the driver's logHandler through this Transaction method.
+func (t *Transaction) logRollbackWarning(rbErr error) {
+	if t.client != nil && t.client.logHandler != nil {
+		t.client.logHandler.logf(Warning, rollbackFailedDuringCleanup, rbErr.Error())
+	}
+}
+
 func extractTransactionId(results []*Result) (string, error) {
 	if len(results) == 0 {
 		return "", fmt.Errorf("server did not return transaction ID")

@@ -151,6 +151,33 @@ Key behaviors consistent across all GLVs:
 See the <<gremlin-drivers-variants,Gremlin Drivers and Variants>> reference documentation for language-specific
 syntax and examples.
 
+==== Managed Transaction Blocks
+
+In addition to the manual `begin()`/`commit()`/`rollback()` lifecycle, every GLV (including the Java driver and embedded
+Java graphs) now offers closure-based convenience methods directly on `GraphTraversalSource` (`g`). You hand `g` a
+function that receives the transaction-bound `g` (`gtx`), and the transaction lifecycle is managed for you: the
+transaction is begun, your function runs, and it is committed on normal completion or rolled back if your function
+raises. This reduces the common begin/do-work/commit boilerplate and makes it harder to accidentally run a traversal
+against the non-transactional `g`, since only the transactional source is in scope inside the closure. The methods are a
+Traversal-API convenience (they live on `g`, not on the `Transaction` returned by `g.tx()`).
+
+The method naming follows each language's idiom (the value-returning form is `evaluateInTx` rather than `call`, because
+`call` is already the `call()` service step on `GraphTraversalSource`):
+
+* **Java**: `g.executeInTx(Consumer)` (no return) and `g.evaluateInTx(Function)` (returns the body's value).
+* **Python**: `g.execute_in_tx(fn)` — a single method that returns whatever the function returns.
+* **JavaScript**: `await g.executeInTx(fn)` — the callback may be `async`; resolves to the callback's return value.
+* **.NET**: `g.ExecuteInTxAsync(Func<..,Task>)` and `g.EvaluateInTxAsync<T>(Func<..,Task<T>>)`, both accepting an optional `CancellationToken`.
+* **Go**: `g.ExecuteInTx(func(*GraphTraversalSource) error) error` and `g.EvaluateInTx(func(*GraphTraversalSource) (interface{}, error)) (interface{}, error)`.
+
+The closure runs the transaction exactly once (no automatic retry). If the function fails, the original error is
+re-raised after rollback; if `commit()` fails, the commit error is raised and a rollback is still attempted to release
+server-side resources. The manual `begin()`/`commit()`/`rollback()` API remains available and unchanged for advanced
+use. See the <<gremlin-drivers-variants,Gremlin Drivers and Variants>> reference documentation for language-specific
+examples.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3253[TINKERPOP-3253]
+
 ==== Transaction Default Close Behavior Changed
 
 The default behavior of `close()` on a remote transaction has been changed from `commit` to `rollback` across all

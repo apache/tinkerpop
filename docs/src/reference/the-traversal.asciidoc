@@ -60,8 +60,54 @@ traversal strategies may not function properly.
 image:gremlin-coins.png[width=100,float=right] A link:http://en.wikipedia.org/wiki/Database_transaction[database transaction]
 represents a unit of work to execute against the database. A traversals unit of work is affected by usage convention
 (i.e. the method of <<connecting-gremlin, connecting>>) and the graph provider's transaction model. Without diving
-deeply into different conventions and models the most general and recommended approach to working with transactions is
-demonstrated as follows:
+deeply into different conventions and models, the recommended way to work with transactions is to wrap the unit of
+work in a closure passed to `executeInTx` (or `evaluateInTx` when a value must be returned), which manages the
+transaction lifecycle for you:
+
+[source,java]
+----
+GraphTraversalSource g = traversal().with(graph);
+// or
+GraphTraversalSource g = traversal().with(conn);
+
+// the closure receives the transaction-bound gtx; the transaction is begun
+// automatically, committed when the closure completes normally, and rolled
+// back if it throws
+g.executeInTx(gtx -> {
+    gtx.addV('person').iterate();
+    gtx.addV('software').iterate();
+});
+
+// use evaluateInTx when the unit of work needs to return a value
+long count = g.evaluateInTx(gtx -> gtx.V().count().next());
+----
+
+This closure form is preferred because it guarantees correctness by default: the transaction is always committed on
+success and rolled back on any error (or other abnormal exit), so partial work is never left dangling and there is no
+way to forget a `commit()` or a `rollback()` in an error path. It also reduces boilerplate, collapsing the common
+begin/do-work/commit cycle into a single call and removing the repetitive try/catch lifecycle management that is easy
+to get subtly wrong. Because the closure receives `gtx` as its argument, the transactional source is the one already
+in hand for the unit of work, making it natural to run traversals against `gtx` rather than accidentally against the
+non-transactional `g` (which would execute as a separate implicit transaction).
+
+In Java, a `GraphTraversalSource` can be backed by either a remote connection or an embedded graph, and the two model
+transactions differently. In the remote case, `g.tx()` returns a distinct transaction object each time, keyed by a
+server-side transaction ID, and the `gtx` spawned from it is a genuinely separate `GraphTraversalSource` from `g`.
+Issuing a traversal against `g` instead of `gtx` silently runs as its own implicit transaction. In the embedded case,
+`g.tx()` returns a thread-bound transaction (the traditional Java model in which the transaction is associated with the
+current thread), so `g` and `gtx` actually share the same transaction scope. Because the closure hands you the correct
+transaction-bound `gtx` and owns the lifecycle, the exact same code is correct under both paradigms; you do not have to
+reason about whether `g` and `gtx` refer to the same underlying transaction. (The non-Java GLVs are always remote, so
+this distinction does not arise there.)
+
+The closure runs the unit of work exactly once (there is no automatic retry). If the closure throws, the original
+error is re-raised after the rollback. If the `commit()` itself fails, the commit error is raised and a rollback is
+still attempted to release server-side resources.
+
+Manual transaction control (calling `begin()`, `commit()`, and `rollback()` yourself, shown below) remains fully
+supported, but it should only be reached for when the closure form does not fit the use case. Examples include when the
+transaction must stay open across several independent units of work, when its lifetime is driven by external control
+flow that cannot be expressed as a single closure, or when interleaving work across multiple open transactions:
 
 [source,java]
 ----
@@ -84,7 +130,7 @@ try {
 }
 ----
 
-The above example is straightforward and represents a good starting point for discussing the nuances of transactions
+The manual example above is a good starting point for discussing the nuances of transactions
 in relation to the usage convention and graph provider caveats alluded to earlier.
 
 Focusing on remote contexts first, note that it is still possible to issue traversals from `g`, but those will

@@ -516,6 +516,127 @@ namespace Gremlin.Net.IntegrationTest.Driver
             Assert.Equal(0L, await GetCount(client2, "drc_close_test"));
         }
 
+        // Sentinel exception used by the body-throws closure test to assert the exact
+        // original error (type + message) propagates out of the closure wrapper.
+        private sealed class SentinelTransactionException : Exception
+        {
+            public SentinelTransactionException(string message) : base(message)
+            {
+            }
+        }
+
+        [Fact]
+        public async Task ShouldCommitOnSuccessWithExecuteInTxAsync()
+        {
+            using var client = CreateClient();
+            await DropGraph(client);
+            var connection = new DriverRemoteConnection(client, "gtx");
+            var g = AnonymousTraversalSource.Traversal().With(connection);
+
+            await g.ExecuteInTxAsync(async gtx => await gtx.AddV("person").Promise(t => t.Iterate()));
+
+            // The closure committed automatically on success, so the vertex is persisted.
+            Assert.Equal(1L, await GetCount(client, "person"));
+        }
+
+        [Fact]
+        public async Task ShouldRollbackAndRethrowWhenExecuteInTxAsyncBodyThrows()
+        {
+            using var client = CreateClient();
+            await DropGraph(client);
+            var connection = new DriverRemoteConnection(client, "gtx");
+            var g = AnonymousTraversalSource.Traversal().With(connection);
+
+            const string sentinelMessage = "sentinel-body-error-3f1c8e";
+
+            // (i) The exact original exception (type + message) propagates to the caller.
+            var ex = await Assert.ThrowsAsync<SentinelTransactionException>(() =>
+                g.ExecuteInTxAsync(async gtx =>
+                {
+                    await gtx.AddV("person").Promise(t => t.Iterate());
+                    throw new SentinelTransactionException(sentinelMessage);
+                }));
+            Assert.Equal(sentinelMessage, ex.Message);
+
+            // (ii) The closure rolled back automatically, so the vertex is NOT persisted.
+            Assert.Equal(0L, await GetCount(client, "person"));
+        }
+
+        [Fact]
+        public async Task ShouldReturnBodyValueFromEvaluateInTxAsync()
+        {
+            using var client = CreateClient();
+            await DropGraph(client);
+            var connection = new DriverRemoteConnection(client, "gtx");
+            var g = AnonymousTraversalSource.Traversal().With(connection);
+
+            var n = await g.EvaluateInTxAsync(async gtx =>
+            {
+                await gtx.AddV("person").Promise(t => t.Iterate());
+                await gtx.AddV("person").Promise(t => t.Iterate());
+                return await gtx.V().Count().Promise(t => t.Next());
+            });
+
+            // The body counted the two vertices it added within the transaction.
+            Assert.Equal(2L, n);
+
+            // The closure committed, so the same count is visible afterwards.
+            Assert.Equal(2L, await GetCount(client, "person"));
+        }
+
+        [Fact]
+        public async Task ShouldThrowWhenOpeningNestedTransactionInsideExecuteInTxAsync()
+        {
+            using var client = CreateClient();
+            await DropGraph(client);
+            var connection = new DriverRemoteConnection(client, "gtx");
+            var g = AnonymousTraversalSource.Traversal().With(connection);
+
+            // Opening a SECOND transaction from inside the body must throw. The closure body's
+            // own commit will then fail because the body threw, surfacing the nesting error.
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                g.ExecuteInTxAsync(async gtx =>
+                {
+                    // gtx.Tx() legitimately returns the SAME transaction (it must not throw);
+                    // calling BeginAsync() on it opens a second transaction and must throw.
+                    await gtx.Tx().BeginAsync();
+                }));
+        }
+
+        [Fact]
+        public async Task ShouldPropagateCommitErrorFromExecuteInTxAsync()
+        {
+            using var client = CreateClient();
+            await DropGraph(client);
+            var connection = new DriverRemoteConnection(client, "gtx");
+            var g = AnonymousTraversalSource.Traversal().With(connection);
+
+            // Drive a commit failure without a mock: from inside the body, terminate the
+            // server-side transaction out-of-band (rollback by its transactionId via a second
+            // client). The wrapper's automatic CommitAsync then fails server-side with
+            // "Transaction not found", and that commit error must propagate out of ExecuteInTxAsync.
+            using var sideClient = CreateClient();
+
+            var ex = await Assert.ThrowsAsync<ResponseException>(() =>
+                g.ExecuteInTxAsync(async gtx =>
+                {
+                    await gtx.AddV("person").Promise(t => t.Iterate());
+
+                    // Roll back this very transaction out-of-band so the upcoming commit fails.
+                    var txId = gtx.Tx().TransactionId!;
+                    var rollbackMsg = RequestMessage.Build("g.tx().rollback()")
+                        .AddG("gtx")
+                        .AddField(Tokens.ArgsTransactionId, txId)
+                        .Create();
+                    await sideClient.SubmitAsync<object>(rollbackMsg);
+                }));
+
+            Assert.Contains("Transaction not found", ex.Message);
+
+            // The out-of-band rollback already discarded the work, so nothing is persisted.
+            Assert.Equal(0L, await GetCount(client, "person"));
+        }
+
         [Fact]
         public async Task ShouldSerializeUnawaitedSubmissions()
         {

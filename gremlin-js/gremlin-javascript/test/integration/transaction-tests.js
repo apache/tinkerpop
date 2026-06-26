@@ -421,4 +421,118 @@ describe('Transaction', function () {
       await nonTxClient.close();
     });
   });
+
+  describe('Closure API (g.executeInTx())', function () {
+    it('should commit on success', async function () {
+      const connection = getConnection('gtx');
+      const g = anon.traversal().withRemote(connection);
+
+      await g.executeInTx(async (gtx) => {
+        await gtx.addV('person').iterate();
+      });
+
+      // Fresh non-transactional query confirms the vertex was committed.
+      const count = await g.V().hasLabel('person').count().next();
+      assert.strictEqual(count.value, 1);
+
+      await connection.close();
+    });
+
+    it('should rollback and rethrow when the body throws', async function () {
+      const connection = getConnection('gtx');
+      const g = anon.traversal().withRemote(connection);
+
+      const sentinelMessage = 'sentinel body failure 0xC0FFEE';
+      class SentinelError extends Error {}
+
+      let caught;
+      try {
+        await g.executeInTx(async (gtx) => {
+          await gtx.addV('person').iterate();
+          throw new SentinelError(sentinelMessage);
+        });
+        assert.fail('Expected executeInTx() to rethrow the body error');
+      } catch (e) {
+        caught = e;
+      }
+
+      // (i) the exact original error (type + message) is rethrown to the caller
+      assert.ok(caught instanceof SentinelError);
+      assert.strictEqual(caught.message, sentinelMessage);
+
+      // (ii) the vertex added in the body was NOT persisted (rollback happened)
+      const count = await g.V().hasLabel('person').count().next();
+      assert.strictEqual(count.value, 0);
+
+      await connection.close();
+    });
+
+    it('should return the body value', async function () {
+      const connection = getConnection('gtx');
+      const g = anon.traversal().withRemote(connection);
+
+      // Seed a vertex outside the transaction so the body can count it.
+      await g.addV('person').iterate();
+
+      const n = await g.executeInTx((gtx) => gtx.V().count().next());
+      assert.strictEqual(n.value, 1);
+
+      await connection.close();
+    });
+
+    it('should reject opening a nested transaction in the body', async function () {
+      const connection = getConnection('gtx');
+      const g = anon.traversal().withRemote(connection);
+
+      await assert.rejects(
+        () =>
+          g.executeInTx(async (gtx) => {
+            // gtx.tx() legitimately returns the SAME transaction; calling begin()
+            // on it opens a second transaction and trips the double-begin guard.
+            await gtx.tx().begin();
+          }),
+        /Transaction already started/
+      );
+
+      await connection.close();
+    });
+
+    // Forces a real, no-mock commit failure by finalizing the transaction from
+    // inside the body: gtx.tx() returns the same Transaction, and calling
+    // rollback() on it closes it. executeInTx's own trailing commit() then fails
+    // because the transaction is no longer open, and that error propagates.
+    it('should propagate a commit failure out of executeInTx', async function () {
+      const connection = getConnection('gtx');
+      const g = anon.traversal().withRemote(connection);
+      // a second connection used to kill the transaction out-of-band
+      const sideClient = getClient('gtx');
+
+      // To drive a deterministic, no-mock commit failure, the body succeeds but the
+      // transaction is rolled back from a separate connection (by its transactionId)
+      // before the body returns; executeInTx's commit() is then a real commit RPC that
+      // the server rejects (HTTP 404, "Transaction not found").
+      let caught;
+      try {
+        await g.executeInTx(async (gtx) => {
+          await gtx.addV('person').iterate();
+          const transactionId = gtx.tx().transactionId;
+          await sideClient.submit('g.tx().rollback()', null, { transactionId });
+        });
+        assert.fail('Expected executeInTx() to propagate the commit failure');
+      } catch (e) {
+        caught = e;
+      }
+      // The server maps a missing/closed transaction to HTTP 404; the body text is on
+      // statusMessage (the driver puts the HTTP status line in the Error message).
+      assert.strictEqual(caught.statusCode, 404);
+      assert.ok(caught.statusMessage.includes('Transaction not found'));
+
+      // The body's work was not persisted (the transaction was rolled back out-of-band).
+      const count = await g.V().hasLabel('person').count().next();
+      assert.strictEqual(count.value, 0);
+
+      await sideClient.close();
+      await connection.close();
+    });
+  });
 });
