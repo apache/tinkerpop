@@ -448,13 +448,12 @@ Feature: Step - where()
       | v[peter] |
 
   # where(P.gt(traversal)) - compare current traverser value against resolved traversal result
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_valuesXageX_whereXgtXVXvid1X_valuesXageXXX
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_valuesXageX_whereXgtXconstantX29XXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().values("age").where(P.gt(__.V(vid1).values("age")))
+      g.V().values("age").where(P.gt(__.constant(29)))
       """
     When iterated to list
     Then the result should be unordered
@@ -462,14 +461,13 @@ Feature: Step - where()
       | d[32].i |
       | d[35].i |
 
-  # where(P.lt(traversal)) - filter ages less than josh's age
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_valuesXageX_whereXltXVXvid3X_valuesXageXXX
+  # where(P.lt(traversal)) - filter ages less than a constant
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_valuesXageX_whereXltXconstantX32XXX
     Given the modern graph
-    And using the parameter vid3 defined as "v[josh].id"
     And the traversal of
       """
-      g.V().values("age").where(P.lt(__.V(vid3).values("age")))
+      g.V().values("age").where(P.lt(__.constant(32)))
       """
     When iterated to list
     Then the result should be unordered
@@ -478,13 +476,12 @@ Feature: Step - where()
       | d[27].i |
 
   # where(P.eq(traversal)) - exact match against resolved value
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_valuesXageX_whereXeqXVXvid1X_valuesXageXXX
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_valuesXageX_whereXeqXconstantX29XXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().values("age").where(P.eq(__.V(vid1).values("age")))
+      g.V().values("age").where(P.eq(__.constant(29)))
       """
     When iterated to list
     Then the result should be unordered
@@ -507,13 +504,12 @@ Feature: Step - where()
       | d[32].i |
 
   # where(P.neq(traversal)) - not equal to resolved value
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_valuesXnameX_whereXneqXVXvid1X_valuesXnameXXX
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_valuesXnameX_whereXneqXconstantXmarkoXXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().values("name").where(P.neq(__.V(vid1).values("name")))
+      g.V().values("name").where(P.neq(__.constant("marko")))
       """
     When iterated to list
     Then the result should be unordered
@@ -525,12 +521,12 @@ Feature: Step - where()
       | peter |
 
   # Empty traversal result - filters out (no match)
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_valuesXageX_whereXeqXV9999_valuesXageXXX
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_valuesXageX_whereXeqXconstantX99999XXX
     Given the modern graph
     And the traversal of
       """
-      g.V().values("age").where(P.eq(__.V(9999).values("age")))
+      g.V().values("age").where(P.eq(__.constant(99999)))
       """
     When iterated to list
     Then the result should be empty

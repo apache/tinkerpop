@@ -105,7 +105,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Repe
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyChildVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
@@ -285,7 +284,6 @@ public final class CoreImports {
         CLASS_IMPORTS.add(LambdaRestrictionStrategy.class);
         CLASS_IMPORTS.add(PathRetractionStrategy.class);
         CLASS_IMPORTS.add(ReadOnlyStrategy.class);
-        CLASS_IMPORTS.add(ReadOnlyChildVerificationStrategy.class);
         CLASS_IMPORTS.add(ReferenceElementStrategy.class);
         CLASS_IMPORTS.add(RepeatUnrollStrategy.class);
         CLASS_IMPORTS.add(SeedStrategy.class);

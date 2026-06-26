@@ -1797,15 +1797,18 @@ be used mid-traversal.
 ----
 g.E(11) <1>
 g.E().hasLabel('knows').has('weight', gt(0.75))
-g.inject(1).coalesce(E().hasLabel("knows"), addE("knows").from(V().has("name","josh")).to(V().has("name","vadas"))) <2>
+g.inject([7,8,9]).as('ids').E(__.select('ids').unfold()) <2>
+g.inject(1).coalesce(E().hasLabel("knows"), addE("knows").from(V().has("name","josh")).to(V().has("name","vadas"))) <3>
 ----
 
 <1> Find the edge by its unique identifier (i.e. `T.id`) - not all graphs will use a numeric value for their identifier.
-<2> Get edges with label `knows`, if there is none then add new one between `josh` and `vadas`.
+<2> Inject a list of edge IDs and use a child traversal with `select()` to dynamically resolve them for lookup.
+<3> Get edges with label `knows`, if there is none then add new one between `josh` and `vadas`.
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#E(java.lang.Object...)++[`E(Object...)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#E(java.lang.Object...)++[`E(Object...)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#E(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`E(Traversal)`]
 
 [[element-step]]
 === Element Step
@@ -5426,7 +5429,8 @@ g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#V(java.lang.Object...)++[`V(Object...)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#V(java.lang.Object...)++[`V(Object...)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#V(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`V(Traversal)`]
 
 [[value-step]]
 === Value Step

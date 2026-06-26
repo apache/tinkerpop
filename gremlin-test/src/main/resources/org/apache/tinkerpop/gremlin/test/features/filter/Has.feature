@@ -621,13 +621,12 @@ Feature: Step - has()
     """
     When iterated to list
     Then the result should be empty
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasXname_VXvid1X_valuesXnameXX
+
+  Scenario: g_V_hasXname_constantXmarkoXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().has("name", __.V(vid1).values("name"))
+      g.V().has("name", __.constant("marko"))
       """
     When iterated to list
     Then the result should be unordered
@@ -636,41 +635,23 @@ Feature: Step - has()
 
   @GraphComputerVerificationMidVNotSupported
   # has(key, traversal) with multi-result child traversal - takes first result (order-dependent)
-  @InsertionOrderingRequired
   Scenario: g_V_hasXname_VXvid1X_outXknowsX_valuesXnameXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().has("name", __.V(vid1).out("knows").values("name"))
+      g.V().has("name", __.V(vid1).out("knows").values("name").order())
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | v[vadas] |
+      | v[josh] |
 
-  # has(key, traversal) with multi-result child traversal (age) - takes first result (order-dependent)
-  @GraphComputerVerificationMidVNotSupported
-  @InsertionOrderingRequired
-  Scenario: g_V_hasXage_VXvid1X_outXknowsX_valuesXageXX
+  Scenario: g_V_hasXname_valuesXnonexistentXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().has("age", __.V(vid1).out("knows").values("age"))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[vadas] |
-
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasXname_VXvid1X_valuesXnonexistentXX
-    Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
-    And the traversal of
-      """
-      g.V().has("name", __.V(vid1).values("nonexistent"))
+      g.V().has("name", __.values("nonexistent"))
       """
     When iterated to list
     Then the result should be empty
@@ -684,13 +665,11 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasXage_gtXVXvid1X_valuesXageXXX
+  Scenario: g_V_hasXage_gtXconstantX29XXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().has("age", P.gt(__.V(vid1).values("age")))
+      g.V().has("age", P.gt(__.constant(29)))
       """
     When iterated to list
     Then the result should be unordered
@@ -698,26 +677,22 @@ Feature: Step - has()
       | v[josh] |
       | v[peter] |
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasXage_lteXVXvid2X_valuesXageXXX
+  Scenario: g_V_hasXage_lteXconstantX27XXX
     Given the modern graph
-    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
-      g.V().has("age", P.lte(__.V(vid2).values("age")))
+      g.V().has("age", P.lte(__.constant(27)))
       """
     When iterated to list
     Then the result should be unordered
       | result |
       | v[vadas] |
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasXage_neqXVXvid3X_valuesXageXXX
+  Scenario: g_V_hasXage_neqXconstantX32XXX
     Given the modern graph
-    And using the parameter vid3 defined as "v[josh].id"
     And the traversal of
       """
-      g.V().has("age", P.neq(__.V(vid3).values("age")))
+      g.V().has("age", P.neq(__.constant(32)))
       """
     When iterated to list
     Then the result should be unordered
@@ -726,39 +701,33 @@ Feature: Step - has()
       | v[vadas] |
       | v[peter] |
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasXname_eqXVXvid1X_valuesXnameXXX
+  Scenario: g_V_hasXname_eqXconstantXmarkoXXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().has("name", P.eq(__.V(vid1).values("name")))
+      g.V().has("name", P.eq(__.constant("marko")))
       """
     When iterated to list
     Then the result should be unordered
       | result |
       | v[marko] |
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasXage_ltXVXvid1X_valuesXageXXX
+  Scenario: g_V_hasXage_ltXconstantX29XXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().has("age", P.lt(__.V(vid1).values("age")))
+      g.V().has("age", P.lt(__.constant(29)))
       """
     When iterated to list
     Then the result should be unordered
       | result |
       | v[vadas] |
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasXage_gteXVXvid3X_valuesXageXXX
+  Scenario: g_V_hasXage_gteXconstantX32XXX
     Given the modern graph
-    And using the parameter vid3 defined as "v[josh].id"
     And the traversal of
       """
-      g.V().has("age", P.gte(__.V(vid3).values("age")))
+      g.V().has("age", P.gte(__.constant(32)))
       """
     When iterated to list
     Then the result should be unordered
@@ -766,24 +735,20 @@ Feature: Step - has()
       | v[josh] |
       | v[peter] |
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasXage_eqXVXvid1X_valuesXnonexistentXXX
+  Scenario: g_V_hasXage_eqXvaluesXnonexistentXXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().has("age", P.eq(__.V(vid1).values("nonexistent")))
+      g.V().has("age", P.eq(__.values("nonexistent")))
       """
     When iterated to list
     Then the result should be empty
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasXlabel_VXvid1X_labelXX
+  Scenario: g_V_hasXlabel_constantXpersonXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().has(T.label, __.V(vid1).label())
+      g.V().has(T.label, __.constant("person"))
       """
     When iterated to list
     Then the result should be unordered
@@ -793,13 +758,11 @@ Feature: Step - has()
       | v[josh] |
       | v[peter] |
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasXperson_name_VXvid1X_valuesXnameXX_age
+  Scenario: g_V_hasXperson_name_constantXmarkoXX_age
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().has("person", "name", __.V(vid1).values("name")).values("age")
+      g.V().has("person", "name", __.constant("marko")).values("age")
       """
     When iterated to list
     Then the result should be unordered
@@ -823,13 +786,11 @@ Feature: Step - has()
       | v[peter] |
 
   # Multi-traversal within() where one traversal produces no results - still matches on the other
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasXname_withinXVXvid1X_valuesXnonexistentX_constantXmarkoXXX
+  Scenario: g_V_hasXname_withinXvaluesXnonexistentX_constantXmarkoXXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().has("name", P.within(__.V(vid1).values("nonexistent"), __.constant("marko")))
+      g.V().has("name", P.within(__.values("nonexistent"), __.constant("marko")))
       """
     When iterated to list
     Then the result should be unordered
@@ -837,27 +798,21 @@ Feature: Step - has()
       | v[marko] |
 
   # Multi-traversal within() where all traversals produce no results - filters everything
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasXname_withinXVXvid1X_valuesXnonexistentX_VXvid1X_valuesXnonexistentXXX
+  Scenario: g_V_hasXname_withinXvaluesXnonexistentX_valuesXnonexistent2XXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().has("name", P.within(__.V(vid1).values("nonexistent"), __.V(vid1).values("nonexistent")))
+      g.V().has("name", P.within(__.values("nonexistent"), __.values("nonexistent2")))
       """
     When iterated to list
     Then the result should be empty
 
-  # Multi-traversal without() with three traversals
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasXname_withoutXVXvid1X_valuesXnameX_VXvid2X_valuesXnameX_VXvid3X_valuesXnameXXX
+  # Multi-traversal without() with three constant traversals
+  Scenario: g_V_hasXname_withoutXconstantXmarkoX_constantXvadasX_constantXpeterXXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter vid2 defined as "v[vadas].id"
-    And using the parameter vid3 defined as "v[peter].id"
     And the traversal of
       """
-      g.V().has("name", P.without(__.V(vid1).values("name"), __.V(vid2).values("name"), __.V(vid3).values("name")))
+      g.V().has("name", P.without(__.constant("marko"), __.constant("vadas"), __.constant("peter")))
       """
     When iterated to list
     Then the result should be unordered
@@ -935,13 +890,11 @@ Feature: Step - has()
       | e[marko-knows->josh] |
 
   # hasLabel with a child traversal
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasLabelXVXvid1X_labelXX
+  Scenario: g_V_hasLabelXconstantXpersonXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().hasLabel(__.V(vid1).label())
+      g.V().hasLabel(__.constant("person"))
       """
     When iterated to list
     Then the result should be unordered
@@ -980,13 +933,11 @@ Feature: Step - has()
       | v[marko] |
 
   # hasKey with a child traversal
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_propertiesXageX_hasKeyXVXvid1X_propertiesXageX_keyXX
+  Scenario: g_V_propertiesXageX_hasKeyXconstantXageXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().properties("age").hasKey(__.V(vid1).properties("age").key())
+      g.V().properties("age").hasKey(__.constant("age"))
       """
     When iterated to list
     Then the result should be unordered
@@ -997,13 +948,11 @@ Feature: Step - has()
       | vp[peter-age->d[35].i] |
 
   # hasKey with P.eq(traversal)
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_propertiesXageX_hasKeyXeqXVXvid1X_propertiesXageX_keyXX
+  Scenario: g_V_propertiesXageX_hasKeyXeqXconstantXageXXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().properties("age").hasKey(P.eq(__.V(vid1).properties("age").key()))
+      g.V().properties("age").hasKey(P.eq(__.constant("age")))
       """
     When iterated to list
     Then the result should be unordered
@@ -1014,13 +963,11 @@ Feature: Step - has()
       | vp[peter-age->d[35].i] |
 
   # hasValue with a child traversal
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_propertiesXageX_hasValueXVXvid1X_valuesXageXX
+  Scenario: g_V_propertiesXageX_hasValueXconstantX29XX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().properties("age").hasValue(__.V(vid1).values("age"))
+      g.V().properties("age").hasValue(__.constant(29))
       """
     When iterated to list
     Then the result should be unordered
@@ -1028,13 +975,11 @@ Feature: Step - has()
       | vp[marko-age->d[29].i] |
 
   # hasValue with P.eq(traversal)
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_propertiesXageX_hasValueXeqXVXvid1X_valuesXageXXX
+  Scenario: g_V_propertiesXageX_hasValueXeqXconstantX29XXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().properties("age").hasValue(P.eq(__.V(vid1).values("age")))
+      g.V().properties("age").hasValue(P.eq(__.constant(29)))
       """
     When iterated to list
     Then the result should be unordered
@@ -1068,3 +1013,16 @@ Feature: Step - has()
       | result |
       | josh |
       | peter |
+
+  # Child traversal using constant() to filter edge properties
+  Scenario: g_V_hasXname_markoX_outEXknowsX_hasXweight_gteXconstantX05XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name","marko").outE("knows").has("weight", P.gte(__.constant(0.5)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | e[marko-knows->vadas] |
+      | e[marko-knows->josh] |

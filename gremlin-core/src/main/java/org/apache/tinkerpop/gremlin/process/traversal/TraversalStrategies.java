@@ -52,7 +52,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Path
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyChildVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
@@ -288,7 +287,6 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
                     LazyBarrierStrategy.instance(),
                     ProfileStrategy.instance(),
                     StandardVerificationStrategy.instance(),
-                    ReadOnlyChildVerificationStrategy.instance(),
                     GValueReductionStrategy.instance());
             registerStrategies(Graph.class, graphStrategies);
             registerStrategies(EmptyGraph.class, new DefaultTraversalStrategies());

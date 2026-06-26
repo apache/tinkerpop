@@ -113,39 +113,33 @@ Feature: Step - is()
     Then the result should be unordered
       | result |
       | lop |
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_valuesXageX_isXVXvid1X_valuesXageXX
+  Scenario: g_V_valuesXageX_isXconstantX29XX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().values("age").is(__.V(vid1).values("age"))
+      g.V().values("age").is(__.constant(29))
       """
     When iterated to list
     Then the result should be unordered
       | result |
       | d[29].i |
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_valuesXnameX_isXVXvid1X_valuesXnameXX
+  Scenario: g_V_valuesXnameX_isXconstantXmarkoXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().values("name").is(__.V(vid1).values("name"))
+      g.V().values("name").is(__.constant("marko"))
       """
     When iterated to list
     Then the result should be unordered
       | result |
       | marko |
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_valuesXageX_isXgtXVXvid1X_valuesXageXXX
+  Scenario: g_V_valuesXageX_isXgtXconstantX29XXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().values("age").is(P.gt(__.V(vid1).values("age")))
+      g.V().values("age").is(P.gt(__.constant(29)))
       """
     When iterated to list
     Then the result should be unordered
@@ -153,13 +147,11 @@ Feature: Step - is()
       | d[32].i |
       | d[35].i |
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_valuesXageX_isXltXVXvid3X_valuesXageXXX
+  Scenario: g_V_valuesXageX_isXltXconstantX32XXX
     Given the modern graph
-    And using the parameter vid3 defined as "v[josh].id"
     And the traversal of
       """
-      g.V().values("age").is(P.lt(__.V(vid3).values("age")))
+      g.V().values("age").is(P.lt(__.constant(32)))
       """
     When iterated to list
     Then the result should be unordered
@@ -167,13 +159,11 @@ Feature: Step - is()
       | d[29].i |
       | d[27].i |
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_valuesXageX_isXneqXVXvid4X_valuesXageXXX
+  Scenario: g_V_valuesXageX_isXneqXconstantX35XXX
     Given the modern graph
-    And using the parameter vid4 defined as "v[peter].id"
     And the traversal of
       """
-      g.V().values("age").is(P.neq(__.V(vid4).values("age")))
+      g.V().values("age").is(P.neq(__.constant(35)))
       """
     When iterated to list
     Then the result should be unordered
@@ -196,25 +186,21 @@ Feature: Step - is()
       | d[27].i |
       | d[32].i |
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_valuesXageX_isXVXvid1X_valuesXnonexistentXX
+  Scenario: g_V_valuesXageX_isXconstantX99999XX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V().values("age").is(__.V(vid1).values("nonexistent"))
+      g.V().values("age").is(__.constant(99999))
       """
     When iterated to list
     Then the result should be empty
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_hasLabelXpersonX_valuesXageX_chooseXgtXVXvid1X_valuesXageXX_olderX
+  Scenario: g_V_hasLabelXpersonX_valuesXageX_chooseXgtXconstantX29XX_olderX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
       g.V().hasLabel("person").values("age").
-        choose(__.is(P.gt(__.V(vid1).values("age"))),
+        choose(__.is(P.gt(__.constant(29))),
                __.constant("older than marko"),
                __.constant("not older"))
       """
@@ -244,62 +230,52 @@ Feature: Step - is()
       | above average |
       | above average |
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_VXvid1X_outXknowsX_valuesXageX_fold_allXgteXVXvid2X_valuesXageXXX
+  Scenario: g_VXvid1X_outXknowsX_valuesXageX_fold_allXgteXconstantX27XXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
-      g.V(vid1).out("knows").values("age").fold().all(P.gte(__.V(vid2).values("age")))
+      g.V(vid1).out("knows").values("age").fold().all(P.gte(__.constant(27)))
       """
     When iterated to list
     Then the result should have a count of 1
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_VXvid1X_outXknowsX_valuesXageX_fold_allXgtXVXvid2X_valuesXageXXX
+  Scenario: g_VXvid1X_outXknowsX_valuesXageX_fold_allXgtXconstantX27XXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
-      g.V(vid1).out("knows").values("age").fold().all(P.gt(__.V(vid2).values("age")))
+      g.V(vid1).out("knows").values("age").fold().all(P.gt(__.constant(27)))
       """
     When iterated to list
     Then the result should be empty
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_VXvid1X_outXknowsX_valuesXageX_fold_anyXeqXVXvid3X_valuesXageXXX
+  Scenario: g_VXvid1X_outXknowsX_valuesXageX_fold_anyXeqXconstantX32XXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter vid3 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(vid1).out("knows").values("age").fold().any(P.eq(__.V(vid3).values("age")))
+      g.V(vid1).out("knows").values("age").fold().any(P.eq(__.constant(32)))
       """
     When iterated to list
     Then the result should have a count of 1
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_VXvid1X_outXknowsX_valuesXageX_fold_noneXeqXVXvid4X_valuesXageXXX
+  Scenario: g_VXvid1X_outXknowsX_valuesXageX_fold_noneXeqXconstantX35XXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter vid4 defined as "v[peter].id"
     And the traversal of
       """
-      g.V(vid1).out("knows").values("age").fold().none(P.eq(__.V(vid4).values("age")))
+      g.V(vid1).out("knows").values("age").fold().none(P.eq(__.constant(35)))
       """
     When iterated to list
     Then the result should have a count of 1
 
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_VXvid1X_outXknowsX_valuesXageX_fold_noneXeqXVXvid3X_valuesXageXXX
+  Scenario: g_VXvid1X_outXknowsX_valuesXageX_fold_noneXeqXconstantX32XXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter vid3 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(vid1).out("knows").values("age").fold().none(P.eq(__.V(vid3).values("age")))
+      g.V(vid1).out("knows").values("age").fold().none(P.eq(__.constant(32)))
       """
     When iterated to list
     Then the result should be empty
@@ -358,14 +334,11 @@ Feature: Step - is()
     Then the result should be empty
 
   # Multi-traversal without() in is() context
-  @GraphComputerVerificationMidVNotSupported
-  Scenario: g_V_valuesXageX_isXwithoutXVXvid1X_valuesXageX_VXvid2X_valuesXageXXX
+  Scenario: g_V_valuesXageX_isXwithoutXconstantX29X_constantX32XXX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter vid2 defined as "v[josh].id"
     And the traversal of
       """
-      g.V().values("age").is(P.without(__.V(vid1).values("age"), __.V(vid2).values("age")))
+      g.V().values("age").is(P.without(__.constant(29), __.constant(32)))
       """
     When iterated to list
     Then the result should be unordered

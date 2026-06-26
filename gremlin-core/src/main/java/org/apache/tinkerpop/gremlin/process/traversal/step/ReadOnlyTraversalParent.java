@@ -23,8 +23,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
  * (no mutating steps allowed). Examples include {@code has(key, traversal)},
  * {@code is(P.gt(traversal))}, {@code V(traversal)}, and {@code property(traversal)}.
  * <p>
- * The {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyChildVerificationStrategy}
- * validates the local children of every step implementing this interface, rejecting child traversals that
+ * The {@link org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy}
+ * validates the children of every step implementing this interface, rejecting child traversals that
  * contain mutating steps. New steps that accept such traversals should implement this interface so they are
  * validated automatically rather than relying on a hardcoded step list.
  *

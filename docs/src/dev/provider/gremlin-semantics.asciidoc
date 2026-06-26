@@ -1590,7 +1590,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#element-step[reference]
 
 *Description:* Reads edges from the graph by their identifiers. Can be used as a start step or mid-traversal.
 
-*Syntax:* `E(Object... edgeIds)` | `E(List edgeIds)` | `E(Traversal idTraversal)`
+*Syntax:* `E(Object... edgeIds)` | `E(Traversal idTraversal)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1600,9 +1600,10 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#element-step[reference]
 
 *Arguments:*
 
-* `edgeIds` - Zero or more edge identifiers. If none are provided, all edges are returned. A `List` may be provided
-  as a single argument and will be expanded to look up each contained identifier.
-* `idTraversal` - A child traversal which supplies edge identifiers. The child traversal must be read-only (no mutating steps).
+* `edgeIds` - Zero or more edge identifiers. If none are provided, all edges are returned. Arrays and `Collection`
+  values are flattened (unrolled) into individual IDs.
+* `idTraversal` - A child traversal which supplies edge identifiers. The child traversal must be read-only
+  (no mutating steps).
 
 *Modulation:*
 
@@ -1613,6 +1614,8 @@ None
 * When used as a start step with a traversal argument, a synthetic traverser seeds the child traversal.
 * When used mid-traversal with a traversal argument, the current traverser seeds the child traversal.
 * If no edges match the provided identifiers, the step produces no results.
+* Graph providers may optimize `E()` with subsequent `has()` filters by folding `HasContainer` predicates into the
+  step for index-backed lookups.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/GraphStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#graph-step[reference]
@@ -1738,23 +1741,26 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#groupcount-step[referenc
 [[has-step]]
 === has()
 
-*Description:* Filters traversers by property existence, property value, or label.
+*Description:* Filters traversers by property existence, property value, label, or identifier.
 
-*Syntax:* `has(String key)` | `has(String key, Object value)` | `has(String key, P predicate)` | `has(String key, Traversal traversal)` | `has(T accessor, Object value)` | `has(T accessor, P predicate)` | `has(String label, String key, Object value)` | `has(String label, String key, P predicate)`
+*Syntax:* `has(String key)` | `has(String key, Object value)` | `has(String key, P predicate)` | `has(String key, Traversal traversal)` | `has(T accessor, Object value)` | `has(T accessor, P predicate)` | `has(T accessor, Traversal traversal)` | `has(String label, String key, Object value)` | `has(String label, String key, P predicate)` | `has(String label, String key, Traversal traversal)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`Element`|`Element`
+|N |Y |N |`Element` / `Property` |`Element` / `Property`
 |=========================================================
 
 *Arguments:*
 
-* `key` - The property key to check (or a `T` accessor for `id` or `label`).
-* `value` - The value to compare against using equality. May be a literal or a `Traversal`.
+* `key` - The property key to check.
+* `accessor` - A `T` accessor: `T.id` (element identifier), `T.label` (element label), `T.key` (property key), or
+  `T.value` (property value).
+* `value` - The value to compare against using equality.
 * `predicate` - A `P` predicate for comparison. The predicate value may be a literal or a `Traversal`.
 * `traversal` - A child traversal whose first result is used as the comparison value (implicitly wrapped in `P.eq()`).
-  Must be read-only.
+  Must be read-only (no mutating steps). The child traversal is evaluated per-traverser: the current traverser seeds
+  the child, and the first result is used for comparison.
 * `label` - A label filter applied before the property check (three-argument form).
 
 *Modulation:*
@@ -1763,13 +1769,21 @@ None
 
 *Considerations:*
 
-* `has(key)` filters to elements that have the specified property (existence check). `hasNot(key)` is the inverse.
+* `has(key)` filters to elements that have the specified property (existence check).
 * `has(T.label, value)` is equivalent to `hasLabel(value)`. `has(T.id, value)` is equivalent to `hasId(value)`.
-* When the domain is a `Map` (e.g., from `elementMap()` or `valueMap()`), `has()` filters by map key/value.
+* When the domain is a `Property` (e.g., from `properties()`), `T.key` and `T.value` accessors are used to filter
+  by property key or property value respectively.
+* When the predicate value for `T.id` is a `String`, the element's `id().toString()` is used for comparison.
+* For multi-valued properties (list/set cardinality), `has(key, value)` passes if *any* property with that key matches.
 * When a `Traversal` is supplied as a value or inside a `P`, it is resolved per-traverser and its first result is used.
 * Child traversals must be read-only. Mutating steps are rejected with `IllegalArgumentException`.
-* For `within()`/`without()` predicates with traversal arguments, use `fold()` to collect multiple results into a list.
-* `has(key, null)` filters to elements where the property value is `null` (not existence check).
+* `has(key, null)` filters to elements where the property value is `null` (not an existence check).
+* `has(null)` and `has(null, value)` always produce an empty result.
+
+*Exceptions:*
+
+* `IllegalArgumentException` if a child traversal contains mutating steps.
+* `IllegalStateException` if the traverser is not an `Element` or `Property`.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/HasStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
@@ -1779,7 +1793,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
 
 *Description:* Filters elements by their identifier.
 
-*Syntax:* `hasId(Object id, Object... otherIds)` | `hasId(List ids)` | `hasId(P predicate)` | `hasId(Traversal traversal)`
+*Syntax:* `hasId(Object id, Object... otherIds)` | `hasId(P predicate)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1789,10 +1803,9 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
 
 *Arguments:*
 
-* `id` - One or more identifiers to match against. A `List` may be provided as a single argument and will be expanded.
+* `id` - One or more identifiers, or Traversals supplying identifiers to match against. Arrays and
+`Collection` values are flattened (unrolled) into individual IDs. Multiple IDs are combined into `P.within(...)`.
 * `predicate` - A `P` predicate for identifier comparison. The predicate value may contain a `Traversal`.
-* `traversal` - A child traversal whose first result is used as the identifier (implicitly wrapped in `P.eq()`).
-  Must be read-only.
 
 *Modulation:*
 
@@ -1801,7 +1814,9 @@ None
 *Considerations:*
 
 * Equivalent to `has(T.id, ...)`.
-* Child traversals must be read-only. Mutating steps are rejected with `IllegalArgumentException`.
+* When the predicate value is a `String`, the element's `id().toString()` is used for comparison.
+* `hasId(null)` filters all elements since `T.id` cannot be null.
+* Child traversals must be read-only; mutating steps are rejected with `IllegalArgumentException`.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/HasStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
@@ -1832,7 +1847,9 @@ None
 
 *Considerations:*
 
+* Equivalent to `has(T.key, ...)`.
 * Operates on `Property` or `VertexProperty` traversers (typically reached via `properties()`).
+* Not intended for testing key existence on vertices/edges, use `has(key)` for that purpose.
 * Child traversals must be read-only; mutating steps are rejected with `IllegalArgumentException`.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/HasStep.java[source],
@@ -1896,6 +1913,7 @@ None
 
 *Considerations:*
 
+* Equivalent to `has(T.value, ...)`.
 * Operates on `Property` or `VertexProperty` traversers (typically reached via `properties()`).
 * Child traversals must be read-only; mutating steps are rejected with `IllegalArgumentException`.
 
@@ -2012,7 +2030,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#intersect-step[reference
 
 *Description:* Filters scalar values by testing them against a predicate or value.
 
-*Syntax:* `is(Object value)` | `is(P predicate)` | `is(Traversal traversal)`
+*Syntax:* `is(Object value)` | `is(P predicate)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -2022,10 +2040,9 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#intersect-step[reference
 
 *Arguments:*
 
-* `value` - A literal value to test equality against.
-* `predicate` - A `P` predicate for comparison. The predicate value may contain a `Traversal`.
-* `traversal` - A child traversal whose first result is compared using equality (implicitly wrapped in `P.eq()`).
-  Must be read-only.
+* `value` - A literal value or a `Traversal` to test equality against. `value` is implicitly wrapped
+  in `P.eq(value)`.
+* `predicate` - A `P` predicate for comparison. The predicate value may be a literal or a `Traversal`.
 
 *Modulation:*
 
@@ -2033,9 +2050,11 @@ None
 
 *Considerations:*
 
-* Operates on scalar values in the traversal stream (numbers, strings, etc.).
-* When a `Traversal` is supplied as a value or inside a `P`, it is resolved per-traverser and its first result is used.
+* When a `Traversal` is supplied as a value or inside a `P`, it is resolved per-traverser: the current traverser seeds
+  the child traversal and its first result is used for comparison.
+* If the child traversal produces no result, the comparison is aborted and the traverser is filtered out.
 * Child traversals must be read-only; mutating steps are rejected with `IllegalArgumentException`.
+* Type mismatches during comparison (e.g., comparing a number to a string) result in the traverser being filtered.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/IsStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#is-step[reference]
@@ -2452,7 +2471,8 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#project-step[reference]
 [[property-step]]
 === property()
 
-*Description:* Adds or sets properties on elements. Returns the updated elements.
+*Description:* Adds or sets properties on elements. This is a sideEffect step: it returns the element, not the
+property it created.
 
 *Syntax:* `property(Object key, Object value, Object... keyValues)` | `property(Cardinality cardinality, Object key, Object value, Object... keyValues)` | `property(Map keyValues)` | `property(Cardinality cardinality, Map keyValues)` | `property(Traversal mapTraversal)`
 
@@ -2466,9 +2486,10 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#project-step[reference]
 
 * `key` - The property key. May be a literal or a `Traversal` whose first result is used as the key.
 * `value` - The property value. May be a literal or a `Traversal` whose first result is used as the value.
-* `keyValues` - Additional key/value pairs and optional meta-properties.
-* `cardinality` - The vertex property cardinality (`single`, `list`, `set`).
-* `keyValues` (Map) - A `Map` of property key-value pairs to set.
+* `keyValues` - Additional key/value pairs for meta-properties on vertex properties.
+* `cardinality` - The vertex property cardinality (`single`, `list`, `set`). If `null`, uses the graph's default.
+* `keyValues` (Map) - A `Map` of property key-value pairs to set. Values may use `CardinalityValue` to override
+  the cardinality on a per-entry basis.
 * `mapTraversal` - A child traversal that must produce a `Map`. Each entry becomes a property on the element.
   Must be read-only.
 
@@ -2478,9 +2499,11 @@ None
 
 *Considerations:*
 
-* When following `addV()` or `addE()`, the step may be folded into the creation operation.
+* When following `addV()` or `addE()`, the step may be folded into the creation operation (only when cardinality is
+  not specified and meta-properties are not included).
 * Key and value arguments may be traversals; their first result is used per-traverser.
 * A `Map` argument (literal or from a traversal) sets multiple properties in one step.
+* `property(null)` and `property(Cardinality, null)` are no-ops that return the input unchanged.
 * Child traversals must be read-only; mutating steps are rejected with `IllegalArgumentException`.
 * If a map traversal does not produce a `Map`, an `IllegalStateException` is thrown.
 
@@ -2934,7 +2957,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[reference]
 
 *Description:* Reads vertices from the graph by their identifiers. Can be used as a start step or mid-traversal.
 
-*Syntax:* `V(Object... vertexIds)` | `V(List vertexIds)` | `V(Traversal idTraversal)`
+*Syntax:* `V(Object... vertexIds)` | `V(Traversal idTraversal)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -2944,9 +2967,10 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[reference]
 
 *Arguments:*
 
-* `vertexIds` - Zero or more vertex identifiers. If none are provided, all vertices are returned. A `List` may be
-  provided as a single argument and will be expanded to look up each contained identifier.
-* `idTraversal` - A child traversal which supplies vertex identifiers. The child traversal must be read-only (no mutating steps).
+* `vertexIds` - Zero or more vertex identifiers. If none are provided, all vertices are returned. Arrays and
+  `Collection` values are flattened (unrolled) into individual IDs.
+* `idTraversal` - A child traversal which supplies vertex identifiers. The child traversal must be read-only
+  (no mutating steps).
 
 *Modulation:*
 
@@ -2957,6 +2981,8 @@ None
 * When used as a start step with a traversal argument, a synthetic traverser seeds the child traversal.
 * When used mid-traversal with a traversal argument, the current traverser seeds the child traversal.
 * If no vertices match the provided identifiers, the step produces no results.
+* Graph providers may optimize `V()` with subsequent `has()` filters by folding `HasContainer` predicates into the
+  step for index-backed lookups.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/GraphStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#graph-step[reference]
@@ -3032,14 +3058,21 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#propertymap-step[referen
 
 *Modulation:*
 
-* `by()` - Specifies how to extract comparison values from the subject and/or the predicate target.
+* `by()` - Extracts comparison values. The first `by()` applies to the subject (current traverser or `startKey`),
+  the second applies to the predicate target. If a `by()` modulator is non-productive (produces no value), the
+  traverser is filtered out.
 
 *Considerations:*
 
 * `where(P)` with a scope-label value compares the current traverser (or labeled traverser) against the labeled value.
-* `where(P)` with a traversal value resolves the child traversal per-traverser and compares directly.
-* `where(P)` can combine scope-label and traversal values in a `ConnectiveP` (e.g., `P.neq('a').and(P.gt(traversal))`).
-* Child traversals must be read-only; mutating steps are rejected with `IllegalArgumentException`.
+* `where(P)` with a traversal value resolves the child traversal per-traverser and compares directly against the
+  current value.
+* `where(P)` can combine scope-label and traversal values in a `ConnectiveP`
+  (e.g., `P.neq('a').and(P.gt(traversal))`).
+* `where(Traversal)` is an existence filter: traversers pass if the child traversal produces at least one result.
+* Child traversals inside predicates must be read-only; mutating steps are rejected with `IllegalArgumentException`.
+* In OLAP, the anonymous traversal of `where()` processes the current object "locally" within the vertex's
+star graph. It cannot traverse to adjacent vertices' properties or edges.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/WherePredicateStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/WhereTraversalStep.java[source (traversal)],

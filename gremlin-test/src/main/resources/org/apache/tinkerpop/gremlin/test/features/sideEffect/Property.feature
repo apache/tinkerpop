@@ -67,7 +67,6 @@ Feature: Step - property()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"creatorCount\", 3L)"
 
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_VXvid1X_propertyXknownCount_outXknowsX_countX
     Given the empty graph
     And the graph initializer of
@@ -90,7 +89,6 @@ Feature: Step - property()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"knownCount\", 2L)"
 
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_VXvid1X_propertyXcreator_inXcreatedX_valuesXnameXX
     Given the empty graph
     And the graph initializer of
@@ -169,7 +167,6 @@ Feature: Step - property()
     And the graph should return 1 for count of "g.V(vid2).has(\"originalName\", \"marko\")"
     And the graph should return 1 for count of "g.V(vid2).has(\"originalLabel\", \"person\")"
 
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_VXvid1X_propertyXlist_friends_outXknowsX_valuesXnameXX
     Given the empty graph
     And the graph initializer of
@@ -192,7 +189,6 @@ Feature: Step - property()
     Then the result should have a count of 1
     And the graph should return 2 for count of "g.V(vid1).properties(\"friends\")"
 
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_VXvid1X_propertyXset_langs_outXcreatedX_valuesXlangXX
     Given the empty graph
     And the graph initializer of
@@ -215,7 +211,6 @@ Feature: Step - property()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V(vid1).properties(\"langs\")"
 
-  @GraphComputerVerificationMidVNotSupported
   Scenario: g_VXvid1X_propertyXsingle_friend_outXknowsX_valuesXnameXX
     Given the empty graph
     And the graph initializer of
