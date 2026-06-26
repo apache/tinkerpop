@@ -29,6 +29,9 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -37,6 +40,12 @@ public abstract class ReferenceElement<E extends Element> implements Element, Se
 
     protected Object id;
     protected String label;
+
+    /**
+     * Multi-label storage. When non-null, takes precedence over the single {@link #label} field.
+     * Only populated when the source element has more than one label.
+     */
+    protected Set<String> elementLabels;
 
     protected ReferenceElement() {
 
@@ -64,6 +73,15 @@ public abstract class ReferenceElement<E extends Element> implements Element, Se
             else
                 this.label = VertexProperty.DEFAULT_LABEL;
         }
+        // Capture all labels from the source element for multi-label support.
+        try {
+            final Set<String> srcLabels = element.labels();
+            if (srcLabels.size() > 1) {
+                this.elementLabels = new LinkedHashSet<>(srcLabels);
+            }
+        } catch (UnsupportedOperationException e) {
+            // Adjacent vertices in graph computer context may not support labels()
+        }
     }
 
     @Override
@@ -73,7 +91,28 @@ public abstract class ReferenceElement<E extends Element> implements Element, Se
 
     @Override
     public String label() {
+        if (this.elementLabels != null && !this.elementLabels.isEmpty()) {
+            return this.elementLabels.iterator().next();
+        }
         return this.label;
+    }
+
+    @Override
+    public Set<String> labels() {
+        if (this.elementLabels != null) {
+            return Collections.unmodifiableSet(this.elementLabels);
+        }
+        return this.label != null ? Collections.singleton(this.label) : Collections.emptySet();
+    }
+
+    /**
+     * Sets multi-label storage directly. Used by constructors and deserialization.
+     */
+    protected void setElementLabels(final Set<String> labels) {
+        if (labels != null && !labels.isEmpty()) {
+            this.elementLabels = new LinkedHashSet<>(labels);
+            this.label = labels.iterator().next();
+        }
     }
 
     @Override

@@ -35,6 +35,9 @@ graphs: {
   graph: {
     configuration: conf/tinkergraph-empty.properties,
     traversalSources: [{name: g}, {name: ggraph}]},
+  multilabel: {
+    configuration: conf/tinkergraph-multilabel.properties,
+    traversalSources: [{name: gmultilabel}]},
   classic: {
     configuration: conf/tinkergraph-empty.properties,
     traversalSources: [{name: gclassic}]},

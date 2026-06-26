@@ -737,6 +737,28 @@ public interface Graph extends AutoCloseable, Host {
                 return new VertexPropertyFeatures() {
                 };
             }
+
+            /**
+             * Gets the {@link LabelCardinality} for vertices in this graph. Defines how many labels
+             * a vertex can have and whether labels are mutable.
+             *
+             * @return the label cardinality for vertices, defaulting to {@link LabelCardinality#ONE}
+             * @since 4.0.0
+             */
+            default LabelCardinality getLabelCardinality() {
+                return LabelCardinality.ONE;
+            }
+
+            /**
+             * Gets the default label returned for vertices with no explicit labels when the cardinality
+             * requires at least one label ({@link LabelCardinality#ONE} or {@link LabelCardinality#ONE_OR_MORE}).
+             *
+             * @return the default vertex label, typically {@link Vertex#DEFAULT_LABEL}
+             * @since 4.0.0
+             */
+            default String getDefaultLabel() {
+                return Vertex.DEFAULT_LABEL;
+            }
         }
 
         /**
@@ -784,6 +806,17 @@ public interface Graph extends AutoCloseable, Host {
             default EdgePropertyFeatures properties() {
                 return new EdgePropertyFeatures() {
                 };
+            }
+
+            /**
+             * Gets the {@link LabelCardinality} for edges in this graph. Edge labels are always
+             * immutable (exactly one label, set at creation time).
+             *
+             * @return the label cardinality for edges, always {@link LabelCardinality#ONE}
+             * @since 4.0.0
+             */
+            default LabelCardinality getLabelCardinality() {
+                return LabelCardinality.ONE;
             }
         }
 

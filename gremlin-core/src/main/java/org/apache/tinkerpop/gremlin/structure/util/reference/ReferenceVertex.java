@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -44,6 +45,11 @@ public class ReferenceVertex extends ReferenceElement<Vertex> implements Vertex 
 
     public ReferenceVertex(final Object id, final String label) {
         super(id, label);
+    }
+
+    public ReferenceVertex(final Object id, final Set<String> labels) {
+        super(id, labels != null && !labels.isEmpty() ? labels.iterator().next() : Vertex.DEFAULT_LABEL);
+        this.setElementLabels(labels);
     }
 
     public ReferenceVertex(final Vertex vertex) {

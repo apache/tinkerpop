@@ -29,8 +29,10 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -42,6 +44,12 @@ public abstract class DetachedElement<E> implements Element, Serializable, Attac
     protected String label;
     protected Map<String, List<Property>> properties = null;
 
+    /**
+     * Multi-label storage. When non-null, takes precedence over the single {@link #label} field.
+     * Only populated when the source element has more than one label.
+     */
+    protected Set<String> elementLabels;
+
     protected DetachedElement() {
 
     }
@@ -52,6 +60,15 @@ public abstract class DetachedElement<E> implements Element, Serializable, Attac
             this.label = element.label();
         } catch (final UnsupportedOperationException e) {   // ghetto.
             this.label = Vertex.DEFAULT_LABEL;
+        }
+        // Capture all labels from the source element for multi-label support.
+        try {
+            final Set<String> srcLabels = element.labels();
+            if (srcLabels.size() > 1) {
+                this.elementLabels = new LinkedHashSet<>(srcLabels);
+            }
+        } catch (UnsupportedOperationException e) {
+            // Adjacent vertices in graph computer context may not support labels()
         }
     }
 
@@ -72,7 +89,28 @@ public abstract class DetachedElement<E> implements Element, Serializable, Attac
 
     @Override
     public String label() {
-        return this.label;
+        if (this.elementLabels != null && !this.elementLabels.isEmpty()) {
+            return this.elementLabels.iterator().next();
+        }
+        return this.label != null ? this.label : "";
+    }
+
+    @Override
+    public Set<String> labels() {
+        if (this.elementLabels != null) {
+            return Collections.unmodifiableSet(this.elementLabels);
+        }
+        return this.label != null ? Collections.singleton(this.label) : Collections.emptySet();
+    }
+
+    /**
+     * Sets multi-label storage directly. Used by builders and deserialization.
+     */
+    protected void setElementLabels(final Set<String> labels) {
+        if (labels != null && !labels.isEmpty()) {
+            this.elementLabels = new LinkedHashSet<>(labels);
+            this.label = labels.iterator().next();
+        }
     }
 
     @Override

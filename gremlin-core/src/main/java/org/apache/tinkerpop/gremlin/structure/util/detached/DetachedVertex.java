@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents a {@link Vertex} that is disconnected from a {@link Graph}.  "Disconnection" can mean detachment from
@@ -193,6 +194,11 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
         public Builder setLabel(final String label) {
             v.label = label;
+            return this;
+        }
+
+        public Builder setLabels(final Set<String> labels) {
+            v.setElementLabels(labels);
             return this;
         }
 
