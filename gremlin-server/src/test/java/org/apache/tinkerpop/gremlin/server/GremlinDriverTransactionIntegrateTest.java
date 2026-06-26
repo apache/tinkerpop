@@ -812,7 +812,7 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
                 gtx.addV("person").property("name", "doomed_commit").iterate();
                 final String txId = ((RemoteTransaction) gtx.tx()).getTransactionId();
                 sideClient.submit("g.tx().rollback()",
-                        RequestOptions.build().addG(GTX).transactionId(txId).create()).all().join();
+                        RequestOptions.build().traversalSource(GTX).transactionId(txId).create()).all().join();
             });
             fail("The commit failure should propagate out of executeInTx()");
         } catch (Exception ex) {
