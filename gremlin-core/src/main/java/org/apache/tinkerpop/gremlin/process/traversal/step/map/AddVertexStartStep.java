@@ -53,14 +53,28 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements 
 
     public AddVertexStartStep(final Traversal.Admin traversal, final String label) {
         super(traversal);
-        this.internalParameters.set(this, T.label, null == label ? Vertex.DEFAULT_LABEL : label);
+        if (label != null) {
+            this.internalParameters.set(this, T.label, label);
+        }
         userProvidedLabel = label != null;
     }
 
     public AddVertexStartStep(final Traversal.Admin traversal, final Traversal<?, String> vertexLabelTraversal) {
         super(traversal);
-        this.internalParameters.set(this, T.label, null == vertexLabelTraversal ? Vertex.DEFAULT_LABEL : vertexLabelTraversal);
+        if (vertexLabelTraversal != null) {
+            this.internalParameters.set(this, T.label, vertexLabelTraversal);
+        }
         userProvidedLabel = vertexLabelTraversal != null;
+    }
+
+    public AddVertexStartStep(final Traversal.Admin traversal, final Set<String> labels) {
+        super(traversal);
+        if (labels != null && !labels.isEmpty()) {
+            this.internalParameters.set(this, T.label, labels);
+            userProvidedLabel = true;
+        } else {
+            userProvidedLabel = false;
+        }
     }
 
     @Override

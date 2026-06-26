@@ -18,8 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IndexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -101,4 +103,30 @@ public class WithOptions {
      * @since 4.0.0
      */
     public static final String queryLanguage = "queryLanguage";
+
+    // Multi-label configuration
+    //
+
+    /**
+     * The user-facing key for multilabel configuration used with {@code g.with("multilabel")}.
+     */
+    public static final String MULTILABEL_KEY = "multilabel";
+
+    /**
+     * The user-facing key for singlelabel override used with {@code g.with("singlelabel")}.
+     * When present, overrides multilabel to force single-label output in valueMap/elementMap steps.
+     */
+    public static final String SINGLELABEL_KEY = "singlelabel";
+
+    /**
+     * Checks whether multi-label output is enabled for the given traversal via source-level
+     * {@code g.with("multilabel")} configuration. Returns {@code false} if {@code g.with("singlelabel")}
+     * is also present, as singlelabel overrides multilabel.
+     */
+    public static boolean isMultilabelEnabled(final Traversal.Admin<?, ?> traversal) {
+        return traversal.getStrategies().getStrategy(OptionsStrategy.class)
+                .map(os -> os.getOptions().containsKey(MULTILABEL_KEY)
+                        && !os.getOptions().containsKey(SINGLELABEL_KEY))
+                .orElse(false);
+    }
 }

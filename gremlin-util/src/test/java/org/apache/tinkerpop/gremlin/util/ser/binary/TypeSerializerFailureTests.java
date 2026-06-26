@@ -57,7 +57,10 @@ public class TypeSerializerFailureTests {
 
     @Parameterized.Parameters(name = "Value={0}")
     public static Collection input() {
-        final ReferenceVertex vertex = new ReferenceVertex("a vertex", null);
+        // Use an unserializable id (raw Object has no registered TypeSerializer) to force
+        // serialization failure for vertex/edge cases. Previously null labels caused the
+        // failure, but now empty labels are serialized gracefully as empty lists.
+        final ReferenceVertex vertex = new ReferenceVertex(new Object(), "a vertex");
 
         final BulkSet<Object> bulkSet = new BulkSet<>();
         bulkSet.add(vertex, 1L);
@@ -72,7 +75,7 @@ public class TypeSerializerFailureTests {
                 vertex,
                 bulkSet,
                 Collections.singletonList(vertex),
-                new ReferenceEdge("an edge", null, vertex, vertex),
+                new ReferenceEdge(new Object(), "an edge", vertex, vertex),
                 Lambda.supplier(null),
                 metrics,
                 new DefaultTraversalMetrics(1L, Collections.singletonList(metrics)),

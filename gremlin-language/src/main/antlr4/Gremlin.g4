@@ -119,6 +119,7 @@ traversalSourceSpawnMethod_addE
 traversalSourceSpawnMethod_addV
     : K_ADDV LPAREN RPAREN
     | K_ADDV LPAREN stringArgument RPAREN
+    | K_ADDV LPAREN stringArgument COMMA stringArgument (COMMA stringArgument)* RPAREN
     | K_ADDV LPAREN nestedTraversal RPAREN
     ;
 
@@ -317,6 +318,10 @@ traversalMethod
     | traversalMethod_dateAdd
     | traversalMethod_dateDiff
     | traversalMethod_asNumber
+    | traversalMethod_labels
+    | traversalMethod_addLabel
+    | traversalMethod_dropLabels
+    | traversalMethod_dropLabel
     ;
 
 traversalMethod_V
@@ -337,6 +342,7 @@ traversalMethod_addE
 traversalMethod_addV
     : K_ADDV LPAREN RPAREN #traversalMethod_addV_Empty
     | K_ADDV LPAREN stringArgument RPAREN #traversalMethod_addV_String
+    | K_ADDV LPAREN stringArgument COMMA stringArgument (COMMA stringArgument)* RPAREN #traversalMethod_addV_StringVarargs
     | K_ADDV LPAREN nestedTraversal RPAREN #traversalMethod_addV_Traversal
     ;
 
@@ -636,6 +642,24 @@ traversalMethod_key
 
 traversalMethod_label
     : K_LABEL LPAREN RPAREN
+    ;
+
+traversalMethod_labels
+    : K_LABELS LPAREN RPAREN
+    ;
+
+traversalMethod_addLabel
+    : K_ADDLABEL LPAREN stringArgument (COMMA stringArgument)* RPAREN #traversalMethod_addLabel_String
+    | K_ADDLABEL LPAREN nestedTraversal RPAREN #traversalMethod_addLabel_Traversal
+    ;
+
+traversalMethod_dropLabels
+    : K_DROPLABELS LPAREN RPAREN #traversalMethod_dropLabels_Empty
+    ;
+
+traversalMethod_dropLabel
+    : K_DROPLABEL LPAREN stringArgument (COMMA stringArgument)* RPAREN #traversalMethod_dropLabel_String
+    | K_DROPLABEL LPAREN nestedTraversal RPAREN #traversalMethod_dropLabel_Traversal
     ;
 
 traversalMethod_length
@@ -1792,6 +1816,7 @@ keyword
     : TRAVERSAL_ROOT // g - __ is not an allowable key in this context
     | K_ADDALL
     | K_ADDE
+    | K_ADDLABEL
     | K_ADDV
     | K_AGGREGATE
     | K_ALL
@@ -1863,6 +1888,8 @@ keyword
     | K_DOUBLE
     | K_DOUBLEU
     | K_DROP
+    | K_DROPLABEL
+    | K_DROPLABELS
     | K_DT
     | K_DURATION
     | K_DURATIONC
@@ -2105,6 +2132,7 @@ keyword
 
 K_ADDALL: 'addAll';
 K_ADDE: 'addE';
+K_ADDLABEL: 'addLabel';
 K_ADDV: 'addV';
 K_AGGREGATE: 'aggregate';
 K_ALL: 'all';
@@ -2176,6 +2204,8 @@ K_DIV: 'div';
 K_DOUBLE: 'double';
 K_DOUBLEU: 'DOUBLE';
 K_DROP: 'drop';
+K_DROPLABEL: 'dropLabel';
+K_DROPLABELS: 'dropLabels';
 K_DT: 'DT';
 K_DURATION: 'duration';
 K_DURATIONC: 'Duration';

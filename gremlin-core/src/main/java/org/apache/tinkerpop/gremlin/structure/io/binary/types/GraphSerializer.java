@@ -135,7 +135,8 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
 
         context.write(vertex.id(), buffer);
         // serializing label as list here for now according to GraphBinaryV4
-        context.writeValue(Collections.singletonList(vertex.label()), buffer, false);
+        final String vLabel = vertex.label();
+        context.writeValue(vLabel == null ? Collections.emptyList() : Collections.singletonList(vLabel), buffer, false);
         context.writeValue(vertexProperties.size(), buffer, false);
 
         for (VertexProperty<Object> vp : vertexProperties) {
@@ -154,7 +155,8 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
     private void writeEdge(Buffer buffer, GraphBinaryWriter context, Edge edge) throws IOException {
         context.write(edge.id(), buffer);
         // serializing label as list here for now according to GraphBinaryV4
-        context.writeValue(Collections.singletonList(edge.label()), buffer, false);
+        final String eLabel = edge.label();
+        context.writeValue(eLabel == null ? Collections.emptyList() : Collections.singletonList(eLabel), buffer, false);
 
         context.write(edge.inVertex().id(), buffer);
 

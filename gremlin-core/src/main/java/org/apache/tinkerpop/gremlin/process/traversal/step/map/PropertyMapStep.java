@@ -61,6 +61,7 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
 
     protected Parameters parameters = new Parameters();
     protected Traversal.Admin<K, E> valueTraversal;
+    private Boolean multilabelEnabled;
 
     public PropertyMapStep(final Traversal.Admin traversal, final PropertyType propertyType, final String... propertyKeys) {
         super(traversal);
@@ -200,9 +201,26 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
                 if (includeToken(WithOptions.keys)) map.put(T.key, getVertexPropertyKey((VertexProperty<?>) element));
                 if (includeToken(WithOptions.values)) map.put(T.value, getVertexPropertyValue((VertexProperty<?>) element));
             } else {
-                if (includeToken(WithOptions.labels)) map.put(T.label, getElementLabel(element));
+                if (includeToken(WithOptions.labels)) {
+                    if (isMultilabelEnabled()) {
+                        map.put(T.label, element.labels());
+                    } else {
+                        map.put(T.label, getElementLabel(element));
+                    }
+                }
             }
         }
+    }
+
+    /**
+     * Checks if multilabel mode is enabled via source-level {@code g.with("multilabel")}.
+     * Result is cached since strategies are immutable after traversal compilation.
+     */
+    private boolean isMultilabelEnabled() {
+        if (multilabelEnabled == null) {
+            multilabelEnabled = WithOptions.isMultilabelEnabled(getTraversal());
+        }
+        return multilabelEnabled;
     }
 
     protected Object getElementId(Element element){

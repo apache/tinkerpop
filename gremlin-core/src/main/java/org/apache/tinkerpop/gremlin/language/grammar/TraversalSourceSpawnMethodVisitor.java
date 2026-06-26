@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -61,8 +62,9 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
      */
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_addE(final GremlinParser.TraversalSourceSpawnMethod_addEContext ctx) {
-        if (ctx.stringArgument() != null) {
-            final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(ctx.stringArgument());
+        final GremlinParser.StringArgumentContext stringArg = ctx.stringArgument();
+        if (stringArg != null) {
+            final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(stringArg);
             if (GValue.valueInstanceOf(literalOrVar, String.class)) {
                 return this.traversalSource.addE((GValue<String>) literalOrVar);
             } else {
@@ -80,12 +82,29 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
      */
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_addV(final GremlinParser.TraversalSourceSpawnMethod_addVContext ctx) {
-        if (ctx.stringArgument() != null) {
-            final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(ctx.stringArgument());
-            if (GValue.valueInstanceOf(literalOrVar, String.class)) {
-                return this.traversalSource.addV((GValue<String>) literalOrVar);
+        final List<GremlinParser.StringArgumentContext> stringArgs = ctx.stringArgument();
+        if (stringArgs != null && !stringArgs.isEmpty()) {
+            if (stringArgs.size() == 1) {
+                final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(stringArgs.get(0));
+                if (GValue.valueInstanceOf(literalOrVar, String.class)) {
+                    return this.traversalSource.addV((GValue<String>) literalOrVar);
+                } else {
+                    return this.traversalSource.addV((String) literalOrVar);
+                }
             } else {
-                return this.traversalSource.addV((String) literalOrVar);
+                // Multi-label: addV("a", "b", ...)
+                final Object firstLiteralOrVar = antlr.argumentVisitor.visitStringArgument(stringArgs.get(0));
+                final String firstLabel = firstLiteralOrVar instanceof String ? (String) firstLiteralOrVar : ((GValue<String>) firstLiteralOrVar).get();
+                // Create vertex with first label, then add remaining labels
+                GraphTraversal t = this.traversalSource.addV(firstLabel);
+                final Object secondLiteralOrVar = antlr.argumentVisitor.visitStringArgument(stringArgs.get(1));
+                final String secondLabel = secondLiteralOrVar instanceof String ? (String) secondLiteralOrVar : ((GValue<String>) secondLiteralOrVar).get();
+                final String[] moreLabels = new String[stringArgs.size() - 2];
+                for (int i = 2; i < stringArgs.size(); i++) {
+                    final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(stringArgs.get(i));
+                    moreLabels[i - 2] = literalOrVar instanceof String ? (String) literalOrVar : ((GValue<String>) literalOrVar).get();
+                }
+                return t.addLabel(secondLabel, moreLabels);
             }
         } else if (ctx.nestedTraversal() != null) {
             return this.traversalSource.addV(anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));

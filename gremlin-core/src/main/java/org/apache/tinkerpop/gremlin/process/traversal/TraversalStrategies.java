@@ -54,6 +54,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Prod
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LabelsDropVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy;
@@ -263,6 +264,7 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
 
             // verification
             put(EdgeLabelVerificationStrategy.class.getSimpleName(), EdgeLabelVerificationStrategy.class);
+            put(LabelsDropVerificationStrategy.class.getSimpleName(), LabelsDropVerificationStrategy.class);
             put(LambdaRestrictionStrategy.class.getSimpleName(), LambdaRestrictionStrategy.class);
             put(ReadOnlyStrategy.class.getSimpleName(), ReadOnlyStrategy.class);
             put(ReservedKeysVerificationStrategy.class.getSimpleName(), ReservedKeysVerificationStrategy.class);
@@ -287,6 +289,7 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
                     LazyBarrierStrategy.instance(),
                     ProfileStrategy.instance(),
                     StandardVerificationStrategy.instance(),
+                    LabelsDropVerificationStrategy.instance(),
                     GValueReductionStrategy.instance());
             registerStrategies(Graph.class, graphStrategies);
             registerStrategies(EmptyGraph.class, new DefaultTraversalStrategies());

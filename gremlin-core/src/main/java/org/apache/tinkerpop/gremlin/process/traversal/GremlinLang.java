@@ -528,6 +528,14 @@ public class GremlinLang implements Cloneable, Serializable {
             // special handling for OptionsStrategy
             if (arguments[i] instanceof OptionsStrategy) {
                 optionsStrategies.add((OptionsStrategy) arguments[i]);
+                // Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
+                final Configuration configuration = ((OptionsStrategy) arguments[i]).getConfiguration();
+                if (configuration.containsKey("multilabel")) {
+                    gremlin.append(".with(\"multilabel\")");
+                }
+                if (configuration.containsKey("singlelabel")) {
+                    gremlin.append(".with(\"singlelabel\")");
+                }
                 break;
             }
 
