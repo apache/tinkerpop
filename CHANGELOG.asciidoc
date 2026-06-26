@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added GraphBinary `Tree` (`0x2b`) serialization and deserialization with a native tree-shaped API to `gremlin-python`, `gremlin-dotnet`, `gremlin-go`, and `gremlin-javascript`.
 * Standardized `gremlin-dotnet` connection options per the TinkerPop 4.x GLV proposal:
 ** Renamed the `Auth.BasicAuth`/`Auth.SigV4Auth` factory methods to `Auth.Basic`/`Auth.Sigv4` (breaking; the old methods have been removed). *(breaking)*
 ** Renamed `MaxConnectionsPerServer` to `MaxConnections`, `IdleConnectionTimeout` to `IdleTimeout`, and `KeepAliveInterval` to `KeepAliveTime` (now wired to a real TCP keep-alive socket option rather than the inert HTTP/2 ping timeout, enabling `SO_KEEPALIVE` and setting the per-socket idle time on Windows, Linux, and macOS, with a no-op fallback to the OS default idle time on other platforms); the old property names have been removed. *(breaking)*

@@ -254,6 +254,8 @@ func (d *GraphBinaryDeserializer) readValue(dt dataType, flag byte) (interface{}
 		return d.readGraph()
 	case pathType:
 		return d.readPath()
+	case treeType:
+		return d.readTree()
 	case propertyType:
 		return d.readProperty()
 	case vertexPropertyType:
@@ -640,6 +642,30 @@ func (d *GraphBinaryDeserializer) readPath() (*Path, error) {
 		}
 	}
 	return path, nil
+}
+
+func (d *GraphBinaryDeserializer) readTree() (interface{}, error) {
+	return d.readTreeValue()
+}
+
+func (d *GraphBinaryDeserializer) readTreeValue() (*Tree, error) {
+	length, err := d.readInt32()
+	if err != nil {
+		return nil, err
+	}
+	tree := &Tree{}
+	for i := int32(0); i < length; i++ {
+		key, err := d.ReadFullyQualified()
+		if err != nil {
+			return nil, err
+		}
+		child, err := d.readTreeValue()
+		if err != nil {
+			return nil, err
+		}
+		tree.GetOrCreateChild(key).AddTree(child)
+	}
+	return tree, nil
 }
 
 func (d *GraphBinaryDeserializer) readProperty() (*Property, error) {

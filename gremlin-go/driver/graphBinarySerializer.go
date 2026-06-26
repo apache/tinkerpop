@@ -61,6 +61,7 @@ const (
 	byteBuffer         dataType = 0x25
 	shortType          dataType = 0x26
 	booleanType        dataType = 0x27
+	treeType           dataType = 0x2b
 	mergeType          dataType = 0x2e
 	durationType       dataType = 0x81
 	compositePDTType   dataType = 0xf0
@@ -363,6 +364,36 @@ func pathWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeS
 	return typeSerializer.write(p.Objects, w)
 }
 
+// Format: {length}{entry_0}...{entry_n}
+// Per entry: {key}{child}
+//   - key:   fully-qualified ({type_code}{type_info}{value_flag}{value}); may be null.
+//   - child: a bare (value-only) child Tree, i.e. its own {length}{entries...}
+//     with no type_code/value_flag, written recursively. A leaf is length 0.
+// Each key is written fully-qualified and each child as a bare value (no
+// type_code/value_flag); this matches readTree/readTreeValue in
+// graphBinaryDeserializer.go.
+func treeWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
+	t := value.(*Tree)
+	if err := binary.Write(w, binary.BigEndian, int32(len(t.entries))); err != nil {
+		return err
+	}
+	for _, e := range t.entries {
+		// key fully-qualified (may be null)
+		if err := typeSerializer.write(e.key, w); err != nil {
+			return err
+		}
+		// child written as a bare value (never null; an empty subtree is length 0)
+		child := e.value
+		if child == nil {
+			child = &Tree{}
+		}
+		if err := treeWriter(child, w, typeSerializer); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Format: {vertex_count}{vertices...}{edge_count}{edges...}
 // Per vertex: {id}{labels:list<string>}{vp_count}{vps...}
 // Per vp:     {id}{labels:list<string>}{value}{parent=null}{meta_props:list<property>}
@@ -602,6 +633,8 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return vertexPropertyType, nil
 	case *Path:
 		return pathType, nil
+	case *Tree:
+		return treeType, nil
 	case Set:
 		return setType, nil
 	case time.Time:
