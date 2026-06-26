@@ -576,6 +576,123 @@ func (tg *tinkerPopGraph) theResultShouldBeEmpty() error {
 	return nil
 }
 
+// treeNode is one node of the expected tree structure parsed from a Gherkin
+// ascii-tree docstring: a parsed key value and its child nodes in document order.
+type treeNode struct {
+	value    interface{}
+	children []*treeNode
+}
+
+// parseTree builds the expected tree from a Gherkin ascii-tree docstring and
+// returns its root nodes. Each line's depth is its leading-space count divided
+// by three; the node value is the line with the leading "|--" removed, trimmed,
+// and passed through parseValue. A node at depth 0 is a root, otherwise it is
+// appended to the most recent node at the depth above it. An empty docstring
+// yields no roots (an empty tree).
+func (tg *tinkerPopGraph) parseTree(asciiTree string) []*treeNode {
+	var roots []*treeNode
+	if len(asciiTree) == 0 {
+		return roots
+	}
+
+	lines := regexp.MustCompile(`\r\n|\r|\n`).Split(asciiTree, -1)
+	levelMap := map[int]*treeNode{}
+
+	for _, line := range lines {
+		if len(line) == 0 {
+			continue
+		}
+
+		leadingSpaces := 0
+		for _, c := range line {
+			if c == ' ' {
+				leadingSpaces++
+			} else {
+				break
+			}
+		}
+		level := leadingSpaces / 3 // 3 spaces per level
+		rawValue := strings.TrimSpace(strings.Replace(line, "|--", "", 1))
+
+		node := &treeNode{value: parseValue(rawValue, tg.graphName)}
+		if level == 0 {
+			roots = append(roots, node)
+		} else {
+			parent := levelMap[level-1]
+			parent.children = append(parent.children, node)
+		}
+		levelMap[level] = node
+	}
+
+	return roots
+}
+
+// validateTreeStructure recursively asserts that actualTree matches the parsed
+// expectedNode: the child count must match and every expected child must be
+// present and recursively match.
+func validateTreeStructure(actualTree *gremlingo.Tree, expectedNode *treeNode) error {
+	if len(actualTree.RootNodes()) != len(expectedNode.children) {
+		return fmt.Errorf("tree child count does not match at %v: expected %d, got %d",
+			expectedNode.value, len(expectedNode.children), len(actualTree.RootNodes()))
+	}
+	for _, child := range expectedNode.children {
+		if !actualTree.HasChild(child.value) {
+			return fmt.Errorf("tree not matching at %v", child.value)
+		}
+		sub, err := actualTree.ChildAt(child.value)
+		if err != nil {
+			return err
+		}
+		if err := validateTreeStructure(sub, child); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Asserts the most recent result is a *gremlingo.Tree matching the ascii-tree
+// docstring, validated recursively.
+func (tg *tinkerPopGraph) theResultShouldBeATreeWithAStructureOf(expectedTree *godog.DocString) error {
+	if len(tg.result) == 0 {
+		return errors.New("no result to assert against")
+	}
+
+	// The traversal yields a single Tree (via "iterated next").
+	res, ok := tg.result[0].(*gremlingo.Result)
+	if !ok {
+		return fmt.Errorf("expected first result to be *gremlingo.Result, got %T", tg.result[0])
+	}
+	tree, ok := res.GetInterface().(*gremlingo.Tree)
+	if !ok {
+		return fmt.Errorf("expected the result to be a *gremlingo.Tree, got %T", res.GetInterface())
+	}
+
+	var content string
+	if expectedTree != nil {
+		content = expectedTree.Content
+	}
+	// an empty docstring represents an empty tree
+	roots := tg.parseTree(content)
+
+	if len(tree.RootNodes()) != len(roots) {
+		return fmt.Errorf("tree root node count does not match expected structure: expected %d, got %d",
+			len(roots), len(tree.RootNodes()))
+	}
+	for _, root := range roots {
+		if !tree.HasChild(root.value) {
+			return fmt.Errorf("tree not matching at %v", root.value)
+		}
+		sub, err := tree.ChildAt(root.value)
+		if err != nil {
+			return err
+		}
+		if err := validateTreeStructure(sub, root); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // theResultShouldBeASubgraphWithTheFollowing asserts that the most recent
 // traversal result is a *gremlingo.Graph data container whose Vertices or
 // Edges map (selected by the data-table header) matches the expected rows.
@@ -1100,6 +1217,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the graph should return (\d+) for count of "(.+)"$`, tg.theGraphShouldReturnForCountOf)
 	ctx.Step(`^the result should be empty$`, tg.theResultShouldBeEmpty)
 	ctx.Step(`^the result should be a subgraph with the following$`, tg.theResultShouldBeASubgraphWithTheFollowing)
+	ctx.Step(`^the result should be a tree with a structure of$`, tg.theResultShouldBeATreeWithAStructureOf)
 	ctx.Step(`^the result should be (o\w+)$`, tg.theResultShouldBe)
 	ctx.Step(`^the result should be (u\w+)$`, tg.theResultShouldBe)
 	ctx.Step(`^the result should have a count of (\d+)$`, tg.theResultShouldHaveACountOf)
@@ -1135,7 +1253,7 @@ func TestCucumberFeatures(t *testing.T) {
 		TestSuiteInitializer: InitializeTestSuite,
 		ScenarioInitializer:  InitializeScenario,
 		Options: &godog.Options{
-			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepTree && ~@StepWrite && ~@DataChar",
+			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepWrite && ~@DataChar",
 			Format:   "pretty",
 			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features")},
 			TestingT: t, // Testing instance that will run subtests.

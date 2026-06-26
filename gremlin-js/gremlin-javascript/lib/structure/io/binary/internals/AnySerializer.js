@@ -46,6 +46,7 @@ export default class AnySerializer {
       ioc.binarySerializer,
       ioc.primitivePDTSerializer,
       ioc.compositePDTSerializer,
+      ioc.treeSerializer,
       ioc.mapSerializer,
     ];
   }

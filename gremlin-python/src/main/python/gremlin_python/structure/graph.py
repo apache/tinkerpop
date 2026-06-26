@@ -339,3 +339,232 @@ def provider_defined(name=None, included_fields=None, excluded_fields=None):
         _pdt_decorated_types[cls._pdt_name] = cls
         return cls
     return decorator
+
+
+class Tree(object):
+    """
+    A tree data structure with a tree-shaped public API.
+
+    Children are backed by an ordered list of ``(key, subtree)`` entries,
+    preserving insertion order and using value-equality (``==``) for key lookup
+    so keys need not be hashable. ``None`` keys are supported.
+    """
+
+    def __init__(self, entries=None):
+        # internal ordered list of [key, subtree] pairs
+        self._entries = []
+        if entries is not None:
+            for key, child in entries:
+                if not isinstance(child, Tree):
+                    raise TypeError("Tree entries must map a key to a Tree, got: " + repr(child))
+                self._entries.append([key, child])
+
+    # ------------------------------------------------------------------
+    # internal helpers
+    # ------------------------------------------------------------------
+
+    def _find_entry(self, key):
+        for entry in self._entries:
+            if entry[0] == key:
+                return entry
+        return None
+
+    # ------------------------------------------------------------------
+    # navigation
+    # ------------------------------------------------------------------
+
+    def root_nodes(self):
+        """Returns the list of keys at the root of this tree, in insertion order."""
+        return [entry[0] for entry in self._entries]
+
+    def child_at(self, key):
+        """
+        Returns the child subtree for the given key.
+
+        :raises KeyError: if no immediate child exists for the given key
+        """
+        entry = self._find_entry(key)
+        if entry is None:
+            raise KeyError("Tree has no child for key: " + str(key))
+        return entry[1]
+
+    def has_child(self, key):
+        """Returns True if the given key is an immediate child of this tree."""
+        return self._find_entry(key) is not None
+
+    def contains(self, value):
+        """Returns True if the given value appears as a key anywhere in this tree (recursive)."""
+        for key, child in self._entries:
+            if key == value or child.contains(value):
+                return True
+        return False
+
+    def find_subtree(self, key):
+        """
+        Recursively searches the tree for the first subtree rooted at ``key`` and
+        returns it, or ``None`` if not found. Direct children are visited before
+        recursing.
+        """
+        for k, child in self._entries:
+            if k == key:
+                return child
+        for _, child in self._entries:
+            found = child.find_subtree(key)
+            if found is not None:
+                return found
+        return None
+
+    def get_or_create_child(self, key):
+        """Returns the existing child for ``key``, or inserts and returns a new empty Tree if absent."""
+        entry = self._find_entry(key)
+        if entry is None:
+            child = Tree()
+            self._entries.append([key, child])
+            return child
+        return entry[1]
+
+    # ------------------------------------------------------------------
+    # structural
+    # ------------------------------------------------------------------
+
+    def is_leaf(self):
+        """Returns True if this tree has no children. An empty tree is considered a leaf."""
+        return len(self._entries) == 0
+
+    def node_count(self):
+        """Returns the total number of nodes (keys) in the tree, counted recursively."""
+        count = len(self._entries)
+        for _, child in self._entries:
+            count += child.node_count()
+        return count
+
+    def get_nodes_at_depth(self, depth):
+        """
+        Returns the keys at the given depth. Depth 0 returns the root keys.
+
+        Negative depths and depths beyond the tree's height return an empty list.
+        """
+        nodes = []
+        for tree in self.get_trees_at_depth(depth):
+            nodes.extend(tree.root_nodes())
+        return nodes
+
+    def get_trees_at_depth(self, depth):
+        """
+        Returns the trees at the given depth. Depth 0 returns a singleton list
+        containing this tree. Negative depths and depths beyond the tree's
+        height return an empty list.
+        """
+        if depth < 0:
+            return []
+        current = [self]
+        for _ in range(depth):
+            nxt = []
+            for tree in current:
+                nxt.extend(entry[1] for entry in tree._entries)
+            if not nxt:
+                return []
+            current = nxt
+        return current
+
+    def get_leaf_nodes(self):
+        """Returns all keys whose subtrees are leaves (recursive)."""
+        leaves = []
+        self._collect_leaf_keys(leaves)
+        return leaves
+
+    def _collect_leaf_keys(self, out):
+        for key, child in self._entries:
+            if child.is_leaf():
+                out.append(key)
+            else:
+                child._collect_leaf_keys(out)
+
+    def get_leaf_trees(self):
+        """Returns single-key trees representing each leaf key in this tree (recursive)."""
+        leaves = []
+        self._collect_leaf_trees(leaves)
+        return leaves
+
+    def _collect_leaf_trees(self, out):
+        for key, child in self._entries:
+            if child.is_leaf():
+                out.append(Tree([(key, child)]))
+            else:
+                child._collect_leaf_trees(out)
+
+    # ------------------------------------------------------------------
+    # composition
+    # ------------------------------------------------------------------
+
+    def add_tree(self, other):
+        """
+        Recursively merges ``other`` into this tree. For overlapping keys (by
+        value-equality) child subtrees are merged in turn. For keys present only
+        in ``other`` the corresponding subtree reference is adopted directly.
+        """
+        for key, child in other._entries:
+            entry = self._find_entry(key)
+            if entry is None:
+                self._entries.append([key, child])
+            else:
+                entry[1].add_tree(child)
+
+    def split_parents(self):
+        """
+        Splits this tree into one tree per root key. If the tree has a single
+        root, returns a singleton list containing this tree.
+        """
+        if len(self._entries) == 1:
+            return [self]
+        return [Tree([(key, child)]) for key, child in self._entries]
+
+    # ------------------------------------------------------------------
+    # output
+    # ------------------------------------------------------------------
+
+    def pretty_print(self):
+        """
+        Produces a formatted string representation of the tree structure using a
+        ``|--`` ASCII style, matching Java's ``Tree.prettyPrint``.
+
+        Each level is indented by 3 spaces relative to its parent. The returned
+        string has no trailing newline.
+        """
+        lines = []
+        self._pretty_print(lines, "")
+        return "\n".join(lines)
+
+    def _pretty_print(self, lines, prefix):
+        for key, child in self._entries:
+            lines.append(prefix + "|--" + str(key))
+            child._pretty_print(lines, prefix + "   ")
+
+    # ------------------------------------------------------------------
+    # identity
+    # ------------------------------------------------------------------
+
+    def __eq__(self, other):
+        if not isinstance(other, Tree):
+            return NotImplemented
+        if len(self._entries) != len(other._entries):
+            return False
+        for key, child in self._entries:
+            matched = False
+            for okey, ochild in other._entries:
+                if okey == key:
+                    if ochild != child:
+                        return False
+                    matched = True
+                    break
+            if not matched:
+                return False
+        return True
+
+    def __hash__(self):
+        # structurally-equal trees share the same number of root entries, so this
+        # is consistent with __eq__ while remaining valid for unhashable keys.
+        return hash(len(self._entries))
+
+    def __repr__(self):
+        return "{" + ", ".join(str(key) + "=" + repr(child) for key, child in self._entries) + "}"

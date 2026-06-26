@@ -308,6 +308,25 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public Task TestPropPath() => RunWriteRead("prop-path"); // properties aren't serialized
 
+        // Tree tests
+        [Fact]
+        public Task TestTraversalTree() => RunWriteRead("traversal-tree"); // vertex properties aren't serialized
+
+        [Fact]
+        public Task TestEmptyTree() => TestEmptyTreeRoundTrip();
+
+        private async Task TestEmptyTreeRoundTrip()
+        {
+            // no .gbin resource exists for an empty tree, so exercise an in-memory round trip
+            var empty = (Gremlin.Net.Structure.Tree)Model.Entries["empty-tree"]!;
+            using var writeStream = new MemoryStream();
+            await Writer.WriteAsync(empty, writeStream);
+            using var readStream = new MemoryStream(writeStream.ToArray());
+            var roundTripped = await Reader.ReadAsync(readStream);
+            Assert.Equal(empty, roundTripped);
+            Assert.True(((Gremlin.Net.Structure.Tree)roundTripped!).IsLeaf());
+        }
+
         // Property tests
         [Fact]
         public Task TestEdgeProperty() => Run("edge-property");

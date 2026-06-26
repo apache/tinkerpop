@@ -34,7 +34,6 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
     /// 
     /// The following models aren't supported:
     /// tinker-graph              Graph type not implemented
-    /// traversal-tree            Tree type not implemented  
     /// max-offsetdatetime        DateTimeOffset.MaxValue exceeds serialization range
     /// min-offsetdatetime        DateTimeOffset.MinValue exceeds serialization range
     /// forever-duration          TimeSpan cannot represent Duration.FOREVER
@@ -62,6 +61,14 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         private static readonly VertexProperty SanDiego = new(6, "location", "san diego", null,
             new dynamic[] { StartTime1997, EndTime2001 });
         private static readonly VertexProperty NameMarko = new(0, "name", "marko", null);
+
+        // tree for g.V(10).out().tree(): v[10] -> v[11]
+        private static Tree BuildTraversalTree()
+        {
+            var tree = new Tree();
+            tree.GetOrCreateChild(new Vertex(10, "software")).GetOrCreateChild(new Vertex(11, "software"));
+            return tree;
+        }
 
         public static Dictionary<string, object?> Entries { get; } = new()
         {
@@ -153,6 +160,11 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
                 new List<ISet<string>> { new HashSet<string>(), new HashSet<string>(), new HashSet<string>() },
                 new List<object?> { new Vertex(1, "person"), new Vertex(10, "software"), new Vertex(11, "software") }),
             ["empty-path"] = new Path(new List<ISet<string>>(), new List<object?>()),
+
+            // Tree
+            ["traversal-tree"] = BuildTraversalTree(),
+            ["empty-tree"] = new Tree(),
+
             ["prop-path"] = new Path(
                 new List<ISet<string>> { new HashSet<string>(), new HashSet<string>(), new HashSet<string>() },
                 new List<object?>
