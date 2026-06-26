@@ -43,9 +43,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Reference implementation for String format step, a mid-traversal step which will handle result formatting
- * to string values. If the incoming traverser is a non-String value then an {@code IllegalArgumentException}
- * will be thrown.
+ * Reference implementation for String format step, a mid-traversal step which substitutes {@code %{variable_name}}
+ * and {@code %{_}} references in a format string with property values, scope values, or {@code by()} modulator
+ * results from the incoming traverser. If any referenced variable cannot be resolved the result is filtered out.
+ * A null format string causes an {@link IllegalArgumentException} at step construction.
  *
  * @author Valentyn Kahamlyk
  */

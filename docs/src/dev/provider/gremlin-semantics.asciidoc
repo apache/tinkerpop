@@ -26,8 +26,7 @@ them with tests in the Gremlin test suite makes it easier for providers to imple
 TinkerPop Community to have better consistency in their user experiences. While the general Gremlin test suite offers
 an integrated approach to testing Gremlin queries, the `@StepClassSemantics` oriented tests found
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features[here] are especially focused to the
-definitions found in this section. References to the location of specific tests can be found throughout the
-sub-sections below.
+definitions found in this section.
 
 == Types
 
@@ -509,6 +508,12 @@ fully demonstrative of Gremlin step semantics. It is also hard to simply read th
 step is meant to behave. This section discusses the semantics for individual steps to help users and providers
 understand implementation expectations.
 
+Each step entry uses the following labeled fields in order: `Description`, `Syntax`, a start/mid/modulated/domain/range
+table, `Arguments`, `Modulation` (where applicable), `Considerations`, `Exceptions`, and a closing `See:` line linking
+to the source file and the corresponding reference documentation. When a step has no entries for `Arguments`,
+`Modulation`, or `Exceptions`, the field is still present with `None` as its body. When adding a new step or revising
+an existing one, follow the pattern from a neighboring entry rather than introducing a new structure.
+
 [[adde-step]]
 === addE()
 
@@ -544,7 +549,7 @@ existing `Vertex` in the graph. `GraphTraversal` implementations in GLVs may opt
 `to(Vertex)` as syntactic sugar. If translating to gremlin-lang scripts, these sugared modulators must be converted to
 `from(__.V(vertex.id()))` or `from(__.constant(vertex.id()))` (and equivalents for `to()`).
 
-*Exceptions*
+*Exceptions:*
 
 * If the edge label is null, an `IllegalArgumentException` will be thrown.
 
@@ -579,7 +584,7 @@ None
 The `addV()` step can be used as both a start step and a mid-traversal step. If no label is provided, the default
 vertex label for the graph will be used.
 
-*Exceptions*
+*Exceptions:*
 
 * If the vertex label is null, an `IllegalArgumentException` will be thrown.
 
@@ -613,7 +618,7 @@ None
 Each value will be tested using the supplied predicate. Empty lists always pass through and null/non-list traversers
 will be filtered out of the Traversal Stream.
 
-*Exceptions*
+*Exceptions:*
 
 * A GremlinTypeErrorException will be thrown if one occurs and no other value evaluates to false.
 
@@ -646,7 +651,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[reference]
 The `aggregate()` step is a side-effect step that collects objects but passes the traverser to the next step unchanged.
 The aggregated objects can be accessed later using the `cap()` step.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
@@ -679,7 +684,7 @@ None
 The `and()` step is a filter step that allows the traverser to pass if all of the provided traversals yield a result.
 It follows the ternary boolean logic described in the <<gremlin-semantics-concepts,Ternary Boolean Logics>> section.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
@@ -712,7 +717,7 @@ None
 Each value will be tested using the supplied predicate. Empty lists, null traversers, and non-list traversers will be
 filtered out of the Traversal Stream.
 
-*Exceptions*
+*Exceptions:*
 
 * A GremlinTypeErrorException will be thrown if one occurs and no other value evaluates to true.
 
@@ -747,7 +752,7 @@ The `as()` step is not a real step, but a "step modulator" similar to `by()` and
 for later access by steps like `select()` and `match()`. A step can have any number of labels associated with it, which
 is useful for referencing the same step multiple times in a future step.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
@@ -771,9 +776,11 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#as-step[reference]
 
 None
 
+*Considerations:*
+
 Booleans are passed as is, numbers evaluate to `true` if non-zero, and `false` if zero or `NaN`. Strings only accept "true" or "false" (case-insensitive).
 
-*Exceptions*
+*Exceptions:*
 
 If the incoming traverser type is unsupported, a string other than "true" or "false", or `null`, then an `IllegalArgumentException` is thrown.
 
@@ -797,9 +804,11 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asBool-step[reference]
 
 None
 
+*Considerations:*
+
 Incoming date remains unchanged.
 
-*Exceptions*
+*Exceptions:*
 
 * If the incoming traverser is a non-String/Number/Date value then an `IllegalArgumentException` will be thrown.
 
@@ -823,9 +832,11 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[reference]
 
 * `typeToken` - The enum `GType` to denote the desired type to parse/cast to.
 
+*Considerations:*
+
 If no type token is provided, the incoming number remains unchanged.
 
-*Exceptions*
+*Exceptions:*
 
 * If any overflow occurs during narrowing of types, then an `ArithmeticException` will be thrown.
 * If the incoming string cannot be parsed into a valid number format, then a `NumberFormatException` will be thrown.
@@ -851,14 +862,19 @@ incoming list traverser as string.
 
 *Arguments:*
 
-* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
-The `global` scope will operate on individual traverser, casting all (except `null`) to string. The `local` scope will behave like
-`global` for everything except lists, where it will cast individual non-`null` elements inside the list into string and return a
-list of string instead.
+* `scope` - Determines the type of traverser it operates on. The `global` scope operates on individual traversers.
+The `local` scope operates on list traversers (`Iterable`, `Iterator`, or array), converting each element. Non-list
+traversers under `Scope.local` behave as under `Scope.global`.
 
-*Exceptions*
+*Considerations:*
+
+Each value is converted to its String representation using `String.valueOf` semantics. The list traverser forms
+recognized under `Scope.local` are `Iterable`, `Iterator`, and array.
+
+*Exceptions:*
 
 * If the incoming traverser is a `null` value then an `IllegalArgumentException` will be thrown.
+* Under `Scope.local`, an `IllegalArgumentException` will also be thrown if any element of the list traverser is `null`.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringGlobalStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringLocalStep.java[source (local)],
@@ -892,7 +908,7 @@ The `barrier()` step is useful in the following situations:
 * When "stalling" the traversal may lead to a "bulking optimization" in traversals that repeatedly touch many of the
 same elements (i.e., optimizing).
 
-*Exceptions*
+*Exceptions:*
 
 None
 
@@ -925,7 +941,7 @@ None
 The `both()` step is a vertex-centric step that traverses both incoming and outgoing edges from the current vertex to
 adjacent vertices. It is equivalent to the union of `in()` and `out()`.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
@@ -958,7 +974,7 @@ None
 The `bothE()` step is a vertex-centric step that traverses both incoming and outgoing edges from the current vertex. It
 is equivalent to the union of `inE()` and `outE()`.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
@@ -991,7 +1007,7 @@ None
 The `bothV()` step is an edge-centric step that traverses to both the incoming and outgoing vertices of the current
 edge. It is equivalent to the union of `inV()` and `outV()`.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
@@ -1026,7 +1042,7 @@ The `branch()` step is a general step that splits the traverser to all the child
 basis for more robust steps like `choose()` and `union()`. The branch step is typically used with the `option()` step
 to specify the branch options.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
@@ -1060,7 +1076,7 @@ None
 The `cap()` step is a barrier step that iterates the traversal up to itself and emits the sideEffect referenced by the
 provided key. If multiple keys are provided, then a `Map<String,Object>` of sideEffects is emitted.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
@@ -1138,7 +1154,7 @@ The reference implementation provides a default version, which will produce a li
 description if run with `verbose=true`. Providers using their own implementation of the call operation must provide their
 own directory listing service with the service name `"--list"`.
 
-*Exceptions*
+*Exceptions:*
 
 * If a named service does not support the execution mode implied by the traversal, for example, using a `Streaming` or
 `Barrier` step as a traversal source, this will result in an `UnsupportedOperationException`.
@@ -1206,7 +1222,7 @@ g.V().union(__.has("name", "vadas").values('age').fold(), __.has('name',neq('vad
 g.V().choose(__.has("name", "vadas"), __.values('age').fold(), __.values('name').fold())
 ----
 
-*Exceptions*
+*Exceptions:*
 
 * `IllegalArgumentException` - If `Pick.any` is used as an option token, as only one option per traverser is allowed.
 
@@ -1240,7 +1256,7 @@ A list is returned after the combine operation is applied so duplicates are allo
 duplicates aren't wanted. This step only applies to list types which means that non-iterable types (including null)
 will cause exceptions to be thrown.
 
-*Exceptions*
+*Exceptions:*
 
 * If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 * If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
@@ -1275,7 +1291,7 @@ None
 Each traverser is subject to a random filter based on the provided probability. A probability of 0.0 means no
 traversers pass through, while a probability of 1.0 means all traversers pass through.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
@@ -1304,10 +1320,12 @@ be concatenated with the incoming traverser.
 * `otherConcatTraversals` - Varargs of `Traversal`. Each `Traversal` value must resolve to a `String`. The first result
 returned from each traversal will be concatenated with the incoming traverser and the previous traversal arguments.
 
+*Considerations:*
+
 Any `null` String values will be skipped when concatenated with non-`null` String values. If two `null` value are
 concatenated, the `null` value will be propagated and returned.
 
-*Exceptions*
+*Exceptions:*
 
 * If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 
@@ -1332,7 +1350,12 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#concat-step[reference]
 * `dateToken` - Date token enum. Supported values `second`, `minute`, `hour`, `day`.
 * `value` - The number of units, specified by the DT Token, to add to the incoming values. May be negative for subtraction.
 
-*Exceptions*
+*Considerations:*
+
+The step computes a duration from `dateToken` and `value` at step construction time and adds that duration to
+the incoming date.
+
+*Exceptions:*
 
 * If the incoming traverser is a non-Date value then an `IllegalArgumentException` will be thrown.
 
@@ -1358,9 +1381,11 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[reference]
 * `dateTraversal` - The `Traversal` value must resolve to a `Date`. The first result returned from the traversal will be
 subtracted with the incoming traverser.
 
+*Considerations:*
+
 If argument resolves as `null` then incoming date will not be changed.
 
-*Exceptions*
+*Exceptions:*
 
 * If the incoming traverser is a non-Date value then an `IllegalArgumentException` will be thrown.
 
@@ -1462,7 +1487,7 @@ Set difference (`A-B`) is an ordered operation. The incoming traverser is treate
 treated as `B`. A set is returned after the difference operation is applied so there won't be duplicates. This step only
 applies to list types which means that non-iterable types (including null) will cause exceptions to be thrown.
 
-*Exceptions*
+*Exceptions:*
 
 * If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 * If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
@@ -1496,7 +1521,7 @@ None
 A set is returned after the disjunct operation is applied so there won't be duplicates. This step only applies to list
 types which means that non-iterable types (including null) will cause exceptions to be thrown.
 
-*Exceptions*
+*Exceptions:*
 
 * If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 * If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
@@ -1525,10 +1550,25 @@ None
 
 None
 
+*Considerations:*
+
+The `element()` step traverses from a `Property` to the `Element` that owns it. A `VertexProperty`
+yields its `Vertex`, an edge `Property` yields its `Edge`, and a meta `Property` (a property on a
+`VertexProperty`) yields the `VertexProperty`. The step is a pure navigation step and does not
+consult the underlying graph.
+
+*Exceptions:*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ElementStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#element-step[reference]
+
 [[format-step]]
 === format()
 
-*Description:* a mid-traversal step which will handle result formatting to string values.
+*Description:* Returns a string built by substituting variable references in a template with values from the
+incoming traverser.
 
 *Syntax:* `format(String formatString)`
 
@@ -1540,19 +1580,24 @@ None
 
 *Arguments:*
 
-* `formatString` - Variables can be represented with `%{variable_name}` notation.
-Positional arguments can be used as `%{_}` token. Can be used multiple times.
-The variable values are used in the order that the first one will be found: Element properties, then Scope values.
-If value for some variable was not found, then the result is filtered out.
-
-*Exceptions*
-
-None
+* `formatString` - The template string. Variables are written as `%{variable_name}` and positional arguments as
+`%{_}`. Either form may appear multiple times.
 
 *Modulation:*
 
-* `by()` - Used to inject positional argument. For example:
+* `by()` - Provides the value for each `%{_}` positional argument in declaration order. For example:
 `g.V().format("%{name} has %{_} connections").by(bothE().count())`.
+
+*Considerations:*
+
+For each `%{variable_name}` reference, the step first looks for a property of that name on the incoming `Element`,
+and if none is found, falls back to a scope value such as an `as()` label. For each `%{_}` reference, the step
+consumes the next `by()` traversal in declaration order. If any variable cannot be resolved, the entire result
+is filtered out of the traversal stream.
+
+*Exceptions:*
+
+* If `formatString` is `null`, an `IllegalArgumentException` is thrown at step construction.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/FormatStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#format-step[reference]
@@ -1590,7 +1635,7 @@ side-effect key), it returns a `Map<Object, Object>` where keys are the grouping
 results. As a side-effect step, it stores the grouping in a side-effect and passes the traverser to the next step
 unchanged. In both forms, this step is a barrier and must fully iterate the traversal before returning any results.
 
-*Exceptions*
+*Exceptions:*
 
 * If more than 2 `by()` modulators are provided, an `IllegalStateException` will be thrown.
 
@@ -1629,7 +1674,7 @@ The `groupCount()` step can be used as both a map step and a side-effect step. A
 counts in a side-effect and passes the traverser to the next step unchanged. Note that both the map and side-effect
 forms of this step are barriers that must fully iterate the traversal before returning any results.
 
-*Exceptions*
+*Exceptions:*
 
 * If multiple `by()` modulators are provided, an `IllegalStateException` will be thrown.
 
@@ -1656,9 +1701,11 @@ the length of each string element inside incoming list traverser.
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
@@ -1724,7 +1771,7 @@ None
 A set is returned after the intersect operation is applied so there won't be duplicates. This step only applies to list
 types which means that non-iterable types (including null) will cause exceptions to be thrown.
 
-*Exceptions*
+*Exceptions:*
 
 * If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 * If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
@@ -1759,7 +1806,7 @@ Every element in the list (except `null`) is converted to a String. Null values 
 between neighboring elements to form the final result. This step only applies to list types which means that
 non-iterable types (including `null`) will cause exceptions to be thrown.
 
-*Exceptions*
+*Exceptions:*
 
 * If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 * If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
@@ -1785,9 +1832,11 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#conjoin-step[reference]
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
@@ -1841,7 +1890,7 @@ referenced by `select()`.
 * When used as a spawn step on `GraphTraversalSource`, no upstream traversers are consumed; the provider
 executes the query once and emits one traverser per result row.
 
-*Exceptions*
+*Exceptions:*
 
 * If the step is reached and no supporting strategy has replaced the placeholder, an `UnsupportedOperationException` is
 thrown.
@@ -1877,7 +1926,7 @@ both maps contain the same key then the value yielded from the argument will be 
 step only applies to list types or maps which means that other non-iterable types (including null) will cause exceptions
 to be thrown.
 
-*Exceptions*
+*Exceptions:*
 
 * If the incoming traverser isn't a list (array or Iterable) or map then an `IllegalArgumentException` will be thrown.
 * If the argument doesn't resolve to a list (array or Iterable) or map then an `IllegalArgumentException` will be thrown.
@@ -1949,7 +1998,7 @@ resolve to a `Map`.
 * `option(Merge.outV/inV)` can also accept a `Traversal` that resolves to a `Vertex`, allowing `mergeE` to be combined
 with `mergeV` via a `select` operation.
 
-*Exceptions*
+*Exceptions:*
 
 * `Map` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
 * Use of `T.label` should always have a value that is a `String`.
@@ -2017,7 +2066,7 @@ must occur at traversal construction for static values (i.e. a `Map`) and at run
 * `option(Merge, Traversal)` - Sets the `onCreate` or `onMatch` arguments dynamically where the `Traversal` must
 resolve to a `Map`.
 
-*Exceptions*
+*Exceptions:*
 
 * `Map` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
 * Use of `T.label` should always have a value that is a `String`.
@@ -2057,7 +2106,7 @@ None
 Each value will be tested using the supplied predicate. Empty lists always pass through and null/non-list traversers
 will be filtered out of the traversal stream.
 
-*Exceptions*
+*Exceptions:*
 
 * A GremlinTypeErrorException will be thrown if one occurs and no other value evaluates to true.
 
@@ -2090,7 +2139,7 @@ None
 A list of lists is returned after the product operation is applied with the inner list being a result pair. This step only
 applies to list types which means that non-iterable types (including null) will cause exceptions to be thrown.
 
-*Exceptions*
+*Exceptions:*
 
 * If the incoming traverser isn't a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
 * If the argument doesn't resolve to a list (array or Iterable) then an `IllegalArgumentException` will be thrown.
@@ -2128,7 +2177,7 @@ current state of the traverser. Each key in the resulting map corresponds to a `
 provided. If a `by()` modulation doesn't produce a value for a particular key (not productive), that key will be omitted
 from the resulting `Map`.
 
-*Exceptions*
+*Exceptions:*
 
 * If duplicate keys are provided, an `IllegalArgumentException` will be thrown.
 
@@ -2202,14 +2251,13 @@ message containing: `The repeat()-traversal was not defined`.
   - Nested `repeat()` steps maintain separate loop counters. Use `repeat("a", ...)` and `loops("a")` to reference a
     specific counter inside nested loops.
 
-*Exceptions*
+*Exceptions:*
 
 * Using `emit()`, `until()`, or `times()` without a matching `repeat()` will raise an `IllegalStateException` at runtime
   when the step is initialized during iteration with the message containing: `The repeat()-traversal was not defined`.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/branch/RepeatStep.java[source],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#repeat-step[reference],
-link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/branch/Repeat.feature[tests]
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#repeat-step[reference]
 
 [[replace-step]]
 === replace()
@@ -2233,9 +2281,11 @@ will be returned
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
@@ -2261,11 +2311,13 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[reference]
 
 None
 
+*Considerations:*
+
 The behavior of reverse depends on the type of the incoming traverser. If the traverser is a string, then the string is
 reversed. If the traverser is iterable (Iterable, Iterator, or an array) then a list containing the items in reverse
 order are returned. All other types (including null) are not processed and are returned unmodified.
 
-*Exceptions*
+*Exceptions:*
 
 * If the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 
@@ -2290,9 +2342,11 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#reverse-step[reference]
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
@@ -2321,9 +2375,11 @@ whitespaces. An empty string separator will split on each character.
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
@@ -2359,7 +2415,7 @@ The `subgraph()` step is a side-effect step that extracts edges encountered duri
 into a new subgraph. The step passes traversers through unchanged while building the subgraph as a side-effect. Subgraph
 step is a barrier and must fully iterate the traversal before returning any results.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
@@ -2388,9 +2444,11 @@ index &leq; start index will return the empty string.
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
@@ -2418,9 +2476,11 @@ the lowercase representation of each string elements inside incoming list traver
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
@@ -2448,9 +2508,11 @@ the uppercase representation of each string elements inside incoming list traver
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
@@ -2493,7 +2555,7 @@ structure representing the hierarchical paths taken during traversal. As a side-
 side-effect and passes the traverser to the next step unchanged. The tree structure reflects the branching paths of the
 traversal, with each level representing a step in the path.
 
-*Exceptions*
+*Exceptions:*
 
 None
 
@@ -2519,9 +2581,11 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tree-step[reference]
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 
+*Considerations:*
+
 Null values from the incoming traverser are not processed and remain as null when returned.
 
-*Exceptions*
+*Exceptions:*
 
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
@@ -2552,9 +2616,7 @@ specified by propertyKeys. If the list is empty, then all properties are include
 
 *Modulation:*
 
-* `by(Traversal)` - Only a single by() modulator is allowed and it applies to all map values. An attempt to add more
-than one by() will result in an Exception that contains the message "valueMap()/propertyMap() step can only have one by
-modulator".
+* `by(Traversal)` - Only a single by() modulator is allowed and it applies to all map values.
 * `with(key, value)` - Determines which optional entries to add to the map. The key is "tinkerpop.valueMap.tokens" and
 the possible values are:
 ** 0 for no tokens
@@ -2563,6 +2625,19 @@ the possible values are:
 ** 4 for including keys (VertexProperty)
 ** 8 for including values (VertexProperty)
 ** 15 for including all
+
+*Considerations:*
+
+A `Vertex` may carry multiple values for a single property key (`Cardinality.list` or `Cardinality.set`). For such
+keys, the resulting map entry contains a `List` of the values. An `Edge` and a `VertexProperty` have at most one
+value per key and the value is returned directly.
+
+*Exceptions:*
+
+* If more than one `by()` modulator is supplied, an `IllegalArgumentException` is thrown with the message
+"valueMap()/propertyMap() step can only have one by modulator".
+* If the `WithOptions.tokens` configuration receives any non-`Integer` argument, an `IllegalArgumentException` is
+thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/PropertyMapStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#valuemap-step[reference],
