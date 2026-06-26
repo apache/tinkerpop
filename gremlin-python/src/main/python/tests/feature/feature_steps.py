@@ -93,8 +93,18 @@ def choose_graph(step, graph_name):
     if (step.context.ignore):
         return
 
-    step.context.graph_name = graph_name
-    step.context.g = traversal().with_(step.context.remote_conn[graph_name]).with_('language', 'gremlin-lang')
+    # Multi-label tests use the gmultilabel traversal source for empty graphs
+    is_multilabel = "MultiLabel" in tagset
+    is_multilabel_default = "MultiLabelDefault" in tagset
+    if is_multilabel_default and graph_name == "empty":
+        step.context.graph_name = "multilabel"
+        step.context.g = traversal().with_(step.context.remote_conn["multilabel"]).with_('language', 'gremlin-lang').with_('multilabel')
+    elif is_multilabel and graph_name == "empty":
+        step.context.graph_name = "multilabel"
+        step.context.g = traversal().with_(step.context.remote_conn["multilabel"]).with_('language', 'gremlin-lang')
+    else:
+        step.context.graph_name = graph_name
+        step.context.g = traversal().with_(step.context.remote_conn[graph_name]).with_('language', 'gremlin-lang')
 
 
 @given("the graph initializer of")
@@ -455,6 +465,13 @@ def __find_cached_element(ctx, graph_name, identifier, element_type):
             cache = world.create_lookup_vp(ctx.remote_conn["empty"])
         else:
             cache = world.create_lookup_e(ctx.remote_conn["empty"])
+    elif graph_name == "multilabel":
+        if element_type == "v":
+            cache = world.create_lookup_v(ctx.remote_conn["multilabel"])
+        elif element_type == "vp":
+            cache = world.create_lookup_vp(ctx.remote_conn["multilabel"])
+        else:
+            cache = world.create_lookup_e(ctx.remote_conn["multilabel"])
     else:
         if element_type == "v":
             cache = ctx.lookup_v[graph_name]

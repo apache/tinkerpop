@@ -57,13 +57,15 @@ type Element struct {
 // Vertex contains a single Vertex which has a Label and an Id.
 type Vertex struct {
 	Element
+	Labels []string // All labels; Element.Label still holds first label for compat
 }
 
 // Edge links two Vertex structs along with its Property Objects. An edge has both a direction and a Label.
 type Edge struct {
 	Element
-	OutV Vertex
-	InV  Vertex
+	OutV   Vertex
+	InV    Vertex
+	Labels []string // All labels
 }
 
 // VertexProperty is similar to property in that it denotes a key/value pair associated with a Vertex, but is different

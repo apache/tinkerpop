@@ -143,6 +143,10 @@ class GraphTraversalSource(object):
         else:
             options_strategy[1].configuration[k] = val
 
+        # Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
+        if k == 'multilabel' or k == 'singlelabel':
+            source.gremlin_lang.gremlin.extend(['.', 'with', '(', f'"{k}"', ')'])
+
         return source
 
     def tx(self):
@@ -359,6 +363,17 @@ class GraphTraversal(Traversal):
         self.gremlin_lang.add_step("addV", *args)
         return self
 
+    def addLabel(self, *args):
+        warnings.warn(
+            "gremlin_python.process.GraphTraversal.addLabel will be replaced by "
+            "gremlin_python.process.GraphTraversal.add_label.",
+            DeprecationWarning)
+        return self.add_label(*args)
+
+    def add_label(self, *args):
+        self.gremlin_lang.add_step("addLabel", *args)
+        return self
+
     def aggregate(self, *args):
         self.gremlin_lang.add_step("aggregate", *args)
         return self
@@ -521,6 +536,28 @@ class GraphTraversal(Traversal):
 
     def drop(self, *args):
         self.gremlin_lang.add_step("drop", *args)
+        return self
+
+    def dropLabel(self, *args):
+        warnings.warn(
+            "gremlin_python.process.GraphTraversal.dropLabel will be replaced by "
+            "gremlin_python.process.GraphTraversal.drop_label.",
+            DeprecationWarning)
+        return self.drop_label(*args)
+
+    def drop_label(self, *args):
+        self.gremlin_lang.add_step("dropLabel", *args)
+        return self
+
+    def dropLabels(self, *args):
+        warnings.warn(
+            "gremlin_python.process.GraphTraversal.dropLabels will be replaced by "
+            "gremlin_python.process.GraphTraversal.drop_labels.",
+            DeprecationWarning)
+        return self.drop_labels(*args)
+
+    def drop_labels(self, *args):
+        self.gremlin_lang.add_step("dropLabels", *args)
         return self
 
     def element(self, *args):
@@ -713,6 +750,10 @@ class GraphTraversal(Traversal):
 
     def label(self, *args):
         self.gremlin_lang.add_step("label", *args)
+        return self
+
+    def labels(self, *args):
+        self.gremlin_lang.add_step("labels", *args)
         return self
 
     def length(self, *args):
@@ -1157,6 +1198,18 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, GremlinLang()).add_v(*args)
 
     @classmethod
+    def addLabel(cls, *args):
+        warnings.warn(
+            "gremlin_python.process.__.addLabel will be replaced by "
+            "gremlin_python.process.__.add_label.",
+            DeprecationWarning)
+        return cls.add_label(*args)
+
+    @classmethod
+    def add_label(cls, *args):
+        return cls.graph_traversal(None, None, GremlinLang()).add_label(*args)
+
+    @classmethod
     def aggregate(cls, *args):
         return cls.graph_traversal(None, None, GremlinLang()).aggregate(*args)
 
@@ -1307,6 +1360,30 @@ class __(object, metaclass=MagicType):
     @classmethod
     def drop(cls, *args):
         return cls.graph_traversal(None, None, GremlinLang()).drop(*args)
+
+    @classmethod
+    def dropLabel(cls, *args):
+        warnings.warn(
+            "gremlin_python.process.__.dropLabel will be replaced by "
+            "gremlin_python.process.__.drop_label.",
+            DeprecationWarning)
+        return cls.drop_label(*args)
+
+    @classmethod
+    def drop_label(cls, *args):
+        return cls.graph_traversal(None, None, GremlinLang()).drop_label(*args)
+
+    @classmethod
+    def dropLabels(cls, *args):
+        warnings.warn(
+            "gremlin_python.process.__.dropLabels will be replaced by "
+            "gremlin_python.process.__.drop_labels.",
+            DeprecationWarning)
+        return cls.drop_labels(*args)
+
+    @classmethod
+    def drop_labels(cls, *args):
+        return cls.graph_traversal(None, None, GremlinLang()).drop_labels(*args)
 
     @classmethod
     def element(cls, *args):
@@ -1503,6 +1580,10 @@ class __(object, metaclass=MagicType):
     @classmethod
     def label(cls, *args):
         return cls.graph_traversal(None, None, GremlinLang()).label(*args)
+
+    @classmethod
+    def labels(cls, *args):
+        return cls.graph_traversal(None, None, GremlinLang()).labels(*args)
 
     @classmethod
     def length(cls, *args):
@@ -1869,6 +1950,14 @@ def add_v(*args):
     return __.add_v(*args)
 
 
+def addLabel(*args):
+    return __.add_label(*args)
+
+
+def add_label(*args):
+    return __.add_label(*args)
+
+
 def aggregate(*args):
     return __.aggregate(*args)
 
@@ -2007,6 +2096,22 @@ def disjunct(*args):
 
 def drop(*args):
     return __.drop(*args)
+
+
+def dropLabel(*args):
+    return __.drop_label(*args)
+
+
+def drop_label(*args):
+    return __.drop_label(*args)
+
+
+def dropLabels(*args):
+    return __.drop_labels(*args)
+
+
+def drop_labels(*args):
+    return __.drop_labels(*args)
 
 
 def element(*args):
@@ -2157,6 +2262,10 @@ def key(*args):
 
 def label(*args):
     return __.label(*args)
+
+
+def labels(*args):
+    return __.labels(*args)
 
 
 def length(*args):
@@ -2462,6 +2571,10 @@ statics.add_static('addV', addV)
 
 statics.add_static('add_v', add_v)
 
+statics.add_static('addLabel', addLabel)
+
+statics.add_static('add_label', add_label)
+
 statics.add_static('aggregate', aggregate)
 
 statics.add_static('all_', all_)
@@ -2531,6 +2644,14 @@ statics.add_static('discard', discard)
 statics.add_static('disjunct', disjunct)
 
 statics.add_static('drop', drop)
+
+statics.add_static('dropLabel', dropLabel)
+
+statics.add_static('drop_label', drop_label)
+
+statics.add_static('dropLabels', dropLabels)
+
+statics.add_static('drop_labels', drop_labels)
 
 statics.add_static('element', element)
 
@@ -2603,6 +2724,8 @@ statics.add_static('is_', is_)
 statics.add_static('key', key)
 
 statics.add_static('label', label)
+
+statics.add_static('labels', labels)
 
 statics.add_static('length', length)
 

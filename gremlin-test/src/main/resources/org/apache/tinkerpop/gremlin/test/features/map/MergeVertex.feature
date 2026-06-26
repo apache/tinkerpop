@@ -990,3 +990,144 @@ Feature: Step - mergeV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"stephen\").hasNot(\"created\")"
     And the graph should return 2 for count of "g.V()"
+
+  @MultiLabel
+  Scenario: g_mergeVXlabel_ab_name_markoX_multilabel_create
+    Given the empty graph
+    And the traversal of
+      """
+      g.mergeV([(T.label): ["person","employee"], name: "marko"])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().hasLabel(\"person\").hasLabel(\"employee\")"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"marko\")"
+
+  @MultiLabel
+  Scenario: g_mergeVXlabel_abc_name_testX_multilabel_create
+    Given the empty graph
+    And the traversal of
+      """
+      g.mergeV([(T.label): ["a","b","c"], name: "test"])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().hasLabel(\"a\").hasLabel(\"b\").hasLabel(\"c\")"
+
+  @MultiLabel
+  Scenario: g_mergeVXlabel_ab_name_markoX_multilabel_match
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").addLabel("employee").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.mergeV([(T.label): ["person","employee"], name: "marko"])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().hasLabel(\"person\").hasLabel(\"employee\")"
+
+  @MultiLabel
+  Scenario: g_mergeVXlabel_ab_name_markoX_multilabel_nomatch
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.mergeV([(T.label): ["person","employee"], name: "marko"])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 2 for count of "g.V()"
+
+  @MultiLabel
+  Scenario: g_mergeVXlabel_person_name_markoX_optionXonMatch_label_managerX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").addLabel("employee").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.mergeV([(T.label): "person", name: "marko"]).
+          option(Merge.onMatch, [(T.label): "manager"])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().hasLabel(\"manager\")"
+    And the graph should return 1 for count of "g.V().hasLabel(\"person\")"
+    And the graph should return 1 for count of "g.V().hasLabel(\"employee\")"
+
+  @MultiLabel
+  Scenario: g_mergeVXlabel_person_name_markoX_optionXonMatch_label_manager_directorX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.mergeV([(T.label): "person", name: "marko"]).
+          option(Merge.onMatch, [(T.label): ["manager","director"]])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().hasLabel(\"manager\").hasLabel(\"director\")"
+    And the graph should return 1 for count of "g.V().hasLabel(\"person\")"
+
+  @MultiLabel
+  Scenario: g_mergeVXlabel_person_name_markoX_optionXonMatch_label_emptyX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.mergeV([(T.label): "person", name: "marko"]).
+          option(Merge.onMatch, [(T.label): []])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().hasLabel(\"person\")"
+
+  @MultiLabel
+  Scenario: g_mergeVXname_markoX_optionXonCreate_label_ab_name_markoX
+    Given the empty graph
+    And the traversal of
+      """
+      g.mergeV([name: "marko"]).
+          option(Merge.onCreate, [(T.label): ["person","employee"], name: "marko"])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().hasLabel(\"person\").hasLabel(\"employee\")"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"marko\")"
+
+  @MultiLabel
+  Scenario: g_mergeVXlabel_person_name_markoX_optionXonMatch_label_existingX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").addLabel("employee").property("name", "marko")
+      """
+    And the traversal of
+      """
+      g.mergeV([(T.label): "person", name: "marko"]).
+          option(Merge.onMatch, [(T.label): "person"])
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().hasLabel(\"person\").hasLabel(\"employee\")"
