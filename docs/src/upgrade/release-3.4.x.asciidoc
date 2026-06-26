@@ -945,7 +945,7 @@ link:https://tinkerpop.apache.org/docs/3.4.1/reference/#sparql-with-gremlin[Refe
 
 === Upgrading for Providers
 
-==== Graph Database Providers
+==== Graph System Providers
 
 ===== GraphBinary Serializer Changes
 
@@ -1657,7 +1657,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2037[TINKERPOP-2037]
 
 === Upgrading for Providers
 
-==== Graph Database Providers
+==== Graph System Providers
 
 ===== io() Step
 

@@ -380,6 +380,7 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.7.2/CHANGELOG.asc
 complete list of all the modifications that are part of this release.
 
 == TinkerPop 3.7.1
+
 *Release Date: November 20, 2023*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.7.1/CHANGELOG.asciidoc#release-3-7-1[changelog] for a

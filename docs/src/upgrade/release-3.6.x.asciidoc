@@ -74,6 +74,8 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Providers
 
+==== Graph Driver Providers
+
 The `HttpGremlinRequestEncoder` constructor has been deprecated in favor of one with an additional parameter
 `boolean userAgentEnabled`. User agent HTTP headers can now be encoded if this flag is enabled.
 
@@ -81,7 +83,7 @@ The `HttpGremlinRequestEncoder` constructor has been deprecated in favor of one 
 
 *Release Date: July 31, 2023*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.6.5/CHANGELOG.asciidoc#release-3.6.5[changelog] for a
+Please see the link:https://github.com/apache/tinkerpop/blob/3.6.5/CHANGELOG.asciidoc#release-3-6-5[changelog] for a
 complete list of all the modifications that are part of this release.
 
 === Upgrading for Users

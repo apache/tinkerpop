@@ -435,12 +435,11 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1821[TINKERPOP-1821]
 
 == TinkerPop 3.2.6
 
-
 *Release Date: August 21, 2017*
 
-=== Upgrading for Users
-
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.6/CHANGELOG.asciidoc#release-3-2-6[changelog] for a complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
 
 ==== Deprecated useMapperFromGraph
 
@@ -1459,7 +1458,7 @@ to take arguments for the `Traversal` to be constructed by extending classes.
 
 == TinkerPop 3.2.0
 
-*Release Date: Release Date: April 8, 2016*
+*Release Date: April 8, 2016*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.2.0-incubating/CHANGELOG.asciidoc#tinkerpop-320-release-date-april-8-2016[changelog] for a complete list of all the modifications that are part of this release.
 

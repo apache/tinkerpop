@@ -32,7 +32,7 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
-===== Declarative Pattern Matching
+==== Declarative Pattern Matching
 
 Gremlin has always offered both imperative and declarative styles to writing graph queries. While the imperative style
 has largely dominated examples and usages, the `match` step has always provided a declarative way to express queries.
@@ -1572,12 +1572,15 @@ required.
 
 === Upgrading for Providers
 
-==== Renaming NoneStep to DiscardStep
+==== Graph System Providers
+
+===== Renaming NoneStep to DiscardStep
+
 NoneStep, which was primarily used by `iterate()` to discard traversal results in remote contexts, has been renamed to
 DiscardStep. In its place is a new list filtering NoneStep, which takes a predicate as an argument and passes lists with
 no elements matching the predicate.
 
-==== Changes to Serialization
+===== Changes to Serialization
 
 The V4 versions of GraphBinary and GraphSON are being introduced. Support for the older versions of GraphBinary (V1)
 and GraphSON (V1-3) is removed. Upon the full release of 4.0, the GLVs will only use GraphBinary, however, the Gremlin
@@ -1636,8 +1639,6 @@ The `GraphSONSerializerProvider` is not used in GraphSON 4. The `GraphSONSeriali
 `ToStringSerializer` for any unknown type and was used in previous GraphSON versions. Because GraphSON 4 is only
 intended to serialize specific types and not used as a general serializer, GraphSON 4 serializers will throw an error
 when encountering unknown types.
-
-==== Graph System Providers
 
 ===== AbstractAuthenticatorHandler Constructor
 

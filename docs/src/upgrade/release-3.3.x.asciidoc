@@ -67,7 +67,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2336[TINKERPOP-2336]
 
 === Upgrading for Providers
 
-==== Gremlin Driver Providers
+==== Graph Driver Providers
 
 ===== Session Close
 
@@ -357,7 +357,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2182[TINKERPOP-2182]
 
 === Upgrading for Providers
 
-==== Graph Database Providers
+==== Graph System Providers
 
 ===== Detection of Anti-Patterns
 
@@ -490,7 +490,7 @@ for the least amount of data necessary to continue the traversal evaluation.
 
 === Upgrading for Providers
 
-==== Graph Database Providers
+==== Graph System Providers
 
 ===== OptOut on GraphProvider
 
@@ -733,7 +733,7 @@ In particular, these properties referenced in TinkerPop documentation and config
 IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
 changes there may prove important for the provider's implementation.
 
-==== Graph Database Providers
+==== Graph System Providers
 
 ===== IO Version Check
 
@@ -1215,8 +1215,6 @@ Under the new model, the plugin simply returns `Customizer` instances that can b
 `ScriptEngine` or specifically to a particular `ScriptEngine`. More details can be found in the
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-plugins[Provider Documentation]
 
-==== Graph Database Providers
-
 ===== Test Suite Removal
 
 A number of test suites that were previously deprecated have been removed which should reduce the burden on graph
@@ -1247,7 +1245,7 @@ to transaction problems and it allows for more common, generalized error handlin
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1004[TINKERPOP-1004]
 
-==== Driver Providers
+==== Graph Driver Providers
 
 ===== SASL Byte Array
 
