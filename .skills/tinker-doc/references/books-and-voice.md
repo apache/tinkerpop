@@ -247,7 +247,13 @@ functions in normative prose. The reference implementation is linked from each
 step's `See:` block, and that is the appropriate place for any Java-flavored
 specifics. For exceptions, name the TinkerPop error category (`Argument Error`,
 `State Error`, `Type Error`, `Arithmetic Error`, `Unsupported Operation`) rather
-than a Java exception class.
+than a Java exception class. For types, use the `GType` enum names (`STRING`,
+`INT`, `LONG`, `BIGINT`, `BIGDECIMAL`, `FLOAT`, `DOUBLE`, `BOOLEAN`, `UUID`,
+`DATETIME`, `DURATION`, `BINARY`, `CHAR`, `NULL`, `NUMBER`, `LIST`, `SET`, `MAP`,
+plus graph types). Type definitions live in `== Types`; per-type Equality,
+Comparability, and Orderability behavior lives in the Comparability chapter. Do
+not duplicate definitions across the two. The `Java reference exception` column
+of the Errors table is the one intentional Java reference in the document.
 
 The document has two parts. The conceptual sections near the top (equality,
 comparability, orderability, equivalence, type promotion) specify the
@@ -291,7 +297,8 @@ A new overload usually means adding its signature to `*Syntax:*` and describing
 the new argument under `*Arguments:*`. A semantic change usually means revising
 `*Considerations:*` or `*Exceptions:*`. Match a nearby existing step rather than
 inventing a new structure, and fill the gap when documenting a step that has no
-entry yet.
+entry yet. When editing an `*Exceptions:*` section, verify the claim against the
+step's source class.
 
 ---
 
