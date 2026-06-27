@@ -32,6 +32,57 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Standardizing Python Connection Options
+
+TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In `gremlin-python`, several
+connection options passed to `Client`/`DriverRemoteConnection` have been renamed for consistency. Because this is a
+major version, the old names have been removed rather than retained as aliases, and a number of new options have been
+added. The notes below describe the Python changes. See <<glv-driver-changes, GLV Driver Changes>> for the equivalent changes in
+the other drivers.
+
+Renames (breaking). The following options have been renamed and the old names removed. Migrate to the new names:
+
+- `pool_size` is now `max_connections` (default raised from 8 to 128). `max_connections` is also applied to the
+  aiohttp `TCPConnector` `limit`, so the transport layer reflects the option in addition to sizing the connection
+  pool.
+- `ssl_options` is now `ssl` (accepts an `ssl.SSLContext`).
+
+Behavior changes. These change runtime behavior on upgrade, even if you do not change your configuration:
+
+- `compression` is a new option that defaults to `'deflate'` (on), so the driver advertises `Accept-Encoding: deflate`
+  by default. Set `compression='none'` to disable it; when disabled, aiohttp's automatic `Accept-Encoding` injection is
+  suppressed so compression is not silently negotiated. Defaulting compression on is a deliberate deviation from the
+  proposal's agreed default-off, applied consistently across the GLVs by later agreement.
+- `connect_timeout` now defaults to 5s. Together with `read_timeout` it is wired into a single aiohttp `ClientTimeout`
+  via the socket-level `sock_connect`/`sock_read` knobs rather than a whole-request `total`, so long but legitimate
+  streaming responses are not aborted while a stalled server no longer hangs forever.
+- The minimum supported `aiohttp` has been raised to `3.11` (required for the `socket_factory` used by
+  `keep_alive_time`). *(breaking)*
+
+New options:
+
+- `connect_timeout` (default 5s): a new socket-connect timeout. It is combined with the existing `read_timeout`
+  (rewired into a single aiohttp `ClientTimeout` via `sock_connect`/`sock_read`, as described above).
+  Each timeout option's primary form is the millisecond-suffixed name (`connect_timeout_millis`, `idle_timeout_millis`,
+  `read_timeout_millis`, `keep_alive_time_millis`); the unsuffixed canonical name (`connect_timeout`, etc.) accepts the
+  idiomatic seconds value.
+- `idle_timeout` (default 180s): mapped to the aiohttp `TCPConnector` keep-alive timeout.
+- `keep_alive_time` (default 30s): enables TCP keep-alive probes via the connector socket factory
+  (`TCP_KEEPIDLE`/`TCP_KEEPALIVE`, guarded by platform availability).
+- `compression` (`'none'`/`'deflate'`, default `'deflate'`): the wire compression negotiated with the server.
+- `batch_size` (default 64): a connection-level default that fills the per-request `batchSize` when unset.
+- `proxy` and `trust_env`: explicit HTTP proxy and environment-trust options surfaced on the aiohttp `ClientSession`.
+- `auth.sigv4` gains a credentials-provider variant that accepts an optional credentials provider or callable, falling
+  back to the AWS environment variables.
+
+Removals (breaking):
+
+- The `max_content_length` kwarg has been removed (it was previously accepted but discarded).
+- The standalone `headers` kwarg has been removed from `Client`/`DriverRemoteConnection`; custom headers must now be
+  set via interceptors.
+
+See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
+
 ==== Standardizing Java Connection Options
 
 TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In the Java reference driver
@@ -406,7 +457,7 @@ from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
 Client(url, 'g', transport_factory=lambda: AiohttpHTTPTransport(ssl_options=ctx, read_timeout=30))
 
 # After
-Client(url, 'g', ssl_options=ctx, read_timeout=30)
+Client(url, 'g', ssl=ctx, read_timeout=30)
 ----
 
 The `Connection` constructor signature has changed. The `protocol` and `transport_factory` positional arguments have
