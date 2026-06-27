@@ -241,6 +241,14 @@ the semantics of each construct. **It must be updated whenever Gremlin steps, th
 grammar (`Gremlin.g4`), or the semantics code change in any way.** Treat it as
 part of the change, not an afterthought.
 
+The semantics document is language-agnostic: it specifies Gremlin behavior for
+every GLV. Do not name Java-specific types, exception classes, syntax, or library
+functions in normative prose. The reference implementation is linked from each
+step's `See:` block, and that is the appropriate place for any Java-flavored
+specifics. For exceptions, name the TinkerPop error category (`Argument Error`,
+`State Error`, `Type Error`, `Arithmetic Error`, `Unsupported Operation`) rather
+than a Java exception class.
+
 The document has two parts. The conceptual sections near the top (equality,
 comparability, orderability, equivalence, type promotion) specify the
 cross-cutting behaviors and change rarely. The large `== Steps` section documents
@@ -259,24 +267,23 @@ fills in the same labeled fields, in order:
 - A `[width="100%",options="header"]` table with the columns
   `Start Step | Mid Step | Modulated | Domain | Range`.
 - `*Arguments:*` — one bullet per argument. (A genuine enumeration, so a list is
-  the right choice here.)
-- `*Modulation:*` — present only for steps that take modulators such as
-  `from()`/`to()`.
+  the right choice here.) Use `None` as the body for steps that take no arguments.
+- `*Modulation:*` — describes the modulators the step accepts (such as
+  `from()`/`to()` or `by()`). Use `None` as the body for steps that take no
+  modulators.
 - `*Considerations:*` — prose covering edge cases, grammar restrictions, and any
   GLV-specific notes.
-- `*Exceptions*` — the conditions under which the step throws.
+- `*Exceptions:*` — the conditions under which the step raises an error, named by
+  the TinkerPop error category rather than a Java exception class. Use `None` as
+  the body for steps that raise no errors.
 - A closing `See:` line linking to the step's source file(s) and its reference
   entry, using the `x.y.z` placeholder.
 
 A new overload usually means adding its signature to `*Syntax:*` and describing
 the new argument under `*Arguments:*`. A semantic change usually means revising
-`*Considerations:*` or `*Exceptions*`. Match a nearby existing step rather than
+`*Considerations:*` or `*Exceptions:*`. Match a nearby existing step rather than
 inventing a new structure, and fill the gap when documenting a step that has no
 entry yet.
-
-Examples in the semantics document are illustrative, not executed. They use
-`[source,text]` blocks showing the `gremlin>` prompt, because the point is to
-specify behavior precisely rather than to run it against a toy graph.
 
 ---
 
