@@ -62,13 +62,11 @@ Providers can register custom types outside the TinkerPop type space using the `
 for `P.typeOf(String)` filtering. Unregistered string inputs raise an `Argument Error`.
 
 The `registerDataType()` method registers the class's simple name by default, or accepts a custom string name. Providers
-should use PascalCase following Java conventions and prefix type names to avoid conflicts
+should use PascalCase and prefix type names to avoid conflicts
 (e.g., `ProviderPrefix:SimpleTypeName`).
 
 The type cache only enables type recognition for filtering. Custom types still require separate serialization support.
 Clients without custom serializers cannot deserialize these types.
-
-NOTE: TinkerPop has a bit of a JVM-centric view of types as it was developed within that ecosystem.
 
 Graph providers may not support all of these types depending on the architecture and implementation. Therefore
 TinkerPop must provide a way for Graph providers to override the behavior while it has its own default behavior. Also
@@ -348,7 +346,7 @@ same time evaluating the same semantically equivalent numerics as equal during p
 
 ===== MAP
 
-'Map' semantics can be thought of as similar to `Set` semantics for the entry set the comprises the `Map`. So again,
+'Map' semantics can be thought of as similar to `SET` semantics for the entry set the comprises the `MAP`. So again,
 we compare pairwise, entry-by-entry, in the same way as `Lists`, and again, we first sort the entries using
 <<Orderability,Orderability>> semantics. Map entries are compared first by key, then by value using the
 <<Equality and Comparability Semantics by Type,Equality and Comparability>> semantics that apply to the specific type
@@ -376,7 +374,7 @@ follow these semantics.
 
 To achieve this globally complete order, we need to address any cases in Comparability which are incomputable, we must
 define a global order across type families, and we must provide semantics for ordering "unknown"
-values (for cases of in-process JVM implementations, like the TinkerGraph).
+values (for in-process implementations where the host language's value space exceeds the GType enum).
 
 We define the type space, and the global order across the type space as follows:
 
@@ -418,8 +416,8 @@ type ordering where every value of type A appears before or after every value of
 
 ==== Key differences from Comparability
 
-One key difference to note is that we use Orderability semantics to compare values within containers (`List`, `Set`,
-`Path`, `Map`, `Property`) rather than using Comparability semantics (i.e. Orderability all the way down).
+One key difference to note is that we use Orderability semantics to compare values within containers (`LIST`, `SET`,
+`Path`, `MAP`, `Property`) rather than using Comparability semantics (i.e. Orderability all the way down).
 
 ===== Numeric Ordering
 
@@ -438,9 +436,9 @@ Same as Comparability, except Orderability semantics apply for the pairwise elem
 ===== Unknown Types
 
 For Orderability semantics, we allow for the possibility of "unknown" types. If the "unknown" arguments are of the same
-type, we use `java.lang.Object#equals()` and `java.lang.Comparable` (if implemented) to determine their natural order.
-If the unknown arguments are of different types or do not define a natural order, we order first by Class,
-then by `Object.toString()`.
+type, we use the type's native equality and ordering operations (if defined) to determine their natural order.
+If the unknown arguments are of different types or do not define a natural order, we order first by type identity,
+then by canonical string representation.
 
 [[gremlin-semantics-equivalence]]
 === Equivalence
@@ -587,19 +585,19 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addvertex-step[reference
 [[all-step]]
 === all()
 
-*Description:* Filters array data from the traversal stream if all of the array's items match the supplied predicate.
+*Description:* Filters list data from the traversal stream if all of the list's items match the supplied predicate.
 
 *Syntax:* `all(P predicate)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`List`/`array`/`Iterable`/`Iterator` |`List`/`array`/`Iterable`/`Iterator`
+|N |Y |N |`LIST` |`LIST`
 |=========================================================
 
 *Arguments:*
 
-* `predicate` - The predicate to use to test each value in the array data.
+* `predicate` - The predicate to use to test each value in the list data.
 
 *Modulation:*
 
@@ -686,19 +684,19 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#and-step[reference]
 [[any-step]]
 === any()
 
-*Description:* Filters array data from the Traversal Stream if any of the array's items match the supplied predicate.
+*Description:* Filters list data from the Traversal Stream if any of the list's items match the supplied predicate.
 
 *Syntax:* `any(P predicate)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`List`/`array`/`Iterable`/`Iterator` |`List`/`array`/`Iterable`/`Iterator`
+|N |Y |N |`LIST` |`LIST`
 |=========================================================
 
 *Arguments:*
 
-* `predicate` - The predicate to use to test each value in the array data.
+* `predicate` - The predicate to use to test each value in the list data.
 
 *Modulation:*
 
@@ -861,13 +859,13 @@ incoming list traverser as string.
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`any` |`STRING`/`List`
+|N |Y |N |`any` |`STRING`/`LIST`
 |=========================================================
 
 *Arguments:*
 
 * `scope` - Determines the type of traverser it operates on. The `global` scope operates on individual traversers.
-The `local` scope operates on list traversers (`Iterable`, `Iterator`, or array), converting each element. Non-list
+The `local` scope operates on list traversers, converting each element. Non-list
 traversers under `Scope.local` behave as under `Scope.global`.
 
 *Modulation:*
@@ -876,8 +874,7 @@ None
 
 *Considerations:*
 
-Each value is converted to its canonical String representation. The list traverser forms
-recognized under `Scope.local` are `Iterable`, `Iterator`, and array.
+Each value is converted to its canonical String representation.
 
 *Exceptions:*
 
@@ -1082,7 +1079,7 @@ None
 *Considerations:*
 
 The `cap()` step is a barrier step that iterates the traversal up to itself and emits the sideEffect referenced by the
-provided key. If multiple keys are provided, then a `Map<String,Object>` of sideEffects is emitted.
+provided key. If multiple keys are provided, then a `MAP<STRING, any>` of sideEffects is emitted.
 
 *Exceptions:*
 
@@ -1120,7 +1117,7 @@ type currently supported by the Gremlin type system.
 type currently supported by the Gremlin type system.
 
 How static and dynamic parameters are merged is a detail left to the provider implementation. The reference implementation
-(`CallStep`) uses effectively a "left to right" merge of the parameters - it starts with the static parameter `Map`
+(`CallStep`) uses effectively a "left to right" merge of the parameters - it starts with the static parameter `MAP`
 argument, then merges in the parameters from the dynamic `Traversal` argument, then merges in each `with` modulation
 one by one in the order they appear.
 
@@ -1151,7 +1148,7 @@ There are three execution methods in the reference implementation service call A
 * `execute(ServiceCallContext, TraverserSet, Map)` - execute a service call mid-traversal barrier
 
 The Map is the merged collection of all static and dynamic parameters. In the case of `Barrier` execution, notice
-that there is one `Map` for many input. Since the `call()` API supports dynamic parameters, this implies that all
+that there is one `MAP` for many input. Since the `call()` API supports dynamic parameters, this implies that all
 input must reduce to the same set of parameters for `Barrier` execution. In the reference implementation, if more
 than one parameter set is detected, this will cause an exception and the traversal will halt. Providers that
 implement their own version of a call operation may decide on other strategies to handle this case - for example
@@ -1247,12 +1244,12 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#choose-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`array`/`Iterable` |`List`
+|N |Y |N |`LIST` |`LIST`
 |=========================================================
 
 *Arguments:*
 
-* `values` - A list of items (as an Iterable or an array) or a traversal that will produce a list of items.
+* `values` - A list of items or a traversal that will produce a list of items.
 
 *Modulation:*
 
@@ -1266,8 +1263,8 @@ will cause exceptions to be thrown.
 
 *Exceptions:*
 
-* If the incoming traverser isn't a list (array or Iterable) then an `Argument Error` is raised.
-* If the argument doesn't resolve to a list (array or Iterable) then an `Argument Error` is raised.
+* If the incoming traverser isn't a list then an `Argument Error` is raised.
+* If the argument doesn't resolve to a list then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/CombineStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#combine-step[reference],
@@ -1494,12 +1491,12 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dedup-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`array`/`Iterable` |`Set`
+|N |Y |N |`LIST` |`SET`
 |=========================================================
 
 *Arguments:*
 
-* `values` - A list of items (as an Iterable or an array) or a `Traversal` that will produce a list of items.
+* `values` - A list of items or a `Traversal` that will produce a list of items.
 
 *Modulation:*
 
@@ -1513,8 +1510,8 @@ applies to list types which means that non-iterable types (including null) will 
 
 *Exceptions:*
 
-* If the incoming traverser isn't a list (array or Iterable) then an `Argument Error` is raised.
-* If the argument doesn't resolve to a list (array or Iterable) then an `Argument Error` is raised.
+* If the incoming traverser isn't a list then an `Argument Error` is raised.
+* If the argument doesn't resolve to a list then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DifferenceStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#difference-step[reference]
@@ -1529,12 +1526,12 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#difference-step[referenc
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`array`/`Iterable` |`Set`
+|N |Y |N |`LIST` |`SET`
 |=========================================================
 
 *Arguments:*
 
-* `values` - A list of items (as an Iterable or an array) or a `Traversal` that will produce a list of items.
+* `values` - A list of items or a `Traversal` that will produce a list of items.
 
 *Modulation:*
 
@@ -1547,8 +1544,8 @@ types which means that non-iterable types (including null) will cause exceptions
 
 *Exceptions:*
 
-* If the incoming traverser isn't a list (array or Iterable) then an `Argument Error` is raised.
-* If the argument doesn't resolve to a list (array or Iterable) then an `Argument Error` is raised.
+* If the incoming traverser isn't a list then an `Argument Error` is raised.
+* If the argument doesn't resolve to a list then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DisjunctStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#disjunct-step[reference]
@@ -1655,7 +1652,7 @@ objects are collected into a list.
 *Considerations:*
 
 The `group()` step can be used as both a reducing barrier step and a side-effect step. As a reducing barrier step (no
-side-effect key), it returns a `Map<Object, Object>` where keys are the grouping criteria and values are the reduced
+side-effect key), it returns a `MAP<any, any>` where keys are the grouping criteria and values are the reduced
 results. As a side-effect step, it stores the grouping in a side-effect and passes the traverser to the next step
 unchanged. In both forms, this step is a barrier and must fully iterate the traversal before returning any results.
 
@@ -1670,7 +1667,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#group-step[reference]
 [[groupcount-step]]
 === groupCount()
 
-*Description:* Counts the number of times a particular object has been part of a traversal, returning a `Map` where the
+*Description:* Counts the number of times a particular object has been part of a traversal, returning a `MAP` where the
 object is the key and the value is the count.
 
 *Syntax:* `groupCount()` | `groupCount(String sideEffectKey)`
@@ -1694,7 +1691,7 @@ key.
 *Considerations:*
 
 The `groupCount()` step can be used as both a map step and a side-effect step. As a map step, it returns a
-`Map<Object, LONG>` with the counted objects as keys and their counts as values. As a side-effect step, it stores the
+`MAP<any, LONG>` with the counted objects as keys and their counts as values. As a side-effect step, it stores the
 counts in a side-effect and passes the traverser to the next step unchanged. Note that both the map and side-effect
 forms of this step are barriers that must fully iterate the traversal before returning any results.
 
@@ -1717,7 +1714,7 @@ the length of each string element inside incoming list traverser.
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`STRING`/`array`/`Iterable` |`INT`/`List`
+|N |Y |N |`STRING`/`LIST` |`INT`/`LIST`
 |=========================================================
 
 *Arguments:*
@@ -1786,12 +1783,12 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#local-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`array`/`Iterable` |`Set`
+|N |Y |N |`LIST` |`SET`
 |=========================================================
 
 *Arguments:*
 
-* `values` - A list of items (as an Iterable or an array) or a `Traversal` that will produce a list of items.
+* `values` - A list of items or a `Traversal` that will produce a list of items.
 
 
 *Modulation:*
@@ -1805,8 +1802,8 @@ types which means that non-iterable types (including null) will cause exceptions
 
 *Exceptions:*
 
-* If the incoming traverser isn't a list (array or Iterable) then an `Argument Error` is raised.
-* If the argument doesn't resolve to a list (array or Iterable) then an `Argument Error` is raised.
+* If the incoming traverser isn't a list then an `Argument Error` is raised.
+* If the argument doesn't resolve to a list then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/IntersectStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#intersect-step[reference]
@@ -1821,7 +1818,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#intersect-step[reference
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`array`/`Iterable` |`STRING`
+|N |Y |N |`LIST` |`STRING`
 |=========================================================
 
 *Arguments:*
@@ -1840,8 +1837,8 @@ non-iterable types (including `null`) will cause exceptions to be thrown.
 
 *Exceptions:*
 
-* If the incoming traverser isn't a list (array or Iterable) then an `Argument Error` is raised.
-* If the argument doesn't resolve to a list (array or Iterable) then an `Argument Error` is raised.
+* If the incoming traverser isn't a list then an `Argument Error` is raised.
+* If the argument doesn't resolve to a list then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ConjoinStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#conjoin-step[reference]
@@ -1856,7 +1853,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#conjoin-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`STRING`/`array`/`Iterable` |`STRING`/`List`
+|N |Y |N |`STRING`/`LIST` |`STRING`/`LIST`
 |=========================================================
 
 *Arguments:*
@@ -1898,7 +1895,7 @@ bound parameters to the query; how (and whether) these are used is left to the p
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|Y |Y |Y (via `with()`) |`any` |`Map<String, Object>`
+|Y |Y |Y (via `with()`) |`any` |`MAP<STRING, any>`
 |=========================================================
 
 *Arguments:*
@@ -1916,7 +1913,7 @@ When omitted, the provider uses its native or default language.
 
 * The step is a provider-delegation point. `gremlin-core` supplies only the placeholder `DeclarativeMatchStep`;
 graph providers replace it with their own implementation via a `TraversalStrategy`.
-* The traverser value emitted by the step is a `Map<String, Object>` containing one entry per named variable in
+* The traverser value emitted by the step is a `MAP<STRING, any>` containing one entry per named variable in
 the matched pattern, keyed by variable name. Providers must set this map as the traverser value for each result
 row.
 * Each named variable is also recorded as a labeled entry in the traverser's path, so results remain retrievable
@@ -1944,12 +1941,12 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#match-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`array`/`Iterable`/`Map` |`Set`/`Map`
+|N |Y |N |`LIST`/`MAP` |`SET`/`MAP`
 |=========================================================
 
 *Arguments:*
 
-* `values` - A list of items (as an `Iterable` or an array), a `Map`, or a `Traversal` that will produce a list of items.
+* `values` - A list of items, a `MAP`, or a `Traversal` that will produce a list of items.
 
 *Modulation:*
 
@@ -1964,8 +1961,8 @@ to be thrown.
 
 *Exceptions:*
 
-* If the incoming traverser isn't a list (array or Iterable) or map then an `Argument Error` is raised.
-* If the argument doesn't resolve to a list (array or Iterable) or map then an `Argument Error` is raised.
+* If the incoming traverser isn't a list or map then an `Argument Error` is raised.
+* If the argument doesn't resolve to a list or map then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[reference]
@@ -1980,40 +1977,40 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|Y |Y |`option()` |`Map`/`Vertex` |`Edge`
+|Y |Y |`option()` |`MAP`/`Vertex` |`Edge`
 |=========================================================
 
 *Arguments:*
 
-* `searchCreate` - A `Map` used to match an `Edge` and if not found will be the default set of data to create the new one.
-* `onCreate` - A `Map` used to specify additional existence criteria and/or properties not already specified in `searchCreate`.
-* `onMatch` - A `Map` used to update the `Edge` that is found using the `searchCreate` criteria.
+* `searchCreate` - A `MAP` used to match an `Edge` and if not found will be the default set of data to create the new one.
+* `onCreate` - A `MAP` used to specify additional existence criteria and/or properties not already specified in `searchCreate`.
+* `onMatch` - A `MAP` used to update the `Edge` that is found using the `searchCreate` criteria.
 * `outV` - A `Vertex` that will be late-bound into the `searchCreate` and `onCreate` `Maps` for the `Direction.OUT` key,
-or else another `Map` used to search for that `Vertex`
+or else another `MAP` used to search for that `Vertex`
 * `inV` - A `Vertex` that will be late-bound into the `searchCreate` and `onCreate` `Maps` for the `Direction.IN` key,
-or else another `Map` used to search for that `Vertex`
+or else another `MAP` used to search for that `Vertex`
 
-The `searchCreate` and `onCreate` `Map` instances must consist of any combination of:
+The `searchCreate` and `onCreate` `MAP` instances must consist of any combination of:
 
 * `T` - `id`, `label`
 * `Direction` - `IN` or `to`, `OUT` or `from`
 * Arbitrary `STRING` keys (which are assumed to be vertex properties).
 
-The `onMatch` `Map` instance only allows for `STRING` keys as the `id` and `label` of a `Vertex` are immutable as are
+The `onMatch` `MAP` instance only allows for `STRING` keys as the `id` and `label` of a `Vertex` are immutable as are
 the incident vertices. Values for these valid keys that are `null` will be treated according to the semantics of the
 `addE()` step.
 
-The `Map` that is used as the argument for `searchCreate` may be assigned from the incoming `Traverser` for the no-arg
+The `MAP` that is used as the argument for `searchCreate` may be assigned from the incoming `Traverser` for the no-arg
 `mergeE()`. If `mergeE(Map)` is used, then it will override the incoming `Traverser`. If `mergeE(Traversal)` is used,
-the `Traversal` argument must resolve to a `Map` and it would also override the incoming Traverser. The `onCreate` and
+the `Traversal` argument must resolve to a `MAP` and it would also override the incoming Traverser. The `onCreate` and
 `onMatch` arguments are assigned via modulation as described below.
 
-If `onMatch` is triggered the `Traverser` becomes the matched `Edge`, but the traversal still must return a `Map`
-instance to be applied. `Null` is considered semantically equivalent to an empty `Map`.
+If `onMatch` is triggered the `Traverser` becomes the matched `Edge`, but the traversal still must return a `MAP`
+instance to be applied. `Null` is considered semantically equivalent to an empty `MAP`.
 
 [width="100%",options="header"]
 |=========================================================
-|Event |Empty `Map` (or Null)
+|Event |Empty `MAP` (or Null)
 |Search |Matches all edges
 |Create |New edge with defaults
 |Update |No update to matched edge
@@ -2023,20 +2020,20 @@ If `T.id` is used for `searchCreate` or `onCreate`, it may be ignored for edge c
 support user supplied identifiers. `onCreate` inherits from `searchCreate` - values for `T.id`, `T.label`, and
 `Direction.OUT/IN` do not need to be specified twice. Additionally, `onCreate` cannot override values in `searchCreate`
 (i.e. `if (exists(x)) return(x) else create(y)` is not supported). An important point here is that validation for
-`onCreate` must occur at traversal construction for static values (i.e. a `Map`) and at runtime for dynamic values
+`onCreate` must occur at traversal construction for static values (i.e. a `MAP`) and at runtime for dynamic values
 (i.e. a `Traversal`).
 
 *Modulation:*
 
 * `option(Merge, Map)` - Sets the `onCreate` or `onMatch` arguments directly.
 * `option(Merge, Traversal)` - Sets the `onCreate` or `onMatch` arguments dynamically where the `Traversal` must
-resolve to a `Map`.
+resolve to a `MAP`.
 * `option(Merge.outV/inV)` can also accept a `Traversal` that resolves to a `Vertex`, allowing `mergeE` to be combined
 with `mergeV` via a `select` operation.
 
 *Exceptions:*
 
-* `Map` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
+* `MAP` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
 * Use of `T.label` should always have a value that is a `STRING`.
 * If `T.id`, `T.label`, and/or `Direction.IN/OUT` are specified in `searchCreate`, they cannot be overridden in `onCreate`.
 * For late binding of the from and to vertices, `Direction.OUT` must be set to `Merge.outV` and `Direction.IN` must
@@ -2060,30 +2057,30 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergee-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|Y |Y |`option()` |`Map` |`Vertex`
+|Y |Y |`option()` |`MAP` |`Vertex`
 |=========================================================
 
 *Arguments:*
 
-* `searchCreate` - A `Map` used to match a `Vertex` and if not found will be the default set of data to create the new one.
-* `onCreate` - A `Map` used to specify additional existence criteria and/or properties not already specified in `searchCreate`.
-* `onMatch` - A `Map` used to update the `Vertex` that is found using the `searchCreate` criteria.
+* `searchCreate` - A `MAP` used to match a `Vertex` and if not found will be the default set of data to create the new one.
+* `onCreate` - A `MAP` used to specify additional existence criteria and/or properties not already specified in `searchCreate`.
+* `onMatch` - A `MAP` used to update the `Vertex` that is found using the `searchCreate` criteria.
 
-The `searchCreate` and `onCreate` `Map` instances must consist of any combination of `T.id`, `T.label`, or arbitrary
-`STRING` keys (which are assumed to be vertex properties). The `onMatch` `Map` instance only allows for `STRING` keys
+The `searchCreate` and `onCreate` `MAP` instances must consist of any combination of `T.id`, `T.label`, or arbitrary
+`STRING` keys (which are assumed to be vertex properties). The `onMatch` `MAP` instance only allows for `STRING` keys
 as the `id` and `label` of a `Vertex` are immutable. `null` values for these valid keys are not allowed.
 
-The `Map` that is used as the argument for `searchCreate` may be assigned from the incoming `Traverser` for the no-arg
+The `MAP` that is used as the argument for `searchCreate` may be assigned from the incoming `Traverser` for the no-arg
 `mergeV()`. If `mergeV(Map)` is used, then it will override the incoming `Traverser`. If `mergeV(Traversal)` is used,
-the `Traversal` argument must resolve to a `Map` and it would also override the incoming Traverser. The `onCreate` and
+the `Traversal` argument must resolve to a `MAP` and it would also override the incoming Traverser. The `onCreate` and
 `onMatch` arguments are assigned via modulation as described below.
 
-If `onMatch` is triggered the `Traverser` becomes the matched `Vertex`, but the traversal still must return a `Map`
-instance to be applied. `Null` is considered semantically equivalent to an empty `Map`.
+If `onMatch` is triggered the `Traverser` becomes the matched `Vertex`, but the traversal still must return a `MAP`
+instance to be applied. `Null` is considered semantically equivalent to an empty `MAP`.
 
 [width="100%",options="header"]
 |=========================================================
-|Event |Empty `Map` (or Null)
+|Event |Empty `MAP` (or Null)
 |Search |Matches all vertices
 |Create |New vertex with defaults
 |Update |No update to matched vertex
@@ -2093,18 +2090,18 @@ If `T.id` is used for `searchCreate` or `onCreate`, it may be ignored for vertex
 support user supplied identifiers. `onCreate` inherits from `searchCreate` - values for `T.id`, `T.label` do not need
 to be specified twice. Additionally, `onCreate` cannot override values in `searchCreate` (i.e.
 `if (exists(x)) return(x) else create(y)` is not supported). An important point here is that validation for `onCreate`
-must occur at traversal construction for static values (i.e. a `Map`) and at runtime for dynamic values (i.e. a
+must occur at traversal construction for static values (i.e. a `MAP`) and at runtime for dynamic values (i.e. a
 `Traversal`).
 
 *Modulation:*
 
 * `option(Merge, Map)` - Sets the `onCreate` or `onMatch` arguments directly.
 * `option(Merge, Traversal)` - Sets the `onCreate` or `onMatch` arguments dynamically where the `Traversal` must
-resolve to a `Map`.
+resolve to a `MAP`.
 
 *Exceptions:*
 
-* `Map` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
+* `MAP` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
 * Use of `T.label` should always have a value that is a `STRING`.
 * If `T.id` and/or `T.label` are specified in `searchCreate`, they cannot be overridden in `onCreate`.
 
@@ -2119,19 +2116,19 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]
 [[none-step]]
 === none()
 
-*Description:* Filters array data from the traversal stream if none of the array's items match the supplied predicate.
+*Description:* Filters list data from the traversal stream if none of the list's items match the supplied predicate.
 
 *Syntax:* `none(P predicate)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`List`/`array`/`Iterable`/`Iterator` |`List`/`array`/`Iterable`/`Iterator`
+|N |Y |N |`LIST` |`LIST`
 |=========================================================
 
 *Arguments:*
 
-* `predicate` - The predicate used to test each value in the array data.
+* `predicate` - The predicate used to test each value in the list data.
 
 *Modulation:*
 
@@ -2159,12 +2156,12 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#none-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`array`/`Iterable` |`List(List)`
+|N |Y |N |`LIST` |`LIST(LIST)`
 |=========================================================
 
 *Arguments:*
 
-* `values` - A list of items (as an `Iterable` or an array) or a `Traversal` that will produce a list of items.
+* `values` - A list of items or a `Traversal` that will produce a list of items.
 
 *Modulation:*
 
@@ -2177,8 +2174,8 @@ applies to list types which means that non-iterable types (including null) will 
 
 *Exceptions:*
 
-* If the incoming traverser isn't a list (array or Iterable) then an `Argument Error` is raised.
-* If the argument doesn't resolve to a list (array or Iterable) then an `Argument Error` is raised.
+* If the incoming traverser isn't a list then an `Argument Error` is raised.
+* If the argument doesn't resolve to a list then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ProductStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
@@ -2186,14 +2183,14 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
 [[project-step]]
 === project()
 
-*Description:* Projects the current object in the stream into a `Map` that is keyed by the provided labels.
+*Description:* Projects the current object in the stream into a `MAP` that is keyed by the provided labels.
 
 *Syntax:* `project(String projectKey, String... otherProjectKeys)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |`by()` |`any` |`Map<String, Object>`
+|N |Y |`by()` |`any` |`MAP<STRING, any>`
 |=========================================================
 
 *Arguments:*
@@ -2211,7 +2208,7 @@ modulations should match the number of keys provided.
 The `project()` step is similar to `select()` but instead of retrieving historic traverser state, it modulates the
 current state of the traverser. Each key in the resulting map corresponds to a `by()` modulation in the order they are
 provided. If a `by()` modulation doesn't produce a value for a particular key (not productive), that key will be omitted
-from the resulting `Map`.
+from the resulting `MAP`.
 
 *Exceptions:*
 
@@ -2305,7 +2302,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#repeat-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`STRING`/`array`/`Iterable` |`STRING`/`List`
+|N |Y |N |`STRING`/`LIST` |`STRING`/`LIST`
 |=========================================================
 
 *Arguments:*
@@ -2344,7 +2341,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`Object` |`Object`
+|N |Y |N |`any` |`any`
 |=========================================================
 
 *Arguments:*
@@ -2358,7 +2355,7 @@ None
 *Considerations:*
 
 The behavior of reverse depends on the type of the incoming traverser. If the traverser is a string, then the string is
-reversed. If the traverser is iterable (Iterable, Iterator, or an array) then a list containing the items in reverse
+reversed. If the traverser is iterable then a list containing the items in reverse
 order are returned. All other types (including null) are not processed and are returned unmodified.
 
 *Exceptions:*
@@ -2378,7 +2375,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#reverse-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`STRING`/`array`/`Iterable` |`STRING`/`List`
+|N |Y |N |`STRING`/`LIST` |`STRING`/`LIST`
 |=========================================================
 
 *Arguments:*
@@ -2413,7 +2410,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`STRING`/`array`/`Iterable` |`List`
+|N |Y |N |`STRING`/`LIST` |`LIST`
 |=========================================================
 
 *Arguments:*
@@ -2484,7 +2481,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#subgraph-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`STRING`/`array`/`Iterable` |`STRING`/`List`
+|N |Y |N |`STRING`/`LIST` |`STRING`/`LIST`
 |=========================================================
 
 *Arguments:*
@@ -2524,7 +2521,7 @@ the lowercase representation of each string elements inside incoming list traver
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`STRING` |`STRING`/`List`
+|N |Y |N |`STRING` |`STRING`/`LIST`
 |=========================================================
 
 *Arguments:*
@@ -2560,7 +2557,7 @@ the uppercase representation of each string elements inside incoming list traver
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`STRING`/`array`/`Iterable` |`STRING`/`List`
+|N |Y |N |`STRING`/`LIST` |`STRING`/`LIST`
 |=========================================================
 
 *Arguments:*
@@ -2637,7 +2634,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tree-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`STRING`/`array`/`Iterable` |`STRING`/`List`
+|N |Y |N |`STRING`/`LIST` |`STRING`/`LIST`
 |=========================================================
 
 *Arguments:*
@@ -2672,7 +2669,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |`by()`/`with()` |`Element` |`Map`
+|N |Y |`by()`/`with()` |`Element` |`MAP`
 |=========================================================
 
 *Arguments:*
@@ -2697,7 +2694,7 @@ the possible values are:
 *Considerations:*
 
 A `Vertex` may carry multiple values for a single property key (`Cardinality.list` or `Cardinality.set`). For such
-keys, the resulting map entry contains a `List` of the values. An `Edge` and a `VertexProperty` have at most one
+keys, the resulting map entry contains a `LIST` of the values. An `Edge` and a `VertexProperty` have at most one
 value per key and the value is returned directly.
 
 *Exceptions:*
