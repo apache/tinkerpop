@@ -264,6 +264,14 @@ fills in the same labeled fields, in order:
 - `*Description:*` — one or two sentences on what the step does.
 - `*Syntax:*` — each overload as a backticked signature, multiple overloads
   separated by `|` (for example `` `asString()` | `asString(Scope scope)` ``).
+  Use TypeScript-style `name: TYPE` parameter form with GType names for
+  primitives (`STRING`, `INT`, `BOOLEAN`, etc.), `any` for unconstrained
+  values, and PascalCase for TinkerPop concept types (`Traversal`,
+  `Traverser`, `Scope`, `P`, `T`, `GType`, etc.). Varargs use the trailing
+  ellipsis form (`STRING...`). Document only the overloads that appear in
+  the ANTLR grammar (`gremlin-language/src/main/antlr4/Gremlin.g4`); do
+  not document method-level overloads that exist only as Java
+  `GraphTraversal` sugar.
 - A `[width="100%",options="header"]` table with the columns
   `Start Step | Mid Step | Modulated | Domain | Range`.
 - `*Arguments:*` — one bullet per argument. (A genuine enumeration, so a list is
