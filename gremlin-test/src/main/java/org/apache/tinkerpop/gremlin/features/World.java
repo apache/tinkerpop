@@ -56,6 +56,27 @@ public interface World {
     public GraphTraversalSource getGraphTraversalSource(final GraphData graphData);
 
     /**
+     * Gets a {@link GraphTraversalSource} configured for multi-label support (ZERO_OR_MORE vertex label cardinality).
+     * This source is used by {@code @MultiLabel} tagged scenarios that require label mutation operations such as
+     * {@code addLabel()} and {@code dropLabel()}. The default implementation delegates to
+     * {@link #getGraphTraversalSource(GraphData)} with {@code null} which works for embedded graphs that already
+     * have multi-label cardinality configured. Remote implementations should override this to connect to a
+     * dedicated multi-label traversal source.
+     */
+    public default GraphTraversalSource getMultiLabelGraphTraversalSource() {
+        return getGraphTraversalSource(null);
+    }
+
+    /**
+     * Gets a {@link GraphTraversalSource} that returns labels as a set by default from
+     * {@code elementMap()}/{@code valueMap()}. Used by {@code @MultiLabelDefault} tagged scenarios to simulate
+     * a provider whose default label output is a set. Applies {@code with("multilabel")} to the multi-label source.
+     */
+    public default GraphTraversalSource getMultiLabelDefaultGraphTraversalSource() {
+        return getMultiLabelGraphTraversalSource().with("multilabel");
+    }
+
+    /**
      * Called before each individual test is executed which provides an opportunity to do some setup. For example,
      * if there is a specific test that can't be supported it can be ignored by checking for the name with
      * {@code scenario.getName()} and then throwing an {@code AssumptionViolatedException}.

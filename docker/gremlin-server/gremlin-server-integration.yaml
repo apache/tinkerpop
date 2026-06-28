@@ -23,6 +23,9 @@ graphs: {
   graph: {
     configuration: conf/tinkergraph-service.properties,
     traversalSources: [{name: g}, {name: ggraph}]},
+  multilabel: {
+    configuration: conf/tinkergraph-multilabel.properties,
+    traversalSources: [{name: gmultilabel}]},
   immutable: {
     configuration: conf/tinkergraph-service.properties,
     traversalSources: [{name: gimmutable}]},

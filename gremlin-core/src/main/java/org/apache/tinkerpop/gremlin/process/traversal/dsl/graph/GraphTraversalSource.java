@@ -55,9 +55,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -371,6 +374,32 @@ public class GraphTraversalSource implements TraversalSource {
         clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, vertexLabel);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, vertexLabel));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by adding a vertex with multiple labels.
+     * Creates the vertex with the first label, then adds the remaining labels.
+     *
+     * @param label1     the first label
+     * @param label2     the second label
+     * @param moreLabels additional labels
+     * @return the traversal with the vertex added
+     * @since 4.0.0
+     */
+    public GraphTraversal<Vertex, Vertex> addV(final String label1, final String label2, final String... moreLabels) {
+        if (null == label1) throw new IllegalArgumentException("vertexLabel cannot be null");
+        if (null == label2) throw new IllegalArgumentException("vertexLabel cannot be null");
+        for (final String l : moreLabels) {
+            if (null == l) throw new IllegalArgumentException("vertexLabel cannot be null");
+        }
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, label1, label2, moreLabels);
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+        final Set<String> allLabels = new LinkedHashSet<>();
+        allLabels.add(label1);
+        allLabels.add(label2);
+        Collections.addAll(allLabels, moreLabels);
+        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, allLabels));
     }
 
     /**

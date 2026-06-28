@@ -30,7 +30,7 @@ import (
 func TestGraphStructureFunctions(t *testing.T) {
 	t.Run("Test Vertex.String()", func(t *testing.T) {
 		uid, _ := uuid.NewUUID()
-		v := Vertex{Element{uid, "Vertex-Label", nil}}
+		v := Vertex{Element: Element{uid, "Vertex-Label", nil}}
 		assert.Equal(t, fmt.Sprintf("v[%s]", uid.String()), v.String())
 	})
 
@@ -38,14 +38,14 @@ func TestGraphStructureFunctions(t *testing.T) {
 		uidEdge, _ := uuid.NewUUID()
 		uidIn, _ := uuid.NewUUID()
 		uidOut, _ := uuid.NewUUID()
-		v := Edge{Element{uidEdge, "edge_label", nil}, Vertex{Element{uidOut, "vertex_out", nil}}, Vertex{Element{uidIn, "vertex_in", nil}}}
+		v := Edge{Element: Element{uidEdge, "edge_label", nil}, OutV: Vertex{Element: Element{uidOut, "vertex_out", nil}}, InV: Vertex{Element: Element{uidIn, "vertex_in", nil}}}
 		assert.Equal(t, fmt.Sprintf("e[%s][%s-edge_label->%s]", uidEdge.String(), uidOut.String(), uidIn.String()), v.String())
 	})
 
 	t.Run("Test VertexProperty.String()", func(t *testing.T) {
 		uidVProp, _ := uuid.NewUUID()
 		uidV, _ := uuid.NewUUID()
-		v := VertexProperty{Element{uidVProp, "Vertex-prop", nil}, "Vertex", []uint32{0, 1}, Vertex{Element{uidV, "Vertex", nil}}}
+		v := VertexProperty{Element{uidVProp, "Vertex-prop", nil}, "Vertex", []uint32{0, 1}, Vertex{Element: Element{uidV, "Vertex", nil}}}
 		assert.Equal(t, "vp[Vertex-prop->[0 1]]", v.String())
 	})
 

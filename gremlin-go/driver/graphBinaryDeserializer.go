@@ -369,7 +369,13 @@ func (d *GraphBinaryDeserializer) readVertex(withProps bool) (*Vertex, error) {
 	if !ok {
 		return nil, newError(err0404ReadNullTypeError)
 	}
-	v := &Vertex{Element: Element{Id: id, Label: label}}
+	allLabels := make([]string, 0, len(labelSlice))
+	for _, l := range labelSlice {
+		if s, ok := l.(string); ok {
+			allLabels = append(allLabels, s)
+		}
+	}
+	v := &Vertex{Element: Element{Id: id, Label: label}, Labels: allLabels}
 	if withProps {
 		props, err := d.ReadFullyQualified()
 		if err != nil {
@@ -400,6 +406,12 @@ func (d *GraphBinaryDeserializer) readEdge() (*Edge, error) {
 	if !ok {
 		return nil, newError(err0404ReadNullTypeError)
 	}
+	allLabels := make([]string, 0, len(labelSlice))
+	for _, l := range labelSlice {
+		if s, ok := l.(string); ok {
+			allLabels = append(allLabels, s)
+		}
+	}
 	inV, err := d.readVertex(false)
 	if err != nil {
 		return nil, err
@@ -419,6 +431,7 @@ func (d *GraphBinaryDeserializer) readEdge() (*Edge, error) {
 		Element: Element{Id: id, Label: label},
 		InV:     *inV,
 		OutV:    *outV,
+		Labels:  allLabels,
 	}
 	e.Properties = make([]interface{}, 0)
 	if props != nil {

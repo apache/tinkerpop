@@ -19291,6 +19291,52 @@
         ]
     },
     {
+        "scenario": "g_addVXa_bX_labels",
+        "traversals": [
+            {
+                "original": "g.addV(\"a\", \"b\").labels().fold()",
+                "language": "g.addV(\"a\", \"b\").labels().fold()",
+                "canonical": "g.addV(\"a\", \"b\").labels().fold()",
+                "anonymized": "g.addV(string0, string1).labels().fold()",
+                "dotnet": "g.AddV((string) \"a\", (string) \"b\").Labels().Fold()",
+                "go": "g.AddV(\"a\", \"b\").Labels().Fold()",
+                "groovy": "g.addV(\"a\", \"b\").labels().fold()",
+                "java": "g.addV(\"a\", \"b\").labels().fold()",
+                "javascript": "g.addV(\"a\", \"b\").labels().fold()",
+                "python": "g.add_v('a', 'b').labels().fold()"
+            },
+            {
+                "original": "g.V().hasLabel(\"a\").hasLabel(\"b\")",
+                "language": "g.V().hasLabel(\"a\").hasLabel(\"b\")",
+                "canonical": "g.V().hasLabel(\"a\").hasLabel(\"b\")",
+                "anonymized": "g.V().hasLabel(string0).hasLabel(string1)",
+                "dotnet": "g.V().HasLabel(\"a\").HasLabel(\"b\")",
+                "go": "g.V().HasLabel(\"a\").HasLabel(\"b\")",
+                "groovy": "g.V().hasLabel(\"a\").hasLabel(\"b\")",
+                "java": "g.V().hasLabel(\"a\").hasLabel(\"b\")",
+                "javascript": "g.V().hasLabel(\"a\").hasLabel(\"b\")",
+                "python": "g.V().has_label('a').has_label('b')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_addVXa_b_cX_labels_count",
+        "traversals": [
+            {
+                "original": "g.addV(\"a\", \"b\", \"c\").labels().count()",
+                "language": "g.addV(\"a\", \"b\", \"c\").labels().count()",
+                "canonical": "g.addV(\"a\", \"b\", \"c\").labels().count()",
+                "anonymized": "g.addV(string0, string1, string2).labels().count()",
+                "dotnet": "g.AddV((string) \"a\", (string) \"b\", (string) \"c\").Labels().Count()",
+                "go": "g.AddV(\"a\", \"b\", \"c\").Labels().Count()",
+                "groovy": "g.addV(\"a\", \"b\", \"c\").labels().count()",
+                "java": "g.addV(\"a\", \"b\", \"c\").labels().count()",
+                "javascript": "g.addV(\"a\", \"b\", \"c\").labels().count()",
+                "python": "g.add_v('a', 'b', 'c').labels().count()"
+            }
+        ]
+    },
+    {
         "scenario": "g_injectX1X_asBool",
         "traversals": [
             {
@@ -23458,6 +23504,103 @@
         "scenario": "g_V_elementMap",
         "traversals": [
             {
+                "original": "g.with(\"singlelabel\").V().elementMap()",
+                "language": "g.with(\"singlelabel\").V().elementMap()",
+                "canonical": "g.with(\"singlelabel\").V().elementMap()",
+                "anonymized": "g.with(string0).V().elementMap()",
+                "dotnet": "g.With(\"singlelabel\").V().ElementMap<object>()",
+                "go": "g.With(\"singlelabel\").V().ElementMap()",
+                "groovy": "g.with(\"singlelabel\").V().elementMap()",
+                "java": "g.with(\"singlelabel\").V().elementMap()",
+                "javascript": "g.with_(\"singlelabel\").V().elementMap()",
+                "python": "g.with_('singlelabel').V().element_map()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_elementMapXname_ageX",
+        "traversals": [
+            {
+                "original": "g.with(\"singlelabel\").V().elementMap(\"name\", \"age\")",
+                "language": "g.with(\"singlelabel\").V().elementMap(\"name\", \"age\")",
+                "canonical": "g.with(\"singlelabel\").V().elementMap(\"name\", \"age\")",
+                "anonymized": "g.with(string0).V().elementMap(string1, string2)",
+                "dotnet": "g.With(\"singlelabel\").V().ElementMap<object>(\"name\", \"age\")",
+                "go": "g.With(\"singlelabel\").V().ElementMap(\"name\", \"age\")",
+                "groovy": "g.with(\"singlelabel\").V().elementMap(\"name\", \"age\")",
+                "java": "g.with(\"singlelabel\").V().elementMap(\"name\", \"age\")",
+                "javascript": "g.with_(\"singlelabel\").V().elementMap(\"name\", \"age\")",
+                "python": "g.with_('singlelabel').V().element_map('name', 'age')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_EX11X_elementMap",
+        "traversals": [
+            {
+                "original": "g.with(\"singlelabel\").E(eid11).elementMap()",
+                "language": "g.with(\"singlelabel\").E(eid11).elementMap()",
+                "canonical": "g.with(\"singlelabel\").E(eid11).elementMap()",
+                "anonymized": "g.with(string0).E(eid11).elementMap()",
+                "dotnet": "g.With(\"singlelabel\").E(eid11).ElementMap<object>()",
+                "go": "g.With(\"singlelabel\").E(eid11).ElementMap()",
+                "groovy": "g.with(\"singlelabel\").E(eid11).elementMap()",
+                "java": "g.with(\"singlelabel\").E(eid11).elementMap()",
+                "javascript": "g.with_(\"singlelabel\").E(eid11).elementMap()",
+                "python": "g.with_('singlelabel').E(eid11).element_map()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_elementMapXname_age_nullX",
+        "traversals": [
+            {
+                "original": "g.with(\"singlelabel\").V().elementMap(\"name\", \"age\", null)",
+                "language": "g.with(\"singlelabel\").V().elementMap(\"name\", \"age\", null)",
+                "canonical": "g.with(\"singlelabel\").V().elementMap(\"name\", \"age\", null)",
+                "anonymized": "g.with(string0).V().elementMap(string1, string2, string3)",
+                "dotnet": "g.With(\"singlelabel\").V().ElementMap<object>(\"name\", \"age\", null)",
+                "go": "g.With(\"singlelabel\").V().ElementMap(\"name\", \"age\", nil)",
+                "groovy": "g.with(\"singlelabel\").V().elementMap(\"name\", \"age\", null)",
+                "java": "g.with(\"singlelabel\").V().elementMap(\"name\", \"age\", null)",
+                "javascript": "g.with_(\"singlelabel\").V().elementMap(\"name\", \"age\", null)",
+                "python": "g.with_('singlelabel').V().element_map('name', 'age', None)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withXmultilabelX_VXmarkoX_elementMap",
+        "traversals": [
+            {
+                "original": "g.with(\"multilabel\").V().has(\"name\", \"marko\").elementMap()",
+                "language": "g.with(\"multilabel\").V().has(\"name\", \"marko\").elementMap()",
+                "canonical": "g.with(\"multilabel\").V().has(\"name\", \"marko\").elementMap()",
+                "anonymized": "g.with(string0).V().has(string1, string2).elementMap()",
+                "dotnet": "g.With(\"multilabel\").V().Has(\"name\", \"marko\").ElementMap<object>()",
+                "go": "g.With(\"multilabel\").V().Has(\"name\", \"marko\").ElementMap()",
+                "groovy": "g.with(\"multilabel\").V().has(\"name\", \"marko\").elementMap()",
+                "java": "g.with(\"multilabel\").V().has(\"name\", \"marko\").elementMap()",
+                "javascript": "g.with_(\"multilabel\").V().has(\"name\", \"marko\").elementMap()",
+                "python": "g.with_('multilabel').V().has('name', 'marko').element_map()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_elementMap_single_label_default",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "language": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "canonical": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "anonymized": "g.addV(string0).addLabel(string1).property(string2, string3)",
+                "dotnet": "g.AddV((string) \"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "go": "g.AddV(\"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "groovy": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "java": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "javascript": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "python": "g.add_v('person').add_label('employee').property('name', 'marko')"
+            },
+            {
                 "original": "g.V().elementMap()",
                 "language": "g.V().elementMap()",
                 "canonical": "g.V().elementMap()",
@@ -23472,53 +23615,89 @@
         ]
     },
     {
-        "scenario": "g_V_elementMapXname_ageX",
+        "scenario": "g_withXmultilabelX_V_elementMap_multilabel",
         "traversals": [
             {
-                "original": "g.V().elementMap(\"name\", \"age\")",
-                "language": "g.V().elementMap(\"name\", \"age\")",
-                "canonical": "g.V().elementMap(\"name\", \"age\")",
-                "anonymized": "g.V().elementMap(string0, string1)",
-                "dotnet": "g.V().ElementMap<object>(\"name\", \"age\")",
-                "go": "g.V().ElementMap(\"name\", \"age\")",
-                "groovy": "g.V().elementMap(\"name\", \"age\")",
-                "java": "g.V().elementMap(\"name\", \"age\")",
-                "javascript": "g.V().elementMap(\"name\", \"age\")",
-                "python": "g.V().element_map('name', 'age')"
+                "original": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "language": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "canonical": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "anonymized": "g.addV(string0).addLabel(string1).property(string2, string3)",
+                "dotnet": "g.AddV((string) \"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "go": "g.AddV(\"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "groovy": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "java": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "javascript": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "python": "g.add_v('person').add_label('employee').property('name', 'marko')"
+            },
+            {
+                "original": "g.with(\"multilabel\").V().elementMap()",
+                "language": "g.with(\"multilabel\").V().elementMap()",
+                "canonical": "g.with(\"multilabel\").V().elementMap()",
+                "anonymized": "g.with(string0).V().elementMap()",
+                "dotnet": "g.With(\"multilabel\").V().ElementMap<object>()",
+                "go": "g.With(\"multilabel\").V().ElementMap()",
+                "groovy": "g.with(\"multilabel\").V().elementMap()",
+                "java": "g.with(\"multilabel\").V().elementMap()",
+                "javascript": "g.with_(\"multilabel\").V().elementMap()",
+                "python": "g.with_('multilabel').V().element_map()"
             }
         ]
     },
     {
-        "scenario": "g_EX11X_elementMap",
+        "scenario": "g_V_elementMap_multi_label_default",
         "traversals": [
             {
-                "original": "g.E(eid11).elementMap()",
-                "language": "g.E(eid11).elementMap()",
-                "canonical": "g.E(eid11).elementMap()",
-                "anonymized": "g.E(eid11).elementMap()",
-                "dotnet": "g.E(eid11).ElementMap<object>()",
-                "go": "g.E(eid11).ElementMap()",
-                "groovy": "g.E(eid11).elementMap()",
-                "java": "g.E(eid11).elementMap()",
-                "javascript": "g.E(eid11).elementMap()",
-                "python": "g.E(eid11).element_map()"
+                "original": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "language": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "canonical": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "anonymized": "g.addV(string0).addLabel(string1).property(string2, string3)",
+                "dotnet": "g.AddV((string) \"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "go": "g.AddV(\"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "groovy": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "java": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "javascript": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "python": "g.add_v('person').add_label('employee').property('name', 'marko')"
+            },
+            {
+                "original": "g.V().elementMap()",
+                "language": "g.V().elementMap()",
+                "canonical": "g.V().elementMap()",
+                "anonymized": "g.V().elementMap()",
+                "dotnet": "g.V().ElementMap<object>()",
+                "go": "g.V().ElementMap()",
+                "groovy": "g.V().elementMap()",
+                "java": "g.V().elementMap()",
+                "javascript": "g.V().elementMap()",
+                "python": "g.V().element_map()"
             }
         ]
     },
     {
-        "scenario": "g_V_elementMapXname_age_nullX",
+        "scenario": "g_withXsinglelabelX_V_elementMap_multi_label_default",
         "traversals": [
             {
-                "original": "g.V().elementMap(\"name\", \"age\", null)",
-                "language": "g.V().elementMap(\"name\", \"age\", null)",
-                "canonical": "g.V().elementMap(\"name\", \"age\", null)",
-                "anonymized": "g.V().elementMap(string0, string1, string2)",
-                "dotnet": "g.V().ElementMap<object>(\"name\", \"age\", null)",
-                "go": "g.V().ElementMap(\"name\", \"age\", nil)",
-                "groovy": "g.V().elementMap(\"name\", \"age\", null)",
-                "java": "g.V().elementMap(\"name\", \"age\", null)",
-                "javascript": "g.V().elementMap(\"name\", \"age\", null)",
-                "python": "g.V().element_map('name', 'age', None)"
+                "original": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "language": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "canonical": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "anonymized": "g.addV(string0).addLabel(string1).property(string2, string3)",
+                "dotnet": "g.AddV((string) \"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "go": "g.AddV(\"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "groovy": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "java": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "javascript": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "python": "g.add_v('person').add_label('employee').property('name', 'marko')"
+            },
+            {
+                "original": "g.with(\"singlelabel\").V().elementMap()",
+                "language": "g.with(\"singlelabel\").V().elementMap()",
+                "canonical": "g.with(\"singlelabel\").V().elementMap()",
+                "anonymized": "g.with(string0).V().elementMap()",
+                "dotnet": "g.With(\"singlelabel\").V().ElementMap<object>()",
+                "go": "g.With(\"singlelabel\").V().ElementMap()",
+                "groovy": "g.with(\"singlelabel\").V().elementMap()",
+                "java": "g.with(\"singlelabel\").V().elementMap()",
+                "javascript": "g.with_(\"singlelabel\").V().elementMap()",
+                "python": "g.with_('singlelabel').V().element_map()"
             }
         ]
     },
@@ -24393,6 +24572,127 @@
                 "java": "g.V().values(\"name\").order().fold().lTrim(Scope.local)",
                 "javascript": "g.V().values(\"name\").order().fold().lTrim(Scope.local)",
                 "python": "g.V().values('name').order().fold().l_trim(Scope.local)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasLabelXpersonX_labels",
+        "traversals": [
+            {
+                "original": "g.V().hasLabel(\"person\").labels()",
+                "language": "g.V().hasLabel(\"person\").labels()",
+                "canonical": "g.V().hasLabel(\"person\").labels()",
+                "anonymized": "g.V().hasLabel(string0).labels()",
+                "dotnet": "g.V().HasLabel(\"person\").Labels()",
+                "go": "g.V().HasLabel(\"person\").Labels()",
+                "groovy": "g.V().hasLabel(\"person\").labels()",
+                "java": "g.V().hasLabel(\"person\").labels()",
+                "javascript": "g.V().hasLabel(\"person\").labels()",
+                "python": "g.V().has_label('person').labels()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_labels_multilabel",
+        "traversals": [
+            {
+                "original": "g.addV(\"a\", \"b\")",
+                "language": "g.addV(\"a\", \"b\")",
+                "canonical": "g.addV(\"a\", \"b\")",
+                "anonymized": "g.addV(string0, string1)",
+                "dotnet": "g.AddV((string) \"a\", (string) \"b\")",
+                "go": "g.AddV(\"a\", \"b\")",
+                "groovy": "g.addV(\"a\", \"b\")",
+                "java": "g.addV(\"a\", \"b\")",
+                "javascript": "g.addV(\"a\", \"b\")",
+                "python": "g.add_v('a', 'b')"
+            },
+            {
+                "original": "g.V().labels()",
+                "language": "g.V().labels()",
+                "canonical": "g.V().labels()",
+                "anonymized": "g.V().labels()",
+                "dotnet": "g.V().Labels()",
+                "go": "g.V().Labels()",
+                "groovy": "g.V().labels()",
+                "java": "g.V().labels()",
+                "javascript": "g.V().labels()",
+                "python": "g.V().labels()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_addVXa_bX_labels_count",
+        "traversals": [
+            {
+                "original": "g.addV(\"a\", \"b\")",
+                "language": "g.addV(\"a\", \"b\")",
+                "canonical": "g.addV(\"a\", \"b\")",
+                "anonymized": "g.addV(string0, string1)",
+                "dotnet": "g.AddV((string) \"a\", (string) \"b\")",
+                "go": "g.AddV(\"a\", \"b\")",
+                "groovy": "g.addV(\"a\", \"b\")",
+                "java": "g.addV(\"a\", \"b\")",
+                "javascript": "g.addV(\"a\", \"b\")",
+                "python": "g.add_v('a', 'b')"
+            },
+            {
+                "original": "g.V().labels().count()",
+                "language": "g.V().labels().count()",
+                "canonical": "g.V().labels().count()",
+                "anonymized": "g.V().labels().count()",
+                "dotnet": "g.V().Labels().Count()",
+                "go": "g.V().Labels().Count()",
+                "groovy": "g.V().labels().count()",
+                "java": "g.V().labels().count()",
+                "javascript": "g.V().labels().count()",
+                "python": "g.V().labels().count()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_addV_labels",
+        "traversals": [
+            {
+                "original": "g.addV()",
+                "language": "g.addV()",
+                "canonical": "g.addV()",
+                "anonymized": "g.addV()",
+                "dotnet": "g.AddV()",
+                "go": "g.AddV()",
+                "groovy": "g.addV()",
+                "java": "g.addV()",
+                "javascript": "g.addV()",
+                "python": "g.add_v()"
+            },
+            {
+                "original": "g.V().labels()",
+                "language": "g.V().labels()",
+                "canonical": "g.V().labels()",
+                "anonymized": "g.V().labels()",
+                "dotnet": "g.V().Labels()",
+                "go": "g.V().Labels()",
+                "groovy": "g.V().labels()",
+                "java": "g.V().labels()",
+                "javascript": "g.V().labels()",
+                "python": "g.V().labels()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_E_labels",
+        "traversals": [
+            {
+                "original": "g.E().hasLabel(\"knows\").labels()",
+                "language": "g.E().hasLabel(\"knows\").labels()",
+                "canonical": "g.E().hasLabel(\"knows\").labels()",
+                "anonymized": "g.E().hasLabel(string0).labels()",
+                "dotnet": "g.E().HasLabel(\"knows\").Labels()",
+                "go": "g.E().HasLabel(\"knows\").Labels()",
+                "groovy": "g.E().hasLabel(\"knows\").labels()",
+                "java": "g.E().hasLabel(\"knows\").labels()",
+                "javascript": "g.E().hasLabel(\"knows\").labels()",
+                "python": "g.E().has_label('knows').labels()"
             }
         ]
     },
@@ -32675,6 +32975,495 @@
         ]
     },
     {
+        "scenario": "g_mergeVXlabel_ab_name_markoX_multilabel_create",
+        "traversals": [
+            {
+                "original": "g.mergeV([(T.label): [\"person\",\"employee\"], name: \"marko\"])",
+                "language": "g.mergeV([(T.label):[\"person\", \"employee\"], name:\"marko\"])",
+                "canonical": "g.mergeV([(T.label):[\"person\", \"employee\"], name:\"marko\"])",
+                "anonymized": "g.mergeV(map0)",
+                "dotnet": "g.MergeV((IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, new List<object> { \"person\", \"employee\" } }, { \"name\", \"marko\" }})",
+                "go": "g.MergeV(map[interface{}]interface{}{gremlingo.T.Label: []interface{}{\"person\", \"employee\"}, \"name\": \"marko\" })",
+                "groovy": "g.mergeV([(T.label):[\"person\", \"employee\"], name:\"marko\"])",
+                "java": "g.mergeV(new LinkedHashMap<Object, Object>() {{ put(T.label, new ArrayList<Object>() {{ add(\"person\"); add(\"employee\"); }}); put(\"name\", \"marko\"); }})",
+                "javascript": "g.mergeV(new Map([[T.label, [\"person\", \"employee\"]], [\"name\", \"marko\"]]))",
+                "python": "g.merge_v({ T.label: ['person', 'employee'], 'name': 'marko' })"
+            },
+            {
+                "original": "g.V()",
+                "language": "g.V()",
+                "canonical": "g.V()",
+                "anonymized": "g.V()",
+                "dotnet": "g.V()",
+                "go": "g.V()",
+                "groovy": "g.V()",
+                "java": "g.V()",
+                "javascript": "g.V()",
+                "python": "g.V()"
+            },
+            {
+                "original": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "language": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "canonical": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "anonymized": "g.V().hasLabel(string0).hasLabel(string1)",
+                "dotnet": "g.V().HasLabel(\"person\").HasLabel(\"employee\")",
+                "go": "g.V().HasLabel(\"person\").HasLabel(\"employee\")",
+                "groovy": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "java": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "javascript": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "python": "g.V().has_label('person').has_label('employee')"
+            },
+            {
+                "original": "g.V().has(\"name\",\"marko\")",
+                "language": "g.V().has(\"name\", \"marko\")",
+                "canonical": "g.V().has(\"name\", \"marko\")",
+                "anonymized": "g.V().has(string0, string1)",
+                "dotnet": "g.V().Has(\"name\", \"marko\")",
+                "go": "g.V().Has(\"name\", \"marko\")",
+                "groovy": "g.V().has(\"name\", \"marko\")",
+                "java": "g.V().has(\"name\", \"marko\")",
+                "javascript": "g.V().has(\"name\", \"marko\")",
+                "python": "g.V().has('name', 'marko')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_mergeVXlabel_abc_name_testX_multilabel_create",
+        "traversals": [
+            {
+                "original": "g.mergeV([(T.label): [\"a\",\"b\",\"c\"], name: \"test\"])",
+                "language": "g.mergeV([(T.label):[\"a\", \"b\", \"c\"], name:\"test\"])",
+                "canonical": "g.mergeV([(T.label):[\"a\", \"b\", \"c\"], name:\"test\"])",
+                "anonymized": "g.mergeV(map0)",
+                "dotnet": "g.MergeV((IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, new List<object> { \"a\", \"b\", \"c\" } }, { \"name\", \"test\" }})",
+                "go": "g.MergeV(map[interface{}]interface{}{gremlingo.T.Label: []interface{}{\"a\", \"b\", \"c\"}, \"name\": \"test\" })",
+                "groovy": "g.mergeV([(T.label):[\"a\", \"b\", \"c\"], name:\"test\"])",
+                "java": "g.mergeV(new LinkedHashMap<Object, Object>() {{ put(T.label, new ArrayList<Object>() {{ add(\"a\"); add(\"b\"); add(\"c\"); }}); put(\"name\", \"test\"); }})",
+                "javascript": "g.mergeV(new Map([[T.label, [\"a\", \"b\", \"c\"]], [\"name\", \"test\"]]))",
+                "python": "g.merge_v({ T.label: ['a', 'b', 'c'], 'name': 'test' })"
+            },
+            {
+                "original": "g.V()",
+                "language": "g.V()",
+                "canonical": "g.V()",
+                "anonymized": "g.V()",
+                "dotnet": "g.V()",
+                "go": "g.V()",
+                "groovy": "g.V()",
+                "java": "g.V()",
+                "javascript": "g.V()",
+                "python": "g.V()"
+            },
+            {
+                "original": "g.V().hasLabel(\"a\").hasLabel(\"b\").hasLabel(\"c\")",
+                "language": "g.V().hasLabel(\"a\").hasLabel(\"b\").hasLabel(\"c\")",
+                "canonical": "g.V().hasLabel(\"a\").hasLabel(\"b\").hasLabel(\"c\")",
+                "anonymized": "g.V().hasLabel(string0).hasLabel(string1).hasLabel(string2)",
+                "dotnet": "g.V().HasLabel(\"a\").HasLabel(\"b\").HasLabel(\"c\")",
+                "go": "g.V().HasLabel(\"a\").HasLabel(\"b\").HasLabel(\"c\")",
+                "groovy": "g.V().hasLabel(\"a\").hasLabel(\"b\").hasLabel(\"c\")",
+                "java": "g.V().hasLabel(\"a\").hasLabel(\"b\").hasLabel(\"c\")",
+                "javascript": "g.V().hasLabel(\"a\").hasLabel(\"b\").hasLabel(\"c\")",
+                "python": "g.V().has_label('a').has_label('b').has_label('c')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_mergeVXlabel_ab_name_markoX_multilabel_match",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "language": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "canonical": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "anonymized": "g.addV(string0).addLabel(string1).property(string2, string3)",
+                "dotnet": "g.AddV((string) \"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "go": "g.AddV(\"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "groovy": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "java": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "javascript": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "python": "g.add_v('person').add_label('employee').property('name', 'marko')"
+            },
+            {
+                "original": "g.mergeV([(T.label): [\"person\",\"employee\"], name: \"marko\"])",
+                "language": "g.mergeV([(T.label):[\"person\", \"employee\"], name:\"marko\"])",
+                "canonical": "g.mergeV([(T.label):[\"person\", \"employee\"], name:\"marko\"])",
+                "anonymized": "g.mergeV(map0)",
+                "dotnet": "g.MergeV((IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, new List<object> { \"person\", \"employee\" } }, { \"name\", \"marko\" }})",
+                "go": "g.MergeV(map[interface{}]interface{}{gremlingo.T.Label: []interface{}{\"person\", \"employee\"}, \"name\": \"marko\" })",
+                "groovy": "g.mergeV([(T.label):[\"person\", \"employee\"], name:\"marko\"])",
+                "java": "g.mergeV(new LinkedHashMap<Object, Object>() {{ put(T.label, new ArrayList<Object>() {{ add(\"person\"); add(\"employee\"); }}); put(\"name\", \"marko\"); }})",
+                "javascript": "g.mergeV(new Map([[T.label, [\"person\", \"employee\"]], [\"name\", \"marko\"]]))",
+                "python": "g.merge_v({ T.label: ['person', 'employee'], 'name': 'marko' })"
+            },
+            {
+                "original": "g.V()",
+                "language": "g.V()",
+                "canonical": "g.V()",
+                "anonymized": "g.V()",
+                "dotnet": "g.V()",
+                "go": "g.V()",
+                "groovy": "g.V()",
+                "java": "g.V()",
+                "javascript": "g.V()",
+                "python": "g.V()"
+            },
+            {
+                "original": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "language": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "canonical": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "anonymized": "g.V().hasLabel(string0).hasLabel(string1)",
+                "dotnet": "g.V().HasLabel(\"person\").HasLabel(\"employee\")",
+                "go": "g.V().HasLabel(\"person\").HasLabel(\"employee\")",
+                "groovy": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "java": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "javascript": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "python": "g.V().has_label('person').has_label('employee')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_mergeVXlabel_ab_name_markoX_multilabel_nomatch",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "canonical": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "anonymized": "g.addV(string0).property(string1, string2)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "python": "g.add_v('person').property('name', 'marko')"
+            },
+            {
+                "original": "g.mergeV([(T.label): [\"person\",\"employee\"], name: \"marko\"])",
+                "language": "g.mergeV([(T.label):[\"person\", \"employee\"], name:\"marko\"])",
+                "canonical": "g.mergeV([(T.label):[\"person\", \"employee\"], name:\"marko\"])",
+                "anonymized": "g.mergeV(map0)",
+                "dotnet": "g.MergeV((IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, new List<object> { \"person\", \"employee\" } }, { \"name\", \"marko\" }})",
+                "go": "g.MergeV(map[interface{}]interface{}{gremlingo.T.Label: []interface{}{\"person\", \"employee\"}, \"name\": \"marko\" })",
+                "groovy": "g.mergeV([(T.label):[\"person\", \"employee\"], name:\"marko\"])",
+                "java": "g.mergeV(new LinkedHashMap<Object, Object>() {{ put(T.label, new ArrayList<Object>() {{ add(\"person\"); add(\"employee\"); }}); put(\"name\", \"marko\"); }})",
+                "javascript": "g.mergeV(new Map([[T.label, [\"person\", \"employee\"]], [\"name\", \"marko\"]]))",
+                "python": "g.merge_v({ T.label: ['person', 'employee'], 'name': 'marko' })"
+            },
+            {
+                "original": "g.V()",
+                "language": "g.V()",
+                "canonical": "g.V()",
+                "anonymized": "g.V()",
+                "dotnet": "g.V()",
+                "go": "g.V()",
+                "groovy": "g.V()",
+                "java": "g.V()",
+                "javascript": "g.V()",
+                "python": "g.V()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_mergeVXlabel_person_name_markoX_optionXonMatch_label_managerX",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "language": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "canonical": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "anonymized": "g.addV(string0).addLabel(string1).property(string2, string3)",
+                "dotnet": "g.AddV((string) \"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "go": "g.AddV(\"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "groovy": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "java": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "javascript": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "python": "g.add_v('person').add_label('employee').property('name', 'marko')"
+            },
+            {
+                "original": "g.mergeV([(T.label): \"person\", name: \"marko\"]).option(Merge.onMatch, [(T.label): \"manager\"])",
+                "language": "g.mergeV([(T.label):\"person\", name:\"marko\"]).option(Merge.onMatch, [(T.label):\"manager\"])",
+                "canonical": "g.mergeV([(T.label):\"person\", name:\"marko\"]).option(Merge.onMatch, [(T.label):\"manager\"])",
+                "anonymized": "g.mergeV(map0).option(Merge.onMatch, map1)",
+                "dotnet": "g.MergeV((IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, \"person\" }, { \"name\", \"marko\" }}).Option(Merge.OnMatch, (IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, \"manager\" }})",
+                "go": "g.MergeV(map[interface{}]interface{}{gremlingo.T.Label: \"person\", \"name\": \"marko\" }).Option(gremlingo.Merge.OnMatch, map[interface{}]interface{}{gremlingo.T.Label: \"manager\" })",
+                "groovy": "g.mergeV([(T.label):\"person\", name:\"marko\"]).option(Merge.onMatch, [(T.label):\"manager\"])",
+                "java": "g.mergeV(new LinkedHashMap<Object, Object>() {{ put(T.label, \"person\"); put(\"name\", \"marko\"); }}).option(Merge.onMatch, new LinkedHashMap<Object, Object>() {{ put(T.label, \"manager\"); }})",
+                "javascript": "g.mergeV(new Map([[T.label, \"person\"], [\"name\", \"marko\"]])).option(Merge.onMatch, new Map([[T.label, \"manager\"]]))",
+                "python": "g.merge_v({ T.label: 'person', 'name': 'marko' }).option(Merge.on_match, { T.label: 'manager' })"
+            },
+            {
+                "original": "g.V()",
+                "language": "g.V()",
+                "canonical": "g.V()",
+                "anonymized": "g.V()",
+                "dotnet": "g.V()",
+                "go": "g.V()",
+                "groovy": "g.V()",
+                "java": "g.V()",
+                "javascript": "g.V()",
+                "python": "g.V()"
+            },
+            {
+                "original": "g.V().hasLabel(\"manager\")",
+                "language": "g.V().hasLabel(\"manager\")",
+                "canonical": "g.V().hasLabel(\"manager\")",
+                "anonymized": "g.V().hasLabel(string0)",
+                "dotnet": "g.V().HasLabel(\"manager\")",
+                "go": "g.V().HasLabel(\"manager\")",
+                "groovy": "g.V().hasLabel(\"manager\")",
+                "java": "g.V().hasLabel(\"manager\")",
+                "javascript": "g.V().hasLabel(\"manager\")",
+                "python": "g.V().has_label('manager')"
+            },
+            {
+                "original": "g.V().hasLabel(\"person\")",
+                "language": "g.V().hasLabel(\"person\")",
+                "canonical": "g.V().hasLabel(\"person\")",
+                "anonymized": "g.V().hasLabel(string0)",
+                "dotnet": "g.V().HasLabel(\"person\")",
+                "go": "g.V().HasLabel(\"person\")",
+                "groovy": "g.V().hasLabel(\"person\")",
+                "java": "g.V().hasLabel(\"person\")",
+                "javascript": "g.V().hasLabel(\"person\")",
+                "python": "g.V().has_label('person')"
+            },
+            {
+                "original": "g.V().hasLabel(\"employee\")",
+                "language": "g.V().hasLabel(\"employee\")",
+                "canonical": "g.V().hasLabel(\"employee\")",
+                "anonymized": "g.V().hasLabel(string0)",
+                "dotnet": "g.V().HasLabel(\"employee\")",
+                "go": "g.V().HasLabel(\"employee\")",
+                "groovy": "g.V().hasLabel(\"employee\")",
+                "java": "g.V().hasLabel(\"employee\")",
+                "javascript": "g.V().hasLabel(\"employee\")",
+                "python": "g.V().has_label('employee')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_mergeVXlabel_person_name_markoX_optionXonMatch_label_manager_directorX",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "canonical": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "anonymized": "g.addV(string0).property(string1, string2)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "python": "g.add_v('person').property('name', 'marko')"
+            },
+            {
+                "original": "g.mergeV([(T.label): \"person\", name: \"marko\"]).option(Merge.onMatch, [(T.label): [\"manager\",\"director\"]])",
+                "language": "g.mergeV([(T.label):\"person\", name:\"marko\"]).option(Merge.onMatch, [(T.label):[\"manager\", \"director\"]])",
+                "canonical": "g.mergeV([(T.label):\"person\", name:\"marko\"]).option(Merge.onMatch, [(T.label):[\"manager\", \"director\"]])",
+                "anonymized": "g.mergeV(map0).option(Merge.onMatch, map1)",
+                "dotnet": "g.MergeV((IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, \"person\" }, { \"name\", \"marko\" }}).Option(Merge.OnMatch, (IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, new List<object> { \"manager\", \"director\" } }})",
+                "go": "g.MergeV(map[interface{}]interface{}{gremlingo.T.Label: \"person\", \"name\": \"marko\" }).Option(gremlingo.Merge.OnMatch, map[interface{}]interface{}{gremlingo.T.Label: []interface{}{\"manager\", \"director\"} })",
+                "groovy": "g.mergeV([(T.label):\"person\", name:\"marko\"]).option(Merge.onMatch, [(T.label):[\"manager\", \"director\"]])",
+                "java": "g.mergeV(new LinkedHashMap<Object, Object>() {{ put(T.label, \"person\"); put(\"name\", \"marko\"); }}).option(Merge.onMatch, new LinkedHashMap<Object, Object>() {{ put(T.label, new ArrayList<Object>() {{ add(\"manager\"); add(\"director\"); }}); }})",
+                "javascript": "g.mergeV(new Map([[T.label, \"person\"], [\"name\", \"marko\"]])).option(Merge.onMatch, new Map([[T.label, [\"manager\", \"director\"]]]))",
+                "python": "g.merge_v({ T.label: 'person', 'name': 'marko' }).option(Merge.on_match, { T.label: ['manager', 'director'] })"
+            },
+            {
+                "original": "g.V()",
+                "language": "g.V()",
+                "canonical": "g.V()",
+                "anonymized": "g.V()",
+                "dotnet": "g.V()",
+                "go": "g.V()",
+                "groovy": "g.V()",
+                "java": "g.V()",
+                "javascript": "g.V()",
+                "python": "g.V()"
+            },
+            {
+                "original": "g.V().hasLabel(\"manager\").hasLabel(\"director\")",
+                "language": "g.V().hasLabel(\"manager\").hasLabel(\"director\")",
+                "canonical": "g.V().hasLabel(\"manager\").hasLabel(\"director\")",
+                "anonymized": "g.V().hasLabel(string0).hasLabel(string1)",
+                "dotnet": "g.V().HasLabel(\"manager\").HasLabel(\"director\")",
+                "go": "g.V().HasLabel(\"manager\").HasLabel(\"director\")",
+                "groovy": "g.V().hasLabel(\"manager\").hasLabel(\"director\")",
+                "java": "g.V().hasLabel(\"manager\").hasLabel(\"director\")",
+                "javascript": "g.V().hasLabel(\"manager\").hasLabel(\"director\")",
+                "python": "g.V().has_label('manager').has_label('director')"
+            },
+            {
+                "original": "g.V().hasLabel(\"person\")",
+                "language": "g.V().hasLabel(\"person\")",
+                "canonical": "g.V().hasLabel(\"person\")",
+                "anonymized": "g.V().hasLabel(string0)",
+                "dotnet": "g.V().HasLabel(\"person\")",
+                "go": "g.V().HasLabel(\"person\")",
+                "groovy": "g.V().hasLabel(\"person\")",
+                "java": "g.V().hasLabel(\"person\")",
+                "javascript": "g.V().hasLabel(\"person\")",
+                "python": "g.V().has_label('person')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_mergeVXlabel_person_name_markoX_optionXonMatch_label_emptyX",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "canonical": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "anonymized": "g.addV(string0).property(string1, string2)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "python": "g.add_v('person').property('name', 'marko')"
+            },
+            {
+                "original": "g.mergeV([(T.label): \"person\", name: \"marko\"]).option(Merge.onMatch, [(T.label): []])",
+                "language": "g.mergeV([(T.label):\"person\", name:\"marko\"]).option(Merge.onMatch, [(T.label):[]])",
+                "canonical": "g.mergeV([(T.label):\"person\", name:\"marko\"]).option(Merge.onMatch, [(T.label):[]])",
+                "anonymized": "g.mergeV(map0).option(Merge.onMatch, map1)",
+                "dotnet": "g.MergeV((IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, \"person\" }, { \"name\", \"marko\" }}).Option(Merge.OnMatch, (IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, new List<object> {  } }})",
+                "go": "g.MergeV(map[interface{}]interface{}{gremlingo.T.Label: \"person\", \"name\": \"marko\" }).Option(gremlingo.Merge.OnMatch, map[interface{}]interface{}{gremlingo.T.Label: []interface{}{} })",
+                "groovy": "g.mergeV([(T.label):\"person\", name:\"marko\"]).option(Merge.onMatch, [(T.label):[]])",
+                "java": "g.mergeV(new LinkedHashMap<Object, Object>() {{ put(T.label, \"person\"); put(\"name\", \"marko\"); }}).option(Merge.onMatch, new LinkedHashMap<Object, Object>() {{ put(T.label, new ArrayList<Object>() {{  }}); }})",
+                "javascript": "g.mergeV(new Map([[T.label, \"person\"], [\"name\", \"marko\"]])).option(Merge.onMatch, new Map([[T.label, []]]))",
+                "python": "g.merge_v({ T.label: 'person', 'name': 'marko' }).option(Merge.on_match, { T.label: [] })"
+            },
+            {
+                "original": "g.V()",
+                "language": "g.V()",
+                "canonical": "g.V()",
+                "anonymized": "g.V()",
+                "dotnet": "g.V()",
+                "go": "g.V()",
+                "groovy": "g.V()",
+                "java": "g.V()",
+                "javascript": "g.V()",
+                "python": "g.V()"
+            },
+            {
+                "original": "g.V().hasLabel(\"person\")",
+                "language": "g.V().hasLabel(\"person\")",
+                "canonical": "g.V().hasLabel(\"person\")",
+                "anonymized": "g.V().hasLabel(string0)",
+                "dotnet": "g.V().HasLabel(\"person\")",
+                "go": "g.V().HasLabel(\"person\")",
+                "groovy": "g.V().hasLabel(\"person\")",
+                "java": "g.V().hasLabel(\"person\")",
+                "javascript": "g.V().hasLabel(\"person\")",
+                "python": "g.V().has_label('person')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_mergeVXname_markoX_optionXonCreate_label_ab_name_markoX",
+        "traversals": [
+            {
+                "original": "g.mergeV([name: \"marko\"]).option(Merge.onCreate, [(T.label): [\"person\",\"employee\"], name: \"marko\"])",
+                "language": "g.mergeV([name:\"marko\"]).option(Merge.onCreate, [(T.label):[\"person\", \"employee\"], name:\"marko\"])",
+                "canonical": "g.mergeV([name:\"marko\"]).option(Merge.onCreate, [(T.label):[\"person\", \"employee\"], name:\"marko\"])",
+                "anonymized": "g.mergeV(map0).option(Merge.onCreate, map1)",
+                "dotnet": "g.MergeV((IDictionary<object, object>) new Dictionary<object, object> {{ \"name\", \"marko\" }}).Option(Merge.OnCreate, (IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, new List<object> { \"person\", \"employee\" } }, { \"name\", \"marko\" }})",
+                "go": "g.MergeV(map[interface{}]interface{}{\"name\": \"marko\" }).Option(gremlingo.Merge.OnCreate, map[interface{}]interface{}{gremlingo.T.Label: []interface{}{\"person\", \"employee\"}, \"name\": \"marko\" })",
+                "groovy": "g.mergeV([name:\"marko\"]).option(Merge.onCreate, [(T.label):[\"person\", \"employee\"], name:\"marko\"])",
+                "java": "g.mergeV(new LinkedHashMap<Object, Object>() {{ put(\"name\", \"marko\"); }}).option(Merge.onCreate, new LinkedHashMap<Object, Object>() {{ put(T.label, new ArrayList<Object>() {{ add(\"person\"); add(\"employee\"); }}); put(\"name\", \"marko\"); }})",
+                "javascript": "g.mergeV(new Map([[\"name\", \"marko\"]])).option(Merge.onCreate, new Map([[T.label, [\"person\", \"employee\"]], [\"name\", \"marko\"]]))",
+                "python": "g.merge_v({ 'name': 'marko' }).option(Merge.on_create, { T.label: ['person', 'employee'], 'name': 'marko' })"
+            },
+            {
+                "original": "g.V()",
+                "language": "g.V()",
+                "canonical": "g.V()",
+                "anonymized": "g.V()",
+                "dotnet": "g.V()",
+                "go": "g.V()",
+                "groovy": "g.V()",
+                "java": "g.V()",
+                "javascript": "g.V()",
+                "python": "g.V()"
+            },
+            {
+                "original": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "language": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "canonical": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "anonymized": "g.V().hasLabel(string0).hasLabel(string1)",
+                "dotnet": "g.V().HasLabel(\"person\").HasLabel(\"employee\")",
+                "go": "g.V().HasLabel(\"person\").HasLabel(\"employee\")",
+                "groovy": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "java": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "javascript": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "python": "g.V().has_label('person').has_label('employee')"
+            },
+            {
+                "original": "g.V().has(\"name\",\"marko\")",
+                "language": "g.V().has(\"name\", \"marko\")",
+                "canonical": "g.V().has(\"name\", \"marko\")",
+                "anonymized": "g.V().has(string0, string1)",
+                "dotnet": "g.V().Has(\"name\", \"marko\")",
+                "go": "g.V().Has(\"name\", \"marko\")",
+                "groovy": "g.V().has(\"name\", \"marko\")",
+                "java": "g.V().has(\"name\", \"marko\")",
+                "javascript": "g.V().has(\"name\", \"marko\")",
+                "python": "g.V().has('name', 'marko')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_mergeVXlabel_person_name_markoX_optionXonMatch_label_existingX",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "language": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "canonical": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "anonymized": "g.addV(string0).addLabel(string1).property(string2, string3)",
+                "dotnet": "g.AddV((string) \"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "go": "g.AddV(\"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "groovy": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "java": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "javascript": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "python": "g.add_v('person').add_label('employee').property('name', 'marko')"
+            },
+            {
+                "original": "g.mergeV([(T.label): \"person\", name: \"marko\"]).option(Merge.onMatch, [(T.label): \"person\"])",
+                "language": "g.mergeV([(T.label):\"person\", name:\"marko\"]).option(Merge.onMatch, [(T.label):\"person\"])",
+                "canonical": "g.mergeV([(T.label):\"person\", name:\"marko\"]).option(Merge.onMatch, [(T.label):\"person\"])",
+                "anonymized": "g.mergeV(map0).option(Merge.onMatch, map1)",
+                "dotnet": "g.MergeV((IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, \"person\" }, { \"name\", \"marko\" }}).Option(Merge.OnMatch, (IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, \"person\" }})",
+                "go": "g.MergeV(map[interface{}]interface{}{gremlingo.T.Label: \"person\", \"name\": \"marko\" }).Option(gremlingo.Merge.OnMatch, map[interface{}]interface{}{gremlingo.T.Label: \"person\" })",
+                "groovy": "g.mergeV([(T.label):\"person\", name:\"marko\"]).option(Merge.onMatch, [(T.label):\"person\"])",
+                "java": "g.mergeV(new LinkedHashMap<Object, Object>() {{ put(T.label, \"person\"); put(\"name\", \"marko\"); }}).option(Merge.onMatch, new LinkedHashMap<Object, Object>() {{ put(T.label, \"person\"); }})",
+                "javascript": "g.mergeV(new Map([[T.label, \"person\"], [\"name\", \"marko\"]])).option(Merge.onMatch, new Map([[T.label, \"person\"]]))",
+                "python": "g.merge_v({ T.label: 'person', 'name': 'marko' }).option(Merge.on_match, { T.label: 'person' })"
+            },
+            {
+                "original": "g.V()",
+                "language": "g.V()",
+                "canonical": "g.V()",
+                "anonymized": "g.V()",
+                "dotnet": "g.V()",
+                "go": "g.V()",
+                "groovy": "g.V()",
+                "java": "g.V()",
+                "javascript": "g.V()",
+                "python": "g.V()"
+            },
+            {
+                "original": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "language": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "canonical": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "anonymized": "g.V().hasLabel(string0).hasLabel(string1)",
+                "dotnet": "g.V().HasLabel(\"person\").HasLabel(\"employee\")",
+                "go": "g.V().HasLabel(\"person\").HasLabel(\"employee\")",
+                "groovy": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "java": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "javascript": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "python": "g.V().has_label('person').has_label('employee')"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_age_min",
         "traversals": [
             {
@@ -37735,16 +38524,16 @@
         "scenario": "g_V_valueMapXtrueX",
         "traversals": [
             {
-                "original": "g.V().valueMap(true)",
-                "language": "g.V().valueMap(true)",
-                "canonical": "g.V().valueMap(true)",
-                "anonymized": "g.V().valueMap(boolean0)",
-                "dotnet": "g.V().ValueMap<object, object>(true)",
-                "go": "g.V().ValueMap(true)",
-                "groovy": "g.V().valueMap(true)",
-                "java": "g.V().valueMap(true)",
-                "javascript": "g.V().valueMap(true)",
-                "python": "g.V().value_map(True)"
+                "original": "g.with(\"singlelabel\").V().valueMap(true)",
+                "language": "g.with(\"singlelabel\").V().valueMap(true)",
+                "canonical": "g.with(\"singlelabel\").V().valueMap(true)",
+                "anonymized": "g.with(string0).V().valueMap(boolean0)",
+                "dotnet": "g.With(\"singlelabel\").V().ValueMap<object, object>(true)",
+                "go": "g.With(\"singlelabel\").V().ValueMap(true)",
+                "groovy": "g.with(\"singlelabel\").V().valueMap(true)",
+                "java": "g.with(\"singlelabel\").V().valueMap(true)",
+                "javascript": "g.with_(\"singlelabel\").V().valueMap(true)",
+                "python": "g.with_('singlelabel').V().value_map(True)"
             }
         ]
     },
@@ -37752,16 +38541,16 @@
         "scenario": "g_V_valueMap_withXtokensX",
         "traversals": [
             {
-                "original": "g.V().valueMap().with(WithOptions.tokens)",
-                "language": "g.V().valueMap().with(WithOptions.tokens)",
-                "canonical": "g.V().valueMap().with(WithOptions.tokens)",
-                "anonymized": "g.V().valueMap().with(WithOptions.tokens)",
-                "dotnet": "g.V().ValueMap<object, object>().With(WithOptions.Tokens)",
-                "go": "g.V().ValueMap().With(gremlingo.WithOptions.Tokens)",
-                "groovy": "g.V().valueMap().with(WithOptions.tokens)",
-                "java": "g.V().valueMap().with(WithOptions.tokens)",
-                "javascript": "g.V().valueMap().with_(WithOptions.tokens)",
-                "python": "g.V().value_map().with_(WithOptions.tokens)"
+                "original": "g.with(\"singlelabel\").V().valueMap().with(WithOptions.tokens)",
+                "language": "g.with(\"singlelabel\").V().valueMap().with(WithOptions.tokens)",
+                "canonical": "g.with(\"singlelabel\").V().valueMap().with(WithOptions.tokens)",
+                "anonymized": "g.with(string0).V().valueMap().with(WithOptions.tokens)",
+                "dotnet": "g.With(\"singlelabel\").V().ValueMap<object, object>().With(WithOptions.Tokens)",
+                "go": "g.With(\"singlelabel\").V().ValueMap().With(gremlingo.WithOptions.Tokens)",
+                "groovy": "g.with(\"singlelabel\").V().valueMap().with(WithOptions.tokens)",
+                "java": "g.with(\"singlelabel\").V().valueMap().with(WithOptions.tokens)",
+                "javascript": "g.with_(\"singlelabel\").V().valueMap().with_(WithOptions.tokens)",
+                "python": "g.with_('singlelabel').V().value_map().with_(WithOptions.tokens)"
             }
         ]
     },
@@ -37786,16 +38575,16 @@
         "scenario": "g_V_valueMapXtrue_name_ageX",
         "traversals": [
             {
-                "original": "g.V().valueMap(true, \"name\", \"age\")",
-                "language": "g.V().valueMap(true, \"name\", \"age\")",
-                "canonical": "g.V().valueMap(true, \"name\", \"age\")",
-                "anonymized": "g.V().valueMap(boolean0, string0, string1)",
-                "dotnet": "g.V().ValueMap<object, object>(true, \"name\", \"age\")",
-                "go": "g.V().ValueMap(true, \"name\", \"age\")",
-                "groovy": "g.V().valueMap(true, \"name\", \"age\")",
-                "java": "g.V().valueMap(true, \"name\", \"age\")",
-                "javascript": "g.V().valueMap(true, \"name\", \"age\")",
-                "python": "g.V().value_map(True, 'name', 'age')"
+                "original": "g.with(\"singlelabel\").V().valueMap(true, \"name\", \"age\")",
+                "language": "g.with(\"singlelabel\").V().valueMap(true, \"name\", \"age\")",
+                "canonical": "g.with(\"singlelabel\").V().valueMap(true, \"name\", \"age\")",
+                "anonymized": "g.with(string0).V().valueMap(boolean0, string1, string2)",
+                "dotnet": "g.With(\"singlelabel\").V().ValueMap<object, object>(true, \"name\", \"age\")",
+                "go": "g.With(\"singlelabel\").V().ValueMap(true, \"name\", \"age\")",
+                "groovy": "g.with(\"singlelabel\").V().valueMap(true, \"name\", \"age\")",
+                "java": "g.with(\"singlelabel\").V().valueMap(true, \"name\", \"age\")",
+                "javascript": "g.with_(\"singlelabel\").V().valueMap(true, \"name\", \"age\")",
+                "python": "g.with_('singlelabel').V().value_map(True, 'name', 'age')"
             }
         ]
     },
@@ -37803,16 +38592,16 @@
         "scenario": "g_V_valueMapXname_ageX_withXtokensX",
         "traversals": [
             {
-                "original": "g.V().valueMap(\"name\", \"age\").with(WithOptions.tokens)",
-                "language": "g.V().valueMap(\"name\", \"age\").with(WithOptions.tokens)",
-                "canonical": "g.V().valueMap(\"name\", \"age\").with(WithOptions.tokens)",
-                "anonymized": "g.V().valueMap(string0, string1).with(WithOptions.tokens)",
-                "dotnet": "g.V().ValueMap<object, object>(\"name\", \"age\").With(WithOptions.Tokens)",
-                "go": "g.V().ValueMap(\"name\", \"age\").With(gremlingo.WithOptions.Tokens)",
-                "groovy": "g.V().valueMap(\"name\", \"age\").with(WithOptions.tokens)",
-                "java": "g.V().valueMap(\"name\", \"age\").with(WithOptions.tokens)",
-                "javascript": "g.V().valueMap(\"name\", \"age\").with_(WithOptions.tokens)",
-                "python": "g.V().value_map('name', 'age').with_(WithOptions.tokens)"
+                "original": "g.with(\"singlelabel\").V().valueMap(\"name\", \"age\").with(WithOptions.tokens)",
+                "language": "g.with(\"singlelabel\").V().valueMap(\"name\", \"age\").with(WithOptions.tokens)",
+                "canonical": "g.with(\"singlelabel\").V().valueMap(\"name\", \"age\").with(WithOptions.tokens)",
+                "anonymized": "g.with(string0).V().valueMap(string1, string2).with(WithOptions.tokens)",
+                "dotnet": "g.With(\"singlelabel\").V().ValueMap<object, object>(\"name\", \"age\").With(WithOptions.Tokens)",
+                "go": "g.With(\"singlelabel\").V().ValueMap(\"name\", \"age\").With(gremlingo.WithOptions.Tokens)",
+                "groovy": "g.with(\"singlelabel\").V().valueMap(\"name\", \"age\").with(WithOptions.tokens)",
+                "java": "g.with(\"singlelabel\").V().valueMap(\"name\", \"age\").with(WithOptions.tokens)",
+                "javascript": "g.with_(\"singlelabel\").V().valueMap(\"name\", \"age\").with_(WithOptions.tokens)",
+                "python": "g.with_('singlelabel').V().value_map('name', 'age').with_(WithOptions.tokens)"
             }
         ]
     },
@@ -37820,16 +38609,16 @@
         "scenario": "g_V_valueMapXname_ageX_withXtokens_labelsX_byXunfoldX",
         "traversals": [
             {
-                "original": "g.V().valueMap(\"name\", \"age\").with(WithOptions.tokens, WithOptions.labels).by(__.unfold())",
-                "language": "g.V().valueMap(\"name\", \"age\").with(WithOptions.tokens, WithOptions.labels).by(__.unfold())",
-                "canonical": "g.V().valueMap(\"name\", \"age\").with(WithOptions.tokens, WithOptions.labels).by(__.unfold())",
-                "anonymized": "g.V().valueMap(string0, string1).with(WithOptions.tokens, WithOptions.labels).by(__.unfold())",
-                "dotnet": "g.V().ValueMap<object, object>(\"name\", \"age\").With(WithOptions.Tokens, WithOptions.Labels).By(__.Unfold<object>())",
-                "go": "g.V().ValueMap(\"name\", \"age\").With(gremlingo.WithOptions.Tokens, gremlingo.WithOptions.Labels).By(gremlingo.T__.Unfold())",
-                "groovy": "g.V().valueMap(\"name\", \"age\").with(WithOptions.tokens, WithOptions.labels).by(__.unfold())",
-                "java": "g.V().valueMap(\"name\", \"age\").with(WithOptions.tokens, WithOptions.labels).by(__.unfold())",
-                "javascript": "g.V().valueMap(\"name\", \"age\").with_(WithOptions.tokens, WithOptions.labels).by(__.unfold())",
-                "python": "g.V().value_map('name', 'age').with_(WithOptions.tokens, WithOptions.labels).by(__.unfold())"
+                "original": "g.with(\"singlelabel\").V().valueMap(\"name\", \"age\").with(WithOptions.tokens, WithOptions.labels).by(__.unfold())",
+                "language": "g.with(\"singlelabel\").V().valueMap(\"name\", \"age\").with(WithOptions.tokens, WithOptions.labels).by(__.unfold())",
+                "canonical": "g.with(\"singlelabel\").V().valueMap(\"name\", \"age\").with(WithOptions.tokens, WithOptions.labels).by(__.unfold())",
+                "anonymized": "g.with(string0).V().valueMap(string1, string2).with(WithOptions.tokens, WithOptions.labels).by(__.unfold())",
+                "dotnet": "g.With(\"singlelabel\").V().ValueMap<object, object>(\"name\", \"age\").With(WithOptions.Tokens, WithOptions.Labels).By(__.Unfold<object>())",
+                "go": "g.With(\"singlelabel\").V().ValueMap(\"name\", \"age\").With(gremlingo.WithOptions.Tokens, gremlingo.WithOptions.Labels).By(gremlingo.T__.Unfold())",
+                "groovy": "g.with(\"singlelabel\").V().valueMap(\"name\", \"age\").with(WithOptions.tokens, WithOptions.labels).by(__.unfold())",
+                "java": "g.with(\"singlelabel\").V().valueMap(\"name\", \"age\").with(WithOptions.tokens, WithOptions.labels).by(__.unfold())",
+                "javascript": "g.with_(\"singlelabel\").V().valueMap(\"name\", \"age\").with_(WithOptions.tokens, WithOptions.labels).by(__.unfold())",
+                "python": "g.with_('singlelabel').V().value_map('name', 'age').with_(WithOptions.tokens, WithOptions.labels).by(__.unfold())"
             }
         ]
     },
@@ -37871,16 +38660,16 @@
         "scenario": "g_V_hasLabelXpersonX_filterXoutEXcreatedXX_valueMapXtrueX",
         "traversals": [
             {
-                "original": "g.V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap(true)",
-                "language": "g.V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap(true)",
-                "canonical": "g.V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap(true)",
-                "anonymized": "g.V().hasLabel(string0).filter(__.outE(string1)).valueMap(boolean0)",
-                "dotnet": "g.V().HasLabel(\"person\").Filter(__.OutE(\"created\")).ValueMap<object, object>(true)",
-                "go": "g.V().HasLabel(\"person\").Filter(gremlingo.T__.OutE(\"created\")).ValueMap(true)",
-                "groovy": "g.V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap(true)",
-                "java": "g.V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap(true)",
-                "javascript": "g.V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap(true)",
-                "python": "g.V().has_label('person').filter_(__.out_e('created')).value_map(True)"
+                "original": "g.with(\"singlelabel\").V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap(true)",
+                "language": "g.with(\"singlelabel\").V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap(true)",
+                "canonical": "g.with(\"singlelabel\").V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap(true)",
+                "anonymized": "g.with(string0).V().hasLabel(string1).filter(__.outE(string2)).valueMap(boolean0)",
+                "dotnet": "g.With(\"singlelabel\").V().HasLabel(\"person\").Filter(__.OutE(\"created\")).ValueMap<object, object>(true)",
+                "go": "g.With(\"singlelabel\").V().HasLabel(\"person\").Filter(gremlingo.T__.OutE(\"created\")).ValueMap(true)",
+                "groovy": "g.with(\"singlelabel\").V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap(true)",
+                "java": "g.with(\"singlelabel\").V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap(true)",
+                "javascript": "g.with_(\"singlelabel\").V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap(true)",
+                "python": "g.with_('singlelabel').V().has_label('person').filter_(__.out_e('created')).value_map(True)"
             }
         ]
     },
@@ -37888,16 +38677,16 @@
         "scenario": "g_V_hasLabelXpersonX_filterXoutEXcreatedXX_valueMap_withXtokensX",
         "traversals": [
             {
-                "original": "g.V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap().with(WithOptions.tokens)",
-                "language": "g.V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap().with(WithOptions.tokens)",
-                "canonical": "g.V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap().with(WithOptions.tokens)",
-                "anonymized": "g.V().hasLabel(string0).filter(__.outE(string1)).valueMap().with(WithOptions.tokens)",
-                "dotnet": "g.V().HasLabel(\"person\").Filter(__.OutE(\"created\")).ValueMap<object, object>().With(WithOptions.Tokens)",
-                "go": "g.V().HasLabel(\"person\").Filter(gremlingo.T__.OutE(\"created\")).ValueMap().With(gremlingo.WithOptions.Tokens)",
-                "groovy": "g.V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap().with(WithOptions.tokens)",
-                "java": "g.V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap().with(WithOptions.tokens)",
-                "javascript": "g.V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap().with_(WithOptions.tokens)",
-                "python": "g.V().has_label('person').filter_(__.out_e('created')).value_map().with_(WithOptions.tokens)"
+                "original": "g.with(\"singlelabel\").V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap().with(WithOptions.tokens)",
+                "language": "g.with(\"singlelabel\").V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap().with(WithOptions.tokens)",
+                "canonical": "g.with(\"singlelabel\").V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap().with(WithOptions.tokens)",
+                "anonymized": "g.with(string0).V().hasLabel(string1).filter(__.outE(string2)).valueMap().with(WithOptions.tokens)",
+                "dotnet": "g.With(\"singlelabel\").V().HasLabel(\"person\").Filter(__.OutE(\"created\")).ValueMap<object, object>().With(WithOptions.Tokens)",
+                "go": "g.With(\"singlelabel\").V().HasLabel(\"person\").Filter(gremlingo.T__.OutE(\"created\")).ValueMap().With(gremlingo.WithOptions.Tokens)",
+                "groovy": "g.with(\"singlelabel\").V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap().with(WithOptions.tokens)",
+                "java": "g.with(\"singlelabel\").V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap().with(WithOptions.tokens)",
+                "javascript": "g.with_(\"singlelabel\").V().hasLabel(\"person\").filter(__.outE(\"created\")).valueMap().with_(WithOptions.tokens)",
+                "python": "g.with_('singlelabel').V().has_label('person').filter_(__.out_e('created')).value_map().with_(WithOptions.tokens)"
             }
         ]
     },
@@ -37949,6 +38738,139 @@
                 "java": "g.V().valueMap(\"name\", \"age\").by(__.is(\"x\")).by(__.unfold())",
                 "javascript": "g.V().valueMap(\"name\", \"age\").by(__.is(\"x\")).by(__.unfold())",
                 "python": "g.V().value_map('name', 'age').by(__.is_('x')).by(__.unfold())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withXmultilabelX_VXmarkoX_valueMap_withXtokensX",
+        "traversals": [
+            {
+                "original": "g.with(\"multilabel\").V().has(\"name\", \"marko\").valueMap().with(WithOptions.tokens)",
+                "language": "g.with(\"multilabel\").V().has(\"name\", \"marko\").valueMap().with(WithOptions.tokens)",
+                "canonical": "g.with(\"multilabel\").V().has(\"name\", \"marko\").valueMap().with(WithOptions.tokens)",
+                "anonymized": "g.with(string0).V().has(string1, string2).valueMap().with(WithOptions.tokens)",
+                "dotnet": "g.With(\"multilabel\").V().Has(\"name\", \"marko\").ValueMap<object, object>().With(WithOptions.Tokens)",
+                "go": "g.With(\"multilabel\").V().Has(\"name\", \"marko\").ValueMap().With(gremlingo.WithOptions.Tokens)",
+                "groovy": "g.with(\"multilabel\").V().has(\"name\", \"marko\").valueMap().with(WithOptions.tokens)",
+                "java": "g.with(\"multilabel\").V().has(\"name\", \"marko\").valueMap().with(WithOptions.tokens)",
+                "javascript": "g.with_(\"multilabel\").V().has(\"name\", \"marko\").valueMap().with_(WithOptions.tokens)",
+                "python": "g.with_('multilabel').V().has('name', 'marko').value_map().with_(WithOptions.tokens)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_valueMap_withXtokensX_single_label_default",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "language": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "canonical": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "anonymized": "g.addV(string0).addLabel(string1).property(string2, string3)",
+                "dotnet": "g.AddV((string) \"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "go": "g.AddV(\"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "groovy": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "java": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "javascript": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "python": "g.add_v('person').add_label('employee').property('name', 'marko')"
+            },
+            {
+                "original": "g.V().valueMap().with(WithOptions.tokens)",
+                "language": "g.V().valueMap().with(WithOptions.tokens)",
+                "canonical": "g.V().valueMap().with(WithOptions.tokens)",
+                "anonymized": "g.V().valueMap().with(WithOptions.tokens)",
+                "dotnet": "g.V().ValueMap<object, object>().With(WithOptions.Tokens)",
+                "go": "g.V().ValueMap().With(gremlingo.WithOptions.Tokens)",
+                "groovy": "g.V().valueMap().with(WithOptions.tokens)",
+                "java": "g.V().valueMap().with(WithOptions.tokens)",
+                "javascript": "g.V().valueMap().with_(WithOptions.tokens)",
+                "python": "g.V().value_map().with_(WithOptions.tokens)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withXmultilabelX_V_valueMap_withXtokensX_multilabel",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "language": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "canonical": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "anonymized": "g.addV(string0).addLabel(string1).property(string2, string3)",
+                "dotnet": "g.AddV((string) \"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "go": "g.AddV(\"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "groovy": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "java": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "javascript": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "python": "g.add_v('person').add_label('employee').property('name', 'marko')"
+            },
+            {
+                "original": "g.with(\"multilabel\").V().valueMap().with(WithOptions.tokens)",
+                "language": "g.with(\"multilabel\").V().valueMap().with(WithOptions.tokens)",
+                "canonical": "g.with(\"multilabel\").V().valueMap().with(WithOptions.tokens)",
+                "anonymized": "g.with(string0).V().valueMap().with(WithOptions.tokens)",
+                "dotnet": "g.With(\"multilabel\").V().ValueMap<object, object>().With(WithOptions.Tokens)",
+                "go": "g.With(\"multilabel\").V().ValueMap().With(gremlingo.WithOptions.Tokens)",
+                "groovy": "g.with(\"multilabel\").V().valueMap().with(WithOptions.tokens)",
+                "java": "g.with(\"multilabel\").V().valueMap().with(WithOptions.tokens)",
+                "javascript": "g.with_(\"multilabel\").V().valueMap().with_(WithOptions.tokens)",
+                "python": "g.with_('multilabel').V().value_map().with_(WithOptions.tokens)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_valueMap_withXtokensX_multi_label_default",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "language": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "canonical": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "anonymized": "g.addV(string0).addLabel(string1).property(string2, string3)",
+                "dotnet": "g.AddV((string) \"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "go": "g.AddV(\"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "groovy": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "java": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "javascript": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "python": "g.add_v('person').add_label('employee').property('name', 'marko')"
+            },
+            {
+                "original": "g.V().valueMap().with(WithOptions.tokens)",
+                "language": "g.V().valueMap().with(WithOptions.tokens)",
+                "canonical": "g.V().valueMap().with(WithOptions.tokens)",
+                "anonymized": "g.V().valueMap().with(WithOptions.tokens)",
+                "dotnet": "g.V().ValueMap<object, object>().With(WithOptions.Tokens)",
+                "go": "g.V().ValueMap().With(gremlingo.WithOptions.Tokens)",
+                "groovy": "g.V().valueMap().with(WithOptions.tokens)",
+                "java": "g.V().valueMap().with(WithOptions.tokens)",
+                "javascript": "g.V().valueMap().with_(WithOptions.tokens)",
+                "python": "g.V().value_map().with_(WithOptions.tokens)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withXsinglelabelX_V_valueMap_withXtokensX_multi_label_default",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "language": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "canonical": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "anonymized": "g.addV(string0).addLabel(string1).property(string2, string3)",
+                "dotnet": "g.AddV((string) \"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "go": "g.AddV(\"person\").AddLabel(\"employee\").Property(\"name\", \"marko\")",
+                "groovy": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "java": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "javascript": "g.addV(\"person\").addLabel(\"employee\").property(\"name\", \"marko\")",
+                "python": "g.add_v('person').add_label('employee').property('name', 'marko')"
+            },
+            {
+                "original": "g.with(\"singlelabel\").V().valueMap().with(WithOptions.tokens)",
+                "language": "g.with(\"singlelabel\").V().valueMap().with(WithOptions.tokens)",
+                "canonical": "g.with(\"singlelabel\").V().valueMap().with(WithOptions.tokens)",
+                "anonymized": "g.with(string0).V().valueMap().with(WithOptions.tokens)",
+                "dotnet": "g.With(\"singlelabel\").V().ValueMap<object, object>().With(WithOptions.Tokens)",
+                "go": "g.With(\"singlelabel\").V().ValueMap().With(gremlingo.WithOptions.Tokens)",
+                "groovy": "g.with(\"singlelabel\").V().valueMap().with(WithOptions.tokens)",
+                "java": "g.with(\"singlelabel\").V().valueMap().with(WithOptions.tokens)",
+                "javascript": "g.with_(\"singlelabel\").V().valueMap().with_(WithOptions.tokens)",
+                "python": "g.with_('singlelabel').V().value_map().with_(WithOptions.tokens)"
             }
         ]
     },
@@ -41232,6 +42154,134 @@
         ]
     },
     {
+        "scenario": "g_V_hasLabelXpersonX_hasXname_markoX_addLabelXemployeeX_labels",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "canonical": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "anonymized": "g.addV(string0).property(string1, string2)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\")",
+                "python": "g.add_v('person').property('name', 'marko')"
+            },
+            {
+                "original": "g.V().hasLabel(\"person\").has(\"name\", \"marko\").addLabel(\"employee\").labels().fold()",
+                "language": "g.V().hasLabel(\"person\").has(\"name\", \"marko\").addLabel(\"employee\").labels().fold()",
+                "canonical": "g.V().hasLabel(\"person\").has(\"name\", \"marko\").addLabel(\"employee\").labels().fold()",
+                "anonymized": "g.V().hasLabel(string0).has(string1, string2).addLabel(string3).labels().fold()",
+                "dotnet": "g.V().HasLabel(\"person\").Has(\"name\", \"marko\").AddLabel(\"employee\").Labels().Fold()",
+                "go": "g.V().HasLabel(\"person\").Has(\"name\", \"marko\").AddLabel(\"employee\").Labels().Fold()",
+                "groovy": "g.V().hasLabel(\"person\").has(\"name\", \"marko\").addLabel(\"employee\").labels().fold()",
+                "java": "g.V().hasLabel(\"person\").has(\"name\", \"marko\").addLabel(\"employee\").labels().fold()",
+                "javascript": "g.V().hasLabel(\"person\").has(\"name\", \"marko\").addLabel(\"employee\").labels().fold()",
+                "python": "g.V().has_label('person').has('name', 'marko').add_label('employee').labels().fold()"
+            },
+            {
+                "original": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "language": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "canonical": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "anonymized": "g.V().hasLabel(string0).hasLabel(string1)",
+                "dotnet": "g.V().HasLabel(\"person\").HasLabel(\"employee\")",
+                "go": "g.V().HasLabel(\"person\").HasLabel(\"employee\")",
+                "groovy": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "java": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "javascript": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
+                "python": "g.V().has_label('person').has_label('employee')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_addLabelXa_bX_labels_count",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\")",
+                "language": "g.addV(\"person\")",
+                "canonical": "g.addV(\"person\")",
+                "anonymized": "g.addV(string0)",
+                "dotnet": "g.AddV((string) \"person\")",
+                "go": "g.AddV(\"person\")",
+                "groovy": "g.addV(\"person\")",
+                "java": "g.addV(\"person\")",
+                "javascript": "g.addV(\"person\")",
+                "python": "g.add_v('person')"
+            },
+            {
+                "original": "g.V().addLabel(\"a\", \"b\").labels().count()",
+                "language": "g.V().addLabel(\"a\", \"b\").labels().count()",
+                "canonical": "g.V().addLabel(\"a\", \"b\").labels().count()",
+                "anonymized": "g.V().addLabel(string0, string1).labels().count()",
+                "dotnet": "g.V().AddLabel(\"a\", \"b\").Labels().Count()",
+                "go": "g.V().AddLabel(\"a\", \"b\").Labels().Count()",
+                "groovy": "g.V().addLabel(\"a\", \"b\").labels().count()",
+                "java": "g.V().addLabel(\"a\", \"b\").labels().count()",
+                "javascript": "g.V().addLabel(\"a\", \"b\").labels().count()",
+                "python": "g.V().add_label('a', 'b').labels().count()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_addLabelXexistingX_labels_count",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\")",
+                "language": "g.addV(\"person\")",
+                "canonical": "g.addV(\"person\")",
+                "anonymized": "g.addV(string0)",
+                "dotnet": "g.AddV((string) \"person\")",
+                "go": "g.AddV(\"person\")",
+                "groovy": "g.addV(\"person\")",
+                "java": "g.addV(\"person\")",
+                "javascript": "g.addV(\"person\")",
+                "python": "g.add_v('person')"
+            },
+            {
+                "original": "g.V().addLabel(\"person\").labels().count()",
+                "language": "g.V().addLabel(\"person\").labels().count()",
+                "canonical": "g.V().addLabel(\"person\").labels().count()",
+                "anonymized": "g.V().addLabel(string0).labels().count()",
+                "dotnet": "g.V().AddLabel(\"person\").Labels().Count()",
+                "go": "g.V().AddLabel(\"person\").Labels().Count()",
+                "groovy": "g.V().addLabel(\"person\").labels().count()",
+                "java": "g.V().addLabel(\"person\").labels().count()",
+                "javascript": "g.V().addLabel(\"person\").labels().count()",
+                "python": "g.V().add_label('person').labels().count()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_E_addLabelXfriendX_labels_fold",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"josh\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"josh\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "canonical": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"josh\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "anonymized": "g.addV(string0).property(string1, string2).as(string3).addV(string0).property(string1, string4).as(string5).addE(string6).from(string3).to(string5)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").As(\"a\").AddV((string) \"person\").Property(\"name\", \"josh\").As(\"b\").AddE((string) \"knows\").From(\"a\").To(\"b\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").As(\"a\").AddV(\"person\").Property(\"name\", \"josh\").As(\"b\").AddE(\"knows\").From(\"a\").To(\"b\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"josh\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"josh\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"josh\").as(\"b\").addE(\"knows\").from_(\"a\").to(\"b\")",
+                "python": "g.add_v('person').property('name', 'marko').as_('a').add_v('person').property('name', 'josh').as_('b').add_e('knows').from_('a').to('b')"
+            },
+            {
+                "original": "g.E().addLabel(\"friend\").labels().fold()",
+                "language": "g.E().addLabel(\"friend\").labels().fold()",
+                "canonical": "g.E().addLabel(\"friend\").labels().fold()",
+                "anonymized": "g.E().addLabel(string0).labels().fold()",
+                "dotnet": "g.E().AddLabel(\"friend\").Labels().Fold()",
+                "go": "g.E().AddLabel(\"friend\").Labels().Fold()",
+                "groovy": "g.E().addLabel(\"friend\").labels().fold()",
+                "java": "g.E().addLabel(\"friend\").labels().fold()",
+                "javascript": "g.E().addLabel(\"friend\").labels().fold()",
+                "python": "g.E().add_label('friend').labels().fold()"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_valueXnameX_aggregateXxX_capXxX",
         "traversals": [
             {
@@ -42197,6 +43247,233 @@
                 "java": "g.V().aggregate(\"a\").cap(\"a\").unfold().barrier().both()",
                 "javascript": "g.V().aggregate(\"a\").cap(\"a\").unfold().barrier().both()",
                 "python": "g.V().aggregate('a').cap('a').unfold().barrier().both()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_dropLabelXaX_labels",
+        "traversals": [
+            {
+                "original": "g.addV(\"a\", \"b\")",
+                "language": "g.addV(\"a\", \"b\")",
+                "canonical": "g.addV(\"a\", \"b\")",
+                "anonymized": "g.addV(string0, string1)",
+                "dotnet": "g.AddV((string) \"a\", (string) \"b\")",
+                "go": "g.AddV(\"a\", \"b\")",
+                "groovy": "g.addV(\"a\", \"b\")",
+                "java": "g.addV(\"a\", \"b\")",
+                "javascript": "g.addV(\"a\", \"b\")",
+                "python": "g.add_v('a', 'b')"
+            },
+            {
+                "original": "g.V().dropLabel(\"a\").labels().fold()",
+                "language": "g.V().dropLabel(\"a\").labels().fold()",
+                "canonical": "g.V().dropLabel(\"a\").labels().fold()",
+                "anonymized": "g.V().dropLabel(string0).labels().fold()",
+                "dotnet": "g.V().DropLabel(\"a\").Labels().Fold()",
+                "go": "g.V().DropLabel(\"a\").Labels().Fold()",
+                "groovy": "g.V().dropLabel(\"a\").labels().fold()",
+                "java": "g.V().dropLabel(\"a\").labels().fold()",
+                "javascript": "g.V().dropLabel(\"a\").labels().fold()",
+                "python": "g.V().drop_label('a').labels().fold()"
+            },
+            {
+                "original": "g.V().hasLabel(\"a\")",
+                "language": "g.V().hasLabel(\"a\")",
+                "canonical": "g.V().hasLabel(\"a\")",
+                "anonymized": "g.V().hasLabel(string0)",
+                "dotnet": "g.V().HasLabel(\"a\")",
+                "go": "g.V().HasLabel(\"a\")",
+                "groovy": "g.V().hasLabel(\"a\")",
+                "java": "g.V().hasLabel(\"a\")",
+                "javascript": "g.V().hasLabel(\"a\")",
+                "python": "g.V().has_label('a')"
+            },
+            {
+                "original": "g.V().hasLabel(\"b\")",
+                "language": "g.V().hasLabel(\"b\")",
+                "canonical": "g.V().hasLabel(\"b\")",
+                "anonymized": "g.V().hasLabel(string0)",
+                "dotnet": "g.V().HasLabel(\"b\")",
+                "go": "g.V().HasLabel(\"b\")",
+                "groovy": "g.V().hasLabel(\"b\")",
+                "java": "g.V().hasLabel(\"b\")",
+                "javascript": "g.V().hasLabel(\"b\")",
+                "python": "g.V().has_label('b')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_dropLabels_labels",
+        "traversals": [
+            {
+                "original": "g.addV(\"a\", \"b\")",
+                "language": "g.addV(\"a\", \"b\")",
+                "canonical": "g.addV(\"a\", \"b\")",
+                "anonymized": "g.addV(string0, string1)",
+                "dotnet": "g.AddV((string) \"a\", (string) \"b\")",
+                "go": "g.AddV(\"a\", \"b\")",
+                "groovy": "g.addV(\"a\", \"b\")",
+                "java": "g.addV(\"a\", \"b\")",
+                "javascript": "g.addV(\"a\", \"b\")",
+                "python": "g.add_v('a', 'b')"
+            },
+            {
+                "original": "g.V().dropLabels().labels()",
+                "language": "g.V().dropLabels().labels()",
+                "canonical": "g.V().dropLabels().labels()",
+                "anonymized": "g.V().dropLabels().labels()",
+                "dotnet": "g.V().DropLabels().Labels()",
+                "go": "g.V().DropLabels().Labels()",
+                "groovy": "g.V().dropLabels().labels()",
+                "java": "g.V().dropLabels().labels()",
+                "javascript": "g.V().dropLabels().labels()",
+                "python": "g.V().drop_labels().labels()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_dropLabelXa_bX_labels",
+        "traversals": [
+            {
+                "original": "g.addV(\"a\", \"b\", \"c\")",
+                "language": "g.addV(\"a\", \"b\", \"c\")",
+                "canonical": "g.addV(\"a\", \"b\", \"c\")",
+                "anonymized": "g.addV(string0, string1, string2)",
+                "dotnet": "g.AddV((string) \"a\", (string) \"b\", (string) \"c\")",
+                "go": "g.AddV(\"a\", \"b\", \"c\")",
+                "groovy": "g.addV(\"a\", \"b\", \"c\")",
+                "java": "g.addV(\"a\", \"b\", \"c\")",
+                "javascript": "g.addV(\"a\", \"b\", \"c\")",
+                "python": "g.add_v('a', 'b', 'c')"
+            },
+            {
+                "original": "g.V().dropLabel(\"a\", \"b\").labels()",
+                "language": "g.V().dropLabel(\"a\", \"b\").labels()",
+                "canonical": "g.V().dropLabel(\"a\", \"b\").labels()",
+                "anonymized": "g.V().dropLabel(string0, string1).labels()",
+                "dotnet": "g.V().DropLabel(\"a\", \"b\").Labels()",
+                "go": "g.V().DropLabel(\"a\", \"b\").Labels()",
+                "groovy": "g.V().dropLabel(\"a\", \"b\").labels()",
+                "java": "g.V().dropLabel(\"a\", \"b\").labels()",
+                "javascript": "g.V().dropLabel(\"a\", \"b\").labels()",
+                "python": "g.V().drop_label('a', 'b').labels()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_dropLabels_defaultLabel",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\")",
+                "language": "g.addV(\"person\")",
+                "canonical": "g.addV(\"person\")",
+                "anonymized": "g.addV(string0)",
+                "dotnet": "g.AddV((string) \"person\")",
+                "go": "g.AddV(\"person\")",
+                "groovy": "g.addV(\"person\")",
+                "java": "g.addV(\"person\")",
+                "javascript": "g.addV(\"person\")",
+                "python": "g.add_v('person')"
+            },
+            {
+                "original": "g.V().dropLabels().labels()",
+                "language": "g.V().dropLabels().labels()",
+                "canonical": "g.V().dropLabels().labels()",
+                "anonymized": "g.V().dropLabels().labels()",
+                "dotnet": "g.V().DropLabels().Labels()",
+                "go": "g.V().DropLabels().Labels()",
+                "groovy": "g.V().dropLabels().labels()",
+                "java": "g.V().dropLabels().labels()",
+                "javascript": "g.V().dropLabels().labels()",
+                "python": "g.V().drop_labels().labels()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_E_dropLabelXknowsX_labels",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "language": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "canonical": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "anonymized": "g.addV(string0).as(string1).addV(string0).as(string2).addE(string3).from(string1).to(string2)",
+                "dotnet": "g.AddV((string) \"person\").As(\"a\").AddV((string) \"person\").As(\"b\").AddE((string) \"knows\").From(\"a\").To(\"b\")",
+                "go": "g.AddV(\"person\").As(\"a\").AddV(\"person\").As(\"b\").AddE(\"knows\").From(\"a\").To(\"b\")",
+                "groovy": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "java": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "javascript": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from_(\"a\").to(\"b\")",
+                "python": "g.add_v('person').as_('a').add_v('person').as_('b').add_e('knows').from_('a').to('b')"
+            },
+            {
+                "original": "g.E().dropLabel(\"knows\").labels().fold()",
+                "language": "g.E().dropLabel(\"knows\").labels().fold()",
+                "canonical": "g.E().dropLabel(\"knows\").labels().fold()",
+                "anonymized": "g.E().dropLabel(string0).labels().fold()",
+                "dotnet": "g.E().DropLabel(\"knows\").Labels().Fold()",
+                "go": "g.E().DropLabel(\"knows\").Labels().Fold()",
+                "groovy": "g.E().dropLabel(\"knows\").labels().fold()",
+                "java": "g.E().dropLabel(\"knows\").labels().fold()",
+                "javascript": "g.E().dropLabel(\"knows\").labels().fold()",
+                "python": "g.E().drop_label('knows').labels().fold()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_E_dropLabels_labels",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "language": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "canonical": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "anonymized": "g.addV(string0).as(string1).addV(string0).as(string2).addE(string3).from(string1).to(string2)",
+                "dotnet": "g.AddV((string) \"person\").As(\"a\").AddV((string) \"person\").As(\"b\").AddE((string) \"knows\").From(\"a\").To(\"b\")",
+                "go": "g.AddV(\"person\").As(\"a\").AddV(\"person\").As(\"b\").AddE(\"knows\").From(\"a\").To(\"b\")",
+                "groovy": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "java": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "javascript": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from_(\"a\").to(\"b\")",
+                "python": "g.add_v('person').as_('a').add_v('person').as_('b').add_e('knows').from_('a').to('b')"
+            },
+            {
+                "original": "g.E().dropLabels().labels()",
+                "language": "g.E().dropLabels().labels()",
+                "canonical": "g.E().dropLabels().labels()",
+                "anonymized": "g.E().dropLabels().labels()",
+                "dotnet": "g.E().DropLabels().Labels()",
+                "go": "g.E().DropLabels().Labels()",
+                "groovy": "g.E().dropLabels().labels()",
+                "java": "g.E().dropLabels().labels()",
+                "javascript": "g.E().dropLabels().labels()",
+                "python": "g.E().drop_labels().labels()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_dropLabelXnonExistentX_labels",
+        "traversals": [
+            {
+                "original": "g.addV(\"a\", \"b\")",
+                "language": "g.addV(\"a\", \"b\")",
+                "canonical": "g.addV(\"a\", \"b\")",
+                "anonymized": "g.addV(string0, string1)",
+                "dotnet": "g.AddV((string) \"a\", (string) \"b\")",
+                "go": "g.AddV(\"a\", \"b\")",
+                "groovy": "g.addV(\"a\", \"b\")",
+                "java": "g.addV(\"a\", \"b\")",
+                "javascript": "g.addV(\"a\", \"b\")",
+                "python": "g.add_v('a', 'b')"
+            },
+            {
+                "original": "g.V().dropLabel(\"xyz\").labels()",
+                "language": "g.V().dropLabel(\"xyz\").labels()",
+                "canonical": "g.V().dropLabel(\"xyz\").labels()",
+                "anonymized": "g.V().dropLabel(string0).labels()",
+                "dotnet": "g.V().DropLabel(\"xyz\").Labels()",
+                "go": "g.V().DropLabel(\"xyz\").Labels()",
+                "groovy": "g.V().dropLabel(\"xyz\").labels()",
+                "java": "g.V().dropLabel(\"xyz\").labels()",
+                "javascript": "g.V().dropLabel(\"xyz\").labels()",
+                "python": "g.V().drop_label('xyz').labels()"
             }
         ]
     },

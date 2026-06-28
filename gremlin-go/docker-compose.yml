@@ -72,6 +72,7 @@ services:
     working_dir: /go_app
     command: >
       bash -c "go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
+      && go build ./...
       && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" -coverpkg=./... | gotestfmt
       && echo 'Running examples...'
       && go run examples/basic_gremlin.go

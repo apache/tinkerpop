@@ -501,10 +501,31 @@ func (tg *tinkerPopGraph) nothingShouldHappenBecause(arg1 *godog.DocString) erro
 
 // Choose the graph.
 func (tg *tinkerPopGraph) chooseGraph(graphName string) error {
-	tg.graphName = graphName
-	data := tg.graphDataMap[graphName]
+	// Multi-label tests use the gmultilabel traversal source for empty graphs
+	isMultiLabel := false
+	isMultiLabelDefault := false
+	for _, tag := range tg.scenario.Tags {
+		if tag.Name == "@MultiLabel" {
+			isMultiLabel = true
+		}
+		if tag.Name == "@MultiLabelDefault" {
+			isMultiLabelDefault = true
+		}
+	}
+
+	if isMultiLabelDefault && graphName == "empty" {
+		tg.graphName = "multilabel"
+	} else if isMultiLabel && graphName == "empty" {
+		tg.graphName = "multilabel"
+	} else {
+		tg.graphName = graphName
+	}
+	data := tg.graphDataMap[tg.graphName]
 	tg.g = gremlingo.Traversal_().With(data.connection).With("language", "gremlin-lang")
-	if graphName == "empty" {
+	if isMultiLabelDefault {
+		tg.g = tg.g.With("multilabel", true)
+	}
+	if tg.graphName == "empty" || tg.graphName == "multilabel" {
 		err := tg.cleanEmptyDataGraph(tg.g)
 		if err != nil {
 			return err
@@ -528,7 +549,17 @@ func (tg *tinkerPopGraph) theGraphInitializerOf(arg1 *godog.DocString) error {
 		return err
 	}
 	future := traversal.Iterate()
-	return <-future
+	err = <-future
+	if err != nil {
+		return err
+	}
+	// Reload vertex/edge data for dynamic graphs after initializer adds data
+	if tg.graphName == "empty" {
+		tg.reloadEmptyData()
+	} else if tg.graphName == "multilabel" {
+		tg.reloadMultilabelData()
+	}
+	return nil
 }
 
 func (tg *tinkerPopGraph) theResultShouldHaveACountOf(expectedCount int) error {
@@ -994,6 +1025,8 @@ func (tg *tinkerPopGraph) theTraversalOf(arg1 *godog.DocString) error {
 func (tg *tinkerPopGraph) usingTheParameterDefined(name string, params string) error {
 	if tg.graphName == "empty" {
 		tg.reloadEmptyData()
+	} else if tg.graphName == "multilabel" {
+		tg.reloadMultilabelData()
 	}
 	tg.parameters[name] = parseValue(strings.Replace(params, "\\\"", "\"", -1), tg.graphName)
 	return nil
@@ -1014,6 +1047,8 @@ func (tg *tinkerPopGraph) usingTheParameterOfP(paramName, pVal, stringVal string
 func (tg *tinkerPopGraph) usingTheSideEffectDefined(key string, value string) error {
 	if tg.graphName == "empty" {
 		tg.reloadEmptyData()
+	} else if tg.graphName == "multilabel" {
+		tg.reloadMultilabelData()
 	}
 	tg.sideEffects[key] = parseValue(strings.Replace(value, "\\\"", "\"", -1), tg.graphName)
 	return nil

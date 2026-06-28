@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -204,7 +205,19 @@ public final class StarGraph implements Graph, Serializable {
         if (vertex instanceof StarVertex) return (StarGraph) vertex.graph();
         // else convert to a star graph
         final StarGraph starGraph = new StarGraph();
-        final StarVertex starVertex = (StarVertex) starGraph.addVertex(T.id, vertex.id(), T.label, vertex.label());
+        final String vertexLabel = vertex.label();
+        final StarVertex starVertex;
+        if (vertexLabel != null) {
+            starVertex = (StarVertex) starGraph.addVertex(T.id, vertex.id(), T.label, vertexLabel);
+        } else {
+            starVertex = (StarVertex) starGraph.addVertex(T.id, vertex.id());
+        }
+
+        // Copy multi-labels from source vertex
+        final Set<String> srcLabels = vertex.labels();
+        if (srcLabels.size() > 1) {
+            starVertex.setLabels(srcLabels);
+        }
 
         final boolean supportsMetaProperties = vertex.graph().features().vertex().supportsMetaProperties();
 
@@ -214,13 +227,23 @@ public final class StarGraph implements Graph, Serializable {
                 vp.properties().forEachRemaining(p -> starVertexProperty.property(p.key(), p.value()));
         });
         vertex.edges(Direction.IN).forEachRemaining(edge -> {
-            final Edge starEdge = starVertex.addInEdge(edge.label(), starGraph.addVertex(T.id, edge.outVertex().id()), T.id, edge.id());
+            final String edgeLabel = edge.label() == null ? Edge.DEFAULT_LABEL : edge.label();
+            final Edge starEdge = starVertex.addInEdge(edgeLabel, starGraph.addVertex(T.id, edge.outVertex().id()), T.id, edge.id());
             edge.properties().forEachRemaining(p -> starEdge.property(p.key(), p.value()));
+            final Set<String> edgeSrcLabels = edge.labels();
+            if (edgeSrcLabels.size() > 1) {
+                ((StarGraph.StarEdge) starEdge).setLabels(edgeSrcLabels);
+            }
         });
 
         vertex.edges(Direction.OUT).forEachRemaining(edge -> {
-            final Edge starEdge = starVertex.addOutEdge(edge.label(), starGraph.addVertex(T.id, edge.inVertex().id()), T.id, edge.id());
+            final String edgeLabel = edge.label() == null ? Edge.DEFAULT_LABEL : edge.label();
+            final Edge starEdge = starVertex.addOutEdge(edgeLabel, starGraph.addVertex(T.id, edge.inVertex().id()), T.id, edge.id());
             edge.properties().forEachRemaining(p -> starEdge.property(p.key(), p.value()));
+            final Set<String> edgeSrcLabels = edge.labels();
+            if (edgeSrcLabels.size() > 1) {
+                ((StarGraph.StarEdge) starEdge).setLabels(edgeSrcLabels);
+            }
         });
         return starGraph;
     }
@@ -308,7 +331,7 @@ public final class StarGraph implements Graph, Serializable {
     public abstract class StarElement<E extends Element> implements Element, Attachable<E> {
 
         protected final Object id;
-        protected final String label;
+        protected String label;
 
         protected StarElement(final Object id, final String label) {
             this.id = id;
@@ -352,12 +375,35 @@ public final class StarGraph implements Graph, Serializable {
 
     public final class StarVertex extends StarElement<Vertex> implements Vertex {
 
+        private Set<String> vertexLabels;
         protected Map<String, List<Edge>> outEdges = null;
         protected Map<String, List<Edge>> inEdges = null;
         protected Map<String, List<VertexProperty>> vertexProperties = null;
 
         public StarVertex(final Object id, final String label) {
             super(id, label);
+            this.vertexLabels = new LinkedHashSet<>();
+            this.vertexLabels.add(internStrings ? label.intern() : label);
+        }
+
+        @Override
+        public Set<String> labels() {
+            return Collections.unmodifiableSet(this.vertexLabels);
+        }
+
+        @Override
+        public String label() {
+            return this.vertexLabels.isEmpty() ? this.label : this.vertexLabels.iterator().next();
+        }
+
+        /**
+         * Sets the vertex labels from a source set. Used when copying labels from a multi-label vertex.
+         */
+        public void setLabels(final Set<String> labels) {
+            if (labels != null && !labels.isEmpty()) {
+                this.vertexLabels = new LinkedHashSet<>(labels);
+                this.label = this.vertexLabels.iterator().next();
+            }
         }
 
         private void dropEdgeProperty(Object id) {
@@ -733,6 +779,11 @@ public final class StarGraph implements Graph, Serializable {
         }
 
         @Override
+        public Set<String> labels() {
+            throw GraphComputer.Exceptions.adjacentVertexLabelsCanNotBeRead();
+        }
+
+        @Override
         public Graph graph() {
             return StarGraph.this;
         }
@@ -769,11 +820,34 @@ public final class StarGraph implements Graph, Serializable {
 
     public abstract class StarEdge extends StarElement<Edge> implements Edge {
 
+        private Set<String> edgeLabels;
         protected final Object otherId;
 
         private StarEdge(final Object id, final String label, final Object otherId) {
             super(id, label);
             this.otherId = otherId;
+            this.edgeLabels = new LinkedHashSet<>();
+            this.edgeLabels.add(internStrings ? label.intern() : label);
+        }
+
+        @Override
+        public Set<String> labels() {
+            return Collections.unmodifiableSet(this.edgeLabels);
+        }
+
+        @Override
+        public String label() {
+            return this.edgeLabels.isEmpty() ? this.label : this.edgeLabels.iterator().next();
+        }
+
+        /**
+         * Sets the edge labels from a source set. Used when copying labels from a multi-label edge.
+         */
+        public void setLabels(final Set<String> labels) {
+            if (labels != null && !labels.isEmpty()) {
+                this.edgeLabels = new LinkedHashSet<>(labels);
+                this.label = this.edgeLabels.iterator().next();
+            }
         }
 
         @Override

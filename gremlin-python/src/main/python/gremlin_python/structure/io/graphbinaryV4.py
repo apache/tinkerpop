@@ -593,12 +593,21 @@ class EdgeIO(_GraphBinaryTypeIO):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
 
         writer.to_dict(obj.id, to_extend)
-        # serializing label as list here for now according to GraphBinaryV4
-        ListIO.dictify([obj.label], writer, to_extend, True, False)
+        # serializing labels as list according to GraphBinaryV4
+        if hasattr(obj, '_labels') and obj._labels:
+            ListIO.dictify(list(obj._labels), writer, to_extend, True, False)
+        else:
+            ListIO.dictify([obj.label], writer, to_extend, True, False)
         writer.to_dict(obj.inV.id, to_extend)
-        ListIO.dictify([obj.inV.label], writer, to_extend, True, False)
+        if hasattr(obj.inV, '_labels') and obj.inV._labels:
+            ListIO.dictify(list(obj.inV._labels), writer, to_extend, True, False)
+        else:
+            ListIO.dictify([obj.inV.label], writer, to_extend, True, False)
         writer.to_dict(obj.outV.id, to_extend)
-        ListIO.dictify([obj.outV.label], writer, to_extend, True, False)
+        if hasattr(obj.outV, '_labels') and obj.outV._labels:
+            ListIO.dictify(list(obj.outV._labels), writer, to_extend, True, False)
+        else:
+            ListIO.dictify([obj.outV.label], writer, to_extend, True, False)
         to_extend.extend(NULL_BYTES)
         to_extend.extend(NULL_BYTES)
 
@@ -611,15 +620,15 @@ class EdgeIO(_GraphBinaryTypeIO):
     @classmethod
     def _read_edge(cls, b, r):
         edgeid = r.read_object(b)
-        # reading single string value for now according to GraphBinaryV4
-        edgelbl = r.to_object(b, DataType.list, False)[0]
+        # reading label list according to GraphBinaryV4
+        edge_labels = r.to_object(b, DataType.list, False)
         inv = Vertex(r.read_object(b), r.to_object(b, DataType.list, False)[0])
         outv = Vertex(r.read_object(b), r.to_object(b, DataType.list, False)[0])
         b.read(2)
         props = r.read_object(b)
         # null properties are returned as empty lists
         properties = [] if props is None else props
-        edge = Edge(edgeid, outv, edgelbl, inv, properties)
+        edge = Edge(edgeid, outv, edge_labels[0] if edge_labels else "edge", inv, properties, labels=edge_labels)
         return edge
 
 
@@ -679,7 +688,10 @@ class TinkerGraphIO(_GraphBinaryTypeIO):
         IntIO.dictify(len(vertices), writer, to_extend, True, False)
         for v in vertices:
             writer.to_dict(v.id, to_extend)
-            ListIO.dictify([v.label], writer, to_extend, True, False)
+            if hasattr(v, '_labels') and v._labels:
+                ListIO.dictify(list(v._labels), writer, to_extend, True, False)
+            else:
+                ListIO.dictify([v.label], writer, to_extend, True, False)
             v_props = v.properties
             IntIO.dictify(len(v_props), writer, to_extend, True, False)
             for vp in v_props:
@@ -692,7 +704,10 @@ class TinkerGraphIO(_GraphBinaryTypeIO):
         IntIO.dictify(len(edges), writer, to_extend, True, False)
         for e in edges:
             writer.to_dict(e.id, to_extend)
-            ListIO.dictify([e.label], writer, to_extend, True, False)
+            if hasattr(e, '_labels') and e._labels:
+                ListIO.dictify(list(e._labels), writer, to_extend, True, False)
+            else:
+                ListIO.dictify([e.label], writer, to_extend, True, False)
             writer.to_dict(e.inV.id, to_extend)
             writer.to_dict(None, to_extend)
             writer.to_dict(e.outV.id, to_extend)
@@ -712,8 +727,8 @@ class TinkerGraphIO(_GraphBinaryTypeIO):
         vertex_count = r.to_object(b, DataType.int, False)
         for _ in range(vertex_count):
             v_id = r.read_object(b)
-            v_label = r.to_object(b, DataType.list, False)[0]
-            vertex = Vertex(v_id, v_label)
+            v_labels = r.to_object(b, DataType.list, False)
+            vertex = Vertex(v_id, v_labels[0] if v_labels else "vertex", labels=v_labels)
             graph.vertices[v_id] = vertex
 
             vp_count = r.to_object(b, DataType.int, False)
@@ -732,14 +747,15 @@ class TinkerGraphIO(_GraphBinaryTypeIO):
         edge_count = r.to_object(b, DataType.int, False)
         for _ in range(edge_count):
             e_id = r.read_object(b)
-            e_label = r.to_object(b, DataType.list, False)[0]
+            e_labels = r.to_object(b, DataType.list, False)
             in_v_id = r.read_object(b)
             r.read_object(b)  # discard in-v label
             out_v_id = r.read_object(b)
             r.read_object(b)  # discard out-v label
             r.read_object(b)  # discard parent
 
-            edge = Edge(e_id, graph.vertices[out_v_id], e_label, graph.vertices[in_v_id])
+            edge = Edge(e_id, graph.vertices[out_v_id], e_labels[0] if e_labels else "edge",
+                        graph.vertices[in_v_id], labels=e_labels)
             graph.edges[e_id] = edge
 
             edge_props = r.to_object(b, DataType.list, False)
@@ -758,8 +774,11 @@ class VertexIO(_GraphBinaryTypeIO):
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         writer.to_dict(obj.id, to_extend)
-        # serializing label as list here for now according to GraphBinaryV4
-        ListIO.dictify([obj.label], writer, to_extend, True, False)
+        # serializing labels as list according to GraphBinaryV4
+        if hasattr(obj, '_labels') and obj._labels:
+            ListIO.dictify(list(obj._labels), writer, to_extend, True, False)
+        else:
+            ListIO.dictify([obj.label], writer, to_extend, True, False)
         to_extend.extend(NULL_BYTES)
         return to_extend
 
@@ -770,12 +789,12 @@ class VertexIO(_GraphBinaryTypeIO):
     @classmethod
     def _read_vertex(cls, b, r):
         vertex_id = r.read_object(b)
-        # reading single string value for now according to GraphBinaryV4
-        vertex_label = r.to_object(b, DataType.list, False)[0]
+        # reading label list according to GraphBinaryV4
+        vertex_labels = r.to_object(b, DataType.list, False)
         props = r.read_object(b)
         # null properties are returned as empty lists
         properties = [] if props is None else props
-        vertex = Vertex(vertex_id, vertex_label, properties)
+        vertex = Vertex(vertex_id, vertex_labels[0] if vertex_labels else "vertex", properties, labels=vertex_labels)
         return vertex
 
 

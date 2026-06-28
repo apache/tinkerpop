@@ -267,8 +267,12 @@ func vertexWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTyp
 		return err
 	}
 
-	// Not fully qualified.
-	if err := typeSerializer.writeValue([1]string{v.Label}, w, false); err != nil {
+	// Write all labels as a list. Use Labels slice if populated, otherwise fall back to single Label.
+	labels := v.Labels
+	if len(labels) == 0 {
+		labels = []string{v.Label}
+	}
+	if err := typeSerializer.writeValue(labels, w, false); err != nil {
 		return err
 	}
 	// Note that as TinkerPop currently send "references" only, properties will always be null
@@ -283,8 +287,12 @@ func edgeWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeS
 		return err
 	}
 
-	// Not fully qualified
-	if err := typeSerializer.writeValue([1]string{e.Label}, w, false); err != nil {
+	// Write all labels as a list. Use Labels slice if populated, otherwise fall back to single Label.
+	labels := e.Labels
+	if len(labels) == 0 {
+		labels = []string{e.Label}
+	}
+	if err := typeSerializer.writeValue(labels, w, false); err != nil {
 		return err
 	}
 
@@ -293,8 +301,12 @@ func edgeWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeS
 		return err
 	}
 
-	// Not fully qualified.
-	if err := typeSerializer.writeValue([1]string{e.InV.Label}, w, false); err != nil {
+	// Write in-vertex labels
+	inVLabels := e.InV.Labels
+	if len(inVLabels) == 0 {
+		inVLabels = []string{e.InV.Label}
+	}
+	if err := typeSerializer.writeValue(inVLabels, w, false); err != nil {
 		return err
 	}
 	// Write out-vertex
@@ -302,8 +314,12 @@ func edgeWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeS
 		return err
 	}
 
-	// Not fully qualified.
-	if err := typeSerializer.writeValue([1]string{e.OutV.Label}, w, false); err != nil {
+	// Write out-vertex labels
+	outVLabels := e.OutV.Labels
+	if len(outVLabels) == 0 {
+		outVLabels = []string{e.OutV.Label}
+	}
+	if err := typeSerializer.writeValue(outVLabels, w, false); err != nil {
 		return err
 	}
 

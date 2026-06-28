@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents an {@link Edge} that is disconnected from a {@link Graph}.  "Disconnection" can mean detachment from
@@ -177,6 +178,11 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
 
         public Builder setLabel(final String label) {
             e.label = label;
+            return this;
+        }
+
+        public Builder setLabels(final Set<String> labels) {
+            e.setElementLabels(labels);
             return this;
         }
 

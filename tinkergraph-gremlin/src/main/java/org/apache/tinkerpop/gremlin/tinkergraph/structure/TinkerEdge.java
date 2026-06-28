@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
  */
 public class TinkerEdge extends TinkerElement implements Edge {
 
+    protected Set<String> edgeLabels;
     protected Map<String, Property> properties;
 
     protected Vertex inVertex = null;
@@ -62,8 +64,30 @@ public class TinkerEdge extends TinkerElement implements Edge {
         }
     }
 
+    protected TinkerEdge(final Object id, final Vertex outVertex, final Set<String> labels, final Vertex inVertex) {
+        this(id, outVertex, labels, inVertex, 0);
+    }
+
+    protected TinkerEdge(final Object id, final Vertex outVertex, final Set<String> labels, final Vertex inVertex, final long currentVersion) {
+        this(id, (AbstractTinkerGraph) outVertex.graph(), outVertex.id(),
+             (labels == null || labels.isEmpty()) ? Edge.DEFAULT_LABEL : labels.iterator().next(),
+             inVertex.id(), currentVersion, false);
+        // Override the singleton set from the private constructor with the provided labels.
+        // Edge labels remain immutable (singleton) since TinkerEdge doesn't support label mutation.
+        if (labels != null && !labels.isEmpty()) {
+            this.edgeLabels = labels.size() == 1
+                    ? Collections.singleton(labels.iterator().next())
+                    : Collections.unmodifiableSet(new LinkedHashSet<>(labels));
+        }
+        if (!isTxMode) {
+            this.inVertex = inVertex;
+            this.outVertex = outVertex;
+        }
+    }
+
     private TinkerEdge(final Object id, AbstractTinkerGraph graph, final Object outVertexId, final String label, final Object inVertexId, final long currentVersion, final Boolean skipIndexUpdate) {
         super(id, label, currentVersion);
+        this.edgeLabels = Collections.singleton(label);
         isTxMode = graph instanceof TinkerTransactionGraph;
         this.graph = graph;
         if (isTxMode) {
@@ -106,6 +130,17 @@ public class TinkerEdge extends TinkerElement implements Edge {
     }
 
     @Override
+    public Set<String> labels() {
+        return Collections.unmodifiableSet(this.edgeLabels);
+    }
+
+    @Override
+    @Deprecated
+    public String label() {
+        return this.edgeLabels.iterator().next();
+    }
+
+    @Override
     public void remove() {
         graph.touch(this);
         TinkerIndexHelper.removeElementIndex(this);
@@ -124,11 +159,13 @@ public class TinkerEdge extends TinkerElement implements Edge {
         if (!isTxMode) {
             // shallow copy for non-tx mode
             final TinkerEdge edge = new TinkerEdge(id, outVertex, label, inVertex, currentVersion);
+            edge.edgeLabels = this.edgeLabels;
             edge.properties = properties;
             return edge;
         }
 
         final TinkerEdge edge = new TinkerEdge(id, graph, outVertexId, label, inVertexId, currentVersion, true);
+        edge.edgeLabels = this.edgeLabels;
 
         if (properties != null) {
             final Map<String, Property> cloned = new ConcurrentHashMap<>(properties.size());

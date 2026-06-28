@@ -19,36 +19,45 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import java.util.Set;
 
 public class AddVertexStartStepPlaceholder extends AbstractAddVertexStepPlaceholder<Vertex>
         implements AddVertexStepContract<Vertex>, GValueHolder<Vertex, Vertex> {
 
     public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final String label) {
-        super(traversal, label == null ? Vertex.DEFAULT_LABEL : label);
+        super(traversal, label);
     }
 
     public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final GValue<String> label) {
-        super(traversal, label == null ? GValue.of(Vertex.DEFAULT_LABEL) : label);
+        super(traversal, label);
     }
 
     public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<?,String> vertexLabelTraversal) {
-        super(traversal, vertexLabelTraversal == null ?
-                new ConstantTraversal<>(Vertex.DEFAULT_LABEL) : (Traversal.Admin<Vertex,String>) vertexLabelTraversal);
+        super(traversal, vertexLabelTraversal == null ? null : (Traversal.Admin<Vertex,String>) vertexLabelTraversal);
+    }
+
+    public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final Set<String> labels) {
+        super(traversal, labels);
     }
 
     @Override
     public AddVertexStartStep asConcreteStep() {
         AddVertexStartStep step;
-        if (label instanceof Traversal) {
+        if (label instanceof Set) {
+            step = new AddVertexStartStep(traversal, (Set<String>) label);
+        } else if (label instanceof Traversal) {
             step = new AddVertexStartStep(traversal, ((Traversal<?, String>) label).asAdmin());
         } else if (label instanceof GValue) {
             step = new AddVertexStartStep(traversal, ((GValue<String>) label).get());
         } else {
-            step = new AddVertexStartStep(traversal, (String) label);
+            // When userProvidedLabel is false, label may be the default from the placeholder
+            // hierarchy. Pass null so AddVertexStartStep does not inject T.label.
+            final String labelStr = hasUserProvidedLabel() ? (String) label : null;
+            step = new AddVertexStartStep(traversal, labelStr);
         }
         super.configureConcreteStep(step);
         return step;

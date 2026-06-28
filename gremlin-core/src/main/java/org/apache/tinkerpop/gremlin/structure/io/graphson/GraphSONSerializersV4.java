@@ -86,7 +86,7 @@ class GraphSONSerializersV4 {
             jsonGenerator.writeStartObject();
 
             jsonGenerator.writeObjectField(GraphSONTokens.ID, vertex.id());
-            writeLabel(jsonGenerator, GraphSONTokens.LABEL, vertex.label());
+            writeLabels(jsonGenerator, GraphSONTokens.LABEL, vertex.labels());
             writeTypeForGraphObjectIfUntyped(jsonGenerator, typeInfo, GraphSONTokens.VERTEX);
             writeProperties(vertex, jsonGenerator, serializerProvider);
 
@@ -146,7 +146,7 @@ class GraphSONSerializersV4 {
             jsonGenerator.writeStartObject();
 
             jsonGenerator.writeObjectField(GraphSONTokens.ID, edge.id());
-            writeLabel(jsonGenerator, GraphSONTokens.LABEL, edge.label());
+            writeLabels(jsonGenerator, GraphSONTokens.LABEL, edge.labels());
             writeTypeForGraphObjectIfUntyped(jsonGenerator, typeInfo, GraphSONTokens.EDGE);
             writeVertex(GraphSONTokens.IN, edge.inVertex(), jsonGenerator);
             writeVertex(GraphSONTokens.OUT, edge.outVertex(), jsonGenerator);
@@ -160,7 +160,7 @@ class GraphSONSerializersV4 {
             jsonGenerator.writeFieldName(vertexDirection);
             jsonGenerator.writeStartObject();
             jsonGenerator.writeObjectField(GraphSONTokens.ID, v.id());
-            writeLabel(jsonGenerator, GraphSONTokens.LABEL, v.label());
+            writeLabels(jsonGenerator, GraphSONTokens.LABEL, v.labels());
             jsonGenerator.writeEndObject();
         }
 
@@ -394,8 +394,14 @@ class GraphSONSerializersV4 {
                     v.setId(deserializationContext.readValue(jsonParser, Object.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.LABEL)) {
                     jsonParser.nextToken();
+                    final java.util.Set<String> labels = new java.util.LinkedHashSet<>();
                     while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-                        v.setLabel(jsonParser.getText());
+                        labels.add(jsonParser.getText());
+                    }
+                    if (labels.size() == 1) {
+                        v.setLabel(labels.iterator().next());
+                    } else if (!labels.isEmpty()) {
+                        v.setLabels(labels);
                     }
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.PROPERTIES)) {
                     jsonParser.nextToken();
@@ -432,8 +438,14 @@ class GraphSONSerializersV4 {
                     e.setId(deserializationContext.readValue(jsonParser, Object.class));
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.LABEL)) {
                     jsonParser.nextToken();
+                    final java.util.Set<String> labels = new java.util.LinkedHashSet<>();
                     while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-                        e.setLabel(jsonParser.getText());
+                        labels.add(jsonParser.getText());
+                    }
+                    if (labels.size() == 1) {
+                        e.setLabel(labels.iterator().next());
+                    } else if (!labels.isEmpty()) {
+                        e.setLabels(labels);
                     }
                 } else if (jsonParser.getCurrentName().equals(GraphSONTokens.OUT)) {
                     jsonParser.nextToken();
@@ -690,6 +702,18 @@ class GraphSONSerializersV4 {
         jsonGenerator.writeFieldName(labelName);
         jsonGenerator.writeStartArray();
         jsonGenerator.writeString(labelValue);
+        jsonGenerator.writeEndArray();
+    }
+
+    /**
+     * Helper method for writing multiple labels as an array. Used for multi-label vertex support.
+     */
+    private static void writeLabels(final JsonGenerator jsonGenerator, final String labelName, final java.util.Set<String> labels) throws IOException {
+        jsonGenerator.writeFieldName(labelName);
+        jsonGenerator.writeStartArray();
+        for (final String label : labels) {
+            jsonGenerator.writeString(label);
+        }
         jsonGenerator.writeEndArray();
     }
 }
