@@ -2185,6 +2185,101 @@ Promise.all([
 });
 ----
 
+[[gremlin-javascript-tiny-gremlin]]
+=== Tiny Gremlin
+
+Tiny Gremlin executes a defined subset of Gremlin locally and in-process against a detached `Graph` held in
+memory. No Gremlin Server or remote connection is involved. A local traversal source is created by passing a
+`Graph` instance to `with_()` in place of a `DriverRemoteConnection`:
+
+[source,javascript]
+----
+const Graph = gremlin.structure.Graph;
+
+const graph = new Graph();
+const g = traversal().with_(graph);
+----
+
+The supported steps and the precise semantics of each, including the `by()` modulators available on `path()`, are
+described in the link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#tiny-gremlin[Tiny Gremlin] provider
+documentation. A step outside the subset raises a `LocalExecutionError`, which is exported from the `driver`
+namespace.
+
+==== Building a Graph
+
+A `Graph` is populated with the mutation steps `addV()`, `addE()` and `property()`. Each traversal is terminated
+with `iterate()` so that its mutation is applied to the in-memory graph:
+
+[source,javascript]
+----
+const graph = new Graph();
+const g = traversal().with_(graph);
+
+await g.addV('person').property('name', 'marko').property('age', 29).iterate();
+await g.addV('person').property('name', 'vadas').property('age', 27).iterate();
+await g.addE('knows')
+  .from_(__.V().has('name', 'marko'))
+  .to(__.V().has('name', 'vadas'))
+  .property('weight', 0.5)
+  .iterate();
+----
+
+==== Querying a Graph
+
+Once a `Graph` holds data, it is navigated and filtered with the supported read steps. Alongside the usual
+terminal methods such as `toList()` and `next()`, Tiny Gremlin adds two terminals that consume results with a
+native JavaScript function, `forEach()` and `reduce()`:
+
+[source,javascript]
+----
+// list the names reachable from marko
+const friends = await g.V().has('name', 'marko').out('knows').values('name').toList();
+
+// iterate results with a side-effecting function
+await g.V().hasLabel('person').values('name').forEach((name) => console.log(name));
+
+// fold results into a single value with a seeded accumulator
+const totalAge = await g.V().hasLabel('person').values('age').reduce((acc, age) => acc + age, 0);
+
+// path() projects each element through by()
+const paths = await g.V().has('name', 'marko').out().path().by('name').toList();
+----
+
+==== Working within the subset
+
+Because Tiny Gremlin is a subset, reshaping and reducing steps such as `project()`, `group()`, `groupCount()` and
+`sum()` are not available. The intended pattern is to perform everything the subset supports within the traversal,
+including sorting with `order().by()`, terminate with `toList()`, and then complete the work in JavaScript with
+the standard array methods:
+
+[source,javascript]
+----
+// project() is unavailable: order in the traversal, then map() the materialized result
+const people = (await g.V().hasLabel('person').order().by('name').elementMap().toList())
+  .map((m) => ({ name: m.get('name'), age: m.get('age') }));
+
+// groupCount() is unavailable: tally the labels with Array.reduce()
+const counts = (await g.V().label().toList())
+  .reduce((acc, label) => { acc[label] = (acc[label] || 0) + 1; return acc; }, {});
+----
+
+==== Processing a subgraph
+
+The primary use case for Tiny Gremlin is the local exploration of a subgraph extracted from a remote graph. The
+`subgraph()`-step returns a detached `Graph` to the client, and passing that `Graph` to `with_()` makes its
+contents available for in-process traversal without further calls to the server:
+
+[source,javascript]
+----
+// pull a subgraph from a remote graph
+const remote = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin'));
+const sg = (await remote.E().hasLabel('created').subgraph('sg').cap('sg').next()).value;
+
+// query the detached subgraph locally
+const lg = traversal().with_(sg);
+const creators = await lg.V().hasLabel('software').in_('created').values('name').toList();
+----
+
 [[gremlin-javascript-gvalue]]
 === GValue Parameterization
 
