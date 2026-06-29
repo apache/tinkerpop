@@ -24,7 +24,7 @@ ARG GREMLIN_SERVER_DIR
 RUN apk add --no-cache --update \
     bash \
     perl \
-    openjdk11-jdk
+    openjdk17-jdk
 
 COPY src/main/docker/docker-entrypoint.sh /
 COPY ${GREMLIN_SERVER_DIR} /opt/gremlin-server

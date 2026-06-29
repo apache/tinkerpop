@@ -24,7 +24,7 @@ ARG SOCKET_SERVER_VERSION
 
 RUN apk add --no-cache --update \
     bash \
-    openjdk11-jdk
+    openjdk17-jdk
 
 COPY ${SOCKET_SERVER_DIR}/gremlin-socket-server-${SOCKET_SERVER_VERSION}.jar /opt/gremlin-socket-server/gremlin-socket-server.jar
 COPY ${SOCKET_SERVER_DIR}/libs/ /opt/gremlin-socket-server/libs/

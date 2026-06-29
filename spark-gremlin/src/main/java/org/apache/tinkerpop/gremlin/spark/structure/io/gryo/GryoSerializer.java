@@ -51,7 +51,7 @@ import org.apache.tinkerpop.shaded.kryo.serializers.ExternalizableSerializer;
 import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
 import scala.Tuple2;
 import scala.Tuple3;
-import scala.collection.mutable.WrappedArray;
+import scala.collection.immutable.ArraySeq;
 import scala.runtime.BoxedUnit;
 
 import java.io.Serializable;
@@ -147,7 +147,7 @@ public final class GryoSerializer extends Serializer implements Serializable {
                 super.register(GryoIo.class, Class.forName("scala.None$"), new JavaSerializer());
                 super.register(GryoIo.class, Class.forName("scala.Some$"), new JavaSerializer());
                 super.register(GryoIo.class, Class.forName("scala.Some"), new JavaSerializer());
-                super.register(GryoIo.class, WrappedArray.ofRef.class, new WrappedArraySerializer());
+                super.register(GryoIo.class, ArraySeq.ofRef.class, new WrappedArraySerializer());
                 super.register(GryoIo.class, MessagePayload.class, null);
                 super.register(GryoIo.class, ViewIncomingPayload.class, null);
                 super.register(GryoIo.class, ViewOutgoingPayload.class, null);
