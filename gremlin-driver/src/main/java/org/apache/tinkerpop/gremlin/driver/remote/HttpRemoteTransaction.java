@@ -320,7 +320,26 @@ public class HttpRemoteTransaction implements RemoteTransaction {
         }
 
         try {
-            return pinnedClient.submit(gremlin, builder.create());
+            final ResultSet rs = pinnedClient.submit(gremlin, builder.create());
+
+            // pinnedClient.submit() returns as soon as the request is written to the wire - it does NOT wait for the
+            // server. That is unsafe for a transaction: a request is fire-and-forget at this point, so a later request
+            // on this transaction (e.g. a commit following an addV) could reach the server first and the earlier
+            // request's work would be lost. Block until the server's response headers come back, which means the
+            // request has made a full round trip and the server has ordered it on the transaction's single-threaded
+            // executor ahead of anything we send next. We deliberately wait on headers, not the full body, so large
+            // result sets still stream lazily to the caller via the returned ResultSet.
+            //
+            // This wait is intentionally unbounded: we must NOT abandon it on a client-side stopwatch. A slow server
+            // may still be going to run the request, so giving up early and letting the caller retry the same traversal
+            // could execute it twice. The wait ends only on a definitive signal - headers arriving (success) or the
+            // future completing exceptionally because the request can no longer succeed: a connection close
+            // (channelInactive -> markError), a transport read timeout (ReadTimeoutHandler -> exceptionCaught ->
+            // markError), or a server error response. The connection's own read timeout, not this method, bounds how
+            // long we can wait for an unresponsive server.
+            rs.headersReceivedAsync().get();
+
+            return rs;
         } catch (Exception e) {
             throw new RuntimeException("Transaction request failed: " + e.getMessage(), e);
         }
