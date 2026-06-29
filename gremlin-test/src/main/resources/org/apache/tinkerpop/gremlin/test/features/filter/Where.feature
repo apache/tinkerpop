@@ -446,3 +446,148 @@ Feature: Step - where()
       | v[vadas] |
       | v[josh] |
       | v[peter] |
+
+  # where(P.gt(traversal)) - compare current traverser value against resolved traversal result
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_valuesXageX_whereXgtXconstantX29XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").where(P.gt(__.constant(29)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[32].i |
+      | d[35].i |
+
+  # where(P.lt(traversal)) - filter ages less than a constant
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_valuesXageX_whereXltXconstantX32XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").where(P.lt(__.constant(32)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[27].i |
+
+  # where(P.eq(traversal)) - exact match against resolved value
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_valuesXageX_whereXeqXconstantX29XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").where(P.eq(__.constant(29)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+
+  # where(P.within(traversal)) - collection membership against resolved traversal results
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_valuesXageX_whereXwithinXVXvid1X_outXknowsX_valuesXageXXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().values("age").where(P.within(__.V(vid1).out("knows").values("age").fold()))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[27].i |
+      | d[32].i |
+
+  # where(P.neq(traversal)) - not equal to resolved value
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_valuesXnameX_whereXneqXconstantXmarkoXXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").where(P.neq(__.constant("marko")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
+
+  # Empty traversal result - filters out (no match)
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_valuesXageX_whereXeqXconstantX99999XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").where(P.eq(__.constant(99999)))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  # where(P.gt(traversal)) with by() modulator - compare property values
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_whereXgtXVXvid1X_valuesXageXXX_byXageX_valuesXnameX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().where(P.gt(__.V(vid1).values("age"))).by("age").values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | josh |
+      | peter |
+
+  # Mixed ConnectiveP: traversal-bearing predicate AND scope-label predicate
+  # Verifies that scope-label resolution still works when combined with traversal predicates
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_VX1X_asXaX_V_valuesXageX_whereXgteXconstantX0XX_andXneqXaXXX_byX_byXageX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).as("a").V().hasLabel("person").values("age").where(P.gte(__.constant(0)).and(P.neq("a"))).by().by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
+
+  # Mixed ConnectiveP: scope-label predicate AND traversal-bearing predicate (reversed order)
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_VX1X_asXaX_V_valuesXageX_whereXneqXaX_andXgtXVXvid1X_valuesXageXXXX_byX_byXageX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).as("a").V().hasLabel("person").values("age").where(P.neq("a").and(P.gt(__.V(vid1).values("age")))).by().by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[32].i |
+      | d[35].i |
+
+  # Mixed ConnectiveP with OR: traversal OR scope-label
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_VX1X_asXaX_V_valuesXageX_whereXeqXVXvid1X_valuesXageXX_orXeqXaXXX_byX_byXageX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).as("a").V().hasLabel("person").values("age").where(P.eq(__.V(vid1).values("age")).or(P.eq("a"))).by().by("age")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |

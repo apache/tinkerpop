@@ -22,10 +22,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ReadOnlyTraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
@@ -45,7 +45,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WherePredicateStep<S> extends FilterStep<S> implements Scoping, PathProcessor, ByModulating, TraversalParent {
+public final class WherePredicateStep<S> extends FilterStep<S> implements Scoping, PathProcessor, ByModulating, ReadOnlyTraversalParent {
 
     protected String startKey;
     protected List<String> selectKeys;
@@ -54,6 +54,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     protected Set<String> keepLabels;
 
     protected TraversalRing<S, ?> traversalRing = new TraversalRing<>();
+    private List<Traversal.Admin<?, ?>> predicateTraversals;
 
     public WherePredicateStep(final Traversal.Admin traversal, final Optional<String> startKey, final P<String> predicate) {
         super(traversal);
@@ -63,12 +64,19 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
         this.predicate = (P) predicate;
         this.selectKeys = new ArrayList<>();
         this.configurePredicates(this.predicate);
+        // Cache and integrate child traversals from the predicate
+        this.predicateTraversals = new ArrayList<>();
+        P.collectTraversals(this.predicate, this.predicateTraversals);
+        for (final Traversal.Admin<?, ?> t : this.predicateTraversals) {
+            this.integrateChild(t);
+        }
     }
 
     private void configurePredicates(final P<Object> predicate) {
         if (predicate instanceof ConnectiveP)
             ((ConnectiveP<Object>) predicate).getPredicates().forEach(this::configurePredicates);
-        else {
+        else if (!predicate.hasTraversal()) {
+            // Only configure scope keys for non-traversal predicates (string label references)
             final String selectKey = getSelectKey(predicate);
             this.selectKeys.add(selectKey);
             this.scopeKeys.add(selectKey);
@@ -82,6 +90,9 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
                     return false;
             }
 
+            return true;
+        } else if (predicate.hasTraversal()) {
+            // Already resolved by P.resolve() — skip, consuming no selectKey entry
             return true;
         } else {
             final TraversalProduct product = TraversalUtil.produce((S) this.getSafeScopeValue(Pop.last, selectKeysIterator.next(), traverser), this.traversalRing.next());
@@ -112,14 +123,31 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
+        // Resolve the left-hand value (current traverser or startKey scope value)
         final TraversalProduct product = null == this.startKey ?
                 TraversalUtil.produce(traverser, this.traversalRing.next()) :
                 TraversalUtil.produce((S) this.getSafeScopeValue(Pop.last, this.startKey, traverser), this.traversalRing.next());
 
-        final boolean predicateValuesProductive = this.setPredicateValues(this.predicate, traverser, this.selectKeys.iterator());
-        this.traversalRing.reset();
+        if (!product.isProductive()) {
+            this.traversalRing.reset();
+            return false;
+        }
 
-        return product.isProductive() && predicateValuesProductive && this.predicate.test(product.get());
+        if (this.predicate.hasTraversal()) {
+            // Resolve traversal-bearing predicates first
+            this.predicate.resolve(traverser);
+        }
+
+        // Resolve scope-label children (setPredicateValues skips traversal-bearing leaves)
+        if (!this.selectKeys.isEmpty()) {
+            final boolean predicateValuesProductive = this.setPredicateValues(this.predicate, traverser, this.selectKeys.iterator());
+            this.traversalRing.reset();
+            if (!predicateValuesProductive) return false;
+        } else {
+            this.traversalRing.reset();
+        }
+
+        return this.predicate.test(product.get());
     }
 
     @Override
@@ -136,7 +164,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     public HashSet<PopInstruction> getPopInstructions() {
         final HashSet<PopInstruction> popInstructions = new HashSet<>();
         popInstructions.addAll(Scoping.super.getPopInstructions());
-        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        popInstructions.addAll(ReadOnlyTraversalParent.super.getPopInstructions());
         return popInstructions;
     }
 
@@ -145,6 +173,8 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
         final WherePredicateStep<S> clone = (WherePredicateStep<S>) super.clone();
         clone.predicate = this.predicate.clone();
         clone.traversalRing = this.traversalRing.clone();
+        clone.predicateTraversals = new ArrayList<>();
+        P.collectTraversals(clone.predicate, clone.predicateTraversals);
         return clone;
     }
 
@@ -152,6 +182,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
         this.traversalRing.getTraversals().forEach(this::integrateChild);
+        this.predicateTraversals.forEach(this::integrateChild);
     }
 
     @Override
@@ -166,7 +197,12 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
 
     @Override
     public List<Traversal.Admin<S, ?>> getLocalChildren() {
-        return (List) this.traversalRing.getTraversals();
+        if (this.predicateTraversals.isEmpty()) {
+            return (List) this.traversalRing.getTraversals();
+        }
+        final List<Traversal.Admin<S, ?>> children = new ArrayList<>((List) this.traversalRing.getTraversals());
+        children.addAll((List) this.predicateTraversals);
+        return children;
     }
 
     @Override

@@ -91,6 +91,15 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added transaction closure methods (`executeInTx`/`evaluateInTx`) on `GraphTraversalSource` in all GLVs that wrap the begin/commit/rollback lifecycle, so a lambda receives the transaction-bound `g` and is auto-committed on success or rolled back on error.
 * Changed default transaction close behavior from commit to rollback across all GLVs to align with embedded graph defaults.
 * Refactored Go driver connection to block until response headers arrive, enabling synchronous error returns and proper transaction ordering.
+* Added child traversal support to `has()`, `hasLabel()`, `V()`, `E()`, `property()`, `is()`, `where(P)`, `P.eq/neq/gt/lt/gte/lte/within/without()`, and `TextP` predicates. Child traversals are resolved per-traverser at runtime, enabling dynamic filtering and lookup patterns.
+* Added multi-traversal `P.within(trav1, trav2, ...)` and `P.without(trav1, trav2, ...)` which combine results from multiple child traversals for collection membership testing.
+* Added `V(traversal)` and `E(traversal)` as start steps with synthetic traverser seeding, consistent with `mergeV(traversal)` behavior.
+* Added `ReadOnlyChildVerificationStrategy` that blocks mutating steps (`addV`, `addE`, `drop`, etc.) inside child traversals. All child traversals must be read-only.
+* Added `hasLabel(Traversal)` overload with grammar support for dynamic label filtering.
+* Added traversal-bearing predicate support to `where(P)` - resolves child traversal and tests against current value when `P.hasTraversal()` is true.
+* Added rejection of traversal-bearing predicates in `choose(P)` and `choose().option(P, ...)` - the predicate's child traversal cannot be resolved in the branch-selection context.
+* Added runtime Map validation for `property(traversal)` - rejects results that are not a `Map` of property key/value pairs.
+* Added mixed traversal/literal detection in `P.within()` and `P.without()` - throws `IllegalArgumentException` with guidance to wrap literals in `__.constant()`.
 * Removed `uuid` dependency from `gremlin-javascript` in favor of the built-in `globalThis.crypto.randomUUID()`.
 * Added streaming HTTP response support to `gremlin-driver` for incremental result deserialization over GraphBinary.
 * Connected HTTP streaming response deserialization to the traversal API in `gremlin-javascript`, enabling `next()` to return the first result without waiting for the full response.

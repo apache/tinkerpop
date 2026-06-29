@@ -62,8 +62,18 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
 
     private Parameters withConfiguration = new Parameters();
 
+    /**
+     * Marks the single-argument {@code property(traversal)} (Map-producing) form.
+     */
+    private boolean mapForm;
+
     public AddPropertyStepPlaceholder(final Traversal.Admin traversal, final VertexProperty.Cardinality cardinality, final Object keyObject, final Object valueObject) {
+        this(traversal, cardinality, keyObject, valueObject, false);
+    }
+
+    public AddPropertyStepPlaceholder(final Traversal.Admin traversal, final VertexProperty.Cardinality cardinality, final Object keyObject, final Object valueObject, final boolean mapForm) {
         super(traversal);
+        this.mapForm = mapForm;
         if (keyObject instanceof GValue) {
             throw new IllegalArgumentException("GValue is not allowed for property keys");
         }
@@ -128,13 +138,14 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
         return Objects.equals(key, that.key) &&
                 Objects.equals(value, that.value) &&
                 cardinality == that.cardinality &&
+                mapForm == that.mapForm &&
                 Objects.equals(properties, that.properties) &&
                 Objects.equals(withConfiguration, that.withConfiguration);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), key, value, cardinality, properties, withConfiguration);
+        return Objects.hash(super.hashCode(), key, value, cardinality, mapForm, properties, withConfiguration);
     }
 
     @Override
@@ -176,6 +187,7 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
     public AddPropertyStepPlaceholder<S> clone() {
         final AddPropertyStepPlaceholder<S> clone = (AddPropertyStepPlaceholder<S>) super.clone();
         clone.cardinality = cardinality;
+        clone.mapForm = mapForm;
 
         // Attempt to deep clone key for Traversal and GValue. Shallow copy is fine if key is a String or enum
         if (this.key instanceof Traversal) {
@@ -199,6 +211,7 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
         clone.properties = new HashMap<>();
         for (Map.Entry<Object, List<Object>> entry : this.properties.entrySet()) {
             final Object key = entry.getKey();
+            final Object clonedKey = key instanceof Traversal ? ((Traversal<?, ?>) key).asAdmin().clone() : key;
             final List<Object> oldValues = entry.getValue();
             final List<Object> newValues = new ArrayList<>(oldValues.size());
             for (Object v : oldValues) {
@@ -210,7 +223,7 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
                     newValues.add(v);
                 }
             }
-            clone.properties.put(key, newValues);
+            clone.properties.put(clonedKey, newValues);
         }
 
         return clone;
@@ -218,7 +231,7 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
 
     @Override
     public AddPropertyStep<S> asConcreteStep() {
-        AddPropertyStep<S> step = new AddPropertyStep<>(traversal, cardinality, key, value instanceof GValue ? ((GValue<?>) value).get() : value);
+        AddPropertyStep<S> step = new AddPropertyStep<>(traversal, cardinality, key, value instanceof GValue ? ((GValue<?>) value).get() : value, mapForm);
 
         for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
             for (Object value : entry.getValue()) {

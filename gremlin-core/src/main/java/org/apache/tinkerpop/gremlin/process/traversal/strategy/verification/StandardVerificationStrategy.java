@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finaliza
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ReadOnlyTraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
@@ -32,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierS
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.RequirementsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ReadOnlyChildValidator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -75,6 +77,23 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
             // prevents silly stuff like g.V().emit()
             if (step instanceof RepeatStep && null == ((RepeatStep) step).getRepeatTraversal())
                 throw new VerificationException("The repeat()-traversal was not defined:" + traversal, traversal);
+
+            if (step instanceof ReadOnlyTraversalParent) {
+                for (final Traversal.Admin<?, ?> child : ((ReadOnlyTraversalParent) step).getLocalChildren()) {
+                    try {
+                        ReadOnlyChildValidator.validate(child);
+                    } catch (final IllegalArgumentException e) {
+                        throw new VerificationException(e.getMessage(), traversal);
+                    }
+                }
+                for (final Traversal.Admin<?, ?> child : ((ReadOnlyTraversalParent) step).getGlobalChildren()) {
+                    try {
+                        ReadOnlyChildValidator.validate(child);
+                    } catch (final IllegalArgumentException e) {
+                        throw new VerificationException(e.getMessage(), traversal);
+                    }
+                }
+            }
 
         }
 

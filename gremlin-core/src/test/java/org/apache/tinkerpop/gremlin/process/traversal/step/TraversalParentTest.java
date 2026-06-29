@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -47,10 +48,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeStepContract
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AllStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AnyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CombineStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConcatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.DateDiffStep;
@@ -106,6 +113,7 @@ import org.junit.runners.Parameterized;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -133,9 +141,18 @@ public class TraversalParentTest {
     public Traversal.Admin<?,?> traversal;
 
     @Parameterized.Parameter(value = 2)
+    /**
+     * Expected global children before strategy application. If null, pre-strategy assertions are skipped entirely
+     * (useful for cases where the step under test only exists after strategy folding, e.g. multiple HasContainers
+     * folded into a single HasStep by InlineFilterStrategy).
+     */
     public List<Traversal.Admin<?,?>> expectedGlobalChildren;
 
     @Parameterized.Parameter(value = 3)
+    /**
+     * Expected local children before strategy application. If null, pre-strategy assertions are skipped entirely.
+     * See {@link #expectedGlobalChildren} for details.
+     */
     public List<Traversal.Admin<?,?>> expectedLocalChildren;
 
     /**
@@ -389,6 +406,30 @@ public class TraversalParentTest {
                         List.of(__.outE(), __.has("age", P.gte(32))),
                         null, null
                 },
+                {AllStep.class,
+                        g.V().values("age").fold().all(P.eq(__.constant(29))),
+                        List.of(),
+                        List.of(__.constant(29)),
+                        null, null
+                },
+                {AllStep.class,
+                        g.V().values("age").fold().all(P.within(__.V().values("age").fold(), __.constant(29))),
+                        List.of(),
+                        List.of(__.V().values("age").fold(), __.constant(29)),
+                        null, null
+                },
+                {AnyStep.class,
+                        g.V().values("age").fold().any(P.eq(__.constant(29))),
+                        List.of(),
+                        List.of(__.constant(29)),
+                        null, null
+                },
+                {AnyStep.class,
+                        g.V().values("age").fold().any(P.within(__.V().values("age").fold(), __.constant(29))),
+                        List.of(),
+                        List.of(__.V().values("age").fold(), __.constant(29)),
+                        null, null
+                },
                 {OrStep.class,
                         g.V().or(__.outE(), __.has("age", P.gte(32))),
                         List.of(),
@@ -539,10 +580,53 @@ public class TraversalParentTest {
                         List.of(__.constant("key"), __.constant("value")),
                         null, null
                 },
+                {GraphStep.class,
+                        g.V(__.constant(1)),
+                        List.of(),
+                        List.of(__.constant(1)),
+                        null, null
+                },
+                {GraphStep.class,
+                        g.E(__.constant(1)),
+                        List.of(),
+                        List.of(__.constant(1)),
+                        null, null
+                },
+                {HasStep.class,
+                        g.V().has("age", P.eq(__.constant(29))),
+                        List.of(),
+                        List.of(__.constant(29)),
+                        null, null
+                },
+                {HasStep.class,
+                        g.V().has("name", P.within(__.V().values("name").fold(), __.constant("marko"))),
+                        List.of(),
+                        List.of(__.V().values("name").fold(), __.constant("marko")),
+                        null, null
+                },
+                {HasStep.class,
+                        g.V().has("age", P.gt(__.constant(27))).has("name", P.eq(__.constant("marko"))),
+                        null,
+                        null,
+                        List.of(),
+                        List.of(__.constant(27), __.constant("marko"))
+                },
                 {IntersectStep.class,
                         g.V().fold().intersect(__.constant(List.of(1, 2, 3))),
                         List.of(),
                         List.of(__.constant(List.of(1, 2, 3))),
+                        null, null
+                },
+                {IsStep.class,
+                        g.V().values("age").is(P.eq(__.constant(29))),
+                        List.of(),
+                        List.of(__.constant(29)),
+                        null, null
+                },
+                {IsStep.class,
+                        g.V().values("age").is(P.within(__.V().values("age").fold(), __.constant(29))),
+                        List.of(),
+                        List.of(__.V().values("age").fold(), __.constant(29)),
                         null, null
                 },
                 {LocalStep.class,
@@ -585,6 +669,18 @@ public class TraversalParentTest {
                         g.V().not(__.has("age", P.gt(27))),
                         List.of(),
                         List.of(__.has("age", P.gt(27))),
+                        null, null
+                },
+                {NoneStep.class,
+                        g.V().values("age").fold().none(P.eq(__.constant(29))),
+                        List.of(),
+                        List.of(__.constant(29)),
+                        null, null
+                },
+                {NoneStep.class,
+                        g.V().values("age").fold().none(P.within(__.V().values("age").fold(), __.constant(29))),
+                        List.of(),
+                        List.of(__.V().values("age").fold(), __.constant(29)),
                         null, null
                 },
                 {OptionalStep.class,
@@ -918,6 +1014,12 @@ public class TraversalParentTest {
                         List.of(__.constant("value")),
                         null, null
                 },
+                {WherePredicateStep.class,
+                        g.V().as("a").out().as("b").where("a", P.eq(__.constant("b"))),
+                        List.of(),
+                        List.of(__.constant("b")),
+                        null, null
+                },
                 {WhereTraversalStep.class,
                         g.V().as("a").out().as("b").where(__.as("a").out().as("c")),
                         List.of(),
@@ -929,24 +1031,54 @@ public class TraversalParentTest {
 
     @Test
     public void doTest() {
-        verifyExpectedParents(expectedGlobalChildren, expectedLocalChildren, "(pre-strategy application)");
+        if (expectedGlobalChildren != null && expectedLocalChildren != null) {
+            verifyExpectedParents(expectedGlobalChildren, expectedLocalChildren, "(pre-strategy application)");
 
-        traversal = traversal.clone();
+            final List<Traversal.Admin<?,?>> preCloneGlobal = getChildTraversals(true);
+            final List<Traversal.Admin<?,?>> preCloneLocal = getChildTraversals(false);
 
-        verifyExpectedParents(expectedGlobalChildren, expectedLocalChildren, "(cloned traversal, pre-strategy application)");
+            traversal = traversal.clone();
+
+            verifyExpectedParents(expectedGlobalChildren, expectedLocalChildren, "(cloned traversal, pre-strategy application)");
+            verifyCloneIndependence(preCloneGlobal, getChildTraversals(true), "(cloned traversal, pre-strategy application)");
+            verifyCloneIndependence(preCloneLocal, getChildTraversals(false), "(cloned traversal, pre-strategy application)");
+        }
 
         traversal.getStrategies().addStrategies(GValueReductionStrategy.instance());
         traversal.applyStrategies();
 
-        verifyExpectedParents(postStrategyExpectedGlobalChildren == null ? expectedGlobalChildren : postStrategyExpectedGlobalChildren,
-                postStrategyExpectedLocalChildren == null ? expectedLocalChildren : postStrategyExpectedLocalChildren,
-                "(pre-strategy application)");
+        final List<Traversal.Admin<?,?>> expectedPostGlobal = postStrategyExpectedGlobalChildren == null ? expectedGlobalChildren : postStrategyExpectedGlobalChildren;
+        final List<Traversal.Admin<?,?>> expectedPostLocal = postStrategyExpectedLocalChildren == null ? expectedLocalChildren : postStrategyExpectedLocalChildren;
+
+        verifyExpectedParents(expectedPostGlobal, expectedPostLocal, "(post-strategy application)");
+
+        final List<Traversal.Admin<?,?>> preClonePostStratGlobal = getChildTraversals(true);
+        final List<Traversal.Admin<?,?>> preClonePostStratLocal = getChildTraversals(false);
 
         traversal = traversal.clone();
 
-        verifyExpectedParents(postStrategyExpectedGlobalChildren == null ? expectedGlobalChildren : postStrategyExpectedGlobalChildren,
-                postStrategyExpectedLocalChildren == null ? expectedLocalChildren : postStrategyExpectedLocalChildren,
-                "(cloned traversal, pre-strategy application)");
+        verifyExpectedParents(expectedPostGlobal, expectedPostLocal, "(cloned traversal, post-strategy application)");
+        verifyCloneIndependence(preClonePostStratGlobal, getChildTraversals(true), "(cloned traversal, post-strategy application)");
+        verifyCloneIndependence(preClonePostStratLocal, getChildTraversals(false), "(cloned traversal, post-strategy application)");
+    }
+
+    private List<Traversal.Admin<?,?>> getChildTraversals(boolean global) {
+        List<Step<?,?>> steps = TraversalHelper.getStepsOfAssignableClass(stepClass, traversal);
+        if (steps.size() != 1 || !(steps.get(0) instanceof TraversalParent)) return List.of();
+        TraversalParent parent = (TraversalParent) steps.get(0);
+        return new ArrayList<>(global ? parent.getGlobalChildren() : parent.getLocalChildren());
+    }
+
+    private void verifyCloneIndependence(List<Traversal.Admin<?,?>> originalChildren, List<Traversal.Admin<?,?>> clonedChildren, String messageSuffix) {
+        for (Traversal.Admin<?, ?> clonedChild : clonedChildren) {
+            if (clonedChild instanceof AbstractLambdaTraversal) continue;
+            for (Traversal.Admin<?, ?> originalChild : originalChildren) {
+                assertFalse(
+                        String.format("Cloned child traversal %s should be a different instance from original for Traversal [%s] %s",
+                                clonedChild.toString(), traversal, messageSuffix),
+                        clonedChild == originalChild);
+            }
+        }
     }
 
     private void verifyExpectedParents(List<Traversal.Admin<?,?>> expectedGlobalChildren, List<Traversal.Admin<?,?>> expectedLocalChildren, String messageSuffix) {

@@ -403,6 +403,63 @@ partial work is discarded if the user forgets to call `commit()`. In Java (both 
 can still be overridden via `tx.onClose(Transaction.CLOSE_BEHAVIOR.COMMIT)`. The non-Java GLVs do not support
 configuring close behavior and always rollback.
 
+==== Expanding Dynamic Arguments to Additional Steps
+
+Prior to 4.0, comparing a traverser's value against a dynamically computed reference required several coordinated
+step labels and `where()` comparison. For example, finding all people older than "marko" previously required:
+
+[source,groovy]
+----
+// Old way: label marko's age, compare via where()
+gremlin> g.V(1).values("age").as("markosAge").
+......1>   V().hasLabel("person").as("p").
+......2>   values("age").as("otherAge").
+......3>   where("otherAge", gt("markosAge")).
+......4>   select("p").values("name")
+==>josh
+==>peter
+----
+
+This pattern required several coordinated step labels and could not easily compose with other predicates. With
+traversal-accepting arguments, the same query becomes a single, readable step:
+
+[source,groovy]
+----
+// New way: traversal inside the predicate
+gremlin> g.V().has("age", P.gt(__.V(1).values("age"))).values("name")
+==>josh
+==>peter
+----
+
+Steps and predicates that previously only accepted literal values now accept child traversals resolved per-traverser
+at runtime. Affected steps: `has()`, `hasId()`, `hasKey()`, `hasLabel()`, `hasValue()`, `V()`, `E()`, `property()`,
+`is()`, `where(P)`, and all `P` and `TextP` predicates.
+
+[source,groovy]
+----
+// Multi-source filtering with within() - combine sources in one traversal with union().fold()
+gremlin> g.V().has("name", P.within(__.union(__.V(1).out("knows").values("name"), __.constant("peter")).fold()))
+==>v[2]
+==>v[4]
+==>v[6]
+
+// Set multiple properties from a computed Map
+gremlin> g.V(4).property(__.V(1).project("friendCount").by(__.out("knows").count()))
+==>v[4]
+----
+
+Users should look to simplify existing traversals that use `as()`/`where()`/`select()` patterns solely to compare
+a traverser against a dynamically computed value. In particular, patterns of the form
+`__.as("x")...where("x", P.gt("y"))` can often be replaced with a single `has()` or `is()` step containing
+a traversal predicate.
+
+See: <<has-step,has()>>, <<v-step,V()>>, <<property-step,property()>>, <<is-step,is()>>,
+<<where-step,where()>>,
+link:https://issues.apache.org/jira/browse/TINKERPOP-2586[TINKERPOP-2586],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2777[TINKERPOP-2777],
+link:https://issues.apache.org/jira/browse/TINKERPOP-3005[TINKERPOP-3005],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1463[TINKERPOP-1463]
+
 ==== Removed `uuid` Dependency in gremlin-javascript
 
 The `uuid` npm package has been removed from `gremlin-javascript`. UUID generation now uses the built-in
@@ -951,6 +1008,21 @@ Kryo's default `Map` serializer because it extended `HashMap`, whereas in 4.x it
 serializer. As a result, Gryo-serialized `Tree` data written by 3.x cannot be read by 4.x and vice versa. The
 Gryo type registration id (`61`) is unchanged and 4.x-to-4.x Gryo round-trips correctly; this Gryo break is
 expected for the 4.0.0 major release.
+
+===== Traversal-Accepting Steps - HasContainer Guard
+
+Steps and predicates now accept child traversals resolved at runtime. `HasContainer` instances that hold a child
+traversal cannot be folded into index lookups because their value is dynamic (resolved per-traverser). Providers that
+fold `HasContainer` predicates into their graph step must guard against this:
+
+[source,java]
+----
+if (hasContainer.hasTraversal()) continue;  // skip - dynamic value, cannot fold into index
+----
+
+`GraphStep.processHasContainerIds()` already includes this guard. Providers that implement their own `HasContainer`
+folding strategy should add the same check. Without it, the container's value is read before it has been resolved
+against a traverser, so an unresolved value would be folded into the index lookup and produce incorrect results.
 
 ==== Graph Driver Providers
 

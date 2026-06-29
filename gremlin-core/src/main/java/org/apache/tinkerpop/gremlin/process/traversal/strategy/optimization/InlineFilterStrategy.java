@@ -62,6 +62,10 @@ import java.util.Set;
  * pure filters with inlining reduces the number of variations of a filter that a graph provider may need to reason
  * about when writing their own strategies. As a result, this strategy helps increase the likelihood that a provider's
  * filtering optimization will succeed at re-writing the traversal.
+ * <p>
+ * Has-steps containing traversal-bearing predicates (i.e. {@code has("age", P.gt(__.V(1).values("age")))}) are
+ * excluded from inlining because their child traversals must be resolved per-traverser at runtime and cannot be
+ * safely merged with adjacent has-steps or folded into edge labels.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @example <pre>
@@ -114,6 +118,14 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
     ///////////////////////////
 
     private static boolean processHasStep(final HasStep<?> step, final Traversal.Admin<?, ?> traversal) {
+        // Skip inlining for has-steps with traversal-bearing predicates. These contain child traversals that
+        // must be resolved per-traverser at runtime and cannot be merged into adjacent steps.
+        if (step.getHasContainers().stream().anyMatch(HasContainer::hasTraversal)) return false;
+        if (step.getPreviousStep() instanceof HasStep) {
+            // Also skip if the previous has-step contains traversal-bearing predicates, since merging into
+            // it would mix static and dynamic predicates in a single step.
+            if (((HasStep<?>) step.getPreviousStep()).getHasContainers().stream().anyMatch(HasContainer::hasTraversal)) return false;
+        }
         if (step.getPreviousStep() instanceof HasStep) {
             final HasStep<?> previousStep = (HasStep<?>) step.getPreviousStep();
             final List<HasContainer> hasContainers = new ArrayList<>(step.getHasContainers());
@@ -221,6 +233,11 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
             InlineFilterStrategy.instance().apply(childTraversal);
             for (final Step<?, ?> childStep : childTraversal.getSteps()) {
                 if (childStep instanceof HasStep) {
+                    // Skip optimization if any HasContainer has a traversal-bearing predicate
+                    if (((HasStep<?>) childStep).getHasContainers().stream().anyMatch(HasContainer::hasTraversal)) {
+                        process = false;
+                        break;
+                    }
                     P p = null;
                     for (final HasContainer hasContainer : ((HasStep<?>) childStep).getHasContainers()) {
                         if (null == key)

@@ -741,6 +741,14 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasKey step to that traversal.
         /// </summary>
+        public static GraphTraversal<object, object> HasKey(ITraversal traversal)
+        {
+            return new GraphTraversal<object, object>().HasKey(traversal);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasKey step to that traversal.
+        /// </summary>
         public static GraphTraversal<object, object> HasKey(string? label, params string?[]? otherLabels)
         {
             return otherLabels is { Length: 0 }
@@ -754,6 +762,14 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, object> HasLabel(P? predicate)
         {
             return new GraphTraversal<object, object>().HasLabel(predicate);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasLabel step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> HasLabel(ITraversal traversal)
+        {
+            return new GraphTraversal<object, object>().HasLabel(traversal);            
         }
 
         /// <summary>
@@ -790,6 +806,14 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, object> HasValue(P? predicate)
         {
             return new GraphTraversal<object, object>().HasValue(predicate);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the hasValue step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> HasValue(ITraversal traversal)
+        {
+            return new GraphTraversal<object, object>().HasValue(traversal);            
         }
 
         /// <summary>
@@ -1276,6 +1300,15 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, object> Property(IDictionary<object, object> map)
         {
             return new GraphTraversal<object, object>().Property(map);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the property step with a
+        ///     map-producing traversal to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Property(ITraversal propertyTraversal)
+        {
+            return new GraphTraversal<object, object>().Property(propertyTraversal);
         }
 
         /// <summary>

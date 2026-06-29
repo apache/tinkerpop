@@ -1071,6 +1071,15 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the hasKey step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
+        public GraphTraversal<TStart, TEnd> HasKey (ITraversal traversal)
+        {
+            GremlinLang.AddStep("hasKey", traversal);
+            return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
+        ///     Adds the hasKey step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
         public GraphTraversal<TStart, TEnd> HasKey (string? label, params string?[]? otherLabels)
         {
             List<object?> args;
@@ -1093,6 +1102,15 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal<TStart, TEnd> HasLabel (P? predicate)
         {
             GremlinLang.AddStep("hasLabel", predicate);
+            return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
+        ///     Adds the hasLabel step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> HasLabel (ITraversal traversal)
+        {
+            GremlinLang.AddStep("hasLabel", traversal);
             return Wrap<TStart, TEnd>(this);
         }
 
@@ -1149,6 +1167,15 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal<TStart, TEnd> HasValue (P? predicate)
         {
             GremlinLang.AddStep("hasValue", predicate);
+            return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
+        ///     Adds the hasValue step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> HasValue (ITraversal traversal)
+        {
+            GremlinLang.AddStep("hasValue", traversal);
             return Wrap<TStart, TEnd>(this);
         }
 
@@ -1847,6 +1874,16 @@ namespace Gremlin.Net.Process.Traversal
                     Property(cardinality, entry.Key, entry.Value);
                 }
             }
+            return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
+        ///     Adds the property step with a map-producing traversal to this <see cref="GraphTraversal{SType, EType}" />.
+        ///     The traversal must produce a Map whose entries become properties on the element.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> Property(ITraversal propertyTraversal)
+        {
+            GremlinLang.AddStep("property", propertyTraversal);
             return Wrap<TStart, TEnd>(this);
         }
 

@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ReadOnlyChildValidator;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -548,6 +549,24 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     /**
+     * Spawns a {@link GraphTraversal} starting with vertices whose IDs are resolved from a child traversal.
+     * As a start step, a synthetic traverser is generated to seed the child traversal evaluation,
+     * consistent with how {@code mergeV(traversal)} handles start steps. The child traversal should
+     * be self-contained (e.g., {@code __.V(1).id()}) rather than dependent on an incoming traverser.
+     *
+     * @param traversal the child traversal that produces vertex IDs
+     * @since 4.0.0
+     */
+    public GraphTraversal<Vertex, Vertex> V(final Traversal<?, ?> traversal) {
+        if (null == traversal) return V(new Object[]{ null });
+        ReadOnlyChildValidator.validate(traversal.asAdmin());
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.V, traversal);
+        final GraphTraversal.Admin<Vertex, Vertex> traversalAdmin = new DefaultGraphTraversal<>(clone);
+        return traversalAdmin.addStep(new GraphStep<>(traversalAdmin, Vertex.class, true, traversal.asAdmin()));
+    }
+
+    /**
      * Spawns a {@link GraphTraversal} starting with all edges or some subset of edges as specified by their unique
      * identifier.
      *
@@ -566,6 +585,24 @@ public class GraphTraversalSource implements TraversalSource {
             step = new GraphStep<>(traversal, Edge.class, true, ids);
         }
         return traversal.addStep(step);
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} starting with edges whose IDs are resolved from a child traversal.
+     * As a start step, a synthetic traverser is generated to seed the child traversal evaluation,
+     * consistent with how {@code mergeE(traversal)} handles start steps. The child traversal should
+     * be self-contained (e.g., {@code __.V(1).outE().id()}) rather than dependent on an incoming traverser.
+     *
+     * @param traversal the child traversal that produces edge IDs
+     * @since 4.0.0
+     */
+    public GraphTraversal<Edge, Edge> E(final Traversal<?, ?> traversal) {
+        if (null == traversal) return E(new Object[]{ null });
+        ReadOnlyChildValidator.validate(traversal.asAdmin());
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.E, traversal);
+        final GraphTraversal.Admin<Edge, Edge> traversalAdmin = new DefaultGraphTraversal<>(clone);
+        return traversalAdmin.addStep(new GraphStep<>(traversalAdmin, Edge.class, true, traversal.asAdmin()));
     }
 
     /**

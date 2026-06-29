@@ -30,32 +30,29 @@ g.V().has('name','marko').out('knows').has('age', gt(29)).values('name')
 In plain language, the above Gremlin asks, "What are the names of the people who Marko knows who are over the age of
 29?". In this case, "29" is known as a constant to the traversal. Of course, if the question is changed slightly to
 instead ask, "What are the names of the people who Marko knows who are older than he is?", the hardcoding of "29" will
-no longer suffice. There are multiple ways Gremlin would allow this second question to be answered. The first is
-obvious to any programmer - use a variable:
+no longer suffice. Rather than computing Marko's age in a separate query and passing it in as a variable, the value
+can be _induced_ from the traversal itself by supplying a child `Traversal` to the predicate. The child traversal is
+resolved for each traverser and its first result is used as the comparison value, so Marko's age is queried once and
+then applied to filter the people he knows:
 
 [gremlin-groovy,modern]
 ----
-vMarko = g.V().has('name','marko').next()
-g.V(vMarko).out('knows').has('age', gt(marko.value('age'))).values('name')
-----
-
-The downside to this approach is that it takes two separate traversals to answer the question. Ideally, there should
-be a single traversal, that can query "marko" once, determine his `age` and then use that for the value supplied to
-filter the people he knows. In this way the _value_ for the `age` in the `has()`-filter is _induced_ from the `Traversal`
-itself.
-
-[gremlin-groovy,modern]
-----
-g.V().has('name','marko').as('marko').      <1>
-  out('knows').as('friend').                <2>
-    where('friend', gt('marko')).by('age'). <3>
-  values('name')                            <4>
+g.V().has('name','marko').as('marko').                 <1>
+  out('knows').                                        <2>
+    has('age', gt(__.select('marko').values('age'))).  <3>
+  values('name')                                       <4>
 ----
 
 <1> Find the "marko" `Vertex` and label it as "marko".
-<2> Traverse out on the "knows" edges to the adjacent `Vertex` and label it as "friend".
-<3> Continue to traverser only if Marko's current friend is older than him.
+<2> Traverse out on the "knows" edges to Marko's friends.
+<3> Keep a friend only if their `age` is greater than Marko's. The child traversal `__.select('marko').values('age')`
+resolves Marko's age from the labelled "marko" vertex and `gt()` compares each friend's `age` against it.
 <4> Get the name of Marko's older friend.
+
+The child traversal supplied to a predicate must be read-only; mutating steps such as `addV()` or `property()` are
+rejected. See the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#a-note-on-predicates[A Note on Predicates]
+and link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[has()] sections of the reference documentation
+for more detail on traversal-bearing predicates.
 
 As another example of how traversal induced values can be used, consider a scenario where there was a graph that
 contained people, their friendship relationships, and the movies that they liked.

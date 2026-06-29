@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 
 import java.util.ArrayList;
@@ -133,5 +134,22 @@ public abstract class ConnectiveP<V> extends P<V> {
             allGValues.addAll(p.getGValues());
         }
         return allGValues;
+    }
+
+    @Override
+    public boolean hasTraversal() {
+        if (super.hasTraversal()) return true;
+        for (final P<?> p : this.predicates) {
+            if (p.hasTraversal()) return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void resolve(final Traverser.Admin<?> traverser) {
+        super.resolve(traverser);
+        for (final P<?> p : this.predicates) {
+            p.resolve(traverser);
+        }
     }
 }
