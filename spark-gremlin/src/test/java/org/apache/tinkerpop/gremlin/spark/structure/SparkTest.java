@@ -38,7 +38,7 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.junit.Test;
-import scala.collection.JavaConversions;
+import scala.jdk.javaapi.CollectionConverters;
 
 import java.io.File;
 
@@ -112,7 +112,7 @@ public class SparkTest extends AbstractSparkTest {
     }
 
     private static boolean hasPersistedRDD(final String name) {
-        for (final RDD<?> rdd : JavaConversions.asJavaIterable(Spark.getContext().persistentRdds().values())) {
+        for (final RDD<?> rdd : CollectionConverters.asJava(Spark.getContext().persistentRdds().values())) {
             if (null != rdd.name() && rdd.name().equals(name))
                 return true;
         }
@@ -121,7 +121,7 @@ public class SparkTest extends AbstractSparkTest {
 
     private static int getPersistedRDDSize() {
         int counter = 0;
-        for (final RDD<?> rdd : JavaConversions.asJavaIterable(Spark.getContext().persistentRdds().values())) {
+        for (final RDD<?> rdd : CollectionConverters.asJava(Spark.getContext().persistentRdds().values())) {
             if (null != rdd.name())
                 counter++;
         }
