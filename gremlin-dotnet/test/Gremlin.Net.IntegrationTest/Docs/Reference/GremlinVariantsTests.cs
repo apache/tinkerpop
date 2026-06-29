@@ -143,7 +143,7 @@ var username = "username";
 var password = "password";
 var gremlinServer = new GremlinServer("localhost", 8182, enableSsl: true);
 using var gremlinClient = new GremlinClient(gremlinServer,
-    interceptors: new[] { Auth.BasicAuth(username, password) });
+    interceptors: new[] { Auth.Basic(username, password) });
 // end::submittingScriptsWithAuthentication[]
         }
         

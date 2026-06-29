@@ -43,7 +43,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task BasicAuthShouldSetCorrectAuthorizationHeader()
         {
-            var interceptor = Auth.BasicAuth("user", "pass");
+            var interceptor = Auth.Basic("user", "pass");
             var context = CreateTestContext();
 
             await interceptor(context);
@@ -55,7 +55,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task BasicAuthShouldSetHeaderOnEveryInvocation()
         {
-            var interceptor = Auth.BasicAuth("user", "pass");
+            var interceptor = Auth.Basic("user", "pass");
             var context1 = CreateTestContext();
             var context2 = CreateTestContext();
 
@@ -70,7 +70,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task BasicAuthShouldHandleColonsInPassword()
         {
-            var interceptor = Auth.BasicAuth("user", "pass:with:colons");
+            var interceptor = Auth.Basic("user", "pass:with:colons");
             var context = CreateTestContext();
 
             await interceptor(context);
@@ -83,7 +83,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task BasicAuthShouldHandleUnicodeCharacters()
         {
-            var interceptor = Auth.BasicAuth("用户", "密码");
+            var interceptor = Auth.Basic("用户", "密码");
             var context = CreateTestContext();
 
             await interceptor(context);
@@ -96,7 +96,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task BasicAuthShouldOverwriteExistingAuthorizationHeader()
         {
-            var interceptor = Auth.BasicAuth("user", "pass");
+            var interceptor = Auth.Basic("user", "pass");
             var context = CreateTestContext();
             context.Headers["Authorization"] = "Bearer old-token";
 
@@ -109,7 +109,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task BasicAuthShouldHandleEmptyCredentials()
         {
-            var interceptor = Auth.BasicAuth("", "");
+            var interceptor = Auth.Basic("", "");
             var context = CreateTestContext();
 
             await interceptor(context);
@@ -140,7 +140,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task SigV4AuthShouldAddRequiredHeaders()
         {
-            var interceptor = Auth.SigV4Auth("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
+            var interceptor = Auth.Sigv4("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
             var context = CreateSigv4TestContext();
 
             await interceptor(context);
@@ -154,7 +154,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task SigV4AuthShouldHaveCorrectAuthorizationPrefix()
         {
-            var interceptor = Auth.SigV4Auth("gremlin-west-2", "tinkerpop-sigv4", TestBasicCredentials);
+            var interceptor = Auth.Sigv4("gremlin-west-2", "tinkerpop-sigv4", TestBasicCredentials);
             var context = CreateSigv4TestContext();
 
             await interceptor(context);
@@ -166,7 +166,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task SigV4AuthShouldAddSessionTokenForTemporaryCredentials()
         {
-            var interceptor = Auth.SigV4Auth("gremlin-east-1", "tinkerpop-sigv4", TestSessionCredentials);
+            var interceptor = Auth.Sigv4("gremlin-east-1", "tinkerpop-sigv4", TestSessionCredentials);
             var context = CreateSigv4TestContext();
 
             await interceptor(context);
@@ -178,7 +178,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task SigV4AuthShouldNotAddSessionTokenForPermanentCredentials()
         {
-            var interceptor = Auth.SigV4Auth("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
+            var interceptor = Auth.Sigv4("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
             var context = CreateSigv4TestContext();
 
             await interceptor(context);
@@ -190,7 +190,7 @@ namespace Gremlin.Net.UnitTest.Driver
         public async Task SigV4AuthContentHashShouldMatchBodySha256()
         {
             var body = new byte[] { 0x84, 0x00, 0xFD, 0x01 };
-            var interceptor = Auth.SigV4Auth("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
+            var interceptor = Auth.Sigv4("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
             var context = CreateSigv4TestContext(body);
 
             await interceptor(context);
@@ -204,7 +204,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task SigV4AuthShouldHandleEmptyBody()
         {
-            var interceptor = Auth.SigV4Auth("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
+            var interceptor = Auth.Sigv4("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
             var context = CreateSigv4TestContext(Array.Empty<byte>());
 
             await interceptor(context);
@@ -217,7 +217,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task SigV4AuthShouldSetCorrectHost()
         {
-            var interceptor = Auth.SigV4Auth("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
+            var interceptor = Auth.Sigv4("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
             var context = CreateSigv4TestContext();
 
             await interceptor(context);
@@ -228,7 +228,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public async Task SigV4AuthShouldThrowWhenBodyIsNotByteArray()
         {
-            var interceptor = Auth.SigV4Auth("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
+            var interceptor = Auth.Sigv4("gremlin-east-1", "tinkerpop-sigv4", TestBasicCredentials);
             var context = new HttpRequestContext("POST", new Uri("https://example.com:8182/gremlin"),
                 new Dictionary<string, string>
                 {

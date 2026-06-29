@@ -54,7 +54,7 @@ public class ConnectionExample
         var server = new GremlinServer(ServerHost, ServerPort);
         var settings = new ConnectionSettings
         {
-            ConnectionTimeout = TimeSpan.FromSeconds(30),
+            ConnectTimeout = TimeSpan.FromSeconds(30),
         };
         using var remoteConnection = new DriverRemoteConnection(
             new GremlinClient(server, connectionSettings: settings), "g");
@@ -71,7 +71,7 @@ public class ConnectionExample
         var server = new GremlinServer(ServerHost, SecureServerPort, enableSsl: true);
         var client = new GremlinClient(server,
             connectionSettings: new ConnectionSettings { SkipCertificateValidation = true },
-            interceptors: new[] { Auth.BasicAuth("stephen", "password") });
+            interceptors: new[] { Auth.Basic("stephen", "password") });
         using var remoteConnection = new DriverRemoteConnection(client, "g");
         var g = Traversal().With(remoteConnection);
 

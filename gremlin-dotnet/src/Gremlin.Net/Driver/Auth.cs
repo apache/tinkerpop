@@ -43,7 +43,7 @@ namespace Gremlin.Net.Driver
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
         /// <returns>A request interceptor delegate.</returns>
-        public static Func<HttpRequestContext, Task> BasicAuth(string username, string password)
+        public static Func<HttpRequestContext, Task> Basic(string username, string password)
         {
             var encoded = Convert.ToBase64String(
                 Encoding.UTF8.GetBytes(username + ":" + password));
@@ -68,7 +68,7 @@ namespace Gremlin.Net.Driver
         ///     Optional AWS credentials. When null, the default credential chain is used.
         /// </param>
         /// <returns>A request interceptor delegate.</returns>
-        public static Func<HttpRequestContext, Task> SigV4Auth(
+        public static Func<HttpRequestContext, Task> Sigv4(
             string region, string service, AWSCredentials? credentials = null)
         {
             // Cache the credential provider once when using the default chain.
@@ -104,6 +104,7 @@ namespace Gremlin.Net.Driver
                 SignRequest(context, immutableCreds, signer, clientConfig);
             };
         }
+
 
         private static void SignRequest(HttpRequestContext context,
             ImmutableCredentials credentials, AWS4Signer signer, SigningClientConfig clientConfig)

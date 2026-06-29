@@ -32,6 +32,46 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Standardizing .NET Connection Options
+
+TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In `gremlin-dotnet`, several
+`ConnectionSettings` properties and the `Auth` factory methods have been renamed for consistency. Because this is a
+major version, the old names have been removed rather than retained as aliases, and a number of new options have been
+added. The notes below describe the .NET changes. See <<glv-driver-changes, GLV Driver Changes>> for the
+equivalent changes in the other drivers.
+
+Renames (breaking). The following members have been renamed and the old names removed. Migrate to the new names:
+
+- `ConnectionTimeout` is now `ConnectTimeout`.
+- `MaxConnectionsPerServer` is now `MaxConnections`.
+- `IdleConnectionTimeout` is now `IdleTimeout`.
+- `KeepAliveInterval` is now `KeepAliveTime`.
+- `EnableCompression` is now `Compression`.
+- The `Auth.BasicAuth` and `Auth.SigV4Auth` factory methods are now `Auth.Basic` and `Auth.Sigv4`.
+
+Behavior changes. These change runtime behavior on upgrade, even if you do not change your configuration:
+
+- `ConnectTimeout` now defaults to 5s (lowered from 15s).
+- `KeepAliveTime` is now wired to a real TCP keep-alive socket option rather than the inert HTTP/2 ping timeout. It
+enables `SO_KEEPALIVE` and sets the per-socket idle time on Windows, Linux, and macOS; on other platforms keep-alive
+stays enabled at the OS default idle time.
+- `Compression` is now a `{None, Deflate}` enum defaulting to `Deflate` (compression on by default), so the driver
+sends `Accept-Encoding: deflate` by default. Set `Compression.None` to disable. The old `EnableCompression` `bool`
+has been removed.
+
+New options:
+
+- `Ssl` (an `SslClientAuthenticationOptions` for client certificates and custom CAs; `SkipCertificateValidation` is
+applied to an internal copy rather than mutating the supplied options).
+- `BatchSize` (default 64): a connection-level default that fills the per-request batch size when unset.
+- `MaxResponseHeaderBytes`: the maximum allowed size, in bytes, of the response headers.
+- `ReadTimeout`: a per-read idle timeout applied to each individual read of the response stream.
+- Each timeout is also settable in milliseconds via an `int` companion property (`ConnectTimeoutMillis`, `IdleTimeoutMillis`,
+  `ReadTimeoutMillis`, `KeepAliveTimeMillis`); the unsuffixed `TimeSpan` property is the idiomatic form.
+- `Proxy`: routes connections through an `IWebProxy`.
+
+See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
+
 ==== Standardizing Go Connection Options
 
 TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In `gremlin-go`, several

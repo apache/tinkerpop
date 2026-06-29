@@ -2589,7 +2589,7 @@ include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference
 
 Authentication is handled through request interceptors. Interceptors are functions that modify the outgoing HTTP
 request before it is sent — they are used for authentication, custom headers, or request signing. The `Auth` class
-provides `BasicAuth()` and `SigV4Auth()` as built-in interceptors:
+provides `Basic()` and `SigV4()` as built-in interceptors:
 
 [source,csharp]
 ----
@@ -2597,12 +2597,12 @@ provides `BasicAuth()` and `SigV4Auth()` as built-in interceptors:
 var server = new GremlinServer("localhost", 8182, enableSsl: true);
 using var client = new GremlinClient(server,
     connectionSettings: new ConnectionSettings { SkipCertificateValidation = true },
-    interceptors: new[] { Auth.BasicAuth("username", "password") });
+    interceptors: new[] { Auth.Basic("username", "password") });
 
 // SigV4 authentication
 var server = new GremlinServer("localhost", 8182, enableSsl: true);
 using var client = new GremlinClient(server,
-    interceptors: new[] { Auth.SigV4Auth("service-region", "service-name") });
+    interceptors: new[] { Auth.Sigv4("service-region", "service-name") });
 ----
 
 If you authenticate to a remote <<connecting-gremlin-server,Gremlin Server>> or
@@ -2658,17 +2658,35 @@ constructor:
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|ConnectionTimeout |The TCP connection timeout. |15 s
-|IdleConnectionTimeout |How long idle connections stay in the pool before being closed. |180 s
-|MaxConnectionsPerServer |The maximum concurrent connections to a single server. |128
-|KeepAliveInterval |The TCP keep-alive probe interval. |30 s
-|EnableCompression |Whether to request deflate compression. |false
+|ConnectTimeoutMillis |The TCP connect timeout in milliseconds (transport establishment, i.e. TCP connect plus TLS handshake where applicable, not an HTTP request timeout). Also settable as `ConnectTimeout` (a `TimeSpan`). |5000
+|IdleTimeoutMillis |How long in milliseconds idle connections stay in the pool before being closed. Also settable as `IdleTimeout` (a `TimeSpan`). |180000
+|MaxConnections |The maximum concurrent connections to a single server. |128
+|KeepAliveTimeMillis |Idle time in milliseconds before TCP keep-alive probes begin on an otherwise idle connection. Enables `SO_KEEPALIVE` on the socket and sets the per-socket idle time on Windows, Linux, and macOS; on other platforms keep-alive stays enabled at the OS default idle time. Also settable as `KeepAliveTime` (a `TimeSpan`). |30000
+|Compression |The response compression algorithm (`Compression.None` or `Compression.Deflate`). |`Compression.Deflate`
+|BatchSize |The connection-level default batch size used to fill the per-request batch size when it is unset. |64
+|Ssl |The `SslClientAuthenticationOptions` used for HTTPS connections (client certificates, custom CA, protocols, etc.). `SkipCertificateValidation` is applied to an internal copy of these options rather than mutating the object you provide. |`null`
+|MaxResponseHeaderBytes |The maximum allowed size, in bytes, of the response headers. `0` leaves the handler default unchanged (converted internally to the handler's native kilobyte unit). |0
+|ReadTimeoutMillis |The idle-read timeout in milliseconds applied to each individual read of the response stream. It resets per chunk. `0` (the default) disables it. Also settable as `ReadTimeout` (a `TimeSpan`; `Timeout.InfiniteTimeSpan` disables). |0
+|Proxy |The `IWebProxy` used for connections. |`null`
 |EnableUserAgentOnConnect |Enables sending a user agent to the server on requests.
 More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |BulkResults |Whether to send the bulkResults header on all requests. |false
-|SkipCertificateValidation |Whether to skip SSL certificate validation. Only use for testing with self-signed certificates. |false
+|SkipCertificateValidation |Whether to skip SSL certificate validation. Only use for testing with self-signed certificates. When `Ssl` is also provided, the accept-all callback is set on an internal copy so the supplied options object is never mutated. |false
 |=========================================================
+
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `ReadTimeout` only bounds
+the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
+runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
+your application by passing a cancellation token that cancels after the deadline:
+
+[source,csharp]
+----
+// bound the entire request (submit plus full result iteration) to 30 seconds
+using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+var results = await client.SubmitAsync<Vertex>(
+    "g.V().out().out()", cancellationToken: cts.Token);
+----
 
 ==== GremlinClient Settings
 
@@ -2699,7 +2717,7 @@ A request interceptor is a `Func<HttpRequestContext, Task>` that mutates the `Ht
 `Task` for async support but does not produce a value). A list of these is maintained and will be run sequentially for
 each request. When creating a `GremlinClient`, the `interceptors` parameter accepts an ordered collection of
 interceptors. Order matters, so if one interceptor depends on another's output, ensure they are added in the correct
-order. Note that authentication (e.g. `Auth.BasicAuth()`, `Auth.SigV4Auth()`) is also implemented using interceptors.
+order. Note that authentication (e.g. `Auth.Basic()`, `Auth.Sigv4()`) is also implemented using interceptors.
 These factory methods return interceptor delegates that can be included in the `interceptors` list. Alternatively, the
 `auth` parameter on `GremlinClient` appends the auth interceptor to the end of the list so it runs last.
 
@@ -2709,7 +2727,7 @@ var server = new GremlinServer("localhost", 8182);
 using var client = new GremlinClient(server,
     interceptors: new Func<HttpRequestContext, Task>[]
     {
-        Auth.BasicAuth("username", "password"),
+        Auth.Basic("username", "password"),
         context =>
         {
             context.Headers["X-Custom-Header"] = "value";
@@ -2881,7 +2899,7 @@ order and are useful for authentication, custom headers, or request signing.
 [source,csharp]
 ----
 var client = new GremlinClient(new GremlinServer("localhost", 8182),
-    interceptors: new[] { Auth.BasicAuth("username", "password") });
+    interceptors: new[] { Auth.Basic("username", "password") });
 ----
 
 When `requestSerializer` is set to `null`, the request body is passed as a `RequestMessage` to interceptors, and an

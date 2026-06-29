@@ -44,6 +44,62 @@ namespace Gremlin.Net.Driver
         }
 
         /// <summary>
+        ///     Creates a new instance of the <see cref="GremlinServer" /> class from a single URL.
+        /// </summary>
+        /// <param name="url">
+        ///     The URL of the Gremlin endpoint, e.g. <c>https://localhost:8182/gremlin</c>. The scheme determines
+        ///     whether SSL is enabled (<c>https</c> enables it, <c>http</c> disables it) and the host, port and path
+        ///     are taken from the URL. When the URL omits the port the default <c>8182</c> is used, and when it omits
+        ///     the path the default <c>/gremlin</c> is used.
+        /// </param>
+        /// <returns>A new <see cref="GremlinServer" /> configured from the given URL.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="url" /> is null.</exception>
+        /// <exception cref="ArgumentException">
+        ///     Thrown when <paramref name="url" /> is not a valid absolute URL or does not use the
+        ///     <c>http</c> or <c>https</c> scheme.
+        /// </exception>
+        public static GremlinServer FromUrl(string url)
+        {
+            if (url == null) throw new ArgumentNullException(nameof(url));
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+                throw new ArgumentException($"'{url}' is not a valid absolute URL.", nameof(url));
+            return new GremlinServer(uri);
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="GremlinServer" /> class from a <see cref="System.Uri" />.
+        /// </summary>
+        /// <param name="uri">
+        ///     The URI of the Gremlin endpoint. The scheme determines whether SSL is enabled (<c>https</c> enables it,
+        ///     <c>http</c> disables it). When the URI omits the port the default <c>8182</c> is used, and when it omits
+        ///     the path the default <c>/gremlin</c> is used.
+        /// </param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="uri" /> is null.</exception>
+        /// <exception cref="ArgumentException">
+        ///     Thrown when <paramref name="uri" /> does not use the <c>http</c> or <c>https</c> scheme.
+        /// </exception>
+        public GremlinServer(Uri uri)
+        {
+            if (uri == null) throw new ArgumentNullException(nameof(uri));
+            ValidateScheme(uri.Scheme);
+
+            var enableSsl = string.Equals(uri.Scheme, "https", StringComparison.OrdinalIgnoreCase);
+
+            // Only override the port when the URL specifies one; otherwise keep the default 8182.
+            // System.Uri auto-fills the scheme default port (80/443) and flags it via IsDefaultPort,
+            // so treat that case as "not specified".
+            var port = uri.IsDefaultPort ? 8182 : uri.Port;
+
+            // Likewise, only override the path when the URL has a non-empty path, otherwise keep the default
+            // /gremlin. System.Uri turns a path-less URL into AbsolutePath "/", so treat "/" or empty as default.
+            var path = string.IsNullOrEmpty(uri.AbsolutePath) || uri.AbsolutePath == "/"
+                ? "/gremlin"
+                : uri.AbsolutePath;
+
+            Uri = CreateUri(uri.Host, port, enableSsl, path);
+        }
+
+        /// <summary>
         ///     Gets the URI of the Gremlin Server.
         /// </summary>
         public Uri Uri { get; }
@@ -52,6 +108,14 @@ namespace Gremlin.Net.Driver
         {
             var scheme = enableSsl ? "https" : "http";
             return new Uri($"{scheme}://{hostname}:{port}{path}");
+        }
+
+        private static void ValidateScheme(string scheme)
+        {
+            if (!string.Equals(scheme, "http", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(scheme, "https", StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException(
+                    $"Unsupported scheme '{scheme}'. Only 'http' and 'https' are supported.");
         }
     }
 }
