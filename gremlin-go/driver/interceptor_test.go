@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -310,9 +311,10 @@ func TestFieldMutationBeforeSerialization(t *testing.T) {
 		"interceptor field mutation should be reflected in the serialized output")
 }
 
-// TestSigV4AuthWithSerializeBody verifies that SigV4Auth calls SerializeBody and signs
-// the request properly.
-func TestSigV4AuthWithSerializeBody(t *testing.T) {
+// TestInterceptorSerializeBodyFlow verifies that an interceptor calling SerializeBody
+// causes the request to be sent as serialized JSON, and that headers it sets reach the
+// server. This mirrors how auth interceptors (e.g. auth.SigV4) operate.
+func TestInterceptorSerializeBodyFlow(t *testing.T) {
 	var capturedHeaders http.Header
 	var capturedBody []byte
 
@@ -328,25 +330,25 @@ func TestSigV4AuthWithSerializeBody(t *testing.T) {
 
 	conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
 
-	mockProvider := &mockCredentialsProvider{
-		accessKey: "MOCK_ID",
-		secretKey: "MOCK_KEY",
-	}
-
-	// Only SigV4Auth — no SerializeRequest() needed
-	conn.AddInterceptor(SigV4AuthWithCredentials("gremlin-east-1", "tinkerpop-sigv4", mockProvider))
+	// Interceptor serializes the body then sets an auth-like header, as auth.SigV4 does.
+	conn.AddInterceptor(func(req *HttpRequest) error {
+		if _, err := req.SerializeBody(); err != nil {
+			return err
+		}
+		req.Headers.Set("Authorization", "AWS4-HMAC-SHA256 Credential=MOCK_ID")
+		req.Headers.Set("X-Amz-Date", "20240101T000000Z")
+		return nil
+	})
 
 	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V().count()", Fields: map[string]interface{}{}})
 	require.NoError(t, err)
 	_, _ = rs.All()
 
-	// SigV4 should have added Authorization and X-Amz-Date headers
 	assert.NotEmpty(t, capturedHeaders.Get("Authorization"),
-		"SigV4Auth should set Authorization header")
+		"interceptor should set Authorization header")
 	assert.NotEmpty(t, capturedHeaders.Get("X-Amz-Date"),
-		"SigV4Auth should set X-Amz-Date header")
-	assert.Contains(t, capturedHeaders.Get("Authorization"), "AWS4-HMAC-SHA256",
-		"Authorization header should use AWS4-HMAC-SHA256 signing algorithm")
+		"interceptor should set X-Amz-Date header")
+	assert.Contains(t, capturedHeaders.Get("Authorization"), "AWS4-HMAC-SHA256")
 
 	// Body should be valid JSON
 	assert.NotEmpty(t, capturedBody, "body should be non-empty serialized bytes")
@@ -356,14 +358,13 @@ func TestSigV4AuthWithSerializeBody(t *testing.T) {
 	assert.Equal(t, "g.V().count()", parsed["gremlin"])
 }
 
-// TestSigV4Auth_AutoSerializesRequestMessage verifies that SigV4Auth automatically
-// serializes *RequestMessage to JSON bytes before signing.
-func TestSigV4Auth_AutoSerializesRequestMessage(t *testing.T) {
-	provider := &mockCredentialsProvider{
-		accessKey: "MOCK_ID",
-		secretKey: "MOCK_KEY",
+// TestInterceptorAutoSerializesRequestMessage verifies that an interceptor can call
+// SerializeBody to turn a *RequestMessage into JSON bytes before the request is sent.
+func TestInterceptorAutoSerializesRequestMessage(t *testing.T) {
+	interceptor := func(req *HttpRequest) error {
+		_, err := req.SerializeBody()
+		return err
 	}
-	interceptor := SigV4AuthWithCredentials("gremlin-east-1", "tinkerpop-sigv4", provider)
 
 	req, err := NewHttpRequest("POST", "https://test_url:8182/gremlin")
 	require.NoError(t, err)
@@ -374,11 +375,11 @@ func TestSigV4Auth_AutoSerializesRequestMessage(t *testing.T) {
 	req.Body = &RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}}
 
 	err = interceptor(req)
-	require.NoError(t, err, "SigV4Auth should auto-serialize *RequestMessage")
+	require.NoError(t, err, "SerializeBody should auto-serialize *RequestMessage")
 
 	// Body should now be []byte (serialized JSON)
 	bodyBytes, ok := req.Body.([]byte)
-	assert.True(t, ok, "Body should be []byte after SigV4Auth auto-serialization")
+	assert.True(t, ok, "Body should be []byte after auto-serialization")
 	assert.NotEmpty(t, bodyBytes, "serialized body should be non-empty")
 
 	// Verify it's valid JSON
@@ -386,21 +387,15 @@ func TestSigV4Auth_AutoSerializesRequestMessage(t *testing.T) {
 	err = json.Unmarshal(bodyBytes, &parsed)
 	require.NoError(t, err, "body should be valid JSON after auto-serialization")
 	assert.Equal(t, "g.V()", parsed["gremlin"])
-
-	// SigV4 headers should be set
-	assert.NotEmpty(t, req.Headers.Get("Authorization"), "Authorization header should be set")
-	assert.NotEmpty(t, req.Headers.Get("X-Amz-Date"), "X-Amz-Date header should be set")
-	assert.Contains(t, req.Headers.Get("Authorization"), "AWS4-HMAC-SHA256")
 }
 
-// TestSigV4Auth_RejectsNonByteBody verifies that SigV4Auth returns an error when Body
-// is not []byte and not *RequestMessage (e.g., an io.Reader).
-func TestSigV4Auth_RejectsNonByteBody(t *testing.T) {
-	provider := &mockCredentialsProvider{
-		accessKey: "MOCK_ID",
-		secretKey: "MOCK_KEY",
+// TestInterceptorSerializeBodyRejectsNonByteBody verifies that SerializeBody returns an
+// error when Body is not []byte and not *RequestMessage (e.g., an io.Reader).
+func TestInterceptorSerializeBodyRejectsNonByteBody(t *testing.T) {
+	interceptor := func(req *HttpRequest) error {
+		_, err := req.SerializeBody()
+		return err
 	}
-	interceptor := SigV4AuthWithCredentials("gremlin-east-1", "tinkerpop-sigv4", provider)
 
 	req, err := NewHttpRequest("POST", "https://test_url:8182/gremlin")
 	require.NoError(t, err)
@@ -446,8 +441,12 @@ func TestMultipleInterceptors_MutateThenAuth(t *testing.T) {
 		return nil
 	})
 
-	// BasicAuth adds the Authorization header (works on any body type)
-	conn.AddInterceptor(BasicAuth("admin", "secret"))
+	// A basic-auth-style interceptor adds the Authorization header (works on any body type)
+	conn.AddInterceptor(func(req *HttpRequest) error {
+		encoded := base64.StdEncoding.EncodeToString([]byte("admin:secret"))
+		req.Headers.Set(HeaderAuthorization, "Basic "+encoded)
+		return nil
+	})
 
 	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 	require.NoError(t, err)
@@ -630,12 +629,12 @@ func TestAuthInterceptorIsAlwaysLast(t *testing.T) {
 	}))
 	defer server.Close()
 
-	t.Run("Auth runs after RequestInterceptors on Client", func(t *testing.T) {
+	t.Run("Auth runs after Interceptors on Client", func(t *testing.T) {
 		order = nil
 		client, err := NewClient(server.URL,
 			func(settings *ClientSettings) {
 				settings.Auth = func(req *HttpRequest) error { order = append(order, 3); return nil }
-				settings.RequestInterceptors = []RequestInterceptor{
+				settings.Interceptors = []RequestInterceptor{
 					func(req *HttpRequest) error { order = append(order, 1); return nil },
 					func(req *HttpRequest) error { order = append(order, 2); return nil },
 				}
@@ -651,12 +650,12 @@ func TestAuthInterceptorIsAlwaysLast(t *testing.T) {
 			"Auth interceptor should always run last")
 	})
 
-	t.Run("Auth runs after RequestInterceptors on DriverRemoteConnection", func(t *testing.T) {
+	t.Run("Auth runs after Interceptors on DriverRemoteConnection", func(t *testing.T) {
 		order = nil
 		remote, err := NewDriverRemoteConnection(server.URL,
 			func(settings *DriverRemoteConnectionSettings) {
 				settings.Auth = func(req *HttpRequest) error { order = append(order, 3); return nil }
-				settings.RequestInterceptors = []RequestInterceptor{
+				settings.Interceptors = []RequestInterceptor{
 					func(req *HttpRequest) error { order = append(order, 1); return nil },
 					func(req *HttpRequest) error { order = append(order, 2); return nil },
 				}

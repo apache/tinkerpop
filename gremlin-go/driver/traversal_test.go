@@ -478,7 +478,7 @@ func newWithOptionsConnection(t *testing.T) *GraphTraversalSource {
 
 	remote, err := NewDriverRemoteConnection(testNoAuthWithAliasUrl,
 		func(settings *DriverRemoteConnectionSettings) {
-			settings.TlsConfig = testNoAuthWithAliasTlsConfig
+			settings.Ssl = testNoAuthWithAliasTlsConfig
 			settings.TraversalSource = "gmodern"
 		})
 	assert.Nil(t, err)
@@ -492,7 +492,7 @@ func newTestRemoteConnection(t *testing.T) *DriverRemoteConnection {
 
 	remote, err := NewDriverRemoteConnection(testNoAuthWithAliasUrl,
 		func(settings *DriverRemoteConnectionSettings) {
-			settings.TlsConfig = testNoAuthWithAliasTlsConfig
+			settings.Ssl = testNoAuthWithAliasTlsConfig
 			settings.TraversalSource = "gtx"
 		})
 	assert.Nil(t, err)
@@ -518,7 +518,7 @@ func TestProviderDefinedTypeTraversalAPIIntegration(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		remote, err := NewDriverRemoteConnection(testNoAuthUrl,
 			func(settings *DriverRemoteConnectionSettings) {
-				settings.TlsConfig = &tls.Config{}
+				settings.Ssl = &tls.Config{}
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 		require.NoError(t, err)
@@ -552,7 +552,7 @@ func TestProviderDefinedTypeTraversalAPIIntegration(t *testing.T) {
 
 		remote, err := NewDriverRemoteConnection(testNoAuthUrl,
 			func(settings *DriverRemoteConnectionSettings) {
-				settings.TlsConfig = &tls.Config{}
+				settings.Ssl = &tls.Config{}
 				settings.TraversalSource = testServerModernGraphAlias
 				settings.PDTRegistry = registry
 			})

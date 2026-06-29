@@ -21,6 +21,8 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"net/http"
+	"net/url"
 	"reflect"
 	"sync"
 	"time"
@@ -28,47 +30,100 @@ import (
 	"golang.org/x/text/language"
 )
 
-const connectionTimeoutDefault = 5 * time.Second
-
 // ClientSettings is used to modify a Client's settings on initialization.
 type ClientSettings struct {
-	TraversalSource   string
-	LogVerbosity      LogVerbosity
-	Logger            Logger
-	Language          language.Tag
-	TlsConfig         *tls.Config
-	ConnectionTimeout time.Duration
-	EnableCompression bool
+	TraversalSource string
+	LogVerbosity    LogVerbosity
+	Logger          Logger
+	Language        language.Tag
 
-	// MaximumConcurrentConnections is the maximum number of concurrent TCP connections
+	// Ssl is the TLS configuration used for secure (wss/https) connections.
+	Ssl *tls.Config
+
+	// ConnectTimeoutMillis is the TCP/transport-establishment timeout in milliseconds
+	// (TCP connect plus TLS handshake where applicable), not an HTTP request timeout.
+	// This is the canonical form; ConnectTimeout is the time.Duration companion. Set
+	// only one of the two.
+	// Default: 5000 (5 seconds). Set to 0 to use the default.
+	ConnectTimeoutMillis int
+
+	// ConnectTimeout is the time.Duration companion to ConnectTimeoutMillis.
+	ConnectTimeout time.Duration
+
+	// ReadTimeoutMillis is an idle-read timeout in milliseconds: it is reset on each
+	// read of the response body rather than bounding the whole request. Streaming-safe.
+	// The deadline is re-armed across pooled-connection reuse. This is the canonical
+	// form; ReadTimeout is the time.Duration companion. Set only one of the two.
+	// Default: 0 (disabled).
+	ReadTimeoutMillis int
+
+	// ReadTimeout is the time.Duration companion to ReadTimeoutMillis.
+	ReadTimeout time.Duration
+
+	// Compression selects the content-encoding negotiated with the server.
+	// Default: CompressionDeflate (on). Set to CompressionNone to disable compression.
+	Compression Compression
+
+	// MaxConnections is the maximum number of concurrent TCP connections
 	// to the Gremlin server. This limits how many requests can be in-flight simultaneously.
 	// Default: 128. Set to 0 to use the default.
-	MaximumConcurrentConnections int
+	MaxConnections int
 
 	// MaxIdleConnections is the maximum number of idle (keep-alive) connections to retain
 	// in the connection pool. Idle connections are reused for subsequent requests.
 	// Default: 8. Set to 0 to use the default.
 	MaxIdleConnections int
 
-	// IdleConnectionTimeout is how long an idle connection remains in the pool before
-	// being closed. Set this to match your server's idle timeout if needed.
-	// Default: 180 seconds (3 minutes). Set to 0 to use the default.
-	IdleConnectionTimeout time.Duration
+	// IdleTimeoutMillis is how long in milliseconds an idle connection remains in the
+	// pool before being closed. Set this to match your server's idle timeout if needed.
+	// This is the canonical form; IdleTimeout is the time.Duration companion. Set only
+	// one of the two.
+	// Default: 180000 (180 seconds). Set to 0 to use the default.
+	IdleTimeoutMillis int
 
-	// KeepAliveInterval is the interval between TCP keep-alive probes on idle connections.
-	// This helps detect dead connections and keeps connections alive through firewalls.
-	// Default: 30 seconds. Set to 0 to use the default.
-	KeepAliveInterval time.Duration
+	// IdleTimeout is the time.Duration companion to IdleTimeoutMillis.
+	IdleTimeout time.Duration
+
+	// KeepAliveTimeMillis is the TCP keep-alive idle-before-probe interval in
+	// milliseconds on connections. This helps detect dead connections and keeps
+	// connections alive through firewalls. This is the canonical form; KeepAliveTime is
+	// the time.Duration companion. Set only one of the two.
+	// Default: 30000 (30 seconds). Set to 0 to use the default.
+	KeepAliveTimeMillis int
+
+	// KeepAliveTime is the time.Duration companion to KeepAliveTimeMillis.
+	KeepAliveTime time.Duration
+
+	// BatchSize is the connection-level default that fills a request's batchSize
+	// when it is not set per-request.
+	// Default: 64. Set to 0 to use the default.
+	BatchSize int
+
+	// BulkResults is the connection-level default for bulkResults. When true, requests
+	// submitted on this connection bulk results unless overridden per-request via
+	// RequestOptionsBuilder.SetBulkResults. The DriverRemoteConnection traversal path
+	// defaults to true regardless of this setting.
+	// Default: false.
+	BulkResults bool
+
+	// MaxResponseHeaderBytes limits the number of response header bytes the client will
+	// read. Maps to http.Transport.MaxResponseHeaderBytes.
+	// Default: 0 (use net/http's default).
+	MaxResponseHeaderBytes int64
+
+	// Proxy returns the proxy URL to use for a given request. When nil, the client
+	// uses http.ProxyFromEnvironment (HTTP_PROXY/HTTPS_PROXY/NO_PROXY).
+	Proxy func(*http.Request) (*url.URL, error)
 
 	EnableUserAgentOnConnect bool
 
 	// PDTRegistry enables automatic hydration of ProviderDefinedType values during deserialization.
 	PDTRegistry *PDTRegistry
 
-	// RequestInterceptors are functions that modify HTTP requests before sending.
-	RequestInterceptors []RequestInterceptor
+	// Interceptors are functions that modify HTTP requests before sending.
+	Interceptors []RequestInterceptor
 
-	// Auth is a RequestInterceptor for authentication (e.g. BasicAuth, SigV4Auth).
+	// Auth is a RequestInterceptor for authentication (e.g. auth.Basic, auth.SigV4).
 	// As a convenience, this is always appended to the end of the interceptor list
 	// so it runs last, after any user interceptors have modified the request.
 	Auth RequestInterceptor
@@ -81,6 +136,7 @@ type Client struct {
 	logHandler         *logHandler
 	connectionSettings *connectionSettings
 	conn               *connection
+	bulkResults        bool     // connection-level default for bulkResults (default false)
 	transactions       sync.Map // tracks open transactions for cascade rollback on close
 }
 
@@ -92,28 +148,49 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		LogVerbosity:             Info,
 		Logger:                   &defaultLogger{},
 		Language:                 language.English,
-		TlsConfig:                &tls.Config{},
-		ConnectionTimeout:        connectionTimeoutDefault,
-		EnableCompression:        false,
+		Ssl:                      &tls.Config{},
+		Compression:              CompressionDeflate,
 		EnableUserAgentOnConnect: true,
 
-		MaximumConcurrentConnections: 0, // Use default (128)
-		MaxIdleConnections:           0, // Use default (8)
-		IdleConnectionTimeout:        0, // Use default (180s)
-		KeepAliveInterval:            0, // Use default (30s)
+		MaxConnections:     0, // Use default (128)
+		MaxIdleConnections: 0, // Use default (8)
+		IdleTimeout:        0, // Use default (180s)
+		KeepAliveTime:      0, // Use default (30s)
+		BatchSize:          0, // Use default (64)
 	}
 	for _, configuration := range configurations {
 		configuration(settings)
 	}
 
+	connectTimeout, err := resolveTimeout(settings.ConnectTimeoutMillis, settings.ConnectTimeout, "ConnectTimeout")
+	if err != nil {
+		return nil, err
+	}
+	readTimeout, err := resolveTimeout(settings.ReadTimeoutMillis, settings.ReadTimeout, "ReadTimeout")
+	if err != nil {
+		return nil, err
+	}
+	idleTimeout, err := resolveTimeout(settings.IdleTimeoutMillis, settings.IdleTimeout, "IdleTimeout")
+	if err != nil {
+		return nil, err
+	}
+	keepAliveTime, err := resolveTimeout(settings.KeepAliveTimeMillis, settings.KeepAliveTime, "KeepAliveTime")
+	if err != nil {
+		return nil, err
+	}
+
 	connSettings := &connectionSettings{
-		tlsConfig:                settings.TlsConfig,
-		connectionTimeout:        settings.ConnectionTimeout,
-		maxConnsPerHost:          settings.MaximumConcurrentConnections,
+		ssl:                      settings.Ssl,
+		connectTimeout:           connectTimeout,
+		readTimeout:              readTimeout,
+		maxConnsPerHost:          settings.MaxConnections,
 		maxIdleConnsPerHost:      settings.MaxIdleConnections,
-		idleConnTimeout:          settings.IdleConnectionTimeout,
-		keepAliveInterval:        settings.KeepAliveInterval,
-		enableCompression:        settings.EnableCompression,
+		idleTimeout:              idleTimeout,
+		keepAliveTime:            keepAliveTime,
+		compression:              settings.Compression,
+		maxResponseHeaderBytes:   settings.MaxResponseHeaderBytes,
+		batchSize:                settings.BatchSize,
+		proxy:                    settings.Proxy,
 		enableUserAgentOnConnect: settings.EnableUserAgentOnConnect,
 		pdtRegistry:              settings.PDTRegistry,
 	}
@@ -123,7 +200,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 	conn := newConnection(logHandler, url, connSettings)
 
 	// Add user-provided interceptors
-	for _, interceptor := range settings.RequestInterceptors {
+	for _, interceptor := range settings.Interceptors {
 		conn.AddInterceptor(interceptor)
 	}
 
@@ -138,6 +215,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		logHandler:         logHandler,
 		connectionSettings: connSettings,
 		conn:               conn,
+		bulkResults:        settings.BulkResults,
 	}
 
 	return client, nil
@@ -182,6 +260,14 @@ func (client *Client) untrackTransaction(tx *Transaction) {
 // SubmitWithOptions submits a Gremlin script to the server with specified RequestOptions and returns a ResultSet.
 func (client *Client) SubmitWithOptions(traversalString string, requestOptions RequestOptions) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
+	// Apply the connection-level bulkResults default when the request did not set it
+	// per-request. The script path only forces bulking when the connection-level
+	// setting is true; a false setting leaves the request untouched (matching the
+	// other GLVs, whose connection-level bulkResults defaults to false).
+	if requestOptions.bulkResults == nil && client.bulkResults {
+		bulk := true
+		requestOptions.bulkResults = &bulk
+	}
 	request := MakeStringRequest(traversalString, client.traversalSource, requestOptions)
 	rs, err := client.conn.submit(&request)
 	return rs, err
@@ -219,7 +305,9 @@ func (client *Client) submitGremlinLangWithBuilder(gremlinLang *GremlinLang, bui
 	}
 
 	// default bulkResults to true when using DRC through request options
-	// consistent with Java RequestOptions.getRequestOptions and Python extract_request_options
+	// consistent with Java RequestOptions.getRequestOptions and Python extract_request_options.
+	// The traversal path always defaults to true when unset, regardless of the
+	// connection-level BulkResults setting (matching the other GLVs).
 	if builder.bulkResults == nil {
 		builder.SetBulkResults(true)
 	}

@@ -37,7 +37,7 @@ func TestClient(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 			})
 		assert.NoError(t, err)
 		assert.NotNil(t, client)
@@ -56,7 +56,7 @@ func TestClient(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 			})
 		assert.NoError(t, err)
 		assert.NotNil(t, client)
@@ -71,7 +71,7 @@ func TestClient(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 		assert.NoError(t, err)
@@ -93,7 +93,7 @@ func TestClient(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 		assert.NoError(t, err)
@@ -117,7 +117,7 @@ func TestClient(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 		assert.NoError(t, err)
@@ -141,7 +141,7 @@ func TestClient(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 
@@ -163,7 +163,7 @@ func TestClient(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 			})
 		assert.NoError(t, err)
 		assert.NotNil(t, client)
@@ -193,7 +193,7 @@ func TestClient(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 			})
 		assert.NoError(t, err)
 		assert.NotNil(t, client)
@@ -217,7 +217,7 @@ func TestClient(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
+				settings.Ssl = testNoAuthTlsConfig
 				settings.TraversalSource = testServerCrewGraphAlias
 			})
 
@@ -302,7 +302,7 @@ func TestProviderDefinedTypeIntegration(t *testing.T) {
 	t.Run("simple Point PDT round-trip", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl, func(settings *ClientSettings) {
-			settings.TlsConfig = &tls.Config{}
+			settings.Ssl = &tls.Config{}
 			settings.TraversalSource = testServerModernGraphAlias
 		})
 		require.NoError(t, err)
@@ -325,7 +325,7 @@ func TestProviderDefinedTypeIntegration(t *testing.T) {
 	t.Run("nested PDT (Person with Address)", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl, func(settings *ClientSettings) {
-			settings.TlsConfig = &tls.Config{}
+			settings.Ssl = &tls.Config{}
 			settings.TraversalSource = testServerModernGraphAlias
 		})
 		require.NoError(t, err)
@@ -357,7 +357,7 @@ func TestProviderDefinedTypeIntegration(t *testing.T) {
 	t.Run("PDT in collection", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl, func(settings *ClientSettings) {
-			settings.TlsConfig = &tls.Config{}
+			settings.Ssl = &tls.Config{}
 			settings.TraversalSource = testServerModernGraphAlias
 		})
 		require.NoError(t, err)

@@ -68,8 +68,8 @@ func withConfigs() {
 	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection(serverURL,
 		func(settings *gremlingo.DriverRemoteConnectionSettings) {
 			settings.TraversalSource = "g"
-			settings.MaximumConcurrentConnections = 4
-			settings.EnableCompression = false
+			settings.MaxConnections = 4
+			settings.Compression = gremlingo.CompressionNone
 		})
 
 	if err != nil {

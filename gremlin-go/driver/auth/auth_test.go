@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 */
 
-package gremlingo
+package auth
 
 import (
 	"context"
@@ -27,26 +27,30 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/stretchr/testify/assert"
+
+	gremlingo "github.com/apache/tinkerpop/gremlin-go/v4/driver"
 )
 
-func createMockRequest() *HttpRequest {
-	req, _ := NewHttpRequest("POST", "https://test_url:8182/gremlin")
+const graphBinaryMimeType = "application/vnd.graphbinary-v4.0"
+
+func createMockRequest() *gremlingo.HttpRequest {
+	req, _ := gremlingo.NewHttpRequest("POST", "https://test_url:8182/gremlin")
 	req.Headers.Set("Content-Type", graphBinaryMimeType)
 	req.Headers.Set("Accept", graphBinaryMimeType)
 	req.Body = []byte(`{"gremlin":"g.V()"}`)
 	return req
 }
 
-func TestBasicAuth(t *testing.T) {
+func TestBasic(t *testing.T) {
 	t.Run("adds authorization header", func(t *testing.T) {
 		req := createMockRequest()
-		assert.Empty(t, req.Headers.Get(HeaderAuthorization))
+		assert.Empty(t, req.Headers.Get(gremlingo.HeaderAuthorization))
 
-		interceptor := BasicAuth("username", "password")
+		interceptor := Basic("username", "password")
 		err := interceptor(req)
 
 		assert.NoError(t, err)
-		authHeader := req.Headers.Get(HeaderAuthorization)
+		authHeader := req.Headers.Get(gremlingo.HeaderAuthorization)
 		assert.True(t, strings.HasPrefix(authHeader, "Basic "))
 
 		// Verify encoding
@@ -72,7 +76,7 @@ func (m *mockCredentialsProvider) Retrieve(ctx context.Context) (aws.Credentials
 	}, nil
 }
 
-func TestSigV4Auth(t *testing.T) {
+func TestSigV4(t *testing.T) {
 	t.Run("adds signed headers", func(t *testing.T) {
 		req := createMockRequest()
 		assert.Empty(t, req.Headers.Get("Authorization"))
@@ -82,7 +86,7 @@ func TestSigV4Auth(t *testing.T) {
 			accessKey: "MOCK_ID",
 			secretKey: "MOCK_KEY",
 		}
-		interceptor := SigV4AuthWithCredentials("gremlin-east-1", "tinkerpop-sigv4", provider)
+		interceptor := SigV4WithCredentials("gremlin-east-1", "tinkerpop-sigv4", provider)
 		err := interceptor(req)
 
 		assert.NoError(t, err)
@@ -102,7 +106,7 @@ func TestSigV4Auth(t *testing.T) {
 			secretKey:    "MOCK_KEY",
 			sessionToken: "MOCK_TOKEN",
 		}
-		interceptor := SigV4AuthWithCredentials("gremlin-east-1", "tinkerpop-sigv4", provider)
+		interceptor := SigV4WithCredentials("gremlin-east-1", "tinkerpop-sigv4", provider)
 		err := interceptor(req)
 
 		assert.NoError(t, err)
@@ -110,5 +114,29 @@ func TestSigV4Auth(t *testing.T) {
 		authHeader := req.Headers.Get("Authorization")
 		assert.True(t, strings.HasPrefix(authHeader, "AWS4-HMAC-SHA256 Credential="))
 		assert.Contains(t, authHeader, "gremlin-east-1/tinkerpop-sigv4/aws4_request")
+	})
+
+	t.Run("auto-serializes *RequestMessage before signing", func(t *testing.T) {
+		provider := &mockCredentialsProvider{
+			accessKey: "MOCK_ID",
+			secretKey: "MOCK_KEY",
+		}
+		interceptor := SigV4WithCredentials("gremlin-east-1", "tinkerpop-sigv4", provider)
+
+		req, err := gremlingo.NewHttpRequest("POST", "https://test_url:8182/gremlin")
+		assert.NoError(t, err)
+		req.Headers.Set("Content-Type", "application/json")
+		req.Headers.Set("Accept", graphBinaryMimeType)
+		req.Body = &gremlingo.RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}}
+
+		err = interceptor(req)
+		assert.NoError(t, err)
+
+		bodyBytes, ok := req.Body.([]byte)
+		assert.True(t, ok, "Body should be []byte after auto-serialization")
+		assert.NotEmpty(t, bodyBytes)
+		assert.NotEmpty(t, req.Headers.Get("Authorization"))
+		assert.NotEmpty(t, req.Headers.Get("X-Amz-Date"))
+		assert.Contains(t, req.Headers.Get("Authorization"), "AWS4-HMAC-SHA256")
 	})
 }

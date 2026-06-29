@@ -17,7 +17,10 @@ specific language governing permissions and limitations
 under the License.
 */
 
-package gremlingo
+// Package auth provides authentication interceptors for the gremlin-go driver.
+// Each constructor returns a gremlingo.RequestInterceptor that can be assigned to
+// the Auth field of ClientSettings or DriverRemoteConnectionSettings.
+package auth
 
 import (
 	"context"
@@ -29,30 +32,32 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/config"
+
+	gremlingo "github.com/apache/tinkerpop/gremlin-go/v4/driver"
 )
 
-// BasicAuth returns a RequestInterceptor that adds Basic authentication header.
-func BasicAuth(username, password string) RequestInterceptor {
+// Basic returns a RequestInterceptor that adds a Basic authentication header.
+func Basic(username, password string) gremlingo.RequestInterceptor {
 	encoded := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
-	return func(req *HttpRequest) error {
-		req.Headers.Set(HeaderAuthorization, "Basic "+encoded)
+	return func(req *gremlingo.HttpRequest) error {
+		req.Headers.Set(gremlingo.HeaderAuthorization, "Basic "+encoded)
 		return nil
 	}
 }
 
-// SigV4Auth returns a RequestInterceptor that signs requests using AWS SigV4.
+// SigV4 returns a RequestInterceptor that signs requests using AWS SigV4.
 // It uses the default AWS credential chain (env vars, shared config, IAM role, etc.)
-func SigV4Auth(region, service string) RequestInterceptor {
-	return SigV4AuthWithCredentials(region, service, nil)
+func SigV4(region, service string) gremlingo.RequestInterceptor {
+	return SigV4WithCredentials(region, service, nil)
 }
 
-// SigV4AuthWithCredentials returns a RequestInterceptor that signs requests using AWS SigV4
+// SigV4WithCredentials returns a RequestInterceptor that signs requests using AWS SigV4
 // with the provided credentials provider. If provider is nil, uses default credential chain.
 // If the request body has not been serialized yet (*RequestMessage), it is automatically
 // serialized to JSON before signing via SerializeBody().
 //
 // Caches the signer and credentials provider for efficiency.
-func SigV4AuthWithCredentials(region, service string, credentialsProvider aws.CredentialsProvider) RequestInterceptor {
+func SigV4WithCredentials(region, service string, credentialsProvider aws.CredentialsProvider) gremlingo.RequestInterceptor {
 	// Create signer once - it's stateless and safe to reuse
 	signer := v4.NewSigner()
 
@@ -61,7 +66,7 @@ func SigV4AuthWithCredentials(region, service string, credentialsProvider aws.Cr
 	var providerOnce sync.Once
 	var providerErr error
 
-	return func(req *HttpRequest) error {
+	return func(req *gremlingo.HttpRequest) error {
 		// Ensure body is serialized to JSON bytes before signing.
 		// SerializeBody is idempotent: safe to call even if already serialized.
 		if _, err := req.SerializeBody(); err != nil {
