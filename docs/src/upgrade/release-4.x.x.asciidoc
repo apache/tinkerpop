@@ -340,6 +340,21 @@ examples.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3253[TINKERPOP-3253]
 
+==== `Transaction.open()` Replaced by `begin()`
+
+The `open()` method has been removed from the `Transaction` API. Use `begin()` instead, which is now the single
+transaction-start method for both embedded and remote contexts. Replace any `tx.open()` or `g.tx().open()` calls with
+`begin()`. This is a compile-time break and is straightforward to find and fix.
+
+In addition, `begin()` is idempotent. Calling it when a transaction is already open does not start a new transaction
+and does not throw. Instead it returns a `TraversalSource` bound to the existing transaction. For embedded graphs this
+replaces the previous behavior where opening an already-open transaction threw an exception, so review and remove any
+code that catches or relies on a second open failing. For the semantics of `begin()` and how it interacts with
+`AUTO`/`MANUAL` transactions, see the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#transactions[Traversal Transactions] reference documentation.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3252[TINKERPOP-3252]
+
 ==== Transaction Default Close Behavior Changed
 
 The default behavior of `close()` on a remote transaction has been changed from `commit` to `rollback` across all

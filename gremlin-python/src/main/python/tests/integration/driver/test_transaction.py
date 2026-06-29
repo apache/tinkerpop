@@ -125,12 +125,22 @@ class TestTransaction(object):
         with pytest.raises(Exception, match="Transaction is not open"):
             tx.submit("g.V().count()")
 
-    def test_should_throw_on_double_begin(self, client):
+    def test_should_be_idempotent_on_double_begin(self, client):
         tx = client.transact()
         tx.begin()
+        tx_id = tx.transaction_id
 
-        with pytest.raises(Exception, match="Transaction already started"):
-            tx.begin()
+        # begin() while already open is idempotent: it does not raise and does not start a new
+        # server-side transaction (the transactionId is unchanged)
+        gtx = tx.begin()
+        assert tx.is_open
+        assert tx.transaction_id == tx_id
+
+        # the source from the second begin() works within the same transaction
+        gtx.addV("person").property("name", "double_begin").iterate()
+        assert gtx.V().has("name", "double_begin").count().next() == 1
+
+        tx.rollback()
 
     def test_should_throw_on_commit_when_not_open(self, client):
         tx = client.transact()
@@ -162,6 +172,16 @@ class TestTransaction(object):
         # Data should NOT persist (rollback is default)
         result = client.submit("g.V().hasLabel('person').count()").all().result()
         assert result[0] == 0
+
+    def test_should_be_idempotent_on_double_close(self, client):
+        tx = client.transact()
+        tx.begin()
+        tx.close()
+        assert not tx.is_open
+
+        # close() is idempotent: closing an already-closed transaction is a safe no-op
+        tx.close()
+        assert not tx.is_open
 
     def test_should_isolate_concurrent_transactions(self, client):
         tx1 = client.transact()
@@ -291,13 +311,17 @@ class TestTransaction(object):
         same_tx = gtx.tx()
         assert same_tx is tx
 
-    def test_should_throw_on_begin_from_gtx_tx(self, client):
+    def test_should_be_idempotent_on_begin_from_gtx_tx(self, client):
         tx = client.transact()
         gtx = tx.begin()
+        tx_id = tx.transaction_id
         same_tx = gtx.tx()
 
-        with pytest.raises(Exception, match="Transaction already started"):
-            same_tx.begin()
+        # begin() on the same (already open) transaction obtained via gtx.tx() is idempotent: it does
+        # not start a new server-side transaction, so it stays bound to the same transaction id
+        same_tx.begin()
+        assert same_tx.is_open
+        assert same_tx.transaction_id == tx_id
 
         tx.rollback()
 
@@ -333,7 +357,8 @@ class TestTransaction(object):
         tx.begin()
         tx.commit()
 
-        with pytest.raises(Exception, match="Transaction already started"):
+        # a transaction is single-use: begin() after commit raises (closed, cannot be reused)
+        with pytest.raises(Exception, match="Transaction is closed and cannot be reused"):
             tx.begin()
 
     def test_should_not_allow_begin_after_rollback(self, client):
@@ -341,7 +366,8 @@ class TestTransaction(object):
         tx.begin()
         tx.rollback()
 
-        with pytest.raises(Exception, match="Transaction already started"):
+        # a transaction is single-use: begin() after rollback raises (closed, cannot be reused)
+        with pytest.raises(Exception, match="Transaction is closed and cannot be reused"):
             tx.begin()
 
 
@@ -449,19 +475,20 @@ class TestTransaction(object):
         count = g.execute_in_tx(lambda gtx: gtx.V().count().next())
         assert count == 2
 
-    def test_execute_in_tx_rejects_nested_transaction(self, remote_connection):
-        # Opening a SECOND transaction inside the body must raise. gtx.tx()
-        # itself legitimately returns the same transaction (so we do NOT assert
-        # it raises); calling begin() on it does raise.
+    def test_execute_in_tx_begin_is_idempotent(self, remote_connection):
+        # gtx.tx() returns the same (already-open) transaction; calling begin() on it inside the
+        # body is idempotent - it does not raise and does not start a new server-side transaction,
+        # returning a source bound to the same transaction (unchanged transaction id).
         g = traversal().with_(remote_connection)
 
         def body(gtx):
-            # gtx.tx() returns the same (already-open) transaction; begin()
-            # on an already-open transaction is the double-begin guard.
-            gtx.tx().begin()
+            tx = gtx.tx()
+            tx_id = tx.transaction_id
+            gtx2 = tx.begin()
+            assert gtx2 is not None
+            assert gtx2.tx().transaction_id == tx_id
 
-        with pytest.raises(Exception, match="Transaction already started"):
-            g.execute_in_tx(body)
+        g.execute_in_tx(body)
 
     def test_execute_in_tx_propagates_commit_failure(self, remote_connection):
         # To drive a deterministic, no-mock commit failure, the body succeeds but

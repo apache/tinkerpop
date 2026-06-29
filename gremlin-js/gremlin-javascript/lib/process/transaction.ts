@@ -60,36 +60,45 @@ export class Transaction {
 
   /**
    * Spawns a GraphTraversalSource that is bound to a remote transaction.
+   *
+   * begin() is idempotent: calling it while a transaction is already open does not send a
+   * second begin to the server and does not throw - it reuses the existing transaction ID and
+   * returns a source bound to the same transaction. A transaction is single-use, so calling
+   * begin() after it has been closed (commit/rollback/failed begin) throws.
    * @returns {Promise<GraphTraversalSource>}
    */
   async begin(): Promise<GraphTraversalSource> {
-    if (this._isOpen || this._failed) {
-      throw new Error('Transaction already started');
+    if (this._failed) {
+      throw new Error('Transaction is closed and cannot be reused; begin a new transaction');
     }
 
-    let result;
-    try {
-      result = await this._client.submit('g.tx().begin()', null);
-    } catch (e) {
-      this._failed = true;
-      throw e;
-    }
+    // idempotent: if a transaction is already open, reuse the existing transactionId without
+    // sending a second begin to the server, and return a source bound to the same transaction
+    if (!this._isOpen) {
+      let result;
+      try {
+        result = await this._client.submit('g.tx().begin()', null);
+      } catch (e) {
+        this._failed = true;
+        throw e;
+      }
 
-    const resultArray = result.toArray();
-    if (!resultArray || resultArray.length === 0) {
-      this._failed = true;
-      throw new Error('Server did not return transaction ID');
-    }
+      const resultArray = result.toArray();
+      if (!resultArray || resultArray.length === 0) {
+        this._failed = true;
+        throw new Error('Server did not return transaction ID');
+      }
 
-    const resultMap = resultArray[0];
-    if (!resultMap || !(resultMap instanceof Map) || !resultMap.get('transactionId')) {
-      this._failed = true;
-      throw new Error('Server did not return transaction ID in expected format');
-    }
+      const resultMap = resultArray[0];
+      if (!resultMap || !(resultMap instanceof Map) || !resultMap.get('transactionId')) {
+        this._failed = true;
+        throw new Error('Server did not return transaction ID in expected format');
+      }
 
-    this._transactionId = resultMap.get('transactionId');
-    this._isOpen = true;
-    this._client.trackTransaction(this);
+      this._transactionId = resultMap.get('transactionId');
+      this._isOpen = true;
+      this._client.trackTransaction(this);
+    }
 
     // Create a DriverRemoteConnection bound to this transaction. The DRC
     // will automatically attach the transactionId to all requests.

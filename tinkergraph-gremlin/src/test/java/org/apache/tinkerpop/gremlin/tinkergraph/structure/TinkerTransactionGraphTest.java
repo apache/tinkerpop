@@ -1416,6 +1416,28 @@ public class TinkerTransactionGraphTest {
     }
 
     @Test
+    public void shouldBeIdempotentAndNonLossyWhenBeginCalledWhileOpen() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        // stage an uncommitted change in the open transaction
+        gtx.addV().iterate();
+        assertTrue(gtx.tx().isOpen());
+        assertEquals(1L, (long) gtx.V().count().next());
+
+        // calling begin() again while already open must be idempotent and non-lossy: it must NOT
+        // start a new transaction or discard the in-flight one, so the staged change still exists
+        final GraphTraversalSource gtx2 = g.tx().begin();
+        assertTrue(gtx.tx().isOpen());
+        assertEquals(1L, (long) gtx2.V().count().next());
+
+        // the change is part of one continuous transaction - committing once persists exactly it
+        gtx.tx().commit();
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        assertEquals(1L, (long) gtx3.V().count().next());
+    }
+
+    @Test
     public void shouldHandleAddingPropertyWhenOtherTxAttemptsDeleteThenRollsback() throws InterruptedException {
         final TinkerTransactionGraph g = TinkerTransactionGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();

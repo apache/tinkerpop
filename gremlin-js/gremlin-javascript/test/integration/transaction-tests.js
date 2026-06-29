@@ -110,14 +110,23 @@ describe('Transaction', function () {
       );
     });
 
-    it('should throw on double begin', async function () {
+    it('should be idempotent on double begin', async function () {
       const tx = client.transact();
       await tx.begin();
+      const txId = tx.transactionId;
 
-      await assert.rejects(
-        () => tx.begin(),
-        /Transaction already started/
-      );
+      // begin() while already open is idempotent: it does not throw and does not start a new
+      // server-side transaction (the transactionId is unchanged)
+      const gtx = await tx.begin();
+      assert.strictEqual(tx.isOpen, true);
+      assert.strictEqual(tx.transactionId, txId);
+
+      // the source from the second begin() works within the same transaction
+      await gtx.addV('person').property('name', 'double_begin').iterate();
+      const count = await gtx.V().has('name', 'double_begin').count().next();
+      assert.strictEqual(count.value, 1);
+
+      await tx.rollback();
     });
 
     it('should throw on commit when not open', async function () {
@@ -157,6 +166,17 @@ describe('Transaction', function () {
 
       const result = await client.submit("g.V().hasLabel('person').count()");
       assert.strictEqual(result.first(), 0);
+    });
+
+    it('should be idempotent on double close', async function () {
+      const tx = client.transact();
+      await tx.begin();
+      await tx.close();
+      assert.strictEqual(tx.isOpen, false);
+
+      // close() is idempotent: closing an already-closed transaction is a safe no-op
+      await tx.close();
+      assert.strictEqual(tx.isOpen, false);
     });
 
     it('should isolate concurrent transactions', async function () {
@@ -219,9 +239,10 @@ describe('Transaction', function () {
       await tx.begin();
       await tx.commit();
 
+      // a transaction is single-use: begin() after commit rejects (closed, cannot be reused)
       await assert.rejects(
         () => tx.begin(),
-        /Transaction already started/
+        /Transaction is closed and cannot be reused/
       );
     });
 
@@ -244,9 +265,10 @@ describe('Transaction', function () {
       await tx.begin();
       await tx.rollback();
 
+      // a transaction is single-use: begin() after rollback rejects (closed, cannot be reused)
       await assert.rejects(
         () => tx.begin(),
-        /Transaction already started/
+        /Transaction is closed and cannot be reused/
       );
     });
 
@@ -353,18 +375,20 @@ describe('Transaction', function () {
       await connection.close();
     });
 
-    it('should throw on begin from gtx.tx()', async function () {
+    it('should be idempotent on begin from gtx.tx()', async function () {
       const connection = getConnection('gtx');
       const g = anon.traversal().withRemote(connection);
 
       const tx = g.tx();
       const gtx = await tx.begin();
+      const txId = tx.transactionId;
       const sameTx = gtx.tx();
 
-      await assert.rejects(
-        () => sameTx.begin(),
-        /Transaction already started/
-      );
+      // begin() on the same (already open) transaction obtained via gtx.tx() is idempotent: it does
+      // not start a new server-side transaction, so it stays bound to the same transaction id
+      await sameTx.begin();
+      assert.strictEqual(sameTx.isOpen, true);
+      assert.strictEqual(sameTx.transactionId, txId);
 
       await tx.rollback();
       await connection.close();
@@ -412,10 +436,10 @@ describe('Transaction', function () {
       assert.strictEqual(tx.isOpen, false);
       assert.strictEqual(tx.transactionId, undefined);
 
-      // Cannot begin again
+      // a transaction is single-use: begin() after a failed begin rejects (closed, cannot be reused)
       await assert.rejects(
         () => tx.begin(),
-        /Transaction already started/
+        /Transaction is closed and cannot be reused/
       );
 
       await nonTxClient.close();
@@ -480,19 +504,20 @@ describe('Transaction', function () {
       await connection.close();
     });
 
-    it('should reject opening a nested transaction in the body', async function () {
+    it('should be idempotent when beginning inside the body', async function () {
       const connection = getConnection('gtx');
       const g = anon.traversal().withRemote(connection);
 
-      await assert.rejects(
-        () =>
-          g.executeInTx(async (gtx) => {
-            // gtx.tx() legitimately returns the SAME transaction; calling begin()
-            // on it opens a second transaction and trips the double-begin guard.
-            await gtx.tx().begin();
-          }),
-        /Transaction already started/
-      );
+      await g.executeInTx(async (gtx) => {
+        // gtx.tx() legitimately returns the SAME (already-open) transaction; calling begin()
+        // on it is idempotent - it does not throw and does not start a new server-side
+        // transaction (the transaction id is unchanged).
+        const tx = gtx.tx();
+        const txId = tx.transactionId;
+        const gtx2 = await tx.begin();
+        assert.ok(gtx2);
+        assert.strictEqual(gtx2.tx().transactionId, txId);
+      });
 
       await connection.close();
     });

@@ -85,7 +85,7 @@ const (
 	err1001ConvertArgumentChildTraversalNotFromAnonError errorCode = "E1001_BYTECODE_CHILD_T_NOT_ANON_ERROR"
 
 	// transaction.go errors
-	err1101TransactionRepeatedOpenError      errorCode = "E1101_TRANSACTION_REPEATED_OPEN_ERROR"
+	err1101TransactionClosedCannotReuseError errorCode = "E1101_TRANSACTION_CLOSED_CANNOT_REUSE_ERROR"
 	err1102TransactionRollbackNotOpenedError errorCode = "E1102_TRANSACTION_ROLLBACK_NOT_OPENED_ERROR"
 	err1103TransactionCommitNotOpenedError   errorCode = "E1103_TRANSACTION_COMMIT_NOT_OPENED_ERROR"
 	err1104TransactionRepeatedCloseError     errorCode = "E1104_TRANSACTION_REPEATED_CLOSE_ERROR"

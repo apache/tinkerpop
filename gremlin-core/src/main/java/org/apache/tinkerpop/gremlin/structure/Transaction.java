@@ -51,11 +51,6 @@ public interface Transaction extends AutoCloseable {
 
     ////////////////
     /**
-     * Opens a transaction.
-     */
-    public void open();
-
-    /**
      * Commits a transaction. This method may optionally throw {@link TransactionException} on error. Providers should
      * consider wrapping their transaction exceptions in this TinkerPop exception as it will lead to better error
      * handling with Gremlin Server and other parts of the stack.
@@ -81,16 +76,21 @@ public interface Transaction extends AutoCloseable {
     }
 
     /**
-     * Starts a transaction in the context of a {@link GraphTraversalSource} instance. It is up to the
-     * {@link Transaction} implementation to decide what this means and up to users to be aware of that meaning.
+     * Starts a transaction in the context of a {@link GraphTraversalSource} instance and returns that
+     * transaction-bound source. See {@link #begin(Class)} for the full contract.
      */
     public default <T extends TraversalSource> T begin() {
         return (T) begin(GraphTraversalSource.class);
     }
 
     /**
-     * Starts a transaction in the context of a particular {@link TraversalSource} instance. It is up to the
-     * {@link Transaction} implementation to decide what this means and up to users to be aware of that meaning.
+     * Starts a transaction in the context of a particular {@link TraversalSource} instance and returns a
+     * {@link TraversalSource} bound to it. If a transaction is not already open for this {@link Transaction}, one
+     * is started; if a transaction is already open, this method is idempotent - it does not start a new
+     * transaction and does not throw, returning a source bound to the open transaction. The identity of the
+     * returned source across calls is unspecified and must not be relied upon. How the returned
+     * {@link TraversalSource} is bound to the transaction's context is up to the implementation and up to users to
+     * be aware of that meaning.
      */
     public <T extends TraversalSource> T begin(final Class<T> traversalSourceClass);
 
@@ -151,10 +151,6 @@ public interface Transaction extends AutoCloseable {
     public static class Exceptions {
 
         private Exceptions() {
-        }
-
-        public static IllegalStateException transactionAlreadyOpen() {
-            return new IllegalStateException("Stop the current transaction before opening another");
         }
 
         public static IllegalStateException transactionMustBeOpenToReadWrite() {
@@ -224,7 +220,7 @@ public interface Transaction extends AutoCloseable {
         AUTO {
             @Override
             public void accept(final Transaction transaction) {
-                if (!transaction.isOpen()) transaction.open();
+                if (!transaction.isOpen()) transaction.begin();
             }
         },
 
@@ -240,11 +236,6 @@ public interface Transaction extends AutoCloseable {
     }
 
     public static final Transaction NO_OP = new Transaction() {
-        @Override
-        public void open() {
-            throw new UnsupportedOperationException("This Transaction implementation is a no-op for all methods");
-        }
-
         @Override
         public void commit() {
             throw new UnsupportedOperationException("This Transaction implementation is a no-op for all methods");

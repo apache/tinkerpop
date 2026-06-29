@@ -54,6 +54,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 ** Added a `proxy(ProxyOptions)` builder that inserts a Netty `HttpProxyHandler` into the pipeline before the SSL handler.
 ** Removed the `maxResponseContentLength` connection option and its `HttpObjectAggregator` cap; responses are streamed and the new `readTimeout` is the partial mitigation.
 ** Reconciled the `validationRequest` default: the builder default is now `g.inject(0)` to match the `Settings` default (it was previously `''`).
+* Removed `Transaction.open()` in favor of `begin()`, which is now the single transaction-start primitive across embedded and remote contexts.
+* Changed `begin()` and `close()` to be idempotent and calling it when a transaction is already in that state no longer throws.
 * Added configurable CORS `allowedOrigins` setting to Gremlin Server; warns when wildcard origin is used alongside authentication.
 * Standardized `gremlin-go` connection options per the TinkerPop 4.x GLV proposal:
 ** Moved `BasicAuth`/`SigV4Auth`/`SigV4AuthWithCredentials` out of package `gremlingo` into a new `auth` sub-package as `auth.Basic`/`auth.SigV4`/`auth.SigV4WithCredentials`. The flat `gremlingo` functions have been removed; use the `auth` sub-package.

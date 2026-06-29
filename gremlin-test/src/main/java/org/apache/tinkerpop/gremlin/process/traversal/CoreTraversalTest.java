@@ -217,12 +217,12 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
 
         // close down the current transaction and fire up a fresh one
-        g.tx().open();
+        g.tx().begin();
         final Traversal t = g.V().has("name", "marko");
         g.tx().rollback();
 
         // the traversal should still work since there are auto transactions
-        g.tx().open();
+        g.tx().begin();
         assertEquals(1, IteratorUtils.count(t));
         g.tx().rollback();
     }

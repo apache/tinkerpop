@@ -128,7 +128,7 @@ public class UnmanagedTransaction {
      */
     public void open() {
         try {
-            graph.tx().open();
+            graph.tx().begin();
             touch();
             logger.debug("Transaction {} opened", transactionId);
         } catch (Exception e) {

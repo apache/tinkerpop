@@ -496,7 +496,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     }
 
     /**
-     * Handle begin by creating an {@link UnmanagedTransaction} and submitting the open to its executor.
+     * Handle begin by creating an {@link UnmanagedTransaction} and submitting the transaction begin to its executor.
      */
     private void doBegin(final Context ctx) throws Exception {
         final String traversalSourceName = ctx.getRequestMessage().getField(Tokens.ARGS_G);
@@ -507,7 +507,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             ctx.setTransactionId(txCtx.getTransactionId());
             final Graph graph = graphManager.getTraversalSource(traversalSourceName).getGraph();
             txCtx.submit(new FutureTask<>(() -> {
-                graph.tx().open();
+                graph.tx().begin();
                 return null;
             })).get(5000, TimeUnit.MILLISECONDS); // Not an option for now, but 5s should be plenty.
         } catch (IllegalStateException ise) {
