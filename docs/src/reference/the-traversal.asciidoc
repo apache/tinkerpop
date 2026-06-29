@@ -6865,19 +6865,20 @@ script = t.gremlin_lang.get_gremlin()
 [[tiny-gremlin-traversal]]
 == Tiny Gremlin
 
-*Tiny Gremlin* is a defined subset of the Gremlin traversal language that executes locally and in-process against a
+Tiny Gremlin is a defined subset of the Gremlin traversal language that executes locally and in-process against a
 small, detached `Graph` instance. The most common use case is to call `subgraph()` on a remote graph, receive a `Graph`
 object, and then navigate and filter it locally using familiar Gremlin syntax without an additional network round-trip.
 A secondary use case is constructing small graphs entirely in-process using `addV()`, `addE()`, and `property()`.
 
 Full details on semantics, supported forms, and limitations are covered in the
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#tiny-gremlin[Tiny Gremlin Semantics] section of the
-Provider Documentation. Tiny Gremlin is currently only supported in `gremlin-javascript`.
+Provider Documentation. Tiny Gremlin is currently only supported in <<gremlin-javascript-tiny-gremlin,Javascript>>
 
 === Supported Steps
 
-Tiny Gremlin supports exactly 33 steps. No other step may be used in a Tiny Gremlin traversal; attempting to do so
-results in an error before any graph data is accessed.
+Tiny Gremlin supports the basic steps required to navigate, filter, mutate and extract values from elements in a graph.
+These steps should provide the basics required to author simple traversals for data gathering, path finding and other
+graph analysis tasks.
 
 [width="100%",options="header"]
 |===
@@ -6890,36 +6891,5 @@ results in an error before any graph data is accessed.
 |Range |<<limit-step,`limit()`>>, <<range-step,`range()`>>, <<skip-step,`skip()`>>, <<tail-step,`tail()`>>
 |Ordering |<<order-step,`order()`>>
 |Mutation |<<addvertex-step,`addV()`>>, <<addedge-step,`addE()`>>, <<property-step,`property()`>>
-|Modulators |<<from-step,`from()`>>, <<to-step,`to()`>>
+|Modulators |<<from-step,`from()`>>, <<to-step,`to()`>> - in conjunction with `addE()`, not `path()`.
 |===
-
-=== Language Support
-
-Tiny Gremlin is currently only implemented in `gremlin-javascript`. The `with_(graph)` API accepts a local `Graph`
-object in place of a remote connection, transparently enabling local traversal using the same Gremlin API:
-
-[source,javascript]
-----
-const { graph: { Graph }, process: { anonymousTraversal: { traversal } } } = require('gremlin');
-
-const graph = new Graph();
-const g = traversal().with_(graph);
-
-// Build a small graph and query it locally
-const names = await g.addV('person').property('name', 'alice')
-                      .V().values('name').toList();
-// Returns: ['alice']
-----
-
-The primary use case of processing a subgraph received from a remote server requires no code changes other than
-passing the returned `Graph` object to `with_()`:
-
-[source,javascript]
-----
-// Retrieve a subgraph from a remote server
-const subgraph = await gRemote.V().hasLabel('person').subgraph('sg').cap('sg').next();
-
-// Query it locally with Tiny Gremlin — no additional network calls
-const g = traversal().with_(subgraph);
-const paths = await g.V().out('knows').in('knows').path().toList();
-----

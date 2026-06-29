@@ -2188,9 +2188,9 @@ Promise.all([
 [[gremlin-javascript-tiny-gremlin]]
 === Tiny Gremlin
 
-Tiny Gremlin executes a defined subset of Gremlin locally and in-process against a detached `Graph` held in
-memory. No Gremlin Server or remote connection is involved. A local traversal source is created by passing a
-`Graph` instance to `with_()` in place of a `DriverRemoteConnection`:
+<<tiny-gremlin-traversal, Tiny Gremlin>> is a subset of the Gremlin language that can execute locally and in-process
+against a detached `Graph` held in memory. No Gremlin Server or remote connection is involved. A local traversal source
+is created by passing a `Graph` instance to `with_()` in place of a `DriverRemoteConnection`:
 
 [source,javascript]
 ----
