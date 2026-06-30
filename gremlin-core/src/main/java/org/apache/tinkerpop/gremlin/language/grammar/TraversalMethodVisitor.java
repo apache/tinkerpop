@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -126,17 +127,35 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
     @Override
     public GraphTraversal visitTraversalMethod_addV_StringVarargs(final GremlinParser.TraversalMethod_addV_StringVarargsContext ctx) {
         final List<GremlinParser.StringArgumentContext> args = ctx.stringArgument();
-        final Object firstLiteralOrVar = antlr.argumentVisitor.visitStringArgument(args.get(0));
-        final String firstLabel = firstLiteralOrVar instanceof String ? (String) firstLiteralOrVar : ((GValue<String>) firstLiteralOrVar).get();
-        final Object secondLiteralOrVar = antlr.argumentVisitor.visitStringArgument(args.get(1));
-        final String secondLabel = secondLiteralOrVar instanceof String ? (String) secondLiteralOrVar : ((GValue<String>) secondLiteralOrVar).get();
-
-        final String[] moreLabels = new String[args.size() - 2];
-        for (int i = 2; i < args.size(); i++) {
-            final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(args.get(i));
-            moreLabels[i - 2] = literalOrVar instanceof String ? (String) literalOrVar : ((GValue<String>) literalOrVar).get();
+        // Check if any arguments are GValue - if so, use the GValue-aware overload
+        final List<Object> allArgs = new ArrayList<>(args.size());
+        boolean hasGValue = false;
+        for (final GremlinParser.StringArgumentContext arg : args) {
+            final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(arg);
+            allArgs.add(literalOrVar);
+            if (literalOrVar instanceof GValue) {
+                hasGValue = true;
+            }
         }
-        return this.graphTraversal.addV(firstLabel, secondLabel, moreLabels);
+        if (hasGValue) {
+            // Use GValue-aware multi-label overload: addV(first, more...)
+            final GValue<String> firstLabel = allArgs.get(0) instanceof GValue ?
+                    (GValue<String>) allArgs.get(0) : GValue.of((String) allArgs.get(0));
+            final GValue<String>[] moreLabels = new GValue[allArgs.size() - 1];
+            for (int i = 1; i < allArgs.size(); i++) {
+                moreLabels[i - 1] = allArgs.get(i) instanceof GValue ?
+                        (GValue<String>) allArgs.get(i) : GValue.of((String) allArgs.get(i));
+            }
+            return this.graphTraversal.addV(firstLabel, moreLabels);
+        } else {
+            // All plain strings: addV(first, more...)
+            final String firstLabel = (String) allArgs.get(0);
+            final String[] moreLabels = new String[allArgs.size() - 1];
+            for (int i = 1; i < allArgs.size(); i++) {
+                moreLabels[i - 1] = (String) allArgs.get(i);
+            }
+            return this.graphTraversal.addV(firstLabel, moreLabels);
+        }
     }
 
     /**

@@ -60,7 +60,8 @@ public class AddVertexStepTest extends GValueStepTest {
                 __.addV("knows").property("c", "e"),
                 __.addV(GValue.of("label", "knows")).property("a", "b"),
                 __.addV(GValue.of("label", "created")).property("a", GValue.of("prop", "b")),
-                __.addV(GValue.of("label", "knows")).property("a", GValue.of("prop1", "b")).property("c", GValue.of("prop2", "e"))
+                __.addV(GValue.of("label", "knows")).property("a", GValue.of("prop1", "b")).property("c", GValue.of("prop2", "e")),
+                __.addV(GValue.of("l1", "person"), GValue.of("l2", "employee")).property("a", "b")
         );
     }
 
@@ -69,7 +70,9 @@ public class AddVertexStepTest extends GValueStepTest {
         return List.of(
                 Pair.of(__.addV(GValue.of("label", "knows")).property("a", "b"), Set.of("label")),
                 Pair.of(__.addV(GValue.of("label", "created")).property("a", GValue.of("prop", "b")), Set.of("label", "prop")),
-                Pair.of(__.addV(GValue.of("label", "knows")).property("a", GValue.of("prop1", "b")).property("c", GValue.of("prop2", "e")), Set.of("label", "prop1", "prop2"))
+                Pair.of(__.addV(GValue.of("label", "knows")).property("a", GValue.of("prop1", "b")).property("c", GValue.of("prop2", "e")), Set.of("label", "prop1", "prop2")),
+                Pair.of(__.addV(GValue.of("l1", "person"), GValue.of("l2", "employee")), Set.of("l1", "l2")),
+                Pair.of(__.addV(GValue.of("l1", "person"), GValue.of("l2", "employee"), GValue.of("l3", "manager")), Set.of("l1", "l2", "l3"))
         );
     }
 
@@ -366,5 +369,103 @@ public class AddVertexStepTest extends GValueStepTest {
                 .property(T.id, GValue.of("id", "1234"))
                 .property("age", GValue.of("a", 29))
                 .asAdmin();
+    }
+
+    // --- Multi-label GValue tests ---
+
+    @Test
+    public void multiLabelGValuesShouldSurviveParsing() {
+        GraphTraversal.Admin<Object, Vertex> traversal = getMultiLabelGValueTraversal();
+        final AddVertexStepPlaceholder<?> step = (AddVertexStepPlaceholder<?>) traversal.getSteps().get(0);
+        assertTrue(step.isParameterized());
+        Collection<GValue<?>> gValues = step.getGValues();
+        assertEquals(2, gValues.size());
+        assertTrue(gValues.stream().map(GValue::getName).collect(Collectors.toList())
+                .containsAll(List.of("l1", "l2")));
+    }
+
+    @Test
+    public void multiLabelGetLabelShouldPinVariables() {
+        GraphTraversal.Admin<Object, Vertex> traversal = getMultiLabelGValueTraversal();
+        final AddVertexStepPlaceholder<?> step = (AddVertexStepPlaceholder<?>) traversal.getSteps().get(0);
+        final Object resolved = step.getLabel();
+        assertTrue(resolved instanceof Set);
+        assertEquals(Set.of("person", "employee"), resolved);
+        verifyVariables(traversal, Set.of("l1", "l2"), Set.of());
+    }
+
+    @Test
+    public void multiLabelGetLabelWithGValueShouldNotPin() {
+        GraphTraversal.Admin<Object, Vertex> traversal = getMultiLabelGValueTraversal();
+        final AddVertexStepPlaceholder<?> step = (AddVertexStepPlaceholder<?>) traversal.getSteps().get(0);
+        final Object raw = step.getLabelWithGValue();
+        assertTrue(raw instanceof Set);
+        final Set<?> rawSet = (Set<?>) raw;
+        assertEquals(2, rawSet.size());
+        assertTrue(rawSet.contains(GValue.of("l1", "person")));
+        assertTrue(rawSet.contains(GValue.of("l2", "employee")));
+        verifyVariables(traversal, Set.of(), Set.of("l1", "l2"));
+    }
+
+    @Test
+    public void multiLabelUpdateVariableShouldSubstitute() {
+        GraphTraversal.Admin<Object, Vertex> traversal = getMultiLabelGValueTraversal();
+        final AddVertexStepPlaceholder<?> step = (AddVertexStepPlaceholder<?>) traversal.getSteps().get(0);
+        step.updateVariable("l1", "worker");
+        final Object resolved = step.getLabel();
+        assertTrue(resolved instanceof Set);
+        assertEquals(Set.of("worker", "employee"), resolved);
+    }
+
+    @Test
+    public void multiLabelConcreteStepShouldResolveLabels() {
+        GraphTraversal.Admin<Object, Vertex> traversal = getMultiLabelGValueTraversal();
+        final AddVertexStepPlaceholder<?> step = (AddVertexStepPlaceholder<?>) traversal.getSteps().get(0);
+        final AddVertexStep<?> concrete = step.asConcreteStep();
+        final Object concreteLabel = concrete.getLabel();
+        assertTrue(concreteLabel instanceof Set);
+        assertEquals(Set.of("person", "employee"), concreteLabel);
+    }
+
+    @Test
+    public void multiLabelCloneShouldPreserveGValues() {
+        GraphTraversal.Admin<Object, Vertex> traversal = getMultiLabelGValueTraversal();
+        final AddVertexStepPlaceholder<?> step = (AddVertexStepPlaceholder<?>) traversal.getSteps().get(0);
+        final AddVertexStepPlaceholder<?> cloned = (AddVertexStepPlaceholder<?>) step.clone();
+        // Verify clone has independent GValues by modifying clone and checking original is unaffected
+        cloned.updateVariable("l1", "cloned-label");
+        // Original should be unchanged - use getLabelWithGValue to avoid pinning
+        final Object originalRaw = step.getLabelWithGValue();
+        assertTrue(originalRaw instanceof Set);
+        final Set<?> originalSet = (Set<?>) originalRaw;
+        assertTrue(originalSet.contains(GValue.of("l1", "person")));
+        assertTrue(originalSet.contains(GValue.of("l2", "employee")));
+        // Clone should reflect the update
+        final Object clonedRaw = cloned.getLabelWithGValue();
+        assertTrue(clonedRaw instanceof Set);
+        final Set<?> clonedSet = (Set<?>) clonedRaw;
+        assertTrue(clonedSet.contains(GValue.of("l1", "cloned-label")));
+        assertTrue(clonedSet.contains(GValue.of("l2", "employee")));
+    }
+
+    @Test
+    public void multiLabelWithThreeGValueLabels() {
+        GraphTraversal.Admin<Object, Vertex> traversal = __.addV(
+                GValue.of("l1", "person"),
+                GValue.of("l2", "employee"),
+                GValue.of("l3", "manager")).asAdmin();
+        final AddVertexStepPlaceholder<?> step = (AddVertexStepPlaceholder<?>) traversal.getSteps().get(0);
+        assertTrue(step.isParameterized());
+        Collection<GValue<?>> gValues = step.getGValues();
+        assertEquals(3, gValues.size());
+        assertTrue(gValues.stream().map(GValue::getName).collect(Collectors.toList())
+                .containsAll(List.of("l1", "l2", "l3")));
+        final Object resolved = step.getLabel();
+        assertTrue(resolved instanceof Set);
+        assertEquals(Set.of("person", "employee", "manager"), resolved);
+    }
+
+    private GraphTraversal.Admin<Object, Vertex> getMultiLabelGValueTraversal() {
+        return __.addV(GValue.of("l1", "person"), GValue.of("l2", "employee")).asAdmin();
     }
 }

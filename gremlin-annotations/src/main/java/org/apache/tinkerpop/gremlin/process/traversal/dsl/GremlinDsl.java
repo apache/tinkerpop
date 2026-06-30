@@ -68,7 +68,7 @@ public @interface GremlinDsl {
      *
      * <ul>
      *   <li>{@link GraphTraversalSource#addV()}</li>
-     *   <li>{@link GraphTraversalSource#addV(String)}</li>
+     *   <li>{@link GraphTraversalSource#addV(String, String[])}</li>
      *   <li>{@link GraphTraversalSource#V(Object...)}</li>
      *   <li>{@link GraphTraversalSource#E(Object...)}</li>
      *   <li>{@link GraphTraversalSource#inject(Object...)}</li>

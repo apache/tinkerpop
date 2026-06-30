@@ -1463,17 +1463,31 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Adds a {@link Vertex}.
+     * Adds a {@link Vertex} with one or more labels.
+     * When called with multiple labels, creates a multi-labeled vertex using the set-based
+     * constructor.
      *
-     * @param vertexLabel the label of the {@link Vertex} to add
+     * @param label the label (or only) label of the {@link Vertex} to add
+     * @param additionalLabels  additional labels (may be empty for single-label)
      * @return the traversal with the {@link AddVertexStepContract} added
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step" target="_blank">Reference Documentation - AddVertex Step</a>
      * @since 3.1.0-incubating
      */
-    public default GraphTraversal<S, Vertex> addV(final String vertexLabel) {
-        if (null == vertexLabel) throw new IllegalArgumentException("vertexLabel cannot be null");
-        this.asAdmin().getGremlinLang().addStep(Symbols.addV, vertexLabel);
-        return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), vertexLabel));
+    public default GraphTraversal<S, Vertex> addV(final String label, final String... additionalLabels) {
+        if (null == label) throw new IllegalArgumentException("label cannot be null");
+        for (final String l : additionalLabels) {
+            if (null == l) throw new IllegalArgumentException("label cannot be null");
+        }
+        if (additionalLabels.length == 0) {
+            this.asAdmin().getGremlinLang().addStep(Symbols.addV, label);
+            return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), label));
+        } else {
+            this.asAdmin().getGremlinLang().addStep(Symbols.addV, label, additionalLabels);
+            final Set<Object> allLabels = new LinkedHashSet<>();
+            allLabels.add(label);
+            Collections.addAll(allLabels, additionalLabels);
+            return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), allLabels));
+        }
     }
 
     /**
@@ -1490,20 +1504,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Adds a {@link Vertex}.
-     *
-     * @param vertexLabel the label of the {@link Vertex} to add
-     * @return the traversal with the {@link AddVertexStepContract} added
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step" target="_blank">Reference Documentation - AddVertex Step</a>
-     * @since 3.8.0
-     */
-    public default GraphTraversal<S, Vertex> addV(final GValue<String> vertexLabel) {
-        if (null == vertexLabel || null == vertexLabel.get()) throw new IllegalArgumentException("vertexLabel cannot be null");
-        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.addV, vertexLabel);
-        return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), vertexLabel));
-    }
-
-    /**
      * Adds a {@link Vertex} with a default vertex label.
      *
      * @return the traversal with the {@link AddVertexStepContract} added
@@ -1516,27 +1516,28 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Adds a {@link Vertex} with multiple labels. Use this method to create multi-labeled vertices.
-     * Creates the vertex with the first label, then adds the remaining labels.
+     * Adds a {@link Vertex} with one or more labels where labels may be {@link GValue} variables.
      *
-     * @param label1     the first label
-     * @param label2     the second label
-     * @param moreLabels additional labels
+     * @param label the label (or only) label
+     * @param additionalLabels  additional labels. May be empty for single-label)
      * @return the traversal with the {@link AddVertexStepContract} added
-     * @since 4.0.0
+     * @since 3.8.0
      */
-    public default GraphTraversal<S, Vertex> addV(final String label1, final String label2, final String... moreLabels) {
-        if (null == label1) throw new IllegalArgumentException("vertexLabel cannot be null");
-        if (null == label2) throw new IllegalArgumentException("vertexLabel cannot be null");
-        for (final String l : moreLabels) {
-            if (null == l) throw new IllegalArgumentException("vertexLabel cannot be null");
+    public default GraphTraversal<S, Vertex> addV(final GValue<String> label, final GValue<String>... additionalLabels) {
+        if (null == label || null == label.get()) throw new IllegalArgumentException("vertexLabel cannot be null");
+        for (final GValue<String> l : additionalLabels) {
+            if (null == l || null == l.get()) throw new IllegalArgumentException("vertexLabel cannot be null");
         }
-        this.asAdmin().getGremlinLang().addStep(Symbols.addV, label1, label2, moreLabels);
-        final Set<String> allLabels = new LinkedHashSet<>();
-        allLabels.add(label1);
-        allLabels.add(label2);
-        Collections.addAll(allLabels, moreLabels);
-        return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), allLabels));
+        if (additionalLabels.length == 0) {
+            this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.addV, label);
+            return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), label));
+        } else {
+            this.asAdmin().getGremlinLang().addStep(Symbols.addV, label, additionalLabels);
+            final LinkedHashSet<Object> allLabels = new LinkedHashSet<>();
+            allLabels.add(label);
+            Collections.addAll(allLabels, additionalLabels);
+            return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), allLabels));
+        }
     }
 
     /**
