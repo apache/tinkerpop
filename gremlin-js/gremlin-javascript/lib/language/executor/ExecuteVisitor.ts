@@ -480,6 +480,42 @@ export class ExecuteVisitor {
     }
   }
 
+  // ── Repeat / loop steps ───────────────────────────────────────────────────
+  // repeat() and its times()/until()/emit() modulators are pushed as separate
+  // descriptors here; the local executor folds them into a single repeat spec,
+  // tracking whether each modulator was declared before or after the repeat().
+
+  visitTraversalMethod_repeat_Traversal(ctx: any): void {
+    this.push('repeat', [this.visitNestedTraversalAsSubPipeline(ctx.nestedTraversal())]);
+  }
+
+  // repeat(String, Traversal) — the loop-label form. Tiny Gremlin has no step labels,
+  // so this is left without a body so the executor can reject it with a clear message.
+
+  visitTraversalMethod_times(ctx: any): void {
+    this.push('times', [this.recoverIntegerLiteral(ctx.integerLiteral())]);
+  }
+
+  visitTraversalMethod_until_Traversal(ctx: any): void {
+    this.push('until', [this.visitNestedTraversalAsSubPipeline(ctx.nestedTraversal())]);
+  }
+
+  visitTraversalMethod_until_Predicate(ctx: any): void {
+    this.push('until', [this.recoverPredicate(ctx.traversalPredicate())]);
+  }
+
+  visitTraversalMethod_emit_Empty(_ctx: any): void {
+    this.push('emit', []);
+  }
+
+  visitTraversalMethod_emit_Traversal(ctx: any): void {
+    this.push('emit', [this.visitNestedTraversalAsSubPipeline(ctx.nestedTraversal())]);
+  }
+
+  visitTraversalMethod_emit_Predicate(ctx: any): void {
+    this.push('emit', [this.recoverPredicate(ctx.traversalPredicate())]);
+  }
+
   // ── Mutation steps ────────────────────────────────────────────────────────
 
   visitTraversalMethod_addV_Empty(ctx: any): void {

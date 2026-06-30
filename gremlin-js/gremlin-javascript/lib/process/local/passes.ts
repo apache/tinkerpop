@@ -31,6 +31,7 @@ const SUPPORTED_STEPS = new Set<string>([
   'path',
   'limit', 'range', 'skip', 'tail',
   'order', 'by',
+  'repeat', 'times', 'until', 'emit',
   'addV', 'addE', 'property',
   'from', 'to',
 ]);

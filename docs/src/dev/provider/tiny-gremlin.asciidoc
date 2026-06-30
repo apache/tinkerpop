@@ -37,12 +37,12 @@ then navigates and filters it locally using familiar Gremlin syntax. A secondary
 entirely in process for lightweight analysis or testing, using `addV()`, `addE()`, and `property()`.
 
 Because the graph is small and entirely in memory, features that are expensive or architecture-dependent in a full
-implementation, such as `repeat()`, distributed OLAP steps, aggregation barriers, and strategy-based optimizations,
-are deliberately excluded. The result is a small, self-contained, predictable execution model.
+implementation, such as distributed OLAP steps, aggregation barriers, and strategy-based optimizations, are
+deliberately excluded. The result is a small, self-contained, predictable execution model.
 
 === Supported Steps
 
-Tiny Gremlin supports exactly the 33 steps listed below, grouped by category. No other step may be used in a Tiny
+Tiny Gremlin supports exactly the 37 steps listed below, grouped by category. No other step may be used in a Tiny
 Gremlin traversal; doing so results in an error before any graph data is accessed.
 
 [width="100%",options="header"]
@@ -55,8 +55,9 @@ Gremlin traversal; doing so results in an error before any graph data is accesse
 |Path |`path()`
 |Range |`limit()`, `range()`, `skip()`, `tail()`
 |Ordering |`order()`
+|Branch |`repeat()`
 |Mutation |`addV()`, `addE()`, `property()`
-|Modulators |`from()`, `to()`
+|Modulators |`from()`, `to()`, `times()`, `until()`, `emit()`
 |===
 
 === Terminal Methods
@@ -346,6 +347,50 @@ Emits elements at positions `[low, high)` in the stream, zero-indexed.
 *Tiny Gremlin limitations:*
 
 * The `Scope` form is not supported and will raise an error.
+
+=== repeat()
+
+*Gremlin Semantics reference:* <<repeat-step,repeat()>>
+
+Repeatedly applies a child traversal to each traverser, forming a loop. The loop is bounded by a `times()` or
+`until()` modulator, and `emit()` may side-output traversers as they pass through the loop. The position of a
+modulator relative to `repeat()` determines its semantics, matching full Gremlin:
+
+* `repeat(traversal).times(n)` runs the loop body `n` times. Declared after `repeat()`, the body always executes at
+  least once, so `times(0)` still runs the body once. Declared before, as in `times(n).repeat(traversal)`, the count
+  is checked first, so `times(0)` emits the input unchanged without running the body.
+* `repeat(traversal).until(condition)` is do-while: the body runs and then the condition is tested. Reversing the
+  order to `until(condition).repeat(traversal)` is while: the condition is tested before the body.
+* `emit()` side-outputs every traverser, and `emit(condition)` side-outputs only those satisfying the condition.
+  Declared after `repeat()` it emits traversers leaving the body, and declared before it emits them entering the body.
+
+A `condition` for `until()` or `emit()` is an anonymous filter traversal, satisfied when it produces at least one
+result. The loop body and these conditions may themselves contain any supported step, including `order().by()` or
+`path()`.
+
+The loop is driven breadth-first over the whole frontier: at each loop iteration every surviving traverser advances
+in lockstep through one shared evaluation of the body. A barrier step such as `order().by()` inside the body
+therefore sees all traversers at that loop position and orders them globally, matching full Gremlin rather than
+ordering within the descendants of a single input.
+
+Nested `repeat()` is supported. A `repeat()` may appear inside another `repeat()`, whether in the loop body or in
+an `until()` or `emit()` condition, to any depth. For example,
+`repeat(__.out().repeat(__.in()).times(2)).until(__.hasId(10))` is valid, and the global barrier behaviour above is
+preserved through the nesting, so `order().by()` within an inner `repeat()` still orders the whole frontier.
+
+*Tiny Gremlin limitations:*
+
+* The loop-label form (`repeat("label", traversal)`) is not supported because `as()`-style step labels and the
+  `loops("label")` reference are excluded from Tiny Gremlin.
+* The predicate form (`until(P)` and `emit(P)`) is not supported. It corresponds to Java's `Predicate<Traverser>`
+  lambda overload rather than a value predicate, so the anonymous-traversal form (for example
+  `until(__.has("name", "ripple"))`) must be used instead.
+* Mutation steps (`addV()`, `addE()`, `property()`) are not permitted within a `repeat()` body or its `until()` and
+  `emit()` conditions, since mutating the graph while looping over it has no well-defined semantics. This is enforced
+  at any nesting depth, including inside a nested `repeat()`.
+* A `repeat()` with no `times()` or `until()` bound terminates only when its body stops producing traversers, as on
+  an acyclic graph. As in full Gremlin, an unbounded loop over cyclic data does not terminate, so a bound is the
+  caller's responsibility.
 
 === skip()
 

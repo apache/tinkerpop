@@ -6889,6 +6889,7 @@ graph analysis tasks.
 |Value Extraction |<<id-step,`id()`>>, <<label-step,`label()`>>, <<values-step,`values()`>>, <<valuemap-step,`valueMap()`>>, <<elementmap-step,`elementMap()`>>, <<value-step,`value()`>>, <<key-step,`key()`>>
 |Path |<<path-step,`path()`>>
 |Range |<<limit-step,`limit()`>>, <<range-step,`range()`>>, <<skip-step,`skip()`>>, <<tail-step,`tail()`>>
+|Branching | <<repeat-step,`repeat()`>>, <<emit-step, `emit()`>>, <<times-step, `times()`>>, <<until-step, `until()`>>
 |Ordering |<<order-step,`order()`>>
 |Mutation |<<addvertex-step,`addV()`>>, <<addedge-step,`addE()`>>, <<property-step,`property()`>>
 |Modulators |<<from-step,`from()`>>, <<to-step,`to()`>> - in conjunction with `addE()`, not `path()`.

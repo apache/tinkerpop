@@ -19,7 +19,7 @@
 
 import { P, TextP, t, direction } from '../traversal.js';
 import { Graph, Vertex, Edge, VertexProperty, Property, Path } from '../../structure/graph.js';
-import type { Arg, Pipeline } from './types.js';
+import type { Arg, Pipeline, ExecutionContext, RepeatSpec } from './types.js';
 
 // ── Traverser helpers ─────────────────────────────────────────────────────────
 
@@ -764,5 +764,81 @@ export function* stepProperty(
       else existing.push(newProp);
     }
     yield item;
+  }
+}
+
+// ── Repeat step ───────────────────────────────────────────────────────────────
+
+/**
+ * Executes repeat() with its folded times()/until()/emit() modulators against a
+ * stream. The loop is driven breadth-first over the whole frontier: at each loop
+ * depth, every surviving traverser advances in lockstep through one shared run of
+ * the body. until() is the exit condition (checked before the body when declared
+ * first — while — or after it otherwise — do-while), times() is a loop-count exit,
+ * and emit() is a side output that does not stop a traverser from continuing to loop.
+ *
+ * Driving the body over the entire frontier at once (rather than per input
+ * traverser) is what gives barrier steps inside the body — order().by(), and the
+ * same for a nested repeat() — their global semantics: order() sees every traverser
+ * at that loop position, not just the descendants of a single start. Because the
+ * frontier only ever holds traversers that have survived exactly `loops` iterations,
+ * the loop count is uniform across the frontier and the per-traverser times()/until()
+ * exits remain exact.
+ *
+ * Child pipelines (the body and any until()/emit() traversal conditions) are run
+ * through the ExecutionContext, so a repeat() body may itself contain order().by(),
+ * path() projections, or a nested repeat().
+ */
+export function* stepRepeat(
+  source: Iterable<StreamItem>,
+  spec: RepeatSpec,
+  ctx: ExecutionContext,
+): Generator<StreamItem> {
+  // until()/emit() conditions are always filter traversals here; the predicate form
+  // is rejected during folding (see requireTraversalCondition in LocalExecutor).
+  const conditionHolds = (cond: Pipeline, item: StreamItem): boolean => {
+    for (const _out of ctx.runBranch(cond, [item])) return true; // filter traversal: any output => true
+    return false;
+  };
+
+  const exitBeforeBody = (item: StreamItem, loops: number): boolean => {
+    if (spec.times != null && spec.timesFirst && loops >= spec.times) return true;
+    if (spec.untilFirst && spec.until != null && conditionHolds(spec.until, item)) return true;
+    return false;
+  };
+  const exitAfterBody = (item: StreamItem, loops: number): boolean => {
+    if (spec.times != null && !spec.timesFirst && loops >= spec.times) return true;
+    if (!spec.untilFirst && spec.until != null && conditionHolds(spec.until, item)) return true;
+    return false;
+  };
+  const shouldEmit = (item: StreamItem): boolean => {
+    if (!spec.emitPresent) return false;
+    if (spec.emit == null) return true; // bare emit() — emit every traverser
+    return conditionHolds(spec.emit, item);
+  };
+
+  let frontier: StreamItem[] = [...source];
+  let loops = 0;
+  while (frontier.length > 0) {
+    // While-phase: traversers that hit a before-body exit leave the loop now;
+    // the rest (optionally emitted ahead of the body) form the body's input.
+    const entering: StreamItem[] = [];
+    for (const item of frontier) {
+      if (exitBeforeBody(item, loops)) { yield item; continue; }
+      if (spec.emitFirst && shouldEmit(item)) yield item;
+      entering.push(item);
+    }
+    if (entering.length === 0) break;
+
+    // Run the body over the entire frontier in one pass so barriers see it all.
+    const nextLoops = loops + 1;
+    const nextFrontier: StreamItem[] = [];
+    for (const out of ctx.runBranch(spec.body, entering)) {
+      if (exitAfterBody(out, nextLoops)) { yield out; continue; }
+      if (!spec.emitFirst && shouldEmit(out)) yield out;
+      nextFrontier.push(out);
+    }
+    frontier = nextFrontier;
+    loops = nextLoops;
   }
 }

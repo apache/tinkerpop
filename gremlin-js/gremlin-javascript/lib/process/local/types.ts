@@ -18,6 +18,7 @@
  */
 
 import { P, TextP, EnumValue } from '../traversal.js';
+import type { Graph } from '../../structure/graph.js';
 
 /**
  * A single element flowing through a Tiny Gremlin local pipeline.
@@ -55,3 +56,43 @@ export interface StepDescriptor {
  * traversal or anonymous sub-traversal.
  */
 export type Pipeline = StepDescriptor[];
+
+/**
+ * The capabilities a "parent" step (one that runs nested child pipelines) needs
+ * from the executor. This is Tiny Gremlin's lightweight analog of Java's
+ * TraversalParent: rather than each parent step reaching back into the executor
+ * through bespoke escapes, the executor hands every parent step a context with
+ * three child-execution modes.
+ */
+export interface ExecutionContext {
+  graph: Graph;
+  trackPaths: boolean;
+  /** Apply a child pipeline as mid-traversal steps over an existing stream (flatMap per traverser). */
+  runBranch(child: Pipeline, source: Iterable<any>): Iterable<any>;
+  /** Run a single value-extraction child against one object, returning its first result or NON_PRODUCTIVE. */
+  runProject(child: Pipeline, object: any): any;
+  /** Run a child as a complete source-rooted pipeline (e.g. addE from/to), returning the first result. */
+  runRooted(child: Pipeline): any;
+}
+
+/**
+ * The folded form of a repeat() step and its times()/until()/emit() modulators.
+ * `untilFirst`/`emitFirst` record whether the modulator was declared before the
+ * repeat() (while/emit-before) or after it (do-while/emit-after). A null `emit`
+ * with `emitPresent` true is a bare emit() that always emits.
+ */
+export interface RepeatSpec {
+  body: Pipeline;
+  until: Pipeline | null;
+  untilFirst: boolean;
+  emit: Pipeline | null;
+  emitPresent: boolean;
+  emitFirst: boolean;
+  times: number | null;
+  /**
+   * Whether times() was declared before the repeat(). Like until(), position decides
+   * while vs. do-while: times(0).repeat(b) skips the body entirely (identity), while
+   * repeat(b).times(0) still runs the body once.
+   */
+  timesFirst: boolean;
+}

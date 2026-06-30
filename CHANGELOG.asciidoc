@@ -130,7 +130,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added the `gql-gremlin` module containing the TinkerGQL engine, a `MATCH`-pattern executor implementing a deliberate minimal subset of ISO GQL, usable by any graph provider.
 * Added `Graph.countVerticesByLabel(String)`, `Graph.countEdgesByLabel(String)`, and the `Graph.Index` nested interface as performance-hint extension points for the TinkerGQL engine.
 * Added GQL support to TinkerGraph with `gql-gremlin`,
-* Added Tiny Gremlin local execution to `gremlin-javascript`: `traversal().with_(graph)` now executes a defined subset of Gremlin steps (navigation, filtering, value extraction, path tracking, range, ordering, and local mutation) against an in-memory `Graph` without a remote server. The `Graph` adjacency index (`outEdges`, `inEdges`) enables O(1) navigation. New `forEach(fn)` and `reduce(fn, seed)` terminal methods on `Traversal` support result processing with native JavaScript functions. The `LocalGraphConnection` and `LocalExecutionError` are exported from the `driver` namespace.
 
 [[release-4-0-0-beta-2]]
 === TinkerPop 4.0.0-beta.2 (April 1, 2026)

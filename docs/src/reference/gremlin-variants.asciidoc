@@ -2243,6 +2243,9 @@ const totalAge = await g.V().hasLabel('person').values('age').reduce((acc, age) 
 
 // path() projects each element through by()
 const paths = await g.V().has('name', 'marko').out().path().by('name').toList();
+
+// repeat() loops a child traversal, here two hops out from marko
+const reached = await g.V().has('name', 'marko').repeat(__.out()).times(2).values('name').toList();
 ----
 
 ==== Working within the subset

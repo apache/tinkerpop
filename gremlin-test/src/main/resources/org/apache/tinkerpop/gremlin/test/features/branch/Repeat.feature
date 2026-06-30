@@ -18,6 +18,7 @@
 @StepClassBranch @StepRepeat
 Feature: Step - repeat()
 
+  @TinyGremlin
   Scenario: g_V_repeatXoutX_timesX2X_emit_path
     Given the modern graph
     And the traversal of
@@ -36,6 +37,7 @@ Feature: Step - repeat()
       | p[v[josh],v[lop]] |
       | p[v[peter],v[lop]] |
 
+  @TinyGremlin
   Scenario: g_V_repeatXoutX_timesX2X_repeatXinX_timesX2X_name
     Given the modern graph
     And the traversal of
@@ -48,7 +50,7 @@ Feature: Step - repeat()
       | marko |
       | marko |
 
-  @GraphComputerVerificationReferenceOnly
+  @GraphComputerVerificationReferenceOnly @TinyGremlin
   Scenario: g_V_repeatXoutE_inVX_timesX2X_path_by_name_by_label
     Given the modern graph
     And the traversal of
@@ -61,6 +63,7 @@ Feature: Step - repeat()
       | p[marko,knows,josh,created,lop] |
       | p[marko,knows,josh,created,ripple] |
 
+  @TinyGremlin
   Scenario: g_V_repeatXoutX_timesX2X
     Given the modern graph
     And the traversal of
@@ -73,6 +76,7 @@ Feature: Step - repeat()
       | v[ripple] |
       | v[lop] |
 
+  @TinyGremlin
   Scenario: g_V_repeatXoutX_timesX2X_emit
     Given the modern graph
     And the traversal of
@@ -88,6 +92,7 @@ Feature: Step - repeat()
       | v[vadas] |
     And the result should have a count of 8
 
+  @TinyGremlin
   Scenario: g_VX1X_timesX2X_repeatXoutX_name
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -101,6 +106,7 @@ Feature: Step - repeat()
       | ripple |
       | lop |
 
+  @TinyGremlin
   Scenario: g_V_emit_timesX2X_repeatXoutX_path
     Given the modern graph
     And the traversal of
@@ -125,6 +131,7 @@ Feature: Step - repeat()
       | p[v[peter]] |
       | p[v[peter],v[lop]] |
 
+  @TinyGremlin
   Scenario: g_V_emit_repeatXoutX_timesX2X_path
     Given the modern graph
     And the traversal of
@@ -149,6 +156,7 @@ Feature: Step - repeat()
       | p[v[peter]] |
       | p[v[peter],v[lop]] |
 
+  @TinyGremlin
   Scenario: g_VX1X_emitXhasXlabel_personXX_repeatXoutX_name
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -224,7 +232,7 @@ Feature: Step - repeat()
       | result |
       | p[marko,knows,josh,created,ripple]  |
 
-  @GraphComputerVerificationReferenceOnly
+  @GraphComputerVerificationReferenceOnly @TinyGremlin
   Scenario: g_V_hasXloop_name_loopX_repeatXinX_timesX5X_path_by_name
     Given the sink graph
     And the traversal of
@@ -236,7 +244,7 @@ Feature: Step - repeat()
       | result |
       | p[loop,loop,loop,loop,loop,loop] |
 
-  @GraphComputerVerificationReferenceOnly
+  @GraphComputerVerificationReferenceOnly @TinyGremlin
   Scenario: g_V_repeatXout_repeatXout_order_byXname_descXX_timesX1XX_timesX1X_limitX1X_path_byXnameX
       Given the modern graph
       And the traversal of
@@ -248,7 +256,7 @@ Feature: Step - repeat()
           | result |
           | p[marko,josh,ripple] |
 
-  @GraphComputerVerificationReferenceOnly
+  @GraphComputerVerificationReferenceOnly @TinyGremlin
   Scenario: g_V_repeatXoutXknowsXX_untilXrepeatXoutXcreatedXX_emitXhasXname_lopXXX_path_byXnameX
     Given the modern graph
     And the traversal of
@@ -260,6 +268,7 @@ Feature: Step - repeat()
       | result |
       | p[marko,josh] |
 
+  @TinyGremlin
   Scenario: g_V_repeatXrepeatXout_createdXX_untilXhasXname_rippleXXXemit_lang
     Given the modern graph
     And the traversal of
@@ -375,6 +384,7 @@ Feature: Step - repeat()
     When iterated to list
     Then the traversal will raise an error with message containing text of "The repeat()-traversal was not defined"
 
+  @TinyGremlin
   Scenario: g_V_hasXperson_name_markoX_repeatXoutXcreatedXX_timesX1X_name
     Given the modern graph
     And the traversal of
@@ -386,6 +396,7 @@ Feature: Step - repeat()
       | result |
       | lop |
 
+  @TinyGremlin
   Scenario: g_V_hasXperson_name_markoX_repeatXoutXcreatedXX_timesX0X_name
     Given the modern graph
     And the traversal of
@@ -397,6 +408,7 @@ Feature: Step - repeat()
       | result |
       | lop |
 
+  @TinyGremlin
   Scenario: g_V_hasXperson_name_markoX_timesX1X_repeatXoutXcreatedXX_name
     Given the modern graph
     And the traversal of
@@ -408,6 +420,7 @@ Feature: Step - repeat()
       | result |
       | lop |
 
+  @TinyGremlin
   Scenario: g_V_hasXperson_name_markoX_timesX0X_repeatXoutXcreatedXX_name
     Given the modern graph
     And the traversal of
@@ -508,6 +521,7 @@ Feature: Step - repeat()
       | p[v[marko],v[lop],v[josh]] |
 
   # Nested repeat should maintain globalness
+  @TinyGremlin
   Scenario: g_V_repeatXboth_repeatXorder_byXnameXX_timesX1XX_timesX1X
     Given the modern graph
     And the traversal of
