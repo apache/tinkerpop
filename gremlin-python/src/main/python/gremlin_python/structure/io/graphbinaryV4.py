@@ -154,7 +154,7 @@ class GraphBinaryReader(object):
         self.pdt_registry = pdt_registry
         # Mirror of self.deserializers keyed by int type code instead of DataType.
         # Avoids the per-read DataType(bt) call, whose aenum construction negatively affects performance on large results.
-        self._objectify_by_code = {dt.value: des.objectify for dt, des in self.deserializers.items()}
+        self._deserializer_by_type_code = {dt.value: des.objectify for dt, des in self.deserializers.items()}
 
     def read_object(self, b):
         if b is None:
@@ -171,7 +171,7 @@ class GraphBinaryReader(object):
                     buff.read(1)
                 return None
             try:
-                objectify = self._objectify_by_code[bt]
+                objectify = self._deserializer_by_type_code[bt]
             except KeyError:
                 raise ValueError("%r is not a valid DataType" % bt) from None
             result = objectify(buff, self, nullable)
