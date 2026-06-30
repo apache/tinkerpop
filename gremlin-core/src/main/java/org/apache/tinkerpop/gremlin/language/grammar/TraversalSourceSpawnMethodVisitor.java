@@ -90,8 +90,6 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
                 // Multi-label: addV("a", "b", ...)
                 final Object firstLiteralOrVar = antlr.argumentVisitor.visitStringArgument(stringArgs.get(0));
                 final String firstLabel = firstLiteralOrVar instanceof String ? (String) firstLiteralOrVar : ((GValue<String>) firstLiteralOrVar).get();
-                // Create vertex with first label, then add remaining labels
-                GraphTraversal t = this.traversalSource.addV(firstLabel);
                 final Object secondLiteralOrVar = antlr.argumentVisitor.visitStringArgument(stringArgs.get(1));
                 final String secondLabel = secondLiteralOrVar instanceof String ? (String) secondLiteralOrVar : ((GValue<String>) secondLiteralOrVar).get();
                 final String[] moreLabels = new String[stringArgs.size() - 2];
@@ -99,7 +97,7 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
                     final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(stringArgs.get(i));
                     moreLabels[i - 2] = literalOrVar instanceof String ? (String) literalOrVar : ((GValue<String>) literalOrVar).get();
                 }
-                return t.addLabel(secondLabel, moreLabels);
+                return this.traversalSource.addV(firstLabel, secondLabel, moreLabels);
             }
         } else if (ctx.nestedTraversal() != null) {
             return this.traversalSource.addV(anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));
