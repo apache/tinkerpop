@@ -357,7 +357,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             var roots = new List<TreeNode>();
             if (string.IsNullOrEmpty(asciiTree)) return roots;
 
-            var lines = Regex.Split(asciiTree, "\\R");
+            var lines = Regex.Split(asciiTree, "\r\n|\r|\n");
             var levelMap = new Dictionary<int, TreeNode>();
 
             foreach (var line in lines)
