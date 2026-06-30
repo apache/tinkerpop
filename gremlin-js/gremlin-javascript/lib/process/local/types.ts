@@ -67,12 +67,20 @@ export type Pipeline = StepDescriptor[];
 export interface ExecutionContext {
   graph: Graph;
   trackPaths: boolean;
+  /**
+   * The loop count of the nearest enclosing repeat(), read by loops(). Zero outside any
+   * repeat() and on a repeat()'s first body pass. repeat() supplies the value to its body
+   * and its until()/emit() conditions via withLoops().
+   */
+  loops: number;
   /** Apply a child pipeline as mid-traversal steps over an existing stream (flatMap per traverser). */
   runBranch(child: Pipeline, source: Iterable<any>): Iterable<any>;
   /** Run a single value-extraction child against one object, returning its first result or NON_PRODUCTIVE. */
   runProject(child: Pipeline, object: any): any;
   /** Run a child as a complete source-rooted pipeline (e.g. addE from/to), returning the first result. */
   runRooted(child: Pipeline): any;
+  /** Derive a context with a different loops() value, used by repeat() per loop iteration. */
+  withLoops(loops: number): ExecutionContext;
 }
 
 /**

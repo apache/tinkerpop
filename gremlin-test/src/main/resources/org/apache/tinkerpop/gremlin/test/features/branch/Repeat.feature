@@ -951,6 +951,7 @@ Feature: Step - repeat()
       | josh |
       | peter |
 
+  @TinyGremlin
   Scenario: g_V_untilXloops_isX2XX_repeatXout_order_byXnameXX_valuesXnameX
     Given the modern graph
     And the traversal of

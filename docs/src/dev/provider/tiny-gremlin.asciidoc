@@ -42,7 +42,7 @@ deliberately excluded. The result is a small, self-contained, predictable execut
 
 === Supported Steps
 
-Tiny Gremlin supports exactly the 37 steps listed below, grouped by category. No other step may be used in a Tiny
+Tiny Gremlin supports exactly the 39 steps listed below, grouped by category. No other step may be used in a Tiny
 Gremlin traversal; doing so results in an error before any graph data is accessed.
 
 [width="100%",options="header"]
@@ -50,12 +50,12 @@ Gremlin traversal; doing so results in an error before any graph data is accesse
 |Category |Steps
 |Source |`V()`, `E()`
 |Navigation |`out()`, `in()`, `both()`, `outE()`, `inE()`, `bothE()`, `outV()`, `inV()`, `otherV()`
-|Filter |`has()`, `hasId()`, `hasLabel()`, `hasNot()`
+|Filter |`has()`, `hasId()`, `hasLabel()`, `hasNot()`, `is()`
 |Value Extraction |`id()`, `label()`, `values()`, `valueMap()`, `elementMap()`, `value()`, `key()`
 |Path |`path()`
 |Range |`limit()`, `range()`, `skip()`, `tail()`
 |Ordering |`order()`
-|Branch |`repeat()`
+|Branch |`repeat()`, `loops()`
 |Mutation |`addV()`, `addE()`, `property()`
 |Modulators |`from()`, `to()`, `times()`, `until()`, `emit()`
 |===
@@ -228,6 +228,14 @@ Maps a vertex to its incoming edges.
 
 Maps an edge to its incoming vertex (the head of the arrow).
 
+=== is()
+
+*Gremlin Semantics reference:* <<is-step,is()>>
+
+Filters the stream, keeping only traversers whose value equals the given object or satisfies the given predicate, for
+example `is(32)` or `is(P.gte(29))`. It pairs naturally with `loops()` to bound a `repeat()`, as in
+`until(__.loops().is(2))`.
+
 === key()
 
 *Gremlin Semantics reference:* <<key-step,key()>>
@@ -249,6 +257,18 @@ Truncates the result stream to at most `n` elements.
 *Tiny Gremlin limitations:*
 
 * The `Scope` form is not supported and will raise an error.
+
+=== loops()
+
+*Gremlin Semantics reference:* <<loops-step,loops()>>
+
+Maps each traverser to the loop count of the nearest enclosing `repeat()` — zero on the first body pass, incrementing
+each iteration. It is most often used as an exit condition with `is()`, so `repeat(traversal).until(__.loops().is(2))`
+is equivalent to `repeat(traversal).times(2)`. Outside any `repeat()` it is zero.
+
+*Tiny Gremlin limitations:*
+
+* The `loops("label")` form, which references a labeled loop, is not supported because Tiny Gremlin has no step labels.
 
 === order()
 
@@ -365,8 +385,8 @@ modulator relative to `repeat()` determines its semantics, matching full Gremlin
   Declared after `repeat()` it emits traversers leaving the body, and declared before it emits them entering the body.
 
 A `condition` for `until()` or `emit()` is an anonymous filter traversal, satisfied when it produces at least one
-result. The loop body and these conditions may themselves contain any supported step, including `order().by()` or
-`path()`.
+result. The loop body and these conditions may themselves contain any supported step, including `order().by()`,
+`path()`, or `loops()` — so `until(__.loops().is(2))` bounds the loop by iteration count, equivalent to `times(2)`.
 
 The loop is driven breadth-first over the whole frontier: at each loop iteration every surviving traverser advances
 in lockstep through one shared evaluation of the body. A barrier step such as `order().by()` inside the body

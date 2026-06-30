@@ -26,12 +26,12 @@ export type OptimizationPass = (pipeline: Pipeline) => Pipeline;
 const SUPPORTED_STEPS = new Set<string>([
   'V', 'E',
   'out', 'in', 'both', 'outE', 'inE', 'bothE', 'outV', 'inV', 'otherV',
-  'has', 'hasId', 'hasLabel', 'hasNot',
+  'has', 'hasId', 'hasLabel', 'hasNot', 'is',
   'id', 'label', 'values', 'valueMap', 'elementMap', 'value', 'key',
   'path',
   'limit', 'range', 'skip', 'tail',
   'order', 'by',
-  'repeat', 'times', 'until', 'emit',
+  'repeat', 'times', 'until', 'emit', 'loops',
   'addV', 'addE', 'property',
   'from', 'to',
 ]);

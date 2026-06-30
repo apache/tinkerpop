@@ -516,6 +516,24 @@ export class ExecuteVisitor {
     this.push('emit', [this.recoverPredicate(ctx.traversalPredicate())]);
   }
 
+  visitTraversalMethod_loops_Empty(_ctx: any): void {
+    this.push('loops', []);
+  }
+
+  // loops(String) — the loop-label reference. Tiny Gremlin has no step labels, so the
+  // label is carried through for the executor to reject with a clear message.
+  visitTraversalMethod_loops_String(ctx: any): void {
+    this.push('loops', [this.recoverStringLiteral(ctx.stringLiteral())]);
+  }
+
+  visitTraversalMethod_is_Object(ctx: any): void {
+    this.push('is', [this.recoverGenericArg(ctx.genericArgument())]);
+  }
+
+  visitTraversalMethod_is_P(ctx: any): void {
+    this.push('is', [this.recoverPredicate(ctx.traversalPredicate())]);
+  }
+
   // ── Mutation steps ────────────────────────────────────────────────────────
 
   visitTraversalMethod_addV_Empty(ctx: any): void {

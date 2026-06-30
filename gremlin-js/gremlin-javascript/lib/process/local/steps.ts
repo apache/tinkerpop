@@ -329,6 +329,20 @@ export function* stepHasNot(
   }
 }
 
+export function* stepIs(
+  source: Iterable<StreamItem>, args: Arg[], graph: Graph, trackPaths: boolean,
+): Generator<StreamItem> {
+  const arg = args[0];
+  for (const item of source) {
+    const v = getValue(item, trackPaths);
+    if (arg instanceof P || arg instanceof TextP) {
+      if (evaluatePredicate(arg, v)) yield item;
+    } else if (v === arg) {
+      yield item;
+    }
+  }
+}
+
 export function* stepHasKey(
   source: Iterable<StreamItem>, args: Arg[], graph: Graph, trackPaths: boolean,
 ): Generator<StreamItem> {
@@ -767,6 +781,24 @@ export function* stepProperty(
   }
 }
 
+// ── Loops step ────────────────────────────────────────────────────────────────
+
+/**
+ * Replaces each traverser's value with the loop count of the nearest enclosing repeat()
+ * (ctx.loops), typically tested by a following is(), e.g. until(__.loops().is(2)). Zero
+ * outside any repeat(). The loops("label") form is rejected — Tiny Gremlin has no step labels.
+ */
+export function* stepLoops(
+  source: Iterable<StreamItem>, args: Arg[], ctx: ExecutionContext,
+): Generator<StreamItem> {
+  if (args.length > 0) {
+    throw new Error('loops("label") is not supported in Tiny Gremlin; step labels are excluded');
+  }
+  for (const item of source) {
+    yield wrap(ctx.loops, getPath(item, ctx.trackPaths), ctx.trackPaths);
+  }
+}
+
 // ── Repeat step ───────────────────────────────────────────────────────────────
 
 /**
@@ -795,47 +827,54 @@ export function* stepRepeat(
   ctx: ExecutionContext,
 ): Generator<StreamItem> {
   // until()/emit() conditions are always filter traversals here; the predicate form
-  // is rejected during folding (see requireTraversalCondition in LocalExecutor).
-  const conditionHolds = (cond: Pipeline, item: StreamItem): boolean => {
-    for (const _out of ctx.runBranch(cond, [item])) return true; // filter traversal: any output => true
+  // is rejected during folding (see requireTraversalCondition in LocalExecutor). Each is
+  // run through a context carrying the loop count it should observe via loops(), so
+  // until(__.loops().is(n)) sees the same counter that times(n) compares against.
+  const conditionHolds = (cond: Pipeline, item: StreamItem, condCtx: ExecutionContext): boolean => {
+    for (const _out of condCtx.runBranch(cond, [item])) return true; // filter traversal: any output => true
     return false;
   };
 
-  const exitBeforeBody = (item: StreamItem, loops: number): boolean => {
+  const exitBeforeBody = (item: StreamItem, loops: number, condCtx: ExecutionContext): boolean => {
     if (spec.times != null && spec.timesFirst && loops >= spec.times) return true;
-    if (spec.untilFirst && spec.until != null && conditionHolds(spec.until, item)) return true;
+    if (spec.untilFirst && spec.until != null && conditionHolds(spec.until, item, condCtx)) return true;
     return false;
   };
-  const exitAfterBody = (item: StreamItem, loops: number): boolean => {
+  const exitAfterBody = (item: StreamItem, loops: number, condCtx: ExecutionContext): boolean => {
     if (spec.times != null && !spec.timesFirst && loops >= spec.times) return true;
-    if (!spec.untilFirst && spec.until != null && conditionHolds(spec.until, item)) return true;
+    if (!spec.untilFirst && spec.until != null && conditionHolds(spec.until, item, condCtx)) return true;
     return false;
   };
-  const shouldEmit = (item: StreamItem): boolean => {
+  const shouldEmit = (item: StreamItem, condCtx: ExecutionContext): boolean => {
     if (!spec.emitPresent) return false;
     if (spec.emit == null) return true; // bare emit() — emit every traverser
-    return conditionHolds(spec.emit, item);
+    return conditionHolds(spec.emit, item, condCtx);
   };
 
   let frontier: StreamItem[] = [...source];
   let loops = 0;
   while (frontier.length > 0) {
+    // The body, the while-phase until(), and an emit-before condition all observe the
+    // current loop count; the do-while until() and emit-after condition observe the
+    // post-body count.
+    const curCtx = ctx.withLoops(loops);
     // While-phase: traversers that hit a before-body exit leave the loop now;
     // the rest (optionally emitted ahead of the body) form the body's input.
     const entering: StreamItem[] = [];
     for (const item of frontier) {
-      if (exitBeforeBody(item, loops)) { yield item; continue; }
-      if (spec.emitFirst && shouldEmit(item)) yield item;
+      if (exitBeforeBody(item, loops, curCtx)) { yield item; continue; }
+      if (spec.emitFirst && shouldEmit(item, curCtx)) yield item;
       entering.push(item);
     }
     if (entering.length === 0) break;
 
     // Run the body over the entire frontier in one pass so barriers see it all.
     const nextLoops = loops + 1;
+    const nextCtx = ctx.withLoops(nextLoops);
     const nextFrontier: StreamItem[] = [];
-    for (const out of ctx.runBranch(spec.body, entering)) {
-      if (exitAfterBody(out, nextLoops)) { yield out; continue; }
-      if (!spec.emitFirst && shouldEmit(out)) yield out;
+    for (const out of curCtx.runBranch(spec.body, entering)) {
+      if (exitAfterBody(out, nextLoops, nextCtx)) { yield out; continue; }
+      if (!spec.emitFirst && shouldEmit(out, nextCtx)) yield out;
       nextFrontier.push(out);
     }
     frontier = nextFrontier;

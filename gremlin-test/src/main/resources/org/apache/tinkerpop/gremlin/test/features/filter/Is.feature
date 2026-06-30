@@ -18,6 +18,7 @@
 @StepClassFilter @StepIs
 Feature: Step - is()
 
+  @TinyGremlin
   Scenario: g_V_valuesXageX_isX32X
     Given the modern graph
     And the traversal of
@@ -29,6 +30,7 @@ Feature: Step - is()
       | result |
       | d[32].i |
 
+  @TinyGremlin
   Scenario: g_V_valuesXageX_isX32varX
     Given the modern graph
     And using the parameter xx1 defined as "d[32].i"
@@ -41,6 +43,7 @@ Feature: Step - is()
       | result |
       | d[32].i |
 
+  @TinyGremlin
   Scenario: g_V_valuesXageX_isXlte_30X
     Given the modern graph
     And the traversal of
@@ -53,6 +56,7 @@ Feature: Step - is()
       | d[27].i |
       | d[29].i |
 
+  @TinyGremlin
   Scenario: g_V_valuesXageX_isXlte_30varX
     Given the modern graph
     And using the parameter xx1 defined as "d[30].i"
@@ -66,6 +70,7 @@ Feature: Step - is()
       | d[27].i |
       | d[29].i |
 
+  @TinyGremlin
   Scenario: g_V_valuesXageX_isXgte_29X_isXlt_34X
     Given the modern graph
     And the traversal of
@@ -78,6 +83,7 @@ Feature: Step - is()
       | d[29].i |
       | d[32].i |
 
+  @TinyGremlin
   Scenario: g_V_valuesXageX_isXgte_29vaarX_isXlt_34varX
     Given the modern graph
     And using the parameter xx1 defined as "d[29].i"

@@ -24,9 +24,9 @@ import { Graph, Vertex, Edge } from '../../structure/graph.js';
 import {
   wrap, getValue, NON_PRODUCTIVE, type StreamItem,
   stepOut, stepIn, stepBoth, stepOutE, stepInE, stepBothE, stepOutV, stepInV, stepOtherV,
-  stepHas, stepHasId, stepHasLabel, stepHasNot,
+  stepHas, stepHasId, stepHasLabel, stepHasNot, stepIs,
   stepId, stepLabel, stepValue, stepKey, stepValues, stepValueMap, stepElementMap,
-  stepPath, stepRepeat,
+  stepPath, stepRepeat, stepLoops,
   stepLimit, stepRange, stepSkip, stepTail, stepOrder,
   stepAddV, stepAddEWithModulators, stepProperty,
 } from './steps.js';
@@ -183,9 +183,19 @@ export class LocalExecutor {
 
   /** Builds the ExecutionContext handed to parent steps for running their child pipelines. */
   private makeContext(graph: Graph, trackPaths: boolean): ExecutionContext {
+    return this.buildContext(graph, trackPaths, 0);
+  }
+
+  /**
+   * Builds a context at a specific loops() value. withLoops() returns a fresh context rather
+   * than mutating, so a nested repeat() can set its own loop count without clobbering the
+   * outer loop's — each level's loops() reads the value baked into its own context object.
+   */
+  private buildContext(graph: Graph, trackPaths: boolean, loops: number): ExecutionContext {
     const ctx: ExecutionContext = {
       graph,
       trackPaths,
+      loops,
       runBranch: (child, src) => {
         let stream: Iterable<StreamItem> = src;
         for (const step of child) stream = this.applyStep(step, stream, ctx);
@@ -193,17 +203,18 @@ export class LocalExecutor {
       },
       runProject: (child, object) => {
         // child is a single value-extraction step (validated during folding).
-        const probe: ExecutionContext = { ...ctx, trackPaths: false };
+        const probe = this.buildContext(graph, false, loops);
         for (const out of this.applyStep(child[0], [wrap(object, [], false)], probe)) {
           return getValue(out, false);
         }
         return NON_PRODUCTIVE; // non-productive by(Traversal) filters the path traverser
       },
       runRooted: (child) => {
-        const probe: ExecutionContext = { ...ctx, trackPaths: false };
+        const probe = this.buildContext(graph, false, loops);
         for (const item of this.buildChain(child, probe)) return item;
         return null;
       },
+      withLoops: (n) => this.buildContext(graph, trackPaths, n),
     };
     return ctx;
   }
@@ -329,9 +340,10 @@ function requireTraversalCondition(stepName: string, arg: Arg | undefined): Pipe
 }
 
 // ── Parent step registry ────────────────────────────────────────────────────────
-// Steps that run nested child pipelines. They receive the ExecutionContext and use
-// its runBranch/runProject/runRooted helpers, so adding a new branching step is a
-// registry entry rather than a special case in applyStep.
+// Steps that need the ExecutionContext — to run nested child pipelines (path, addE,
+// repeat) or to read loop state (loops). They use its runBranch/runProject/runRooted
+// helpers and loops field, so adding such a step is a registry entry rather than a
+// special case in applyStep.
 
 const PARENT_STEPS = new Map<string, ParentStepFn>([
   ['path', (source, args, ctx) => stepPath(source, args, ctx.trackPaths, (sub, obj) => ctx.runProject(sub, obj))],
@@ -345,6 +357,7 @@ const PARENT_STEPS = new Map<string, ParentStepFn>([
     (sub) => ctx.runRooted(sub as unknown as Pipeline),
   )],
   ['repeat', (source, args, ctx) => stepRepeat(source, args[0] as unknown as RepeatSpec, ctx)],
+  ['loops', (source, args, ctx) => stepLoops(source, args, ctx)],
 ]);
 
 // ── Result copying ────────────────────────────────────────────────────────────
@@ -426,6 +439,7 @@ const STEP_REGISTRY = new Map<string, StepFn>([
   ['hasId',       stepHasId],
   ['hasLabel',    stepHasLabel],
   ['hasNot',      stepHasNot],
+  ['is',          stepIs],
   ['id',          stepId],
   ['label',       stepLabel],
   ['value',       stepValue],
