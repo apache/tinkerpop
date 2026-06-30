@@ -95,6 +95,16 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
             contentType = resp.headers().get(HttpHeaderNames.CONTENT_TYPE);
             queueInputStream = new ByteBufQueueInputStream();
 
+            // Signal that the server's response headers have arrived, before any body chunk is processed. The full
+            // round trip to the server has completed, so a caller blocked on headersReceivedAsync() (e.g. a remote
+            // transaction's submit) can now proceed knowing the server has ordered this request ahead of any later one
+            // on the same transaction, without waiting for the body to stream back. An error response still trips this
+            // via markComplete()/markError() downstream.
+            {
+                final ResultSet rsForHeaders = pendingResultSet.get();
+                if (rsForHeaders != null) rsForHeaders.markHeadersReceived();
+            }
+
             // Spawn reader thread for GraphBinary responses
             if (isGraphBinaryResponse()) {
                 final ResultSet rs = pendingResultSet.get();

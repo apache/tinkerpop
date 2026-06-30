@@ -41,9 +41,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.LAST_CONTENT_READ_RESPONSE;
@@ -101,6 +103,66 @@ public class HttpStreamingResponseHandlerTest {
         assertSame(LAST_CONTENT_READ_RESPONSE, out);
 
         channel.finishAndReleaseAll();
+    }
+
+    @Test
+    public void shouldMarkHeadersReceivedWhenResponseHeaderDecodes() throws Exception {
+        // The ResultSet completes its async stages on its own executor, separate from the handler's readerPool (which
+        // mirrors production: cluster.executor() vs cluster.streamingReaderPool()). This matters here because an OK
+        // response spawns a reader thread that blocks the readerPool until end-of-stream; sharing one executor would
+        // deadlock the headers future's completion hop.
+        final ExecutorService rsExecutor = Executors.newSingleThreadExecutor();
+        try {
+            final ResultSet rs = new ResultSet(rsExecutor, RequestMessage.build("g.V()").create(), null);
+            final AtomicReference<ResultSet> pending = new AtomicReference<>(rs);
+            final EmbeddedChannel channel = createChannel(pending);
+
+            // capture the future once - each call to headersReceivedAsync() returns a fresh async stage
+            final CompletableFuture<Void> headers = rs.headersReceivedAsync();
+            assertFalse(headers.isDone());
+
+            // the response header alone (no body yet) should trip the headers-received future, since the full round
+            // trip to the server has completed and the server has begun responding
+            final HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+            response.headers().set(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_GRAPHBINARY_V4);
+            channel.writeInbound(response);
+
+            headers.get(2, TimeUnit.SECONDS);
+            assertTrue(headers.isDone());
+            assertFalse(headers.isCompletedExceptionally());
+            // the body has not been read yet, so read-completion must still be outstanding
+            assertFalse(rs.allItemsAvailable());
+
+            channel.finishAndReleaseAll();
+        } finally {
+            rsExecutor.shutdownNow();
+        }
+    }
+
+    @Test
+    public void shouldMarkHeadersReceivedOnErrorResponseHeader() throws Exception {
+        final ExecutorService rsExecutor = Executors.newSingleThreadExecutor();
+        try {
+            final ResultSet rs = new ResultSet(rsExecutor, RequestMessage.build("g.V()").create(), null);
+            final AtomicReference<ResultSet> pending = new AtomicReference<>(rs);
+            final EmbeddedChannel channel = createChannel(pending);
+
+            final CompletableFuture<Void> headers = rs.headersReceivedAsync();
+            assertFalse(headers.isDone());
+
+            // an error status still arrives as a response header first; a caller blocked on headers must be released
+            final HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+            response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
+            channel.writeInbound(response);
+
+            headers.get(2, TimeUnit.SECONDS);
+            assertTrue(headers.isDone());
+            assertFalse(headers.isCompletedExceptionally());
+
+            channel.finishAndReleaseAll();
+        } finally {
+            rsExecutor.shutdownNow();
+        }
     }
 
     @Test
