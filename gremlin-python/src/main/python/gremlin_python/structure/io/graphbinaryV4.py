@@ -650,8 +650,9 @@ class TreeIO(_GraphBinaryTypeIO):
         # when as_value (a nested/bare child tree) prefix_bytes writes nothing:
         # no type-id and no null flag. As a root value it writes {type-id}{null flag}.
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
-        to_extend.extend(int32_pack(len(obj)))
-        for key in obj.root_nodes():
+        root_nodes = obj.root_nodes()
+        to_extend.extend(int32_pack(len(root_nodes)))
+        for key in root_nodes:
             child = obj.child_at(key)
             # key is written fully-qualified (its own type-id + null flag + value)
             writer.to_dict(key, to_extend)

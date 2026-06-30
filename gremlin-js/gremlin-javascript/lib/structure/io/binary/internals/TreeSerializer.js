@@ -94,7 +94,7 @@ export default class TreeSerializer {
    * @returns {Promise<Tree>}
    */
   async deserializeValue(reader, valueFlag, typeCode) {
-    return this._readTreeValue(reader);
+    return await this._readTreeValue(reader);
   }
 
   /**

@@ -160,7 +160,7 @@ def test_get_leaf_trees():
     roots = [t.root_nodes()[0] for t in leaf_trees]
     assert roots == ["d", "e", "f"]
     for t in leaf_trees:
-        assert len(t) == 1
+        assert len(t.root_nodes()) == 1
         assert t.child_at(t.root_nodes()[0]).is_leaf()
 
 
