@@ -66,6 +66,11 @@ public final class HadoopConfiguration extends AbstractConfiguration implements 
     }
 
     @Override
+    protected boolean containsValueInternal(final Object value) {
+        return properties.containsValue(value);
+    }
+
+    @Override
     protected void addPropertyDirect(final String key, final Object value) {
         this.properties.put(key, value);
     }
