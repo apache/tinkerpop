@@ -31,6 +31,9 @@
 host: 0.0.0.0
 port: 45940
 evaluationTimeout: 30000
+# Set below the code default (600000) so SettingsTest can confirm a YAML-provided value is honored; still far larger
+# than any integration test's runtime (8 minutes), so it never fires during a test.
+maxTransactionLifetime: 480000
 graphs: {
   graph: {
     configuration: conf/tinkergraph-empty.properties,

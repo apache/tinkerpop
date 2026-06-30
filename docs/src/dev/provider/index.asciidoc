@@ -1430,14 +1430,21 @@ rejects it with HTTP 400. This prevents cross-graph operations within a single t
 
 ==== Transaction Timeout and Idle Reclamation
 
-Servers implement a configurable transaction timeout (`transactionTimeout`, default 600000ms). The timeout represents
-how long a transaction can sit idle with no requests before the server forcibly rolls it back and removes it. The
-timeout resets on each request received for that transaction, so active transactions are not affected. After a timeout
-fires, any subsequent request with that transaction ID receives a 404 response.
+A transaction can be bounded at three independent scopes, each disabled with `0`. The `evaluationTimeout` bounds a
+single operation. The `idleTransactionTimeout` (default 60000ms) bounds the idle gaps between operations: how long a
+transaction may remain idle, with no operation running or queued, before it is rolled back and removed; once it is
+removed, a subsequent request with that transaction ID receives a 404. The `maxTransactionLifetime` (default 600000ms)
+bounds the total age of the transaction regardless of activity, and so may end a transaction while an operation is still
+running; the in-flight request then receives a 504 (`TransactionException`) and subsequent requests receive a 404.
+
+The defaults bound a transaction without any operator configuration; disabling them is a deliberate choice, and a
+per-request `timeoutMs` is honored as sent rather than overridden by the server. How promptly a running operation is
+actually interrupted when a bound fires is a property of the provider's execution and traversal machinery, not
+guaranteed by these settings.
 
 ==== Transaction Capacity Limits
 
-Servers enforce a configurable maximum number of concurrent open transactions (`maxConcurrentTransactions`, default
+Servers may enforce a configurable maximum number of concurrent open transactions (`maxConcurrentTransactions`, default
 1000). When the limit is reached, new begin requests are rejected with HTTP 503. Slots are freed when transactions
 close via commit, rollback, or timeout.
 

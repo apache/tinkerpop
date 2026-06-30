@@ -57,6 +57,10 @@ public class Context {
     private final Object timeoutExecutorLock = new Object();
     private String transactionId; // initially null for non-transactional requests and begin() calls; set after transaction creation.
     private Map<String, Object> parameters = new HashMap<>(); // only available after string parameters are parsed by grammar.
+    // Set by the transaction's lifetime cap (on the scheduler thread) before it interrupts this request's operation, and
+    // read as the interrupt unwinds the operation (on the transaction worker thread) to report an accurate
+    // transaction-timeout error rather than a generic evaluation timeout. volatile for cross-thread visibility.
+    private volatile boolean closedByLifetimeCap = false;
 
     public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
                    final Settings settings, final GraphManager graphManager,
@@ -141,6 +145,22 @@ public class Context {
 
     public void setTransactionId(final String transactionId) {
         this.transactionId = transactionId;
+    }
+
+    /**
+     * Marks this request's operation as having been interrupted because its transaction hit its absolute lifetime cap.
+     * Set by the transaction's lifetime cap before it interrupts the operation.
+     */
+    public void setClosedByLifetimeCap(final boolean closedByLifetimeCap) {
+        this.closedByLifetimeCap = closedByLifetimeCap;
+    }
+
+    /**
+     * Returns {@code true} if this request's operation was interrupted by its transaction's absolute lifetime cap, in
+     * which case the resulting interrupt should be reported as a transaction timeout rather than an evaluation timeout.
+     */
+    public boolean isClosedByLifetimeCap() {
+        return closedByLifetimeCap;
     }
 
     public Map<String, Object> getParameters() {

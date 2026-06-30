@@ -31,6 +31,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -41,9 +43,14 @@ public class TransactionManager {
     private static final Logger logger = LoggerFactory.getLogger(TransactionManager.class);
 
     private final ConcurrentMap<String, UnmanagedTransaction> transactions = new ConcurrentHashMap<>();
+    // Absolute-lifetime timers, one per transaction with the cap enabled, keyed by transaction id. The manager owns the
+    // lifetime cap because it is scoped to the transaction's existence in the registry (a single fixed schedule), unlike
+    // the activity-driven idle timer that the transaction must own to see its executor's running/idle transitions.
+    private final ConcurrentMap<String, ScheduledFuture<?>> lifetimeTimers = new ConcurrentHashMap<>();
     private final ScheduledExecutorService scheduledExecutorService;
     private final GraphManager graphManager;
-    private final long transactionTimeoutMs;
+    private final long idleTransactionTimeoutMs;
+    private final long maxTransactionLifetimeMs;
     private final int maxConcurrentTransactions;
     private final long perGraphCloseMs;
 
@@ -52,23 +59,26 @@ public class TransactionManager {
      *
      * @param scheduledExecutorService Scheduler for timeout management
      * @param graphManager The graph manager for accessing traversal sources
-     * @param transactionTimeoutMs Timeout in milliseconds before auto-rollback
+     * @param idleTransactionTimeoutMs Inactivity timeout in milliseconds before auto-rollback; {@code 0} disables it
+     * @param maxTransactionLifetimeMs Absolute cap in milliseconds on total transaction age; {@code 0} disables it
      * @param maxConcurrentTransactions Maximum number of concurrent transactions allowed
      */
     public TransactionManager(final ScheduledExecutorService scheduledExecutorService,
                               final GraphManager graphManager,
-                              final long transactionTimeoutMs,
+                              final long idleTransactionTimeoutMs,
+                              final long maxTransactionLifetimeMs,
                               final int maxConcurrentTransactions,
                               final long perGraphCloseMs) {
         this.scheduledExecutorService = scheduledExecutorService;
         this.graphManager = graphManager;
-        this.transactionTimeoutMs = transactionTimeoutMs;
+        this.idleTransactionTimeoutMs = idleTransactionTimeoutMs;
+        this.maxTransactionLifetimeMs = maxTransactionLifetimeMs;
         this.maxConcurrentTransactions = maxConcurrentTransactions;
         this.perGraphCloseMs = perGraphCloseMs;
 
         MetricManager.INSTANCE.getGauge(transactions::size, name(GremlinServer.class, "transactions"));
-        logger.info("TransactionManager initialized with timeout={}ms, maxTransactions={}",
-                transactionTimeoutMs, maxConcurrentTransactions);
+        logger.info("TransactionManager initialized with idleTransactionTimeout={}ms, maxTransactionLifetime={}ms, maxTransactions={}",
+                idleTransactionTimeoutMs, maxTransactionLifetimeMs, maxConcurrentTransactions);
     }
 
     /**
@@ -105,6 +115,11 @@ public class TransactionManager {
      */
     void destroy(final String id) {
         transactions.remove(id);
+        // Cancel this transaction's lifetime cap (if any) so the one-shot cannot fire after the transaction is gone.
+        // Covers every close path uniformly (commit, rollback, idle reclaim, and the cap firing itself, where
+        // cancelling the already-running one-shot is a harmless no-op).
+        final ScheduledFuture<?> lifetimeTimer = lifetimeTimers.remove(id);
+        if (lifetimeTimer != null) lifetimeTimer.cancel(false);
     }
 
     /**
@@ -112,23 +127,35 @@ public class TransactionManager {
      * {@link UnmanagedTransaction} is inserted into the transactions map.
      */
     private UnmanagedTransaction createTransactionContext(final String traversalSourceName, final Graph graph) {
-        String txId;
-        UnmanagedTransaction ctx;
+        String transactionId;
+        UnmanagedTransaction transaction;
 
         do {
-            txId = UUID.randomUUID().toString();
-            ctx = new UnmanagedTransaction(
-                    txId,
+            transactionId = UUID.randomUUID().toString();
+            transaction = new UnmanagedTransaction(
+                    transactionId,
                     this,
                     traversalSourceName,
                     graph,
                     scheduledExecutorService,
-                    transactionTimeoutMs,
+                    idleTransactionTimeoutMs,
                     perGraphCloseMs
             );
-        } while (transactions.putIfAbsent(txId, ctx) != null);
+        } while (transactions.putIfAbsent(transactionId, transaction) != null);
 
-        return ctx;
+        // Schedule the absolute lifetime cap only AFTER the transaction is registered above. The cap's teardown
+        // (onLifetimeCap -> close(false)) early-returns if the manager does not yet know about the transaction, so
+        // scheduling it before registration could let a pathologically small cap fire into nothing and leave an
+        // unreclaimable transaction holding a worker thread and slot. Scheduling after registration guarantees the cap
+        // can always tear the transaction down; destroy() cancels it on every close path. The clock effectively starts
+        // at construction (registration follows within microseconds), so it bounds total transaction age including begin.
+        if (maxTransactionLifetimeMs > 0) {
+            final UnmanagedTransaction registered = transaction; // effectively-final copy for the scheduled method ref
+            lifetimeTimers.put(transactionId, scheduledExecutorService.schedule(
+                    registered::onLifetimeCap, maxTransactionLifetimeMs, TimeUnit.MILLISECONDS));
+        }
+
+        return transaction;
     }
 
     /**
@@ -174,6 +201,10 @@ public class TransactionManager {
         });
 
         transactions.clear();
+        // Each close(false) above already cancelled its lifetime timer via destroy(); cancel any stragglers (e.g. a
+        // transaction whose close threw) so no scheduled cap outlives the manager.
+        lifetimeTimers.values().forEach(timer -> timer.cancel(false));
+        lifetimeTimers.clear();
         logger.info("TransactionManager shutdown complete");
     }
 }

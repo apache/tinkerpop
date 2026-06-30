@@ -31,6 +31,8 @@ metrics: {
   jmxReporter: {enabled: true},
   slf4jReporter: {enabled: true, interval: 180000}}
 strictTransactionManagement: false
+idleTransactionTimeout: 60000
+maxTransactionLifetime: 600000
 idleConnectionTimeout: 0
 keepAliveInterval: 0
 maxInitialLineLength: 4096
