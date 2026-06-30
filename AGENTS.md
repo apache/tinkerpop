@@ -76,7 +76,10 @@ These rules apply to any AI/IDE assistant operating on this repository.
 - Before presenting any change as complete, satisfy the **Definition of Done** above — a full
   Maven validation matched to your changeset, not just targeted or unit tests.
 - Update or add tests when behavior changes.
-- Update documentation and/or changelog when you change public behavior or APIs.
+- Update documentation when you change public behavior or APIs, and add a changelog entry for the net user-facing
+  change — one entry per user-facing change, not one per commit (see the `tinker-doc` skill for changelog discipline).
+- Keep commit messages short and usage-focused — what changed from a reader's perspective, not an implementation
+  play-by-play. Deep rationale belongs in the PR or code comments.
 - Follow existing patterns for code structure, documentation layout, and naming.
 - If code is ready, stop and ask to commit, push or merge manually.
 

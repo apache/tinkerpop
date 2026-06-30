@@ -141,8 +141,9 @@ ones that are easy to miss:
   revising any documentation (voice, per-book style, executable code blocks, AsciiDoc wiring),
   use the **tinker-doc** skill. The mechanical minimum: add new content to the right book and update
   its `index.asciidoc`.
-- **Changelog**: for user-visible or API changes, update `CHANGELOG.asciidoc` in the correct
-  version section. Do not invent version numbers or release names.
+- **Changelog**: for user-visible or API changes, add a concise `CHANGELOG.asciidoc` entry in the
+  correct version section. Do not invent version numbers or release names. See the **tinker-doc**
+  skill for changelog discipline (one entry per user-facing change, not per commit) and voice.
 
 Otherwise, match the existing code in neighboring files — explicit imports (no wildcards),
 `final` where practical, SLF4J logging over `println`, Hamcrest matchers, and closing any

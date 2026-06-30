@@ -127,8 +127,14 @@ for what those patterns are.
 Behavioral and API changes usually need more than reference updates:
 
 - **`CHANGELOG.asciidoc`** (repo root) gets a concise entry in the correct
-  version section. One short clause. Do not invent version numbers or release
-  names.
+  version section. One short clause, written for what the user will see on
+  release day — the net user-facing change, from a usage perspective — not the
+  implementation detail. Do not invent version numbers or release names.
+  - The changelog is not a commit log. Not every commit earns an entry, and a
+    feature built over many commits should have **one** entry, not one per
+    increment. When extending an unreleased feature, fold the change into its
+    existing entry rather than appending a new line; if a change has no
+    user-visible effect, it needs no entry at all.
 - **Upgrade docs** get an entry for user-visible features and especially for
   breaking changes to public APIs or Gremlin semantics. A breaking change
   without clear migration guidance in the upgrade docs is incomplete.
