@@ -109,6 +109,30 @@ public class TraversalMethodVisitorTest {
     }
 
     @Test
+    public void shouldParseTraversalMethod_addV_MultipleLabels() throws Exception {
+        // mid-traversal multi-label addV
+        compare(g.V().addV("dog", "pet"), eval("g.V().addV(\"dog\",\"pet\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addV_MultipleLabelsThree() throws Exception {
+        // mid-traversal multi-label addV with three labels
+        compare(g.V().addV("dog", "pet", "animal"), eval("g.V().addV(\"dog\",\"pet\",\"animal\")"));
+    }
+
+    @Test
+    public void shouldParseSourceSpawnMethod_addV_MultipleLabels() throws Exception {
+        // source-spawned multi-label addV produces same structure as mid-traversal
+        compare(g.addV("dog", "pet"), eval("g.addV(\"dog\",\"pet\")"));
+    }
+
+    @Test
+    public void shouldParseSourceSpawnMethod_addV_MultipleLabelsThree() throws Exception {
+        // source-spawned multi-label addV with three labels
+        compare(g.addV("dog", "pet", "animal"), eval("g.addV(\"dog\",\"pet\",\"animal\")"));
+    }
+
+    @Test
     public void shouldParseTraversalMethod_aggregate() throws Exception {
         compare(g.V().aggregate("test"), eval("g.V().aggregate('test')"));
     }
