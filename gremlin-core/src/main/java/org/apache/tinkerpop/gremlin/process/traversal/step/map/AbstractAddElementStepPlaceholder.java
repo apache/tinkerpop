@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -75,9 +76,18 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         addTraversal(labelTraversal);
     }
 
-    protected AbstractAddElementStepPlaceholder(final Traversal.Admin traversal, final Set<String> labels) {
+    protected AbstractAddElementStepPlaceholder(final Traversal.Admin traversal, final Set<Object> labels) {
         super(traversal);
-        this.label = (labels == null || labels.isEmpty()) ? this.getDefaultLabel() : labels;
+        if (labels == null || labels.isEmpty()) {
+            this.label = this.getDefaultLabel();
+        } else {
+            this.label = labels;
+            for (final Object l : labels) {
+                if (l instanceof GValue && ((GValue<?>) l).isVariable()) {
+                    traversal.getGValueManager().register((GValue<?>) l);
+                }
+            }
+        }
     }
 
     protected abstract String getDefaultLabel();
@@ -171,6 +181,13 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
                 (elementId instanceof GValue && ((GValue<?>) elementId).isVariable())) {
             return true;
         }
+        if (label instanceof Set) {
+            for (final Object l : (Set<?>) label) {
+                if (l instanceof GValue && ((GValue<?>) l).isVariable()) {
+                    return true;
+                }
+            }
+        }
         for (List<Object> list : properties.values()) {
             if (GValue.containsVariables(list.toArray())) {
                 return true;
@@ -184,6 +201,18 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         if (label instanceof GValue) {
             traversal.getGValueManager().pinVariable(((GValue<?>) label).getName());
             return ((GValue<?>) label).get();
+        }
+        if (label instanceof Set) {
+            final Set<String> resolved = new LinkedHashSet<>();
+            for (final Object l : (Set<?>) label) {
+                if (l instanceof GValue) {
+                    traversal.getGValueManager().pinVariable(((GValue<?>) l).getName());
+                    resolved.add((String) ((GValue<?>) l).get());
+                } else {
+                    resolved.add((String) l);
+                }
+            }
+            return resolved;
         }
         return label;
     }
@@ -310,6 +339,20 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     public void updateVariable(String name, Object value) {
         if (label instanceof GValue && name.equals(((GValue<?>) label).getName())) {
             label = GValue.of(name, value);
+        } else if (label instanceof Set) {
+            final LinkedHashSet<Object> updated = new LinkedHashSet<>();
+            boolean changed = false;
+            for (final Object l : (Set<?>) label) {
+                if (l instanceof GValue && name.equals(((GValue<?>) l).getName())) {
+                    updated.add(GValue.of(name, value));
+                    changed = true;
+                } else {
+                    updated.add(l);
+                }
+            }
+            if (changed) {
+                label = updated;
+            }
         }
         if (elementId instanceof GValue && name.equals(((GValue<?>) elementId).getName())) {
             elementId = GValue.of(name, value);
@@ -328,6 +371,12 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         Set<GValue<?>> gValues = GValueHelper.getGValuesFromProperties(properties);
         if (label instanceof GValue && ((GValue<?>) label).isVariable()) {
             gValues.add((GValue<?>) label);
+        } else if (label instanceof Set) {
+            for (final Object l : (Set<?>) label) {
+                if (l instanceof GValue && ((GValue<?>) l).isVariable()) {
+                    gValues.add((GValue<?>) l);
+                }
+            }
         }
         if (elementId instanceof GValue && ((GValue<?>) elementId).isVariable()) {
             gValues.add((GValue<?>) elementId);
@@ -349,6 +398,16 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
                 clone.label = ((Traversal<?, ?>) this.label).asAdmin().clone();
             } else if (this.label instanceof GValue) {
                 clone.label = ((GValue<?>) this.label).clone();
+            } else if (this.label instanceof Set) {
+                final LinkedHashSet<Object> clonedSet = new LinkedHashSet<>();
+                for (final Object l : (Set<?>) this.label) {
+                    if (l instanceof GValue) {
+                        clonedSet.add(((GValue<?>) l).clone());
+                    } else {
+                        clonedSet.add(l);
+                    }
+                }
+                clone.label = clonedSet;
             } else {
                 clone.label = this.label;
             }

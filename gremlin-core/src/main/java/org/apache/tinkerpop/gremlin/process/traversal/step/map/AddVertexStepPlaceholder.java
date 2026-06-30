@@ -19,9 +19,9 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class AddVertexStepPlaceholder<S> extends AbstractAddVertexStepPlaceholder<S> {
@@ -38,7 +38,7 @@ public class AddVertexStepPlaceholder<S> extends AbstractAddVertexStepPlaceholde
         super(traversal, vertexLabelTraversal);
     }
 
-    public AddVertexStepPlaceholder(Traversal.Admin traversal, Set<String> labels) {
+    public AddVertexStepPlaceholder(Traversal.Admin traversal, Set<Object> labels) {
         super(traversal, labels);
     }
 
@@ -46,7 +46,16 @@ public class AddVertexStepPlaceholder<S> extends AbstractAddVertexStepPlaceholde
     public AddVertexStep<S> asConcreteStep() {
         AddVertexStep<S> step;
         if (label instanceof Set) {
-            step = new AddVertexStep<>(traversal, (Set<String>) label);
+            // Resolve any GValue elements to their string values
+            final Set<String> resolvedLabels = new LinkedHashSet<>();
+            for (final Object l : (Set<?>) label) {
+                if (l instanceof GValue) {
+                    resolvedLabels.add((String) ((GValue<?>) l).get());
+                } else {
+                    resolvedLabels.add((String) l);
+                }
+            }
+            step = new AddVertexStep<>(traversal, resolvedLabels);
         } else if (label instanceof Traversal) {
             step = new AddVertexStep<>(traversal, ((Traversal<S, String>) label).asAdmin());
         } else if (label instanceof GValue) {

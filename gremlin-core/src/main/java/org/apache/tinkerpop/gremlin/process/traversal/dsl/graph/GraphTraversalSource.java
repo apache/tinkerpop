@@ -323,17 +323,31 @@ public class GraphTraversalSource implements TraversalSource {
     //// SPAWNS
 
     /**
-     * Spawns a {@link GraphTraversal} by adding a vertex with the specified label. If the {@code label} is
-     * {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
+     * Spawns a {@link GraphTraversal} by adding a vertex with one or more labels.
      *
+     * @param label the label (or only) vertex label
+     * @param additionalLabels  additional labels (may be empty for single-label)
+     * @return the traversal with the vertex added
      * @since 3.1.0-incubating
      */
-    public GraphTraversal<Vertex, Vertex> addV(final String vertexLabel) {
-        if (null == vertexLabel) throw new IllegalArgumentException("vertexLabel cannot be null");
+    public GraphTraversal<Vertex, Vertex> addV(final String label, final String... additionalLabels) {
+        if (null == label) throw new IllegalArgumentException("vertexLabel cannot be null");
+        for (final String l : additionalLabels) {
+            if (null == l) throw new IllegalArgumentException("vertexLabel cannot be null");
+        }
         final GraphTraversalSource clone = this.clone();
-        clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, vertexLabel);
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, vertexLabel));
+        if (additionalLabels.length == 0) {
+            clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, label);
+            final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+            return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, label));
+        } else {
+            clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, label, additionalLabels);
+            final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+            final Set<Object> allLabels = new LinkedHashSet<>();
+            allLabels.add(label);
+            Collections.addAll(allLabels, additionalLabels);
+            return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, allLabels));
+        }
     }
 
     /**
@@ -363,43 +377,33 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     /**
-     * Spawns a {@link GraphTraversal} by adding a vertex with the specified label. If the {@code label} is
-     * {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
+     * Spawns a {@link GraphTraversal} by adding a vertex with one or more labels where labels may
+     * be {@link GValue} variables. Preserves variable bindings end-to-end.
      *
-     * @since 3.8.0
-     */
-    public GraphTraversal<Vertex, Vertex> addV(final GValue<String> vertexLabel) {
-        if (null == vertexLabel) throw new IllegalArgumentException("vertexLabel cannot be null");
-        final GraphTraversalSource clone = this.clone();
-        clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, vertexLabel);
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, vertexLabel));
-    }
-
-    /**
-     * Spawns a {@link GraphTraversal} by adding a vertex with multiple labels.
-     * Creates the vertex with the first label, then adds the remaining labels.
-     *
-     * @param label1     the first label
-     * @param label2     the second label
-     * @param moreLabels additional labels
+     * @param label the first (or only) label
+     * @param additionalLabels  additional labels. May be empty for single-label)
      * @return the traversal with the vertex added
      * @since 4.0.0
      */
-    public GraphTraversal<Vertex, Vertex> addV(final String label1, final String label2, final String... moreLabels) {
-        if (null == label1) throw new IllegalArgumentException("vertexLabel cannot be null");
-        if (null == label2) throw new IllegalArgumentException("vertexLabel cannot be null");
-        for (final String l : moreLabels) {
-            if (null == l) throw new IllegalArgumentException("vertexLabel cannot be null");
+    @SafeVarargs
+    public final GraphTraversal<Vertex, Vertex> addV(final GValue<String> label, final GValue<String>... additionalLabels) {
+        if (null == label || null == label.get()) throw new IllegalArgumentException("vertexLabel cannot be null");
+        for (final GValue<String> l : additionalLabels) {
+            if (null == l || null == l.get()) throw new IllegalArgumentException("vertexLabel cannot be null");
         }
         final GraphTraversalSource clone = this.clone();
-        clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, label1, label2, moreLabels);
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        final Set<String> allLabels = new LinkedHashSet<>();
-        allLabels.add(label1);
-        allLabels.add(label2);
-        Collections.addAll(allLabels, moreLabels);
-        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, allLabels));
+        if (additionalLabels.length == 0) {
+            clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, label);
+            final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+            return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, label));
+        } else {
+            clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, label, (Object[]) additionalLabels);
+            final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+            final LinkedHashSet<Object> allLabels = new LinkedHashSet<>();
+            allLabels.add(label);
+            Collections.addAll(allLabels, additionalLabels);
+            return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, allLabels));
+        }
     }
 
     /**

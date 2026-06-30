@@ -47,7 +47,7 @@ public abstract class AbstractAddVertexStepPlaceholder<S> extends AbstractAddEle
         userProvidedLabel = vertexLabelTraversal != null;
     }
 
-    protected AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final Set<String> labels) {
+    protected AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final Set<Object> labels) {
         super(traversal, labels);
         userProvidedLabel = labels != null && !labels.isEmpty();
     }

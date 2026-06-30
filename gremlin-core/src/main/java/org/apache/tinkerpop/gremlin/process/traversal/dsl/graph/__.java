@@ -687,17 +687,18 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#addV(String)
+     * @see GraphTraversal#addV(String, String...)
      */
-    public static <A> GraphTraversal<A, Vertex> addV(final String vertexLabel) {
-        return __.<A>start().addV(vertexLabel);
+    public static <A> GraphTraversal<A, Vertex> addV(final String first, final String... more) {
+        return __.<A>start().addV(first, more);
     }
 
     /**
-     * @see GraphTraversal#addV(GValue)
+     * @see GraphTraversal#addV(GValue, GValue...)
      */
-    public static <A> GraphTraversal<A, Vertex> addV(final GValue<String> vertexLabel) {
-        return __.<A>start().addV(vertexLabel);
+    @SafeVarargs
+    public static <A> GraphTraversal<A, Vertex> addV(final GValue<String> first, final GValue<String>... more) {
+        return __.<A>start().addV(first, more);
     }
 
     /**
@@ -712,13 +713,6 @@ public class __ {
      */
     public static <A> GraphTraversal<A, Vertex> addV() {
         return __.<A>start().addV();
-    }
-
-    /**
-     * @see GraphTraversal#addV(String, String, String...)
-     */
-    public static <A> GraphTraversal<A, Vertex> addV(final String label1, final String label2, final String... moreLabels) {
-        return __.<A>start().addV(label1, label2, moreLabels);
     }
 
     /**
