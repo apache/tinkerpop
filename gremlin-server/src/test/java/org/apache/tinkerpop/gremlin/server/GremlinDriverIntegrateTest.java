@@ -645,15 +645,15 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         try {
             final Client client = cluster.connect();
 
-            final AtomicInteger checked = new AtomicInteger(0);
             final ResultSet results = client.submit("g.inject(1,2,3,4,5,6,7,8,9)");
+            // depending on timing every result may already be available on the first check (in particular with HTTP
+            // streaming over a fast loopback), so do not assert that the polling loop runs - only that all nine
+            // results ultimately arrive and the available count never exceeds the total while streaming
             while (!results.allItemsAvailable()) {
                 assertTrue(results.getAvailableItemCount() < 10);
-                checked.incrementAndGet();
                 Thread.sleep(100);
             }
 
-            assertTrue(checked.get() > 0);
             assertEquals(9, results.getAvailableItemCount());
         } finally {
             cluster.close();
