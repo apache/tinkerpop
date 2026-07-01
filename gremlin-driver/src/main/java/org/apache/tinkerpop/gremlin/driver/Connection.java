@@ -289,12 +289,15 @@ final class Connection {
 
                         resultSet.getReadCompleted().whenComplete((v, t) -> {
                             if (t != null) {
-                                // the callback for when the read failed. a failed read means the request went to the server
-                                // and came back with a server-side error of some sort.  it means the server is responsive
-                                // so this isn't going to be like a potentially dead host situation which is handled above on a failed
-                                // write operation.
+                                // A failed read means the request reached the server and came back with a
+                                // server-side error, so the server is responsive and the connection is healthy.
+                                // The connection is returned to the pool by the wire-level completion path
+                                // (LAST_CONTENT_READ_RESPONSE), so no connection cleanup is performed here.
+                                // Returning it here as well was redundant and, because this callback can run after
+                                // the connection has already been returned and re-borrowed for a later request,
+                                // could return a connection that is still in flight for a different request.
+                                // Dead/dropped connections are handled by the channel close/inactive paths.
                                 logger.debug("Error while processing request on the server {}.", this, t);
-                                handleConnectionCleanupOnError(thisConnection);
                             }
                             // While this request was in process, close might have been signaled in closeAsync().
                             // However, close would be blocked until all pending requests are completed. Attempt

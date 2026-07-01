@@ -273,7 +273,11 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
     }
 
-    @Test
+    // Backstop timeout: this test floods the server to exercise rate limiting and then joins on the request
+    // futures. If a response were ever lost the unbounded joins would block forever and stall the entire CI job,
+    // so this generous cap bounds any such failure to this method rather than the whole build. With the
+    // connection-return fix in place it should never fire; it exists purely as a safety net.
+    @Test(timeout = 300000)
     public void shouldBlowTheWorkQueueSize() throws Exception {
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();
@@ -286,6 +290,13 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         final AtomicBoolean errorTriggered = new AtomicBoolean();
         final ResultSet r1 = client.submitAsync("Thread.sleep(1000);'test4'", groovyRequestOptions).get();
+
+        // Give r1 a brief head start to reach the server and occupy the single gremlin worker before the
+        // flood begins. r1 and the flood requests travel on different pooled connections, so without this
+        // wait the flood could reach the server's single-slot work queue first and rate-limit r1 itself
+        // (the request that is meant to be holding the worker). Occupying the worker takes only milliseconds
+        // while r1 sleeps for 1s, so this wait still leaves ample time for the queue to fill during the flood.
+        Thread.sleep(500);
 
         final List<CompletableFuture<List<Result>>> blockers = new ArrayList<>();
         for (int ix = 0; ix < 512 && !errorTriggered.get(); ix++) {
