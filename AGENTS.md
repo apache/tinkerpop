@@ -100,3 +100,9 @@ These rules apply to any AI/IDE assistant operating on this repository.
 
 1. Prefer no change over an unsafe or speculative change.
 2. Ask for clarification.
+
+## Security
+
+For Apache TinkerPop's threat model — trust boundaries, in-scope / out-of-scope, the security properties
+the project does and does not provide, and known non-findings — see [SECURITY.md](SECURITY.md), which
+points to [THREAT_MODEL.md](THREAT_MODEL.md). Consult it before triaging or reporting security issues.
