@@ -28,8 +28,6 @@ services:
     ports:
       - "45940:45940"
       - "45941:45941"
-      - "45942:45942"
-      - "4588:4588"
     volumes:
       - ${HOME}/.groovy:/root/.groovy
       - ${HOME}/.m2:/root/.m2

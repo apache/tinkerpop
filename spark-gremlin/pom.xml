@@ -41,11 +41,6 @@ limitations under the License.
                     <groupId>io.dropwizard.metrics</groupId>
                     <artifactId>metrics-core</artifactId>
                 </exclusion>
-                <!-- prefer gremlin-test/spark kerby -->
-                <exclusion>
-                    <groupId>org.apache.kerby</groupId>
-                    <artifactId>kerb-simplekdc</artifactId>
-                </exclusion>
                 <!-- prefer spark snappy -->
                 <exclusion>
                     <groupId>org.xerial.snappy</groupId>
@@ -55,10 +50,6 @@ limitations under the License.
                 <exclusion>
                     <groupId>com.google.code.gson</groupId>
                     <artifactId>gson</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.kerby</groupId>
-                    <artifactId>kerb-core</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>

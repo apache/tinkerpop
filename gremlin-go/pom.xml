@@ -120,7 +120,7 @@ limitations under the License.
                                       compose up             - build images, start the server and test containers,
                                                                and wait for the test container to finish
                                       compose down (second)  - tear down this run's containers and network
-                                      port-wait loop         - wait up to 30 s for ports 45940-45942 and 4588 to be released by
+                                      port-wait loop         - wait up to 30 s for ports 45940 and 45941 to be released by
                                                                the Docker daemon before returning to Maven; all GLV modules share
                                                                these host ports and run sequentially, so the next module would
                                                                fail to bind them if docker-proxy has not fully exited yet
@@ -128,7 +128,7 @@ limitations under the License.
                                     -->
                                     <arguments>
                                         <argument>-c</argument>
-                                        <argument>docker compose down; docker compose up --build --exit-code-from gremlin-go-integration-tests; EXIT=$?; docker compose down; for i in $(seq 1 30); do ss -tlnp | grep -qE ':(45940|45941|45942|4588) ' || break; sleep 1; done; docker image prune --filter label=maintainer=dev@tinkerpop.apache.org -f; exit $EXIT</argument>
+                                        <argument>docker compose down; docker compose up --build --exit-code-from gremlin-go-integration-tests; EXIT=$?; docker compose down; for i in $(seq 1 30); do ss -tlnp | grep -qE ':(45940|45941) ' || break; sleep 1; done; docker image prune --filter label=maintainer=dev@tinkerpop.apache.org -f; exit $EXIT</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
