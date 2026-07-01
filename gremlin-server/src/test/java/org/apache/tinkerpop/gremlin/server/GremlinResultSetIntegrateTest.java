@@ -82,7 +82,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Before
     public void beforeTest() {
-        cluster = TestClientFactory.build().serializer(messageSerializer).create();
+        cluster = TestClientFactory.build().responseSerializer(messageSerializer).create();
         client = cluster.connect();
     }
 

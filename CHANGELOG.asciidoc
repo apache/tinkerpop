@@ -67,6 +67,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 ** Added a `proxy(ProxyOptions)` builder that inserts a Netty `HttpProxyHandler` into the pipeline before the SSL handler.
 ** Removed the `maxResponseContentLength` connection option and its `HttpObjectAggregator` cap; responses are streamed and the new `readTimeout` is the partial mitigation.
 ** Reconciled the `validationRequest` default: the builder default is now `g.inject(0)` to match the `Settings` default (it was previously `''`).
+* Renamed the `gremlin-driver` `serializer` configuration to `responseSerializer` to match the other GLVs and to make clear it only controls response deserialization (requests are always sent as JSON).
+* Renamed the `gremlin-javascript` `reader` connection option to `responseSerializer` to match the other GLVs and to make clear it only controls response deserialization (requests are always sent as JSON).
 * Removed `Transaction.open()` in favor of `begin()`, which is now the single transaction-start primitive across embedded and remote contexts.
 * Changed `begin()` and `close()` to be idempotent and calling it when a transaction is already in that state no longer throws.
 * Added `maxTransactionLifetime` setting to Gremlin Server, an absolute cap on the total age of an HTTP transaction that interrupts a running operation and rolls the transaction back when it fires (default 600000ms, set to `0` to disable).

@@ -1086,8 +1086,8 @@ The following table describes the various configuration options for the Gremlin 
 |password |The password to submit on requests that require authentication. |_none_
 |path |The URL path to the Gremlin Server. |_/gremlin_
 |port |The port of the Gremlin Server to connect to. The same port will be applied for all hosts. |8182
-|serializer.className |The fully qualified class name of the `MessageSerializer` that will be used to deserialize responses from the server. Note that the serializer configured on the client should be supported by the server configuration. |_none_
-|serializer.config |A `Map` of configuration settings for the serializer. |_none_
+|responseSerializer.className |The fully qualified class name of the `MessageSerializer` that will be used to deserialize responses from the server. Note that the serializer configured on the client should be supported by the server configuration. |_none_
+|responseSerializer.config |A `Map` of configuration settings for the serializer. |_none_
 |username |The username to submit on requests that require authentication. |_none_
 |workerPoolSize |Size of the pool for handling background work. |available processors * 2
 |=========================================================
@@ -1210,7 +1210,7 @@ IoRegistry registry = ...; // an IoRegistry instance exposed by a specific graph
 TypeSerializerRegistry typeSerializerRegistry = TypeSerializerRegistry.build().addRegistry(registry).create();
 MessageSerializer serializer = new GraphBinaryMessageSerializerV4(typeSerializerRegistry);
 Cluster cluster = Cluster.build().
-                          serializer(serializer).
+                          responseSerializer(serializer).
                           create();
 Client client = cluster.connect();
 GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(client, "g"));
@@ -1989,8 +1989,7 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options.interceptors |RequestInterceptor/RequestInterceptor[] |One or more functions that can modify the HTTP request before it is sent. |undefined
 |options.auth |RequestInterceptor |An auth interceptor that is always appended to the end of the interceptor list so it runs last. |undefined
 |options.preciseNumbers |Boolean |When `true`, wraps deserialized numbers in typed wrappers that preserve the server's original type. |undefined
-|options.reader |GraphBinaryReader |The reader to use for deserializing responses. |GraphBinaryReader
-|options.writer |GraphBinaryWriter |The writer to use for serializing requests. |GraphBinaryWriter
+|options.responseSerializer |GraphBinaryReader |The reader to use for deserializing responses. |GraphBinaryReader
 |options.enableUserAgentOnConnect |Boolean |Determines if a user agent header will be sent with requests. |true
 |options.agent |Agent |A custom `node:http` or `node:https` Agent for connection pooling or proxy configuration. |undefined
 |options.pdtRegistry |ProviderDefinedTypeRegistry |A registry for hydrating and dehydrating <<gremlin-javascript-pdt,Provider Defined Types>>. |undefined

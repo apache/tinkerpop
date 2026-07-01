@@ -504,18 +504,18 @@ describe('Precise Mode Tests', () => {
   describe('Connection option wiring', () => {
     it('preciseNumbers: true uses a precise reader', () => {
       const conn = new Connection('http://localhost:8182', { preciseNumbers: true });
-      assert.ok(conn._reader !== graphBinaryReader);
+      assert.ok(conn._responseSerializer !== graphBinaryReader);
     });
 
-    it('explicit reader takes precedence over preciseNumbers', () => {
+    it('explicit responseSerializer takes precedence over preciseNumbers', () => {
       const customReader = { custom: true };
-      const conn = new Connection('http://localhost:8182', { reader: customReader, preciseNumbers: true });
-      assert.strictEqual(conn._reader, customReader);
+      const conn = new Connection('http://localhost:8182', { responseSerializer: customReader, preciseNumbers: true });
+      assert.strictEqual(conn._responseSerializer, customReader);
     });
 
     it('default uses the default reader', () => {
       const conn = new Connection('http://localhost:8182', {});
-      assert.ok(conn._reader instanceof graphBinaryReader.constructor);
+      assert.ok(conn._responseSerializer instanceof graphBinaryReader.constructor);
     });
   });
 });
