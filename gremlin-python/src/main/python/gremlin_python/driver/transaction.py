@@ -98,7 +98,7 @@ class Transaction:
         strategies.add_strategies([RemoteStrategy(tx_connection)])
         return GraphTraversalSource(None, strategies, GremlinLang())
 
-    def submit(self, gremlin, bindings=None, request_options=None):
+    def submit(self, gremlin, parameters=None, request_options=None):
         """Submits a gremlin-lang string within this transaction.
 
         The transactionId is automatically attached. Has the same signature
@@ -109,7 +109,7 @@ class Transaction:
         opts = {'transactionId': self._transaction_id}
         if request_options:
             opts.update(request_options)
-        return self._client.submit(gremlin, bindings=bindings, request_options=opts)
+        return self._client.submit(gremlin, parameters=parameters, request_options=opts)
 
     def commit(self):
         """Commits the transaction."""

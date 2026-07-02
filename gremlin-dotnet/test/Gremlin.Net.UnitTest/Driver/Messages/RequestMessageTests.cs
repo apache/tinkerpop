@@ -55,27 +55,27 @@ namespace Gremlin.Net.UnitTest.Driver.Messages
         }
 
         [Fact]
-        public void ShouldSetBindings()
+        public void ShouldSetParameters()
         {
             var msg = RequestMessage.Build("g.V(x)")
-                .AddBinding("x", 1)
+                .AddParameter("x", 1)
                 .Create();
 
-            var bindingsString = (string)msg.Fields[Tokens.ArgsBindings];
-            Assert.Contains("\"x\":1", bindingsString);
+            var parametersString = (string)msg.Fields[Tokens.ArgsParameters];
+            Assert.Contains("\"x\":1", parametersString);
         }
 
         [Fact]
-        public void ShouldSetMultipleBindings()
+        public void ShouldSetMultipleParameters()
         {
-            var bindings = new Dictionary<string, object> { { "x", 1 }, { "name", "test" } };
+            var parameters = new Dictionary<string, object> { { "x", 1 }, { "name", "test" } };
             var msg = RequestMessage.Build("g.V(x).has(name)")
-                .AddBindings(bindings)
+                .AddParameters(parameters)
                 .Create();
 
-            var bindingsString = (string)msg.Fields[Tokens.ArgsBindings];
-            Assert.Contains("\"x\":1", bindingsString);
-            Assert.Contains("\"name\":\"test\"", bindingsString);
+            var parametersString = (string)msg.Fields[Tokens.ArgsParameters];
+            Assert.Contains("\"x\":1", parametersString);
+            Assert.Contains("\"name\":\"test\"", parametersString);
         }
 
         [Fact]
@@ -99,21 +99,21 @@ namespace Gremlin.Net.UnitTest.Driver.Messages
         }
 
         [Fact]
-        public void ShouldNotContainBindingsWhenNoneAdded()
+        public void ShouldNotContainParametersWhenNoneAdded()
         {
             var msg = RequestMessage.Build("g.V()").Create();
 
-            Assert.False(msg.Fields.ContainsKey(Tokens.ArgsBindings));
+            Assert.False(msg.Fields.ContainsKey(Tokens.ArgsParameters));
         }
 
         [Fact]
-        public void ShouldSetBindingsString()
+        public void ShouldSetParametersString()
         {
             var msg = RequestMessage.Build("g.V(x)")
-                .AddBindingsString("[\"x\":1]")
+                .AddParametersString("[\"x\":1]")
                 .Create();
 
-            Assert.Equal("[\"x\":1]", msg.Fields[Tokens.ArgsBindings]);
+            Assert.Equal("[\"x\":1]", msg.Fields[Tokens.ArgsParameters]);
         }
     }
 }

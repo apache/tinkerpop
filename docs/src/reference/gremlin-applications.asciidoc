@@ -805,21 +805,14 @@ returns:
 
 `POST` is the only supported method for this endpoint. This means that `GET` with query parameters is not supported.
 
-It is also preferred that Gremlin scripts be parameterized when possible via `bindings`:
+It is also preferred that Gremlin scripts be parameterized when possible via `parameters`:
 
 [source,text]
-curl -X POST -d "{\"gremlin\":\"100-x\", \"bindings\":{\"x\":1}}" "http://localhost:8182"
+curl -X POST -d "{\"gremlin\":\"100-x\", \"parameters\":\"[x:1]\"}" "http://localhost:8182"
 
-The `bindings` argument is a `Map` of variables where the keys become available as variables in the Gremlin script.
-Note that parameterization of requests is critical to performance, as repeated script compilation can be avoided on
-each request.
-
-NOTE: It is possible to pass bindings via `GET` based requests.  Query string arguments prefixed with "bindings." will
-be treated as parameters, where that prefix will be removed and the value following the period will become the
-parameter name.  In other words, `bindings.x` will create a parameter named "x" that can be referenced in the submitted
-Gremlin script.  The caveat is that these arguments will always be treated as `String` values.  To ensure that data
-types are preserved or to pass complex objects such as lists or maps, use `POST` which will at least support the
-allowed JSON data types.
+The `parameters` argument is a gremlin-lang string that encodes a map of key/value pairs where the keys become available
+as variables in the Gremlin script. Note that parameterization of requests is critical to performance, as repeated
+script compilation can be avoided on each request.
 
 NOTE: The Gremlin Server does not support link:https://en.wikipedia.org/wiki/HTTP_pipelining[HTTP pipelining]. Sending
 a second request on the same connection before the first response completes will cause the server to close the
@@ -845,7 +838,7 @@ Finally, as Gremlin Server can host multiple `ScriptEngine` instances (e.g. `gre
 possible to define the language to utilize to process the request:
 
 [source,text]
-curl -X POST -d "{\"gremlin\":\"100-x\", \"language\":\"gremlin-groovy\", \"bindings\":{\"x\":1}}" "http://localhost:8182"
+curl -X POST -d "{\"gremlin\":\"100-x\", \"language\":\"gremlin-groovy\", \"parameters\":\"[x:1]\"}" "http://localhost:8182"
 
 By default this value is set to `gremlin-groovy`.  If using a `GET` operation, this value can be set as a query
 string argument with by setting the `language` key.
@@ -1769,7 +1762,7 @@ continuously:
 client = Cluster.build("localhost").port(8182).create().connect()
 ==>org.apache.tinkerpop.gremlin.driver.Client$ClusteredClient@42ff9a77
 client.submit("while(true) { }")
-org.apache.tinkerpop.gremlin.driver.exception.ResponseException: A timeout occurred during traversal evaluation of [RequestMessage{, fields={bindings={}, language=gremlin-groovy, batchSize=64}, gremlin=while(true) { }}] - consider increasing the limit given to evaluationTimeout
+org.apache.tinkerpop.gremlin.driver.exception.ResponseException: A timeout occurred during traversal evaluation of [RequestMessage{, fields={parameters={}, language=gremlin-groovy, batchSize=64}, gremlin=while(true) { }}] - consider increasing the limit given to evaluationTimeout
 
 The `GroovyCompilerGremlinPlugin` has a number of configuration options:
 

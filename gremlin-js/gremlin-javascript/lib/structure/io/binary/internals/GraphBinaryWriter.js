@@ -48,9 +48,9 @@ export default class GraphBinaryWriter {
       if (g) {
         fields.set('g', g);
       }
-      const bindings = requestMessage.getBindings();
-      if (bindings && Object.keys(bindings).length > 0) {
-        fields.set('bindings', bindings);
+      const parameters = requestMessage.getParameters();
+      if (parameters && Object.keys(parameters).length > 0) {
+        fields.set('parameters', parameters);
       }
       const timeoutMs = requestMessage.getTimeoutMs();
       if (timeoutMs !== undefined) {

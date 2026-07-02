@@ -68,7 +68,7 @@ namespace Gremlin.Net.Driver.Remote
             var parametersString = gremlinLang.GetParametersAsString();
             if (parametersString != "[:]")
             {
-                requestMsg.AddBindingsString(parametersString);
+                requestMsg.AddParametersString(parametersString);
             }
 
             foreach (var optionsStrategy in gremlinLang.OptionsStrategies)

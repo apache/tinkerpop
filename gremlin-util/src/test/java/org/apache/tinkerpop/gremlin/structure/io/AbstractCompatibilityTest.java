@@ -138,14 +138,14 @@ public abstract class AbstractCompatibilityTest {
                                                final RequestMessage recycled) {
         // Check per field rather than map equals since a new field may get added later.
         assertEquals(resource.getGremlin(), recycled.getGremlin());
-        assertEquals(resource.<Map>getField(SerTokens.TOKEN_BINDINGS), recycled.getField(SerTokens.TOKEN_BINDINGS));
+        assertEquals(resource.<Map>getField(SerTokens.TOKEN_PARAMETERS), recycled.getField(SerTokens.TOKEN_PARAMETERS));
         assertEquals(resource.<String>getField(SerTokens.TOKEN_LANGUAGE), recycled.getField(SerTokens.TOKEN_LANGUAGE));
         assertEquals(resource.<String>getField(SerTokens.TOKEN_G), recycled.getField(SerTokens.TOKEN_G));
         assertEquals(resource.<Long>getField(SerTokens.TOKEN_TIMEOUT_MS), recycled.getField(SerTokens.TOKEN_TIMEOUT_MS));
         assertEquals(resource.<String>getField(SerTokens.TOKEN_MATERIALIZE_PROPERTIES), recycled.getField(SerTokens.TOKEN_MATERIALIZE_PROPERTIES));
 
         assertEquals(resource.getGremlin(), fromStatic.getGremlin());
-        assertEquals(resource.<Map>getField(SerTokens.TOKEN_BINDINGS), fromStatic.getField(SerTokens.TOKEN_BINDINGS));
+        assertEquals(resource.<Map>getField(SerTokens.TOKEN_PARAMETERS), fromStatic.getField(SerTokens.TOKEN_PARAMETERS));
         assertEquals(resource.<String>getField(SerTokens.TOKEN_LANGUAGE), fromStatic.getField(SerTokens.TOKEN_LANGUAGE));
         assertEquals(resource.<String>getField(SerTokens.TOKEN_G), fromStatic.getField(SerTokens.TOKEN_G));
         assertEquals(resource.<Long>getField(SerTokens.TOKEN_TIMEOUT_MS), fromStatic.getField(SerTokens.TOKEN_TIMEOUT_MS));

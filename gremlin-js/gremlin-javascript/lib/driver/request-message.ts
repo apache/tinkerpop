@@ -22,7 +22,7 @@ import GremlinLang from '../process/gremlin-lang.js';
 // Token constants
 const Tokens = {
   ARGS_LANGUAGE: 'language',
-  ARGS_BINDINGS: 'bindings',
+  ARGS_PARAMETERS: 'parameters',
   ARGS_G: 'g',
   ARGS_MATERIALIZE_PROPERTIES: 'materializeProperties',
   TIMEOUT_MS: 'timeoutMs',
@@ -38,7 +38,7 @@ export class RequestMessage {
   private gremlin: string;
   private language: string;
   private timeoutMs?: number;
-  private bindings?: object;
+  private parameters?: object;
   private g?: string;
   private materializeProperties?: string;
   private bulkResults?: boolean;
@@ -48,7 +48,7 @@ export class RequestMessage {
     gremlin: string,
     language: string,
     timeoutMs: number | undefined,
-    bindings: object | undefined,
+    parameters: object | undefined,
     g: string | undefined,
     materializeProperties: string | undefined,
     bulkResults: boolean | undefined,
@@ -61,7 +61,7 @@ export class RequestMessage {
     this.gremlin = gremlin;
     this.language = language;
     this.timeoutMs = timeoutMs;
-    this.bindings = bindings;
+    this.parameters = parameters;
     this.g = g;
     this.materializeProperties = materializeProperties;
     this.bulkResults = bulkResults;
@@ -80,8 +80,8 @@ export class RequestMessage {
     return this.timeoutMs;
   }
 
-  getBindings(): object | undefined {
-    return this.bindings;
+  getParameters(): object | undefined {
+    return this.parameters;
   }
 
   getG(): string | undefined {
@@ -117,8 +117,8 @@ export class RequestMessage {
     if (this.g) {
       payload['g'] = this.g;
     }
-    if (this.bindings !== undefined) {
-      payload['bindings'] = this.bindings;
+    if (this.parameters !== undefined) {
+      payload['parameters'] = this.parameters;
     }
     if (this.timeoutMs !== undefined) {
       payload['timeoutMs'] = this.timeoutMs;
@@ -148,8 +148,8 @@ export class RequestMessage {
  */
 export class Builder {
   private readonly gremlin: string;
-  private readonly bindings = {};
-  private bindingsString?: string;
+  private readonly parameters = {};
+  private parametersString?: string;
   public language: string;
   public timeoutMs?: number;
   public g?: string;
@@ -169,36 +169,36 @@ export class Builder {
   }
 
   /**
-   * Adds a single binding parameter. The accumulated bindings map is converted to a gremlin-lang
+   * Adds a single query parameter. The accumulated parameters map is converted to a gremlin-lang
    * map literal string when the message is created.
-   * Cannot be mixed with {@link addBindingsString}.
+   * Cannot be mixed with {@link addParametersString}.
    */
-  addBinding(key: string, value: any): Builder {
-    if (this.bindingsString) throw new Error('Cannot mix addBinding() with addBindingsString().');
-    Object.assign(this.bindings, {[key]: value})
+  addParameter(key: string, value: any): Builder {
+    if (this.parametersString) throw new Error('Cannot mix addParameter() with addParametersString().');
+    Object.assign(this.parameters, {[key]: value})
     return this;
   }
 
   /**
-   * Merges the provided bindings into the accumulated bindings map. The values are converted to a
+   * Merges the provided parameters into the accumulated parameters map. The values are converted to a
    * gremlin-lang map literal string when the message is created.
-   * Cannot be mixed with {@link addBindingsString}.
+   * Cannot be mixed with {@link addParametersString}.
    */
-  addBindings(otherBindings: object): Builder {
-    if (!otherBindings) throw new Error('bindings argument cannot be null.');
-    if (this.bindingsString) throw new Error('Cannot mix addBindings() with addBindingsString().');
-    Object.assign(this.bindings, otherBindings)
+  addParameters(otherParameters: object): Builder {
+    if (!otherParameters) throw new Error('parameters argument cannot be null.');
+    if (this.parametersString) throw new Error('Cannot mix addParameters() with addParametersString().');
+    Object.assign(this.parameters, otherParameters)
     return this;
   }
 
   /**
-   * Sets the bindings as a pre-formatted gremlin-lang map literal string (e.g. `'["x":1,"y":"knows"]'`).
-   * Calling this method replaces any previously set bindings string (last-one-wins).
-   * Cannot be mixed with {@link addBinding} or {@link addBindings}.
+   * Sets the query parameters as a pre-formatted gremlin-lang map literal string (e.g. `'["x":1,"y":"knows"]'`).
+   * Calling this method replaces any previously set parameters string (last-one-wins).
+   * Cannot be mixed with {@link addParameter} or {@link addParameters}.
    */
-  addBindingsString(bindingsString: string): Builder {
-    if (Object.keys(this.bindings).length > 0) throw new Error('Cannot mix addBindingsString() with addBinding()/addBindings().');
-    this.bindingsString = bindingsString;
+  addParametersString(parametersString: string): Builder {
+    if (Object.keys(this.parameters).length > 0) throw new Error('Cannot mix addParametersString() with addParameter()/addParameters().');
+    this.parametersString = parametersString;
     return this;
   }
 
@@ -239,20 +239,20 @@ export class Builder {
    * Create the request message given the settings provided to the Builder.
    */
   create(): RequestMessage {
-    // mutual exclusion between addBindings/addBinding and addBindingsString is
+    // mutual exclusion between addParameters/addParameter and addParametersString is
     // enforced at call time, so only one path can be set here
-    let bindings: string | undefined;
-    if (this.bindingsString) {
-      bindings = this.bindingsString;
-    } else if (Object.keys(this.bindings).length > 0) {
-      bindings = GremlinLang.convertParametersToString(new Map(Object.entries(this.bindings)));
+    let parameters: string | undefined;
+    if (this.parametersString) {
+      parameters = this.parametersString;
+    } else if (Object.keys(this.parameters).length > 0) {
+      parameters = GremlinLang.convertParametersToString(new Map(Object.entries(this.parameters)));
     }
     // @ts-ignore - accessing private constructor from Builder
     return new RequestMessage(
       this.gremlin,
       this.language || 'gremlin-lang',
       this.timeoutMs,
-      bindings,
+      parameters,
       this.g,
       this.materializeProperties,
       this.bulkResults,

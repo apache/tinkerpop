@@ -22,7 +22,7 @@ import {RequestMessage} from "./request-message.js";
 import { Transaction } from '../process/transaction.js';
 
 export type RequestOptions = {
-  bindings?: any;
+  parameters?: any;
   language?: string;
   accept?: string;
   evaluationTimeout?: number;
@@ -78,12 +78,12 @@ export default class Client {
   /**
    * Send a request to the Gremlin Server and buffer the entire response.
    * @param {string} message The script to send
-   * @param {Object|null} [bindings] The script bindings, if any.
+   * @param {Object|null} [parameters] The query parameters, if any.
    * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
    * @returns {Promise<ResultSet>}
    */
-  submit(message: string, bindings: any | null, requestOptions?: RequestOptions): Promise<any> {
-    return this._connection.submit(this.#buildRequest(message, bindings, requestOptions));
+  submit(message: string, parameters: any | null, requestOptions?: RequestOptions): Promise<any> {
+    return this._connection.submit(this.#buildRequest(message, parameters, requestOptions));
   }
 
   /**
@@ -91,33 +91,33 @@ export default class Client {
    * Returns an AsyncGenerator that yields individual result items as they are
    * deserialized from the response. For bulked responses, yields Traverser objects.
    * @param {string} message The script to send
-   * @param {Object|null} [bindings] The script bindings, if any.
+   * @param {Object|null} [parameters] The query parameters, if any.
    * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
    * @returns {AsyncGenerator<any>}
    */
-  async *stream(message: string, bindings: any | null, requestOptions?: RequestOptions): AsyncGenerator<any> {
-    return yield* this._connection.stream(this.#buildRequest(message, bindings, requestOptions));
+  async *stream(message: string, parameters: any | null, requestOptions?: RequestOptions): AsyncGenerator<any> {
+    return yield* this._connection.stream(this.#buildRequest(message, parameters, requestOptions));
   }
 
-  #buildRequest(message: string, bindings: any | null, requestOptions?: RequestOptions): RequestMessage {
+  #buildRequest(message: string, parameters: any | null, requestOptions?: RequestOptions): RequestMessage {
     const requestBuilder = RequestMessage.build(message)
         .addG(this.options.traversalSource || 'g');
 
     if (requestOptions?.language) {
       requestBuilder.addLanguage(requestOptions.language);
     }
-    if (requestOptions?.bindings) {
-          if (typeof requestOptions.bindings === 'string') {
-              requestBuilder.addBindingsString(requestOptions.bindings);
+    if (requestOptions?.parameters) {
+          if (typeof requestOptions.parameters === 'string') {
+              requestBuilder.addParametersString(requestOptions.parameters);
           } else {
-              requestBuilder.addBindings(requestOptions.bindings);
+              requestBuilder.addParameters(requestOptions.parameters);
           }
     }
-    if (bindings) {
-          if (typeof bindings === 'string') {
-              requestBuilder.addBindingsString(bindings);
+    if (parameters) {
+          if (typeof parameters === 'string') {
+              requestBuilder.addParametersString(parameters);
           } else {
-              requestBuilder.addBindings(bindings);
+              requestBuilder.addParameters(parameters);
           }
     }
     if (requestOptions?.materializeProperties) {

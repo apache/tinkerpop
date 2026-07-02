@@ -81,7 +81,7 @@ public class MessageSerializerTest {
                 .addTimeoutMillis(500)
                 .addG("g1")
                 .addLanguage("some-lang")
-                .addBindings("['k':'v']")
+                .addParameters("['k':'v']")
                 .create();
 
         final ByteBuf buffer = serializer.serializeRequestAsBinary(request, allocator);
