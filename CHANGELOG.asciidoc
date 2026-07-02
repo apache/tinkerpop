@@ -27,6 +27,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from prior 3.7.x releases.
 
+* Enabled building and running with Java 25.
+* Bumped to Groovy 4.0.32 which adds support for parsing Java 25 bytecode.
+* Bumped Hadoop to 3.4.3 (and Kerby to 2.0.3) to enable `hadoop-gremlin` to build and run on Java 25.
 * Add missing `Configuring` interface to `GraphStepPlaceholder` and `VertexStepPlaceholder`
 
 [[release-3-8-1]]

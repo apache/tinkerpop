@@ -108,9 +108,10 @@ if [ -n "$SCRIPT_DEBUG" ]; then
     set -x
 fi
 
-# Try to detect JDK version and add specific flag for JDK 17 to allow use of neo4j-gremlin
+# Try to detect the JDK major version and add specific flags for JDK 17 and newer to allow use of neo4j-gremlin
 JAVA_VERSION=$($JAVA -version 2>&1 | awk -F '"' '/version/ {print $2}')
-if [[ "$JAVA_VERSION" == 17* ]]; then
+JAVA_MAJOR_VERSION=$(echo "$JAVA_VERSION" | awk -F. '{if ($1 == 1) print $2; else print $1}')
+if [[ "$JAVA_MAJOR_VERSION" -ge 17 ]]; then
     JVM_OPTS+=( "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED" )
     JVM_OPTS+=( "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED" )
 fi
