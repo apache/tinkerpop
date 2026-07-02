@@ -32,207 +32,79 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
-==== Standardizing .NET Connection Options
+==== Standardizing GLV Connection Options
 
-TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In `gremlin-dotnet`, several
-`ConnectionSettings` properties and the `Auth` factory methods have been renamed for consistency. Because this is a
-major version, the old names have been removed rather than retained as aliases, and a number of new options have been
-added. The notes below describe the .NET changes. See <<glv-driver-changes, GLV Driver Changes>> for the
-equivalent changes in the other drivers.
+TinkerPop 4.x standardizes connection option names and defaults across all five Gremlin Language Variants (Java, Python,
+.NET, Go, and JavaScript). Each driver using its language-idiomatic casing (`camelCase`, `PascalCase`, or `snake_case`).
+Renames are breaking: the old option names have been removed (no deprecated aliases), so existing code must be updated.
 
-Renames (breaking). The following members have been renamed and the old names removed. Migrate to the new names:
+NOTE: Timeouts use a millisecond-suffixed canonical name (`connectTimeoutMillis`, `readTimeoutMillis`,
+`idleTimeoutMillis`, `keepAliveTimeMillis`, and the `_millis` form in Python). Java, Go, .NET, and Python also accept an
+idiomatic duration companion for the same setting (Java `Duration`, Go `time.Duration`, .NET `TimeSpan`, Python seconds);
+set only one form per option. JavaScript exposes only the millisecond form.
 
-- `ConnectionTimeout` is now `ConnectTimeout`.
-- `MaxConnectionsPerServer` is now `MaxConnections`.
-- `IdleConnectionTimeout` is now `IdleTimeout`.
-- `KeepAliveInterval` is now `KeepAliveTime`.
-- `EnableCompression` is now `Compression`.
-- The `Auth.BasicAuth` and `Auth.SigV4Auth` factory methods are now `Auth.Basic` and `Auth.Sigv4`.
+===== Standardized options (cross-GLV)
 
-Behavior changes. These change runtime behavior on upgrade, even if you do not change your configuration:
+The table lists each standardized option by driver. Defaults are shown in parentheses; "n/a" means the driver does not
+expose that option.
 
-- `ConnectTimeout` now defaults to 5s (lowered from 15s).
-- `KeepAliveTime` is now wired to a real TCP keep-alive socket option rather than the inert HTTP/2 ping timeout. It
-enables `SO_KEEPALIVE` and sets the per-socket idle time on Windows, Linux, and macOS; on other platforms keep-alive
-stays enabled at the OS default idle time.
-- `Compression` is now a `{None, Deflate}` enum defaulting to `Deflate` (compression on by default), so the driver
-sends `Accept-Encoding: deflate` by default. Set `Compression.None` to disable. The old `EnableCompression` `bool`
-has been removed.
+[width="100%",cols="2,2,2,2,2,2",options="header"]
+|=========================================================
+|Concept |Java (`Cluster.Builder`) |Python (kwarg) |.NET (`ConnectionSettings`) |Go (settings field) |JavaScript (option)
+|Max pooled connections |`maxConnections` (128) |`max_connections` (128) |`MaxConnections` (128) |`MaxConnections` (128) |`maxConnections` (128)
+|Connect timeout |`connectTimeoutMillis` (5000) |`connect_timeout_millis` (5000) |`ConnectTimeoutMillis` (5000) |`ConnectTimeoutMillis` (5000) |n/a
+|Idle-read timeout |`readTimeoutMillis` (0/off) |`read_timeout_millis` (off) |`ReadTimeoutMillis` (0/off) |`ReadTimeoutMillis` (0/off) |`readTimeoutMillis` (undici default)
+|Pool idle timeout |`idleTimeoutMillis` (180000) |`idle_timeout_millis` (180000) |`IdleTimeout` (180s) |`IdleTimeoutMillis` (180000) |n/a
+|TCP keep-alive idle |`keepAliveTimeMillis` (30000) |`keep_alive_time_millis` (30000) |`KeepAliveTime` (30s) |`KeepAliveTimeMillis` (30000) |`keepAliveTimeMillis` (30000)
+|Compression |`compression` (`DEFLATE`) |`compression` (`'deflate'`) |`Compression` (`Deflate`) |`Compression` (`CompressionDeflate`) |`compression` (`'deflate'`)
+|Connection-level batch size |`batchSize` (64) |`batch_size` (64) |`BatchSize` (64) |`BatchSize` (64) |`batchSize` (64)
+|Connection-level bulkResults |`bulkResults` (false) |`bulk_results` (false) |`BulkResults` (false) |`BulkResults` (false) |`bulkResults` (false)
+|Max response header bytes |`maxResponseHeaderBytes` (8192) |n/a |`MaxResponseHeaderBytes` (handler default) |`MaxResponseHeaderBytes` (net/http default) |`maxResponseHeaderBytes` (undici default)
+|TLS configuration |`ssl(SslContext)` + keystore builders |`ssl` (`SSLContext`) |`Ssl` (`SslClientAuthenticationOptions`) |`Ssl` (`*tls.Config`) |runtime (`NODE_EXTRA_CA_CERTS`, etc.)
+|HTTP proxy |`proxy(ProxyOptions)` |`proxy` |`Proxy` (`IWebProxy`) |`Proxy` (env default) |`proxy` (undici `ProxyAgent`)
+|Request interceptors |`interceptors` |`interceptors` |interceptor delegates |`Interceptors` |`interceptors`
+|=========================================================
 
-New options:
+===== Behavior changes (all drivers)
 
-- `Ssl` (an `SslClientAuthenticationOptions` for client certificates and custom CAs; `SkipCertificateValidation` is
-applied to an internal copy rather than mutating the supplied options).
-- `BatchSize` (default 64): a connection-level default that fills the per-request batch size when unset.
-- `MaxResponseHeaderBytes`: the maximum allowed size, in bytes, of the response headers.
-- `ReadTimeout`: a per-read idle timeout applied to each individual read of the response stream.
-- Each timeout is also settable in milliseconds via an `int` companion property (`ConnectTimeoutMillis`, `IdleTimeoutMillis`,
-  `ReadTimeoutMillis`, `KeepAliveTimeMillis`); the unsuffixed `TimeSpan` property is the idiomatic form.
-- `Proxy`: routes connections through an `IWebProxy`.
+These change runtime behavior on upgrade even if you do not change your configuration:
 
-See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
+- *Compression defaults to on.* Every driver now defaults compression to `deflate` and sends `Accept-Encoding: deflate`.
+  Disable it with the compression option's "none" value (`Compression.NONE`, `'none'`, `Compression.None`,
+  `CompressionNone`).
+- *Connect timeout lowered to 5s* (from 15s, where applicable) and is now actually applied to transport establishment
+  (TCP connect plus TLS handshake), not the whole request.
+- *`readTimeout` is an idle-read timeout*, reset on each inbound response chunk, so it is streaming-safe and bounds only
+  the gap between chunks, not total response duration. It is off by default.
+- *`idleTimeout` reaps only pooled connections* that are idle between requests; it no longer bounds an in-flight
+  response (that is `readTimeout`'s job).
 
-==== Standardizing Go Connection Options
+===== Driver-specific notes
 
-TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In `gremlin-go`, several
-`DriverRemoteConnectionSettings`/`ClientSettings` options introduced for the HTTP driver in 4.0.0-beta.2 have been
-renamed for consistency, the authentication helpers have moved into a dedicated `auth` sub-package, and a number of
-new options have been added. The notes below describe the Go changes. See <<glv-driver-changes, GLV Driver Changes>>
-for the equivalent changes in the other drivers.
-
-Renames (breaking). The following settings fields have been renamed. Because they are struct fields, they cannot be
-aliased, so existing code must be updated to the new names:
-
-- `MaximumConcurrentConnections` is now `MaxConnections` (default 128).
-- `IdleConnectionTimeout` is now `IdleTimeoutMillis` (default 180000), an `int` of milliseconds. The `time.Duration` companion `IdleTimeout` may be set instead (set only one).
-- `KeepAliveInterval` is now `KeepAliveTimeMillis` (default 30000), an `int` of milliseconds. The `time.Duration` companion `KeepAliveTime` may be set instead (set only one).
-- `ConnectionTimeout` is now `ConnectTimeoutMillis` (default 5000), an `int` of milliseconds. The `time.Duration` companion `ConnectTimeout` may be set instead (set only one).
-- `TlsConfig` (`*tls.Config`) is now `Ssl`.
-- `RequestInterceptors` is now `Interceptors`.
-- `EnableCompression` is now `Compression`.
-- The `BasicAuth`, `SigV4Auth`, and `SigV4AuthWithCredentials` functions have moved out of package `gremlingo` into a
-new `auth` sub-package (`github.com/apache/tinkerpop/gremlin-go/v4/driver/auth`) as `auth.Basic`, `auth.SigV4`, and
-`auth.SigV4WithCredentials`. The flat `gremlingo` functions have been removed; use the `auth` sub-package.
-
-Behavior changes. These change runtime behavior on upgrade, even if you do not change your configuration:
-
-- `Compression` is now a typed `Compression` const (`gremlingo.CompressionNone`/`gremlingo.CompressionDeflate`)
-defaulting to `CompressionDeflate` (compression on by default), so the driver sends `Accept-Encoding: deflate` by
-default. Set `gremlingo.CompressionNone` to disable it. The manual per-chunk deflate decode path is retained.
-- `http.Transport.Proxy` now defaults to `http.ProxyFromEnvironment`, so the standard `HTTP_PROXY`/`HTTPS_PROXY`/
-`NO_PROXY` environment variables are honored. Previously the custom transport left `Proxy` unset, silently dropping
-any environment proxy configuration.
-
-New options:
-
-- `ReadTimeoutMillis` (default 0, disabled), an `int` of milliseconds: a per-read idle timeout reset on each read of
-the response body and re-armed across pooled-connection reuse, so it never fires while a pooled connection is idle
-between requests. The `time.Duration` companion `ReadTimeout` may be set instead (set only one).
-- `MaxResponseHeaderBytes`: exposes `http.Transport.MaxResponseHeaderBytes` (native bytes).
-- `Proxy`: an explicit `func(*http.Request) (*url.URL, error)` proxy override for the transport.
-- `BatchSize` (default 64): a connection-level default that fills a request's `batchSize` when it is left
-unset.
-- `BulkResults` (default false): a connection-level default for `bulkResults` applied to every request unless
-overridden per-request. The `DriverRemoteConnection` traversal path defaults to `true` regardless of this setting.
+- *Java* (`gremlin-driver`): renamed `maxConnectionPoolSize`->`maxConnections`, `connectionSetupTimeoutMillis`->`connectTimeoutMillis`,
+  `idleConnectionTimeoutMillis`->`idleTimeoutMillis`, `resultIterationBatchSize`->`batchSize`, and `RequestOptions` `addG`->`traversalSource`;
+  old names are removed. New: `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`, `proxy(ProxyOptions)`,
+  `url(String)`, `ssl(SslContext)`. Removed `maxResponseContentLength`. `validationRequest` default reconciled to `g.inject(0)`.
+- *Python* (`gremlin-python`): renamed `pool_size`->`max_connections` (default 8->128) and `ssl_options`->`ssl` (old names removed).
+  New: `connect_timeout_millis`, `read_timeout_millis`, `idle_timeout_millis`, `keep_alive_time_millis`, `compression`,
+  `batch_size`, `proxy`, `trust_env`. `auth.sigv4` gained an optional credentials provider. Removed `headers` (use interceptors)
+  and `max_content_length`. Requires `aiohttp>=3.11`.
+- *.NET* (`gremlin-dotnet`): renamed `MaxConnectionsPerServer`->`MaxConnections`, `ConnectionTimeout`->`ConnectTimeout`,
+  `IdleConnectionTimeout`->`IdleTimeout`, `KeepAliveInterval`->`KeepAliveTime`, `EnableCompression`->`Compression`, and
+  `Auth.BasicAuth`/`Auth.SigV4Auth`->`Auth.Basic`/`Auth.Sigv4`; old names removed. New: `ReadTimeout`, `MaxResponseHeaderBytes`,
+  `Proxy`, `Ssl`, `BulkResults`. `KeepAliveTime` now drives a real TCP keep-alive socket option instead of the inert HTTP/2 ping.
+- *Go* (`gremlin-go`): renamed `MaximumConcurrentConnections`->`MaxConnections`, `IdleConnectionTimeout`->`IdleTimeout`,
+  `KeepAliveInterval`->`KeepAliveTime`, `ConnectionTimeout`->`ConnectTimeout`, `TlsConfig`->`Ssl`, `RequestInterceptors`->`Interceptors`,
+  `EnableCompression`->`Compression`; old struct fields removed. Auth helpers moved from package `gremlingo`
+  (`BasicAuth`/`SigV4Auth`/`SigV4AuthWithCredentials`) into a new `auth` sub-package (`auth.Basic`/`auth.SigV4`/`auth.SigV4WithCredentials`).
+  New: `ReadTimeout(Millis)`, `MaxResponseHeaderBytes`, `Proxy` (defaults to `http.ProxyFromEnvironment`), `BatchSize`, `BulkResults`.
+- *JavaScript* (`gremlin-javascript`): adopted `undici` as a pinned dependency providing the default dispatcher built from the
+  options above. New: `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`, `proxy`, `compression`, `batchSize`,
+  `bulkResults`, `logger`. Removed `headers` (use interceptors) and the `ca`/`cert`/`pfx`/`rejectUnauthorized`/`agent` options
+  (TLS is configured through the Node/undici runtime). undici is swapped out in browser bundles, where these connection-pool
+  options are managed by the browser.
 
 See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
-
-==== Standardizing Python Connection Options
-
-TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In `gremlin-python`, several
-connection options passed to `Client`/`DriverRemoteConnection` have been renamed for consistency. Because this is a
-major version, the old names have been removed rather than retained as aliases, and a number of new options have been
-added. The notes below describe the Python changes. See <<glv-driver-changes, GLV Driver Changes>> for the equivalent changes in
-the other drivers.
-
-Renames (breaking). The following options have been renamed and the old names removed. Migrate to the new names:
-
-- `pool_size` is now `max_connections` (default raised from 8 to 128). `max_connections` is also applied to the
-  aiohttp `TCPConnector` `limit`, so the transport layer reflects the option in addition to sizing the connection
-  pool.
-- `ssl_options` is now `ssl` (accepts an `ssl.SSLContext`).
-
-Behavior changes. These change runtime behavior on upgrade, even if you do not change your configuration:
-
-- `compression` is a new option that defaults to `'deflate'` (on), so the driver advertises `Accept-Encoding: deflate`
-  by default. Set `compression='none'` to disable it; when disabled, aiohttp's automatic `Accept-Encoding` injection is
-  suppressed so compression is not silently negotiated. Defaulting compression on is a deliberate deviation from the
-  proposal's agreed default-off, applied consistently across the GLVs by later agreement.
-- `connect_timeout` now defaults to 5s. Together with `read_timeout` it is wired into a single aiohttp `ClientTimeout`
-  via the socket-level `sock_connect`/`sock_read` knobs rather than a whole-request `total`, so long but legitimate
-  streaming responses are not aborted while a stalled server no longer hangs forever.
-- The minimum supported `aiohttp` has been raised to `3.11` (required for the `socket_factory` used by
-  `keep_alive_time`). *(breaking)*
-
-New options:
-
-- `connect_timeout` (default 5s): a new socket-connect timeout. It is combined with the existing `read_timeout`
-  (rewired into a single aiohttp `ClientTimeout` via `sock_connect`/`sock_read`, as described above).
-  Each timeout option's primary form is the millisecond-suffixed name (`connect_timeout_millis`, `idle_timeout_millis`,
-  `read_timeout_millis`, `keep_alive_time_millis`); the unsuffixed canonical name (`connect_timeout`, etc.) accepts the
-  idiomatic seconds value.
-- `idle_timeout` (default 180s): mapped to the aiohttp `TCPConnector` keep-alive timeout.
-- `keep_alive_time` (default 30s): enables TCP keep-alive probes via the connector socket factory
-  (`TCP_KEEPIDLE`/`TCP_KEEPALIVE`, guarded by platform availability).
-- `compression` (`'none'`/`'deflate'`, default `'deflate'`): the wire compression negotiated with the server.
-- `batch_size` (default 64): a connection-level default that fills the per-request `batchSize` when unset.
-- `proxy` and `trust_env`: explicit HTTP proxy and environment-trust options surfaced on the aiohttp `ClientSession`.
-- `auth.sigv4` gains a credentials-provider variant that accepts an optional credentials provider or callable, falling
-  back to the AWS environment variables.
-
-Removals (breaking):
-
-- The `max_content_length` kwarg has been removed (it was previously accepted but discarded).
-- The standalone `headers` kwarg has been removed from `Client`/`DriverRemoteConnection`; custom headers must now be
-  set via interceptors.
-
-See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
-
-==== Standardizing Java Connection Options
-
-TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In the Java reference driver
-(`gremlin-driver`), several `Cluster.Builder` options have been renamed for consistency. As this is a major version,
-the old names have been removed rather than retained as aliases, and a number of new options have been added. The notes
-below describe the Java changes. See <<glv-driver-changes, GLV Driver Changes>> for the equivalent changes in the
-other drivers.
-
-Renames (breaking). The following builder methods have been renamed and the old names removed; migrate to the new
-names:
-
-- `maxConnectionPoolSize` is now `maxConnections` (default 128).
-- `idleConnectionTimeoutMillis` is now `idleTimeout` (default 180000 ms), settable as `idleTimeout(Duration)` or `idleTimeoutMillis(long)` (YAML key `connectionPool.idleTimeoutMillis`).
-- `connectionSetupTimeoutMillis` is now `connectTimeout`, settable as `connectTimeout(Duration)` or `connectTimeoutMillis(int)` (YAML key `connectionPool.connectTimeoutMillis`).
-- `resultIterationBatchSize` is now `batchSize` (default 64); it sets the connection-level default that fills a request's per-request `batchSize` when unset (mirroring how `bulkResults` shares one name across connection and per-request scopes).
-- A new `ssl(SslContext)` builder accepts a fully configured Netty `SslContext`.
-- On `RequestOptions`, `addG` is now `traversalSource`.
-
-Behavior changes. These change runtime behavior on upgrade, even if you do not change your configuration:
-
-- `idleTimeout` now applies only to connections sitting idle in the pool between requests. Previously its underlying
-  Netty `IdleStateHandler` also watched the in-flight read window, so a stalled in-flight response could be closed
-  by `idleTimeout` even with `readTimeout` disabled. That in-flight coverage is now solely `readTimeout`'s job, so
-  if you relied on `idleTimeout` to bound a hung in-flight request, set `readTimeout` explicitly.
-- `connectTimeout` now defaults to 5s (lowered from 15s) and is now actually applied to the connection bootstrap.
-  Previously `connectionSetupTimeoutMillis` was validated but never enforced, so the connection setup was effectively
-  unbounded. A slow TCP or TLS setup now fails after 5s where it previously did not time out. If you rely on the old
-  behavior, set `connectTimeout` explicitly to a larger value.
-- `compression` now defaults to `Compression.DEFLATE` (on), so the driver sends `Accept-Encoding: deflate` by default.
-  This preserves the pre-4.x always-on Java behavior. Set `compression(Compression.NONE)` to disable it.
-- The `validationRequest` builder default has been reconciled to `g.inject(0)` (it was previously an empty string in
-  the builder, which did not match the config-file default).
-
-New options:
-
-- `readTimeout` (default 0, disabled): a streaming-safe idle-read timeout that fires only if no response chunk arrives
-  within the interval. It is armed per request and does not affect idle pooled connections. Settable as
-  `readTimeout(Duration)` or `readTimeoutMillis(long)` (YAML key `connectionPool.readTimeoutMillis`).
-- `keepAliveTime` (default 30000 ms): the idle time before TCP keep-alive probes begin. It enables `SO_KEEPALIVE` and
-  sets `TCP_KEEPIDLE` where supported (JDK 11+ on Linux and macOS). Set 0 to disable. Settable as
-  `keepAliveTime(Duration)` or `keepAliveTimeMillis(long)` (YAML key `connectionPool.keepAliveTimeMillis`).
-- `maxResponseHeaderBytes` (default 8192): the maximum response header size, which was previously hardcoded.
-- `proxy(ProxyOptions)`: routes connections through an HTTP proxy.
-- `url(String)`: configures the endpoint from a single URL (scheme, host, port, and path). The existing
-  `addContactPoint`/`addContactPoints`, `port`, and `path` options remain for multi-host configurations.
-
-The `maxResponseContentLength` setting has been removed. Responses are now streamed rather than aggregated
-and size-capped. The new idle `readTimeout` is the partial mitigation for unbounded or slow responses.
-
-Note that none of the driver timeouts bound the *total* time of a request: `readTimeout` only bounds the gap between
-response chunks, so a response that keeps producing chunks will not time out no matter how long it runs overall. If
-you need an overall deadline, impose it in your application around the asynchronous API, for example by wrapping a
-`CompletableFuture` with a timeout:
-
-[source,java]
-----
-// bound the entire request (submit plus full result iteration) to 30 seconds
-final List<Result> results = client.submitAsync("g.V().out().out()")
-        .thenCompose(ResultSet::all)
-        .orTimeout(30, TimeUnit.SECONDS)
-        .get();
-----
-
-See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4
-].
 
 ==== Declarative Pattern Matching
 

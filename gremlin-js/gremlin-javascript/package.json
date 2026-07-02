@@ -20,6 +20,10 @@
   "type": "module",
   "main": "./build/cjs/index.cjs",
   "types": "./build/esm/index.d.ts",
+  "browser": {
+    "./build/esm/driver/dispatcher.js": "./build/esm/driver/dispatcher.browser.js",
+    "./build/cjs/driver/dispatcher.cjs": "./build/cjs/driver/dispatcher.browser.cjs"
+  },
   "exports": {
     ".": {
       "import": "./build/esm/index.js",
@@ -44,7 +48,8 @@
   "dependencies": {
     "antlr4ng": "3.0.16",
     "buffer": "^6.0.3",
-    "eventemitter3": "^5.0.1"
+    "eventemitter3": "^5.0.1",
+    "undici": "6.27.0"
   },
   "optionalDependencies": {
     "@aws-sdk/credential-providers": "^3.967.0",
