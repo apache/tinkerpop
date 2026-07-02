@@ -644,8 +644,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 === AddLabel Step
 
 The `addLabel()`-step (*sideEffect*) adds one or more labels to an element. The graph must be configured with a
-`LabelCardinality` that supports mutation (e.g. `ZERO_OR_MORE` or `ONE_OR_MORE`). Adding a label that already exists
-on the element is a no-op.
+`LabelCardinality` that supports mutation (e.g. `ZERO_OR_MORE` or `ONE_OR_MORE`).
 
 [gremlin-groovy]
 ----
@@ -656,12 +655,13 @@ g = traversal().with(graph)
 g.addV('person').property('name','marko').addLabel('employee').labels()
 g.V().has('name','marko').hasLabel('person')
 g.V().has('name','marko').hasLabel('employee')
+g.V().has('name','marko').addLabel('employee').labels() <1>
 ----
+
+<1> Adding a label that already exists has no effect.
 
 NOTE: When `LabelCardinality` is set to `ONE` (the default), calling `addLabel()` will throw an
 `IllegalStateException` since labels are immutable in that mode.
-
-See: <<labels-step,labels() step>>, <<droplabel-step,dropLabel() step>>
 
 *Additional References*
 
@@ -1794,8 +1794,7 @@ g.V()
 === DropLabel Step
 
 The `dropLabel()`-step (*sideEffect*) removes one or more specific labels from an element. The `dropLabels()`-step
-removes all labels. The graph must be configured with a `LabelCardinality` that supports mutation. Dropping a label
-that does not exist on the element is a no-op.
+removes all labels. The graph must be configured with a `LabelCardinality` that supports mutation.
 
 [gremlin-groovy]
 ----
@@ -1805,9 +1804,16 @@ graph = TinkerGraph.open(conf)
 g = traversal().with(graph)
 v = g.addV('person').property('name','marko').addLabel('employee').addLabel('manager').next()
 g.V(v).labels()
-g.V(v).dropLabel('manager').labels()
-g.V(v).dropLabels().labels()
+g.V(v).dropLabel('manager').labels() <1>
+g.V(v).dropLabel('manager').labels() <2>
+g.V(v).dropLabels().labels() <3>
+g.V(v).labels().count() <4>
 ----
+
+<1> Removes the "manager" label.
+<2> Dropping a label that is not present has no effect.
+<3> Removes all remaining labels.
+<4> Confirms zero labels remain.
 
 NOTE: With `LabelCardinality.ONE_OR_MORE`, `dropLabels()` always throws and `dropLabel()` throws if it would
 leave the element with zero labels.
@@ -1815,8 +1821,6 @@ leave the element with zero labels.
 IMPORTANT: Do not confuse `dropLabel()` with `labels().drop()`. The latter attempts to drop the string traversers
 emitted by `labels()` and is blocked by the `LabelsDropVerificationStrategy`. Use `dropLabel()` or `dropLabels()` to
 remove labels from vertices.
-
-See: <<addlabel-step,addLabel() step>>, <<labels-step,labels() step>>
 
 *Additional References*
 
@@ -2671,8 +2675,6 @@ g.addV('person').property('name','marko').addLabel('employee').iterate()
 g.V().labels()
 g.V().labels().count()
 ----
-
-See: <<label-step,label() step>>, <<addlabel-step,addLabel() step>>, <<droplabel-step,dropLabel() step>>
 
 *Additional References*
 
