@@ -278,10 +278,10 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
-        public void SerializeBodyShouldIncludeBindingsField()
+        public void SerializeBodyShouldIncludeParametersField()
         {
             var message = RequestMessage.Build("g.V(x)")
-                .AddBindingsString("[x:1,y:'marko']")
+                .AddParametersString("[x:1,y:'marko']")
                 .Create();
             var context = new HttpRequestContext("POST", new Uri("http://localhost:8182/gremlin"),
                 new Dictionary<string, string>(), message);
@@ -289,7 +289,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var result = context.SerializeBody();
 
             var json = JsonDocument.Parse(result);
-            Assert.Equal("[x:1,y:'marko']", json.RootElement.GetProperty("bindings").GetString());
+            Assert.Equal("[x:1,y:'marko']", json.RootElement.GetProperty("parameters").GetString());
         }
 
         #endregion

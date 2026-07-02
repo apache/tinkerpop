@@ -42,33 +42,33 @@ func TestRequestOptions(t *testing.T) {
 		r := new(RequestOptionsBuilder).SetMaterializeProperties("TestMaterializeProperties").Create()
 		assert.Equal(t, "TestMaterializeProperties", r.materializeProperties)
 	})
-	t.Run("Test RequestOptionsBuilder with custom bindings", func(t *testing.T) {
-		bindings := map[string]interface{}{"x": int32(2), "y": int32(5)}
-		r := new(RequestOptionsBuilder).SetBindings(bindings).Create()
-		assert.Contains(t, r.bindingsString, "\"x\":2")
-		assert.Contains(t, r.bindingsString, "\"y\":5")
+	t.Run("Test RequestOptionsBuilder with custom parameters", func(t *testing.T) {
+		parameters := map[string]interface{}{"x": int32(2), "y": int32(5)}
+		r := new(RequestOptionsBuilder).SetParameters(parameters).Create()
+		assert.Contains(t, r.parametersString, "\"x\":2")
+		assert.Contains(t, r.parametersString, "\"y\":5")
 	})
-	t.Run("Test RequestOptionsBuilder AddBinding() with no other bindings", func(t *testing.T) {
-		r := new(RequestOptionsBuilder).AddBinding("x", int32(2)).AddBinding("y", int32(5)).Create()
-		assert.Contains(t, r.bindingsString, "\"x\":2")
-		assert.Contains(t, r.bindingsString, "\"y\":5")
+	t.Run("Test RequestOptionsBuilder AddParameter() with no other parameters", func(t *testing.T) {
+		r := new(RequestOptionsBuilder).AddParameter("x", int32(2)).AddParameter("y", int32(5)).Create()
+		assert.Contains(t, r.parametersString, "\"x\":2")
+		assert.Contains(t, r.parametersString, "\"y\":5")
 	})
-	t.Run("Test RequestOptionsBuilder AddBinding() overwriting existing key", func(t *testing.T) {
-		r := new(RequestOptionsBuilder).AddBinding("x", int32(2)).AddBinding("x", int32(5)).Create()
-		assert.Contains(t, r.bindingsString, "\"x\":5")
+	t.Run("Test RequestOptionsBuilder AddParameter() overwriting existing key", func(t *testing.T) {
+		r := new(RequestOptionsBuilder).AddParameter("x", int32(2)).AddParameter("x", int32(5)).Create()
+		assert.Contains(t, r.parametersString, "\"x\":5")
 	})
-	t.Run("Test RequestOptionsBuilder AddBinding() with existing bindings", func(t *testing.T) {
-		bindings := map[string]interface{}{"x": int32(2), "y": int32(5)}
-		r := new(RequestOptionsBuilder).SetBindings(bindings).AddBinding("z", int32(7)).Create()
-		assert.Contains(t, r.bindingsString, "\"x\":2")
-		assert.Contains(t, r.bindingsString, "\"y\":5")
-		assert.Contains(t, r.bindingsString, "\"z\":7")
+	t.Run("Test RequestOptionsBuilder AddParameter() with existing parameters", func(t *testing.T) {
+		parameters := map[string]interface{}{"x": int32(2), "y": int32(5)}
+		r := new(RequestOptionsBuilder).SetParameters(parameters).AddParameter("z", int32(7)).Create()
+		assert.Contains(t, r.parametersString, "\"x\":2")
+		assert.Contains(t, r.parametersString, "\"y\":5")
+		assert.Contains(t, r.parametersString, "\"z\":7")
 	})
-	t.Run("Test RequestOptionsBuilder SetBindings resets previous bindings", func(t *testing.T) {
-		bindings1 := map[string]interface{}{"x": int32(2)}
-		bindings2 := map[string]interface{}{"z": int32(7)}
-		r := new(RequestOptionsBuilder).SetBindings(bindings1).SetBindings(bindings2).Create()
-		assert.Contains(t, r.bindingsString, "\"z\":7")
-		assert.NotContains(t, r.bindingsString, "\"x\"")
+	t.Run("Test RequestOptionsBuilder SetParameters resets previous parameters", func(t *testing.T) {
+		parameters1 := map[string]interface{}{"x": int32(2)}
+		parameters2 := map[string]interface{}{"z": int32(7)}
+		r := new(RequestOptionsBuilder).SetParameters(parameters1).SetParameters(parameters2).Create()
+		assert.Contains(t, r.parametersString, "\"z\":7")
+		assert.NotContains(t, r.parametersString, "\"x\"")
 	})
 }

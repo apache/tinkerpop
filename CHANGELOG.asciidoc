@@ -89,6 +89,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Updated all default Gremlin Server configs to remove Groovy dependency from initialization.
 * Added script engine allowlist to Gremlin Server - the `scriptEngines` YAML configuration now restricts which engines can serve requests; `gremlin-lang` is always available.
 * Modified request parameters from `Map<String, Object>` to gremlin-lang compatible `String`.
+* Renamed the request `bindings` field to `parameters` across the HTTP request body, GraphBinary, and GraphSON, standardizing terminology for query parameters.
 * Modified HTTP API to expect gremlin-lang strings for parameters and update all GLVs to send requests in new format.
 * Added string parameter parsing to `GremlinServer` to prevent traversal injection and excessive nesting depths.
 * Modified all GLVs to detect unsupported types in `GremlinLang` and throw consistent error for that case.

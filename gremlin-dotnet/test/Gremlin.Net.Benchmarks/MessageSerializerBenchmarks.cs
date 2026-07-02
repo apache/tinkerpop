@@ -66,7 +66,7 @@ namespace Gremlin.Net.Benchmarks
         private static RequestMessage RequestMessageFor(GremlinLang gremlinLang) =>
             Gremlin.Net.Driver.Messages.RequestMessage.Build(gremlinLang.GetGremlin())
                 .AddG("g")
-                .AddBindings(gremlinLang.Parameters)
+                .AddParameters(gremlinLang.Parameters)
                 .Create();
 
         private static readonly GraphBinary4MessageSerializer BinaryMessageSerializer = new();

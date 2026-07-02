@@ -97,7 +97,7 @@ def test_client_deflate_compression_round_trip():
         client.close()
 
 
-def test_client_simple_eval_bindings(client):
+def test_client_simple_eval_parameters(client):
     assert client.submit('g.V(x).values("age")', {'x': 1}).all().result()[0] == 29
 
 
@@ -105,18 +105,18 @@ def test_client_eval_traversal(client):
     assert len(client.submit('g.V()').all().result()) == 6
 
 
-def test_client_eval_traversal_bindings(client):
-    assert client.submit('g.V(x).values("name")', bindings={'x': 1}).all().result()[0] == 'marko'
+def test_client_eval_traversal_parameters(client):
+    assert client.submit('g.V(x).values("name")', parameters={'x': 1}).all().result()[0] == 'marko'
 
 
-def test_client_eval_traversal_request_options_bindings(client):
-    assert client.submit('g.V(x).values("name")', request_options={'bindings': {'x': 1}}).all().result()[0] == 'marko'
+def test_client_eval_traversal_request_options_parameters(client):
+    assert client.submit('g.V(x).values("name")', request_options={'parameters': {'x': 1}}).all().result()[0] == 'marko'
 
 
-def test_client_eval_traversal_bindings_request_options_bindings(client):
-    # Note that parameters from request_options[bindings] is applied later and will replace bindings if key is the same
-    assert client.submit('g.V(x).values("name")', bindings={'x': 1},
-                         request_options={'bindings': {'x': 2}}).all().result()[0] == 'vadas'
+def test_client_eval_traversal_parameters_request_options_parameters(client):
+    # Note that parameters from request_options[parameters] is applied later and will replace parameters if key is the same
+    assert client.submit('g.V(x).values("name")', parameters={'x': 1},
+                         request_options={'parameters': {'x': 2}}).all().result()[0] == 'vadas'
 
 
 def test_client_error(client):
@@ -272,22 +272,22 @@ def test_client_gremlin_lang_options(client):
     assert len(result_set.all().result()) == 6
 
 
-def test_client_gremlin_lang_request_options_with_binding(client):
+def test_client_gremlin_lang_request_options_with_parameter(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
-    # Note that bindings for constructed traversals is done via Parameter only
+    # Note that parameters for constructed traversals is done via Parameter only
     t = g.with_('language', 'gremlin-lang').V(GValue('x', [1, 2, 3])).count()
-    request_opts = {'language': 'gremlin-lang', 'bindings': {'x': [1, 2, 3]}}
+    request_opts = {'language': 'gremlin-lang', 'parameters': {'x': [1, 2, 3]}}
     message = create_basic_request_message(t)
     result_set = client.submit(message, request_options=request_opts)
     assert result_set.all().result()[0] == 3
     # We can re-use the extracted request options in script submission
     result_set = client.submit('g.V(x).values("name")', request_options=request_opts)
     assert result_set.all().result()[0] == 'marko'
-    # For script submission only, we can also add bindings to request options and they will be applied
-    request_opts2 = {'language': 'gremlin-lang', 'bindings': {'y': 4}}
+    # For script submission only, we can also add parameters to request options and they will be applied
+    request_opts2 = {'language': 'gremlin-lang', 'parameters': {'y': 4}}
     result_set = client.submit('g.V(y).values("name")', request_options=request_opts2)
     assert result_set.all().result()[0] == 'josh'
-    result_set = client.submit('g.V(z).values("name")', bindings={'z': 5})
+    result_set = client.submit('g.V(z).values("name")', parameters={'z': 5})
     assert result_set.all().result()[0] == 'ripple'
 
 

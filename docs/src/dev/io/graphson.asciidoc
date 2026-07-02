@@ -2751,7 +2751,7 @@ The following `RequestMessage` is an example of a simple sessionless request for
     "@value": 1000
   },
   "g": "g",
-  "bindings": {
+  "parameters": {
     "@type": "g:Map",
     "@value": [
       "x",
@@ -2772,7 +2772,7 @@ The following `RequestMessage` is an example of a simple sessionless request for
   "materializeProperties": "tokens",
   "timeoutMs": 1000,
   "g": "g",
-  "bindings": {
+  "parameters": {
     "x": 1
   },
   "language": "gremlin-groovy"

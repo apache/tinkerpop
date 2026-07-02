@@ -47,10 +47,10 @@ namespace Gremlin.Net.Driver
         public const string ArgsBatchSize = "batchSize";
 
         /// <summary>
-        ///     Argument name that allows definition of a map of key/value pairs to apply as variables in the
+        ///     Argument name that allows definition of a map of key/value pairs to apply as query parameters in the
         ///     context of the Gremlin request sent to the server.
         /// </summary>
-        public const string ArgsBindings = "bindings";
+        public const string ArgsParameters = "parameters";
 
         /// <summary>
         ///     Argument name that corresponds to the Gremlin to evaluate.
