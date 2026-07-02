@@ -70,7 +70,10 @@ public class ElementMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>> imple
             if (isMultilabelEnabled()) {
                 map.put(T.label, element.labels());
             } else {
-                map.put(T.label, element.label());
+                final String label = element.label();
+                if (!label.isEmpty()) {
+                    map.put(T.label, label);
+                }
             }
         }
 

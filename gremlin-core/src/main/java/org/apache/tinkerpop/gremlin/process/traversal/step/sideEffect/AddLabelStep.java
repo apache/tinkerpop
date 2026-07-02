@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -50,7 +51,7 @@ public class AddLabelStep<S extends Element> extends SideEffectStep<S>
         implements Mutating<Event.ElementLabelChangedEvent>, TraversalParent {
 
     private final String[] labels;
-    private Traversal.Admin<S, String> labelTraversal;
+    private Traversal.Admin<S, ?> labelTraversal;
     private CallbackRegistry<Event.ElementLabelChangedEvent> callbackRegistry;
 
     public AddLabelStep(final Traversal.Admin traversal, final String label, final String... moreLabels) {
@@ -66,7 +67,7 @@ public class AddLabelStep<S extends Element> extends SideEffectStep<S>
         this.labelTraversal = null;
     }
 
-    public AddLabelStep(final Traversal.Admin traversal, final Traversal.Admin<S, String> labelTraversal) {
+    public AddLabelStep(final Traversal.Admin traversal, final Traversal.Admin<S, ?> labelTraversal) {
         super(traversal);
         this.labels = null;
         this.labelTraversal = this.integrateChild(labelTraversal);
@@ -78,12 +79,24 @@ public class AddLabelStep<S extends Element> extends SideEffectStep<S>
         final Set<String> oldLabels = new LinkedHashSet<>(element.labels());
 
         if (this.labelTraversal != null) {
+            final Object result = TraversalUtil.apply(traverser, this.labelTraversal);
             final List<String> collectedLabels = new ArrayList<>();
-            TraversalUtil.applyAll(traverser, this.labelTraversal)
-                    .forEachRemaining(label -> {
-                        ElementHelper.validateLabel(label);
-                        collectedLabels.add(label);
-                    });
+            if (result instanceof Collection) {
+                for (final Object item : (Collection<?>) result) {
+                    if (!(item instanceof String)) {
+                        throw new IllegalArgumentException("Label traversal Collection must contain only Strings, but got: " +
+                                (item == null ? "null" : item.getClass().getName()));
+                    }
+                    ElementHelper.validateLabel((String) item);
+                    collectedLabels.add((String) item);
+                }
+            } else if (result instanceof String) {
+                ElementHelper.validateLabel((String) result);
+                collectedLabels.add((String) result);
+            } else {
+                throw new IllegalArgumentException("Label traversal must produce a String or Collection<String>, but got: " +
+                        (result == null ? "null" : result.getClass().getName()));
+            }
             if (!collectedLabels.isEmpty()) {
                 element.addLabel(collectedLabels.get(0),
                         collectedLabels.subList(1, collectedLabels.size()).toArray(new String[0]));
@@ -124,7 +137,7 @@ public class AddLabelStep<S extends Element> extends SideEffectStep<S>
     }
 
     @Override
-    public List<Traversal.Admin<S, String>> getLocalChildren() {
+    public List<Traversal.Admin<S, ?>> getLocalChildren() {
         return this.labelTraversal != null ? Collections.singletonList(this.labelTraversal) : Collections.emptyList();
     }
 

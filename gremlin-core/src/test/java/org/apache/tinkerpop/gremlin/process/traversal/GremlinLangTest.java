@@ -93,6 +93,8 @@ public class GremlinLangTest {
                 {g.addV("t\"'est"), "g.addV(\"t\\\"'est\")"},
                 {g.addV("dog", "pet"), "g.addV(\"dog\",\"pet\")"},
                 {g.addV("dog", "pet", "animal"), "g.addV(\"dog\",\"pet\",\"animal\")"},
+                {g.addV(__.constant("a"), __.constant("b")), "g.addV(__.constant(\"a\"),__.constant(\"b\"))"},
+                {g.addV(__.constant("a"), __.constant("b"), __.constant("c")), "g.addV(__.constant(\"a\"),__.constant(\"b\"),__.constant(\"c\"))"},
                 {g.inject(true, (byte) 1, (short) 2, 3, 4L, 5f, 6d, BigInteger.valueOf(7L), BigDecimal.valueOf(8L)),
                         "g.inject(true,1B,2S,3,4L,5.0F,6.0D,7N,8M)"},
                 {g.inject(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY),

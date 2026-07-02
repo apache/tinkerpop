@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -42,7 +43,7 @@ public abstract class AbstractAddVertexStepPlaceholder<S> extends AbstractAddEle
         userProvidedLabel = label != null;
     }
 
-    protected AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<S,String> vertexLabelTraversal) {
+    protected AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<S,?> vertexLabelTraversal) {
         super(traversal, vertexLabelTraversal);
         userProvidedLabel = vertexLabelTraversal != null;
     }
@@ -50,6 +51,11 @@ public abstract class AbstractAddVertexStepPlaceholder<S> extends AbstractAddEle
     protected AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final Set<Object> labels) {
         super(traversal, labels);
         userProvidedLabel = labels != null && !labels.isEmpty();
+    }
+
+    protected AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final List<Traversal.Admin<?, ?>> labelTraversals) {
+        super(traversal, labelTraversals);
+        userProvidedLabel = labelTraversals != null && !labelTraversals.isEmpty();
     }
 
     @Override

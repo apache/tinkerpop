@@ -54,10 +54,12 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -351,17 +353,36 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     /**
-     * Spawns a {@link GraphTraversal} by adding a vertex with the label as determined by a {@link Traversal}. If the
-     * {@code vertexLabelTraversal} is {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
+     * Spawns a {@link GraphTraversal} by adding a vertex with one or more labels each determined by a
+     * {@link Traversal}. When called with a single traversal ({@code more} is empty), the traversal is iterated
+     * for a single result following the {@code by()} modulation pattern. If the result is a
+     * {@link java.util.Collection}, its elements are spread into the label set. When called with multiple
+     * traversals (2+), each is iterated for a single scalar String result forming the ordered label set.
      *
-     * @since 3.3.1
+     * @param first the first (or only) label traversal
+     * @param more  additional label traversals (may be empty for single-traversal behavior)
+     * @since 4.0.0
      */
-    public GraphTraversal<Vertex, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
-        if (null == vertexLabelTraversal) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
+    public GraphTraversal<Vertex, Vertex> addV(final Traversal<?, ?> first, final Traversal<?, ?>... more) {
+        if (null == first) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
+        for (final Traversal<?, ?> t : more) {
+            if (null == t) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
+        }
         final GraphTraversalSource clone = this.clone();
-        clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, vertexLabelTraversal);
-        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, vertexLabelTraversal.asAdmin()));
+        if (more.length == 0) {
+            clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, first);
+            final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+            return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, first.asAdmin()));
+        } else {
+            clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, first, more);
+            final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+            final List<Traversal.Admin<?, ?>> allTraversals = new ArrayList<>(more.length + 1);
+            allTraversals.add(first.asAdmin());
+            for (final Traversal<?, ?> t : more) {
+                allTraversals.add(t.asAdmin());
+            }
+            return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, allTraversals));
+        }
     }
 
     /**

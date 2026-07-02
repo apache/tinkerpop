@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 public class AddVertexStartStepPlaceholder extends AbstractAddVertexStepPlaceholder<Vertex>
@@ -37,18 +38,25 @@ public class AddVertexStartStepPlaceholder extends AbstractAddVertexStepPlacehol
         super(traversal, label);
     }
 
-    public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<?,String> vertexLabelTraversal) {
-        super(traversal, vertexLabelTraversal == null ? null : (Traversal.Admin<Vertex,String>) vertexLabelTraversal);
+    public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<?,?> vertexLabelTraversal) {
+        super(traversal, vertexLabelTraversal == null ? null : (Traversal.Admin<Vertex,?>) vertexLabelTraversal);
     }
 
     public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final Set<Object> labels) {
         super(traversal, labels);
     }
 
+    public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final List<Traversal.Admin<?, ?>> labelTraversals) {
+        super(traversal, labelTraversals);
+    }
+
     @Override
     public AddVertexStartStep asConcreteStep() {
         AddVertexStartStep step;
-        if (label instanceof Set) {
+        if (label instanceof List) {
+            // Multiple label traversals - each resolved to one String label at execution
+            step = new AddVertexStartStep(traversal, (List<Traversal.Admin<?, ?>>) label);
+        } else if (label instanceof Set) {
             // Resolve any GValue elements to their string values
             final Set<String> resolvedLabels = new LinkedHashSet<>();
             for (final Object l : (Set<?>) label) {
@@ -60,7 +68,7 @@ public class AddVertexStartStepPlaceholder extends AbstractAddVertexStepPlacehol
             }
             step = new AddVertexStartStep(traversal, resolvedLabels);
         } else if (label instanceof Traversal) {
-            step = new AddVertexStartStep(traversal, ((Traversal<?, String>) label).asAdmin());
+            step = new AddVertexStartStep(traversal, ((Traversal<?, ?>) label).asAdmin());
         } else if (label instanceof GValue) {
             step = new AddVertexStartStep(traversal, ((GValue<String>) label).get());
         } else {

@@ -196,6 +196,22 @@ public abstract class TinkerWorld implements World {
         }
 
         @Override
+        public void beforeEachScenario(final Scenario scenario) {
+            super.beforeEachScenario(scenario);
+
+            // TinkerTransactionGraph always uses ZERO_OR_MORE label cardinality so scenarios that
+            // test single-label-only (immutable labels) error behavior cannot run here.
+            switch (scenario.getName()) {
+                case "g_V_dropLabelXpersonX_single_label_graph":
+                case "g_V_dropLabels_single_label_graph":
+                case "g_V_addLabelXemployeeX_single_label_graph":
+                    throw new AssumptionViolatedException("TinkerTransactionGraph uses ZERO_OR_MORE cardinality - single-label error tests not applicable");
+                default:
+                    // Do nothing
+            }
+        }
+
+        @Override
         public AbstractTinkerGraph open(final Configuration configuration) {
             return TinkerTransactionGraph.open(configuration);
         }

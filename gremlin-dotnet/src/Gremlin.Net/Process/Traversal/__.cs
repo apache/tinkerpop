@@ -97,27 +97,17 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addV step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Vertex> AddV(string vertexLabel)
+        public static GraphTraversal<object, Vertex> AddV(string label, params string[] additionalLabels)
         {
-            return new GraphTraversal<object, Vertex>().AddV(vertexLabel);            
+            return new GraphTraversal<object, Vertex>().AddV(label, additionalLabels);            
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addV step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Vertex> AddV(ITraversal vertexLabelTraversal)
+        public static GraphTraversal<object, Vertex> AddV(ITraversal label, params ITraversal[] additionalLabels)
         {
-            return new GraphTraversal<object, Vertex>().AddV(vertexLabelTraversal);            
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addV step with multiple labels to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, Vertex> AddV(string label1, string label2, params string[] moreLabels)
-        {
-            return moreLabels is { Length: 0 }
-                ? new GraphTraversal<object, Vertex>().AddV(label1, label2)
-                : new GraphTraversal<object, Vertex>().AddV(label1, label2, moreLabels);            
+            return new GraphTraversal<object, Vertex>().AddV(label, additionalLabels);            
         }
 
         /// <summary>

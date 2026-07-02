@@ -205,7 +205,10 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
                     if (isMultilabelEnabled()) {
                         map.put(T.label, element.labels());
                     } else {
-                        map.put(T.label, getElementLabel(element));
+                        final String label = getElementLabel(element);
+                        if (!label.isEmpty()) {
+                            map.put(T.label, label);
+                        }
                     }
                 }
             }

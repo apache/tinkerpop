@@ -67,7 +67,7 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         }
     }
 
-    protected AbstractAddElementStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<S,String> labelTraversal) {
+    protected AbstractAddElementStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<S,?> labelTraversal) {
         super(traversal);
         this.label = labelTraversal == null ? this.getDefaultLabel() : labelTraversal;
         if (labelTraversal instanceof GValueConstantTraversal) {
@@ -86,6 +86,25 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
                 if (l instanceof GValue && ((GValue<?>) l).isVariable()) {
                     traversal.getGValueManager().register((GValue<?>) l);
                 }
+            }
+        }
+    }
+
+    /**
+     * Constructor for multiple label traversals. Each traversal resolves to a single String label
+     * at execution time.
+     *
+     * @param traversal the parent traversal
+     * @param labelTraversals the list of label-producing traversals (must have 2+ elements)
+     */
+    protected AbstractAddElementStepPlaceholder(final Traversal.Admin traversal, final List<Traversal.Admin<?, ?>> labelTraversals) {
+        super(traversal);
+        if (labelTraversals == null || labelTraversals.isEmpty()) {
+            this.label = this.getDefaultLabel();
+        } else {
+            this.label = labelTraversals;
+            for (final Traversal.Admin<?, ?> t : labelTraversals) {
+                addTraversal(t);
             }
         }
     }
@@ -117,6 +136,12 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         }
         if (label != null && label instanceof Traversal) {
             childTraversals.add(((Traversal<?, ?>) label).asAdmin());
+        } else if (label instanceof List) {
+            for (final Object item : (List<?>) label) {
+                if (item instanceof Traversal) {
+                    childTraversals.add(((Traversal<?, ?>) item).asAdmin());
+                }
+            }
         }
         if (elementId != null && elementId instanceof Traversal) {
             childTraversals.add(((Traversal<?, ?>) elementId).asAdmin());

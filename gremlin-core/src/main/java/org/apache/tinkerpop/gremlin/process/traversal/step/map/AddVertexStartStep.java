@@ -18,7 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,8 +38,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
@@ -50,6 +55,7 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements 
     private boolean first = true;
     private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
     private boolean userProvidedLabel;
+    private List<Traversal.Admin<?, ?>> labelTraversals;
 
     public AddVertexStartStep(final Traversal.Admin traversal, final String label) {
         super(traversal);
@@ -59,7 +65,7 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements 
         userProvidedLabel = label != null;
     }
 
-    public AddVertexStartStep(final Traversal.Admin traversal, final Traversal<?, String> vertexLabelTraversal) {
+    public AddVertexStartStep(final Traversal.Admin traversal, final Traversal<?, ?> vertexLabelTraversal) {
         super(traversal);
         if (vertexLabelTraversal != null) {
             this.internalParameters.set(this, T.label, vertexLabelTraversal);
@@ -71,6 +77,23 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements 
         super(traversal);
         if (labels != null && !labels.isEmpty()) {
             this.internalParameters.set(this, T.label, labels);
+            userProvidedLabel = true;
+        } else {
+            userProvidedLabel = false;
+        }
+    }
+
+    /**
+     * Constructor for multiple label traversals. Each traversal is resolved to a single String
+     * label at execution time.
+     */
+    public AddVertexStartStep(final Traversal.Admin traversal, final List<Traversal.Admin<?, ?>> labelTraversals) {
+        super(traversal);
+        if (labelTraversals != null && !labelTraversals.isEmpty()) {
+            this.labelTraversals = new ArrayList<>(labelTraversals);
+            for (final Traversal.Admin<?, ?> t : this.labelTraversals) {
+                this.integrateChild(t);
+            }
             userProvidedLabel = true;
         } else {
             userProvidedLabel = false;
@@ -105,7 +128,13 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements 
 
     @Override
     public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
-        return this.internalParameters.getTraversals();
+        final List<Traversal.Admin<S, E>> children = new ArrayList<>(this.internalParameters.getTraversals());
+        if (this.labelTraversals != null) {
+            for (final Traversal.Admin<?, ?> t : this.labelTraversals) {
+                children.add((Traversal.Admin<S, E>) t);
+            }
+        }
+        return children;
     }
 
     @Override
@@ -135,7 +164,34 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements 
         if (this.first) {
             this.first = false;
             final TraverserGenerator generator = this.getTraversal().getTraverserGenerator();
-            final Vertex vertex = this.getTraversal().getGraph().get().addVertex(this.internalParameters.getKeyValues(generator.generate(false, (Step) this, 1L)));
+            final Traverser.Admin<Vertex> dummyTraverser = generator.generate(false, (Step) this, 1L);
+            final Object[] keyValues;
+            if (this.labelTraversals != null) {
+                // Multi-traversal: resolve each traversal to a single String label
+                final Set<String> labels = new LinkedHashSet<>();
+                for (final Traversal.Admin<?, ?> t : this.labelTraversals) {
+                    final Object result = TraversalUtil.apply(dummyTraverser, (Traversal.Admin<Vertex, ?>) t);
+                    if (result == null) {
+                        throw new IllegalArgumentException("Label traversal must not produce null");
+                    }
+                    if (result instanceof Collection) {
+                        throw new IllegalArgumentException("Label traversal must produce a scalar String when multiple traversals are provided, but got a Collection");
+                    }
+                    if (!(result instanceof String)) {
+                        throw new IllegalArgumentException(String.format("Label traversal must produce a String, but got %s", result.getClass().getSimpleName()));
+                    }
+                    ElementHelper.validateLabel((String) result);
+                    labels.add((String) result);
+                }
+                final Object[] otherKeyValues = this.internalParameters.getKeyValues(dummyTraverser);
+                keyValues = new Object[otherKeyValues.length + 2];
+                keyValues[0] = T.label;
+                keyValues[1] = labels;
+                System.arraycopy(otherKeyValues, 0, keyValues, 2, otherKeyValues.length);
+            } else {
+                keyValues = this.internalParameters.getKeyValues(dummyTraverser);
+            }
+            final Vertex vertex = this.getTraversal().getGraph().get().addVertex(keyValues);
             EventUtil.registerVertexCreation(callbackRegistry, getTraversal(), vertex);
             return generator.generate(vertex, this, 1L);
         } else
@@ -155,7 +211,11 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements 
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.internalParameters.hashCode() ^ this.withConfiguration.hashCode();
+        int hash = super.hashCode() ^ this.internalParameters.hashCode() ^ this.withConfiguration.hashCode();
+        if (this.labelTraversals != null) {
+            hash ^= this.labelTraversals.hashCode();
+        }
+        return hash;
     }
 
     @Override
@@ -173,6 +233,9 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements 
         super.setTraversal(parentTraversal);
         this.internalParameters.getTraversals().forEach(this::integrateChild);
         this.withConfiguration.getTraversals().forEach(this::integrateChild);
+        if (this.labelTraversals != null) {
+            this.labelTraversals.forEach(this::integrateChild);
+        }
     }
 
     @Override
@@ -181,6 +244,12 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements 
         clone.internalParameters = this.internalParameters.clone();
         clone.withConfiguration = this.withConfiguration.clone();
         clone.userProvidedLabel = this.userProvidedLabel;
+        if (this.labelTraversals != null) {
+            clone.labelTraversals = new ArrayList<>(this.labelTraversals.size());
+            for (final Traversal.Admin<?, ?> t : this.labelTraversals) {
+                clone.labelTraversals.add(t.clone());
+            }
+        }
         return clone;
     }
 
