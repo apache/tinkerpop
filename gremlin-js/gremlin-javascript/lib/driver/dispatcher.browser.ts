@@ -68,3 +68,12 @@ export function buildDispatcher(options: DispatcherOptions = {}): undefined {
   }
   return undefined;
 }
+
+/**
+ * Browser counterpart of the Node `httpFetch` holder. There is no `undici` in the browser, so
+ * requests use the global `fetch` and the user agent manages the transport. Same holder shape as
+ * the Node build.
+ */
+export const httpFetch: { fetch: typeof globalThis.fetch } = {
+  fetch: globalThis.fetch.bind(globalThis),
+};

@@ -33,7 +33,7 @@ import {RequestMessage} from "./request-message.js";
 import { HttpRequest, RequestInterceptor } from './http-request.js';
 import ResponseError from './response-error.js';
 import { Traverser } from '../process/traversal.js';
-import { buildDispatcher } from './dispatcher.js';
+import { buildDispatcher, httpFetch } from './dispatcher.js';
 import { Logger, LoggerCallback, normalizeLogger } from './logger.js';
 
 const responseStatusCode = {
@@ -321,7 +321,7 @@ export default class Connection extends EventEmitter {
 
     this._log('debug', `Sending ${httpRequest.method} request to ${httpRequest.url}`);
 
-    return fetch(httpRequest.url, {
+    return httpFetch.fetch(httpRequest.url, {
       method: httpRequest.method,
       headers: httpRequest.headers,
       body: httpRequest.body,

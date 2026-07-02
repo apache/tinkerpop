@@ -20,19 +20,20 @@
 import assert from 'assert';
 import Connection from '../../lib/driver/connection.js';
 import { RequestMessage } from '../../lib/driver/request-message.js';
+import { httpFetch } from '../../lib/driver/dispatcher.js';
 
 // Connection-level unit tests that verify interceptor wiring and auto-serialization
-// by mocking the global fetch and capturing what the Connection sends.
+// by mocking the driver's fetch (httpFetch.fetch) and capturing what the Connection sends.
 describe('Connection (request pipeline)', function () {
   let originalFetch;
   let captured;
 
   beforeEach(function () {
     captured = null;
-    originalFetch = global.fetch;
+    originalFetch = httpFetch.fetch;
     // Return an error response so we don't need a valid GraphBinary body; the test only
     // cares about what was sent to fetch. The resulting ResponseError is swallowed per-test.
-    global.fetch = (url, init) => {
+    httpFetch.fetch = (url, init) => {
       captured = { url, init };
       return Promise.resolve({
         ok: false,
@@ -45,7 +46,7 @@ describe('Connection (request pipeline)', function () {
   });
 
   afterEach(function () {
-    global.fetch = originalFetch;
+    httpFetch.fetch = originalFetch;
   });
 
   function makeConnection(options = {}) {

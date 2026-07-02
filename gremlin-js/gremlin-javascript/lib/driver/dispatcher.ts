@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-import { Agent, ProxyAgent, buildConnector, Dispatcher } from 'undici';
+import { Agent, ProxyAgent, buildConnector, Dispatcher, fetch as undiciFetch } from 'undici';
 
 /** Default concurrent-connections-per-origin cap (Node's global fetch is uncapped). */
 export const DEFAULT_MAX_CONNECTIONS = 128;
@@ -111,3 +111,14 @@ export function buildDispatcher(options: DispatcherOptions = {}): Dispatcher {
 
   return new Agent(agentOptions);
 }
+
+/**
+ * HTTP `fetch` for the Node build. Uses undici's own `fetch` (not the global one) so `fetch` and the
+ * {@link buildDispatcher} dispatcher share one undici version, whatever undici the Node runtime
+ * bundles (e.g. Node 26 ships undici 8, incompatible with an undici 6 dispatcher). A holder object,
+ * not a bare export, so tests can swap `fetch` (an ESM export can't be reassigned, an object
+ * property can). The cast aligns undici's `fetch` type with the global one.
+ */
+export const httpFetch: { fetch: typeof globalThis.fetch } = {
+  fetch: undiciFetch as unknown as typeof globalThis.fetch,
+};
