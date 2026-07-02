@@ -3690,17 +3690,28 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Adds dynamically computed labels to the current element. This is a side-effect step that passes the
-     * element through unchanged. If the result is a {@link java.util.Collection}, its elements are spread
-     * into the label set.
+     * Adds one or more dynamically computed labels to the current element. This is a side-effect step that
+     * passes the element through unchanged. Each traversal is iterated for a single result only. If exactly
+     * one {@link Traversal} is provided, and it produces a {@link java.util.Collection}, the collection will
+     * be automatically unfolded.
      *
-     * @param labelTraversal the traversal that produces labels to add
+     * @param labelTraversal      the first (or only) label traversal
+     * @param moreLabelTraversals additional label traversals (may be empty for single-traversal behavior)
      * @return the traversal with an appended {@link AddLabelStep}
      * @since 4.0.0
      */
-    public default GraphTraversal<S, E> addLabel(final Traversal<?, ?> labelTraversal) {
-        this.asAdmin().getGremlinLang().addStep(Symbols.addLabel, labelTraversal);
-        return this.asAdmin().addStep((AddLabelStep) new AddLabelStep(this.asAdmin(), labelTraversal.asAdmin()));
+    public default GraphTraversal<S, E> addLabel(final Traversal<?, ?> labelTraversal, final Traversal<?, ?>... moreLabelTraversals) {
+        final List<Traversal<?, ?>> all = TraversalHelper.asVarargsList(labelTraversal, moreLabelTraversals, "labelTraversal");
+        if (moreLabelTraversals.length == 0) {
+            this.asAdmin().getGremlinLang().addStep(Symbols.addLabel, labelTraversal);
+        } else {
+            this.asAdmin().getGremlinLang().addStep(Symbols.addLabel, labelTraversal, moreLabelTraversals);
+        }
+        final List<Traversal.Admin<?, ?>> allAdmins = new ArrayList<>(all.size());
+        for (final Traversal<?, ?> t : all) {
+            allAdmins.add(t.asAdmin());
+        }
+        return this.asAdmin().addStep((AddLabelStep) new AddLabelStep(this.asAdmin(), allAdmins));
     }
 
     /**
@@ -3730,16 +3741,28 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Removes a dynamically computed label from the current element. This is a side-effect step that passes the
-     * element through unchanged.
+     * Removes one or more dynamically computed labels from the current element. This is a side-effect step
+     * that passes the element through unchanged. Each traversal is iterated for a single result only. If
+     * exactly one {@link Traversal} is provided, and it produces a {@link java.util.Collection}, the collection
+     * will be automatically unfolded.
      *
-     * @param labelTraversal the traversal that produces the label to remove
+     * @param labelTraversal      the first (or only) label traversal
+     * @param moreLabelTraversals additional label traversals (may be empty for single-traversal behavior)
      * @return the traversal with an appended {@link DropLabelsStep}
      * @since 4.0.0
      */
-    public default GraphTraversal<S, E> dropLabel(final Traversal<?, String> labelTraversal) {
-        this.asAdmin().getGremlinLang().addStep(Symbols.dropLabel, labelTraversal);
-        return this.asAdmin().addStep((DropLabelsStep) new DropLabelsStep(this.asAdmin(), labelTraversal.asAdmin()));
+    public default GraphTraversal<S, E> dropLabel(final Traversal<?, String> labelTraversal, final Traversal<?, String>... moreLabelTraversals) {
+        final List<Traversal<?, String>> all = TraversalHelper.asVarargsList(labelTraversal, moreLabelTraversals, "labelTraversal");
+        if (moreLabelTraversals.length == 0) {
+            this.asAdmin().getGremlinLang().addStep(Symbols.dropLabel, labelTraversal);
+        } else {
+            this.asAdmin().getGremlinLang().addStep(Symbols.dropLabel, labelTraversal, moreLabelTraversals);
+        }
+        final List<Traversal.Admin<?, ?>> allAdmins = new ArrayList<>(all.size());
+        for (final Traversal<?, String> t : all) {
+            allAdmins.add(t.asAdmin());
+        }
+        return this.asAdmin().addStep((DropLabelsStep) new DropLabelsStep(this.asAdmin(), allAdmins));
     }
 
     /**

@@ -142,3 +142,65 @@ Feature: Step - dropLabel() / dropLabels()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Label mutation is not supported"
+
+  @MultiLabel
+  Scenario: g_V_dropLabelXconstantXaXX_labels
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("a", "b")
+      """
+    And the traversal of
+      """
+      g.V().dropLabel(constant("a")).labels().fold()
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 0 for count of "g.V().hasLabel(\"a\")"
+    And the graph should return 1 for count of "g.V().hasLabel(\"b\")"
+
+  @MultiLabel
+  Scenario: g_V_dropLabelXconstantXlistXa_bXXX_labels
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("a", "b", "c")
+      """
+    And the traversal of
+      """
+      g.V().dropLabel(constant(["a", "b"])).labels()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | c |
+
+  @MultiLabel
+  Scenario: g_V_dropLabelXconstantXaX_constantXbXX_labels
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("a", "b", "c")
+      """
+    And the traversal of
+      """
+      g.V().dropLabel(constant("a"), constant("b")).labels()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | c |
+
+  @MultiLabel
+  Scenario: g_V_dropLabelXconstantXlistXa_bXX_constantXcXX_labels
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("a", "b", "c")
+      """
+    And the traversal of
+      """
+      g.V().dropLabel(constant(["a", "b"]), constant("c")).labels().fold()
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Collection"

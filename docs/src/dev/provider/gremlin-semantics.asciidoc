@@ -586,7 +586,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addvertex-step[reference
 
 *Description:* Adds one or more labels to an element.
 
-*Syntax:* `addLabel(String label, String... moreLabels)` | `addLabel(Traversal<?, String> labelTraversal)`
+*Syntax:* `addLabel(String label, String... moreLabels)` | `addLabel(Traversal<?, ?> labelTraversal, Traversal<?, ?>... moreLabelTraversals)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -598,7 +598,8 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addvertex-step[reference
 
 * `label` - The label to add.
 * `moreLabels` - Additional labels to add.
-* `labelTraversal` - A traversal that produces labels to add.
+* `labelTraversal` - The first (or only) traversal that produces a label to add.
+* `moreLabelTraversals` - Additional label-producing traversals (may be empty for single-traversal behavior).
 
 *Considerations:*
 
@@ -606,11 +607,16 @@ Label add and remove operations require a `LabelCardinality` that permits changi
 (`ONE_OR_MORE` or `ZERO_OR_MORE`). When `LabelCardinality` is `ONE`, the vertex's label is fixed at creation and
 cannot be added to or removed.
 Adding a label that already exists on the element is a no-op. The step returns the element (sideEffect semantics).
+Each traversal argument is iterated for a single result only. If exactly one traversal is provided and it produces
+a `Collection<String>`, the collection will be automatically unfolded into the set of labels added; if more than one
+traversal is provided, each must resolve to a single `String` label.
 
 *Exceptions*
 
 * If the graph's `LabelCardinality` does not permit label modification, an `IllegalStateException` will be thrown.
 * If any label argument is null or empty, an `IllegalArgumentException` will be thrown.
+* If more than one traversal is provided and any of them produces a `Collection`, an `IllegalArgumentException` will
+be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/AddLabelStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addlabel-step[reference]
@@ -619,7 +625,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addlabel-step[reference]
 
 *Description:* Removes one or more specific labels from an element, or removes all labels.
 
-*Syntax:* `dropLabel(String label, String... moreLabels)` | `dropLabel(Traversal<?, String> labelTraversal)` | `dropLabels()`
+*Syntax:* `dropLabel(String label, String... moreLabels)` | `dropLabel(Traversal<?, String> labelTraversal, Traversal<?, String>... moreLabelTraversals)` | `dropLabels()`
 
 [width="100%",options="header"]
 |=========================================================
@@ -631,7 +637,8 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addlabel-step[reference]
 
 * `label` - The label to remove.
 * `moreLabels` - Additional labels to remove.
-* `labelTraversal` - A traversal that produces labels to remove.
+* `labelTraversal` - The first (or only) traversal that produces a label to remove.
+* `moreLabelTraversals` - Additional label-producing traversals (may be empty for single-traversal behavior).
 
 *Considerations:*
 
@@ -639,11 +646,16 @@ Label add and remove operations require a `LabelCardinality` that permits changi
 (`ONE_OR_MORE` or `ZERO_OR_MORE`). Dropping a label that does not exist
 on the element is a no-op. `dropLabels()` removes all labels (only valid with `ZERO_OR_MORE`). The step returns the
 element (sideEffect semantics).
+Each traversal argument is iterated for a single result only. If exactly one traversal is provided and it produces
+a `Collection<String>`, the collection will be automatically unfolded into the set of labels removed; if more than
+one traversal is provided, each must resolve to a single `String` label.
 
 *Exceptions*
 
 * If the graph's `LabelCardinality` does not permit label modification, an `IllegalStateException` will be thrown.
 * If `dropLabel()` or `dropLabels()` would violate the minimum label count, an `IllegalStateException` will be thrown.
+* If more than one traversal is provided and any of them produces a `Collection`, an `IllegalArgumentException` will
+be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/DropLabelsStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#droplabel-step[reference]

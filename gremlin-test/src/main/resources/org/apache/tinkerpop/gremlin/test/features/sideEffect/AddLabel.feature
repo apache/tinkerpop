@@ -88,3 +88,65 @@ Feature: Step - addLabel()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Label mutation is not supported"
+
+  @MultiLabel
+  Scenario: g_V_addLabelXconstantXemployeeXX_labels_count
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person")
+      """
+    And the traversal of
+      """
+      g.V().addLabel(constant("employee")).labels().count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[2].l |
+
+  @MultiLabel
+  Scenario: g_V_addLabelXconstantXlistXa_bXXX_labels_count
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person")
+      """
+    And the traversal of
+      """
+      g.V().addLabel(constant(["a", "b"])).labels().count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[3].l |
+
+  @MultiLabel
+  Scenario: g_V_addLabelXconstantXaX_constantXbXX_labels_count
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person")
+      """
+    And the traversal of
+      """
+      g.V().addLabel(constant("a"), constant("b")).labels().count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[3].l |
+
+  @MultiLabel
+  Scenario: g_V_addLabelXconstantXlistXa_bXX_constantXcXX_labels
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person")
+      """
+    And the traversal of
+      """
+      g.V().addLabel(constant(["a", "b"]), constant("c")).labels().fold()
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Collection"

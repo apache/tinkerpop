@@ -44407,6 +44407,122 @@
         ]
     },
     {
+        "scenario": "g_V_addLabelXconstantXemployeeXX_labels_count",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\")",
+                "language": "g.addV(\"person\")",
+                "canonical": "g.addV(\"person\")",
+                "anonymized": "g.addV(string0)",
+                "dotnet": "g.AddV((string) \"person\")",
+                "go": "g.AddV(\"person\")",
+                "groovy": "g.addV(\"person\")",
+                "java": "g.addV(\"person\")",
+                "javascript": "g.addV(\"person\")",
+                "python": "g.add_v('person')"
+            },
+            {
+                "original": "g.V().addLabel(constant(\"employee\")).labels().count()",
+                "language": "g.V().addLabel(__.constant(\"employee\")).labels().count()",
+                "canonical": "g.V().addLabel(__.constant(\"employee\")).labels().count()",
+                "anonymized": "g.V().addLabel(__.constant(string0)).labels().count()",
+                "dotnet": "g.V().AddLabel(__.Constant<object>(\"employee\")).Labels().Count()",
+                "go": "g.V().AddLabel(gremlingo.T__.Constant(\"employee\")).Labels().Count()",
+                "groovy": "g.V().addLabel(__.constant(\"employee\")).labels().count()",
+                "java": "g.V().addLabel(__.constant(\"employee\")).labels().count()",
+                "javascript": "g.V().addLabel(__.constant(\"employee\")).labels().count()",
+                "python": "g.V().add_label(__.constant('employee')).labels().count()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_addLabelXconstantXlistXa_bXXX_labels_count",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\")",
+                "language": "g.addV(\"person\")",
+                "canonical": "g.addV(\"person\")",
+                "anonymized": "g.addV(string0)",
+                "dotnet": "g.AddV((string) \"person\")",
+                "go": "g.AddV(\"person\")",
+                "groovy": "g.addV(\"person\")",
+                "java": "g.addV(\"person\")",
+                "javascript": "g.addV(\"person\")",
+                "python": "g.add_v('person')"
+            },
+            {
+                "original": "g.V().addLabel(constant([\"a\", \"b\"])).labels().count()",
+                "language": "g.V().addLabel(__.constant([\"a\", \"b\"])).labels().count()",
+                "canonical": "g.V().addLabel(__.constant([\"a\", \"b\"])).labels().count()",
+                "anonymized": "g.V().addLabel(__.constant(list0)).labels().count()",
+                "dotnet": "g.V().AddLabel(__.Constant<object>(new List<object> { \"a\", \"b\" })).Labels().Count()",
+                "go": "g.V().AddLabel(gremlingo.T__.Constant([]interface{}{\"a\", \"b\"})).Labels().Count()",
+                "groovy": "g.V().addLabel(__.constant([\"a\", \"b\"])).labels().count()",
+                "java": "g.V().addLabel(__.constant(new ArrayList<Object>() {{ add(\"a\"); add(\"b\"); }})).labels().count()",
+                "javascript": "g.V().addLabel(__.constant([\"a\", \"b\"])).labels().count()",
+                "python": "g.V().add_label(__.constant(['a', 'b'])).labels().count()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_addLabelXconstantXaX_constantXbXX_labels_count",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\")",
+                "language": "g.addV(\"person\")",
+                "canonical": "g.addV(\"person\")",
+                "anonymized": "g.addV(string0)",
+                "dotnet": "g.AddV((string) \"person\")",
+                "go": "g.AddV(\"person\")",
+                "groovy": "g.addV(\"person\")",
+                "java": "g.addV(\"person\")",
+                "javascript": "g.addV(\"person\")",
+                "python": "g.add_v('person')"
+            },
+            {
+                "original": "g.V().addLabel(constant(\"a\"), constant(\"b\")).labels().count()",
+                "language": "g.V().addLabel(__.constant(\"a\"), __.constant(\"b\")).labels().count()",
+                "canonical": "g.V().addLabel(__.constant(\"a\"), __.constant(\"b\")).labels().count()",
+                "anonymized": "g.V().addLabel(__.constant(string0), __.constant(string1)).labels().count()",
+                "dotnet": "g.V().AddLabel(__.Constant<object>(\"a\"), __.Constant<object>(\"b\")).Labels().Count()",
+                "go": "g.V().AddLabel(gremlingo.T__.Constant(\"a\"), gremlingo.T__.Constant(\"b\")).Labels().Count()",
+                "groovy": "g.V().addLabel(__.constant(\"a\"), __.constant(\"b\")).labels().count()",
+                "java": "g.V().addLabel(__.constant(\"a\"), __.constant(\"b\")).labels().count()",
+                "javascript": "g.V().addLabel(__.constant(\"a\"), __.constant(\"b\")).labels().count()",
+                "python": "g.V().add_label(__.constant('a'), __.constant('b')).labels().count()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_addLabelXconstantXlistXa_bXX_constantXcXX_labels",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\")",
+                "language": "g.addV(\"person\")",
+                "canonical": "g.addV(\"person\")",
+                "anonymized": "g.addV(string0)",
+                "dotnet": "g.AddV((string) \"person\")",
+                "go": "g.AddV(\"person\")",
+                "groovy": "g.addV(\"person\")",
+                "java": "g.addV(\"person\")",
+                "javascript": "g.addV(\"person\")",
+                "python": "g.add_v('person')"
+            },
+            {
+                "original": "g.V().addLabel(constant([\"a\", \"b\"]), constant(\"c\")).labels().fold()",
+                "language": "g.V().addLabel(__.constant([\"a\", \"b\"]), __.constant(\"c\")).labels().fold()",
+                "canonical": "g.V().addLabel(__.constant([\"a\", \"b\"]), __.constant(\"c\")).labels().fold()",
+                "anonymized": "g.V().addLabel(__.constant(list0), __.constant(string0)).labels().fold()",
+                "dotnet": "g.V().AddLabel(__.Constant<object>(new List<object> { \"a\", \"b\" }), __.Constant<object>(\"c\")).Labels().Fold()",
+                "go": "g.V().AddLabel(gremlingo.T__.Constant([]interface{}{\"a\", \"b\"}), gremlingo.T__.Constant(\"c\")).Labels().Fold()",
+                "groovy": "g.V().addLabel(__.constant([\"a\", \"b\"]), __.constant(\"c\")).labels().fold()",
+                "java": "g.V().addLabel(__.constant(new ArrayList<Object>() {{ add(\"a\"); add(\"b\"); }}), __.constant(\"c\")).labels().fold()",
+                "javascript": "g.V().addLabel(__.constant([\"a\", \"b\"]), __.constant(\"c\")).labels().fold()",
+                "python": "g.V().add_label(__.constant(['a', 'b']), __.constant('c')).labels().fold()"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_valueXnameX_aggregateXxX_capXxX",
         "traversals": [
             {
@@ -45633,6 +45749,146 @@
                 "java": "g.V().hasLabel(\"person\").dropLabels()",
                 "javascript": "g.V().hasLabel(\"person\").dropLabels()",
                 "python": "g.V().has_label('person').drop_labels()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_dropLabelXconstantXaXX_labels",
+        "traversals": [
+            {
+                "original": "g.addV(\"a\", \"b\")",
+                "language": "g.addV(\"a\", \"b\")",
+                "canonical": "g.addV(\"a\", \"b\")",
+                "anonymized": "g.addV(string0, string1)",
+                "dotnet": "g.AddV((string) \"a\", (string) \"b\")",
+                "go": "g.AddV(\"a\", \"b\")",
+                "groovy": "g.addV(\"a\", \"b\")",
+                "java": "g.addV(\"a\", \"b\")",
+                "javascript": "g.addV(\"a\", \"b\")",
+                "python": "g.add_v('a', 'b')"
+            },
+            {
+                "original": "g.V().dropLabel(constant(\"a\")).labels().fold()",
+                "language": "g.V().dropLabel(__.constant(\"a\")).labels().fold()",
+                "canonical": "g.V().dropLabel(__.constant(\"a\")).labels().fold()",
+                "anonymized": "g.V().dropLabel(__.constant(string0)).labels().fold()",
+                "dotnet": "g.V().DropLabel(__.Constant<object>(\"a\")).Labels().Fold()",
+                "go": "g.V().DropLabel(gremlingo.T__.Constant(\"a\")).Labels().Fold()",
+                "groovy": "g.V().dropLabel(__.constant(\"a\")).labels().fold()",
+                "java": "g.V().dropLabel(__.constant(\"a\")).labels().fold()",
+                "javascript": "g.V().dropLabel(__.constant(\"a\")).labels().fold()",
+                "python": "g.V().drop_label(__.constant('a')).labels().fold()"
+            },
+            {
+                "original": "g.V().hasLabel(\"a\")",
+                "language": "g.V().hasLabel(\"a\")",
+                "canonical": "g.V().hasLabel(\"a\")",
+                "anonymized": "g.V().hasLabel(string0)",
+                "dotnet": "g.V().HasLabel(\"a\")",
+                "go": "g.V().HasLabel(\"a\")",
+                "groovy": "g.V().hasLabel(\"a\")",
+                "java": "g.V().hasLabel(\"a\")",
+                "javascript": "g.V().hasLabel(\"a\")",
+                "python": "g.V().has_label('a')"
+            },
+            {
+                "original": "g.V().hasLabel(\"b\")",
+                "language": "g.V().hasLabel(\"b\")",
+                "canonical": "g.V().hasLabel(\"b\")",
+                "anonymized": "g.V().hasLabel(string0)",
+                "dotnet": "g.V().HasLabel(\"b\")",
+                "go": "g.V().HasLabel(\"b\")",
+                "groovy": "g.V().hasLabel(\"b\")",
+                "java": "g.V().hasLabel(\"b\")",
+                "javascript": "g.V().hasLabel(\"b\")",
+                "python": "g.V().has_label('b')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_dropLabelXconstantXlistXa_bXXX_labels",
+        "traversals": [
+            {
+                "original": "g.addV(\"a\", \"b\", \"c\")",
+                "language": "g.addV(\"a\", \"b\", \"c\")",
+                "canonical": "g.addV(\"a\", \"b\", \"c\")",
+                "anonymized": "g.addV(string0, string1, string2)",
+                "dotnet": "g.AddV((string) \"a\", (string) \"b\", (string) \"c\")",
+                "go": "g.AddV(\"a\", \"b\", \"c\")",
+                "groovy": "g.addV(\"a\", \"b\", \"c\")",
+                "java": "g.addV(\"a\", \"b\", \"c\")",
+                "javascript": "g.addV(\"a\", \"b\", \"c\")",
+                "python": "g.add_v('a', 'b', 'c')"
+            },
+            {
+                "original": "g.V().dropLabel(constant([\"a\", \"b\"])).labels()",
+                "language": "g.V().dropLabel(__.constant([\"a\", \"b\"])).labels()",
+                "canonical": "g.V().dropLabel(__.constant([\"a\", \"b\"])).labels()",
+                "anonymized": "g.V().dropLabel(__.constant(list0)).labels()",
+                "dotnet": "g.V().DropLabel(__.Constant<object>(new List<object> { \"a\", \"b\" })).Labels()",
+                "go": "g.V().DropLabel(gremlingo.T__.Constant([]interface{}{\"a\", \"b\"})).Labels()",
+                "groovy": "g.V().dropLabel(__.constant([\"a\", \"b\"])).labels()",
+                "java": "g.V().dropLabel(__.constant(new ArrayList<Object>() {{ add(\"a\"); add(\"b\"); }})).labels()",
+                "javascript": "g.V().dropLabel(__.constant([\"a\", \"b\"])).labels()",
+                "python": "g.V().drop_label(__.constant(['a', 'b'])).labels()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_dropLabelXconstantXaX_constantXbXX_labels",
+        "traversals": [
+            {
+                "original": "g.addV(\"a\", \"b\", \"c\")",
+                "language": "g.addV(\"a\", \"b\", \"c\")",
+                "canonical": "g.addV(\"a\", \"b\", \"c\")",
+                "anonymized": "g.addV(string0, string1, string2)",
+                "dotnet": "g.AddV((string) \"a\", (string) \"b\", (string) \"c\")",
+                "go": "g.AddV(\"a\", \"b\", \"c\")",
+                "groovy": "g.addV(\"a\", \"b\", \"c\")",
+                "java": "g.addV(\"a\", \"b\", \"c\")",
+                "javascript": "g.addV(\"a\", \"b\", \"c\")",
+                "python": "g.add_v('a', 'b', 'c')"
+            },
+            {
+                "original": "g.V().dropLabel(constant(\"a\"), constant(\"b\")).labels()",
+                "language": "g.V().dropLabel(__.constant(\"a\"), __.constant(\"b\")).labels()",
+                "canonical": "g.V().dropLabel(__.constant(\"a\"), __.constant(\"b\")).labels()",
+                "anonymized": "g.V().dropLabel(__.constant(string0), __.constant(string1)).labels()",
+                "dotnet": "g.V().DropLabel(__.Constant<object>(\"a\"), __.Constant<object>(\"b\")).Labels()",
+                "go": "g.V().DropLabel(gremlingo.T__.Constant(\"a\"), gremlingo.T__.Constant(\"b\")).Labels()",
+                "groovy": "g.V().dropLabel(__.constant(\"a\"), __.constant(\"b\")).labels()",
+                "java": "g.V().dropLabel(__.constant(\"a\"), __.constant(\"b\")).labels()",
+                "javascript": "g.V().dropLabel(__.constant(\"a\"), __.constant(\"b\")).labels()",
+                "python": "g.V().drop_label(__.constant('a'), __.constant('b')).labels()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_dropLabelXconstantXlistXa_bXX_constantXcXX_labels",
+        "traversals": [
+            {
+                "original": "g.addV(\"a\", \"b\", \"c\")",
+                "language": "g.addV(\"a\", \"b\", \"c\")",
+                "canonical": "g.addV(\"a\", \"b\", \"c\")",
+                "anonymized": "g.addV(string0, string1, string2)",
+                "dotnet": "g.AddV((string) \"a\", (string) \"b\", (string) \"c\")",
+                "go": "g.AddV(\"a\", \"b\", \"c\")",
+                "groovy": "g.addV(\"a\", \"b\", \"c\")",
+                "java": "g.addV(\"a\", \"b\", \"c\")",
+                "javascript": "g.addV(\"a\", \"b\", \"c\")",
+                "python": "g.add_v('a', 'b', 'c')"
+            },
+            {
+                "original": "g.V().dropLabel(constant([\"a\", \"b\"]), constant(\"c\")).labels().fold()",
+                "language": "g.V().dropLabel(__.constant([\"a\", \"b\"]), __.constant(\"c\")).labels().fold()",
+                "canonical": "g.V().dropLabel(__.constant([\"a\", \"b\"]), __.constant(\"c\")).labels().fold()",
+                "anonymized": "g.V().dropLabel(__.constant(list0), __.constant(string0)).labels().fold()",
+                "dotnet": "g.V().DropLabel(__.Constant<object>(new List<object> { \"a\", \"b\" }), __.Constant<object>(\"c\")).Labels().Fold()",
+                "go": "g.V().DropLabel(gremlingo.T__.Constant([]interface{}{\"a\", \"b\"}), gremlingo.T__.Constant(\"c\")).Labels().Fold()",
+                "groovy": "g.V().dropLabel(__.constant([\"a\", \"b\"]), __.constant(\"c\")).labels().fold()",
+                "java": "g.V().dropLabel(__.constant(new ArrayList<Object>() {{ add(\"a\"); add(\"b\"); }}), __.constant(\"c\")).labels().fold()",
+                "javascript": "g.V().dropLabel(__.constant([\"a\", \"b\"]), __.constant(\"c\")).labels().fold()",
+                "python": "g.V().drop_label(__.constant(['a', 'b']), __.constant('c')).labels().fold()"
             }
         ]
     },

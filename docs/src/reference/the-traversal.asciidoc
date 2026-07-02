@@ -686,7 +686,8 @@ NOTE: When `LabelCardinality` is set to `ONE` (the default), calling `addLabel()
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addLabel(java.lang.String,java.lang.String...)++[`addLabel(String, String...)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addLabel(java.lang.String,java.lang.String...)++[`addLabel(String, String...)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addLabel(org.apache.tinkerpop.gremlin.process.traversal.Traversal,org.apache.tinkerpop.gremlin.process.traversal.Traversal...)++[`addLabel(Traversal, Traversal...)`]
 
 [[aggregate-step]]
 === [[store-step]]Aggregate Step
@@ -1849,6 +1850,7 @@ remove labels from vertices.
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dropLabel(java.lang.String,java.lang.String...)++[`dropLabel(String, String...)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dropLabel(org.apache.tinkerpop.gremlin.process.traversal.Traversal,org.apache.tinkerpop.gremlin.process.traversal.Traversal...)++[`dropLabel(Traversal, Traversal...)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dropLabels()++[`dropLabels()`]
 
 [[e-step]]

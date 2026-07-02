@@ -157,6 +157,56 @@ public class TraversalMethodVisitorTest {
     }
 
     @Test
+    public void shouldParseTraversalMethod_addLabel_String() throws Exception {
+        compare(g.V().addLabel("dog"), eval("g.V().addLabel(\"dog\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addLabel_MultipleLabels() throws Exception {
+        compare(g.V().addLabel("dog", "pet"), eval("g.V().addLabel(\"dog\",\"pet\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addLabel_Traversal() throws Exception {
+        compare(g.V().addLabel(constant("dog")), eval("g.V().addLabel(constant(\"dog\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addLabel_TraversalVarargs() throws Exception {
+        compare(g.V().addLabel(constant("a"), constant("b")), eval("g.V().addLabel(constant(\"a\"),constant(\"b\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addLabel_TraversalVarargsThree() throws Exception {
+        compare(g.V().addLabel(constant("a"), constant("b"), constant("c")), eval("g.V().addLabel(constant(\"a\"),constant(\"b\"),constant(\"c\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_dropLabel_String() throws Exception {
+        compare(g.V().dropLabel("dog"), eval("g.V().dropLabel(\"dog\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_dropLabel_MultipleLabels() throws Exception {
+        compare(g.V().dropLabel("dog", "pet"), eval("g.V().dropLabel(\"dog\",\"pet\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_dropLabel_Traversal() throws Exception {
+        compare(g.V().dropLabel(constant("dog")), eval("g.V().dropLabel(constant(\"dog\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_dropLabel_TraversalVarargs() throws Exception {
+        compare(g.V().dropLabel(constant("a"), constant("b")), eval("g.V().dropLabel(constant(\"a\"),constant(\"b\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_dropLabel_TraversalVarargsThree() throws Exception {
+        compare(g.V().dropLabel(constant("a"), constant("b"), constant("c")), eval("g.V().dropLabel(constant(\"a\"),constant(\"b\"),constant(\"c\"))"));
+    }
+
+    @Test
     public void shouldParseTraversalMethod_aggregate() throws Exception {
         compare(g.V().aggregate("test"), eval("g.V().aggregate('test')"));
     }

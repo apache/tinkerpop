@@ -1154,7 +1154,16 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_addLabel_Traversal(final GremlinParser.TraversalMethod_addLabel_TraversalContext ctx) {
-        return this.graphTraversal.addLabel(antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        final List<GremlinParser.NestedTraversalContext> traversalCtxs = ctx.nestedTraversal();
+        if (traversalCtxs.size() == 1) {
+            return this.graphTraversal.addLabel(antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(0)));
+        }
+        final Traversal<?, ?> firstTraversal = antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(0));
+        final Traversal<?, ?>[] moreTraversals = new Traversal[traversalCtxs.size() - 1];
+        for (int i = 1; i < traversalCtxs.size(); i++) {
+            moreTraversals[i - 1] = antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(i));
+        }
+        return this.graphTraversal.addLabel(firstTraversal, moreTraversals);
     }
 
     /**
@@ -1191,7 +1200,16 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_dropLabel_Traversal(final GremlinParser.TraversalMethod_dropLabel_TraversalContext ctx) {
-        return this.graphTraversal.dropLabel(antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        final List<GremlinParser.NestedTraversalContext> traversalCtxs = ctx.nestedTraversal();
+        if (traversalCtxs.size() == 1) {
+            return this.graphTraversal.dropLabel(antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(0)));
+        }
+        final Traversal<?, String> firstTraversal = antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(0));
+        final Traversal<?, String>[] moreTraversals = new Traversal[traversalCtxs.size() - 1];
+        for (int i = 1; i < traversalCtxs.size(); i++) {
+            moreTraversals[i - 1] = antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(i));
+        }
+        return this.graphTraversal.dropLabel(firstTraversal, moreTraversals);
     }
 
     /**

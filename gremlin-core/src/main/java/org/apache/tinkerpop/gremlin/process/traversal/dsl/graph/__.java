@@ -143,10 +143,10 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#addLabel(Traversal)
+     * @see GraphTraversal#addLabel(Traversal, Traversal...)
      */
-    public static <A extends Element> GraphTraversal<A, A> addLabel(final Traversal<?, ?> labelTraversal) {
-        return __.<A>start().addLabel(labelTraversal);
+    public static <A extends Element> GraphTraversal<A, A> addLabel(final Traversal<?, ?> labelTraversal, final Traversal<?, ?>... moreLabelTraversals) {
+        return __.<A>start().addLabel(labelTraversal, moreLabelTraversals);
     }
 
     /**
@@ -164,10 +164,10 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#dropLabel(Traversal)
+     * @see GraphTraversal#dropLabel(Traversal, Traversal...)
      */
-    public static <A extends Element> GraphTraversal<A, A> dropLabel(final Traversal<?, String> labelTraversal) {
-        return __.<A>start().dropLabel(labelTraversal);
+    public static <A extends Element> GraphTraversal<A, A> dropLabel(final Traversal<?, String> labelTraversal, final Traversal<?, String>... moreLabelTraversals) {
+        return __.<A>start().dropLabel(labelTraversal, moreLabelTraversals);
     }
 
     /**

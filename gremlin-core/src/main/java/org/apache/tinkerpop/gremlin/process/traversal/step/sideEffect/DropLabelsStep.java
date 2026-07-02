@@ -49,7 +49,7 @@ public class DropLabelsStep<S extends Element> extends SideEffectStep<S>
 
     private final boolean dropAll;
     private final String[] labels;
-    private Traversal.Admin<S, String> labelTraversal;
+    private List<Traversal.Admin<S, ?>> labelTraversals;
     private CallbackRegistry<Event.ElementLabelChangedEvent> callbackRegistry;
 
     /**
@@ -59,7 +59,7 @@ public class DropLabelsStep<S extends Element> extends SideEffectStep<S>
         super(traversal);
         this.dropAll = true;
         this.labels = null;
-        this.labelTraversal = null;
+        this.labelTraversals = null;
     }
 
     /**
@@ -72,17 +72,22 @@ public class DropLabelsStep<S extends Element> extends SideEffectStep<S>
         allLabels.add(label);
         allLabels.addAll(Arrays.asList(moreLabels));
         this.labels = allLabels.toArray(new String[0]);
-        this.labelTraversal = null;
+        this.labelTraversals = null;
     }
 
     /**
-     * Constructor for dropLabel(Traversal) - removes dynamically computed label.
+     * Constructor for one or more label traversals - removes dynamically computed label(s). If exactly one
+     * traversal is given and it produces a {@link java.util.Collection}, the collection is unfolded into the set
+     * of labels removed; otherwise each traversal must resolve to a single {@link String} label.
      */
-    public DropLabelsStep(final Traversal.Admin traversal, final Traversal.Admin<S, String> labelTraversal) {
+    public DropLabelsStep(final Traversal.Admin traversal, final List<Traversal.Admin<S, ?>> labelTraversals) {
         super(traversal);
         this.dropAll = false;
         this.labels = null;
-        this.labelTraversal = this.integrateChild(labelTraversal);
+        this.labelTraversals = new ArrayList<>(labelTraversals.size());
+        for (final Traversal.Admin<S, ?> t : labelTraversals) {
+            this.labelTraversals.add(this.integrateChild(t));
+        }
     }
 
     @Override
@@ -90,10 +95,10 @@ public class DropLabelsStep<S extends Element> extends SideEffectStep<S>
         final Element element = traverser.get();
         final Set<String> oldLabels = new LinkedHashSet<>(element.labels());
 
-        if (this.labelTraversal != null) {
-            final String label = TraversalUtil.apply(traverser, this.labelTraversal);
-            if (label != null) {
-                element.dropLabel(label);
+        if (this.labelTraversals != null) {
+            final Set<String> collectedLabels = TraversalUtil.resolveStringArguments(traverser, this.labelTraversals);
+            for (final String l : collectedLabels) {
+                if (l != null) element.dropLabel(l);
             }
         } else if (this.dropAll) {
             element.dropLabels();
@@ -122,7 +127,7 @@ public class DropLabelsStep<S extends Element> extends SideEffectStep<S>
     @Override
     public String toString() {
         if (this.dropAll) return StringFactory.stepString(this);
-        return StringFactory.stepString(this, this.labels != null ? Arrays.asList(this.labels) : this.labelTraversal);
+        return StringFactory.stepString(this, this.labels != null ? Arrays.asList(this.labels) : this.labelTraversals);
     }
 
     @Override
@@ -130,27 +135,32 @@ public class DropLabelsStep<S extends Element> extends SideEffectStep<S>
         int result = super.hashCode();
         result ^= Boolean.hashCode(this.dropAll);
         if (this.labels != null) result ^= Arrays.hashCode(this.labels);
-        if (this.labelTraversal != null) result ^= this.labelTraversal.hashCode();
+        if (this.labelTraversals != null) result ^= this.labelTraversals.hashCode();
         return result;
     }
 
     @Override
-    public List<Traversal.Admin<S, String>> getLocalChildren() {
-        return this.labelTraversal != null ? Collections.singletonList(this.labelTraversal) : Collections.emptyList();
+    public List<Traversal.Admin<S, ?>> getLocalChildren() {
+        return this.labelTraversals != null ? Collections.unmodifiableList(this.labelTraversals) : Collections.emptyList();
     }
 
     @Override
     public DropLabelsStep<S> clone() {
         final DropLabelsStep<S> clone = (DropLabelsStep<S>) super.clone();
-        if (this.labelTraversal != null)
-            clone.labelTraversal = this.labelTraversal.clone();
+        if (this.labelTraversals != null) {
+            clone.labelTraversals = new ArrayList<>(this.labelTraversals.size());
+            for (final Traversal.Admin<S, ?> t : this.labelTraversals) {
+                clone.labelTraversals.add(t.clone());
+            }
+        }
         return clone;
     }
 
     @Override
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
-        if (this.labelTraversal != null)
-            this.integrateChild(this.labelTraversal);
+        if (this.labelTraversals != null) {
+            this.labelTraversals.forEach(this::integrateChild);
+        }
     }
 }
