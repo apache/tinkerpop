@@ -36,7 +36,7 @@ RUN dos2unix /opt/docker-entrypoint.sh /opt/gremlin-server/bin/gremlin-server.sh
 ARG GREMLIN_SERVER
 ENV GREMLIN_SERVER_VERSION=$GREMLIN_SERVER
 
-EXPOSE 45940-45942 4588
+EXPOSE 45940 45941
 
 ENTRYPOINT ["/opt/docker-entrypoint.sh"]
 CMD []

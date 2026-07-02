@@ -61,7 +61,7 @@ echo "Using Gremlin Server $GREMLIN_SERVER_VERSION"
 sed -e "s/GREMLIN_SERVER_VERSION\$/${GREMLIN_SERVER_VERSION}/" docker/gremlin-server/Dockerfile.template > Dockerfile
 
 docker build -t tinkerpop:${BUILD_TAG} .
-docker run ${TINKERPOP_TEST_DOCKER_OPTS} ${REMOVE_CONTAINER} -p 45940:45940 -p 45941:45941 -p 45942:45942 -p 4588:4588 -h gremlin-server-test -v "${HOME}"/.groovy:/root/.groovy \
+docker run ${TINKERPOP_TEST_DOCKER_OPTS} ${REMOVE_CONTAINER} -p 45940:45940 -p 45941:45941 -h gremlin-server-test -v "${HOME}"/.groovy:/root/.groovy \
     -v "${HOME}"/.m2:/root/.m2 -v ${ABS_PROJECT_HOME}/gremlin-test/target:/opt/gremlin-test -ti tinkerpop:${BUILD_TAG} ${@}
 
 status=$?
