@@ -248,7 +248,7 @@ public class AddVertexStepTest extends GValueStepTest {
     public void shouldDefaultTheLabelIfNullTraversal() {
         final Traversal.Admin t = mock(Traversal.Admin.class);
         when(t.getTraverserSetSupplier()).thenReturn(TraverserSetSupplier.instance());
-        final AddVertexStartStep starStep = new AddVertexStartStep(t, (Traversal<?, String>) null);
+        final AddVertexStartStep starStep = new AddVertexStartStep(t, (Traversal<?, ?>) null);
         assertEquals(Vertex.DEFAULT_LABEL, starStep.getLabel());
         final AddVertexStep step = new AddVertexStep(t, (String) null);
         assertEquals(Vertex.DEFAULT_LABEL, starStep.getLabel());

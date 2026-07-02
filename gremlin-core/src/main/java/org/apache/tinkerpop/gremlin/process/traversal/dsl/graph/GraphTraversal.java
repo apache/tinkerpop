@@ -1491,16 +1491,39 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Adds a {@link Vertex} with a vertex label determined by a {@link Traversal}.
+     * Adds a {@link Vertex} with one or more labels each determined by a {@link Traversal}.
+     * <p>
+     * When called with a single traversal ({@code more} is empty), the traversal is iterated for a single result
+     * following the {@code by()} modulation pattern. If the result is a {@link java.util.Collection}, its elements
+     * are spread into the label set (collection-spread behavior).
+     * <p>
+     * When called with multiple traversals (2+), each traversal is iterated for a single scalar String result.
+     * The results form the ordered label set. A non-String, null, or Collection result in the multi-traversal
+     * case is an error.
      *
+     * @param first the first (or only) label traversal
+     * @param more  additional label traversals (may be empty for single-traversal behavior)
      * @return the traversal with the {@link AddVertexStepContract} added
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step" target="_blank">Reference Documentation - AddVertex Step</a>
-     * @since 3.3.1
+     * @since 4.0.0
      */
-    public default GraphTraversal<S, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
-        if (null == vertexLabelTraversal) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
-        this.asAdmin().getGremlinLang().addStep(Symbols.addV, vertexLabelTraversal);
-        return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), vertexLabelTraversal.asAdmin()));
+    public default GraphTraversal<S, Vertex> addV(final Traversal<?, ?> first, final Traversal<?, ?>... more) {
+        if (null == first) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
+        for (final Traversal<?, ?> t : more) {
+            if (null == t) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
+        }
+        if (more.length == 0) {
+            this.asAdmin().getGremlinLang().addStep(Symbols.addV, first);
+            return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), first.asAdmin()));
+        } else {
+            this.asAdmin().getGremlinLang().addStep(Symbols.addV, first, more);
+            final List<Traversal.Admin<?, ?>> allTraversals = new ArrayList<>(more.length + 1);
+            allTraversals.add(first.asAdmin());
+            for (final Traversal<?, ?> t : more) {
+                allTraversals.add(t.asAdmin());
+            }
+            return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), allTraversals));
+        }
     }
 
     /**
@@ -3673,13 +3696,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     /**
      * Adds dynamically computed labels to the current element. This is a side-effect step that passes the
-     * element through unchanged.
+     * element through unchanged. The traversal is iterated for a single result following the {@code by()} modulation
+     * pattern. If the result is a {@link java.util.Collection}, its elements are spread into the label set.
      *
      * @param labelTraversal the traversal that produces labels to add
      * @return the traversal with an appended {@link AddLabelStep}
      * @since 4.0.0
      */
-    public default GraphTraversal<S, E> addLabel(final Traversal<?, String> labelTraversal) {
+    public default GraphTraversal<S, E> addLabel(final Traversal<?, ?> labelTraversal) {
         this.asAdmin().getGremlinLang().addStep(Symbols.addLabel, labelTraversal);
         return this.asAdmin().addStep((AddLabelStep) new AddLabelStep(this.asAdmin(), labelTraversal.asAdmin()));
     }

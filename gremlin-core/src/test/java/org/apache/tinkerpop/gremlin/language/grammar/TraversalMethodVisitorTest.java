@@ -133,6 +133,30 @@ public class TraversalMethodVisitorTest {
     }
 
     @Test
+    public void shouldParseTraversalMethod_addV_TraversalVarargs() throws Exception {
+        // mid-traversal multi-label addV with traversal varargs
+        compare(g.V().addV(constant("a"), constant("b")), eval("g.V().addV(constant(\"a\"),constant(\"b\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addV_TraversalVarargsThree() throws Exception {
+        // mid-traversal multi-label addV with three traversals
+        compare(g.V().addV(constant("a"), constant("b"), constant("c")), eval("g.V().addV(constant(\"a\"),constant(\"b\"),constant(\"c\"))"));
+    }
+
+    @Test
+    public void shouldParseSourceSpawnMethod_addV_TraversalVarargs() throws Exception {
+        // source-spawned multi-label addV with traversal varargs
+        compare(g.addV(constant("a"), constant("b")), eval("g.addV(constant(\"a\"),constant(\"b\"))"));
+    }
+
+    @Test
+    public void shouldParseSourceSpawnMethod_addV_TraversalVarargsThree() throws Exception {
+        // source-spawned multi-label addV with three traversals
+        compare(g.addV(constant("a"), constant("b"), constant("c")), eval("g.addV(constant(\"a\"),constant(\"b\"),constant(\"c\"))"));
+    }
+
+    @Test
     public void shouldParseTraversalMethod_aggregate() throws Exception {
         compare(g.V().aggregate("test"), eval("g.V().aggregate('test')"));
     }

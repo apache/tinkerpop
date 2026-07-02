@@ -113,21 +113,17 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_addV_String(final GremlinParser.TraversalMethod_addV_StringContext ctx) {
-        final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(ctx.stringArgument());
-        if (GValue.valueInstanceOf(literalOrVar, String.class)) {
-            return this.graphTraversal.addV((GValue<String>) literalOrVar);
-        } else {
-            return this.graphTraversal.addV((String) literalOrVar);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public GraphTraversal visitTraversalMethod_addV_StringVarargs(final GremlinParser.TraversalMethod_addV_StringVarargsContext ctx) {
         final List<GremlinParser.StringArgumentContext> args = ctx.stringArgument();
-        // Check if any arguments are GValue - if so, use the GValue-aware overload
+        if (args.size() == 1) {
+            // Single string argument
+            final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(args.get(0));
+            if (GValue.valueInstanceOf(literalOrVar, String.class)) {
+                return this.graphTraversal.addV((GValue<String>) literalOrVar);
+            } else {
+                return this.graphTraversal.addV((String) literalOrVar);
+            }
+        }
+        // Multiple string arguments: addV("a", "b", ...)
         final List<Object> allArgs = new ArrayList<>(args.size());
         boolean hasGValue = false;
         for (final GremlinParser.StringArgumentContext arg : args) {
@@ -229,7 +225,17 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_addV_Traversal(final GremlinParser.TraversalMethod_addV_TraversalContext ctx) {
-        return this.graphTraversal.addV(antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        final List<GremlinParser.NestedTraversalContext> traversalCtxs = ctx.nestedTraversal();
+        if (traversalCtxs.size() == 1) {
+            return this.graphTraversal.addV(antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(0)));
+        }
+        // Multiple traversal arguments: addV(t1, t2, ...)
+        final Traversal<?, ?> firstTraversal = antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(0));
+        final Traversal<?, ?>[] moreTraversals = new Traversal[traversalCtxs.size() - 1];
+        for (int i = 1; i < traversalCtxs.size(); i++) {
+            moreTraversals[i - 1] = antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(i));
+        }
+        return this.graphTraversal.addV(firstTraversal, moreTraversals);
     }
 
     /**

@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-@StepClassSideEffect @StepAddLabel @MultiLabel
+@StepClassSideEffect @StepAddLabel
 Feature: Step - addLabel()
 
   @MultiLabel
@@ -75,6 +75,16 @@ Feature: Step - addLabel()
     And the traversal of
       """
       g.E().addLabel("friend").labels().fold()
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Label mutation is not supported"
+
+  @GraphComputerVerificationStrategyNotSupported
+  Scenario: g_V_addLabelXemployeeX_single_label_graph
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").addLabel("employee")
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Label mutation is not supported"

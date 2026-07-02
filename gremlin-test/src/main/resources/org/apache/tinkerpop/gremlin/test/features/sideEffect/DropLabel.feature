@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-@StepClassSideEffect @StepDropLabel @MultiLabel
+@StepClassSideEffect @StepDropLabel
 Feature: Step - dropLabel() / dropLabels()
 
   @MultiLabel
@@ -122,3 +122,23 @@ Feature: Step - dropLabel() / dropLabels()
       | result |
       | a |
       | b |
+
+  @GraphComputerVerificationStrategyNotSupported
+  Scenario: g_V_dropLabelXpersonX_single_label_graph
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").dropLabel("person")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Label mutation is not supported"
+
+  @GraphComputerVerificationStrategyNotSupported
+  Scenario: g_V_dropLabels_single_label_graph
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").dropLabels()
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Label mutation is not supported"

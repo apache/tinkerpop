@@ -84,6 +84,7 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_addV(final GremlinParser.TraversalSourceSpawnMethod_addVContext ctx) {
         final List<GremlinParser.StringArgumentContext> stringArgs = ctx.stringArgument();
+        final List<GremlinParser.NestedTraversalContext> traversalArgs = ctx.nestedTraversal();
         if (stringArgs != null && !stringArgs.isEmpty()) {
             if (stringArgs.size() == 1) {
                 final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(stringArgs.get(0));
@@ -124,8 +125,18 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
                     return this.traversalSource.addV(firstLabel, moreLabels);
                 }
             }
-        } else if (ctx.nestedTraversal() != null) {
-            return this.traversalSource.addV(anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));
+        } else if (traversalArgs != null && !traversalArgs.isEmpty()) {
+            if (traversalArgs.size() == 1) {
+                return this.traversalSource.addV(anonymousVisitor.visitNestedTraversal(traversalArgs.get(0)));
+            } else {
+                // Multi-traversal: addV(t1, t2, ...)
+                final Traversal<?, ?> firstTraversal = anonymousVisitor.visitNestedTraversal(traversalArgs.get(0));
+                final Traversal<?, ?>[] moreTraversals = new Traversal[traversalArgs.size() - 1];
+                for (int i = 1; i < traversalArgs.size(); i++) {
+                    moreTraversals[i - 1] = anonymousVisitor.visitNestedTraversal(traversalArgs.get(i));
+                }
+                return this.traversalSource.addV(firstTraversal, moreTraversals);
+            }
         } else {
             return this.traversalSource.addV();
         }

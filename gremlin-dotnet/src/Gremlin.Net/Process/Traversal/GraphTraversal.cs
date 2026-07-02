@@ -176,9 +176,21 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the addV step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, Vertex> AddV (string vertexLabel)
+        public GraphTraversal<TStart, Vertex> AddV (string label, params string[] additionalLabels)
         {
-            GremlinLang.AddStep("addV", vertexLabel);
+            if (label == null) throw new ArgumentNullException(nameof(label));
+            if (additionalLabels == null) throw new ArgumentNullException(nameof(additionalLabels));
+
+            if (additionalLabels.Length == 0)
+            {
+                GremlinLang.AddStep("addV", label);
+            }
+            else
+            {
+                var args = new List<object>(1 + additionalLabels.Length) { label };
+                args.AddRange(additionalLabels);
+                GremlinLang.AddStep("addV", args.ToArray());
+            }
             return Wrap<TStart, Vertex>(this);
         }
 
@@ -194,24 +206,21 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the addV step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, Vertex> AddV (ITraversal vertexLabelTraversal)
+        public GraphTraversal<TStart, Vertex> AddV (ITraversal label, params ITraversal[] additionalLabels)
         {
-            GremlinLang.AddStep("addV", vertexLabelTraversal);
-            return Wrap<TStart, Vertex>(this);
-        }
+            if (label == null) throw new ArgumentNullException(nameof(label));
+            if (additionalLabels == null) throw new ArgumentNullException(nameof(additionalLabels));
 
-        /// <summary>
-        ///     Adds the addV step with multiple labels to this <see cref="GraphTraversal{SType, EType}" />.
-        /// </summary>
-        public GraphTraversal<TStart, Vertex> AddV (string label1, string label2, params string[] moreLabels)
-        {
-            if (label1 == null) throw new ArgumentNullException(nameof(label1));
-            if (label2 == null) throw new ArgumentNullException(nameof(label2));
-            if (moreLabels == null) throw new ArgumentNullException(nameof(moreLabels));
-
-            var args = new List<object>(2 + moreLabels.Length) { label1, label2 };
-            args.AddRange(moreLabels);
-            GremlinLang.AddStep("addV", args.ToArray());
+            if (additionalLabels.Length == 0)
+            {
+                GremlinLang.AddStep("addV", label);
+            }
+            else
+            {
+                var args = new List<object>(1 + additionalLabels.Length) { label };
+                args.AddRange(additionalLabels);
+                GremlinLang.AddStep("addV", args.ToArray());
+            }
             return Wrap<TStart, Vertex>(this);
         }
 

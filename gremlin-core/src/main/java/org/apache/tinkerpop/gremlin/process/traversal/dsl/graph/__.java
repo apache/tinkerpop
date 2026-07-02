@@ -145,7 +145,7 @@ public class __ {
     /**
      * @see GraphTraversal#addLabel(Traversal)
      */
-    public static <A extends Element> GraphTraversal<A, A> addLabel(final Traversal<?, String> labelTraversal) {
+    public static <A extends Element> GraphTraversal<A, A> addLabel(final Traversal<?, ?> labelTraversal) {
         return __.<A>start().addLabel(labelTraversal);
     }
 
@@ -716,10 +716,10 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#addV(org.apache.tinkerpop.gremlin.process.traversal.Traversal)
+     * @see GraphTraversal#addV(Traversal, Traversal...)
      */
-    public static <A> GraphTraversal<A, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
-        return __.<A>start().addV(vertexLabelTraversal);
+    public static <A> GraphTraversal<A, Vertex> addV(final Traversal<?, ?> first, final Traversal<?, ?>... more) {
+        return __.<A>start().addV(first, more);
     }
 
     /**

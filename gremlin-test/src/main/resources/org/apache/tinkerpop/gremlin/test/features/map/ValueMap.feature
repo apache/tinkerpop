@@ -237,7 +237,7 @@ Feature: Step - valueMap()
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").addLabel("employee").property("name", "marko")
+      g.addV("person").property("name", "marko")
       """
     And the traversal of
       """
@@ -295,3 +295,67 @@ Feature: Step - valueMap()
     Then the result should be unordered
       | result |
       | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": ["marko"]}] |
+
+  @MultiLabel
+  Scenario: g_withXsinglelabelX_V_valueMapXtrueX_zero_label_vertex
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV().property("name", "nobody")
+      """
+    And the traversal of
+      """
+      g.with("singlelabel").V().valueMap(true)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[nobody].id", "name": ["nobody"]}] |
+
+  @MultiLabel
+  Scenario: g_withXmultilabelX_V_valueMapXtrueX_zero_label_vertex
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV().property("name", "nobody")
+      """
+    And the traversal of
+      """
+      g.with("multilabel").V().valueMap(true)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[nobody].id", "t[label]": "s[]", "name": ["nobody"]}] |
+
+  @MultiLabel @MultiLabelDefault
+  Scenario: g_V_valueMapXtrueX_zero_label_vertex_multi_label_default
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV().property("name", "nobody")
+      """
+    And the traversal of
+      """
+      g.V().valueMap(true)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[nobody].id", "t[label]": "s[]", "name": ["nobody"]}] |
+
+  @MultiLabel @SingleLabelDefault
+  Scenario: g_V_valueMapXtrueX_zero_label_vertex_single_label_default
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV().property("name", "nobody")
+      """
+    And the traversal of
+      """
+      g.V().valueMap(true)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[nobody].id", "name": ["nobody"]}] |
