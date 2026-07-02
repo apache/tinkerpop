@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -63,7 +64,19 @@ public class StandardVerificationStrategyTest {
                 {repeat(out().values("age").inject(10)).times(2), false},
                 {repeat(out().choose(constant(true), inject(1), inject(2))).times(5), false},
                 {__.V().profile(), true},
-                {__.V().profile("metrics").cap("metrics"), true}
+                {__.V().profile("metrics").cap("metrics"), true},
+
+                // labels().drop() patterns should REJECT
+                {__.labels().drop(), false},
+                {__.labels().is("x").drop(), false},
+                {__.labels().where(P.eq("x")).drop(), false},
+                {__.labels().not(__.is("x")).drop(), false},
+
+                // labels() patterns that should ALLOW (no direct labels->drop path)
+                {__.V().drop(), true},
+                {__.properties().drop(), true},
+                {__.labels().map(__.constant("x")).drop(), true},
+                {__.labels().order().drop(), true},
         });
     }
 

@@ -26,6 +26,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ReadOnlyTraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
@@ -95,6 +98,22 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
                 }
             }
 
+        }
+
+        // Reject labels().drop() patterns — users should use dropLabel(label) or dropLabels() instead
+        for (final DropStep<?> dropStep : TraversalHelper.getStepsOfClass(DropStep.class, traversal)) {
+            Step<?, ?> current = dropStep.getPreviousStep();
+
+            // Walk backward through filter steps (IsStep, HasStep, WhereStep, NotStep, etc.)
+            while (current instanceof FilterStep) {
+                current = current.getPreviousStep();
+            }
+
+            if (current instanceof LabelsStep) {
+                throw new VerificationException(
+                        "labels().drop() is not supported. Use dropLabel(label) or dropLabels() instead.",
+                        traversal);
+            }
         }
 
         // The ProfileSideEffectStep must be one of the following

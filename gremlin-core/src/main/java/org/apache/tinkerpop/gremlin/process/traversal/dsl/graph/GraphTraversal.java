@@ -1467,7 +1467,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * When called with multiple labels, creates a multi-labeled vertex using the set-based
      * constructor.
      *
-     * @param label the label (or only) label of the {@link Vertex} to add
+     * @param label the first (or only) label of the {@link Vertex} to add
      * @param additionalLabels  additional labels (may be empty for single-label)
      * @return the traversal with the {@link AddVertexStepContract} added
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step" target="_blank">Reference Documentation - AddVertex Step</a>
@@ -1492,20 +1492,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     /**
      * Adds a {@link Vertex} with one or more labels each determined by a {@link Traversal}.
-     * <p>
-     * When called with a single traversal ({@code more} is empty), the traversal is iterated for a single result
-     * following the {@code by()} modulation pattern. If the result is a {@link java.util.Collection}, its elements
-     * are spread into the label set (collection-spread behavior).
-     * <p>
-     * When called with multiple traversals (2+), each traversal is iterated for a single scalar String result.
-     * The results form the ordered label set. A non-String, null, or Collection result in the multi-traversal
-     * case is an error.
+     *
+     * Each traversal is iterated for a single result only. If exactly one {@link Traversal} is provided,
+     * and it produces a {@link Collection<String>}, the collection will be automatically unfolded.
      *
      * @param first the first (or only) label traversal
      * @param more  additional label traversals (may be empty for single-traversal behavior)
      * @return the traversal with the {@link AddVertexStepContract} added
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step" target="_blank">Reference Documentation - AddVertex Step</a>
-     * @since 4.0.0
+     * @since 3.3.1
      */
     public default GraphTraversal<S, Vertex> addV(final Traversal<?, ?> first, final Traversal<?, ?>... more) {
         if (null == first) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
@@ -3696,8 +3691,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     /**
      * Adds dynamically computed labels to the current element. This is a side-effect step that passes the
-     * element through unchanged. The traversal is iterated for a single result following the {@code by()} modulation
-     * pattern. If the result is a {@link java.util.Collection}, its elements are spread into the label set.
+     * element through unchanged. If the result is a {@link java.util.Collection}, its elements are spread
+     * into the label set.
      *
      * @param labelTraversal the traversal that produces labels to add
      * @return the traversal with an appended {@link AddLabelStep}
@@ -3705,7 +3700,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> addLabel(final Traversal<?, ?> labelTraversal) {
         this.asAdmin().getGremlinLang().addStep(Symbols.addLabel, labelTraversal);
-        return this.asAdmin().addStep((AddLabelStep) new AddLabelStep(this.asAdmin(), labelTraversal.asAdmin()));
+        return this.asAdmin().addStep((AddLabelStep) new AddLabelStep<>(this.asAdmin(), labelTraversal.asAdmin()));
     }
 
     /**
