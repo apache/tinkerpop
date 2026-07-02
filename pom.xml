@@ -162,16 +162,16 @@ limitations under the License.
         <commons.text.version>1.15.0</commons.text.version>
         <cucumber.version>7.21.1</cucumber.version>
         <exp4j.version>0.4.8</exp4j.version>
-        <groovy.version>4.0.25</groovy.version>
+        <groovy.version>4.0.32</groovy.version>
         <guice.version>4.2.3</guice.version>
-        <hadoop.version>3.3.3</hadoop.version>
+        <hadoop.version>3.4.3</hadoop.version>
         <hamcrest.version>3.0</hamcrest.version>
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>3.3.1</javadoc-plugin.version>
         <javapoet.version>1.13.0</javapoet.version>
         <jbcrypt.version>0.4</jbcrypt.version>
         <junit.version>4.13.1</junit.version>
-        <kerby.version>2.0.1</kerby.version>
+        <kerby.version>2.0.3</kerby.version>
         <logback.version>1.2.13</logback.version>
         <metrics.version>3.0.2</metrics.version>
         <mockito.version>5.19.0</mockito.version>
@@ -253,7 +253,7 @@ limitations under the License.
                             <rules>
                                 <DependencyConvergence/>
                                 <requireJavaVersion>
-                                    <version>[11,18)</version>
+                                    <version>[11,26)</version>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>[3.5.3,)</version>
@@ -770,6 +770,13 @@ limitations under the License.
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
                 <version>${caffeine.version}</version>
+            </dependency>
+            <!-- xnio-api (pulled in transitively by the Kerby test KDC's kerb-admin) references conflicting
+                 wildfly-common versions; pin to the newer one so dependency convergence is satisfied -->
+            <dependency>
+                <groupId>org.wildfly.common</groupId>
+                <artifactId>wildfly-common</artifactId>
+                <version>1.5.4.Final</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
