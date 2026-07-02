@@ -1819,7 +1819,7 @@ NOTE: With `LabelCardinality.ONE_OR_MORE`, `dropLabels()` always throws and `dro
 leave the element with zero labels.
 
 IMPORTANT: Do not confuse `dropLabel()` with `labels().drop()`. The latter attempts to drop the string traversers
-emitted by `labels()` and is blocked by the `LabelsDropVerificationStrategy`. Use `dropLabel()` or `dropLabels()` to
+emitted by `labels()` and is blocked by the `StandardVerificationStrategy`. Use `dropLabel()` or `dropLabels()` to
 remove labels from vertices.
 
 *Additional References*

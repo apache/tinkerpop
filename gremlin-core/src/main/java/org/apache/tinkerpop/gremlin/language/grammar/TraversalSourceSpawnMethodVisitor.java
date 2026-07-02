@@ -101,7 +101,7 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
                     }
                 }
                 if (hasGValue) {
-                    // Use GValue-aware multi-label overload: addV(first, more...)
+                    // Use GValue-aware multi-label overload: addV(label, additionalLabels...)
                     final GValue<String> firstLabel = allArgs.get(0) instanceof GValue ?
                             (GValue<String>) allArgs.get(0) : GValue.of((String) allArgs.get(0));
                     final GValue<String>[] moreLabels = new GValue[allArgs.size() - 1];
@@ -111,7 +111,7 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
                     }
                     return this.traversalSource.addV(firstLabel, moreLabels);
                 } else {
-                    // All plain strings: addV(first, more...)
+                    // All plain strings: addV(label, additionalLabels...)
                     final String firstLabel = (String) allArgs.get(0);
                     final String[] moreLabels = new String[allArgs.size() - 1];
                     for (int i = 1; i < allArgs.size(); i++) {

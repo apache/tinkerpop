@@ -49,7 +49,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `addLabel()` and `dropLabel()`/`dropLabels()` steps for vertex label mutation.
 * Added `LabelCardinalityValidator` utility for constraint enforcement separated from the `LabelCardinality` enum.
 * Added `with("multilabel")` source configuration for `elementMap()` and `valueMap()` to return labels as a set.
-* Added `LabelsDropVerificationStrategy` to prevent accidental `labels().drop()` usage.
+* Added `labels().drop()` rejection to `StandardVerificationStrategy` to prevent accidental usage.
 * Added multi-label syntax to `addV()` and `mergeV()` with append-only `onMatch` semantics.
 * Added typed numeric wrappers and `preciseNumbers` connection option to `gremlin-javascript` for explicit control over numeric type serialization and deserialization.
 * Added `NextN(n)` to `Traversal` in `gremlin-go` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs, and updated the Go translators in `gremlin-core` and `gremlin-javascript` to emit `NextN(n)` for the batched form.
