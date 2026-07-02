@@ -3700,7 +3700,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> addLabel(final Traversal<?, ?> labelTraversal) {
         this.asAdmin().getGremlinLang().addStep(Symbols.addLabel, labelTraversal);
-        return this.asAdmin().addStep((AddLabelStep) new AddLabelStep<>(this.asAdmin(), labelTraversal.asAdmin()));
+        return this.asAdmin().addStep((AddLabelStep) new AddLabelStep(this.asAdmin(), labelTraversal.asAdmin()));
     }
 
     /**
