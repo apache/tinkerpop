@@ -1,5 +1,9 @@
 name: build-test
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore:
+      - dependabot/**
+  pull_request:
 env:
   # modules commonly excluded from builds as they have their own independent non-JVM setups and can be run in parallel.
   # take care when modifying this list because GLVs use shell commands to remove themselves from this list and
