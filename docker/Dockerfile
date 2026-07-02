@@ -29,7 +29,7 @@ RUN apt-get install apt-transport-https gnupg ca-certificates
 RUN sh -c 'echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | tee /etc/apt/sources.list.d/mono-official-stable.list'
 RUN apt-get update
 
-RUN apt-get install -y openjdk-11-jdk gawk git maven openssh-server subversion zip
+RUN apt-get install -y openjdk-17-jdk gawk git maven openssh-server subversion zip
 RUN apt-get install -y --force-yes dotnet-sdk-8.0 mono-devel
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -43,7 +43,7 @@ RUN python3 -m pip install --upgrade pip
 RUN pip install virtualenv
 RUN pip install virtualenvwrapper --no-deps
 
-RUN rm -rf /var/lib/apt/lists/* /var/cache/openjdk-11-jdk
+RUN rm -rf /var/lib/apt/lists/* /var/cache/openjdk-17-jdk
 
 RUN sed -i 's@PermitRootLogin without-password@PermitRootLogin yes@' /etc/ssh/sshd_config
 RUN sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuuid.so@g' /etc/pam.d/sshd

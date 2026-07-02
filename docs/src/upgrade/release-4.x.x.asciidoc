@@ -117,6 +117,19 @@ overridden per-request. The `DriverRemoteConnection` traversal path defaults to 
 
 See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
 
+==== Java 17 Required; Java 25 Supported
+
+TinkerPop 4.0 raises the minimum Java version from 11 to 17 for both building and running, and adds support for running
+on Java 25. *(breaking)* Supporting Java 25 required upgrading Groovy to 4.0.32 (whose bundled ASM can parse Java 25
+bytecode) and Hadoop to 3.4.3 (which moved off the `Subject.getSubject()` API that was removed along with the Security
+Manager). Spark was upgraded to 4.1.x, built on Scala 2.13 — the first Spark line that supports Java 25. Because Spark 4
+requires Java 17 as its minimum, and `spark-gremlin` is part of the build, the project-wide minimum is now Java 17.
+Netty was upgraded to 4.2.x as required by Spark 4.
+
+As with the earlier JDK 17 support, some libraries still rely on deep reflection (most notably the Kryo serialization
+library used with OLAP), so it may be necessary to `--add-opens` or `--add-exports` certain modules at runtime. The set
+of options used by TinkerPop's own tests is unchanged.
+
 ==== Standardizing Python Connection Options
 
 TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In `gremlin-python`, several

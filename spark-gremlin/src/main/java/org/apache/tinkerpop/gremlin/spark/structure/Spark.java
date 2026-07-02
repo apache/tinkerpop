@@ -23,7 +23,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.rdd.RDD;
-import scala.collection.JavaConversions;
+import scala.jdk.javaapi.CollectionConverters;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -108,7 +108,7 @@ public class Spark {
             recreateStopped();
 
         final Set<String> keepNames = new HashSet<>();
-        for (final RDD<?> rdd : JavaConversions.asJavaIterable(CONTEXT.persistentRdds().values())) {
+        for (final RDD<?> rdd : CollectionConverters.asJava(CONTEXT.persistentRdds().values())) {
             if (null != rdd.name()) {
                 keepNames.add(rdd.name());
                 NAME_TO_RDD.put(rdd.name(), rdd);

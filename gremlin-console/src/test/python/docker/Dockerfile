@@ -20,7 +20,7 @@ FROM python:3.10-bullseye
 
 LABEL maintainer="dev@tinkerpop.apache.org"
 
-RUN apt-get update && apt-get install -y --no-install-recommends openjdk-11-jre && apt-get install dos2unix
+RUN apt-get update && apt-get install -y --no-install-recommends openjdk-17-jre && apt-get install dos2unix
 
 WORKDIR /console_app
 CMD dos2unix ./gremlin-console/bin/gremlin.sh && python3 setup.py build && python3 setup.py test; \
