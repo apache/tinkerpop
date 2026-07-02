@@ -166,7 +166,7 @@ TinkerGraph has several settings that can be provided on creation via `Configura
 |gremlin.tinkergraph.vertexPropertyIdManager |The `IdManager` implementation to use for vertex properties.
 |gremlin.tinkergraph.defaultVertexPropertyCardinality |The default `VertexProperty.Cardinality` to use when `Vertex.property(k,v)` is called.
 |gremlin.tinkergraph.allowNullPropertyValues |A boolean value that determines whether or not `null` property values are allowed and defaults to `false`.
-|gremlin.tinkergraph.vertexLabelCardinality |The `LabelCardinality` for vertices. Options are `ONE` (default, single immutable label, backward-compatible with 3.x), `ONE_OR_MORE` (at least one label, mutable), or `ZERO_OR_MORE` (fully flexible, zero or more labels). See <<tinkergraph-multi-label>>.
+|gremlin.tinkergraph.vertexLabelCardinality |The `LabelCardinality` for vertices. Options are `ONE` (default, single immutable label, backward-compatible with 3.x), `ONE_OR_MORE` (at least one label, mutable), or `ZERO_OR_MORE` (zero or more labels). See <<tinkergraph-multi-label>>.
 |gremlin.tinkergraph.graphLocation |The path and file name for where TinkerGraph should persist the graph data. If a
 value is specified here, the `gremlin.tinkergraph.graphFormat` should also be specified.  If this value is not
 included (default), then the graph will stay in-memory and not be loaded/persisted to disk.
@@ -227,23 +227,27 @@ TinkerGraph supports multiple labels per vertex when `gremlin.tinkergraph.vertex
 `ONE_OR_MORE` or `ZERO_OR_MORE`. This enables use of the `addLabel()`, `dropLabel()`, `dropLabels()`, and `labels()`
 traversal steps.
 
-[source,groovy]
+[gremlin-groovy]
 ----
 conf = new BaseConfiguration()
 conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
 graph = TinkerGraph.open(conf)
 g = traversal().with(graph)
 g.addV("person","employee").property("name","marko").iterate()
-g.V().has("name","marko").labels()  // emits: person, employee
-g.V().has("name","marko").addLabel("manager").labels()  // emits: person, employee, manager
-g.V().has("name","marko").dropLabel("employee").labels()  // emits: person, manager
+g.V().has("name","marko").labels() <1>
+g.V().has("name","marko").addLabel("manager").labels() <2>
+g.V().has("name","marko").dropLabel("employee").labels() <3>
 ----
+
+<1> The vertex was created with two labels.
+<2> A third label is added.
+<3> One label is removed.
 
 The `hasLabel()` step works with multi-label vertices using OR semantics: `hasLabel("a","b")` matches any vertex that
 has label "a" OR label "b". To match vertices having both labels, chain multiple `hasLabel()` calls:
 `hasLabel("a").hasLabel("b")`.
 
-IMPORTANT: Edge labels are currently fixed at cardinality `ONE` and are not configurable.
+IMPORTANT: Edges always have exactly one label — multi-label support applies to vertices only.
 
 [[tinkergraph-gremlin-tx]]
 === Transactions
