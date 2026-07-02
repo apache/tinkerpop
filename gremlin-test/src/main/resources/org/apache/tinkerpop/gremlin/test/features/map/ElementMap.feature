@@ -95,16 +95,18 @@ Feature: Step - elementMap()
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property("name", "marko")
+      g.addV("person").addLabel("employee").property("name", "marko")
       """
     And the traversal of
       """
       g.V().elementMap()
       """
     When iterated to list
-    Then the result should be unordered
+    Then the result should have a count of 1
+    And the result should be of
       | result |
       | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": "marko"}] |
+      | m[{"t[id]": "v[marko].id", "t[label]": "employee", "name": "marko"}] |
 
   @MultiLabel
   Scenario: g_withXmultilabelX_V_elementMap_multilabel
