@@ -162,6 +162,51 @@ class TestDriverRemoteConnection(object):
             assert isinstance(e, Edge)
             assert e.label == 'knows'
 
+    def test_tree(self, remote_connection):
+        from gremlin_python.structure.graph import Tree
+        g = traversal().with_(remote_connection)
+        # modern graph: marko -> josh -> lop/ripple, depth 2
+        tree = g.V(1).out().out().tree().by('name').next()
+        assert isinstance(tree, Tree)
+
+        # root level: only marko
+        assert tree.root_nodes() == ['marko']
+
+        # marko's child subtree is rooted at josh
+        marko_subtree = tree.child_at('marko')
+        assert marko_subtree.root_nodes() == ['josh']
+
+        # total key count across marko/josh/lop/ripple
+        assert tree.node_count() == 4
+
+        # depth navigation
+        assert tree.get_nodes_at_depth(0) == ['marko']
+        depth_two = tree.get_nodes_at_depth(2)
+        assert set(depth_two) == {'lop', 'ripple'}
+
+        # leaf nodes are lop and ripple (order-insensitive)
+        assert set(tree.get_leaf_nodes()) == {'lop', 'ripple'}
+
+        # root tree is not a leaf
+        assert tree.is_leaf() is False
+
+        # pretty print produces the ASCII tree style
+        printed = tree.pretty_print()
+        assert isinstance(printed, str)
+        # lop and ripple are siblings at depth 2 with unspecified order
+        option_a = "|--marko\n   |--josh\n      |--lop\n      |--ripple"
+        option_b = "|--marko\n   |--josh\n      |--ripple\n      |--lop"
+        assert tree.pretty_print() in (option_a, option_b)
+
+    def test_tree_with_vertices(self, remote_connection):
+        from gremlin_python.structure.graph import Tree
+        g = traversal().with_(remote_connection)
+        # no by(): keys are the vertices themselves (the default user-facing shape)
+        tree = g.V(1).out().out().tree().next()
+        assert isinstance(tree, Tree)
+        assert tree.node_count() == 4
+        assert len(tree.root_nodes()) == 1
+
     def test_set_with_unhashable_elements(self, remote_connection):
         g = traversal().withRemote(remote_connection)
         # g.V().valueMap().dedup(Scope.local) returns a Set of Map results which previously

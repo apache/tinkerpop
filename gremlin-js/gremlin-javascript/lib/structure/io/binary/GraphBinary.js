@@ -30,7 +30,6 @@
  * TODO: it has the following open topics:
  * Core Data Types support:
  * - [] 0x22: BigDecimal
- * - [] 0x2b: Tree
  * Extended Types support:
  * - [] 0x80: Char
  * - [] 0x81: Duration
@@ -53,6 +52,7 @@ import SetSerializer from './internals/SetSerializer.js';
 import UuidSerializer from './internals/UuidSerializer.js';
 import EdgeSerializer from './internals/EdgeSerializer.js';
 import PathSerializer from './internals/PathSerializer.js';
+import TreeSerializer from './internals/TreeSerializer.js';
 import PropertySerializer from './internals/PropertySerializer.js';
 import VertexSerializer from './internals/VertexSerializer.js';
 import VertexPropertySerializer from './internals/VertexPropertySerializer.js';
@@ -107,9 +107,9 @@ function createIoc(anySerializerOptions) {
   ioc.unspecifiedNullSerializer = new UnspecifiedNullSerializer(ioc);
   ioc.enumSerializer = new EnumSerializer(ioc);
   ioc.compositePDTSerializer = new CompositePDTSerializer(ioc);
+  ioc.treeSerializer = new TreeSerializer(ioc);
 
   // Register stub serializers for unimplemented v4 types
-  new StubSerializer(ioc, ioc.DataType.TREE, 'Tree');
   new StubSerializer(ioc, ioc.DataType.PRIMITIVEPDT, 'PrimitivePDT');
 
   ioc.pdtRegistry = null;
@@ -177,6 +177,7 @@ export const {
   unspecifiedNullSerializer,
   enumSerializer,
   compositePDTSerializer,
+  treeSerializer,
   numberSerializationStrategy,
   anySerializer,
   graphBinaryReader,

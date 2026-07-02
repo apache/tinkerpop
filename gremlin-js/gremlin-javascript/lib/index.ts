@@ -86,6 +86,7 @@ export const structure = {
   Edge: graph.Edge,
   Graph: graph.Graph,
   Path: graph.Path,
+  Tree: graph.Tree,
   Property: graph.Property,
   ProviderDefinedType: graph.ProviderDefinedType,
   ProviderDefinedTypeRegistry,

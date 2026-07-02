@@ -30,8 +30,8 @@ from aenum import Enum
 from gremlin_python.process.traversal import Direction, T, Merge
 from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, BigIntType, \
     DictType, SetType, SingleByte, SingleChar
-from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path, ProviderDefinedType, \
-    _pdt_decorated_types
+from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path, Tree, \
+    ProviderDefinedType, _pdt_decorated_types
 from gremlin_python.structure.io.util import HashableDict, SymbolUtil, Marker
 
 log = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class DataType(Enum):
     binary = 0x25
     short = 0x26
     boolean = 0x27
-    tree = 0x2b                   # not supported - no tree object in Python yet
+    tree = 0x2b
     char = 0x80
     duration = 0x81
     composite_pdt = 0xf0
@@ -638,6 +638,42 @@ class PathIO(_GraphBinaryTypeIO):
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
         return cls.is_null(buff, reader, lambda b, r: Path(r.read_object(b), r.read_object(b)), nullable)
+
+
+class TreeIO(_GraphBinaryTypeIO):
+
+    python_type = Tree
+    graphbinary_type = DataType.tree
+
+    @classmethod
+    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
+        # when as_value (a nested/bare child tree) prefix_bytes writes nothing:
+        # no type-id and no null flag. As a root value it writes {type-id}{null flag}.
+        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
+        root_nodes = obj.root_nodes()
+        to_extend.extend(int32_pack(len(root_nodes)))
+        for key in root_nodes:
+            child = obj.child_at(key)
+            # key is written fully-qualified (its own type-id + null flag + value)
+            writer.to_dict(key, to_extend)
+            # child is written as a BARE tree value: no type-id, no null flag
+            cls.dictify(child, writer, to_extend, as_value=True, nullable=False)
+        return to_extend
+
+    @classmethod
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_tree, nullable)
+
+    @classmethod
+    def _read_tree(cls, b, r):
+        size = cls.read_int(b)
+        tree = Tree()
+        while size > 0:
+            key = r.read_object(b)
+            child = cls.objectify(b, r, False)
+            tree.get_or_create_child(key).add_tree(child)
+            size = size - 1
+        return tree
 
 
 class PropertyIO(_GraphBinaryTypeIO):
