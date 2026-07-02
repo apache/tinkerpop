@@ -25,6 +25,25 @@ limitations under the License.
     </parent>
     <artifactId>spark-gremlin</artifactId>
     <name>Apache TinkerPop :: Spark Gremlin</name>
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spark 3.3.x and Hadoop 3.4.x pull in different 4.1.x Netty patch releases. Align every Netty
+                 artifact to the version TinkerPop standardizes on so that dependency convergence is satisfied. -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>${netty.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Spark requires dropwizard metrics 4.x; Hadoop 3.4.x pulls in the older 3.2.4 -->
+            <dependency>
+                <groupId>io.dropwizard.metrics</groupId>
+                <artifactId>metrics-core</artifactId>
+                <version>4.2.7</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -177,7 +196,7 @@ limitations under the License.
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-recipes</artifactId>
-            <version>4.2.0</version>
+            <version>5.2.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.zookeeper</groupId>
