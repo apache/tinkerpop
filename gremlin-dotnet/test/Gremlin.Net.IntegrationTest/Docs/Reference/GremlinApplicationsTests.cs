@@ -40,14 +40,14 @@ namespace Gremlin.Net.IntegrationTest.Docs.Reference
 var gremlinServer = new GremlinServer("localhost", 8182);
 using (var gremlinClient = new GremlinClient(gremlinServer))
 {
-    var bindings = new Dictionary<string, object>
+    var parameters = new Dictionary<string, object>
     {
         {"name", "marko"}
     };
 
     var response =
         await gremlinClient.SubmitWithSingleResultAsync<object>("g.V().has('person','name',name).out('knows')",
-            bindings);
+            parameters);
 }
 
 // traversal

@@ -235,7 +235,7 @@ public abstract class Client implements RequestSubmitter, RequestSubmitterAsync 
 
         // apply settings if they were made available
         options.getTimeout().ifPresent(timeout -> request.addTimeoutMillis(timeout));
-        options.getParameters().ifPresent(params -> request.addBindings(params));
+        options.getParameters().ifPresent(params -> request.addParameters(params));
         options.getG().ifPresent(g -> request.addG(g));
         options.getLanguage().ifPresent(lang -> request.addLanguage(lang));
         options.getMaterializeProperties().ifPresent(mp -> request.addMaterializeProperties(mp));

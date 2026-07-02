@@ -881,10 +881,10 @@ func Test_ConvertParametersToString(t *testing.T) {
 	t.Run("should panic on unsupported type via RequestOptionsBuilder.Create()", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
-				t.Error("expected panic for unsupported type in bindings")
+				t.Error("expected panic for unsupported type in parameters")
 			}
 		}()
-		new(RequestOptionsBuilder).SetBindings(map[string]interface{}{"x": struct{}{}}).Create()
+		new(RequestOptionsBuilder).SetParameters(map[string]interface{}{"x": struct{}{}}).Create()
 	})
 }
 

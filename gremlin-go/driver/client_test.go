@@ -89,7 +89,7 @@ func TestClient(t *testing.T) {
 		AssertMarkoVertexWithProperties(t, result)
 	})
 
-	t.Run("Test client.Submit() with bindings", func(t *testing.T) {
+	t.Run("Test client.Submit() with parameters", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
@@ -100,9 +100,9 @@ func TestClient(t *testing.T) {
 		assert.NotNil(t, client)
 		defer client.Close()
 
-		bindings := map[string]interface{}{"x": 1}
+		parameters := map[string]interface{}{"x": 1}
 
-		resultSet, err := client.Submit("g.V(x).values(\"name\")", bindings)
+		resultSet, err := client.Submit("g.V(x).values(\"name\")", parameters)
 		assert.NoError(t, err)
 		assert.NotNil(t, resultSet)
 
@@ -113,7 +113,7 @@ func TestClient(t *testing.T) {
 		assert.Equal(t, "marko", result.Data)
 	})
 
-	t.Run("Test client.SubmitWithOptions() with bindings", func(t *testing.T) {
+	t.Run("Test client.SubmitWithOptions() with parameters", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
@@ -124,9 +124,9 @@ func TestClient(t *testing.T) {
 		assert.NotNil(t, client)
 		defer client.Close()
 
-		bindings := map[string]interface{}{"x": 1}
+		parameters := map[string]interface{}{"x": 1}
 
-		resultSet, err := client.SubmitWithOptions("g.V(x).values(\"name\")", new(RequestOptionsBuilder).SetBindings(bindings).Create())
+		resultSet, err := client.SubmitWithOptions("g.V(x).values(\"name\")", new(RequestOptionsBuilder).SetParameters(parameters).Create())
 		assert.NoError(t, err)
 		assert.NotNil(t, resultSet)
 

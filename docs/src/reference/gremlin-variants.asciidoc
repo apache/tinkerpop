@@ -492,14 +492,14 @@ options := new(RequestOptionsBuilder).
 			SetEvaluationTimeout(5000).
 			SetBatchSize(32).
 			SetMaterializeProperties("tokens").
-			AddBinding("x", 100).
+			AddParameter("x", 100).
 			Create()
 resultSet, err := client.SubmitWithOptions("g.V(x).count()", options)
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
 `evaluationTimeout` and `materializeProperties`.
-`RequestOptions` may also contain a map of variable `bindings` to be applied to the supplied
+`RequestOptions` may also contain a map of query `parameters` to be applied to the supplied
 traversal string.
 
 [source,go]
@@ -2256,7 +2256,7 @@ for await (const item of client.stream('g.V()', null)) {
 }
 ----
 
-`client.stream()` accepts the same parameters as `client.submit()`: a script string, optional bindings, and optional
+`client.stream()` accepts the same arguments as `client.submit()`: a script string, optional parameters, and optional
 per-request settings.
 
 [source,javascript]

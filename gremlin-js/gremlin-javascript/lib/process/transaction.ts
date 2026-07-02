@@ -160,7 +160,7 @@ export class Transaction {
    * Submits a gremlin-lang string within this transaction. The transactionId
    * is automatically attached. Has the same signature as Client.submit().
    */
-  async submit(gremlin: string, bindings?: any, requestOptions?: any): Promise<any> {
+  async submit(gremlin: string, parameters?: any, requestOptions?: any): Promise<any> {
     if (!this._isOpen) {
       throw new Error('Transaction is not open');
     }
@@ -168,7 +168,7 @@ export class Transaction {
       ...requestOptions,
       transactionId: this._transactionId,
     };
-    return this._client.submit(gremlin, bindings || null, opts);
+    return this._client.submit(gremlin, parameters || null, opts);
   }
 
   async #closeTransaction(script: string): Promise<void> {

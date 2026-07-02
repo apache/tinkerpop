@@ -520,7 +520,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put(T.id.getAccessor(), "123");
             final RequestMessage request = RequestMessage.build("g.inject(1,2,3,4,5,6,7,8,9,0)")
-                    .addBindings(bindings).create();
+                    .addParameters(bindings).create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
@@ -539,7 +539,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put("id", "123"); // "id" is invalid for gremlin-groovy, but not gremlin-lang
             final RequestMessage request = RequestMessage.build("g.inject(1,2,3,4,5,6,7,8,9,0)")
-                    .addBindings(bindings).addLanguage("gremlin-groovy").create();
+                    .addParameters(bindings).addLanguage("gremlin-groovy").create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
@@ -562,7 +562,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             bindings.put("x", 1);
             bindings.put("y", "knows");
             final RequestMessage request = RequestMessage.build("g.V(x).out(y).values('name')")
-                    .addBindings(bindings).addG("gmodern").create();
+                    .addParameters(bindings).addG("gmodern").create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
@@ -581,7 +581,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put("x", 1);
             final RequestMessage request = RequestMessage.build("g.V(x).out('knows').values('name')")
-                    .addBindings(bindings).addG("gmodern").create();
+                    .addParameters(bindings).addG("gmodern").create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
@@ -603,7 +603,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put(null, "123");
             final RequestMessage request = RequestMessage.build("g.inject(1,2,3,4,5,6,7,8,9,0)")
-                    .addBindings(bindings).create();
+                    .addParameters(bindings).create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
@@ -1139,7 +1139,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldSubmitWithStringBindingsViaRequestMessage() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final RequestMessage request = RequestMessage.build("g.V(x).out(y).values('name')")
-                    .addBindings("[\"x\":1,\"y\":\"knows\"]").addG("gmodern").create();
+                    .addParameters("[\"x\":1,\"y\":\"knows\"]").addG("gmodern").create();
             final List<ResponseMessage> responses = client.submit(request);
             assertEquals(HttpResponseStatus.OK, responses.get(0).getStatus().getCode());
             assertEquals("vadas", responses.get(0).getResult().getData().get(0));
@@ -1150,7 +1150,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldRejectTraversalInjectionInStringBindings() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final RequestMessage request = RequestMessage.build("g.V(x)")
-                    .addBindings("[x:__.V().drop()]").addG("gmodern").create();
+                    .addParameters("[x:__.V().drop()]").addG("gmodern").create();
             final List<ResponseMessage> responses = client.submit(request);
             assertEquals(HttpResponseStatus.BAD_REQUEST, responses.get(0).getStatus().getCode());
         }

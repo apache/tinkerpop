@@ -64,8 +64,8 @@ public class GremlinError {
     }
 
     // script errors
-    public static GremlinError binding() {
-        final String message = String.format("The message is using one or more invalid binding keys - they must be of type String and cannot be null");
+    public static GremlinError parameter() {
+        final String message = String.format("The message is using one or more invalid parameter keys - they must be of type String and cannot be null");
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
@@ -76,15 +76,15 @@ public class GremlinError {
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
-    public static GremlinError binding(final Set<String> badBindings) {
+    public static GremlinError parameter(final Set<String> badParameters) {
         final String message = String.format("The message supplies one or more invalid parameters key of [%s] - these are reserved names.",
-                badBindings);
+                badParameters);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
-    public static GremlinError binding(final int bindingsCount, final int allowedSize) {
-        final String message = String.format("The message contains %s bindings which is more than is allowed by the server %s configuration",
-                bindingsCount, allowedSize);
+    public static GremlinError parameter(final int parametersCount, final int allowedSize) {
+        final String message = String.format("The message contains %s parameters which is more than is allowed by the server %s configuration",
+                parametersCount, allowedSize);
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 

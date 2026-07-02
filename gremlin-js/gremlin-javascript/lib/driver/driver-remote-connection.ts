@@ -109,7 +109,7 @@ export default class DriverRemoteConnection extends RemoteConnection {
 
     const parametersString = gremlinLang.getParametersAsString();
     if (parametersString !== '[:]') {
-      requestOptions.bindings = parametersString;
+      requestOptions.parameters = parametersString;
     }
 
     // If this connection is bound to a transaction, attach the transactionId

@@ -34,7 +34,7 @@ type RequestMessage struct {
 // Parameters:
 //   - stringGremlin: The Gremlin query string to execute
 //   - traversalSource: The name of the traversal source (typically "g")
-//   - requestOptions: Options such as bindings, timeout, batch size, etc.
+//   - requestOptions: Options such as parameters, timeout, batch size, etc.
 //
 // Returns:
 //   - request: A request structure ready for serialization
@@ -52,8 +52,8 @@ func MakeStringRequest(stringGremlin string, traversalSource string, requestOpti
 		"g":        traversalSource,
 	}
 
-	if requestOptions.bindingsString != "" && requestOptions.bindingsString != "[:]" {
-		newFields["bindings"] = requestOptions.bindingsString
+	if requestOptions.parametersString != "" && requestOptions.parametersString != "[:]" {
+		newFields["parameters"] = requestOptions.parametersString
 	}
 
 	if requestOptions.evaluationTimeout != 0 {

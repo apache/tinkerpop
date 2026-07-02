@@ -153,31 +153,30 @@ class Client:
             max_connections=self._max_connections,
             **self._transport_kwargs)
 
-    def submit(self, message, bindings=None, request_options=None):
-        return self.submit_async(message, bindings=bindings, request_options=request_options).result()
+    def submit(self, message, parameters=None, request_options=None):
+        return self.submit_async(message, parameters=parameters, request_options=request_options).result()
 
-    def submitAsync(self, message, bindings=None, request_options=None):
+    def submitAsync(self, message, parameters=None, request_options=None):
         warnings.warn(
             "gremlin_python.driver.client.Client.submitAsync will be replaced by "
             "gremlin_python.driver.client.Client.submit_async.",
             DeprecationWarning)
-        return self.submit_async(message, bindings, request_options)
+        return self.submit_async(message, parameters, request_options)
 
-    def submit_async(self, message, bindings=None, request_options=None):
+    def submit_async(self, message, parameters=None, request_options=None):
         if self.is_closed():
             raise Exception("Client is closed")
 
         log.debug("message '%s'", str(message))
         fields = {'g': self._traversal_source}
 
-        # TODO: bindings is now part of request_options, evaluate the need to keep it separate in python.
-        #  Note this bindings parameter only applies to string script submissions
-        if isinstance(message, str) and bindings:
+        # Note this parameters argument only applies to string script submissions
+        if isinstance(message, str) and parameters:
             from gremlin_python.process.traversal import GremlinLang
-            if isinstance(bindings, dict):
-                fields['bindings'] = GremlinLang.convert_parameters_to_string(bindings)
+            if isinstance(parameters, dict):
+                fields['parameters'] = GremlinLang.convert_parameters_to_string(parameters)
             else:
-                fields['bindings'] = bindings
+                fields['parameters'] = parameters
 
         if isinstance(message, str):
             log.debug("fields='%s', gremlin='%s'", str(fields), str(message))
@@ -194,13 +193,13 @@ class Client:
         conn = self._pool.get(True)
         if request_options:
             message.fields.update({token: request_options[token] for token in request.Tokens
-                                   if token in request_options and token != 'bindings'})
-            if 'bindings' in request_options:
-                bindings_val = request_options['bindings']
-                if isinstance(bindings_val, dict):
+                                   if token in request_options and token != 'parameters'})
+            if 'parameters' in request_options:
+                parameters_val = request_options['parameters']
+                if isinstance(parameters_val, dict):
                     from gremlin_python.process.traversal import GremlinLang
-                    bindings_val = GremlinLang.convert_parameters_to_string(bindings_val)
-                message.fields['bindings'] = bindings_val
+                    parameters_val = GremlinLang.convert_parameters_to_string(parameters_val)
+                message.fields['parameters'] = parameters_val
 
         # Fill in the connection-level default batch size when the caller did
         # not set a per-request batchSize.
