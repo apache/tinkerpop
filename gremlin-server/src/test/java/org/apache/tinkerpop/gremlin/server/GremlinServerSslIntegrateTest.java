@@ -176,7 +176,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
                 System.out.println(result.getStatus());
-                if (result.getStatus().getCode() != HttpResponseStatus.PARTIAL_CONTENT) {
+                if (result.getStatus().getCode() != HttpResponseStatus.NO_CONTENT) {
                     pass.set(HttpResponseStatus.OK == result.getStatus().getCode() &&
                             (((int) ((List) result.getResult().getData()).get(0) == 246)));
                 }
