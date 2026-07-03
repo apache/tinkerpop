@@ -7,8 +7,24 @@
 **File** `{ path, language, changed }`
 A source file in the PR. `changed: true` if modified in this PR.
 
+*Stub Files* `{ path, language, changed: true, parsed: false, deleted }` are
+markers for changed files the extractor didn't parse, so the PR's `modifies`
+edge still lands. `deleted: true` means the PR removed the file (absent from the
+PR-head worktree); `deleted: false` means it's present but an unparsed type
+(non-code, or a non-primary language). Real Files have no `parsed` property, so
+select materialized files with `.hasNot("parsed")` and markers with
+`.has("parsed", false)`.
+
 **Function** `{ name, signature, visibility, filePath, lines_start, lines_end, changed }`
 A function or method. The primary unit of analysis.
+
+*External stub Functions* `{ name, external: true, resolved: false, changed: false }`
+are markers created when a `calls`/`tests` edge targets a function by name that
+wasn't extracted (a library/JDK call, or a function in a file this PR didn't
+change). They keep the edge from vanishing and let blast-radius/centrality see
+the call; they lack `filePath`/`signature`/`visibility`. Filter them out with
+`.has("external", false)` — or, since real Functions have no `external` property,
+`.hasNot("external")` — when you only want materialized code.
 
 **Type** `{ name, kind, visibility, filePath }`
 A class, interface, struct, or enum. `kind` is one of: class, interface, struct, enum.
@@ -42,6 +58,23 @@ The PR itself is a Discussion with `source: "pr"`.
 A comment on a Discussion.
 
 ## Edges (14 labels)
+
+### Edge confidence (every edge)
+
+Every edge carries a `confidence` property recording how the relationship was
+established, so downstream analysis and the reviewer can separate observed fact
+from deduction:
+
+| Value | Meaning | Examples |
+|-------|---------|----------|
+| `EXTRACTED` | Explicitly present in source or the git diff | `defines`, `modifies`, `has_comment`, an `addresses` link stated in the PR body/diff (`found_in: pr`/`diff`) |
+| `INFERRED` | Reasonable deduction | `calls`/`tests` (resolved by name match), `proposed_in`, a cross-referenced `addresses` (`found_in: jira_body`/`devlist_body`), agent `implements_step`/`documents` mappings |
+| `AMBIGUOUS` | Uncertain; flagged for human review | keyword-search `addresses` (`found_in: search`), low-confidence agent guesses |
+
+Enrichment write commands (`mapStep`, `linkDiscussion`, `linkDoc`) accept an
+optional `--confidence` flag (default `INFERRED`). `auditConfidence` reports the
+distribution and lists every `AMBIGUOUS` edge; the review's structural appendix
+renders this as the **Signal Confidence** panel.
 
 ### Code relationships
 

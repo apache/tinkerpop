@@ -39,7 +39,7 @@ function esc(str) {
  * Input contract — data fields (from review.js):
  *   meta: { pr, title, domains: [], language, changedFileCount, timestamp }
  *   graphStats: { vertices, edges, breakdown: { files, functions, types, tests, calls } }
- *   checks: { completeness, coverageGaps, centrality, blastRadius, clusters }
+ *   checks: { completeness, coverageGaps, centrality, blastRadius, clusters, confidence }
  *   discussions: { jiras, devList, secondary, prComments, devListSearchKeywords, ... }
  *   changedFiles: []
  *
@@ -345,11 +345,53 @@ function renderOpenQuestions(questions) {
   return `<section id="open-questions">\n  <h2>Open Questions</h2>\n  ${cards}\n</section>`;
 }
 
+function renderConfidence(confidence) {
+  if (!confidence || !confidence.distribution) return "";
+  const d = confidence.distribution;
+  const ambiguous = confidence.ambiguous || [];
+
+  const chip = (label, value, cls) =>
+    `<div class="stat-box"><div class="value">${value || 0}</div><div class="label">${label}</div></div>`;
+
+  let ambiguousHtml;
+  if (ambiguous.length === 0) {
+    ambiguousHtml = `<p class="section-intro">No AMBIGUOUS edges — nothing was linked purely by keyword search or low-confidence guess.</p>`;
+  } else {
+    const rows = ambiguous.map(a => {
+      const via = a.foundVia ? ` <span class="discovery-meta">via ${esc(a.foundVia)}</span>` : "";
+      const found = a.foundIn ? esc(a.foundIn) : "&mdash;";
+      return `<tr><td><code>${esc(a.relation)}</code></td><td class="fn-name">${esc(a.from)}</td><td class="fn-name">${esc(a.to)}${via}</td><td>${found}</td></tr>`;
+    }).join("\n      ");
+    ambiguousHtml = `<table class="gap-table">
+    <thead><tr><th>Relation</th><th>From</th><th>To</th><th>Found in</th></tr></thead>
+    <tbody>\n      ${rows}\n    </tbody>
+  </table>`;
+  }
+
+  const untagged = d.UNTAGGED
+    ? `<div class="stat-box"><div class="value">${d.UNTAGGED}</div><div class="label">Untagged</div></div>`
+    : "";
+
+  return `
+  <h3>Signal Confidence</h3>
+  <p class="section-intro">Every graph edge is tagged by how it was established. <strong>EXTRACTED</strong> edges are observed directly in source or the git diff; <strong>INFERRED</strong> edges are name-resolved or evidence-backed deductions; <strong>AMBIGUOUS</strong> edges are keyword-search or low-confidence guesses and are listed below for human review.</p>
+  <div class="stats-grid">
+    ${chip("Extracted", d.EXTRACTED)}
+    ${chip("Inferred", d.INFERRED)}
+    ${chip("Ambiguous", d.AMBIGUOUS)}
+    ${untagged}
+  </div>
+  <h4 style="margin-top: 1rem;">Ambiguous edges (${ambiguous.length}) &mdash; verify before relying on</h4>
+  ${ambiguousHtml}
+`;
+}
+
 function renderAppendixStructural(checks, graphStats) {
   const hotspots = checks?.centrality?.hotspots || [];
   const blast = checks?.blastRadius?.functions || [];
   const stats = graphStats || {};
   const bd = stats.breakdown || {};
+  const confidenceHtml = renderConfidence(checks?.confidence);
 
   const hotspotRows = hotspots.slice(0, 10).map(h => {
     const badge = (h.inherentlyCentral && h.changed) ? `<span class="badge badge-modified">modified</span>` : "";
@@ -377,7 +419,7 @@ function renderAppendixStructural(checks, graphStats) {
     <thead><tr><th>Function</th><th>File</th><th>Reachable</th><th></th></tr></thead>
     <tbody>\n      ${blastRows}\n    </tbody>
   </table>
-
+${confidenceHtml}
   <h3>Graph Statistics</h3>
   <div class="stats-grid">
     <div class="stat-box"><div class="value">${stats.vertices || 0}</div><div class="label">Vertices</div></div>

@@ -20,6 +20,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import gremlin from "gremlin";
+import { CONFIDENCE, normalizeConfidence } from "../graph/confidence.js";
 
 const { process: { statics: __ } } = gremlin;
 
@@ -81,7 +82,8 @@ export async function getCanonicalSteps(repoPath) {
 
 // === Write operations ===
 
-export async function mapStep(g, functionName, filePath, canonicalStepName) {
+export async function mapStep(g, functionName, filePath, canonicalStepName, confidence) {
+  const conf = normalizeConfidence(confidence, CONFIDENCE.INFERRED);
   const stepExists = await g.V().hasLabel("Step").has("name", canonicalStepName).hasNext();
   if (!stepExists) {
     await g.addV("Step")
@@ -94,13 +96,15 @@ export async function mapStep(g, functionName, filePath, canonicalStepName) {
     .has("name", functionName)
     .has("filePath", filePath)
     .addE("implements_step")
+    .property("confidence", conf)
     .to(__.V().hasLabel("Step").has("name", canonicalStepName))
     .next();
 
-  return { mapped: `${functionName} -> ${canonicalStepName}` };
+  return { mapped: `${functionName} -> ${canonicalStepName}`, confidence: conf };
 }
 
-export async function linkDiscussion(g, url, source, title, body) {
+export async function linkDiscussion(g, url, source, title, body, confidence) {
+  const conf = normalizeConfidence(confidence, CONFIDENCE.INFERRED);
   await g.addV("Discussion")
     .property("url", url)
     .property("source", source)
@@ -112,11 +116,12 @@ export async function linkDiscussion(g, url, source, title, body) {
   if (prDiscussion) {
     await g.V().hasLabel("Discussion").has("source", "pr")
       .addE("addresses")
+      .property("confidence", conf)
       .to(__.V().hasLabel("Discussion").has("url", url))
       .next();
   }
 
-  return { linked: `${source}: ${title}` };
+  return { linked: `${source}: ${title}`, confidence: conf };
 }
 
 export async function annotate(g, label, name, key, value) {
@@ -127,7 +132,8 @@ export async function annotate(g, label, name, key, value) {
   return { annotated: `${label}:${name}.${key} = ${value}` };
 }
 
-export async function linkDoc(g, entityLabel, entityName, docPath, section) {
+export async function linkDoc(g, entityLabel, entityName, docPath, section, confidence) {
+  const conf = normalizeConfidence(confidence, CONFIDENCE.INFERRED);
   const docExists = await g.V().hasLabel("Doc").has("path", docPath).hasNext();
   if (!docExists) {
     await g.addV("Doc")
@@ -138,10 +144,11 @@ export async function linkDoc(g, entityLabel, entityName, docPath, section) {
 
   await g.V().hasLabel("Doc").has("path", docPath)
     .addE("documents")
+    .property("confidence", conf)
     .to(__.V().hasLabel(entityLabel).has("name", entityName))
     .next();
 
-  return { linked: `${docPath} documents ${entityLabel}:${entityName}` };
+  return { linked: `${docPath} documents ${entityLabel}:${entityName}`, confidence: conf };
 }
 
 export async function addGrammarRule(g, name, production) {

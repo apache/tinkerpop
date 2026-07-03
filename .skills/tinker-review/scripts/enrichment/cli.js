@@ -25,12 +25,14 @@ import {
   mapStep, linkDiscussion, linkDoc, addGrammarRule, annotate,
   createPrDiscussion,
 } from "./api.js";
+import { confidenceAudit } from "../patterns/confidence-audit.js";
 
 const COMMANDS = {
   listFunctions: { fn: listFunctions, needsG: true },
   listTypes: { fn: listTypes, needsG: true },
   getCallsFrom: { fn: getCallsFrom, needsG: true },
   getCanonicalSteps: { fn: getCanonicalSteps, needsG: false },
+  auditConfidence: { fn: confidenceAudit, needsG: true },
   mapStep: { fn: mapStep, needsG: true },
   linkDiscussion: { fn: linkDiscussion, needsG: true },
   linkDoc: { fn: linkDoc, needsG: true },
@@ -73,9 +75,10 @@ async function main() {
     console.log("  listTypes       [--kind class]");
     console.log("  getCallsFrom    --function <name> --file <path>");
     console.log("  getCanonicalSteps");
-    console.log("  mapStep         --function <name> --file <path> --step <canonicalName>");
-    console.log("  linkDiscussion  --url <url> --source <jira|devlist|proposal> --title <title> [--body <body>]");
-    console.log("  linkDoc         --entity <label> --name <name> --doc <path> [--section <section>]");
+    console.log("  auditConfidence [--maxAmbiguous 50]");
+    console.log("  mapStep         --function <name> --file <path> --step <canonicalName> [--confidence INFERRED|AMBIGUOUS|EXTRACTED]");
+    console.log("  linkDiscussion  --url <url> --source <jira|devlist|proposal> --title <title> [--body <body>] [--confidence ...]");
+    console.log("  linkDoc         --entity <label> --name <name> --doc <path> [--section <section>] [--confidence ...]");
     console.log("  addGrammarRule  --name <name> [--production <production>]");
     console.log("  annotate        --label <label> --name <name> --key <key> --value <value>");
     console.log("");
@@ -124,14 +127,17 @@ async function main() {
       case "getCanonicalSteps":
         result = await fn(session.worktreePath || session.repoPath);
         break;
+      case "auditConfidence":
+        result = await fn(g, { maxAmbiguous: args.maxAmbiguous });
+        break;
       case "mapStep":
-        result = await fn(g, args.function, args.file, args.step);
+        result = await fn(g, args.function, args.file, args.step, args.confidence);
         break;
       case "linkDiscussion":
-        result = await fn(g, args.url, args.source, args.title, args.body);
+        result = await fn(g, args.url, args.source, args.title, args.body, args.confidence);
         break;
       case "linkDoc":
-        result = await fn(g, args.entity, args.name, args.doc, args.section);
+        result = await fn(g, args.entity, args.name, args.doc, args.section, args.confidence);
         break;
       case "addGrammarRule":
         result = await fn(g, args.name, args.production);

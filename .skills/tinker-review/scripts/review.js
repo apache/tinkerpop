@@ -34,6 +34,7 @@ import { highCentrality } from "./patterns/centrality.js";
 import { blastRadius } from "./patterns/blast-radius.js";
 import { clusterAnalysis } from "./patterns/cluster-analysis.js";
 import { architecture } from "./patterns/architecture.js";
+import { confidenceAudit } from "./patterns/confidence-audit.js";
 import { createPrDiscussion } from "./enrichment/api.js";
 import { discoverDiscussions } from "./discovery/discussions.js";
 
@@ -234,7 +235,8 @@ export async function setup(params) {
 
 // ============================================================
 // PHASE 1 — extract, populate, discover, run checks
-// Writes evidence JSON to workDir. Server stays alive.
+// Writes evidence JSON to workDir. The Gremlin Server container stays alive for
+// enrichment; the CLI process itself exits once Phase 1 completes (see main()).
 // ============================================================
 
 export async function phase1(session) {
@@ -245,7 +247,7 @@ export async function phase1(session) {
   log(`Phase 1 complete: ${extraction.files.length} files, ${extraction.functions.length} functions, ${extraction.types.length} types`);
 
   log(`Populating graph...`);
-  const graphStats = await populate(g, extraction);
+  const graphStats = await populate(g, extraction, { changedFiles, worktreePath });
   log(`Graph populated: ${graphStats.vertices} vertices, ${graphStats.edges} edges`);
 
   let prTitle = `PR #${pr}`;
@@ -303,11 +305,13 @@ export async function phase1(session) {
   const centralityResult = await highCentrality(g, { changedOnly: true, topN: 10, minDegree: 3 });
   const blastResult = await blastRadius(g, { depth: 3, changedOnly: true });
   const clusterResult = await clusterAnalysis(a, { changedOnly: true });
+  const confidenceResult = await confidenceAudit(g);
   log(`  completeness: ${completenessResults.filter(r => r.missing.length > 0).length} gaps found`);
   log(`  coverage_gaps: ${coverageResult.uncovered.length} functions without tests`);
   log(`  centrality: ${centralityResult.aboveThreshold} hotspots`);
   log(`  blast_radius: max ${blastResult.maxReachable} reachable`);
   log(`  clusters: ${clusterResult.clusterCount} (${clusterResult.coherent ? "coherent" : "fragmented"})`);
+  log(`  confidence: ${confidenceResult.distribution.EXTRACTED} extracted / ${confidenceResult.distribution.INFERRED} inferred / ${confidenceResult.distribution.AMBIGUOUS} ambiguous`);
 
   log(`Generating architecture map...`);
   const architectureResult = await architecture(g, { clusterResult, changedOnly: true });
@@ -330,6 +334,7 @@ export async function phase1(session) {
       centrality: centralityResult,
       blastRadius: blastResult,
       clusters: clusterResult,
+      confidence: confidenceResult,
     },
     discussions,
     changedFiles,
@@ -399,6 +404,16 @@ if (process.argv[1] && basename(process.argv[1]) === "review.js") {
     log(`Work directory: ${session.workDir}`);
     log(`Worktree: ${session.worktreePath}`);
     log(`To teardown: call teardown(session) or stop container ${session.handle.containerId}`);
+
+    // Phase 1 is done. Close OUR Gremlin connections so this process exits
+    // cleanly and completion is detectable (exit code 0 + the sentinel line
+    // below). The Gremlin Server container stays up independently — enrichment
+    // (scripts/enrichment/cli.js) opens its own connection per command from
+    // session.json, so nothing depends on this process lingering.
+    await session.connection.close().catch(() => {});
+    await session.aConnection.close().catch(() => {});
+    log(`PHASE1_COMPLETE pr=${pr} evidence=${jsonPath} port=${session.handle.port} container=${session.handle.containerId}`);
+    process.exit(0);
   } catch (err) {
     await teardown(session).catch(() => {});
     throw err;

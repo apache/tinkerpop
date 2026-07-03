@@ -549,7 +549,15 @@ export async function extract(directory, language, options = {}) {
   };
 
   for (const file of sourceFiles) {
-    const content = await readFile(file.fullPath, "utf-8");
+    let content;
+    try {
+      content = await readFile(file.fullPath, "utf-8");
+    } catch (err) {
+      // A file in the PR's changed set that isn't on disk was deleted by the
+      // PR — there's no source to extract, so skip it rather than crash.
+      if (err.code === "ENOENT") continue;
+      throw err;
+    }
     const tree = parser.parse(content);
     if (!tree) continue;
 

@@ -80,13 +80,20 @@ node scripts/enrichment/cli.js listFunctions --workDir /tmp/pr-review-<pr> --cha
 node scripts/enrichment/cli.js listTypes --workDir /tmp/pr-review-<pr> --kind class
 node scripts/enrichment/cli.js getCallsFrom --workDir /tmp/pr-review-<pr> --function <name> --file <path>
 node scripts/enrichment/cli.js getCanonicalSteps --workDir /tmp/pr-review-<pr>
+node scripts/enrichment/cli.js auditConfidence --workDir /tmp/pr-review-<pr>
 ```
 
-**Write commands:**
+`auditConfidence` returns the edge confidence distribution and the list of
+AMBIGUOUS edges. Re-run it after enrichment to refresh the audit with the edges
+you added, then reflect any remaining AMBIGUOUS links in `openQuestions`.
+
+**Write commands** (edges you create default to `INFERRED`; pass
+`--confidence AMBIGUOUS` for a guess you want flagged, or `EXTRACTED` when the
+source states it directly):
 ```bash
-node scripts/enrichment/cli.js mapStep --workDir /tmp/pr-review-<pr> --function <name> --file <path> --step <canonicalName>
-node scripts/enrichment/cli.js linkDiscussion --workDir /tmp/pr-review-<pr> --url <url> --source jira --title <title>
-node scripts/enrichment/cli.js linkDoc --workDir /tmp/pr-review-<pr> --entity Step --name <name> --doc <path>
+node scripts/enrichment/cli.js mapStep --workDir /tmp/pr-review-<pr> --function <name> --file <path> --step <canonicalName> [--confidence INFERRED|AMBIGUOUS|EXTRACTED]
+node scripts/enrichment/cli.js linkDiscussion --workDir /tmp/pr-review-<pr> --url <url> --source jira --title <title> [--confidence ...]
+node scripts/enrichment/cli.js linkDoc --workDir /tmp/pr-review-<pr> --entity Step --name <name> --doc <path> [--confidence ...]
 node scripts/enrichment/cli.js addGrammarRule --workDir /tmp/pr-review-<pr> --name <name>
 node scripts/enrichment/cli.js annotate --workDir /tmp/pr-review-<pr> --label Function --name <name> --key <key> --value <value>
 ```
