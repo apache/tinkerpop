@@ -16,31 +16,29 @@ deletions). It runs in addition to `general.md` and any module playbook.
    (e.g. `Krb5Authenticator.java` -> `Krb5Authenticator`). Deleted files are
    already in the graph as `File { deleted: true }` markers.
 
-2. Run `listExternalRefs`. Any external callee whose `matchesDeletedSymbol` is
-   true is a dangling reference the changed code itself still makes — a
-   smoking gun visible in the graph with no grep needed. Record each with
-   `addReference` and treat as a finding.
+2. **Phase 1 already found the code-symbol references.** For every deleted *code*
+   file it grepped the surviving worktree for that class/method name and wrote a
+   `references` edge per hit — read them from `checks.removalRefs` (and
+   `checks.removalRefs.externalCallers` for changed code still calling a removed
+   name). Your job on these is judgment, not discovery: classify each (see
+   Interpret). They are `INFERRED`; confirm or downgrade with `setEdgeConfidence`.
 
-3. **Grep the surviving worktree** (`/tmp/pr-review-<pr>/src`) for every removed
-   symbol, excluding the deleted files themselves. Search code *and* the
-   supporting cast that removals commonly miss:
-   - source (`*.java`, GLV sources) and build files (`pom.xml`, `*.gradle`)
-   - config/resources (`*.yaml`, `*.conf`, `*.properties`)
+3. **Grep for what the automatic pass skips** — the non-code supporting cast that
+   removals commonly leave behind, keyed off `listDeleted`:
+   - config/resources (`*.yaml`, `*.conf`, `*.properties`), ports, feature flags
+   - build files (`pom.xml`, `*.gradle`) — was the dependency actually dropped?
    - docs (`docs/src/**/*.asciidoc`) and `CHANGELOG.asciidoc`
    - Docker/CI setup (compose files, `*.sh`)
 
-   For each surviving hit, record it with `addReference --fromPath <file>
-   --toPath <deletedFile> --symbol <name> --location <where>`.
-
-4. Confirm the removal is complete on the *other* side too: was the dependency
-   dropped from `pom.xml`? Were the config keys, ports, and doc sections that
-   described the feature removed, not just the classes?
+   Record any surviving hit with `addReference --fromPath <file> --toPath
+   <deletedFile> --symbol <name> --location <where>` — the escape hatch for the
+   cases the code-symbol pass cannot see.
 
 ## Interpret
 Read the structural signals from evidence.json (schema in
 [references/interfaces.md](../references/interfaces.md)); the `references` edges
-you added above and checks.coverageGaps on any surviving code are the primary
-structural outputs here.
+in checks.removalRefs (plus any you added by hand) and checks.coverageGaps on
+any surviving code are the primary structural outputs here.
 
 Not every surviving reference is a defect — classify each:
 - **Active code / build / config / live docs** referencing a removed symbol is a

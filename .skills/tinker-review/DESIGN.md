@@ -35,7 +35,7 @@ has already exited.
 |------|------|
 | `scripts/review.js` | Phase 1 orchestrator — `setup` / `phase1` / `teardown` |
 | `scripts/extraction/tree-sitter.js` | source → structural extraction |
-| `scripts/graph/*.js` | populate the graph; `confidence.js` / `externals.js` hold the data-model vocabularies |
+| `scripts/graph/*.js` | populate the graph; `confidence.js` / `externals.js` / `references.js` hold the data-model vocabularies and shared edge helpers |
 | `scripts/patterns/*.js` | one structural check per file; each defines its own result `@typedef` |
 | `scripts/enrichment/{api,cli}.js` | Phase 2 read/write commands over the live graph |
 | `scripts/renderer/{render.js,template.html}` | `report.json` → HTML |
@@ -60,7 +60,13 @@ has already exited.
   silently vanish. A new edge must follow both.
 - **Mechanical vs judgment decides where code goes.** Anything reproducible is a
   Phase-1 module; anything needing judgment is a Phase-2 command the agent drives
-  from a playbook. That boundary tells you where a new capability belongs.
+  from a playbook. "Reproducible" means the signal is strong enough to act on
+  without judgment — not merely that a script *could* run. Finding references to
+  removed code is mechanical (grep a known symbol), so it is a Phase-1 pass
+  (`removal-refs.js`); `addReference` stays as the manual escape hatch for the
+  non-code cases the pass can't see. Mapping a method to a Gremlin step is *not*
+  mechanical — step names collide with ordinary method names, so it needs the
+  judgment the GLV playbook describes, and stays a Phase-2 command.
 
 ## How to change it
 

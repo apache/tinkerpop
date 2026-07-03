@@ -21,6 +21,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import gremlin from "gremlin";
 import { CONFIDENCE, normalizeConfidence, isValidConfidence } from "../graph/confidence.js";
+import { symbolFromPath, createReferenceEdge } from "../graph/references.js";
 
 const { process: { statics: __ } } = gremlin;
 
@@ -78,19 +79,6 @@ export async function getCanonicalSteps(repoPath) {
   cachedSteps = [...g4.matchAll(/traversalMethod_(\w+)/g)].map(m => m[1]);
   cachedSteps = [...new Set(cachedSteps)].sort();
   return cachedSteps;
-}
-
-// The likely symbol name a source file defined — its basename without extension
-// (Krb5Authenticator.java -> Krb5Authenticator). Used to turn deleted-file paths
-// into names the agent can grep the rest of the repo for.
-function symbolFromPath(path) {
-  const base = path.split("/").pop() || path;
-  const dot = base.indexOf(".");
-  return dot > 0 ? base.slice(0, dot) : base;
-}
-
-function extOf(path) {
-  return path.includes(".") ? path.split(".").pop() : "";
 }
 
 // === Removal-impact reads ===
@@ -206,12 +194,11 @@ export async function setEdgeConfidence(g, params = {}) {
 }
 
 /**
- * Record a lingering reference to removed code: a surviving file (fromPath) that
- * still mentions a symbol defined by a deleted file (toPath). Creates a
- * `references` edge File -> File(deleted), carrying the matched symbol and
- * location. The source file is often outside the changed set and has no vertex
- * yet, so it's find-or-created as an unparsed marker. This is the payoff of a
- * removal review — "the PR deleted X, but these places still use it."
+ * Manual escape hatch for recording a lingering reference to removed code that
+ * the Phase-1 removal-refs pass didn't catch — e.g. a config-string or
+ * non-code-symbol reference, which that pass deliberately skips. The automatic
+ * pass (patterns/removal-refs.js) handles code symbols; use this for the cases
+ * that need a human/agent to spot. Creates the same `references` edge.
  *
  * @param {object} g - gremlin-js GraphTraversalSource (already connected)
  * @param {object} params
@@ -219,7 +206,7 @@ export async function setEdgeConfidence(g, params = {}) {
  * @param {string} params.toPath - Deleted file path (must be an existing deleted File)
  * @param {string} [params.symbol] - The removed symbol found in fromPath
  * @param {string} [params.location] - Where (e.g. "L42" or a line snippet)
- * @param {string} [params.confidence] - default INFERRED (a textual grep match)
+ * @param {string} [params.confidence] - default INFERRED (a textual match)
  * @returns {Promise<object>}
  */
 export async function addReference(g, params = {}) {
@@ -234,25 +221,7 @@ export async function addReference(g, params = {}) {
     return { error: `no deleted File vertex for toPath "${toPath}" (use listDeleted for valid targets)` };
   }
 
-  const srcExists = await g.V().hasLabel("File").has("path", fromPath).hasNext();
-  if (!srcExists) {
-    await g.addV("File")
-      .property("path", fromPath)
-      .property("language", extOf(fromPath))
-      .property("changed", false)
-      .property("parsed", false)
-      .property("deleted", false)
-      .next();
-  }
-
-  await g.V().hasLabel("File").has("path", fromPath)
-    .addE("references")
-    .property("confidence", conf)
-    .property("symbol", symbol || "")
-    .property("location", location || "")
-    .to(__.V().hasLabel("File").has("path", toPath))
-    .next();
-
+  await createReferenceEdge(g, { fromPath, toPath, symbol, location, confidence: conf });
   return { referenced: `${fromPath} -> ${toPath}`, symbol: symbol || "", confidence: conf };
 }
 
