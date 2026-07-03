@@ -547,7 +547,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
     public void shouldNotIdleTimeoutLongRunningOperation() throws Exception {
         // With a short idle timeout (500ms), a single operation that runs LONGER than the idle timeout must still
         // succeed -- the idle timer is suspended while an operation is in progress, so a long-running op is not
-        // reclaimed mid-execution (it is instead bounded by evaluationTimeout, left at its default here).
+        // reclaimed mid-execution (it is instead bounded by timeoutMs, left at its default here).
         final String txId = beginTx(client, GTX);
 
         // Seed two vertices and an edge so repeat(both()) has something to traverse and keeps the executor busy. Each

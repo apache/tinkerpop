@@ -40,8 +40,7 @@ final class GremlinASTChecker {
     private static final AstBuilder astBuilder = new AstBuilder()
     public static final Result EMPTY_RESULT = new Result(0)
 
-    private static final List<String> tokens = ["evaluationTimeout", "scriptEvaluationTimeout",
-                                                "ARGS_EVAL_TIMEOUT", "ARGS_SCRIPT_EVAL_TIMEOUT"]
+    private static final List<String> tokens = ["timeoutMs", "TIMEOUT_MS"]
 
     /**
      * Parses a Gremlin script and extracts a {@code Result} containing properties that are relevant to the checker.
@@ -125,7 +124,7 @@ final class GremlinASTChecker {
 //import org.apache.commons.lang.RandomStringUtils
 //rand = new java.util.Random()
 //engine = new groovy.text.SimpleTemplateEngine()
-//baseScript = 'g.with("evaluationTimeout",1).V().out("$a").in().where(outE().has("weight",$b).count().is($c)).order().by("name",desc).limit($d).project("x","y").by("name").by(outE().fold());'
+//baseScript = 'g.with("timeoutMs",1).V().out("$a").in().where(outE().has("weight",$b).count().is($c)).order().by("name",desc).limit($d).project("x","y").by("name").by(outE().fold());'
 //[1,10,50,100,500,1000,5000,10000].collect {
 //    def binding = [a: RandomStringUtils.random(30), b: rand.nextDouble(), c: rand.nextInt(), d: rand.nextInt()]
 //    def longScript = (0..<it).collect{engine.createTemplate(baseScript).make(binding)}.join()

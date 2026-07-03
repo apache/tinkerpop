@@ -82,10 +82,10 @@ namespace Gremlin.Net.UnitTest.Driver.Messages
         public void ShouldSetAdditionalField()
         {
             var msg = RequestMessage.Build("g.V()")
-                .AddField(Tokens.ArgsEvalTimeout, 5000L)
+                .AddField(Tokens.ArgsTimeoutMs, 5000L)
                 .Create();
 
-            Assert.Equal(5000L, msg.Fields[Tokens.ArgsEvalTimeout]);
+            Assert.Equal(5000L, msg.Fields[Tokens.ArgsTimeoutMs]);
         }
 
         [Fact]

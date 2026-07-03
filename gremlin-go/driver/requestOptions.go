@@ -20,7 +20,7 @@ under the License.
 package gremlingo
 
 type RequestOptions struct {
-	evaluationTimeout     int
+	timeoutMs     int
 	batchSize             int
 	userAgent             string
 	parametersString      string
@@ -30,7 +30,7 @@ type RequestOptions struct {
 }
 
 type RequestOptionsBuilder struct {
-	evaluationTimeout     int
+	timeoutMs     int
 	batchSize             int
 	userAgent             string
 	parameters            map[string]interface{}
@@ -40,8 +40,8 @@ type RequestOptionsBuilder struct {
 	transactionId         string
 }
 
-func (builder *RequestOptionsBuilder) SetEvaluationTimeout(evaluationTimeout int) *RequestOptionsBuilder {
-	builder.evaluationTimeout = evaluationTimeout
+func (builder *RequestOptionsBuilder) SetTimeoutMs(timeoutMs int) *RequestOptionsBuilder {
+	builder.timeoutMs = timeoutMs
 	return builder
 }
 
@@ -100,7 +100,7 @@ func (builder *RequestOptionsBuilder) AddParameter(key string, parameter interfa
 func (builder *RequestOptionsBuilder) Create() RequestOptions {
 	requestOptions := new(RequestOptions)
 
-	requestOptions.evaluationTimeout = builder.evaluationTimeout
+	requestOptions.timeoutMs = builder.timeoutMs
 	requestOptions.batchSize = builder.batchSize
 	requestOptions.userAgent = builder.userAgent
 	requestOptions.materializeProperties = builder.materializeProperties

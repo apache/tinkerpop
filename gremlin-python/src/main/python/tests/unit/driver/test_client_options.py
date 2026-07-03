@@ -115,10 +115,10 @@ class TestRequestMessageNoMutation:
 
         original = RequestMessage(fields={'g': 'g'}, gremlin='g.V()')
 
-        client.submit_async(original, request_options={'evaluationTimeout': 1000})
+        client.submit_async(original, request_options={'timeoutMs': 1000})
         # The caller's original message must be untouched.
         assert 'batchSize' not in original.fields
-        assert 'evaluationTimeout' not in original.fields
+        assert 'timeoutMs' not in original.fields
         assert original.fields == {'g': 'g'}
 
         # Resubmit the same message with different options; it must not carry
@@ -126,7 +126,7 @@ class TestRequestMessageNoMutation:
         client.submit_async(original, request_options={'batchSize': 5})
         sent = conn.write.call_args[0][0]
         assert sent.fields['batchSize'] == 5
-        assert 'evaluationTimeout' not in sent.fields
+        assert 'timeoutMs' not in sent.fields
         # And the original is still pristine.
         assert original.fields == {'g': 'g'}
 

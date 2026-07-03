@@ -154,6 +154,29 @@ As with the earlier JDK 17 support, some libraries still rely on deep reflection
 library used with OLAP), so it may be necessary to `--add-opens` or `--add-exports` certain modules at runtime. The set
 of options used by TinkerPop's own tests is unchanged.
 
+==== Renaming `evaluationTimeout` to `timeoutMs`
+
+The per-request execution timeout is now referred to by a single name, `timeoutMs`, everywhere. `timeoutMs` is the
+maximum time in milliseconds that a request is allowed to execute on the server before it times out. It can be
+configured server-wide and overridden on a per-request basis. Previously the same concept was called
+`evaluationTimeout` in the server configuration, the `with()` script token, and several driver APIs, while the wire
+protocol already used `timeoutMs`. Collapsing to one name removes that inconsistency.
+
+This is a breaking change with no backward-compatible alias. The old `evaluationTimeout` name (and the long-deprecated
+`scriptEvaluationTimeout`) are no longer recognized anywhere. Update each surface as follows:
+
+- *Server config*: the `gremlin-server.yaml` key `evaluationTimeout` becomes `timeoutMs` (default still 30000).
+- *Script token*: `g.with('evaluationTimeout', 500)` becomes `g.with('timeoutMs', 500)`.
+- *Java driver*: `RequestOptions.Builder.timeout(long)` becomes `timeoutMs(long)` and `getTimeout()` becomes `getTimeoutMs()`.
+- *Go driver*: `RequestOptionsBuilder.SetEvaluationTimeout(int)` becomes `SetTimeoutMs(int)`.
+- *.NET driver*: `Tokens.ArgsEvalTimeout` becomes `Tokens.ArgsTimeoutMs` and `RequestMessage.Builder.AddEvaluationTimeout(...)`
+  becomes `AddTimeoutMs(...)`.
+- *JavaScript driver*: the request option `{ evaluationTimeout: N }` becomes `{ timeoutMs: N }`.
+- *Python driver*: use the token `timeoutMs` (e.g. `g.with_('timeoutMs', 500)` or `request_options={'timeoutMs': 500}`).
+
+Driver and server should be upgraded together. A driver sending the old `evaluationTimeout` field to a 4.x server has
+that field silently ignored and falls back to the server's default timeout, as with any unrecognized request argument.
+
 ==== Declarative Pattern Matching
 
 Gremlin has always offered both imperative and declarative styles to writing graph queries. While the imperative style

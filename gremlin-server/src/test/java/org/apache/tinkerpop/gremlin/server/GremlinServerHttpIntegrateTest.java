@@ -138,8 +138,8 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             case "should200OnPOSTWithAuthorizationHeader":
                 configureForAuthentication(settings);
                 break;
-            case "should500OnPOSTWithEvaluationTimeout":
-                settings.evaluationTimeout = 5000;
+            case "should500OnPOSTWithTimeoutMs":
+                settings.timeoutMs = 5000;
                 settings.gremlinPool = 1;
                 break;
             case "shouldRespectCorsAllowedOrigins":
@@ -924,7 +924,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test(timeout = 10000) // Add test timeout to prevent incorrect timeout behavior from stopping test run.
-    public void should500OnPOSTWithEvaluationTimeout() throws Exception {
+    public void should500OnPOSTWithTimeoutMs() throws Exception {
         // Related to TINKERPOP-2769. This is a similar test to the one for the WebSocketChannelizer.
         final CloseableHttpClient firstClient = HttpClients.createDefault();
         final CloseableHttpClient secondClient = HttpClients.createDefault();

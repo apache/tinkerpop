@@ -238,11 +238,11 @@ Some connection options can also be set on individual requests made through the 
 
 [source,go]
 ----
-results, err := g.With("evaluationTimeout", 500).V().Out("knows").ToList()
+results, err := g.With("timeoutMs", 500).V().Out("knows").ToList()
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent` and
-`evaluationTimeout`.
+`timeoutMs`.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
 to optimize result transfer. For direct `Client.Submit()` calls, set the connection-level `BulkResults` option to
@@ -514,12 +514,12 @@ Both the `Client` and `DriverRemoteConnection` types have a `SubmitWithOptions(t
 of the standard `Submit()` method. These methods allow a `RequestOptions` struct to be passed in which will augment the
 execution on the server. `RequestOptions` can be constructed
 using `RequestOptionsBuilder`. A good use-case for this feature is to set a per-request override to the
-`evaluationTimeout` so that it only applies to the current request.
+`timeoutMs` so that it only applies to the current request.
 
 [source,go]
 ----
 options := new(RequestOptionsBuilder).
-			SetEvaluationTimeout(5000).
+			SetTimeoutMs(5000).
 			SetBatchSize(32).
 			SetMaterializeProperties("tokens").
 			AddParameter("x", 100).
@@ -528,15 +528,15 @@ resultSet, err := client.SubmitWithOptions("g.V(x).count()", options)
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
-`evaluationTimeout` and `materializeProperties`.
+`timeoutMs` and `materializeProperties`.
 `RequestOptions` may also contain a map of query `parameters` to be applied to the supplied
 traversal string.
 
 [source,go]
 ----
-resultSet, err := client.SubmitWithOptions("g.with('evaluationTimeout', 500).addV().iterate();"+
+resultSet, err := client.SubmitWithOptions("g.with('timeoutMs', 500).addV().iterate();"+
   "g.addV().iterate();"+
-  "g.with('evaluationTimeout', 500).addV();", new(RequestOptionsBuilder).SetEvaluationTimeout(500).Create())
+  "g.with('timeoutMs', 500).addV();", new(RequestOptionsBuilder).SetTimeoutMs(500).Create())
 results, err := resultSet.All()
 ----
 
@@ -1039,11 +1039,11 @@ on the `TraversalSource`. For instance to set request timeout to 500 millisecond
 [source,java]
 ----
 GraphTraversalSource g = traversal().with(conf);
-List<Vertex> vertices = g.with(Tokens.ARGS_EVAL_TIMEOUT, 500L).V().out("knows").toList()
+List<Vertex> vertices = g.with(Tokens.TIMEOUT_MS, 500L).V().out("knows").toList()
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
-`materializeProperties` and `evaluationTimeout`. Use of `Tokens` to reference these options is preferred.
+`materializeProperties` and `timeoutMs`. Use of `Tokens` to reference these options is preferred.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
 to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
@@ -1381,8 +1381,7 @@ which will boost performance and reduce resources required on the server.
 
 There are a number of overloads to `Client.submit()` that accept a `RequestOptions` object. The `RequestOptions`
 provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
-this feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current
-request.
+this feature is to set a per-request override to the `timeoutMs` so that it only applies to the current request.
 
 [source,java]
 ----
@@ -1940,11 +1939,11 @@ Some connection options can also be set on individual requests made through the 
 
 [source,javascript]
 ----
-const vertices = await g.with_('evaluationTimeout', 500).V().out('knows').toList()
+const vertices = await g.with_('timeoutMs', 500).V().out('knows').toList()
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent`,
-`bulkResults`, `materializeProperties` and `evaluationTimeout`.
+`bulkResults`, `materializeProperties` and `timeoutMs`.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
 to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
@@ -2281,16 +2280,15 @@ for (const vertex of result2) {
 
 The `client.submit()` functions accept a `requestOptions` which expects a dictionary. The `requestOptions`
 provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
-this feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current
-request.
+this feature is to set a per-request override to the `timeoutMs` so that it only applies to the current request.
 
 [source,javascript]
 ----
-const result = await client.submit("g.V().repeat(both()).times(100)", null, { evaluationTimeout: 5000 })
+const result = await client.submit("g.V().repeat(both()).times(100)", null, { timeoutMs: 5000 })
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent`,
-`bulkResults`, `materializeProperties` and `evaluationTimeout`.
+`bulkResults`, `materializeProperties` and `timeoutMs`.
 
 IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
 with bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Scripts with multiple traversals and multiple
@@ -2327,7 +2325,7 @@ per-request settings.
 [source,javascript]
 ----
 try {
-  for await (const item of client.stream('g.V().has("age", gt(age))', { age: 30 }, { evaluationTimeout: 5000 })) {
+  for await (const item of client.stream('g.V().has("age", gt(age))', { age: 30 }, { timeoutMs: 5000 })) {
     console.log(item);
   }
 } catch (err) {
@@ -2679,12 +2677,12 @@ For instance to set request timeout to 500 milliseconds:
 
 [source,csharp]
 ----
-var l = g.With(Tokens.ArgsEvalTimeout, 500).V().Out("knows").Count().ToList();
+var l = g.With(Tokens.ArgsTimeoutMs, 500).V().Out("knows").Count().ToList();
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
-`materializeProperties`, and `evaluationTimeout`. These options are available as constants on the
-`Gremlin.Net.Driver.Tokens` class.
+`materializeProperties`, and `timeoutMs`. These options are available as constants on the `Gremlin.Net.Driver.Tokens`
+class.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
 to optimize result transfer. This does not apply to direct `GremlinClient.SubmitAsync()` calls, where `bulkResults`
@@ -2946,7 +2944,7 @@ include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference
 ==== Per Request Settings
 
 A `RequestMessage` can be built with additional fields using the builder pattern. A good use-case for this
-feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current request.
+feature is to set a per-request override to the `timeoutMs` so that it only applies to the current request.
 
 [source,csharp]
 ----
@@ -2954,7 +2952,7 @@ include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`, `materializeProperties`
-and `evaluationTimeout`. These options are available as constants on the `Gremlin.Net.Driver.Tokens` class.
+and `timeoutMs`. These options are available as constants on the `Gremlin.Net.Driver.Tokens` class.
 
 ==== Request Interceptors
 
@@ -3339,11 +3337,11 @@ Some connection options can also be set on individual requests made through the 
 
 [source,python]
 ----
-vertices = g.with_('evaluationTimeout', 500).V().out('knows').to_list()
+vertices = g.with_('timeoutMs', 500).V().out('knows').to_list()
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `language`,
-`materializeProperties`, `userAgent`, and `evaluationTimeout`.
+`materializeProperties`, `userAgent`, and `timeoutMs`.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `True` per-request
 to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
@@ -3692,16 +3690,15 @@ returns a `concurrent.futures.Future` that resolves to a list when it is complet
 
 The `client.submit()` functions accept a `request_options` which expects a dictionary. The `request_options`
 provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
-this feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current
-request.
+this feature is to set a per-request override to the `timeoutMs` so that it only applies to the current request.
 
 [source,python]
 ----
-result_set = client.submit('g.V().repeat(both()).times(100)', request_options={'evaluationTimeout': 5000})
+result_set = client.submit('g.V().repeat(both()).times(100)', request_options={'timeoutMs': 5000})
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `requestId`, `userAgent`,
-`materializeProperties` and `evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
+`materializeProperties` and `timeoutMs`.
 
 IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
 with bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Scripts with multiple traversals and multiple

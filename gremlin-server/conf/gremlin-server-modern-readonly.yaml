@@ -17,7 +17,7 @@
 
 host: localhost
 port: 8182
-evaluationTimeout: 30000
+timeoutMs: 30000
 graphs: {
   graph: {
     configuration: conf/tinkergraph-empty.properties,

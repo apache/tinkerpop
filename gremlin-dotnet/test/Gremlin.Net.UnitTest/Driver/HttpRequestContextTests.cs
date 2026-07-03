@@ -206,7 +206,7 @@ namespace Gremlin.Net.UnitTest.Driver
                 .AddG("g")
                 .AddLanguage("gremlin-lang")
                 .AddBatchSize(100)
-                .AddEvaluationTimeout(30000)
+                .AddTimeoutMs(30000)
                 .Create();
             var context = new HttpRequestContext("POST", new Uri("http://localhost:8182/gremlin"),
                 new Dictionary<string, string>(), message);
@@ -218,7 +218,7 @@ namespace Gremlin.Net.UnitTest.Driver
             Assert.Equal("g", json.RootElement.GetProperty("g").GetString());
             Assert.Equal("gremlin-lang", json.RootElement.GetProperty("language").GetString());
             Assert.Equal(100, json.RootElement.GetProperty("batchSize").GetInt32());
-            Assert.Equal(30000, json.RootElement.GetProperty("evaluationTimeout").GetInt32());
+            Assert.Equal(30000, json.RootElement.GetProperty("timeoutMs").GetInt32());
         }
 
         [Fact]

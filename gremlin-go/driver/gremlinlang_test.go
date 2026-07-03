@@ -599,7 +599,7 @@ func Test_GremlinLang(t *testing.T) {
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
-				return g.WithStrategies(OptionsStrategy(map[string]interface{}{"evaluationTimeout": 500})).V().Count()
+				return g.WithStrategies(OptionsStrategy(map[string]interface{}{"timeoutMs": 500})).V().Count()
 			},
 			// OptionsStrategy are now extracted into request message and is no longer sent with the script
 			equals: "g.V().count()",

@@ -105,9 +105,10 @@ public class Settings {
     public int threadPoolBoss = 1;
 
     /**
-     * Time in milliseconds to wait for a request to complete execution. Defaults to 30000.
+     * The maximum time in milliseconds that a request is allowed to execute on the server before it times out.
+     * Serves as the server-wide default which may be overridden on a per-request basis. Defaults to 30000.
      */
-    public long evaluationTimeout = 30000L;
+    public long timeoutMs = 30000L;
 
     /**
      * Number of items in a particular resultset to iterate and serialize prior to pushing the data down the wire
@@ -188,7 +189,7 @@ public class Settings {
      * Time in milliseconds that a transaction can remain idle (no operation running or queued) before it is
      * automatically rolled back. This prevents resource leaks from abandoned transactions. The idle timer is suspended
      * while an operation is in progress, so a long-running operation does not trip it (its duration is instead bounded
-     * by {@link #evaluationTimeout}). Set to {@code 0} to disable idle reclamation entirely. Default is 60000
+     * by {@link #timeoutMs}). Set to {@code 0} to disable idle reclamation entirely. Default is 60000
      * (1 minute).
      */
     public long idleTransactionTimeout = 60000L;
@@ -210,7 +211,7 @@ public class Settings {
      * {@link #idleTransactionTimeout} (which only reclaims idle transactions), this cap fires even while an operation is
      * running, interrupting it and rolling the transaction back, so it bounds how long a single transaction can hold its
      * dedicated worker thread and concurrency slot. The bound on transaction lifetime and slot occupancy is absolute;
-     * the bound on thread occupancy is best-effort in the same way {@link #evaluationTimeout} is, since interrupting a
+     * the bound on thread occupancy is best-effort in the same way {@link #timeoutMs} is, since interrupting a
      * running operation only takes effect when it reaches an interruptible point. Set to {@code 0} to disable the cap.
      * Default is 600000 (10 minutes).
      */
@@ -330,8 +331,8 @@ public class Settings {
         return Optional.ofNullable(ssl);
     }
 
-    public long getEvaluationTimeout() {
-        return evaluationTimeout;
+    public long getTimeoutMs() {
+        return timeoutMs;
     }
 
     /**

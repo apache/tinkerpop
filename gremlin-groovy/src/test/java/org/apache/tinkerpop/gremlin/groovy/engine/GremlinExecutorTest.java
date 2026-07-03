@@ -267,7 +267,7 @@ public class GremlinExecutorTest {
         final CountDownLatch timeOutCount = new CountDownLatch(1);
 
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .evaluationTimeout(250)
+                .timeoutMs(250)
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
                 .afterTimeout((b) -> timeOutCount.countDown()).create();
@@ -294,7 +294,7 @@ public class GremlinExecutorTest {
         final CountDownLatch timeOutCount = new CountDownLatch(1);
 
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .evaluationTimeout(250)
+                .timeoutMs(250)
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
                 .afterTimeout((b) -> timeOutCount.countDown()).create();
@@ -321,13 +321,13 @@ public class GremlinExecutorTest {
         final CountDownLatch timeOutCount = new CountDownLatch(1);
 
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .evaluationTimeout(10000)
+                .timeoutMs(10000)
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
                 .afterTimeout((b) -> timeOutCount.countDown()).create();
         try {
             final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
-                    .evaluationTimeoutOverride(250L).create();
+                    .timeoutMsOverride(250L).create();
             gremlinExecutor.eval("Thread.sleep(1000);10", "gremlin-groovy", new SimpleBindings(), lifeCycle).get();
             fail("This script should have timed out with an exception");
         } catch (Exception ex) {
@@ -350,13 +350,13 @@ public class GremlinExecutorTest {
         final CountDownLatch timeOutCount = new CountDownLatch(1);
 
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .evaluationTimeout(10000)
+                .timeoutMs(10000)
                 .afterFailure((b, e) -> failureCalled.set(true))
                 .afterSuccess((b) -> successCalled.set(true))
                 .afterTimeout((b) -> timeOutCount.countDown()).create();
         try {
             final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
-                    .evaluationTimeoutOverride(100L).create();
+                    .timeoutMsOverride(100L).create();
             gremlinExecutor.eval("Thread.sleep(9000);10", "gremlin-groovy", new SimpleBindings(), lifeCycle).get();
             fail("This script should have timed out with an exception");
         } catch (Exception ex) {
@@ -460,28 +460,28 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldCancelTimeoutOnSuccessfulScript() throws Exception {
-        final long evaluationTimeout = 15_000;
+        final long timeoutMs = 15_000;
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .evaluationTimeout(evaluationTimeout)
+                .timeoutMs(timeoutMs)
                 .create();
 
         final long now = System.currentTimeMillis();
         assertEquals(2, gremlinExecutor.eval("1+1").get());
         gremlinExecutor.close();
-        assertTrue(System.currentTimeMillis() - now < evaluationTimeout);
+        assertTrue(System.currentTimeMillis() - now < timeoutMs);
     }
 
     @Test
     public void shouldCancelTimeoutOnSuccessfulEval() throws Exception {
-        final long evaluationTimeout = 15_000;
+        final long timeoutMs = 15_000;
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .evaluationTimeout(evaluationTimeout)
+                .timeoutMs(timeoutMs)
                 .create();
 
         final long now = System.currentTimeMillis();
         assertEquals(2, gremlinExecutor.eval("1+1").get());
         gremlinExecutor.close();
-        assertTrue(System.currentTimeMillis() - now < evaluationTimeout);
+        assertTrue(System.currentTimeMillis() - now < timeoutMs);
     }
 
     @Test

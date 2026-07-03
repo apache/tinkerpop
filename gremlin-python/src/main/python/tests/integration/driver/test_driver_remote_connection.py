@@ -46,20 +46,20 @@ class TestDriverRemoteConnection(object):
 
     def test_extract_request_options(self, remote_connection):
         g = traversal().with_(remote_connection)
-        t = g.with_("evaluationTimeout", 1000).with_("batchSize", 100).V().count()
+        t = g.with_("timeoutMs", 1000).with_("batchSize", 100).V().count()
         assert remote_connection.extract_request_options(t.gremlin_lang) == {'batchSize': 100,
-                                                                             'evaluationTimeout': 1000,
+                                                                             'timeoutMs': 1000,
                                                                              'bulkResults': True}
         assert 6 == t.to_list()[0]
 
     @pytest.mark.skip(reason="TINKERPOP-3126: g.V() with a variable/parameter argument fails to parse in gremlin-lang")
     def test_extract_request_options_with_params(self, remote_connection):
         g = traversal().with_(remote_connection)
-        t = g.with_("evaluationTimeout",
+        t = g.with_("timeoutMs",
                     1000).with_("batchSize", 100).with_("userAgent",
                                                         "test").V(GValue('ids', [1, 2, 3])).count()
         assert remote_connection.extract_request_options(t.gremlin_lang) == {'batchSize': 100,
-                                                                             'evaluationTimeout': 1000,
+                                                                             'timeoutMs': 1000,
                                                                              'userAgent': 'test',
                                                                              'bulkResults': True,
                                                                              'parameters': "['ids':[1,2,3]]"}

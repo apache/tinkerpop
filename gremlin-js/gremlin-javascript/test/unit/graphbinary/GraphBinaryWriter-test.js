@@ -52,16 +52,16 @@ describe('GraphBinaryWriter', () => {
   });
 
   describe('fields with entries', () => {
-    it('map with evaluationTimeout entry', () => {
+    it('map with timeoutMs entry', () => {
       const fields = new Map();
-      fields.set('evaluationTimeout', 1000);
+      fields.set('timeoutMs', 1000);
       const result = writer.writeRequest({ gremlin: 'g.V()', fields });
       const expected = Buffer.from([
         0x84, // version
         0x00, 0x00, 0x00, 0x01, // map length=1
         0x03, 0x00, // key type_code=STRING, value_flag=0x00
-        0x00, 0x00, 0x00, 0x11, // key string length=17
-        0x65, 0x76, 0x61, 0x6C, 0x75, 0x61, 0x74, 0x69, 0x6F, 0x6E, 0x54, 0x69, 0x6D, 0x65, 0x6F, 0x75, 0x74, // "evaluationTimeout"
+        0x00, 0x00, 0x00, 0x09, // key string length=9
+        0x74, 0x69, 0x6D, 0x65, 0x6F, 0x75, 0x74, 0x4D, 0x73, // "timeoutMs"
         0x01, 0x00, // value type_code=INT, value_flag=0x00
         0x00, 0x00, 0x03, 0xE8, // value int=1000
         0x00, 0x00, 0x00, 0x05, // gremlin string length=5

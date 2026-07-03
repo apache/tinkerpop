@@ -69,10 +69,10 @@ namespace Gremlin.Net.Driver
         public const string ArgsLanguage = "language";
 
         /// <summary>
-        ///     Argument name that allows the override of the server setting that determines the maximum time to wait for a
-        ///     request to execute on the server.
+        ///     Argument name that allows the override of the server setting that determines the maximum time in
+        ///     milliseconds a request is allowed to execute on the server before it times out.
         /// </summary>
-        public const string ArgsEvalTimeout = "evaluationTimeout";
+        public const string ArgsTimeoutMs = "timeoutMs";
 
         /// <summary>
         ///     Argument name that allows the override of handling properties.

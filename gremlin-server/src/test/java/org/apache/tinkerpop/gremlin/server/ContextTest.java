@@ -53,7 +53,7 @@ public class ContextTest {
     {
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final RequestMessage request =
-                RequestMessage.build("g.with('evaluationTimeout', 1000).with(true).with('materializeProperties', 'tokens').V().out('knows')")
+                RequestMessage.build("g.with('timeoutMs', 1000).with(true).with('materializeProperties', 'tokens').V().out('knows')")
                     .create();
         final Settings settings = new Settings();
         final Context context = new Context(request, ctx, settings, null, null, null);
@@ -67,7 +67,7 @@ public class ContextTest {
     {
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final RequestMessage request =
-                RequestMessage.build("g.with('evaluationTimeout', 1000).with(true).with('materializeProperties', 'some-invalid-value').V().out('knows')")
+                RequestMessage.build("g.with('timeoutMs', 1000).with(true).with('materializeProperties', 'some-invalid-value').V().out('knows')")
                     .create();
         final Settings settings = new Settings();
         final Context context = new Context(request, ctx, settings, null, null, null);
