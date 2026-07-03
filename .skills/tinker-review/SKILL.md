@@ -71,7 +71,7 @@ a phase of this run — this is the contract for what to do with the content:
 |---------|------|---------------------|
 | **Context** | framing | Orient to the change type and its risks; not actioned directly. |
 | **Enrich** | Phase 2 | Execute the listed steps using the enrichment CLI commands. |
-| **Interpret** | Phase 5 | When writing the report, weigh the named `evidence.json` fields into `findings` / `openQuestions`. |
+| **Interpret** | Phase 2 (report) | When writing the report, weigh the named `evidence.json` fields into `findings` / `openQuestions`. |
 | **Escape** | any phase | Check the stop/escalate conditions; halt or flag when one holds. |
 
 Phase 1 already computes every structural check — completeness, coverageGaps,
