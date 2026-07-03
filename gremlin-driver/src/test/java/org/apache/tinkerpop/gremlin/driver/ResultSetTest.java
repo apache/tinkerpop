@@ -62,6 +62,29 @@ public class ResultSetTest extends AbstractResultSetTest {
     }
 
     @Test
+    public void shouldKeepFirstErrorWhenMarkedFailedTwice() throws InterruptedException {
+        // Two threads can race to fail the same stream (e.g. a read-timeout on the event loop and end-of-stream on
+        // the reader thread). The first error must win consistently across both the completed future and the error
+        // observed via getAvailableItemCount(), so the recorded cause and the future's completion never disagree.
+        final CompletableFuture<Void> all = resultSet.allItemsAvailableAsync();
+        final RuntimeException first = new RuntimeException("first");
+        final RuntimeException second = new RuntimeException("second");
+
+        resultSet.markError(first);
+        resultSet.markError(second);
+
+        pool.awaitTermination(2, TimeUnit.SECONDS);
+        assertThat(all.isCompletedExceptionally(), is(true));
+
+        try {
+            resultSet.getAvailableItemCount();
+            fail("Expected the recorded error to be thrown");
+        } catch (RuntimeException ex) {
+            assertEquals(first, ex.getCause());
+        }
+    }
+
+    @Test
     public void shouldHaveAllItemsAvailableOnReadComplete() throws InterruptedException {
         assertThat(resultSet.allItemsAvailable(), is(false));
         resultSet.markComplete();
