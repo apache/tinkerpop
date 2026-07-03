@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.dsl;
 
 import com.squareup.javapoet.ArrayTypeName;
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
@@ -66,7 +67,10 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -285,9 +289,20 @@ public class GremlinDslProcessor extends AbstractProcessor {
                     .addParameter(String[].class, "additionalLabels")
                     .varargs()
                     .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
-                    .addStatement("clone.getGremlinLang().addStep($T.addV, first)", GraphTraversal.Symbols.class)
-                    .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
-                    .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, first))", ctx.traversalClassName, AddVertexStartStep.class)
+                    .addCode(CodeBlock.builder()
+                            .beginControlFlow("if (additionalLabels.length == 0)")
+                            .addStatement("clone.getGremlinLang().addStep($T.addV, label)", GraphTraversal.Symbols.class)
+                            .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
+                            .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, label))", ctx.traversalClassName, AddVertexStartStep.class)
+                            .nextControlFlow("else")
+                            .addStatement("clone.getGremlinLang().addStep($T.addV, label, additionalLabels)", GraphTraversal.Symbols.class)
+                            .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
+                            .addStatement("final $T<$T> allLabels = new $T<>()", Set.class, String.class, LinkedHashSet.class)
+                            .addStatement("allLabels.add(label)")
+                            .addStatement("$T.addAll(allLabels, additionalLabels)", Collections.class)
+                            .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, allLabels))", ctx.traversalClassName, AddVertexStartStep.class)
+                            .endControlFlow()
+                            .build())
                     .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
                     .build());
             traversalSourceClass.addMethod(MethodSpec.methodBuilder("addV")
@@ -297,9 +312,22 @@ public class GremlinDslProcessor extends AbstractProcessor {
                     .addParameter(Traversal[].class, "additionalLabels")
                     .varargs()
                     .addStatement("$N clone = this.clone()", ctx.traversalSourceClazz)
-                    .addStatement("clone.getGremlinLang().addStep($T.addV, label)", GraphTraversal.Symbols.class)
-                    .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
-                    .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, label.asAdmin()))", ctx.traversalClassName, AddVertexStartStep.class)
+                    .addCode(CodeBlock.builder()
+                            .beginControlFlow("if (additionalLabels.length == 0)")
+                            .addStatement("clone.getGremlinLang().addStep($T.addV, label)", GraphTraversal.Symbols.class)
+                            .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
+                            .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, label.asAdmin()))", ctx.traversalClassName, AddVertexStartStep.class)
+                            .nextControlFlow("else")
+                            .addStatement("clone.getGremlinLang().addStep($T.addV, label, additionalLabels)", GraphTraversal.Symbols.class)
+                            .addStatement("$N traversal = new $N(clone)", ctx.defaultTraversalClazz, ctx.defaultTraversalClazz)
+                            .addStatement("final $T<$T<?, ?>> allTraversals = new $T<>(additionalLabels.length + 1)", List.class, Traversal.Admin.class, ArrayList.class)
+                            .addStatement("allTraversals.add(label.asAdmin())")
+                            .beginControlFlow("for (final $T<?, ?> t : additionalLabels)", Traversal.class)
+                            .addStatement("allTraversals.add(t.asAdmin())")
+                            .endControlFlow()
+                            .addStatement("return ($T) traversal.asAdmin().addStep(new $T(traversal, allTraversals))", ctx.traversalClassName, AddVertexStartStep.class)
+                            .endControlFlow()
+                            .build())
                     .returns(ParameterizedTypeName.get(ctx.traversalClassName, ClassName.get(Vertex.class), ClassName.get(Vertex.class)))
                     .build());
             traversalSourceClass.addMethod(MethodSpec.methodBuilder("addE")

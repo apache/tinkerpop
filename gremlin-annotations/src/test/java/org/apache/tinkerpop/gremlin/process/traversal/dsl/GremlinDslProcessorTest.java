@@ -27,13 +27,18 @@ import javax.tools.StandardLocation;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -86,6 +91,33 @@ public class GremlinDslProcessorTest {
             final Class cls = cl.loadClass("org.apache.tinkerpop.gremlin.process.traversal.dsl.RemoteDslTraversal");
             cls.getConstructor().newInstance();
         } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void shouldApplyAllLabelsForGeneratedMultiLabelAddV() {
+        final Compilation compilation = javac()
+                .withProcessors(new GremlinDslProcessor())
+                .compile(JavaFileObjects.forResource(GremlinDsl.class.getResource("SocialTraversalDsl.java")),
+                        JavaFileObjects.forResource(GremlinDsl.class.getResource("AddVMultiLabelDslTraversal.java")));
+        assertCompilationSuccess(compilation);
+
+        try {
+            final ClassLoader cl = new JavaFileObjectClassLoader(compilation.generatedFiles());
+            final Class cls = cl.loadClass("org.apache.tinkerpop.gremlin.process.traversal.dsl.AddVMultiLabelDslTraversal");
+            final Object instance = cls.getConstructor().newInstance();
+
+            // addV(String, String...) should aggregate all labels rather than dropping the varargs
+            final Object stringLabelResult = cls.getMethod("getStringLabelResult").invoke(instance);
+            assertTrue(stringLabelResult instanceof Set);
+            assertEquals(new LinkedHashSet<>(Arrays.asList("person", "employee")), stringLabelResult);
+
+            // addV(Traversal, Traversal...) should retain all label traversals as children rather than
+            // dropping the varargs
+            final List<?> traversalLabelChildren = (List<?>) cls.getMethod("getTraversalLabelChildren").invoke(instance);
+            assertEquals(2, traversalLabelChildren.size());
+        } catch (final Exception e) {
             throw new RuntimeException(e);
         }
     }
