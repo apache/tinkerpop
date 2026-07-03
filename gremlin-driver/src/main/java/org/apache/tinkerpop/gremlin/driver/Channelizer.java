@@ -29,6 +29,9 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.proxy.HttpProxyHandler;
+
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.handler.GremlinResponseHandler;
@@ -147,9 +150,10 @@ public interface Channelizer extends ChannelHandler {
             // TLS handshake.
             final ProxyOptions proxy = cluster.getProxy();
             if (proxy != null) {
+                final SocketAddress proxyAddress = resolveProxyAddress(proxy.getAddress());
                 final HttpProxyHandler proxyHandler = proxy.hasCredentials()
-                        ? new HttpProxyHandler(proxy.getAddress(), proxy.getUsername(), proxy.getPassword())
-                        : new HttpProxyHandler(proxy.getAddress());
+                        ? new HttpProxyHandler(proxyAddress, proxy.getUsername(), proxy.getPassword())
+                        : new HttpProxyHandler(proxyAddress);
                 pipeline.addLast(PIPELINE_PROXY_HANDLER, proxyHandler);
             }
 
@@ -189,6 +193,21 @@ public interface Channelizer extends ChannelHandler {
                 }
             }
         }
+
+        /**
+         * Resolves an unresolved proxy {@link SocketAddress} so that Netty's {@code HttpProxyHandler} can connect to
+         * it. A resolved address (or a non-{@link InetSocketAddress}) is returned unchanged.
+         */
+        private static SocketAddress resolveProxyAddress(final SocketAddress address) {
+            if (address instanceof InetSocketAddress) {
+                final InetSocketAddress inet = (InetSocketAddress) address;
+                if (inet.isUnresolved()) {
+                    return new InetSocketAddress(inet.getHostString(), inet.getPort());
+                }
+            }
+            return address;
+        }
+
     }
 
     /**

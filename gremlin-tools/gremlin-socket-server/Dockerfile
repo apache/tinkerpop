@@ -32,5 +32,6 @@ COPY ${SOCKET_SERVER_DIR}/libs/ /opt/gremlin-socket-server/libs/
 WORKDIR /opt/gremlin-socket-server
 
 EXPOSE 45943
+EXPOSE 45944
 
 ENTRYPOINT ["java","-jar","gremlin-socket-server.jar"]

@@ -26,6 +26,8 @@ public final class SocketServerConstants {
 
     public static final int PORT = 45943;
 
+    public static final int PROXY_PORT = 45944;
+
     public static final String GREMLIN_SINGLE_VERTEX = "server_single_vertex";
     public static final String GREMLIN_CLOSE_CONNECTION = "server_close_connection";
     public static final String GREMLIN_VERTEX_THEN_CLOSE = "server_vertex_then_close";

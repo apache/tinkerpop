@@ -21,7 +21,11 @@ package gremlingo
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -33,6 +37,105 @@ import (
 func socketServerURL() string {
 	return getEnvOrDefaultString("GREMLIN_SOCKET_SERVER_URL",
 		fmt.Sprintf("http://localhost:%d/gremlin", socketServerPort))
+}
+
+func socketServerProxyURL() string {
+	return getEnvOrDefaultString("GREMLIN_SOCKET_SERVER_PROXY_URL",
+		"http://localhost:45944")
+}
+
+// resetProxyRecording clears the proxy's recorded targets via POST /__reset.
+func resetProxyRecording(t *testing.T) {
+	t.Helper()
+	proxyURL := socketServerProxyURL()
+	resp, err := http.Post(proxyURL+"/__reset", "application/json", nil)
+	if err != nil {
+		t.Skipf("Recording proxy not available: %v", err)
+	}
+	resp.Body.Close()
+}
+
+// recordedProxyTargets fetches the recorded "host:port" targets via GET /__recorded.
+func recordedProxyTargets(t *testing.T) []string {
+	t.Helper()
+	proxyURL := socketServerProxyURL()
+	resp, err := http.Get(proxyURL + "/__recorded")
+	if err != nil {
+		t.Skipf("Recording proxy not available: %v", err)
+	}
+	defer resp.Body.Close()
+
+	var recorded []string
+	if err := json.NewDecoder(resp.Body).Decode(&recorded); err != nil {
+		t.Fatalf("failed to decode recorded proxy targets: %v", err)
+	}
+	return recorded
+}
+
+// anyTargetHasPortSuffix reports whether any recorded target ends with ":<port>",
+// matching on port suffix only so the host portion is ignored.
+func anyTargetHasPortSuffix(targets []string, port int) bool {
+	suffix := fmt.Sprintf(":%d", port)
+	for _, target := range targets {
+		if strings.HasSuffix(target, suffix) {
+			return true
+		}
+	}
+	return false
+}
+
+// TestProxyRoutesSocketServerTraffic verifies that traffic submitted through a
+// client configured with a Proxy is routed to the socket server via the shared
+// recording proxy, and that the proxy records the socket server target.
+func TestProxyRoutesSocketServerTraffic(t *testing.T) {
+	resetProxyRecording(t)
+
+	parsedProxyURL, err := url.Parse(socketServerProxyURL())
+	require.NoError(t, err)
+
+	client, err := NewClient(socketServerURL(), func(settings *ClientSettings) {
+		settings.Proxy = func(*http.Request) (*url.URL, error) {
+			return parsedProxyURL, nil
+		}
+	})
+	require.NoError(t, err)
+	defer client.Close()
+
+	rs, err := client.Submit(gremlinSingleVertex)
+	require.NoError(t, err)
+	results, err := rs.All()
+	require.NoError(t, err)
+	assert.Equal(t, 1, len(results))
+
+	targets := recordedProxyTargets(t)
+	assert.True(t, anyTargetHasPortSuffix(targets, socketServerPort),
+		"expected at least one recorded target ending with :%d, got %v", socketServerPort, targets)
+}
+
+// TestProxyNegativeControl verifies that a client connecting directly to the
+// socket server (no Proxy configured) does not route through the recording
+// proxy, so the proxy records no socket server target.
+func TestProxyNegativeControl(t *testing.T) {
+	resetProxyRecording(t)
+
+	client, err := NewClient(socketServerURL(), func(settings *ClientSettings) {
+		// Force a direct connection (no proxy) regardless of ambient proxy env vars.
+		settings.Proxy = func(*http.Request) (*url.URL, error) {
+			return nil, nil
+		}
+	})
+	require.NoError(t, err)
+	defer client.Close()
+
+	rs, err := client.Submit(gremlinSingleVertex)
+	require.NoError(t, err)
+	results, err := rs.All()
+	require.NoError(t, err)
+	assert.Equal(t, 1, len(results))
+
+	targets := recordedProxyTargets(t)
+	assert.False(t, anyTargetHasPortSuffix(targets, socketServerPort),
+		"expected no recorded target ending with :%d, got %v", socketServerPort, targets)
 }
 
 func newSocketServerClient(t *testing.T, configurations ...func(*ClientSettings)) *Client {
