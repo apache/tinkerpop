@@ -449,7 +449,8 @@ the traversal to utilize a parameter in place of a literal.
 
 [source,go]
 ----
-g.V().Has("name", gremlingo.NewGValue("name", "marko"))
+g.V().Has("name", gremlingo.GValue{Name: "name", Value: "marko"})
+g.MergeV(gremlingo.GValue{Name: "vertexPattern", Value: map[interface{}]interface{}{"name": "marko"}})
 ----
 
 [[gremlin-go-scripts]]
@@ -2216,8 +2217,17 @@ Promise.all([
 [[gremlin-javascript-gvalue]]
 === GValue Parameterization
 
-IMPORTANT: 4.0.0-beta.2 Release - `GValue` parameterization is not yet implemented for the JavaScript driver. This
-functionality is planned for a future release.
+A `GValue` is an encapsulation of a parameter name and value. A <<traversal-parameterization,subset of gremlin steps>>
+are able to accept GValues. When constructing a `GraphTraversal` with such steps in JavaScript, a GValue may be passed
+in the traversal to utilize a parameter in place of a literal.
+
+[source,javascript]
+----
+const GValue = gremlin.process.GValue;
+
+g.V().has('name', new GValue('name', 'marko'));
+g.mergeV(new GValue('vertexPattern', { name: 'marko' }));
+----
 
 [[gremlin-javascript-scripts]]
 === Submitting Scripts
@@ -2886,6 +2896,8 @@ the traversal to utilize a parameter in place of a literal.
 [source,csharp]
 ----
 g.V().Has("name", new GValue<string>("name", "marko"));
+g.MergeV(new GValue<IDictionary<object, object>>("vertexPattern",
+    new Dictionary<object, object> { { "name", "marko" } }));
 ----
 
 [[gremlin-dotnet-scripts]]

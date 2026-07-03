@@ -184,9 +184,10 @@ public class GremlinLangTest {
             g.V(GValue.of("1a", new int[]{1, 2, 3}));
         }
 
-        @Test(expected = IllegalArgumentException.class)
-        public void shouldCheckParameterNameIsNotReserved() {
-            g.V(GValue.of("_1", new int[]{1, 2, 3}));
+        @Test
+        public void shouldAllowParameterNameStartingWithUnderscore() {
+            final GremlinLang gremlin = g.V(GValue.of("_1", new int[]{1, 2, 3})).asAdmin().getGremlinLang();
+            assertEquals("g.V(_1)", gremlin.getGremlin());
         }
 
         @Test(expected = IllegalArgumentException.class)

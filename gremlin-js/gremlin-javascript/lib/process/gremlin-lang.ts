@@ -22,7 +22,11 @@ import { OptionsStrategy, TraversalStrategy } from './traversal-strategy.js';
 import { Long, Int, Float, Double, Short, Byte, INT32_MIN, INT32_MAX } from '../utils.js';
 import { Vertex, ProviderDefinedType } from '../structure/graph.js';
 import { ProviderDefinedTypeRegistry } from '../structure/ProviderDefinedTypeRegistry.js';
+import { GValue } from './gvalue.js';
+import { isDeepStrictEqual } from 'node:util';
 import { Buffer } from 'buffer';
+
+const PARAM_NAME_PATTERN = /^[\p{L}_$][\p{L}\p{Nd}_$]*$/u;
 
 export default class GremlinLang {
   private gremlin: string = '';
@@ -120,6 +124,20 @@ export default class GremlinLang {
       const escaped = JSON.stringify(arg).slice(1, -1).replace(/'/g, "\\'");
       return `'${escaped}'`;
     }
+    if (arg instanceof GValue) {
+      const key = arg.name;
+      if (!PARAM_NAME_PATTERN.test(key)) {
+        throw new Error(`Invalid parameter name [${key}].`);
+      }
+      if (this.parameters.has(key)) {
+        if (!isDeepStrictEqual(this.parameters.get(key), arg.value)) {
+          throw new Error(`Parameter with name ${key} already exists.`);
+        }
+      } else {
+        this.parameters.set(key, arg.value);
+      }
+      return key;
+    }
     if (arg instanceof P || arg instanceof TextP) {
       return this._predicateAsString(arg);
     }
@@ -150,6 +168,9 @@ export default class GremlinLang {
       return this._argAsString(arg.id);
     }
     if (arg instanceof GremlinLang) {
+      // Merge the child's parameters so GValue bindings nested inside a child
+      // traversal are still sent to the server alongside the rendered query.
+      arg.parameters.forEach((v, k) => this.parameters.set(k, v));
       return arg.getGremlin('__');
     }
     if (typeof arg.getGremlinLang === 'function') {
@@ -157,7 +178,11 @@ export default class GremlinLang {
       if (arg.graph != null) {
         throw new Error('Child traversal must be anonymous - use __ not g');
       }
-      return arg.getGremlinLang().getGremlin('__');
+      const childLang = arg.getGremlinLang();
+      // Merge the child's parameters so GValue bindings nested inside a child
+      // traversal are still sent to the server alongside the rendered query.
+      childLang.parameters.forEach((v: any, k: string) => this.parameters.set(k, v));
+      return childLang.getGremlin('__');
     }
     if (arg instanceof Uint8Array) {
       return `Binary("${Buffer.from(arg.buffer, arg.byteOffset, arg.byteLength).toString('base64')}")`;

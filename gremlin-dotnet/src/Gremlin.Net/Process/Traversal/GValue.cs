@@ -52,29 +52,17 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Initializes a new instance of the <see cref="GValue{T}" /> class.
         /// </summary>
-        /// <param name="name">The parameter name. Must be a valid identifier, not null, and not start with underscore.</param>
+        /// <param name="name">The parameter name. Must not be null.</param>
         /// <param name="value">The parameter value.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="name" /> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="name" /> is not a valid identifier.</exception>
+        /// <exception cref="ArgumentException">Thrown when value is a nested GValue.</exception>
         public GValue(string name, T value)
         {
+            if (value is IGValue)
+                throw new ArgumentException("GValues cannot be nested");
+
             if (name == null)
                 throw new ArgumentNullException(nameof(name), "The parameter name cannot be null.");
-
-            if (name.Length == 0)
-                throw new ArgumentException($"Invalid parameter name [{name}].");
-
-            if (name[0] == '_')
-                throw new ArgumentException($"Invalid GValue name {name}. Should not start with _.");
-
-            if (!char.IsLetter(name[0]))
-                throw new ArgumentException($"Invalid parameter name [{name}].");
-
-            for (int i = 1; i < name.Length; i++)
-            {
-                if (!char.IsLetterOrDigit(name[i]))
-                    throw new ArgumentException($"Invalid parameter name [{name}].");
-            }
 
             Name = name;
             Value = value;
@@ -119,10 +107,15 @@ namespace Gremlin.Net.Process.Traversal
             }
         }
 
+        /// <summary>
+        ///     Gets a value indicating whether the parameter value is null.
+        /// </summary>
+        public bool IsNull => Value == null;
+
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"GValue({Name}, {Value})";
+            return $"{Name}={Value}";
         }
     }
 }

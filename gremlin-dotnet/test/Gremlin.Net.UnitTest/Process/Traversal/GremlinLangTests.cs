@@ -953,27 +953,36 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         }
 
         [Fact]
-        public void GValue_special_char_name_throws_ArgumentException()
+        public void GValue_special_char_name_accepted()
         {
-            Assert.Throws<ArgumentException>(() => new GValue<int>("\"", 1));
+            var gval = new GValue<int>("\"", 1);
+            Assert.Equal("\"", gval.Name);
         }
 
         [Fact]
-        public void GValue_numeric_name_throws_ArgumentException()
+        public void GValue_numeric_name_accepted()
         {
-            Assert.Throws<ArgumentException>(() => new GValue<int>("1", 1));
+            var gval = new GValue<int>("1", 1);
+            Assert.Equal("1", gval.Name);
         }
 
         [Fact]
-        public void GValue_invalid_identifier_name_throws_ArgumentException()
+        public void GValue_digit_start_name_accepted()
         {
-            Assert.Throws<ArgumentException>(() => new GValue<int>("1a", 1));
+            var gval = new GValue<int>("1a", 1);
+            Assert.Equal("1a", gval.Name);
         }
 
         [Fact]
-        public void GValue_underscore_name_throws_ArgumentException()
+        public void GValue_underscore_name_accepted()
         {
-            Assert.Throws<ArgumentException>(() => new GValue<int>("_1", 1));
+            Assert.Equal("_1", new GValue<int>("_1", 1).Name);
+        }
+
+        [Fact]
+        public void GValue_nested_throws_ArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() => new GValue<object>("x", new GValue<int>("y", 1)));
         }
 
         [Fact]
@@ -991,6 +1000,83 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             var result = _g.Inject((object)gval).V(gval).GremlinLang;
             Assert.Equal("g.inject(ids).V(ids)", result.GetGremlin());
             Assert.True(result.Parameters.ContainsKey("ids"));
+        }
+
+        [Fact]
+        public void GValue_mid_underscore_name_accepted()
+        {
+            var gval = new GValue<int>("a_b", 42);
+            var result = _g.Inject((object)gval).GremlinLang;
+            Assert.Equal("g.inject(a_b)", result.GetGremlin());
+        }
+
+        [Fact]
+        public void GValue_empty_name_accepted()
+        {
+            var gval = new GValue<int>("", 1);
+            Assert.Equal("", gval.Name);
+        }
+
+        [Fact]
+        public void GValue_mid_dollar_name_accepted()
+        {
+            var gval = new GValue<int>("a$b", 1);
+            Assert.Equal("a$b", gval.Name);
+        }
+
+        [Fact]
+        public void GValue_unicode_letter_name_accepted()
+        {
+            var gval = new GValue<int>("caf\u00e9", 7);
+            var result = _g.Inject((object)gval).GremlinLang;
+            Assert.Equal("g.inject(caf\u00e9)", result.GetGremlin());
+        }
+
+        [Fact]
+        public void GValue_construction_and_accessors()
+        {
+            var gval = new GValue<string>("myName", "hello");
+            Assert.Equal("myName", gval.Name);
+            Assert.Equal("hello", gval.Value);
+            Assert.Equal("hello", gval.ObjectValue);
+        }
+
+        [Fact]
+        public void GValue_IsNull_true_when_null_value()
+        {
+            var gval = new GValue<string?>("x", null);
+            Assert.True(gval.IsNull);
+        }
+
+        [Fact]
+        public void GValue_IsNull_false_when_non_null_value()
+        {
+            var gval = new GValue<int>("x", 5);
+            Assert.False(gval.IsNull);
+        }
+
+        [Fact]
+        public void GValue_ToString_format()
+        {
+            var gval = new GValue<int>("myVar", 42);
+            Assert.Equal("myVar=42", gval.ToString());
+        }
+
+        [Fact]
+        public void GValue_duplicate_name_equal_list_values_allowed()
+        {
+            var gval1 = new GValue<List<int>>("ids", new List<int> { 1, 2, 3 });
+            var gval2 = new GValue<List<int>>("ids", new List<int> { 1, 2, 3 });
+            var result = _g.Inject((object)gval1).V(gval2).GremlinLang;
+            Assert.Equal("g.inject(ids).V(ids)", result.GetGremlin());
+        }
+
+        [Fact]
+        public void GValue_duplicate_name_different_list_values_throws()
+        {
+            var gval1 = new GValue<List<int>>("ids", new List<int> { 1, 2, 3 });
+            var gval2 = new GValue<List<int>>("ids", new List<int> { 4, 5, 6 });
+            Assert.Throws<ArgumentException>(() => _g.Inject((object)gval1).V(gval2));
         }
 
         // --- Cardinality with Map Tests ---
@@ -1230,6 +1316,50 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         private class NestedAnnotatedWidget
         {
             public string Tag { get; set; } = "";
+        }
+
+        [Fact]
+        public void GValue_duplicate_name_equal_dictionary_values_allowed()
+        {
+            var gval1 = new GValue<Dictionary<string, int>>("m", new Dictionary<string, int> { { "a", 1 }, { "b", 2 } });
+            var gval2 = new GValue<Dictionary<string, int>>("m", new Dictionary<string, int> { { "a", 1 }, { "b", 2 } });
+            var result = _g.Inject((object)gval1).V(gval2).GremlinLang;
+            Assert.Equal("g.inject(m).V(m)", result.GetGremlin());
+        }
+
+        [Fact]
+        public void GValue_duplicate_name_equal_nested_collection_values_allowed()
+        {
+            var gval1 = new GValue<List<List<int>>>("n", new List<List<int>> { new List<int> { 1, 2 }, new List<int> { 3, 4 } });
+            var gval2 = new GValue<List<List<int>>>("n", new List<List<int>> { new List<int> { 1, 2 }, new List<int> { 3, 4 } });
+            var result = _g.Inject((object)gval1).V(gval2).GremlinLang;
+            Assert.Equal("g.inject(n).V(n)", result.GetGremlin());
+        }
+
+        [Fact]
+        public void GValue_underscore_start_name_accepted_in_traversal()
+        {
+            var gval = new GValue<int[]>("_1", new[] { 1, 2, 3 });
+            var result = _g.V(gval).GremlinLang;
+            Assert.Equal("g.V(_1)", result.GetGremlin());
+            Assert.True(result.Parameters.ContainsKey("_1"));
+        }
+
+        [Fact]
+        public void GValue_dollar_sign_name_accepted_in_traversal()
+        {
+            var gval = new GValue<int>("a$b", 42);
+            var result = _g.Inject((object)gval).GremlinLang;
+            Assert.Equal("g.inject(a$b)", result.GetGremlin());
+            Assert.True(result.Parameters.ContainsKey("a$b"));
+        }
+
+        [Fact]
+        public void GValue_invalid_identifier_throws_in_traversal()
+        {
+            var gval = new GValue<int>("1a", 1);
+            var ex = Assert.Throws<ArgumentException>(() => _g.V(gval).GremlinLang.GetGremlin());
+            Assert.Contains("Invalid parameter name", ex.Message);
         }
     }
 }

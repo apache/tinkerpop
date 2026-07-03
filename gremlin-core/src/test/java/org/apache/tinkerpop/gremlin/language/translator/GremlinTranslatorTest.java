@@ -70,6 +70,13 @@ public class GremlinTranslatorTest {
         }
 
         @Test
+        public void shouldExtractVariablesFromDotNetParameterize() {
+            final Translation translation = GremlinTranslator.translate(query, new DotNetTranslateVisitor("g", true));
+            assertEquals(expectedVariables.size(), translation.getParameters().size());
+            assertThat(translation.getParameters().toArray(), arrayContainingInAnyOrder(expectedVariables.toArray()));
+        }
+
+        @Test
         public void shouldExtractVariablesFromGo() {
             final Translation translation = GremlinTranslator.translate(query, Translator.GO);
             assertEquals(expectedVariables.size(), translation.getParameters().size());
@@ -1552,6 +1559,23 @@ public class GremlinTranslatorTest {
         }
 
         @Test
+        public void shouldTranslateForDotNetParameterize() {
+            // Run the entire corpus through the parameterize translator to confirm it never throws or diverges
+            // across the grammar. Parameterization only affects variable arguments (the GValue-wrapping branches in
+            // DotNetTranslateVisitor are gated on ctx.variable() != null), so for any query without variables the
+            // output must be identical to the plain DotNet translation. Queries that actually contain variables are
+            // covered with explicit expected output in DotNetParameterizeTranslationTest.
+            try {
+                final Translation translation = GremlinTranslator.translate(query, new DotNetTranslateVisitor("g", true));
+                if (translation.getParameters().isEmpty()) {
+                    assertEquals(expectedForDotNet, translation.getTranslated());
+                }
+            } catch (TranslatorException e) {
+                assertThat(e.getMessage(), startsWith(expectedForDotNet));
+            }
+        }
+
+        @Test
         public void shouldTranslateForGo() {
             try {
                 final String translatedQuery = GremlinTranslator.translate(query, "g", Translator.GO).getTranslated();
@@ -1599,6 +1623,46 @@ public class GremlinTranslatorTest {
             } catch (TranslatorException e) {
                 assertThat(e.getMessage(), startsWith(expectedForPython));
             }
+        }
+    }
+
+    /**
+     * Dedicated coverage for the parameterized .NET translation ({@code new DotNetTranslateVisitor(name, true)}), which
+     * is unique in that it wraps variable arguments in strongly-typed {@code GValue<T>} instances rather than emitting
+     * bare parameters. These cases exercise the common argument types as well as the all-or-none behavior of
+     * multi-argument {@code hasLabel}.
+     */
+    @RunWith(Parameterized.class)
+    public static class DotNetParameterizeTranslationTest {
+
+        @Parameterized.Parameter(value = 0)
+        public String query;
+
+        @Parameterized.Parameter(value = 1)
+        public String expected;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Collection<Object[]> data() {
+            return Arrays.asList(new Object[][]{
+                    // literals are not parameterized
+                    {"g.V().has('name','marko')", "g.V().Has(\"name\", \"marko\")"},
+                    // a variable string value is wrapped in a typed GValue
+                    {"g.V().has('name', x)", "g.V().Has(\"name\", new GValue<object>(\"x\", (object) x))"},
+                    // V()/E() id arguments are not GValue-wrapped by the translator; they pass through as bare variables
+                    {"g.V(x)", "g.V(x)"},
+                    // a variable map value is wrapped in a typed GValue
+                    {"g.mergeV(x)", "g.MergeV(new GValue<IDictionary<object, object>>(\"x\", (IDictionary<object, object>) x))"},
+                    // multi-arg hasLabel with all variables wraps every argument
+                    {"g.V().hasLabel(x, y)", "g.V().HasLabel(new GValue<string>(\"x\", (string) x), new GValue<string>(\"y\", (string) y))"},
+                    // multi-arg hasLabel mixing a literal and a variable uses plain casts for all (none wrapped)
+                    {"g.V().hasLabel('person', y)", "g.V().HasLabel(\"person\", (string) y)"},
+            });
+        }
+
+        @Test
+        public void shouldTranslateForDotNetParameterize() {
+            final String translatedQuery = GremlinTranslator.translate(query, new DotNetTranslateVisitor("g", true)).getTranslated();
+            assertEquals(expected, translatedQuery);
         }
     }
 }

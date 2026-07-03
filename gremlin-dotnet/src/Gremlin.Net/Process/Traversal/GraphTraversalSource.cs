@@ -454,6 +454,17 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addE step to that
         ///     traversal.
         /// </summary>
+        public GraphTraversal<Edge, Edge> AddE(GValue<string> label)
+        {
+            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, GremlinLang.Clone());
+            traversal.GremlinLang.AddStep("addE", label);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addE step to that
+        ///     traversal.
+        /// </summary>
         public GraphTraversal<Edge, Edge> AddE(ITraversal edgeLabelTraversal)
         {
             var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, GremlinLang.Clone());
@@ -475,6 +486,17 @@ namespace Gremlin.Net.Process.Traversal
             }
             var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("mergeE", m);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the mergeE step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<Edge, Edge> MergeE(GValue<IDictionary<object, object>> searchCreate)
+        {
+            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, GremlinLang.Clone());
+            traversal.GremlinLang.AddStep("mergeE", searchCreate);
             return traversal;
         }
 
@@ -515,6 +537,17 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addV step to that
         ///     traversal.
         /// </summary>
+        public GraphTraversal<Vertex, Vertex> AddV(GValue<string> vertexLabel)
+        {
+            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
+            traversal.GremlinLang.AddStep("addV", vertexLabel);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the addV step to that
+        ///     traversal.
+        /// </summary>
         public GraphTraversal<Vertex, Vertex> AddV(ITraversal vertexLabelTraversal)
         {
             var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
@@ -530,6 +563,17 @@ namespace Gremlin.Net.Process.Traversal
         {
             var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("mergeV", m);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the mergeV step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<Vertex, Vertex> MergeV(GValue<IDictionary<object, object>> searchCreate)
+        {
+            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
+            traversal.GremlinLang.AddStep("mergeV", searchCreate);
             return traversal;
         }
 
@@ -631,6 +675,29 @@ namespace Gremlin.Net.Process.Traversal
         {
             var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("call", service, m, t);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the call step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<TStart, TStart> Call<TStart>(string service, GValue<IDictionary<object, object>> m)
+        {
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, GremlinLang.Clone());
+            traversal.GremlinLang.AddStep("call", service, m);
+            return traversal;
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the call step to that
+        ///     traversal.
+        /// </summary>
+        public GraphTraversal<TStart, TStart> Call<TStart>(string service, GValue<IDictionary<object, object>> m,
+            ITraversal childTraversal)
+        {
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, GremlinLang.Clone());
+            traversal.GremlinLang.AddStep("call", service, m, childTraversal);
             return traversal;
         }
 

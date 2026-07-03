@@ -19,6 +19,7 @@
 
 import copy
 import math
+import re
 import threading
 import uuid
 import warnings
@@ -926,9 +927,8 @@ class GremlinLang(object):
 
         if isinstance(arg, GValue):
             key = arg.get_name()
-
-            if not key.isidentifier():
-                raise Exception(f'invalid parameter name {key}.')
+            if not re.fullmatch(r'(?:[^\W\d]|\$)(?:\w|\$)*', key):
+                raise Exception(f'Invalid parameter name [{key}].')
 
             if key in self.parameters:
                 if self.parameters[key] != arg.value:
@@ -1184,10 +1184,10 @@ class GremlinLang(object):
 
 class GValue:
     def __init__(self, name, value):
+        if isinstance(value, GValue):
+            raise Exception('GValues cannot be nested')
         if name is None:
-            raise Exception("The parameter name cannot be None.")
-        if name.startswith('_'):
-            raise Exception(f'invalid GValue name {name}. Should not start with _.')
+            raise Exception('GValue name cannot be null.')
         self.name = name
         self.value = value
 
@@ -1199,6 +1199,12 @@ class GValue:
 
     def get(self):
         return self.value
+
+    def __repr__(self):
+        return f'{self.name}={self.value}'
+
+    def __str__(self):
+        return f'{self.name}={self.value}'
 
 
 class CardinalityValue(GremlinLang):

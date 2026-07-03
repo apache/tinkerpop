@@ -46,6 +46,7 @@ type tinkerPopGraph struct {
 }
 
 var parsers map[*regexp.Regexp]func(string, string) interface{}
+var parameterize = getEnvOrDefaultBool("PARAMETERIZE", false)
 
 func init() {
 	parsers = map[*regexp.Regexp]func(string, string) interface{}{
@@ -995,7 +996,12 @@ func (tg *tinkerPopGraph) usingTheParameterDefined(name string, params string) e
 	if tg.graphName == "empty" {
 		tg.reloadEmptyData()
 	}
-	tg.parameters[name] = parseValue(strings.Replace(params, "\\\"", "\"", -1), tg.graphName)
+	val := parseValue(strings.Replace(params, "\\\"", "\"", -1), tg.graphName)
+	if parameterize {
+		tg.parameters[name] = gremlingo.GValue{Name: name, Value: val}
+	} else {
+		tg.parameters[name] = val
+	}
 	return nil
 }
 
