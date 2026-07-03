@@ -25,6 +25,7 @@ metadata:
 
 - Read [references/schema.md](references/schema.md) when you need to understand what vertices, edges, or properties exist in the knowledge graph (typically during enrichment or when writing raw Gremlin)
 - Read [references/interfaces.md](references/interfaces.md) when you need the exact function signatures or data type definitions for a module
+- Read [references/enrichment-cli.md](references/enrichment-cli.md) when you need to know what an enrichment CLI command *does* and when to reach for it (the command names below are terse; this is where their meaning lives)
 
 ## Execution Sequence
 
@@ -93,49 +94,29 @@ to the per-check `@typedef`s in `scripts/patterns/*.js`.
 
 The Gremlin Server is still running. Use `scripts/enrichment/cli.js` to
 read from and write to the knowledge graph. Do NOT write your own connection
-code or import gremlin-js directly — the CLI handles connections for you.
+code or import gremlin-js directly — the CLI handles connections for you. For
+what each command does and when to use it, see
+[references/enrichment-cli.md](references/enrichment-cli.md).
 
-**Usage:**
+Every command takes `--workDir /tmp/pr-review-<pr>`, connects using that dir's
+`session.json`, prints its JSON result to stdout, and disconnects:
 ```bash
 node scripts/enrichment/cli.js <command> --workDir /tmp/pr-review-<pr> [--options...]
 ```
 
-**Read commands:**
-```bash
-node scripts/enrichment/cli.js listFunctions --workDir /tmp/pr-review-<pr> --changed true --visibility public
-node scripts/enrichment/cli.js listTypes --workDir /tmp/pr-review-<pr> --kind class
-node scripts/enrichment/cli.js getCallsFrom --workDir /tmp/pr-review-<pr> --function <name> --file <path>
-node scripts/enrichment/cli.js getCanonicalSteps --workDir /tmp/pr-review-<pr>
-node scripts/enrichment/cli.js auditConfidence --workDir /tmp/pr-review-<pr>
-node scripts/enrichment/cli.js listInferred --workDir /tmp/pr-review-<pr> --relation implements_step
-node scripts/enrichment/cli.js listDeleted --workDir /tmp/pr-review-<pr>          # removal PRs: files the PR deleted + their symbols
-node scripts/enrichment/cli.js listExternalRefs --workDir /tmp/pr-review-<pr>     # unresolved callees; flags any matching a deleted symbol
-```
+The command catalog — what each does and when to reach for it — lives in
+[references/enrichment-cli.md](references/enrichment-cli.md); run
+`node scripts/enrichment/cli.js --help` for exact flags. In brief: **read
+commands** (`listFunctions`, `listDeleted`, `listExternalRefs`, …) orient you and
+feed the playbooks; **write commands** (`mapStep`, `addReference`,
+`setEdgeConfidence`, …) add the semantic edges. Edges you create default to
+`INFERRED` — pass `--confidence AMBIGUOUS` for a flagged guess or `EXTRACTED`
+when the source states it directly.
 
-`auditConfidence` returns the edge confidence distribution and the list of
-AMBIGUOUS edges. Re-run it after enrichment to refresh the audit with the edges
-you added, then reflect any remaining AMBIGUOUS links in `openQuestions`.
-
-`listInferred` is your **verification worklist** — the name-resolved / agent-mapped
-edges worth a source check (optionally narrowed with `--relation`). After reading
-the source, use `setEdgeConfidence` (below) to promote a confirmed edge to
-`EXTRACTED` or downgrade a wrong resolution to `AMBIGUOUS`.
-
-**Write commands** (edges you create default to `INFERRED`; pass
-`--confidence AMBIGUOUS` for a guess you want flagged, or `EXTRACTED` when the
-source states it directly):
-```bash
-node scripts/enrichment/cli.js mapStep --workDir /tmp/pr-review-<pr> --function <name> --file <path> --step <canonicalName> [--confidence INFERRED|AMBIGUOUS|EXTRACTED]
-node scripts/enrichment/cli.js setEdgeConfidence --workDir /tmp/pr-review-<pr> --relation <label> --fromName <name> [--fromFile <path>] [--toName <name>] --confidence <EXTRACTED|INFERRED|AMBIGUOUS>
-node scripts/enrichment/cli.js addReference --workDir /tmp/pr-review-<pr> --fromPath <survivingFile> --toPath <deletedFile> --symbol <name> [--location <where>] [--confidence ...]
-node scripts/enrichment/cli.js linkDiscussion --workDir /tmp/pr-review-<pr> --url <url> --source jira --title <title> [--confidence ...]
-node scripts/enrichment/cli.js linkDoc --workDir /tmp/pr-review-<pr> --entity Step --name <name> --doc <path> [--confidence ...]
-node scripts/enrichment/cli.js addGrammarRule --workDir /tmp/pr-review-<pr> --name <name>
-node scripts/enrichment/cli.js annotate --workDir /tmp/pr-review-<pr> --label Function --name <name> --key <key> --value <value>
-```
-
-Each command connects, executes, prints JSON result to stdout, and disconnects.
-The connection info is read from `/tmp/pr-review-<pr>/session.json` automatically.
+The confidence loop is the backbone of enrichment: `auditConfidence` →
+`listInferred` (your verification worklist) → read the source → `setEdgeConfidence`
+to promote or downgrade, then re-run `auditConfidence` and reflect anything still
+`AMBIGUOUS` in `openQuestions`. See `general.md`'s **Verify confidence** section.
 
 **Read source files:** worktree at `/tmp/pr-review-<pr>/src/`
 

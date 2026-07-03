@@ -29,6 +29,16 @@ let cachedSteps = null;
 
 // === Read operations ===
 
+/**
+ * List Function vertices, optionally filtered. The go-to orientation read:
+ * `--changed true` shows just the functions this PR touched; `--visibility
+ * public` narrows to the API surface. Returns signature and line span so you can
+ * jump to source in the worktree.
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @param {object} [filter] - { changed?: boolean, visibility?: string, filePath?: string }
+ * @returns {Promise<{name, signature, filePath, visibility, changed, linesStart, linesEnd}[]>}
+ */
 export async function listFunctions(g, filter = {}) {
   let t = g.V().hasLabel("Function");
   if (filter.changed !== undefined) t = t.has("changed", filter.changed);
@@ -46,6 +56,15 @@ export async function listFunctions(g, filter = {}) {
   }));
 }
 
+/**
+ * List Type vertices (classes, interfaces, enums), optionally by `kind` or
+ * `filePath`. Use it to see the types the PR defines or touches before drilling
+ * into their functions.
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @param {object} [filter] - { kind?: string, filePath?: string }
+ * @returns {Promise<{name, kind, visibility, filePath}[]>}
+ */
 export async function listTypes(g, filter = {}) {
   let t = g.V().hasLabel("Type");
   if (filter.kind) t = t.has("kind", filter.kind);
@@ -59,6 +78,17 @@ export async function listTypes(g, filter = {}) {
   }));
 }
 
+/**
+ * The direct callees of one function — its outgoing `calls` edges. Use it to
+ * trace what a changed function depends on (e.g. does it still call a symbol the
+ * PR removed?). The function is keyed by name AND file because names repeat
+ * across the codebase.
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @param {string} functionName - Caller's name
+ * @param {string} filePath - Caller's file (disambiguates same-named functions)
+ * @returns {Promise<{calleeName, filePath}[]>}
+ */
 export async function getCallsFrom(g, functionName, filePath) {
   const results = await g.V().hasLabel("Function")
     .has("name", functionName)
@@ -72,6 +102,16 @@ export async function getCallsFrom(g, functionName, filePath) {
   }));
 }
 
+/**
+ * The canonical Gremlin traversal-step vocabulary, parsed from `Gremlin.g4`
+ * (every `traversalMethod_<name>` rule). This is the authoritative set of step
+ * names you map GLV/host-language methods onto with `mapStep`. Reads the grammar
+ * file, not the graph, so it needs the repo path rather than `g`; result is
+ * cached for the process.
+ *
+ * @param {string} repoPath - Path to the checked-out worktree
+ * @returns {Promise<string[]>} sorted, de-duplicated canonical step names
+ */
 export async function getCanonicalSteps(repoPath) {
   if (cachedSteps) return cachedSteps;
   const g4Path = join(repoPath, "gremlin-language/src/main/antlr4/Gremlin.g4");
@@ -130,6 +170,20 @@ export async function listExternalRefs(g) {
 
 // === Write operations ===
 
+/**
+ * Record that a GLV/host-language function implements a canonical Gremlin step,
+ * as an `implements_step` edge (creating the Step vertex if it's the first time
+ * that step is seen). The core enrichment move of the GLV playbook: map only
+ * real traversal-step methods, not language boilerplate. Validate the step name
+ * against `getCanonicalSteps` first.
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @param {string} functionName - The implementing function's name
+ * @param {string} filePath - The implementing function's file
+ * @param {string} canonicalStepName - A name from getCanonicalSteps
+ * @param {string} [confidence] - default INFERRED (a name-based mapping)
+ * @returns {Promise<object>}
+ */
 export async function mapStep(g, functionName, filePath, canonicalStepName, confidence) {
   const conf = normalizeConfidence(confidence, CONFIDENCE.INFERRED);
   const stepExists = await g.V().hasLabel("Step").has("name", canonicalStepName).hasNext();
@@ -225,6 +279,21 @@ export async function addReference(g, params = {}) {
   return { referenced: `${fromPath} -> ${toPath}`, symbol: symbol || "", confidence: conf };
 }
 
+/**
+ * Attach an external discussion you found (JIRA issue, dev-list thread, proposal
+ * doc) to the graph as a Discussion vertex, linked from the PR's own discussion
+ * via an `addresses` edge. Use it when enrichment turns up prior context the
+ * Phase-1 discovery pass missed, so the report can cite where the change was
+ * debated.
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @param {string} url - Canonical link to the discussion
+ * @param {string} source - jira | devlist | proposal
+ * @param {string} title - Human-readable title
+ * @param {string} [body] - Optional excerpt/summary
+ * @param {string} [confidence] - default INFERRED
+ * @returns {Promise<object>}
+ */
 export async function linkDiscussion(g, url, source, title, body, confidence) {
   const conf = normalizeConfidence(confidence, CONFIDENCE.INFERRED);
   await g.addV("Discussion")
@@ -246,6 +315,19 @@ export async function linkDiscussion(g, url, source, title, body, confidence) {
   return { linked: `${source}: ${title}`, confidence: conf };
 }
 
+/**
+ * Set an arbitrary property on a vertex identified by label + name. The
+ * general-purpose escape hatch for recording a fact the schema has no dedicated
+ * edge for (e.g. tagging a Function with a review note). Prefer a typed command
+ * when one fits; reach for this only when none does.
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @param {string} label - Vertex label (e.g. Function, Step)
+ * @param {string} name - Vertex name
+ * @param {string} key - Property key to set
+ * @param {string} value - Property value
+ * @returns {Promise<object>}
+ */
 export async function annotate(g, label, name, key, value) {
   await g.V().hasLabel(label).has("name", name)
     .property(key, value)
@@ -254,6 +336,20 @@ export async function annotate(g, label, name, key, value) {
   return { annotated: `${label}:${name}.${key} = ${value}` };
 }
 
+/**
+ * Record that a documentation file documents a graph entity, as a `documents`
+ * edge from a Doc vertex (created on first use) to the named entity. Use it to
+ * connect a step/feature to the reference docs or recipe that covers it, so the
+ * report can flag a change whose docs weren't updated.
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @param {string} entityLabel - Label of the documented entity (e.g. Step)
+ * @param {string} entityName - Name of the documented entity
+ * @param {string} docPath - Path to the doc file
+ * @param {string} [section] - Optional section/anchor within the doc
+ * @param {string} [confidence] - default INFERRED
+ * @returns {Promise<object>}
+ */
 export async function linkDoc(g, entityLabel, entityName, docPath, section, confidence) {
   const conf = normalizeConfidence(confidence, CONFIDENCE.INFERRED);
   const docExists = await g.V().hasLabel("Doc").has("path", docPath).hasNext();
@@ -273,6 +369,16 @@ export async function linkDoc(g, entityLabel, entityName, docPath, section, conf
   return { linked: `${docPath} documents ${entityLabel}:${entityName}`, confidence: conf };
 }
 
+/**
+ * Add a GrammarRule vertex for a rule the PR introduces to the grammar. Use it
+ * in the grammar playbook when a `*.g4` change adds a production the graph
+ * should track so later steps can link to it.
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @param {string} name - Rule name
+ * @param {string} [production] - Optional production body
+ * @returns {Promise<object>}
+ */
 export async function addGrammarRule(g, name, production) {
   await g.addV("GrammarRule")
     .property("name", name)
@@ -282,6 +388,18 @@ export async function addGrammarRule(g, name, production) {
   return { added: `GrammarRule: ${name}` };
 }
 
+/**
+ * INTERNAL (Phase 1). Create the root PR Discussion vertex that every other
+ * discussion links back to via `addresses`. review.js calls this once while
+ * building the graph; it's idempotent (a second call is a no-op). Exposed on the
+ * CLI only for manual re-runs — reviewers don't call it during enrichment.
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @param {number|string} pr - PR number (forms the GitHub URL)
+ * @param {string} [title] - Defaults to "PR #<pr>"
+ * @param {string} [body] - Optional description
+ * @returns {Promise<{created: boolean, pr?}>}
+ */
 export async function createPrDiscussion(g, pr, title, body) {
   const exists = await g.V().hasLabel("Discussion").has("source", "pr").hasNext();
   if (exists) return { created: false };
