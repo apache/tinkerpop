@@ -117,9 +117,9 @@ traversalSourceSpawnMethod_addE
     ;
 
 traversalSourceSpawnMethod_addV
-    : K_ADDV LPAREN RPAREN
-    | K_ADDV LPAREN stringArgument (COMMA stringArgument)* RPAREN
-    | K_ADDV LPAREN nestedTraversal (COMMA nestedTraversal)* RPAREN
+    : K_ADDV LPAREN RPAREN #traversalSourceSpawnMethod_addV_Empty
+    | K_ADDV LPAREN stringArgumentVarargs RPAREN #traversalSourceSpawnMethod_addV_String
+    | K_ADDV LPAREN nestedTraversal (COMMA nestedTraversal)* RPAREN #traversalSourceSpawnMethod_addV_Traversal
     ;
 
 traversalSourceSpawnMethod_E
@@ -340,7 +340,7 @@ traversalMethod_addE
 
 traversalMethod_addV
     : K_ADDV LPAREN RPAREN #traversalMethod_addV_Empty
-    | K_ADDV LPAREN stringArgument (COMMA stringArgument)* RPAREN #traversalMethod_addV_String
+    | K_ADDV LPAREN stringArgumentVarargs RPAREN #traversalMethod_addV_String
     | K_ADDV LPAREN nestedTraversal (COMMA nestedTraversal)* RPAREN #traversalMethod_addV_Traversal
     ;
 
@@ -647,7 +647,7 @@ traversalMethod_labels
     ;
 
 traversalMethod_addLabel
-    : K_ADDLABEL LPAREN stringArgument (COMMA stringArgument)* RPAREN #traversalMethod_addLabel_String
+    : K_ADDLABEL LPAREN stringArgumentVarargs RPAREN #traversalMethod_addLabel_String
     | K_ADDLABEL LPAREN nestedTraversal (COMMA nestedTraversal)* RPAREN #traversalMethod_addLabel_Traversal
     ;
 
@@ -656,7 +656,7 @@ traversalMethod_dropLabels
     ;
 
 traversalMethod_dropLabel
-    : K_DROPLABEL LPAREN stringArgument (COMMA stringArgument)* RPAREN #traversalMethod_dropLabel_String
+    : K_DROPLABEL LPAREN stringArgumentVarargs RPAREN #traversalMethod_dropLabel_String
     | K_DROPLABEL LPAREN nestedTraversal (COMMA nestedTraversal)* RPAREN #traversalMethod_dropLabel_Traversal
     ;
 
@@ -1579,6 +1579,10 @@ integerArgument
 stringArgument
     : stringLiteral
     | variable
+    ;
+
+stringArgumentVarargs
+    : stringArgument (COMMA stringArgument)*
     ;
 
 stringNullableArgument

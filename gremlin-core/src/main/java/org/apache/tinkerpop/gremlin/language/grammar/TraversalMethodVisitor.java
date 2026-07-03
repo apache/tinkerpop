@@ -41,9 +41,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
@@ -113,45 +111,15 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_addV_String(final GremlinParser.TraversalMethod_addV_StringContext ctx) {
-        final List<GremlinParser.StringArgumentContext> args = ctx.stringArgument();
-        if (args.size() == 1) {
-            // Single string argument
-            final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(args.get(0));
-            if (GValue.valueInstanceOf(literalOrVar, String.class)) {
-                return this.graphTraversal.addV((GValue<String>) literalOrVar);
-            } else {
-                return this.graphTraversal.addV((String) literalOrVar);
-            }
+        final GremlinParser.StringArgumentVarargsContext varargsCtx = ctx.stringArgumentVarargs();
+        if (varargsCtx.stringArgument().stream().anyMatch(arg -> arg.variable() != null)) {
+            final GValue<String>[] labels = antlr.argumentVisitor.parseStringVarargs(varargsCtx);
+            return this.graphTraversal.addV(labels[0], Arrays.copyOfRange(labels, 1, labels.length));
         }
-        // Multiple string arguments: addV("a", "b", ...)
-        final List<Object> allArgs = new ArrayList<>(args.size());
-        boolean hasGValue = false;
-        for (final GremlinParser.StringArgumentContext arg : args) {
-            final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(arg);
-            allArgs.add(literalOrVar);
-            if (literalOrVar instanceof GValue) {
-                hasGValue = true;
-            }
-        }
-        if (hasGValue) {
-            // Use GValue-aware multi-label overload: addV(first, more...)
-            final GValue<String> firstLabel = allArgs.get(0) instanceof GValue ?
-                    (GValue<String>) allArgs.get(0) : GValue.of((String) allArgs.get(0));
-            final GValue<String>[] moreLabels = new GValue[allArgs.size() - 1];
-            for (int i = 1; i < allArgs.size(); i++) {
-                moreLabels[i - 1] = allArgs.get(i) instanceof GValue ?
-                        (GValue<String>) allArgs.get(i) : GValue.of((String) allArgs.get(i));
-            }
-            return this.graphTraversal.addV(firstLabel, moreLabels);
-        } else {
-            // All plain strings: addV(first, more...)
-            final String firstLabel = (String) allArgs.get(0);
-            final String[] moreLabels = new String[allArgs.size() - 1];
-            for (int i = 1; i < allArgs.size(); i++) {
-                moreLabels[i - 1] = (String) allArgs.get(i);
-            }
-            return this.graphTraversal.addV(firstLabel, moreLabels);
-        }
+        final String[] labels = varargsCtx.stringArgument().stream()
+                .map(arg -> antlr.genericVisitor.parseString(arg.stringLiteral()))
+                .toArray(String[]::new);
+        return this.graphTraversal.addV(labels[0], Arrays.copyOfRange(labels, 1, labels.length));
     }
 
     /**
@@ -225,17 +193,10 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_addV_Traversal(final GremlinParser.TraversalMethod_addV_TraversalContext ctx) {
-        final List<GremlinParser.NestedTraversalContext> traversalCtxs = ctx.nestedTraversal();
-        if (traversalCtxs.size() == 1) {
-            return this.graphTraversal.addV(antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(0)));
-        }
-        // Multiple traversal arguments: addV(t1, t2, ...)
-        final Traversal<?, ?> firstTraversal = antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(0));
-        final Traversal<?, ?>[] moreTraversals = new Traversal[traversalCtxs.size() - 1];
-        for (int i = 1; i < traversalCtxs.size(); i++) {
-            moreTraversals[i - 1] = antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(i));
-        }
-        return this.graphTraversal.addV(firstTraversal, moreTraversals);
+        final Traversal<?, ?>[] traversals = ctx.nestedTraversal().stream()
+                .map(antlr.tvisitor::visitNestedTraversal)
+                .toArray(Traversal[]::new);
+        return this.graphTraversal.addV(traversals[0], Arrays.copyOfRange(traversals, 1, traversals.length));
     }
 
     /**
@@ -243,12 +204,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_addE_String(final GremlinParser.TraversalMethod_addE_StringContext ctx) {
-        final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(ctx.stringArgument());
-        if (GValue.valueInstanceOf(literalOrVar, String.class)) {
-            return this.graphTraversal.addE((GValue<String>) literalOrVar);
-        } else {
-            return this.graphTraversal.addE((String) literalOrVar);
-        }
+        final GValue<String> label = antlr.argumentVisitor.parseString(ctx.stringArgument());
+        return label.isVariable() ? this.graphTraversal.addE(label) : this.graphTraversal.addE(label.get());
     }
 
     /**
@@ -1133,20 +1090,9 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_addLabel_String(final GremlinParser.TraversalMethod_addLabel_StringContext ctx) {
-        final List<GremlinParser.StringArgumentContext> args = ctx.stringArgument();
-        final Object firstLiteralOrVar = antlr.argumentVisitor.visitStringArgument(args.get(0));
-        final String firstLabel = firstLiteralOrVar instanceof String ? (String) firstLiteralOrVar : ((GValue<String>) firstLiteralOrVar).get();
-
-        if (args.size() == 1) {
-            return this.graphTraversal.addLabel(firstLabel);
-        } else {
-            final String[] moreLabels = new String[args.size() - 1];
-            for (int i = 1; i < args.size(); i++) {
-                final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(args.get(i));
-                moreLabels[i - 1] = literalOrVar instanceof String ? (String) literalOrVar : ((GValue<String>) literalOrVar).get();
-            }
-            return this.graphTraversal.addLabel(firstLabel, moreLabels);
-        }
+        final GValue<String>[] labels = antlr.argumentVisitor.parseStringVarargs(ctx.stringArgumentVarargs());
+        return this.graphTraversal.addLabel(labels[0].get(),
+                Arrays.stream(labels, 1, labels.length).map(GValue::get).toArray(String[]::new));
     }
 
     /**
@@ -1154,16 +1100,10 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_addLabel_Traversal(final GremlinParser.TraversalMethod_addLabel_TraversalContext ctx) {
-        final List<GremlinParser.NestedTraversalContext> traversalCtxs = ctx.nestedTraversal();
-        if (traversalCtxs.size() == 1) {
-            return this.graphTraversal.addLabel(antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(0)));
-        }
-        final Traversal<?, ?> firstTraversal = antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(0));
-        final Traversal<?, ?>[] moreTraversals = new Traversal[traversalCtxs.size() - 1];
-        for (int i = 1; i < traversalCtxs.size(); i++) {
-            moreTraversals[i - 1] = antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(i));
-        }
-        return this.graphTraversal.addLabel(firstTraversal, moreTraversals);
+        final Traversal<?, ?>[] traversals = ctx.nestedTraversal().stream()
+                .map(antlr.tvisitor::visitNestedTraversal)
+                .toArray(Traversal[]::new);
+        return this.graphTraversal.addLabel(traversals[0], Arrays.copyOfRange(traversals, 1, traversals.length));
     }
 
     /**
@@ -1179,20 +1119,9 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_dropLabel_String(final GremlinParser.TraversalMethod_dropLabel_StringContext ctx) {
-        final List<GremlinParser.StringArgumentContext> args = ctx.stringArgument();
-        final Object firstLiteralOrVar = antlr.argumentVisitor.visitStringArgument(args.get(0));
-        final String firstLabel = firstLiteralOrVar instanceof String ? (String) firstLiteralOrVar : ((GValue<String>) firstLiteralOrVar).get();
-
-        if (args.size() == 1) {
-            return this.graphTraversal.dropLabel(firstLabel);
-        } else {
-            final String[] moreLabels = new String[args.size() - 1];
-            for (int i = 1; i < args.size(); i++) {
-                final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(args.get(i));
-                moreLabels[i - 1] = literalOrVar instanceof String ? (String) literalOrVar : ((GValue<String>) literalOrVar).get();
-            }
-            return this.graphTraversal.dropLabel(firstLabel, moreLabels);
-        }
+        final GValue<String>[] labels = antlr.argumentVisitor.parseStringVarargs(ctx.stringArgumentVarargs());
+        return this.graphTraversal.dropLabel(labels[0].get(),
+                Arrays.stream(labels, 1, labels.length).map(GValue::get).toArray(String[]::new));
     }
 
     /**
@@ -1200,16 +1129,10 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_dropLabel_Traversal(final GremlinParser.TraversalMethod_dropLabel_TraversalContext ctx) {
-        final List<GremlinParser.NestedTraversalContext> traversalCtxs = ctx.nestedTraversal();
-        if (traversalCtxs.size() == 1) {
-            return this.graphTraversal.dropLabel(antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(0)));
-        }
-        final Traversal<?, String> firstTraversal = antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(0));
-        final Traversal<?, String>[] moreTraversals = new Traversal[traversalCtxs.size() - 1];
-        for (int i = 1; i < traversalCtxs.size(); i++) {
-            moreTraversals[i - 1] = antlr.tvisitor.visitNestedTraversal(traversalCtxs.get(i));
-        }
-        return this.graphTraversal.dropLabel(firstTraversal, moreTraversals);
+        final Traversal<?, String>[] traversals = ctx.nestedTraversal().stream()
+                .map(antlr.tvisitor::visitNestedTraversal)
+                .toArray(Traversal[]::new);
+        return this.graphTraversal.dropLabel(traversals[0], Arrays.copyOfRange(traversals, 1, traversals.length));
     }
 
     /**

@@ -23,12 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTrav
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -82,64 +77,35 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
      * {@inheritDoc}
      */
     @Override
-    public GraphTraversal visitTraversalSourceSpawnMethod_addV(final GremlinParser.TraversalSourceSpawnMethod_addVContext ctx) {
-        final List<GremlinParser.StringArgumentContext> stringArgs = ctx.stringArgument();
-        final List<GremlinParser.NestedTraversalContext> traversalArgs = ctx.nestedTraversal();
-        if (stringArgs != null && !stringArgs.isEmpty()) {
-            if (stringArgs.size() == 1) {
-                final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(stringArgs.get(0));
-                if (GValue.valueInstanceOf(literalOrVar, String.class)) {
-                    return this.traversalSource.addV((GValue<String>) literalOrVar);
-                } else {
-                    return this.traversalSource.addV((String) literalOrVar);
-                }
-            } else {
-                // Multi-label: addV("a", "b", ...)
-                // Check if any arguments are GValue - if so, use the GValue-aware overload
-                final List<Object> allArgs = new ArrayList<>(stringArgs.size());
-                boolean hasGValue = false;
-                for (final GremlinParser.StringArgumentContext arg : stringArgs) {
-                    final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(arg);
-                    allArgs.add(literalOrVar);
-                    if (literalOrVar instanceof GValue) {
-                        hasGValue = true;
-                    }
-                }
-                if (hasGValue) {
-                    // Use GValue-aware multi-label overload: addV(label, additionalLabels...)
-                    final GValue<String> firstLabel = allArgs.get(0) instanceof GValue ?
-                            (GValue<String>) allArgs.get(0) : GValue.of((String) allArgs.get(0));
-                    final GValue<String>[] moreLabels = new GValue[allArgs.size() - 1];
-                    for (int i = 1; i < allArgs.size(); i++) {
-                        moreLabels[i - 1] = allArgs.get(i) instanceof GValue ?
-                                (GValue<String>) allArgs.get(i) : GValue.of((String) allArgs.get(i));
-                    }
-                    return this.traversalSource.addV(firstLabel, moreLabels);
-                } else {
-                    // All plain strings: addV(label, additionalLabels...)
-                    final String firstLabel = (String) allArgs.get(0);
-                    final String[] moreLabels = new String[allArgs.size() - 1];
-                    for (int i = 1; i < allArgs.size(); i++) {
-                        moreLabels[i - 1] = (String) allArgs.get(i);
-                    }
-                    return this.traversalSource.addV(firstLabel, moreLabels);
-                }
-            }
-        } else if (traversalArgs != null && !traversalArgs.isEmpty()) {
-            if (traversalArgs.size() == 1) {
-                return this.traversalSource.addV(anonymousVisitor.visitNestedTraversal(traversalArgs.get(0)));
-            } else {
-                // Multi-traversal: addV(t1, t2, ...)
-                final Traversal<?, ?> firstTraversal = anonymousVisitor.visitNestedTraversal(traversalArgs.get(0));
-                final Traversal<?, ?>[] moreTraversals = new Traversal[traversalArgs.size() - 1];
-                for (int i = 1; i < traversalArgs.size(); i++) {
-                    moreTraversals[i - 1] = anonymousVisitor.visitNestedTraversal(traversalArgs.get(i));
-                }
-                return this.traversalSource.addV(firstTraversal, moreTraversals);
-            }
-        } else {
-            return this.traversalSource.addV();
+    public GraphTraversal visitTraversalSourceSpawnMethod_addV_Empty(final GremlinParser.TraversalSourceSpawnMethod_addV_EmptyContext ctx) {
+        return this.traversalSource.addV();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalSourceSpawnMethod_addV_String(final GremlinParser.TraversalSourceSpawnMethod_addV_StringContext ctx) {
+        final GremlinParser.StringArgumentVarargsContext varargsCtx = ctx.stringArgumentVarargs();
+        if (varargsCtx.stringArgument().stream().anyMatch(arg -> arg.variable() != null)) {
+            final GValue<String>[] labels = antlr.argumentVisitor.parseStringVarargs(varargsCtx);
+            return this.traversalSource.addV(labels[0], Arrays.copyOfRange(labels, 1, labels.length));
         }
+        final String[] labels = varargsCtx.stringArgument().stream()
+                .map(arg -> antlr.genericVisitor.parseString(arg.stringLiteral()))
+                .toArray(String[]::new);
+        return this.traversalSource.addV(labels[0], Arrays.copyOfRange(labels, 1, labels.length));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalSourceSpawnMethod_addV_Traversal(final GremlinParser.TraversalSourceSpawnMethod_addV_TraversalContext ctx) {
+        final Traversal<?, ?>[] traversals = ctx.nestedTraversal().stream()
+                .map(anonymousVisitor::visitNestedTraversal)
+                .toArray(Traversal[]::new);
+        return this.traversalSource.addV(traversals[0], Arrays.copyOfRange(traversals, 1, traversals.length));
     }
 
     /**
