@@ -970,6 +970,15 @@ limitations under the License.
                 <!-- the output directory for the asciidoctor plugin - finalized documents can be found here -->
                 <htmlsingle.output.dir>${project.basedir}/target/docs/htmlsingle</htmlsingle.output.dir>
                 <asciidoctor.style.dir>${asciidoc.input.dir}/stylesheets</asciidoctor.style.dir>
+
+                <!-- GremlinTreeprocessor attributes - set via CLI in bin/process-docs.sh -->
+                <gremlin.docs.console.home/>
+                <gremlin.docs.hadoop.libs/>
+                <gremlin.docs.dryrun>false</gremlin.docs.dryrun>
+
+                <!-- Keep the asciidoctor-maven-plugin's JRuby gem extraction under target/ instead
+                     of creating a 'gems/' directory at the repo root. -->
+                <asciidoctor.gemPath>${project.basedir}/target/asciidoctor-gems</asciidoctor.gemPath>
             </properties>
 
             <build>
@@ -1036,6 +1045,13 @@ limitations under the License.
                         <groupId>org.asciidoctor</groupId>
                         <artifactId>asciidoctor-maven-plugin</artifactId>
                         <inherited>false</inherited>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.tinkerpop</groupId>
+                                <artifactId>tinkerpop-docs</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                        </dependencies>
                         <executions>
                             <execution>
                                 <id>home</id>
@@ -1070,6 +1086,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1097,6 +1117,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1124,6 +1148,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1151,6 +1179,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1178,6 +1210,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1205,6 +1241,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1232,6 +1272,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1259,6 +1303,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1284,6 +1332,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1310,6 +1362,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1336,6 +1392,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>
@@ -1361,6 +1421,10 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
                                     </attributes>
                                 </configuration>
                             </execution>

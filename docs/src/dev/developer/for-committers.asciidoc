@@ -941,9 +941,9 @@ of the Apache "Licensing How-to" for more information.
 
 The documentation for TinkerPop is stored in the git repository in `docs/src/` and are then split into several
 subdirectories, each representing a "book" (or its own publishable body of work). If a new AsciiDoc file is added to
-a book, then it should also be included in the `index.asciidoc` file for that book, otherwise the preprocessor will
-ignore it. Likewise, if a whole new book (subdirectory) is added, it must include an `index.asciidoc` file to be
-recognized by the AsciiDoc preprocessor.
+a book, then it should also be included in the `index.asciidoc` file for that book, otherwise the documentation build
+will ignore it. Likewise, if a whole new book (subdirectory) is added, it must include an `index.asciidoc` file to be
+recognized by the documentation build.
 
 Adding a book also requires a change to the root `pom.xml` file. Find the "asciidoc" Maven profile and add a new
 `<execution>` to the `asciidoctor-maven-plugin` configuration. For each book in `docs/src/`, there should be a
