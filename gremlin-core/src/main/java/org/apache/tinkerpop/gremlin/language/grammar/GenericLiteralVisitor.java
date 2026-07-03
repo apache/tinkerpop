@@ -160,6 +160,20 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     /**
+     * Parse a string literal varargs, and return a string array
+     */
+    public String[] parseStringVarargs(final GremlinParser.StringLiteralVarargsContext varargsContext) {
+        if (varargsContext == null) {
+            return new String[0];
+        }
+        return varargsContext.stringLiteral()
+                .stream()
+                .filter(Objects::nonNull)
+                .map(this::parseString)
+                .toArray(String[]::new);
+    }
+
+    /**
      * Parse a TraversalStrategy literal list context and return a string array
      */
     public static TraversalStrategy[] parseTraversalStrategyList(final GremlinParser.TraversalStrategyVarargsContext traversalStrategyListContext,

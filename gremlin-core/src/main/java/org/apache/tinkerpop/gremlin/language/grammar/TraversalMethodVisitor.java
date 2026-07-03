@@ -1090,9 +1090,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_addLabel_String(final GremlinParser.TraversalMethod_addLabel_StringContext ctx) {
-        final GValue<String>[] labels = antlr.argumentVisitor.parseStringVarargs(ctx.stringArgumentVarargs());
-        return this.graphTraversal.addLabel(labels[0].get(),
-                Arrays.stream(labels, 1, labels.length).map(GValue::get).toArray(String[]::new));
+        final String[] labels = antlr.genericVisitor.parseStringVarargs(ctx.stringLiteralVarargs());
+        return this.graphTraversal.addLabel(labels[0], Arrays.copyOfRange(labels, 1, labels.length));
     }
 
     /**
@@ -1119,9 +1118,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_dropLabel_String(final GremlinParser.TraversalMethod_dropLabel_StringContext ctx) {
-        final GValue<String>[] labels = antlr.argumentVisitor.parseStringVarargs(ctx.stringArgumentVarargs());
-        return this.graphTraversal.dropLabel(labels[0].get(),
-                Arrays.stream(labels, 1, labels.length).map(GValue::get).toArray(String[]::new));
+        final String[] labels = antlr.genericVisitor.parseStringVarargs(ctx.stringLiteralVarargs());
+        return this.graphTraversal.dropLabel(labels[0], Arrays.copyOfRange(labels, 1, labels.length));
     }
 
     /**
