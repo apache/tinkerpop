@@ -30,6 +30,11 @@ metadata:
 
 When invoked with `/review <pr-number>`:
 
+The run has two phases (see [DESIGN.md](DESIGN.md)). **Phase 1** (step 1) is
+deterministic and builds the graph. **Phase 2** (steps 3–5) is agent-driven —
+enrichment, an optional functional test, then the report. Step 2 loads the
+playbooks that guide Phase 2; step 6 tears down.
+
 ### 1. Setup + Phase 1 (deterministic)
 
 Run the review script. This handles everything mechanical:
@@ -82,7 +87,7 @@ meaning of every field is documented in
 [references/interfaces.md](references/interfaces.md) (`Evidence`), which points
 to the per-check `@typedef`s in `scripts/patterns/*.js`.
 
-### 3. Phase 2 — Enrichment (agent-driven)
+### 3. Phase 2 — Enrichment
 
 The Gremlin Server is still running. Use `scripts/enrichment/cli.js` to
 read from and write to the knowledge graph. Do NOT write your own connection
@@ -134,7 +139,7 @@ The connection info is read from `/tmp/pr-review-<pr>/session.json` automaticall
 
 Follow the playbook's Enrich section. Check Escape conditions.
 
-### 4. Functional Testing (subagent)
+### 4. Phase 2 — Functional Testing (optional, subagent)
 
 **IMPORTANT: Functional testing is NOT running the project's unit tests.**
 DO NOT use `mvn test`. DO NOT run TreeTest, DO NOT run any existing test class.
@@ -175,7 +180,7 @@ and attempts adversarial edge cases.
 
 The subagent returns: test plan, results, adversarial findings, exact test code.
 
-### 5. Produce Report
+### 5. Phase 2 — Produce Report
 
 Write the narrative JSON, then render.
 
