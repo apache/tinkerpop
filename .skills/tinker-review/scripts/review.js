@@ -35,6 +35,7 @@ import { blastRadius } from "./patterns/blast-radius.js";
 import { clusterAnalysis } from "./patterns/cluster-analysis.js";
 import { architecture } from "./patterns/architecture.js";
 import { confidenceAudit } from "./patterns/confidence-audit.js";
+import { classifyExternals } from "./patterns/classify-externals.js";
 import { createPrDiscussion } from "./enrichment/api.js";
 import { discoverDiscussions } from "./discovery/discussions.js";
 
@@ -295,6 +296,10 @@ export async function phase1(session) {
   log(`Loading discussions into graph...`);
   await populateDiscussions(g, discussions, { pr, prTitle: prTitle.trim(), changedFiles });
 
+  log(`Classifying external callees...`);
+  const externalsResult = await classifyExternals(g, worktreePath);
+  log(`  externals: ${externalsResult.library.length} library / ${externalsResult.project.length} project / ${externalsResult.unresolved.length} unresolved`);
+
   log(`Running checks...`);
   const completenessResults = await completeness(g, {
     vertexLabel: "File",
@@ -335,6 +340,7 @@ export async function phase1(session) {
       blastRadius: blastResult,
       clusters: clusterResult,
       confidence: confidenceResult,
+      externals: externalsResult,
     },
     discussions,
     changedFiles,

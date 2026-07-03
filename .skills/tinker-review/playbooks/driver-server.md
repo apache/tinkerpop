@@ -49,7 +49,10 @@ For each layer, look for:
 ## Interpret
 Driver/server changes have inherently high blast radius — they're shared
 infrastructure. Don't flag blast radius as surprising, but DO highlight
-which specific callers are most affected.
+which specific callers are most affected. Use `listExternalRefs` to separate
+real project coupling (`origin: project`/`unresolved`) from library noise
+(`origin: library`) when judging a changed function's reach — centrality already
+drops the library calls, so a function still ranking high is genuinely central.
 
 Connection pooling and concurrency code should have explicit test coverage.
 If coverage gaps exist in connection lifecycle code, flag prominently —

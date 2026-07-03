@@ -31,6 +31,15 @@ Look for these patterns in the changed code and annotate them:
 - Data structures with concurrency implications (note if CopyOnWriteArraySet,
   synchronized collections, etc. are introduced without profiling justification)
 
+## Verify confidence
+Before writing the report, run `auditConfidence`. Then pull the verification
+worklist with `listInferred` (start with `--relation implements_step`, then any
+`calls` edges that matter to your findings) and spot-check the ones your
+conclusions lean on against the source in the worktree. Re-grade what you
+verify with `setEdgeConfidence`: promote a confirmed edge to `EXTRACTED`, or
+downgrade a wrong name-resolution to `AMBIGUOUS`. Anything left `AMBIGUOUS`
+after this pass belongs in `openQuestions` — don't assert it as fact.
+
 ## Checks
 - coverage_gaps(pr.tests(), pr.modified())
 - orphans("Function", "tests", { changedOnly: true })

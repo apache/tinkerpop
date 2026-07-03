@@ -24,6 +24,16 @@ methods — only the method on GraphTraversal/GraphTraversalSource that users
 call (e.g., `tree()`) should map to the step. In a GLV, the equivalent is
 the method on the traversal DSL class.
 
+Record your confidence in each mapping via `mapStep --confidence`: use the
+default `INFERRED` for a solid match, and `AMBIGUOUS` when you can't reliably
+tell whether a method is a real step implementation (this is the graph form of
+the `step_mapping_confidence < 0.7` escape below — AMBIGUOUS mappings surface in
+the report's review list instead of being asserted as fact). Once you've mapped
+methods, run `listInferred --relation implements_step` and, for any mapping you
+then confirm against the reference GLV or grammar, promote it with
+`setEdgeConfidence --relation implements_step --fromName <method> --toName <step>
+--confidence EXTRACTED`.
+
 If the PR references a JIRA ticket (TINKERPOP-XXXX), link it as a discussion.
 
 For the driver layer, identify connection acquisition and release points.

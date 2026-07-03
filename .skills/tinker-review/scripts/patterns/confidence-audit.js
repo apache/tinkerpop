@@ -71,24 +71,69 @@ export async function confidenceAudit(g, params = {}) {
     }
   }
 
-  const ambiguousRows = await g.E()
-    .has("confidence", CONFIDENCE.AMBIGUOUS)
-    .project("relation", "found_in", "found_via", "from", "to")
+  const ambiguous = await listEdgesByConfidence(g, {
+    confidence: CONFIDENCE.AMBIGUOUS,
+    limit: maxAmbiguous,
+  });
+
+  return { distribution, total, ambiguous };
+}
+
+/**
+ * List edges at a given confidence, optionally narrowed to one relation, with
+ * both endpoints described. The building block behind confidenceAudit's
+ * AMBIGUOUS list and the agent-facing listInferred worklist.
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @param {object} [opts]
+ * @param {string} [opts.confidence] - Filter to this confidence value
+ * @param {string} [opts.relation] - Filter to this edge label (e.g. implements_step)
+ * @param {number} [opts.limit] - Cap the result count (default 100)
+ * @returns {Promise<object[]>} rows of { relation, confidence, from, to, foundIn, foundVia }
+ */
+export async function listEdgesByConfidence(g, opts = {}) {
+  const { confidence, relation, limit = 100 } = opts;
+  let t = g.E();
+  if (relation) t = t.hasLabel(relation);
+  if (confidence) t = t.has("confidence", confidence);
+
+  const rows = await t
+    .limit(limit)
+    .project("relation", "confidence", "found_in", "found_via", "from", "to")
     .by(__.label())
+    .by(__.coalesce(__.values("confidence"), __.constant("")))
     .by(__.coalesce(__.values("found_in"), __.constant("")))
     .by(__.coalesce(__.values("found_via"), __.constant("")))
     .by(__.outV().elementMap())
     .by(__.inV().elementMap())
-    .limit(maxAmbiguous)
     .toList();
 
-  const ambiguous = ambiguousRows.map((row) => ({
+  return rows.map((row) => ({
     relation: row.get("relation"),
+    confidence: row.get("confidence") || undefined,
     from: describeVertex(row.get("from")),
     to: describeVertex(row.get("to")),
     foundIn: row.get("found_in") || undefined,
     foundVia: row.get("found_via") || undefined,
   }));
+}
 
-  return { distribution, total, ambiguous };
+/**
+ * Agent verification worklist: the INFERRED edges (name-resolved calls, agent
+ * step/doc mappings) that warrant a source check. After verifying, the agent
+ * uses setEdgeConfidence to promote a confirmed edge to EXTRACTED or downgrade a
+ * wrong one to AMBIGUOUS.
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @param {object} [params]
+ * @param {string} [params.relation] - Narrow to one relation (e.g. implements_step)
+ * @param {number} [params.limit] - Cap results (default 100)
+ * @returns {Promise<object[]>}
+ */
+export async function listInferred(g, params = {}) {
+  return listEdgesByConfidence(g, {
+    confidence: CONFIDENCE.INFERRED,
+    relation: params.relation,
+    limit: params.limit || 100,
+  });
 }

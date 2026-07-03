@@ -22,10 +22,12 @@ import { join } from "node:path";
 import gremlin from "gremlin";
 import {
   listFunctions, listTypes, getCallsFrom, getCanonicalSteps,
-  mapStep, linkDiscussion, linkDoc, addGrammarRule, annotate,
+  listDeleted, listExternalRefs, addReference,
+  mapStep, setEdgeConfidence, linkDiscussion, linkDoc, addGrammarRule, annotate,
   createPrDiscussion,
 } from "./api.js";
-import { confidenceAudit } from "../patterns/confidence-audit.js";
+import { confidenceAudit, listInferred } from "../patterns/confidence-audit.js";
+import { classifyExternals } from "../patterns/classify-externals.js";
 
 const COMMANDS = {
   listFunctions: { fn: listFunctions, needsG: true },
@@ -33,7 +35,13 @@ const COMMANDS = {
   getCallsFrom: { fn: getCallsFrom, needsG: true },
   getCanonicalSteps: { fn: getCanonicalSteps, needsG: false },
   auditConfidence: { fn: confidenceAudit, needsG: true },
+  listInferred: { fn: listInferred, needsG: true },
+  listDeleted: { fn: listDeleted, needsG: true },
+  listExternalRefs: { fn: listExternalRefs, needsG: true },
+  classifyExternals: { fn: classifyExternals, needsG: true },
+  addReference: { fn: addReference, needsG: true },
   mapStep: { fn: mapStep, needsG: true },
+  setEdgeConfidence: { fn: setEdgeConfidence, needsG: true },
   linkDiscussion: { fn: linkDiscussion, needsG: true },
   linkDoc: { fn: linkDoc, needsG: true },
   addGrammarRule: { fn: addGrammarRule, needsG: true },
@@ -76,7 +84,13 @@ async function main() {
     console.log("  getCallsFrom    --function <name> --file <path>");
     console.log("  getCanonicalSteps");
     console.log("  auditConfidence [--maxAmbiguous 50]");
+    console.log("  listInferred    [--relation implements_step|calls|...] [--limit 100]");
+    console.log("  listDeleted");
+    console.log("  listExternalRefs");
+    console.log("  classifyExternals   (tags external stubs origin=library|project|unresolved)");
+    console.log("  addReference    --fromPath <path> --toPath <deletedPath> [--symbol <name>] [--location <L42>] [--confidence ...]");
     console.log("  mapStep         --function <name> --file <path> --step <canonicalName> [--confidence INFERRED|AMBIGUOUS|EXTRACTED]");
+    console.log("  setEdgeConfidence --relation <label> --fromName <name> [--fromFile <path>] [--toName <name>] --confidence <EXTRACTED|INFERRED|AMBIGUOUS>");
     console.log("  linkDiscussion  --url <url> --source <jira|devlist|proposal> --title <title> [--body <body>] [--confidence ...]");
     console.log("  linkDoc         --entity <label> --name <name> --doc <path> [--section <section>] [--confidence ...]");
     console.log("  addGrammarRule  --name <name> [--production <production>]");
@@ -130,8 +144,39 @@ async function main() {
       case "auditConfidence":
         result = await fn(g, { maxAmbiguous: args.maxAmbiguous });
         break;
+      case "listInferred":
+        result = await fn(g, { relation: args.relation, limit: args.limit });
+        break;
+      case "listDeleted":
+        result = await fn(g);
+        break;
+      case "listExternalRefs":
+        result = await fn(g);
+        break;
+      case "classifyExternals":
+        result = await fn(g, session.worktreePath || session.repoPath);
+        break;
+      case "addReference":
+        result = await fn(g, {
+          fromPath: args.fromPath,
+          toPath: args.toPath,
+          symbol: args.symbol,
+          location: args.location,
+          confidence: args.confidence,
+        });
+        break;
       case "mapStep":
         result = await fn(g, args.function, args.file, args.step, args.confidence);
+        break;
+      case "setEdgeConfidence":
+        result = await fn(g, {
+          relation: args.relation,
+          fromName: args.fromName,
+          fromFile: args.fromFile,
+          toName: args.toName,
+          fromLabel: args.fromLabel,
+          confidence: args.confidence,
+        });
         break;
       case "linkDiscussion":
         result = await fn(g, args.url, args.source, args.title, args.body, args.confidence);

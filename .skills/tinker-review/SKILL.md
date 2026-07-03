@@ -60,6 +60,7 @@ Then determine which domain-specific playbooks apply from changed file paths:
 - `gremlin-driver/`, `gremlin-server/`, `gremlin-util/` → `playbooks/driver-server.md`
 - Small change set with linked issue → `playbooks/bug-fix.md`
 - `gremlin-language/` or `*.g4` → `playbooks/grammar.md`
+- Deletion-heavy change set (removes a feature/module/dependency; `listDeleted` returns entries) → `playbooks/removal.md`
 
 Load ALL matching playbooks. Execute enrichment for each in sequence.
 
@@ -81,17 +82,27 @@ node scripts/enrichment/cli.js listTypes --workDir /tmp/pr-review-<pr> --kind cl
 node scripts/enrichment/cli.js getCallsFrom --workDir /tmp/pr-review-<pr> --function <name> --file <path>
 node scripts/enrichment/cli.js getCanonicalSteps --workDir /tmp/pr-review-<pr>
 node scripts/enrichment/cli.js auditConfidence --workDir /tmp/pr-review-<pr>
+node scripts/enrichment/cli.js listInferred --workDir /tmp/pr-review-<pr> --relation implements_step
+node scripts/enrichment/cli.js listDeleted --workDir /tmp/pr-review-<pr>          # removal PRs: files the PR deleted + their symbols
+node scripts/enrichment/cli.js listExternalRefs --workDir /tmp/pr-review-<pr>     # unresolved callees; flags any matching a deleted symbol
 ```
 
 `auditConfidence` returns the edge confidence distribution and the list of
 AMBIGUOUS edges. Re-run it after enrichment to refresh the audit with the edges
 you added, then reflect any remaining AMBIGUOUS links in `openQuestions`.
 
+`listInferred` is your **verification worklist** — the name-resolved / agent-mapped
+edges worth a source check (optionally narrowed with `--relation`). After reading
+the source, use `setEdgeConfidence` (below) to promote a confirmed edge to
+`EXTRACTED` or downgrade a wrong resolution to `AMBIGUOUS`.
+
 **Write commands** (edges you create default to `INFERRED`; pass
 `--confidence AMBIGUOUS` for a guess you want flagged, or `EXTRACTED` when the
 source states it directly):
 ```bash
 node scripts/enrichment/cli.js mapStep --workDir /tmp/pr-review-<pr> --function <name> --file <path> --step <canonicalName> [--confidence INFERRED|AMBIGUOUS|EXTRACTED]
+node scripts/enrichment/cli.js setEdgeConfidence --workDir /tmp/pr-review-<pr> --relation <label> --fromName <name> [--fromFile <path>] [--toName <name>] --confidence <EXTRACTED|INFERRED|AMBIGUOUS>
+node scripts/enrichment/cli.js addReference --workDir /tmp/pr-review-<pr> --fromPath <survivingFile> --toPath <deletedFile> --symbol <name> [--location <where>] [--confidence ...]
 node scripts/enrichment/cli.js linkDiscussion --workDir /tmp/pr-review-<pr> --url <url> --source jira --title <title> [--confidence ...]
 node scripts/enrichment/cli.js linkDoc --workDir /tmp/pr-review-<pr> --entity Step --name <name> --doc <path> [--confidence ...]
 node scripts/enrichment/cli.js addGrammarRule --workDir /tmp/pr-review-<pr> --name <name>

@@ -18,13 +18,19 @@ select materialized files with `.hasNot("parsed")` and markers with
 **Function** `{ name, signature, visibility, filePath, lines_start, lines_end, changed }`
 A function or method. The primary unit of analysis.
 
-*External stub Functions* `{ name, external: true, resolved: false, changed: false }`
+*External stub Functions* `{ name, external: true, resolved: false, changed: false, origin?, definedIn? }`
 are markers created when a `calls`/`tests` edge targets a function by name that
 wasn't extracted (a library/JDK call, or a function in a file this PR didn't
 change). They keep the edge from vanishing and let blast-radius/centrality see
 the call; they lack `filePath`/`signature`/`visibility`. Filter them out with
 `.has("external", false)` — or, since real Functions have no `external` property,
 `.hasNot("external")` — when you only want materialized code.
+
+`classifyExternals` tags each stub with `origin`: `library` (a known JDK/accessor
+name — noise), `project` (a repo source declares a type with this name;
+`definedIn` records the file), or `unresolved` (unknown). Centrality drops
+`origin: library` calls from out-degree so ubiquitous accessor calls don't
+inflate hotspots.
 
 **Type** `{ name, kind, visibility, filePath }`
 A class, interface, struct, or enum. `kind` is one of: class, interface, struct, enum.
@@ -57,7 +63,7 @@ The PR itself is a Discussion with `source: "pr"`.
 **Comment** `{ author, body, timestamp }`
 A comment on a Discussion.
 
-## Edges (14 labels)
+## Edges (15 labels)
 
 ### Edge confidence (every edge)
 
@@ -84,6 +90,7 @@ renders this as the **Signal Confidence** panel.
 | `defines` | File | Function or Type | File contains this definition |
 | `implements` | Function | Type | Function implements an interface |
 | `depends_on` | File | File | File imports/requires another file |
+| `references` | File | File (deleted) | A surviving file still mentions a symbol from a file the PR deleted. Added during a removal review via `addReference`; carries `symbol` and `location` properties. |
 
 ### Domain relationships
 
