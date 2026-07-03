@@ -713,7 +713,7 @@ g.V().local(aggregate('x')).limit(1).cap('x')
 
 [gremlin-groovy,modern]
 ----
-g.E().local(aggregate('x')).by('weight').cap('x')
+g.E().local(aggregate('x').by('weight')).cap('x')
 ----
 
 *Additional References*
@@ -3042,7 +3042,7 @@ and pass the value in the params map via `match(String, Map)`:
 
 [gremlin-groovy,modern]
 ----
-g.match("MATCH (p:person {name: $personName})-[:knows]->(f:person)",
+g.match('MATCH (p:person {name: $personName})-[:knows]->(f:person)',
         ["personName": "marko"]).
   select("p", "f").by("name")
 ----
@@ -4204,7 +4204,7 @@ g.V(4).property(
       by(__.out('created').values('name'))) <7>
 g.V(4).valueMap()
 g.addV().property(T.label,'person').valueMap().with(WithOptions.tokens) <8>
-g.addV().property(null) <9>
+g.addV().property((Map) null) <9>
 g.addV().property(set, null)
 ----
 

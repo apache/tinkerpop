@@ -29,7 +29,8 @@ __pycache__/
 __version__.py
 .glv
 settings.xml
-tools/
+tools/*
+!tools/tinkerpop-docs/
 [Dd]ebug/
 [Rr]elease/
 [Oo]bj/
