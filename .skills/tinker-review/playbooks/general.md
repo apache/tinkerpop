@@ -40,11 +40,12 @@ verify with `setEdgeConfidence`: promote a confirmed edge to `EXTRACTED`, or
 downgrade a wrong name-resolution to `AMBIGUOUS`. Anything left `AMBIGUOUS`
 after this pass belongs in `openQuestions` — don't assert it as fact.
 
-## Checks
-- coverage_gaps(pr.tests(), pr.modified())
-- orphans("Function", "tests", { changedOnly: true })
-
 ## Interpret
+Read the structural signals from evidence.json (schema in
+[references/interfaces.md](../references/interfaces.md)). Missing tests on
+changed code (checks.coverageGaps, checks.orphans) are a test-quality concern —
+weigh them alongside the code smells below.
+
 Style nits and unused variables are low severity — note them but don't
 make them the focus of the report. Prioritize safety concerns (resource
 leaks, concurrency risks, missing error handling) and test quality issues.

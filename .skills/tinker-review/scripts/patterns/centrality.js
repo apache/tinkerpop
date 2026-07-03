@@ -46,6 +46,27 @@ const INHERENTLY_CENTRAL = new Set([
  *   Only takes effect once classifyExternals has tagged `origin`.
  * @returns {Promise<CentralityResult>}
  */
+
+/**
+ * @typedef {Object} Hotspot
+ * @property {string}  name
+ * @property {string}  filePath
+ * @property {string}  signature
+ * @property {number}  linesStart
+ * @property {number}  linesEnd
+ * @property {boolean} changed            whether the PR modified this function
+ * @property {number}  inDegree           incoming call edges (how many functions call it)
+ * @property {number}  outDegree          outgoing call edges, excluding origin:library targets
+ * @property {number}  totalDegree        inDegree + outDegree — the centrality score
+ * @property {boolean} inherentlyCentral  a boilerplate method (equals/toString/…) central by
+ *                                         nature; surfaced only when the PR modified it
+ *
+ * @typedef {Object} CentralityResult
+ * @property {Hotspot[]} hotspots               top functions by totalDegree (>= minDegree)
+ * @property {number}    totalAnalyzed          functions considered
+ * @property {number}    aboveThreshold         how many cleared minDegree
+ * @property {number}    filteredAsBoilerplate  inherently-central, unchanged functions dropped
+ */
 export async function highCentrality(g, params = {}) {
   const changedOnly = params.changedOnly !== false;
   const topN = params.topN || 10;

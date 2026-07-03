@@ -24,24 +24,29 @@ For API design concerns (mined from TinkerPop reviewer patterns):
 - Class design: wrapping + extending the same parent is suspicious
 - Type restrictions should not be too narrow (provider implementations vary)
 
-## Checks
-- completeness(step, ["in:implements_step", "out:has_rule", "in:covers", "in:documents", "out:proposed_in"])
-- coverage_gaps(pr.tests(), pr.modified())
-- high_centrality(pr.modified())
-- blast_radius(pr.modified(), 3)
-
 ## Interpret
-A step missing from some GLVs is acceptable if tracked in a follow-up
-issue — check if the PR or linked JIRA mentions phased rollout. Missing
-documentation is not acceptable — a step without docs is undiscoverable.
+Read the structural signals from evidence.json (schema in
+[references/interfaces.md](../references/interfaces.md)).
+
+A new step's completeness (checks.completeness over implements_step / has_rule /
+covers / documents / proposed_in) tells you what's missing. Missing from some
+GLVs is acceptable if a follow-up issue tracks it — check the PR or linked JIRA
+for phased rollout. Missing docs (no `documents` edge) is not acceptable — an
+undocumented step is undiscoverable. Missing tests (checks.coverageGaps, no
+`covers` edge) is a blocking gap — a new step must be exercised.
+
+A new step usually has low blast radius (checks.blastRadius) since nothing calls
+it yet; a high value means it hooks into shared infrastructure — verify those
+integration points.
 
 When comparing signatures across GLVs, parameter count should match but
 parameter types will differ by language. Focus on semantic equivalence,
 not syntactic identity.
 
-High centrality in step infrastructure (TraversalStrategy, Step interface
-implementations) is expected — these are shared abstractions. Flag it
-for attention but don't treat it as a problem.
+High centrality (checks.centrality) in step infrastructure (TraversalStrategy,
+Step interface implementations) is expected — these are shared abstractions.
+Flag it for attention but don't treat it as a problem. Ignore out-degree that's
+just library calls (checks.externals, origin=library).
 
 ## Escape
 - if missing: proposal — "Cannot assess intent — need human to confirm expected semantics"

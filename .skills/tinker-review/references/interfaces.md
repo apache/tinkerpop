@@ -68,54 +68,75 @@ interface ServerHandle {
 // === Graph Population ===
 
 interface PopulationSummary {
-  vertices: number;
-  edges: number;
-  breakdown: {
+  vertices: number;              // true count, queried from the graph after population
+  edges: number;                 // true count, queried from the graph after population
+  breakdown: {                   // per-type ATTEMPTED inserts (may exceed the real totals above)
     files: number;
     functions: number;
     types: number;
+    tests: number;
     calls: number;
     defines: number;
-    dependsOn: number;
+    testsEdges: number;
+    externalFunctions: number;   // stub Functions minted for unresolved callees
+    stubFiles: number;           // stub Files minted for changed files that weren't parsed
   };
 }
 
 // === Pattern Results ===
+//
+// Each check's result type is defined — WITH per-field meaning — as a @typedef
+// in the pattern file that produces it. Those typedefs are canonical; read them
+// when interpreting a field. Do not re-declare them here (that is what drifts).
+//
+//   CompletenessResult   scripts/patterns/completeness.js
+//   CoverageGapResult    scripts/patterns/coverage-gaps.js
+//   CentralityResult     scripts/patterns/centrality.js
+//   BlastRadiusResult    scripts/patterns/blast-radius.js
+//   ClusterResult        scripts/patterns/cluster-analysis.js
+//   ConfidenceResult     scripts/patterns/confidence-audit.js
+//   ExternalsResult      scripts/patterns/classify-externals.js
+//   OrphanResult         scripts/patterns/orphans.js
+//   ArchitectureResult   scripts/patterns/architecture.js
 
-interface CompletenessResult {
-  node: string;          // vertex id or identifier checked
-  present: string[];     // edge labels that exist
-  missing: string[];     // edge labels that are absent
-  score: number;         // present.length / (present.length + missing.length)
-}
+// === Evidence (evidence.json — what Phase 1 writes; the fields Interpret cites) ===
 
-interface CoverageGapResult {
-  uncovered: {
-    name: string;
-    signature: string;
-    filePath: string;
-    linesStart: number;
-    linesEnd: number;
-  }[];
-  totalChanged: number;
-  totalCovered: number;
-}
-
-// === Evidence Package (renderer input) ===
-
-interface EvidencePackage {
+interface Evidence {
   meta: {
     pr: number;
     title: string;
-    domain: string;
+    domains: string[];           // e.g. ["general", "glv", "driver-server"]
+    language: string;
+    changedFileCount: number;
     timestamp: string;
   };
-  summary: string;
   graphStats: PopulationSummary;
+  architecture: ArchitectureResult;
   checks: {
     completeness: CompletenessResult[];
     coverageGaps: CoverageGapResult;
+    centrality:   CentralityResult;
+    blastRadius:  BlastRadiusResult;
+    clusters:     ClusterResult;
+    confidence:   ConfidenceResult;
+    externals:    ExternalsResult;
+    orphans:      OrphanResult;
   };
+  discussions: DiscussionsResult;   // jiras[], devList[], secondary[], proposals[], prComments{}
+  changedFiles: string[];
+}
+
+// === ReportPackage (report.json — renderer input; Evidence + agent narrative) ===
+// The agent adds these fields in Phase 5; render.js consumes the whole thing.
+
+interface ReportPackage extends Evidence {
+  summary: string;                       // HTML
+  clusters: { assessment: string };      // narrative prose — distinct from checks.clusters
+  guidedWalk: { title; badge; badgeText; body }[];
+  findings: { title; snippet; body }[];
+  openQuestions: { title; body; meta }[];
+  functionalTest?: { plan; results: { name; pass; output }[]; observations };
+  appendixFunctional?: { environment; testCode; fullOutput };
 }
 ```
 

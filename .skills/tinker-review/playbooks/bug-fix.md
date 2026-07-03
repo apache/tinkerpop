@@ -22,25 +22,28 @@ Look for:
 
 If the PR references a JIRA ticket (TINKERPOP-XXXX), link it as a discussion.
 
-## Checks
-- completeness(pr, ["addresses"])
-- coverage_gaps(pr.tests(), pr.modified())
-- blast_radius(pr.modified(), 3)
-- high_centrality(pr.modified())
-
 ## Interpret
-High blast radius on a bug fix is a warning signal — the fix touches
-something many callers depend on. This doesn't mean it's wrong, but it
-means the reviewer should verify the fix doesn't subtly change behavior
-for existing callers.
+Read the structural signals from evidence.json (schema in
+[references/interfaces.md](../references/interfaces.md)).
 
-Changes outside the issue scope aren't automatically bad — sometimes
-fixing a bug requires touching adjacent code. But they should be
-explainable. Flag them with "necessary for fix?" not "wrong."
+High blast radius (checks.blastRadius) on a bug fix is a warning signal — the
+fix touches something many callers depend on. It isn't wrong, but verify it
+doesn't subtly change behavior for existing callers. If high-centrality
+functions (checks.centrality) are modified, say explicitly that every caller
+needs a behavioral-change check — a fix in a hot function breaks things far
+from the fix site.
 
-If high-centrality functions are modified, emphasize that the reviewer
-should check all callers for behavioral changes. A fix in a hot function
-can silently break things far from the fix site.
+A bug fix with no new or modified test is the biggest red flag: an untested fix
+(checks.coverageGaps, checks.orphans) can't be shown to prevent regression.
+Call it out prominently.
+
+Confirm the fix is tied to its issue — the PR should have an `addresses` edge to
+the JIRA/discussion (checks.completeness on `addresses`). No linked issue means
+correctness can't be assessed.
+
+Changes outside the issue scope aren't automatically bad — sometimes a fix needs
+adjacent code. But they should be explainable. Flag them "necessary for fix?"
+not "wrong."
 
 ## Escape
 - if no linked issue — "Cannot assess whether fix is correct without knowing the bug"

@@ -15,14 +15,13 @@ Identify which grammar rules were added or modified. Check:
 Link the proposal/discussion — grammar changes should always have prior
 community discussion.
 
-## Checks
-- completeness(grammarRule, ["in:has_rule"])
-- blast_radius(pr.modified(), 2)
-- high_centrality(pr.modified())
-
 ## Interpret
-Grammar changes have outsized blast radius by nature — the grammar
-touches everything. Focus on whether the change is backwards compatible.
+Read the structural signals from evidence.json (schema in
+[references/interfaces.md](../references/interfaces.md)). Grammar changes have
+outsized blast radius by nature (checks.blastRadius, checks.centrality) — the
+grammar touches everything, so don't flag the reach itself; focus on backwards
+compatibility. Completeness (checks.completeness on has_rule) shows whether new
+rules are wired to a step.
 
 A new rule that adds syntax (existing queries still work) is low risk.
 A modified rule that changes parsing of existing syntax is high risk and

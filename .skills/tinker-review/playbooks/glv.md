@@ -40,23 +40,21 @@ For the driver layer, identify connection acquisition and release points.
 Trace resource lifecycle through error paths — the common GLV bug is
 leaking connections when a traversal fails mid-execution.
 
-## Checks
-- completeness(glv, canonical_step_list())
-- coverage_gaps(pr.tests(), pr.modified())
-- high_centrality(pr.modified())
-
 ## Interpret
-When reporting completeness gaps, distinguish between missing steps and
-steps that exist but use a language-specific name (e.g., Python uses
-`addV` but Go uses `AddV` — same step, different convention).
+Read the structural signals from evidence.json (schema in
+[references/interfaces.md](../references/interfaces.md)).
+
+When reporting completeness gaps (checks.completeness), distinguish between
+missing steps and steps that exist but use a language-specific name (e.g.,
+Python uses `addV` but Go uses `AddV` — same step, different convention).
 
 When reporting divergence from the reference GLV, the question isn't
 "is it different?" — it's "is the difference justified by the host
 language?" A Go GLV using goroutines where Python uses asyncio is fine.
 A Go GLV using a different serialization format is a concern.
 
-Coverage gaps in a GLV are expected for driver internals (connection
-management, serialization) — but traversal step methods should have
+Coverage gaps in a GLV (checks.coverageGaps) are expected for driver internals
+(connection management, serialization) — but traversal step methods should have
 corresponding test coverage.
 
 ## Escape

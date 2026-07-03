@@ -64,6 +64,24 @@ Then determine which domain-specific playbooks apply from changed file paths:
 
 Load ALL matching playbooks. Execute enrichment for each in sequence.
 
+**How a playbook is applied.** Each playbook has four sections, and each maps to
+a phase of this run — this is the contract for what to do with the content:
+
+| Section | When | What you do with it |
+|---------|------|---------------------|
+| **Context** | framing | Orient to the change type and its risks; not actioned directly. |
+| **Enrich** | Phase 2 | Execute the listed steps using the enrichment CLI commands. |
+| **Interpret** | Phase 5 | When writing the report, weigh the named `evidence.json` fields into `findings` / `openQuestions`. |
+| **Escape** | any phase | Check the stop/escalate conditions; halt or flag when one holds. |
+
+Phase 1 already computes every structural check — completeness, coverageGaps,
+centrality, blastRadius, clusters, confidence, externals, orphans — into
+`evidence.json`. Playbooks' Interpret sections reference those results **by field
+name** (e.g. `checks.blastRadius`); they do not re-run checks. The shape and
+meaning of every field is documented in
+[references/interfaces.md](references/interfaces.md) (`Evidence`), which points
+to the per-check `@typedef`s in `scripts/patterns/*.js`.
+
 ### 3. Phase 2 — Enrichment (agent-driven)
 
 The Gremlin Server is still running. Use `scripts/enrichment/cli.js` to

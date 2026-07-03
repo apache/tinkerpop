@@ -32,6 +32,19 @@ import gremlin from "gremlin";
  * @param {boolean} [params.changedOnly] - Only check changed vertices (default: false)
  * @returns {Promise<OrphanResult>}
  */
+
+/**
+ * @typedef {Object} Orphan
+ * @property {string} name
+ * @property {string} label        vertex label checked (Function, Step, …)
+ * @property {string} filePath
+ * @property {string} missingEdge  the expected relationship that is absent (e.g. "in:tests")
+ *
+ * @typedef {Object} OrphanResult
+ * @property {Orphan[]} orphaned       vertices missing the expected relationship
+ * @property {number}   totalChecked   vertices examined
+ * @property {number}   totalOrphaned  orphaned.length
+ */
 export async function orphans(g, params) {
   const { vertexLabel, expectedEdge } = params;
   const direction = params.direction || "in";

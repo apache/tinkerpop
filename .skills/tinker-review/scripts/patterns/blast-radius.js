@@ -40,6 +40,25 @@ const INHERENTLY_CENTRAL = new Set([
  * @param {boolean} [params.changedOnly] - Start from changed functions only (default: true)
  * @returns {Promise<BlastRadiusResult>}
  */
+
+/**
+ * @typedef {Object} BlastRadiusFn
+ * @property {string}  name
+ * @property {string}  filePath
+ * @property {string}  signature
+ * @property {number}  linesStart
+ * @property {number}  linesEnd
+ * @property {boolean} changed         whether the PR modified this function
+ * @property {number}  reachableCount  callers reachable within `depth` hops upstream; high = the
+ *                                      change ripples widely (for driver/server this is expected)
+ * @property {number}  depth           hop limit used for this row
+ *
+ * @typedef {Object} BlastRadiusResult
+ * @property {BlastRadiusFn[]} functions        changed functions and how far each one's change reaches
+ * @property {number}          maxReachable     largest reachableCount across changed functions
+ * @property {number}          totalWithCallers changed functions that have any upstream callers
+ * @property {number}          depth            hop limit applied
+ */
 export async function blastRadius(g, params = {}) {
   const depth = params.depth || 3;
   const changedOnly = params.changedOnly !== false;

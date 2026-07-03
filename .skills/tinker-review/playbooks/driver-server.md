@@ -40,23 +40,22 @@ For each layer, look for:
 - Server configuration: gremlin-lang expressions, not Groovy scripts
 - Don't leave commented-out old code — remove it cleanly
 
-## Checks
-- blast_radius(pr.modified(), 3)
-- high_centrality(pr.modified())
-- coverage_gaps(pr.tests(), pr.modified())
-- orphans("Function", "tests", { changedOnly: true })
-
 ## Interpret
-Driver/server changes have inherently high blast radius — they're shared
-infrastructure. Don't flag blast radius as surprising, but DO highlight
-which specific callers are most affected. Use `listExternalRefs` to separate
-real project coupling (`origin: project`/`unresolved`) from library noise
-(`origin: library`) when judging a changed function's reach — centrality already
-drops the library calls, so a function still ranking high is genuinely central.
+Read the structural signals from evidence.json (schema in
+[references/interfaces.md](../references/interfaces.md)).
+
+Driver/server changes have inherently high blast radius (checks.blastRadius) —
+they're shared infrastructure. Don't flag the reach as surprising, but DO
+highlight which specific callers are most affected (checks.centrality). Use
+`listExternalRefs` to separate real project coupling (`origin: project`/
+`unresolved`) from library noise (`origin: library`) when judging a changed
+function's reach — centrality already drops the library calls, so a function
+still ranking high is genuinely central.
 
 Connection pooling and concurrency code should have explicit test coverage.
-If coverage gaps exist in connection lifecycle code, flag prominently —
-these are the hardest bugs to reproduce and the most impactful in production.
+If coverage gaps exist in connection lifecycle code (checks.coverageGaps,
+checks.orphans), flag prominently — these are the hardest bugs to reproduce
+and the most impactful in production.
 
 Serialization changes that add/remove type codes need upgrade documentation.
 Check if the PR includes corresponding upgrade doc entries.

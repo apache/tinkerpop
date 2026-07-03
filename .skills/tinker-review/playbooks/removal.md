@@ -36,11 +36,12 @@ deletions). It runs in addition to `general.md` and any module playbook.
    dropped from `pom.xml`? Were the config keys, ports, and doc sections that
    described the feature removed, not just the classes?
 
-## Checks
-- coverage_gaps(pr.tests(), pr.modified())
-- (references edges created above are the primary structural output)
-
 ## Interpret
+Read the structural signals from evidence.json (schema in
+[references/interfaces.md](../references/interfaces.md)); the `references` edges
+you added above and checks.coverageGaps on any surviving code are the primary
+structural outputs here.
+
 Not every surviving reference is a defect — classify each:
 - **Active code / build / config / live docs** referencing a removed symbol is a
   **blocking finding**: the build breaks or the feature is half-removed.

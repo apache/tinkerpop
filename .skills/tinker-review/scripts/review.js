@@ -36,6 +36,7 @@ import { clusterAnalysis } from "./patterns/cluster-analysis.js";
 import { architecture } from "./patterns/architecture.js";
 import { confidenceAudit } from "./patterns/confidence-audit.js";
 import { classifyExternals } from "./patterns/classify-externals.js";
+import { orphans } from "./patterns/orphans.js";
 import { createPrDiscussion } from "./enrichment/api.js";
 import { discoverDiscussions } from "./discovery/discussions.js";
 
@@ -311,12 +312,14 @@ export async function phase1(session) {
   const blastResult = await blastRadius(g, { depth: 3, changedOnly: true });
   const clusterResult = await clusterAnalysis(a, { changedOnly: true });
   const confidenceResult = await confidenceAudit(g);
+  const orphansResult = await orphans(g, { vertexLabel: "Function", expectedEdge: "tests", direction: "in", changedOnly: true });
   log(`  completeness: ${completenessResults.filter(r => r.missing.length > 0).length} gaps found`);
   log(`  coverage_gaps: ${coverageResult.uncovered.length} functions without tests`);
   log(`  centrality: ${centralityResult.aboveThreshold} hotspots`);
   log(`  blast_radius: max ${blastResult.maxReachable} reachable`);
   log(`  clusters: ${clusterResult.clusterCount} (${clusterResult.coherent ? "coherent" : "fragmented"})`);
   log(`  confidence: ${confidenceResult.distribution.EXTRACTED} extracted / ${confidenceResult.distribution.INFERRED} inferred / ${confidenceResult.distribution.AMBIGUOUS} ambiguous`);
+  log(`  orphans: ${orphansResult.totalOrphaned} functions with no test`);
 
   log(`Generating architecture map...`);
   const architectureResult = await architecture(g, { clusterResult, changedOnly: true });
@@ -341,6 +344,7 @@ export async function phase1(session) {
       clusters: clusterResult,
       confidence: confidenceResult,
       externals: externalsResult,
+      orphans: orphansResult,
     },
     discussions,
     changedFiles,

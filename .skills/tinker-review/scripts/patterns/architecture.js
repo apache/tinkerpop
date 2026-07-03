@@ -33,7 +33,19 @@ const { process: { t } } = gremlin;
  * @param {object} [params.clusterResult] - Output from clusterAnalysis() (connectedComponent clusters)
  * @param {boolean} [params.changedOnly] - Only include changed files (default: false)
  * @param {number} [params.maxNodes] - Cap on nodes to render (default: 40)
- * @returns {Promise<{nodes: Array, edges: Array}>}
+ * @returns {Promise<ArchitectureResult>}
+ */
+
+/**
+ * @typedef {Object} ArchitectureNode
+ * @property {string}  id
+ * @property {string}  label
+ * @property {string}  cluster  the cluster/community the node belongs to
+ * @property {boolean} changed  whether the PR modified it
+ *
+ * @typedef {Object} ArchitectureResult
+ * @property {ArchitectureNode[]} nodes
+ * @property {{from: string, to: string}[]} edges  directed dependency edges between nodes
  */
 export async function architecture(g, params = {}) {
   const { clusterResult, changedOnly = false, maxNodes = 40 } = params;

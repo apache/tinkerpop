@@ -47,7 +47,22 @@ function describeVertex(elementMap) {
  * @param {object} g - gremlin-js GraphTraversalSource (already connected)
  * @param {object} [params]
  * @param {number} [params.maxAmbiguous] - Cap the AMBIGUOUS edge list (default 50)
- * @returns {Promise<{distribution: object, total: number, ambiguous: object[]}>}
+ * @returns {Promise<ConfidenceResult>}
+ */
+
+/**
+ * @typedef {Object} EdgeConfidenceRow
+ * @property {string} relation      edge label (calls, implements_step, addresses, …)
+ * @property {string} [confidence]  the edge's confidence value
+ * @property {string} from          described source vertex, e.g. "Function(foo)"
+ * @property {string} to            described target vertex
+ * @property {string} [foundIn]     provenance for discussion links (pr, search, …)
+ * @property {string} [foundVia]
+ *
+ * @typedef {Object} ConfidenceResult
+ * @property {{EXTRACTED:number, INFERRED:number, AMBIGUOUS:number, UNTAGGED:number}} distribution  edge counts by confidence
+ * @property {number}              total      count of all edges
+ * @property {EdgeConfidenceRow[]} ambiguous  AMBIGUOUS edges — flagged for human review
  */
 export async function confidenceAudit(g, params = {}) {
   const maxAmbiguous = params.maxAmbiguous || 50;
@@ -89,7 +104,7 @@ export async function confidenceAudit(g, params = {}) {
  * @param {string} [opts.confidence] - Filter to this confidence value
  * @param {string} [opts.relation] - Filter to this edge label (e.g. implements_step)
  * @param {number} [opts.limit] - Cap the result count (default 100)
- * @returns {Promise<object[]>} rows of { relation, confidence, from, to, foundIn, foundVia }
+ * @returns {Promise<EdgeConfidenceRow[]>}
  */
 export async function listEdgesByConfidence(g, opts = {}) {
   const { confidence, relation, limit = 100 } = opts;
@@ -128,7 +143,7 @@ export async function listEdgesByConfidence(g, opts = {}) {
  * @param {object} [params]
  * @param {string} [params.relation] - Narrow to one relation (e.g. implements_step)
  * @param {number} [params.limit] - Cap results (default 100)
- * @returns {Promise<object[]>}
+ * @returns {Promise<EdgeConfidenceRow[]>}
  */
 export async function listInferred(g, params = {}) {
   return listEdgesByConfidence(g, {

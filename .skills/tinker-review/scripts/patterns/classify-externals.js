@@ -50,7 +50,15 @@ async function definedAsProjectType(name, repoPath) {
  *
  * @param {object} g - gremlin-js GraphTraversalSource (already connected)
  * @param {string} repoPath - a git worktree to grep for project type definitions
- * @returns {Promise<{total: number, library: string[], project: object[], unresolved: string[]}>}
+ * @returns {Promise<ExternalsResult>}
+ */
+
+/**
+ * @typedef {Object} ExternalsResult
+ * @property {number}   total       external-callee stubs classified
+ * @property {string[]} library     names judged JDK/accessor noise (dropped from centrality out-degree)
+ * @property {{name: string, definedIn: string}[]} project  names a repo type declares, with the file
+ * @property {string[]} unresolved  neither a known library name nor a project type — unknown
  */
 export async function classifyExternals(g, repoPath) {
   const names = await g.V().hasLabel("Function").has("external", true).values("name").toList();

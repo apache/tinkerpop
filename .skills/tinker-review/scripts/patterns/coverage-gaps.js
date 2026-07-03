@@ -27,6 +27,20 @@ import gremlin from "gremlin";
  * @param {boolean} [params.changedOnly] - Only check functions with changed=true (default: true)
  * @returns {Promise<CoverageGapResult>}
  */
+
+/**
+ * @typedef {Object} UncoveredFunction
+ * @property {string} name
+ * @property {string} signature
+ * @property {string} filePath
+ * @property {number} linesStart
+ * @property {number} linesEnd
+ *
+ * @typedef {Object} CoverageGapResult
+ * @property {UncoveredFunction[]} uncovered     changed functions with no incoming `tests` edge
+ * @property {number}              totalChanged  changed functions considered
+ * @property {number}              totalCovered  changed functions that do have a test
+ */
 export async function coverageGaps(g, params = {}) {
   const changedOnly = params.changedOnly !== false;
 

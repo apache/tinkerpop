@@ -29,6 +29,19 @@
  * @param {boolean} [params.changedOnly] - Only analyze changed files (default: true)
  * @returns {Promise<ClusterResult>}
  */
+
+/**
+ * @typedef {Object} Cluster
+ * @property {number}   id     1-based cluster index (largest first)
+ * @property {string[]} files  file paths in this connected component
+ * @property {number}   size   files.length
+ *
+ * @typedef {Object} ClusterResult
+ * @property {number}    clusterCount  disconnected components among changed files
+ * @property {boolean}   coherent      true when the change is one logical unit (<= 1 cluster)
+ * @property {Cluster[]} clusters      components, largest first
+ * @property {number}    totalFiles    changed files placed into clusters
+ */
 export async function clusterAnalysis(a, params = {}) {
   const changedOnly = params.changedOnly !== false;
 
