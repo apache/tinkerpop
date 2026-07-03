@@ -32,7 +32,7 @@ When invoked with `/review <pr-number>`:
 
 The run has two phases (see [DESIGN.md](DESIGN.md)). **Phase 1** (step 1) is
 deterministic and builds the graph. **Phase 2** (steps 3–5) is agent-driven —
-enrichment, an optional functional test, then the report. Step 2 loads the
+enrichment, an optional functional test, then the report. Step 2 chooses the
 playbooks that guide Phase 2; step 6 tears down.
 
 ### 1. Setup + Phase 1 (deterministic)
@@ -55,29 +55,31 @@ coverage gaps, centrality, blast radius, cluster analysis) → write evidence JS
 
 If re-running, the script cleans up stale worktrees/branches automatically.
 
-### 2. Classify and Load Playbooks
+### 2. Choose the playbooks
 
-**Always load** `playbooks/general.md` — it applies to every PR.
+Playbooks carry the domain judgment for Phase 2. `general.md` always applies;
+select the domain playbooks in two passes:
 
-Then determine which domain-specific playbooks apply from changed file paths:
-- `gremlin-dart/`, `gremlin-go/`, `gremlin-python/`, `gremlin-dotnet/`, `gremlin-js/` → `playbooks/glv.md`
-- `gremlin-core/` with new step patterns → `playbooks/new-step.md`
-- `gremlin-driver/`, `gremlin-server/`, `gremlin-util/` → `playbooks/driver-server.md`
-- Small change set with linked issue → `playbooks/bug-fix.md`
-- `gremlin-language/` or `*.g4` → `playbooks/grammar.md`
-- Deletion-heavy change set (removes a feature/module/dependency; `listDeleted` returns entries) → `playbooks/removal.md`
+1. **Orient** — from the changed file paths, gather the candidates:
+   - `gremlin-dart/`, `gremlin-go/`, `gremlin-python/`, `gremlin-dotnet/`, `gremlin-js/` → `playbooks/glv.md`
+   - `gremlin-core/` with new step patterns → `playbooks/new-step.md`
+   - `gremlin-driver/`, `gremlin-server/`, `gremlin-util/` → `playbooks/driver-server.md`
+   - Small change set with linked issue → `playbooks/bug-fix.md`
+   - `gremlin-language/` or `*.g4` → `playbooks/grammar.md`
+   - Deletion-heavy change set (removes a feature/module/dependency; `listDeleted` returns entries) → `playbooks/removal.md`
+2. **Confirm** — read each candidate's **Context** and keep only the ones that
+   truly fit this PR. A path can match a playbook that doesn't apply: a
+   `gremlin-core/` change that adds no step, or a `gremlin-driver/` fix that's
+   really a bug-fix.
 
-Load ALL matching playbooks. Execute enrichment for each in sequence.
+Then apply each kept playbook's sections at the point each is used:
 
-**How a playbook is applied.** Each playbook has four sections, and each maps to
-a phase of this run — this is the contract for what to do with the content:
-
-| Section | When | What you do with it |
-|---------|------|---------------------|
-| **Context** | framing | Orient to the change type and its risks; not actioned directly. |
-| **Enrich** | Phase 2 | Execute the listed steps using the enrichment CLI commands. |
-| **Interpret** | Phase 2 (report) | When writing the report, weigh the named `evidence.json` fields into `findings` / `openQuestions`. |
-| **Escape** | any phase | Check the stop/escalate conditions; halt or flag when one holds. |
+| Section | Used when | What you do |
+|---------|-----------|-------------|
+| **Context** | choosing playbooks (above) | Confirm the path-matched playbook fits this PR; set aside the ones that don't. |
+| **Enrich** | improving the graph (step 3) | Run its enrichment CLI commands to add semantic edges. |
+| **Interpret** | writing the report (step 5) | Weigh the named `evidence.json` fields into `findings` / `openQuestions`. |
+| **Escape** | any time | Honor its stop/escalate gates; halt or flag when one holds. |
 
 Phase 1 already computes every structural check — completeness, coverageGaps,
 centrality, blastRadius, clusters, confidence, externals, orphans — into

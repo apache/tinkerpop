@@ -77,8 +77,9 @@ has already exited.
 - **Add an enrichment command** — a function in `scripts/enrichment/api.js` (or a
   pattern module), wired into `cli.js` (COMMANDS + help + switch), documented in
   `SKILL.md`. Edge-creating commands take a `confidence`, default `INFERRED`.
-- **Add a playbook** — four sections (Context / Enrich / Interpret / Escape);
-  Enrich uses real commands, Interpret cites `evidence.json` fields; add a
-  routing rule in `SKILL.md`.
+- **Add a playbook** — four sections, each with a job: **Context** states when
+  the playbook applies (an applicability gate, read while choosing playbooks),
+  **Enrich** uses real enrichment commands, **Interpret** cites `evidence.json`
+  fields, **Escape** sets stop/escalate gates. Add an orient rule in `SKILL.md`.
 - **Add an edge or vertex type** — document it in `references/schema.md`; tag new
   edges with `confidence`; use find-or-create for cross-boundary endpoints.
