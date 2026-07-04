@@ -47,7 +47,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class TinkerTransactionGraphTest {
+public class TinkerStorageGraphTest {
 
     private static final String PROPERTY_NAME = "name";
     private static final String PROPERTY_WEIGHT = "weight";
@@ -60,9 +60,9 @@ public class TinkerTransactionGraphTest {
     @Test
     public void shouldCountVerticesByLabelAccountingForMultipleLabels() {
         final org.apache.commons.configuration2.Configuration config = new org.apache.commons.configuration2.BaseConfiguration();
-        config.setProperty(org.apache.tinkerpop.gremlin.structure.Graph.GRAPH, TinkerTransactionGraph.class.getName());
+        config.setProperty(org.apache.tinkerpop.gremlin.structure.Graph.GRAPH, TinkerStorageGraph.class.getName());
         config.setProperty(AbstractTinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, "ZERO_OR_MORE");
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open(config);
+        final TinkerStorageGraph g = TinkerStorageGraph.open(config);
 
         final GraphTraversalSource gtx = g.tx().begin();
         gtx.addV("person").next();
@@ -83,7 +83,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldReturnSameVertexInstanceInsideTransaction() {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
 
         final GraphTraversalSource gtx = g.tx().begin();
 
@@ -95,7 +95,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldDeleteVertexOnCommit() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
 
         final GraphTraversalSource gtx = g.tx().begin();
 
@@ -121,7 +121,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldDeleteCreatedVertexOnCommit() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
 
         final GraphTraversalSource gtx = g.tx().begin();
 
@@ -142,7 +142,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldCleanUpVertexContainerOnCommit() {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
 
         final GraphTraversalSource gtx = g.tx().begin();
 
@@ -165,7 +165,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldCleanUpVertexContainerOnRollback() {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
 
         final GraphTraversalSource gtx = g.tx().begin();
 
@@ -188,7 +188,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldDeleteUnusedVertexContainerOnCommit() {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
 
         final GraphTraversalSource gtx = g.tx().begin();
 
@@ -204,7 +204,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldDeleteUnusedVertexContainerOnRollback() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
 
         final GraphTraversalSource gtx = g.tx().begin();
 
@@ -242,7 +242,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldDeleteUnusedVertexContainerOnConcurrentVertexDelete() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
 
         final GraphTraversalSource gtx = g.tx().begin();
 
@@ -282,7 +282,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldRemoveContainerAndReferenceFromVertexOnDeleteEdge() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
 
         final GraphTraversalSource gtx = g.tx().begin();
 
@@ -329,7 +329,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldRemoveContainerAndReferenceFromVertexOnConcurrentDeleteEdge() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
 
         final GraphTraversalSource gtx = g.tx().begin();
 
@@ -393,7 +393,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldCreateIndexForNewVertex() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         g.createIndex("test-property", Vertex.class);
 
         final GraphTraversalSource gtx = g.tx().begin();
@@ -433,7 +433,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldCreateIndexForNullVertexProperty() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         g.createIndex("test-property", Vertex.class);
         g.allowNullPropertyValues = true;
         final Integer nullValue = null;
@@ -475,7 +475,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldRemoveIndexForRemovedVertex() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         g.createIndex("test-property", Vertex.class);
 
         final GraphTraversalSource gtx = g.tx().begin();
@@ -514,7 +514,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldRemoveIndexForRemovedVertexProperty() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         g.createIndex("test-property", Vertex.class);
 
         final GraphTraversalSource gtx = g.tx().begin();
@@ -555,7 +555,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldCreateIndexForNewEdge() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         g.createIndex("test-property", Edge.class);
 
         final GraphTraversalSource gtx = g.tx().begin();
@@ -595,7 +595,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldChangeIndexForChangedEdge() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         g.createIndex("test-property", Edge.class);
 
         final GraphTraversalSource gtx = g.tx().begin();
@@ -642,7 +642,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldRemoveIndexForRemovedEdge() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         g.createIndex("test-property", Edge.class);
 
         final GraphTraversalSource gtx = g.tx().begin();
@@ -682,7 +682,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldCreateIndexForNullProperty() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         g.createIndex("test-property", Edge.class);
         g.allowNullPropertyValues = true;
         final Integer nullValue = null;
@@ -725,7 +725,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldRemoveIndexForNullProperty() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         g.createIndex("test-property", Edge.class);
         final Integer nullValue = null;
 
@@ -773,7 +773,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void vertexCloneTest() {
-        final TinkerVertex vertex = new TinkerVertex(123, "label", TinkerTransactionGraph.open());
+        final TinkerVertex vertex = new TinkerVertex(123, "label", TinkerStorageGraph.open());
         final TinkerVertexProperty vp = new TinkerVertexProperty(vertex, "test", "qq");
         final TinkerEdge edge = new TinkerEdge(1, vertex, "label", vertex);
         vertex.properties = new ConcurrentHashMap<>();
@@ -792,7 +792,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void edgeCloneTest() {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final TinkerVertex v1 = (TinkerVertex) g.addVertex();
         final TinkerVertex v2 = (TinkerVertex) g.addVertex();
         final TinkerEdge edge = new TinkerEdge(3, v1, "label", v2);
@@ -807,7 +807,7 @@ public class TinkerTransactionGraphTest {
 
     // utility methods
 
-    private void countElementsInNewThreadTx(final TinkerTransactionGraph g, final long verticesCount, final long edgesCount) throws InterruptedException {
+    private void countElementsInNewThreadTx(final TinkerStorageGraph g, final long verticesCount, final long edgesCount) throws InterruptedException {
         final AtomicLong vCount = new AtomicLong(-1);
         final AtomicLong eCount = new AtomicLong(-1);
         final Thread thread = new Thread(() -> {
@@ -824,7 +824,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldNotAllowDirtyReadsOfVertexForReadOnlyTransaction() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         gtx.addV().next();
@@ -844,7 +844,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldNotAllowDirtyReadsOfVertexDropForReadOnlyTransaction() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         gtx.addV().next();
@@ -867,7 +867,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldNotAllowDirtyReadsOfEdgeForReadOnlyTransaction() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().next();
@@ -889,7 +889,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldNotAllowDirtyReadsOfEdgeDropForReadOnlyTransaction() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().next();
@@ -914,7 +914,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldNotAllowDirtyReadsOfVertexPropertyAddForReadOnlyTransaction() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         gtx.addV().property("a", 1).iterate();
@@ -937,7 +937,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldNotAllowDirtyReadsOfVertexPropertyDropForReadOnlyTransaction() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         gtx.addV().property("a", 1).iterate();
@@ -960,7 +960,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldNotAllowDirtyReadsOfVertexPropertyUpdateForReadOnlyTransaction() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         gtx.addV().property("a", 1L).iterate();
@@ -983,7 +983,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldNotAllowDirtyReadsOfEdgePropertyAddForReadOnlyTransaction() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().next();
@@ -1008,7 +1008,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldNotAllowDirtyReadsOfEdgePropertyDropForReadOnlyTransaction() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().next();
@@ -1033,7 +1033,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldNotAllowDirtyReadsOfEdgePropertyUpdateForReadOnlyTransaction() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().next();
@@ -1058,7 +1058,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldHandleAddingPropertyWhenOtherTxDeleteEdge() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().next();
@@ -1094,7 +1094,7 @@ public class TinkerTransactionGraphTest {
     //tx1 adds a property to v1, tx2 deletes v1
     @Test
     public void shouldHandleAddingPropertyWhenOtherTxDeleteVertex() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().next();
@@ -1127,7 +1127,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldDeleteEdgeOnCommit() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().next();
@@ -1162,7 +1162,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldHandleConcurrentChangeForProperty() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().next();
@@ -1197,7 +1197,7 @@ public class TinkerTransactionGraphTest {
     // tx1 adds an edge from v1 to v2, tx2 deletes v1 or v2
     @Test
     public void shouldHandleAddingEdgeWhenOtherTxDeleteVertex() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().next();
@@ -1231,7 +1231,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldHandleConcurrentChangeForVertexProperty() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().next();
@@ -1263,7 +1263,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldHandleConcurrentDeleteEdge() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().next();
@@ -1314,7 +1314,7 @@ public class TinkerTransactionGraphTest {
     // tx1 adds a new vertex v1, tx2 adds the same vertex
     @Test
     public void shouldHandleAddingSameVertexInDifferentTx() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().next();
@@ -1343,7 +1343,7 @@ public class TinkerTransactionGraphTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionWhenTryToAddVertexWithUsedId() {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         // add vertex
@@ -1357,7 +1357,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldHandleConcurrentVertexDelete() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().next();
@@ -1395,7 +1395,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldHandleConcurrentChangeForVertexMetaProperty() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().property("test", 1).next();
@@ -1427,7 +1427,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldReopenClosedTransaction() {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
         gtx.addV().iterate();
         gtx.tx().commit();
@@ -1442,7 +1442,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldBeIdempotentAndNonLossyWhenBeginCalledWhileOpen() {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         // stage an uncommitted change in the open transaction
@@ -1464,7 +1464,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldHandleAddingPropertyWhenOtherTxAttemptsDeleteThenRollsback() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().next();
@@ -1493,7 +1493,7 @@ public class TinkerTransactionGraphTest {
     // tx1 adds vertex v1, tx2 removes vertex v1
     @Test
     public void shouldHandleAddingVertexWhenOtherTxTryToDeleteSameVertex() throws InterruptedException {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v1 = gtx.addV().next();
@@ -1520,7 +1520,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldHandleSequenceOfCreateReadDeleteCreateSameVertex() {
-        final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
+        final TinkerStorageGraph graph = TinkerStorageGraph.open();
         final GraphTraversalSource g = graph.traversal();
 
         g.addV().property(T.id, 1).next();
@@ -1541,7 +1541,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldHandleCorrectlyHandleCountForChangedAndReadElement() {
-        final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
+        final TinkerStorageGraph graph = TinkerStorageGraph.open();
         final GraphTraversalSource g = graph.traversal();
 
         g.addV().property(T.id, 1).next();
@@ -1565,7 +1565,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldAllowDropAddVertexInSameTransaction() {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final TinkerTransaction tx = (TinkerTransaction) g.tx();
 
         // create initial vertex with a property
@@ -1594,7 +1594,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldAllowAddDropAddVertexInSameTransaction() {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final TinkerTransaction tx = (TinkerTransaction) g.tx();
 
         final GraphTraversalSource gtx = tx.begin();
@@ -1614,7 +1614,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldAllowAddDropAddDropVertexInSameTransaction() {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final TinkerTransaction tx = (TinkerTransaction) g.tx();
 
         final GraphTraversalSource gtx = tx.begin();
@@ -1636,7 +1636,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldAllowAddDropAddDropVertexInMultipleTransactions() {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final TinkerTransaction tx = (TinkerTransaction) g.tx();
 
         // first transaction
@@ -1666,7 +1666,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldAllowDropAddUniqueVertexInConcurrentTransactions() {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final TinkerTransaction tx = (TinkerTransaction) g.tx();
 
         // create first vertex and commit
@@ -1699,7 +1699,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldPreventDropAddVertexInConcurrentTransactions() {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final TinkerTransaction tx = (TinkerTransaction) g.tx();
 
         // create initial vertex and commit transaction
@@ -1732,7 +1732,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldPreventDropUpdateVertexInConcurrentTransactions() {
-        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
         final TinkerTransaction tx = (TinkerTransaction) g.tx();
 
         // create initial vertex and commit transaction
@@ -1763,7 +1763,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void readVertexShouldNotConflictWithDropAddUpdateVertexInSeparateTransaction() throws InterruptedException {
-        final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
+        final TinkerStorageGraph graph = TinkerStorageGraph.open();
         final GraphTraversalSource g = graph.traversal();
         final GraphTraversalSource gtx = g.tx().begin();
         final AtomicReference<AssertionError> validationException = new AtomicReference<>();
@@ -1816,7 +1816,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void readEdgeShouldNotConflictWithDropAddUpdateEdgeInSeparateTransaction() throws InterruptedException {
-        final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
+        final TinkerStorageGraph graph = TinkerStorageGraph.open();
         final GraphTraversalSource g = graph.traversal();
         final GraphTraversalSource gtx = g.tx().begin();
         final AtomicReference<AssertionError> validationException = new AtomicReference<>();
@@ -1872,7 +1872,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldNotAllowDirtyReadsOfVertexLabelAddForReadOnlyTransaction() throws InterruptedException {
-        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final TinkerStorageGraph g = openMultiLabelGraph();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v = gtx.addV("person").next();
@@ -1892,7 +1892,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldNotAllowDirtyReadsOfVertexLabelDropForReadOnlyTransaction() throws InterruptedException {
-        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final TinkerStorageGraph g = openMultiLabelGraph();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v = gtx.addV("person").addLabel("employee").next();
@@ -1912,7 +1912,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldNotAllowDirtyReadsOfVertexLabelDropAllForReadOnlyTransaction() throws InterruptedException {
-        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final TinkerStorageGraph g = openMultiLabelGraph();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v = gtx.addV("person").addLabel("employee").next();
@@ -1932,7 +1932,7 @@ public class TinkerTransactionGraphTest {
     // tx1 adds label "employee", tx2 concurrently adds label "customer" to the same vertex
     @Test
     public void shouldHandleConcurrentChangeForVertexLabel() throws InterruptedException {
-        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final TinkerStorageGraph g = openMultiLabelGraph();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v = gtx.addV("person").next();
@@ -1964,7 +1964,7 @@ public class TinkerTransactionGraphTest {
     // tx1 drops label "employee", tx2 concurrently drops the same label
     @Test
     public void shouldHandleConcurrentDropOfSameVertexLabel() throws InterruptedException {
-        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final TinkerStorageGraph g = openMultiLabelGraph();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v = gtx.addV("person").addLabel("employee").next();
@@ -1996,7 +1996,7 @@ public class TinkerTransactionGraphTest {
     // tx1 adds a label to v1, tx2 deletes v1
     @Test
     public void shouldHandleAddingLabelWhenOtherTxDeleteVertex() throws InterruptedException {
-        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final TinkerStorageGraph g = openMultiLabelGraph();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v = gtx.addV("person").next();
@@ -2027,7 +2027,7 @@ public class TinkerTransactionGraphTest {
     // tx1 adds a label to v1, tx2 attempts to delete v1 but rolls back
     @Test
     public void shouldHandleAddingLabelWhenOtherTxAttemptsDeleteThenRollsback() throws InterruptedException {
-        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final TinkerStorageGraph g = openMultiLabelGraph();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v = gtx.addV("person").next();
@@ -2054,7 +2054,7 @@ public class TinkerTransactionGraphTest {
     // tx1 adds a label to v1, tx2 concurrently updates a property of v1 - both touch the vertex
     @Test
     public void shouldHandleConcurrentLabelAddAndPropertyChange() throws InterruptedException {
-        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final TinkerStorageGraph g = openMultiLabelGraph();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v = gtx.addV("person").next();
@@ -2088,7 +2088,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldIsolateVertexLabelCountAcrossTransactions() throws InterruptedException {
-        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final TinkerStorageGraph g = openMultiLabelGraph();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v = gtx.addV("person").next();
@@ -2115,7 +2115,7 @@ public class TinkerTransactionGraphTest {
 
     @Test
     public void shouldRollbackVertexLabelDrop() throws InterruptedException {
-        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final TinkerStorageGraph g = openMultiLabelGraph();
         final GraphTraversalSource gtx = g.tx().begin();
 
         final Vertex v = gtx.addV("person").addLabel("employee").next();
@@ -2133,14 +2133,14 @@ public class TinkerTransactionGraphTest {
                 readLabelsInNewThreadTx(g, v.id()));
     }
 
-    private TinkerTransactionGraph openMultiLabelGraph() {
+    private TinkerStorageGraph openMultiLabelGraph() {
         final org.apache.commons.configuration2.Configuration config = new org.apache.commons.configuration2.BaseConfiguration();
-        config.setProperty(org.apache.tinkerpop.gremlin.structure.Graph.GRAPH, TinkerTransactionGraph.class.getName());
+        config.setProperty(org.apache.tinkerpop.gremlin.structure.Graph.GRAPH, TinkerStorageGraph.class.getName());
         config.setProperty(AbstractTinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, "ZERO_OR_MORE");
-        return TinkerTransactionGraph.open(config);
+        return TinkerStorageGraph.open(config);
     }
 
-    private Set<String> readLabelsInNewThreadTx(final TinkerTransactionGraph g, final Object id) throws InterruptedException {
+    private Set<String> readLabelsInNewThreadTx(final TinkerStorageGraph g, final Object id) throws InterruptedException {
         final AtomicReference<Set<String>> result = new AtomicReference<>();
         final Thread thread = new Thread(() -> {
             final GraphTraversalSource gtx = g.tx().begin();
@@ -2151,7 +2151,7 @@ public class TinkerTransactionGraphTest {
         return result.get();
     }
 
-    private long countByLabelInNewThreadTx(final TinkerTransactionGraph g, final String label) throws InterruptedException {
+    private long countByLabelInNewThreadTx(final TinkerStorageGraph g, final String label) throws InterruptedException {
         final AtomicLong count = new AtomicLong(-1);
         final Thread thread = new Thread(() -> {
             g.tx().begin();
@@ -2180,7 +2180,7 @@ public class TinkerTransactionGraphTest {
         }).collect(Collectors.toList());
     }
     
-    private void verifyCommittedSingleEdge(final TinkerTransactionGraph g, final Object weightValue) {
+    private void verifyCommittedSingleEdge(final TinkerStorageGraph g, final Object weightValue) {
         // graph should only have a single edge
         assertEquals(1, g.getEdges().size());
 
@@ -2207,11 +2207,11 @@ public class TinkerTransactionGraphTest {
         }
     }
 
-    private void verifyCommittedSingleVertex(final TinkerTransactionGraph g) {
+    private void verifyCommittedSingleVertex(final TinkerStorageGraph g) {
         verifyCommittedSingleVertex(g, null);
     }
 
-    private void verifyCommittedSingleVertex(final TinkerTransactionGraph g, final String namePropertyValue) {
+    private void verifyCommittedSingleVertex(final TinkerStorageGraph g, final String namePropertyValue) {
         // graph should only have a single vertex
         assertEquals(1, g.getVertices().size());
         

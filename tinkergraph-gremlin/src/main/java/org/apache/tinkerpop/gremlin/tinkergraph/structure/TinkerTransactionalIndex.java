@@ -38,7 +38,7 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
     protected ThreadLocal<Map<String, Map<Object, Set<T>>>> txIndex =
             ThreadLocal.withInitial(() -> new ConcurrentHashMap<>());
 
-    public TinkerTransactionalIndex(final TinkerTransactionGraph graph, final Class<T> indexClass) {
+    public TinkerTransactionalIndex(final TinkerStorageGraph graph, final Class<T> indexClass) {
         super(graph, indexClass);
     }
 
@@ -183,8 +183,8 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
 
         final Map elements =
                 Vertex.class.isAssignableFrom(indexClass) ?
-                        ((TinkerTransactionGraph) graph).getVertices() :
-                        ((TinkerTransactionGraph) graph).getEdges();
+                        ((TinkerStorageGraph) graph).getVertices() :
+                        ((TinkerStorageGraph) graph).getEdges();
 
         for (Object element : elements.values()) {
             addContainer((TinkerElementContainer<T>) element);

@@ -20,14 +20,14 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
-import org.apache.tinkerpop.gremlin.tinkergraph.TinkerTransactionGraphProvider;
+import org.apache.tinkerpop.gremlin.tinkergraph.TinkerStorageGraphProvider;
 import org.junit.runner.RunWith;
 
 /**
- * Executes the Standard Gremlin Structure Test Suite using TinkerTransactionGraph.
+ * Executes the Standard Gremlin Structure Test Suite using TinkerStorageGraph.
  */
 @RunWith(StructureStandardSuite.class)
-@GraphProviderClass(provider = TinkerTransactionGraphProvider.class, graph = TinkerTransactionGraph.class)
-public class TinkerTransactionGraphStructureStandardTest {
+@GraphProviderClass(provider = TinkerStorageGraphProvider.class, graph = TinkerStorageGraph.class)
+public class TinkerStorageGraphStructureStandardTest {
 
 }

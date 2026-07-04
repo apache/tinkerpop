@@ -163,8 +163,8 @@ public abstract class AbstractGremlinServerIntegrationTest {
         return (directory.delete());
     }
 
-    protected static void useTinkerTransactionGraph(final Settings settings) {
-        logger.info("Running transactional tests using TinkerTransactionGraph");
-        settings.graphs.put("graph", "conf/tinkertransactiongraph-empty.properties");
+    protected static void useTinkerStorageGraph(final Settings settings) {
+        logger.info("Running transactional tests using TinkerStorageGraph");
+        settings.graphs.put("graph", "conf/tinkerstoragegraph-empty.properties");
     }
 }
