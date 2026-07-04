@@ -47,8 +47,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * An in-memory (with optional persistence on calls to {@link #close()}), reference implementation of the property
- * graph interfaces with transaction support provided by TinkerPop.
+ * The transactional implementation of the {@link TinkerGraph} interface, in-memory with optional persistence on
+ * calls to {@link #close()}. It is planned that this implementation will optionally support simple storage to disk
+ * built on its transaction functionality.
  *
  * @author Valentyn Kahamlyk
  */
@@ -56,17 +57,17 @@ import java.util.concurrent.ConcurrentHashMap;
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_INTEGRATE)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_COMPUTER)
-public final class TinkerTransactionGraph extends AbstractTinkerGraph {
+public final class TinkerStorageGraph extends AbstractTinkerGraph {
 
     static {
-        TraversalStrategies.GlobalCache.registerStrategies(TinkerTransactionGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(
+        TraversalStrategies.GlobalCache.registerStrategies(TinkerStorageGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(
                 TinkerGraphStepStrategy.instance(),
                 TinkerGraphCountStrategy.instance(),
                 GqlDeclarativeMatchStrategy.instance()));
     }
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
-        this.setProperty(Graph.GRAPH, TinkerTransactionGraph.class.getName());
+        this.setProperty(Graph.GRAPH, TinkerStorageGraph.class.getName());
     }};
 
     private final TinkerGraphFeatures features = new TinkerGraphFeatures();
@@ -77,9 +78,9 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     private final Map<Object, TinkerElementContainer<TinkerEdge>> edges = new ConcurrentHashMap<>();
 
     /**
-     * An empty private constructor that initializes {@link TinkerTransactionGraph}.
+     * An empty private constructor that initializes {@link TinkerStorageGraph}.
      */
-    private TinkerTransactionGraph(final Configuration configuration) {
+    private TinkerStorageGraph(final Configuration configuration) {
         this.configuration = configuration;
         vertexIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, Vertex.class);
         edgeIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, Edge.class);
@@ -109,19 +110,19 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     }
 
     /**
-     * Open a new {@link TinkerTransactionGraph} instance.
+     * Open a new {@link TinkerStorageGraph} instance.
      * <p/>
      * <b>Reference Implementation Help:</b> If a {@link Graph} implementation does not require a {@code Configuration}
      * (or perhaps has a default configuration) it can choose to implement a zero argument
      * {@code open()} method. This is an optional constructor method for TinkerGraph. It is not enforced by the Gremlin
      * Test Suite.
      */
-    public static TinkerTransactionGraph open() {
+    public static TinkerStorageGraph open() {
         return open(EMPTY_CONFIGURATION);
     }
 
     /**
-     * Open a new {@code TinkerGraph} instance.
+     * Open a new {@code TinkerStorageGraph} instance.
      * <p/>
      * <b>Reference Implementation Help:</b> This method is the one use by the {@link GraphFactory} to instantiate
      * {@link Graph} instances.  This method must be overridden for the Structure Test Suite to pass. Implementers have
@@ -133,8 +134,8 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
      * @param configuration the configuration for the instance
      * @return a newly opened {@link Graph}
      */
-    public static TinkerTransactionGraph open(final Configuration configuration) {
-        return new TinkerTransactionGraph(configuration);
+    public static TinkerStorageGraph open(final Configuration configuration) {
+        return new TinkerStorageGraph(configuration);
     }
 
     ////////////// STRUCTURE API METHODS //////////////////
@@ -291,6 +292,11 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     @Override
     public Transaction tx() {
         return transaction;
+    }
+
+    @Override
+    public boolean isTxMode() {
+        return true;
     }
 
     @Override
@@ -532,6 +538,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
      * @param elementClass the element class to index
      * @param <E>          The type of the element class
      */
+    @Override
     public <E extends Element> void createIndex(final String key, final Class<E> elementClass) {
         if (Vertex.class.isAssignableFrom(elementClass)) {
             if (null == this.vertexIndex) this.vertexIndex = new TinkerTransactionalIndex<>(this, TinkerVertex.class);
@@ -551,6 +558,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
      * @param elementClass the element class of the index to drop
      * @param <E>          The type of the element class
      */
+    @Override
     public <E extends Element> void dropIndex(final String key, final Class<E> elementClass) {
         if (Vertex.class.isAssignableFrom(elementClass)) {
             if (null != this.vertexIndex) this.vertexIndex.dropKeyIndex(key);

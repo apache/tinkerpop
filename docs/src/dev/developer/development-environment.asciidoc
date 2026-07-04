@@ -770,12 +770,12 @@ tips are helpful to know when doing so:
 * It is not possible to run the tests in `gremlin-test` without a `Graph` implementation. For example, it is not
 possible to just right-click `org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest` and then select
 `Debug 'MatchTest'`. Instead, running that test would require opening `tinkergraph-gremlin` and executing the
-`TinkerGraphProcessStandardTest` (as an example) which runs the full Gremlin test suite to include `MatchTest`.
+`TinkerMemoryGraphProcessStandardTest` (as an example) which runs the full Gremlin test suite to include `MatchTest`.
 * To run just `MatchTest`, set a `GREMLIN_TESTS` environment variable with the fully qualified path name to the test
 configuration in Intellij. Note that the fully qualified test name is really
 `org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$CountMatchTraversals`.
 * Gherkin tests have a similar pattern in that they require a `Graph` implementation to execute them. Therefore,
-debugging entails going to `tinkergraph-gremlin` and running `TinkerGraphFeatureTest` in the debugger.
+debugging entails going to `tinkergraph-gremlin` and running `TinkerMemoryGraphFeatureTest` in the debugger.
 * It is possible to filter the Gherkin tests by adding a system property to the debug configuration that specifies the
 tags to use or ignore. For example to just run the `coin()` tests: `-Dcucumber.filter.tags="@StepCoin"`
 

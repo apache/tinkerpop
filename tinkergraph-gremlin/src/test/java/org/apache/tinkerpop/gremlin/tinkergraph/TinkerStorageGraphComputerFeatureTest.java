@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.Provides;
 import com.google.inject.Stage;
 import io.cucumber.guice.CucumberModules;
 import io.cucumber.junit.Cucumber;
@@ -30,13 +31,12 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @GraphComputerOnly and not @AllowNullPropertyValues and not @InsertionOrderingRequired and not @MultiLabelDefault",
+        tags = World.GRAPHCOMPUTER_TAG_FILTER,
         glue = { "org.apache.tinkerpop.gremlin.features" },
-        objectFactory = TinkerTransactionGraphFeatureTest.TinkerGraphGuiceFactory.class,
+        objectFactory = TinkerStorageGraphComputerFeatureTest.TinkerGraphGuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
         plugin = {"progress", "junit:target/cucumber.xml"})
-public class TinkerTransactionGraphFeatureTest {
-
+public class TinkerStorageGraphComputerFeatureTest {
     public static class TinkerGraphGuiceFactory extends AbstractGuiceFactory {
         public TinkerGraphGuiceFactory() {
             super(Guice.createInjector(Stage.PRODUCTION, CucumberModules.createScenarioModule(), new ServiceModule()));
@@ -46,7 +46,12 @@ public class TinkerTransactionGraphFeatureTest {
     public static final class ServiceModule extends AbstractModule {
         @Override
         protected void configure() {
-            bind(World.class).to(TinkerWorld.TinkerTransactionGraphWorld.class);
+            bind(World.class).to(TinkerWorld.ComputerWorld.class);
+        }
+
+        @Provides
+        static TinkerWorld.ComputerWorld provideComputerWorld() {
+            return new TinkerWorld.ComputerWorld(new TinkerWorld.TinkerStorageGraphWorld());
         }
     }
 }

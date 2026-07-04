@@ -59,7 +59,7 @@ graphs: {
     configuration: conf/tinkergraph-multilabel.properties,
     traversalSources: [{name: gzoo}]},
   tx: {
-    configuration: conf/tinkertransactiongraph-empty.properties,
+    configuration: conf/tinkerstoragegraph-empty.properties,
     traversalSources: [{name: gtx}]}}
 lifecycleHooks:
   - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: classic, dataset: classic}}

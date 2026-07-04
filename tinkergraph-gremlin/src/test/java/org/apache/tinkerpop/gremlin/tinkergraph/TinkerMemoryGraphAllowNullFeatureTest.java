@@ -31,12 +31,13 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = World.GRAPHCOMPUTER_TAG_FILTER,
+        tags = "@AllowNullPropertyValues and not @MultiLabelDefault",
         glue = { "org.apache.tinkerpop.gremlin.features" },
-        objectFactory = TinkerTransactionGraphComputerFeatureTest.TinkerGraphGuiceFactory.class,
+        objectFactory = TinkerMemoryGraphAllowNullFeatureTest.TinkerGraphGuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
         plugin = {"progress", "junit:target/cucumber.xml"})
-public class TinkerTransactionGraphComputerFeatureTest {
+public class TinkerMemoryGraphAllowNullFeatureTest {
+
     public static class TinkerGraphGuiceFactory extends AbstractGuiceFactory {
         public TinkerGraphGuiceFactory() {
             super(Guice.createInjector(Stage.PRODUCTION, CucumberModules.createScenarioModule(), new ServiceModule()));
@@ -46,12 +47,12 @@ public class TinkerTransactionGraphComputerFeatureTest {
     public static final class ServiceModule extends AbstractModule {
         @Override
         protected void configure() {
-            bind(World.class).to(TinkerWorld.ComputerWorld.class);
+            bind(World.class).to(TinkerWorld.NullWorld.class);
         }
 
         @Provides
-        static TinkerWorld.ComputerWorld provideComputerWorld() {
-            return new TinkerWorld.ComputerWorld(new TinkerWorld.TinkerTransactionGraphWorld());
+        static TinkerWorld.NullWorld provideNullWorld() {
+            return new TinkerWorld.NullWorld(new TinkerWorld.TinkerGraphWorld());
         }
     }
 }

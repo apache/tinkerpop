@@ -114,10 +114,10 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             case "shouldRollbackOnFailedMutatingTraversal":
             case "shouldCommitMutatingTraversalWithEmptyResult":
             case "should400OnTransactionBeginWithNonPositiveBatchSize":
-                useTinkerTransactionGraph(settings);
+                useTinkerStorageGraph(settings);
                 break;
             case "should200OnPOSTTransactionalGraphInStrictMode":
-                useTinkerTransactionGraph(settings);
+                useTinkerStorageGraph(settings);
                 settings.strictTransactionManagement = true;
                 break;
             case "should200OnPOSTWithGraphSON4d0AcceptHeaderDefaultResultToJson":

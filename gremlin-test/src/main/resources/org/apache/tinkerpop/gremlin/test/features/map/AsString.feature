@@ -221,4 +221,4 @@ Feature: Step - asString()
     When iterated to list
     Then the result should be unordered
       | result |
-      | tinkergraph[vertices:3 edges:2] |
+      | tinkermemorygraph[vertices:3 edges:2] |
