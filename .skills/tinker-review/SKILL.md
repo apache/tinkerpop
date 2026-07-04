@@ -75,12 +75,22 @@ select the domain playbooks in two passes:
 
 Then apply each kept playbook's sections at the point each is used:
 
+The three working sections (**Enrich**, **Inspect**, **Interpret**) are bullet
+checklists — one item per action.
+
 | Section | Used when | What you do |
 |---------|-----------|-------------|
 | **Context** | choosing playbooks (above) | Confirm the path-matched playbook fits this PR; set aside the ones that don't. |
-| **Enrich** | improving the graph (step 3) | Run its enrichment CLI commands to add semantic edges. |
-| **Interpret** | writing the report (step 5) | Weigh the named `evidence.json` fields into `findings` / `openQuestions`. |
+| **Enrich** | improving the graph (step 3) | Run each command bullet to add or re-grade semantic edges. Graph mutation only. |
+| **Inspect** | reading the changed source (step 3) | Check each bullet against the source; record what you find as a *candidate finding* for Interpret. |
+| **Interpret** | writing the report (step 5) | Weigh the named `evidence.json` fields together with the Inspect candidates into `findings` / `openQuestions`. |
 | **Escape** | any time | Honor its stop/escalate gates; halt or flag when one holds. |
+
+The three working sections split by data flow: **Enrich** writes to the graph,
+**Inspect** reads the changed source into candidate findings, **Interpret** reads
+the computed `evidence.json` checks and weighs the Inspect candidates into the
+report. `findings` is an ordered list — Interpret ranks it most-severe-first,
+grading each entry blocking / high / low.
 
 Phase 1 already computes every structural check — completeness, coverageGaps,
 centrality, blastRadius, clusters, confidence, externals, orphans — into
@@ -116,11 +126,14 @@ when the source states it directly.
 The confidence loop is the backbone of enrichment: `auditConfidence` →
 `listInferred` (your verification worklist) → read the source → `setEdgeConfidence`
 to promote or downgrade, then re-run `auditConfidence` and reflect anything still
-`AMBIGUOUS` in `openQuestions`. See `general.md`'s **Verify confidence** section.
+`AMBIGUOUS` in `openQuestions`. It is defined once in `general.md`'s **Enrich**
+section and inherited by every playbook.
 
 **Read source files:** worktree at `/tmp/pr-review-<pr>/src/`
 
-Follow the playbook's Enrich section. Check Escape conditions.
+Follow the playbook's Enrich section (graph writes) and its Inspect section (read
+the changed source, recording concerns as candidate findings for Interpret to
+weigh at report time). Check Escape conditions.
 
 ### 4. Phase 2 — Functional Testing (optional, subagent)
 
@@ -174,7 +187,7 @@ produce a complete evidence-with-narrative JSON file. Write it to
 - `summary` — HTML paragraph describing the PR
 - `clusters.assessment` — HTML prose about what the clusters mean
 - `guidedWalk` — array of `{ title, badge, badgeText, body }` objects
-- `findings` — array of `{ title, snippet, body }` objects
+- `findings` — array of `{ title, snippet, body }` objects, ordered most-severe-first (Interpret grades each blocking / high / low)
 - `openQuestions` — array of `{ title, body, meta }` objects
 - `functionalTest` — `{ plan, results: [{name, pass, output}], observations }` (if testing was done)
 - `appendixFunctional` — `{ environment, testCode, fullOutput }` (if testing was done)

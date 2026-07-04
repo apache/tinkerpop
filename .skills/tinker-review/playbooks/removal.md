@@ -12,45 +12,33 @@ Load this playbook when `listDeleted` returns entries (or the PR is dominated by
 deletions). It runs in addition to `general.md` and any module playbook.
 
 ## Enrich
-1. Run `listDeleted` to get the removed files and the symbol each likely defined
-   (e.g. `Krb5Authenticator.java` -> `Krb5Authenticator`). Deleted files are
-   already in the graph as `File { deleted: true }` markers.
+- `listDeleted` — the removed files and the symbol each likely defined
+  (`Krb5Authenticator.java` -> `Krb5Authenticator`). The entry point; its results
+  are the valid `--toPath` targets for `addReference`.
+- Read `checks.removalRefs` (and `checks.removalRefs.externalCallers`) — Phase 1
+  already grepped the surviving worktree for each removed code symbol and wrote a
+  `references` edge per hit. Once you've classified each (see Interpret), confirm
+  or downgrade it with `setEdgeConfidence`.
+- `addReference` — record the non-code hits the automatic pass can't see, grepped
+  off `listDeleted`: config/resources (`*.yaml`, `*.conf`, `*.properties`), build
+  files (`pom.xml`, `*.gradle`), docs (`docs/src/**/*.asciidoc`, `CHANGELOG.asciidoc`),
+  Docker/CI setup (`*.sh`, compose files).
 
-2. **Phase 1 already found the code-symbol references.** For every deleted *code*
-   file it grepped the surviving worktree for that class/method name and wrote a
-   `references` edge per hit — read them from `checks.removalRefs` (and
-   `checks.removalRefs.externalCallers` for changed code still calling a removed
-   name). Your job on these is judgment, not discovery: classify each (see
-   Interpret). They are `INFERRED`; confirm or downgrade with `setEdgeConfidence`.
-
-3. **Grep for what the automatic pass skips** — the non-code supporting cast that
-   removals commonly leave behind, keyed off `listDeleted`:
-   - config/resources (`*.yaml`, `*.conf`, `*.properties`), ports, feature flags
-   - build files (`pom.xml`, `*.gradle`) — was the dependency actually dropped?
-   - docs (`docs/src/**/*.asciidoc`) and `CHANGELOG.asciidoc`
-   - Docker/CI setup (compose files, `*.sh`)
-
-   Record any surviving hit with `addReference --fromPath <file> --toPath
-   <deletedFile> --symbol <name> --location <where>` — the escape hatch for the
-   cases the code-symbol pass cannot see.
+## Inspect
+None specific to removal — the review judgment here is structural (classifying
+the `references` edges recorded in Enrich) and is handled in Interpret rather
+than by reading changed source.
 
 ## Interpret
-Read the structural signals from evidence.json (schema in
-[references/interfaces.md](../references/interfaces.md)); the `references` edges
-in checks.removalRefs (plus any you added by hand) and checks.coverageGaps on
-any surviving code are the primary structural outputs here.
-
-Not every surviving reference is a defect — classify each:
-- **Active code / build / config / live docs** referencing a removed symbol is a
-  **blocking finding**: the build breaks or the feature is half-removed.
-- **Historical release notes** (e.g. `docs/src/upgrade/release-3.x.asciidoc`)
-  mentioning the removed symbol are **expected and correct** — they record when
-  the feature existed. Note them as verified-benign, not as a problem.
-- A **current** upgrade/CHANGELOG entry should *gain* a line announcing the
-  removal. Its absence is a finding (users need to know the feature is gone).
-
-Weight findings by where the reference lives, and say so explicitly in the
-report so the reviewer isn't left guessing whether a hit matters.
+The `references` edges in `checks.removalRefs` (plus any you added) and
+`checks.coverageGaps` on surviving code are the primary outputs.
+Classify each surviving reference and state where it lives:
+- Active code / build / config / live docs referencing a removed symbol —
+  blocking; the build breaks or the feature is half-removed.
+- Historical release notes (e.g. `docs/src/upgrade/release-3.x.asciidoc`)
+  mentioning the removed symbol — expected and correct; note as verified-benign.
+- No current upgrade/CHANGELOG line announcing the removal — a finding; users
+  need to know the feature is gone.
 
 ## Escape
 - if a removed symbol is still referenced by active source or build files —

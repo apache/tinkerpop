@@ -7,62 +7,52 @@ here affect all users and all GLV drivers. Correctness under concurrency
 and backwards compatibility are critical concerns.
 
 ## Enrich
-Identify what layer of the driver/server stack is being modified:
-- Connection lifecycle (pooling, creation, cleanup)
-- Protocol handling (HTTP, WebSocket, request/response framing)
-- Serialization (GraphBinary, GraphSON, type registration)
-- Server initialization (configuration, script engines)
-- Authentication/authorization
+- `linkDoc` — if the change adds or removes a serializer type code, record the
+  documentation that covers that format (`--entity File --name <doc>`).
+- `linkDiscussion` — record a referenced proposal or JIRA.
 
-For each layer, look for:
+## Inspect
+Context: layered — identify the layer (connection lifecycle / protocol /
+serialization / server init / auth) first, then check the matching group.
 
 **Connection management:**
-- Are HttpClient/WebSocket instances shared or created per-connection?
-  (Shared is correct for pooling; per-connection defeats the pool)
+- HttpClient/WebSocket instances shared or created per-connection? (shared is
+  correct for pooling; per-connection defeats the pool)
 - Could pool size = 1 cause deadlock?
-- Data structure choices for connection tracking: CopyOnWriteArraySet has
-  write overhead, ConcurrentLinkedQueue is better for frequent insert/remove
-- Are settings kept as a cohesive object or extracted into individual fields?
-  (Prefer the object — individual fields drift from the source of truth)
+- Connection-tracking data structures: `CopyOnWriteArraySet` has write overhead;
+  `ConcurrentLinkedQueue` is better for frequent insert/remove.
+- Settings kept as a cohesive object, or extracted into individual fields that
+  drift from the source of truth? (prefer the object)
 
 **Serialization:**
-- De-bulking: should happen lazily at traversal iteration, not eagerly when
-  responses arrive (eager de-bulking puts all objects in memory at once)
-- Removed type IDs: if a serializer type code is removed, leave a comment
-  documenting what it was ("122 was Bytecode until removed in 4.x")
-- Error response fallback: GraphBinary errors may come back as JSON if the
-  server can't serialize the error in binary
-- Numeric types: longs need 'L' suffix in GremlinLang text format
+- De-bulking happens lazily at traversal iteration, not eagerly on response
+  arrival (eager puts all objects in memory at once).
+- Removed type IDs leave a comment documenting what they were ("122 was Bytecode
+  until removed in 4.x").
+- Error-response fallback: GraphBinary errors may return as JSON when the server
+  can't serialize the error in binary.
+- Numeric types: longs need an `L` suffix in GremlinLang text format.
 
 **API migration:**
-- New code must use GremlinLang, not Bytecode (removed in 4.x)
-- New code must use with_(), not withRemote (deprecated)
-- Server configuration: gremlin-lang expressions, not Groovy scripts
-- Don't leave commented-out old code — remove it cleanly
+- New code uses GremlinLang, not Bytecode (removed in 4.x).
+- New code uses `with_()`, not `withRemote` (deprecated).
+- Server configuration uses gremlin-lang expressions, not Groovy scripts.
+- No commented-out old code left behind — remove it cleanly.
 
 ## Interpret
-Read the structural signals from evidence.json (schema in
-[references/interfaces.md](../references/interfaces.md)).
-
-Driver/server changes have inherently high blast radius (checks.blastRadius) —
-they're shared infrastructure. Don't flag the reach as surprising, but DO
-highlight which specific callers are most affected (checks.centrality). Use
-`listExternalRefs` to separate real project coupling (`origin: project`/
-`unresolved`) from library noise (`origin: library`) when judging a changed
-function's reach — centrality already drops the library calls, so a function
-still ranking high is genuinely central.
-
-Connection pooling and concurrency code should have explicit test coverage.
-If coverage gaps exist in connection lifecycle code (checks.coverageGaps,
-checks.orphans), flag prominently — these are the hardest bugs to reproduce
-and the most impactful in production.
-
-Serialization changes that add/remove type codes need upgrade documentation.
-Check if the PR includes corresponding upgrade doc entries.
-
-For "good enough for now" patterns (strategy handling, migration scaffolding),
-note them as acceptable if they're clearly marked as temporary, but flag if
-they look like they'll become permanent debt.
+- `checks.blastRadius` — inherently high (shared infrastructure); don't flag the
+  reach itself, name the specific callers most affected.
+- `checks.centrality` with `listExternalRefs` — separate project coupling
+  (`origin: project`/`unresolved`) from library noise (`origin: library`);
+  centrality already drops library calls, so a function ranking high is
+  genuinely central.
+- `checks.coverageGaps` / `checks.orphans` in connection-lifecycle or
+  concurrency code — blocking; these are the hardest bugs to reproduce and the
+  most impactful in production.
+- Serialization type-code change with no `documents` edge from Enrich — high;
+  flag the missing IO/upgrade doc.
+- "Good enough for now" patterns (strategy handling, migration scaffolding) —
+  acceptable if clearly marked temporary; flag if they look like permanent debt.
 
 ## Escape
 - if connection pool logic modified without concurrency tests — "Pool changes need concurrency testing — flag for manual review of deadlock/race conditions"

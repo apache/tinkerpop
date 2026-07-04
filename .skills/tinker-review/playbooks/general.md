@@ -6,57 +6,51 @@ the type of change. This playbook always applies in addition to any
 domain-specific playbook.
 
 ## Enrich
-Look for these patterns in the changed code and annotate them:
+The confidence pass runs on every review; it lives here and every playbook
+inherits it. Run in order:
+- `auditConfidence` — read the edge-confidence distribution and the `AMBIGUOUS` list.
+- `listInferred` — pull the verification worklist (`--relation implements_step`
+  first, then any `calls` edges your findings lean on); read each against the
+  worktree source.
+- `setEdgeConfidence` — re-grade what you verified: promote a confirmed edge to
+  `EXTRACTED`, downgrade a wrong name-resolution to `AMBIGUOUS`.
+- `auditConfidence` again — anything still `AMBIGUOUS` goes to `openQuestions`,
+  never asserted as fact.
 
-**Style violations:**
-- Wildcard imports in Java (import foo.*)
+## Inspect
+**Style:**
+- Wildcard imports in Java (`import foo.*`)
 - Formatting/indentation changes mixed with functional changes
 - Unused variables or imports
 - Non-final variables that should be final
 
-**Deprecated API usage:**
-- Use of withRemote (deprecated in 4.0, use with_())
+**Deprecated API:**
+- `withRemote` (deprecated in 4.0, use `with_()`)
 - Groovy script strings where gremlin-lang should be used
-- Any API marked @Deprecated being used in new code
+- Any `@Deprecated` API used in new code
 
-**Test concerns:**
+**Tests:**
 - Tests that drop/clear all data instead of isolating with specialized labels
 - Assertions that don't clearly explain what they verify
 - Error/exception paths that aren't tested
 - Test helpers without guard clauses (missing else/throw for invalid input)
 
 **Resource safety:**
-- Connections, channels, or streams opened without clear cleanup paths
+- Connections, channels, or streams opened without a clear cleanup path
 - Log levels: error for unexpected failures, info for expected lifecycle events
-- Data structures with concurrency implications (note if CopyOnWriteArraySet,
-  synchronized collections, etc. are introduced without profiling justification)
-
-## Verify confidence
-Before writing the report, run `auditConfidence`. Then pull the verification
-worklist with `listInferred` (start with `--relation implements_step`, then any
-`calls` edges that matter to your findings) and spot-check the ones your
-conclusions lean on against the source in the worktree. Re-grade what you
-verify with `setEdgeConfidence`: promote a confirmed edge to `EXTRACTED`, or
-downgrade a wrong name-resolution to `AMBIGUOUS`. Anything left `AMBIGUOUS`
-after this pass belongs in `openQuestions` — don't assert it as fact.
+- Concurrency-implicated data structures (`CopyOnWriteArraySet`, synchronized
+  collections) introduced without profiling justification
 
 ## Interpret
-Read the structural signals from evidence.json (schema in
-[references/interfaces.md](../references/interfaces.md)). Missing tests on
-changed code (checks.coverageGaps, checks.orphans) are a test-quality concern —
-weigh them alongside the code smells below.
-
-Style nits and unused variables are low severity — note them but don't
-make them the focus of the report. Prioritize safety concerns (resource
-leaks, concurrency risks, missing error handling) and test quality issues.
-
-Formatting changes mixed with functional changes are worth flagging
-prominently — they make the PR harder to review and should ideally be
-separate commits.
-
-Deprecated API usage in NEW code is always a concern. Deprecated usage
-in MODIFIED code (that was already there) is lower priority unless the
-PR is specifically about migrating away from the deprecated API.
+- `checks.coverageGaps` / `checks.orphans` — missing tests on changed code; a
+  test-quality concern, weighed alongside the Inspect smells.
+- Safety concerns (resource leaks, concurrency risks, missing error handling)
+  and test-quality issues — high; make these the focus.
+- Style nits and unused variables — low; note them, don't let them dominate.
+- Formatting mixed with functional changes — high; it makes the PR harder to
+  review and should ideally be separate commits.
+- Deprecated API in new code — high. Deprecated API already present in modified
+  code — low, unless the PR is specifically a migration away from it.
 
 ## Escape
 None — this playbook always completes. No conditions warrant stopping.

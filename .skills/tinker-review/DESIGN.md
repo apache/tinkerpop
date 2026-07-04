@@ -77,9 +77,31 @@ has already exited.
 - **Add an enrichment command** — a function in `scripts/enrichment/api.js` (or a
   pattern module), wired into `cli.js` (COMMANDS + help + switch), documented in
   `SKILL.md`. Edge-creating commands take a `confidence`, default `INFERRED`.
-- **Add a playbook** — four sections, each with a job: **Context** states when
-  the playbook applies (an applicability gate, read while choosing playbooks),
-  **Enrich** uses real enrichment commands, **Interpret** cites `evidence.json`
-  fields, **Escape** sets stop/escalate gates. Add an orient rule in `SKILL.md`.
+- **Add a playbook** — five sections. **Context** is prose stating when the
+  playbook applies (an applicability gate, read while choosing playbooks). The
+  three working sections — **Enrich**, **Inspect**, **Interpret** — are bullet
+  checklists, one item per action so the agent runs them dependably rather than
+  parsing prose. They split by data flow:
+  - **Enrich** — each bullet names a registered enrichment command and mutates
+    the graph only (name at least one command, or state that none applies).
+  - **Inspect** — each bullet names a source-read concern to record as a
+    *candidate finding* for Interpret. List only the concerns; the "read the
+    changed source, record each as a candidate finding" instruction is stated
+    once in `SKILL.md` and must not be repeated per playbook. An Inspect section
+    may open with a single `Context:` line naming its lens (e.g. `Context:
+    API-design concerns mined from TinkerPop reviewer patterns`) when that framing
+    guides the read. If a playbook has no source-read work (its judgment is
+    structural), say so in one line rather than inventing items.
+  - **Interpret** — each bullet weighs an `evidence.json` field or an Inspect
+    candidate into `findings` or `openQuestions`. List only the weighing bullets;
+    the "weigh the evidence.json signals and Inspect candidates into `findings` /
+    `openQuestions`" instruction is stated once in `SKILL.md` and must not be
+    repeated per playbook. `findings` is an ordered list: rank it most-severe-first
+    and grade each entry blocking / high / low. Prominence is expressed by that
+    ordering, not a per-finding field.
+
+  **Escape** sets stop/escalate gates. `test/playbook-sections.test.js` enforces
+  that every playbook carries the five sections in order and that Enrich names a
+  command. Add an orient rule in `SKILL.md`.
 - **Add an edge or vertex type** — document it in `references/schema.md`; tag new
   edges with `confidence`; use find-or-create for cross-boundary endpoints.

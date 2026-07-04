@@ -8,54 +8,32 @@ reference GLV for structural comparison is typically gremlin-go (most
 recent accepted GLV).
 
 ## Enrich
-Map public methods in the GLV to their canonical Gremlin steps. Only map
-methods that are actual traversal step implementations — the methods a user
-calls to build a traversal. Do NOT map inherited language boilerplate
-(toString, hashCode, equals, clone, close, etc.) or internal helper methods
-(getLocalChildren, setTraversal, getRequirements, etc.) to steps.
+- `getCanonicalSteps` — pull the authoritative step vocabulary from `Gremlin.g4`;
+  validate every step name against it before mapping.
+- `mapStep` — map each real traversal-step method to its canonical step. A step
+  method is on a traversal class, returns the traversal (fluent), is named to
+  match the canonical step (cased per language), and is public DSL — not internal
+  plumbing. Never map boilerplate (`toString`, `equals`, `close`) or helpers
+  (`getLocalChildren`, `setTraversal`). Pass `--confidence AMBIGUOUS` when you
+  can't tell whether a method is a real step (it surfaces in the review list
+  instead of being asserted).
+- `listInferred --relation implements_step` then `setEdgeConfidence` — promote a
+  mapping to `EXTRACTED` once confirmed against the reference GLV or grammar.
+- `linkDiscussion` — record a referenced JIRA or dev-list thread.
 
-A step implementation is typically:
-- A method on a traversal class that returns the traversal (fluent API)
-- Named to match the canonical step (cased per language convention)
-- Part of the public traversal DSL, not internal plumbing
-
-In Java specifically, the step *class* (e.g., TreeStep) contains internal
-methods — only the method on GraphTraversal/GraphTraversalSource that users
-call (e.g., `tree()`) should map to the step. In a GLV, the equivalent is
-the method on the traversal DSL class.
-
-Record your confidence in each mapping via `mapStep --confidence`: use the
-default `INFERRED` for a solid match, and `AMBIGUOUS` when you can't reliably
-tell whether a method is a real step implementation (this is the graph form of
-the `step_mapping_confidence < 0.7` escape below — AMBIGUOUS mappings surface in
-the report's review list instead of being asserted as fact). Once you've mapped
-methods, run `listInferred --relation implements_step` and, for any mapping you
-then confirm against the reference GLV or grammar, promote it with
-`setEdgeConfidence --relation implements_step --fromName <method> --toName <step>
---confidence EXTRACTED`.
-
-If the PR references a JIRA ticket (TINKERPOP-XXXX), link it as a discussion.
-
-For the driver layer, identify connection acquisition and release points.
-Trace resource lifecycle through error paths — the common GLV bug is
-leaking connections when a traversal fails mid-execution.
+## Inspect
+- Connection acquisition and release points — trace resource lifecycle through
+  error paths; the common GLV bug is leaking a connection when a traversal fails
+  mid-execution.
 
 ## Interpret
-Read the structural signals from evidence.json (schema in
-[references/interfaces.md](../references/interfaces.md)).
-
-When reporting completeness gaps (checks.completeness), distinguish between
-missing steps and steps that exist but use a language-specific name (e.g.,
-Python uses `addV` but Go uses `AddV` — same step, different convention).
-
-When reporting divergence from the reference GLV, the question isn't
-"is it different?" — it's "is the difference justified by the host
-language?" A Go GLV using goroutines where Python uses asyncio is fine.
-A Go GLV using a different serialization format is a concern.
-
-Coverage gaps in a GLV (checks.coverageGaps) are expected for driver internals
-(connection management, serialization) — but traversal step methods should have
-corresponding test coverage.
+- `checks.completeness` — distinguish genuinely missing steps from steps present
+  under a language-specific name (Python `addV` vs Go `AddV` — same step).
+- Divergence from the reference GLV — judge whether the host language justifies
+  it. Goroutines where Python uses asyncio is fine; a different serialization
+  format is a concern.
+- `checks.coverageGaps` — expected for driver internals (connection management,
+  serialization); traversal-step methods should have test coverage.
 
 ## Escape
 - if not test_suite_passes(glv): stop("Cannot proceed — GLV must pass test suite first")

@@ -6,30 +6,26 @@ are inherently high-risk — they affect all parsers, all GLVs, and all
 downstream tooling. Backwards compatibility is critical.
 
 ## Enrich
-Identify which grammar rules were added or modified. Check:
-- Is this adding new syntax or modifying existing syntax?
-- If modifying: could existing valid Gremlin become invalid?
-- Are all ANTLR targets updated? (Java, Python, Go parsers)
-- Is there a corresponding step implementation for new grammar rules?
+- `addGrammarRule` — record each grammar rule the PR adds, so completeness can
+  check it's wired to a step.
+- `linkDiscussion --source proposal` — record the proposal or dev-list thread
+  (grammar changes need prior community consensus).
 
-Link the proposal/discussion — grammar changes should always have prior
-community discussion.
+## Inspect
+- New vs modified syntax — a modified rule that changes the parse of existing
+  syntax is the high-risk case: could valid Gremlin become invalid?
+- ANTLR targets — Java, Python, and Go parsers all updated?
+- Step wiring — is there a step implementation for each new rule?
+- New keywords — TinkerPop has special handling for keywords as map keys (#3091);
+  a new keyword can break queries that use it as an identifier.
 
 ## Interpret
-Read the structural signals from evidence.json (schema in
-[references/interfaces.md](../references/interfaces.md)). Grammar changes have
-outsized blast radius by nature (checks.blastRadius, checks.centrality) — the
-grammar touches everything, so don't flag the reach itself; focus on backwards
-compatibility. Completeness (checks.completeness on has_rule) shows whether new
-rules are wired to a step.
-
-A new rule that adds syntax (existing queries still work) is low risk.
-A modified rule that changes parsing of existing syntax is high risk and
-needs explicit backwards-compatibility analysis.
-
-Look for keywords being added — TinkerPop has specific handling for
-allowing keywords as map keys (#3091). New keywords can break existing
-queries that use them as identifiers.
+- `checks.blastRadius` / `checks.centrality` — grammar touches everything; don't
+  flag the reach, focus on backwards compatibility.
+- `checks.completeness` on `has_rule` — shows whether the recorded rules are
+  wired to a step.
+- New-syntax rule (existing queries still parse) — low. Modified rule (changes
+  the parse of existing syntax) — high; needs explicit backwards-compat analysis.
 
 ## Escape
 - if no proposal or dev-list discussion found — "Grammar changes require community consensus — flagging for discussion"
