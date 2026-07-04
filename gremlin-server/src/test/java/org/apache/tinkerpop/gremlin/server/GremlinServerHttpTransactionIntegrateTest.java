@@ -122,7 +122,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
                 break;
             case "shouldRejectMismatchedGraphAliasInTransaction": {
                 final Settings.GraphSettings gs = new Settings.GraphSettings();
-                gs.configuration = "conf/tinkertransactiongraph-empty.properties";
+                gs.configuration = "conf/tinkerstoragegraph-empty.properties";
                 final Settings.TraversalSourceSettings ts = new Settings.TraversalSourceSettings();
                 ts.name = "gTxEmpty";
                 gs.traversalSources.add(ts);

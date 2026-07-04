@@ -29,28 +29,32 @@ import org.apache.tinkerpop.gremlin.structure.io.IoEdgeTest;
 import org.apache.tinkerpop.gremlin.structure.io.IoVertexTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedGraphTest;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphTest;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph.DefaultIdManager;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerMemoryGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraphVariables;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerTransactionGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class TinkerTransactionGraphProvider extends AbstractGraphProvider {
+/**
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
+public class TinkerMemoryGraphProvider extends AbstractGraphProvider {
 
     private static final Set<Class> IMPLEMENTATION = new HashSet<Class>() {{
         add(TinkerEdge.class);
         add(TinkerElement.class);
-        add(TinkerTransactionGraph.class);
+        add(TinkerMemoryGraph.class);
+        add(AbstractTinkerGraph.class);
         add(TinkerGraphVariables.class);
         add(TinkerProperty.class);
         add(TinkerVertex.class);
@@ -60,18 +64,18 @@ public class TinkerTransactionGraphProvider extends AbstractGraphProvider {
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName,
                                                     final LoadGraphWith.GraphData loadGraphWith) {
-        final DefaultIdManager idManager = selectIdMakerFromGraphData(loadGraphWith);
-        final String idMaker = (idManager.equals(DefaultIdManager.ANY) ? selectIdMakerFromTest(test, testMethodName) : idManager).name();
+        final TinkerGraph.DefaultIdManager idManager = selectIdMakerFromGraphData(loadGraphWith);
+        final String idMaker = (idManager.equals(TinkerGraph.DefaultIdManager.ANY) ? selectIdMakerFromTest(test, testMethodName) : idManager).name();
         return new HashMap<String, Object>() {{
-            put(Graph.GRAPH, TinkerTransactionGraph.class.getName());
-            put(TinkerTransactionGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, idMaker);
-            put(TinkerTransactionGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, idMaker);
-            put(TinkerTransactionGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, idMaker);
+            put(Graph.GRAPH, TinkerMemoryGraph.class.getName());
+            put(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, idMaker);
+            put(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, idMaker);
+            put(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, idMaker);
             if (requiresListCardinalityAsDefault(loadGraphWith, test, testMethodName))
-                put(TinkerTransactionGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
+                put(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
             if (requiresPersistence(test, testMethodName)) {
-                put(TinkerTransactionGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
-                put(TinkerTransactionGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION,TestHelper.makeTestDataFile(test, "temp", testMethodName + ".kryo"));
+                put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
+                put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION,TestHelper.makeTestDataFile(test, "temp", testMethodName + ".kryo"));
             }
         }};
     }
@@ -82,7 +86,7 @@ public class TinkerTransactionGraphProvider extends AbstractGraphProvider {
             graph.close();
 
         // in the even the graph is persisted we need to clean up
-        final String graphLocation = null != configuration ? configuration.getString(TinkerTransactionGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null) : null;
+        final String graphLocation = null != configuration ? configuration.getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null) : null;
         if (graphLocation != null) {
             final File f = new File(graphLocation);
             f.delete();
@@ -114,7 +118,7 @@ public class TinkerTransactionGraphProvider extends AbstractGraphProvider {
     /**
      * Some tests require special configuration for TinkerGraph to properly configure the id manager.
      */
-    protected DefaultIdManager selectIdMakerFromTest(final Class<?> test, final String testMethodName) {
+    protected TinkerGraph.DefaultIdManager selectIdMakerFromTest(final Class<?> test, final String testMethodName) {
         if (test.equals(GraphTest.class)) {
             final Set<String> testsThatNeedLongIdManager = new HashSet<String>(){{
                 add("shouldIterateVerticesWithNumericIdSupportUsingDoubleRepresentation");
@@ -143,9 +147,9 @@ public class TinkerTransactionGraphProvider extends AbstractGraphProvider {
             }};
 
             if (testsThatNeedLongIdManager.contains(testMethodName))
-                return DefaultIdManager.LONG;
+                return TinkerGraph.DefaultIdManager.LONG;
             else if (testsThatNeedUuidIdManager.contains(testMethodName))
-                return DefaultIdManager.UUID;
+                return TinkerGraph.DefaultIdManager.UUID;
         }  else if (test.equals(IoEdgeTest.class)) {
             final Set<String> testsThatNeedLongIdManager = new HashSet<String>(){{
                 add("shouldReadWriteEdge[graphson-v1]");
@@ -157,7 +161,7 @@ public class TinkerTransactionGraphProvider extends AbstractGraphProvider {
             }};
 
             if (testsThatNeedLongIdManager.contains(testMethodName))
-                return DefaultIdManager.LONG;
+                return TinkerGraph.DefaultIdManager.LONG;
         } else if (test.equals(IoVertexTest.class)) {
             final Set<String> testsThatNeedLongIdManager = new HashSet<String>(){{
                 add("shouldReadWriteVertexWithBOTHEdges[graphson-v1]");
@@ -177,36 +181,29 @@ public class TinkerTransactionGraphProvider extends AbstractGraphProvider {
             }};
 
             if (testsThatNeedLongIdManager.contains(testMethodName))
-                return DefaultIdManager.LONG;
+                return TinkerGraph.DefaultIdManager.LONG;
         }
 
-        return DefaultIdManager.ANY;
+        return TinkerGraph.DefaultIdManager.ANY;
     }
 
     /**
      * Test that load with specific graph data can be configured with a specific id manager as the data type to
      * be used in the test for that graph is known.
      */
-    protected DefaultIdManager selectIdMakerFromGraphData(final LoadGraphWith.GraphData loadGraphWith) {
-        if (null == loadGraphWith) return DefaultIdManager.ANY;
+    protected TinkerGraph.DefaultIdManager selectIdMakerFromGraphData(final LoadGraphWith.GraphData loadGraphWith) {
+        if (null == loadGraphWith) return TinkerGraph.DefaultIdManager.ANY;
         if (loadGraphWith.equals(LoadGraphWith.GraphData.CLASSIC))
-            return DefaultIdManager.INTEGER;
+            return TinkerGraph.DefaultIdManager.INTEGER;
         else if (loadGraphWith.equals(LoadGraphWith.GraphData.MODERN))
-            return DefaultIdManager.INTEGER;
+            return TinkerGraph.DefaultIdManager.INTEGER;
         else if (loadGraphWith.equals(LoadGraphWith.GraphData.CREW))
-            return DefaultIdManager.INTEGER;
+            return TinkerGraph.DefaultIdManager.INTEGER;
         else if (loadGraphWith.equals(LoadGraphWith.GraphData.GRATEFUL))
-            return DefaultIdManager.INTEGER;
+            return TinkerGraph.DefaultIdManager.INTEGER;
         else if (loadGraphWith.equals(LoadGraphWith.GraphData.SINK))
-            return DefaultIdManager.INTEGER;
+            return TinkerGraph.DefaultIdManager.INTEGER;
         else
-            throw new IllegalStateException(String.format("Need to define a new %s for %s", TinkerTransactionGraph.IdManager.class.getName(), loadGraphWith.name()));
-    }
-
-    @Override
-    protected void readIntoGraph(final Graph graph, final String path) throws IOException {
-        super.readIntoGraph(graph, path);
-
-        graph.tx().commit();
+            throw new IllegalStateException(String.format("Need to define a new %s for %s", TinkerGraph.IdManager.class.getName(), loadGraphWith.name()));
     }
 }

@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerTransactionGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph;
 import org.junit.Test;
 
 import javax.script.Bindings;
@@ -58,7 +58,7 @@ public class DefaultGraphManagerTest {
         assertThat(graphNames.contains("grateful"), is(true));
         assertThat(graphNames.contains("tx"), is(true));
         assertThat(graphManager.getGraph("graph"), instanceOf(TinkerGraph.class));
-        assertThat(graphManager.getGraph("tx"), instanceOf(TinkerTransactionGraph.class));
+        assertThat(graphManager.getGraph("tx"), instanceOf(TinkerStorageGraph.class));
     }
 
     @Test
@@ -77,7 +77,7 @@ public class DefaultGraphManagerTest {
         assertThat(bindings.containsKey("grateful"), is(true));
         assertThat(bindings.containsKey("tx"), is(true));
         assertThat(bindings.get("graph"), instanceOf(TinkerGraph.class));
-        assertThat(bindings.get("tx"), instanceOf(TinkerTransactionGraph.class));
+        assertThat(bindings.get("tx"), instanceOf(TinkerStorageGraph.class));
     }
 
     @Test
@@ -109,7 +109,7 @@ public class DefaultGraphManagerTest {
         assertThat(graphNames.contains("grateful"), is(true));
         assertThat(graphNames.contains("tx"), is(true));
         assertThat(graphManager.getGraph("newGraph"), instanceOf(TinkerGraph.class));
-        assertThat(graphManager.getGraph("tx"), instanceOf(TinkerTransactionGraph.class));
+        assertThat(graphManager.getGraph("tx"), instanceOf(TinkerStorageGraph.class));
     }
 
     @Test

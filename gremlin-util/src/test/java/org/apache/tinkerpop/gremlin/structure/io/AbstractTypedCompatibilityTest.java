@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.graphbinary.GraphBinaryCompatibilityTest;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTypedCompatibilityTest;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerMemoryGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
@@ -700,8 +701,8 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     public void shouldReadWriteTinkerGraph() throws Exception {
         final String resourceName = "tinker-graph";
 
-        final TinkerGraph fromStatic = read(readFromResource(resourceName), TinkerGraph.class);
-        final TinkerGraph recycled = read(write(fromStatic, TinkerGraph.class, resourceName), TinkerGraph.class);
+        final TinkerGraph fromStatic = read(readFromResource(resourceName), TinkerMemoryGraph.class);
+        final TinkerGraph recycled = read(write(fromStatic, TinkerMemoryGraph.class, resourceName), TinkerMemoryGraph.class);
         assertNotSame(fromStatic, recycled);
 
         IoTest.assertCrewGraph(fromStatic, false);

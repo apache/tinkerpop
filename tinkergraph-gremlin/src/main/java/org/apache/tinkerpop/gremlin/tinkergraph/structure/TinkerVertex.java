@@ -57,14 +57,14 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     protected TinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph) {
         super(id, label);
         this.graph = graph;
-        this.isTxMode = graph instanceof TinkerTransactionGraph;
+        this.isTxMode = graph.isTxMode();
         this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
     }
 
     protected TinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph, final long currentVersion) {
         super(id, label, currentVersion);
         this.graph = graph;
-        this.isTxMode = graph instanceof TinkerTransactionGraph;
+        this.isTxMode = graph.isTxMode();
         this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
     }
 

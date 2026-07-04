@@ -37,7 +37,7 @@ final class TinkerIndex<T extends Element> extends AbstractTinkerIndex<T> {
 
     protected Map<String, Map<Object, Set<T>>> index = new ConcurrentHashMap<>();
 
-    public TinkerIndex(final TinkerGraph graph, final Class<T> indexClass) {
+    public TinkerIndex(final TinkerMemoryGraph graph, final Class<T> indexClass) {
         super(graph, indexClass);
     }
 
@@ -130,8 +130,8 @@ final class TinkerIndex<T extends Element> extends AbstractTinkerIndex<T> {
 
         (Vertex.class.isAssignableFrom(this.indexClass) ?
                 // cleaner to use graph.vertices(), but graph.vertices is quicker
-                ((TinkerGraph)this.graph).vertices.values().parallelStream() :
-                ((TinkerGraph)this.graph).edges.values().parallelStream())
+                ((TinkerMemoryGraph)this.graph).vertices.values().parallelStream() :
+                ((TinkerMemoryGraph)this.graph).edges.values().parallelStream())
                 .map(e -> new Object[]{((T) e).property(key), e})
                 .filter(a -> ((Property) a[0]).isPresent())
                 .forEach(a -> this.put(key, ((Property) a[0]).value(), (T) a[1]));

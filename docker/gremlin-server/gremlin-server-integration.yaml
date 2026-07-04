@@ -42,7 +42,7 @@ graphs: {
     configuration: conf/tinkergraph-service.properties,
     traversalSources: [{name: gsink}]},
   tx: {
-    configuration: conf/tinkertransactiongraph-service.properties,
+    configuration: conf/tinkerstoragegraph-service.properties,
     traversalSources: [{name: gtx}]}}
 lifecycleHooks:
   - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: classic, dataset: classic}}

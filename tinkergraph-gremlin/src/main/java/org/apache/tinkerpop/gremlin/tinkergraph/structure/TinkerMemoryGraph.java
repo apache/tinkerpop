@@ -38,47 +38,52 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * An in-memory (with optional persistence on calls to {@link #close()}), reference implementation of the property
- * graph interfaces with transaction support provided by TinkerPop.
+ * The in-memory (with optional persistence on calls to {@link #close()}) implementation of the {@link TinkerGraph}
+ * interface and the reference implementation of the property graph interfaces provided by TinkerPop.
  *
- * @author Valentyn Kahamlyk
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_INTEGRATE)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_COMPUTER)
-public final class TinkerTransactionGraph extends AbstractTinkerGraph {
+public class TinkerMemoryGraph extends AbstractTinkerGraph {
 
     static {
-        TraversalStrategies.GlobalCache.registerStrategies(TinkerTransactionGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(
+        TraversalStrategies.GlobalCache.registerStrategies(TinkerMemoryGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(
                 TinkerGraphStepStrategy.instance(),
                 TinkerGraphCountStrategy.instance(),
                 GqlDeclarativeMatchStrategy.instance()));
     }
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
-        this.setProperty(Graph.GRAPH, TinkerTransactionGraph.class.getName());
+        this.setProperty(Graph.GRAPH, TinkerMemoryGraph.class.getName());
     }};
 
     private final TinkerGraphFeatures features = new TinkerGraphFeatures();
 
-    private final TinkerTransaction transaction = new TinkerTransaction(this);
+    protected Map<Object, Vertex> vertices = new ConcurrentHashMap<>();
+    protected Map<Object, Edge> edges = new ConcurrentHashMap<>();
 
-    private final Map<Object, TinkerElementContainer<TinkerVertex>> vertices = new ConcurrentHashMap<>();
-    private final Map<Object, TinkerElementContainer<TinkerEdge>> edges = new ConcurrentHashMap<>();
+    private final Map<String, AtomicInteger> vertexLabelCounts = new ConcurrentHashMap<>();
+    private final Map<String, AtomicInteger> edgeLabelCounts = new ConcurrentHashMap<>();
 
     /**
-     * An empty private constructor that initializes {@link TinkerTransactionGraph}.
+     * An empty private constructor that initializes {@link TinkerMemoryGraph}.
      */
-    private TinkerTransactionGraph(final Configuration configuration) {
+    TinkerMemoryGraph(final Configuration configuration) {
         this.configuration = configuration;
         vertexIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, Vertex.class);
         edgeIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, Edge.class);
@@ -102,19 +107,19 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     }
 
     /**
-     * Open a new {@link TinkerTransactionGraph} instance.
+     * Open a new {@link TinkerMemoryGraph} instance.
      * <p/>
      * <b>Reference Implementation Help:</b> If a {@link Graph} implementation does not require a {@code Configuration}
      * (or perhaps has a default configuration) it can choose to implement a zero argument
-     * {@code open()} method. This is an optional constructor method for TinkerGraph. It is not enforced by the Gremlin
-     * Test Suite.
+     * {@code open()} method. This is an optional constructor method for TinkerMemoryGraph. It is not enforced by the
+     * Gremlin Test Suite.
      */
-    public static TinkerTransactionGraph open() {
+    public static TinkerMemoryGraph open() {
         return open(EMPTY_CONFIGURATION);
     }
 
     /**
-     * Open a new {@code TinkerGraph} instance.
+     * Open a new {@code TinkerMemoryGraph} instance.
      * <p/>
      * <b>Reference Implementation Help:</b> This method is the one use by the {@link GraphFactory} to instantiate
      * {@link Graph} instances.  This method must be overridden for the Structure Test Suite to pass. Implementers have
@@ -126,8 +131,8 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
      * @param configuration the configuration for the instance
      * @return a newly opened {@link Graph}
      */
-    public static TinkerTransactionGraph open(final Configuration configuration) {
-        return new TinkerTransactionGraph(configuration);
+    public static TinkerMemoryGraph open(final Configuration configuration) {
+        return new TinkerMemoryGraph(configuration);
     }
 
     ////////////// STRUCTURE API METHODS //////////////////
@@ -135,76 +140,30 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     @Override
     public Vertex addVertex(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
-
         Object idValue = vertexIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
-        if (null == idValue)
-            idValue = vertexIdManager.getNextId(this);
         final String label = ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL);
 
-        this.tx().readWrite();
-        final long txNumber = transaction.getTxNumber();
-
-        final TinkerElementContainer<TinkerVertex> newContainer = new TinkerElementContainer<>(idValue);
-        // try to add new container or get existing
-        TinkerElementContainer<TinkerVertex> container = vertices.putIfAbsent(idValue, newContainer);
-
-        // is existing container contains Vertex?
-        if (container != null && container.get() != null)
-            throw Exceptions.vertexWithIdAlreadyExists(idValue);
-
-        long version = txNumber;
-        if (container != null && container.isDeleted() && container.getModified() != null) {
-            // vertex being added was previously deleted 
-            // we need to reference the version from the deleted state when adding the vertex back
-            version = container.getModified().version();
-            container.unmarkDeleted((TinkerTransaction) tx());
+        if (null != idValue) {
+            if (this.vertices.containsKey(idValue))
+                throw Exceptions.vertexWithIdAlreadyExists(idValue);
+        } else {
+            idValue = vertexIdManager.getNextId(this);
         }
-        
-        // no existing container, let's use new one
-        if (container == null)
-            container = newContainer;
 
-        final TinkerVertex vertex = new TinkerVertex(idValue, label, this, version);
+        final Vertex vertex = createTinkerVertex(idValue, label, this);
         ElementHelper.attachProperties(vertex, VertexProperty.Cardinality.list, keyValues);
-        container.setDraft(vertex, (TinkerTransaction) tx());
+        this.vertices.put(vertex.id(), vertex);
+        vertexLabelCounts.computeIfAbsent(label, l -> new AtomicInteger()).incrementAndGet();
 
         return vertex;
     }
 
     @Override
-    public void removeVertex(final Object vertexId) {
-        if (!vertices.containsKey(vertexId)) return;
-
-        // vertex can be deleted in other thread, so need to double-check
-        final TinkerElementContainer<?> container = vertices.get(vertexId);
-        if (null != container)
-            container.markDeleted((TinkerTransaction) tx());
-    }
-
-    @Override
-    public void touch(final TinkerVertex vertex) {
-        // already removed, so skip
-        if (null == vertex || !vertices.containsKey(vertex.id())) return;
-
-        final TinkerElementContainer<TinkerVertex> container = vertices.get(vertex.id());
-
-        if (null != container) {
-            this.tx().readWrite();
-            container.touch(vertex, (TinkerTransaction) tx());
-        }
-    }
-
-    @Override
-    public void touch(final TinkerEdge edge) {
-        // already removed, so skip
-        if (null == edge || !edges.containsKey(edge.id())) return;
-
-        final TinkerElementContainer<TinkerEdge> container = edges.get(edge.id());
-
-        if (null != container) {
-            this.tx().readWrite();
-            container.touch(edge, (TinkerTransaction) tx());
-        }
+    public void removeVertex(final Object vertexId)
+    {
+        final Vertex removed = this.vertices.remove(vertexId);
+        if (removed != null)
+            vertexLabelCounts.computeIfPresent(removed.label(), (l, c) -> { c.decrementAndGet(); return c; });
     }
 
     @Override
@@ -213,65 +172,60 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
 
         Object idValue = edgeIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
-        if (null == idValue)
+
+        final Edge edge;
+        if (null != idValue) {
+            if (edges.containsKey(idValue))
+                throw Graph.Exceptions.edgeWithIdAlreadyExists(idValue);
+        } else {
             idValue = edgeIdManager.getNextId(this);
+        }
 
-        this.tx().readWrite();
-        final long txNumber = transaction.getTxNumber();
-
-        final TinkerElementContainer<TinkerEdge> newContainer = new TinkerElementContainer<>(idValue);
-        // try to add new container or get existing
-        TinkerElementContainer<TinkerEdge> container = edges.putIfAbsent(idValue, newContainer);
-
-        // is existing container contains Vertex?
-        if (container != null && container.get() != null)
-            throw Exceptions.vertexWithIdAlreadyExists(idValue);
-
-        // no existing container, let's use new one
-        if (container == null)
-            container = newContainer;
-
-        final TinkerEdge edge = new TinkerEdge(idValue, outVertex, label, inVertex, txNumber);
+        edge = new TinkerEdge(idValue, outVertex, label, inVertex);
         ElementHelper.attachProperties(edge, keyValues);
-        container.setDraft(edge, (TinkerTransaction) tx());
-
+        edges.put(edge.id(), edge);
+        edgeLabelCounts.computeIfAbsent(label, l -> new AtomicInteger()).incrementAndGet();
         addOutEdge(outVertex, label, edge);
         addInEdge(inVertex, label, edge);
-
         return edge;
     }
 
     @Override
     public void removeEdge(final Object edgeId) {
-        if (!edges.containsKey(edgeId)) return;
-
-        final TinkerElementContainer<TinkerEdge> container = edges.get(edgeId);
-
-        if (null == container || container.isDeleted()) return;
-
-        final TinkerEdge edge = container.get();
-
-        if (edge == null) return;
+        final Edge edge = edges.get(edgeId);
+        // already removed?
+        if (null == edge) return;
 
         final TinkerVertex outVertex = (TinkerVertex) edge.outVertex();
-        touch(outVertex);
         final TinkerVertex inVertex = (TinkerVertex) edge.inVertex();
-        touch(inVertex);
 
-        if (null != outVertex && null != outVertex.outEdgesId) {
-            final Set<Object> edges = outVertex.outEdgesId.get(edge.label());
-            if (null != edges) {
-                edges.removeIf(e -> e == edge.id());
-            }
+        if (null != outVertex && null != outVertex.outEdges) {
+            final Set<Edge> edges = outVertex.outEdges.get(edge.label());
+            if (null != edges)
+                edges.removeIf(e -> e.id() == edgeId);
         }
-        if (null != inVertex && null != inVertex.inEdgesId) {
-            final Set<Object> edges = inVertex.inEdgesId.get(edge.label());
-            if (null != edges) {
-                edges.removeIf(e -> e == edge.id());
-            }
+        if (null != inVertex && null != inVertex.inEdges) {
+            final Set<Edge> edges = inVertex.inEdges.get(edge.label());
+            if (null != edges)
+                edges.removeIf(e -> e.id() == edgeId);
         }
 
-        container.markDeleted((TinkerTransaction) tx());
+        this.edges.remove(edgeId);
+        edgeLabelCounts.computeIfPresent(edge.label(), (l, c) -> { c.decrementAndGet(); return c; });
+    }
+
+    @Override
+    public long countVerticesByLabel(final String label) {
+        if (label == null) return getVerticesCount();
+        final AtomicInteger count = vertexLabelCounts.get(label);
+        return count == null ? 0L : count.get();
+    }
+
+    @Override
+    public long countEdgesByLabel(final String label) {
+        if (label == null) return getEdgesCount();
+        final AtomicInteger count = edgeLabelCounts.get(label);
+        return count == null ? 0L : count.get();
     }
 
     @Override
@@ -279,52 +233,26 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         super.clear();
         this.vertices.clear();
         this.edges.clear();
+        this.vertexLabelCounts.clear();
+        this.edgeLabelCounts.clear();
     }
 
     @Override
     public Transaction tx() {
-        return transaction;
+        throw Exceptions.transactionsNotSupported();
     }
 
     @Override
-    public int getVerticesCount() {
-        return (int) vertices.entrySet().stream().filter(v -> v.getValue().get() != null).count();
-    }
+    public int getVerticesCount() { return vertices.size(); }
 
     @Override
-    public boolean hasVertex(Object id) {
-        return null != vertex(id);
-    }
-
-    Map<Object, TinkerElementContainer<TinkerVertex>> getVertices () { return vertices; }
+    public boolean hasVertex(Object id) { return vertices.containsKey(id); }
 
     @Override
-    public int getEdgesCount() {
-        return (int) edges.entrySet().stream().filter(v -> v.getValue().get() != null).count();
-    }
+    public int getEdgesCount() {  return edges.size(); }
 
     @Override
-    public long countVerticesByLabel(final String label) {
-        if (label == null) return getVerticesCount();
-        return vertices.values().stream()
-                .filter(c -> c.get() != null && label.equals(c.get().label()))
-                .count();
-    }
-
-    @Override
-    public long countEdgesByLabel(final String label) {
-        if (label == null) return getEdgesCount();
-        return edges.values().stream()
-                .filter(c -> c.get() != null && label.equals(c.get().label()))
-                .count();
-    }
-
-    @Override
-    public boolean hasEdge(Object id) {
-        return null != edge(id);
-    }
-
-    Map<Object, TinkerElementContainer<TinkerEdge>> getEdges () { return edges; }
+    public boolean hasEdge(Object id) { return edges.containsKey(id); }
 
     @Override
     public TinkerServiceRegistry getServiceRegistry() {
@@ -333,8 +261,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
     @Override
     public Vertex vertex(final Object vertexId) {
-        final TinkerElementContainer<TinkerVertex> container = vertices.get(vertexIdManager.convert(vertexId));
-        return container == null ? null : container.getWithClone((TinkerTransaction) tx());
+        return vertices.get(vertexIdManager.convert(vertexId));
     }
 
     @Override
@@ -343,28 +270,22 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     }
 
     @Override
-    public Edge edge(final Object edgeId) {
-        final TinkerElementContainer<TinkerEdge> container = edges.get(edgeIdManager.convert(edgeId));
-        return container == null ? null : container.getWithClone((TinkerTransaction) tx());
-    }
-
-    @Override
     public Iterator<Edge> edges(final Object... edgeIds) {
         return createElementIterator(Edge.class, edges, edgeIdManager, edgeIds);
     }
 
-    private <T extends Element, C extends TinkerElement> Iterator<T> createElementIterator(final Class<T> clazz,
-                                                                  final Map<Object, TinkerElementContainer<C>> elements,
+    @Override
+    public Edge edge(final Object edgeId) {
+        return edges.get(edgeIdManager.convert(edgeId));
+    }
+
+
+    private <T extends Element> Iterator<T> createElementIterator(final Class<T> clazz, final Map<Object, T> elements,
                                                                   final IdManager idManager,
-
                                                                   final Object... ids) {
-        this.tx().readWrite();
-
         final Iterator<T> iterator;
         if (0 == ids.length) {
-            iterator = new TinkerGraphIterator<>(
-                    // todo: clone only if traversal contains mutating steps
-                    elements.values().stream().map(c -> (T) c.getWithClone((TinkerTransaction) tx())).filter(e -> e != null).iterator());
+            iterator = new TinkerGraphIterator<>(elements.values().iterator());
         } else {
             final List<Object> idList = Arrays.asList(ids);
 
@@ -376,8 +297,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
                 // ids cant be null so all of those filter out
                 if (null == id) return null;
                 final Object iid = clazz.isAssignableFrom(id.getClass()) ? clazz.cast(id).id() : idManager.convert(id);
-                final TinkerElementContainer<C> container = elements.get(iid);
-                return container == null ? null : (T) container.getWithClone((TinkerTransaction) tx());
+                return elements.get(idManager.convert(iid));
             }).iterator(), Objects::nonNull));
         }
         return TinkerHelper.inComputerMode(this) ?
@@ -386,35 +306,34 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
                         IteratorUtils.filter((Iterator<Edge>) iterator, t -> this.graphComputerView.legalEdge(t.outVertex(), t))) :
                 iterator;
     }
+
     @Override
     protected void addOutEdge(final TinkerVertex vertex, final String label, final Edge edge) {
-        touch(vertex);
-        if (null == vertex.outEdgesId) vertex.outEdgesId = new ConcurrentHashMap<>();
-        Set<Object> edges = vertex.outEdgesId.get(label);
+        if (null == vertex.outEdges) vertex.outEdges = new HashMap<>();
+        Set<Edge> edges = vertex.outEdges.get(label);
         if (null == edges) {
-            edges = ConcurrentHashMap.newKeySet();
-            vertex.outEdgesId.put(label, edges);
+            edges = new HashSet<>();
+            vertex.outEdges.put(label, edges);
         }
-        edges.add(edge.id());
+        edges.add(edge);
     }
 
     @Override
     protected void addInEdge(final TinkerVertex vertex, final String label, final Edge edge) {
-        touch(vertex);
-        if (null == vertex.inEdgesId) vertex.inEdgesId = new ConcurrentHashMap<>();
-        Set<Object> edges = vertex.inEdgesId.get(label);
+        if (null == vertex.inEdges) vertex.inEdges = new HashMap<>();
+        Set<Edge> edges = vertex.inEdges.get(label);
         if (null == edges) {
-            edges = ConcurrentHashMap.newKeySet();
-            vertex.inEdgesId.put(label, edges);
+            edges = new HashSet<>();
+            vertex.inEdges.put(label, edges);
         }
-        edges.add(edge.id());
+        edges.add(edge);
     }
 
     /**
      * Return TinkerGraph feature set.
      * <p/>
      * <b>Reference Implementation Help:</b> Implementers only need to implement features for which there are
-     * negative or instance configured features.  By default, all {@link Features} return true.
+     * negative or instance configured features.  By default, all {@link Graph.Features} return true.
      */
     @Override
     public Features features() {
@@ -463,13 +382,13 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         }
 
         @Override
-        public boolean supportsThreadedTransactions() {
+        public boolean supportsTransactions() {
             return false;
         }
 
         @Override
-        public boolean supportsTransactions() {
-            return true;
+        public boolean supportsThreadedTransactions() {
+            return false;
         }
 
         @Override
@@ -480,7 +399,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     }
 
 
-    /////////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
+    ///////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
 
     /**
      * Create an index for said element class ({@link Vertex} or {@link Edge}) and said property key.
@@ -491,12 +410,13 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
      * @param elementClass the element class to index
      * @param <E>          The type of the element class
      */
+    @Override
     public <E extends Element> void createIndex(final String key, final Class<E> elementClass) {
         if (Vertex.class.isAssignableFrom(elementClass)) {
-            if (null == this.vertexIndex) this.vertexIndex = new TinkerTransactionalIndex<>(this, TinkerVertex.class);
+            if (null == this.vertexIndex) this.vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
             this.vertexIndex.createKeyIndex(key);
         } else if (Edge.class.isAssignableFrom(elementClass)) {
-            if (null == this.edgeIndex) this.edgeIndex = new TinkerTransactionalIndex<>(this, TinkerEdge.class);
+            if (null == this.edgeIndex) this.edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
             this.edgeIndex.createKeyIndex(key);
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
@@ -510,6 +430,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
      * @param elementClass the element class of the index to drop
      * @param <E>          The type of the element class
      */
+    @Override
     public <E extends Element> void dropIndex(final String key, final Class<E> elementClass) {
         if (Vertex.class.isAssignableFrom(elementClass)) {
             if (null != this.vertexIndex) this.vertexIndex.dropKeyIndex(key);

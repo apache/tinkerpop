@@ -19,15 +19,17 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.process;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.process.ProcessEmbeddedComputerSuite;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.process.ProcessEmbeddedStandardSuite;
+import org.apache.tinkerpop.gremlin.tinkergraph.TinkerMemoryGraphProvider;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerMemoryGraph;
 import org.junit.runner.RunWith;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * Executes the Standard Gremlin Process Test Suite using TinkerGraph.
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(ProcessEmbeddedComputerSuite.class)
-@GraphProviderClass(provider = TinkerGraphNoStrategyComputerProvider.class, graph = TinkerGraph.class)
-public class TinkerGraphNoStrategyProcessComputerIntegrateTest {
-
+@RunWith(ProcessEmbeddedStandardSuite.class)
+@GraphProviderClass(provider = TinkerMemoryGraphProvider.class, graph = TinkerMemoryGraph.class)
+public class TinkerMemoryGraphProcessStandardTest {
 }

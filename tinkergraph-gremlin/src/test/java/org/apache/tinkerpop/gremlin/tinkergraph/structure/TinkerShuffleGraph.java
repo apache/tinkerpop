@@ -33,14 +33,14 @@ import java.util.List;
 /**
  * @author Cole Greer (https://github.com/Cole-Greer)
  */
-public class TinkerShuffleGraph extends TinkerGraph {
+public class TinkerShuffleGraph extends TinkerMemoryGraph {
 
     static {
         // GlobalCache falls back to Graph.class (not TinkerGraph.class) for unregistered subclasses,
         // so TinkerShuffleGraph must explicitly inherit TinkerGraph's strategies, including
         // GqlDeclarativeMatchStrategy.
         TraversalStrategies.GlobalCache.registerStrategies(TinkerShuffleGraph.class,
-                TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).clone());
+                TraversalStrategies.GlobalCache.getStrategies(TinkerMemoryGraph.class).clone());
     }
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{

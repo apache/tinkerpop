@@ -28,9 +28,9 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import java.io.InputStream;
 
 import static org.apache.tinkerpop.gremlin.structure.io.IoCore.gryo;
-import static org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph.DefaultIdManager;
-import static org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph.DefaultIdManager.INTEGER;
-import static org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph.DefaultIdManager.LONG;
+import static org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.DefaultIdManager;
+import static org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.DefaultIdManager.INTEGER;
+import static org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.DefaultIdManager.LONG;
 
 /**
  * Helps create a variety of different toy graphs for testing and learning purposes.
@@ -45,8 +45,8 @@ public final class TinkerFactory {
     /**
      * Create the "classic" graph which was the original toy graph from TinkerPop 2.x.
      */
-    public static TinkerGraph createClassic() {
-        final TinkerGraph g = getTinkerGraphWithClassicNumberManager();
+    public static TinkerMemoryGraph createClassic() {
+        final TinkerMemoryGraph g = getTinkerGraphWithClassicNumberManager();
         generateClassic(g);
         return g;
     }
@@ -54,7 +54,7 @@ public final class TinkerFactory {
     /**
      * Generate the graph in {@link #createClassic()} into an existing graph.
      */
-    public static void generateClassic(final AbstractTinkerGraph g) {
+    public static void generateClassic(final TinkerGraph g) {
         final Vertex marko = g.addVertex(T.id, 1, "name", "marko", "age", 29);
         final Vertex vadas = g.addVertex(T.id, 2, "name", "vadas", "age", 27);
         final Vertex lop = g.addVertex(T.id, 3, "name", "lop", "lang", "java");
@@ -73,8 +73,8 @@ public final class TinkerFactory {
      * Create the "modern" graph which has the same structure as the "classic" graph from TinkerPop 2.x but includes
      * 3.x features like vertex labels.
      */
-    public static TinkerGraph createModern() {
-        final TinkerGraph g = getTinkerGraphWithCurrentNumberManager();
+    public static TinkerMemoryGraph createModern() {
+        final TinkerMemoryGraph g = getTinkerGraphWithCurrentNumberManager();
         generateModern(g);
         return g;
     }
@@ -82,7 +82,7 @@ public final class TinkerFactory {
     /**
      * Generate the graph in {@link #createModern()} into an existing graph.
      */
-    public static void generateModern(final AbstractTinkerGraph g) {
+    public static void generateModern(final TinkerGraph g) {
         final Vertex marko = g.addVertex(T.id, 1, T.label, "person");
         marko.property("name", "marko", T.id, 0l);
         marko.property("age", 29, T.id, 1l);
@@ -114,10 +114,10 @@ public final class TinkerFactory {
      * Create the "the crew" graph which is a TinkerPop 3.x toy graph showcasing many 3.x features like meta-properties,
      * multi-properties and graph variables.
      */
-    public static TinkerGraph createTheCrew() {
+    public static TinkerMemoryGraph createTheCrew() {
         final Configuration conf = getConfigurationWithCurrentNumberManager();
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
-        final TinkerGraph g = TinkerGraph.open(conf);
+        final TinkerMemoryGraph g = TinkerMemoryGraph.open(conf);
         generateTheCrew(g);
         return g;
     }
@@ -125,7 +125,7 @@ public final class TinkerFactory {
     /**
      * Generate the graph in {@link #createTheCrew()} into an existing graph.
      */
-    public static void generateTheCrew(final AbstractTinkerGraph g) {
+    public static void generateTheCrew(final TinkerGraph g) {
         final Vertex marko = g.addVertex(T.id, 1, T.label, "person", "name", "marko");
         final Vertex stephen = g.addVertex(T.id, 7, T.label, "person", "name", "stephen");
         final Vertex matthias = g.addVertex(T.id, 8, T.label, "person", "name", "matthias");
@@ -179,8 +179,8 @@ public final class TinkerFactory {
      * Creates the "kitchen sink" graph which is a collection of structures (e.g. self-loops) that aren't represented
      * in other graphs and are useful for various testing scenarios.
      */
-    public static TinkerGraph createKitchenSink() {
-        final TinkerGraph g = getTinkerGraphWithCurrentNumberManager();
+    public static TinkerMemoryGraph createKitchenSink() {
+        final TinkerMemoryGraph g = getTinkerGraphWithCurrentNumberManager();
         generateKitchenSink(g);
         return g;
     }
@@ -188,7 +188,7 @@ public final class TinkerFactory {
     /**
      * Generate the graph in {@link #createKitchenSink()} into an existing graph.
      */
-    public static void generateKitchenSink(final AbstractTinkerGraph graph) {
+    public static void generateKitchenSink(final TinkerGraph graph) {
         final GraphTraversalSource g = graph.traversal();
         g.addV("loops").property(T.id, 1000).property("name", "loop").as("me").
           addE("self").to("me").property(T.id, 1001).
@@ -203,8 +203,8 @@ public final class TinkerFactory {
      * Creates the "grateful dead" graph which is a larger graph than most of the toy graphs but has real-world
      * structure and application and is therefore useful for demonstrating more complex traversals.
      */
-    public static TinkerGraph createGratefulDead() {
-        final TinkerGraph g = getTinkerGraphWithCurrentNumberManager();
+    public static TinkerMemoryGraph createGratefulDead() {
+        final TinkerMemoryGraph g = getTinkerGraphWithCurrentNumberManager();
         generateGratefulDead(g);
         return g;
     }
@@ -212,7 +212,7 @@ public final class TinkerFactory {
     /**
      * Generate the graph in {@link #createGratefulDead()} into an existing graph.
      */
-    public static void generateGratefulDead(final AbstractTinkerGraph graph) {
+    public static void generateGratefulDead(final TinkerGraph graph) {
         final InputStream stream = TinkerFactory.class.getResourceAsStream("grateful-dead.kryo");
         if (null == stream) {
             throw new IllegalStateException("The dataset is not accessible - ensure that you are not using tinkergraph-gremlin with the 'min' classifier");
@@ -229,8 +229,8 @@ public final class TinkerFactory {
      * Creates the "air-routes" graph which is a larger graph than most of the toy graphs but has real-world
      * structure and application and is therefore useful for demonstrating more complex traversals.
      */
-    public static TinkerGraph createAirRoutes() {
-        final TinkerGraph g = getTinkerGraphWithCurrentNumberManager();
+    public static TinkerMemoryGraph createAirRoutes() {
+        final TinkerMemoryGraph g = getTinkerGraphWithCurrentNumberManager();
         generateAirRoutes(g);
         return g;
     }
@@ -238,7 +238,7 @@ public final class TinkerFactory {
     /**
      * Generate the graph in {@link #createAirRoutes()} into an existing graph.
      */
-    public static void generateAirRoutes(final AbstractTinkerGraph graph) {
+    public static void generateAirRoutes(final TinkerGraph graph) {
         final InputStream stream = TinkerFactory.class.getResourceAsStream("air-routes.kryo");
 
         if (null == stream) {
@@ -252,16 +252,16 @@ public final class TinkerFactory {
         }
     }
 
-    private static TinkerGraph getTinkerGraphWithCurrentNumberManager() {
-        return TinkerGraph.open(getConfigurationWithCurrentNumberManager());
+    private static TinkerMemoryGraph getTinkerGraphWithCurrentNumberManager() {
+        return TinkerMemoryGraph.open(getConfigurationWithCurrentNumberManager());
     }
 
     private static Configuration getConfigurationWithCurrentNumberManager() {
         return getNumberIdManagerConfiguration(INTEGER, INTEGER, LONG);
     }
 
-    private static TinkerGraph getTinkerGraphWithClassicNumberManager() {
-        return TinkerGraph.open(getConfigurationHWithClassicNumberManager());
+    private static TinkerMemoryGraph getTinkerGraphWithClassicNumberManager() {
+        return TinkerMemoryGraph.open(getConfigurationHWithClassicNumberManager());
     }
 
     private static Configuration getConfigurationHWithClassicNumberManager() {

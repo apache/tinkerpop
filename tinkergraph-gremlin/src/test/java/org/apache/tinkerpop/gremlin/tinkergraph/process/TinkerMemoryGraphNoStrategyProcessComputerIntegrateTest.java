@@ -16,20 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.tinkergraph.structure;
+package org.apache.tinkerpop.gremlin.tinkergraph.process;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
-import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
+import org.apache.tinkerpop.gremlin.process.ProcessEmbeddedComputerSuite;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerMemoryGraph;
 import org.junit.runner.RunWith;
 
 /**
- * Executes the Standard Gremlin Structure Test Suite using TinkerGraph.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(StructureStandardSuite.class)
-@GraphProviderClass(provider = TinkerGraphProvider.class, graph = TinkerGraph.class)
-public class TinkerGraphStructureStandardTest {
+@RunWith(ProcessEmbeddedComputerSuite.class)
+@GraphProviderClass(provider = TinkerMemoryGraphNoStrategyComputerProvider.class, graph = TinkerMemoryGraph.class)
+public class TinkerMemoryGraphNoStrategyProcessComputerIntegrateTest {
 
 }

@@ -295,7 +295,7 @@ IMPORTANT: As transactions are `ThreadLocal` in nature, so are the transaction c
 `onClose`.
 
 Once there is an understanding for how transactions are configured, most of the rest of the `Transaction` interface
-is self-explanatory. Note that `TinkerTransactionGraph` is used for the examples to follow as standard `TinkerGraph`
+is self-explanatory. Note that `TinkerStorageGraph` is used for the examples to follow as standard `TinkerGraph`
 does not support transactions.
 
 IMPORTANT: The following example is meant to demonstrate specific use of `ThreadLocal` transactions and is at odds
@@ -305,7 +305,7 @@ using this method.
 
 [source,groovy]
 ----
-gremlin> graph = TinkerTransactionGraph.open()
+gremlin> graph = TinkerStorageGraph.open()
 ==>tinkertransactiongraph[vertices:0 edges:0]
 gremlin> g = traversal().with(graph)
 ==>graphtraversalsource[tinkertransactiongraph[vertices:0 edges:0], standard]
@@ -317,13 +317,13 @@ gremlin> graph.features()
 >-- Persistence: false
 ...
 gremlin> g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.AUTO) <2>
-==>org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerTransactionGraph$TinkerTransaction@1c067c0d
+==>org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph$TinkerTransaction@1c067c0d
 gremlin> g.addV("person").property("name","stephen")  <3>
 ==>v[0]
 gremlin> g.tx().commit() <4>
 ==>null
 gremlin> g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL) <5>
-==>org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerTransactionGraph$TinkerTransaction@1c067c0d
+==>org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph$TinkerTransaction@1c067c0d
 gremlin> g.tx().isOpen()
 ==>false
 gremlin> g.addV("person").property("name","marko") <6>
@@ -337,7 +337,7 @@ gremlin> g.tx().commit()
 ----
 
 <1> Check `features` to ensure that the graph supports transactions.
-<2> By default, `TinkerTransactionGraph` is configured with "automatic" transactions, so it is set here for demonstration purposes only.
+<2> By default, `TinkerStorageGraph` is configured with "automatic" transactions, so it is set here for demonstration purposes only.
 <3> When the vertex is added, the transaction is automatically started.  From this point, more mutations can be staged
 or other read operations executed in the context of that open transaction.
 <4> Calling `commit` finalizes the transaction.
@@ -355,7 +355,7 @@ the exact same behaviors and link:https://en.wikipedia.org/wiki/ACID[ACID] guara
 
 The available capability for transactions with <<gremlin-server,Gremlin Server>> is dependent upon the graph
 configured on the server. The graph must support transactions for `g.tx().begin()` to succeed. If the graph does not
-support transactions (e.g. a basic `TinkerGraph`), the server returns an error. Use `TinkerTransactionGraph` or
+support transactions (e.g. a basic `TinkerGraph`), the server returns an error. Use `TinkerStorageGraph` or
 another transaction-capable graph implementation.
 
 The Gremlin Server implements the transactions as part of the HTTP API and it no longer runs on top of sessions.

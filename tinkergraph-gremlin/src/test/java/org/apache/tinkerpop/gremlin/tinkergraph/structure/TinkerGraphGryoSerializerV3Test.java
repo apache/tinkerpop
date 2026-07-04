@@ -52,7 +52,7 @@ public class TinkerGraphGryoSerializerV3Test {
     @Mock
     private Input input;
 
-    private TinkerGraph graph = TinkerGraph.open();
+    private TinkerMemoryGraph graph = TinkerMemoryGraph.open();
     private TinkerIoRegistryV3.TinkerGraphGryoSerializer serializer = new TinkerIoRegistryV3.TinkerGraphGryoSerializer();
 
     @Before
@@ -71,7 +71,7 @@ public class TinkerGraphGryoSerializerV3Test {
     public void shouldVerifyKryoUsedForRead() throws Exception {
         // Not possible to mock an entire deserialization so just verify the same kryo instances are being used
         try {
-            serializer.read(kryo, input, TinkerGraph.class);
+            serializer.read(kryo, input, TinkerMemoryGraph.class);
         } catch (RuntimeException ex) {
             verify(kryo, atLeastOnce()).readObject(any(), any());
             verify(kryo, atLeastOnce()).readClassAndObject(any());

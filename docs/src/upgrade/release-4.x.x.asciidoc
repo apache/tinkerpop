@@ -65,6 +65,44 @@ RequestMessage.build("g.V(x)").addParameters(params).create();
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3262[TINKERPOP-3262]
 
+==== TinkerGraph Interface and Implementation Renames
+
+`TinkerGraph` is now an interface with two implementations. The in-memory implementation, previously the concrete
+`TinkerGraph` class, is named `TinkerMemoryGraph`. The transactional implementation, previously named
+`TinkerTransactionGraph`, is named `TinkerStorageGraph` in anticipation of it gaining optional disk storage in a
+future release. This structure clarifies the relationship between the two implementations and gives them a shared,
+stable API.
+
+Most code requires no change. `TinkerGraph.open()` still constructs the in-memory graph and the `gremlin.graph`
+configuration key still accepts `org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph`, which resolves to
+the in-memory implementation. The interface carries the `GREMLIN_TINKERGRAPH_*` configuration constants, the
+`IdManager` types, index management and `clear()`, so typical usage compiles as before:
+
+[source,groovy]
+----
+graph = TinkerGraph.open()
+g = traversal().with(graph)
+g.addV('person').property('name','marko').iterate()
+graph.createIndex('name', Vertex.class)
+----
+
+Code that referenced the renamed classes directly must be updated:
+
+* `gremlin.graph=...TinkerTransactionGraph` becomes `gremlin.graph=...TinkerStorageGraph` in configuration files, and
+`TinkerTransactionGraph.open()` becomes `TinkerStorageGraph.open()`.
+* Code depending on the exact runtime class of `TinkerGraph.open()` now sees `TinkerMemoryGraph`, including the value
+of `graph.configuration().getString("gremlin.graph")` and the `toString()` rendering of the graph, which is now
+`tinkermemorygraph[...]`. This also applies to the default graph produced by `subgraph()`.
+* `TinkerHelper.getVertices(graph)` and `TinkerHelper.getEdges(graph)` now take a `TinkerMemoryGraph` argument, and
+`TinkerFactory` creation methods return `TinkerMemoryGraph`.
+* Whole-graph payloads serialized with Gryo or typed GraphSON by an earlier version embed the old class name and are
+not guaranteed readable across the rename. The GraphSON type name `tinker:graph` is unchanged, so wire-level
+serialization of subgraphs between 4.0.0 processes is unaffected.
+* Test suite classes were renamed accordingly, for example `TinkerGraphProvider` to `TinkerMemoryGraphProvider`,
+which affects providers that extended them.
+
+See: link:https://lists.apache.org/thread/2zt62kvfssh6xz5vnf2lk1g7cstq9vod[DISCUSS thread]
+
 ==== Standardizing GLV Connection Options
 
 TinkerPop 4.x standardizes connection option names and defaults across all five Gremlin Language Variants (Java, Python,

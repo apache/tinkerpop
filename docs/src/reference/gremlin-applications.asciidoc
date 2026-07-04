@@ -2250,7 +2250,7 @@ success without requiring an explicit `commit()`.
 `g.tx().commit()` and `g.tx().rollback()`. Multiple traversals can participate in the same explicit transaction.
 
 IMPORTANT: Not all graph implementations support explicit transactions (for example, basic `TinkerGraph` does not).
-Use `TinkerTransactionGraph` or another graph implementation that supports explicit transactions. Attempting to begin
+Use `TinkerStorageGraph` or another graph implementation that supports explicit transactions. Attempting to begin
 an explicit transaction on a graph that does not support them will result in an error.
 
 Several settings in the Gremlin Server YAML control transaction resource usage. The `idleTransactionTimeout`

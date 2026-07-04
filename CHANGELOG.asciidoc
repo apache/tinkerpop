@@ -42,6 +42,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `gremlin-dotnet` deflate response decompression, which threw on the server's zlib-framed output because it used `DeflateStream` (raw DEFLATE, RFC 1951) instead of `ZLibStream` (zlib, RFC 1950); the bug was previously masked because compression was off by default.
 * Fixed `gremlin-dotnet` SSL options cloning (used on the skip-certificate-validation path) to copy `ClientCertificateContext` and `AllowTlsResume`, which were previously dropped, breaking mTLS client certificates and silently re-enabling TLS resumption.
 * Fixed `gremlin-python` read timeout to derive from a single source (aiohttp `sock_read`), removing a redundant `async_timeout` read wrapper that could race it; a read timeout now deterministically raises `ReadTimeoutError` (a builtin `TimeoutError` subclass).
+* Made `TinkerGraph` an interface and renamed the in-memory implementation to `TinkerMemoryGraph`; `TinkerGraph.open()` and `gremlin.graph=...TinkerGraph` behave as before. *(breaking)*
+* Renamed `TinkerTransactionGraph` to `TinkerStorageGraph`. *(breaking)*
 * Removed `Transaction.open()` in favor of `begin()`, which is now the single transaction-start primitive across embedded and remote contexts.
 * Changed `begin()` and `close()` to be idempotent and calling it when a transaction is already in that state no longer throws.
 * Added `maxTransactionLifetime` setting to Gremlin Server, an absolute cap on the total age of an HTTP transaction that interrupts a running operation and rolls the transaction back when it fires (default 600000ms, set to `0` to disable).

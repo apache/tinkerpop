@@ -66,7 +66,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class TinkerGraphServiceTest {
 
-    final TinkerGraph graph = TinkerFactory.createModern();
+    final TinkerMemoryGraph graph = TinkerFactory.createModern();
     final GraphTraversalSource g = graph.traversal();
 
     @Before

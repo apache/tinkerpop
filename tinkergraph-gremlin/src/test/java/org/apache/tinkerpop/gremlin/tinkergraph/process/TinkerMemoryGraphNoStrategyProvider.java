@@ -18,17 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process;
 
+import org.apache.tinkerpop.gremlin.GraphProvider;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.GValueReductionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.tinkergraph.TinkerMemoryGraphProvider;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 
 import java.util.Arrays;
@@ -37,18 +39,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * A {@link GraphProvider} that constructs a {@link TraversalSource} with no default strategies applied.  This allows
+ * the process tests to be executed without strategies applied.
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class TinkerGraphNoStrategyComputerProvider extends TinkerGraphComputerProvider {
+public class TinkerMemoryGraphNoStrategyProvider extends TinkerMemoryGraphProvider {
 
     private static final HashSet<Class<? extends TraversalStrategy>> REQUIRED_STRATEGIES = new HashSet<>(Arrays.asList(
-            CountStrategy.class,
-            ComputerVerificationStrategy.class,
+            TinkerGraphStepStrategy.class,
             ProfileStrategy.class,
             ProductiveByStrategy.class, // this strategy is required to maintain 3.5.x null behaviors defined in tests
-            FilterRankingStrategy.class,
             ConnectiveStrategy.class,
-            SideEffectStrategy.class));
+            SideEffectStrategy.class,
+            GValueReductionStrategy.class));
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
@@ -56,6 +60,6 @@ public class TinkerGraphNoStrategyComputerProvider extends TinkerGraphComputerPr
                 .map(TraversalStrategy::getClass)
                 .filter(clazz -> !REQUIRED_STRATEGIES.contains(clazz))
                 .collect(Collectors.toList());
-        return graph.traversal().withoutStrategies(toRemove.toArray(new Class[toRemove.size()])).withComputer();
+        return graph.traversal().withoutStrategies(toRemove.toArray(new Class[toRemove.size()]));
     }
 }

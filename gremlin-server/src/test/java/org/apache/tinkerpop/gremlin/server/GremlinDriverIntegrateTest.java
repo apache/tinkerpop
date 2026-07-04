@@ -150,14 +150,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 break;
             case "shouldExecuteSessionlessScriptOnTransactionalGraph":
             case "shouldManageTransactionsInSession":
-                useTinkerTransactionGraph(settings);
+                useTinkerStorageGraph(settings);
                 break;
             case "shouldRequireAliasedGraphVariablesInStrictTransactionMode":
                 settings.strictTransactionManagement = true;
                 break;
             case "shouldAliasGraphVariablesInStrictTransactionMode":
                 settings.strictTransactionManagement = true;
-                useTinkerTransactionGraph(settings);
+                useTinkerStorageGraph(settings);
                 break;
             case "shouldProcessSessionRequestsInOrderAfterTimeout":
                 settings.evaluationTimeout = 250;

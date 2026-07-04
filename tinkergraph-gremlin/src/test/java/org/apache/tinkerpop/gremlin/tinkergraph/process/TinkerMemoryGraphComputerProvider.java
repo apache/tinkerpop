@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
+import org.apache.tinkerpop.gremlin.tinkergraph.TinkerMemoryGraphProvider;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 
 import java.util.HashMap;
@@ -35,7 +35,7 @@ import java.util.Random;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @GraphProvider.Descriptor(computer = TinkerGraphComputer.class)
-public class TinkerGraphComputerProvider extends TinkerGraphProvider {
+public class TinkerMemoryGraphComputerProvider extends TinkerMemoryGraphProvider {
 
     private static final Random RANDOM = TestHelper.RANDOM;
 

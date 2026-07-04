@@ -97,7 +97,7 @@ import static org.mockito.Mockito.mock;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class TinkerGraphTest {
+public class TinkerMemoryGraphTest {
 
     @Test
     public void shouldManageIndices() {
@@ -328,7 +328,7 @@ public class TinkerGraphTest {
             graph.io(IoCore.gryo()).writer().create().writeObject(out, graph);
             final byte[] b = out.toByteArray();
             try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(b)) {
-                final TinkerGraph target = graph.io(IoCore.gryo()).reader().create().readObject(inputStream, TinkerGraph.class);
+                final TinkerGraph target = graph.io(IoCore.gryo()).reader().create().readObject(inputStream, TinkerMemoryGraph.class);
                 IoTest.assertModernGraph(target, true, false);
             }
         }
@@ -341,7 +341,7 @@ public class TinkerGraphTest {
             graph.io(IoCore.gryo()).writer().create().writeObject(out, graph);
             final byte[] b = out.toByteArray();
             try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(b)) {
-                final TinkerGraph target = graph.io(IoCore.gryo()).reader().create().readObject(inputStream, TinkerGraph.class);
+                final TinkerGraph target = graph.io(IoCore.gryo()).reader().create().readObject(inputStream, TinkerMemoryGraph.class);
                 IoTest.assertCrewGraph(target, false);
             }
         }
@@ -353,7 +353,7 @@ public class TinkerGraphTest {
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             graph.io(IoCore.graphson()).writer().create().writeObject(out, graph);
             try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray())) {
-                final TinkerGraph target = graph.io(IoCore.graphson()).reader().create().readObject(inputStream, TinkerGraph.class);
+                final TinkerGraph target = graph.io(IoCore.graphson()).reader().create().readObject(inputStream, TinkerMemoryGraph.class);
                 IoTest.assertModernGraph(target, true, false);
             }
         }
@@ -365,7 +365,7 @@ public class TinkerGraphTest {
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             graph.io(IoCore.graphson()).writer().create().writeObject(out, graph);
             try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray())) {
-                final TinkerGraph target = graph.io(IoCore.graphson()).reader().create().readObject(inputStream, TinkerGraph.class);
+                final TinkerGraph target = graph.io(IoCore.graphson()).reader().create().readObject(inputStream, TinkerMemoryGraph.class);
                 IoTest.assertCrewGraph(target, false);
             }
         }
@@ -380,7 +380,7 @@ public class TinkerGraphTest {
             writer.writeObject(out, graph);
             try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray())) {
                 final GraphReader reader = GraphSONReader.build().mapper(mapper).create();
-                final TinkerGraph target = reader.readObject(inputStream, TinkerGraph.class);
+                final TinkerGraph target = reader.readObject(inputStream, TinkerMemoryGraph.class);
                 IoTest.assertModernGraph(target, true, false);
             }
         }
@@ -430,13 +430,13 @@ public class TinkerGraphTest {
     @Test(expected = IllegalStateException.class)
     public void shouldRequireGraphFormatIfLocationIsSet() {
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, TestHelper.makeTestDataDirectory(TinkerGraphTest.class));
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, TestHelper.makeTestDataDirectory(TinkerMemoryGraphTest.class));
         TinkerGraph.open(conf);
     }
 
     @Test
     public void shouldPersistToGraphML() {
-        final String graphLocation = TestHelper.makeTestDataFile(TinkerGraphTest.class, "shouldPersistToGraphML.xml");
+        final String graphLocation = TestHelper.makeTestDataFile(TinkerMemoryGraphTest.class, "shouldPersistToGraphML.xml");
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -454,7 +454,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToGraphSON() {
-        final String graphLocation = TestHelper.makeTestDataFile(TinkerGraphTest.class, "shouldPersistToGraphSON.json");
+        final String graphLocation = TestHelper.makeTestDataFile(TinkerMemoryGraphTest.class, "shouldPersistToGraphSON.json");
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -472,7 +472,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToGryo() {
-        final String graphLocation = TestHelper.makeTestDataFile(TinkerGraphTest.class, "shouldPersistToGryo.kryo");
+        final String graphLocation = TestHelper.makeTestDataFile(TinkerMemoryGraphTest.class, "shouldPersistToGryo.kryo");
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -490,7 +490,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToGryoAndHandleMultiProperties() {
-        final String graphLocation = TestHelper.makeTestDataFile(TinkerGraphTest.class, "shouldPersistToGryoMulti.kryo");
+        final String graphLocation = TestHelper.makeTestDataFile(TinkerMemoryGraphTest.class, "shouldPersistToGryoMulti.kryo");
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -509,8 +509,8 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistWithRelativePath() {
-        final String graphLocation = TestHelper.convertToRelative(TinkerGraphTest.class,
-                                                                  TestHelper.makeTestDataPath(TinkerGraphTest.class))
+        final String graphLocation = TestHelper.convertToRelative(TinkerMemoryGraphTest.class,
+                                                                  TestHelper.makeTestDataPath(TinkerMemoryGraphTest.class))
                                      + "shouldPersistToGryoRelative.kryo";
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
@@ -529,7 +529,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToAnyGraphFormat() {
-        final String graphLocation = TestHelper.makeTestDataFile(TinkerGraphTest.class, "shouldPersistToAnyGraphFormat.dat");
+        final String graphLocation = TestHelper.makeTestDataFile(TinkerMemoryGraphTest.class, "shouldPersistToAnyGraphFormat.dat");
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -1018,7 +1018,7 @@ public class TinkerGraphTest {
 
         public Registration getRegistration(final Class clazz) {
             if (Color.class.isAssignableFrom(clazz)) {
-                final Registration registration = super.getRegistration(TinkerGraph.class);
+                final Registration registration = super.getRegistration(TinkerMemoryGraph.class);
                 return new Registration(registration.getType(), colorToGraphSerializer, registration.getId());
             } else {
                 return super.getRegistration(clazz);

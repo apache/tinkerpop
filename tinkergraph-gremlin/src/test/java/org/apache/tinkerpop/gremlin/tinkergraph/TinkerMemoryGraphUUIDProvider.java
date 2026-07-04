@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerMemoryGraph;
 
 import java.io.File;
 import java.util.HashMap;
@@ -32,7 +33,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphUUIDProvider extends TinkerGraphProvider {
+public class TinkerMemoryGraphUUIDProvider extends TinkerMemoryGraphProvider {
 
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName,
@@ -40,7 +41,7 @@ public class TinkerGraphUUIDProvider extends TinkerGraphProvider {
         final TinkerGraph.DefaultIdManager idManager = TinkerGraph.DefaultIdManager.UUID;
         final String idMaker = idManager.name();
         return new HashMap<String, Object>() {{
-            put(Graph.GRAPH, TinkerGraph.class.getName());
+            put(Graph.GRAPH, TinkerMemoryGraph.class.getName());
             put(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, idMaker);
             put(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, idMaker);
             put(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, idMaker);

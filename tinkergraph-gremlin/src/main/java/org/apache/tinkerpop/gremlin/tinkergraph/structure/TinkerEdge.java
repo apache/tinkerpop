@@ -64,7 +64,7 @@ public class TinkerEdge extends TinkerElement implements Edge {
 
     private TinkerEdge(final Object id, AbstractTinkerGraph graph, final Object outVertexId, final String label, final Object inVertexId, final long currentVersion, final Boolean skipIndexUpdate) {
         super(id, label, currentVersion);
-        isTxMode = graph instanceof TinkerTransactionGraph;
+        isTxMode = graph.isTxMode();
         this.graph = graph;
         if (isTxMode) {
             this.outVertexId = outVertexId;

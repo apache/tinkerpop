@@ -42,7 +42,10 @@ under the License.
 image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory (with optional
 persistence), graph engine that provides both OLTP and OLAP functionality. It is non-transactional by default but does
 have a lightweight transactional form that can be instantiated offering simple `ThreadLocal` transactions supporting
-`read committed` transaction isolation. TinkerGraph is deployed with TinkerPop and serves as the reference
+`read committed` transaction isolation. As of 4.0.0, `TinkerGraph` is an interface with two implementations:
+`TinkerMemoryGraph`, the in-memory, non-transactional implementation that `TinkerGraph.open()` constructs, and
+`TinkerStorageGraph`, the transactional implementation formerly named `TinkerTransactionGraph`. TinkerGraph is
+deployed with TinkerPop and serves as the reference
 implementation for other providers to study in order to understand the semantics of the various methods of the
 TinkerPop API. Its status as a reference implementation does not however imply that it is not suitable for production.
 TinkerGraph has many practical use cases in production applications and their development. Some examples of TinkerGraph
@@ -160,7 +163,9 @@ TinkerGraph has several settings that can be provided on creation via `Configura
 [width="100%",cols="2,10",options="header"]
 |=========================================================
 |Property |Description
-|gremlin.graph |`org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph`
+|gremlin.graph |`org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph`. This name refers to the
+`TinkerGraph` interface and resolves to the in-memory implementation. The name of either implementation,
+`TinkerMemoryGraph` or `TinkerStorageGraph`, may be specified instead.
 |gremlin.tinkergraph.vertexIdManager |The `IdManager` implementation to use for vertices.
 |gremlin.tinkergraph.edgeIdManager |The `IdManager` implementation to use for edges.
 |gremlin.tinkergraph.vertexPropertyIdManager |The `IdManager` implementation to use for vertex properties.
@@ -178,7 +183,7 @@ loaded/persisted to disk.
 |=========================================================
 
 NOTE: To use <<tinkergraph-gremlin-tx, transactions>>, configure `gremlin.graph` as
-`org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerTransactionGraph`.
+`org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph`.
 
 The `IdManager` settings above refer to how TinkerGraph will control identifiers for vertices, edges and vertex
 properties.  There are several options for each of these settings: `ANY`, `LONG`, `INTEGER`, `UUID`, `STRING` or the
@@ -222,22 +227,23 @@ g.V().properties()
 [[tinkergraph-gremlin-tx]]
 === Transactions
 
-`TinkerGraph` includes optional transaction support and thread-safety through the `TinkerTransactionGraph` class.
+`TinkerGraph` includes optional transaction support and thread-safety through the `TinkerStorageGraph` class.
 The default configuration of TinkerGraph remains non-transactional.
 
-NOTE: This feature was first made available in TinkerPop 3.7.0.
+NOTE: This feature was first made available in TinkerPop 3.7.0 as `TinkerTransactionGraph`. The class was renamed to
+`TinkerStorageGraph` in 4.0.0.
 
 ==== Transaction Semantics
 
-`TinkerTransactionGraph` only has support for `ThreadLocal` transactions, so embedded graph transactions may not be fully
+`TinkerStorageGraph` only has support for `ThreadLocal` transactions, so embedded graph transactions may not be fully
 supported. You can think of the transaction as belonging to a thread, any traversals executed within the same thread
 will share the same transaction even if you attempt to start a new transaction.
 
-`TinkerTransactionGraph` provides the `read committed` transaction isolation level. This means that it will always try to
+`TinkerStorageGraph` provides the `read committed` transaction isolation level. This means that it will always try to
 guard against dirty reads but will not prevent non-repeatable reads or phantom reads. While you may notice stricter 
 isolation semantics in some cases, you should not depend on this behavior as it may change in the future.
 
-`TinkerTransactionGraph` employs optimistic locking as its locking strategy. This reduces complexity in the design as
+`TinkerStorageGraph` employs optimistic locking as its locking strategy. This reduces complexity in the design as
 there are fewer timeouts that the user needs to manage. However, a consequence of this approach is that a transaction
 will throw a `TransactionException` if two different transactions attempt to lock the same element (see "Best Practices"
 below).
@@ -246,13 +252,13 @@ below).
 ==== Testing Remote Providers
 
 These transaction semantics described above may not fit use cases for some production scenarios that require strict
-ACID-like transactions. Therefore, it is recommended that `TinkerTransactionGraph` be used as a `Graph` for test
-environments where you still require access to a `Graph` that supports transactions. `TinkerTransactionGraph` does fully
+ACID-like transactions. Therefore, it is recommended that `TinkerStorageGraph` be used as a `Graph` for test
+environments where you still require access to a `Graph` that supports transactions. `TinkerStorageGraph` does fully
 support TinkerPop's `Transaction` interface which still makes it a useful `Graph` for exploring the
 <<transactions,Transaction API>>.
 
 A common scenario where this sort of testing is helpful is with <<connecting-rgp, Remote Graph Providers>>, where
-developing unit tests might be hard against a graph service. Instead, configure `TinkerTransactionGraph`, either in an
+developing unit tests might be hard against a graph service. Instead, configure `TinkerStorageGraph`, either in an
 embedded style if using Java or with Gremlin Server for other cases.
 
 [source,java]
@@ -273,10 +279,10 @@ public class GraphService {
 }
 
 // when writing tests for the GraphService it becomes possible to configure the test
-// to run in a variety of scenarios. here we decide that TinkerTransactionGraph is a
+// to run in a variety of scenarios. here we decide that TinkerStorageGraph is a
 // suitable test graph replacement for our actual production graph.
 public class GraphServiceTest {
-    private static final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
+    private static final TinkerStorageGraph graph = TinkerStorageGraph.open();
     private static final GraphTraversalSource g = traversal().with(graph);
     private static final GraphService service = new GraphService(g);
 
@@ -288,7 +294,7 @@ public class GraphServiceTest {
 }
 
 // or perhaps, since we're using a remote graph provider, we feel it would be better to
-// start Gremlin Server with a TinkerTransactionGraph configured using a docker container,
+// start Gremlin Server with a TinkerStorageGraph configured using a docker container,
 // embedding it directly in our tests or running it as a separate process like:
 //
 // bin/gremlin-server.sh conf/gremlin-server-transaction.yaml
@@ -315,7 +321,7 @@ appropriately.
 
 ==== Best Practices
 
-Errors can occur before a transaction gets committed. Specifically for `TinkerTransactionGraph`, you may encounter many
+Errors can occur before a transaction gets committed. Specifically for `TinkerStorageGraph`, you may encounter many
 `TransactionException` errors in a highly concurrent environment due its optimistic approach to locking. Users should
 follow the try-catch-rollback pattern described in the
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#transactions[transactions] section in combination with
@@ -325,16 +331,16 @@ exponential backoff based retries to mitigate this issue.
 
 While transactions impose minimal impact for mutating workloads, users should expect performance degradation for
 read-only work relative to the non-transactional configuration. However, its approach to locking
-(write-only, optimistic) and its in-memory nature, TinkerTransactionGraph is likely faster than other `Graph`
+(write-only, optimistic) and its in-memory nature, TinkerStorageGraph is likely faster than other `Graph`
 implementations that support transactions.
 
 ==== Examples
 
-Constructing a simple graph using `TinkerTransactionGraph` in Java is presented below:
+Constructing a simple graph using `TinkerStorageGraph` in Java is presented below:
 
 [source,java]
 ----
-Graph graph = TinkerTransactionGraph.open();
+Graph graph = TinkerStorageGraph.open();
 g = traversal().with(graph)
 GraphTraversalSource gtx = g.tx().begin();
 
@@ -352,11 +358,11 @@ try {
 The above Gremlin creates two vertices named "marko" and "lop" and connects them via a created-edge with a weight=0.6
 property. In case of any errors `rollback()` will be called and no changes will be performed.
 
-To use the embedded TinkerTransactionGraph in Gremlin Console:
+To use the embedded TinkerStorageGraph in Gremlin Console:
 
 [gremlin-groovy]
 ----
-graph = TinkerTransactionGraph.open() <1>
+graph = TinkerStorageGraph.open() <1>
 g = traversal().with(graph) <2>
 g.addV('test').property('name','one')
 g.tx().commit() <3>
