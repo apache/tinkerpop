@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Implementation of {@link AbstractThreadLocalTransaction} for {@link TinkerTransactionGraph}
+ * Implementation of {@link AbstractThreadLocalTransaction} for {@link TinkerStorageGraph}
  */
 final class TinkerTransaction extends AbstractThreadLocalTransaction {
 
@@ -64,13 +64,13 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
      */
     private final ThreadLocal<Set<TinkerElementContainer>> txReadElements = new ThreadLocal<>();
 
-    private final TinkerTransactionGraph graph;
+    private final TinkerStorageGraph graph;
 
     static {
         openedTx = new AtomicLong(0);
     }
 
-    public TinkerTransaction(final TinkerTransactionGraph g) {
+    public TinkerTransaction(final TinkerStorageGraph g) {
         super(g);
         graph = g;
     }

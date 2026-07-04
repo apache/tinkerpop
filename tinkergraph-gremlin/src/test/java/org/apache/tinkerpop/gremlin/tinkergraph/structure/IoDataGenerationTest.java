@@ -57,7 +57,7 @@ public class IoDataGenerationTest {
 
     @Before
     public void before() throws IOException {
-        tempPath = TestHelper.makeTestDataPath(TinkerGraphTest.class, "tinkerpop-io");
+        tempPath = TestHelper.makeTestDataPath(TinkerMemoryGraphTest.class, "tinkerpop-io");
 
         FileUtils.deleteDirectory(tempPath);
         if (!tempPath.mkdirs()) throw new IOException(String.format("Could not create %s", tempPath));

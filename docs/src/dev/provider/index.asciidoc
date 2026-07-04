@@ -1056,7 +1056,7 @@ The following is just an example as taken from TinkerGraph:
         glue = { "org.apache.tinkerpop.gremlin.features" },
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
         plugin = {"progress", "junit:target/cucumber.xml"},
-        objectFactory = TinkerGraphFeatureTest.TinkerGraphGuiceFactory.class)
+        objectFactory = TinkerMemoryGraphFeatureTest.TinkerGraphGuiceFactory.class)
 ----
 
 The `@CucumberOptions` that are used are mostly implementation-specific, so it will be up to the provider to make some

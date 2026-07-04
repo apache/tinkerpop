@@ -86,7 +86,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     protected TinkerVertex(final Object id, final Set<String> labels, final AbstractTinkerGraph graph, final long currentVersion) {
         super(id, null, currentVersion);  // labels are set below
         this.graph = graph;
-        this.isTxMode = graph instanceof TinkerTransactionGraph;
+        this.isTxMode = graph.isTxMode();
         this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
 
         final Set<String> initial = new LinkedHashSet<>();
