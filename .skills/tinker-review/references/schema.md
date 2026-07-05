@@ -32,8 +32,17 @@ name — noise), `project` (a repo source declares a type with this name;
 `origin: library` calls from out-degree so ubiquitous accessor calls don't
 inflate hotspots.
 
-**Type** `{ name, kind, visibility, filePath }`
-A class, interface, struct, or enum. `kind` is one of: class, interface, struct, enum.
+**Type** `{ name, kind, visibility, filePath, changed }`
+A class, interface, struct, or enum. `kind` is one of: class, interface, struct,
+enum. `changed: true` if the PR modified the file it's declared in.
+
+*External stub Types* `{ name, external: true, resolved: false }` are markers
+created when an `extends`/`implements` edge names a supertype that wasn't
+extracted — typically a JDK/library class outside the worktree. In-repo
+supertypes are usually materialized by the extractor's hierarchy-neighborhood
+expansion (which pulls a changed type's ancestors and descendants in as context),
+so stubs mostly stand for third-party types. They lack `kind`/`filePath`; filter
+them with `.has("external", false)` or `.hasNot("external")`.
 
 ### TinkerPop domain
 
@@ -43,12 +52,9 @@ A Gremlin traversal step as a concept (e.g., "addV", "has", "out"). Created duri
 **GrammarRule** `{ name, production }`
 An ANTLR production in Gremlin.g4.
 
-**GLV** `{ language }`
-A Gremlin Language Variant (e.g., "dart", "go", "python").
-
 ### Verification
 
-**Test** `{ name, type }`
+**Test** `{ name, type, filePath }`
 A test function. `type` is one of: unit, integration, suite.
 
 **Doc** `{ path, section }`
@@ -63,7 +69,10 @@ The PR itself is a Discussion with `source: "pr"`.
 **Comment** `{ author, body, timestamp }`
 A comment on a Discussion.
 
-## Edges (15 labels)
+## Edges (16 implemented + 1 planned)
+
+One edge is marked ⚠️ *planned* below (`depends_on`) — documented but intentionally
+not populated.
 
 ### Edge confidence (every edge)
 
@@ -88,8 +97,11 @@ renders this as the **Signal Confidence** panel.
 |------|------|----|---------|
 | `calls` | Function | Function | Function invokes another function |
 | `defines` | File | Function or Type | File contains this definition |
-| `implements` | Function | Type | Function implements an interface |
-| `depends_on` | File | File | File imports/requires another file |
+| `declares` | Type | Function | Type's body declares this method (the membership edge; both endpoints pinned to the same file). `EXTRACTED` |
+| `extends` | Type | Type | Subclass extends a superclass, or interface extends an interface. Supertype resolved by simple name; unresolved parents get an external Type stub. `INFERRED` |
+| `implements` | Type | Type | Class implements an interface. Same resolution/stub behavior as `extends`. (Java splits `extends`/`implements` precisely; other languages label all bases `extends`.) `INFERRED` |
+| `overrides` | Function | Function | A method overrides a same-named method declared by an ancestor type (transitive over `extends`/`implements`). Derived after population by `deriveOverrides`. `INFERRED` |
+| `depends_on` | File | File | ⚠️ *planned, not populated.* File imports/requires another file. Intentionally omitted — call/defines edges already carry file connectivity (see `populate.js`). |
 | `references` | File | File (deleted) | A surviving file still mentions a symbol from a file the PR deleted. Added during a removal review via `addReference`; carries `symbol` and `location` properties. |
 
 ### Domain relationships
@@ -97,15 +109,14 @@ renders this as the **Signal Confidence** panel.
 | Edge | From | To | Meaning |
 |------|------|----|---------|
 | `implements_step` | Function | Step | This function is a GLV's implementation of a Gremlin step |
-| `has_rule` | Step | GrammarRule | This step is defined by this grammar production |
-| `provides` | GLV | Step | This GLV implements this step |
+| `has_rule` | Step | GrammarRule | This step is defined by this grammar production. Written by `linkRule` (after `addGrammarRule` creates the rule vertex). `INFERRED` |
 
 ### Verification
 
 | Edge | From | To | Meaning |
 |------|------|----|---------|
 | `tests` | Test | Function | This test exercises this function |
-| `covers` | Test | Step | This test covers this step's behavior |
+| `covers` | Test | Step | This test covers this step's behavior. Written by `mapCoverage`. The `new-step` playbook treats a missing `covers` as a coverage gap. `INFERRED` |
 | `documents` | Doc | Step, Function, or Type | This doc describes this entity |
 
 ### Discussion

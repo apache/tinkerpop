@@ -248,6 +248,10 @@ export async function phase1(session) {
   log(`Phase 1: Extracting structure (${language})...`);
   const extraction = await extract(worktreePath, language, { changedFiles });
   log(`Phase 1 complete: ${extraction.files.length} files, ${extraction.functions.length} functions, ${extraction.types.length} types`);
+  const neighborhood = extraction.hierarchyNeighborhood;
+  if (neighborhood && neighborhood.files > 0) {
+    log(`  hierarchy neighborhood: +${neighborhood.files} context files parsed for override/hierarchy edges${neighborhood.truncated ? " (TRUNCATED — hierarchy blast radius is a lower bound)" : ""}`);
+  }
 
   log(`Populating graph...`);
   const graphStats = await populate(g, extraction, { changedFiles, worktreePath });
@@ -315,13 +319,14 @@ export async function phase1(session) {
   const coverageResult = await coverageGaps(g, { changedOnly: true });
   const centralityResult = await highCentrality(g, { changedOnly: true, topN: 10, minDegree: 3 });
   const blastResult = await blastRadius(g, { depth: 3, changedOnly: true });
+  blastResult.neighborhood = extraction.hierarchyNeighborhood || null;
   const clusterResult = await clusterAnalysis(a, { changedOnly: true });
   const confidenceResult = await confidenceAudit(g);
   const orphansResult = await orphans(g, { vertexLabel: "Function", expectedEdge: "tests", direction: "in", changedOnly: true });
   log(`  completeness: ${completenessResults.filter(r => r.missing.length > 0).length} gaps found`);
   log(`  coverage_gaps: ${coverageResult.uncovered.length} functions without tests`);
   log(`  centrality: ${centralityResult.aboveThreshold} hotspots`);
-  log(`  blast_radius: max ${blastResult.maxReachable} reachable`);
+  log(`  blast_radius: max ${blastResult.maxReachable} reachable, ${blastResult.types.length} changed types with hierarchy impact`);
   log(`  clusters: ${clusterResult.clusterCount} (${clusterResult.coherent ? "coherent" : "fragmented"})`);
   log(`  confidence: ${confidenceResult.distribution.EXTRACTED} extracted / ${confidenceResult.distribution.INFERRED} inferred / ${confidenceResult.distribution.AMBIGUOUS} ambiguous`);
   log(`  orphans: ${orphansResult.totalOrphaned} functions with no test`);

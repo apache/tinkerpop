@@ -389,6 +389,75 @@ export async function addGrammarRule(g, name, production) {
 }
 
 /**
+ * Link a Gremlin step to the grammar production that defines it, as a `has_rule`
+ * edge (Step -> GrammarRule). Closes the loop `addGrammarRule` opens: the rule
+ * vertex exists, this connects the step concept to it. The grammar playbook's
+ * `checks.completeness` on `has_rule` reports which steps still lack this link.
+ * Both vertices must already exist (`mapStep` creates the Step, `addGrammarRule`
+ * the rule).
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @param {string} stepName - Canonical step name (an existing Step vertex)
+ * @param {string} ruleName - Grammar rule name (an existing GrammarRule vertex)
+ * @param {string} [confidence] - default INFERRED
+ * @returns {Promise<object>}
+ */
+export async function linkRule(g, stepName, ruleName, confidence) {
+  const conf = normalizeConfidence(confidence, CONFIDENCE.INFERRED);
+  const stepExists = await g.V().hasLabel("Step").has("name", stepName).hasNext();
+  if (!stepExists) {
+    return { error: `no Step vertex named "${stepName}" (map it with mapStep first)` };
+  }
+  const ruleExists = await g.V().hasLabel("GrammarRule").has("name", ruleName).hasNext();
+  if (!ruleExists) {
+    return { error: `no GrammarRule vertex named "${ruleName}" (add it with addGrammarRule first)` };
+  }
+
+  await g.V().hasLabel("Step").has("name", stepName)
+    .addE("has_rule")
+    .property("confidence", conf)
+    .to(__.V().hasLabel("GrammarRule").has("name", ruleName))
+    .next();
+
+  return { linked: `${stepName} has_rule ${ruleName}`, confidence: conf };
+}
+
+/**
+ * Record that a test covers a Gremlin step's behavior, as a `covers` edge
+ * (Test -> Step). The `new-step` playbook treats a step with no `covers` as a
+ * coverage gap; this is how you record the coverage you find during enrichment.
+ * The test is keyed by name AND file because test names repeat across suites;
+ * the Step vertex must already exist (created via `mapStep`).
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @param {string} testName - The covering test's name
+ * @param {string} filePath - The test's file (disambiguates same-named tests)
+ * @param {string} stepName - Canonical step name (an existing Step vertex)
+ * @param {string} [confidence] - default INFERRED
+ * @returns {Promise<object>}
+ */
+export async function mapCoverage(g, testName, filePath, stepName, confidence) {
+  const conf = normalizeConfidence(confidence, CONFIDENCE.INFERRED);
+  const stepExists = await g.V().hasLabel("Step").has("name", stepName).hasNext();
+  if (!stepExists) {
+    return { error: `no Step vertex named "${stepName}" (map it with mapStep first)` };
+  }
+  const testExists = await g.V().hasLabel("Test")
+    .has("name", testName).has("filePath", filePath).hasNext();
+  if (!testExists) {
+    return { error: `no Test vertex "${testName}" in ${filePath}` };
+  }
+
+  await g.V().hasLabel("Test").has("name", testName).has("filePath", filePath)
+    .addE("covers")
+    .property("confidence", conf)
+    .to(__.V().hasLabel("Step").has("name", stepName))
+    .next();
+
+  return { covered: `${testName} covers ${stepName}`, confidence: conf };
+}
+
+/**
  * INTERNAL (Phase 1). Create the root PR Discussion vertex that every other
  * discussion links back to via `addresses`. review.js calls this once while
  * building the graph; it's idempotent (a second call is a no-op). Exposed on the

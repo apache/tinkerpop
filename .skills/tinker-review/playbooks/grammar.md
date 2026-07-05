@@ -6,8 +6,9 @@ are inherently high-risk — they affect all parsers, all GLVs, and all
 downstream tooling. Backwards compatibility is critical.
 
 ## Enrich
-- `addGrammarRule` — record each grammar rule the PR adds, so completeness can
-  check it's wired to a step.
+- `addGrammarRule` — record each grammar rule the PR adds.
+- `linkRule` — wire each rule to the step it defines (`has_rule`), so
+  completeness can check every rule reaches a step.
 - `linkDiscussion --source proposal` — record the proposal or dev-list thread
   (grammar changes need prior community consensus).
 

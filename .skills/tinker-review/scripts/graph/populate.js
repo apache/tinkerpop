@@ -22,13 +22,56 @@ import { join } from "node:path";
 import gremlin from "gremlin";
 import { CONFIDENCE } from "./confidence.js";
 
-const { process: { statics: __ } } = gremlin;
+const { process: { statics: __, P } } = gremlin;
 
 const BATCH_SIZE = 50;
 
 async function submitBatch(batch) {
   const results = await Promise.allSettled(batch.map((t) => t.next()));
   return results.filter((r) => r.status === "fulfilled").length;
+}
+
+/**
+ * Derive `overrides` edges (Function -> Function) from the type hierarchy.
+ *
+ * For each real Function `f` declared by some Type, walk that type's transitive
+ * supertypes (extends/implements) and, for every ancestor method sharing `f`'s
+ * name, add `f -overrides-> ancestorMethod`. This is what lets blast radius see
+ * impact flowing through interface/abstract hierarchies: change an interface
+ * method and every override is reachable via `in("overrides")`.
+ *
+ * Requires the `extends`/`implements` and `declares` edges to already be in the
+ * graph, so it runs as a final pass after population. INFERRED — the match is by
+ * method name (arity isn't reliably captured across languages).
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @returns {Promise<number>} count of overrides edges created
+ */
+export async function deriveOverrides(g) {
+  // Only functions that have a declaring type can override anything.
+  const fnIds = await g.V().hasLabel("Function").hasNot("external")
+    .where(__.in_("declares")).id().toList();
+
+  let created = 0;
+  for (const fid of fnIds) {
+    // One scoped walk per function: a global dedup() here would dedup ancestor
+    // types ACROSS seeds, so a shared ancestor (e.g. a common interface) would
+    // be walked only once total and most overrides would be lost. Per-seed keeps
+    // each walk independent.
+    const result = await g.V(fid).as("f")
+      .in_("declares")
+      .repeat(__.out("extends", "implements")).emit().times(6)
+      .dedup()
+      .out("declares").hasNot("external")
+      .where(P.eq("f")).by("name")
+      .where(P.neq("f"))
+      .dedup()
+      .addE("overrides").from_("f")
+      .property("confidence", CONFIDENCE.INFERRED)
+      .count().next();
+    created += Number(result.value);
+  }
+  return created;
 }
 
 /**
@@ -49,7 +92,7 @@ export async function populate(g, extraction, options = {}) {
   const counts = {
     vertices: 0,
     edges: 0,
-    breakdown: { files: 0, functions: 0, types: 0, tests: 0, calls: 0, defines: 0, testsEdges: 0, externalFunctions: 0, stubFiles: 0 },
+    breakdown: { files: 0, functions: 0, types: 0, tests: 0, calls: 0, defines: 0, testsEdges: 0, externalFunctions: 0, stubFiles: 0, externalTypes: 0, extendsEdges: 0, implementsEdges: 0, declares: 0, overrides: 0 },
   };
 
   for (const file of extraction.files) {
@@ -106,6 +149,7 @@ export async function populate(g, extraction, options = {}) {
       .property("kind", type.kind)
       .property("visibility", type.visibility)
       .property("filePath", type.filePath)
+      .property("changed", type.changed === undefined ? false : type.changed)
       .next();
     counts.vertices++;
     counts.breakdown.types++;
@@ -236,6 +280,73 @@ export async function populate(g, extraction, options = {}) {
     }
   }
 
+  // Resolve-or-mark supertypes. Like callees, a supertype is named in the source
+  // but its declaration is often outside the changed set (a JDK class, or a base
+  // type in a file this PR didn't touch). Materialize an external Type stub for
+  // any supertype name not among the extracted types so the extends/implements
+  // edge has a vertex to land on. Flushed before the edges below reference them.
+  const extractedTypeNames = new Set(extraction.types.map((t) => t.name));
+  const unresolvedSupertypes = new Set();
+  for (const type of extraction.types) {
+    for (const s of (type.supertypes || [])) {
+      if (!extractedTypeNames.has(s.name)) unresolvedSupertypes.add(s.name);
+    }
+  }
+  for (const name of unresolvedSupertypes) {
+    batch.push(
+      g.addV("Type")
+        .property("name", name)
+        .property("external", true)
+        .property("resolved", false)
+    );
+    counts.breakdown.externalTypes++;
+    if (batch.length >= BATCH_SIZE) {
+      await submitBatch(batch);
+      batch = [];
+    }
+  }
+  if (batch.length > 0) {
+    await submitBatch(batch);
+    batch = [];
+  }
+
+  // Type hierarchy edges (Type -> Type). INFERRED: the supertype is resolved by
+  // simple name, so the target is a deduction (like `calls`). `relation` is
+  // "extends" or "implements" as the source declared it.
+  for (const type of extraction.types) {
+    for (const s of (type.supertypes || [])) {
+      batch.push(
+        g.V().hasLabel("Type").has("name", type.name).has("filePath", type.filePath)
+          .addE(s.relation)
+          .property("confidence", CONFIDENCE.INFERRED)
+          .to(__.V().hasLabel("Type").has("name", s.name))
+      );
+      if (s.relation === "extends") counts.breakdown.extendsEdges++;
+      else counts.breakdown.implementsEdges++;
+      if (batch.length >= BATCH_SIZE) {
+        await submitBatch(batch);
+        batch = [];
+      }
+    }
+  }
+
+  // Membership edges (Type -> Function). EXTRACTED: the method sits directly in
+  // the type's body — a directly observed fact, and both endpoints are pinned to
+  // the same file so the resolution is exact.
+  for (const decl of (extraction.declares || [])) {
+    batch.push(
+      g.V().hasLabel("Type").has("name", decl.typeName).has("filePath", decl.filePath)
+        .addE("declares")
+        .property("confidence", CONFIDENCE.EXTRACTED)
+        .to(__.V().hasLabel("Function").has("name", decl.functionName).has("filePath", decl.filePath))
+    );
+    counts.breakdown.declares++;
+    if (batch.length >= BATCH_SIZE) {
+      await submitBatch(batch);
+      batch = [];
+    }
+  }
+
   // Import resolution (depends_on edges) is intentionally not implemented.
   // File-to-file connectivity is already captured through the calls/defines edges
   // (File A defines Function X which calls Function Y defined in File B). The
@@ -245,7 +356,11 @@ export async function populate(g, extraction, options = {}) {
 
   if (batch.length > 0) {
     await submitBatch(batch);
+    batch = [];
   }
+
+  // Derive `overrides` edges now that the hierarchy and membership edges exist.
+  counts.breakdown.overrides = await deriveOverrides(g);
 
   // Report the true graph size. The per-type breakdown above counts attempted
   // inserts; query the graph itself for the authoritative vertex/edge totals so

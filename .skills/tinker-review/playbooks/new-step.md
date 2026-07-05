@@ -11,6 +11,8 @@ semantics.
 - `mapStep` — link the core implementation to its canonical name. Map the
   `GraphTraversal`/`GraphTraversalSource` method users call, not the internal
   methods on the Step class (e.g., `TreeStep`).
+- `mapCoverage` — record each test that exercises the step (`covers`), so
+  completeness/coverageGaps can confirm the new step is tested.
 - `linkDoc` — record the documentation that references the step.
 - `linkDiscussion` — record the proposal or JIRA that defines the step's semantics.
 

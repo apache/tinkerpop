@@ -25,7 +25,7 @@ import {
   listFunctions, listTypes, getCallsFrom, getCanonicalSteps,
   listDeleted, listExternalRefs, addReference,
   mapStep, setEdgeConfidence, linkDiscussion, linkDoc, addGrammarRule, annotate,
-  createPrDiscussion,
+  linkRule, mapCoverage, createPrDiscussion,
 } from "./api.js";
 import { confidenceAudit, listInferred } from "../patterns/confidence-audit.js";
 import { classifyExternals } from "../patterns/classify-externals.js";
@@ -54,6 +54,8 @@ const COMMANDS = {
   linkDiscussion: { fn: linkDiscussion, needsG: true, facing: "agent" },
   linkDoc: { fn: linkDoc, needsG: true, facing: "agent" },
   addGrammarRule: { fn: addGrammarRule, needsG: true, facing: "agent" },
+  linkRule: { fn: linkRule, needsG: true, facing: "agent" },
+  mapCoverage: { fn: mapCoverage, needsG: true, facing: "agent" },
   annotate: { fn: annotate, needsG: true, facing: "agent" },
   // Internal — run by review.js during Phase 1; exposed for manual re-runs only
   classifyExternals: { fn: classifyExternals, needsG: true, facing: "internal" },
@@ -104,6 +106,8 @@ async function main() {
     console.log("  linkDiscussion  --url <url> --source <jira|devlist|proposal> --title <title> [--body <body>] [--confidence ...]");
     console.log("  linkDoc         --entity <label> --name <name> --doc <path> [--section <section>] [--confidence ...]");
     console.log("  addGrammarRule  --name <name> [--production <production>]");
+    console.log("  linkRule        --step <canonicalName> --rule <ruleName> [--confidence ...]");
+    console.log("  mapCoverage     --test <name> --file <path> --step <canonicalName> [--confidence ...]");
     console.log("  annotate        --label <label> --name <name> --key <key> --value <value>");
     console.log("");
     console.log("Internal (normally run by review.js during Phase 1; here for manual re-runs):");
@@ -202,6 +206,12 @@ async function main() {
         break;
       case "addGrammarRule":
         result = await fn(g, args.name, args.production);
+        break;
+      case "linkRule":
+        result = await fn(g, args.step, args.rule, args.confidence);
+        break;
+      case "mapCoverage":
+        result = await fn(g, args.test, args.file, args.step, args.confidence);
         break;
       case "annotate":
         result = await fn(g, args.label, args.name, args.key, args.value);

@@ -403,6 +403,20 @@ function renderAppendixStructural(checks, graphStats) {
     return `<tr><td class="fn-name">${esc(b.name)}</td><td>${esc((b.filePath || "").split("/").pop())}</td><td class="num">${b.reachableCount}</td><td>${badge}</td></tr>`;
   }).join("\n      ");
 
+  const hierarchy = checks?.blastRadius?.types || [];
+  const truncated = checks?.blastRadius?.neighborhood?.truncated;
+  const hierarchyRows = hierarchy.slice(0, 10).map(t => {
+    return `<tr><td class="fn-name">${esc(t.name)}</td><td>${esc(t.kind || "")}</td><td>${esc((t.filePath || "").split("/").pop())}</td><td class="num">${t.implementerCount}</td></tr>`;
+  }).join("\n      ");
+  const truncNote = truncated ? ` <strong>Neighborhood truncated — these counts are a lower bound.</strong>` : "";
+  const hierarchyHtml = hierarchy.length === 0 ? "" : `
+  <h3>Type Hierarchy Impact</h3>
+  <p class="section-intro">For each changed type (typically an interface), the number of functions declared by everything that implements or extends it within 3 levels — impact that flows through the type hierarchy rather than direct calls.${truncNote}</p>
+  <table class="gap-table">
+    <thead><tr><th>Type</th><th>Kind</th><th>File</th><th>Implementer fns</th></tr></thead>
+    <tbody>\n      ${hierarchyRows}\n    </tbody>
+  </table>`;
+
   return `<section id="appendix-structural">
   <h2>Appendix: Structural Data</h2>
 
@@ -414,11 +428,12 @@ function renderAppendixStructural(checks, graphStats) {
   </table>
 
   <h3>Blast Radius</h3>
-  <p class="section-intro">Reachable callers within 3 hops upstream — higher means more code affected by behavioral changes.</p>
+  <p class="section-intro">Reachable callers and overriders within 3 hops upstream — higher means more code affected by behavioral changes. Includes impact flowing through interface/abstract overrides, not just direct calls.</p>
   <table class="gap-table">
     <thead><tr><th>Function</th><th>File</th><th>Reachable</th><th></th></tr></thead>
     <tbody>\n      ${blastRows}\n    </tbody>
   </table>
+${hierarchyHtml}
 ${confidenceHtml}
   <h3>Graph Statistics</h3>
   <div class="stats-grid">

@@ -146,6 +146,18 @@ Adds a `GrammarRule` vertex for a rule the PR introduces. Reach for it in the
 grammar playbook when a `*.g4` change adds a production the graph should track so
 later steps can link to it.
 
+### linkRule
+Links a step to the grammar production that defines it, as a `has_rule` edge
+(Step → GrammarRule). Closes the loop `addGrammarRule` opens — both vertices must
+exist first (`mapStep` for the Step, `addGrammarRule` for the rule). The grammar
+playbook's `checks.completeness` on `has_rule` reports which steps still lack it.
+
+### mapCoverage
+Records that a test covers a step's behavior, as a `covers` edge (Test → Step).
+Key the test by `--test` name **and** `--file` (names repeat across suites); the
+Step must already exist (`mapStep`). The `new-step` playbook treats a step with
+no `covers` as a coverage gap — this is how you record the coverage you find.
+
 ### annotate
 Sets an arbitrary `--key`/`--value` property on a vertex identified by `--label`
 + `--name`. The **general-purpose escape hatch** for a fact the schema has no
