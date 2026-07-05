@@ -1507,7 +1507,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), first.asAdmin()));
         } else {
             this.asAdmin().getGremlinLang().addStep(Symbols.addV, first, more);
-            final List<Traversal.Admin<?, ?>> allTraversals = new ArrayList<>(more.length + 1);
+            final Collection<Object> allTraversals = new LinkedHashSet<>(more.length + 1);
             allTraversals.add(first.asAdmin());
             for (final Traversal<?, ?> t : more) {
                 allTraversals.add(t.asAdmin());
@@ -1546,7 +1546,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), label));
         } else {
             this.asAdmin().getGremlinLang().addStep(Symbols.addV, label, additionalLabels);
-            final LinkedHashSet<Object> allLabels = new LinkedHashSet<>();
+            final Collection<Object> allLabels = new LinkedHashSet<>();
             allLabels.add(label);
             Collections.addAll(allLabels, additionalLabels);
             return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), allLabels));

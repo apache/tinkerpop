@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
@@ -55,58 +56,32 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     protected Parameters withConfiguration = new Parameters();
 
     protected AbstractAddElementStepPlaceholder(final Traversal.Admin traversal, final String label) {
-        super(traversal);
-        this.label = label == null ? this.getDefaultLabel() : label;
+        this(traversal, (Object) label);
     }
 
     protected AbstractAddElementStepPlaceholder(final Traversal.Admin traversal, final GValue<String> label) {
-        super(traversal);
-        this.label = label == null ? this.getDefaultLabel() : label;
-        if (label != null && label.isVariable()) {
-            traversal.getGValueManager().register(label);
-        }
+        this(traversal, (Object) label);
     }
 
     protected AbstractAddElementStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<S,?> labelTraversal) {
-        super(traversal);
-        this.label = labelTraversal == null ? this.getDefaultLabel() : labelTraversal;
-        if (labelTraversal instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().register(((GValueConstantTraversal<S, String>) labelTraversal).getGValue());
-        }
-        addTraversal(labelTraversal);
-    }
-
-    protected AbstractAddElementStepPlaceholder(final Traversal.Admin traversal, final Set<Object> labels) {
-        super(traversal);
-        if (labels == null || labels.isEmpty()) {
-            this.label = this.getDefaultLabel();
-        } else {
-            this.label = labels;
-            for (final Object l : labels) {
-                if (l instanceof GValue && ((GValue<?>) l).isVariable()) {
-                    traversal.getGValueManager().register((GValue<?>) l);
-                }
-            }
-        }
+        this(traversal, (Object) labelTraversal);
     }
 
     /**
-     * Constructor for multiple label traversals. Each traversal resolves to a single String label
-     * at execution time.
+     * Constructor for multiple labels, each of which may be a {@code String}, a {@link GValue}, or a
+     * {@link Traversal.Admin} that resolves to a single {@code String} label at execution time.
      *
      * @param traversal the parent traversal
-     * @param labelTraversals the list of label-producing traversals (must have 2+ elements)
+     * @param labels the labels to add (must have 2+ elements; {@code null} or empty results in the default label)
      */
-    protected AbstractAddElementStepPlaceholder(final Traversal.Admin traversal, final List<Traversal.Admin<?, ?>> labelTraversals) {
+    protected AbstractAddElementStepPlaceholder(final Traversal.Admin traversal, final Collection<Object> labels) {
+        this(traversal, (Object) labels);
+    }
+
+    private AbstractAddElementStepPlaceholder(final Traversal.Admin traversal, final Object label) {
         super(traversal);
-        if (labelTraversals == null || labelTraversals.isEmpty()) {
-            this.label = this.getDefaultLabel();
-        } else {
-            this.label = labelTraversals;
-            for (final Traversal.Admin<?, ?> t : labelTraversals) {
-                addTraversal(t);
-            }
-        }
+        this.label = this.getDefaultLabel();
+        if (label != null) setLabel(label);
     }
 
     protected abstract String getDefaultLabel();
@@ -136,8 +111,8 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         }
         if (label != null && label instanceof Traversal) {
             childTraversals.add(((Traversal<?, ?>) label).asAdmin());
-        } else if (label instanceof List) {
-            for (final Object item : (List<?>) label) {
+        } else if (label instanceof Collection) {
+            for (final Object item : (Collection<?>) label) {
                 if (item instanceof Traversal) {
                     childTraversals.add(((Traversal<?, ?>) item).asAdmin());
                 }
@@ -206,8 +181,8 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
                 (elementId instanceof GValue && ((GValue<?>) elementId).isVariable())) {
             return true;
         }
-        if (label instanceof Set) {
-            for (final Object l : (Set<?>) label) {
+        if (label instanceof Collection) {
+            for (final Object l : (Collection<?>) label) {
                 if (l instanceof GValue && ((GValue<?>) l).isVariable()) {
                     return true;
                 }
@@ -227,19 +202,37 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
             traversal.getGValueManager().pinVariable(((GValue<?>) label).getName());
             return ((GValue<?>) label).get();
         }
-        if (label instanceof Set) {
-            final Set<String> resolved = new LinkedHashSet<>();
-            for (final Object l : (Set<?>) label) {
-                if (l instanceof GValue) {
-                    traversal.getGValueManager().pinVariable(((GValue<?>) l).getName());
-                    resolved.add((String) ((GValue<?>) l).get());
-                } else {
-                    resolved.add((String) l);
-                }
+        if (label instanceof Collection) {
+            final Set<Object> resolved = new LinkedHashSet<>();
+            for (final Object l : (Collection<?>) label) {
+                resolved.add(resolveLabelElement(l));
             }
             return resolved;
         }
+        if (label instanceof Traversal) {
+            return resolveLabelElement(label);
+        }
         return label;
+    }
+
+    /**
+     * Resolves a single label element. Handles {@code GValue}, {@code ConstantTraversal}, and
+     * {@code GValueConstantTraversal}, which can be resolved to a {@code String} without a live
+     * {@code Traverser}. Any other {@code Traversal} cannot be resolved statically and is returned as-is.
+     */
+    private Object resolveLabelElement(final Object l) {
+        if (l instanceof GValue) {
+            traversal.getGValueManager().pinVariable(((GValue<?>) l).getName());
+            return ((GValue<?>) l).get();
+        }
+        if (l instanceof GValueConstantTraversal) {
+            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, ?>) l).getGValue().getName());
+            return ((GValueConstantTraversal<?, ?>) l).next();
+        }
+        if (l instanceof ConstantTraversal) {
+            return ((ConstantTraversal<?, ?>) l).next();
+        }
+        return l;
     }
 
     @Override
@@ -249,19 +242,36 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
 
     @Override
     public void setLabel(Object label) {
-        if (this.label.equals(this.getDefaultLabel())) {
-            if (label instanceof Traversal) {
-                this.label = ((Traversal<S, String>) label).asAdmin();
-                this.integrateChild((Traversal.Admin<?, ?>) this.label);
-            } else if (label instanceof GValue) {
-                this.label = label;
-                traversal.getGValueManager().register((GValue<?>) label);
-            } else {
-                this.label = label;
-            }
-        } else {
+        if (!this.label.equals(this.getDefaultLabel())) {
             throw new IllegalArgumentException(String.format("Element T.label has already been set to [%s] and cannot be overridden with [%s]",
                     this.label, label));
+        }
+        if (label instanceof Traversal) {
+            this.label = ((Traversal<S, String>) label).asAdmin();
+            if (label instanceof GValueConstantTraversal) {
+                traversal.getGValueManager().register(((GValueConstantTraversal<S, String>) label).getGValue());
+            }
+            addTraversal((Traversal.Admin<?, ?>) this.label);
+        } else if (label instanceof GValue) {
+            this.label = label;
+            if (((GValue<?>) label).isVariable()) {
+                traversal.getGValueManager().register((GValue<?>) label);
+            }
+        } else if (label instanceof Collection) {
+            final Collection<?> labels = (Collection<?>) label;
+            if (labels.isEmpty()) {
+                return;
+            }
+            this.label = new LinkedHashSet<>(labels);
+            for (final Object l : labels) {
+                if (l instanceof Traversal) {
+                    addTraversal(((Traversal<?, ?>) l).asAdmin());
+                } else if (l instanceof GValue && ((GValue<?>) l).isVariable()) {
+                    traversal.getGValueManager().register((GValue<?>) l);
+                }
+            }
+        } else {
+            this.label = label;
         }
     }
 
@@ -364,10 +374,10 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     public void updateVariable(String name, Object value) {
         if (label instanceof GValue && name.equals(((GValue<?>) label).getName())) {
             label = GValue.of(name, value);
-        } else if (label instanceof Set) {
+        } else if (label instanceof Collection) {
             final LinkedHashSet<Object> updated = new LinkedHashSet<>();
             boolean changed = false;
-            for (final Object l : (Set<?>) label) {
+            for (final Object l : (Collection<?>) label) {
                 if (l instanceof GValue && name.equals(((GValue<?>) l).getName())) {
                     updated.add(GValue.of(name, value));
                     changed = true;
@@ -396,8 +406,8 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         Set<GValue<?>> gValues = GValueHelper.getGValuesFromProperties(properties);
         if (label instanceof GValue && ((GValue<?>) label).isVariable()) {
             gValues.add((GValue<?>) label);
-        } else if (label instanceof Set) {
-            for (final Object l : (Set<?>) label) {
+        } else if (label instanceof Collection) {
+            for (final Object l : (Collection<?>) label) {
                 if (l instanceof GValue && ((GValue<?>) l).isVariable()) {
                     gValues.add((GValue<?>) l);
                 }
@@ -423,11 +433,13 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
                 clone.label = ((Traversal<?, ?>) this.label).asAdmin().clone();
             } else if (this.label instanceof GValue) {
                 clone.label = ((GValue<?>) this.label).clone();
-            } else if (this.label instanceof Set) {
+            } else if (this.label instanceof Collection) {
                 final LinkedHashSet<Object> clonedSet = new LinkedHashSet<>();
-                for (final Object l : (Set<?>) this.label) {
+                for (final Object l : (Collection<?>) this.label) {
                     if (l instanceof GValue) {
                         clonedSet.add(((GValue<?>) l).clone());
+                    } else if (l instanceof Traversal) {
+                        clonedSet.add(((Traversal<?, ?>) l).asAdmin().clone());
                     } else {
                         clonedSet.add(l);
                     }

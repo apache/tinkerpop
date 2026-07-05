@@ -51,32 +51,21 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex> implements AddVer
     private Parameters withConfiguration = new Parameters();
     private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
     private boolean userProvidedLabel;
-    private List<Traversal.Admin<?, ?>> labelTraversals;
+    private Object label;
 
     public AddVertexStep(final Traversal.Admin traversal, final String label) {
         super(traversal);
-        if (label != null) {
-            this.internalParameters.set(this, T.label, label);
-        }
-        userProvidedLabel = label != null;
+        setLabel(label);
     }
 
     public AddVertexStep(final Traversal.Admin traversal, final Traversal.Admin<S,?> vertexLabelTraversal) {
         super(traversal);
-        if (vertexLabelTraversal != null) {
-            this.internalParameters.set(this, T.label, vertexLabelTraversal);
-        }
-        userProvidedLabel = vertexLabelTraversal != null;
+        setLabel(vertexLabelTraversal);
     }
 
     public AddVertexStep(final Traversal.Admin traversal, final Set<String> labels) {
         super(traversal);
-        if (labels != null && !labels.isEmpty()) {
-            this.internalParameters.set(this, T.label, labels);
-            userProvidedLabel = true;
-        } else {
-            userProvidedLabel = false;
-        }
+        setLabel(labels);
     }
 
     /**
@@ -85,15 +74,7 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex> implements AddVer
      */
     public AddVertexStep(final Traversal.Admin traversal, final List<Traversal.Admin<?, ?>> labelTraversals) {
         super(traversal);
-        if (labelTraversals != null && !labelTraversals.isEmpty()) {
-            this.labelTraversals = new ArrayList<>(labelTraversals);
-            for (final Traversal.Admin<?, ?> t : this.labelTraversals) {
-                this.integrateChild(t);
-            }
-            userProvidedLabel = true;
-        } else {
-            userProvidedLabel = false;
-        }
+        setLabel(labelTraversals);
     }
 
     @Override
@@ -125,9 +106,13 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex> implements AddVer
     @Override
     public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
         final List<Traversal.Admin<S, E>> children = new ArrayList<>(this.internalParameters.getTraversals());
-        if (this.labelTraversals != null) {
-            for (final Traversal.Admin<?, ?> t : this.labelTraversals) {
-                children.add((Traversal.Admin<S, E>) t);
+        if (this.label instanceof Traversal.Admin) {
+            children.add((Traversal.Admin<S, E>) this.label);
+        } else if (this.label instanceof Collection) {
+            for (final Object l : (Collection<?>) this.label) {
+                if (l instanceof Traversal.Admin) {
+                    children.add((Traversal.Admin<S, E>) l);
+                }
             }
         }
         return children;
@@ -139,17 +124,11 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex> implements AddVer
     }
 
     private void configureInternalParams(final Object... keyValues) {
-        if (keyValues[0] == T.label) userProvidedLabel = true;
-
-        if (keyValues[0] == T.label && this.internalParameters.contains(T.label)) {
-            if (this.internalParameters.contains(T.label, Vertex.DEFAULT_LABEL)) {
-                this.internalParameters.remove(T.label);
-                this.internalParameters.set(this, keyValues);
-            } else {
-                throw new IllegalArgumentException(String.format("Vertex T.label has already been set to [%s] and cannot be overridden with [%s]",
-                        this.internalParameters.getRaw().get(T.label).get(0), keyValues[1]));
-            }
-        } else if (keyValues[0] == T.id && this.internalParameters.contains(T.id)) {
+        if (keyValues[0] == T.label) {
+            setLabel(keyValues[1]);
+            return;
+        }
+        if (keyValues[0] == T.id && this.internalParameters.contains(T.id)) {
             throw new IllegalArgumentException(String.format("Vertex T.id has already been set to [%s] and cannot be overridden with [%s]",
                     this.internalParameters.getRaw().get(T.id).get(0), keyValues[1]));
         } else {
@@ -159,36 +138,47 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex> implements AddVer
 
     @Override
     protected Vertex map(final Traverser.Admin<S> traverser) {
+        final Object[] otherKeyValues = this.internalParameters.getKeyValues(traverser);
         final Object[] keyValues;
-        if (this.labelTraversals != null) {
-            // Multi-traversal: resolve each traversal to a single String label
-            final Set<String> labels = new LinkedHashSet<>();
-            for (final Traversal.Admin<?, ?> t : this.labelTraversals) {
-                final Object result = TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) t);
-                if (result == null) {
-                    throw new IllegalArgumentException("Label traversal must not produce null");
-                }
-                if (result instanceof Collection) {
-                    throw new IllegalArgumentException("Label traversal must produce a scalar String when multiple traversals are provided, but got a Collection");
-                }
-                if (!(result instanceof String)) {
-                    throw new IllegalArgumentException(String.format("Label traversal must produce a String, but got %s", result.getClass().getSimpleName()));
-                }
-                ElementHelper.validateLabel((String) result);
-                labels.add((String) result);
-            }
-            // Build key-values with the resolved label set plus any other parameters
-            final Object[] otherKeyValues = this.internalParameters.getKeyValues(traverser);
+        if (this.label instanceof Collection) {
+            // Multi-value label: resolve each element to a single String label
+            final Set<String> labels = resolveLabelCollection(traverser, (Collection<?>) this.label);
             keyValues = new Object[otherKeyValues.length + 2];
             keyValues[0] = T.label;
             keyValues[1] = labels;
             System.arraycopy(otherKeyValues, 0, keyValues, 2, otherKeyValues.length);
+        } else if (this.label != null) {
+            final Object resolvedLabel = this.label instanceof Traversal.Admin ?
+                    TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) this.label) : this.label;
+            keyValues = new Object[otherKeyValues.length + 2];
+            keyValues[0] = T.label;
+            keyValues[1] = resolvedLabel;
+            System.arraycopy(otherKeyValues, 0, keyValues, 2, otherKeyValues.length);
         } else {
-            keyValues = this.internalParameters.getKeyValues(traverser);
+            keyValues = otherKeyValues;
         }
         final Vertex vertex = this.getTraversal().getGraph().get().addVertex(keyValues);
         EventUtil.registerVertexCreation(callbackRegistry, getTraversal(), vertex);
         return vertex;
+    }
+
+    private static <S> Set<String> resolveLabelCollection(final Traverser.Admin<S> traverser, final Collection<?> label) {
+        final Set<String> labels = new LinkedHashSet<>();
+        for (final Object l : label) {
+            final Object result = l instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) l) : l;
+            if (result == null) {
+                throw new IllegalArgumentException("Label traversal must not produce null");
+            }
+            if (result instanceof Collection) {
+                throw new IllegalArgumentException("Label traversal must produce a scalar String when multiple traversals are provided, but got a Collection");
+            }
+            if (!(result instanceof String)) {
+                throw new IllegalArgumentException(String.format("Label traversal must produce a String, but got %s", result.getClass().getSimpleName()));
+            }
+            ElementHelper.validateLabel((String) result);
+            labels.add((String) result);
+        }
+        return labels;
     }
 
     @Override
@@ -200,8 +190,8 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex> implements AddVer
     @Override
     public int hashCode() {
         int hash = super.hashCode() ^ this.internalParameters.hashCode() ^ this.withConfiguration.hashCode();
-        if (this.labelTraversals != null) {
-            hash ^= this.labelTraversals.hashCode();
+        if (this.label != null) {
+            hash ^= this.label.hashCode();
         }
         return hash;
     }
@@ -221,9 +211,7 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex> implements AddVer
         super.setTraversal(parentTraversal);
         this.internalParameters.getTraversals().forEach(this::integrateChild);
         this.withConfiguration.getTraversals().forEach(this::integrateChild);
-        if (this.labelTraversals != null) {
-            this.labelTraversals.forEach(this::integrateChild);
-        }
+        this.getLocalChildren().forEach(this::integrateChild);
     }
 
     @Override
@@ -232,18 +220,41 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex> implements AddVer
         clone.internalParameters = this.internalParameters.clone();
         clone.withConfiguration = this.withConfiguration.clone();
         clone.userProvidedLabel = this.userProvidedLabel;
-        if (this.labelTraversals != null) {
-            clone.labelTraversals = new ArrayList<>(this.labelTraversals.size());
-            for (final Traversal.Admin<?, ?> t : this.labelTraversals) {
-                clone.labelTraversals.add(t.clone());
+        if (this.label instanceof Traversal.Admin) {
+            clone.label = ((Traversal.Admin<?, ?>) this.label).clone();
+        } else if (this.label instanceof Collection) {
+            final LinkedHashSet<Object> clonedLabels = new LinkedHashSet<>();
+            for (final Object l : (Collection<?>) this.label) {
+                clonedLabels.add(l instanceof Traversal.Admin ? ((Traversal.Admin<?, ?>) l).clone() : l);
             }
+            clone.label = clonedLabels;
+        } else {
+            clone.label = this.label;
         }
         return clone;
     }
 
     @Override
     public Object getLabel() {
-        Object label = internalParameters.get(T.label, () -> Vertex.DEFAULT_LABEL).get(0);
+        if (this.label == null) {
+            return Vertex.DEFAULT_LABEL;
+        }
+        if (this.label instanceof Collection) {
+            final Set<Object> resolved = new LinkedHashSet<>();
+            for (final Object l : (Collection<?>) this.label) {
+                resolved.add(resolveStaticLabel(l));
+            }
+            return resolved;
+        }
+        return resolveStaticLabel(this.label);
+    }
+
+    /**
+     * Resolves a single label element. Handles {@code ConstantTraversal}, which can be resolved to a
+     * {@code String} without a live {@code Traverser}. Any other {@code Traversal} cannot be resolved
+     * statically and is returned as-is.
+     */
+    private static Object resolveStaticLabel(final Object label) {
         if (label instanceof ConstantTraversal) {
             return ((ConstantTraversal<?, ?>) label).next();
         }
@@ -252,7 +263,35 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex> implements AddVer
 
     @Override
     public void setLabel(Object label) {
-        this.configure(T.label, label);
+        if (label == null) {
+            this.label = null;
+            userProvidedLabel = false;
+            return;
+        }
+        if (userProvidedLabel) {
+            throw new IllegalArgumentException(String.format("Vertex T.label has already been set to [%s] and cannot be overridden with [%s]",
+                    this.label, label));
+        }
+        if (label instanceof Collection) {
+            final Collection<?> labels = (Collection<?>) label;
+            if (labels.isEmpty()) {
+                this.label = null;
+                userProvidedLabel = false;
+                return;
+            }
+            this.label = new LinkedHashSet<>(labels);
+            for (final Object l : labels) {
+                if (l instanceof Traversal) {
+                    this.integrateChild(((Traversal<?, ?>) l).asAdmin());
+                }
+            }
+        } else if (label instanceof Traversal) {
+            this.label = ((Traversal<S, String>) label).asAdmin();
+            this.integrateChild((Traversal.Admin<?, ?>) this.label);
+        } else {
+            this.label = label;
+        }
+        userProvidedLabel = true;
     }
 
     @Override

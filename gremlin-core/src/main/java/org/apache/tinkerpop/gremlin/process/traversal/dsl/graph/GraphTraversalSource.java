@@ -377,7 +377,7 @@ public class GraphTraversalSource implements TraversalSource {
         } else {
             clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, label, additionalLabels);
             final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-            final List<Traversal.Admin<?, ?>> allTraversals = new ArrayList<>(additionalLabels.length + 1);
+            final Collection<Object> allTraversals = new LinkedHashSet<>(additionalLabels.length + 1);
             allTraversals.add(label.asAdmin());
             for (final Traversal<?, ?> t : additionalLabels) {
                 allTraversals.add(t.asAdmin());
