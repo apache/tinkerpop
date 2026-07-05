@@ -19,7 +19,7 @@
 
 import { get } from "node:https";
 import { readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, basename } from "node:path";
 
 const JIRA_BASE = "https://issues.apache.org/jira";
 const DEV_LIST_API = "https://lists.apache.org/api/stats.lua";
@@ -123,7 +123,32 @@ async function searchDevList(keywords) {
   }
 }
 
-async function findMatchingProposals(repoPath, keywords) {
+// Whole-word, case-insensitive match for a keyword (so "krb5" doesn't hit inside
+// another token, and a keyword must stand on word boundaries).
+function keywordRegex(kw) {
+  const esc = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(?:^|[^A-Za-z0-9])${esc}(?:[^A-Za-z0-9]|$)`, "i");
+}
+
+// Split an asciidoc proposal into { title, headings, body }, dropping the ASF
+// license preamble by starting at the first level-1 title (`= Title`). Without
+// this, keyword matching hits the license header ("...the NOTICE file...") that
+// every ASF-licensed doc carries.
+function splitProposal(raw) {
+  const lines = raw.split("\n");
+  const titleIdx = lines.findIndex((l) => /^=\s+\S/.test(l));
+  const content = titleIdx >= 0 ? lines.slice(titleIdx) : lines;
+  const title = titleIdx >= 0 ? content[0].replace(/^=\s+/, "").trim() : "";
+  const headings = content.filter((l) => /^=+\s+\S/.test(l)).join("\n");
+  return { title, headings, body: content.join("\n") };
+}
+
+// The proposals index (docs/src/dev/future/index.asciidoc) is a table of
+// contents, not a proposal — its headings name every topic, so it matches
+// keywords spuriously. Exclude it from proposal discovery.
+const isProposalIndex = (file) => /^index\.(asciidoc|adoc)$/i.test(basename(file));
+
+export async function findMatchingProposals(repoPath, keywords) {
   const proposalDir = join(repoPath, PROPOSAL_DIR);
   try {
     const files = await readdir(proposalDir);
@@ -131,26 +156,60 @@ async function findMatchingProposals(repoPath, keywords) {
 
     for (const file of files) {
       if (!file.endsWith(".asciidoc") && !file.endsWith(".adoc")) continue;
-      const content = await readFile(join(proposalDir, file), "utf-8");
-      const lowerContent = content.toLowerCase();
-      const matchedKeywords = keywords.filter((k) => lowerContent.includes(k.toLowerCase()));
-      if (matchedKeywords.length > 0) {
-        const titleMatch = content.match(/^=+\s*(.+)$/m);
-        proposals.push({
-          file,
-          path: `${PROPOSAL_DIR}/${file}`,
-          source: "proposal",
-          title: titleMatch ? titleMatch[1].trim() : file,
-          matchedKeywords,
-          snippet: content.slice(0, 500),
-        });
-      }
+      if (isProposalIndex(file)) continue;
+      const { title, headings, body } = splitProposal(await readFile(join(proposalDir, file), "utf-8"));
+
+      const matches = (text) => keywords.filter((k) => keywordRegex(k).test(text));
+      const titleHits = new Set([...matches(title), ...matches(headings)]);
+      const bodyHits = new Set(matches(body));
+      // Keep a proposal only on real signal: a keyword in its title/heading, or
+      // at least two distinct keywords in the body. A lone body mention is noise.
+      const strong = titleHits.size > 0;
+      if (!strong && bodyHits.size < 2) continue;
+
+      proposals.push({
+        file,
+        path: `${PROPOSAL_DIR}/${file}`,
+        source: "proposal",
+        title: title || file,
+        matchedKeywords: [...new Set([...titleHits, ...bodyHits])],
+        matchedIn: strong ? "title" : "body",
+        found_in: "search",
+        score: titleHits.size * 2 + bodyHits.size,
+        snippet: body.slice(0, 500),
+      });
     }
 
-    return proposals.sort((a, b) => b.matchedKeywords.length - a.matchedKeywords.length);
+    return proposals.sort((a, b) => b.score - a.score);
   } catch {
     return [];
   }
+}
+
+// Turn explicit proposal paths referenced in the PR text/diff into proposal
+// records at EXTRACTED confidence — a named reference is a fact, not a guess.
+async function resolveExplicitProposals(repoPath, proposalPaths) {
+  const out = [];
+  for (const rel of new Set(proposalPaths.map((p) => p.replace(/[.,)\]]+$/, "")))) {
+    if (isProposalIndex(rel)) continue;
+    try {
+      const { title } = splitProposal(await readFile(join(repoPath, rel), "utf-8"));
+      out.push({
+        file: basename(rel),
+        path: rel,
+        source: "proposal",
+        title: title || rel,
+        matchedKeywords: [],
+        matchedIn: "reference",
+        found_in: "pr",
+        score: 100,
+        snippet: "",
+      });
+    } catch {
+      // Referenced path may not exist in this worktree — skip it.
+    }
+  }
+  return out;
 }
 
 function extractLinksFromText(text) {
@@ -254,10 +313,17 @@ export async function discoverDiscussions(params) {
   const secondaryDiscussions = await followLinks(directDiscussions);
 
   // --- Proposals ---
+  // Explicit references in the PR text/diff are EXTRACTED facts; keyword matches
+  // are the graded fuzzy fallback. Merge them, letting an explicit reference win
+  // over a keyword hit for the same proposal.
   const proposalLinks = [...allText.matchAll(/docs\/src\/dev\/future\/[^\s)\]>"]+/g)].map((m) => m[0]);
   let proposals = [];
   if (repoPath) {
-    proposals = await findMatchingProposals(repoPath, keywords);
+    const explicit = await resolveExplicitProposals(repoPath, proposalLinks);
+    const explicitPaths = new Set(explicit.map((p) => p.path));
+    const keywordMatched = (await findMatchingProposals(repoPath, keywords))
+      .filter((p) => !explicitPaths.has(p.path));
+    proposals = [...explicit, ...keywordMatched];
   }
 
   return {

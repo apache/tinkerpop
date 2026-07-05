@@ -110,20 +110,62 @@ function classifyDomains(changedFiles) {
   return domains;
 }
 
-function extractKeywords(changedFiles, prTitle) {
-  const keywords = new Set();
+// Structural/infra filenames that describe packaging, not a topic — they match
+// boilerplate (e.g. NOTICE lives in every ASF license header) and must never
+// become search keywords.
+const STRUCTURAL_NAMES = new Set([
+  "index", "package", "pom", "build", "notice", "license", "dockerfile",
+  "docker-compose", "readme", "changelog", "makefile", "setup", "config",
+]);
+// Generic verbs/nouns in PR titles that carry no topic signal.
+const GENERIC_WORDS = new Set([
+  "remove", "removes", "removed", "removal", "add", "adds", "added", "fix",
+  "fixes", "fixed", "update", "updates", "updated", "support", "refactor",
+  "improve", "improves", "cleanup", "bump", "upgrade", "migrate", "implement",
+  "introduce", "enable", "disable", "allow", "the", "and", "for", "with",
+]);
+// Tokens so common across the repo that matching on them finds everything.
+const UBIQUITOUS_TOKENS = new Set([
+  "gremlin", "server", "client", "test", "tests", "docker", "tinkerpop",
+  "apache", "core", "impl", "util", "utils", "common", "base", "default",
+  "abstract", "main", "java", "python",
+]);
+
+// Split an identifier/filename into lowercased word tokens (camelCase and
+// non-alphanumeric boundaries), e.g. "Krb5Authenticator" -> ["krb5","authenticator"].
+function tokenizeName(name) {
+  return name
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .split(/[^A-Za-z0-9]+/)
+    .map((t) => t.toLowerCase())
+    .filter((t) => t.length >= 3);
+}
+
+// Keywords for discovery search (dev-list + proposals). Topic first: PR-title
+// words (the human statement of intent) lead so they can't be truncated by the
+// cap, then distinctive tokens from changed-file basenames. Structural names,
+// generic verbs, and repo-ubiquitous tokens are filtered out so we don't search
+// on noise like "NOTICE" or "gremlin-server". Exported for testing.
+export function extractKeywords(changedFiles, prTitle) {
+  const keywords = [];
+  const seen = new Set();
+  const push = (word) => {
+    const k = word.toLowerCase();
+    if (k.length < 3 || seen.has(k)) return;
+    if (GENERIC_WORDS.has(k) || UBIQUITOUS_TOKENS.has(k)) return;
+    seen.add(k);
+    keywords.push(k);
+  };
+
+  for (const w of prTitle.split(/[\s\-_:,.()]+/)) {
+    if (!/^\d+$/.test(w)) push(w);
+  }
   for (const file of changedFiles) {
-    const parts = file.split("/");
-    const filename = parts[parts.length - 1].replace(/\.\w+$/, "");
-    if (filename.length > 3 && !["index", "package", "pom", "build"].includes(filename.toLowerCase())) {
-      keywords.add(filename);
-    }
+    const base = file.split("/").pop().replace(/\.\w+$/, "");
+    if (STRUCTURAL_NAMES.has(base.toLowerCase())) continue;
+    for (const tok of tokenizeName(base)) push(tok);
   }
-  const titleWords = prTitle.split(/[\s\-_:]+/).filter((w) => w.length > 3 && !/^\d+$/.test(w));
-  for (const w of titleWords.slice(0, 3)) {
-    keywords.add(w);
-  }
-  return [...keywords].slice(0, 6);
+  return keywords.slice(0, 8);
 }
 
 async function cleanupWorktree(repoPath, worktreePath, prBranch) {
@@ -194,7 +236,7 @@ export async function setup(params) {
   log(`PR #${pr} — classified as: ${domains.join(", ")} (${languages.join("+")}, ${changedFiles.length} files changed)`);
 
   log(`Starting Gremlin Server...`);
-  const handle = await startServer();
+  const handle = await startServer({ port: options.port });
   log(`Gremlin Server ready on port ${handle.port}`);
 
   const connection = new gremlin.driver.DriverRemoteConnection(handle.url);

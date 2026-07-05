@@ -261,12 +261,22 @@ export async function populateDiscussions(g, discussions, context) {
     if (batch.length >= BATCH_SIZE) { await submitBatch(batch); batch = []; }
   }
 
-  // proposed_in: link proposals to the PR Discussion
+  // proposed_in: link proposals to the PR Discussion. Confidence tracks how the
+  // link was found: an explicit reference is EXTRACTED, a title/heading keyword
+  // match is INFERRED, a body-only match is AMBIGUOUS (so it surfaces for human
+  // review). The matched terms and location ride on the edge so the link is
+  // self-explanatory — mirroring `addresses`' found_in/found_via.
+  const confForMatch = (matchedIn) =>
+    matchedIn === "reference" ? CONFIDENCE.EXTRACTED
+    : matchedIn === "title" ? CONFIDENCE.INFERRED
+    : CONFIDENCE.AMBIGUOUS;
   for (const proposal of (discussions.proposals || [])) {
     batch.push(
       g.V().hasLabel("Discussion").has("source", "proposal").has("title", proposal.title)
         .addE("proposed_in")
-        .property("confidence", CONFIDENCE.INFERRED)
+        .property("confidence", confForMatch(proposal.matchedIn))
+        .property("matched_in", proposal.matchedIn || "search")
+        .property("matched_keywords", (proposal.matchedKeywords || []).join(", "))
         .to(__.V().hasLabel("Discussion").has("url", prUrl))
     );
     counts.edges++;

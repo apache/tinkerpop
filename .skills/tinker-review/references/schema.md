@@ -130,7 +130,7 @@ renders this as the **Signal Confidence** panel.
 |------|------|----|---------|
 | `has_comment` | Discussion | Comment | Discussion contains this comment |
 | `addresses` | Discussion | Discussion | One discussion references another (e.g., PR addresses a JIRA) |
-| `proposed_in` | Step | Discussion | This step was proposed/discussed here |
+| `proposed_in` | Discussion(proposal) | Discussion(pr) | A `docs/src/dev/future` proposal that this PR appears to relate to. Confidence tracks how it was found (see properties below). |
 | `modifies` | Discussion(pr) | Function or File | The PR modifies this code |
 
 #### `addresses` edge properties
@@ -139,4 +139,11 @@ renders this as the **Signal Confidence** panel.
 |----------|--------|---------|
 | `found_in` | `pr`, `diff`, `search`, `jira_body`, `devlist_body` | Where the link was discovered |
 | `found_via` | JIRA ID or URL | Which discussion contained the reference (for secondary links) |
+
+#### `proposed_in` edge properties
+
+| Property | Values | Meaning |
+|----------|--------|---------|
+| `matched_in` | `reference`, `title`, `body` | How the proposal was linked: an explicit path reference in the PR (`EXTRACTED`), a keyword in the proposal's title/heading (`INFERRED`), or keywords in its body (`AMBIGUOUS`). |
+| `matched_keywords` | comma-separated terms | The keywords that matched, so the link is self-explanatory. |
 

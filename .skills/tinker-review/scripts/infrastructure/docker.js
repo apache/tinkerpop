@@ -53,7 +53,9 @@ export async function startServer(options = {}) {
   const image = options.image || DEFAULT_IMAGE;
   const timeoutMs = options.timeoutMs || DEFAULT_TIMEOUT_MS;
 
-  const port = await findAvailablePort();
+  // A fixed port lets a review be regenerated on the same endpoint; otherwise an
+  // OS-assigned free port is used.
+  const port = options.port || await findAvailablePort();
   const configDir = `/tmp/gremlin-review-${port}`;
 
   await mkdir(join(configDir, "scripts"), { recursive: true });
