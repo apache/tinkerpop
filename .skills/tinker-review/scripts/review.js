@@ -25,7 +25,7 @@ import { existsSync } from "node:fs";
 import gremlin from "gremlin";
 
 import { startServer, stopServer } from "./infrastructure/docker.js";
-import { extract } from "./extraction/tree-sitter.js";
+import { extractMulti } from "./extraction/tree-sitter.js";
 import { populate } from "./graph/populate.js";
 import { populateDiscussions } from "./graph/populate-discussions.js";
 import { completeness } from "./patterns/completeness.js";
@@ -57,7 +57,10 @@ function log(msg) {
   process.stdout.write(`[review] ${msg}\n`);
 }
 
-function detectLanguage(changedFiles) {
+// Every language present among the changed files, most-changed first. The graph
+// is built from all of them (extractMulti); by-name edges stay language-scoped so
+// mixing languages doesn't invent cross-language edges. Falls back to ["java"].
+function detectLanguages(changedFiles) {
   const extCounts = new Map();
   for (const file of changedFiles) {
     const ext = extname(file).slice(1);
@@ -65,16 +68,8 @@ function detectLanguage(changedFiles) {
       extCounts.set(LANGUAGE_HINTS[ext], (extCounts.get(LANGUAGE_HINTS[ext]) || 0) + 1);
     }
   }
-
-  let best = null;
-  let bestCount = 0;
-  for (const [lang, count] of extCounts) {
-    if (count > bestCount) {
-      best = lang;
-      bestCount = count;
-    }
-  }
-  return best || "java";
+  const langs = [...extCounts.entries()].sort((a, b) => b[1] - a[1]).map(([lang]) => lang);
+  return langs.length > 0 ? langs : ["java"];
 }
 
 async function getChangedFiles(repoPath, prBranch, remote = "upstream", baseBranch = "master") {
@@ -193,9 +188,10 @@ export async function setup(params) {
   await exec("git", ["worktree", "add", worktreePath, prBranch], { cwd: repoPath });
 
   const changedFiles = await getChangedFiles(repoPath, prBranch, remote, baseBranch);
-  const language = detectLanguage(changedFiles);
+  const languages = detectLanguages(changedFiles);
+  const language = languages[0];
   const domains = classifyDomains(changedFiles);
-  log(`PR #${pr} — classified as: ${domains.join(", ")} (${language}, ${changedFiles.length} files changed)`);
+  log(`PR #${pr} — classified as: ${domains.join(", ")} (${languages.join("+")}, ${changedFiles.length} files changed)`);
 
   log(`Starting Gremlin Server...`);
   const handle = await startServer();
@@ -227,6 +223,7 @@ export async function setup(params) {
     worktreePath,
     changedFiles,
     language,
+    languages,
     domains,
     handle,
     connection,
@@ -244,9 +241,10 @@ export async function setup(params) {
 
 export async function phase1(session) {
   const { pr, repoPath, remote, baseBranch = "master", prBranch, workDir, worktreePath, changedFiles, language, domains, g, a } = session;
+  const languages = session.languages || [language];
 
-  log(`Phase 1: Extracting structure (${language})...`);
-  const extraction = await extract(worktreePath, language, { changedFiles });
+  log(`Phase 1: Extracting structure (${languages.join("+")})...`);
+  const extraction = await extractMulti(worktreePath, languages, { changedFiles });
   log(`Phase 1 complete: ${extraction.files.length} files, ${extraction.functions.length} functions, ${extraction.types.length} types`);
   const neighborhood = extraction.hierarchyNeighborhood;
   if (neighborhood && neighborhood.files > 0) {
@@ -341,6 +339,7 @@ export async function phase1(session) {
       title: prTitle.trim(),
       domains,
       language,
+      languages,
       changedFileCount: changedFiles.length,
       timestamp: new Date().toISOString(),
     },

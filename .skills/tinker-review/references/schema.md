@@ -15,8 +15,11 @@ PR-head worktree); `deleted: false` means it's present but an unparsed type
 select materialized files with `.hasNot("parsed")` and markers with
 `.has("parsed", false)`.
 
-**Function** `{ name, signature, visibility, filePath, lines_start, lines_end, changed }`
-A function or method. The primary unit of analysis.
+**Function** `{ name, signature, visibility, filePath, language, lines_start, lines_end, changed }`
+A function or method. The primary unit of analysis. `language` is the source
+language (java, python, javascript, go, csharp, dart); by-name edges (`calls`,
+`tests`) resolve only within a language, so a multi-language PR never invents
+cross-language edges.
 
 *External stub Functions* `{ name, external: true, resolved: false, changed: false, origin?, definedIn? }`
 are markers created when a `calls`/`tests` edge targets a function by name that
@@ -32,9 +35,10 @@ name — noise), `project` (a repo source declares a type with this name;
 `origin: library` calls from out-degree so ubiquitous accessor calls don't
 inflate hotspots.
 
-**Type** `{ name, kind, visibility, filePath, changed }`
+**Type** `{ name, kind, visibility, filePath, language, changed }`
 A class, interface, struct, or enum. `kind` is one of: class, interface, struct,
-enum. `changed: true` if the PR modified the file it's declared in.
+enum. `changed: true` if the PR modified the file it's declared in. `language`
+scopes `extends`/`implements` resolution so hierarchies never cross languages.
 
 *External stub Types* `{ name, external: true, resolved: false }` are markers
 created when an `extends`/`implements` edge names a supertype that wasn't
@@ -54,8 +58,9 @@ An ANTLR production in Gremlin.g4.
 
 ### Verification
 
-**Test** `{ name, type, filePath }`
-A test function. `type` is one of: unit, integration, suite.
+**Test** `{ name, type, filePath, language }`
+A test function. `type` is one of: unit, integration, suite. `language` scopes
+the `tests` edge to same-language functions.
 
 **Doc** `{ path, section }`
 A documentation file or section that references code.

@@ -28,7 +28,7 @@ import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { extract } from "../scripts/extraction/tree-sitter.js";
+import { extract, extractMulti } from "../scripts/extraction/tree-sitter.js";
 
 async function withJavaSources(files, fn) {
   const dir = await mkdtemp(join(tmpdir(), "tinker-extract-"));
@@ -136,6 +136,28 @@ test("changing only a subclass pulls its ancestors in as context (upward)", asyn
     assert.equal(byPath["Traversal.java"], false, "transitive ancestor pulled in");
     assert.equal(byPath["Unrelated.java"], undefined, "unrelated type not pulled in");
   });
+});
+
+// Multi-language extraction (P1): every language a PR touches lands in one
+// merged result, and every record is stamped with its language so population can
+// keep by-name edges from crossing languages.
+test("extractMulti merges every language and stamps records with language", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "tinker-multi-"));
+  try {
+    await writeFile(join(dir, "Svc.java"), "package x;\npublic class Svc { public void foo() {} }\n");
+    await writeFile(join(dir, "svc.py"), "class Svc:\n    def foo(self):\n        pass\n");
+    const r = await extractMulti(dir, ["java", "python"], { changedFiles: ["Svc.java", "svc.py"] });
+
+    assert.deepEqual([...r.languages].sort(), ["java", "python"]);
+    const langs = new Set(r.functions.map((f) => f.language));
+    assert.ok(langs.has("java") && langs.has("python"), "functions from both languages present");
+    assert.equal(r.types.find((t) => t.language === "java").name, "Svc");
+    assert.equal(r.types.find((t) => t.language === "python").name, "Svc");
+    // Every record carries a language (no undefined leaked through the merge).
+    assert.ok(r.functions.every((f) => f.language) && r.types.every((t) => t.language));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });
 
 test("expandHierarchy:false keeps extraction to changed files only", async () => {

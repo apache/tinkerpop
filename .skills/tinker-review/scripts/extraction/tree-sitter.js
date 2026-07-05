@@ -260,6 +260,7 @@ function extractFunctionsFromTree(tree, filePath, language, fileChanged) {
           signature: extractSignature(node, language) || name,
           visibility: getVisibility(node, language),
           filePath,
+          language,
           linesStart: node.startPosition.row + 1,
           linesEnd: node.endPosition.row + 1,
           changed: fileChanged,
@@ -415,6 +416,7 @@ function extractTypesFromTree(tree, filePath, language, fileChanged) {
           kind: inferTypeKind(node, language),
           visibility: getVisibility(node, language),
           filePath,
+          language,
           changed: fileChanged,
           supertypes: extractSupertypes(node, language),
         });
@@ -516,6 +518,7 @@ function extractCallsFromTree(tree, filePath, language, functionRanges) {
           callerName: findEnclosingFunction(line, functionRanges) || "<module>",
           callerFile: filePath,
           calleeName,
+          language,
           line,
         });
       }
@@ -661,6 +664,7 @@ function parseSourceFile(parser, file, language, result) {
         name: fn.name,
         type: classifyTestType(file.path, language),
         filePath: file.path,
+        language,
         calledFunctions: fileCalls.filter((c) => c.callerName === fn.name).map((c) => c.calleeName),
       });
     }
@@ -840,4 +844,39 @@ export async function extract(directory, language, options = {}) {
 
   parser.delete();
   return result;
+}
+
+/**
+ * Extract every language a PR touches into one merged result. Each language is
+ * parsed independently (own parser, own hierarchy-neighborhood pass) and the
+ * records — already stamped with `language` — are concatenated. This is what
+ * makes the graph multi-language; population then keeps by-name edges scoped to
+ * a single language so no spurious cross-language edges are invented.
+ *
+ * @param {string} directory - Absolute path to the PR worktree
+ * @param {string[]} languages - Languages to parse (e.g., ["java", "python"])
+ * @param {object} [options] - Passed through to `extract` (e.g., changedFiles)
+ * @returns {Promise<ExtractionResult>} merged result; `languages` lists what was parsed
+ */
+export async function extractMulti(directory, languages, options = {}) {
+  const merged = {
+    languages: [],
+    files: [], functions: [], types: [], calls: [], imports: [], tests: [], declares: [],
+    hierarchyNeighborhood: { files: 0, truncated: false },
+  };
+
+  for (const language of languages) {
+    if (!LANGUAGE_EXTENSIONS[language]) continue;
+    const one = await extract(directory, language, options);
+    merged.languages.push(language);
+    for (const key of ["files", "functions", "types", "calls", "imports", "tests", "declares"]) {
+      merged[key].push(...one[key]);
+    }
+    if (one.hierarchyNeighborhood) {
+      merged.hierarchyNeighborhood.files += one.hierarchyNeighborhood.files;
+      merged.hierarchyNeighborhood.truncated ||= one.hierarchyNeighborhood.truncated;
+    }
+  }
+
+  return merged;
 }
