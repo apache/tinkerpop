@@ -23,7 +23,13 @@ import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.*;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.junit.Test;
 
