@@ -58,6 +58,10 @@ public final class ResultSet implements Iterable<Result> {
     private final Queue<Pair<CompletableFuture<List<Result>>, Integer>> waiting = new ConcurrentLinkedQueue<>();
     private final AtomicReference<Throwable> error = new AtomicReference<>();
     private final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
+    // Completes when the server's response headers have been received (i.e. the request made a full round trip and the
+    // server has begun responding). This is distinct from readCompleted, which only completes once the entire body has
+    // been read. It lets a caller (e.g. a remote transaction) block until the server has begun handling this request.
+    private final CompletableFuture<Void> headersReceived = new CompletableFuture<>();
 
     private final ExecutorService executor;
     private final RequestMessage originalRequestMessage;
@@ -92,6 +96,18 @@ public final class ResultSet implements Iterable<Result> {
         // create a new completion stage that is completed by executor thread loop, when returning a future outside the
         // client (ie application code).
         return readCompleted.whenCompleteAsync((s,t) -> {}, executor);
+    }
+
+    /**
+     * Returns a future that completes once the server's response headers have been received - that is, once the
+     * request has made a full round trip to the server and the server has begun responding - without waiting for the
+     * entire body. Used by remote transactions to block on submission just long enough to guarantee server-side
+     * ordering relative to a subsequent request, while still streaming the body lazily.
+     */
+    public CompletableFuture<Void> headersReceivedAsync() {
+        // completed by Netty's event loop thread; hop to the executor pool so application code attached downstream
+        // does not run on (and block) the event loop. Mirrors allItemsAvailableAsync().
+        return headersReceived.whenCompleteAsync((s,t) -> {}, executor);
     }
 
     /**
@@ -197,9 +213,22 @@ public final class ResultSet implements Iterable<Result> {
     }
 
     /**
+     * Marks the response headers as received. Called by the streaming decoder the moment the server's response header
+     * is decoded, before any body chunks are processed. Idempotent and safe to call more than once. On the
+     * non-streaming path there is no separate header event - the aggregator coalesces the whole response - so this is
+     * instead tripped as a backstop by {@link #markComplete()}/{@link #markError(Throwable)}.
+     */
+    public void markHeadersReceived() {
+        this.headersReceived.complete(null);
+    }
+
+    /**
      * Marks the result stream as complete.
      */
     public void markComplete() {
+        // backstop: ensure the headers future is tripped even on a path that never signaled it explicitly (e.g. the
+        // non-streaming aggregator path, or a NO_CONTENT response with no body).
+        this.headersReceived.complete(null);
         this.readCompleted.complete(null);
         this.drainAllWaiting();
     }
@@ -211,6 +240,9 @@ public final class ResultSet implements Iterable<Result> {
      */
     public void markError(final Throwable throwable) {
         error.set(throwable);
+        // an error may arrive before headers were ever signaled (e.g. a write failure or a non-streaming error
+        // response); fail the headers future too so anyone blocked on it observes the error rather than hanging.
+        this.headersReceived.completeExceptionally(throwable);
         this.readCompleted.completeExceptionally(throwable);
         this.drainAllWaiting();
     }
