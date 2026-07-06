@@ -24,6 +24,7 @@ import uuid
 import pytest
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.connection import GremlinServerError
+from gremlin_python.driver.exceptions import ReadTimeoutError
 from gremlin_python.driver.request import RequestMessage
 from gremlin_python.driver.serializer import GraphBinarySerializersV4
 from gremlin_python.structure.graph import ProviderDefinedType
@@ -33,7 +34,6 @@ from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.structure.graph import Graph, Vertex
 from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
 from gremlin_python.statics import *
-from asyncio import TimeoutError
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -191,10 +191,11 @@ def test_client_side_timeout_set_for_aiohttp(client):
         # should fire an exception
         client.submit('Thread.sleep(2000);1', request_options={'language': 'gremlin-groovy'}).all().result()
         assert False
-    except asyncio.TimeoutError as err:
-        # The driver enforces the read timeout with a single mechanism (aiohttp's
-        # sock_read) and normalizes it to a single asyncio.TimeoutError with a
-        # deterministic message, so we assert on both the type and the message.
+    except ReadTimeoutError as err:
+        # The driver normalizes a read timeout to a single ReadTimeoutError (a builtin
+        # TimeoutError subclass) with a deterministic message, so we assert on both the
+        # type (still catchable via `except TimeoutError`) and the message.
+        assert isinstance(err, TimeoutError)
         assert str(err) == "Read timed out after 1.0s waiting for response data."
 
     # still can submit after failure

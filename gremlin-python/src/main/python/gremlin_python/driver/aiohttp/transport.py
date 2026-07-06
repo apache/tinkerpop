@@ -21,6 +21,8 @@ import asyncio
 import socket
 import sys
 
+from gremlin_python.driver.exceptions import ReadTimeoutError
+
 if sys.version_info >= (3, 11):
     import asyncio as async_timeout
 else:
@@ -73,12 +75,13 @@ def _normalize_compression(compression):
 
 def _run_read(loop, read_timeout, coro):
     """Run a response-read coroutine on ``loop``, normalizing aiohttp's read timeout
-    (SocketTimeoutError / ServerTimeoutError) into a plain ``asyncio.TimeoutError`` so a
-    read timeout always surfaces as one deterministic, library-agnostic type."""
+    (SocketTimeoutError / ServerTimeoutError) into a ``ReadTimeoutError`` so a read
+    timeout always surfaces as one deterministic, transport-agnostic type. It subclasses
+    the builtin ``TimeoutError`` so callers can still ``except TimeoutError``."""
     try:
         return loop.run_until_complete(coro)
     except aiohttp.ServerTimeoutError as e:
-        raise asyncio.TimeoutError(
+        raise ReadTimeoutError(
             f"Read timed out after {read_timeout}s waiting for response data.") from e
 
 
