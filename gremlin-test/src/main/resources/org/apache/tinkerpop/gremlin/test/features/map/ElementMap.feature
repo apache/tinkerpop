@@ -250,7 +250,7 @@ Feature: Step - elementMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "e[marko-knows->josh].id", "t[label]": "s[knows]", "weight": "d[0.5].d", "D[OUT]": "m[{\\"t[id]\\": \\"v[marko].id\\", \\"t[label]\\": \\"person\\"}]", "D[IN]": "m[{\\"t[id]\\": \\"v[josh].id\\", \\"t[label]\\": \\"person\\"}]"}] |
+      | m[{"t[id]": "e[marko-knows->josh].id", "t[label]": "s[knows]", "weight": "d[0.5].d", "D[OUT]": "m[{\\"t[id]\\": \\"v[marko].id\\", \\"t[label]\\": \\"s[person]\\"}]", "D[IN]": "m[{\\"t[id]\\": \\"v[josh].id\\", \\"t[label]\\": \\"s[person]\\"}]"}] |
 
   @GraphComputerVerificationReferenceOnly @MultiLabel @MultiLabelDefault
   Scenario: g_E_elementMap_multi_label_default
@@ -266,7 +266,7 @@ Feature: Step - elementMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "e[marko-knows->josh].id", "t[label]": "s[knows]", "weight": "d[0.5].d", "D[OUT]": "m[{\\"t[id]\\": \\"v[marko].id\\", \\"t[label]\\": \\"person\\"}]", "D[IN]": "m[{\\"t[id]\\": \\"v[josh].id\\", \\"t[label]\\": \\"person\\"}]"}] |
+      | m[{"t[id]": "e[marko-knows->josh].id", "t[label]": "s[knows]", "weight": "d[0.5].d", "D[OUT]": "m[{\\"t[id]\\": \\"v[marko].id\\", \\"t[label]\\": \\"s[person]\\"}]", "D[IN]": "m[{\\"t[id]\\": \\"v[josh].id\\", \\"t[label]\\": \\"s[person]\\"}]"}] |
 
   @GraphComputerVerificationReferenceOnly @MultiLabel @SingleLabelDefault
   Scenario: g_E_elementMap_single_label_default

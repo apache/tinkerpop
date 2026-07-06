@@ -97,7 +97,14 @@ public class ElementMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>> imple
         m.put(T.id, v.id());
 
         // can't add label if doing GraphComputer stuff as there is no access to the label of the adjacent vertex
-        if (!onGraphComputer) m.put(T.label, v.label());
+        if (!onGraphComputer) {
+            if (isMultilabelEnabled()) {
+                m.put(T.label, v.labels());
+            } else {
+                final String label = v.label();
+                if (!label.isEmpty()) m.put(T.label, label);
+            }
+        }
 
         return m;
     }

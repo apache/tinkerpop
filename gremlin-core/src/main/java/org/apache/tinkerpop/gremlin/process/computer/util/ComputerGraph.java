@@ -136,6 +136,11 @@ public final class ComputerGraph implements Graph {
         }
 
         @Override
+        public Set<String> labels() {
+            return this.element.labels();
+        }
+
+        @Override
         public Graph graph() {
             return ComputerGraph.this;
         }
