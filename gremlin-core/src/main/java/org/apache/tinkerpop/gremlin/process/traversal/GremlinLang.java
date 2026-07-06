@@ -32,10 +32,10 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.gremlin.util.NumberHelper;
 
 import javax.lang.model.SourceVersion;
@@ -74,12 +74,12 @@ public class GremlinLang implements Cloneable, Serializable {
     private Map<String, Object> parameters = new HashMap<>();
     private String unsupportedType = "";
     private List<OptionsStrategy> optionsStrategies = new ArrayList<>();
-    private ProviderDefinedTypeRegistry pdtRegistry;
+    private PDTRegistry pdtRegistry;
 
     public GremlinLang() {
     }
 
-    public GremlinLang(final ProviderDefinedTypeRegistry pdtRegistry) {
+    public GremlinLang(final PDTRegistry pdtRegistry) {
         this.pdtRegistry = pdtRegistry;
     }
 
@@ -191,13 +191,13 @@ public class GremlinLang implements Cloneable, Serializable {
             return String.format("Binary(\"%s\")", Base64.getEncoder().encodeToString((byte[]) arg));
         }
 
-        if (arg instanceof PrimitiveProviderDefinedType) {
-            final PrimitiveProviderDefinedType pdt = (PrimitiveProviderDefinedType) arg;
+        if (arg instanceof PrimitivePDT) {
+            final PrimitivePDT pdt = (PrimitivePDT) arg;
             return "PDT(" + argAsString(pdt.getName()) + "," + argAsString(pdt.getValue()) + ")";
         }
 
-        if (arg instanceof ProviderDefinedType) {
-            final ProviderDefinedType pdt = (ProviderDefinedType) arg;
+        if (arg instanceof CompositePDT) {
+            final CompositePDT pdt = (CompositePDT) arg;
             return "PDT(" + argAsString(pdt.getName()) + "," + asString((Map<?, ?>) pdt.getFields()) + ")";
         }
 
@@ -280,17 +280,17 @@ public class GremlinLang implements Cloneable, Serializable {
             final Optional<PrimitivePDTAdapter<?>> primitiveAdapter = pdtRegistry.getPrimitiveAdapterByClass(arg.getClass());
             if (primitiveAdapter.isPresent()) {
                 final String value = ((PrimitivePDTAdapter) primitiveAdapter.get()).toValue(arg);
-                return argAsString(new PrimitiveProviderDefinedType(primitiveAdapter.get().typeName(), value));
+                return argAsString(new PrimitivePDT(primitiveAdapter.get().typeName(), value));
             }
             final Optional<CompositePDTAdapter<?>> adapter = pdtRegistry.getCompositeAdapterByClass(arg.getClass());
             if (adapter.isPresent()) {
                 final Map<String, Object> fields = ((CompositePDTAdapter) adapter.get()).toFields(arg);
-                return argAsString(new ProviderDefinedType(adapter.get().typeName(), fields));
+                return argAsString(new CompositePDT(adapter.get().typeName(), fields));
             }
         }
 
         if (arg.getClass().isAnnotationPresent(ProviderDefined.class)) {
-            return argAsString(ProviderDefinedType.from(arg));
+            return argAsString(CompositePDT.from(arg));
         }
 
         unsupportedType = arg.getClass().getSimpleName();
@@ -590,16 +590,16 @@ public class GremlinLang implements Cloneable, Serializable {
     }
 
     /**
-     * Sets the {@link ProviderDefinedTypeRegistry} used for registry-based dehydration of unknown types.
+     * Sets the {@link PDTRegistry} used for registry-based dehydration of unknown types.
      */
-    public void setPdtRegistry(final ProviderDefinedTypeRegistry pdtRegistry) {
+    public void setPdtRegistry(final PDTRegistry pdtRegistry) {
         this.pdtRegistry = pdtRegistry;
     }
 
     /**
-     * Gets the {@link ProviderDefinedTypeRegistry} used for registry-based dehydration.
+     * Gets the {@link PDTRegistry} used for registry-based dehydration.
      */
-    public ProviderDefinedTypeRegistry getPdtRegistry() {
+    public PDTRegistry getPdtRegistry() {
         return this.pdtRegistry;
     }
 

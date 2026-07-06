@@ -23,13 +23,13 @@ import java.util.Objects;
 /**
  * An immutable representation of a primitive provider-defined type consisting of a name and an opaque string value.
  */
-public final class PrimitiveProviderDefinedType {
+public final class PrimitivePDT {
 
     private final String name;
     private final String value;
     private Object hydrated;
 
-    public PrimitiveProviderDefinedType(final String name, final String value) {
+    public PrimitivePDT(final String name, final String value) {
         if (name == null || name.isEmpty())
             throw new IllegalArgumentException("name cannot be null or empty");
         if (value == null)
@@ -49,8 +49,8 @@ public final class PrimitiveProviderDefinedType {
     /**
      * Returns a copy of this primitive PDT with the hydrated object attached.
      */
-    public PrimitiveProviderDefinedType withHydrated(final Object hydrated) {
-        final PrimitiveProviderDefinedType copy = new PrimitiveProviderDefinedType(this.name, this.value);
+    public PrimitivePDT withHydrated(final Object hydrated) {
+        final PrimitivePDT copy = new PrimitivePDT(this.name, this.value);
         copy.hydrated = hydrated;
         return copy;
     }
@@ -71,8 +71,8 @@ public final class PrimitiveProviderDefinedType {
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
-        if (!(o instanceof PrimitiveProviderDefinedType)) return false;
-        final PrimitiveProviderDefinedType that = (PrimitiveProviderDefinedType) o;
+        if (!(o instanceof PrimitivePDT)) return false;
+        final PrimitivePDT that = (PrimitivePDT) o;
         return name.equals(that.name) && value.equals(that.value);
     }
 

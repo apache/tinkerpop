@@ -38,7 +38,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializer;
@@ -276,7 +276,7 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
                 "g.inject(PDT(\"Point\", [\"x\":1, \"y\":2]))").all().get();
 
         assertEquals(1, results.size());
-        final ProviderDefinedType pdt = (ProviderDefinedType) results.get(0).getObject();
+        final CompositePDT pdt = (CompositePDT) results.get(0).getObject();
         assertEquals("Point", pdt.getName());
         assertEquals(1, pdt.getFields().get("x"));
         assertEquals(2, pdt.getFields().get("y"));
@@ -289,12 +289,12 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
                 "\"address\":PDT(\"Address\", [\"street\":\"123 Main St\", \"city\":\"Springfield\", \"zip\":\"12345\"])]))").all().get();
 
         assertEquals(1, results.size());
-        final ProviderDefinedType person = (ProviderDefinedType) results.get(0).getObject();
+        final CompositePDT person = (CompositePDT) results.get(0).getObject();
         assertEquals("Person", person.getName());
         assertEquals("Alice", person.getFields().get("name"));
         assertEquals(30, person.getFields().get("age"));
 
-        final ProviderDefinedType address = (ProviderDefinedType) person.getFields().get("address");
+        final CompositePDT address = (CompositePDT) person.getFields().get("address");
         assertEquals("Address", address.getName());
         assertEquals("123 Main St", address.getFields().get("street"));
         assertEquals("Springfield", address.getFields().get("city"));
@@ -309,12 +309,12 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
         final List<?> list = (List<?>) results.get(0).getObject();
         assertEquals(2, list.size());
 
-        final ProviderDefinedType p1 = (ProviderDefinedType) list.get(0);
+        final CompositePDT p1 = (CompositePDT) list.get(0);
         assertEquals("Point", p1.getName());
         assertEquals(1, p1.getFields().get("x"));
         assertEquals(2, p1.getFields().get("y"));
 
-        final ProviderDefinedType p2 = (ProviderDefinedType) list.get(1);
+        final CompositePDT p2 = (CompositePDT) list.get(1);
         assertEquals("Point", p2.getName());
         assertEquals(3, p2.getFields().get("x"));
         assertEquals(4, p2.getFields().get("y"));
@@ -327,7 +327,7 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
         httppost.addHeader("Content-Type", "application/json");
         httppost.addHeader("Accept", "application/json");
         httppost.setEntity(new StringEntity(
-                "{\"gremlin\":\"g.inject(org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType.from(new org.apache.tinkerpop.gremlin.server.pdt.Point(1, 2)))\",\"language\":\"gremlin-groovy\"}",
+                "{\"gremlin\":\"g.inject(org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT.from(new org.apache.tinkerpop.gremlin.server.pdt.Point(1, 2)))\",\"language\":\"gremlin-groovy\"}",
                 Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {

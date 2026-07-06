@@ -22,26 +22,35 @@ import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 
 import java.io.IOException;
+import java.util.Map;
 
-public class PrimitiveProviderDefinedTypeSerializer extends SimpleTypeSerializer<PrimitiveProviderDefinedType> {
+public class CompositePDTSerializer extends SimpleTypeSerializer<CompositePDT> {
 
-    public PrimitiveProviderDefinedTypeSerializer() {
-        super(DataType.PRIMITIVE_PDT);
+    public CompositePDTSerializer() {
+        super(DataType.COMPOSITE_PDT);
     }
 
     @Override
-    protected PrimitiveProviderDefinedType readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
+    protected CompositePDT readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
         final String name = context.read(buffer);
-        final String value = context.read(buffer);
-        return new PrimitiveProviderDefinedType(name, value);
+        if (name == null || name.isEmpty())
+            throw new IOException("CompositePDT name cannot be null or empty");
+        final Map<?, ?> fields = context.read(buffer);
+        for (final Object key : fields.keySet()) {
+            if (!(key instanceof String))
+                throw new IOException("CompositePDT fields map must have String keys, found: " + key.getClass().getName());
+        }
+        @SuppressWarnings("unchecked")
+        final Map<String, Object> typedFields = (Map<String, Object>) (Map<?, ?>) fields;
+        return new CompositePDT(name, typedFields);
     }
 
     @Override
-    protected void writeValue(final PrimitiveProviderDefinedType value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
+    protected void writeValue(final CompositePDT value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
         context.write(value.getName(), buffer);
-        context.write(value.getValue(), buffer);
+        context.write(value.getFields(), buffer);
     }
 }

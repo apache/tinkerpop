@@ -34,24 +34,24 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Registry for {@link ProviderDefinedTypeAdapter} instances that supports hydration of
- * {@link ProviderDefinedType} values into typed objects.
+ * {@link CompositePDT} values into typed objects.
  */
-public final class ProviderDefinedTypeRegistry {
+public final class PDTRegistry {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProviderDefinedTypeRegistry.class);
+    private static final Logger logger = LoggerFactory.getLogger(PDTRegistry.class);
 
     private final Map<String, CompositePDTAdapter<?>> compositeAdaptersByName = new ConcurrentHashMap<>();
     private final Map<Class<?>, CompositePDTAdapter<?>> compositeAdaptersByClass = new ConcurrentHashMap<>();
     private final Map<String, PrimitivePDTAdapter<?>> primitiveAdaptersByName = new ConcurrentHashMap<>();
     private final Map<Class<?>, PrimitivePDTAdapter<?>> primitiveAdaptersByClass = new ConcurrentHashMap<>();
 
-    private ProviderDefinedTypeRegistry() {}
+    private PDTRegistry() {}
 
     /**
      * Creates a registry populated via {@link ServiceLoader} discovery.
      */
-    public static ProviderDefinedTypeRegistry create() {
-        final ProviderDefinedTypeRegistry registry = new ProviderDefinedTypeRegistry();
+    public static PDTRegistry create() {
+        final PDTRegistry registry = new PDTRegistry();
         for (final ProviderDefinedTypeAdapter adapter : ServiceLoader.load(ProviderDefinedTypeAdapter.class)) {
             registry.register(adapter);
         }
@@ -61,8 +61,8 @@ public final class ProviderDefinedTypeRegistry {
     /**
      * Creates an empty registry for manual registration.
      */
-    public static ProviderDefinedTypeRegistry empty() {
-        return new ProviderDefinedTypeRegistry();
+    public static PDTRegistry empty() {
+        return new PDTRegistry();
     }
 
     /**
@@ -118,14 +118,14 @@ public final class ProviderDefinedTypeRegistry {
     }
 
     /**
-     * Attempts to hydrate a {@link ProviderDefinedType} into a typed object using a registered adapter.
+     * Attempts to hydrate a {@link CompositePDT} into a typed object using a registered adapter.
      * Recursively hydrates nested PDT values in the fields map (including those inside Lists, Sets,
      * and Maps) regardless of whether the outer type itself has a registered adapter — so a registered
      * inner type is hydrated even when nested inside an unregistered outer PDT.
      * Returns the original PDT (with nested values hydrated) if no adapter is found for the outer type,
      * or if the adapter throws an exception.
      */
-    public Object hydrate(final ProviderDefinedType pdt) {
+    public Object hydrate(final CompositePDT pdt) {
         // recursively hydrate nested PDTs in the fields map, whether or not the outer has an adapter
         boolean nestedChanged = false;
         final Map<String, Object> hydrated = new LinkedHashMap<>();
@@ -140,23 +140,23 @@ public final class ProviderDefinedTypeRegistry {
         if (adapter == null) {
             // No adapter for the outer type: return it raw, but with any registered nested types hydrated.
             // Preserve identity when nothing nested was hydrated.
-            return nestedChanged ? new ProviderDefinedType(pdt.getName(), hydrated) : pdt;
+            return nestedChanged ? new CompositePDT(pdt.getName(), hydrated) : pdt;
         }
 
         try {
             return adapter.fromFields(hydrated);
         } catch (final Exception e) {
-            logger.warn("Failed to hydrate ProviderDefinedType '{}', returning raw PDT: {}",
+            logger.warn("Failed to hydrate CompositePDT '{}', returning raw PDT: {}",
                     pdt.getName(), e.getMessage());
             return pdt;
         }
     }
 
     private Object hydrateValue(final Object value) {
-        if (value instanceof ProviderDefinedType)
-            return hydrate((ProviderDefinedType) value);
-        if (value instanceof PrimitiveProviderDefinedType)
-            return hydratePrimitive((PrimitiveProviderDefinedType) value);
+        if (value instanceof CompositePDT)
+            return hydrate((CompositePDT) value);
+        if (value instanceof PrimitivePDT)
+            return hydratePrimitive((PrimitivePDT) value);
         if (value instanceof List) {
             final List<Object> result = new ArrayList<>();
             for (final Object item : (List<?>) value)
@@ -179,21 +179,21 @@ public final class ProviderDefinedTypeRegistry {
     }
 
     /**
-     * Attempts to hydrate a {@link PrimitiveProviderDefinedType} into a typed object using a registered
+     * Attempts to hydrate a {@link PrimitivePDT} into a typed object using a registered
      * {@link PrimitivePDTAdapter}. Returns the original primitive PDT if no adapter is found or if the
      * adapter throws an exception.
      */
-    public Object hydratePrimitive(final PrimitiveProviderDefinedType pdt) {
+    public Object hydratePrimitive(final PrimitivePDT pdt) {
         final PrimitivePDTAdapter adapter = primitiveAdaptersByName.get(pdt.getName());
         if (adapter == null) {
-            logger.warn("No PrimitivePDTAdapter registered for '{}', returning raw PrimitiveProviderDefinedType",
+            logger.warn("No PrimitivePDTAdapter registered for '{}', returning raw PrimitivePDT",
                     pdt.getName());
             return pdt;
         }
         try {
             return adapter.fromValue(pdt.getValue());
         } catch (final Exception e) {
-            logger.warn("Failed to hydrate PrimitiveProviderDefinedType '{}', returning raw: {}",
+            logger.warn("Failed to hydrate PrimitivePDT '{}', returning raw: {}",
                     pdt.getName(), e.getMessage());
             return pdt;
         }
@@ -222,11 +222,11 @@ public final class ProviderDefinedTypeRegistry {
                 throw new IllegalArgumentException(clazz.getName() +
                         " must have a no-arg constructor for annotation-based hydration");
             }
-            // reuse ProviderDefinedType's validated, cached field/name resolution
+            // reuse CompositePDT's validated, cached field/name resolution
             return new AnnotatedTypeAdapter<>(
-                    ProviderDefinedType.resolveTypeName(clazz),
+                    CompositePDT.resolveTypeName(clazz),
                     clazz,
-                    ProviderDefinedType.resolveFields(clazz));
+                    CompositePDT.resolveFields(clazz));
         }
 
         @Override public String typeName() { return typeName; }
@@ -234,7 +234,7 @@ public final class ProviderDefinedTypeRegistry {
 
         @Override
         public Map<String, Object> toFields(final T obj) {
-            return ProviderDefinedType.from(obj).getFields();
+            return CompositePDT.from(obj).getFields();
         }
 
         @Override

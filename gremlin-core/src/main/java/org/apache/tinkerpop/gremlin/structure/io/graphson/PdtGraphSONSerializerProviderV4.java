@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializationConfig;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
@@ -27,15 +27,15 @@ import org.apache.tinkerpop.shaded.jackson.databind.ser.SerializerFactory;
 
 /**
  * A {@link DefaultSerializerProvider} for GraphSON V4 that returns a PDT adapter-based serializer
- * for classes registered in the {@link ProviderDefinedTypeRegistry}.
+ * for classes registered in the {@link PDTRegistry}.
  */
 final class PdtGraphSONSerializerProviderV4 extends DefaultSerializerProvider {
     private static final long serialVersionUID = 1L;
-    private final ProviderDefinedTypeRegistry pdtRegistry;
+    private final PDTRegistry pdtRegistry;
     private final JsonSerializer<Object> pdtAdapterSerializer;
     private final JsonSerializer<Object> primitivePdtAdapterSerializer;
 
-    PdtGraphSONSerializerProviderV4(final ProviderDefinedTypeRegistry pdtRegistry) {
+    PdtGraphSONSerializerProviderV4(final PDTRegistry pdtRegistry) {
         super();
         this.pdtRegistry = pdtRegistry;
         this.pdtAdapterSerializer = new PdtGraphSONSerializersV4.PdtAdapterJacksonSerializer(pdtRegistry);
@@ -44,7 +44,7 @@ final class PdtGraphSONSerializerProviderV4 extends DefaultSerializerProvider {
 
     private PdtGraphSONSerializerProviderV4(final SerializerProvider src,
                                             final SerializationConfig config, final SerializerFactory f,
-                                            final ProviderDefinedTypeRegistry pdtRegistry,
+                                            final PDTRegistry pdtRegistry,
                                             final JsonSerializer<Object> pdtAdapterSerializer,
                                             final JsonSerializer<Object> primitivePdtAdapterSerializer) {
         super(src, config, f);

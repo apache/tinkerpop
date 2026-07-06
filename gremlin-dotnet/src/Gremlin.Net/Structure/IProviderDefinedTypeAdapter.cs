@@ -26,7 +26,7 @@ using System.Collections.Generic;
 namespace Gremlin.Net.Structure
 {
     /// <summary>
-    /// Adapter for hydrating a <see cref="ProviderDefinedType"/> into a strongly-typed object.
+    /// Adapter for hydrating a <see cref="CompositePDT"/> into a strongly-typed object.
     /// </summary>
     /// <typeparam name="T">The target type to hydrate into.</typeparam>
     public interface IProviderDefinedTypeAdapter<T>

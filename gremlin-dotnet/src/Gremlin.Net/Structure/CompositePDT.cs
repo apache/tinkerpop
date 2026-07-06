@@ -28,16 +28,16 @@ using System.Linq;
 namespace Gremlin.Net.Structure
 {
     /// <summary>
-    /// Represents a provider-defined type (PDT) with a name and a set of fields.
+    /// Represents a composite provider-defined type (PDT) with a name and a set of fields.
     /// </summary>
-    public class ProviderDefinedType
+    public class CompositePDT
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProviderDefinedType"/> class.
+        /// Initializes a new instance of the <see cref="CompositePDT"/> class.
         /// </summary>
         /// <param name="name">The fully-qualified name of the provider-defined type.</param>
         /// <param name="fields">The fields of the provider-defined type.</param>
-        public ProviderDefinedType(string name, IReadOnlyDictionary<string, object?> fields)
+        public CompositePDT(string name, IReadOnlyDictionary<string, object?> fields)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             if (string.IsNullOrEmpty(name)) throw new ArgumentException("name cannot be empty", nameof(name));
@@ -60,7 +60,7 @@ namespace Gremlin.Net.Structure
 
         /// <inheritdoc />
         public override bool Equals(object? obj) =>
-            obj is ProviderDefinedType other && Name == other.Name &&
+            obj is CompositePDT other && Name == other.Name &&
             Fields.Count == other.Fields.Count &&
             Fields.All(kv => other.Fields.TryGetValue(kv.Key, out var v) && Equals(kv.Value, v));
 

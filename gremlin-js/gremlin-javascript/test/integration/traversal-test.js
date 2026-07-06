@@ -23,8 +23,8 @@
 
 import assert from 'assert';
 import { AssertionError } from 'assert';
-import {Edge, Vertex, VertexProperty, ProviderDefinedType, PrimitiveProviderDefinedType} from '../../lib/structure/graph.js';
-import { ProviderDefinedTypeRegistry } from '../../lib/structure/ProviderDefinedTypeRegistry.js';
+import {Edge, Vertex, VertexProperty, CompositePDT, PrimitivePDT} from '../../lib/structure/graph.js';
+import { PDTRegistry } from '../../lib/structure/PDTRegistry.js';
 import anon from '../../lib/process/anonymous-traversal.js';
 import { GraphTraversalSource, GraphTraversal, statics } from '../../lib/process/graph-traversal.js';
 import {
@@ -357,7 +357,7 @@ if (process.env.DOCKER_ENVIRONMENT === 'true') {
   serverUrl = 'http://localhost:45940/gremlin';
 }
 
-describe('ProviderDefinedType - Traversal API', function () {
+describe('CompositePDT - Traversal API', function () {
   describe('raw PDT round-trip via Traversal API', function () {
     let pdtConnection;
 
@@ -371,13 +371,13 @@ describe('ProviderDefinedType - Traversal API', function () {
 
     it('should round-trip a PDT via g.inject()', async function () {
       const g = anon.traversal().with_(pdtConnection);
-      const pdt = new ProviderDefinedType('TestPoint', { x: 1, y: 2 });
+      const pdt = new CompositePDT('TestPoint', { x: 1, y: 2 });
 
       const results = await g.inject(pdt).toList();
 
       assert.strictEqual(results.length, 1);
       const result = results[0];
-      assert.ok(result instanceof ProviderDefinedType);
+      assert.ok(result instanceof CompositePDT);
       assert.strictEqual(result.name, 'TestPoint');
       assert.strictEqual(result.fields.x, 1);
       assert.strictEqual(result.fields.y, 2);
@@ -395,7 +395,7 @@ describe('ProviderDefinedType - Traversal API', function () {
     }
 
     before(function () {
-      const registry = new ProviderDefinedTypeRegistry();
+      const registry = new PDTRegistry();
       registry.register('TestPoint', {
         serialize: (obj) => ({ x: obj.x, y: obj.y }),
         deserialize: (fields) => new TestPoint(fields.x, fields.y),
@@ -425,7 +425,7 @@ describe('ProviderDefinedType - Traversal API', function () {
   });
 });
 
-describe('PrimitiveProviderDefinedType - Traversal API', function () {
+describe('PrimitivePDT - Traversal API', function () {
   describe('raw primitive PDT round-trip via Traversal API', function () {
     let pdtConnection;
 
@@ -439,26 +439,26 @@ describe('PrimitiveProviderDefinedType - Traversal API', function () {
 
     it('should round-trip a primitive PDT via g.inject()', async function () {
       const g = anon.traversal().with_(pdtConnection);
-      const pdt = new PrimitiveProviderDefinedType('Uint32', '42');
+      const pdt = new PrimitivePDT('Uint32', '42');
 
       const results = await g.inject(pdt).toList();
 
       assert.strictEqual(results.length, 1);
       const result = results[0];
-      assert.ok(result instanceof PrimitiveProviderDefinedType);
+      assert.ok(result instanceof PrimitivePDT);
       assert.strictEqual(result.name, 'Uint32');
       assert.strictEqual(result.value, '42');
     });
 
     it('should round-trip an unregistered primitive PDT (raw)', async function () {
       const g = anon.traversal().with_(pdtConnection);
-      const pdt = new PrimitiveProviderDefinedType('UnregisteredType', 'opaque-value');
+      const pdt = new PrimitivePDT('UnregisteredType', 'opaque-value');
 
       const results = await g.inject(pdt).toList();
 
       assert.strictEqual(results.length, 1);
       const result = results[0];
-      assert.ok(result instanceof PrimitiveProviderDefinedType);
+      assert.ok(result instanceof PrimitivePDT);
       assert.strictEqual(result.name, 'UnregisteredType');
       assert.strictEqual(result.value, 'opaque-value');
     });
@@ -474,7 +474,7 @@ describe('PrimitiveProviderDefinedType - Traversal API', function () {
     }
 
     before(function () {
-      const registry = new ProviderDefinedTypeRegistry();
+      const registry = new PDTRegistry();
       registry.registerPrimitive('Uint32', {
         toValue: (obj) => String(obj.v),
         fromValue: (value) => new Uint32(parseInt(value, 10)),
@@ -512,7 +512,7 @@ describe('PrimitiveProviderDefinedType - Traversal API', function () {
     }
 
     before(function () {
-      const registry = new ProviderDefinedTypeRegistry();
+      const registry = new PDTRegistry();
       registry.registerPrimitive('Uint32', {
         toValue: (obj) => String(obj.v),
         fromValue: (value) => new Uint32(parseInt(value, 10)),
@@ -529,14 +529,14 @@ describe('PrimitiveProviderDefinedType - Traversal API', function () {
 
     it('should hydrate nested primitive inside composite', async function () {
       const g = anon.traversal().with_(pdtConnection);
-      const inner = new PrimitiveProviderDefinedType('Uint32', '55');
-      const outer = new ProviderDefinedType('Measurement', { unit: 'kg', amount: inner });
+      const inner = new PrimitivePDT('Uint32', '55');
+      const outer = new CompositePDT('Measurement', { unit: 'kg', amount: inner });
 
       const results = await g.inject(outer).toList();
 
       assert.strictEqual(results.length, 1);
       const result = results[0];
-      assert.ok(result instanceof ProviderDefinedType);
+      assert.ok(result instanceof CompositePDT);
       assert.strictEqual(result.name, 'Measurement');
       assert.strictEqual(result.fields.unit, 'kg');
       // The nested primitive PDT should be hydrated to Uint32

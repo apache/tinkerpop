@@ -25,12 +25,12 @@ import { P, TextP, t as T, order as Order, scope as Scope, column as Column,
          withOptions as WithOptions, direction } from '../../lib/process/traversal.js';
 import { ReadOnlyStrategy, SubgraphStrategy, OptionsStrategy,
          PartitionStrategy, SeedStrategy } from '../../lib/process/traversal-strategy.js';
-import { Graph, Vertex, ProviderDefinedType, PrimitiveProviderDefinedType } from '../../lib/structure/graph.js';
+import { Graph, Vertex, CompositePDT, PrimitivePDT } from '../../lib/structure/graph.js';
 import { TraversalStrategies } from '../../lib/process/traversal-strategy.js';
 import { Long, toFloat, toDouble, toShort, toByte, toInt, toLong } from '../../lib/utils.js';
 import GremlinLang from '../../lib/process/gremlin-lang.js';
 import { GValue } from '../../lib/process/gvalue.js';
-import { ProviderDefinedTypeRegistry } from '../../lib/structure/ProviderDefinedTypeRegistry.js';
+import { PDTRegistry } from '../../lib/structure/PDTRegistry.js';
 
 const g = new GraphTraversalSource(new Graph(), new TraversalStrategies());
 
@@ -631,7 +631,7 @@ describe('GremlinLang', function () {
 
   describe('PDT gremlin-lang tests', function () {
     it('should handle basic PDT', function () {
-      const pdt = new ProviderDefinedType('Point', { x: 1, y: 2 });
+      const pdt = new CompositePDT('Point', { x: 1, y: 2 });
       assert.strictEqual(
         g.inject(pdt).getGremlinLang().getGremlin(),
         "g.inject(PDT(\"Point\",['x':1,'y':2]))"
@@ -639,7 +639,7 @@ describe('GremlinLang', function () {
     });
 
     it('should handle PDT with special chars in name (quotes)', function () {
-      const pdt = new ProviderDefinedType('my"type', { a: 1 });
+      const pdt = new CompositePDT('my"type', { a: 1 });
       assert.strictEqual(
         g.inject(pdt).getGremlinLang().getGremlin(),
         "g.inject(PDT(\"my\\\"type\",['a':1]))"
@@ -647,8 +647,8 @@ describe('GremlinLang', function () {
     });
 
     it('should handle nested PDT', function () {
-      const inner = new ProviderDefinedType('Inner', { v: 42 });
-      const outer = new ProviderDefinedType('Outer', { child: inner });
+      const inner = new CompositePDT('Inner', { v: 42 });
+      const outer = new CompositePDT('Outer', { child: inner });
       assert.strictEqual(
         g.inject(outer).getGremlinLang().getGremlin(),
         "g.inject(PDT(\"Outer\",['child':PDT(\"Inner\",['v':42])]))"
@@ -656,7 +656,7 @@ describe('GremlinLang', function () {
     });
 
     it('should handle PDT with empty fields', function () {
-      const pdt = new ProviderDefinedType('Empty', {});
+      const pdt = new CompositePDT('Empty', {});
       assert.strictEqual(
         g.inject(pdt).getGremlinLang().getGremlin(),
         "g.inject(PDT(\"Empty\",[:]))"
@@ -772,7 +772,7 @@ describe('GremlinLang', function () {
 
   describe('Primitive PDT gremlin-lang tests', function () {
     it('should handle basic primitive PDT', function () {
-      const pdt = new PrimitiveProviderDefinedType('Uint32', '42');
+      const pdt = new PrimitivePDT('Uint32', '42');
       assert.strictEqual(
         g.inject(pdt).getGremlinLang().getGremlin(),
         'g.inject(PDT("Uint32","42"))'
@@ -780,7 +780,7 @@ describe('GremlinLang', function () {
     });
 
     it('should handle primitive PDT with leading zeros', function () {
-      const pdt = new PrimitiveProviderDefinedType('TinkerId', '007');
+      const pdt = new PrimitivePDT('TinkerId', '007');
       assert.strictEqual(
         g.inject(pdt).getGremlinLang().getGremlin(),
         'g.inject(PDT("TinkerId","007"))'
@@ -788,7 +788,7 @@ describe('GremlinLang', function () {
     });
 
     it('should handle primitive PDT with large number', function () {
-      const pdt = new PrimitiveProviderDefinedType('BigNum', '99999999999999999999');
+      const pdt = new PrimitivePDT('BigNum', '99999999999999999999');
       assert.strictEqual(
         g.inject(pdt).getGremlinLang().getGremlin(),
         'g.inject(PDT("BigNum","99999999999999999999"))'
@@ -796,7 +796,7 @@ describe('GremlinLang', function () {
     });
 
     it('should handle primitive PDT with non-numeric value', function () {
-      const pdt = new PrimitiveProviderDefinedType('CustomId', 'abc-def-123');
+      const pdt = new PrimitivePDT('CustomId', 'abc-def-123');
       assert.strictEqual(
         g.inject(pdt).getGremlinLang().getGremlin(),
         'g.inject(PDT("CustomId","abc-def-123"))'
@@ -804,7 +804,7 @@ describe('GremlinLang', function () {
     });
 
     it('should handle primitive PDT with empty value', function () {
-      const pdt = new PrimitiveProviderDefinedType('Empty', '');
+      const pdt = new PrimitivePDT('Empty', '');
       assert.strictEqual(
         g.inject(pdt).getGremlinLang().getGremlin(),
         'g.inject(PDT("Empty",""))'
@@ -812,7 +812,7 @@ describe('GremlinLang', function () {
     });
 
     it('should handle primitive PDT with special chars in name', function () {
-      const pdt = new PrimitiveProviderDefinedType('my"type', '1');
+      const pdt = new PrimitivePDT('my"type', '1');
       assert.strictEqual(
         g.inject(pdt).getGremlinLang().getGremlin(),
         'g.inject(PDT("my\\"type","1"))'
@@ -820,7 +820,7 @@ describe('GremlinLang', function () {
     });
 
     it('should handle primitive PDT with special chars in value', function () {
-      const pdt = new PrimitiveProviderDefinedType('Str', 'hello"world');
+      const pdt = new PrimitivePDT('Str', 'hello"world');
       assert.strictEqual(
         g.inject(pdt).getGremlinLang().getGremlin(),
         'g.inject(PDT("Str","hello\\"world"))'
@@ -831,7 +831,7 @@ describe('GremlinLang', function () {
       class Uint32 {
         constructor(v) { this.v = v; }
       }
-      const registry = new ProviderDefinedTypeRegistry();
+      const registry = new PDTRegistry();
       registry.registerPrimitive('Uint32', {
         toValue: (obj) => String(obj.v),
         fromValue: (value) => new Uint32(parseInt(value, 10)),
@@ -847,7 +847,7 @@ describe('GremlinLang', function () {
       class DualType {
         constructor(v) { this.v = v; }
       }
-      const registry = new ProviderDefinedTypeRegistry();
+      const registry = new PDTRegistry();
       registry.registerPrimitive('DualType', {
         toValue: (obj) => String(obj.v),
         fromValue: (value) => new DualType(value),

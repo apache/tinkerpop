@@ -619,9 +619,9 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return bigDecimalType, nil
 	case *ByteBuffer, ByteBuffer:
 		return byteBuffer, nil
-	case *ProviderDefinedType:
+	case *CompositePDT:
 		return compositePDTType, nil
-	case *PrimitiveProviderDefinedType:
+	case *PrimitivePDT:
 		return primitivePDTType, nil
 	default:
 		switch reflect.TypeOf(val).Kind() {

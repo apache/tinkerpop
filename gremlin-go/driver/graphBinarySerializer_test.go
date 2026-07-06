@@ -720,11 +720,11 @@ func TestWriterErrorPropagation(t *testing.T) {
 	})
 }
 
-func TestProviderDefinedTypeSerialization(t *testing.T) {
+func TestCompositePDTSerialization(t *testing.T) {
 	serializer := graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
 
 	t.Run("round-trip simple PDT", func(t *testing.T) {
-		source := &ProviderDefinedType{
+		source := &CompositePDT{
 			Name:   "com.example.MyType",
 			Fields: map[string]interface{}{"key": "value", "num": int32(42)},
 		}
@@ -735,7 +735,7 @@ func TestProviderDefinedTypeSerialization(t *testing.T) {
 		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
 		result, err := d.ReadFullyQualified()
 		assert.Nil(t, err)
-		pdt, ok := result.(*ProviderDefinedType)
+		pdt, ok := result.(*CompositePDT)
 		assert.True(t, ok)
 		assert.Equal(t, source.Name, pdt.Name)
 		assert.Equal(t, source.Fields["key"], pdt.Fields["key"])
@@ -743,11 +743,11 @@ func TestProviderDefinedTypeSerialization(t *testing.T) {
 	})
 
 	t.Run("round-trip nested PDT", func(t *testing.T) {
-		inner := &ProviderDefinedType{
+		inner := &CompositePDT{
 			Name:   "com.example.Inner",
 			Fields: map[string]interface{}{"x": int32(1)},
 		}
-		outer := &ProviderDefinedType{
+		outer := &CompositePDT{
 			Name:   "com.example.Outer",
 			Fields: map[string]interface{}{"child": inner},
 		}
@@ -758,10 +758,10 @@ func TestProviderDefinedTypeSerialization(t *testing.T) {
 		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
 		result, err := d.ReadFullyQualified()
 		assert.Nil(t, err)
-		pdt, ok := result.(*ProviderDefinedType)
+		pdt, ok := result.(*CompositePDT)
 		assert.True(t, ok)
 		assert.Equal(t, "com.example.Outer", pdt.Name)
-		child, ok := pdt.Fields["child"].(*ProviderDefinedType)
+		child, ok := pdt.Fields["child"].(*CompositePDT)
 		assert.True(t, ok)
 		assert.Equal(t, "com.example.Inner", child.Name)
 		assert.Equal(t, int32(1), child.Fields["x"])
@@ -786,7 +786,7 @@ func TestProviderDefinedTypeSerialization(t *testing.T) {
 				return map[string]interface{}{"hydrated": true, "key": fields["key"]}, nil
 			}, nil)
 
-		source := &ProviderDefinedType{
+		source := &CompositePDT{
 			Name:   "com.example.MyType",
 			Fields: map[string]interface{}{"key": "value"},
 		}
@@ -804,7 +804,7 @@ func TestProviderDefinedTypeSerialization(t *testing.T) {
 	})
 
 	t.Run("no hydration without registry", func(t *testing.T) {
-		source := &ProviderDefinedType{
+		source := &CompositePDT{
 			Name:   "com.example.MyType",
 			Fields: map[string]interface{}{"key": "value"},
 		}
@@ -815,17 +815,17 @@ func TestProviderDefinedTypeSerialization(t *testing.T) {
 		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
 		result, err := d.ReadFullyQualified()
 		assert.Nil(t, err)
-		pdt, ok := result.(*ProviderDefinedType)
+		pdt, ok := result.(*CompositePDT)
 		assert.True(t, ok)
 		assert.Equal(t, "com.example.MyType", pdt.Name)
 	})
 }
 
-func TestPrimitiveProviderDefinedTypeSerialization(t *testing.T) {
+func TestPrimitivePDTSerialization(t *testing.T) {
 	serializer := graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
 
 	t.Run("round-trip simple primitive PDT", func(t *testing.T) {
-		source := &PrimitiveProviderDefinedType{Name: "x:Uint32", Value: "42"}
+		source := &PrimitivePDT{Name: "x:Uint32", Value: "42"}
 		var buf bytes.Buffer
 		err := serializer.write(source, &buf)
 		assert.Nil(t, err)
@@ -833,14 +833,14 @@ func TestPrimitiveProviderDefinedTypeSerialization(t *testing.T) {
 		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
 		result, err := d.ReadFullyQualified()
 		assert.Nil(t, err)
-		pdt, ok := result.(*PrimitiveProviderDefinedType)
+		pdt, ok := result.(*PrimitivePDT)
 		assert.True(t, ok)
 		assert.Equal(t, "x:Uint32", pdt.Name)
 		assert.Equal(t, "42", pdt.Value)
 	})
 
 	t.Run("round-trip leading zeros", func(t *testing.T) {
-		source := &PrimitiveProviderDefinedType{Name: "x:ZipCode", Value: "00123"}
+		source := &PrimitivePDT{Name: "x:ZipCode", Value: "00123"}
 		var buf bytes.Buffer
 		err := serializer.write(source, &buf)
 		assert.Nil(t, err)
@@ -848,13 +848,13 @@ func TestPrimitiveProviderDefinedTypeSerialization(t *testing.T) {
 		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
 		result, err := d.ReadFullyQualified()
 		assert.Nil(t, err)
-		pdt, ok := result.(*PrimitiveProviderDefinedType)
+		pdt, ok := result.(*PrimitivePDT)
 		assert.True(t, ok)
 		assert.Equal(t, "00123", pdt.Value)
 	})
 
 	t.Run("round-trip large number", func(t *testing.T) {
-		source := &PrimitiveProviderDefinedType{Name: "x:BigNum", Value: "99999999999999999999"}
+		source := &PrimitivePDT{Name: "x:BigNum", Value: "99999999999999999999"}
 		var buf bytes.Buffer
 		err := serializer.write(source, &buf)
 		assert.Nil(t, err)
@@ -862,13 +862,13 @@ func TestPrimitiveProviderDefinedTypeSerialization(t *testing.T) {
 		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
 		result, err := d.ReadFullyQualified()
 		assert.Nil(t, err)
-		pdt, ok := result.(*PrimitiveProviderDefinedType)
+		pdt, ok := result.(*PrimitivePDT)
 		assert.True(t, ok)
 		assert.Equal(t, "99999999999999999999", pdt.Value)
 	})
 
 	t.Run("round-trip non-numeric value", func(t *testing.T) {
-		source := &PrimitiveProviderDefinedType{Name: "x:Label", Value: "hello world!"}
+		source := &PrimitivePDT{Name: "x:Label", Value: "hello world!"}
 		var buf bytes.Buffer
 		err := serializer.write(source, &buf)
 		assert.Nil(t, err)
@@ -876,13 +876,13 @@ func TestPrimitiveProviderDefinedTypeSerialization(t *testing.T) {
 		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
 		result, err := d.ReadFullyQualified()
 		assert.Nil(t, err)
-		pdt, ok := result.(*PrimitiveProviderDefinedType)
+		pdt, ok := result.(*PrimitivePDT)
 		assert.True(t, ok)
 		assert.Equal(t, "hello world!", pdt.Value)
 	})
 
 	t.Run("round-trip empty value", func(t *testing.T) {
-		source := &PrimitiveProviderDefinedType{Name: "x:Empty", Value: ""}
+		source := &PrimitivePDT{Name: "x:Empty", Value: ""}
 		var buf bytes.Buffer
 		err := serializer.write(source, &buf)
 		assert.Nil(t, err)
@@ -890,7 +890,7 @@ func TestPrimitiveProviderDefinedTypeSerialization(t *testing.T) {
 		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
 		result, err := d.ReadFullyQualified()
 		assert.Nil(t, err)
-		pdt, ok := result.(*PrimitiveProviderDefinedType)
+		pdt, ok := result.(*PrimitivePDT)
 		assert.True(t, ok)
 		assert.Equal(t, "", pdt.Value)
 	})
@@ -902,7 +902,7 @@ func TestPrimitiveProviderDefinedTypeSerialization(t *testing.T) {
 				return "hydrated:" + s, nil
 			}, nil)
 
-		source := &PrimitiveProviderDefinedType{Name: "x:Uint32", Value: "42"}
+		source := &PrimitivePDT{Name: "x:Uint32", Value: "42"}
 		var buf bytes.Buffer
 		err := serializer.write(source, &buf)
 		assert.Nil(t, err)
@@ -914,7 +914,7 @@ func TestPrimitiveProviderDefinedTypeSerialization(t *testing.T) {
 	})
 
 	t.Run("no hydration without registry", func(t *testing.T) {
-		source := &PrimitiveProviderDefinedType{Name: "x:Uint32", Value: "42"}
+		source := &PrimitivePDT{Name: "x:Uint32", Value: "42"}
 		var buf bytes.Buffer
 		err := serializer.write(source, &buf)
 		assert.Nil(t, err)
@@ -922,7 +922,7 @@ func TestPrimitiveProviderDefinedTypeSerialization(t *testing.T) {
 		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
 		result, err := d.ReadFullyQualified()
 		assert.Nil(t, err)
-		pdt, ok := result.(*PrimitiveProviderDefinedType)
+		pdt, ok := result.(*PrimitivePDT)
 		assert.True(t, ok)
 		assert.Equal(t, "x:Uint32", pdt.Name)
 		assert.Equal(t, "42", pdt.Value)

@@ -24,7 +24,7 @@
 namespace Gremlin.Net.Structure
 {
     /// <summary>
-    /// Adapter for hydrating a <see cref="PrimitiveProviderDefinedType"/> into a strongly-typed object.
+    /// Adapter for hydrating a <see cref="PrimitivePDT"/> into a strongly-typed object.
     /// </summary>
     /// <typeparam name="T">The target type to hydrate into.</typeparam>
     public interface IPrimitivePdtAdapter<T>

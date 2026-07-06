@@ -23,7 +23,7 @@ from collections import OrderedDict
 
 from datetime import datetime, timedelta, timezone
 from gremlin_python.statics import long, bigint, BigDecimal, SingleByte, SingleChar
-from gremlin_python.structure.graph import Graph, Vertex, Edge, Property, VertexProperty, Path, ProviderDefinedType
+from gremlin_python.structure.graph import Graph, Vertex, Edge, Property, VertexProperty, Path, CompositePDT
 from gremlin_python.structure.io.graphbinaryV4 import GraphBinaryWriter, GraphBinaryReader
 from gremlin_python.process.traversal import Direction
 from gremlin_python.structure.io.util import Marker
@@ -318,23 +318,23 @@ class TestGraphBinaryV4(object):
         assert re1.properties[0].value == 0.5
 
     def test_provider_defined_type(self):
-        pdt = ProviderDefinedType('Point', {'x': 1, 'y': 2})
+        pdt = CompositePDT('Point', {'x': 1, 'y': 2})
         result = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(pdt))
-        assert isinstance(result, ProviderDefinedType)
+        assert isinstance(result, CompositePDT)
         assert result.name == 'Point'
         assert result.fields == {'x': 1, 'y': 2}
 
     def test_provider_defined_type_nested(self):
-        inner = ProviderDefinedType('Address', {'street': 'Main'})
-        outer = ProviderDefinedType('Person', {'name': 'Alice', 'address': inner})
+        inner = CompositePDT('Address', {'street': 'Main'})
+        outer = CompositePDT('Person', {'name': 'Alice', 'address': inner})
         result = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(outer))
         assert result.name == 'Person'
         assert result.fields['name'] == 'Alice'
-        assert isinstance(result.fields['address'], ProviderDefinedType)
+        assert isinstance(result.fields['address'], CompositePDT)
         assert result.fields['address'].name == 'Address'
 
     def test_provider_defined_type_null_field(self):
-        pdt = ProviderDefinedType('NullableType', {'value': None, 'name': 'test'})
+        pdt = CompositePDT('NullableType', {'value': None, 'name': 'test'})
         result = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(pdt))
         assert result.fields['value'] is None
         assert result.fields['name'] == 'test'

@@ -30,7 +30,7 @@ using Xunit;
 
 namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 {
-    public class PrimitiveProviderDefinedTypeTests
+    public class PrimitivePDTTests
     {
         private static readonly GraphBinaryWriter Writer = new();
         private static readonly GraphBinaryReader Reader = new();
@@ -38,12 +38,12 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public async Task TestRoundTripBasic()
         {
-            var expected = new PrimitiveProviderDefinedType("com.example.Uint32", "42");
+            var expected = new PrimitivePDT("com.example.Uint32", "42");
 
             using var stream = new MemoryStream();
             await Writer.WriteAsync(expected, stream);
             stream.Position = 0;
-            var actual = await Reader.ReadAsync(stream) as PrimitiveProviderDefinedType;
+            var actual = await Reader.ReadAsync(stream) as PrimitivePDT;
 
             Assert.NotNull(actual);
             Assert.Equal(expected.Name, actual!.Name);
@@ -53,12 +53,12 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public async Task TestRoundTripWithLeadingZeros()
         {
-            var expected = new PrimitiveProviderDefinedType("com.example.Padded", "007");
+            var expected = new PrimitivePDT("com.example.Padded", "007");
 
             using var stream = new MemoryStream();
             await Writer.WriteAsync(expected, stream);
             stream.Position = 0;
-            var actual = await Reader.ReadAsync(stream) as PrimitiveProviderDefinedType;
+            var actual = await Reader.ReadAsync(stream) as PrimitivePDT;
 
             Assert.NotNull(actual);
             Assert.Equal("007", actual!.Value);
@@ -67,13 +67,13 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public async Task TestRoundTripWithLargeNumber()
         {
-            var expected = new PrimitiveProviderDefinedType("com.example.BigNum",
+            var expected = new PrimitivePDT("com.example.BigNum",
                 "99999999999999999999999999999999");
 
             using var stream = new MemoryStream();
             await Writer.WriteAsync(expected, stream);
             stream.Position = 0;
-            var actual = await Reader.ReadAsync(stream) as PrimitiveProviderDefinedType;
+            var actual = await Reader.ReadAsync(stream) as PrimitivePDT;
 
             Assert.NotNull(actual);
             Assert.Equal("99999999999999999999999999999999", actual!.Value);
@@ -82,12 +82,12 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public async Task TestRoundTripNonNumericValue()
         {
-            var expected = new PrimitiveProviderDefinedType("com.example.Token", "abc-def-123");
+            var expected = new PrimitivePDT("com.example.Token", "abc-def-123");
 
             using var stream = new MemoryStream();
             await Writer.WriteAsync(expected, stream);
             stream.Position = 0;
-            var actual = await Reader.ReadAsync(stream) as PrimitiveProviderDefinedType;
+            var actual = await Reader.ReadAsync(stream) as PrimitivePDT;
 
             Assert.NotNull(actual);
             Assert.Equal("abc-def-123", actual!.Value);
@@ -96,12 +96,12 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public async Task TestRoundTripEmptyValue()
         {
-            var expected = new PrimitiveProviderDefinedType("com.example.Empty", "");
+            var expected = new PrimitivePDT("com.example.Empty", "");
 
             using var stream = new MemoryStream();
             await Writer.WriteAsync(expected, stream);
             stream.Position = 0;
-            var actual = await Reader.ReadAsync(stream) as PrimitiveProviderDefinedType;
+            var actual = await Reader.ReadAsync(stream) as PrimitivePDT;
 
             Assert.NotNull(actual);
             Assert.Equal("", actual!.Value);
@@ -110,7 +110,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public async Task TestDataTypeCode()
         {
-            var pdt = new PrimitiveProviderDefinedType("com.example.Test", "val");
+            var pdt = new PrimitivePDT("com.example.Test", "val");
 
             using var stream = new MemoryStream();
             await Writer.WriteAsync(pdt, stream);
@@ -122,28 +122,28 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         public void TestConstructorThrowsOnNullName()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new PrimitiveProviderDefinedType(null!, "val"));
+                new PrimitivePDT(null!, "val"));
         }
 
         [Fact]
         public void TestConstructorThrowsOnEmptyName()
         {
             Assert.Throws<ArgumentException>(() =>
-                new PrimitiveProviderDefinedType("", "val"));
+                new PrimitivePDT("", "val"));
         }
 
         [Fact]
         public void TestConstructorThrowsOnNullValue()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new PrimitiveProviderDefinedType("com.example.T", null!));
+                new PrimitivePDT("com.example.T", null!));
         }
 
         [Fact]
         public void TestEquality()
         {
-            var a = new PrimitiveProviderDefinedType("com.example.T", "42");
-            var b = new PrimitiveProviderDefinedType("com.example.T", "42");
+            var a = new PrimitivePDT("com.example.T", "42");
+            var b = new PrimitivePDT("com.example.T", "42");
             Assert.Equal(a, b);
             Assert.Equal(a.GetHashCode(), b.GetHashCode());
         }
@@ -151,15 +151,15 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public void TestInequality()
         {
-            var a = new PrimitiveProviderDefinedType("com.example.A", "1");
-            var b = new PrimitiveProviderDefinedType("com.example.B", "1");
+            var a = new PrimitivePDT("com.example.A", "1");
+            var b = new PrimitivePDT("com.example.B", "1");
             Assert.NotEqual(a, b);
         }
 
         [Fact]
         public void TestToString()
         {
-            var pdt = new PrimitiveProviderDefinedType("com.example.T", "42");
+            var pdt = new PrimitivePDT("com.example.T", "42");
             Assert.Contains("com.example.T", pdt.ToString());
             Assert.Contains("42", pdt.ToString());
         }
@@ -167,11 +167,11 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public async Task TestHydrationWithRegistry()
         {
-            var registry = new ProviderDefinedTypeRegistry();
+            var registry = new PDTRegistry();
             registry.RegisterPrimitive(new TestUint32Adapter());
             var reader = new GraphBinaryReader(pdtRegistry: registry);
 
-            var pdt = new PrimitiveProviderDefinedType("test:Uint32", "123");
+            var pdt = new PrimitivePDT("test:Uint32", "123");
             using var stream = new MemoryStream();
             await Writer.WriteAsync(pdt, stream);
             stream.Position = 0;
@@ -184,14 +184,14 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public async Task TestNoHydrationWithoutRegistry()
         {
-            var pdt = new PrimitiveProviderDefinedType("test:Uint32", "456");
+            var pdt = new PrimitivePDT("test:Uint32", "456");
             using var stream = new MemoryStream();
             await Writer.WriteAsync(pdt, stream);
             stream.Position = 0;
             var result = await Reader.ReadAsync(stream);
 
-            Assert.IsType<PrimitiveProviderDefinedType>(result);
-            Assert.Equal("456", ((PrimitiveProviderDefinedType)result).Value);
+            Assert.IsType<PrimitivePDT>(result);
+            Assert.Equal("456", ((PrimitivePDT)result).Value);
         }
 
         private class TestUint32Adapter : IPrimitivePdtAdapter<uint>

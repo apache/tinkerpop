@@ -33,9 +33,9 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldHydratePrimitiveWhenAdapterRegistered()
         {
-            var registry = new ProviderDefinedTypeRegistry();
+            var registry = new PDTRegistry();
             registry.RegisterPrimitive(new Uint32Adapter());
-            var pdt = new PrimitiveProviderDefinedType("test:Uint32", "42");
+            var pdt = new PrimitivePDT("test:Uint32", "42");
 
             var result = registry.HydratePrimitive(pdt);
 
@@ -46,8 +46,8 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnRawPrimitivePdtWhenNoAdapterRegistered()
         {
-            var registry = new ProviderDefinedTypeRegistry();
-            var pdt = new PrimitiveProviderDefinedType("unknown:Type", "hello");
+            var registry = new PDTRegistry();
+            var pdt = new PrimitivePDT("unknown:Type", "hello");
 
             var result = registry.HydratePrimitive(pdt);
 
@@ -57,9 +57,9 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnRawPrimitivePdtWhenAdapterThrows()
         {
-            var registry = new ProviderDefinedTypeRegistry();
+            var registry = new PDTRegistry();
             registry.RegisterPrimitive(new ThrowingPrimitiveAdapter());
-            var pdt = new PrimitiveProviderDefinedType("bad:Type", "oops");
+            var pdt = new PrimitivePDT("bad:Type", "oops");
 
             var result = registry.HydratePrimitive(pdt);
 
@@ -69,15 +69,15 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldHydratePrimitiveNestedInComposite()
         {
-            var registry = new ProviderDefinedTypeRegistry();
+            var registry = new PDTRegistry();
             registry.RegisterPrimitive(new Uint32Adapter());
-            var inner = new PrimitiveProviderDefinedType("test:Uint32", "99");
-            var outer = new ProviderDefinedType("unregistered:Wrapper",
+            var inner = new PrimitivePDT("test:Uint32", "99");
+            var outer = new CompositePDT("unregistered:Wrapper",
                 new Dictionary<string, object?> { ["val"] = inner, ["label"] = "test" });
 
             var result = registry.HydrateComposite(outer);
 
-            var rawOuter = Assert.IsType<ProviderDefinedType>(result);
+            var rawOuter = Assert.IsType<CompositePDT>(result);
             Assert.Equal(99u, (uint)rawOuter.Fields["val"]!);
             Assert.Equal("test", rawOuter.Fields["label"]);
         }
@@ -85,7 +85,7 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldGetPrimitiveAdapterByType()
         {
-            var registry = new ProviderDefinedTypeRegistry();
+            var registry = new PDTRegistry();
             registry.RegisterPrimitive(new Uint32Adapter());
 
             var info = registry.GetPrimitiveAdapterByType(typeof(uint));
@@ -98,7 +98,7 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnNullForUnregisteredPrimitiveType()
         {
-            var registry = new ProviderDefinedTypeRegistry();
+            var registry = new PDTRegistry();
 
             var info = registry.GetPrimitiveAdapterByType(typeof(uint));
 

@@ -18,7 +18,7 @@
  */
 
 import { Buffer } from 'buffer';
-import { PrimitiveProviderDefinedType } from '../../../graph.js';
+import { PrimitivePDT } from '../../../graph.js';
 
 export default class PrimitivePDTSerializer {
   constructor(ioc) {
@@ -27,7 +27,7 @@ export default class PrimitivePDTSerializer {
   }
 
   canBeUsedFor(value) {
-    return value instanceof PrimitiveProviderDefinedType;
+    return value instanceof PrimitivePDT;
   }
 
   serialize(item, fullyQualifiedFormat = true) {
@@ -56,11 +56,11 @@ export default class PrimitivePDTSerializer {
       throw new Error('PrimitivePDTSerializer: name cannot be null or empty');
     }
     const value = await this.ioc.anySerializer.deserialize(reader);
-    const pdt = new PrimitiveProviderDefinedType(name, value != null ? String(value) : '');
+    const pdt = new PrimitivePDT(name, value != null ? String(value) : '');
     const pdtRegistry = reader.pdtRegistry;
     if (pdtRegistry) {
       const hydrated = pdtRegistry.hydratePrimitive(pdt);
-      if (!(hydrated instanceof PrimitiveProviderDefinedType)) {
+      if (!(hydrated instanceof PrimitivePDT)) {
         return hydrated;
       }
     }

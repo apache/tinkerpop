@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * An immutable representation of a provider-defined type consisting of a name and a map of fields.
  */
-public final class ProviderDefinedType {
+public final class CompositePDT {
 
     private static final ConcurrentHashMap<Class<?>, FieldCache> FIELD_CACHE = new ConcurrentHashMap<>();
 
@@ -41,7 +41,7 @@ public final class ProviderDefinedType {
     private final Map<String, Object> fields;
     private Object hydrated;
 
-    public ProviderDefinedType(final String name, final Map<String, Object> fields) {
+    public CompositePDT(final String name, final Map<String, Object> fields) {
         if (name == null || name.isEmpty())
             throw new IllegalArgumentException("name cannot be null or empty");
         if (fields == null)
@@ -51,14 +51,14 @@ public final class ProviderDefinedType {
     }
 
     /**
-     * Creates a {@code ProviderDefinedType} from an object annotated with {@link ProviderDefined}.
+     * Creates a {@code CompositePDT} from an object annotated with {@link ProviderDefined}.
      */
-    public static ProviderDefinedType from(final Object obj) {
+    public static CompositePDT from(final Object obj) {
         if (obj == null)
             throw new IllegalArgumentException("obj cannot be null");
 
         final Class<?> clazz = obj.getClass();
-        final FieldCache cache = FIELD_CACHE.computeIfAbsent(clazz, ProviderDefinedType::buildCache);
+        final FieldCache cache = FIELD_CACHE.computeIfAbsent(clazz, CompositePDT::buildCache);
 
         final Map<String, Object> fields = new LinkedHashMap<>();
         for (final Field field : cache.fields) {
@@ -69,7 +69,7 @@ public final class ProviderDefinedType {
             }
         }
 
-        return new ProviderDefinedType(cache.name, fields);
+        return new CompositePDT(cache.name, fields);
     }
 
     /**
@@ -77,14 +77,14 @@ public final class ProviderDefinedType {
      * Validates the annotation and field configuration via the shared field cache.
      */
     static String resolveTypeName(final Class<?> clazz) {
-        return FIELD_CACHE.computeIfAbsent(clazz, ProviderDefinedType::buildCache).name;
+        return FIELD_CACHE.computeIfAbsent(clazz, CompositePDT::buildCache).name;
     }
 
     /**
      * Package-private access to the resolved serializable fields for a {@link ProviderDefined}-annotated class.
      */
     static Field[] resolveFields(final Class<?> clazz) {
-        return FIELD_CACHE.computeIfAbsent(clazz, ProviderDefinedType::buildCache).fields;
+        return FIELD_CACHE.computeIfAbsent(clazz, CompositePDT::buildCache).fields;
     }
 
     private static FieldCache buildCache(final Class<?> clazz) {
@@ -146,14 +146,14 @@ public final class ProviderDefinedType {
     /**
      * Returns a copy of this PDT with the hydrated object attached.
      */
-    public ProviderDefinedType withHydrated(final Object hydrated) {
-        final ProviderDefinedType copy = new ProviderDefinedType(this.name, this.fields);
+    public CompositePDT withHydrated(final Object hydrated) {
+        final CompositePDT copy = new CompositePDT(this.name, this.fields);
         copy.hydrated = hydrated;
         return copy;
     }
 
     /**
-     * Returns the hydrated object if this PDT was hydrated by a {@link ProviderDefinedTypeRegistry}, or {@code null}.
+     * Returns the hydrated object if this PDT was hydrated by a {@link PDTRegistry}, or {@code null}.
      */
     public Object getHydrated() {
         return hydrated;
@@ -168,8 +168,8 @@ public final class ProviderDefinedType {
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
-        if (!(o instanceof ProviderDefinedType)) return false;
-        final ProviderDefinedType that = (ProviderDefinedType) o;
+        if (!(o instanceof CompositePDT)) return false;
+        final CompositePDT that = (CompositePDT) o;
         return name.equals(that.name) && fields.equals(that.fields);
     }
 

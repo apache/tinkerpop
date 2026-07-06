@@ -28,14 +28,14 @@ namespace Gremlin.Net.Structure
     /// <summary>
     /// Represents a primitive provider-defined type (PDT) with a name and an opaque string value.
     /// </summary>
-    public class PrimitiveProviderDefinedType
+    public class PrimitivePDT
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PrimitiveProviderDefinedType"/> class.
+        /// Initializes a new instance of the <see cref="PrimitivePDT"/> class.
         /// </summary>
         /// <param name="name">The fully-qualified name of the provider-defined type.</param>
         /// <param name="value">The opaque string value.</param>
-        public PrimitiveProviderDefinedType(string name, string value)
+        public PrimitivePDT(string name, string value)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             if (string.IsNullOrEmpty(name)) throw new ArgumentException("name cannot be empty", nameof(name));
@@ -57,7 +57,7 @@ namespace Gremlin.Net.Structure
 
         /// <inheritdoc />
         public override bool Equals(object? obj) =>
-            obj is PrimitiveProviderDefinedType other && Name == other.Name && Value == other.Value;
+            obj is PrimitivePDT other && Name == other.Name && Value == other.Value;
 
         /// <inheritdoc />
         public override int GetHashCode() => HashCode.Combine(Name, Value);

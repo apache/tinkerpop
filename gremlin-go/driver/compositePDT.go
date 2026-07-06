@@ -24,19 +24,19 @@ import (
 	"io"
 )
 
-// ProviderDefinedType represents a provider-defined type (PDT) in GraphBinary serialization.
-type ProviderDefinedType struct {
+// CompositePDT represents a composite provider-defined type (PDT) in GraphBinary serialization.
+type CompositePDT struct {
 	Name   string
 	Fields map[string]interface{}
 }
 
-func (p *ProviderDefinedType) String() string {
+func (p *CompositePDT) String() string {
 	return fmt.Sprintf("pdt[%s]%v", p.Name, p.Fields)
 }
 
-// pdtWriter serializes a ProviderDefinedType as a fully-qualified string (name) followed by a fully-qualified map (fields).
+// pdtWriter serializes a CompositePDT as a fully-qualified string (name) followed by a fully-qualified map (fields).
 func pdtWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
-	pdt := value.(*ProviderDefinedType)
+	pdt := value.(*CompositePDT)
 	if err := typeSerializer.write(pdt.Name, w); err != nil {
 		return err
 	}
@@ -50,20 +50,20 @@ func pdtWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSe
 	return typeSerializer.write(m, w)
 }
 
-// PrimitiveProviderDefinedType represents a primitive provider-defined type (PDT) in GraphBinary serialization.
+// PrimitivePDT represents a primitive provider-defined type (PDT) in GraphBinary serialization.
 // Wire format 0xf1: two fully-qualified Strings {name}{value}.
-type PrimitiveProviderDefinedType struct {
+type PrimitivePDT struct {
 	Name  string
 	Value string
 }
 
-func (p *PrimitiveProviderDefinedType) String() string {
+func (p *PrimitivePDT) String() string {
 	return fmt.Sprintf("pdt[%s]%s", p.Name, p.Value)
 }
 
-// primitivePdtWriter serializes a PrimitiveProviderDefinedType as two fully-qualified strings.
+// primitivePdtWriter serializes a PrimitivePDT as two fully-qualified strings.
 func primitivePdtWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
-	pdt := value.(*PrimitiveProviderDefinedType)
+	pdt := value.(*PrimitivePDT)
 	if err := typeSerializer.write(pdt.Name, w); err != nil {
 		return err
 	}

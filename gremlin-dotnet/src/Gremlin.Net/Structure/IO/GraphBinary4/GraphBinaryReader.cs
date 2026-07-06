@@ -34,14 +34,14 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
     public class GraphBinaryReader
     {
         private readonly TypeSerializerRegistry _registry;
-        private readonly ProviderDefinedTypeRegistry? _pdtRegistry;
+        private readonly PDTRegistry? _pdtRegistry;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GraphBinaryReader" /> class.
         /// </summary>
         /// <param name="registry">The <see cref="TypeSerializerRegistry"/> to use for deserialization.</param>
-        /// <param name="pdtRegistry">Optional <see cref="ProviderDefinedTypeRegistry"/> for automatic hydration.</param>
-        public GraphBinaryReader(TypeSerializerRegistry? registry = null, ProviderDefinedTypeRegistry? pdtRegistry = null)
+        /// <param name="pdtRegistry">Optional <see cref="PDTRegistry"/> for automatic hydration.</param>
+        public GraphBinaryReader(TypeSerializerRegistry? registry = null, PDTRegistry? pdtRegistry = null)
         {
             _registry = registry ?? TypeSerializerRegistry.Instance;
             _pdtRegistry = pdtRegistry;
@@ -95,22 +95,22 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
 
             var typeSerializer = _registry.GetSerializerFor(type);
             var result = await typeSerializer.ReadAsync(stream, this, cancellationToken).ConfigureAwait(false);
-            if (result is ProviderDefinedType pdt)
+            if (result is CompositePDT pdt)
             {
                 if (_pdtRegistry != null)
                 {
                     var hydrated = _pdtRegistry.HydrateComposite(pdt);
-                    if (hydrated is not ProviderDefinedType)
+                    if (hydrated is not CompositePDT)
                         return hydrated;
                 }
                 return ProviderDefinedAttribute.HydrateIfRegistered(pdt);
             }
-            if (result is PrimitiveProviderDefinedType primitivePdt)
+            if (result is PrimitivePDT primitivePdt)
             {
                 if (_pdtRegistry != null)
                 {
                     var hydrated = _pdtRegistry.HydratePrimitive(primitivePdt);
-                    if (hydrated is not PrimitiveProviderDefinedType)
+                    if (hydrated is not PrimitivePDT)
                         return hydrated;
                 }
                 return primitivePdt;

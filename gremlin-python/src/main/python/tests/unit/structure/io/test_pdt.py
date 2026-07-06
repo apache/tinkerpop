@@ -19,47 +19,47 @@ under the License.
 
 import pytest
 
-from gremlin_python.structure.graph import ProviderDefinedType, ProviderDefinedTypeRegistry, provider_defined
-from gremlin_python.structure.graph import PrimitiveProviderDefinedType
+from gremlin_python.structure.graph import CompositePDT, PDTRegistry, provider_defined
+from gremlin_python.structure.graph import PrimitivePDT
 from gremlin_python.structure.io.graphbinaryV4 import GraphBinaryWriter, GraphBinaryReader
 
 
-class TestProviderDefinedType(object):
+class TestCompositePDT(object):
     graphbinary_writer = GraphBinaryWriter()
     graphbinary_reader = GraphBinaryReader()
 
     def test_empty_name_rejected(self):
         with pytest.raises(ValueError):
-            ProviderDefinedType("", {"x": 1})
+            CompositePDT("", {"x": 1})
 
     def test_none_name_rejected(self):
         with pytest.raises(ValueError):
-            ProviderDefinedType(None, {"x": 1})
+            CompositePDT(None, {"x": 1})
 
     def test_non_string_key_rejected(self):
         with pytest.raises(TypeError):
-            ProviderDefinedType("com.example.Bad", {1: "value"})
+            CompositePDT("com.example.Bad", {1: "value"})
 
 
-class TestProviderDefinedTypeRegistry(object):
+class TestPDTRegistry(object):
 
     def test_hydrate_simple(self):
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         registry.register("com.example.Point", lambda fields: (fields["x"], fields["y"]))
-        pdt = ProviderDefinedType("com.example.Point", {"x": 1.0, "y": 2.0})
+        pdt = CompositePDT("com.example.Point", {"x": 1.0, "y": 2.0})
         result = registry.hydrate(pdt)
         assert result == (1.0, 2.0)
 
     def test_hydrate_no_adapter_returns_raw(self):
-        registry = ProviderDefinedTypeRegistry()
-        pdt = ProviderDefinedType("com.example.Unknown", {"a": 1})
+        registry = PDTRegistry()
+        pdt = CompositePDT("com.example.Unknown", {"a": 1})
         result = registry.hydrate(pdt)
         assert result is pdt
 
     def test_hydrate_adapter_throws_falls_back(self):
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         registry.register("com.example.Bad", lambda fields: 1 / 0)
-        pdt = ProviderDefinedType("com.example.Bad", {"x": 1})
+        pdt = CompositePDT("com.example.Bad", {"x": 1})
         result = registry.hydrate(pdt)
         assert result is pdt
 
@@ -67,23 +67,23 @@ class TestProviderDefinedTypeRegistry(object):
         from collections import namedtuple
         Inner = namedtuple("Inner", ["val"])
         Outer = namedtuple("Outer", ["child", "count"])
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         registry.register("com.example.Inner", lambda fields: Inner(fields["val"].upper()))
         registry.register("com.example.Outer", lambda fields: Outer(fields["child"], fields["count"]))
-        inner = ProviderDefinedType("com.example.Inner", {"val": "hello"})
-        outer = ProviderDefinedType("com.example.Outer", {"child": inner, "count": 42})
+        inner = CompositePDT("com.example.Inner", {"val": "hello"})
+        outer = CompositePDT("com.example.Outer", {"child": inner, "count": 42})
         result = registry.hydrate(outer)
         assert result == Outer(Inner("HELLO"), 42)
 
     def test_hydrate_non_pdt_passthrough(self):
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         assert registry.hydrate("plain string") == "plain string"
         assert registry.hydrate(42) == 42
 
     def test_dehydrate_simple(self):
         from collections import namedtuple
         Point = namedtuple("Point", ["x", "y"])
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         registry.register("com.example.Point",
                           deserialize_fn=lambda fields: Point(fields["x"], fields["y"]),
                           serialize_fn=lambda p: {"x": p.x, "y": p.y},
@@ -93,11 +93,11 @@ class TestProviderDefinedTypeRegistry(object):
         assert fields == {"x": 1.0, "y": 2.0}
 
     def test_dehydrate_no_adapter_returns_none(self):
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         assert registry.get_composite_adapter_by_class(str) is None
 
     def test_dehydrate_no_serialize_fn_returns_none(self):
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         registry.register("com.example.Thing", deserialize_fn=lambda fields: fields, target_class=dict)
         adapter = registry.get_composite_adapter_by_class(dict)
         assert adapter['serialize'] is None
@@ -106,16 +106,16 @@ class TestProviderDefinedTypeRegistry(object):
         """A registered type ALWAYS hydrates even when nested inside an unregistered outer PDT."""
         from collections import namedtuple
         Inner = namedtuple("Inner", ["val"])
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         registry.register("com.example.Inner", lambda fields: Inner(fields["val"]))
         # "com.example.Outer" is intentionally NOT registered
-        inner_pdt = ProviderDefinedType("com.example.Inner", {"val": 42})
-        outer_pdt = ProviderDefinedType("com.example.Outer", {"child": inner_pdt, "count": 7})
+        inner_pdt = CompositePDT("com.example.Inner", {"val": 42})
+        outer_pdt = CompositePDT("com.example.Outer", {"child": inner_pdt, "count": 7})
 
         result = registry.hydrate(outer_pdt)
 
-        # Outer stays raw ProviderDefinedType (no adapter)
-        assert isinstance(result, ProviderDefinedType)
+        # Outer stays raw CompositePDT (no adapter)
+        assert isinstance(result, CompositePDT)
         assert result.name == "com.example.Outer"
         # Inner field MUST be hydrated to Inner(val=42)
         assert result.fields["child"] == Inner(val=42)
@@ -123,11 +123,11 @@ class TestProviderDefinedTypeRegistry(object):
         assert result.fields["count"] == 7
 
 
-class TestProviderDefinedTypeRegistryBuild(object):
+class TestPDTRegistryBuild(object):
 
     def test_build_returns_registry_with_no_entry_points(self):
-        registry = ProviderDefinedTypeRegistry.create()
-        assert isinstance(registry, ProviderDefinedTypeRegistry)
+        registry = PDTRegistry.create()
+        assert isinstance(registry, PDTRegistry)
 
     def test_build_loads_entry_point(self):
         from unittest.mock import patch, MagicMock
@@ -143,7 +143,7 @@ class TestProviderDefinedTypeRegistryBuild(object):
             else:
                 mock_entry_points.return_value = {'tinkerpop.pdt': [mock_ep]}
 
-            registry = ProviderDefinedTypeRegistry.create()
+            registry = PDTRegistry.create()
             assert "com.mock.Type" in registry._composite_adapters_by_name
 
     def test_build_handles_failing_entry_point(self):
@@ -160,20 +160,20 @@ class TestProviderDefinedTypeRegistryBuild(object):
             else:
                 mock_entry_points.return_value = {'tinkerpop.pdt': [mock_ep]}
 
-            registry = ProviderDefinedTypeRegistry.create()
-            assert isinstance(registry, ProviderDefinedTypeRegistry)
+            registry = PDTRegistry.create()
+            assert isinstance(registry, PDTRegistry)
             assert len(registry._composite_adapters_by_name) == 0
 
 
 class TestReaderAutoHydration(object):
 
     def test_reader_auto_hydrates_with_registry(self):
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         registry.register("com.example.Point", lambda fields: {"x": fields["x"], "y": fields["y"], "hydrated": True})
         writer = GraphBinaryWriter()
         reader = GraphBinaryReader(pdt_registry=registry)
 
-        pdt = ProviderDefinedType("com.example.Point", {"x": 1.0, "y": 2.0})
+        pdt = CompositePDT("com.example.Point", {"x": 1.0, "y": 2.0})
         result = reader.read_object(writer.write_object(pdt))
         assert result == {"x": 1.0, "y": 2.0, "hydrated": True}
 
@@ -181,9 +181,9 @@ class TestReaderAutoHydration(object):
         writer = GraphBinaryWriter()
         reader = GraphBinaryReader()
 
-        pdt = ProviderDefinedType("com.example.Unregistered", {"x": 1.0, "y": 2.0})
+        pdt = CompositePDT("com.example.Unregistered", {"x": 1.0, "y": 2.0})
         result = reader.read_object(writer.write_object(pdt))
-        assert isinstance(result, ProviderDefinedType)
+        assert isinstance(result, CompositePDT)
         assert result == pdt
 
 
@@ -220,7 +220,7 @@ class TestPdtRegistryWiring(object):
     def test_serializer_passes_registry_to_reader(self):
         pytest.importorskip("aiohttp")
         from gremlin_python.driver.serializer import GraphBinarySerializersV4
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         s = GraphBinarySerializersV4(pdt_registry=registry)
         assert s._graphbinary_reader.pdt_registry is registry
 
@@ -228,7 +228,7 @@ class TestPdtRegistryWiring(object):
         pytest.importorskip("aiohttp")
         from unittest.mock import patch
         from gremlin_python.driver.client import Client
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         with patch.object(Client, '_fill_pool'):
             c = Client("ws://localhost:8182/gremlin", "g", pdt_registry=registry)
             assert c._response_serializer._graphbinary_reader.pdt_registry is registry
@@ -238,78 +238,78 @@ class TestPdtRegistryWiring(object):
         from unittest.mock import patch
         from gremlin_python.driver.client import Client
         from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         with patch.object(Client, '_fill_pool'):
             drc = DriverRemoteConnection("ws://localhost:8182/gremlin", "g", pdt_registry=registry)
             assert drc._client._response_serializer._graphbinary_reader.pdt_registry is registry
 
 
-class TestPrimitiveProviderDefinedType(object):
+class TestPrimitivePDT(object):
 
     def test_empty_name_rejected(self):
         with pytest.raises(ValueError):
-            PrimitiveProviderDefinedType("", "123")
+            PrimitivePDT("", "123")
 
     def test_none_name_rejected(self):
         with pytest.raises(ValueError):
-            PrimitiveProviderDefinedType(None, "123")
+            PrimitivePDT(None, "123")
 
     def test_none_value_rejected(self):
         with pytest.raises(ValueError):
-            PrimitiveProviderDefinedType("Uint32", None)
+            PrimitivePDT("Uint32", None)
 
     def test_equality(self):
-        a = PrimitiveProviderDefinedType("Uint32", "42")
-        b = PrimitiveProviderDefinedType("Uint32", "42")
+        a = PrimitivePDT("Uint32", "42")
+        b = PrimitivePDT("Uint32", "42")
         assert a == b
         assert hash(a) == hash(b)
 
     def test_inequality(self):
-        a = PrimitiveProviderDefinedType("Uint32", "42")
-        b = PrimitiveProviderDefinedType("Uint32", "43")
+        a = PrimitivePDT("Uint32", "42")
+        b = PrimitivePDT("Uint32", "43")
         assert a != b
 
     def test_repr(self):
-        pdt = PrimitiveProviderDefinedType("Uint32", "42")
+        pdt = PrimitivePDT("Uint32", "42")
         assert "Uint32" in repr(pdt)
         assert "42" in repr(pdt)
 
 
-class TestPrimitiveProviderDefinedTypeGraphBinary(object):
+class TestPrimitivePDTGraphBinary(object):
     graphbinary_writer = GraphBinaryWriter()
     graphbinary_reader = GraphBinaryReader()
 
     def test_round_trip_simple(self):
-        pdt = PrimitiveProviderDefinedType("Uint32", "42")
+        pdt = PrimitivePDT("Uint32", "42")
         ba = self.graphbinary_writer.write_object(pdt)
         result = self.graphbinary_reader.read_object(ba)
-        assert isinstance(result, PrimitiveProviderDefinedType)
+        assert isinstance(result, PrimitivePDT)
         assert result == pdt
 
     def test_round_trip_leading_zeros(self):
         """Opaque value: leading zeros must be preserved."""
-        pdt = PrimitiveProviderDefinedType("Uint32", "007")
+        pdt = PrimitivePDT("Uint32", "007")
         ba = self.graphbinary_writer.write_object(pdt)
         result = self.graphbinary_reader.read_object(ba)
         assert result.value == "007"
 
     def test_round_trip_large_number(self):
         """Opaque value: large numbers preserved as string."""
-        pdt = PrimitiveProviderDefinedType("BigNum", "99999999999999999999999999999")
+        pdt = PrimitivePDT("BigNum", "99999999999999999999999999999")
         ba = self.graphbinary_writer.write_object(pdt)
         result = self.graphbinary_reader.read_object(ba)
         assert result.value == "99999999999999999999999999999"
 
     def test_round_trip_non_numeric(self):
         """Opaque value: non-numeric strings work."""
-        pdt = PrimitiveProviderDefinedType("TinkerId", "abc-def-123")
+        pdt = PrimitivePDT("TinkerId", "abc-def-123")
         ba = self.graphbinary_writer.write_object(pdt)
         result = self.graphbinary_reader.read_object(ba)
         assert result.value == "abc-def-123"
 
     def test_round_trip_empty_value(self):
         """Edge case: empty string value."""
-        pdt = PrimitiveProviderDefinedType("Empty", "")
+        pdt = PrimitivePDT("Empty", "")
         ba = self.graphbinary_writer.write_object(pdt)
         result = self.graphbinary_reader.read_object(ba)
         assert result.value == ""
@@ -318,32 +318,32 @@ class TestPrimitiveProviderDefinedTypeGraphBinary(object):
 class TestPrimitiveRegistryHydration(object):
 
     def test_hydrate_simple(self):
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         registry.register_primitive("Uint32", lambda v: int(v))
-        pdt = PrimitiveProviderDefinedType("Uint32", "42")
+        pdt = PrimitivePDT("Uint32", "42")
         result = registry.hydrate_primitive(pdt)
         assert result == 42
 
     def test_hydrate_no_adapter_returns_raw(self):
-        registry = ProviderDefinedTypeRegistry()
-        pdt = PrimitiveProviderDefinedType("Unknown", "hello")
+        registry = PDTRegistry()
+        pdt = PrimitivePDT("Unknown", "hello")
         result = registry.hydrate_primitive(pdt)
         assert result is pdt
 
     def test_hydrate_adapter_throws_falls_back(self):
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         registry.register_primitive("Bad", lambda v: 1 / 0)
-        pdt = PrimitiveProviderDefinedType("Bad", "x")
+        pdt = PrimitivePDT("Bad", "x")
         result = registry.hydrate_primitive(pdt)
         assert result is pdt
 
     def test_reader_auto_hydrates_primitive(self):
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         registry.register_primitive("Uint32", lambda v: int(v))
         writer = GraphBinaryWriter()
         reader = GraphBinaryReader(pdt_registry=registry)
 
-        pdt = PrimitiveProviderDefinedType("Uint32", "42")
+        pdt = PrimitivePDT("Uint32", "42")
         result = reader.read_object(writer.write_object(pdt))
         assert result == 42
 
@@ -351,47 +351,47 @@ class TestPrimitiveRegistryHydration(object):
         writer = GraphBinaryWriter()
         reader = GraphBinaryReader()
 
-        pdt = PrimitiveProviderDefinedType("Uint32", "42")
+        pdt = PrimitivePDT("Uint32", "42")
         result = reader.read_object(writer.write_object(pdt))
-        assert isinstance(result, PrimitiveProviderDefinedType)
+        assert isinstance(result, PrimitivePDT)
         assert result == pdt
 
 
 class TestPrimitiveNestedInComposite(object):
 
     def test_primitive_nested_in_composite_hydrates(self):
-        """A PrimitiveProviderDefinedType nested as a field value in a composite PDT is hydrated."""
-        registry = ProviderDefinedTypeRegistry()
+        """A PrimitivePDT nested as a field value in a composite PDT is hydrated."""
+        registry = PDTRegistry()
         registry.register_primitive("Uint32", lambda v: int(v))
         registry.register("com.example.Wrapper", lambda fields: {"id": fields["id"], "count": fields["count"]})
 
-        inner = PrimitiveProviderDefinedType("Uint32", "99")
-        outer = ProviderDefinedType("com.example.Wrapper", {"id": "abc", "count": inner})
+        inner = PrimitivePDT("Uint32", "99")
+        outer = CompositePDT("com.example.Wrapper", {"id": "abc", "count": inner})
         result = registry.hydrate(outer)
         assert result == {"id": "abc", "count": 99}
 
     def test_primitive_nested_in_unregistered_composite_hydrates(self):
         """Primitive nested inside an unregistered composite still hydrates."""
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         registry.register_primitive("Uint32", lambda v: int(v))
 
-        inner = PrimitiveProviderDefinedType("Uint32", "7")
-        outer = ProviderDefinedType("com.example.Unregistered", {"val": inner})
+        inner = PrimitivePDT("Uint32", "7")
+        outer = CompositePDT("com.example.Unregistered", {"val": inner})
         result = registry.hydrate(outer)
-        assert isinstance(result, ProviderDefinedType)
+        assert isinstance(result, CompositePDT)
         assert result.fields["val"] == 7
 
     def test_graphbinary_primitive_nested_in_composite(self):
         """Round-trip a composite PDT containing a primitive PDT field via GraphBinary."""
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         registry.register_primitive("Uint32", lambda v: int(v))
         registry.register("com.example.Outer",
                           lambda fields: {"name": fields["name"], "count": fields["count"]})
         writer = GraphBinaryWriter()
         reader = GraphBinaryReader(pdt_registry=registry)
 
-        inner = PrimitiveProviderDefinedType("Uint32", "5")
-        outer = ProviderDefinedType("com.example.Outer", {"name": "test", "count": inner})
+        inner = PrimitivePDT("Uint32", "5")
+        outer = CompositePDT("com.example.Outer", {"name": "test", "count": inner})
         ba = writer.write_object(outer)
         result = reader.read_object(ba)
         assert result == {"name": "test", "count": 5}
@@ -417,6 +417,6 @@ class TestPrimitiveRegistryEntryPoints(object):
             else:
                 mock_entry_points.return_value = {'tinkerpop.pdt': [mock_ep]}
 
-            registry = ProviderDefinedTypeRegistry.create()
-            pdt = PrimitiveProviderDefinedType("Uint32", "123")
+            registry = PDTRegistry.create()
+            pdt = PrimitivePDT("Uint32", "123")
             assert registry.hydrate_primitive(pdt) == 123

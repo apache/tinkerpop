@@ -217,7 +217,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var results = await response.ToListAsync();
 
             Assert.Single(results);
-            var pdt = Assert.IsType<ProviderDefinedType>(results[0]);
+            var pdt = Assert.IsType<CompositePDT>(results[0]);
             Assert.Equal("Point", pdt.Name);
             Assert.Equal(2, pdt.Fields.Count);
             Assert.Equal(1, pdt.Fields["x"]);
@@ -236,12 +236,12 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var results = await response.ToListAsync();
 
             Assert.Single(results);
-            var pdt = Assert.IsType<ProviderDefinedType>(results[0]);
+            var pdt = Assert.IsType<CompositePDT>(results[0]);
             Assert.Equal("Person", pdt.Name);
             Assert.Equal("Alice", pdt.Fields["name"]);
             Assert.Equal(30, pdt.Fields["age"]);
 
-            var address = Assert.IsType<ProviderDefinedType>(pdt.Fields["address"]);
+            var address = Assert.IsType<CompositePDT>(pdt.Fields["address"]);
             Assert.Equal("Address", address.Name);
             Assert.Equal("123 Main St", address.Fields["street"]);
             Assert.Equal("Springfield", address.Fields["city"]);
@@ -262,12 +262,12 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var list = Assert.IsType<List<object>>(results[0]);
             Assert.Equal(2, list.Count);
 
-            var p1 = Assert.IsType<ProviderDefinedType>(list[0]);
+            var p1 = Assert.IsType<CompositePDT>(list[0]);
             Assert.Equal("Point", p1.Name);
             Assert.Equal(1, p1.Fields["x"]);
             Assert.Equal(2, p1.Fields["y"]);
 
-            var p2 = Assert.IsType<ProviderDefinedType>(list[1]);
+            var p2 = Assert.IsType<CompositePDT>(list[1]);
             Assert.Equal("Point", p2.Name);
             Assert.Equal(3, p2.Fields["x"]);
             Assert.Equal(4, p2.Fields["y"]);
@@ -373,7 +373,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var results = await response.ToListAsync();
 
             Assert.Single(results);
-            var pdt = Assert.IsType<PrimitiveProviderDefinedType>(results[0]);
+            var pdt = Assert.IsType<PrimitivePDT>(results[0]);
             Assert.Equal("Uint32", pdt.Name);
             Assert.Equal("42", pdt.Value);
         }
@@ -389,7 +389,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var results = await response.ToListAsync();
 
             Assert.Single(results);
-            var pdt = Assert.IsType<PrimitiveProviderDefinedType>(results[0]);
+            var pdt = Assert.IsType<PrimitivePDT>(results[0]);
             Assert.Equal("Token", pdt.Name);
             Assert.Equal("007-abc", pdt.Value);
         }
@@ -408,10 +408,10 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var list = Assert.IsType<List<object>>(results[0]);
             Assert.Equal(2, list.Count);
 
-            var p1 = Assert.IsType<PrimitiveProviderDefinedType>(list[0]);
+            var p1 = Assert.IsType<PrimitivePDT>(list[0]);
             Assert.Equal("1", p1.Value);
 
-            var p2 = Assert.IsType<PrimitiveProviderDefinedType>(list[1]);
+            var p2 = Assert.IsType<PrimitivePDT>(list[1]);
             Assert.Equal("2", p2.Value);
         }
 
@@ -426,10 +426,10 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var results = await response.ToListAsync();
 
             Assert.Single(results);
-            var pdt = Assert.IsType<ProviderDefinedType>(results[0]);
+            var pdt = Assert.IsType<CompositePDT>(results[0]);
             Assert.Equal("Measurement", pdt.Name);
             Assert.Equal("kg", pdt.Fields["unit"]);
-            var inner = Assert.IsType<PrimitiveProviderDefinedType>(pdt.Fields["value"]);
+            var inner = Assert.IsType<PrimitivePDT>(pdt.Fields["value"]);
             Assert.Equal("Uint32", inner.Name);
             Assert.Equal("100", inner.Value);
         }

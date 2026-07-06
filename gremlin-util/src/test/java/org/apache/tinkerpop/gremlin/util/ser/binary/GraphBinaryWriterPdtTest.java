@@ -97,7 +97,7 @@ public class GraphBinaryWriterPdtTest {
         writer.write(new TestPoint(1, 2), buffer);
         buffer.readerIndex(0);
 
-        final ProviderDefinedType result = reader.read(buffer);
+        final CompositePDT result = reader.read(buffer);
         assertEquals("TestPoint", result.getName());
         assertEquals(1, result.getFields().get("x"));
         assertEquals(2, result.getFields().get("y"));
@@ -118,7 +118,7 @@ public class GraphBinaryWriterPdtTest {
      */
     @Test
     public void shouldDehydrateRegisteredButUnannotatedTypeViaAdapterOnWritePath() throws IOException {
-        final ProviderDefinedTypeRegistry pdtRegistry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry pdtRegistry = PDTRegistry.empty();
         pdtRegistry.register(new UnannotatedTypeAdapter());
 
         final GraphBinaryWriter registryWriter = new GraphBinaryWriter(TypeSerializerRegistry.INSTANCE, pdtRegistry);
@@ -142,7 +142,7 @@ public class GraphBinaryWriterPdtTest {
      */
     @Test
     public void shouldPreferRegisteredAdapterOverAnnotationOnWritePath() throws IOException {
-        final ProviderDefinedTypeRegistry pdtRegistry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry pdtRegistry = PDTRegistry.empty();
         pdtRegistry.register(new AnnotatedDualAdapter());
 
         final GraphBinaryWriter registryWriter = new GraphBinaryWriter(TypeSerializerRegistry.INSTANCE, pdtRegistry);
@@ -152,24 +152,24 @@ public class GraphBinaryWriterPdtTest {
         buffer.readerIndex(0);
 
         // Read with a registry-free reader to inspect the raw serialized form (no hydration).
-        final ProviderDefinedType result = reader.read(buffer);
+        final CompositePDT result = reader.read(buffer);
         assertEquals("AdapterName", result.getName());
         assertEquals(70, result.getFields().get("viaAdapter"));
         assertFalse(result.getFields().containsKey("x"));
     }
 
     @Test
-    public void shouldNotDoubleWrapProviderDefinedType() throws IOException {
+    public void shouldNotDoubleWrapCompositePDT() throws IOException {
         final Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("x", 1);
         fields.put("y", 2);
-        final ProviderDefinedType pdt = new ProviderDefinedType("TestPoint", fields);
+        final CompositePDT pdt = new CompositePDT("TestPoint", fields);
 
         final Buffer buffer = bufferFactory.create(allocator.buffer());
         writer.write(pdt, buffer);
         buffer.readerIndex(0);
 
-        final ProviderDefinedType result = reader.read(buffer);
+        final CompositePDT result = reader.read(buffer);
         assertEquals(pdt, result);
     }
 
@@ -189,7 +189,7 @@ public class GraphBinaryWriterPdtTest {
 
     @Test
     public void shouldDehydratePrimitiveAdapterOnWritePathAndHydrateBack() throws IOException {
-        final ProviderDefinedTypeRegistry pdtRegistry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry pdtRegistry = PDTRegistry.empty();
         pdtRegistry.register(new Uint32Adapter());
 
         final GraphBinaryWriter registryWriter = new GraphBinaryWriter(TypeSerializerRegistry.INSTANCE, pdtRegistry);
@@ -206,20 +206,20 @@ public class GraphBinaryWriterPdtTest {
     }
 
     @Test
-    public void shouldRoundTripPrimitiveProviderDefinedTypeWithoutRegistry() throws IOException {
-        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Uint32", "99");
+    public void shouldRoundTripPrimitivePDTWithoutRegistry() throws IOException {
+        final PrimitivePDT pdt = new PrimitivePDT("Uint32", "99");
 
         final Buffer buffer = bufferFactory.create(allocator.buffer());
         writer.write(pdt, buffer);
         buffer.readerIndex(0);
 
-        final PrimitiveProviderDefinedType result = reader.read(buffer);
+        final PrimitivePDT result = reader.read(buffer);
         assertEquals(pdt, result);
     }
 
     @Test
     public void shouldRoundTripPrimitiveNestedInComposite() throws IOException {
-        final ProviderDefinedTypeRegistry pdtRegistry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry pdtRegistry = PDTRegistry.empty();
         pdtRegistry.register(new Uint32Adapter());
         pdtRegistry.register(new UnannotatedTypeAdapter());
 
@@ -229,8 +229,8 @@ public class GraphBinaryWriterPdtTest {
         // Build a composite PDT with a nested primitive value
         final Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("value", 7);
-        fields.put("id", new PrimitiveProviderDefinedType("Uint32", "42"));
-        final ProviderDefinedType compositePdt = new ProviderDefinedType("UnannotatedType", fields);
+        fields.put("id", new PrimitivePDT("Uint32", "42"));
+        final CompositePDT compositePdt = new CompositePDT("UnannotatedType", fields);
 
         final Buffer buffer = bufferFactory.create(allocator.buffer());
         registryWriter.write(compositePdt, buffer);

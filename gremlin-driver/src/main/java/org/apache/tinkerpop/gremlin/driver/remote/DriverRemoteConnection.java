@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Optional;
@@ -58,7 +58,7 @@ public class DriverRemoteConnection implements RemoteConnection {
 
     // Default to SPI-discovered adapters so PDT dehydration works with zero configuration.
     // This performs a lightweight ServiceLoader scan; the serializer path does its own independent scan.
-    private ProviderDefinedTypeRegistry pdtRegistry = ProviderDefinedTypeRegistry.create();
+    private PDTRegistry pdtRegistry = PDTRegistry.create();
 
     public DriverRemoteConnection(final Configuration conf) {
         final boolean hasClusterConf = IteratorUtils.anyMatch(conf.getKeys(), k -> k.startsWith("clusterConfiguration"));
@@ -220,14 +220,14 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     @Override
-    public ProviderDefinedTypeRegistry getPdtRegistry() {
+    public PDTRegistry getPdtRegistry() {
         return pdtRegistry;
     }
 
     /**
-     * Sets the {@link ProviderDefinedTypeRegistry} for registry-based dehydration in the gremlin-lang translator.
+     * Sets the {@link PDTRegistry} for registry-based dehydration in the gremlin-lang translator.
      */
-    public void setPdtRegistry(final ProviderDefinedTypeRegistry pdtRegistry) {
+    public void setPdtRegistry(final PDTRegistry pdtRegistry) {
         this.pdtRegistry = pdtRegistry;
     }
 

@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.shaded.jackson.annotation.JsonTypeInfo;
 import org.apache.tinkerpop.shaded.jackson.core.JsonFactory;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
@@ -72,7 +72,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
     private final GraphSONVersion version;
     private final TypeInfo typeInfo;
     private final StreamReadConstraints streamReadConstraints;
-    private final ProviderDefinedTypeRegistry pdtRegistry;
+    private final PDTRegistry pdtRegistry;
 
     private GraphSONMapper(final Builder builder) {
         this.customModules = builder.customModules;
@@ -231,7 +231,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         private StreamReadConstraints.Builder streamReadConstraintsBuilder = StreamReadConstraints.builder()
                 .maxNumberLength(DEFAULT_MAX_NUMBER_LENGTH);
         private TypeInfo typeInfo = null;
-        private ProviderDefinedTypeRegistry pdtRegistry = null;
+        private PDTRegistry pdtRegistry = null;
 
         private Builder() {
         }
@@ -317,10 +317,10 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         }
 
         /**
-         * Set the {@link ProviderDefinedTypeRegistry} to enable automatic hydration of
-         * {@link org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType} values during deserialization.
+         * Set the {@link PDTRegistry} to enable automatic hydration of
+         * {@link org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT} values during deserialization.
          */
-        public Builder pdtRegistry(final ProviderDefinedTypeRegistry pdtRegistry) {
+        public Builder pdtRegistry(final PDTRegistry pdtRegistry) {
             this.pdtRegistry = pdtRegistry;
             return this;
         }

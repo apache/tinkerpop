@@ -26,7 +26,7 @@ from gremlin_python.statics import long
 from gremlin_python.process.traversal import TraversalStrategy, P, Order, T, DT, GValue, Cardinality, Scope
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
-from gremlin_python.structure.graph import Vertex, Edge, Graph, ProviderDefinedType, PrimitiveProviderDefinedType, provider_defined
+from gremlin_python.structure.graph import Vertex, Edge, Graph, CompositePDT, PrimitivePDT, provider_defined
 from gremlin_python.process.strategies import SubgraphStrategy, SeedStrategy, ReservedKeysVerificationStrategy
 from gremlin_python.structure.io.util import HashableDict
 from gremlin_python.driver.connection import GremlinServerError
@@ -292,9 +292,9 @@ class TestDriverRemoteConnection(object):
 
     def test_pdt_round_trip_via_traversal(self, remote_connection):
         g = traversal().with_(remote_connection)
-        pdt = ProviderDefinedType('Point', {'x': 1, 'y': 2})
+        pdt = CompositePDT('Point', {'x': 1, 'y': 2})
         result = g.inject(pdt).next()
-        assert isinstance(result, ProviderDefinedType)
+        assert isinstance(result, CompositePDT)
         assert result.name == 'Point'
         assert result.fields == {'x': 1, 'y': 2}
 
@@ -323,9 +323,9 @@ class TestDriverRemoteConnection(object):
 
     def test_primitive_pdt_round_trip_via_traversal(self, remote_connection):
         g = traversal().with_(remote_connection)
-        pdt = PrimitiveProviderDefinedType('Uint32', '4294967295')
+        pdt = PrimitivePDT('Uint32', '4294967295')
         result = g.inject(pdt).next()
-        assert isinstance(result, PrimitiveProviderDefinedType)
+        assert isinstance(result, PrimitivePDT)
         assert result.name == 'Uint32'
         assert result.value == '4294967295'
 

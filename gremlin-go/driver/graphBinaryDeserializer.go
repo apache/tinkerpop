@@ -61,7 +61,7 @@ type GraphBinaryDeserializer struct {
 	buf         [8]byte
 	err         error        // sticky error
 	bulked      bool         // whether the response stream uses bulked encoding
-	pdtRegistry *PDTRegistry // optional: auto-hydrates ProviderDefinedType results
+	pdtRegistry *PDTRegistry // optional: auto-hydrates CompositePDT results
 }
 
 // GraphBinary flag for bulked list/set
@@ -74,7 +74,7 @@ func NewGraphBinaryDeserializer(r io.Reader) *GraphBinaryDeserializer {
 }
 
 // NewGraphBinaryDeserializerWithRegistry creates a new GraphBinaryDeserializer with a PDTRegistry
-// for automatic hydration of ProviderDefinedType values.
+// for automatic hydration of CompositePDT values.
 func NewGraphBinaryDeserializerWithRegistry(r io.Reader, registry *PDTRegistry) *GraphBinaryDeserializer {
 	return &GraphBinaryDeserializer{r: bufio.NewReaderSize(r, 8192), pdtRegistry: registry}
 }
@@ -816,7 +816,7 @@ func (d *GraphBinaryDeserializer) readCompositePDT() (interface{}, error) {
 	}
 	name, ok := nameObj.(string)
 	if !ok || name == "" {
-		return nil, fmt.Errorf("ProviderDefinedType name must be a non-empty string")
+		return nil, fmt.Errorf("CompositePDT name must be a non-empty string")
 	}
 	fieldsObj, err := d.ReadFullyQualified()
 	if err != nil {
@@ -826,14 +826,14 @@ func (d *GraphBinaryDeserializer) readCompositePDT() (interface{}, error) {
 	if fieldsObj != nil {
 		raw, ok := fieldsObj.(map[interface{}]interface{})
 		if !ok {
-			return nil, fmt.Errorf("ProviderDefinedType fields must be a map")
+			return nil, fmt.Errorf("CompositePDT fields must be a map")
 		}
 		fields = make(map[string]interface{}, len(raw))
 		for k, v := range raw {
 			fields[fmt.Sprint(k)] = v
 		}
 	}
-	pdt := &ProviderDefinedType{Name: name, Fields: fields}
+	pdt := &CompositePDT{Name: name, Fields: fields}
 	if d.pdtRegistry != nil {
 		hydrated := d.pdtRegistry.Hydrate(pdt)
 		if hydrated != pdt {
@@ -850,7 +850,7 @@ func (d *GraphBinaryDeserializer) readPrimitivePDT() (interface{}, error) {
 	}
 	name, ok := nameObj.(string)
 	if !ok || name == "" {
-		return nil, fmt.Errorf("PrimitiveProviderDefinedType name must be a non-empty string")
+		return nil, fmt.Errorf("PrimitivePDT name must be a non-empty string")
 	}
 	valueObj, err := d.ReadFullyQualified()
 	if err != nil {
@@ -858,9 +858,9 @@ func (d *GraphBinaryDeserializer) readPrimitivePDT() (interface{}, error) {
 	}
 	value, ok := valueObj.(string)
 	if !ok {
-		return nil, fmt.Errorf("PrimitiveProviderDefinedType value must be a string")
+		return nil, fmt.Errorf("PrimitivePDT value must be a string")
 	}
-	pdt := &PrimitiveProviderDefinedType{Name: name, Value: value}
+	pdt := &PrimitivePDT{Name: name, Value: value}
 	if d.pdtRegistry != nil {
 		hydrated := d.pdtRegistry.HydratePrimitive(pdt)
 		if hydrated != pdt {

@@ -67,7 +67,7 @@ namespace Gremlin.Net.Driver
         ///     This is equivalent to including the auth interceptor as the last element of <paramref name="interceptors"/>.
         /// </param>
         /// <param name="pdtRegistry">
-        ///     An optional <see cref="ProviderDefinedTypeRegistry"/> for automatic hydration of
+        ///     An optional <see cref="PDTRegistry"/> for automatic hydration of
         ///     provider-defined types.
         /// </param>
         public GremlinClient(GremlinServer gremlinServer,
@@ -76,7 +76,7 @@ namespace Gremlin.Net.Driver
             ILoggerFactory? loggerFactory = null,
             IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null,
             Func<HttpRequestContext, Task>? auth = null,
-            ProviderDefinedTypeRegistry? pdtRegistry = null)
+            PDTRegistry? pdtRegistry = null)
         {
             connectionSettings ??= new ConnectionSettings();
             LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;

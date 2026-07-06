@@ -28,10 +28,10 @@ using System.Threading.Tasks;
 namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
 {
     /// <summary>
-    /// A <see cref="PrimitiveProviderDefinedType"/> serializer for the PrimitivePDT data type.
+    /// A <see cref="PrimitivePDT"/> serializer for the PrimitivePDT data type.
     /// Wire format: two fully-qualified Strings {name}{value}.
     /// </summary>
-    public class PrimitivePDTSerializer : SimpleTypeSerializer<PrimitiveProviderDefinedType>
+    public class PrimitivePDTSerializer : SimpleTypeSerializer<PrimitivePDT>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PrimitivePDTSerializer"/> class.
@@ -41,7 +41,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(PrimitiveProviderDefinedType value, Stream stream,
+        protected override async Task WriteValueAsync(PrimitivePDT value, Stream stream,
             GraphBinaryWriter writer, CancellationToken cancellationToken = default)
         {
             await writer.WriteAsync(value.Name, stream, cancellationToken).ConfigureAwait(false);
@@ -49,7 +49,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
         }
 
         /// <inheritdoc />
-        protected override async Task<PrimitiveProviderDefinedType> ReadValueAsync(Stream stream,
+        protected override async Task<PrimitivePDT> ReadValueAsync(Stream stream,
             GraphBinaryReader reader, CancellationToken cancellationToken = default)
         {
             var name = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false) as string;
@@ -60,7 +60,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
             if (value == null)
                 throw new IOException("PrimitivePDT value cannot be null.");
 
-            return new PrimitiveProviderDefinedType(name!, value);
+            return new PrimitivePDT(name!, value);
         }
     }
 }

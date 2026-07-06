@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.structure.io.pdt;
 
 /**
- * Adapter for converting between a typed object and a {@link PrimitiveProviderDefinedType} string value.
+ * Adapter for converting between a typed object and a {@link PrimitivePDT} string value.
  * Used for single-value (primitive) provider-defined types.
  */
 public interface PrimitivePDTAdapter<T> extends ProviderDefinedTypeAdapter<T> {

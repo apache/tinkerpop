@@ -224,9 +224,9 @@ def client_with_interceptor(request):
 
 @pytest.fixture
 def remote_connection_with_registry(request):
-    from gremlin_python.structure.graph import ProviderDefinedTypeRegistry
+    from gremlin_python.structure.graph import PDTRegistry
 
-    registry = ProviderDefinedTypeRegistry()
+    registry = PDTRegistry()
     registry.register('RegistryPoint',
                       deserialize_fn=lambda fields: RegistryPoint(x=fields['x'], y=fields['y']),
                       serialize_fn=lambda p: {'x': p.x, 'y': p.y},
@@ -252,9 +252,9 @@ def mutating_interceptor(http_request):
 
 @pytest.fixture
 def remote_connection_with_primitive_registry(request):
-    from gremlin_python.structure.graph import ProviderDefinedTypeRegistry
+    from gremlin_python.structure.graph import PDTRegistry
 
-    registry = ProviderDefinedTypeRegistry()
+    registry = PDTRegistry()
     registry.register_primitive('Uint32',
                                 from_value=lambda v: RegistryUint32(value=int(v)),
                                 to_value=lambda u: str(u.value),

@@ -1588,7 +1588,7 @@ public class Point {
 ----
 
 The `name` attribute is a unique identifier for the type. It must not be null or empty — all GLVs reject an
-empty name when a type is defined or a `ProviderDefinedType` is constructed. It is strongly recommended to namespace
+empty name when a type is defined or a `CompositePDT` is constructed. It is strongly recommended to namespace
 type names using your graph's identifier as a prefix (e.g. `"mygraph:Point"`). This avoids collisions when clients
 interact with multiple providers and makes the origin of a type immediately clear. By default, all fields are included.
 Use `includedFields` or `excludedFields` to control which fields are serialized:
@@ -1675,8 +1675,8 @@ user passes an annotated object into a Gremlin traversal or script, TinkerPop co
 without any extra configuration.
 
 *Hydration* — reconstructing an incoming PDT back into the original typed object — requires the driver to know which
-class corresponds to a given PDT name. Without this mapping, the driver will return a generic `ProviderDefinedType`
-object. To enable automatic round-trip hydration, providers must expose a pre-configured `ProviderDefinedTypeRegistry`
+class corresponds to a given PDT name. Without this mapping, the driver will return a generic `CompositePDT`
+object. To enable automatic round-trip hydration, providers must expose a pre-configured `PDTRegistry`
 to users. How that registry is populated differs by language:
 
 ===== Java
@@ -1686,12 +1686,12 @@ annotation to derive the type name and field mapping automatically:
 
 [source,java]
 ----
-ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.create();
+PDTRegistry registry = PDTRegistry.create();
 registry.register(Point.class, Address.class, Person.class);
 ----
 
 Adapter types (for classes you don't own) are discovered automatically via `ServiceLoader` when using
-`ProviderDefinedTypeRegistry.create()`. Register them by adding a file at:
+`PDTRegistry.create()`. Register them by adding a file at:
 
 ----
 META-INF/services/org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter
@@ -1717,17 +1717,17 @@ definition time (import time), so any annotated type round-trips without any add
 
 ===== .NET
 
-`[ProviderDefined]`-annotated types are discovered automatically. Calling `ProviderDefinedTypeRegistry.Create()`
+`[ProviderDefined]`-annotated types are discovered automatically. Calling `PDTRegistry.Create()`
 scans all loaded assemblies for `[ProviderDefined]`-annotated types and registers them for hydration. No extra
 configuration is needed — providers simply annotate their types and users call `Create()` to create the registry.
 
 ===== JavaScript
 
-Register hydration adapters explicitly on a `ProviderDefinedTypeRegistry` instance, then pass it to the connection:
+Register hydration adapters explicitly on a `PDTRegistry` instance, then pass it to the connection:
 
 [source,javascript]
 ----
-const registry = new ProviderDefinedTypeRegistry();
+const registry = new PDTRegistry();
 registry.register('mygraph:Point', {
     serialize: (obj) => ({ x: obj.x, y: obj.y }),
     deserialize: (fields) => new Point(fields.x, fields.y)
@@ -1748,15 +1748,15 @@ registry.RegisterType("mygraph:Point", reflect.TypeOf(Point{}))
 ===== Provider Factory Pattern
 
 Regardless of language, the recommended pattern is for providers to expose a factory method that returns a
-pre-configured `ProviderDefinedTypeRegistry`. This shields end users from needing to know which types exist or how
+pre-configured `PDTRegistry`. This shields end users from needing to know which types exist or how
 the registry is populated:
 
 [source,java]
 ----
 // In the provider's client library
 public class MyGraphTypeRegistry {
-    public static ProviderDefinedTypeRegistry create() {
-        ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.create(); // discovers ServiceLoader adapters
+    public static PDTRegistry create() {
+        PDTRegistry registry = PDTRegistry.create(); // discovers ServiceLoader adapters
         registry.register(Point.class, Address.class, Person.class);               // registers annotated types
         return registry;
     }
@@ -1823,9 +1823,9 @@ Use `register_primitive` on the registry:
 
 [source,python]
 ----
-from gremlin_python.structure.graph import ProviderDefinedTypeRegistry
+from gremlin_python.structure.graph import PDTRegistry
 
-registry = ProviderDefinedTypeRegistry()
+registry = PDTRegistry()
 registry.register_primitive('mygraph:Uint32',
     from_value=lambda s: Uint32(int(s)),
     to_value=lambda obj: str(obj.value),
@@ -1838,9 +1838,9 @@ Use `registerPrimitive` with a `PrimitivePdtAdapter`:
 
 [source,javascript]
 ----
-const { ProviderDefinedTypeRegistry, PrimitivePdtAdapter } = require('gremlin');
+const { PDTRegistry, PrimitivePdtAdapter } = require('gremlin');
 
-const registry = new ProviderDefinedTypeRegistry();
+const registry = new PDTRegistry();
 registry.registerPrimitive('mygraph:Uint32', new PrimitivePdtAdapter(
     (str) => new Uint32(parseInt(str)),   // fromValue
     (obj) => obj.value.toString()          // toValue
@@ -1881,11 +1881,11 @@ public class Uint32Adapter : IPrimitivePdtAdapter<Uint32>
 }
 ----
 
-Register on the `ProviderDefinedTypeRegistry` in the same way as composite adapters.
+Register on the `PDTRegistry` in the same way as composite adapters.
 
 ===== Value Type
 
-Across all GLVs, unhydrated primitive PDT values are represented as `PrimitiveProviderDefinedType` objects containing a
+Across all GLVs, unhydrated primitive PDT values are represented as `PrimitivePDT` objects containing a
 `name` (or `Name`) and a string `value` (or `Value`). When no adapter is registered for a given type name, the driver
 returns this generic value object.
 

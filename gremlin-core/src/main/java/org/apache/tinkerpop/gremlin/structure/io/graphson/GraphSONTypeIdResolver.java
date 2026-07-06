@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.shaded.jackson.annotation.JsonTypeInfo;
 import org.apache.tinkerpop.shaded.jackson.core.type.TypeReference;
 import org.apache.tinkerpop.shaded.jackson.databind.DatabindContext;
@@ -43,7 +43,7 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
 
     private final Map<Class, String> typeToId = new HashMap<>();
 
-    private ProviderDefinedTypeRegistry pdtRegistry;
+    private PDTRegistry pdtRegistry;
 
     // Override manually a type definition.
     public GraphSONTypeIdResolver addCustomType(final String name, final Class clasz) {
@@ -68,7 +68,7 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
         return typeToId;
     }
 
-    public void setPdtRegistry(final ProviderDefinedTypeRegistry pdtRegistry) {
+    public void setPdtRegistry(final PDTRegistry pdtRegistry) {
         this.pdtRegistry = pdtRegistry;
     }
 
@@ -86,10 +86,10 @@ public class GraphSONTypeIdResolver implements TypeIdResolver {
         if (!typeToId.containsKey(aClass)) {
             // Check if pdtRegistry has an adapter for this class
             if (pdtRegistry != null && pdtRegistry.getCompositeAdapterByClass(aClass).isPresent()) {
-                return typeToId.get(org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType.class);
+                return typeToId.get(org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT.class);
             }
             if (pdtRegistry != null && pdtRegistry.getPrimitiveAdapterByClass(aClass).isPresent()) {
-                return typeToId.get(org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType.class);
+                return typeToId.get(org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT.class);
             }
             // If one wants to serialize an object with a type, but hasn't registered
             // a typeID for that class, fail.

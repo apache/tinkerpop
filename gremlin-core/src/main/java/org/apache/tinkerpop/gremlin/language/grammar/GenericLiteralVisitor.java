@@ -27,8 +27,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.math.BigDecimal;
@@ -594,10 +594,10 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
                     throw new IllegalArgumentException("PDT fields map must have String keys, found: " + entry.getKey().getClass().getName());
                 fields.put((String) entry.getKey(), entry.getValue());
             }
-            return new ProviderDefinedType(name, fields);
+            return new CompositePDT(name, fields);
         } else {
             final String value = (String) visitStringLiteral(ctx.stringLiteral(1));
-            return new PrimitiveProviderDefinedType(name, value);
+            return new PrimitivePDT(name, value);
         }
     }
 

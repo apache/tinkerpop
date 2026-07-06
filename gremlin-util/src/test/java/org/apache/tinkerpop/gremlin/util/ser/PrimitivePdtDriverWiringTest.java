@@ -26,8 +26,8 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV4;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.junit.Test;
 
@@ -40,7 +40,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Verifies that PrimitivePDT round-trips through the driver message serializer stack when a
- * {@link PrimitivePDTAdapter} is registered in the {@link ProviderDefinedTypeRegistry} shared
+ * {@link PrimitivePDTAdapter} is registered in the {@link PDTRegistry} shared
  * between the writer (request dehydration) and reader (response hydration).
  */
 public class PrimitivePdtDriverWiringTest {
@@ -67,7 +67,7 @@ public class PrimitivePdtDriverWiringTest {
      */
     @Test
     public void shouldRoundTripPrimitivePdtThroughGraphBinaryMessageSerializer() throws SerializationException {
-        final ProviderDefinedTypeRegistry pdtRegistry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry pdtRegistry = PDTRegistry.empty();
         pdtRegistry.register(new Uint32Adapter());
 
         final GraphBinaryMessageSerializerV4 serializer =
@@ -92,14 +92,14 @@ public class PrimitivePdtDriverWiringTest {
     }
 
     /**
-     * Proves a raw {@link PrimitiveProviderDefinedType} round-trips through GraphBinary without
+     * Proves a raw {@link PrimitivePDT} round-trips through GraphBinary without
      * requiring an adapter (the PDT itself is natively serializable).
      */
     @Test
-    public void shouldRoundTripRawPrimitiveProviderDefinedTypeThroughGraphBinary() throws SerializationException {
+    public void shouldRoundTripRawPrimitivePDTThroughGraphBinary() throws SerializationException {
         final GraphBinaryMessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4();
 
-        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("CustomId", "abc-123");
+        final PrimitivePDT pdt = new PrimitivePDT("CustomId", "abc-123");
         final ResponseMessage response = ResponseMessage.build()
                 .code(HttpResponseStatus.OK)
                 .result(Arrays.asList(pdt))
@@ -111,7 +111,7 @@ public class PrimitivePdtDriverWiringTest {
         final List<?> data = deserialized.getResult().getData();
         assertNotNull(data);
         assertEquals(1, data.size());
-        assertTrue(data.get(0) instanceof PrimitiveProviderDefinedType);
+        assertTrue(data.get(0) instanceof PrimitivePDT);
         assertEquals(pdt, data.get(0));
     }
 
@@ -121,7 +121,7 @@ public class PrimitivePdtDriverWiringTest {
      */
     @Test
     public void shouldHydratePrimitivePdtThroughGraphSONResponsePath() throws SerializationException {
-        final ProviderDefinedTypeRegistry pdtRegistry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry pdtRegistry = PDTRegistry.empty();
         pdtRegistry.register(new Uint32Adapter());
 
         final GraphSONMapper.Builder mapperBuilder = GraphSONMapper.build()
@@ -131,8 +131,8 @@ public class PrimitivePdtDriverWiringTest {
 
         final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4(mapperBuilder);
 
-        // Serialize a response containing a PrimitiveProviderDefinedType (as the server would send)
-        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Uint32", "99");
+        // Serialize a response containing a PrimitivePDT (as the server would send)
+        final PrimitivePDT pdt = new PrimitivePDT("Uint32", "99");
         final ResponseMessage response = ResponseMessage.build()
                 .code(HttpResponseStatus.OK)
                 .result(Arrays.asList(pdt))
@@ -144,10 +144,10 @@ public class PrimitivePdtDriverWiringTest {
         final List<?> data = deserialized.getResult().getData();
         assertNotNull(data);
         assertEquals(1, data.size());
-        // GraphSON deserializer returns PrimitiveProviderDefinedType with hydrated object attached
-        assertTrue("Expected PrimitiveProviderDefinedType but got " + data.get(0).getClass().getName(),
-                data.get(0) instanceof PrimitiveProviderDefinedType);
-        final PrimitiveProviderDefinedType result = (PrimitiveProviderDefinedType) data.get(0);
+        // GraphSON deserializer returns PrimitivePDT with hydrated object attached
+        assertTrue("Expected PrimitivePDT but got " + data.get(0).getClass().getName(),
+                data.get(0) instanceof PrimitivePDT);
+        final PrimitivePDT result = (PrimitivePDT) data.get(0);
         assertNotNull("Hydrated object should be attached", result.getHydrated());
         assertTrue(result.getHydrated() instanceof Uint32);
         assertEquals(99L, ((Uint32) result.getHydrated()).value);
@@ -159,15 +159,15 @@ public class PrimitivePdtDriverWiringTest {
      */
     @Test
     public void shouldDehydrateAndHydrateRawObjectThroughGraphBinaryRequestResponseCycle() throws SerializationException {
-        final ProviderDefinedTypeRegistry pdtRegistry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry pdtRegistry = PDTRegistry.empty();
         pdtRegistry.register(new Uint32Adapter());
 
         final GraphBinaryMessageSerializerV4 serializer =
                 new GraphBinaryMessageSerializerV4(TypeSerializerRegistry.INSTANCE, pdtRegistry);
 
         // Simulate: server sends response containing the dehydrated form of Uint32(7)
-        // In real flow: server writes PrimitiveProviderDefinedType("Uint32","7"); client reads + hydrates
-        final PrimitiveProviderDefinedType wireForm = new PrimitiveProviderDefinedType("Uint32", "7");
+        // In real flow: server writes PrimitivePDT("Uint32","7"); client reads + hydrates
+        final PrimitivePDT wireForm = new PrimitivePDT("Uint32", "7");
         final ResponseMessage response = ResponseMessage.build()
                 .code(HttpResponseStatus.OK)
                 .result(Arrays.asList(wireForm))
@@ -178,7 +178,7 @@ public class PrimitivePdtDriverWiringTest {
 
         final List<?> data = deserialized.getResult().getData();
         assertEquals(1, data.size());
-        // With the adapter registered, the reader hydrates PrimitiveProviderDefinedType back to Uint32
+        // With the adapter registered, the reader hydrates PrimitivePDT back to Uint32
         assertTrue("Expected Uint32 but got " + data.get(0).getClass().getName(),
                 data.get(0) instanceof Uint32);
         assertEquals(7L, ((Uint32) data.get(0)).value);

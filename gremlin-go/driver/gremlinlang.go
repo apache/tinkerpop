@@ -221,7 +221,7 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 	case dt:
 		name := reflect.ValueOf(v).Type().Name()
 		return fmt.Sprintf("%s.%s", strings.ToUpper(name), v), nil
-	case *ProviderDefinedType:
+	case *CompositePDT:
 		fields := v.Fields
 		if fields == nil {
 			fields = map[string]interface{}{}
@@ -231,7 +231,7 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 			return "", err
 		}
 		return fmt.Sprintf("PDT(\"%s\",%s)", escapeString(v.Name), mapStr), nil
-	case *PrimitiveProviderDefinedType:
+	case *PrimitivePDT:
 		return fmt.Sprintf("PDT(\"%s\",\"%s\")", escapeString(v.Name), escapeString(v.Value)), nil
 	case *Vertex:
 		return gl.argAsString(v.Id)
@@ -321,7 +321,7 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 			if primitiveAdapter != nil && primitiveAdapter.ToString != nil {
 				s, err := primitiveAdapter.ToString(arg)
 				if err == nil {
-					pdt := &PrimitiveProviderDefinedType{Name: primitiveAdapter.TypeName, Value: s}
+					pdt := &PrimitivePDT{Name: primitiveAdapter.TypeName, Value: s}
 					return gl.argAsString(pdt)
 				}
 			}
@@ -329,7 +329,7 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 			if adapter != nil && adapter.ToFields != nil {
 				fields, err := adapter.ToFields(arg)
 				if err == nil {
-					pdt := &ProviderDefinedType{Name: adapter.TypeName, Fields: fields}
+					pdt := &CompositePDT{Name: adapter.TypeName, Fields: fields}
 					return gl.argAsString(pdt)
 				}
 			}

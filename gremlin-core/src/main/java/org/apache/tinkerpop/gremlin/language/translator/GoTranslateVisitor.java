@@ -379,13 +379,13 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     @Override
     public Void visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) {
         if (ctx.genericMapLiteral() != null) {
-            sb.append("&gremlingo.ProviderDefinedType{Name: ");
+            sb.append("&gremlingo.CompositePDT{Name: ");
             visitStringLiteral(ctx.stringLiteral(0));
             sb.append(", Fields: ");
             visitGenericMapLiteral(ctx.genericMapLiteral());
             sb.append("}");
         } else {
-            sb.append("&gremlingo.PrimitiveProviderDefinedType{Name: ");
+            sb.append("&gremlingo.PrimitivePDT{Name: ");
             visitStringLiteral(ctx.stringLiteral(0));
             sb.append(", Value: ");
             visitStringLiteral(ctx.stringLiteral(1));

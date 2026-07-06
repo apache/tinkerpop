@@ -31,7 +31,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class ProviderDefinedTypeRegistryTest {
+public class PDTRegistryTest {
 
     // Simple test type
     static class Point {
@@ -87,13 +87,13 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldHydrateSimplePdt() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new PointAdapter());
 
         final Map<String, Object> fields = new HashMap<>();
         fields.put("x", 3);
         fields.put("y", 7);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Point", fields);
+        final CompositePDT pdt = new CompositePDT("Point", fields);
 
         final Object result = registry.hydrate(pdt);
         assertTrue(result instanceof Point);
@@ -103,11 +103,11 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldReturnRawPdtWhenNoAdapterRegistered() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
 
         final Map<String, Object> fields = new HashMap<>();
         fields.put("x", 1);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Unknown", fields);
+        final CompositePDT pdt = new CompositePDT("Unknown", fields);
 
         final Object result = registry.hydrate(pdt);
         assertSame(pdt, result);
@@ -115,7 +115,7 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldHydrateNestedPdts() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new PointAdapter());
         registry.register(new LineAdapter());
 
@@ -127,9 +127,9 @@ public class ProviderDefinedTypeRegistryTest {
         endFields.put("y", 5);
 
         final Map<String, Object> lineFields = new HashMap<>();
-        lineFields.put("start", new ProviderDefinedType("Point", startFields));
-        lineFields.put("end", new ProviderDefinedType("Point", endFields));
-        final ProviderDefinedType linePdt = new ProviderDefinedType("Line", lineFields);
+        lineFields.put("start", new CompositePDT("Point", startFields));
+        lineFields.put("end", new CompositePDT("Point", endFields));
+        final CompositePDT linePdt = new CompositePDT("Line", lineFields);
 
         final Object result = registry.hydrate(linePdt);
         assertTrue(result instanceof Line);
@@ -142,26 +142,26 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldPartiallyHydrateWhenInnerAdapterMissing() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new LineAdapter());
         // Point adapter NOT registered
 
         final Map<String, Object> startFields = new HashMap<>();
         startFields.put("x", 1);
         startFields.put("y", 2);
-        final ProviderDefinedType startPdt = new ProviderDefinedType("Point", startFields);
+        final CompositePDT startPdt = new CompositePDT("Point", startFields);
 
         final Map<String, Object> endFields = new HashMap<>();
         endFields.put("x", 3);
         endFields.put("y", 4);
-        final ProviderDefinedType endPdt = new ProviderDefinedType("Point", endFields);
+        final CompositePDT endPdt = new CompositePDT("Point", endFields);
 
         final Map<String, Object> lineFields = new HashMap<>();
         lineFields.put("start", startPdt);
         lineFields.put("end", endPdt);
-        final ProviderDefinedType linePdt = new ProviderDefinedType("Line", lineFields);
+        final CompositePDT linePdt = new CompositePDT("Line", lineFields);
 
-        // Line adapter will receive ProviderDefinedType values for start/end since Point is not registered.
+        // Line adapter will receive CompositePDT values for start/end since Point is not registered.
         // The LineAdapter.fromFields casts to Point which will throw ClassCastException,
         // so hydrate should fall back to returning the raw PDT.
         final Object result = registry.hydrate(linePdt);
@@ -170,12 +170,12 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldFallBackWhenAdapterThrows() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new FailingAdapter());
 
         final Map<String, Object> fields = new HashMap<>();
         fields.put("x", 1);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Failing", fields);
+        final CompositePDT pdt = new CompositePDT("Failing", fields);
 
         // should not throw, should return raw PDT
         final Object result = registry.hydrate(pdt);
@@ -184,7 +184,7 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldLookUpAdapterByClass() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         final PointAdapter adapter = new PointAdapter();
         registry.register(adapter);
 
@@ -215,7 +215,7 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldHydratePdtsInsideList() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new PointAdapter());
         registry.register(new PolygonAdapter());
 
@@ -226,9 +226,9 @@ public class ProviderDefinedTypeRegistryTest {
 
         final Map<String, Object> polyFields = new HashMap<>();
         polyFields.put("vertices", Arrays.asList(
-                new ProviderDefinedType("Point", p1),
-                new ProviderDefinedType("Point", p2)));
-        final ProviderDefinedType polyPdt = new ProviderDefinedType("Polygon", polyFields);
+                new CompositePDT("Point", p1),
+                new CompositePDT("Point", p2)));
+        final CompositePDT polyPdt = new CompositePDT("Polygon", polyFields);
 
         final Object result = registry.hydrate(polyPdt);
         assertTrue(result instanceof Polygon);
@@ -242,7 +242,7 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldHydratePdtsInsideMapValues() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new PointAdapter());
 
         // A simple adapter that receives a map of named points
@@ -262,12 +262,12 @@ public class ProviderDefinedTypeRegistryTest {
         p2.put("x", 30); p2.put("y", 40);
 
         final Map<String, Object> innerMap = new HashMap<>();
-        innerMap.put("origin", new ProviderDefinedType("Point", p1));
-        innerMap.put("target", new ProviderDefinedType("Point", p2));
+        innerMap.put("origin", new CompositePDT("Point", p1));
+        innerMap.put("target", new CompositePDT("Point", p2));
 
         final Map<String, Object> fields = new HashMap<>();
         fields.put("points", innerMap);
-        final ProviderDefinedType pdt = new ProviderDefinedType("PointMap", fields);
+        final CompositePDT pdt = new CompositePDT("PointMap", fields);
 
         final Object result = registry.hydrate(pdt);
         assertTrue(result instanceof Map);
@@ -283,11 +283,11 @@ public class ProviderDefinedTypeRegistryTest {
     public void shouldBuildViaServiceLoader() {
         // ServiceLoader.load will find adapters on the classpath. With no META-INF/services file
         // in test scope, this should produce an empty registry that still functions.
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.create();
+        final PDTRegistry registry = PDTRegistry.create();
 
         final Map<String, Object> fields = new HashMap<>();
         fields.put("x", 1);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Unregistered", fields);
+        final CompositePDT pdt = new CompositePDT("Unregistered", fields);
         final Object result = registry.hydrate(pdt);
         assertSame(pdt, result);
     }
@@ -320,13 +320,13 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldRegisterAndHydrateAnnotatedClass() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(AnnotatedPoint.class);
 
         final Map<String, Object> fields = new HashMap<>();
         fields.put("x", 3);
         fields.put("y", 7);
-        final Object result = registry.hydrate(new ProviderDefinedType("AnnotatedPoint", fields));
+        final Object result = registry.hydrate(new CompositePDT("AnnotatedPoint", fields));
 
         assertTrue(result instanceof AnnotatedPoint);
         assertEquals(3, ((AnnotatedPoint) result).x);
@@ -335,7 +335,7 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldDehydrateAnnotatedClassViaAdapter() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(AnnotatedPoint.class);
 
         final Optional<CompositePDTAdapter<?>> adapter = registry.getCompositeAdapterByClass(AnnotatedPoint.class);
@@ -345,13 +345,13 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldRespectExcludedFieldsWhenHydratingAnnotatedClass() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(ExcludedFields.class);
 
         final Map<String, Object> fields = new HashMap<>();
         fields.put("value", 42);
         fields.put("secret", "should-be-ignored");
-        final Object result = registry.hydrate(new ProviderDefinedType("Excluded", fields));
+        final Object result = registry.hydrate(new CompositePDT("Excluded", fields));
 
         assertTrue(result instanceof ExcludedFields);
         assertEquals(42, ((ExcludedFields) result).value);
@@ -361,7 +361,7 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldThrowWhenRegisteringNonAnnotatedClass() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         try {
             registry.register(NotAnnotated.class);
             fail("Expected IllegalArgumentException for non-annotated class");
@@ -372,7 +372,7 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldThrowWhenRegisteringClassWithoutNoArgConstructor() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         try {
             registry.register(NoNoArgCtor.class);
             fail("Expected IllegalArgumentException for class without no-arg constructor");
@@ -384,25 +384,25 @@ public class ProviderDefinedTypeRegistryTest {
     @Test
     public void shouldHydrateNestedRegisteredTypeInsideUnregisteredOuter() {
         // Contract: a registered type ALWAYS hydrates even when nested inside an unregistered outer PDT.
-        // The outer "Container" has no adapter, so it remains a raw ProviderDefinedType,
+        // The outer "Container" has no adapter, so it remains a raw CompositePDT,
         // but the inner "Point" field value should be hydrated to a Point instance.
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new PointAdapter());
 
         final Map<String, Object> pointFields = new HashMap<>();
         pointFields.put("x", 10);
         pointFields.put("y", 20);
-        final ProviderDefinedType innerPointPdt = new ProviderDefinedType("Point", pointFields);
+        final CompositePDT innerPointPdt = new CompositePDT("Point", pointFields);
 
         final Map<String, Object> containerFields = new HashMap<>();
         containerFields.put("location", innerPointPdt);
-        final ProviderDefinedType outerPdt = new ProviderDefinedType("Container", containerFields);
+        final CompositePDT outerPdt = new CompositePDT("Container", containerFields);
 
         final Object result = registry.hydrate(outerPdt);
 
-        // Outer should remain a raw ProviderDefinedType (no adapter for "Container")
-        assertTrue("Expected outer to remain a ProviderDefinedType", result instanceof ProviderDefinedType);
-        final ProviderDefinedType resultPdt = (ProviderDefinedType) result;
+        // Outer should remain a raw CompositePDT (no adapter for "Container")
+        assertTrue("Expected outer to remain a CompositePDT", result instanceof CompositePDT);
+        final CompositePDT resultPdt = (CompositePDT) result;
         assertEquals("Container", resultPdt.getName());
 
         // Inner "location" field should be hydrated to a Point instance
@@ -437,7 +437,7 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldRegisterAndLookUpPrimitiveAdapterByName() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new Uint32Adapter());
 
         final Optional<PrimitivePDTAdapter<?>> found = registry.getPrimitiveAdapterByName("Uint32");
@@ -447,7 +447,7 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldRegisterAndLookUpPrimitiveAdapterByClass() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new Uint32Adapter());
 
         final Optional<PrimitivePDTAdapter<?>> found = registry.getPrimitiveAdapterByClass(Uint32.class);
@@ -457,10 +457,10 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldHydratePrimitive() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new Uint32Adapter());
 
-        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Uint32", "42");
+        final PrimitivePDT pdt = new PrimitivePDT("Uint32", "42");
         final Object result = registry.hydratePrimitive(pdt);
         assertTrue(result instanceof Uint32);
         assertEquals(42L, ((Uint32) result).value);
@@ -468,26 +468,26 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldReturnRawPrimitivePdtWhenNoAdapterRegistered() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
 
-        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Unknown", "x");
+        final PrimitivePDT pdt = new PrimitivePDT("Unknown", "x");
         final Object result = registry.hydratePrimitive(pdt);
         assertSame(pdt, result);
     }
 
     @Test
     public void shouldReturnRawPrimitivePdtWhenAdapterThrows() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new FailingPrimitiveAdapter());
 
-        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("FailPrim", "42");
+        final PrimitivePDT pdt = new PrimitivePDT("FailPrim", "42");
         final Object result = registry.hydratePrimitive(pdt);
         assertSame(pdt, result);
     }
 
     @Test
     public void shouldThrowOnDualRegistrationPrimitiveAfterComposite() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new PointAdapter());
 
         // Attempt to register Point.class as a primitive (already registered as composite)
@@ -508,7 +508,7 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldThrowOnDualRegistrationCompositeAfterPrimitive() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new Uint32Adapter());
 
         // Attempt to register Uint32.class as a composite (already registered as primitive)
@@ -529,7 +529,7 @@ public class ProviderDefinedTypeRegistryTest {
 
     @Test
     public void shouldHydratePrimitiveNestedInsideComposite() {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new Uint32Adapter());
 
         // A composite type "Container" with a primitive nested field
@@ -541,9 +541,9 @@ public class ProviderDefinedTypeRegistryTest {
         });
 
         final Map<String, Object> containerFields = new HashMap<>();
-        containerFields.put("id", new PrimitiveProviderDefinedType("Uint32", "99"));
+        containerFields.put("id", new PrimitivePDT("Uint32", "99"));
         containerFields.put("label", "test");
-        final ProviderDefinedType containerPdt = new ProviderDefinedType("Container", containerFields);
+        final CompositePDT containerPdt = new CompositePDT("Container", containerFields);
 
         final Object result = registry.hydrate(containerPdt);
         assertTrue(result instanceof Map);

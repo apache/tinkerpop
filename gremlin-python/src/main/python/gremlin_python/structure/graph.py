@@ -143,14 +143,14 @@ class Path(object):
         return len(self.objects)
 
 
-class ProviderDefinedType(object):
+class CompositePDT(object):
     def __init__(self, name, fields):
         if not name:
             raise ValueError("name cannot be null or empty")
         self._name = name
         self._fields = dict(fields) if fields else {}
         if any(not isinstance(k, str) for k in self._fields):
-            raise TypeError("ProviderDefinedType field keys must be strings")
+            raise TypeError("CompositePDT field keys must be strings")
 
     @property
     def name(self):
@@ -161,7 +161,7 @@ class ProviderDefinedType(object):
         return self._fields
 
     def __eq__(self, other):
-        return isinstance(other, ProviderDefinedType) and self._name == other._name and self._fields == other._fields
+        return isinstance(other, CompositePDT) and self._name == other._name and self._fields == other._fields
 
     def __hash__(self):
         try:
@@ -173,7 +173,7 @@ class ProviderDefinedType(object):
         return f"pdt[{self._name}]{self._fields}"
 
 
-class PrimitiveProviderDefinedType(object):
+class PrimitivePDT(object):
     """An immutable primitive provider-defined type consisting of a name and an opaque string value."""
 
     def __init__(self, name, value):
@@ -193,7 +193,7 @@ class PrimitiveProviderDefinedType(object):
         return self._value
 
     def __eq__(self, other):
-        return isinstance(other, PrimitiveProviderDefinedType) and self._name == other._name and self._value == other._value
+        return isinstance(other, PrimitivePDT) and self._name == other._name and self._value == other._value
 
     def __hash__(self):
         return hash((self._name, self._value))
@@ -202,7 +202,7 @@ class PrimitiveProviderDefinedType(object):
         return f"pdt[{self._name}]({self._value})"
 
 
-class ProviderDefinedTypeRegistry(object):
+class PDTRegistry(object):
     def __init__(self):
         self._composite_adapters_by_name = {}
         self._composite_adapters_by_class = {}
@@ -272,20 +272,20 @@ class ProviderDefinedTypeRegistry(object):
         return registry
 
     def hydrate(self, pdt):
-        """Attempt to hydrate a ProviderDefinedType. Returns typed object or raw PDT."""
-        if not isinstance(pdt, ProviderDefinedType):
+        """Attempt to hydrate a CompositePDT. Returns typed object or raw PDT."""
+        if not isinstance(pdt, CompositePDT):
             return pdt
 
         # Always recurse into fields to hydrate nested registered PDTs.
         changed = False
         hydrated_fields = {}
         for k, v in pdt.fields.items():
-            if isinstance(v, ProviderDefinedType):
+            if isinstance(v, CompositePDT):
                 h = self.hydrate(v)
                 if h is not v:
                     changed = True
                 hydrated_fields[k] = h
-            elif isinstance(v, PrimitiveProviderDefinedType):
+            elif isinstance(v, PrimitivePDT):
                 h = self.hydrate_primitive(v)
                 if h is not v:
                     changed = True
@@ -295,7 +295,7 @@ class ProviderDefinedTypeRegistry(object):
 
         adapter = self._composite_adapters_by_name.get(pdt.name)
         if adapter is None:
-            return ProviderDefinedType(pdt.name, hydrated_fields) if changed else pdt
+            return CompositePDT(pdt.name, hydrated_fields) if changed else pdt
         try:
             return adapter['deserialize'](hydrated_fields)
         except Exception as e:
@@ -304,8 +304,8 @@ class ProviderDefinedTypeRegistry(object):
             return pdt
 
     def hydrate_primitive(self, pdt):
-        """Attempt to hydrate a PrimitiveProviderDefinedType. Returns typed object or raw PDT."""
-        if not isinstance(pdt, PrimitiveProviderDefinedType):
+        """Attempt to hydrate a PrimitivePDT. Returns typed object or raw PDT."""
+        if not isinstance(pdt, PrimitivePDT):
             return pdt
         adapter = self._primitive_adapters_by_name.get(pdt.name)
         if adapter is None:

@@ -92,18 +92,18 @@ func (r *PDTRegistry) GetAdapterByType(t reflect.Type) *PDTAdapter {
 	return r.adaptersByType[t]
 }
 
-// Hydrate converts a ProviderDefinedType into a domain object using the registered adapter.
+// Hydrate converts a CompositePDT into a domain object using the registered adapter.
 // Returns the raw PDT if no adapter is found or if hydration fails.
 // Nested registered PDTs in Fields are always hydrated recursively, even when the outer has no adapter.
-func (r *PDTRegistry) Hydrate(pdt *ProviderDefinedType) interface{} {
+func (r *PDTRegistry) Hydrate(pdt *CompositePDT) interface{} {
 	if pdt == nil {
 		return nil
 	}
 	hydratedFields := make(map[string]interface{}, len(pdt.Fields))
 	for k, v := range pdt.Fields {
-		if nested, ok := v.(*ProviderDefinedType); ok {
+		if nested, ok := v.(*CompositePDT); ok {
 			hydratedFields[k] = r.Hydrate(nested)
-		} else if nested, ok := v.(*PrimitiveProviderDefinedType); ok {
+		} else if nested, ok := v.(*PrimitivePDT); ok {
 			hydratedFields[k] = r.HydratePrimitive(nested)
 		} else {
 			hydratedFields[k] = v
@@ -111,7 +111,7 @@ func (r *PDTRegistry) Hydrate(pdt *ProviderDefinedType) interface{} {
 	}
 	adapter, ok := r.adaptersByName[pdt.Name]
 	if !ok {
-		return &ProviderDefinedType{Name: pdt.Name, Fields: hydratedFields}
+		return &CompositePDT{Name: pdt.Name, Fields: hydratedFields}
 	}
 	result, err := adapter.FromFields(hydratedFields)
 	if err != nil {
@@ -139,9 +139,9 @@ func (r *PDTRegistry) GetPrimitiveAdapterByType(t reflect.Type) *PrimitivePDTAda
 	return r.primitiveAdaptersByType[t]
 }
 
-// HydratePrimitive converts a PrimitiveProviderDefinedType into a domain object using the registered primitive adapter.
+// HydratePrimitive converts a PrimitivePDT into a domain object using the registered primitive adapter.
 // Returns the raw PDT if no adapter is found or if hydration fails.
-func (r *PDTRegistry) HydratePrimitive(pdt *PrimitiveProviderDefinedType) interface{} {
+func (r *PDTRegistry) HydratePrimitive(pdt *PrimitivePDT) interface{} {
 	if pdt == nil {
 		return nil
 	}

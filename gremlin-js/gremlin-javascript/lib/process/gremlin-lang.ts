@@ -20,8 +20,8 @@
 import { P, TextP, EnumValue } from './traversal.js';
 import { OptionsStrategy, TraversalStrategy } from './traversal-strategy.js';
 import { Long, Int, Float, Double, Short, Byte, INT32_MIN, INT32_MAX } from '../utils.js';
-import { Vertex, ProviderDefinedType, PrimitiveProviderDefinedType } from '../structure/graph.js';
-import { ProviderDefinedTypeRegistry } from '../structure/ProviderDefinedTypeRegistry.js';
+import { Vertex, CompositePDT, PrimitivePDT } from '../structure/graph.js';
+import { PDTRegistry } from '../structure/PDTRegistry.js';
 import { GValue } from './gvalue.js';
 import { isDeepStrictEqual } from 'node:util';
 import { Buffer } from 'buffer';
@@ -32,7 +32,7 @@ export default class GremlinLang {
   private gremlin: string = '';
   private optionsStrategies: OptionsStrategy[] = [];
   private parameters: Map<string, any> = new Map();
-  pdtRegistry: ProviderDefinedTypeRegistry | null = null;
+  pdtRegistry: PDTRegistry | null = null;
   
   constructor(toClone?: GremlinLang) {
     if (toClone) {
@@ -156,14 +156,14 @@ export default class GremlinLang {
     if (typeof arg === 'function' && arg.prototype instanceof TraversalStrategy) {
       return arg.name;
     }
-    if (arg instanceof PrimitiveProviderDefinedType) {
+    if (arg instanceof PrimitivePDT) {
       // PDT literals use double-quoted strings (consistent with the composite PDT form below);
       // JSON.stringify handles special-character escaping, then the outer quotes are stripped.
       const escapedName = JSON.stringify(arg.name).slice(1, -1);
       const escapedValue = JSON.stringify(arg.value).slice(1, -1);
       return `PDT("${escapedName}","${escapedValue}")`;
     }
-    if (arg instanceof ProviderDefinedType) {
+    if (arg instanceof CompositePDT) {
       const fields = arg.fields;
       const keys = Object.keys(fields);
       const escapedName = JSON.stringify(arg.name).slice(1, -1);
@@ -222,12 +222,12 @@ export default class GremlinLang {
       const primitiveEntry = this.pdtRegistry.getPrimitiveAdapterByClass(arg.constructor);
       if (primitiveEntry) {
         const value = primitiveEntry.toValue(arg);
-        return this._argAsString(new PrimitiveProviderDefinedType(primitiveEntry.typeName, value));
+        return this._argAsString(new PrimitivePDT(primitiveEntry.typeName, value));
       }
       const entry = this.pdtRegistry.getAdapterByClass(arg.constructor);
       if (entry) {
         const fields = entry.serialize(arg);
-        return this._argAsString(new ProviderDefinedType(entry.typeName, fields));
+        return this._argAsString(new CompositePDT(entry.typeName, fields));
       }
     }
     throw new TypeError(`GremlinLang contains at least one type [${arg?.constructor?.name ?? typeof arg}] that cannot be represented as text.`);

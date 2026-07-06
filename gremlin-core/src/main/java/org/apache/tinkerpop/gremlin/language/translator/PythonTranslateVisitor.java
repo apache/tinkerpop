@@ -320,13 +320,13 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     @Override
     public Void visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) {
         if (ctx.genericMapLiteral() != null) {
-            sb.append("ProviderDefinedType(");
+            sb.append("CompositePDT(");
             visitStringLiteral(ctx.stringLiteral(0));
             sb.append(", ");
             visitGenericMapLiteral(ctx.genericMapLiteral());
             sb.append(")");
         } else {
-            sb.append("PrimitiveProviderDefinedType(");
+            sb.append("PrimitivePDT(");
             visitStringLiteral(ctx.stringLiteral(0));
             sb.append(", ");
             visitStringLiteral(ctx.stringLiteral(1));

@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.server.pdt.TinkerId;
 import org.apache.tinkerpop.gremlin.server.pdt.Uint32;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -96,9 +96,9 @@ public class GremlinServerPrimitivePdtIntegrateTest extends AbstractGremlinServe
 
         assertEquals(1, results.size());
         final Object obj = results.get(0).getObject();
-        // Measurement has no adapter registered, so outer is raw ProviderDefinedType
-        assertThat(obj, instanceOf(ProviderDefinedType.class));
-        final ProviderDefinedType pdt = (ProviderDefinedType) obj;
+        // Measurement has no adapter registered, so outer is raw CompositePDT
+        assertThat(obj, instanceOf(CompositePDT.class));
+        final CompositePDT pdt = (CompositePDT) obj;
         assertEquals("Measurement", pdt.getName());
         assertEquals("meters", pdt.getFields().get("unit"));
         // Nested primitive is hydrated to Uint32

@@ -18,14 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary;
 
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.PrimitiveProviderDefinedTypeSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.ProviderDefinedTypeSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.types.PrimitivePDTSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.types.CompositePDTSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TransformSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.io.IOException;
@@ -51,7 +51,7 @@ import java.util.Optional;
  */
 public class GraphBinaryWriter {
     private final TypeSerializerRegistry registry;
-    private final ProviderDefinedTypeRegistry pdtRegistry;
+    private final PDTRegistry pdtRegistry;
     private final static byte VALUE_FLAG_NULL = 1;
     private final static byte VALUE_FLAG_NONE = 0;
     private final static byte VALUE_FLAG_ORDERED = 2;
@@ -68,7 +68,7 @@ public class GraphBinaryWriter {
         this(registry, null);
     }
 
-    public GraphBinaryWriter(final TypeSerializerRegistry registry, final ProviderDefinedTypeRegistry pdtRegistry) {
+    public GraphBinaryWriter(final TypeSerializerRegistry registry, final PDTRegistry pdtRegistry) {
         this.registry = registry;
         this.pdtRegistry = pdtRegistry;
     }
@@ -89,11 +89,11 @@ public class GraphBinaryWriter {
         final Class<?> objectClass = value.getClass();
 
         final TypeSerializer<T> serializer = getSerializerOrAdapterFallback(objectClass);
-        if (serializer instanceof ProviderDefinedTypeSerializer && !(value instanceof ProviderDefinedType)) {
+        if (serializer instanceof CompositePDTSerializer && !(value instanceof CompositePDT)) {
             serializer.writeValue((T) dehydrateToPdt(value, objectClass), buffer, this, nullable);
             return;
         }
-        if (serializer instanceof PrimitiveProviderDefinedTypeSerializer && !(value instanceof PrimitiveProviderDefinedType)) {
+        if (serializer instanceof PrimitivePDTSerializer && !(value instanceof PrimitivePDT)) {
             serializer.writeValue((T) dehydrateToPrimitivePdt(value, objectClass), buffer, this, nullable);
             return;
         }
@@ -113,15 +113,15 @@ public class GraphBinaryWriter {
         final Class<?> objectClass = value.getClass();
         final TypeSerializer<T> serializer = getSerializerOrAdapterFallback(objectClass);
 
-        if (serializer instanceof ProviderDefinedTypeSerializer && !(value instanceof ProviderDefinedType)) {
-            // Convert @ProviderDefined-annotated object to ProviderDefinedType, then re-enter write().
-            // On re-entry, ProviderDefinedType.class is directly registered in the registry,
+        if (serializer instanceof CompositePDTSerializer && !(value instanceof CompositePDT)) {
+            // Convert @ProviderDefined-annotated object to CompositePDT, then re-enter write().
+            // On re-entry, CompositePDT.class is directly registered in the registry,
             // and the instanceof guard prevents double-wrapping.
             write((T) dehydrateToPdt(value, objectClass), buffer);
             return;
         }
 
-        if (serializer instanceof PrimitiveProviderDefinedTypeSerializer && !(value instanceof PrimitiveProviderDefinedType)) {
+        if (serializer instanceof PrimitivePDTSerializer && !(value instanceof PrimitivePDT)) {
             write((T) dehydrateToPrimitivePdt(value, objectClass), buffer);
             return;
         }
@@ -198,30 +198,30 @@ public class GraphBinaryWriter {
     }
 
     /**
-     * Dehydrates a value to a {@link ProviderDefinedType} using annotation reflection or an adapter from the
+     * Dehydrates a value to a {@link CompositePDT} using annotation reflection or an adapter from the
      * pdtRegistry.
      */
-    private ProviderDefinedType dehydrateToPdt(final Object value, final Class<?> objectClass) {
+    private CompositePDT dehydrateToPdt(final Object value, final Class<?> objectClass) {
         // A registered adapter takes priority
         if (pdtRegistry != null) {
             final Optional<CompositePDTAdapter<?>> opt = pdtRegistry.getCompositeAdapterByClass(objectClass);
             if (opt.isPresent()) {
                 final CompositePDTAdapter adapter = opt.get();
-                return new ProviderDefinedType(adapter.typeName(), adapter.toFields(value));
+                return new CompositePDT(adapter.typeName(), adapter.toFields(value));
             }
         }
         // @ProviderDefined annotation base case
-        return ProviderDefinedType.from(value);
+        return CompositePDT.from(value);
     }
 
 
     /**
-     * Dehydrates a value to a {@link PrimitiveProviderDefinedType} using a {@link PrimitivePDTAdapter} from the
+     * Dehydrates a value to a {@link PrimitivePDT} using a {@link PrimitivePDTAdapter} from the
      * pdtRegistry.
      */
-    private PrimitiveProviderDefinedType dehydrateToPrimitivePdt(final Object value, final Class<?> objectClass) {
+    private PrimitivePDT dehydrateToPrimitivePdt(final Object value, final Class<?> objectClass) {
         final PrimitivePDTAdapter adapter = pdtRegistry.getPrimitiveAdapterByClass(objectClass).get();
-        return new PrimitiveProviderDefinedType(adapter.typeName(), adapter.toValue(value));
+        return new PrimitivePDT(adapter.typeName(), adapter.toValue(value));
     }
 
 }

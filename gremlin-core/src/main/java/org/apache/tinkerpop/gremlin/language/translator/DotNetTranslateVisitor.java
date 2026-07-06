@@ -1420,13 +1420,13 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     @Override
     public Void visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) {
         if (ctx.genericMapLiteral() != null) {
-            sb.append("new ProviderDefinedType(");
+            sb.append("new CompositePDT(");
             sb.append(ctx.stringLiteral(0).getText());
             sb.append(", ");
             visitGenericMapLiteral(ctx.genericMapLiteral());
             sb.append(")");
         } else {
-            sb.append("new PrimitiveProviderDefinedType(");
+            sb.append("new PrimitivePDT(");
             sb.append(ctx.stringLiteral(0).getText());
             sb.append(", ");
             sb.append(ctx.stringLiteral(1).getText());

@@ -199,12 +199,12 @@ function areEqual(obj1: any, obj2: any) {
 /**
  * Represents a composite Provider Defined Type (PDT).
  */
-export class ProviderDefinedType {
+export class CompositePDT {
   readonly name: string;
   readonly fields: Readonly<Record<string, any>>;
 
   constructor(name: string, fields?: Record<string, any>) {
-    if (!name) throw new Error('ProviderDefinedType name cannot be null or empty');
+    if (!name) throw new Error('CompositePDT name cannot be null or empty');
     this.name = name;
     this.fields = Object.freeze(fields || {});
   }
@@ -217,13 +217,13 @@ export class ProviderDefinedType {
 /**
  * Represents a primitive Provider Defined Type (PDT).
  */
-export class PrimitiveProviderDefinedType {
+export class PrimitivePDT {
   readonly name: string;
   readonly value: string;
 
   constructor(name: string, value: string) {
-    if (!name) throw new Error('PrimitiveProviderDefinedType name cannot be null or empty');
-    if (value === null || value === undefined) throw new Error('PrimitiveProviderDefinedType value cannot be null');
+    if (!name) throw new Error('PrimitivePDT name cannot be null or empty');
+    if (value === null || value === undefined) throw new Error('PrimitivePDT value cannot be null');
     this.name = name;
     this.value = value;
   }

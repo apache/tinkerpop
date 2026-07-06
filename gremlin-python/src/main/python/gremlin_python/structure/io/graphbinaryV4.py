@@ -30,8 +30,8 @@ from aenum import Enum
 from gremlin_python.process.traversal import Direction, T, Merge
 from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, BigIntType, \
     DictType, SetType, SingleByte, SingleChar
-from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path, ProviderDefinedType, \
-    PrimitiveProviderDefinedType, _pdt_decorated_types
+from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path, CompositePDT, \
+    PrimitivePDT, _pdt_decorated_types
 from gremlin_python.structure.io.util import HashableDict, SymbolUtil, Marker
 
 log = logging.getLogger(__name__)
@@ -178,28 +178,28 @@ class GraphBinaryReader(object):
             result = objectify(buff, self, nullable)
         else:
             result = self.deserializers[data_type].objectify(buff, self, nullable)
-        if self.pdt_registry is not None and isinstance(result, PrimitiveProviderDefinedType):
+        if self.pdt_registry is not None and isinstance(result, PrimitivePDT):
             hydrated = self.pdt_registry.hydrate_primitive(result)
-            if not isinstance(hydrated, PrimitiveProviderDefinedType):
+            if not isinstance(hydrated, PrimitivePDT):
                 return hydrated
             result = hydrated
-        if self.pdt_registry is not None and isinstance(result, ProviderDefinedType):
+        if self.pdt_registry is not None and isinstance(result, CompositePDT):
             hydrated = self.pdt_registry.hydrate(result)
-            if not isinstance(hydrated, ProviderDefinedType):
+            if not isinstance(hydrated, CompositePDT):
                 return hydrated
             result = hydrated
-        if isinstance(result, ProviderDefinedType) and result.name in _pdt_decorated_types:
+        if isinstance(result, CompositePDT) and result.name in _pdt_decorated_types:
             return self._hydrate_decorated(result)
         return result
 
     def _hydrate_decorated(self, pdt):
-        """Hydrate a ProviderDefinedType using a @provider_defined decorated class."""
+        """Hydrate a CompositePDT using a @provider_defined decorated class."""
         cls = _pdt_decorated_types[pdt.name]
         fields = {}
         for k, v in pdt.fields.items():
-            if isinstance(v, ProviderDefinedType) and v.name in _pdt_decorated_types:
+            if isinstance(v, CompositePDT) and v.name in _pdt_decorated_types:
                 fields[k] = self._hydrate_decorated(v)
-            elif self.pdt_registry is not None and isinstance(v, ProviderDefinedType):
+            elif self.pdt_registry is not None and isinstance(v, CompositePDT):
                 fields[k] = self.pdt_registry.hydrate(v)
             else:
                 fields[k] = v
@@ -960,8 +960,8 @@ class MarkerIO(_GraphBinaryTypeIO):
                            nullable)
 
 
-class ProviderDefinedTypeIO(_GraphBinaryTypeIO):
-    python_type = ProviderDefinedType
+class CompositePDTIO(_GraphBinaryTypeIO):
+    python_type = CompositePDT
     graphbinary_type = DataType.composite_pdt
 
     @classmethod
@@ -979,11 +979,11 @@ class ProviderDefinedTypeIO(_GraphBinaryTypeIO):
     def _read_pdt(cls, b, r):
         name = r.read_object(b)
         fields = r.read_object(b)
-        return ProviderDefinedType(name, fields)
+        return CompositePDT(name, fields)
 
 
-class PrimitiveProviderDefinedTypeIO(_GraphBinaryTypeIO):
-    python_type = PrimitiveProviderDefinedType
+class PrimitivePDTIO(_GraphBinaryTypeIO):
+    python_type = PrimitivePDT
     graphbinary_type = DataType.primitive_pdt
 
     @classmethod
@@ -1001,4 +1001,4 @@ class PrimitiveProviderDefinedTypeIO(_GraphBinaryTypeIO):
     def _read_primitive_pdt(cls, b, r):
         name = r.read_object(b)
         value = r.read_object(b)
-        return PrimitiveProviderDefinedType(name, value)
+        return PrimitivePDT(name, value)

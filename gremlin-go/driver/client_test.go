@@ -295,7 +295,7 @@ func AssertMarkoVertexWithoutProperties(t *testing.T, result *Result) {
 	assert.Equal(t, 0, len(properties))
 }
 
-func TestProviderDefinedTypeIntegration(t *testing.T) {
+func TestCompositePDTIntegration(t *testing.T) {
 	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
 	testNoAuthEnable := getEnvOrDefaultBool("RUN_INTEGRATION_TESTS", true)
 
@@ -315,8 +315,8 @@ func TestProviderDefinedTypeIntegration(t *testing.T) {
 		require.NoError(t, err)
 		require.True(t, ok)
 
-		pdt, ok := result.Data.(*ProviderDefinedType)
-		require.True(t, ok, "expected *ProviderDefinedType, got %T", result.Data)
+		pdt, ok := result.Data.(*CompositePDT)
+		require.True(t, ok, "expected *CompositePDT, got %T", result.Data)
 		assert.Equal(t, "Point", pdt.Name)
 		assert.Equal(t, int32(1), pdt.Fields["x"])
 		assert.Equal(t, int32(2), pdt.Fields["y"])
@@ -340,14 +340,14 @@ func TestProviderDefinedTypeIntegration(t *testing.T) {
 		require.NoError(t, err)
 		require.True(t, ok)
 
-		pdt, ok := result.Data.(*ProviderDefinedType)
-		require.True(t, ok, "expected *ProviderDefinedType, got %T", result.Data)
+		pdt, ok := result.Data.(*CompositePDT)
+		require.True(t, ok, "expected *CompositePDT, got %T", result.Data)
 		assert.Equal(t, "Person", pdt.Name)
 		assert.Equal(t, "Alice", pdt.Fields["name"])
 		assert.Equal(t, int32(30), pdt.Fields["age"])
 
-		address, ok := pdt.Fields["address"].(*ProviderDefinedType)
-		require.True(t, ok, "expected nested *ProviderDefinedType for address")
+		address, ok := pdt.Fields["address"].(*CompositePDT)
+		require.True(t, ok, "expected nested *CompositePDT for address")
 		assert.Equal(t, "Address", address.Name)
 		assert.Equal(t, "123 Main St", address.Fields["street"])
 		assert.Equal(t, "Springfield", address.Fields["city"])
@@ -375,13 +375,13 @@ func TestProviderDefinedTypeIntegration(t *testing.T) {
 		require.True(t, ok, "expected []interface{}, got %T", result.Data)
 		require.Len(t, list, 2)
 
-		p1, ok := list[0].(*ProviderDefinedType)
+		p1, ok := list[0].(*CompositePDT)
 		require.True(t, ok)
 		assert.Equal(t, "Point", p1.Name)
 		assert.Equal(t, int32(1), p1.Fields["x"])
 		assert.Equal(t, int32(2), p1.Fields["y"])
 
-		p2, ok := list[1].(*ProviderDefinedType)
+		p2, ok := list[1].(*CompositePDT)
 		require.True(t, ok)
 		assert.Equal(t, "Point", p2.Name)
 		assert.Equal(t, int32(3), p2.Fields["x"])

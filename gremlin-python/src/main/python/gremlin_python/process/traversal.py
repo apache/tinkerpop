@@ -25,7 +25,7 @@ import uuid
 import warnings
 
 from aenum import Enum
-from gremlin_python.structure.graph import Vertex, Edge, Path, Property, ProviderDefinedType, PrimitiveProviderDefinedType
+from gremlin_python.structure.graph import Vertex, Edge, Path, Property, CompositePDT, PrimitivePDT
 
 from .. import statics
 from ..statics import long, SingleByte, SingleChar, short, bigint, BigDecimal
@@ -911,10 +911,10 @@ class GremlinLang(object):
             else:
                 return tmp
 
-        if isinstance(arg, ProviderDefinedType):
+        if isinstance(arg, CompositePDT):
             return f'PDT({self._arg_as_string(arg.name)},{self._process_dict(arg.fields)})'
 
-        if isinstance(arg, PrimitiveProviderDefinedType):
+        if isinstance(arg, PrimitivePDT):
             return f'PDT({self._arg_as_string(arg.name)},{self._arg_as_string(arg.value)})'
 
         if isinstance(arg, Vertex):
@@ -966,11 +966,11 @@ class GremlinLang(object):
             primitive_adapter = self.pdt_registry.get_primitive_adapter_by_class(type(arg))
             if primitive_adapter is not None and primitive_adapter['to_value'] is not None:
                 value = primitive_adapter['to_value'](arg)
-                return self._arg_as_string(PrimitiveProviderDefinedType(primitive_adapter['type_name'], value))
+                return self._arg_as_string(PrimitivePDT(primitive_adapter['type_name'], value))
             adapter = self.pdt_registry.get_composite_adapter_by_class(type(arg))
             if adapter is not None and adapter['serialize'] is not None:
                 fields = adapter['serialize'](arg)
-                return self._arg_as_string(ProviderDefinedType(adapter['type_name'], fields))
+                return self._arg_as_string(CompositePDT(adapter['type_name'], fields))
 
         # Auto-dehydrate @provider_defined decorated objects
         if hasattr(arg, '_pdt_name'):
@@ -981,7 +981,7 @@ class GremlinLang(object):
                 fields = [f for f in fields if f in included]
             elif excluded:
                 fields = [f for f in fields if f not in excluded]
-            pdt = ProviderDefinedType(arg._pdt_name, {f: getattr(arg, f) for f in fields})
+            pdt = CompositePDT(arg._pdt_name, {f: getattr(arg, f) for f in fields})
             return self._arg_as_string(pdt)
 
         raise TypeError(f'GremlinLang contains at least one type [{type(arg).__name__}] that cannot be represented as text.')

@@ -22,7 +22,7 @@ import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.junit.Test;
 
@@ -31,7 +31,7 @@ import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class PrimitiveProviderDefinedTypeSerializerTest {
+public class PrimitivePDTSerializerTest {
 
     private static final GraphBinaryReader reader = new GraphBinaryReader();
     private static final GraphBinaryWriter writer = new GraphBinaryWriter();
@@ -47,50 +47,50 @@ public class PrimitiveProviderDefinedTypeSerializerTest {
 
     @Test
     public void shouldRoundTripSimplePrimitivePdt() throws IOException {
-        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Uint32", "42");
+        final PrimitivePDT pdt = new PrimitivePDT("Uint32", "42");
 
         final Buffer buffer = writeAndRead(pdt);
-        final PrimitiveProviderDefinedType result = reader.read(buffer);
+        final PrimitivePDT result = reader.read(buffer);
 
         assertEquals(pdt, result);
     }
 
     @Test
     public void shouldRoundTripEmptyValue() throws IOException {
-        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Empty", "");
+        final PrimitivePDT pdt = new PrimitivePDT("Empty", "");
 
         final Buffer buffer = writeAndRead(pdt);
-        final PrimitiveProviderDefinedType result = reader.read(buffer);
+        final PrimitivePDT result = reader.read(buffer);
 
         assertEquals(pdt, result);
     }
 
     @Test
     public void shouldPreserveLeadingZeros() throws IOException {
-        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Uint32", "007");
+        final PrimitivePDT pdt = new PrimitivePDT("Uint32", "007");
 
         final Buffer buffer = writeAndRead(pdt);
-        final PrimitiveProviderDefinedType result = reader.read(buffer);
+        final PrimitivePDT result = reader.read(buffer);
 
         assertEquals("007", result.getValue());
     }
 
     @Test
     public void shouldPreserveLargeValues() throws IOException {
-        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Uint32", "4294967295");
+        final PrimitivePDT pdt = new PrimitivePDT("Uint32", "4294967295");
 
         final Buffer buffer = writeAndRead(pdt);
-        final PrimitiveProviderDefinedType result = reader.read(buffer);
+        final PrimitivePDT result = reader.read(buffer);
 
         assertEquals("4294967295", result.getValue());
     }
 
     @Test
     public void shouldPreserveNonNumericStrings() throws IOException {
-        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("TinkerId", "abc-def-123");
+        final PrimitivePDT pdt = new PrimitivePDT("TinkerId", "abc-def-123");
 
         final Buffer buffer = writeAndRead(pdt);
-        final PrimitiveProviderDefinedType result = reader.read(buffer);
+        final PrimitivePDT result = reader.read(buffer);
 
         assertEquals("abc-def-123", result.getValue());
     }

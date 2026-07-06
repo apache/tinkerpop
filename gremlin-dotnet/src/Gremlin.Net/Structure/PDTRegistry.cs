@@ -33,7 +33,7 @@ namespace Gremlin.Net.Structure
     /// Registry for <see cref="IProviderDefinedTypeAdapter{T}"/> and <see cref="IPrimitivePdtAdapter{T}"/>
     /// instances that hydrate provider-defined types into strongly-typed objects.
     /// </summary>
-    public class ProviderDefinedTypeRegistry
+    public class PDTRegistry
     {
         private readonly Dictionary<string, object> _compositeAdaptersByName = new();
         private readonly Dictionary<Type, (string typeName, object adapter)> _compositeAdaptersByType = new();
@@ -66,9 +66,9 @@ namespace Gremlin.Net.Structure
         /// <item>Types annotated with <see cref="ProviderDefinedAttribute"/> (annotation-based round-trip)</item>
         /// </list>
         /// </summary>
-        public static ProviderDefinedTypeRegistry Create()
+        public static PDTRegistry Create()
         {
-            var registry = new ProviderDefinedTypeRegistry();
+            var registry = new PDTRegistry();
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
@@ -85,7 +85,7 @@ namespace Gremlin.Net.Structure
                             try
                             {
                                 var adapter = Activator.CreateInstance(type);
-                                var registerMethod = typeof(ProviderDefinedTypeRegistry)
+                                var registerMethod = typeof(PDTRegistry)
                                     .GetMethod(nameof(Register))!
                                     .MakeGenericMethod(compositeInterface.GetGenericArguments()[0]);
                                 registerMethod.Invoke(registry, new[] { adapter });
@@ -105,7 +105,7 @@ namespace Gremlin.Net.Structure
                             try
                             {
                                 var adapter = Activator.CreateInstance(type);
-                                var registerMethod = typeof(ProviderDefinedTypeRegistry)
+                                var registerMethod = typeof(PDTRegistry)
                                     .GetMethod(nameof(RegisterPrimitive))!
                                     .MakeGenericMethod(primitiveInterface.GetGenericArguments()[0]);
                                 registerMethod.Invoke(registry, new[] { adapter });
@@ -170,10 +170,10 @@ namespace Gremlin.Net.Structure
         }
 
         /// <summary>
-        /// Hydrates a <see cref="ProviderDefinedType"/> into a typed object using a registered composite adapter.
+        /// Hydrates a <see cref="CompositePDT"/> into a typed object using a registered composite adapter.
         /// Returns the original PDT if no adapter is registered or if hydration fails.
         /// </summary>
-        public object HydrateComposite(ProviderDefinedType pdt)
+        public object HydrateComposite(CompositePDT pdt)
         {
             if (!_compositeAdaptersByName.TryGetValue(pdt.Name, out var adapterObj))
             {
@@ -182,9 +182,9 @@ namespace Gremlin.Net.Structure
                 foreach (var (key, value) in pdt.Fields)
                 {
                     object? hydrated = value;
-                    if (value is ProviderDefinedType nested)
+                    if (value is CompositePDT nested)
                         hydrated = HydrateComposite(nested);
-                    else if (value is PrimitiveProviderDefinedType nestedPrim)
+                    else if (value is PrimitivePDT nestedPrim)
                         hydrated = HydratePrimitive(nestedPrim);
 
                     if (!ReferenceEquals(hydrated, value))
@@ -193,16 +193,16 @@ namespace Gremlin.Net.Structure
                         resolved[key] = hydrated;
                     }
                 }
-                return resolved != null ? new ProviderDefinedType(pdt.Name, resolved) : pdt;
+                return resolved != null ? new CompositePDT(pdt.Name, resolved) : pdt;
             }
             try
             {
                 var hydratedFields = new Dictionary<string, object?>();
                 foreach (var (key, value) in pdt.Fields)
                 {
-                    if (value is ProviderDefinedType nested)
+                    if (value is CompositePDT nested)
                         hydratedFields[key] = HydrateComposite(nested);
-                    else if (value is PrimitiveProviderDefinedType nestedPrim)
+                    else if (value is PrimitivePDT nestedPrim)
                         hydratedFields[key] = HydratePrimitive(nestedPrim);
                     else
                         hydratedFields[key] = value;
@@ -219,10 +219,10 @@ namespace Gremlin.Net.Structure
         }
 
         /// <summary>
-        /// Hydrates a <see cref="PrimitiveProviderDefinedType"/> into a typed object using a registered primitive adapter.
+        /// Hydrates a <see cref="PrimitivePDT"/> into a typed object using a registered primitive adapter.
         /// Returns the original primitive PDT if no adapter is registered or if hydration fails.
         /// </summary>
-        public object HydratePrimitive(PrimitiveProviderDefinedType pdt)
+        public object HydratePrimitive(PrimitivePDT pdt)
         {
             if (!_primitiveAdaptersByName.TryGetValue(pdt.Name, out var adapterObj))
                 return pdt;
@@ -238,10 +238,10 @@ namespace Gremlin.Net.Structure
         }
 
         /// <summary>
-        /// Hydrates a <see cref="ProviderDefinedType"/> into a typed object using a registered composite adapter.
+        /// Hydrates a <see cref="CompositePDT"/> into a typed object using a registered composite adapter.
         /// Returns the original PDT if no adapter is registered or if hydration fails.
         /// </summary>
         [Obsolete("Use HydrateComposite instead.")]
-        public object Hydrate(ProviderDefinedType pdt) => HydrateComposite(pdt);
+        public object Hydrate(CompositePDT pdt) => HydrateComposite(pdt);
     }
 }

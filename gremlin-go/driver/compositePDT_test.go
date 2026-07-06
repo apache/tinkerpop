@@ -25,9 +25,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestProviderDefinedType(t *testing.T) {
+func TestCompositePDT(t *testing.T) {
 	t.Run("String method", func(t *testing.T) {
-		pdt := &ProviderDefinedType{
+		pdt := &CompositePDT{
 			Name:   "com.example.Test",
 			Fields: map[string]interface{}{"a": int32(1)},
 		}
@@ -35,9 +35,9 @@ func TestProviderDefinedType(t *testing.T) {
 	})
 }
 
-func TestPrimitiveProviderDefinedType(t *testing.T) {
+func TestPrimitivePDT(t *testing.T) {
 	t.Run("String method", func(t *testing.T) {
-		pdt := &PrimitiveProviderDefinedType{
+		pdt := &PrimitivePDT{
 			Name:  "x:Uint32",
 			Value: "42",
 		}

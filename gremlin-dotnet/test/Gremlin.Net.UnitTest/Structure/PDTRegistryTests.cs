@@ -29,14 +29,14 @@ using Xunit;
 
 namespace Gremlin.Net.UnitTest.Structure
 {
-    public class ProviderDefinedTypeRegistryTests
+    public class PDTRegistryTests
     {
         [Fact]
         public void ShouldHydrateToTypedObjectWhenAdapterRegistered()
         {
-            var registry = new ProviderDefinedTypeRegistry();
+            var registry = new PDTRegistry();
             registry.Register(new PointAdapter());
-            var pdt = new ProviderDefinedType("geo:Point",
+            var pdt = new CompositePDT("geo:Point",
                 new Dictionary<string, object?> { ["x"] = 1.0, ["y"] = 2.0 });
 
             var result = registry.Hydrate(pdt);
@@ -49,8 +49,8 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnRawPdtWhenNoAdapterRegistered()
         {
-            var registry = new ProviderDefinedTypeRegistry();
-            var pdt = new ProviderDefinedType("unknown:Type",
+            var registry = new PDTRegistry();
+            var pdt = new CompositePDT("unknown:Type",
                 new Dictionary<string, object?> { ["a"] = "b" });
 
             var result = registry.Hydrate(pdt);
@@ -61,9 +61,9 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnRawPdtWhenAdapterThrows()
         {
-            var registry = new ProviderDefinedTypeRegistry();
+            var registry = new PDTRegistry();
             registry.Register(new ThrowingAdapter());
-            var pdt = new ProviderDefinedType("bad:Type",
+            var pdt = new CompositePDT("bad:Type",
                 new Dictionary<string, object?> { ["x"] = "oops" });
 
             var result = registry.Hydrate(pdt);
@@ -74,14 +74,14 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldHydrateNestedPdt()
         {
-            var registry = new ProviderDefinedTypeRegistry();
+            var registry = new PDTRegistry();
             registry.Register(new PointAdapter());
             registry.Register(new LineAdapter());
-            var startPdt = new ProviderDefinedType("geo:Point",
+            var startPdt = new CompositePDT("geo:Point",
                 new Dictionary<string, object?> { ["x"] = 0.0, ["y"] = 0.0 });
-            var endPdt = new ProviderDefinedType("geo:Point",
+            var endPdt = new CompositePDT("geo:Point",
                 new Dictionary<string, object?> { ["x"] = 3.0, ["y"] = 4.0 });
-            var linePdt = new ProviderDefinedType("geo:Line",
+            var linePdt = new CompositePDT("geo:Line",
                 new Dictionary<string, object?> { ["start"] = startPdt, ["end"] = endPdt });
 
             var result = registry.Hydrate(linePdt);
@@ -105,7 +105,7 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void CreateShouldReturnRegistryWithoutCrashing()
         {
-            var registry = ProviderDefinedTypeRegistry.Create();
+            var registry = PDTRegistry.Create();
 
             Assert.NotNull(registry);
         }
@@ -113,8 +113,8 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void CreateShouldDiscoverAdapterFromAssembly()
         {
-            var registry = ProviderDefinedTypeRegistry.Create();
-            var pdt = new ProviderDefinedType("test:Discoverable",
+            var registry = PDTRegistry.Create();
+            var pdt = new CompositePDT("test:Discoverable",
                 new Dictionary<string, object?> { ["value"] = "hello" });
 
             var result = registry.Hydrate(pdt);
@@ -128,18 +128,18 @@ namespace Gremlin.Net.UnitTest.Structure
         {
             // Contract: a registered/adapted inner PDT always hydrates even when nested inside an
             // unregistered outer PDT. Register only the inner type adapter, NOT the outer.
-            var registry = new ProviderDefinedTypeRegistry();
+            var registry = new PDTRegistry();
             registry.Register(new InnerPointAdapter());
 
-            var innerPdt = new ProviderDefinedType("nested:Point",
+            var innerPdt = new CompositePDT("nested:Point",
                 new Dictionary<string, object?> { ["x"] = 3.0, ["y"] = 4.0 });
-            var outerPdt = new ProviderDefinedType("unregistered:Container",
+            var outerPdt = new CompositePDT("unregistered:Container",
                 new Dictionary<string, object?> { ["location"] = innerPdt, ["label"] = "test" });
 
             var result = registry.Hydrate(outerPdt);
 
             // Outer stays raw PDT since it has no adapter
-            var rawOuter = Assert.IsType<ProviderDefinedType>(result);
+            var rawOuter = Assert.IsType<CompositePDT>(result);
             Assert.Equal("unregistered:Container", rawOuter.Name);
 
             // The inner field SHOULD be hydrated to InnerPoint because it IS registered

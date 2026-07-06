@@ -38,10 +38,10 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
 import org.apache.tinkerpop.gremlin.server.pdt.Measurement;
 import org.apache.tinkerpop.gremlin.server.pdt.Uint32;
 import org.apache.tinkerpop.gremlin.server.pdt.Uint32Adapter;
@@ -1327,11 +1327,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Map<String, Object> fields = new HashMap<>();
             fields.put("x", 1);
             fields.put("y", 2);
-            final ProviderDefinedType pdt = new ProviderDefinedType("TestPoint", fields);
+            final CompositePDT pdt = new CompositePDT("TestPoint", fields);
             final Object result = g.inject(pdt).next();
 
-            assertTrue(result instanceof ProviderDefinedType);
-            final ProviderDefinedType r = (ProviderDefinedType) result;
+            assertTrue(result instanceof CompositePDT);
+            final CompositePDT r = (CompositePDT) result;
             assertEquals("TestPoint", r.getName());
             assertEquals(1, r.getFields().get("x"));
             assertEquals(2, r.getFields().get("y"));
@@ -1342,7 +1342,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldRoundTripRegistryPdtViaTraversal() throws Exception {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new TestPointAdapter());
 
         final Cluster cluster = TestClientFactory.build()
@@ -1365,7 +1365,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldRoundTripAnnotatedPdtViaTraversal() throws Exception {
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(TestAnnotatedPoint.class);
 
         final Cluster cluster = TestClientFactory.build()
@@ -1397,9 +1397,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                     groovyRequestOptions).all().get();
 
             assertEquals(1, results.size());
-            final ProviderDefinedType raw = (ProviderDefinedType) results.get(0).getObject();
+            final CompositePDT raw = (CompositePDT) results.get(0).getObject();
 
-            final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+            final PDTRegistry registry = PDTRegistry.empty();
             registry.register(new TestPointAdapter());
             final Object hydrated = registry.hydrate(raw);
 
@@ -1425,12 +1425,12 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                     groovyRequestOptions).all().get();
 
             assertEquals(1, results.size());
-            // Point is @ProviderDefined, so GraphBinary serializes the stored object as a ProviderDefinedType
-            // on the wire. Without a client-side registry it is received as a raw ProviderDefinedType.
+            // Point is @ProviderDefined, so GraphBinary serializes the stored object as a CompositePDT
+            // on the wire. Without a client-side registry it is received as a raw CompositePDT.
             final Object value = results.get(0).getObject();
-            assertTrue("Expected ProviderDefinedType but got: " + value.getClass().getName(),
-                    value instanceof ProviderDefinedType);
-            final ProviderDefinedType pdt = (ProviderDefinedType) value;
+            assertTrue("Expected CompositePDT but got: " + value.getClass().getName(),
+                    value instanceof CompositePDT);
+            final CompositePDT pdt = (CompositePDT) value;
             assertEquals("Point", pdt.getName());
             assertEquals(3, pdt.getFields().get("x"));
             assertEquals(4, pdt.getFields().get("y"));
@@ -1443,16 +1443,16 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldRoundTripRawPrimitivePdtViaTraversal() {
-        // Unregistered base case: with no adapter, a PrimitiveProviderDefinedType round-trips as-is.
+        // Unregistered base case: with no adapter, a PrimitivePDT round-trips as-is.
         final Cluster cluster = TestClientFactory.build().create();
         try {
             final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
-            final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("UnregisteredPrimitive", "4294967295");
+            final PrimitivePDT pdt = new PrimitivePDT("UnregisteredPrimitive", "4294967295");
             final Object result = g.inject(pdt).next();
 
-            assertTrue("Expected PrimitiveProviderDefinedType but got: " + result.getClass().getName(),
-                    result instanceof PrimitiveProviderDefinedType);
-            final PrimitiveProviderDefinedType r = (PrimitiveProviderDefinedType) result;
+            assertTrue("Expected PrimitivePDT but got: " + result.getClass().getName(),
+                    result instanceof PrimitivePDT);
+            final PrimitivePDT r = (PrimitivePDT) result;
             assertEquals("UnregisteredPrimitive", r.getName());
             assertEquals("4294967295", r.getValue());
         } finally {
@@ -1463,7 +1463,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldRoundTripRegisteredPrimitivePdtViaTraversal() {
         // Registered case: a raw provider object auto-dehydrates on send and auto-hydrates on receive.
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new Uint32Adapter());
 
         final Cluster cluster = TestClientFactory.build()
@@ -1489,7 +1489,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         // auto-dehydrates recursively on send and auto-hydrates recursively on receive.
         // Outer composite is the @ProviderDefined "Measurement" (registered by class); inner primitive
         // uses the Uint32 adapter. Exercises recursive de/hydration across both PDT kinds.
-        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry registry = PDTRegistry.empty();
         registry.register(new Uint32Adapter());
         registry.register(Measurement.class);
 

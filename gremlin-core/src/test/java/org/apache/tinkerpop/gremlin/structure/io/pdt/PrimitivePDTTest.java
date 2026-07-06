@@ -25,71 +25,71 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
-public class PrimitiveProviderDefinedTypeTest {
+public class PrimitivePDTTest {
 
     @Test
     public void shouldConstructWithNameAndValue() {
-        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Uint32", "42");
+        final PrimitivePDT pdt = new PrimitivePDT("Uint32", "42");
         assertEquals("Uint32", pdt.getName());
         assertEquals("42", pdt.getValue());
     }
 
     @Test
     public void shouldAllowEmptyStringValue() {
-        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Empty", "");
+        final PrimitivePDT pdt = new PrimitivePDT("Empty", "");
         assertEquals("", pdt.getValue());
     }
 
     @Test
     public void shouldThrowOnNullName() {
-        assertThrows(IllegalArgumentException.class, () -> new PrimitiveProviderDefinedType(null, "v"));
+        assertThrows(IllegalArgumentException.class, () -> new PrimitivePDT(null, "v"));
     }
 
     @Test
     public void shouldThrowOnEmptyName() {
-        assertThrows(IllegalArgumentException.class, () -> new PrimitiveProviderDefinedType("", "v"));
+        assertThrows(IllegalArgumentException.class, () -> new PrimitivePDT("", "v"));
     }
 
     @Test
     public void shouldThrowOnNullValue() {
-        assertThrows(IllegalArgumentException.class, () -> new PrimitiveProviderDefinedType("Name", null));
+        assertThrows(IllegalArgumentException.class, () -> new PrimitivePDT("Name", null));
     }
 
     @Test
     public void shouldHaveCorrectEquals() {
-        final PrimitiveProviderDefinedType a = new PrimitiveProviderDefinedType("Uint32", "007");
-        final PrimitiveProviderDefinedType b = new PrimitiveProviderDefinedType("Uint32", "007");
+        final PrimitivePDT a = new PrimitivePDT("Uint32", "007");
+        final PrimitivePDT b = new PrimitivePDT("Uint32", "007");
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
     }
 
     @Test
     public void shouldNotEqualDifferentName() {
-        final PrimitiveProviderDefinedType a = new PrimitiveProviderDefinedType("Uint32", "42");
-        final PrimitiveProviderDefinedType b = new PrimitiveProviderDefinedType("Int64", "42");
+        final PrimitivePDT a = new PrimitivePDT("Uint32", "42");
+        final PrimitivePDT b = new PrimitivePDT("Int64", "42");
         assertNotEquals(a, b);
     }
 
     @Test
     public void shouldNotEqualDifferentValue() {
-        final PrimitiveProviderDefinedType a = new PrimitiveProviderDefinedType("Uint32", "42");
-        final PrimitiveProviderDefinedType b = new PrimitiveProviderDefinedType("Uint32", "43");
+        final PrimitivePDT a = new PrimitivePDT("Uint32", "42");
+        final PrimitivePDT b = new PrimitivePDT("Uint32", "43");
         assertNotEquals(a, b);
     }
 
     @Test
     public void shouldHaveCorrectToString() {
-        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Uint32", "42");
+        final PrimitivePDT pdt = new PrimitivePDT("Uint32", "42");
         assertEquals("pdt[Uint32](42)", pdt.toString());
     }
 
     @Test
     public void shouldSupportHydratedObject() {
-        final PrimitiveProviderDefinedType pdt = new PrimitiveProviderDefinedType("Uint32", "42");
+        final PrimitivePDT pdt = new PrimitivePDT("Uint32", "42");
         assertNull(pdt.getHydrated());
 
         final Object hydrated = Long.valueOf(42L);
-        final PrimitiveProviderDefinedType withHydrated = pdt.withHydrated(hydrated);
+        final PrimitivePDT withHydrated = pdt.withHydrated(hydrated);
         assertEquals(hydrated, withHydrated.getHydrated());
         // original is unchanged
         assertNull(pdt.getHydrated());

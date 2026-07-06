@@ -18,8 +18,8 @@
  */
 
 import { assert } from 'chai';
-import { PrimitiveProviderDefinedType, ProviderDefinedType } from '../../../lib/structure/graph.js';
-import { ProviderDefinedTypeRegistry } from '../../../lib/structure/ProviderDefinedTypeRegistry.js';
+import { PrimitivePDT, CompositePDT } from '../../../lib/structure/graph.js';
+import { PDTRegistry } from '../../../lib/structure/PDTRegistry.js';
 import ioc, { DataType } from '../../../lib/structure/io/binary/GraphBinary.js';
 import StreamReader from '../../../lib/structure/io/binary/internals/StreamReader.js';
 
@@ -32,16 +32,16 @@ async function roundTrip(value) {
 
 describe('PrimitivePDTSerializer', () => {
   describe('round-trip: simple primitive PDT', () => {
-    it('serializes and deserializes a simple PrimitiveProviderDefinedType', async () => {
-      const pdt = new PrimitiveProviderDefinedType('Uint32', '42');
+    it('serializes and deserializes a simple PrimitivePDT', async () => {
+      const pdt = new PrimitivePDT('Uint32', '42');
       const result = await roundTrip(pdt);
-      assert.instanceOf(result, PrimitiveProviderDefinedType);
+      assert.instanceOf(result, PrimitivePDT);
       assert.strictEqual(result.name, 'Uint32');
       assert.strictEqual(result.value, '42');
     });
 
     it('uses PRIMITIVEPDT type code', () => {
-      const pdt = new PrimitiveProviderDefinedType('Uint32', '123');
+      const pdt = new PrimitivePDT('Uint32', '123');
       const bytes = anySerializer.serialize(pdt);
       assert.strictEqual(bytes[0], DataType.PRIMITIVEPDT);
     });
@@ -49,28 +49,28 @@ describe('PrimitivePDTSerializer', () => {
 
   describe('round-trip: opaque string values', () => {
     it('handles leading zeros (preserved as string)', async () => {
-      const pdt = new PrimitiveProviderDefinedType('TinkerId', '007');
+      const pdt = new PrimitivePDT('TinkerId', '007');
       const result = await roundTrip(pdt);
-      assert.instanceOf(result, PrimitiveProviderDefinedType);
+      assert.instanceOf(result, PrimitivePDT);
       assert.strictEqual(result.value, '007');
     });
 
     it('handles large numbers', async () => {
-      const pdt = new PrimitiveProviderDefinedType('BigNum', '99999999999999999999999999');
+      const pdt = new PrimitivePDT('BigNum', '99999999999999999999999999');
       const result = await roundTrip(pdt);
       assert.strictEqual(result.value, '99999999999999999999999999');
     });
 
     it('handles non-numeric values', async () => {
-      const pdt = new PrimitiveProviderDefinedType('CustomId', 'abc-def-123');
+      const pdt = new PrimitivePDT('CustomId', 'abc-def-123');
       const result = await roundTrip(pdt);
       assert.strictEqual(result.value, 'abc-def-123');
     });
 
     it('handles empty string value', async () => {
-      const pdt = new PrimitiveProviderDefinedType('Empty', '');
+      const pdt = new PrimitivePDT('Empty', '');
       const result = await roundTrip(pdt);
-      assert.instanceOf(result, PrimitiveProviderDefinedType);
+      assert.instanceOf(result, PrimitivePDT);
       assert.strictEqual(result.name, 'Empty');
       assert.strictEqual(result.value, '');
     });
@@ -78,19 +78,19 @@ describe('PrimitivePDTSerializer', () => {
 
   describe('empty name rejected', () => {
     it('constructor rejects empty string name', () => {
-      assert.throws(() => new PrimitiveProviderDefinedType('', '42'), /name cannot be null or empty/);
+      assert.throws(() => new PrimitivePDT('', '42'), /name cannot be null or empty/);
     });
 
     it('constructor rejects null name', () => {
-      assert.throws(() => new PrimitiveProviderDefinedType(null, '42'), /name cannot be null or empty/);
+      assert.throws(() => new PrimitivePDT(null, '42'), /name cannot be null or empty/);
     });
 
     it('constructor rejects undefined name', () => {
-      assert.throws(() => new PrimitiveProviderDefinedType(undefined, '42'), /name cannot be null or empty/);
+      assert.throws(() => new PrimitivePDT(undefined, '42'), /name cannot be null or empty/);
     });
 
     it('constructor rejects null value', () => {
-      assert.throws(() => new PrimitiveProviderDefinedType('Uint32', null), /value cannot be null/);
+      assert.throws(() => new PrimitivePDT('Uint32', null), /value cannot be null/);
     });
 
     it('deserializer rejects null name from wire', async () => {
@@ -111,8 +111,8 @@ describe('PrimitivePDTSerializer', () => {
   });
 
   describe('canBeUsedFor', () => {
-    it('returns true for PrimitiveProviderDefinedType instances', () => {
-      assert.isTrue(primitivePDTSerializer.canBeUsedFor(new PrimitiveProviderDefinedType('t', '1')));
+    it('returns true for PrimitivePDT instances', () => {
+      assert.isTrue(primitivePDTSerializer.canBeUsedFor(new PrimitivePDT('t', '1')));
     });
 
     it('returns false for plain objects', () => {
@@ -123,48 +123,48 @@ describe('PrimitivePDTSerializer', () => {
       assert.isFalse(primitivePDTSerializer.canBeUsedFor('test'));
     });
 
-    it('returns false for composite ProviderDefinedType', () => {
-      assert.isFalse(primitivePDTSerializer.canBeUsedFor(new ProviderDefinedType('t', { a: 1 })));
+    it('returns false for composite CompositePDT', () => {
+      assert.isFalse(primitivePDTSerializer.canBeUsedFor(new CompositePDT('t', { a: 1 })));
     });
   });
 
   describe('auto-hydration via pdtRegistry', () => {
     it('auto-hydrates when pdtRegistry is set on the reader', async () => {
-      const registry = new ProviderDefinedTypeRegistry();
+      const registry = new PDTRegistry();
       registry.registerPrimitive('Uint32', {
         toValue: (obj) => String(obj),
         fromValue: (value) => parseInt(value, 10),
       });
 
-      const pdt = new PrimitiveProviderDefinedType('Uint32', '42');
+      const pdt = new PrimitivePDT('Uint32', '42');
       const bytes = anySerializer.serialize(pdt);
       const reader = StreamReader.fromBuffer(bytes);
       reader.pdtRegistry = registry;
       const result = await anySerializer.deserialize(reader);
 
-      assert.notInstanceOf(result, PrimitiveProviderDefinedType);
+      assert.notInstanceOf(result, PrimitivePDT);
       assert.strictEqual(result, 42);
     });
 
     it('returns raw primitive PDT when no pdtRegistry is set', async () => {
-      const pdt = new PrimitiveProviderDefinedType('Uint32', '42');
+      const pdt = new PrimitivePDT('Uint32', '42');
       const bytes = anySerializer.serialize(pdt);
       const result = await anySerializer.deserialize(StreamReader.fromBuffer(bytes));
 
-      assert.instanceOf(result, PrimitiveProviderDefinedType);
+      assert.instanceOf(result, PrimitivePDT);
       assert.strictEqual(result.name, 'Uint32');
       assert.strictEqual(result.value, '42');
     });
 
     it('returns raw primitive PDT when no adapter registered for that type', async () => {
-      const registry = new ProviderDefinedTypeRegistry();
-      const pdt = new PrimitiveProviderDefinedType('Unknown', 'xyz');
+      const registry = new PDTRegistry();
+      const pdt = new PrimitivePDT('Unknown', 'xyz');
       const bytes = anySerializer.serialize(pdt);
       const reader = StreamReader.fromBuffer(bytes);
       reader.pdtRegistry = registry;
       const result = await anySerializer.deserialize(reader);
 
-      assert.instanceOf(result, PrimitiveProviderDefinedType);
+      assert.instanceOf(result, PrimitivePDT);
       assert.strictEqual(result.name, 'Unknown');
       assert.strictEqual(result.value, 'xyz');
     });

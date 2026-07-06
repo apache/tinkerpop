@@ -22,35 +22,26 @@ import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
 
 import java.io.IOException;
-import java.util.Map;
 
-public class ProviderDefinedTypeSerializer extends SimpleTypeSerializer<ProviderDefinedType> {
+public class PrimitivePDTSerializer extends SimpleTypeSerializer<PrimitivePDT> {
 
-    public ProviderDefinedTypeSerializer() {
-        super(DataType.COMPOSITE_PDT);
+    public PrimitivePDTSerializer() {
+        super(DataType.PRIMITIVE_PDT);
     }
 
     @Override
-    protected ProviderDefinedType readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
+    protected PrimitivePDT readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
         final String name = context.read(buffer);
-        if (name == null || name.isEmpty())
-            throw new IOException("ProviderDefinedType name cannot be null or empty");
-        final Map<?, ?> fields = context.read(buffer);
-        for (final Object key : fields.keySet()) {
-            if (!(key instanceof String))
-                throw new IOException("ProviderDefinedType fields map must have String keys, found: " + key.getClass().getName());
-        }
-        @SuppressWarnings("unchecked")
-        final Map<String, Object> typedFields = (Map<String, Object>) (Map<?, ?>) fields;
-        return new ProviderDefinedType(name, typedFields);
+        final String value = context.read(buffer);
+        return new PrimitivePDT(name, value);
     }
 
     @Override
-    protected void writeValue(final ProviderDefinedType value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
+    protected void writeValue(final PrimitivePDT value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
         context.write(value.getName(), buffer);
-        context.write(value.getFields(), buffer);
+        context.write(value.getValue(), buffer);
     }
 }

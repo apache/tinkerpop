@@ -39,9 +39,9 @@ namespace Gremlin.Net.UnitTest.Structure
             ProviderDefinedAttribute.RegisteredTypes["test:Person"] = typeof(TestPerson);
             try
             {
-                var addressPdt = new ProviderDefinedType("test:Address",
+                var addressPdt = new CompositePDT("test:Address",
                     new Dictionary<string, object?> { ["Street"] = "123 Main", ["City"] = "Springfield" });
-                var personPdt = new ProviderDefinedType("test:Person",
+                var personPdt = new CompositePDT("test:Person",
                     new Dictionary<string, object?> { ["Name"] = "Alice", ["Address"] = addressPdt });
 
                 var result = ProviderDefinedAttribute.HydrateIfRegistered(personPdt);
@@ -65,7 +65,7 @@ namespace Gremlin.Net.UnitTest.Structure
             ProviderDefinedAttribute.RegisteredTypes["test:Bad"] = typeof(TestBadTarget);
             try
             {
-                var pdt = new ProviderDefinedType("test:Bad",
+                var pdt = new CompositePDT("test:Bad",
                     new Dictionary<string, object?> { ["Count"] = "not-an-int" });
 
                 var result = ProviderDefinedAttribute.HydrateIfRegistered(pdt);
@@ -84,9 +84,9 @@ namespace Gremlin.Net.UnitTest.Structure
             ProviderDefinedAttribute.RegisteredTypes["test:Outer"] = typeof(TestOuter);
             try
             {
-                var nestedPdt = new ProviderDefinedType("test:Unknown",
+                var nestedPdt = new CompositePDT("test:Unknown",
                     new Dictionary<string, object?> { ["X"] = 1 });
-                var outerPdt = new ProviderDefinedType("test:Outer",
+                var outerPdt = new CompositePDT("test:Outer",
                     new Dictionary<string, object?> { ["Inner"] = nestedPdt });
 
                 // Inner is typed as TestInner but nested PDT can't hydrate — Convert.ChangeType
@@ -107,7 +107,7 @@ namespace Gremlin.Net.UnitTest.Structure
             ProviderDefinedAttribute.RegisteredTypes["test:Bad"] = typeof(TestBadTarget);
             try
             {
-                var pdt = new ProviderDefinedType("test:Bad",
+                var pdt = new CompositePDT("test:Bad",
                     new Dictionary<string, object?> { ["Count"] = "not-an-int" });
 
                 var writer = new GraphBinaryWriter();
@@ -119,7 +119,7 @@ namespace Gremlin.Net.UnitTest.Structure
                 var result = await reader.ReadAsync(stream);
 
                 // Should return raw PDT, not throw
-                Assert.IsType<ProviderDefinedType>(result);
+                Assert.IsType<CompositePDT>(result);
             }
             finally
             {
@@ -130,7 +130,7 @@ namespace Gremlin.Net.UnitTest.Structure
         [Fact]
         public void ShouldReturnRawPdtWhenTypeNotRegistered()
         {
-            var pdt = new ProviderDefinedType("test:Unregistered",
+            var pdt = new CompositePDT("test:Unregistered",
                 new Dictionary<string, object?> { ["X"] = 1 });
 
             var result = ProviderDefinedAttribute.HydrateIfRegistered(pdt);
@@ -145,16 +145,16 @@ namespace Gremlin.Net.UnitTest.Structure
             ProviderDefinedAttribute.RegisteredTypes["test:InnerWidget"] = typeof(TestInnerWidget);
             try
             {
-                var innerPdt = new ProviderDefinedType("test:InnerWidget",
+                var innerPdt = new CompositePDT("test:InnerWidget",
                     new Dictionary<string, object?> { ["Label"] = "hello" });
-                var outerPdt = new ProviderDefinedType("test:UnregisteredOuter",
+                var outerPdt = new CompositePDT("test:UnregisteredOuter",
                     new Dictionary<string, object?> { ["Widget"] = innerPdt, ["Count"] = 5 });
 
                 // Act
                 var result = ProviderDefinedAttribute.HydrateIfRegistered(outerPdt);
 
                 // Assert: outer is unregistered so stays raw PDT
-                var rawOuter = Assert.IsType<ProviderDefinedType>(result);
+                var rawOuter = Assert.IsType<CompositePDT>(result);
                 Assert.Equal("test:UnregisteredOuter", rawOuter.Name);
 
                 // The inner field SHOULD be hydrated because it IS registered

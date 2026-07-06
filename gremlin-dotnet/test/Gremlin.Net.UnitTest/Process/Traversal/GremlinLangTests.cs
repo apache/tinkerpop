@@ -1178,7 +1178,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void g_Inject_PDT_basic()
         {
-            var pdt = new ProviderDefinedType("Point", new Dictionary<string, object?> { { "x", 1 }, { "y", 2 } });
+            var pdt = new CompositePDT("Point", new Dictionary<string, object?> { { "x", 1 }, { "y", 2 } });
             var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
             Assert.Equal("g.inject(PDT(\"Point\",[\"x\":1,\"y\":2]))", result);
         }
@@ -1186,7 +1186,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void g_Inject_PDT_special_chars_in_name()
         {
-            var pdt = new ProviderDefinedType("my\"type", new Dictionary<string, object?> { { "a", 1 } });
+            var pdt = new CompositePDT("my\"type", new Dictionary<string, object?> { { "a", 1 } });
             var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
             Assert.Equal("g.inject(PDT(\"my\\\"type\",[\"a\":1]))", result);
         }
@@ -1194,8 +1194,8 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void g_Inject_PDT_nested()
         {
-            var inner = new ProviderDefinedType("Inner", new Dictionary<string, object?> { { "v", 42 } });
-            var outer = new ProviderDefinedType("Outer", new Dictionary<string, object?> { { "child", inner } });
+            var inner = new CompositePDT("Inner", new Dictionary<string, object?> { { "v", 42 } });
+            var outer = new CompositePDT("Outer", new Dictionary<string, object?> { { "child", inner } });
             var result = _g.Inject((object)outer).GremlinLang.GetGremlin();
             Assert.Equal("g.inject(PDT(\"Outer\",[\"child\":PDT(\"Inner\",[\"v\":42])]))", result);
         }
@@ -1264,7 +1264,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void g_Inject_PDT_adapter_takes_precedence_over_attribute()
         {
-            var registry = new ProviderDefinedTypeRegistry();
+            var registry = new PDTRegistry();
             registry.Register(new AdapterForAnnotatedPoint());
 
             var g = new GraphTraversalSource();
@@ -1302,7 +1302,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             // An unregistered outer PDT contains an annotated inner object as a field value.
             // The inner should be dehydrated to its PDT form when the outer is serialized.
             var inner = new NestedAnnotatedWidget { Tag = "abc" };
-            var outer = new ProviderDefinedType("unregistered:Container",
+            var outer = new CompositePDT("unregistered:Container",
                 new Dictionary<string, object?> { { "widget", inner }, { "count", 7 } });
 
             var result = _g.Inject((object)outer).GremlinLang.GetGremlin();
@@ -1365,7 +1365,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void g_Inject_PrimitivePDT_basic()
         {
-            var pdt = new PrimitiveProviderDefinedType("Uint32", "42");
+            var pdt = new PrimitivePDT("Uint32", "42");
             var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
             Assert.Equal("g.inject(PDT(\"Uint32\",\"42\"))", result);
         }
@@ -1373,7 +1373,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void g_Inject_PrimitivePDT_special_chars_in_value()
         {
-            var pdt = new PrimitiveProviderDefinedType("Token", "hello\"world");
+            var pdt = new PrimitivePDT("Token", "hello\"world");
             var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
             Assert.Equal("g.inject(PDT(\"Token\",\"hello\\\"world\"))", result);
         }
@@ -1381,7 +1381,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void g_Inject_PrimitivePDT_leading_zeros()
         {
-            var pdt = new PrimitiveProviderDefinedType("Padded", "007");
+            var pdt = new PrimitivePDT("Padded", "007");
             var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
             Assert.Equal("g.inject(PDT(\"Padded\",\"007\"))", result);
         }
@@ -1389,7 +1389,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void g_Inject_PrimitivePDT_auto_dehydration_via_primitive_adapter()
         {
-            var registry = new ProviderDefinedTypeRegistry();
+            var registry = new PDTRegistry();
             registry.RegisterPrimitive(new TestUint32Adapter());
 
             var g = new GraphTraversalSource();
@@ -1402,7 +1402,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void g_Inject_PrimitivePDT_adapter_takes_precedence_over_attribute()
         {
-            var registry = new ProviderDefinedTypeRegistry();
+            var registry = new PDTRegistry();
             registry.RegisterPrimitive(new PrimitiveAdapterForAnnotatedType());
 
             var g = new GraphTraversalSource();

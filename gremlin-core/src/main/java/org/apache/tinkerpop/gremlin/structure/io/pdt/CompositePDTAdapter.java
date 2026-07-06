@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.pdt;
 import java.util.Map;
 
 /**
- * Adapter for converting between a typed object and a {@link ProviderDefinedType} field map.
+ * Adapter for converting between a typed object and a {@link CompositePDT} field map.
  * Used for composite (multi-field) provider-defined types.
  */
 public interface CompositePDTAdapter<T> extends ProviderDefinedTypeAdapter<T> {

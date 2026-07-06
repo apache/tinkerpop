@@ -24,8 +24,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitiveProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -1059,8 +1059,8 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.PdtLiteralContext ctx = parser.pdtLiteral();
             final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitPdtLiteral(ctx);
-            assertThat(result, instanceOf(ProviderDefinedType.class));
-            final ProviderDefinedType pdt = (ProviderDefinedType) result;
+            assertThat(result, instanceOf(CompositePDT.class));
+            final CompositePDT pdt = (CompositePDT) result;
             assertEquals("MyType", pdt.getName());
             assertEquals(1, pdt.getFields().get("x"));
             assertEquals("hello", pdt.getFields().get("y"));
@@ -1072,8 +1072,8 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.PdtLiteralContext ctx = parser.pdtLiteral();
             final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitPdtLiteral(ctx);
-            assertThat(result, instanceOf(ProviderDefinedType.class));
-            final ProviderDefinedType pdt = (ProviderDefinedType) result;
+            assertThat(result, instanceOf(CompositePDT.class));
+            final CompositePDT pdt = (CompositePDT) result;
             assertEquals("Empty", pdt.getName());
             assertTrue(pdt.getFields().isEmpty());
         }
@@ -1097,8 +1097,8 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.PdtLiteralContext ctx = parser.pdtLiteral();
             final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitPdtLiteral(ctx);
-            assertThat(result, instanceOf(PrimitiveProviderDefinedType.class));
-            final PrimitiveProviderDefinedType pdt = (PrimitiveProviderDefinedType) result;
+            assertThat(result, instanceOf(PrimitivePDT.class));
+            final PrimitivePDT pdt = (PrimitivePDT) result;
             assertEquals("Uint32", pdt.getName());
             assertEquals("42", pdt.getValue());
         }
@@ -1109,8 +1109,8 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.PdtLiteralContext ctx = parser.pdtLiteral();
             final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitPdtLiteral(ctx);
-            assertThat(result, instanceOf(PrimitiveProviderDefinedType.class));
-            final PrimitiveProviderDefinedType pdt = (PrimitiveProviderDefinedType) result;
+            assertThat(result, instanceOf(PrimitivePDT.class));
+            final PrimitivePDT pdt = (PrimitivePDT) result;
             assertEquals("Empty", pdt.getName());
             assertEquals("", pdt.getValue());
         }
