@@ -48,6 +48,13 @@ expansion (which pulls a changed type's ancestors and descendants in as context)
 so stubs mostly stand for third-party types. They lack `kind`/`filePath`; filter
 them with `.has("external", false)` or `.hasNot("external")`.
 
+*Analysis-written property* — `community: number` is stamped onto Function, Type,
+File and Test vertices by community detection (`communityDetection`, Louvain
+modularity over the code subgraph). Vertices sharing a value are one densely-tied
+theme; query a theme with `.has("community", n)`. Vertices with no in-subgraph code
+edge are left unstamped. This is distinct from `connectedComponent()`, which the
+`clusterAnalysis` guard runs on the `a` (OLAP) source without persisting a property.
+
 ### TinkerPop domain
 
 **Step** `{ name, canonical_name }`

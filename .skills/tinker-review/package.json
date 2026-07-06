@@ -12,8 +12,10 @@
     "review": "node review.js"
   },
   "dependencies": {
+    "graphology": "^0.26.0",
+    "graphology-communities-louvain": "^2.0.2",
     "gremlin": "^3.8.1",
-    "web-tree-sitter": "^0.24.7",
-    "tree-sitter-wasms": "^0.1.13"
+    "tree-sitter-wasms": "^0.1.13",
+    "web-tree-sitter": "^0.24.7"
   }
 }

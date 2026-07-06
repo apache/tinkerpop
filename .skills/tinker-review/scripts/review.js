@@ -33,6 +33,7 @@ import { coverageGaps } from "./patterns/coverage-gaps.js";
 import { highCentrality } from "./patterns/centrality.js";
 import { blastRadius } from "./patterns/blast-radius.js";
 import { clusterAnalysis } from "./patterns/cluster-analysis.js";
+import { communityDetection } from "./patterns/community-detection.js";
 import { architecture } from "./patterns/architecture.js";
 import { confidenceAudit } from "./patterns/confidence-audit.js";
 import { classifyExternals } from "./patterns/classify-externals.js";
@@ -84,6 +85,41 @@ async function getChangedFiles(repoPath, prBranch, remote = "upstream", baseBran
     { cwd: repoPath }
   );
   return diffOutput.trim().split("\n").filter(Boolean);
+}
+
+/**
+ * Per-file line churn and deletion status for the PR, so downstream analysis can
+ * describe *how* code changed (reduced vs. expanded), not just that it changed.
+ * Merges `--numstat` (line counts) with `--name-status` (A/M/D/R). Binary files
+ * report 0/0. Returns `{ [path]: { added, removed, deleted } }`.
+ */
+export async function computeChurn(repoPath, prBranch, remote = "upstream", baseBranch = "master") {
+  const { stdout: baseCommit } = await exec(
+    "git", ["merge-base", prBranch, `${remote}/${baseBranch}`], { cwd: repoPath }
+  );
+  const range = `${baseCommit.trim()}...${prBranch}`;
+
+  const [numstat, nameStatus] = await Promise.all([
+    exec("git", ["diff", "--numstat", range], { cwd: repoPath }).then((r) => r.stdout).catch(() => ""),
+    exec("git", ["diff", "--name-status", range], { cwd: repoPath }).then((r) => r.stdout).catch(() => ""),
+  ]);
+
+  const churn = {};
+  for (const line of numstat.trim().split("\n").filter(Boolean)) {
+    const [added, removed, ...pathParts] = line.split("\t");
+    const path = pathParts.join("\t");
+    if (!path) continue;
+    churn[path] = { added: added === "-" ? 0 : Number(added), removed: removed === "-" ? 0 : Number(removed), deleted: false };
+  }
+  for (const line of nameStatus.trim().split("\n").filter(Boolean)) {
+    const [status, ...pathParts] = line.split("\t");
+    const path = pathParts.join("\t");
+    if (status && status[0] === "D" && path) {
+      churn[path] = churn[path] || { added: 0, removed: 0 };
+      churn[path].deleted = true;
+    }
+  }
+  return churn;
 }
 
 function classifyDomains(changedFiles) {
@@ -361,6 +397,8 @@ export async function phase1(session) {
   const blastResult = await blastRadius(g, { depth: 3, changedOnly: true });
   blastResult.neighborhood = extraction.hierarchyNeighborhood || null;
   const clusterResult = await clusterAnalysis(a, { changedOnly: true });
+  const churn = await computeChurn(repoPath, prBranch, remote, baseBranch).catch(() => null);
+  const communityResult = await communityDetection(g, { churn });
   const confidenceResult = await confidenceAudit(g);
   const orphansResult = await orphans(g, { vertexLabel: "Function", expectedEdge: "tests", direction: "in", changedOnly: true });
   log(`  completeness: ${completenessResults.filter(r => r.missing.length > 0).length} gaps found`);
@@ -368,6 +406,7 @@ export async function phase1(session) {
   log(`  centrality: ${centralityResult.aboveThreshold} hotspots`);
   log(`  blast_radius: max ${blastResult.maxReachable} reachable, ${blastResult.types.length} changed types with hierarchy impact`);
   log(`  clusters: ${clusterResult.clusterCount} (${clusterResult.coherent ? "coherent" : "fragmented"})`);
+  log(`  communities: ${communityResult.communityCount} themes, modularity ${communityResult.modularity} (${communityResult.isolatedCount} isolated)`);
   log(`  confidence: ${confidenceResult.distribution.EXTRACTED} extracted / ${confidenceResult.distribution.INFERRED} inferred / ${confidenceResult.distribution.AMBIGUOUS} ambiguous`);
   log(`  orphans: ${orphansResult.totalOrphaned} functions with no test`);
 
@@ -393,6 +432,7 @@ export async function phase1(session) {
       centrality: centralityResult,
       blastRadius: blastResult,
       clusters: clusterResult,
+      communities: communityResult,
       confidence: confidenceResult,
       externals: externalsResult,
       removalRefs: removalRefsResult,

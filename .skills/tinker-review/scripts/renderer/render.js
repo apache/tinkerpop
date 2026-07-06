@@ -57,7 +57,7 @@ function notProvided(sectionId, title) {
 }
 
 export function render(evidence) {
-  const { meta, graphStats, checks, discussions, summary, clusters,
+  const { meta, graphStats, checks, discussions, summary, clusters, communityAssessment,
     guidedWalk, functionalTest, findings, openQuestions, appendixFunctional } = evidence;
 
   const parts = [];
@@ -66,6 +66,7 @@ export function render(evidence) {
   parts.push(summary ? renderSummary(summary) : notProvided("summary", "Summary"));
   parts.push(discussions ? renderContext(discussions) : notProvided("context", "Discovered Context"));
   parts.push(renderClusters(clusters, checks && checks.clusters, evidence.architecture));
+  parts.push(renderCommunitySection(checks && checks.communities, communityAssessment));
   parts.push(guidedWalk && guidedWalk.length > 0 ? renderGuidedWalk(guidedWalk) : notProvided("guided-walk", "Guided Walk"));
   parts.push(functionalTest ? renderFunctionalTest(functionalTest) : notProvided("functional-test", "Functional Test"));
   parts.push(findings && findings.length > 0 ? renderFindings(findings) : notProvided("findings", "Findings"));
@@ -95,6 +96,7 @@ function renderNav() {
     <li><a href="#summary">Summary</a></li>
     <li><a href="#context">Context</a></li>
     <li><a href="#clusters">Clusters</a></li>
+    <li><a href="#communities">Communities</a></li>
     <li><a href="#guided-walk">Guided Walk</a></li>
     <li><a href="#functional-test">Functional Test</a></li>
     <li><a href="#findings">Findings</a></li>
@@ -272,13 +274,88 @@ function renderClusters(clusters, clusterData, architecture) {
 
   return `<section id="clusters">
   <h2>Change Coherence</h2>
-  <p class="section-intro">Connected component analysis of changed files. Files are connected when their functions call each other. A single cluster means one logical change; multiple clusters suggest bundled unrelated changes.</p>
+  <p class="section-intro"><strong>Connected components</strong> — the coarse guard: it asks whether any changed file is wholly unreachable from the rest. A strong signal when it fires, but usually one cluster in a well-connected codebase. The finer, density-based view is <a href="#communities">Thematic Communities</a> below.</p>
   ${svg}
   <div class="card card-safe">
     <h3>Assessment</h3>
     ${assessment}
   </div>
 </section>`;
+}
+
+function renderCommunitySection(communityData, assessment) {
+  if (!communityData || !communityData.interpretation) return notProvided("communities", "Thematic Communities");
+
+  const interp = communityData.interpretation;
+  const svg = generateCommunitySvg(communityData);
+
+  // The main section is the analyst's meaning-making (enrichment). Until that runs,
+  // fall back to the deterministic reading so the section is never empty.
+  const body = assessment
+    ? assessment
+    : `<p>${esc(interp.headline)}</p>${interp.reading.length
+        ? `<ul style="margin: 0.5rem 0 0 1.25rem;">${interp.reading.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>`
+        : ""}
+    <p style="font-size: 0.82rem; color: var(--muted, #666); margin: 0.5rem 0 0;">Automated reading — run enrichment for an analyst's assessment of what these communities mean for this PR.</p>`;
+
+  return `<section id="communities">
+  <h2>Thematic Communities <span class="badge">Louvain</span></h2>
+  <p class="section-intro">Louvain modularity over the code subgraph (Discussion/Step hubs excluded) groups the change into densely-tied themes even when everything is technically reachable. Box colour encodes change mode — <span style="color:#c62828">red reduced</span>, <span style="color:#2e7d32">green expanded</span>, <span style="color:#e65100">orange reworked</span>, <span style="color:#3949ab">indigo unchanged context</span>. Per-community membership is in the <a href="#appendix-structural">structural appendix</a>.</p>
+  ${svg}
+  <div class="card ${assessment ? "card-safe" : ""}">
+    <h3>Assessment</h3>
+    ${body}
+  </div>
+</section>`;
+}
+
+function generateCommunitySvg(communityData) {
+  const communities = (communityData && communityData.communities) || [];
+  if (communities.length === 0) return "";
+
+  const modeColor = (c) => {
+    const m = c.churn && c.churn.mode;
+    if (m === "reduced" || m === "purely reduced") return { stroke: "#e53935", fill: "#ffebee", label: "#c62828" };
+    if (m === "expanded") return { stroke: "#43a047", fill: "#e8f5e9", label: "#2e7d32" };
+    if (m === "reworked") return { stroke: "#fb8c00", fill: "#fff3e0", label: "#e65100" };
+    return { stroke: "#5c6bc0", fill: "#e8eaf6", label: "#3949ab" }; // unchanged context / unknown
+  };
+
+  const shown = communities.slice(0, 9);
+  const cols = Math.min(shown.length, 3);
+  const boxW = 270, gapX = 20, gapY = 18;
+  const svgWidth = cols * boxW + (cols + 1) * gapX;
+
+  const heightOf = (c) => 44 + Math.min(c.files.length, 4) * 13 + (c.files.length > 4 ? 13 : 0);
+  const positions = shown.map((c, i) => ({ c, col: i % cols, row: Math.floor(i / cols) }));
+  const numRows = Math.max(...positions.map((p) => p.row)) + 1;
+  const rowH = [];
+  for (let r = 0; r < numRows; r++) rowH[r] = Math.max(...positions.filter((p) => p.row === r).map((p) => heightOf(p.c)));
+  const rowY = [];
+  let acc = gapY;
+  for (let r = 0; r < numRows; r++) { rowY[r] = acc; acc += rowH[r] + gapY; }
+
+  let content = "";
+  for (const { c, col, row } of positions) {
+    const x = gapX + col * (boxW + gapX);
+    const y = rowY[row];
+    const h = rowH[row];
+    const cc = modeColor(c);
+    const kind = c.role.split(",")[0];
+    const churnBadge = c.churn ? `−${c.churn.removed}/+${c.churn.added}` : "unchanged context";
+    content += `<rect x="${x}" y="${y}" width="${boxW}" height="${h}" rx="8" fill="${cc.fill}" stroke="${cc.stroke}" stroke-width="1.5"/>`;
+    content += `<text x="${x + 12}" y="${y + 19}" font-size="11" font-weight="600" fill="${cc.label}">Community ${c.id + 1} — ${esc(kind)}</text>`;
+    content += `<text x="${x + 12}" y="${y + 33}" font-size="9" fill="#555">${c.size} vertices · ${esc(churnBadge)}</text>`;
+    const files = c.files.slice(0, 4).map((f) => f.split("/").pop());
+    for (let j = 0; j < files.length; j++) {
+      content += `<text x="${x + 12}" y="${y + 48 + j * 13}" font-size="8" fill="#333">${esc(files[j])}</text>`;
+    }
+    if (c.files.length > 4) content += `<text x="${x + 12}" y="${y + 48 + 4 * 13}" font-size="8" fill="#666">+${c.files.length - 4} more files</text>`;
+  }
+
+  return `<svg class="cluster-svg" viewBox="0 0 ${svgWidth} ${acc}" xmlns="http://www.w3.org/2000/svg">
+  ${content}
+</svg>`;
 }
 
 function renderGuidedWalk(walk) {
@@ -408,6 +485,21 @@ function renderAppendixStructural(checks, graphStats) {
   const hierarchyRows = hierarchy.slice(0, 10).map(t => {
     return `<tr><td class="fn-name">${esc(t.name)}</td><td>${esc(t.kind || "")}</td><td>${esc((t.filePath || "").split("/").pop())}</td><td class="num">${t.implementerCount}</td></tr>`;
   }).join("\n      ");
+  const communities = checks?.communities?.communities || [];
+  const communityRows = communities.map(c => {
+    const labels = Object.entries(c.labelCounts || {}).sort((a, b) => b[1] - a[1]).map(([l, n]) => `${l}:${n}`).join(", ");
+    const files = c.files.map(f => `<code>${esc(f)}</code>`).join("<br>");
+    return `<tr><td>${c.id + 1}</td><td>${esc(c.role)}</td><td class="num">${c.size}</td><td>${esc(labels)}</td><td>${files}</td></tr>`;
+  }).join("\n      ");
+  const isolated = checks?.communities?.isolatedCount ?? 0;
+  const communitiesHtml = communities.length === 0 ? "" : `
+  <h3>Community Membership</h3>
+  <p class="section-intro">Louvain communities over the code subgraph, largest first (modularity ${checks?.communities?.modularity}). The reading is in <a href="#communities">Thematic Communities</a>; this is the raw membership. Role carries the change mode and line churn (−removed/+added). ${isolated} vertices have no in-subgraph edge and are omitted; every clustered vertex carries a <code>community</code> property for direct querying.</p>
+  <table class="gap-table">
+    <thead><tr><th>#</th><th>Role</th><th>Vertices</th><th>Label mix</th><th>Files</th></tr></thead>
+    <tbody>\n      ${communityRows}\n    </tbody>
+  </table>`;
+
   const truncNote = truncated ? ` <strong>Neighborhood truncated — these counts are a lower bound.</strong>` : "";
   const hierarchyHtml = hierarchy.length === 0 ? "" : `
   <h3>Type Hierarchy Impact</h3>
@@ -434,6 +526,7 @@ function renderAppendixStructural(checks, graphStats) {
     <tbody>\n      ${blastRows}\n    </tbody>
   </table>
 ${hierarchyHtml}
+${communitiesHtml}
 ${confidenceHtml}
   <h3>Graph Statistics</h3>
   <div class="stats-grid">

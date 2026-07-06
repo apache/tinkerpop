@@ -185,7 +185,18 @@ produce a complete evidence-with-narrative JSON file. Write it to
 `/tmp/pr-review-<pr>/report.json`. The narrative fields you must provide:
 
 - `summary` — HTML paragraph describing the PR
-- `clusters.assessment` — HTML prose about what the clusters mean
+- `clusters.assessment` — HTML prose about what the connected-component clusters mean
+- `communityAssessment` — HTML, **light by default**: usually one or two sentences on
+  whether the change is coherent/localized and what its dominant theme is. Expand *only*
+  when the community **structure itself** shows something non-obvious that no other section
+  captures — e.g. disconnected communities hinting at bundled unrelated changes, a community
+  bridging subsystems that shouldn't be coupled, a changed file stranded in a community about
+  an unrelated concern, or diffuse modularity on a supposedly focused change. Absent such a
+  structural surprise, keep it short and instead use the communities as *supporting evidence*
+  cited in other sections (Guided Walk, Findings, Change Coherence). Do NOT restate the graph
+  literally (vertices/edges/labels/counts), do NOT re-narrate what Removal References,
+  Coverage, or Blast Radius already report, and do NOT pad. The renderer draws the diagram
+  and the appendix lists membership; you supply only the judgment.
 - `guidedWalk` — array of `{ title, badge, badgeText, body }` objects
 - `findings` — array of `{ title, snippet, body }` objects, ordered most-severe-first (Interpret grades each blocking / high / low)
 - `openQuestions` — array of `{ title, body, meta }` objects
