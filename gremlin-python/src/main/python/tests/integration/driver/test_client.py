@@ -191,13 +191,11 @@ def test_client_side_timeout_set_for_aiohttp(client):
         # should fire an exception
         client.submit('Thread.sleep(2000);1', request_options={'language': 'gremlin-groovy'}).all().result()
         assert False
-    except TimeoutError:
-        # A client-side read timeout may surface as either a bare asyncio.TimeoutError
-        # or aiohttp's SocketTimeoutError, depending on which of the two independent
-        # read-timeout timers armed by the transport wins the race. Both subclass the
-        # builtin TimeoutError but their messages differ, so we assert on type (via the
-        # except clause) rather than on the message text.
-        pass
+    except asyncio.TimeoutError as err:
+        # The driver enforces the read timeout with a single mechanism (aiohttp's
+        # sock_read) and normalizes it to a single asyncio.TimeoutError with a
+        # deterministic message, so we assert on both the type and the message.
+        assert str(err) == "Read timed out after 1.0s waiting for response data."
 
     # still can submit after failure
     assert client.submit('g.V(x).values("age")', {'x': 1}).all().result()[0] == 29
