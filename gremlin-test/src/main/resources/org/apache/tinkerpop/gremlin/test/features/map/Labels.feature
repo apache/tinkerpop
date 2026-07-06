@@ -35,20 +35,18 @@ Feature: Step - labels()
 
   @MultiLabel
   Scenario: g_V_labels_multilabel
-    Given the empty graph
-    And the graph initializer of
-      """
-      g.addV("a", "b")
-      """
+    Given the zoo graph
     And the traversal of
       """
-      g.V().labels()
+      g.V().has("name", "tux").labels()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | a |
-      | b |
+      | animal |
+      | bird |
+      | aquatic |
+      | endangered |
 
   @MultiLabel
   Scenario: g_addVXa_bX_labels_count

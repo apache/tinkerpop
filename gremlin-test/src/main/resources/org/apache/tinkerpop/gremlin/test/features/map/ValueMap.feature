@@ -286,19 +286,15 @@ Feature: Step - valueMap()
 
   @MultiLabel
   Scenario: g_withXmultilabelX_V_valueMap_withXtokensX_multilabel
-    Given the empty graph
-    And the graph initializer of
-      """
-      g.addV("person").addLabel("employee").property("name", "marko")
-      """
+    Given the zoo graph
     And the traversal of
       """
-      g.with("multilabel").V().valueMap().with(WithOptions.tokens)
+      g.with("multilabel").V().has("name", "tux").valueMap("name", "species").with(WithOptions.tokens)
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "v[marko].id", "t[label]": "s[person,employee]", "name": ["marko"]}] |
+      | m[{"t[id]": "v[tux].id", "t[label]": "s[animal,bird,aquatic,endangered]", "name": ["tux"], "species": ["african penguin"]}] |
 
   @MultiLabel @MultiLabelDefault
   Scenario: g_V_valueMap_withXtokensX_multi_label_default
@@ -318,21 +314,17 @@ Feature: Step - valueMap()
 
   @MultiLabel @MultiLabelDefault
   Scenario: g_withXsinglelabelX_V_valueMap_withXtokensX_multi_label_default
-    Given the empty graph
-    And the graph initializer of
-      """
-      g.addV("person").addLabel("employee").property("name", "marko")
-      """
+    Given the zoo graph
     And the traversal of
       """
-      g.with("singlelabel").V().valueMap().with(WithOptions.tokens)
+      g.with("singlelabel").V().has("name", "lagoon").valueMap("name", "biome").with(WithOptions.tokens)
       """
     When iterated to list
     Then the result should have a count of 1
     And the result should be of
       | result |
-      | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": ["marko"]}] |
-      | m[{"t[id]": "v[marko].id", "t[label]": "employee", "name": ["marko"]}] |
+      | m[{"t[id]": "v[lagoon].id", "t[label]": "habitat", "name": ["lagoon"], "biome": ["marine"]}] |
+      | m[{"t[id]": "v[lagoon].id", "t[label]": "aquatic", "name": ["lagoon"], "biome": ["marine"]}] |
 
   @MultiLabel
   Scenario: g_withXsinglelabelX_V_valueMapXtrueX_zero_label_vertex

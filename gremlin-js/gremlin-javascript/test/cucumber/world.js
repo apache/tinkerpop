@@ -84,7 +84,7 @@ setWorldConstructor(TinkerPopWorld);
 
 BeforeAll(function () {
   // load all traversals
-  const promises = ['modern', 'classic', 'crew', 'grateful', 'sink', 'empty', 'multilabel'].map(graphName => {
+  const promises = ['modern', 'classic', 'crew', 'grateful', 'sink', 'zoo', 'empty', 'multilabel'].map(graphName => {
     let connection = null;
     if (graphName === 'empty') {
       connection = getConnection('ggraph');

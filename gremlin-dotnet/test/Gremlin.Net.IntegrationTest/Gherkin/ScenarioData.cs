@@ -39,7 +39,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 {
     internal class ScenarioData : IDisposable
     {
-        private static readonly string[] GraphNames = {"modern", "classic", "crew", "grateful", "sink"};
+        private static readonly string[] GraphNames = {"modern", "classic", "crew", "grateful", "sink", "zoo"};
 
         private static readonly IDictionary<string, Vertex> EmptyVertices =
             new ReadOnlyDictionary<string, Vertex>(new Dictionary<string, Vertex>());
