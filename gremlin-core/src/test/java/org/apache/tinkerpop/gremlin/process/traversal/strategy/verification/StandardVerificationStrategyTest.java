@@ -35,6 +35,7 @@ import java.util.Arrays;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.cap;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inject;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.label;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.repeat;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sum;
@@ -71,6 +72,12 @@ public class StandardVerificationStrategyTest {
                 {__.labels().is("x").drop(), false},
                 {__.labels().where(P.eq("x")).drop(), false},
                 {__.labels().not(__.is("x")).drop(), false},
+
+                // label().drop() patterns should also REJECT (deprecated step, same protection)
+                {label().drop(), false},
+                {label().is("x").drop(), false},
+                {label().where(P.eq("x")).drop(), false},
+                {label().not(__.is("x")).drop(), false},
 
                 // labels() patterns that should ALLOW (no direct labels->drop path)
                 {__.V().drop(), true},

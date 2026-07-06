@@ -20772,19 +20772,19 @@
         ]
     },
     {
-        "scenario": "g_addVXconstantXa_bX_fold_constantXcXX_label_error",
+        "scenario": "g_addVXconstantXa_bX_constantXcXX_label_error",
         "traversals": [
             {
-                "original": "g.addV(__.inject(\"a\", \"b\").fold(), __.constant(\"c\")).labels().fold()",
-                "language": "g.addV(__.inject(\"a\", \"b\").fold(), __.constant(\"c\")).labels().fold()",
-                "canonical": "g.addV(__.inject(\"a\", \"b\").fold(), __.constant(\"c\")).labels().fold()",
-                "anonymized": "g.addV(__.inject(string0, string1).fold(), __.constant(string2)).labels().fold()",
-                "dotnet": "g.AddV(__.Inject(\"a\", \"b\").Fold(), __.Constant<object>(\"c\")).Labels().Fold()",
-                "go": "g.AddV(gremlingo.T__.Inject(\"a\", \"b\").Fold(), gremlingo.T__.Constant(\"c\")).Labels().Fold()",
-                "groovy": "g.addV(__.inject(\"a\", \"b\").fold(), __.constant(\"c\")).labels().fold()",
-                "java": "g.addV(__.inject(\"a\", \"b\").fold(), __.constant(\"c\")).labels().fold()",
-                "javascript": "g.addV(__.inject(\"a\", \"b\").fold(), __.constant(\"c\")).labels().fold()",
-                "python": "g.add_v(__.inject('a', 'b').fold(), __.constant('c')).labels().fold()"
+                "original": "g.addV(__.constant([\"a\", \"b\"]), __.constant(\"c\")).labels().fold()",
+                "language": "g.addV(__.constant([\"a\", \"b\"]), __.constant(\"c\")).labels().fold()",
+                "canonical": "g.addV(__.constant([\"a\", \"b\"]), __.constant(\"c\")).labels().fold()",
+                "anonymized": "g.addV(__.constant(list0), __.constant(string0)).labels().fold()",
+                "dotnet": "g.AddV(__.Constant<object>(new List<object> { \"a\", \"b\" }), __.Constant<object>(\"c\")).Labels().Fold()",
+                "go": "g.AddV(gremlingo.T__.Constant([]interface{}{\"a\", \"b\"}), gremlingo.T__.Constant(\"c\")).Labels().Fold()",
+                "groovy": "g.addV(__.constant([\"a\", \"b\"]), __.constant(\"c\")).labels().fold()",
+                "java": "g.addV(__.constant(new ArrayList<Object>() {{ add(\"a\"); add(\"b\"); }}), __.constant(\"c\")).labels().fold()",
+                "javascript": "g.addV(__.constant([\"a\", \"b\"]), __.constant(\"c\")).labels().fold()",
+                "python": "g.add_v(__.constant(['a', 'b']), __.constant('c')).labels().fold()"
             }
         ]
     },

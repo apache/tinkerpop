@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -124,7 +124,7 @@ public class ElementMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>> imple
      */
     private boolean isMultilabelEnabled() {
         if (multilabelEnabled == null) {
-            multilabelEnabled = WithOptions.isMultilabelEnabled(getTraversal());
+            multilabelEnabled = TraversalHelper.isMultilabelEnabled(getTraversal());
         }
         return multilabelEnabled;
     }

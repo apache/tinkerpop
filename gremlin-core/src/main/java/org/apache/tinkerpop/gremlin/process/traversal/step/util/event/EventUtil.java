@@ -207,13 +207,11 @@ public final class EventUtil {
     /**
      * Register a label change event with the callback registry.
      */
-    @SuppressWarnings("unchecked")
     public static void registerLabelChange(final CallbackRegistry<Event.ElementLabelChangedEvent> callbackRegistry,
                                            final Traversal.Admin<?, ?> traversal, final Element element,
                                            final Set<String> oldLabels, final Set<String> newLabels) {
         if (hasAnyCallbacks(callbackRegistry)) {
-            final EventStrategy eventStrategy = ((Traversal.Admin<Object, Object>) traversal)
-                    .getStrategies().getStrategy(EventStrategy.class).orElse(null);
+            final EventStrategy eventStrategy = traversal.getStrategies().getStrategy(EventStrategy.class).orElse(null);
             final Element detachedElement = eventStrategy != null ? eventStrategy.detach(element) : element;
             final Event.ElementLabelChangedEvent event = new Event.ElementLabelChangedEvent(detachedElement, oldLabels, newLabels);
             for (EventCallback<Event.ElementLabelChangedEvent> c : callbackRegistry.getCallbacks()) {

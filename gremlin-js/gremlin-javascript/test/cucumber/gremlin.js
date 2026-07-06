@@ -1042,7 +1042,7 @@ const gremlins = {
     g_addVXconstantXaX_constantXbXX_labels: [function({g}) { return g.addV(__.constant("a"), __.constant("b")).labels().fold() }, function({g}) { return g.V().hasLabel("a").hasLabel("b") }], 
     g_addVXconstantXaX_constantXbX_constantXcXX_labels_count: [function({g}) { return g.addV(__.constant("a"), __.constant("b"), __.constant("c")).labels().count() }], 
     g_addVXconstantX_a_b_XX_labels: [function({g}) { return g.addV(__.constant(["a", "b"])).labels().fold() }, function({g}) { return g.V().hasLabel("a").hasLabel("b") }], 
-    g_addVXconstantXa_bX_fold_constantXcXX_label_error: [function({g}) { return g.addV(__.inject("a", "b").fold(), __.constant("c")).labels().fold() }], 
+    g_addVXconstantXa_bX_constantXcXX_label_error: [function({g}) { return g.addV(__.constant(["a", "b"]), __.constant("c")).labels().fold() }], 
     g_injectX1X_asBool: [function({g}) { return g.inject(1).asBool() }], 
     g_injectX3_14X_asBool: [function({g}) { return g.inject(3.14).asBool() }], 
     g_injectXneg_1X_asBool: [function({g}) { return g.inject(-1).asBool() }], 

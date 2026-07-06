@@ -1016,7 +1016,7 @@ world.gremlins = {
     'g_addVXconstantXaX_constantXbXX_labels': [(lambda g:g.add_v(__.constant('a'), __.constant('b')).labels().fold()), (lambda g:g.V().has_label('a').has_label('b'))], 
     'g_addVXconstantXaX_constantXbX_constantXcXX_labels_count': [(lambda g:g.add_v(__.constant('a'), __.constant('b'), __.constant('c')).labels().count())], 
     'g_addVXconstantX_a_b_XX_labels': [(lambda g:g.add_v(__.constant(['a', 'b'])).labels().fold()), (lambda g:g.V().has_label('a').has_label('b'))], 
-    'g_addVXconstantXa_bX_fold_constantXcXX_label_error': [(lambda g:g.add_v(__.inject('a', 'b').fold(), __.constant('c')).labels().fold())], 
+    'g_addVXconstantXa_bX_constantXcXX_label_error': [(lambda g:g.add_v(__.constant(['a', 'b']), __.constant('c')).labels().fold())], 
     'g_injectX1X_asBool': [(lambda g:g.inject(1).as_bool())], 
     'g_injectX3_14X_asBool': [(lambda g:g.inject(3.14).as_bool())], 
     'g_injectXneg_1X_asBool': [(lambda g:g.inject(-1).as_bool())], 

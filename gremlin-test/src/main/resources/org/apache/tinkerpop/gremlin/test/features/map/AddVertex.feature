@@ -763,11 +763,11 @@ Feature: Step - addV()
     And the graph should return 1 for count of "g.V().hasLabel(\"a\").hasLabel(\"b\")"
 
   @MultiLabel
-  Scenario: g_addVXconstantXa_bX_fold_constantXcXX_label_error
+  Scenario: g_addVXconstantXa_bX_constantXcXX_label_error
     Given the empty graph
     And the traversal of
       """
-      g.addV(__.inject("a", "b").fold(), __.constant("c")).labels().fold()
+      g.addV(__.constant(["a", "b"]), __.constant("c")).labels().fold()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "must produce a scalar String when multiple traversals are provided"

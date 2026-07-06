@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
@@ -100,8 +101,8 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
 
         }
 
-        // Reject labels().drop() patterns — users should use dropLabel(label) or dropLabels() instead
-        for (final DropStep<?> dropStep : TraversalHelper.getStepsOfClass(DropStep.class, traversal)) {
+        // Reject label().drop() and labels().drop() patterns — users should use dropLabel(label) or dropLabels() instead
+        for (final DropStep<?> dropStep : TraversalHelper.getStepsOfAssignableClass(DropStep.class, traversal)) {
             Step<?, ?> current = dropStep.getPreviousStep();
 
             // Walk backward through filter steps (IsStep, HasStep, WhereStep, NotStep, etc.)
@@ -109,9 +110,9 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
                 current = current.getPreviousStep();
             }
 
-            if (current instanceof LabelsStep) {
+            if (current instanceof LabelsStep || current instanceof LabelStep) {
                 throw new VerificationException(
-                        "labels().drop() is not supported. Use dropLabel(label) or dropLabels() instead.",
+                        "label().drop() and labels().drop() are not supported. Use dropLabel(label) or dropLabels() instead.",
                         traversal);
             }
         }
