@@ -1131,3 +1131,35 @@ Feature: Step - mergeV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V()"
     And the graph should return 1 for count of "g.V().hasLabel(\"person\").hasLabel(\"employee\")"
+
+  @GraphComputerVerificationStrategyNotSupported
+  Scenario: g_mergeVXlabel_ab_name_markoX_single_label_graph
+    Given the modern graph
+    And the traversal of
+      """
+      g.mergeV([(T.label): ["person","employee"], name: "marko"])
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Element creation allows at most"
+
+  @GraphComputerVerificationStrategyNotSupported
+  Scenario: g_mergeVXlabel_person_name_markoX_optionXonCreate_label_abX_single_label_graph
+    Given the modern graph
+    And the traversal of
+      """
+      g.mergeV([name: "newperson"]).
+          option(Merge.onCreate, [(T.label): ["person","employee"], name: "newperson"])
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Element creation allows at most"
+
+  @GraphComputerVerificationStrategyNotSupported
+  Scenario: g_mergeVXlabel_person_name_markoX_optionXonMatch_label_managerX_single_label_graph
+    Given the modern graph
+    And the traversal of
+      """
+      g.mergeV([(T.label): "person", name: "marko"]).
+          option(Merge.onMatch, [(T.label): "manager"])
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Label mutation is not supported"

@@ -328,9 +328,11 @@ Feature: Step - valueMap()
       g.with("singlelabel").V().valueMap().with(WithOptions.tokens)
       """
     When iterated to list
-    Then the result should be unordered
+    Then the result should have a count of 1
+    And the result should be of
       | result |
       | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": ["marko"]}] |
+      | m[{"t[id]": "v[marko].id", "t[label]": "employee", "name": ["marko"]}] |
 
   @MultiLabel
   Scenario: g_withXsinglelabelX_V_valueMapXtrueX_zero_label_vertex

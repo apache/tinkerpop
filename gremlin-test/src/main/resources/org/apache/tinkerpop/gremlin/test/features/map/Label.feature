@@ -15,15 +15,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
-@StepClassMap @StepLabels
-Feature: Step - labels()
+@StepClassMap @StepLabel
+Feature: Step - label()
 
-  @MultiLabel
-  Scenario: g_V_hasLabelXpersonX_labels
+  Scenario: g_V_label_single_label_graph
     Given the modern graph
     And the traversal of
       """
-      g.V().hasLabel("person").labels()
+      g.V().hasLabel("person").label()
       """
     When iterated to list
     Then the result should be unordered
@@ -34,103 +33,47 @@ Feature: Step - labels()
       | person |
 
   @MultiLabel
-  Scenario: g_V_labels_multilabel
+  Scenario: g_V_label_deprecated_multilabel
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("a", "b")
+      g.addV("a", "b").property("name", "test")
       """
     And the traversal of
       """
-      g.V().labels()
+      g.V().label().count()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | a |
-      | b |
+      | d[1].l |
 
   @MultiLabel
-  Scenario: g_addVXa_bX_labels_count
+  Scenario: g_V_label_deprecated_multilabel_value_is_one_of_labels
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("a", "b")
+      g.addV("a", "b").property("name", "test")
       """
     And the traversal of
       """
-      g.V().labels().count()
+      g.V().filter(__.label().is(P.within("a", "b")))
       """
     When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[2].l |
+    Then the result should have a count of 1
 
   @MultiLabel
-  Scenario: g_addV_labels
+  Scenario: g_E_label_deprecated_multilabel_graph
     Given the empty graph
     And the graph initializer of
       """
-      g.addV()
+      g.addV("person").as("a").addV("person").as("b").addE("knows").from("a").to("b")
       """
     And the traversal of
       """
-      g.V().labels()
-      """
-    When iterated to list
-    Then the result should have a count of 0
-
-  @MultiLabel
-  Scenario: g_E_labels
-    Given the modern graph
-    And the traversal of
-      """
-      g.E().hasLabel("knows").labels()
+      g.E().label()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | knows |
-      | knows |
-
-  Scenario: g_V_hasLabelXpersonX_labels_single_label_graph
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().hasLabel("person").labels()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | person |
-      | person |
-      | person |
-      | person |
-
-  Scenario: g_V_labels_single_label_graph
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().labels()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | person |
-      | person |
-      | person |
-      | person |
-      | software |
-      | software |
-
-  Scenario: g_E_labels_single_label_graph
-    Given the modern graph
-    And the traversal of
-      """
-      g.E().hasLabel("knows").labels()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | knows |
       | knows |

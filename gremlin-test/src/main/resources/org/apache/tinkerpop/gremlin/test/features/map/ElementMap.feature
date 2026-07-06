@@ -186,9 +186,11 @@ Feature: Step - elementMap()
       g.with("singlelabel").V().elementMap()
       """
     When iterated to list
-    Then the result should be unordered
+    Then the result should have a count of 1
+    And the result should be of
       | result |
       | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": "marko"}] |
+      | m[{"t[id]": "v[marko].id", "t[label]": "employee", "name": "marko"}] |
 
   @MultiLabel @MultiLabelDefault
   Scenario: g_V_elementMap_single_label_vertex_multi_label_default

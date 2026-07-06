@@ -26391,6 +26391,110 @@
         ]
     },
     {
+        "scenario": "g_V_label_single_label_graph",
+        "traversals": [
+            {
+                "original": "g.V().hasLabel(\"person\").label()",
+                "language": "g.V().hasLabel(\"person\").label()",
+                "canonical": "g.V().hasLabel(\"person\").label()",
+                "anonymized": "g.V().hasLabel(string0).label()",
+                "dotnet": "g.V().HasLabel(\"person\").Label()",
+                "go": "g.V().HasLabel(\"person\").Label()",
+                "groovy": "g.V().hasLabel(\"person\").label()",
+                "java": "g.V().hasLabel(\"person\").label()",
+                "javascript": "g.V().hasLabel(\"person\").label()",
+                "python": "g.V().has_label('person').label()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_label_deprecated_multilabel",
+        "traversals": [
+            {
+                "original": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
+                "language": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
+                "canonical": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
+                "anonymized": "g.addV(string0, string1).property(string2, string3)",
+                "dotnet": "g.AddV((string) \"a\", (string) \"b\").Property(\"name\", \"test\")",
+                "go": "g.AddV(\"a\", \"b\").Property(\"name\", \"test\")",
+                "groovy": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
+                "java": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
+                "javascript": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
+                "python": "g.add_v('a', 'b').property('name', 'test')"
+            },
+            {
+                "original": "g.V().label().count()",
+                "language": "g.V().label().count()",
+                "canonical": "g.V().label().count()",
+                "anonymized": "g.V().label().count()",
+                "dotnet": "g.V().Label().Count()",
+                "go": "g.V().Label().Count()",
+                "groovy": "g.V().label().count()",
+                "java": "g.V().label().count()",
+                "javascript": "g.V().label().count()",
+                "python": "g.V().label().count()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_label_deprecated_multilabel_value_is_one_of_labels",
+        "traversals": [
+            {
+                "original": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
+                "language": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
+                "canonical": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
+                "anonymized": "g.addV(string0, string1).property(string2, string3)",
+                "dotnet": "g.AddV((string) \"a\", (string) \"b\").Property(\"name\", \"test\")",
+                "go": "g.AddV(\"a\", \"b\").Property(\"name\", \"test\")",
+                "groovy": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
+                "java": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
+                "javascript": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
+                "python": "g.add_v('a', 'b').property('name', 'test')"
+            },
+            {
+                "original": "g.V().filter(__.label().is(P.within(\"a\", \"b\")))",
+                "language": "g.V().filter(__.label().is(P.within(\"a\", \"b\")))",
+                "canonical": "g.V().filter(__.label().is(P.within(\"a\", \"b\")))",
+                "anonymized": "g.V().filter(__.label().is(P.within(string0, string1)))",
+                "dotnet": "g.V().Filter(__.Label().Is(P.Within(\"a\", \"b\")))",
+                "go": "g.V().Filter(gremlingo.T__.Label().Is(gremlingo.P.Within(\"a\", \"b\")))",
+                "groovy": "g.V().filter(__.label().is(P.within(\"a\", \"b\")))",
+                "java": "g.V().filter(__.label().is(P.within(\"a\", \"b\")))",
+                "javascript": "g.V().filter(__.label().is(P.within(\"a\", \"b\")))",
+                "python": "g.V().filter_(__.label().is_(P.within('a', 'b')))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_E_label_deprecated_multilabel_graph",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "language": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "canonical": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "anonymized": "g.addV(string0).as(string1).addV(string0).as(string2).addE(string3).from(string1).to(string2)",
+                "dotnet": "g.AddV((string) \"person\").As(\"a\").AddV((string) \"person\").As(\"b\").AddE((string) \"knows\").From(\"a\").To(\"b\")",
+                "go": "g.AddV(\"person\").As(\"a\").AddV(\"person\").As(\"b\").AddE(\"knows\").From(\"a\").To(\"b\")",
+                "groovy": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "java": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\")",
+                "javascript": "g.addV(\"person\").as(\"a\").addV(\"person\").as(\"b\").addE(\"knows\").from_(\"a\").to(\"b\")",
+                "python": "g.add_v('person').as_('a').add_v('person').as_('b').add_e('knows').from_('a').to('b')"
+            },
+            {
+                "original": "g.E().label()",
+                "language": "g.E().label()",
+                "canonical": "g.E().label()",
+                "anonymized": "g.E().label()",
+                "dotnet": "g.E().Label()",
+                "go": "g.E().Label()",
+                "groovy": "g.E().label()",
+                "java": "g.E().label()",
+                "javascript": "g.E().label()",
+                "python": "g.E().label()"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_hasLabelXpersonX_labels",
         "traversals": [
             {
@@ -26559,64 +26663,6 @@
                 "java": "g.E().hasLabel(\"knows\").labels()",
                 "javascript": "g.E().hasLabel(\"knows\").labels()",
                 "python": "g.E().has_label('knows').labels()"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_label_deprecated_multilabel",
-        "traversals": [
-            {
-                "original": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
-                "language": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
-                "canonical": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
-                "anonymized": "g.addV(string0, string1).property(string2, string3)",
-                "dotnet": "g.AddV((string) \"a\", (string) \"b\").Property(\"name\", \"test\")",
-                "go": "g.AddV(\"a\", \"b\").Property(\"name\", \"test\")",
-                "groovy": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
-                "java": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
-                "javascript": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
-                "python": "g.add_v('a', 'b').property('name', 'test')"
-            },
-            {
-                "original": "g.V().label().count()",
-                "language": "g.V().label().count()",
-                "canonical": "g.V().label().count()",
-                "anonymized": "g.V().label().count()",
-                "dotnet": "g.V().Label().Count()",
-                "go": "g.V().Label().Count()",
-                "groovy": "g.V().label().count()",
-                "java": "g.V().label().count()",
-                "javascript": "g.V().label().count()",
-                "python": "g.V().label().count()"
-            }
-        ]
-    },
-    {
-        "scenario": "g_V_label_deprecated_multilabel_value_is_one_of_labels",
-        "traversals": [
-            {
-                "original": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
-                "language": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
-                "canonical": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
-                "anonymized": "g.addV(string0, string1).property(string2, string3)",
-                "dotnet": "g.AddV((string) \"a\", (string) \"b\").Property(\"name\", \"test\")",
-                "go": "g.AddV(\"a\", \"b\").Property(\"name\", \"test\")",
-                "groovy": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
-                "java": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
-                "javascript": "g.addV(\"a\", \"b\").property(\"name\", \"test\")",
-                "python": "g.add_v('a', 'b').property('name', 'test')"
-            },
-            {
-                "original": "g.V().filter(__.label().is(P.within(\"a\", \"b\")))",
-                "language": "g.V().filter(__.label().is(P.within(\"a\", \"b\")))",
-                "canonical": "g.V().filter(__.label().is(P.within(\"a\", \"b\")))",
-                "anonymized": "g.V().filter(__.label().is(P.within(string0, string1)))",
-                "dotnet": "g.V().Filter(__.Label().Is(P.Within(\"a\", \"b\")))",
-                "go": "g.V().Filter(gremlingo.T__.Label().Is(gremlingo.P.Within(\"a\", \"b\")))",
-                "groovy": "g.V().filter(__.label().is(P.within(\"a\", \"b\")))",
-                "java": "g.V().filter(__.label().is(P.within(\"a\", \"b\")))",
-                "javascript": "g.V().filter(__.label().is(P.within(\"a\", \"b\")))",
-                "python": "g.V().filter_(__.label().is_(P.within('a', 'b')))"
             }
         ]
     },
@@ -35384,6 +35430,57 @@
                 "java": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
                 "javascript": "g.V().hasLabel(\"person\").hasLabel(\"employee\")",
                 "python": "g.V().has_label('person').has_label('employee')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_mergeVXlabel_ab_name_markoX_single_label_graph",
+        "traversals": [
+            {
+                "original": "g.mergeV([(T.label): [\"person\",\"employee\"], name: \"marko\"])",
+                "language": "g.mergeV([(T.label):[\"person\", \"employee\"], name:\"marko\"])",
+                "canonical": "g.mergeV([(T.label):[\"person\", \"employee\"], name:\"marko\"])",
+                "anonymized": "g.mergeV(map0)",
+                "dotnet": "g.MergeV((IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, new List<object> { \"person\", \"employee\" } }, { \"name\", \"marko\" }})",
+                "go": "g.MergeV(map[interface{}]interface{}{gremlingo.T.Label: []interface{}{\"person\", \"employee\"}, \"name\": \"marko\" })",
+                "groovy": "g.mergeV([(T.label):[\"person\", \"employee\"], name:\"marko\"])",
+                "java": "g.mergeV(new LinkedHashMap<Object, Object>() {{ put(T.label, new ArrayList<Object>() {{ add(\"person\"); add(\"employee\"); }}); put(\"name\", \"marko\"); }})",
+                "javascript": "g.mergeV(new Map([[T.label, [\"person\", \"employee\"]], [\"name\", \"marko\"]]))",
+                "python": "g.merge_v({ T.label: ['person', 'employee'], 'name': 'marko' })"
+            }
+        ]
+    },
+    {
+        "scenario": "g_mergeVXlabel_person_name_markoX_optionXonCreate_label_abX_single_label_graph",
+        "traversals": [
+            {
+                "original": "g.mergeV([name: \"newperson\"]).option(Merge.onCreate, [(T.label): [\"person\",\"employee\"], name: \"newperson\"])",
+                "language": "g.mergeV([name:\"newperson\"]).option(Merge.onCreate, [(T.label):[\"person\", \"employee\"], name:\"newperson\"])",
+                "canonical": "g.mergeV([name:\"newperson\"]).option(Merge.onCreate, [(T.label):[\"person\", \"employee\"], name:\"newperson\"])",
+                "anonymized": "g.mergeV(map0).option(Merge.onCreate, map1)",
+                "dotnet": "g.MergeV((IDictionary<object, object>) new Dictionary<object, object> {{ \"name\", \"newperson\" }}).Option(Merge.OnCreate, (IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, new List<object> { \"person\", \"employee\" } }, { \"name\", \"newperson\" }})",
+                "go": "g.MergeV(map[interface{}]interface{}{\"name\": \"newperson\" }).Option(gremlingo.Merge.OnCreate, map[interface{}]interface{}{gremlingo.T.Label: []interface{}{\"person\", \"employee\"}, \"name\": \"newperson\" })",
+                "groovy": "g.mergeV([name:\"newperson\"]).option(Merge.onCreate, [(T.label):[\"person\", \"employee\"], name:\"newperson\"])",
+                "java": "g.mergeV(new LinkedHashMap<Object, Object>() {{ put(\"name\", \"newperson\"); }}).option(Merge.onCreate, new LinkedHashMap<Object, Object>() {{ put(T.label, new ArrayList<Object>() {{ add(\"person\"); add(\"employee\"); }}); put(\"name\", \"newperson\"); }})",
+                "javascript": "g.mergeV(new Map([[\"name\", \"newperson\"]])).option(Merge.onCreate, new Map([[T.label, [\"person\", \"employee\"]], [\"name\", \"newperson\"]]))",
+                "python": "g.merge_v({ 'name': 'newperson' }).option(Merge.on_create, { T.label: ['person', 'employee'], 'name': 'newperson' })"
+            }
+        ]
+    },
+    {
+        "scenario": "g_mergeVXlabel_person_name_markoX_optionXonMatch_label_managerX_single_label_graph",
+        "traversals": [
+            {
+                "original": "g.mergeV([(T.label): \"person\", name: \"marko\"]).option(Merge.onMatch, [(T.label): \"manager\"])",
+                "language": "g.mergeV([(T.label):\"person\", name:\"marko\"]).option(Merge.onMatch, [(T.label):\"manager\"])",
+                "canonical": "g.mergeV([(T.label):\"person\", name:\"marko\"]).option(Merge.onMatch, [(T.label):\"manager\"])",
+                "anonymized": "g.mergeV(map0).option(Merge.onMatch, map1)",
+                "dotnet": "g.MergeV((IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, \"person\" }, { \"name\", \"marko\" }}).Option(Merge.OnMatch, (IDictionary<object, object>) new Dictionary<object, object> {{ T.Label, \"manager\" }})",
+                "go": "g.MergeV(map[interface{}]interface{}{gremlingo.T.Label: \"person\", \"name\": \"marko\" }).Option(gremlingo.Merge.OnMatch, map[interface{}]interface{}{gremlingo.T.Label: \"manager\" })",
+                "groovy": "g.mergeV([(T.label):\"person\", name:\"marko\"]).option(Merge.onMatch, [(T.label):\"manager\"])",
+                "java": "g.mergeV(new LinkedHashMap<Object, Object>() {{ put(T.label, \"person\"); put(\"name\", \"marko\"); }}).option(Merge.onMatch, new LinkedHashMap<Object, Object>() {{ put(T.label, \"manager\"); }})",
+                "javascript": "g.mergeV(new Map([[T.label, \"person\"], [\"name\", \"marko\"]])).option(Merge.onMatch, new Map([[T.label, \"manager\"]]))",
+                "python": "g.merge_v({ T.label: 'person', 'name': 'marko' }).option(Merge.on_match, { T.label: 'manager' })"
             }
         ]
     },
@@ -44471,6 +44568,23 @@
                 "java": "g.V().hasLabel(\"person\").addLabel(\"employee\")",
                 "javascript": "g.V().hasLabel(\"person\").addLabel(\"employee\")",
                 "python": "g.V().has_label('person').add_label('employee')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_addLabelXa_bX_single_label_graph",
+        "traversals": [
+            {
+                "original": "g.V().hasLabel(\"person\").addLabel(\"a\", \"b\")",
+                "language": "g.V().hasLabel(\"person\").addLabel(\"a\", \"b\")",
+                "canonical": "g.V().hasLabel(\"person\").addLabel(\"a\", \"b\")",
+                "anonymized": "g.V().hasLabel(string0).addLabel(string1, string2)",
+                "dotnet": "g.V().HasLabel(\"person\").AddLabel(\"a\", \"b\")",
+                "go": "g.V().HasLabel(\"person\").AddLabel(\"a\", \"b\")",
+                "groovy": "g.V().hasLabel(\"person\").addLabel(\"a\", \"b\")",
+                "java": "g.V().hasLabel(\"person\").addLabel(\"a\", \"b\")",
+                "javascript": "g.V().hasLabel(\"person\").addLabel(\"a\", \"b\")",
+                "python": "g.V().has_label('person').add_label('a', 'b')"
             }
         ]
     },
