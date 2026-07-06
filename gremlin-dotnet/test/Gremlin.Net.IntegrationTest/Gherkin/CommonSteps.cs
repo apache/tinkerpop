@@ -111,18 +111,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             var isMultiLabel = ScenarioData.CurrentScenario != null &&
                 (ScenarioData.CurrentScenario.Tags.Any(t => t.Name == "@MultiLabel") ||
                  (ScenarioData.CurrentFeature != null && ScenarioData.CurrentFeature.Tags.Any(t => t.Name == "@MultiLabel")));
-            var isMultiLabelDefault = ScenarioData.CurrentScenario != null &&
-                (ScenarioData.CurrentScenario.Tags.Any(t => t.Name == "@MultiLabelDefault") ||
-                 (ScenarioData.CurrentFeature != null && ScenarioData.CurrentFeature.Tags.Any(t => t.Name == "@MultiLabelDefault")));
 
-            if (isMultiLabelDefault && graphName == "empty")
-            {
-                ScenarioData.CleanMultilabelData();
-                var data = ScenarioData.GetByGraphName("multilabel");
-                _graphName = "multilabel";
-                _g = Traversal().With(data.Connection).With("multilabel");
-            }
-            else if (isMultiLabel && graphName == "empty")
+            if (isMultiLabel && graphName == "empty")
             {
                 ScenarioData.CleanMultilabelData();
                 var data = ScenarioData.GetByGraphName("multilabel");

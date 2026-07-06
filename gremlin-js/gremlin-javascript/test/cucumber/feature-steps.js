@@ -101,17 +101,13 @@ Given(/^the (.+) graph$/, function (graphName) {
   }
 
   // Multi-label tests use the gmultilabel traversal source for empty graphs
-  if ((this.isMultiLabelDefault || this.isMultiLabel) && graphName === 'empty') {
+  if (this.isMultiLabel && graphName === 'empty') {
     this.graphName = 'multilabel';
   } else {
     this.graphName = graphName;
   }
   const data = this.getData();
   this.g = anon.traversal().with_(data.connection);
-
-  if (this.isMultiLabelDefault) {
-    this.g = this.g.with_("multilabel");
-  }
 
   if (this.isGraphComputer) {
     this.g = this.g.withComputer();

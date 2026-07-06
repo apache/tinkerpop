@@ -359,12 +359,8 @@ public final class StepDefinition {
     public void givenTheXGraph(final String graphName) {
         final boolean isMultiLabel = currentScenario != null &&
                 currentScenario.getSourceTagNames().contains("@MultiLabel");
-        final boolean isMultiLabelDefault = currentScenario != null &&
-                currentScenario.getSourceTagNames().contains("@MultiLabelDefault");
         if (graphName.equals("empty")) {
-            if (isMultiLabelDefault)
-                this.g = world.getMultiLabelDefaultGraphTraversalSource();
-            else if (isMultiLabel)
+            if (isMultiLabel)
                 this.g = world.getMultiLabelGraphTraversalSource();
             else
                 this.g = world.getGraphTraversalSource(null);

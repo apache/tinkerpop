@@ -46,7 +46,7 @@ public interface World {
             "not @GraphComputerVerificationInjectionNotSupported and " +
             "not @GraphComputerVerificationStarGraphExceeded and not @GraphComputerVerificationReferenceOnly and " +
             "not @TinkerServiceRegistry and not @InsertionOrderingRequired and " +
-            "not @GraphComputerVerificationOrderingNotSupported and not @TinkerGQL";
+            "not @GraphComputerVerificationOrderingNotSupported and not @TinkerGQL and not @MultiLabelDefault";
 
     /**
      * Gets a {@link GraphTraversalSource} that is backed by the specified {@link GraphData}. For {@code null}, the
@@ -65,15 +65,6 @@ public interface World {
      */
     public default GraphTraversalSource getMultiLabelGraphTraversalSource() {
         return getGraphTraversalSource(null);
-    }
-
-    /**
-     * Gets a {@link GraphTraversalSource} that returns labels as a set by default from
-     * {@code elementMap()}/{@code valueMap()}. Used by {@code @MultiLabelDefault} tagged scenarios to simulate
-     * a provider whose default label output is a set. Applies {@code with("multilabel")} to the multi-label source.
-     */
-    public default GraphTraversalSource getMultiLabelDefaultGraphTraversalSource() {
-        return getMultiLabelGraphTraversalSource().with("multilabel");
     }
 
     /**

@@ -34,6 +34,40 @@ Feature: Step - elementMap()
       | m[{"t[id]": "v[lop].id", "t[label]": "software", "name": "lop", "lang": "java"}] |
       | m[{"t[id]": "v[ripple].id", "t[label]": "software", "name": "ripple", "lang": "java"}] |
 
+  @SingleLabelDefault
+  Scenario: g_V_elementMap_single_label_only_graph_default
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().elementMap()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": "marko", "age": 29}] |
+      | m[{"t[id]": "v[josh].id", "t[label]": "person", "name": "josh", "age": 32}] |
+      | m[{"t[id]": "v[peter].id", "t[label]": "person", "name": "peter", "age": 35}] |
+      | m[{"t[id]": "v[vadas].id", "t[label]": "person", "name": "vadas", "age": 27}] |
+      | m[{"t[id]": "v[lop].id", "t[label]": "software", "name": "lop", "lang": "java"}] |
+      | m[{"t[id]": "v[ripple].id", "t[label]": "software", "name": "ripple", "lang": "java"}] |
+
+  @MultiLabelDefault
+  Scenario: g_V_elementMap_single_label_only_graph_multi_label_default
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().elementMap()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"t[id]": "v[marko].id", "t[label]": "s[person]", "name": "marko", "age": 29}] |
+      | m[{"t[id]": "v[josh].id", "t[label]": "s[person]", "name": "josh", "age": 32}] |
+      | m[{"t[id]": "v[peter].id", "t[label]": "s[person]", "name": "peter", "age": 35}] |
+      | m[{"t[id]": "v[vadas].id", "t[label]": "s[person]", "name": "vadas", "age": 27}] |
+      | m[{"t[id]": "v[lop].id", "t[label]": "s[software]", "name": "lop", "lang": "java"}] |
+      | m[{"t[id]": "v[ripple].id", "t[label]": "s[software]", "name": "ripple", "lang": "java"}] |
+
   Scenario: g_V_elementMapXname_ageX
     Given the modern graph
     And the traversal of

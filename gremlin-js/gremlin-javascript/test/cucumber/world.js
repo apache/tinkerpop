@@ -117,7 +117,6 @@ Before(function (info) {
   this.scenario = info.pickle.name;
   this.cache = cache;
   this.isMultiLabel = info.pickle.tags && info.pickle.tags.some(t => t.name === '@MultiLabel');
-  this.isMultiLabelDefault = info.pickle.tags && info.pickle.tags.some(t => t.name === '@MultiLabelDefault');
 });
 
 Before({tags: "@GraphComputerOnly"}, function() {
@@ -125,6 +124,10 @@ Before({tags: "@GraphComputerOnly"}, function() {
 })
 
 Before({tags: "@AllowNullPropertyValues"}, function() {
+  return 'skipped'
+})
+
+Before({tags: "@MultiLabelDefault"}, function() {
   return 'skipped'
 })
 

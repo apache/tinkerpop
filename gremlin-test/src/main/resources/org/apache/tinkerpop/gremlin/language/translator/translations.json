@@ -25038,6 +25038,40 @@
         ]
     },
     {
+        "scenario": "g_V_elementMap_single_label_only_graph_default",
+        "traversals": [
+            {
+                "original": "g.V().elementMap()",
+                "language": "g.V().elementMap()",
+                "canonical": "g.V().elementMap()",
+                "anonymized": "g.V().elementMap()",
+                "dotnet": "g.V().ElementMap<object>()",
+                "go": "g.V().ElementMap()",
+                "groovy": "g.V().elementMap()",
+                "java": "g.V().elementMap()",
+                "javascript": "g.V().elementMap()",
+                "python": "g.V().element_map()"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_elementMap_single_label_only_graph_multi_label_default",
+        "traversals": [
+            {
+                "original": "g.V().elementMap()",
+                "language": "g.V().elementMap()",
+                "canonical": "g.V().elementMap()",
+                "anonymized": "g.V().elementMap()",
+                "dotnet": "g.V().ElementMap<object>()",
+                "go": "g.V().ElementMap()",
+                "groovy": "g.V().elementMap()",
+                "java": "g.V().elementMap()",
+                "javascript": "g.V().elementMap()",
+                "python": "g.V().element_map()"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_elementMapXname_ageX",
         "traversals": [
             {
@@ -40441,6 +40475,40 @@
                 "java": "g.with(\"singlelabel\").V().valueMap().with(WithOptions.tokens)",
                 "javascript": "g.with_(\"singlelabel\").V().valueMap().with_(WithOptions.tokens)",
                 "python": "g.with_('singlelabel').V().value_map().with_(WithOptions.tokens)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_valueMap_withXtokensX_single_label_only_graph_default",
+        "traversals": [
+            {
+                "original": "g.V().valueMap().with(WithOptions.tokens)",
+                "language": "g.V().valueMap().with(WithOptions.tokens)",
+                "canonical": "g.V().valueMap().with(WithOptions.tokens)",
+                "anonymized": "g.V().valueMap().with(WithOptions.tokens)",
+                "dotnet": "g.V().ValueMap<object, object>().With(WithOptions.Tokens)",
+                "go": "g.V().ValueMap().With(gremlingo.WithOptions.Tokens)",
+                "groovy": "g.V().valueMap().with(WithOptions.tokens)",
+                "java": "g.V().valueMap().with(WithOptions.tokens)",
+                "javascript": "g.V().valueMap().with_(WithOptions.tokens)",
+                "python": "g.V().value_map().with_(WithOptions.tokens)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_valueMap_withXtokensX_single_label_only_graph_multi_label_default",
+        "traversals": [
+            {
+                "original": "g.V().valueMap().with(WithOptions.tokens)",
+                "language": "g.V().valueMap().with(WithOptions.tokens)",
+                "canonical": "g.V().valueMap().with(WithOptions.tokens)",
+                "anonymized": "g.V().valueMap().with(WithOptions.tokens)",
+                "dotnet": "g.V().ValueMap<object, object>().With(WithOptions.Tokens)",
+                "go": "g.V().ValueMap().With(gremlingo.WithOptions.Tokens)",
+                "groovy": "g.V().valueMap().with(WithOptions.tokens)",
+                "java": "g.V().valueMap().with(WithOptions.tokens)",
+                "javascript": "g.V().valueMap().with_(WithOptions.tokens)",
+                "python": "g.V().value_map().with_(WithOptions.tokens)"
             }
         ]
     },

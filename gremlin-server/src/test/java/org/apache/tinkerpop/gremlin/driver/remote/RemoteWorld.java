@@ -113,18 +113,6 @@ public abstract class RemoteWorld implements World {
     }
 
     @Override
-    public GraphTraversalSource getMultiLabelDefaultGraphTraversalSource() {
-        final Client client = cluster.connect();
-        try {
-            final RequestOptions options = RequestOptions.build().traversalSource("gmultilabel").create();
-            client.submit("g.V().drop()", options).all().get();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return AnonymousTraversalSource.traversal().withRemote(DriverRemoteConnection.using(client, "gmultilabel")).with("multilabel");
-    }
-
-    @Override
     public String changePathToDataFile(final String pathToFileFromGremlin) {
         return ".." + File.separator + pathToFileFromGremlin;
     }

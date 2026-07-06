@@ -504,28 +504,19 @@ func (tg *tinkerPopGraph) nothingShouldHappenBecause(arg1 *godog.DocString) erro
 func (tg *tinkerPopGraph) chooseGraph(graphName string) error {
 	// Multi-label tests use the gmultilabel traversal source for empty graphs
 	isMultiLabel := false
-	isMultiLabelDefault := false
 	for _, tag := range tg.scenario.Tags {
 		if tag.Name == "@MultiLabel" {
 			isMultiLabel = true
 		}
-		if tag.Name == "@MultiLabelDefault" {
-			isMultiLabelDefault = true
-		}
 	}
 
-	if isMultiLabelDefault && graphName == "empty" {
-		tg.graphName = "multilabel"
-	} else if isMultiLabel && graphName == "empty" {
+	if isMultiLabel && graphName == "empty" {
 		tg.graphName = "multilabel"
 	} else {
 		tg.graphName = graphName
 	}
 	data := tg.graphDataMap[tg.graphName]
 	tg.g = gremlingo.Traversal_().With(data.connection).With("language", "gremlin-lang")
-	if isMultiLabelDefault {
-		tg.g = tg.g.With("multilabel", true)
-	}
 	if tg.graphName == "empty" || tg.graphName == "multilabel" {
 		err := tg.cleanEmptyDataGraph(tg.g)
 		if err != nil {
@@ -538,6 +529,9 @@ func (tg *tinkerPopGraph) chooseGraph(graphName string) error {
 			tg.g = tg.g.WithComputer()
 		} else if tag.Name == "@AllowNullPropertyValues" {
 			// The GLV suite does not test against a graph that has null property values enabled, skipping via Pending Error
+			return godog.ErrPending
+		} else if tag.Name == "@MultiLabelDefault" {
+			// The GLV suite does not test against a graph that defaults to multi-label output, skipping via Pending Error
 			return godog.ErrPending
 		}
 	}
@@ -1288,7 +1282,7 @@ func TestCucumberFeatures(t *testing.T) {
 		TestSuiteInitializer: InitializeTestSuite,
 		ScenarioInitializer:  InitializeScenario,
 		Options: &godog.Options{
-			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepWrite && ~@DataChar",
+			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepWrite && ~@DataChar && ~@MultiLabelDefault",
 			Format:   "pretty",
 			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features")},
 			TestingT: t, // Testing instance that will run subtests.

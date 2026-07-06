@@ -88,16 +88,15 @@ def choose_graph(step, graph_name):
     if not step.context.ignore:
         step.context.ignore = "WithReservedKeysVerificationStrategy" in tagset
 
+    if not step.context.ignore:
+        step.context.ignore = "MultiLabelDefault" in tagset
+
     if (step.context.ignore):
         return
 
     # Multi-label tests use the gmultilabel traversal source for empty graphs
     is_multilabel = "MultiLabel" in tagset
-    is_multilabel_default = "MultiLabelDefault" in tagset
-    if is_multilabel_default and graph_name == "empty":
-        step.context.graph_name = "multilabel"
-        step.context.g = traversal().with_(step.context.remote_conn["multilabel"]).with_('language', 'gremlin-lang').with_('multilabel')
-    elif is_multilabel and graph_name == "empty":
+    if is_multilabel and graph_name == "empty":
         step.context.graph_name = "multilabel"
         step.context.g = traversal().with_(step.context.remote_conn["multilabel"]).with_('language', 'gremlin-lang')
     else:
