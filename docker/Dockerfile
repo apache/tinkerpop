@@ -34,7 +34,7 @@ RUN apt-get install -y --force-yes dotnet-sdk-8.0 mono-devel
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get install -y python3 python3.8 python3-dev python3.8-dev python3-pip build-essential checkinstall zlib1g-dev libreadline-gplv2-dev \
-    libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libkrb5-dev krb5-user
+    libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev
 
 # make python3 be python 3.8
 RUN rm /usr/bin/python3
