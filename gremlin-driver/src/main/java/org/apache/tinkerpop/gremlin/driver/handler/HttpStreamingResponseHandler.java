@@ -172,11 +172,15 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
 
     @Override
     public void channelInactive(final ChannelHandlerContext ctx) throws Exception {
+        // Signal end-of-stream only AFTER super.channelInactive so the pending request is marked errored (by the
+        // downstream GremlinResponseHandler) before the reader thread is unblocked. Otherwise the reader can win the
+        // race with an EOFException from the closed stream. This change matches how errors are handled in
+        // exceptionCaught() which is to mark the ResultSet before signaling the stream.
+        releaseErrorBody();
+        super.channelInactive(ctx);
         if (queueInputStream != null) {
             queueInputStream.signalEndOfStream();
         }
-        releaseErrorBody();
-        super.channelInactive(ctx);
     }
 
     @Override
