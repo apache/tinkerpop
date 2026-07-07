@@ -30,9 +30,9 @@ public class SocketServerRunner {
         final Channel channel = server.start(new TestHttpServerInitializer());
 
         final RecordingProxyServer proxyServer = new RecordingProxyServer(SocketServerConstants.PROXY_PORT);
-        final Channel proxyChannel = proxyServer.start();
+        proxyServer.start();
 
-        while (channel.isOpen() || proxyChannel.isOpen()) {
+        while (channel.isOpen()) {
             Thread.sleep(1000);
         }
     }

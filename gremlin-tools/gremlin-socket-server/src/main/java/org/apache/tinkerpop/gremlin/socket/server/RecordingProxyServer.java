@@ -18,34 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.socket.server;
 
-import io.netty.bootstrap.Bootstrap;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpServerCodec;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.util.ReferenceCountUtil;
+import org.littleshoot.proxy.HttpFiltersAdapter;
+import org.littleshoot.proxy.HttpFiltersSourceAdapter;
+import org.littleshoot.proxy.HttpProxyServer;
+import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -56,208 +40,131 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
- * A self-contained Netty HTTP proxy used for cross-GLV proxy testing. It records the
+ * A proxy used for cross-GLV proxy testing, backed by the LittleProxy library. It records the
  * {@code host:port} target of every request it proxies and exposes a small control API so tests can
  * prove that traffic actually transited the proxy.
  * <p>
- * Three kinds of requests are supported:
+ * Two categories of requests are handled by the installed {@code HttpFilters}:
  * <ul>
- *   <li><b>HTTP CONNECT</b> tunneling (used by Java/Netty and JS/undici clients): the target is
- *   recorded, a 200 "Connection Established" is returned and the pipeline is reconfigured to relay
- *   raw bytes bidirectionally between the client and a freshly opened upstream connection.</li>
- *   <li><b>Absolute-URI forward</b> requests (used by Go/Python/.NET for http targets): the target
- *   authority is recorded and the request is forwarded to that target over a new upstream HTTP
- *   connection with the response relayed back to the client.</li>
- *   <li><b>Origin-form control</b> requests: {@code GET /__recorded} returns a JSON array of the
- *   recorded targets, {@code POST /__reset} clears the recorded list. Any other control path
- *   returns 404.</li>
+ *   <li><b>Proxied</b> requests (HTTP CONNECT tunnels used by Java/Netty and JS/undici clients, plus
+ *   absolute-URI forward requests used by Go/Python/.NET for http targets): the target authority is
+ *   recorded and LittleProxy is allowed to proxy the request normally.</li>
+ *   <li><b>Origin-form control</b> requests served on the same proxy port: {@code GET /__recorded}
+ *   returns a JSON array of the recorded targets, {@code POST /__reset} clears the recorded list. Any
+ *   other control path returns 404. These are short-circuited by returning a response directly from
+ *   the filter so they never leave the proxy.</li>
  * </ul>
  */
 public class RecordingProxyServer {
 
     private final int port;
     private final List<String> recordedTargets = new CopyOnWriteArrayList<>();
-    private EventLoopGroup bossGroup;
-    private EventLoopGroup workerGroup;
+    private HttpProxyServer proxyServer;
 
     public RecordingProxyServer(final int port) {
         this.port = port;
     }
 
-    public Channel start() throws InterruptedException {
-        bossGroup = new NioEventLoopGroup(1);
-        workerGroup = new NioEventLoopGroup();
-        final ServerBootstrap b = new ServerBootstrap();
-        b.group(bossGroup, workerGroup)
-                .channel(NioServerSocketChannel.class)
-                .childHandler(new ChannelInitializer<SocketChannel>() {
+    public void start() {
+        proxyServer = DefaultHttpProxyServer.bootstrap()
+                .withPort(port)
+                .withFiltersSource(new HttpFiltersSourceAdapter() {
                     @Override
-                    protected void initChannel(final SocketChannel ch) {
-                        ch.pipeline().addLast("codec", new HttpServerCodec());
-                        ch.pipeline().addLast("aggregator", new HttpObjectAggregator(65536));
-                        ch.pipeline().addLast("handler", new ProxyFrontendHandler(recordedTargets));
+                    public org.littleshoot.proxy.HttpFilters filterRequest(final HttpRequest originalRequest) {
+                        return new RecordingFilters(originalRequest, recordedTargets);
                     }
-                });
-        return b.bind(port).sync().channel();
+                })
+                .start();
     }
 
     public void stop() {
-        bossGroup.shutdownGracefully();
-        workerGroup.shutdownGracefully();
+        if (proxyServer != null) {
+            proxyServer.stop();
+        }
     }
 
     /**
-     * Handles the client-facing side of the proxy: CONNECT tunneling, absolute-URI forwarding and
-     * the origin-form control API.
+     * Records proxied targets and short-circuits the origin-form control API.
      */
-    private static class ProxyFrontendHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+    private static class RecordingFilters extends HttpFiltersAdapter {
 
         private final List<String> recordedTargets;
 
-        ProxyFrontendHandler(final List<String> recordedTargets) {
+        RecordingFilters(final HttpRequest originalRequest, final List<String> recordedTargets) {
+            super(originalRequest);
             this.recordedTargets = recordedTargets;
         }
 
         @Override
-        protected void channelRead0(final ChannelHandlerContext ctx, final FullHttpRequest request) {
+        public io.netty.handler.codec.http.HttpResponse clientToProxyRequest(final HttpObject httpObject) {
+            if (!(httpObject instanceof HttpRequest)) {
+                return null;
+            }
+
+            final HttpRequest request = (HttpRequest) httpObject;
+            final String uri = request.uri();
+
+            if (uri.startsWith("/")) {
+                // origin-form -> control API, short-circuit with a direct response.
+                return handleControl(request);
+            }
+
+            // otherwise it is a proxied request: record the authority and let LittleProxy proxy it.
+            final String authority = extractAuthority(request);
+            if (authority != null) {
+                recordedTargets.add(authority);
+            }
+            return null;
+        }
+
+        /**
+         * Extracts the {@code host:port} authority from a proxied request. For CONNECT the uri is
+         * already {@code host:port}; for an absolute-URI request the uri is parsed with
+         * {@link URI}, falling back to the Host header when the uri cannot be parsed.
+         */
+        private String extractAuthority(final HttpRequest request) {
             final String uri = request.uri();
             if (HttpMethod.CONNECT.equals(request.method())) {
-                handleConnect(ctx, uri);
-            } else if (uri.startsWith("/")) {
-                // origin-form -> control API
-                handleControl(ctx, request);
-            } else {
-                // absolute-form -> forward to the target origin
-                handleForward(ctx, request);
+                return uri;
             }
-        }
 
-        // (a) CONNECT tunneling: record host:port, reply 200, then relay raw bytes.
-        private void handleConnect(final ChannelHandlerContext ctx, final String target) {
-            recordedTargets.add(target);
-
-            final int colon = target.lastIndexOf(':');
-            final String host = target.substring(0, colon);
-            final int targetPort = Integer.parseInt(target.substring(colon + 1));
-
-            final Channel clientChannel = ctx.channel();
-            // Pause reads on the client until the tunnel is fully wired up.
-            clientChannel.config().setAutoRead(false);
-
-            final Bootstrap b = new Bootstrap();
-            b.group(clientChannel.eventLoop())
-                    .channel(NioSocketChannel.class)
-                    .option(ChannelOption.AUTO_READ, false)
-                    .handler(new ChannelInitializer<Channel>() {
-                        @Override
-                        protected void initChannel(final Channel ch) {
-                            ch.pipeline().addLast(new RelayHandler(clientChannel));
-                        }
-                    });
-
-            final ChannelFuture connectFuture = b.connect(host, targetPort);
-            final Channel upstreamChannel = connectFuture.channel();
-            connectFuture.addListener((ChannelFutureListener) future -> {
-                if (!future.isSuccess()) {
-                    sendControlResponse(clientChannel, HttpResponseStatus.BAD_GATEWAY, "", "text/plain");
-                    closeOnFlush(clientChannel);
-                    return;
-                }
-                final FullHttpResponse established = new DefaultFullHttpResponse(
-                        HTTP_1_1, new HttpResponseStatus(200, "Connection Established"));
-                established.headers().set(HttpHeaderNames.CONTENT_LENGTH, 0);
-                clientChannel.writeAndFlush(established).addListener((ChannelFutureListener) writeFuture -> {
-                    if (!writeFuture.isSuccess()) {
-                        closeOnFlush(upstreamChannel);
-                        closeOnFlush(clientChannel);
-                        return;
-                    }
-                    // Switch to a raw byte relay. Add the relay before removing the HTTP handlers
-                    // (codec last) so any bytes buffered by the codec flow into the relay.
-                    clientChannel.pipeline().addLast(new RelayHandler(upstreamChannel));
-                    clientChannel.pipeline().remove("handler");
-                    clientChannel.pipeline().remove("aggregator");
-                    clientChannel.pipeline().remove("codec");
-                    clientChannel.config().setAutoRead(true);
-                    upstreamChannel.config().setAutoRead(true);
-                    clientChannel.read();
-                    upstreamChannel.read();
-                });
-            });
-        }
-
-        // (b) Absolute-URI forward: record host:port, forward request, relay response back.
-        private void handleForward(final ChannelHandlerContext ctx, final FullHttpRequest request) {
-            final URI parsed;
             try {
-                parsed = new URI(request.uri());
-            } catch (Exception e) {
-                sendControlResponse(ctx.channel(), HttpResponseStatus.BAD_REQUEST, "", "text/plain");
-                return;
-            }
-
-            final String host = parsed.getHost();
-            final int targetPort = parsed.getPort();
-
-            recordedTargets.add(host + ":" + targetPort);
-
-            // Build an origin-form request for the upstream. Copy synchronously since the inbound
-            // request is released once channelRead0 returns.
-            String pathAndQuery = parsed.getRawPath();
-            if (pathAndQuery == null || pathAndQuery.isEmpty()) {
-                pathAndQuery = "/";
-            }
-            if (parsed.getRawQuery() != null) {
-                pathAndQuery = pathAndQuery + "?" + parsed.getRawQuery();
-            }
-
-            final FullHttpRequest forwardRequest = request.copy();
-            forwardRequest.setUri(pathAndQuery);
-            forwardRequest.headers().set(HttpHeaderNames.HOST, host + ":" + targetPort);
-
-            final Channel clientChannel = ctx.channel();
-            final String upstreamHost = host;
-            final int upstreamPort = targetPort;
-
-            final Bootstrap b = new Bootstrap();
-            b.group(clientChannel.eventLoop())
-                    .channel(NioSocketChannel.class)
-                    .handler(new ChannelInitializer<Channel>() {
-                        @Override
-                        protected void initChannel(final Channel ch) {
-                            ch.pipeline().addLast(new HttpClientCodec());
-                            ch.pipeline().addLast(new HttpObjectAggregator(65536));
-                            ch.pipeline().addLast(new UpstreamResponseHandler(clientChannel));
-                        }
-                    });
-
-            b.connect(upstreamHost, upstreamPort).addListener((ChannelFutureListener) future -> {
-                if (!future.isSuccess()) {
-                    forwardRequest.release();
-                    sendControlResponse(clientChannel, HttpResponseStatus.BAD_GATEWAY, "", "text/plain");
-                    return;
+                final URI parsed = new URI(uri);
+                final String host = parsed.getHost();
+                if (host != null) {
+                    final int parsedPort = parsed.getPort();
+                    return host + ":" + (parsedPort == -1 ? 80 : parsedPort);
                 }
-                future.channel().writeAndFlush(forwardRequest);
-            });
+            } catch (Exception ignored) {
+                // fall through to the Host header fallback below
+            }
+
+            final String hostHeader = request.headers().get(HttpHeaderNames.HOST);
+            if (hostHeader != null && !hostHeader.isEmpty()) {
+                return hostHeader.contains(":") ? hostHeader : hostHeader + ":80";
+            }
+            return null;
         }
 
-        // (c) Origin-form control API.
-        private void handleControl(final ChannelHandlerContext ctx, final FullHttpRequest request) {
+        private FullHttpResponse handleControl(final HttpRequest request) {
             final String uri = request.uri();
             if (HttpMethod.GET.equals(request.method()) && "/__recorded".equals(uri)) {
-                sendControlResponse(ctx.channel(), HttpResponseStatus.OK, toJsonArray(recordedTargets),
-                        "application/json");
+                return buildResponse(HttpResponseStatus.OK, toJsonArray(recordedTargets), "application/json");
             } else if (HttpMethod.POST.equals(request.method()) && "/__reset".equals(uri)) {
                 recordedTargets.clear();
-                sendControlResponse(ctx.channel(), HttpResponseStatus.OK, "", "text/plain");
+                return buildResponse(HttpResponseStatus.OK, "", "text/plain");
             } else {
-                sendControlResponse(ctx.channel(), HttpResponseStatus.NOT_FOUND, "", "text/plain");
+                return buildResponse(HttpResponseStatus.NOT_FOUND, "", "text/plain");
             }
         }
 
-        @Override
-        public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
-            closeOnFlush(ctx.channel());
+        private static FullHttpResponse buildResponse(final HttpResponseStatus status, final String body,
+                                                      final String contentType) {
+            final FullHttpResponse response = new DefaultFullHttpResponse(
+                    HTTP_1_1, status, Unpooled.copiedBuffer(body, StandardCharsets.UTF_8));
+            response.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType + "; charset=UTF-8");
+            response.headers().set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+            return response;
         }
 
         /**
@@ -278,89 +185,6 @@ public class RecordingProxyServer {
 
         private static String escapeJson(final String value) {
             return value.replace("\\", "\\\\").replace("\"", "\\\"");
-        }
-    }
-
-    /**
-     * Writes a simple full HTTP response with the given body and content type.
-     */
-    private static void sendControlResponse(final Channel channel, final HttpResponseStatus status,
-                                            final String body, final String contentType) {
-        final ByteBuf content = Unpooled.copiedBuffer(body, StandardCharsets.UTF_8);
-        final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, content);
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType + "; charset=UTF-8");
-        HttpUtil.setContentLength(response, content.readableBytes());
-        channel.writeAndFlush(response);
-    }
-
-    private static void closeOnFlush(final Channel channel) {
-        if (channel != null && channel.isActive()) {
-            channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
-        }
-    }
-
-    /**
-     * Relays raw bytes to a peer channel and mirrors close/error events so both ends of a tunnel are
-     * torn down together.
-     */
-    private static class RelayHandler extends ChannelInboundHandlerAdapter {
-
-        private final Channel relayChannel;
-
-        RelayHandler(final Channel relayChannel) {
-            this.relayChannel = relayChannel;
-        }
-
-        @Override
-        public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
-            if (relayChannel.isActive()) {
-                relayChannel.writeAndFlush(msg).addListener((ChannelFutureListener) future -> {
-                    if (future.isSuccess()) {
-                        ctx.channel().read();
-                    } else {
-                        future.channel().close();
-                    }
-                });
-            } else {
-                ReferenceCountUtil.release(msg);
-            }
-        }
-
-        @Override
-        public void channelInactive(final ChannelHandlerContext ctx) {
-            closeOnFlush(relayChannel);
-        }
-
-        @Override
-        public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
-            closeOnFlush(ctx.channel());
-        }
-    }
-
-    /**
-     * Relays a forwarded HTTP response from the upstream origin back to the client, then closes the
-     * upstream connection.
-     */
-    private static class UpstreamResponseHandler extends SimpleChannelInboundHandler<FullHttpResponse> {
-
-        private final Channel clientChannel;
-
-        UpstreamResponseHandler(final Channel clientChannel) {
-            this.clientChannel = clientChannel;
-        }
-
-        @Override
-        protected void channelRead0(final ChannelHandlerContext ctx, final FullHttpResponse response) {
-            if (clientChannel.isActive()) {
-                clientChannel.writeAndFlush(response.retain());
-            }
-            ctx.close();
-        }
-
-        @Override
-        public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
-            ctx.close();
-            closeOnFlush(clientChannel);
         }
     }
 }
