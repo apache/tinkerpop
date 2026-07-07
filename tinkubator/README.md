@@ -16,7 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 -->
-= Tinkubator
+# Tinkubator
 
 The Tinkubator is a collection of experimental code and ideas that may not be ready for production, but are 
 nevertheless valuable for exploration and expansion of the TinkerPop community. The concept of Tinkubator was developed
@@ -24,14 +24,14 @@ many years ago in the earliest years of the project, but it hasn't been in use f
 TinkerPop moves forward to 4.x and the opportunities that AI will bring, the Tinkubator offers a place to experiment
 and explore new ideas at a faster pace with a lower barrier for acceptance.
 
-== Current Projects
+## Current Projects
 
 | Project   | Description                                                           | Stage |
 |:----------|:----------------------------------------------------------------------|:-----:|
 | Project A | This is a project that does something interesting for agentic memory. |   1   |
 | Project B | This is a Gremlin Language Variant for RPG IV.                        |   2   |
 
-== Project Stages
+## Project Stages
 
 Tinkubator projects are categorized into three stages:
 
@@ -42,7 +42,7 @@ Tinkubator projects are categorized into three stages:
 Stage 3 projects have likely reached a level of maturity where they could be considered for graduation from Tinkubator
 and therefore officially supported by the community. Once they graduate, the project would get a non-preview release.
 
-== Requirements for Tinkubator Projects
+## Requirements for Tinkubator Projects
 
 While the Tinkubator is meant to house projects in early stages of development, it is still intended to be a curated
 set of projects that are on their way to production use. As such, there are some basic requirements for projects
