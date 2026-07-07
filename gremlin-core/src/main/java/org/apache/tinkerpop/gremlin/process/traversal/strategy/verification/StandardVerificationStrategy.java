@@ -36,7 +36,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffect
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.RequirementsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ReadOnlyChildValidator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -99,6 +101,18 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
                 }
             }
 
+        }
+
+        // Reject a traversal source configured with both with("multilabel") and with("singlelabel") — the
+        // options are mutually exclusive and combining them has no sensible interpretation.
+        final boolean hasConflictingLabelOptions = traversal.getStrategies().getStrategy(OptionsStrategy.class)
+                .map(os -> os.getOptions().containsKey(WithOptions.MULTILABEL_KEY)
+                        && os.getOptions().containsKey(WithOptions.SINGLELABEL_KEY))
+                .orElse(false);
+        if (hasConflictingLabelOptions) {
+            throw new VerificationException(
+                    "with(\"multilabel\") and with(\"singlelabel\") are mutually exclusive and cannot both be configured on the same traversal source.",
+                    traversal);
         }
 
         // Reject label().drop() and labels().drop() patterns — users should use dropLabel(label) or dropLabels() instead

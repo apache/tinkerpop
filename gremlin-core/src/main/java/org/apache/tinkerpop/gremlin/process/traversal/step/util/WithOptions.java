@@ -106,13 +106,16 @@ public class WithOptions {
     //
 
     /**
-     * The user-facing key for multilabel configuration used with {@code g.with("multilabel")}.
+     * The user-facing key for multilabel configuration used with {@code g.with("multilabel")}. This option is
+     * mutually exclusive with {@link #SINGLELABEL_KEY} - configuring both on the same traversal source is rejected
+     * during traversal strategy verification.
      */
     public static final String MULTILABEL_KEY = "multilabel";
 
     /**
-     * The user-facing key for singlelabel override used with {@code g.with("singlelabel")}.
-     * When present, overrides multilabel to force single-label output in valueMap/elementMap steps.
+     * The user-facing key for singlelabel override used with {@code g.with("singlelabel")}. Forces single-label
+     * output in valueMap/elementMap steps. This option is mutually exclusive with {@link #MULTILABEL_KEY} -
+     * configuring both on the same traversal source is rejected during traversal strategy verification.
      */
     public static final String SINGLELABEL_KEY = "singlelabel";
 }

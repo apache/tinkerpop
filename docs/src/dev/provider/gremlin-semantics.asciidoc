@@ -1663,6 +1663,41 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ElementStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#element-step[reference]
 
+[[elementmap-step]]
+=== elementMap()
+
+*Description:* Converts elements to a `Map` representation containing the element's `id`, `label`, and properties.
+For an `Edge`, the map also includes the `IN` and `OUT` vertex structures (each a nested map of `id` and `label`).
+
+*Syntax:* `elementMap(String... propertyKeys)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Element` |`Map`
+|=========================================================
+
+*Arguments:*
+
+* `propertyKeys` - If `elementMap()` is provided a list of propertyKeys, then the result map will only contain
+property entries specified by propertyKeys. If the list is empty, then all properties are included.
+
+*Considerations:*
+
+The label format in the map is controlled by source-level `with("multilabel")` and `with("singlelabel")` options, not
+by the graph's `LabelCardinality`. When `"multilabel"` is present, the label value is a `Set<String>`; likewise when
+`"singlelabel"` is present, it is a single `String`. The two options are mutually exclusive, configuring both
+`"multilabel"` and `"singlelabel"` on the same source is rejected with a `VerificationException`. Note that is a
+provider choice whether an unconfigured `GraphTraversal` defaults to `multilabel` or `singlelabel` semantics. The
+reference implementation defaults to `singlelabel` semantics.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ElementMapStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#elementmap-step[reference]
+
 [[e-step]]
 === E()
 
@@ -3183,11 +3218,15 @@ keys, the resulting map entry contains a `LIST` of the values. An `Edge` and a `
 value per key and the value is returned directly.
 
 The label format in the map is controlled by source-level `with("multilabel")` and `with("singlelabel")` options, not
-by the graph's `LabelCardinality`. When `"multilabel"` is present and `"singlelabel"` is not, the label value is a
-`Set<String>`; otherwise it is a single `String`. As a deliberate design choice, when both options are present on the
-same source, `"singlelabel"` always takes precedence regardless of the order in which they were applied. This ensures
-deterministic behavior rather than relying on declaration order. Providers who want label output tied to their
-cardinality configuration should override `PropertyMapStep` and/or `ElementMapStep`.
+by the graph's `LabelCardinality`. When `"multilabel"` is present, the label value is a `Set<String>`; likewise when
+`"singlelabel"` is present, it is a single `String`. The two options are mutually exclusive, configuring both
+`"multilabel"` and `"singlelabel"` on the same source is rejected with a `VerificationException`. Note that is a
+provider choice whether an unconfigured `GraphTraversal` defaults to `multilabel` or `singlelabel` semantics. The
+reference implementation defaults to `singlelabel` semantics.
+
+*Exceptions*
+
+None
 
 *Exceptions:*
 

@@ -560,16 +560,14 @@ public final class TraversalHelper {
 
     /**
      * Checks whether multi-label output is enabled for the given traversal via source-level
-     * {@code g.with("multilabel")} configuration. Returns {@code false} if {@code g.with("singlelabel")}
-     * is also present, as singlelabel overrides multilabel.
+     * {@code g.with("multilabel")} configuration.
      *
      * @param traversal the traversal to inspect
      * @return {@code true} if multi-label output is enabled and {@code false} otherwise
      */
     public static boolean isMultilabelEnabled(final Traversal.Admin<?, ?> traversal) {
         return traversal.getStrategies().getStrategy(OptionsStrategy.class)
-                .map(os -> os.getOptions().containsKey(WithOptions.MULTILABEL_KEY)
-                        && !os.getOptions().containsKey(WithOptions.SINGLELABEL_KEY))
+                .map(os -> os.getOptions().containsKey(WithOptions.MULTILABEL_KEY))
                 .orElse(false);
     }
 

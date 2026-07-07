@@ -21,10 +21,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.TestSupport;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -125,5 +127,37 @@ public class StandardVerificationStrategyTest {
 
         copy.asAdmin().setStrategies(strategies);
         return copy;
+    }
+
+    @Test
+    public void shouldRejectBothMultilabelAndSinglelabelOnSameSource() {
+        final GraphTraversalSource g = EmptyGraph.instance().traversal()
+                .withStrategies(StandardVerificationStrategy.instance())
+                .with("multilabel").with("singlelabel");
+
+        try {
+            g.V().iterate();
+            fail("with(\"multilabel\") and with(\"singlelabel\") on the same source should be rejected");
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(VerificationException.class));
+        }
+    }
+
+    @Test
+    public void shouldAllowMultilabelAloneOnSource() {
+        final GraphTraversalSource g = EmptyGraph.instance().traversal()
+                .withStrategies(StandardVerificationStrategy.instance())
+                .with("multilabel");
+
+        g.V().iterate();
+    }
+
+    @Test
+    public void shouldAllowSinglelabelAloneOnSource() {
+        final GraphTraversalSource g = EmptyGraph.instance().traversal()
+                .withStrategies(StandardVerificationStrategy.instance())
+                .with("singlelabel");
+
+        g.V().iterate();
     }
 }
