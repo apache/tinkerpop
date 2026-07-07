@@ -665,7 +665,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 === AddLabel Step
 
 The `addLabel()`-step (*sideEffect*) adds one or more labels to an element. The graph must be configured with a
-`LabelCardinality` that supports mutation (e.g. `ZERO_OR_MORE` or `ONE_OR_MORE`).
+`LabelCardinality` that permits changing the set of labels on an element (e.g. `ZERO_OR_MORE` or `ONE_OR_MORE`).
 
 [gremlin-groovy]
 ----
@@ -1819,7 +1819,8 @@ g.V()
 === DropLabel Step
 
 The `dropLabel()`-step (*sideEffect*) removes one or more specific labels from an element. The `dropLabels()`-step
-removes all labels. The graph must be configured with a `LabelCardinality` that supports mutation.
+removes all labels. The graph must be configured with a `LabelCardinality` that permits changing the set of labels
+on an element (e.g. `ZERO_OR_MORE` or `ONE_OR_MORE`).
 
 [gremlin-groovy]
 ----
@@ -2268,7 +2269,6 @@ It is possible to filter vertices, edges, and vertex properties based on their p
 [gremlin-groovy,modern]
 ----
 g.V().hasLabel('person')
-g.V().hasLabel('person','name','marko')
 g.V().hasLabel('person').out().has('name',within('vadas','josh'))
 g.V().hasLabel('person').out().has('name',within('vadas','josh')).
       outE().hasLabel('created')
@@ -2281,11 +2281,13 @@ g.V().properties().hasKey('age').value() <6>
 g.V().hasNot('age').values('name') <7>
 g.V().has('person','name', startingWith('m')) <8>
 g.V().has(null, 'vadas') <9>
+g.V().has('person','name','marko')
 g.V().has('person', 'name', regex('r')).values('name') <10>
 g.V().has('age', P.gt(__.V(1).values('age'))) <11>
 g.V().has('name', __.V(1).values('name')) <12>
 g.V().hasLabel(__.V(1).label()) <13>
 g.withSack(30).V().has('age', P.gt(__.sack())).values('name') <14>
+g.V().hasLabel('person', 'software').count() <15>
 ----
 
 <1> Find all vertices whose ages are between 20 (exclusive) and 30 (exclusive). In other words, the age must be greater than 20 and less than 30.
@@ -2304,6 +2306,8 @@ is evaluated per-traverser and its first result becomes the comparison value.
 <12> Find all vertices whose name equals marko's name using a traversal as the value argument.
 <13> Find all vertices whose label equals the label of vertex 1.
 <14> Find all people older than a threshold carried in the traverser's `sack()` rather than read from the graph.
+<15> Find all vertices containing the label "person" or "software". To require all specified labels be present on a multi-label
+vertex, chain calls instead: `hasLabel('a').hasLabel('b')`.
 
 NOTE: When a `Traversal` is provided directly as the value argument (not inside a `P`), it is internally wrapped in
 `P.eq(traversal)`. Child traversals must be read-only. Mutating steps like `addV()` or `property()` are rejected with

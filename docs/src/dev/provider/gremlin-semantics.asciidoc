@@ -2093,9 +2093,6 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#label-step[reference]
 For vertices with a single label, `labels()` emits one traverser (equivalent to `label()`). For multi-label vertices,
 it emits one traverser per label. For vertices with zero labels (`ZERO_OR_MORE` mode), no traversers are emitted.
 
-`hasLabel("a", "b")` uses OR semantics: it matches any vertex that has label "a" or label "b". To match vertices
-with all specified labels, chain calls: `hasLabel("a").hasLabel("b")`.
-
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LabelsStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#labels-step[reference]
 
