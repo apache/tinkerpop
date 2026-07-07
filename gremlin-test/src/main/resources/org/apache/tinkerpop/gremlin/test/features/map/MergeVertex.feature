@@ -1132,9 +1132,8 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V()"
     And the graph should return 1 for count of "g.V().hasLabel(\"person\").hasLabel(\"employee\")"
 
-  @GraphComputerVerificationStrategyNotSupported
   Scenario: g_mergeVXlabel_ab_name_markoX_single_label_graph
-    Given the modern graph
+    Given the empty graph
     And the traversal of
       """
       g.mergeV([(T.label): ["person","employee"], name: "marko"])
@@ -1142,9 +1141,8 @@ Feature: Step - mergeV()
     When iterated to list
     Then the traversal will raise an error with message containing text of "Element creation allows at most"
 
-  @GraphComputerVerificationStrategyNotSupported
   Scenario: g_mergeVXlabel_person_name_markoX_optionXonCreate_label_abX_single_label_graph
-    Given the modern graph
+    Given the empty graph
     And the traversal of
       """
       g.mergeV([name: "newperson"]).
@@ -1153,9 +1151,12 @@ Feature: Step - mergeV()
     When iterated to list
     Then the traversal will raise an error with message containing text of "Element creation allows at most"
 
-  @GraphComputerVerificationStrategyNotSupported
   Scenario: g_mergeVXlabel_person_name_markoX_optionXonMatch_label_managerX_single_label_graph
-    Given the modern graph
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko")
+      """
     And the traversal of
       """
       g.mergeV([(T.label): "person", name: "marko"]).

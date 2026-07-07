@@ -79,9 +79,12 @@ Feature: Step - addLabel()
     When iterated to list
     Then the traversal will raise an error with message containing text of "Label mutation is not supported"
 
-  @GraphComputerVerificationStrategyNotSupported
   Scenario: g_V_addLabelXemployeeX_single_label_graph
-    Given the modern graph
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person")
+      """
     And the traversal of
       """
       g.V().hasLabel("person").addLabel("employee")
@@ -89,9 +92,12 @@ Feature: Step - addLabel()
     When iterated to list
     Then the traversal will raise an error with message containing text of "Label mutation is not supported"
 
-  @GraphComputerVerificationStrategyNotSupported
   Scenario: g_V_addLabelXa_bX_single_label_graph
-    Given the modern graph
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person")
+      """
     And the traversal of
       """
       g.V().hasLabel("person").addLabel("a", "b")

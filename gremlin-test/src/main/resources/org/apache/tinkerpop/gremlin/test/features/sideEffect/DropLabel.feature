@@ -123,9 +123,12 @@ Feature: Step - dropLabel() / dropLabels()
       | a |
       | b |
 
-  @GraphComputerVerificationStrategyNotSupported
   Scenario: g_V_dropLabelXpersonX_single_label_graph
-    Given the modern graph
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person")
+      """
     And the traversal of
       """
       g.V().hasLabel("person").dropLabel("person")
@@ -133,9 +136,12 @@ Feature: Step - dropLabel() / dropLabels()
     When iterated to list
     Then the traversal will raise an error with message containing text of "Label mutation is not supported"
 
-  @GraphComputerVerificationStrategyNotSupported
   Scenario: g_V_dropLabels_single_label_graph
-    Given the modern graph
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person")
+      """
     And the traversal of
       """
       g.V().hasLabel("person").dropLabels()

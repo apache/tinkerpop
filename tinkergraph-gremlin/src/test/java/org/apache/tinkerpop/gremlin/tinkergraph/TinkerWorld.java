@@ -65,6 +65,15 @@ public abstract class TinkerWorld implements World {
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, AbstractTinkerGraph.DefaultIdManager.INTEGER.name());
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, AbstractTinkerGraph.DefaultIdManager.INTEGER.name());
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, AbstractTinkerGraph.DefaultIdManager.LONG.name());
+        return conf;
+    }
+
+    /**
+     * Like {@link #getNumberIdManagerConfiguration()} but configured with {@code ZERO_OR_MORE} vertex label
+     * cardinality for use by graphs backing {@code @MultiLabel} tagged scenarios.
+     */
+    protected static Configuration getMultiLabelConfiguration() {
+        final Configuration conf = getNumberIdManagerConfiguration();
         conf.setProperty(AbstractTinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, "ZERO_OR_MORE");
         return conf;
     }
@@ -104,6 +113,11 @@ public abstract class TinkerWorld implements World {
                 return grateful.traversal();
             else
                 throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
+        }
+
+        @Override
+        public GraphTraversalSource getMultiLabelGraphTraversalSource() {
+            return registerTestServices(TinkerGraph.open(getMultiLabelConfiguration())).traversal();
         }
 
         @Override
@@ -196,19 +210,8 @@ public abstract class TinkerWorld implements World {
         }
 
         @Override
-        public void beforeEachScenario(final Scenario scenario) {
-            super.beforeEachScenario(scenario);
-
-            // TinkerTransactionGraph always uses ZERO_OR_MORE label cardinality so scenarios that
-            // test single-label-only (immutable labels) error behavior cannot run here.
-            switch (scenario.getName()) {
-                case "g_V_dropLabelXpersonX_single_label_graph":
-                case "g_V_dropLabels_single_label_graph":
-                case "g_V_addLabelXemployeeX_single_label_graph":
-                    throw new AssumptionViolatedException("TinkerTransactionGraph uses ZERO_OR_MORE cardinality - single-label error tests not applicable");
-                default:
-                    // Do nothing
-            }
+        public GraphTraversalSource getMultiLabelGraphTraversalSource() {
+            return registerTestServices(TinkerTransactionGraph.open(getMultiLabelConfiguration())).traversal();
         }
 
         @Override
@@ -264,6 +267,11 @@ public abstract class TinkerWorld implements World {
                 return grateful.traversal();
             else
                 throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
+        }
+
+        @Override
+        public GraphTraversalSource getMultiLabelGraphTraversalSource() {
+            return registerTestServices(TinkerGraph.open(getMultiLabelConfiguration())).traversal();
         }
 
         @Override
