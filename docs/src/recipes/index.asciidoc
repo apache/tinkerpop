@@ -61,6 +61,8 @@ include::if-then-based-grouping.asciidoc[]
 
 include::looping.asciidoc[]
 
+include::multi-label-vertices.asciidoc[]
+
 include::operating-on-dropped-elements.asciidoc[]
 
 include::pagination.asciidoc[]

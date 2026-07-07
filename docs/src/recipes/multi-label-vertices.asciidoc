@@ -1,0 +1,138 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+[[multi-label-vertices]]
+== Multi-Label Vertices
+
+In the core property graph model, a vertex has exactly one immutable label assigned at creation. TinkerPop also
+allows graph providers to optionally support a different vertex label cardinality, in which case a vertex may carry
+multiple labels, or even none, according to the graph's `LabelCardinality`: `ONE`, `ONE_OR_MORE`, or `ZERO_OR_MORE`.
+It is up to each graph provider to decide which of these cardinalities it supports and what its default is. This
+recipe demonstrates how to configure a graph for multiple labels per vertex and how some common traversal patterns
+change as a result.
+
+TinkerGraph can be configured for multi-label support with the `gremlin.tinkergraph.vertexLabelCardinality` setting.
+
+=== Adding and Removing Labels
+
+Use `addLabel()` to add one or more labels to an existing vertex and `dropLabel()`/`dropLabels()` to remove them.
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+g.addV('person').property('name','marko').addLabel('employee').labels() <1>
+g.V().has('name','marko').addLabel('manager').labels() <2>
+g.V().has('name','marko').dropLabel('employee').labels() <3>
+g.V().has('name','marko').dropLabels().labels() <4>
+----
+
+<1> Create a vertex with the "person" label, then add the "employee" label.
+<2> Add the "manager" label to the existing vertex.
+<3> Remove just the "employee" label, leaving "person" and "manager".
+<4> Remove all remaining labels.
+
+=== Querying by Label
+
+`hasLabel()` uses OR semantics, meaning it matches a vertex that has *any* of the specified labels; this is
+unaffected by label cardinality.
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+g.addV('person','employee').property('name','marko')
+g.addV('person').property('name','vadas')
+g.V().hasLabel('person','employee').count() <1>
+g.V().hasLabel('person').hasLabel('employee').values('name') <2>
+----
+
+<1> Matches both vertices, since each has at least one of "person" or "employee".
+<2> Chaining `hasLabel()` calls requires *all* of the specified labels to be present (AND semantics), matching only
+"marko".
+
+Use the plural `labels()` step, rather than the deprecated singular `label()` step, to reliably retrieve every label
+on a vertex. `label()` returns only one label for a multi-label vertex, chosen non-deterministically.
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+g.addV('person','employee').property('name','marko')
+g.V().has('name','marko').label() <1>
+g.V().has('name','marko').labels() <2>
+----
+
+<1> Non-deterministic, so may return "person" or "employee".
+<2> Emits one traverser per label, reliably surfacing both "person" and "employee".
+
+=== Grouping and Projecting by Label
+
+Steps that modulate `by(label)` (equivalently `by(T.label)`), such as `group()`, `groupCount()`, and `dedup()`,
+inherit the same non-determinism as `label()`. Prefer modulating with `labels()` when working with multi-label
+vertices so that a vertex is accounted for under every one of its labels.
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+g.addV('person','employee').property('name','marko')
+g.addV('person').property('name','vadas')
+g.V().group().by(label).by(values('name').fold()) <1>
+g.V().group().by(labels().fold()).by(values('name').fold()) <2>
+----
+
+<1> Unreliable for multi-label vertices, since marko is grouped under only one of "person" or "employee".
+<2> Groups by the full, ordered set of labels instead, so multi-label vertices are not conflated with single-label
+ones that happen to share one label.
+
+=== Creating or Matching Multi-Label Vertices with mergeV()
+
+`T.label` in a `mergeV()` `Map` may be a single `String` or a `Collection<String>`. When used to search for a
+match, a `Collection` of labels uses AND semantics, meaning the vertex must carry *all* of the specified labels.
+When used in `Merge.onCreate` or `Merge.onMatch`, the labels are *added* to the vertex using `addLabel()` semantics
+rather than replacing its existing labels.
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+g.mergeV([(T.label):['person','employee'], name:'josh']) <1>
+g.mergeV([(T.label):['person','employee'], name:'josh']) <2>
+g.mergeV([(T.label):'person', name:'josh']).
+  option(Merge.onMatch,[(T.label):'manager']) <3>
+g.V().has('name','josh').labels()
+----
+
+<1> Creates a vertex for josh with both the "person" and "employee" labels.
+<2> Matches the vertex created above since it carries both labels; no new vertex is created.
+<3> Matches on the single "person" label and adds "manager" to josh's existing labels.
+
+See the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-labels[Vertex Labels] section of the
+Reference Documentation for further details on `LabelCardinality` and the <<unspecified-keys-and-labels,Unspecified
+Keys and Labels>> discussion in the Anti-Patterns section of these Recipes.

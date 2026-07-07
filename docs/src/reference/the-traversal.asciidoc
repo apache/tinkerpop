@@ -1117,6 +1117,12 @@ on a step-by-step level and thus, as discussed in their respective section of th
 * <<valuemap-step, `valueMap()`>>: transform the result of the values in the resulting `Map` using the `by()` modulator.
 * <<where-step, `where()`>>: determine the predicate given the testing of the results of `by()`-modulation.
 
+NOTE: `by(label)` (or the equivalent `by(T.label)`) modulates using the <<label-step,`label()`>> step, which for a
+multi-label vertex returns only one label chosen non-deterministically. Steps like `group()`, `groupCount()`,
+`dedup()`, `order()`, `path()`, `simplePath()`, and `tree()` that modulate `by(label)` will therefore behave
+unpredictably on multi-label vertices. For graphs that support multiple labels per vertex, prefer modulating with
+the <<labels-step,`labels()`>> step (e.g. `by(labels().fold())`) to account for the full set of labels.
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#by()++[`by()`],
@@ -1305,6 +1311,11 @@ g.V().choose(T.label).
 
 <1> For person vertices, traverse to the software they created; for software vertices, traverse to the people who
 created them.
+
+NOTE: `choose(T.label)` relies on the <<label-step,`label()`>> step, which for a multi-label vertex returns only one
+label chosen non-deterministically. On graphs that support multiple labels per vertex, this can lead to unpredictable
+branch selection. Consider filtering with <<has-step,`hasLabel()`>> beforehand, or restructuring the choice
+around `labels()`, when working with multi-label vertices.
 
 The `Pick` enum was introduced in an example earlier to handle non-matching scenarios. The following `Pick` options may
 be used with `choose()`:
@@ -3536,6 +3547,39 @@ g.V().hasLabel('Dog').valueMap().with(WithOptions.tokens)
 
 NOTE: The example above is written with `gremlin-groovy` and evaluated in Gremlin Console as a Groovy script thus
 allowing link:https://groovy-lang.org/syntax.html#_maps[Groovy syntax] for initializing a `Map`.
+
+On graphs that support multiple labels per vertex, `T.label` in the `mergeV()` `Map` may be supplied as a single
+`String` or as a `Collection<String>` (a `List` or `Set`) to work with multiple labels at once.
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+g.mergeV([(T.label):['person','employee'], name:'marko']) <1>
+g.V().has('name','marko').labels()
+----
+
+<1> Create a vertex for marko with both the "person" and "employee" labels.
+
+IMPORTANT: When `T.label` is used to *search* for a match with a `Collection` of labels, the match uses AND
+semantics, meaning a vertex must carry *all* of the specified labels to match, unlike the OR semantics of
+<<has-step,`hasLabel()`>>. When `T.label` is used in `Merge.onCreate` or `Merge.onMatch`, the specified labels are
+*added* to the vertex using <<addlabel-step,`addLabel()`>> semantics rather than replacing the vertex's existing
+labels.
+
+[gremlin-groovy]
+----
+g.mergeV([(T.label):['person','employee'], name:'marko']) <1>
+g.mergeV([(T.label):'person', name:'marko']).
+  option(Merge.onMatch,[(T.label):'manager']) <2>
+g.V().has('name','marko').labels()
+----
+
+<1> Matches the vertex created above since it carries both labels (AND semantics).
+<2> Matches on the single "person" label and adds "manager" to the vertex's existing labels rather than replacing
+them.
 
 If a vertex already exists that matches the map passed to `mergeV()`, the existing
 vertex will be returned, otherwise a new one will  be created. In this way, `mergeV()`

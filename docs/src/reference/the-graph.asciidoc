@@ -91,20 +91,29 @@ WARNING: Features of reference graphs which are used to connect to remote graphs
 graph to which it connects. It reflects the features of instantiated graph itself, which will likely be quite
 different considering that reference graphs will typically be immutable.
 
+[[optional-data-model-variances]]
+== Optional Data Model Variances
+
+The simplest property graph model consists of vertices and edges, each with a single label and a set of key/value
+properties. This is the lowest common denominator that every TinkerPop-enabled graph supports. Beyond that
+baseline, TinkerPop allows graph providers to optionally support certain variances on the data model that extend
+what a graph element can represent. Support for these variances differs from provider to provider and can be
+discovered at runtime via <<features,`Feature`>>. The variances covered in this section are:
+
+* Multiple properties (*multi-properties*): a vertex property key can have multiple values.
+* Properties on properties (*meta-properties*): a vertex property can itself have properties.
+* Multiple labels (*multi-label*): a vertex can carry more than one label, or none at all, rather than exactly one.
+* Null property values (*nullable properties*): a property value of `null` can be stored rather than triggering
+removal of the property.
+
 [[vertex-properties]]
-== Vertex Properties
+=== Vertex Properties
 
 image:vertex-properties.png[width=215,float=left] TinkerPop introduces the concept of a `VertexProperty<V>`. All the
 properties of a `Vertex` are a `VertexProperty`. A `VertexProperty` implements `Property` and as such, it has a
 key/value pair. However, `VertexProperty` also implements `Element` and thus, can have a collection of key/value
 pairs. Moreover, while an `Edge` can only have one property of key "name" (for example), a `Vertex` can have multiple
-"name" properties. With the inclusion of vertex properties, two features are introduced which ultimately advance the
-graph modelers toolkit:
-
-. Multiple properties (*multi-properties*): a vertex property key can have multiple values.  For example, a vertex can
-have multiple "name" properties.
-. Properties on properties (*meta-properties*): a vertex property can have properties (i.e. a vertex property can
-have key/value data associated with it).
+"name" properties. This is what enables the multi-properties and meta-properties variances introduced above.
 
 Possible use cases for meta-properties:
 
@@ -182,13 +191,29 @@ g.V().has('name','gremlin').inE('uses').
 [[vertex-labels]]
 === Vertex Labels
 
-In addition to multi-properties and meta-properties, TinkerPop supports multiple labels on a single vertex. The number
-of labels a vertex may carry is governed by the graph's configured `LabelCardinality`: `ONE` fixes exactly one immutable
-label per vertex (the traditional model), `ONE_OR_MORE` requires at least one label but permits additional labels to be
-added or removed, and `ZERO_OR_MORE` allows a vertex to have any number of labels including none. See the
+In the simplest property graph model, a vertex has exactly one immutable label assigned at creation, the same as an
+edge. TinkerPop also allows graph providers to optionally support a different vertex label cardinality, in which
+case a vertex may carry multiple labels, or none at all. Whether a graph supports this, and to what degree, is
+governed by its configured `LabelCardinality`:
+
+* `ONE` fixes exactly one immutable label per vertex
+* `ONE_OR_MORE` requires at least one label but permits additional labels to be added or removed
+* `ZERO_OR_MORE` allows a vertex to have any number of labels including none
+
+It is up to each graph provider to decide which of these cardinalities it supports and, where more than one is
+supported, what its default is or whether the choice is left to the user to configure. See the
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_label_cardinality[provider documentation] for configuration
 details and the <<label-step,label()>>, <<labels-step,labels()>>, <<addlabel-step,addLabel()>>, and
 <<droplabel-step,dropLabel()>> steps for traversal access.
+
+[[nullable-property-values]]
+=== Nullable Property Values
+
+Ordinarily, setting a property to `null` is equivalent to removing it, since a property with no value does not
+exist. Some graph providers optionally support storing an explicit `null` as a property value instead, so that the
+property continues to exist but with no assigned value. See a provider's documentation or check
+`Graph.Features.VertexFeatures#supportsNullPropertyValues()` (and the analogous `Edge`/`VertexProperty` features) to
+determine whether this variance is supported.
 
 == Graph Variables
 

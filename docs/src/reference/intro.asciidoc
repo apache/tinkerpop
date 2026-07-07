@@ -138,7 +138,7 @@ tutorial.
 
 .Primary components of the TinkerPop *structure* API
  * `Graph`: maintains a set of vertices and edges, and access to database functions such as transactions.
- * `Element`: maintains a collection of properties and a string label denoting the element type.
+ * `Element`: maintains a collection of properties and one or more string labels denoting the element type.
   ** `Vertex`: extends Element and maintains a set of incoming and outgoing edges.
   ** `Edge`: extends Element and maintains an incoming and outgoing vertex.
  * `Property<V>`: a string key associated with a `V` value.
@@ -169,6 +169,10 @@ essential to end-users working with graphs, however, as mentioned earlier, the s
 way for users to think when building applications with TinkerPop. The structure API is reserved for usage by graph
 providers. Those interested in implementing the structure API to make their graph system TinkerPop enabled can learn
 more about it in the link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/[Graph Provider] documentation.
+
+Graph providers may also optionally support certain variances on this basic structure, such as a vertex having
+multiple properties per key or multiple labels. See <<optional-data-model-variances,Optional Data Model Variances>>
+for details.
 
 [[the-graph-process]]
 === The Graph Process
