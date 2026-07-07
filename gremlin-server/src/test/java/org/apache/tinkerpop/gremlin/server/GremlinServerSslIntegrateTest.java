@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.junit.Test;
 
 import javax.net.ssl.SSLException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -217,7 +218,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             fail("Should throw exception because ssl is enabled on the server but not on client");
         } catch(Exception x) {
             final Throwable root = ExceptionHelper.getRootCause(x);
-            assertThat(root, instanceOf(RuntimeException.class));
+            assertThat(root, instanceOf(IOException.class));
             assertThat(root.getMessage(), containsString("The server may be expecting SSL to be enabled"));
         } finally {
             cluster.close();
