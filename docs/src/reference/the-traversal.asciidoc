@@ -3643,7 +3643,7 @@ semantics, meaning a vertex must carry *all* of the specified labels to match, u
 <<has-step,`hasLabel()`>>. When `T.label` is used in `Merge.onCreate` or `Merge.onMatch`, the specified labels are
 *added* to the vertex using <<addlabel-step,`addLabel()`>> semantics.
 
-[gremlin-groovy]
+[gremlin-groovy,existing]
 ----
 g.mergeV([(T.label):['person','employee'], name:'marko']) <1>
 g.mergeV([(T.label):'person', name:'marko']).
