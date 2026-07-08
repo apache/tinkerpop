@@ -109,7 +109,10 @@ async function searchDevList(keywords) {
     if (!data.emails || data.emails.length === 0) return [];
 
     return data.emails
-      .filter((e) => e.subject && !e.subject.startsWith("Re:"))
+      // Drop replies and JIRA notifications ([jira] subject prefix): those
+      // mirror ticket activity already captured via JIRA discovery. Keep only
+      // content unique to the dev list.
+      .filter((e) => e.subject && !e.subject.startsWith("Re:") && !/\[jira\]/i.test(e.subject))
       .slice(0, 5)
       .map((e) => ({
         url: `https://lists.apache.org/thread/${e.mid}`,
