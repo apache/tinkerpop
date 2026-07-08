@@ -99,6 +99,11 @@ public @interface LoadGraphWith {
         /**
          * Loads "The Zoo" TinkerPop4 toy graph which showcases multi-label vertices and a variety of property
          * types. Requires a graph configured with {@code LabelCardinality.ZERO_OR_MORE} (or {@code ONE_OR_MORE}).
+         * <p/>
+         * Note that this {@code GraphData} does not currently support {@link #location()} or
+         * {@link #featuresRequired()} since none of the serialization formats used to produce a data file for it
+         * (Gryo, GraphSON) correctly round-trip multi-label vertices yet. It is only usable via a
+         * {@link GraphProvider} that builds the graph directly, e.g. with {@code TinkerFactory.createTheZoo()}.
          */
         ZOO;
 
@@ -138,14 +143,6 @@ public @interface LoadGraphWith {
             add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, EdgePropertyFeatures.class));
         }};
 
-        private static final List<FeatureRequirement> featuresRequiredByZoo = new ArrayList<FeatureRequirement>() {{
-            add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
-            add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));
-            add(FeatureRequirement.Factory.create(FEATURE_DOUBLE_VALUES, VertexPropertyFeatures.class));
-            add(FeatureRequirement.Factory.create(FEATURE_BOOLEAN_VALUES, VertexPropertyFeatures.class));
-            add(FeatureRequirement.Factory.create(FEATURE_MULTI_PROPERTIES, Graph.Features.VertexFeatures.class));
-        }};
-
         public String location() {
             switch (this) {
                 case CLASSIC:
@@ -160,8 +157,6 @@ public @interface LoadGraphWith {
                     return RESOURCE_PATH_PREFIX + "tinkerpop-sink-v3.kryo";
                 case AIR_ROUTES:
                     return RESOURCE_PATH_PREFIX + "air-routes-v3.kryo";
-                case ZOO:
-                    return RESOURCE_PATH_PREFIX + "tinkerpop-zoo-v3.kryo";
             }
 
             throw new RuntimeException("No file for this GraphData type");
@@ -181,8 +176,6 @@ public @interface LoadGraphWith {
                     return featuresRequiredBySink;
                 case AIR_ROUTES:
                     return featuresRequiredByAirRoutes;
-                case ZOO:
-                    return featuresRequiredByZoo;
             }
 
             throw new RuntimeException("No features for this GraphData type");
