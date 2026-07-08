@@ -212,6 +212,34 @@ supported, what its default is or whether the choice is left to the user to conf
 <<label-step,label()>>, <<labels-step,labels()>>, <<addlabel-step,addLabel()>>, and
 <<droplabel-step,dropLabel()>> steps for traversal access.
 
+[[the-zoo-toy-graph]]
+TIP: A toy graph demonstrating multi-label vertices alongside a variety of property types is available at
+`TinkerFactory.createTheZoo()` and `data/tinkerpop-zoo*`. Unlike "The Crew" above, which requires a graph configured
+for vertex multi-properties and meta-properties, "The Zoo" requires a `LabelCardinality` of `ONE_OR_MORE` or
+`ZERO_OR_MORE`.
+
+.The Zoo
+image::the-zoo-graph.png[width=685]
+
+"The Zoo" models animals, their habitats, and the people who care for them. Animals carry the "animal" label plus
+any number of descriptive labels - such as "aquatic", "nocturnal", or "endangered" - reflecting the traits that
+apply to them, which is where the graph's multi-label vertices come into play:
+
+[gremlin-groovy,theZoo]
+----
+g.V().hasLabel('animal').valueMap('name','species')
+g.V().has('name','tux').labels()                                     <1>
+g.V().hasLabel('endangered').values('name')                          <2>
+g.V().has('name','tux').out('livesIn').values('name','biome')        <3>
+----
+
+<1> `tux` carries several labels at once - "animal", "bird", "aquatic", and "endangered" - since vertex labels are
+not limited to exactly one for this graph.
+<2> Filtering by a single label, such as "endangered", surfaces every animal that carries it, regardless of what
+other labels are also present.
+<3> Habitats, like "lagoon" and "canopy", are modeled as ordinary single-labeled vertices connected to their
+resident animals with a "livesIn" edge.
+
 [[nullable-property-values]]
 === Nullable Property Values
 
