@@ -488,7 +488,7 @@ g.V().group().by(label).by('name')
 NOTE: `by(label)` groups using the `label()` step, which returns only one label per vertex. This is fine for graphs
 like "modern" where every vertex has exactly one label, but for graphs configured to allow multiple labels per
 vertex, `by(label)` will only account for one of them. See the
-link:https://tinkerpop.apache.org/docs/x.y.z/recipes/#multi-label-vertices[Multi-Label Vertices] recipe for
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#by-step[By Step] section of the Reference Documentation for
 grouping patterns that work reliably with multi-label vertices.
 
 In this section, you have learned a bit more about what property graphs are and how Gremlin interacts with them.
