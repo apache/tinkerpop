@@ -31,6 +31,7 @@ import org.littleshoot.proxy.HttpFiltersSourceAdapter;
 import org.littleshoot.proxy.HttpProxyServer;
 import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ public class RecordingProxyServer {
 
     public void start() {
         proxyServer = DefaultHttpProxyServer.bootstrap()
-                .withPort(port)
+                        .withAddress(new InetSocketAddress(port))
                 .withFiltersSource(new HttpFiltersSourceAdapter() {
                     @Override
                     public org.littleshoot.proxy.HttpFilters filterRequest(final HttpRequest originalRequest) {
