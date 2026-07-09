@@ -27,7 +27,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
 
-public class ProviderDefinedTypeTest {
+public class CompositePDTTest {
 
     @ProviderDefined
     static class Point {
@@ -97,7 +97,7 @@ public class ProviderDefinedTypeTest {
         final Map<String, Object> fields = new HashMap<>();
         fields.put("x", 1);
         fields.put("y", 2);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Point", fields);
+        final CompositePDT pdt = new CompositePDT("Point", fields);
         assertEquals("Point", pdt.getName());
         assertEquals(fields, pdt.getFields());
     }
@@ -106,7 +106,7 @@ public class ProviderDefinedTypeTest {
     public void shouldBeImmutableFromInputMap() {
         final Map<String, Object> fields = new HashMap<>();
         fields.put("x", 1);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Point", fields);
+        final CompositePDT pdt = new CompositePDT("Point", fields);
         fields.put("y", 2);
         assertEquals(1, pdt.getFields().size());
     }
@@ -115,13 +115,13 @@ public class ProviderDefinedTypeTest {
     public void shouldReturnUnmodifiableFields() {
         final Map<String, Object> fields = new HashMap<>();
         fields.put("x", 1);
-        final ProviderDefinedType pdt = new ProviderDefinedType("Point", fields);
+        final CompositePDT pdt = new CompositePDT("Point", fields);
         assertThrows(UnsupportedOperationException.class, () -> pdt.getFields().put("y", 2));
     }
 
     @Test
     public void shouldCreateFromAnnotatedObject() {
-        final ProviderDefinedType pdt = ProviderDefinedType.from(new Point());
+        final CompositePDT pdt = CompositePDT.from(new Point());
         assertEquals("Point", pdt.getName());
         assertEquals(1, pdt.getFields().get("x"));
         assertEquals(2, pdt.getFields().get("y"));
@@ -129,20 +129,20 @@ public class ProviderDefinedTypeTest {
 
     @Test
     public void shouldUseCustomNameFromAnnotation() {
-        final ProviderDefinedType pdt = ProviderDefinedType.from(new NamedPoint());
+        final CompositePDT pdt = CompositePDT.from(new NamedPoint());
         assertEquals("GeoPoint", pdt.getName());
     }
 
     @Test
     public void shouldFilterWithIncludedFields() {
-        final ProviderDefinedType pdt = ProviderDefinedType.from(new IncludedFieldsPoint());
+        final CompositePDT pdt = CompositePDT.from(new IncludedFieldsPoint());
         assertEquals(1, pdt.getFields().size());
         assertEquals(10, pdt.getFields().get("x"));
     }
 
     @Test
     public void shouldFilterWithExcludedFields() {
-        final ProviderDefinedType pdt = ProviderDefinedType.from(new ExcludedFieldsPoint());
+        final CompositePDT pdt = CompositePDT.from(new ExcludedFieldsPoint());
         assertEquals(2, pdt.getFields().size());
         assertEquals(10, pdt.getFields().get("x"));
         assertEquals(20, pdt.getFields().get("y"));
@@ -150,45 +150,45 @@ public class ProviderDefinedTypeTest {
 
     @Test
     public void shouldThrowOnNullObject() {
-        assertThrows(IllegalArgumentException.class, () -> ProviderDefinedType.from(null));
+        assertThrows(IllegalArgumentException.class, () -> CompositePDT.from(null));
     }
 
     @Test
     public void shouldThrowOnNonAnnotatedObject() {
-        assertThrows(IllegalArgumentException.class, () -> ProviderDefinedType.from(new NotAnnotated()));
+        assertThrows(IllegalArgumentException.class, () -> CompositePDT.from(new NotAnnotated()));
     }
 
     @Test
     public void shouldHaveCorrectEqualsAndHashCode() {
         final Map<String, Object> fields = new HashMap<>();
         fields.put("x", 1);
-        final ProviderDefinedType a = new ProviderDefinedType("Point", fields);
-        final ProviderDefinedType b = new ProviderDefinedType("Point", fields);
+        final CompositePDT a = new CompositePDT("Point", fields);
+        final CompositePDT b = new CompositePDT("Point", fields);
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
 
-        final ProviderDefinedType c = new ProviderDefinedType("Other", fields);
+        final CompositePDT c = new CompositePDT("Other", fields);
         assertNotEquals(a, c);
     }
 
     @Test
     public void shouldThrowOnNullName() {
-        assertThrows(IllegalArgumentException.class, () -> new ProviderDefinedType(null, new HashMap<>()));
+        assertThrows(IllegalArgumentException.class, () -> new CompositePDT(null, new HashMap<>()));
     }
 
     @Test
     public void shouldThrowOnEmptyName() {
-        assertThrows(IllegalArgumentException.class, () -> new ProviderDefinedType("", new HashMap<>()));
+        assertThrows(IllegalArgumentException.class, () -> new CompositePDT("", new HashMap<>()));
     }
 
     @Test
     public void shouldThrowOnNullFields() {
-        assertThrows(IllegalArgumentException.class, () -> new ProviderDefinedType("Point", null));
+        assertThrows(IllegalArgumentException.class, () -> new CompositePDT("Point", null));
     }
 
     @Test
     public void shouldPreserveNullFieldValues() {
-        final ProviderDefinedType pdt = ProviderDefinedType.from(new NullFieldPoint());
+        final CompositePDT pdt = CompositePDT.from(new NullFieldPoint());
         assertEquals(2, pdt.getFields().size());
         assertEquals(null, pdt.getFields().get("label"));
         assertEquals(5, pdt.getFields().get("x"));
@@ -196,12 +196,12 @@ public class ProviderDefinedTypeTest {
 
     @Test
     public void shouldThrowOnConflictingIncludedAndExcludedFields() {
-        assertThrows(IllegalArgumentException.class, () -> ProviderDefinedType.from(new ConflictingFieldsPoint()));
+        assertThrows(IllegalArgumentException.class, () -> CompositePDT.from(new ConflictingFieldsPoint()));
     }
 
     @Test
     public void shouldIncludeInheritedFields() {
-        final ProviderDefinedType pdt = ProviderDefinedType.from(new InheritedPoint());
+        final CompositePDT pdt = CompositePDT.from(new InheritedPoint());
         assertEquals("GeoPoint", pdt.getName());
         assertEquals(3, pdt.getFields().size());
         assertEquals("origin", pdt.getFields().get("label"));
@@ -211,7 +211,7 @@ public class ProviderDefinedTypeTest {
 
     @Test
     public void shouldExcludeInheritedFields() {
-        final ProviderDefinedType pdt = ProviderDefinedType.from(new InheritedExcluded());
+        final CompositePDT pdt = CompositePDT.from(new InheritedExcluded());
         assertEquals(2, pdt.getFields().size());
         assertEquals("test", pdt.getFields().get("label"));
         assertEquals(1, pdt.getFields().get("x"));
@@ -219,7 +219,7 @@ public class ProviderDefinedTypeTest {
 
     @Test
     public void shouldIncludeOnlySpecifiedFieldsAcrossHierarchy() {
-        final ProviderDefinedType pdt = ProviderDefinedType.from(new InheritedIncluded());
+        final CompositePDT pdt = CompositePDT.from(new InheritedIncluded());
         assertEquals(2, pdt.getFields().size());
         assertEquals("included", pdt.getFields().get("label"));
         assertEquals(1, pdt.getFields().get("x"));

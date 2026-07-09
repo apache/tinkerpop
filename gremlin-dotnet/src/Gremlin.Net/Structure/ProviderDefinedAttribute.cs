@@ -59,10 +59,10 @@ namespace Gremlin.Net.Structure
         internal static readonly ConcurrentDictionary<string, Type> RegisteredTypes = new();
 
         /// <summary>
-        /// Hydrates a <see cref="ProviderDefinedType"/> using a registered annotated type.
+        /// Hydrates a <see cref="CompositePDT"/> using a registered annotated type.
         /// Returns the original PDT if no annotated type is registered for the name or if hydration fails.
         /// </summary>
-        internal static object HydrateIfRegistered(ProviderDefinedType pdt)
+        internal static object HydrateIfRegistered(CompositePDT pdt)
         {
             if (!RegisteredTypes.TryGetValue(pdt.Name, out var type))
             {
@@ -70,7 +70,7 @@ namespace Gremlin.Net.Structure
                 Dictionary<string, object?>? resolved = null;
                 foreach (var (key, value) in pdt.Fields)
                 {
-                    if (value is ProviderDefinedType nested)
+                    if (value is CompositePDT nested)
                     {
                         var hydrated = HydrateIfRegistered(nested);
                         if (!ReferenceEquals(hydrated, nested))
@@ -80,7 +80,7 @@ namespace Gremlin.Net.Structure
                         }
                     }
                 }
-                return resolved != null ? new ProviderDefinedType(pdt.Name, resolved) : pdt;
+                return resolved != null ? new CompositePDT(pdt.Name, resolved) : pdt;
             }
             try
             {
@@ -90,7 +90,7 @@ namespace Gremlin.Net.Structure
                     var prop = type.GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
                     if (prop != null && prop.CanWrite && value != null)
                     {
-                        var resolved = value is ProviderDefinedType nested
+                        var resolved = value is CompositePDT nested
                             ? HydrateIfRegistered(nested)
                             : value;
                         prop.SetValue(obj, Convert.ChangeType(resolved, prop.PropertyType));

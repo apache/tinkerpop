@@ -117,7 +117,7 @@ type ClientSettings struct {
 
 	EnableUserAgentOnConnect bool
 
-	// PDTRegistry enables automatic hydration of ProviderDefinedType values during deserialization.
+	// PDTRegistry enables automatic hydration of CompositePDT values during deserialization.
 	PDTRegistry *PDTRegistry
 
 	// Interceptors are functions that modify HTTP requests before sending.

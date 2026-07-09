@@ -30,9 +30,9 @@ using System.Threading.Tasks;
 namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
 {
     /// <summary>
-    /// A <see cref="ProviderDefinedType"/> serializer for the CompositePDT data type.
+    /// A <see cref="CompositePDT"/> serializer for the CompositePDT data type.
     /// </summary>
-    public class CompositePDTSerializer : SimpleTypeSerializer<ProviderDefinedType>
+    public class CompositePDTSerializer : SimpleTypeSerializer<CompositePDT>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CompositePDTSerializer"/> class.
@@ -42,7 +42,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(ProviderDefinedType value, Stream stream,
+        protected override async Task WriteValueAsync(CompositePDT value, Stream stream,
             GraphBinaryWriter writer, CancellationToken cancellationToken = default)
         {
             // Write name as fully-qualified string
@@ -53,7 +53,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
         }
 
         /// <inheritdoc />
-        protected override async Task<ProviderDefinedType> ReadValueAsync(Stream stream, GraphBinaryReader reader,
+        protected override async Task<CompositePDT> ReadValueAsync(Stream stream, GraphBinaryReader reader,
             CancellationToken cancellationToken = default)
         {
             var name = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false) as string;
@@ -72,7 +72,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
                 }
             }
 
-            return new ProviderDefinedType(name!, fields);
+            return new CompositePDT(name!, fields);
         }
     }
 }

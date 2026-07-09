@@ -23,9 +23,9 @@ import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.junit.Test;
 
@@ -40,7 +40,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class ProviderDefinedTypeSerializerTest {
+public class CompositePDTSerializerTest {
 
     private static final GraphBinaryReader reader = new GraphBinaryReader();
     private static final GraphBinaryWriter writer = new GraphBinaryWriter();
@@ -59,10 +59,10 @@ public class ProviderDefinedTypeSerializerTest {
         final Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("x", 1);
         fields.put("y", "hello");
-        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Point", fields);
+        final CompositePDT pdt = new CompositePDT("com.example.Point", fields);
 
         final Buffer buffer = writeAndRead(pdt);
-        final ProviderDefinedType result = reader.read(buffer);
+        final CompositePDT result = reader.read(buffer);
 
         assertEquals(pdt, result);
     }
@@ -72,10 +72,10 @@ public class ProviderDefinedTypeSerializerTest {
         final Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("name", "test");
         fields.put("value", null);
-        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Nullable", fields);
+        final CompositePDT pdt = new CompositePDT("com.example.Nullable", fields);
 
         final Buffer buffer = writeAndRead(pdt);
-        final ProviderDefinedType result = reader.read(buffer);
+        final CompositePDT result = reader.read(buffer);
 
         assertEquals(pdt, result);
     }
@@ -84,15 +84,15 @@ public class ProviderDefinedTypeSerializerTest {
     public void shouldRoundTripNestedPdt() throws IOException {
         final Map<String, Object> innerFields = new LinkedHashMap<>();
         innerFields.put("street", "123 Main");
-        final ProviderDefinedType inner = new ProviderDefinedType("com.example.Address", innerFields);
+        final CompositePDT inner = new CompositePDT("com.example.Address", innerFields);
 
         final Map<String, Object> outerFields = new LinkedHashMap<>();
         outerFields.put("name", "Alice");
         outerFields.put("address", inner);
-        final ProviderDefinedType outer = new ProviderDefinedType("com.example.Person", outerFields);
+        final CompositePDT outer = new CompositePDT("com.example.Person", outerFields);
 
         final Buffer buffer = writeAndRead(outer);
-        final ProviderDefinedType result = reader.read(buffer);
+        final CompositePDT result = reader.read(buffer);
 
         assertEquals(outer, result);
     }
@@ -100,7 +100,7 @@ public class ProviderDefinedTypeSerializerTest {
     @Test
     public void shouldRoundTripPdtInsideList() throws IOException {
         final Map<String, Object> fields = Collections.singletonMap("id", 42);
-        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Item", fields);
+        final CompositePDT pdt = new CompositePDT("com.example.Item", fields);
         final List<Object> list = Arrays.asList(pdt, "other");
 
         final Buffer buffer = writeAndRead(list);
@@ -112,7 +112,7 @@ public class ProviderDefinedTypeSerializerTest {
     @Test
     public void shouldRoundTripPdtInsideMapValue() throws IOException {
         final Map<String, Object> fields = Collections.singletonMap("val", 99L);
-        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Wrapper", fields);
+        final CompositePDT pdt = new CompositePDT("com.example.Wrapper", fields);
         final Map<String, Object> map = new HashMap<>();
         map.put("key", pdt);
 
@@ -182,8 +182,8 @@ public class ProviderDefinedTypeSerializerTest {
 
     @Test
     public void shouldAutoHydrateWhenRegistryConfigured() throws IOException {
-        final ProviderDefinedTypeRegistry pdtRegistry = ProviderDefinedTypeRegistry.empty();
-        pdtRegistry.register(new ProviderDefinedTypeAdapter<Map<String, Object>>() {
+        final PDTRegistry pdtRegistry = PDTRegistry.empty();
+        pdtRegistry.register(new CompositePDTAdapter<Map<String, Object>>() {
             @Override
             public String typeName() { return "com.example.Point"; }
 
@@ -207,12 +207,12 @@ public class ProviderDefinedTypeSerializerTest {
         final Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("x", 1);
         fields.put("y", 2);
-        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Point", fields);
+        final CompositePDT pdt = new CompositePDT("com.example.Point", fields);
 
         final Buffer buffer = writeAndRead(pdt);
         final Object result = hydratingReader.read(buffer);
 
-        // Should be the hydrated map, not a ProviderDefinedType
+        // Should be the hydrated map, not a CompositePDT
         assertEquals(true, ((Map<?, ?>) result).get("hydrated"));
         assertEquals(1, ((Map<?, ?>) result).get("x"));
         assertEquals(2, ((Map<?, ?>) result).get("y"));
@@ -222,10 +222,10 @@ public class ProviderDefinedTypeSerializerTest {
     public void shouldNotHydrateWhenNoRegistryConfigured() throws IOException {
         final Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("x", 1);
-        final ProviderDefinedType pdt = new ProviderDefinedType("com.example.Point", fields);
+        final CompositePDT pdt = new CompositePDT("com.example.Point", fields);
 
         final Buffer buffer = writeAndRead(pdt);
-        final ProviderDefinedType result = reader.read(buffer);
+        final CompositePDT result = reader.read(buffer);
 
         assertEquals(pdt, result);
     }

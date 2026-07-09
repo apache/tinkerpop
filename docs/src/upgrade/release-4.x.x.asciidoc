@@ -826,7 +826,7 @@ re-query elements against the original graph, extract their ids and call `g.V(id
 
 Graph providers may now expose custom types as Provider Defined Types (PDT) (replacing the old `CustomTypeSerializer`
 mechanism). The key improvement is that the default case now works out of the box — drivers deserialize PDT values
-as `ProviderDefinedType` objects containing a `name` and a `fields` map without any configuration, eliminating
+as `CompositePDT` objects containing a `name` and a `fields` map without any configuration, eliminating
 the serializer errors that occurred with unknown custom types in TP3. For automatic conversion between PDT values and
 application-specific types, each driver supports an optional registry or annotation mechanism, which requires similar
 effort to the old custom serializer approach but is entirely optional for basic usage:
@@ -836,6 +836,10 @@ effort to the old custom serializer approach but is entirely optional for basic 
 * <<gremlin-javascript-pdt,Gremlin-JavaScript>>
 * <<gremlin-dotnet-pdt,Gremlin.Net>>
 * <<gremlin-go-pdt,Gremlin-Go>>
+
+PDTs come in two flavors: *Composite* (a type name plus a map of fields, for structured types) and *Primitive* (a type
+name plus a single opaque string value, for types expressible as a single stringified value). The gremlin-lang grammar
+supports both forms via the `PDT("name",[map])` and `PDT("name","value")` literals respectively.
 
 
 ==== Tree No Longer Extends HashMap
@@ -885,12 +889,22 @@ implementations must be migrated: providers expose their custom types by annotat
 or, for types they don't own, by implementing `ProviderDefinedTypeAdapter<T>`. Adapters are discovered automatically
 via ServiceLoader, so this requires similar effort to the old approach.
 
-The key improvement is that driver users now receive PDT values as structured `ProviderDefinedType` objects by
+The key improvement is that driver users now receive PDT values as structured `CompositePDT` objects by
 default, without any configuration — eliminating the serializer errors that unknown custom types caused in TP3, and
 benefiting all driver users transparently.
 
 See <<provider-defined-types>> for full details on annotation usage, field filtering, nested types, and ServiceLoader
 registration.
+
+===== Primitive Provider Defined Types
+
+In addition to composite PDTs (which carry a map of fields), providers can now expose *Primitive PDTs* — types
+represented as a single opaque stringified value (GraphBinary type `0xf1`, GraphSON type `g:PrimitivePdt`). This is
+ideal for types with no native TinkerPop representation that can be expressed as a single string, such as unsigned
+integers or WKT geometry strings. Each GLV provides an adapter interface for primitive PDTs
+(`PrimitivePDTAdapter` in Java, `register_primitive` in Python, `registerPrimitive` in JavaScript,
+`RegisterPrimitiveFuncs` in Go, `IPrimitivePdtAdapter<T>` in .NET). A type may be registered as composite or
+primitive, not both. See <<primitive-provider-defined-types>> for details.
 
 `Tree` no longer extends `HashMap`. Provider code that inspected or rebuilt a `Tree` via `Map` methods
 (`get`, `put`, `keySet`, `entrySet`, `size`) must use the tree-shaped API instead: read with `rootNodes()` +

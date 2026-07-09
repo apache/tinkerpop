@@ -56,19 +56,19 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GraphBinary4MessageSerializer" /> class
-        ///     with a <see cref="ProviderDefinedTypeRegistry"/> for automatic hydration.
+        ///     with a <see cref="PDTRegistry"/> for automatic hydration.
         /// </summary>
-        public GraphBinary4MessageSerializer(ProviderDefinedTypeRegistry pdtRegistry)
+        public GraphBinary4MessageSerializer(PDTRegistry pdtRegistry)
         {
             _reader = new GraphBinaryReader(pdtRegistry: pdtRegistry);
             _writer = new GraphBinaryWriter();
         }
 
         /// <summary>
-        ///     Sets the <see cref="ProviderDefinedTypeRegistry"/> on this serializer's reader
+        ///     Sets the <see cref="PDTRegistry"/> on this serializer's reader
         ///     for automatic hydration of provider-defined types.
         /// </summary>
-        public void SetPdtRegistry(ProviderDefinedTypeRegistry pdtRegistry)
+        public void SetPdtRegistry(PDTRegistry pdtRegistry)
         {
             _reader = new GraphBinaryReader(pdtRegistry: pdtRegistry);
         }

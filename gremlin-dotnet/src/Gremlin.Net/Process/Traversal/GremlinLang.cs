@@ -50,9 +50,9 @@ namespace Gremlin.Net.Process.Traversal
         private List<OptionsStrategy> _optionsStrategies = new();
 
         /// <summary>
-        ///     Gets or sets the <see cref="ProviderDefinedTypeRegistry"/> for registry-based dehydration.
+        ///     Gets or sets the <see cref="PDTRegistry"/> for registry-based dehydration.
         /// </summary>
-        public ProviderDefinedTypeRegistry? PdtRegistry { get; set; }
+        public PDTRegistry? PdtRegistry { get; set; }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GremlinLang" /> class.
@@ -333,7 +333,7 @@ namespace Gremlin.Net.Process.Traversal
             if (arg is CardinalityValue cv)
                 return $"Cardinality.{cv.Cardinality!.EnumValue}({ArgAsString(cv.Value)})";
 
-            if (arg is ProviderDefinedType pdt)
+            if (arg is CompositePDT pdt)
             {
                 var sb2 = new StringBuilder("[");
                 var count = pdt.Fields.Count;
@@ -351,6 +351,11 @@ namespace Gremlin.Net.Process.Traversal
                 }
                 sb2.Append(']');
                 return $"PDT(\"{EscapeJava(pdt.Name)}\",{sb2})";
+            }
+
+            if (arg is PrimitivePDT primitivePdt)
+            {
+                return $"PDT(\"{EscapeJava(primitivePdt.Name)}\",\"{EscapeJava(primitivePdt.Value)}\")";
             }
             if (arg is IDictionary dict)
                 return AsString(dict);
@@ -373,14 +378,22 @@ namespace Gremlin.Net.Process.Traversal
 
             // Precedence: a registered adapter intentionally takes priority over the [ProviderDefined]
             // attribute so that explicit adapters can override attribute-derived dehydration behavior.
+            // Check primitive adapter first, then composite.
             if (PdtRegistry != null)
             {
-                var adapterInfo = PdtRegistry.GetAdapterByType(arg.GetType());
+                var primitiveInfo = PdtRegistry.GetPrimitiveAdapterByType(arg.GetType());
+                if (primitiveInfo != null)
+                {
+                    var (adapterTypeName, toStr) = primitiveInfo.Value;
+                    return ArgAsString(new PrimitivePDT(adapterTypeName, toStr(arg)));
+                }
+
+                var adapterInfo = PdtRegistry.GetCompositeAdapterByType(arg.GetType());
                 if (adapterInfo != null)
                 {
                     var (adapterTypeName, toFields) = adapterInfo.Value;
                     var fields = toFields(arg);
-                    return ArgAsString(new ProviderDefinedType(adapterTypeName,
+                    return ArgAsString(new CompositePDT(adapterTypeName,
                         new Dictionary<string, object?>(fields)));
                 }
             }
@@ -396,7 +409,7 @@ namespace Gremlin.Net.Process.Traversal
                 {
                     fields[property.Name] = property.GetValue(arg);
                 }
-                return ArgAsString(new ProviderDefinedType(typeName, fields));
+                return ArgAsString(new CompositePDT(typeName, fields));
             }
 
             throw new ArgumentException(

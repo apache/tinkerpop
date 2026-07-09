@@ -120,6 +120,27 @@ string is valid within the ANTLR grammar:
 
 For example, a string value `say "hello"` would be serialized as `"say \"hello\""` in the canonical Gremlin string.
 
+==== PDT Literals
+
+The gremlin-lang grammar supports Provider Defined Type literals in two forms:
+
+* Composite: `PDT("typeName",[key:"value",...])`  — creates a `CompositePDT` with a map of fields.
+* Primitive: `PDT("typeName","value")` — creates a `PrimitivePDT` with an opaque string value.
+
+Both forms share the `PDT(` prefix. The second argument determines the variant: a map literal produces a composite PDT,
+a string literal produces a primitive PDT.
+
+Examples:
+
+[source,groovy]
+----
+// Composite PDT — a Point with x and y fields
+g.inject(PDT("mygraph:Point",["x":1.0,"y":2.0]))
+
+// Primitive PDT — an unsigned 32-bit integer as a stringified value
+g.inject(PDT("mygraph:Uint32","4294967295"))
+----
+
 The following sections describe each language variant and driver that is officially TinkerPop a part of the project,
 providing more detailed information about usage, configuration and known limitations.
 
@@ -772,18 +793,18 @@ go run modern_traversals.go
 === Provider Defined Types
 
 Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
-`*ProviderDefinedType` structs containing a `Name` and `Fields` map without any configuration.
+`*CompositePDT` structs containing a `Name` and `Fields` map without any configuration.
 Consult your graph provider's documentation for the list of PDTs they support.
 
 [source,go]
 ----
 results, err := g.V().Has("location").Values("location").ToList()
-pdt := results[0].GetInterface().(*gremlingo.ProviderDefinedType)
+pdt := results[0].GetInterface().(*gremlingo.CompositePDT)
 fmt.Println(pdt.Name)   // "x:Point"
 fmt.Println(pdt.Fields) // map[x:1.0 y:2.0]
 ----
 
-Working with raw `*ProviderDefinedType` values is always available. Using a `PDTRegistry` is an optional
+Working with raw `*CompositePDT` values is always available. Using a `PDTRegistry` is an optional
 convenience that automates conversion between PDT values and application types on both the request and response paths.
 
 Using a `PDTRegistry` for hydration and dehydration:
@@ -1755,22 +1776,22 @@ java -cp target/run-examples-shaded.jar examples.ModernTraversals
 === Provider Defined Types
 
 Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
-`ProviderDefinedType` objects containing a name and fields map without any configuration.
+`CompositePDT` objects containing a name and fields map without any configuration.
 Consult your graph provider's documentation for the list of PDTs they support.
 
 Receiving a raw PDT:
 
 [source,java]
 ----
-ProviderDefinedType pdt = (ProviderDefinedType) g.V().has("location").values("location").next();
+CompositePDT pdt = (CompositePDT) g.V().has("location").values("location").next();
 String typeName = pdt.getName();                   // "x:Point"
 Map<String, Object> fields = pdt.getFields();      // {x: 1.0, y: 2.0}
 ----
 
-Working with raw `ProviderDefinedType` objects is always available. The following two approaches are optional
+Working with raw `CompositePDT` objects is always available. The following two approaches are optional
 conveniences that automate conversion between PDT values and application types on both the request and response paths.
 
-Using a `ProviderDefinedTypeRegistry` for hydration and dehydration:
+Using a `PDTRegistry` for hydration and dehydration:
 ----
 public class PointAdapter implements ProviderDefinedTypeAdapter<Point> {
     @Override public String typeName() { return "x:Point"; }
@@ -2005,7 +2026,7 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options.preciseNumbers |Boolean |When `true`, wraps deserialized numbers in typed wrappers that preserve the server's original type. |undefined
 |options.reader |GraphBinaryReader |The reader to use for deserializing responses. |GraphBinaryReader
 |options.enableUserAgentOnConnect |Boolean |Determines if a user agent header will be sent with requests. |true
-|options.pdtRegistry |ProviderDefinedTypeRegistry |A registry for hydrating and dehydrating <<gremlin-javascript-pdt,Provider Defined Types>>. |undefined
+|options.pdtRegistry |PDTRegistry |A registry for hydrating and dehydrating <<gremlin-javascript-pdt,Provider Defined Types>>. |undefined
 |=========================================================
 
 TLS is configured through the Node.js/undici runtime (for example the `NODE_EXTRA_CA_CERTS` or
@@ -2550,7 +2571,7 @@ node modern-traversals.js
 === Provider Defined Types
 
 Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
-`ProviderDefinedType` objects containing a `name` and `fields` map without any configuration.
+`CompositePDT` objects containing a `name` and `fields` map without any configuration.
 Consult your graph provider's documentation for the list of PDTs they support.
 
 Receiving a raw PDT:
@@ -2563,15 +2584,15 @@ console.log(pdt.name);   // "x:Point"
 console.log(pdt.fields); // { x: 1.0, y: 2.0 }
 ----
 
-Working with raw `ProviderDefinedType` objects is always available. Using a `ProviderDefinedTypeRegistry` is an
+Working with raw `CompositePDT` objects is always available. Using a `PDTRegistry` is an
 optional convenience that automates conversion between PDT values and application types on both the request and
 response paths.
 
 [source,javascript]
 ----
-const { ProviderDefinedTypeRegistry } = require('gremlin');
+const { PDTRegistry } = require('gremlin');
 
-const registry = new ProviderDefinedTypeRegistry();
+const registry = new PDTRegistry();
 registry.register('x:Point', {
     serialize: (point) => ({ x: point.x, y: point.y }),
     deserialize: (fields) => new Point(fields.x, fields.y)
@@ -2740,7 +2761,7 @@ The following options can be passed to the `GremlinClient` constructor:
 |connectionSettings |The `ConnectionSettings` for the HTTP connection. |default `ConnectionSettings`
 |loggerFactory |An `ILoggerFactory` for logging. |`NullLoggerFactory`
 |interceptors |A list of `Func<HttpRequestContext, Task>` that modify HTTP requests before sending. |_none_
-|pdtRegistry |A `ProviderDefinedTypeRegistry` for hydrating and dehydrating <<gremlin-dotnet-pdt,Provider Defined Types>>. |`null`
+|pdtRegistry |A `PDTRegistry` for hydrating and dehydrating <<gremlin-dotnet-pdt,Provider Defined Types>>. |`null`
 |auth |A single `Func<HttpRequestContext, Task>` for authentication. Always appended to the end of the interceptor list so it runs last. |_none_
 |=========================================================
 
@@ -3157,22 +3178,22 @@ dotnet run --project ModernTraversals
 === Provider Defined Types
 
 Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
-`ProviderDefinedType` objects containing a `Name` and `Fields` dictionary without any configuration.
+`CompositePDT` objects containing a `Name` and `Fields` dictionary without any configuration.
 Consult your graph provider's documentation for the list of PDTs they support.
 
 Receiving a raw PDT:
 
 [source,csharp]
 ----
-var pdt = (ProviderDefinedType) g.V().Has("location").Values<object>("location").Next();
+var pdt = (CompositePDT) g.V().Has("location").Values<object>("location").Next();
 Console.WriteLine(pdt.Name);   // "x:Point"
 Console.WriteLine(pdt.Fields); // { x: 1.0, y: 2.0 }
 ----
 
-Working with raw `ProviderDefinedType` objects is always available. The following two approaches are optional
+Working with raw `CompositePDT` objects is always available. The following two approaches are optional
 conveniences that automate conversion between PDT values and application types on both the request and response paths.
 
-Using a `ProviderDefinedTypeRegistry` for hydration and dehydration:
+Using a `PDTRegistry` for hydration and dehydration:
 
 [source,csharp]
 ----
@@ -3187,13 +3208,13 @@ public class PointAdapter : IProviderDefinedTypeAdapter<Point>
         new Dictionary<string, object?> { ["x"] = value.X, ["y"] = value.Y };
 }
 
-var registry = new ProviderDefinedTypeRegistry();
+var registry = new PDTRegistry();
 registry.Register(new PointAdapter());
 
 using var client = new GremlinClient(new GremlinServer("localhost", 8182), pdtRegistry: registry);
 ----
 
-The `ProviderDefinedTypeRegistry.Create()` method scans loaded assemblies for `IProviderDefinedTypeAdapter<T>`
+The `PDTRegistry.Create()` method scans loaded assemblies for `IProviderDefinedTypeAdapter<T>`
 implementations and registers them automatically.
 
 For simpler cases where you own the type, annotate it directly to avoid writing an adapter:
@@ -3428,7 +3449,7 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|True
 |bulk_results |Enables bulking of results on the server. |False
-|pdt_registry |A `ProviderDefinedTypeRegistry` for hydrating and dehydrating <<gremlin-python-pdt,Provider Defined Types>>. |`None`
+|pdt_registry |A `PDTRegistry` for hydrating and dehydrating <<gremlin-python-pdt,Provider Defined Types>>. |`None`
 |=========================================================
 
 Transport options such as SSL and timeouts can be passed as keyword arguments to `Client` or
@@ -3927,7 +3948,7 @@ python modern_traversals.py
 === Provider Defined Types
 
 Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
-`ProviderDefinedType` objects containing a `name` and `fields` dict without any configuration.
+`CompositePDT` objects containing a `name` and `fields` dict without any configuration.
 Consult your graph provider's documentation for the list of PDTs they support.
 
 Receiving a raw PDT:
@@ -3939,16 +3960,16 @@ print(pdt.name)   # "x:Point"
 print(pdt.fields) # {'x': 1.0, 'y': 2.0}
 ----
 
-Working with raw `ProviderDefinedType` objects is always available. The following two approaches are optional
+Working with raw `CompositePDT` objects is always available. The following two approaches are optional
 conveniences that automate conversion between PDT values and application types on both the request and response paths.
 
-Using a `ProviderDefinedTypeRegistry` for hydration and dehydration:
+Using a `PDTRegistry` for hydration and dehydration:
 
 [source,python]
 ----
-from gremlin_python.structure.graph import ProviderDefinedTypeRegistry
+from gremlin_python.structure.graph import PDTRegistry
 
-registry = ProviderDefinedTypeRegistry()
+registry = PDTRegistry()
 registry.register('x:Point',
     deserialize_fn=lambda fields: Point(fields['x'], fields['y']),
     serialize_fn=lambda p: {'x': p.x, 'y': p.y},
@@ -3958,7 +3979,7 @@ g = traversal().with_(DriverRemoteConnection('http://localhost:8182/gremlin', 'g
     pdt_registry=registry))
 ----
 
-The `ProviderDefinedTypeRegistry.create()` class method discovers adapters via `entry_points` in `pyproject.toml`
+The `PDTRegistry.create()` class method discovers adapters via `entry_points` in `pyproject.toml`
 under the `tinkerpop.pdt` group.
 
 For simpler cases where you own the type, the `@provider_defined` decorator enables automatic round-trip conversion

@@ -25,7 +25,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a class as a provider-defined type for serialization via {@link ProviderDefinedType}.
+ * Marks a class as a provider-defined type for serialization via {@link CompositePDT}.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

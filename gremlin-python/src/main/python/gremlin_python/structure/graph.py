@@ -143,14 +143,14 @@ class Path(object):
         return len(self.objects)
 
 
-class ProviderDefinedType(object):
+class CompositePDT(object):
     def __init__(self, name, fields):
         if not name:
             raise ValueError("name cannot be null or empty")
         self._name = name
         self._fields = dict(fields) if fields else {}
         if any(not isinstance(k, str) for k in self._fields):
-            raise TypeError("ProviderDefinedType field keys must be strings")
+            raise TypeError("CompositePDT field keys must be strings")
 
     @property
     def name(self):
@@ -161,7 +161,7 @@ class ProviderDefinedType(object):
         return self._fields
 
     def __eq__(self, other):
-        return isinstance(other, ProviderDefinedType) and self._name == other._name and self._fields == other._fields
+        return isinstance(other, CompositePDT) and self._name == other._name and self._fields == other._fields
 
     def __hash__(self):
         try:
@@ -173,21 +173,72 @@ class ProviderDefinedType(object):
         return f"pdt[{self._name}]{self._fields}"
 
 
-class ProviderDefinedTypeRegistry(object):
+class PrimitivePDT(object):
+    """An immutable primitive provider-defined type consisting of a name and an opaque string value."""
+
+    def __init__(self, name, value):
+        if not name:
+            raise ValueError("name cannot be null or empty")
+        if value is None:
+            raise ValueError("value cannot be null")
+        self._name = name
+        self._value = value
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def value(self):
+        return self._value
+
+    def __eq__(self, other):
+        return isinstance(other, PrimitivePDT) and self._name == other._name and self._value == other._value
+
+    def __hash__(self):
+        return hash((self._name, self._value))
+
+    def __repr__(self):
+        return f"pdt[{self._name}]({self._value})"
+
+
+class PDTRegistry(object):
     def __init__(self):
-        self._adapters_by_name = {}
-        self._adapters_by_class = {}
+        self._composite_adapters_by_name = {}
+        self._composite_adapters_by_class = {}
+        self._primitive_adapters_by_name = {}
+        self._primitive_adapters_by_class = {}
 
     def register(self, type_name, deserialize_fn, serialize_fn=None, target_class=None):
-        self._adapters_by_name[type_name] = {
+        self._composite_adapters_by_name[type_name] = {
             'deserialize': deserialize_fn,
             'serialize': serialize_fn,
             'target_class': target_class
         }
         if target_class is not None:
-            self._adapters_by_class[target_class] = {
+            self._composite_adapters_by_class[target_class] = {
                 'type_name': type_name,
                 'serialize': serialize_fn,
+            }
+
+    def register_primitive(self, type_name, from_value, to_value=None, target_class=None):
+        """Register a primitive PDT adapter.
+
+        Args:
+            type_name: The PDT type name string.
+            from_value: Callable(str) -> object for deserialization.
+            to_value: Callable(object) -> str for serialization (optional).
+            target_class: The Python class this adapter produces (optional).
+        """
+        self._primitive_adapters_by_name[type_name] = {
+            'from_value': from_value,
+            'to_value': to_value,
+            'target_class': target_class
+        }
+        if target_class is not None:
+            self._primitive_adapters_by_class[target_class] = {
+                'type_name': type_name,
+                'to_value': to_value,
             }
 
     @classmethod
@@ -221,25 +272,30 @@ class ProviderDefinedTypeRegistry(object):
         return registry
 
     def hydrate(self, pdt):
-        """Attempt to hydrate a ProviderDefinedType. Returns typed object or raw PDT."""
-        if not isinstance(pdt, ProviderDefinedType):
+        """Attempt to hydrate a CompositePDT. Returns typed object or raw PDT."""
+        if not isinstance(pdt, CompositePDT):
             return pdt
 
         # Always recurse into fields to hydrate nested registered PDTs.
         changed = False
         hydrated_fields = {}
         for k, v in pdt.fields.items():
-            if isinstance(v, ProviderDefinedType):
+            if isinstance(v, CompositePDT):
                 h = self.hydrate(v)
+                if h is not v:
+                    changed = True
+                hydrated_fields[k] = h
+            elif isinstance(v, PrimitivePDT):
+                h = self.hydrate_primitive(v)
                 if h is not v:
                     changed = True
                 hydrated_fields[k] = h
             else:
                 hydrated_fields[k] = v
 
-        adapter = self._adapters_by_name.get(pdt.name)
+        adapter = self._composite_adapters_by_name.get(pdt.name)
         if adapter is None:
-            return ProviderDefinedType(pdt.name, hydrated_fields) if changed else pdt
+            return CompositePDT(pdt.name, hydrated_fields) if changed else pdt
         try:
             return adapter['deserialize'](hydrated_fields)
         except Exception as e:
@@ -247,9 +303,27 @@ class ProviderDefinedTypeRegistry(object):
             logging.getLogger(__name__).warning(f"PDT hydration failed for '{pdt.name}': {e}")
             return pdt
 
-    def get_adapter_by_class(self, cls):
+    def hydrate_primitive(self, pdt):
+        """Attempt to hydrate a PrimitivePDT. Returns typed object or raw PDT."""
+        if not isinstance(pdt, PrimitivePDT):
+            return pdt
+        adapter = self._primitive_adapters_by_name.get(pdt.name)
+        if adapter is None:
+            return pdt
+        try:
+            return adapter['from_value'](pdt.value)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Primitive PDT hydration failed for '{pdt.name}': {e}")
+            return pdt
+
+    def get_composite_adapter_by_class(self, cls):
         """Return (type_name, serialize_fn) tuple for the given class, or None."""
-        return self._adapters_by_class.get(cls)
+        return self._composite_adapters_by_class.get(cls)
+
+    def get_primitive_adapter_by_class(self, cls):
+        """Return adapter dict for the given class, or None."""
+        return self._primitive_adapters_by_class.get(cls)
 
 
 # Module-level registry of @provider_defined decorated classes keyed by PDT name.

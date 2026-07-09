@@ -18,8 +18,8 @@
  */
 
 import { assert } from 'chai';
-import { ProviderDefinedType } from '../../../lib/structure/graph.js';
-import { ProviderDefinedTypeRegistry } from '../../../lib/structure/ProviderDefinedTypeRegistry.js';
+import { CompositePDT } from '../../../lib/structure/graph.js';
+import { PDTRegistry } from '../../../lib/structure/PDTRegistry.js';
 import ioc, { DataType } from '../../../lib/structure/io/binary/GraphBinary.js';
 import StreamReader from '../../../lib/structure/io/binary/internals/StreamReader.js';
 
@@ -32,17 +32,17 @@ async function roundTrip(value) {
 
 describe('CompositePDTSerializer', () => {
   describe('round-trip: simple PDT', () => {
-    it('serializes and deserializes a simple ProviderDefinedType', async () => {
-      const pdt = new ProviderDefinedType('myType', { key1: 'value1', key2: 42 });
+    it('serializes and deserializes a simple CompositePDT', async () => {
+      const pdt = new CompositePDT('myType', { key1: 'value1', key2: 42 });
       const result = await roundTrip(pdt);
-      assert.instanceOf(result, ProviderDefinedType);
+      assert.instanceOf(result, CompositePDT);
       assert.strictEqual(result.name, 'myType');
       assert.strictEqual(result.fields.key1, 'value1');
       assert.strictEqual(result.fields.key2, 42);
     });
 
     it('uses COMPOSITEPDT type code', () => {
-      const pdt = new ProviderDefinedType('test', { a: 1 });
+      const pdt = new CompositePDT('test', { a: 1 });
       const bytes = anySerializer.serialize(pdt);
       assert.strictEqual(bytes[0], DataType.COMPOSITEPDT);
     });
@@ -50,13 +50,13 @@ describe('CompositePDTSerializer', () => {
 
   describe('round-trip: nested PDT', () => {
     it('serializes and deserializes a PDT with nested PDT in fields', async () => {
-      const inner = new ProviderDefinedType('inner', { x: 'hello' });
-      const outer = new ProviderDefinedType('outer', { nested: inner, num: 99 });
+      const inner = new CompositePDT('inner', { x: 'hello' });
+      const outer = new CompositePDT('outer', { nested: inner, num: 99 });
       const result = await roundTrip(outer);
-      assert.instanceOf(result, ProviderDefinedType);
+      assert.instanceOf(result, CompositePDT);
       assert.strictEqual(result.name, 'outer');
       assert.strictEqual(result.fields.num, 99);
-      assert.instanceOf(result.fields.nested, ProviderDefinedType);
+      assert.instanceOf(result.fields.nested, CompositePDT);
       assert.strictEqual(result.fields.nested.name, 'inner');
       assert.strictEqual(result.fields.nested.fields.x, 'hello');
     });
@@ -64,9 +64,9 @@ describe('CompositePDTSerializer', () => {
 
   describe('round-trip: null/undefined field value', () => {
     it('handles null field values', async () => {
-      const pdt = new ProviderDefinedType('withNull', { present: 'yes', absent: null });
+      const pdt = new CompositePDT('withNull', { present: 'yes', absent: null });
       const result = await roundTrip(pdt);
-      assert.instanceOf(result, ProviderDefinedType);
+      assert.instanceOf(result, CompositePDT);
       assert.strictEqual(result.name, 'withNull');
       assert.strictEqual(result.fields.present, 'yes');
       assert.strictEqual(result.fields.absent, null);
@@ -75,15 +75,15 @@ describe('CompositePDTSerializer', () => {
 
   describe('empty name rejected', () => {
     it('constructor rejects empty string name', () => {
-      assert.throws(() => new ProviderDefinedType('', { a: 1 }), /name cannot be null or empty/);
+      assert.throws(() => new CompositePDT('', { a: 1 }), /name cannot be null or empty/);
     });
 
     it('constructor rejects null name', () => {
-      assert.throws(() => new ProviderDefinedType(null, { a: 1 }), /name cannot be null or empty/);
+      assert.throws(() => new CompositePDT(null, { a: 1 }), /name cannot be null or empty/);
     });
 
     it('constructor rejects undefined name', () => {
-      assert.throws(() => new ProviderDefinedType(undefined, { a: 1 }), /name cannot be null or empty/);
+      assert.throws(() => new CompositePDT(undefined, { a: 1 }), /name cannot be null or empty/);
     });
 
     it('deserializer rejects null name from wire', async () => {
@@ -105,8 +105,8 @@ describe('CompositePDTSerializer', () => {
   });
 
   describe('canBeUsedFor', () => {
-    it('returns true for ProviderDefinedType instances', () => {
-      assert.isTrue(compositePDTSerializer.canBeUsedFor(new ProviderDefinedType('t', {})));
+    it('returns true for CompositePDT instances', () => {
+      assert.isTrue(compositePDTSerializer.canBeUsedFor(new CompositePDT('t', {})));
     });
 
     it('returns false for plain objects', () => {
@@ -120,30 +120,30 @@ describe('CompositePDTSerializer', () => {
 
   describe('auto-hydration via pdtRegistry', () => {
     it('auto-hydrates when pdtRegistry is set on the reader', async () => {
-      const registry = new ProviderDefinedTypeRegistry();
+      const registry = new PDTRegistry();
       registry.register('myType', {
         serialize: (obj) => obj,
         deserialize: (fields) => ({ hydrated: true, ...fields }),
       });
 
-      const pdt = new ProviderDefinedType('myType', { key1: 'value1', key2: 42 });
+      const pdt = new CompositePDT('myType', { key1: 'value1', key2: 42 });
       const bytes = anySerializer.serialize(pdt);
       const reader = StreamReader.fromBuffer(bytes);
       reader.pdtRegistry = registry;
       const result = await anySerializer.deserialize(reader);
 
-      assert.notInstanceOf(result, ProviderDefinedType);
+      assert.notInstanceOf(result, CompositePDT);
       assert.strictEqual(result.hydrated, true);
       assert.strictEqual(result.key1, 'value1');
       assert.strictEqual(result.key2, 42);
     });
 
     it('returns raw PDT when no pdtRegistry is set', async () => {
-      const pdt = new ProviderDefinedType('myType', { key1: 'value1' });
+      const pdt = new CompositePDT('myType', { key1: 'value1' });
       const bytes = anySerializer.serialize(pdt);
       const result = await anySerializer.deserialize(StreamReader.fromBuffer(bytes));
 
-      assert.instanceOf(result, ProviderDefinedType);
+      assert.instanceOf(result, CompositePDT);
       assert.strictEqual(result.name, 'myType');
     });
   });

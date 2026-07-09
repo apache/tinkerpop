@@ -211,5 +211,6 @@ func initSerializers() {
 		byteBuffer:         byteBufferWriter,
 		markerType:         markerWriter,
 		compositePDTType:   pdtWriter,
+		primitivePDTType:   primitivePdtWriter,
 	}
 }

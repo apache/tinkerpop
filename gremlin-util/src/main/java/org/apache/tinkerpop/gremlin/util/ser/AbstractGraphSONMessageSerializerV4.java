@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV4;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
@@ -77,7 +78,8 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
 
     private GraphSONMapper.Builder initBuilder() {
         final GraphSONMapper.Builder b = GraphSONMapper.build();
-        return b.addCustomModule(GraphSONXModuleV4.build()).version(GraphSONVersion.V4_0);
+        return b.addCustomModule(GraphSONXModuleV4.build()).version(GraphSONVersion.V4_0)
+                .pdtRegistry(PDTRegistry.create());
     }
 
     private GraphSONMapper.Builder applyMaxTokenLimits(final GraphSONMapper.Builder builder, final Map<String, Object> config) {

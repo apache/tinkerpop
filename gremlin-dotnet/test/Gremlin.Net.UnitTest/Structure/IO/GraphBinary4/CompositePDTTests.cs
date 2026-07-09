@@ -31,7 +31,7 @@ using Xunit;
 
 namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 {
-    public class ProviderDefinedTypeTests
+    public class CompositePDTTests
     {
         private static readonly GraphBinaryWriter Writer = new();
         private static readonly GraphBinaryReader Reader = new();
@@ -40,12 +40,12 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         public async Task TestRoundTripWithFields()
         {
             var fields = new Dictionary<string, object?> { { "x", 1 }, { "y", "hello" } };
-            var expected = new ProviderDefinedType("com.example.MyType", fields);
+            var expected = new CompositePDT("com.example.MyType", fields);
 
             using var stream = new MemoryStream();
             await Writer.WriteAsync(expected, stream);
             stream.Position = 0;
-            var actual = await Reader.ReadAsync(stream) as ProviderDefinedType;
+            var actual = await Reader.ReadAsync(stream) as CompositePDT;
 
             Assert.NotNull(actual);
             Assert.Equal(expected.Name, actual!.Name);
@@ -55,12 +55,12 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public async Task TestRoundTripWithEmptyFields()
         {
-            var expected = new ProviderDefinedType("com.example.Empty", new Dictionary<string, object?>());
+            var expected = new CompositePDT("com.example.Empty", new Dictionary<string, object?>());
 
             using var stream = new MemoryStream();
             await Writer.WriteAsync(expected, stream);
             stream.Position = 0;
-            var actual = await Reader.ReadAsync(stream) as ProviderDefinedType;
+            var actual = await Reader.ReadAsync(stream) as CompositePDT;
 
             Assert.NotNull(actual);
             Assert.Equal(expected.Name, actual!.Name);
@@ -71,12 +71,12 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         public async Task TestRoundTripWithNullFieldValue()
         {
             var fields = new Dictionary<string, object?> { { "key", null } };
-            var expected = new ProviderDefinedType("com.example.NullVal", fields);
+            var expected = new CompositePDT("com.example.NullVal", fields);
 
             using var stream = new MemoryStream();
             await Writer.WriteAsync(expected, stream);
             stream.Position = 0;
-            var actual = await Reader.ReadAsync(stream) as ProviderDefinedType;
+            var actual = await Reader.ReadAsync(stream) as CompositePDT;
 
             Assert.NotNull(actual);
             Assert.Equal(expected.Name, actual!.Name);
@@ -86,7 +86,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public async Task TestDataTypeCode()
         {
-            var pdt = new ProviderDefinedType("com.example.Test", new Dictionary<string, object?>());
+            var pdt = new CompositePDT("com.example.Test", new Dictionary<string, object?>());
 
             using var stream = new MemoryStream();
             await Writer.WriteAsync(pdt, stream);
@@ -99,21 +99,21 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         public void TestConstructorThrowsOnNullName()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new ProviderDefinedType(null!, new Dictionary<string, object?>()));
+                new CompositePDT(null!, new Dictionary<string, object?>()));
         }
 
         [Fact]
         public void TestConstructorThrowsOnEmptyName()
         {
             Assert.Throws<ArgumentException>(() =>
-                new ProviderDefinedType("", new Dictionary<string, object?>()));
+                new CompositePDT("", new Dictionary<string, object?>()));
         }
 
         [Fact]
         public void TestEquality()
         {
-            var a = new ProviderDefinedType("com.example.T", new Dictionary<string, object?> { { "k", 1 } });
-            var b = new ProviderDefinedType("com.example.T", new Dictionary<string, object?> { { "k", 1 } });
+            var a = new CompositePDT("com.example.T", new Dictionary<string, object?> { { "k", 1 } });
+            var b = new CompositePDT("com.example.T", new Dictionary<string, object?> { { "k", 1 } });
             Assert.Equal(a, b);
             Assert.Equal(a.GetHashCode(), b.GetHashCode());
         }
@@ -121,15 +121,15 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public void TestInequality()
         {
-            var a = new ProviderDefinedType("com.example.A", new Dictionary<string, object?>());
-            var b = new ProviderDefinedType("com.example.B", new Dictionary<string, object?>());
+            var a = new CompositePDT("com.example.A", new Dictionary<string, object?>());
+            var b = new CompositePDT("com.example.B", new Dictionary<string, object?>());
             Assert.NotEqual(a, b);
         }
 
         [Fact]
         public void TestToString()
         {
-            var pdt = new ProviderDefinedType("com.example.T", new Dictionary<string, object?> { { "x", 42 } });
+            var pdt = new CompositePDT("com.example.T", new Dictionary<string, object?> { { "x", 42 } });
             Assert.Contains("com.example.T", pdt.ToString());
             Assert.Contains("x=42", pdt.ToString());
         }

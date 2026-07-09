@@ -55,8 +55,8 @@ namespace Gremlin.Net.Process.Remote
         RemoteTransaction Tx(GraphTraversalSource graphTraversalSource);
 
         /// <summary>
-        ///     Gets the <see cref="ProviderDefinedTypeRegistry"/> for registry-based dehydration, or null.
+        ///     Gets the <see cref="PDTRegistry"/> for registry-based dehydration, or null.
         /// </summary>
-        ProviderDefinedTypeRegistry? PdtRegistry => null;
+        PDTRegistry? PdtRegistry => null;
     }
 }

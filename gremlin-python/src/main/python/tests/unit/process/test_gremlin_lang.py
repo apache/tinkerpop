@@ -627,7 +627,7 @@ class TestGremlinLang(object):
         assert "it" in result
 
     def test_provider_defined_auto_dehydration(self):
-        from gremlin_python.structure.graph import ProviderDefinedType, provider_defined
+        from gremlin_python.structure.graph import CompositePDT, provider_defined
         g = traversal().with_(None)
 
         @provider_defined(name="com.example.Point")
@@ -641,7 +641,7 @@ class TestGremlinLang(object):
         assert "PDT('com.example.Point',['x':1,'y':2])" in gremlin
 
     def test_pdt_adapter_takes_precedence_over_decorator(self):
-        from gremlin_python.structure.graph import ProviderDefinedTypeRegistry, provider_defined
+        from gremlin_python.structure.graph import PDTRegistry, provider_defined
         g = traversal().with_(None)
 
         @provider_defined(name="com.example.Point")
@@ -650,7 +650,7 @@ class TestGremlinLang(object):
                 self.x = x
                 self.y = y
 
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         registry.register("com.adapter.Point",
                           deserialize_fn=lambda fields: Point(fields["a"], fields["b"]),
                           serialize_fn=lambda p: {"a": p.x, "b": p.y},
@@ -663,30 +663,30 @@ class TestGremlinLang(object):
         assert "PDT('com.adapter.Point',['a':3,'b':4])" in gremlin
 
     def test_pdt_special_characters_in_name(self):
-        from gremlin_python.structure.graph import ProviderDefinedType
+        from gremlin_python.structure.graph import CompositePDT
         g = traversal().with_(None)
 
-        pdt = ProviderDefinedType('say"hello"', {'v': 1})
+        pdt = CompositePDT('say"hello"', {'v': 1})
         gremlin = g.inject(pdt).gremlin_lang.get_gremlin()
         assert "PDT('say\"hello\"',['v':1])" in gremlin
 
-        pdt2 = ProviderDefinedType('back\\slash', {'v': 1})
+        pdt2 = CompositePDT('back\\slash', {'v': 1})
         gremlin2 = g.inject(pdt2).gremlin_lang.get_gremlin()
         assert "PDT('back\\\\slash',['v':1])" in gremlin2
 
     def test_pdt_nested(self):
-        from gremlin_python.structure.graph import ProviderDefinedType
+        from gremlin_python.structure.graph import CompositePDT
         g = traversal().with_(None)
 
-        inner = ProviderDefinedType('Inner', {'v': 1})
-        outer = ProviderDefinedType('Outer', {'inner': inner})
+        inner = CompositePDT('Inner', {'v': 1})
+        outer = CompositePDT('Outer', {'inner': inner})
         gremlin = g.inject(outer).gremlin_lang.get_gremlin()
         assert "PDT('Outer',['inner':PDT('Inner',['v':1])])" in gremlin
 
     def test_dehydrate_inner_decorated_in_unregistered_outer(self):
         """A @provider_defined inner object must dehydrate to PDT form even when nested
-        as a field value inside a raw (unregistered/undecorated) ProviderDefinedType."""
-        from gremlin_python.structure.graph import ProviderDefinedType, provider_defined
+        as a field value inside a raw (unregistered/undecorated) CompositePDT."""
+        from gremlin_python.structure.graph import CompositePDT, provider_defined
         g = traversal().with_(None)
 
         @provider_defined(name="com.example.Inner")
@@ -695,8 +695,8 @@ class TestGremlinLang(object):
                 self.val = val
 
         inner_obj = Inner(99)
-        # Outer is a raw ProviderDefinedType — no adapter, no decorator
-        outer_pdt = ProviderDefinedType("com.example.Outer", {"child": inner_obj, "count": 7})
+        # Outer is a raw CompositePDT — no adapter, no decorator
+        outer_pdt = CompositePDT("com.example.Outer", {"child": inner_obj, "count": 7})
 
         gremlin = g.inject(outer_pdt).gremlin_lang.get_gremlin()
         # The inner decorated object MUST be dehydrated to its PDT representation

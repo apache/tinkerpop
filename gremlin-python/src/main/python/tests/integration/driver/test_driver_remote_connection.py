@@ -26,7 +26,7 @@ from gremlin_python.statics import long
 from gremlin_python.process.traversal import TraversalStrategy, P, Order, T, DT, GValue, Cardinality, Scope
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
-from gremlin_python.structure.graph import Vertex, Edge, Graph, ProviderDefinedType, provider_defined
+from gremlin_python.structure.graph import Vertex, Edge, Graph, CompositePDT, PrimitivePDT, provider_defined
 from gremlin_python.process.strategies import SubgraphStrategy, SeedStrategy, ReservedKeysVerificationStrategy
 from gremlin_python.structure.io.util import HashableDict
 from gremlin_python.driver.connection import GremlinServerError
@@ -292,9 +292,9 @@ class TestDriverRemoteConnection(object):
 
     def test_pdt_round_trip_via_traversal(self, remote_connection):
         g = traversal().with_(remote_connection)
-        pdt = ProviderDefinedType('Point', {'x': 1, 'y': 2})
+        pdt = CompositePDT('Point', {'x': 1, 'y': 2})
         result = g.inject(pdt).next()
-        assert isinstance(result, ProviderDefinedType)
+        assert isinstance(result, CompositePDT)
         assert result.name == 'Point'
         assert result.fields == {'x': 1, 'y': 2}
 
@@ -320,3 +320,20 @@ class TestDriverRemoteConnection(object):
         assert isinstance(result, TestPoint)
         assert result.x == 5
         assert result.y == 10
+
+    def test_primitive_pdt_round_trip_via_traversal(self, remote_connection):
+        g = traversal().with_(remote_connection)
+        pdt = PrimitivePDT('Uint32', '4294967295')
+        result = g.inject(pdt).next()
+        assert isinstance(result, PrimitivePDT)
+        assert result.name == 'Uint32'
+        assert result.value == '4294967295'
+
+    def test_primitive_pdt_registry_round_trip_via_traversal(self, remote_connection_with_primitive_registry,
+                                                             registry_uint32_class):
+        g = traversal().with_(remote_connection_with_primitive_registry)
+        u = registry_uint32_class(value=42)
+        result = g.inject(u).next()
+        # Registry auto-dehydrates on send (to_value) and auto-hydrates on receive (from_value)
+        assert isinstance(result, registry_uint32_class)
+        assert result.value == 42

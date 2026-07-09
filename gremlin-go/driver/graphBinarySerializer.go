@@ -64,6 +64,7 @@ const (
 	mergeType          dataType = 0x2e
 	durationType       dataType = 0x81
 	compositePDTType   dataType = 0xf0
+	primitivePDTType   dataType = 0xf1
 	markerType         dataType = 0xfd
 	nullType           dataType = 0xFE
 )
@@ -618,8 +619,10 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return bigDecimalType, nil
 	case *ByteBuffer, ByteBuffer:
 		return byteBuffer, nil
-	case *ProviderDefinedType:
+	case *CompositePDT:
 		return compositePDTType, nil
+	case *PrimitivePDT:
+		return primitivePDTType, nil
 	default:
 		switch reflect.TypeOf(val).Kind() {
 		case reflect.Map:
