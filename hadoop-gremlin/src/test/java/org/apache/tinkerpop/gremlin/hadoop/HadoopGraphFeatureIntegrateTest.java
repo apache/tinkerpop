@@ -33,12 +33,10 @@ import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.features.TestFiles;
 import org.apache.tinkerpop.gremlin.features.World;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.javatuples.Pair;
 import org.junit.AssumptionViolatedException;
 import org.junit.runner.RunWith;
@@ -91,7 +89,7 @@ public class HadoopGraphFeatureIntegrateTest {
         private static final HadoopGraph crew = HadoopGraph.open(new MapConfiguration(getBaseConfiguration(GraphData.CREW)));
         private static final HadoopGraph sink = HadoopGraph.open(new MapConfiguration(getBaseConfiguration(GraphData.SINK)));
         private static final HadoopGraph grateful = HadoopGraph.open(new MapConfiguration(getBaseConfiguration(GraphData.GRATEFUL)));
-        private static final HadoopGraph zoo = HadoopGraph.open(new MapConfiguration(getZooConfiguration()));
+        private static final HadoopGraph zoo = HadoopGraph.open(new MapConfiguration(getBaseConfiguration(GraphData.ZOO)));
 
         static {
             readIntoGraph(modern, GraphData.MODERN);
@@ -142,22 +140,6 @@ public class HadoopGraphFeatureIntegrateTest {
             return new HashMap<String, Object>() {{
                 put(Graph.GRAPH, HadoopGraph.class.getName());
                 put(Constants.GREMLIN_HADOOP_GRAPH_READER, GryoInputFormat.class.getCanonicalName());
-                put(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
-                put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, getWorkingDirectory());
-                put(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
-            }};
-        }
-
-        /**
-         * The zoo graph is multi-label and only GraphSON V4 preserves the full label set for a vertex - Gryo (and
-         * GraphSON V1/V2/V3) can only carry a single label - so, unlike the other reference graphs, it is read via
-         * {@link GraphSONInputFormat} configured for {@link GraphSONVersion#V4_0} rather than Gryo.
-         */
-        private static Map<String, Object> getZooConfiguration() {
-            return new HashMap<String, Object>() {{
-                put(Graph.GRAPH, HadoopGraph.class.getName());
-                put(Constants.GREMLIN_HADOOP_GRAPH_READER, GraphSONInputFormat.class.getCanonicalName());
-                put(Constants.GREMLIN_HADOOP_GRAPHSON_VERSION, GraphSONVersion.V4_0.name());
                 put(Constants.GREMLIN_HADOOP_GRAPH_WRITER, GryoOutputFormat.class.getCanonicalName());
                 put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, getWorkingDirectory());
                 put(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
