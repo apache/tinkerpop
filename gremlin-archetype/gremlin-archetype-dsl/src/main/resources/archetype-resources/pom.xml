@@ -65,6 +65,19 @@ limitations under the License.
                     <compilerArgs>
                         <arg>-parameters</arg>
                     </compilerArgs>
+                    <!--
+                    Explicitly declare the annotation processor path so that the GremlinDslProcessor runs. As of JDK 23,
+                    javac no longer runs annotation processors that are only discovered on the classpath unless they are
+                    requested explicitly, and the processor is required to generate the DSL classes (e.g.
+                    SocialTraversalSource).
+                    -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.apache.tinkerpop</groupId>
+                            <artifactId>gremlin-annotations</artifactId>
+                            <version>${project.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
         </plugins>

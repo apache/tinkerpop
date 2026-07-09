@@ -153,6 +153,38 @@ limitations under the License.
                     <compilerArgs>
                         <arg>-parameters</arg>
                     </compilerArgs>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.apache.tinkerpop</groupId>
+                            <artifactId>gremlin-annotations</artifactId>
+                            <version>${project.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.apache.tinkerpop</groupId>
+                            <artifactId>gremlin-core</artifactId>
+                            <version>${project.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.apache.tinkerpop</groupId>
+                            <artifactId>gremlin-shaded</artifactId>
+                            <version>${project.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.apache.tinkerpop</groupId>
+                            <artifactId>gremlin-language</artifactId>
+                            <version>${project.version}</version>
+                        </path>
+                        <path>
+                            <groupId>com.squareup</groupId>
+                            <artifactId>javapoet</artifactId>
+                            <version>${javapoet.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.antlr</groupId>
+                            <artifactId>antlr4-runtime</artifactId>
+                            <version>${antlr4.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
         </plugins>
@@ -160,9 +192,9 @@ limitations under the License.
 
     <profiles>
         <profile>
-            <id>jdk11</id>
+            <id>jdk11-and-newer</id>
             <activation>
-                <jdk>[11,18)</jdk>
+                <jdk>[11,)</jdk>
             </activation>
             <build>
                 <plugins>
@@ -172,8 +204,8 @@ limitations under the License.
                         <configuration>
                             <!--
                             need to override source path as we don't seem to get the groovy-stubs automatically. this worked
-                            under java 8 but errors under java 11 due to missing files on the path. i guess java 8 was more
-                            forgiving.
+                            under java 8 but errors under java 11 and newer due to missing files on the path. i guess java 8
+                            was more forgiving.
                             -->
                             <sourcepath>${pom.basedir}/src/main/java:${project.build.directory}/generated-sources/annotations:${project.build.directory}/generated-sources/groovy-stubs/main</sourcepath>
                         </configuration>

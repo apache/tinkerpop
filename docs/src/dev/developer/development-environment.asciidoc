@@ -29,7 +29,10 @@ image:conspiracy.png[]
 == System Configuration
 
 At a minimum, development of TinkerPop requires link:https://openjdk.java.net/projects/jdk/11/[Java 11]. Since 3.7.0, you can also build with
-link:https://openjdk.org/projects/jdk/17/[Java 17]. Note, however, that there are some issues with deep reflection
+link:https://openjdk.org/projects/jdk/17/[Java 17]. Since 3.8.2, there is also experimental support for building and
+testing with link:https://openjdk.org/projects/jdk/21/[Java 21] and link:https://openjdk.org/projects/jdk/25/[Java 25],
+covering every module except `spark-gremlin` (the Spark version it uses only runs on Java 8 through 17).
+Note, however, that there are some issues with deep reflection
 so there are `--add-opens` JVM options included in the pom files to enable this to work. Maven (requiring a minimum of
 link:https://maven.apache.org/download.cgi[Maven 3.5.3+]) is used as the common build system, which even
 controls the builds of non-JVM link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[GLVs]

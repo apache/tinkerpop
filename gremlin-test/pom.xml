@@ -88,6 +88,14 @@ limitations under the License.
             <groupId>org.apache.kerby</groupId>
             <artifactId>kerb-simplekdc</artifactId>
             <version>${kerby.version}</version>
+            <exclusions>
+                <!-- only used by the kadmin CLI tool which is not exercised by the test KDC; excluding it avoids a
+                     version clash with the jline brought in by Hadoop's yarn client -->
+                <exclusion>
+                    <groupId>org.jline</groupId>
+                    <artifactId>jline</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
     <build>
