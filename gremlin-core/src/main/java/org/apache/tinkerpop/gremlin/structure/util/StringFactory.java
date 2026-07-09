@@ -237,7 +237,8 @@ public final class StringFactory {
     }
 
     private static boolean hasLambda(final String objectString) {
-        return objectString.contains("$Lambda$") || // JAVA (org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraphPlayTest$$Lambda$1/1711574013@61a52fb)
+        return objectString.contains("$Lambda$") || // JAVA <21 (org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraphPlayTest$$Lambda$1/1711574013@61a52fb)
+                objectString.contains("$$Lambda/") || // JAVA 21+ (org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraphPlayTest$$Lambda/0x00007fc001151000@61a52fb)
                 objectString.contains("$_run_closure") || // GROOVY (groovysh_evaluate$_run_closure1@db44aa2)
                 objectString.contains("<lambda>");  // PYTHON (<function <lambda> at 0x10dfaec80>)
     }

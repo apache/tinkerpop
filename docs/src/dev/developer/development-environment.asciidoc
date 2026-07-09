@@ -28,8 +28,9 @@ image:conspiracy.png[]
 [[system-configuration]]
 == System Configuration
 
-At a minimum, development of TinkerPop requires link:https://openjdk.java.net/projects/jdk/11/[Java 11] or
-link:https://openjdk.org/projects/jdk/17/[Java 17]. Note, however, that there are some issues with deep reflection
+At a minimum, development of TinkerPop requires link:https://openjdk.org/projects/jdk/17/[Java 17]; builds and tests
+also run on link:https://openjdk.org/projects/jdk/21/[Java 21] and link:https://openjdk.org/projects/jdk/25/[Java 25].
+Note, however, that there are some issues with deep reflection
 so there are `--add-opens` JVM options included in the pom files to enable this to work. Maven (requiring a minimum of
 link:https://maven.apache.org/download.cgi[Maven 3.5.3+]) is used as the common build system, which even
 controls the builds of non-JVM link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[GLVs]
@@ -47,7 +48,7 @@ system. You will need to install both link:https://docs.docker.com/engine/instal
 link:https://docs.docker.com/compose/install/[Docker Compose], which are included in
 link:https://docs.docker.com/desktop/[Docker Desktop].
 
-IMPORTANT: Use Java 11 for documentation generation with `bin/process-docs.sh` and for other build features outside
+IMPORTANT: Use Java 17 for documentation generation with `bin/process-docs.sh` and for other build features outside
 of the basic `mvn clean install` sort of function.
 
 IMPORTANT: For those who intend to offer a contribution, building with a minimal configuration may not be sufficient
@@ -124,7 +125,7 @@ The core of the documentation generation process is an link:https://asciidoctor.
 Gremlin Console subprocess, and renders the console output as tabbed HTML. The orchestration script
 `bin/process-docs.sh` wraps this and acts as the entrypoint: it validates the Gremlin Console and Gremlin Server
 distributions, installs the required plugins into the console, starts a Gremlin Server (for the `:remote` examples) and
-a Gephi mock, then invokes Maven to run the extension. Javadocs should be built using Java 11.
+a Gephi mock, then invokes Maven to run the extension. Javadocs should be built using Java 17.
 
 Before generating documentation, build the build all of the dependencies that the process consumes:
 

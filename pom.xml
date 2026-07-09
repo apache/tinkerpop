@@ -159,7 +159,7 @@ limitations under the License.
         <commons.text.version>1.15.0</commons.text.version>
         <cucumber.version>7.21.1</cucumber.version>
         <exp4j.version>0.4.8</exp4j.version>
-        <groovy.version>4.0.25</groovy.version>
+        <groovy.version>4.0.32</groovy.version>
         <!--
           don't really use guava directly, but there are a lot of jar conflicts around it,
           so centralizing that dependency version here
@@ -170,7 +170,7 @@ limitations under the License.
           it supports the jakarta.inject namespace which tinkerpop doesn't fuss with
         -->
         <guice.version>6.0.0</guice.version>
-        <hadoop.version>3.4.2</hadoop.version>
+        <hadoop.version>3.4.3</hadoop.version>
         <hamcrest.version>3.0</hamcrest.version>
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>3.3.1</javadoc-plugin.version>
@@ -180,10 +180,10 @@ limitations under the License.
         <logback.version>1.3.15</logback.version>
         <metrics.version>3.0.2</metrics.version>
         <mockito.version>5.19.0</mockito.version>
-        <netty.version>4.1.125.Final</netty.version>
+        <netty.version>4.2.7.Final</netty.version>
         <slf4j.version>2.0.16</slf4j.version>
         <snakeyaml.version>2.0</snakeyaml.version>
-        <spark.version>3.5.4</spark.version>
+        <spark.version>4.1.2</spark.version>
         <awssdk.version>2.29.3</awssdk.version>
         <!-- Version aligned with Netty's optional bcpkix dependency used for SelfSignedCertificate -->
         <bouncycastle.version>1.69</bouncycastle.version>
@@ -259,7 +259,7 @@ limitations under the License.
                             <rules>
                                 <DependencyConvergence/>
                                 <requireJavaVersion>
-                                    <version>[11,18)</version>
+                                    <version>[17,26)</version>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>[3.5.3,)</version>
@@ -624,9 +624,9 @@ limitations under the License.
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.14.0</version>
                     <configuration>
-                        <release>11</release>
-                        <source>11</source>
-                        <target>11</target>
+                        <release>17</release>
+                        <source>17</source>
+                        <target>17</target>
                         <compilerArgs>
                             <arg>-parameters</arg>
                         </compilerArgs>
@@ -733,7 +733,7 @@ limitations under the License.
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${javadoc-plugin.version}</version>
                     <configuration>
-                        <source>11</source>
+                        <source>17</source>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -741,7 +741,7 @@ limitations under the License.
                     <artifactId>gmavenplus-plugin</artifactId>
                     <version>4.1.1</version>
                     <configuration>
-                        <targetBytecode>11</targetBytecode>
+                        <targetBytecode>17</targetBytecode>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -2203,7 +2203,7 @@ limitations under the License.
                                 -Dlog4j.configuration=${log4j-test.properties}
                                 -Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider
                                 -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs}
-                                -Djava.net.preferIPv4Stack=true
+                                -Djava.net.preferIPv4Stack=true ${jdk17JvmArgs}
                             </argLine>
                         </configuration>
                     </plugin>
@@ -2215,7 +2215,7 @@ limitations under the License.
                                 -Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
                                 -Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider
                                 -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs}
-                                -Djava.net.preferIPv4Stack=true
+                                -Djava.net.preferIPv4Stack=true ${jdk17JvmArgs}
                             </argLine>
                         </configuration>
                     </plugin>
