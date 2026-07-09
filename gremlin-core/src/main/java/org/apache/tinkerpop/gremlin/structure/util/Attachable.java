@@ -36,7 +36,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * An interface that provides methods for detached properties and elements to be re-attached to the {@link Graph}.
@@ -304,6 +306,12 @@ public interface Attachable<V> {
             final Vertex vertex = hostGraph.features().vertex().willAllowId(baseVertex.id()) ?
                     hostGraph.addVertex(T.id, baseVertex.id(), T.label, baseVertex.label()) :
                     hostGraph.addVertex(T.label, baseVertex.label());
+            final Set<String> labels = baseVertex.labels();
+            if (labels.size() > 1) {
+                final List<String> additionalLabels = labels.stream().filter(l -> !l.equals(baseVertex.label())).collect(Collectors.toList());
+                if (!additionalLabels.isEmpty())
+                    vertex.addLabel(additionalLabels.get(0), additionalLabels.subList(1, additionalLabels.size()).toArray(new String[0]));
+            }
             final Map<String, List<VertexProperty<Object>>> propertyMap = new HashMap<>();
             baseVertex.properties().forEachRemaining(vp -> propertyMap.computeIfAbsent(vp.key(), k -> new ArrayList<>()).add(vp));
             for (Map.Entry<String, List<VertexProperty<Object>>> entry : propertyMap.entrySet()) {
