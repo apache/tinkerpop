@@ -455,11 +455,12 @@ export async function phase1(session) {
 // ============================================================
 
 export async function teardown(sessionOrWorkDir) {
-  let repoPath, worktreePath, prBranch, containerId;
+  let repoPath, worktreePath, prBranch, containerId, workDir;
 
   if (typeof sessionOrWorkDir === "string") {
     // Called with just a workDir path — read session.json
     const { readFile: rf } = await import("node:fs/promises");
+    workDir = sessionOrWorkDir;
     const sessionData = JSON.parse(await rf(join(sessionOrWorkDir, "session.json"), "utf-8"));
     repoPath = sessionData.repoPath;
     worktreePath = sessionData.worktreePath;
@@ -468,12 +469,26 @@ export async function teardown(sessionOrWorkDir) {
   } else {
     // Called with a live session object
     const session = sessionOrWorkDir;
+    workDir = session.workDir;
     repoPath = session.repoPath;
     worktreePath = session.worktreePath;
     prBranch = session.prBranch;
     containerId = session.handle?.containerId;
     if (session.aConnection) await session.aConnection.close().catch(() => {});
     if (session.connection) await session.connection.close().catch(() => {});
+  }
+
+  // Stop the functional-test server and remove its build worktree, if one was
+  // stood up (step 4 persists its handle to functional.json).
+  if (workDir) {
+    const { readFile: rf } = await import("node:fs/promises");
+    const handle = await rf(join(workDir, "functional.json"), "utf-8")
+      .then((s) => JSON.parse(s))
+      .catch(() => null);
+    if (handle) {
+      const { stop: stopFunctional } = await import("./functional/setup.js");
+      await stopFunctional(handle, { repoPath }).catch(() => {});
+    }
   }
 
   if (containerId) {

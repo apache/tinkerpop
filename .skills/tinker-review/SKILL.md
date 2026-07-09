@@ -26,6 +26,7 @@ metadata:
 - Read [references/schema.md](references/schema.md) when you need to understand what vertices, edges, or properties exist in the knowledge graph (typically during enrichment or when writing raw Gremlin)
 - Read [references/interfaces.md](references/interfaces.md) when you need the exact function signatures or data type definitions for a module
 - Read [references/enrichment-cli.md](references/enrichment-cli.md) when you need to know what an enrichment CLI command *does* and when to reach for it (the command names below are terse; this is where their meaning lives)
+- Read [references/functional-testing.md](references/functional-testing.md) when you run the optional functional test (step 4) — what `functional/cli.js` does, how the built server is configured, and how to drive it from the subagent
 
 ## Execution Sequence
 
@@ -83,12 +84,14 @@ checklists — one item per action.
 | **Context** | choosing playbooks (above) | Confirm the path-matched playbook fits this PR; set aside the ones that don't. |
 | **Enrich** | improving the graph (step 3) | Run each command bullet to add or re-grade semantic edges. Graph mutation only. |
 | **Inspect** | reading the changed source (step 3) | Check each bullet against the source; record what you find as a *candidate finding* for Interpret. |
-| **Interpret** | writing the report (step 5) | Weigh the named `evidence.json` fields together with the Inspect candidates into `findings` / `openQuestions`. |
+| **Verify** | functional testing (step 4) | Apply the gate, then shape the blind subagent's test battery. `general.md` holds the shared gate/framework; domains specialize it. |
+| **Interpret** | writing the report (step 5) | Weigh the named `evidence.json` fields together with the Inspect and Verify candidates into `findings` / `openQuestions`. |
 | **Escape** | any time | Honor its stop/escalate gates; halt or flag when one holds. |
 
-The three working sections split by data flow: **Enrich** writes to the graph,
-**Inspect** reads the changed source into candidate findings, **Interpret** reads
-the computed `evidence.json` checks and weighs the Inspect candidates into the
+The working sections split by data flow: **Enrich** writes to the graph,
+**Inspect** reads the changed source into candidate findings, **Verify** exercises
+the built feature as a user would, and **Interpret** reads the computed
+`evidence.json` checks and weighs the Inspect and Verify candidates into the
 report. `findings` is an ordered list — Interpret ranks it most-severe-first,
 grading each entry blocking / high / low.
 
@@ -143,38 +146,75 @@ The project's own tests are the author's responsibility — running them tells
 the reviewer nothing new.
 
 Functional testing means: test the feature AS A USER WOULD. Connect to a
-running Gremlin Server and submit traversals. Try to use the feature based
-only on what the documentation says. Try to break it with adversarial inputs.
+Gremlin Server built from the PR and submit traversals. Try to use the feature
+based only on what the documentation says. Try to break it with adversarial
+inputs.
 
-**Build the full project:**
+**Gate — decide whether to run it.** Consult the applicable playbooks' **Verify**
+sections. `general.md`'s Verify holds the shared gate: skip functional testing
+when the change has no user-facing runtime surface (tests-only, docs-only, a pure
+internal refactor, build/CI plumbing) and either omit `functionalTest` or record
+the skip reason. Otherwise continue.
+
+**Build the PR and start the server (mechanical).** The `functional/cli.js`
+command builds the full reactor, locates the assembly, and launches a Gremlin
+Server from the built artifacts on a fresh port (distinct from the knowledge
+graph server). It reads `pr`/`repoPath` from `session.json` and writes the
+handle to `functional.json` so teardown can find it:
+
 ```bash
-git worktree add /tmp/pr-review-<pr>/build pr-review/<pr>
-mvn -f /tmp/pr-review-<pr>/build/pom.xml clean install -DskipTests
+node .skills/tinker-review/scripts/functional/cli.js start --workDir /tmp/pr-review-<pr>
 ```
 
-**Start Gremlin Server from built artifacts** on a random port (different from
-the knowledge graph server). Use the built assembly at:
-`/tmp/pr-review-<pr>/build/gremlin-server/target/apache-tinkerpop-gremlin-server-*-standalone/`
+This prints `{ url, port, pid, assemblyDir, logFile, ... }`. The build is slow
+(full reactor); on failure, the error names the server log to inspect. See
+[references/functional-testing.md](references/functional-testing.md) for what the
+command does and how to drive it.
 
 **Test from the outside.** Spawn a subagent that receives ONLY:
 - PR title/description (what the change claims to do)
 - Relevant documentation sections
 - Relevant Gherkin test features (for expected behavior reference)
-- The Gremlin Server URL
+- The Gremlin Server URL (the `url` from the command above)
 
 The subagent does NOT get: source code, the knowledge graph, code review findings,
-or access to the analysis worktree. It tests blind — like a user who read the docs.
+or access to the analysis worktree. Brief it as a **minimally experienced
+TinkerPop user** who has only the docs — it tests blind, and its stumbles are
+signal about how usable the feature is.
 
 **The subagent tests by submitting Gremlin traversals** via the Gremlin Console
 or a GLV client. It devises its own test plan from the docs, executes traversals,
-and attempts adversarial edge cases.
+and attempts adversarial edge cases. The **shape** of the battery comes from the
+applicable playbooks' Verify sections — which languages/layers to exercise and
+what adversarial cases matter for this class of change.
 
-**Layer decision:**
+**Layer decision** (the Verify sections say which applies to this PR):
 - **Layer 1 (embedded):** Gremlin Console with TinkerGraph. For core logic changes.
 - **Layer 2 (per-GLV wire):** Connect from each GLV to the server. For
   serialization/type changes. Skip if purely computational.
 
-The subagent returns: test plan, results, adversarial findings, exact test code.
+**Label every scenario in the code (required).** Instruct the subagent to keep
+the test code as the single source of truth for *what* was tested, and to label
+each scenario with a comment carrying a stable id and a one-line intent, e.g.:
+
+```groovy
+// Scenario A1: group().by(T.id) — validates the id key survives when its reduction is productive
+g.V().group().by(id).by(out().count())
+```
+
+The subagent returns:
+- **Complete, unabbreviated test code**, every scenario labeled as above — this is
+  `appendixFunctional.testCode` (raw text; the renderer wraps it — do NOT add
+  `<pre>`/`<code>`). No `...`, no "(abbrev)"; if the battery is large, that is
+  what the appendix is for.
+- **Themes, not a scenario dump** — group the scenarios into a handful of themes,
+  each citing the labels it spans (e.g. "Barrier family (A4–A12): …").
+- Results, adversarial findings, and observations keyed to those labels.
+
+Fold these into the `functionalTest` / `appendixFunctional` report fields (step 5)
+and weigh them in Interpret. The count and granularity of `functionalTest.results`
+rows must match the themes, not inflate to imply more tests than the appendix
+actually lists.
 
 ### 5. Phase 2 — Produce Report
 
@@ -200,11 +240,24 @@ produce a complete evidence-with-narrative JSON file. Write it to
 - `guidedWalk` — array of `{ title, badge, badgeText, body }` objects
 - `findings` — array of `{ title, snippet, body }` objects, ordered most-severe-first (Interpret grades each blocking / high / low)
 - `openQuestions` — array of `{ title, body, meta }` objects
-- `functionalTest` — `{ plan, results: [{name, pass, output}], observations }` (if testing was done)
-- `appendixFunctional` — `{ environment, testCode, fullOutput }` (if testing was done)
+- `functionalTest` — `{ plan, results: [{name, pass, output}], observations }` (if testing was done).
+  `plan` and `observations` are HTML and surface **themes and insights** — what
+  families of behavior were exercised and what was learned — not a per-scenario
+  list. `results` rows are **theme-level**: each `name` names a theme and the
+  scenario labels it spans (e.g. `"Barrier family (A4–A12)"`), so the PASS/FAIL
+  grid stays scannable and every row is backed by labeled code in the appendix.
+  Do not enumerate every scenario here and do not let the row count imply more
+  tests than the appendix lists.
+- `appendixFunctional` — `{ environment, testCode, fullOutput }` (if testing was done).
+  `environment` is HTML. `testCode` and `fullOutput` are **raw text** — the
+  renderer wraps them in `<pre><code>`, so do NOT add `<pre>`/`<code>`/`<p>`
+  yourself. `testCode` is the **complete, unabbreviated** labeled battery from the
+  subagent (see step 4); it is the source of truth the Functional Test section
+  summarizes by label.
 
-All `body` fields are HTML. Use `<code>`, `<strong>`, `<ul>`, `<p>` as needed.
-The renderer handles all layout, CSS, and structure.
+All `body` fields (and `functionalTest.plan`/`observations`, `appendixFunctional.environment`)
+are HTML — use `<code>`, `<strong>`, `<ul>`, `<p>` as needed. The raw-text fields
+noted above are the exception. The renderer handles all layout, CSS, and structure.
 
 **Step B:** Render the report:
 
@@ -231,7 +284,9 @@ git branch -D pr-review/<pr>
 ```
 
 This stops the knowledge graph server, removes worktrees, deletes the branch.
-Call this ONLY after all phases are complete.
+If a functional test ran (step 4), teardown also stops that server (via its
+`pid` in `functional.json`) and removes the `build/` worktree. Call this ONLY
+after all phases are complete.
 
 ## Important Notes
 

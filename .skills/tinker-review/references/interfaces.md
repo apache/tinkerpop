@@ -136,7 +136,11 @@ interface ReportPackage extends Evidence {
   findings: { title; snippet; body }[];
   openQuestions: { title; body; meta }[];
   functionalTest?: { plan; results: { name; pass; output }[]; observations };
+    // plan/observations: HTML, theme-level. results rows are THEMES, each `name`
+    // naming the scenario labels it spans — not one row per scenario.
   appendixFunctional?: { environment; testCode; fullOutput };
+    // environment: HTML. testCode/fullOutput: RAW TEXT (renderer wraps in
+    // <pre><code>; do not pre-wrap). testCode is the COMPLETE labeled battery.
 }
 ```
 

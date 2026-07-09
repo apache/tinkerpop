@@ -39,6 +39,19 @@ serialization / server init / auth) first, then check the matching group.
 - Server configuration uses gremlin-lang expressions, not Groovy scripts.
 - No commented-out old code left behind — remove it cleanly.
 
+## Verify
+- Focus on the wire: connect a GLV client to the built server and round-trip the
+  serializers or protocol paths the PR touches. Confirm the bytes survive both
+  directions (GraphBinary and GraphSON if both are affected).
+- If a type code was added or removed, confirm the new code path works and the
+  removed one fails cleanly rather than mis-deserializing.
+- Adversarial: a payload larger than a batch (exercise result streaming), a
+  server-side error (confirm it comes back as a usable error, per the GraphBinary
+  → JSON error fallback), and a malformed request.
+- Pure connection-lifecycle or concurrency changes have no single-query surface —
+  say so; the confidence here comes from the author's concurrency tests, not this
+  black-box pass.
+
 ## Interpret
 - `checks.blastRadius` — inherently high (shared infrastructure); don't flag the
   reach itself, name the specific callers most affected.

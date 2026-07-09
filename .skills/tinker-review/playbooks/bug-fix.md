@@ -20,6 +20,17 @@ address the root cause, not just the symptom.
 - Resource cleanup on error paths — if the bug involves connection/channel
   handling, no leak when the fix triggers.
 
+## Verify
+- Reproduce the reported symptom first, then confirm the fix resolves it: derive
+  the failing scenario from the linked issue and run it against the built server.
+- Pick the layer by where the bug lives — an embedded Console/TinkerGraph
+  exercise for core logic; the affected GLV's native client for a driver/wire bug.
+- Adversarial: nearby inputs the fix might have missed (the boundary just past
+  the reported case, the empty/null variant) — a fix that only patches the exact
+  reported value is a finding.
+- If the bug has no black-box surface (e.g. an internal-only refactor of the
+  fix), state that; rely on the author's regression test instead.
+
 ## Interpret
 - `checks.blastRadius` — high on a bug fix is a warning: verify the fix doesn't
   subtly change behavior for existing callers.

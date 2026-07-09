@@ -18,12 +18,13 @@
  */
 
 // Structural conformance guard for the playbooks. Every playbook must carry the
-// same five sections in the same order, split by data flow:
+// same six sections in the same order, split by data flow:
 //
 //   Context   — applicability gate
 //   Enrich    — graph mutation only; names real enrichment CLI commands
 //   Inspect   — reads changed source into findings (no graph representation)
-//   Interpret — weighs evidence.json checks (+ Inspect notes) into the report
+//   Verify    — functional-test battery + the gate deciding whether to run it
+//   Interpret — weighs evidence.json checks (+ Inspect/Verify notes) into the report
 //   Escape    — stop/escalate gates
 //
 // It also fails if an Enrich section names no registered command (and doesn't
@@ -41,7 +42,7 @@ import { COMMANDS } from "../scripts/enrichment/cli.js";
 const here = dirname(fileURLToPath(import.meta.url));
 const playbooksDir = join(here, "..", "playbooks");
 
-const CANONICAL = ["Context", "Enrich", "Inspect", "Interpret", "Escape"];
+const CANONICAL = ["Context", "Enrich", "Inspect", "Verify", "Interpret", "Escape"];
 
 // An Enrich section that legitimately has no domain-specific graph write must
 // say so with this phrase rather than silently naming nothing.
@@ -71,7 +72,7 @@ function sectionBody(md, name) {
   return md.slice(start, end);
 }
 
-test("every playbook carries the five canonical sections in order", async () => {
+test("every playbook carries the six canonical sections in order", async () => {
   for (const file of await playbookFiles()) {
     const md = await readFile(join(playbooksDir, file), "utf-8");
     const headers = sectionHeaders(md);

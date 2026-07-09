@@ -29,6 +29,17 @@ None specific to removal — the review judgment here is structural (classifying
 the `references` edges recorded in Enrich) and is handled in Interpret rather
 than by reading changed source.
 
+## Verify
+- The build worktree compiling at all is the first signal — a removal that left a
+  dangling reference fails `mvn install`, and `buildAndStart` reports it.
+- Confirm the removed surface is actually gone: submit a query using the removed
+  step / feature against the built server and confirm it now errors rather than
+  silently working.
+- Confirm what remains still works: exercise a neighboring feature that shared
+  code with the removed one, to catch an over-broad deletion.
+- A removal with no user-facing runtime surface (internal class, build-only
+  dependency) needs no query test — say so; the reference analysis carries it.
+
 ## Interpret
 The `references` edges in `checks.removalRefs` (plus any you added) and
 `checks.coverageGaps` on surviving code are the primary outputs.

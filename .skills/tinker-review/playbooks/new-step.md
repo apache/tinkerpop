@@ -25,6 +25,17 @@ semantics.
 - Cross-GLV signatures — parameter count should match; types differ by language.
   Judge semantic equivalence, not syntactic identity.
 
+## Verify
+- Test the step in every active GLV, not just Java — a new step must work
+  end-to-end per language. Submit native queries against the built server from
+  each GLV client.
+- Drive the step's documented signature: required args, optional args, and the
+  no-arg form if the docs describe one.
+- Adversarial: wrong argument types, the step in an illegal position (start vs
+  mid-traversal), and composition with a common neighbor step (`by`, `as`).
+- Cross-check observed behavior against the step's Gherkin feature — the results
+  should agree with what the feature asserts.
+
 ## Interpret
 - `checks.completeness` over `implements_step` / `has_rule` / `covers` /
   `documents` / `proposed_in` — what's missing. Missing from some GLVs is

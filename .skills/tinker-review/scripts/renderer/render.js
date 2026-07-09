@@ -33,6 +33,31 @@ function esc(str) {
 }
 
 /**
+ * Fields typed as raw *code* (appendixFunctional.testCode / .fullOutput) are
+ * wrapped by the renderer in its own `<pre><code>` and escaped. Agents
+ * sometimes pre-wrap the value in `<pre>`, `<code>`, or `<p>` anyway; escaping
+ * that renders the tags literally. Strip a single leading/trailing wrapper of
+ * those kinds so a slip degrades to clean text instead of visible markup. This
+ * is a lenient guard, not an HTML sanitizer — the field contract is raw text.
+ */
+function stripCodeWrapper(str) {
+  let s = String(str || "").trim();
+  const wrapper = /^<(pre|code|p)(?:\s[^>]*)?>([\s\S]*)<\/\1>$/i;
+  // Peel nested wrappers (e.g. `<pre><code>…</code></pre>`), up to two layers.
+  // Only peel an *unambiguous* single wrapper: if the inner content still holds
+  // the same tag, the string is not one wrapper (e.g. two sibling `<code>`
+  // blocks), so leave it alone rather than over-strip.
+  for (let i = 0; i < 2; i++) {
+    const m = s.match(wrapper);
+    if (!m) break;
+    const inner = m[2].trim();
+    if (new RegExp(`</${m[1]}>`, "i").test(inner)) break;
+    s = inner;
+  }
+  return s;
+}
+
+/**
  * Render the full report from evidence data + agent narrative.
  * Output matches the structure of reference-report.html exactly.
  *
@@ -48,9 +73,11 @@ function esc(str) {
  *   clusters: { svg: "<svg>...</svg>", assessment: "HTML string" }
  *   guidedWalk: [{ title, badge: "attention|info|safe", badgeText, body: "HTML" }]
  *   functionalTest: { plan: "HTML", results: [{name, pass, output}], observations: ["HTML"] }
+ *     (results rows are THEME-level, each naming the scenario labels it covers)
  *   findings: [{ title, snippet: "code", body: "HTML" }]
  *   openQuestions: [{ title, body: "HTML", meta: "string" }]
- *   appendixFunctional: { environment: "HTML", testCode: "code", fullOutput: "code" }
+ *   appendixFunctional: { environment: "HTML", testCode: "raw text", fullOutput: "raw text" }
+ *     (testCode = the COMPLETE labeled battery; renderer wraps it in <pre><code>, do NOT pre-wrap)
  */
 function notProvided(sectionId, title) {
   return `<section id="${sectionId}">\n  <h2>${esc(title)}</h2>\n  <p class="section-intro" style="color: var(--danger);">Section not provided.</p>\n</section>`;
@@ -548,10 +575,11 @@ function renderAppendixFunctional(af) {
   <div class="card">\n    ${af.environment}\n  </div>
 
   <h3>Test Code</h3>
-  <pre><code>${esc(af.testCode)}</code></pre>
+  <p class="section-intro">Complete, unabbreviated test battery. Each scenario is labeled in a comment; the Functional Test section refers to these labels.</p>
+  <pre><code>${esc(stripCodeWrapper(af.testCode))}</code></pre>
 
   <h3>Full Output</h3>
-  <pre><code>${esc(af.fullOutput)}</code></pre>
+  <pre><code>${esc(stripCodeWrapper(af.fullOutput))}</code></pre>
 </section>`;
 }
 

@@ -20,6 +20,17 @@ downstream tooling. Backwards compatibility is critical.
 - New keywords — TinkerPop has special handling for keywords as map keys (#3091);
   a new keyword can break queries that use it as an identifier.
 
+## Verify
+- Submit a query using the new syntax against the built server and confirm it
+  parses and returns the intended result.
+- Backwards-compat is the priority: run a handful of pre-existing query forms and
+  confirm the grammar change did not break them — especially if a rule was
+  modified rather than added.
+- If a new keyword was introduced, submit a query using that word as an
+  identifier / map key (the #3091 hazard) and confirm it still parses.
+- Test across the ANTLR targets the PR updates (Java, Python, Go) — the same
+  query should parse the same in each.
+
 ## Interpret
 - `checks.blastRadius` / `checks.centrality` — grammar touches everything; don't
   flag the reach, focus on backwards compatibility.

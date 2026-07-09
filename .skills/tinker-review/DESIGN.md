@@ -16,7 +16,10 @@ Gremlin Server container stays up.
 
 **Phase 2 — agent-driven** does everything that needs judgment: enrich the graph
 via the enrichment CLI, an optional functional test, then the report. It ends by
-tearing down the container and worktree.
+tearing down the container and worktree. The functional test itself splits along
+the same mechanical/judgment line: `functional/setup.js` builds the PR and starts
+a server from its artifacts (mechanical), while a blind subagent designs and runs
+the test battery per the playbooks' Verify sections (judgment).
 
 Data flows one direction through three artifacts:
 
@@ -38,6 +41,8 @@ has already exited.
 | `scripts/graph/*.js` | populate the graph; `confidence.js` / `externals.js` / `references.js` hold the data-model vocabularies and shared edge helpers |
 | `scripts/patterns/*.js` | one structural check per file; each defines its own result `@typedef` |
 | `scripts/enrichment/{api,cli}.js` | Phase 2 read/write commands over the live graph |
+| `scripts/functional/{setup,cli}.js` | Phase 2 functional test — build the PR, launch a server from its artifacts (mechanical half of step 4) |
+| `scripts/infrastructure/{docker,net}.js` | Phase 1 stock-image server (`docker.js`); shared port/readiness helpers (`net.js`) |
 | `scripts/renderer/{render.js,template.html}` | `report.json` → HTML |
 | `playbooks/*.md` | domain review guidance — prompt scaffolds, not code |
 | `references/{schema,interfaces}.md` | the graph schema and the evidence composite |
@@ -77,11 +82,11 @@ has already exited.
 - **Add an enrichment command** — a function in `scripts/enrichment/api.js` (or a
   pattern module), wired into `cli.js` (COMMANDS + help + switch), documented in
   `SKILL.md`. Edge-creating commands take a `confidence`, default `INFERRED`.
-- **Add a playbook** — five sections. **Context** is prose stating when the
+- **Add a playbook** — six sections. **Context** is prose stating when the
   playbook applies (an applicability gate, read while choosing playbooks). The
-  three working sections — **Enrich**, **Inspect**, **Interpret** — are bullet
-  checklists, one item per action so the agent runs them dependably rather than
-  parsing prose. They split by data flow:
+  four working sections — **Enrich**, **Inspect**, **Verify**, **Interpret** —
+  are bullet checklists, one item per action so the agent runs them dependably
+  rather than parsing prose. They split by data flow:
   - **Enrich** — each bullet names a registered enrichment command and mutates
     the graph only (name at least one command, or state that none applies).
   - **Inspect** — each bullet names a source-read concern to record as a
@@ -92,6 +97,13 @@ has already exited.
     API-design concerns mined from TinkerPop reviewer patterns`) when that framing
     guides the read. If a playbook has no source-read work (its judgment is
     structural), say so in one line rather than inventing items.
+  - **Verify** — each bullet shapes the optional functional test's battery for
+    this class of change: which GLVs/layers to exercise and what adversarial cases
+    matter. The gate (whether to test at all) and the shared battery framework
+    live once in `general.md`'s Verify and must not be repeated per playbook; a
+    domain playbook adds only its specialization. If a change class rarely has a
+    black-box surface, say when to skip in one line rather than inventing items.
+    The mechanical build+start is `functional/setup.js`, not a playbook concern.
   - **Interpret** — each bullet weighs an `evidence.json` field or an Inspect
     candidate into `findings` or `openQuestions`. List only the weighing bullets;
     the "weigh the evidence.json signals and Inspect candidates into `findings` /
@@ -101,7 +113,7 @@ has already exited.
     ordering, not a per-finding field.
 
   **Escape** sets stop/escalate gates. `test/playbook-sections.test.js` enforces
-  that every playbook carries the five sections in order and that Enrich names a
+  that every playbook carries the six sections in order and that Enrich names a
   command. Add an orient rule in `SKILL.md`.
 - **Add an edge or vertex type** — document it in `references/schema.md`; tag new
   edges with `confidence`; use find-or-create for cross-boundary endpoints.

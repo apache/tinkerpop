@@ -26,6 +26,16 @@ recent accepted GLV).
   error paths; the common GLV bug is leaking a connection when a traversal fails
   mid-execution.
 
+## Verify
+- Test from the GLV under review by connecting its native client to the built
+  server — this is the language whose wire behavior the PR changes.
+- Round-trip the value types the GLV serializes (numbers, lists, maps, vertices,
+  the language's date/UUID types) and confirm they survive the trip unchanged.
+- Adversarial: submit a traversal that errors server-side and confirm the GLV
+  surfaces a usable error rather than hanging or leaking the connection.
+- If the change is idiomatic-only (no wire/serialization impact), an embedded
+  Java exercise is not required — state that in `functionalTest`.
+
 ## Interpret
 - `checks.completeness` — distinguish genuinely missing steps from steps present
   under a language-specific name (Python `addV` vs Go `AddV` — same step).
