@@ -117,12 +117,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         continue;
                     }
 
-                    if (scenario.Tags.Concat(feature.Tags).Any(t => t.Name == "@StepTree"))
-                    {
-                        failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.TreeStepNotSupported));
-                        continue;
-                    }
-
                     if (scenario.Tags.Concat(feature.Tags).Any(t => t.Name == "@StepWrite"))
                     {
                         failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.WriteStepTestingNotSupported));

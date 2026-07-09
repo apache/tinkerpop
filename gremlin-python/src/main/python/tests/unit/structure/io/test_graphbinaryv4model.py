@@ -158,6 +158,20 @@ def test_traversal_path():
 def test_empty_path():
     run("empty-path")
 
+def test_traversal_tree():
+    # gremlin-python doesn't serialize vertex properties, so the read tree's
+    # vertices have no properties; vertex equality is by id so the model matches.
+    run_writeread("traversal-tree")
+
+def test_empty_tree():
+    # no .gbin resource exists for an empty tree, so exercise an in-memory round trip
+    from gremlin_python.structure.graph import Tree
+    empty = model["empty-tree"]
+    round_tripped = reader.read_object(writer.write_object(empty))
+    assert isinstance(round_tripped, Tree)
+    assert empty == round_tripped
+    assert round_tripped.is_leaf()
+
 def test_prop_path():
     # gremlin-python doesn't serialize properties
     run_writeread("prop-path")

@@ -63,11 +63,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         NullPropertyValuesNotSupportedOnTestGraph,
 
         /// <summary>
-        /// tree() is not supported yet
-        /// </summary>
-        TreeStepNotSupported,
-
-        /// <summary>
         /// write() is not supported yet for testing
         /// </summary>
         WriteStepTestingNotSupported
