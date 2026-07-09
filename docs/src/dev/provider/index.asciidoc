@@ -1562,12 +1562,23 @@ shows the Java representation of those files.
 [[provider-defined-types]]
 === Provider Defined Types (PDT)
 
-Provider Defined Types allow graph providers to expose custom types that drivers can serialize and deserialize without
-manual configuration on the client side. A provider annotates a class (or registers an adapter for a class it doesn't
-own), and the type flows through the wire protocol automatically. Clients receive PDT values as structured objects they
-can use directly or hydrate into language-native types.
+Provider Defined Types let graph providers expose custom types that drivers serialize and deserialize automatically,
+without manual client-side configuration. PDT comes in two forms. A *Composite PDT* represents a type as a map of
+named fields and suits a type with structure, such as multiple properties or nested types. A *Primitive PDT*
+represents a type as a single opaque stringified value and suits a type better expressed as one value, such as an
+unsigned 32-bit integer or a provider-specific identifier.
 
-==== Basic Usage
+Both forms follow the same workflow. A provider makes a type available for dehydration, and optionally hydration,
+either by annotating the class directly or by registering an adapter for it. Clients configure a `PDTRegistry` to
+enable automatic round-tripping.
+
+[[composite-pdt]]
+==== Composite PDT
+
+A Composite PDT serializes a type as a map of named fields. This is the right choice whenever a type has more than
+one meaningful property, or where nested provider-defined types need to be represented.
+
+===== Basic Usage
 
 Annotate a class with `@ProviderDefined` from the `org.apache.tinkerpop.gremlin.structure.io.pdt` package:
 
@@ -1587,9 +1598,9 @@ public class Point {
 }
 ----
 
-The `name` attribute is a unique identifier for the type. It must not be null or empty — all GLVs reject an
+The `name` attribute is a unique identifier for the type. It must not be null or empty. All GLVs reject an
 empty name when a type is defined or a `CompositePDT` is constructed. It is strongly recommended to namespace
-type names using your graph's identifier as a prefix (e.g. `"mygraph:Point"`). This avoids collisions when clients
+type names using the graph's identifier as a prefix (e.g. `"mygraph:Point"`). This avoids collisions when clients
 interact with multiple providers and makes the origin of a type immediately clear. By default, all fields are included.
 Use `includedFields` or `excludedFields` to control which fields are serialized:
 
@@ -1604,15 +1615,15 @@ public class Person { ... }
 ----
 
 NOTE: For annotation-based round-trip hydration (see <<round-trip-support>>), an annotated class must expose a no-arg
-constructor and the mapped fields must be directly settable (e.g. public fields). Classes that cannot meet these
-requirements — for example those with immutable `final` fields or no default constructor — should instead use a
-`ProviderDefinedTypeAdapter` (see <<adapter-for-types-you-don-t-own>>), which gives full control over construction.
+constructor, and the mapped fields must be directly settable (e.g. public fields). A class that cannot meet these
+requirements, for example one with immutable `final` fields or no default constructor, should instead use a
+`CompositePDTAdapter` (see <<adapter-for-types-you-dont-own>>), which gives full control over construction.
 
 The serialized field set becomes a map whose keys are always strings. In statically typed GLVs (Java, .NET,
-Go, and TypeScript) this is enforced by the type system; in Python the keys are validated at runtime and a
+Go, and TypeScript) this is enforced by the type system. In Python the keys are validated at runtime, and a
 `TypeError` is raised for any non-string key.
 
-==== Nested Types
+===== Nested Types
 
 PDT supports nested custom types. Each nested type must also be annotated:
 
@@ -1633,16 +1644,37 @@ public class Person {
 
 When serialized, the `address` field is itself encoded as a PDT value.
 
-[[adapter-for-types-you-don-t-own]]
-==== Adapter for Types You Don't Own
+[[primitive-provider-defined-types]]
+==== Primitive PDT
 
-For classes you cannot annotate (e.g. `java.awt.Color`), implement `ProviderDefinedTypeAdapter<T>`:
+A Primitive PDT represents a type as a single opaque stringified value rather than a map of fields. It suits a type
+that is best expressed as one value, for example an unsigned 32-bit integer or a provider-specific identifier. A
+Primitive PDT carries only a type name and a string value, and TinkerPop never parses or interprets the value.
+
+A type may be registered as composite or primitive, not both. Attempting to register a type for both forms throws an
+error. Unlike Composite PDT, there is no annotation form for Primitive PDT. Because there is only a single value to
+extract, providers must always supply an adapter (see <<adapter-for-types-you-dont-own>>) rather than annotating fields.
+
+[[adapter-for-types-you-dont-own]]
+==== Adapters for Types You Don't Own
+
+For a class that cannot be annotated, either because the provider does not own the class (e.g. `java.awt.Color`) or
+because the type is a Primitive PDT, register an adapter instead. Composite PDT uses `CompositePDTAdapter<T>`,
+and Primitive PDT uses `PrimitivePDTAdapter<T>`.
+
+NOTE: A registered adapter always takes precedence over annotation-based handling on dehydration. This is consistent
+across all GLVs. If an adapter is registered for a type, it controls serialization regardless of whether the class is
+also annotated.
+
+===== Composite Adapter
+
+Implement `CompositePDTAdapter<T>`:
 
 [source,java]
 ----
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
 
-public class ColorAdapter implements ProviderDefinedTypeAdapter<java.awt.Color> {
+public class ColorAdapter implements CompositePDTAdapter<java.awt.Color> {
 
     @Override
     public String typeName() { return "mygraph:Color"; }
@@ -1664,143 +1696,7 @@ public class ColorAdapter implements ProviderDefinedTypeAdapter<java.awt.Color> 
 }
 ----
 
-[[round-trip-support]]
-==== Round-Trip Support (Dehydration and Hydration)
-
-There is an important distinction between *dehydration* (serializing a type for sending) and *hydration* (deserializing
-a received PDT back into a language-native type).
-
-*Dehydration* is handled automatically for `@ProviderDefined`-annotated classes and adapter-registered types. When a
-user passes an annotated object into a Gremlin traversal or script, TinkerPop converts it to a PDT on the wire
-without any extra configuration.
-
-*Hydration* — reconstructing an incoming PDT back into the original typed object — requires the driver to know which
-class corresponds to a given PDT name. Without this mapping, the driver will return a generic `CompositePDT`
-object. To enable automatic round-trip hydration, providers must expose a pre-configured `PDTRegistry`
-to users. How that registry is populated differs by language:
-
-===== Java
-
-Register annotated classes explicitly with the registry. `register(Class<?>...)` inspects the `@ProviderDefined`
-annotation to derive the type name and field mapping automatically:
-
-[source,java]
-----
-PDTRegistry registry = PDTRegistry.create();
-registry.register(Point.class, Address.class, Person.class);
-----
-
-Adapter types (for classes you don't own) are discovered automatically via `ServiceLoader` when using
-`PDTRegistry.create()`. Register them by adding a file at:
-
-----
-META-INF/services/org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter
-----
-
-with the fully qualified class name of each adapter:
-
-----
-com.example.graph.ColorAdapter
-----
-
-NOTE: Annotation-based hydration reflectively constructs and populates the annotated class
-(`Constructor.setAccessible(true)` and `Field.set()` in `AnnotatedTypeAdapter`). Under JPMS, the provider's module
-must therefore `opens` its PDT package to `org.apache.tinkerpop.gremlin.core` (e.g.
-`opens com.example.graph.types to org.apache.tinkerpop.gremlin.core;` in `module-info.java`, or the equivalent
-`--add-opens` JVM flag), otherwise the JVM throws `InaccessibleObjectException` at hydration time. Providers using a
-`ProviderDefinedTypeAdapter` with explicit `fromFields` logic do not rely on reflection and are unaffected.
-
-===== Python
-
-Hydration is fully automatic for `@provider_defined`-decorated classes. The decorator registers the class at
-definition time (import time), so any annotated type round-trips without any additional setup.
-
-===== .NET
-
-`[ProviderDefined]`-annotated types are discovered automatically. Calling `PDTRegistry.Create()`
-scans all loaded assemblies for `[ProviderDefined]`-annotated types and registers them for hydration. No extra
-configuration is needed — providers simply annotate their types and users call `Create()` to create the registry.
-
-===== JavaScript
-
-Register hydration adapters explicitly on a `PDTRegistry` instance, then pass it to the connection:
-
-[source,javascript]
-----
-const registry = new PDTRegistry();
-registry.register('mygraph:Point', {
-    serialize: (obj) => ({ x: obj.x, y: obj.y }),
-    deserialize: (fields) => new Point(fields.x, fields.y)
-}, Point);
-----
-
-===== Go
-
-Register types on a `PDTRegistry` instance. Go supports either reflection-based registration (using `pdt` struct
-tags) or explicit function registration:
-
-[source,go]
-----
-registry := NewPDTRegistry()
-registry.RegisterType("mygraph:Point", reflect.TypeOf(Point{}))
-----
-
-===== Provider Factory Pattern
-
-Regardless of language, the recommended pattern is for providers to expose a factory method that returns a
-pre-configured `PDTRegistry`. This shields end users from needing to know which types exist or how
-the registry is populated:
-
-[source,java]
-----
-// In the provider's client library
-public class MyGraphTypeRegistry {
-    public static PDTRegistry create() {
-        PDTRegistry registry = PDTRegistry.create(); // discovers ServiceLoader adapters
-        registry.register(Point.class, Address.class, Person.class);               // registers annotated types
-        return registry;
-    }
-}
-----
-
-End users configure their connection in one line:
-
-[source,java]
-----
-DriverRemoteConnection conn = DriverRemoteConnection.using(cluster);
-conn.setPdtRegistry(MyGraphTypeRegistry.create());
-GraphTraversalSource g = traversal().with(conn);
-----
-
-With this in place, `Point` objects round-trip transparently in both directions — the annotation handles outbound
-serialization and the registry handles inbound reconstruction.
-
-For driver users consuming PDTs, see the <<gremlin-variants,Gremlin Variants>> reference documentation for
-each language driver.
-
-[[primitive-provider-defined-types]]
-==== Primitive Provider Defined Types
-
-When a custom type is best represented as a single opaque stringified value rather than a map of fields — for example,
-an unsigned 32-bit integer, a WKT geometry string, or a provider-specific identifier — use a *Primitive PDT* instead of
-a Composite PDT. A Primitive PDT carries only a type name and a string value; TinkerPop never parses or interprets the
-value.
-
-On the wire, a Primitive PDT is serialized as GraphBinary type `0xf1` (two fully-qualified Strings: type and value) or
-GraphSON type `g:PrimitivePdt` (with an untyped JSON string value). In gremlin-lang, the literal form is
-`PDT("name","value")` — an overload of the composite `PDT("name",[map])` literal where the second argument is a string
-instead of a map.
-
-A type may be registered as composite *or* primitive, not both — attempting to register a type for both forms throws an
-error.
-
-===== Adapter Precedence
-
-A registered adapter always takes precedence over annotation/attribute-based handling on dehydration. This is consistent
-across all GLVs: if an adapter is registered for a type, it controls serialization regardless of whether the class is
-also annotated.
-
-===== Java
+===== Primitive Adapter
 
 Implement `PrimitivePDTAdapter<T>`:
 
@@ -1814,12 +1710,66 @@ public class Uint32Adapter implements PrimitivePDTAdapter<Uint32> {
 }
 ----
 
-Register via ServiceLoader in the same way as composite adapters — add the fully qualified class name to
-`META-INF/services/org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter`.
+Both adapter kinds are registered the same way. See <<round-trip-support>> below.
+
+[[round-trip-support]]
+==== Round-Trip Support (Dehydration and Hydration)
+
+There is an important distinction between *dehydration*, serializing a type for sending, and *hydration*,
+deserializing a received PDT back into a language-native type. This distinction, and the registration mechanism used
+to enable it, applies the same way to both Composite and Primitive PDT.
+
+*Dehydration* is handled automatically for `@ProviderDefined`-annotated classes and for adapter-registered types,
+composite or primitive. When an annotated or adapter-backed object is passed into a Gremlin traversal or script,
+TinkerPop converts it to a PDT on the wire without any extra configuration.
+
+*Hydration*, reconstructing an incoming PDT back into the original typed object, requires the driver to know which
+class corresponds to a given PDT name. Without this mapping, the driver returns a generic `CompositePDT` or
+`PrimitivePDT` object (see <<pdt-unregistered-values>>). To enable automatic round-trip hydration, providers must
+expose a pre-configured `PDTRegistry` to users. How that registry is populated differs by language, but each language
+follows the same pattern. Composite types register through annotation-derived or `CompositePDTAdapter`
+mappings, and primitive types register through `PrimitivePDTAdapter` or an equivalent, alongside them.
+
+===== Java
+
+Register annotated composite classes explicitly with the registry. `register(Class<?>...)` inspects the
+`@ProviderDefined` annotation to derive the type name and field mapping automatically:
+
+[source,java]
+----
+PDTRegistry registry = PDTRegistry.create();
+registry.register(Point.class, Address.class, Person.class);
+----
+
+Composite and primitive adapter types (for classes the provider does not own) are both discovered automatically via
+`ServiceLoader` when using `PDTRegistry.create()`, since `CompositePDTAdapter` and `PrimitivePDTAdapter` both extend
+the common `ProviderDefinedTypeAdapter` interface. Register an adapter of either kind by adding its fully qualified
+class name to a single file at:
+
+----
+META-INF/services/org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter
+----
+
+for example:
+
+----
+com.example.graph.ColorAdapter
+----
+
+NOTE: Annotation-based hydration reflectively constructs and populates the annotated class
+(`Constructor.setAccessible(true)` and `Field.set()` in `AnnotatedTypeAdapter`). Under JPMS, the provider's module
+must therefore `opens` its PDT package to `org.apache.tinkerpop.gremlin.core` (e.g.
+`opens com.example.graph.types to org.apache.tinkerpop.gremlin.core;` in `module-info.java`, or the equivalent
+`--add-opens` JVM flag). Otherwise the JVM throws `InaccessibleObjectException` at hydration time. A provider using a
+`CompositePDTAdapter` or `PrimitivePDTAdapter` with explicit `fromFields`/`fromValue` logic does not rely on
+reflection and is unaffected.
 
 ===== Python
 
-Use `register_primitive` on the registry:
+Hydration is fully automatic for `@provider_defined`-decorated composite classes. The decorator registers the class at
+definition time (import time), so any annotated type round-trips without any additional setup.
+
+For primitive types, use `register_primitive` on the registry:
 
 [source,python]
 ----
@@ -1832,9 +1782,39 @@ registry.register_primitive('mygraph:Uint32',
     target_class=Uint32)
 ----
 
+===== .NET
+
+`[ProviderDefined]`-annotated composite types are discovered automatically. Calling `PDTRegistry.Create()`
+scans all loaded assemblies for `[ProviderDefined]`-annotated types and registers them for hydration. No extra
+configuration is needed. Providers simply annotate their types, and users call `Create()` to create the registry.
+
+For primitive types, implement `IPrimitivePdtAdapter<T>` and register it on the `PDTRegistry` in the same way as
+composite adapters:
+
+[source,csharp]
+----
+public class Uint32Adapter : IPrimitivePdtAdapter<Uint32>
+{
+    public string TypeName => "mygraph:Uint32";
+    public Uint32 FromString(string value) => new Uint32(uint.Parse(value));
+    public string ToString(Uint32 obj) => obj.Value.ToString();
+}
+----
+
 ===== JavaScript
 
-Use `registerPrimitive` with a `PrimitivePdtAdapter`:
+Register composite hydration adapters explicitly on a `PDTRegistry` instance, then pass it to the connection:
+
+[source,javascript]
+----
+const registry = new PDTRegistry();
+registry.register('mygraph:Point', {
+    serialize: (obj) => ({ x: obj.x, y: obj.y }),
+    deserialize: (fields) => new Point(fields.x, fields.y)
+}, Point);
+----
+
+For primitive types, use `registerPrimitive` with a `PrimitivePdtAdapter`:
 
 [source,javascript]
 ----
@@ -1849,7 +1829,16 @@ registry.registerPrimitive('mygraph:Uint32', new PrimitivePdtAdapter(
 
 ===== Go
 
-Use `RegisterPrimitiveFuncs` or `RegisterPrimitiveFuncsWithType`:
+Register composite types on a `PDTRegistry` instance. Go supports either reflection-based registration (using `pdt`
+struct tags) or explicit function registration:
+
+[source,go]
+----
+registry := NewPDTRegistry()
+registry.RegisterType("mygraph:Point", reflect.TypeOf(Point{}))
+----
+
+For primitive types, use `RegisterPrimitiveFuncs` or `RegisterPrimitiveFuncsWithType`:
 
 [source,go]
 ----
@@ -1867,27 +1856,50 @@ registry.RegisterPrimitiveFuncsWithType("mygraph:Uint32", reflect.TypeOf(Uint32{
 )
 ----
 
-===== .NET
+===== Provider Factory Pattern
 
-Implement `IPrimitivePdtAdapter<T>`:
+Regardless of language, the recommended pattern is for providers to expose a factory method that returns a
+pre-configured `PDTRegistry` with both composite and primitive types registered. This shields end users from needing
+to know which types exist or how the registry is populated:
 
-[source,csharp]
+[source,java]
 ----
-public class Uint32Adapter : IPrimitivePdtAdapter<Uint32>
-{
-    public string TypeName => "mygraph:Uint32";
-    public Uint32 FromString(string value) => new Uint32(uint.Parse(value));
-    public string ToString(Uint32 obj) => obj.Value.ToString();
+// In the provider's client library
+public class MyGraphTypeRegistry {
+    public static PDTRegistry create() {
+        PDTRegistry registry = PDTRegistry.create(); // discovers ServiceLoader composite and primitive adapters
+        registry.register(Point.class, Address.class, Person.class); // registers annotated composite types
+        return registry;
+    }
 }
 ----
 
-Register on the `PDTRegistry` in the same way as composite adapters.
+End users configure their connection in one line:
 
-===== Value Type
+[source,java]
+----
+DriverRemoteConnection conn = DriverRemoteConnection.using(cluster);
+conn.setPdtRegistry(MyGraphTypeRegistry.create());
+GraphTraversalSource g = traversal().with(conn);
+----
 
-Across all GLVs, unhydrated primitive PDT values are represented as `PrimitivePDT` objects containing a
-`name` (or `Name`) and a string `value` (or `Value`). When no adapter is registered for a given type name, the driver
-returns this generic value object.
+With this in place, `Point` objects round-trip transparently in both directions. The annotation handles outbound
+serialization, and the registry handles inbound reconstruction. The same applies to any primitive type backed by a
+registered `PrimitivePDTAdapter`.
+
+For driver users consuming PDTs, see the <<gremlin-variants,Gremlin Variants>> reference documentation for
+each language driver.
+
+[[pdt-unregistered-values]]
+==== Unregistered PDT Values
+
+When a driver receives a PDT for which no matching registration exists in the `PDTRegistry`, it falls back to a
+generic value object rather than failing:
+
+* An unregistered *Composite PDT* is returned as a `CompositePDT` object.
+* An unregistered *Primitive PDT* is returned as a `PrimitivePDT` object.
+
+This behavior is consistent across all GLVs.
 
 [[gremlin-plugins]]
 == Gremlin Plugins
