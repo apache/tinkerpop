@@ -21,6 +21,8 @@ import asyncio
 import socket
 import sys
 
+from gremlin_python.driver.exceptions import ReadTimeoutError
+
 if sys.version_info >= (3, 11):
     import asyncio as async_timeout
 else:
@@ -69,6 +71,18 @@ def _normalize_compression(compression):
             return normalized
         raise ValueError("compression must be one of 'none', 'deflate', got '%s'" % compression)
     raise TypeError("compression must be a str ('none'|'deflate'), got %s" % type(compression).__name__)
+
+
+def _run_read(loop, read_timeout, coro):
+    """Run a response-read coroutine on ``loop``, normalizing aiohttp's read timeout
+    (SocketTimeoutError / ServerTimeoutError) into a ``ReadTimeoutError`` so a read
+    timeout always surfaces as one deterministic, transport-agnostic type. It subclasses
+    the builtin ``TimeoutError`` so callers can still ``except TimeoutError``."""
+    try:
+        return loop.run_until_complete(coro)
+    except aiohttp.ServerTimeoutError as e:
+        raise ReadTimeoutError(
+            f"Read timed out after {read_timeout}s waiting for response data.") from e
 
 
 def _keep_alive_socket_options(keep_alive_time):
@@ -145,10 +159,8 @@ class AiohttpSyncStream:
         return out
 
     def _read_chunk(self):
-        async def _read():
-            async with async_timeout.timeout(self._read_timeout):
-                return await self._response.content.read(self._FILL_SIZE)
-        return self._loop.run_until_complete(_read())
+        return _run_read(self._loop, self._read_timeout,
+                         self._response.content.read(self._FILL_SIZE))
 
 
 class AiohttpHTTPTransport:
@@ -311,10 +323,7 @@ class AiohttpHTTPTransport:
 
     def read_body(self):
         """Read the entire HTTP response body as bytes."""
-        async def _read():
-            async with async_timeout.timeout(self._read_timeout):
-                return await self._http_req_resp.read()
-        return self._loop.run_until_complete(_read())
+        return _run_read(self._loop, self._read_timeout, self._http_req_resp.read())
 
     def close(self):
         # Inner function to perform async close.
