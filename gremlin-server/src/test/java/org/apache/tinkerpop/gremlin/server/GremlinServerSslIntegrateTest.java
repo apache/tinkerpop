@@ -172,7 +172,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             bindings.put("x", 123);
             bindings.put("y", 123);
             final RequestMessage request = RequestMessage.build("x+y")
-                    .addBindings(bindings).addLanguage("gremlin-groovy").create();
+                    .addParameters(bindings).addLanguage("gremlin-groovy").create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {

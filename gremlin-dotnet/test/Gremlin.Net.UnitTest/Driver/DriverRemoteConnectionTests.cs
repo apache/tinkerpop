@@ -103,7 +103,7 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
-        public async Task ShouldBuildRequestWithBindings()
+        public async Task ShouldBuildRequestWithParameters()
         {
             RequestMessage? capturedRequest = null;
             var client = CreateCapturingClient(msg => capturedRequest = msg);
@@ -116,8 +116,8 @@ namespace Gremlin.Net.UnitTest.Driver
             await connection.SubmitAsync<object, object>(gl);
 
             Assert.NotNull(capturedRequest);
-            var bindingsString = (string)capturedRequest!.Fields[Tokens.ArgsBindings];
-            Assert.Contains("\"x\":42", bindingsString);
+            var parametersString = (string)capturedRequest!.Fields[Tokens.ArgsParameters];
+            Assert.Contains("\"x\":42", parametersString);
         }
 
         [Fact]

@@ -26,12 +26,12 @@ import (
 )
 
 func TestRequest(t *testing.T) {
-	t.Run("Test makeStringRequest() with no bindings", func(t *testing.T) {
+	t.Run("Test makeStringRequest() with no parameters", func(t *testing.T) {
 		r := MakeStringRequest("g.V()", "g", *new(RequestOptions))
 		assert.Equal(t, "g.V()", r.Gremlin)
 		assert.Equal(t, "g", r.Fields["g"])
 		assert.Equal(t, "gremlin-lang", r.Fields["language"])
-		assert.Nil(t, r.Fields["bindings"])
+		assert.Nil(t, r.Fields["parameters"])
 	})
 
 	t.Run("Test makeStringRequest() with custom evaluationTimeout", func(t *testing.T) {
@@ -58,32 +58,32 @@ func TestRequest(t *testing.T) {
 		assert.Equal(t, true, r.Fields["bulkResults"])
 	})
 
-	t.Run("Test makeStringRequest() with string bindings", func(t *testing.T) {
+	t.Run("Test makeStringRequest() with string parameters", func(t *testing.T) {
 		r := MakeStringRequest("g.V(x)", "g",
-			new(RequestOptionsBuilder).SetBindingsString("[\"x\":1]").Create())
-		assert.Equal(t, "[\"x\":1]", r.Fields["bindings"])
+			new(RequestOptionsBuilder).SetParametersString("[\"x\":1]").Create())
+		assert.Equal(t, "[\"x\":1]", r.Fields["parameters"])
 	})
 
-	t.Run("Test makeStringRequest() with map bindings converted to string", func(t *testing.T) {
+	t.Run("Test makeStringRequest() with map parameters converted to string", func(t *testing.T) {
 		r := MakeStringRequest("g.V(x)", "g",
-			new(RequestOptionsBuilder).SetBindings(map[string]interface{}{"x": int32(1)}).Create())
-		assert.Contains(t, r.Fields["bindings"], "\"x\":1")
+			new(RequestOptionsBuilder).SetParameters(map[string]interface{}{"x": int32(1)}).Create())
+		assert.Contains(t, r.Fields["parameters"], "\"x\":1")
 	})
 
-	t.Run("Test RequestOptionsBuilder.Create() converts map bindings to string", func(t *testing.T) {
-		opts := new(RequestOptionsBuilder).SetBindings(map[string]interface{}{"x": int32(1)}).Create()
-		assert.NotEmpty(t, opts.bindingsString)
-		assert.Contains(t, opts.bindingsString, "\"x\":1")
+	t.Run("Test RequestOptionsBuilder.Create() converts map parameters to string", func(t *testing.T) {
+		opts := new(RequestOptionsBuilder).SetParameters(map[string]interface{}{"x": int32(1)}).Create()
+		assert.NotEmpty(t, opts.parametersString)
+		assert.Contains(t, opts.parametersString, "\"x\":1")
 	})
 
-	t.Run("Test RequestOptionsBuilder rejects mixing SetBindings and SetBindingsString", func(t *testing.T) {
+	t.Run("Test RequestOptionsBuilder rejects mixing SetParameters and SetParametersString", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
-				t.Error("expected panic when mixing SetBindings and SetBindingsString")
+				t.Error("expected panic when mixing SetParameters and SetParametersString")
 			}
 		}()
 		new(RequestOptionsBuilder).
-			SetBindings(map[string]interface{}{"x": int32(1)}).
-			SetBindingsString("[\"y\":2]")
+			SetParameters(map[string]interface{}{"x": int32(1)}).
+			SetParametersString("[\"y\":2]")
 	})
 }

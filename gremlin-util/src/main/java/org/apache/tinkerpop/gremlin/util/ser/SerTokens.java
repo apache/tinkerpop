@@ -32,7 +32,7 @@ public final class SerTokens {
     public static final String TOKEN_MESSAGE = "message";
     public static final String TOKEN_GREMLIN = "gremlin";
     public static final String TOKEN_LANGUAGE = "language";
-    public static final String TOKEN_BINDINGS = "bindings";
+    public static final String TOKEN_PARAMETERS = "parameters";
     public static final String TOKEN_G = "g";
     public static final String TOKEN_TIMEOUT_MS = "timeoutMs";
     public static final String TOKEN_MATERIALIZE_PROPERTIES = "materializeProperties";

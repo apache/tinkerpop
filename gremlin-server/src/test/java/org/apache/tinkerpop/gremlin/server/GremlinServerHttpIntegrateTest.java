@@ -193,7 +193,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
         final String bigPost = RandomStringUtils.random(32);
-        httppost.setEntity(new StringEntity("{\"gremlin\":\""+ String.format("g.inject('%s')", bigPost) + "\", \"bindings\":{\"x\":\"10\"}}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\""+ String.format("g.inject('%s')", bigPost) + "\", \"parameters\":{\"x\":\"10\"}}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(413, response.getStatusLine().getStatusCode());
@@ -336,7 +336,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     public void should200OnPOSTWithGremlinQueryStringArgumentWithBindingsAndFunction() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"addItUp(Integer.parseInt(x),Integer.parseInt(y))\",\"language\":\"gremlin-groovy\",\"bindings\":\"[x:\\\"10\\\",y:\\\"10\\\"]\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"addItUp(Integer.parseInt(x),Integer.parseInt(y))\",\"language\":\"gremlin-groovy\",\"parameters\":\"[x:\\\"10\\\",y:\\\"10\\\"]\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -664,7 +664,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"x+y\", \"bindings\":\"[x:10,y:10]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"x+y\", \"parameters\":\"[x:10,y:10]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -680,7 +680,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"bindings\":\"[x:10]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"parameters\":\"[x:10]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -696,7 +696,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"bindings\":\"[x:10.5]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"parameters\":\"[x:10.5]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -712,7 +712,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.V(1).out(x).values('name')\", \"bindings\":\"[x:\\\"knows\\\"]\", \"g\":\"gmodern\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.V(1).out(x).values('name')\", \"parameters\":\"[x:\\\"knows\\\"]\", \"g\":\"gmodern\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -728,7 +728,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"bindings\":\"[x:true]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"parameters\":\"[x:true]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -744,7 +744,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"bindings\":\"[x:null]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"parameters\":\"[x:null]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -760,7 +760,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x).unfold()\", \"bindings\":\"[x:[1,2,3]]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x).unfold()\", \"parameters\":\"[x:[1,2,3]]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -779,7 +779,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"bindings\":\"[x:[\\\"y\\\":1]]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"parameters\":\"[x:[\\\"y\\\":1]]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -796,7 +796,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x, y)\", \"bindings\":10}, \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x, y)\", \"parameters\":10}, \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(400, response.getStatusLine().getStatusCode());
@@ -1218,7 +1218,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final SimpleBindings bindings = new SimpleBindings();
         bindings.put("x", 10.5d);
         final ByteBuf serializedRequest = serializer.serializeRequestAsBinary(
-                RequestMessage.build("g.inject(x)").addBindings(bindings).addLanguage("gremlin-groovy").create(),
+                RequestMessage.build("g.inject(x)").addParameters(bindings).addLanguage("gremlin-groovy").create(),
                 new UnpooledByteBufAllocator(false));
 
         final CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -1240,7 +1240,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     public void should400OnPOSTWithInvalidRequestArgsWhenInvalidBindingsSupplied() throws Exception {
         final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
         final ByteBuf serializedRequest = serializer.serializeRequestAsBinary(
-                RequestMessage.build("g.V(id)").addBindings("[id:1]").addLanguage("gremlin-groovy").create(),
+                RequestMessage.build("g.V(id)").addParameters("[id:1]").addLanguage("gremlin-groovy").create(),
                 new UnpooledByteBufAllocator(false));
 
         final CloseableHttpClient httpclient = HttpClients.createDefault();

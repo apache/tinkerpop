@@ -273,13 +273,13 @@ func (client *Client) SubmitWithOptions(traversalString string, requestOptions R
 	return rs, err
 }
 
-// Submit submits a Gremlin script to the server and returns a ResultSet. Submit can optionally accept a map of bindings
-// to be applied to the traversalString, it is preferred however to instead wrap any bindings into a RequestOptions
+// Submit submits a Gremlin script to the server and returns a ResultSet. Submit can optionally accept a map of parameters
+// to be applied to the traversalString, it is preferred however to instead wrap any parameters into a RequestOptions
 // struct and use SubmitWithOptions().
-func (client *Client) Submit(traversalString string, bindings ...map[string]interface{}) (ResultSet, error) {
+func (client *Client) Submit(traversalString string, parameters ...map[string]interface{}) (ResultSet, error) {
 	requestOptionsBuilder := new(RequestOptionsBuilder)
-	if len(bindings) > 0 {
-		requestOptionsBuilder.SetBindings(bindings[0])
+	if len(parameters) > 0 {
+		requestOptionsBuilder.SetParameters(parameters[0])
 	}
 	return client.SubmitWithOptions(traversalString, requestOptionsBuilder.Create())
 }
@@ -289,7 +289,7 @@ func (client *Client) submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, er
 	return client.submitGremlinLangWithBuilder(gremlinLang, new(RequestOptionsBuilder))
 }
 
-// submitGremlinLangWithBuilder is the core submission function. It extracts bindings
+// submitGremlinLangWithBuilder is the core submission function. It extracts parameters
 // and options strategies from the GremlinLang, merges them into the provided builder,
 // then builds and sends the request.
 func (client *Client) submitGremlinLangWithBuilder(gremlinLang *GremlinLang, builder *RequestOptionsBuilder) (ResultSet, error) {
@@ -297,7 +297,7 @@ func (client *Client) submitGremlinLangWithBuilder(gremlinLang *GremlinLang, bui
 
 	parametersString := gremlinLang.GetParametersAsString()
 	if parametersString != "[:]" {
-		builder.SetBindingsString(parametersString)
+		builder.SetParametersString(parametersString)
 	}
 
 	if len(gremlinLang.optionsStrategies) > 0 {
@@ -320,9 +320,9 @@ func applyOptionsConfig(builder *RequestOptionsBuilder, config map[string]interf
 	builderValue := reflect.ValueOf(builder)
 
 	// Map configuration keys to setter method names.
-	// "bindings" is intentionally excluded because bindings are handled separately
-	// via SetBindingsString in submitGremlinLang, and including it here would
-	// trigger the mutual exclusion panic between SetBindings and SetBindingsString.
+	// "parameters" is intentionally excluded because parameters are handled separately
+	// via SetParametersString in submitGremlinLang, and including it here would
+	// trigger the mutual exclusion panic between SetParameters and SetParametersString.
 	setterMap := map[string]string{
 		"evaluationTimeout":     "SetEvaluationTimeout",
 		"batchSize":             "SetBatchSize",

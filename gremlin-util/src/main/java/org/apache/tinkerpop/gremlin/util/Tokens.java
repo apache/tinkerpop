@@ -47,10 +47,10 @@ public final class Tokens {
     public static final String ARGS_BATCH_SIZE = "batchSize";
 
     /**
-     * Argument name that allows to provide a map of key/value pairs to apply as variables in the context of
+     * Argument name that allows to provide a map of key/value pairs to apply as query parameters in the context of
      * the Gremlin request sent to the server.
      */
-    public static final String ARGS_BINDINGS = "bindings";
+    public static final String ARGS_PARAMETERS = "parameters";
 
     /**
      * Argument name that allows definition of alias names for {@link Graph} and {@link TraversalSource} objects on

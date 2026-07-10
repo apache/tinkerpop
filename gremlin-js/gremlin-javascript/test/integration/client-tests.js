@@ -45,7 +45,7 @@ describe('Client', function () {
           assert.ok(result.first() instanceof Vertex);
         });
     });
-    it('should send and parse a script with bindings', function () {
+    it('should send and parse a script with parameters', function () {
       return client.submit('g.V().has("name", x).values("age")', { x: 'marko' })
         .then(function (result) {
           assert.ok(result);

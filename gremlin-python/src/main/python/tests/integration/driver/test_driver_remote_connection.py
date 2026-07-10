@@ -62,7 +62,7 @@ class TestDriverRemoteConnection(object):
                                                                              'evaluationTimeout': 1000,
                                                                              'userAgent': 'test',
                                                                              'bulkResults': True,
-                                                                             'bindings': "['ids':[1,2,3]]"}
+                                                                             'parameters': "['ids':[1,2,3]]"}
         assert 3 == t.to_list()[0]
 
     def test_traversals(self, remote_connection):
