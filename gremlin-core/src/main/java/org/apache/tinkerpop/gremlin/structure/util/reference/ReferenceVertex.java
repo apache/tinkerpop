@@ -21,13 +21,13 @@ package org.apache.tinkerpop.gremlin.structure.util.reference;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -35,25 +35,53 @@ import java.util.Set;
  */
 public class ReferenceVertex extends ReferenceElement<Vertex> implements Vertex {
 
+    protected Set<String> vertexLabels;
+
     private ReferenceVertex() {
 
     }
 
     public ReferenceVertex(final Object id) {
-        super(id, Vertex.DEFAULT_LABEL);
+        this(id, Vertex.DEFAULT_LABEL);
     }
 
     public ReferenceVertex(final Object id, final String label) {
         super(id, label);
+        this.vertexLabels = toLabelSet(label);
     }
 
     public ReferenceVertex(final Object id, final Set<String> labels) {
         super(id, labels != null && !labels.isEmpty() ? labels.iterator().next() : Vertex.DEFAULT_LABEL);
-        this.setElementLabels(labels);
+        this.vertexLabels = (labels != null && !labels.isEmpty()) ? new LinkedHashSet<>(labels) : toLabelSet(Vertex.DEFAULT_LABEL);
     }
 
     public ReferenceVertex(final Vertex vertex) {
         super(vertex);
+        Set<String> resolved;
+        try {
+            resolved = new LinkedHashSet<>(vertex.labels());
+        } catch (final UnsupportedOperationException e) {
+            // adjacent vertices in graph computer context may not support labels(); seed the set from the single
+            // label the superclass constructor resolved (e.g. the default label for adjacent vertices)
+            resolved = toLabelSet(super.label());
+        }
+        this.vertexLabels = resolved;
+    }
+
+    private static Set<String> toLabelSet(final String label) {
+        final Set<String> set = new LinkedHashSet<>();
+        if (label != null) set.add(label);
+        return set;
+    }
+
+    @Override
+    public String label() {
+        return (this.vertexLabels == null || this.vertexLabels.isEmpty()) ? "" : this.vertexLabels.iterator().next();
+    }
+
+    @Override
+    public Set<String> labels() {
+        return this.vertexLabels == null ? Collections.emptySet() : Collections.unmodifiableSet(this.vertexLabels);
     }
 
     @Override

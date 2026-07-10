@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,10 +55,17 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     private static final String VALUE = "value";
     private static final String PROPERTIES = "properties";
 
+    protected Set<String> vertexLabels;
+
     private DetachedVertex() {}
 
     protected DetachedVertex(final Vertex vertex, final boolean withProperties) {
         super(vertex);
+        try {
+            this.vertexLabels = new LinkedHashSet<>(vertex.labels());
+        } catch (final UnsupportedOperationException e) {
+            // adjacent vertices in graph computer context may not support labels()
+        }
 
         // only serialize properties if requested, and there are meta properties present. this prevents unnecessary
         // object creation of a new HashMap of a new HashMap which will just be empty.  it will use
@@ -98,6 +106,16 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
                 this.properties.get(property.key()).add(property);
             });
         }
+    }
+
+    @Override
+    public String label() {
+        return (this.vertexLabels != null && !this.vertexLabels.isEmpty()) ? this.vertexLabels.iterator().next() : super.label();
+    }
+
+    @Override
+    public Set<String> labels() {
+        return this.vertexLabels != null ? Collections.unmodifiableSet(this.vertexLabels) : super.labels();
     }
 
     @Override
@@ -198,7 +216,10 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
         }
 
         public Builder setLabels(final Set<String> labels) {
-            v.setElementLabels(labels);
+            if (labels != null && !labels.isEmpty()) {
+                v.label = labels.iterator().next();
+                if (labels.size() > 1) v.vertexLabels = new LinkedHashSet<>(labels);
+            }
             return this;
         }
 

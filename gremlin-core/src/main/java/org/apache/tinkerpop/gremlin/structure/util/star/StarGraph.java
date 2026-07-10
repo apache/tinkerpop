@@ -393,7 +393,7 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public String label() {
-            return this.vertexLabels.isEmpty() ? this.label : this.vertexLabels.iterator().next();
+            return this.vertexLabels.isEmpty() ? "" : this.vertexLabels.iterator().next();
         }
 
         /**
@@ -402,7 +402,6 @@ public final class StarGraph implements Graph, Serializable {
         public void setLabels(final Set<String> labels) {
             if (labels != null && !labels.isEmpty()) {
                 this.vertexLabels = new LinkedHashSet<>(labels);
-                this.label = this.vertexLabels.iterator().next();
             }
         }
 

@@ -182,7 +182,7 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
         }
 
         public Builder setLabels(final Set<String> labels) {
-            e.setElementLabels(labels);
+            if (labels != null && !labels.isEmpty()) e.label = labels.iterator().next();
             return this;
         }
 

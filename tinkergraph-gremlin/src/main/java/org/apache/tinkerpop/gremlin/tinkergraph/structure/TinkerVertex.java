@@ -83,18 +83,17 @@ public class TinkerVertex extends TinkerElement implements Vertex {
      * Uses a single-switch pattern to handle default label injection per the configured cardinality.
      */
     protected TinkerVertex(final Object id, final Set<String> labels, final AbstractTinkerGraph graph, final long currentVersion) {
-        super(id, null, currentVersion);  // label field set below
+        super(id, null, currentVersion);  // labels are set below
         this.graph = graph;
         this.isTxMode = graph instanceof TinkerTransactionGraph;
         this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
 
-        // Build the initial label set. Use lightweight immutable sets when possible.
         final Set<String> initial = new LinkedHashSet<>();
         switch (graph.vertexLabelCardinality) {
             case ONE:
                 // Exactly 1 label: use provided or default
                 if (labels != null && !labels.isEmpty())
-                    initial.addAll(labels);
+                    initial.addAll(labels); // Will be rejected by LabelCardinalityValidator below if labels.size() > 1
                 else
                     initial.add(graph.defaultVertexLabel);
                 break;
@@ -115,8 +114,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         this.vertexLabels = initial.size() <= 1
                 ? (initial.isEmpty() ? Collections.emptySet() : Collections.singleton(initial.iterator().next()))
                 : Collections.unmodifiableSet(initial);
-
-        this.label = this.vertexLabels.isEmpty() ? "" : this.vertexLabels.iterator().next();
     }
 
     /**
@@ -163,7 +160,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         ensureMutableLabels();
         this.vertexLabels.add(label);
         Collections.addAll(this.vertexLabels, labels);
-        this.label = this.vertexLabels.iterator().next();
         this.graph.updateVertexLabelIndex(this);
     }
 
@@ -173,7 +169,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         graph.touch(this);
         ensureMutableLabels();
         this.vertexLabels.clear();
-        this.label = "";
         this.graph.updateVertexLabelIndex(this);
     }
 
@@ -186,7 +181,6 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         for (final String l : labels) {
             this.vertexLabels.remove(l);
         }
-        this.label = this.vertexLabels.isEmpty() ? "" : this.vertexLabels.iterator().next();
         this.graph.updateVertexLabelIndex(this);
     }
 

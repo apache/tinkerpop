@@ -56,7 +56,6 @@ public class ReferenceEdge extends ReferenceElement<Edge> implements Edge {
 
     public ReferenceEdge(final Object id, final Set<String> labels, final ReferenceVertex inVertex, final ReferenceVertex outVertex) {
         super(id, labels != null && !labels.isEmpty() ? labels.iterator().next() : Edge.DEFAULT_LABEL);
-        this.setElementLabels(labels);
         this.inVertex = inVertex;
         this.outVertex = outVertex;
     }
