@@ -304,6 +304,10 @@ link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provide
 |Auth |A single RequestInterceptor for authentication (e.g. `auth.Basic`). Always appended to the end of the interceptor list so it runs last. |nil
 |=========================================================
 
+Serialization is not configurable in Gremlin-Go. Requests are always serialized as JSON and responses are always
+deserialized as GraphBinary. A request body encoding other than JSON can only be produced through a
+<<gremlin-go-interceptors,request interceptor>>.
+
 Note that no driver timeout bounds the *total* duration of a request once it is under way. `ReadTimeout` only bounds
 the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
 runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
@@ -1113,7 +1117,7 @@ The following table describes the various configuration options for the Gremlin 
 |password |The password to submit on requests that require authentication. |_none_
 |path |The URL path to the Gremlin Server. |_/gremlin_
 |port |The port of the Gremlin Server to connect to. The same port will be applied for all hosts. |8182
-|responseSerializer.className |The fully qualified class name of the `MessageSerializer` that will be used to deserialize responses from the server. Note that the serializer configured on the client should be supported by the server configuration. |_none_
+|responseSerializer.className |The fully qualified class name of the `MessageSerializer` that will be used to deserialize responses from the server. Note that the serializer configured on the client should be supported by the server configuration. Requests are always serialized as JSON and can only be customized through a <<gremlin-java-interceptors,request interceptor>>. |_none_
 |responseSerializer.config |A `Map` of configuration settings for the serializer. |_none_
 |username |The username to submit on requests that require authentication. |_none_
 |workerPoolSize |Size of the pool for handling background work. |available processors * 2
@@ -1220,8 +1224,10 @@ tx.close(); // commits instead of rolling back
 === Serialization
 
 Remote systems like Gremlin Server and Remote Gremlin Providers respond to requests made in a particular serialization
-format and respond by serializing results to some format to be interpreted by the client. For JVM-based languages,
-there is a single option for serialization: GraphBinary.
+format and respond by serializing results to some format to be interpreted by the client. Requests are always
+serialized as JSON (`application/json`) and that behavior is not configurable. The `responseSerializer` option
+controls only the `Accept` header sent with each request and the deserialization of the response. For JVM-based
+languages, there is a single option for response serialization: GraphBinary.
 
 IMPORTANT: 4.0.0-beta.2 Release - There is temporary support for GraphSON in the Java driver which will help with
 testing, but it is expected that the drivers will only support GraphBinary when 4.0 is fully released.
@@ -1245,9 +1251,7 @@ GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(client, "
 
 The `IoRegistry` tells the serializer what classes from the graph provider to auto-register during serialization.
 Gremlin Server roughly uses this same approach when it configures its serializers, so using this same model will
-ensure compatibility when making requests. Obviously, it is possible to switch to GraphSON or GraphBinary by using
-the appropriate `MessageSerializer` (e.g. `GraphSONMessageSerializerV4` or `GraphBinaryMessageSerializerV4` respectively)
-in the same way and building that into the `Cluster` object.
+ensure compatibility when making requests.
 
 [[gremlin-java-gvalue]]
 === GValue Parameterization
@@ -1433,6 +1437,7 @@ g2Client.submit("g.V()")
 The above code demonstrates how the `alias` method can be used such that the script need only contain a reference
 to "g" and "g1" and "g2" are automatically rebound into "g" on the server-side.
 
+[[gremlin-java-interceptors]]
 ==== RequestInterceptor
 
 Gremlin-Java allows for modification of the underlying HTTP request through the use of `RequestInterceptors`. This is
@@ -2024,7 +2029,7 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options.interceptors |RequestInterceptor/RequestInterceptor[] |One or more functions that can modify the HTTP request before it is sent, run in order. |undefined
 |options.auth |RequestInterceptor |An auth interceptor that is always appended to the end of the interceptor list so it runs last. |undefined
 |options.preciseNumbers |Boolean |When `true`, wraps deserialized numbers in typed wrappers that preserve the server's original type. |undefined
-|options.responseSerializer |GraphBinaryReader |The reader to use for deserializing responses. |GraphBinaryReader
+|options.responseSerializer |GraphBinaryReader |The reader to use for deserializing responses. Requests are always serialized as JSON and can only be customized through a <<gremlin-javascript-interceptors,request interceptor>>. |GraphBinaryReader
 |options.enableUserAgentOnConnect |Boolean |Determines if a user agent header will be sent with requests. |true
 |options.pdtRegistry |PDTRegistry |A registry for hydrating and dehydrating <<gremlin-javascript-pdt,Provider Defined Types>>. |undefined
 |=========================================================
@@ -2755,9 +2760,7 @@ The following options can be passed to the `GremlinClient` constructor:
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|messageSerializer |A single `IMessageSerializer` used for both request and response. |`GraphBinary4MessageSerializer`
-|requestSerializer |The serializer for outgoing requests. When `null`, interceptors must serialize the body. |`GraphBinary4MessageSerializer`
-|responseSerializer |The serializer for incoming responses. Always required. |`GraphBinary4MessageSerializer`
+|responseSerializer |The serializer for incoming responses. Requests are always serialized as JSON and can only be customized through a <<gremlin-dotnet-interceptors,request interceptor>>. |`GraphBinary4MessageSerializer`
 |connectionSettings |The `ConnectionSettings` for the HTTP connection. |default `ConnectionSettings`
 |loggerFactory |An `ILoggerFactory` for logging. |`NullLoggerFactory`
 |interceptors |A list of `Func<HttpRequestContext, Task>` that modify HTTP requests before sending. |_none_
@@ -2822,8 +2825,9 @@ include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference
 [[gremlin-dotnet-serialization]]
 === Serialization
 
-The Gremlin.Net driver uses GraphBinary 4.0 by default. A custom serializer can be provided when creating the
-`GremlinClient`. The driver supports separate request and response serializers, or a single serializer for both:
+The Gremlin.Net driver uses GraphBinary 4.0 for responses by default. A custom response serializer can be provided
+when creating the `GremlinClient`. Requests are always serialized as JSON (`application/json`) and that behavior is
+not configurable, however it can be modified with a `RequestInterceptor`:
 
 [source,csharp]
 ----
@@ -2964,9 +2968,9 @@ var client = new GremlinClient(new GremlinServer("localhost", 8182),
     interceptors: new[] { Auth.Basic("username", "password") });
 ----
 
-When `requestSerializer` is set to `null`, the request body is passed as a `RequestMessage` to interceptors, and an
-interceptor is responsible for serializing it to `byte[]` and setting the `Content-Type` header. This follows the
-Python driver's `request_serializer=None` pattern and is useful for custom serialization workflows.
+Each interceptor receives the request body as a `RequestMessage`. By default, the driver serializes the body to JSON
+(`application/json`) after all interceptors have run. An interceptor that requires a different body encoding can
+serialize the `RequestMessage` to `byte[]` itself and set the `Content-Type` header accordingly.
 
 anchor:gremlin-net-dsl[]
 [[gremlin-dotnet-dsl]]
@@ -3431,7 +3435,7 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 |=========================================================
 |Key |Description |Default
 |max_workers |Maximum number of worker threads. |Same as `max_connections` (128)
-|response_serializer |The response serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
+|response_serializer |The response serializer implementation. Requests are always serialized as JSON and can only be customized through a <<gremlin-python-interceptors,request interceptor>>.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
 |interceptors |The request interceptors to run before the request body is serialized.|`None`
 |auth |An authentication interceptor. Always appended to the end of the interceptor list so it runs last. |`None`
 |max_connections |The maximum number of connections used by the pool. |128
