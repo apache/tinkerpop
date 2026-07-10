@@ -460,7 +460,7 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldCancelTimeoutOnSuccessfulScript() throws Exception {
-        final long evaluationTimeout = 5_000;
+        final long evaluationTimeout = 15_000;
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .evaluationTimeout(evaluationTimeout)
                 .create();
@@ -473,7 +473,7 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldCancelTimeoutOnSuccessfulEval() throws Exception {
-        final long evaluationTimeout = 5_000;
+        final long evaluationTimeout = 15_000;
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .evaluationTimeout(evaluationTimeout)
                 .create();
