@@ -28,23 +28,19 @@
             <version>${netty.version}</version>
         </dependency>
         <dependency>
-            <groupId>xyz.rogfam</groupId>
+            <groupId>io.github.littleproxy</groupId>
             <artifactId>littleproxy</artifactId>
-            <version>2.0.22</version>
+            <version>2.8.0</version>
             <exclusions>
                 <!--
-                littleproxy 2.0.22 pulls io.netty:netty-all:4.1.99.Final which conflicts with the
-                project-managed ${netty.version} (4.1.125.Final) and trips the enforcer
-                DependencyConvergence rule. Exclude it so littleproxy runs against the project netty.
+                littleproxy 2.8.0 pulls its own Netty modules at a different patch level (4.2.15) than
+                the project-managed ${netty.version}. Exclude all of littleproxy's Netty so it runs
+                against the project Netty, satisfying the enforcer DependencyConvergence rule. Both are
+                Netty 4.2.x, so littleproxy is binary-compatible with the project version.
                 -->
                 <exclusion>
                     <groupId>io.netty</groupId>
-                    <artifactId>netty-all</artifactId>
-                </exclusion>
-                <!-- barchart-udt is an abandoned UDT transport lib, not needed for HTTP proxying. -->
-                <exclusion>
-                    <groupId>com.barchart.udt</groupId>
-                    <artifactId>barchart-udt-bundle</artifactId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
