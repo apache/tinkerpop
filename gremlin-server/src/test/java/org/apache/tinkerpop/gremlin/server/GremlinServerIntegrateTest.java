@@ -412,7 +412,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         g.close();
     }
 
-    @Test
+    @Test(timeout = 300000)
     public void shouldProduceProperExceptionOnTimeout() throws Exception {
         final Cluster cluster = TestClientFactory.open();
         final Client client = cluster.connect();

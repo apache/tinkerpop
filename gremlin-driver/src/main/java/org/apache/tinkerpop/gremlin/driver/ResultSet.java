@@ -239,11 +239,16 @@ public final class ResultSet implements Iterable<Result> {
      * @param throwable the error that occurred
      */
     public void markError(final Throwable throwable) {
-        error.set(throwable);
-        // an error may arrive before headers were ever signaled (e.g. a write failure or a non-streaming error
-        // response); fail the headers future too so anyone blocked on it observes the error rather than hanging.
-        this.headersReceived.completeExceptionally(throwable);
-        this.readCompleted.completeExceptionally(throwable);
+        // First writer wins. Two threads can race to mark the same stream as failed - e.g. the Netty event loop
+        // firing a read-timeout while the streaming reader thread hits end-of-stream. Gate on the error field with a
+        // CAS so the recorded cause and the future's completion always agree. The error must be set before the future
+        // completes because waiting-future draining reads it after observing readCompleted.isDone().
+        if (error.compareAndSet(null, throwable)) {
+            // an error may arrive before headers were ever signaled (e.g. a write failure or a non-streaming error
+            // response); fail the headers future too so anyone blocked on it observes the error rather than hanging.
+            this.headersReceived.completeExceptionally(throwable);
+            this.readCompleted.completeExceptionally(throwable);
+        }
         this.drainAllWaiting();
     }
 
