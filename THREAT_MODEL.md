@@ -88,7 +88,7 @@ under the License.
 | **Gremlin Language Variants** (Java `gremlin-driver`, `gremlin-python`, `-dotnet`, `-go`, `-js`) | deserialize server responses | network (connect) | **In**, response-deserialization robustness + TLS cert validation. Java shares the JVM serializers. The others have own per-language deserializers not covered by hardening the JVM server *(documented — each GLV ships its own GraphSON/GraphBinary code)* |
 | **Reference graph** (`tinkergraph-gremlin`) | in-memory graph, the **shipped default graph**, with optional file persistence via the `io()` readers | filesystem (persistence) | **In**, TinkerPop reference code on the default reachable path, so a defect in unmodified TinkerGraph is `VALID` (§3). Loading a persisted graph uses the same GraphSON/Gryo/GraphML readers (§6 IO surface). A custom `graphFormat` reader is provider code (§3) *(documented — `gremlin-server.yaml` → `tinkergraph-empty.properties`, `AbstractTinkerGraph.loadGraph()`)* |
 | **OLAP** (`gremlin-core`/`tinkergraph` computer, `hadoop-gremlin`, `spark-gremlin`) | `GraphComputer`, remote-reachable via `withComputer()` bytecode | network, filesystem, cluster | **In**, reference code (incl. Hadoop/Spark modules). The third-party Hadoop/Spark runtime + cluster config are out (§3) *(documented — `withComputer` is a bytecode source instruction; in-tree modules)* |
-| **`gremlin-console`** | local Groovy REPL. `:remote console` submits **arbitrary Groovy scripts** to a server and deserializes responses. `:install` loads plugins (credentials/hadoop/spark) via Grape | network (connects) | Local REPL **Out** (operator-trusted). As a remote client, submitting arbitrary Groovy = server-side RCE **by-design** (§9), subject to server auth. Response-deserialization robustness + TLS cert validation **In** (like a GLV). Plugins are operator-installed code in the operator's own JVM, so the install decision and third-party plugin behavior are **Out** (trusted-input, §3) *(documented — `DriverRemoteAcceptor`, `InstallCommand`/Grape; `gremlin-applications.asciidoc`)* |
+| **`gremlin-console`** | local Groovy REPL. `:remote console` submits **arbitrary Groovy scripts** to a server and deserializes responses. `:install` loads plugins (credentials/hadoop/spark) via Grape | network (connects) | Local REPL **Out** (operator-trusted). As a remote client, submitting arbitrary Groovy = server-side RCE **by-design** (§9), subject to server auth. Response-deserialization robustness + TLS cert validation **In** (like a GLV). Plugins are operator-installed code in the operator's own JVM, so the install decision, the third-party download channel (Grape), and plugin behavior are **Out** (trusted-input, §3) *(documented — `DriverRemoteAcceptor`, `InstallCommand`/Grape; `gremlin-applications.asciidoc`)* |
 | Test-only / example / build modules (e.g. `gremlin-test`, `gremlin-examples`, `gremlin-tools`, `gremlin-annotations`) | test/build/example code | — | **Out** *(see §3)* |
 
 ## §3 Out of scope (explicit non-goals)
@@ -108,9 +108,9 @@ under the License.
     provider code and cannot be cleanly attributed to either. This is not silently dropped to the provider.
     It triggers a joint determination and a §12 model revision.
 
-  Triage test: *does it reproduce on the unmodified TinkerPop reference distribution?* If yes, in-model. If
-  only with provider code/modifications, it is the provider's. If it genuinely can't be told, `MODEL-GAP`.
-  *(maintainer)*
+  Triage test: *is the defective code TinkerPop's?* A defect in unmodified TinkerPop reference code is
+  in-model, whatever product or graph it runs inside. A defect that depends on the provider's own code or
+  modifications is the provider's. If it genuinely can't be told, `MODEL-GAP`. *(maintainer)*
 - **The calling application's own authentication / authorization of its end users.** TinkerPop has no
   concept of the calling application's end users. *(maintainer)*
 - **Attackers who already control the host, the Gremlin Server process, `gremlin-server.yaml`, or the
@@ -142,7 +142,7 @@ Data flow for a remote request. The `‖` marks the trust boundary, and everythi
                                           TRUST BOUNDARY
  calling app → GLV (build bytecode /            ‖
    opaque script) → transport ────────────────▶ ‖ transport decode (HTTP / WS frame)
-                                                 ‖   → authenticate → deserialize (GraphSON/GraphBinary)
+                                                 ‖   → deserialize (GraphSON/GraphBinary) → authenticate
                                                  ‖   → op-select → authorize → execute (script engine /
                                                  ‖       traversal machine) → graph + storage / io() files
  GLV ◀──────── deserialize response ──────────── ‖   → iterate results → encode response
@@ -229,8 +229,10 @@ Knobs that change which security properties hold (Gremlin Server, `gremlin-serve
   `GraphTraversalSource` with `ReadOnlyStrategy` (block mutations), `SubgraphStrategy`/`PartitionStrategy`
   (scope visible data / tenancy), and `VertexProgramDenyStrategy` (block OLAP). These are **traversal-layer,
   not storage-layer**: `PartitionStrategy` is bypassable via direct `Vertex.property()`, and
-  `ReservedKeysVerificationStrategy` does not cover `mergeV`/`mergeE`. In-model only when configured.
-  *(documented — `the-traversal.asciidoc` "TraversalStrategy")*
+  `ReservedKeysVerificationStrategy` does not cover `mergeV`/`mergeE`. A client can also remove an applied
+  strategy outright, whether by bytecode source instruction (`withoutStrategies()`) or by script, unless
+  an `Authorizer` denies it (§9). In-model only when pinned by a configured `Authorizer`. *(documented —
+  `the-traversal.asciidoc` "TraversalStrategy"; `gremlin-applications.asciidoc` "Authorization")*
 - **TLS/SSL** — configurable on the server connector, **off by default** (`ssl.enabled: false` in the
   shipped `gremlin-server.yaml`, enabled only in `gremlin-server-secure.yaml`). Drives the
   transport-confidentiality property (§9). *(documented)*
@@ -239,7 +241,8 @@ Knobs that change which security properties hold (Gremlin Server, `gremlin-serve
   deployment keeps no attribution record (§9). *(documented — `gremlin-applications.asciidoc` config table;
   `Settings.enableAuditLog`)*
 - **Script execution restriction** — sandbox / compilation customizers / allow-list / preferring
-  bytecode-only (plus `LambdaRestrictionStrategy` to close the bytecode-lambda vector) / the Groovy-free
+  bytecode-only (plus `LambdaRestrictionStrategy`, pinned by an `Authorizer`, to close the bytecode-lambda
+  vector, since unpinned it is removable like any strategy, §9) / the Groovy-free
   `GremlinLangScriptEngine`. **Scripting and bytecode lambdas are unrestricted out of the box:** the shipped
   `gremlin-server.yaml` configures no sandbox and no lambda restriction, and the sandbox controls ship only in
   `gremlin-server-secure.yaml`. The docs are explicit that TinkerPop offers no complete out-of-the-box
@@ -266,6 +269,11 @@ Per-surface trust table:
 | GLV (client) — server response | serialized bytes from the server | yes if the server is malicious/compromised, or a MITM (TLS off / cert not validated) | response-deserialization robustness; TLS with cert validation |
 | `gremlin-server.yaml`, host, data dir | local | no — operator-trusted | filesystem permissions |
 
+- **Deserialization is pre-auth (ordering note):** the server deserializes a request **before**
+  authenticating it (§4 diagram), because authentication itself rides inside a deserialized
+  `RequestMessage` (the SASL op). The wire deserializers therefore face fully anonymous input on every
+  deployment, hardened or not, and a deserializer defect is reachable without credentials, which is what
+  makes it security-critical under §8. *(documented — channelizer pipeline order)*
 - **Shape / rate:** Gremlin Server has per-request limits (`evaluationTimeout`, `maxContentLength`,
   `maxParameters`, `maxWorkQueueSize`, session timeouts) but **no traversal-depth or result-count cap**.
   The bug-vs-capacity line is the §8 resource split. *(documented — `gremlin-applications.asciidoc` config
@@ -294,13 +302,11 @@ Per-surface trust table:
 - **Out of scope:** anyone with operator/host/config control (already authoritative). Also an attacker who
   reaches a server left on the **insecure getting-started default** (no TLS, no auth), which is an operator
   hardening failure (§9/§10), not a code bug, though the pre-auth robustness properties (§8) still apply to
-  the exposed surface. Side-channel/timing adversaries are out unless the PMC wants them in. *(maintainer —
+  the exposed surface. Side-channel/timing adversaries are **out of scope**. *(maintainer —
   public exposure of a hardened server is in scope, whereas exposure of the insecure default is an operator
   failure)*
 
 ## §8 Security properties the project provides
-
-*(Inferred pending PMC confirmation — a property only counts once the project commits to it.)*
 
 **Assets these properties defend (what is being protected):**
 
@@ -314,9 +320,22 @@ Per-surface trust table:
 
 **Properties:**
 
-- **Authentication + authorization enforcement (when configured).** With an `Authenticator`/`Authorizer`
-  set, an unauthenticated or unauthorized client cannot execute requests beyond its grants. *Violation
-  symptom:* auth/authz bypass. *Severity:* security-critical. *(maintainer)*
+- **Enforcement of configured restrictions.** With an `Authenticator`/`Authorizer` set, an
+  unauthenticated or unauthorized client cannot execute requests beyond its grants (§11b session sharing
+  excepted). The same holds for restrictions living in server configuration that no request can touch: a
+  *configured* script sandbox / compilation customizer / allow-list must not be evadable from a request.
+  A restrictive `TraversalStrategy` (`ReadOnlyStrategy`, `SubgraphStrategy`, ...) counts as a configured
+  restriction **only when an `Authorizer` denies its removal or modification**, because a request can
+  otherwise remove strategies itself, whether by bytecode source instruction or by script (§9). This is
+  the §8 anchor for the "bypasses a *configured* restriction" rulings in §9/§11a. *Violation symptom:*
+  auth/authz bypass, or a request evading a configured restriction. *Severity:* security-critical.
+  *(maintainer)*
+- **Credential-store handling (when the built-in mechanism is used).** Where a deployment uses
+  `SimpleAuthenticator` with the credentials graph, passwords are stored and verified as BCrypt hashes,
+  never as plaintext. `Krb5Authenticator` holds no credential store (the KDC does), and a provider's own
+  `Authenticator` and credential store are the provider's (§3). *Violation symptom:* plaintext credential
+  storage, or disclosure of stored credential material to a client. *Severity:* high. *(documented —
+  `SimpleAuthenticator`, credentials DSL)*
 - **Memory / availability safety on the request + deserialization surface.** Malformed or pre-auth input
   (protocol frames, Gremlin strings, serialized payloads) yields a clean error, not a crash, OOM, hang, or
   unbounded allocation of the server. This covers not just the sub-protocol payload but the **transport
@@ -325,6 +344,10 @@ Per-surface trust table:
   or DoS the server. *Violation symptom:* server crash / unbounded allocation / deadlock from malformed or
   pre-auth input, or a crafted frame sequence. *Severity:* security-critical (remote DoS) if pre-auth.
   *(maintainer)*
+- **Request isolation.** One request's bindings and state must not leak into or alter another's
+  (per-request bindings, thread-pool dispatch, §5). Sessions are the deliberate stateful exception
+  (§11b). *Violation symptom:* cross-request state leakage or interference. *Severity:*
+  security-critical. *(maintainer)*
 - **Parser integrity (`gremlin-language`).** A crafted Gremlin string cannot break out of a string literal
   to inject additional traversal steps. This is the safe string-to-traversal path, distinct from building a
   Groovy string by concatenation, which is the calling application's concern (§9). *Violation symptom:*
@@ -347,14 +370,17 @@ Per-surface trust table:
 - **Client (GLV) robustness against hostile server responses.** A GLV deserializing response bytes from a
   malicious/compromised server (or a MITM) does not crash/OOM/execute code. *Violation symptom:* client
   crash/OOM/RCE from crafted responses. *Severity:* critical. *(maintainer)*
-- **No traversal or script can harm the GLV.** No traversal or script, however malformed or hostile, may
-  cause code execution, a crash, a hang, or resource exhaustion **in the GLV itself**. How a GLV processes
-  the input is unconstrained. *Violation symptom:* a traversal or script that harms the GLV that submitted
-  it. *Severity:* high. *(maintainer)*
+- **No pass-through input can harm the GLV.** Outbound bytecode/message construction is otherwise not a
+  surface, because its input is the trusted calling application. This property covers only the
+  pass-through case: an application forwarding an untrusted end-user string verbatim (e.g.
+  `client.submit(userString)`) must not cause code execution, a crash, a hang, or resource exhaustion
+  **in the GLV itself**. Its *server-side* effect is Gremlin-injection, the application's responsibility
+  (§9). *Violation symptom:* a submitted string that harms the GLV that submitted it. *Severity:* high.
+  *(maintainer)*
 
 ## §9 Security properties the project does *not* provide
 
-*(The highest-value section for integrators. Inferred unless tagged, so confirm each.)*
+*(The highest-value section for integrators.)*
 
 - **Script execution is arbitrary code execution by design, not a sandbox.** When string-script requests
   are enabled, the Groovy script engine evaluates attacker-supplied code in the server process. The docs
@@ -387,6 +413,12 @@ Per-surface trust table:
   responsibility.** (A few registered types use Java native serialization, a gadget caveat even when locked.)
   Gryo is not on the wire, so this is an IO/file-surface concern (`io()` step, persistence, OLAP).
   *(documented)*
+- **A `TraversalStrategy` is not an access-control boundary on its own.** A remote request can remove or
+  replace strategies on its traversal source, whether by bytecode source instruction
+  (`withoutStrategies()`) or by script, so a strategy applied by the operator only restricts a client
+  when an `Authorizer` denies strategy removal/modification, as the reference documentation states.
+  Strategies also act at the traversal layer, not the storage layer (§5a). *(documented — `Bytecode`
+  source instructions; `gremlin-applications.asciidoc` "Authorization")*
 - **Ordinary resource exhaustion is not a defended property.** Expensive traversals / large results that
   consume CPU/memory are an operator capacity concern unless a specific bug applies (§8). *(maintainer)*
 - **No defense against a malicious operator / host.** *(maintainer)*
@@ -397,15 +429,15 @@ Per-surface trust table:
     its own untrusted input (e.g. into Groovy) is the calling application's responsibility. Note this is
     distinct from a `gremlin-language` parser breakout, which is an in-model TinkerPop bug (§8). *(maintainer)*
   - **Bytecode-only is not RCE-free unless lambdas are restricted.** A bytecode traversal can carry a
-    **string lambda** that is script-evaluated server-side by a `GremlinScriptEngine`. `LambdaRestrictionStrategy`
-    blocks this but is **not enabled by default**, so not enabling it means the operator/provider accepts the
-    code-execution risk (`BY-DESIGN`, like scripting, §9). *(documented — `Lambda`, `LambdaRestrictionStrategy`)*
+    **string lambda** that is script-evaluated server-side by a `GremlinScriptEngine`.
+    `LambdaRestrictionStrategy` blocks this but is **not enabled by default**, and, being a strategy, is
+    removable by the request itself unless an `Authorizer` pins it (§8). Not enabling and pinning it means
+    the operator/provider accepts the code-execution risk (`BY-DESIGN`, like scripting, §9).
+    *(documented — `Lambda`, `LambdaRestrictionStrategy`)*
   - "Gremlin is just a query language" is misleading. The **string** form can run through a Groovy engine, so
     it is code, not a constrained query. *(maintainer)*
 
 ## §10 Downstream responsibilities (operator/deployer)
-
-*(Inferred unless tagged. Confirm.)*
 
 - Do **not** deploy the shipped getting-started `gremlin-server.yaml` as-is. Before exposing Gremlin Server
   on a public/untrusted network, harden it: enable TLS and an authenticator, and (given no authorizer ships)
@@ -415,8 +447,9 @@ Per-surface trust table:
 - **Restrict script execution:** prefer bytecode-based traversals (or the Groovy-free
   `GremlinLangScriptEngine`). If Groovy scripts are needed, apply the "Protecting Script Execution" controls
   (sandbox / compilation customizers / allow-list) and restrict who may submit scripts. **For bytecode,
-  enable `LambdaRestrictionStrategy`**, since bytecode-only is not RCE-free while string lambdas are allowed
-  (§9). *(documented)*
+  enable `LambdaRestrictionStrategy` and pin it with an `Authorizer` that denies strategy removal**, since
+  bytecode-only is not RCE-free while string lambdas are allowed, and an unpinned strategy is removable by
+  the request itself (§9). *(documented)*
 - Enable TLS (off by default) where traffic crosses an untrusted segment. *(documented)*
 - Enable audit logging (`enableAuditLog`, off by default) where attribution of requests is needed. *(documented)*
 - Use the wire serializers (GraphBinary recommended for drivers). Keep Gryo locked
@@ -443,21 +476,31 @@ Per-surface trust table:
 *(Inferred unless tagged. The PMC's confirmations here are the highest-leverage suppression input.)*
 
 - "Gremlin Server executes arbitrary code via scripts" — by-design when scripting is enabled for the
-  principal (§9), and not a finding unless it bypasses a *configured* restriction. *(documented)*
-- "Bytecode lambdas enable code execution" — by-design when `LambdaRestrictionStrategy` is not enabled
-  (§9), and not a finding unless it bypasses a *configured* restriction. *(documented)*
+  principal (§9), and not a finding unless it bypasses a *configured* restriction. Disposition:
+  `BY-DESIGN: property-disclaimed`. *(documented)*
+- "Bytecode lambdas enable code execution" — a string lambda is server-side code like any script, so this
+  is by-design when lambdas are permitted (§9), and not a finding unless it bypasses a *configured*
+  restriction. Disposition: `BY-DESIGN: property-disclaimed`. *(documented)*
 - "No authentication / no TLS by default" — operator deployment responsibility (§9/§10), not a code bug in
-  itself. *(documented)*
-- "Gryo/Kryo deserialization can be exploited" — Gryo is not on the wire, so a request-path report is a
-  non-finding. Under the locked default (`registrationRequired=true`) a real break is `VALID`, whereas
-  exploiting **unlocked** Gryo on untrusted files is the user's responsibility (§9/§10). *(documented)*
+  itself. Disposition: `BY-DESIGN: property-disclaimed`. *(documented)*
+- "Gryo/Kryo deserialization can be exploited" — Gryo is not on the wire, so a request-path report is
+  factually mistaken and needs no disposition (§13). Under the locked default
+  (`registrationRequired=true`) a real break is `VALID`, whereas exploiting **unlocked** Gryo on
+  untrusted files is the user's responsibility (§9/§10). Disposition for the unlocked-file variant:
+  `BY-DESIGN: property-disclaimed`. *(documented)*
 - "Expensive traversal consumes CPU/memory" — operator capacity concern, unless a specific bug applies
-  (§8/§9). *(maintainer)*
+  (§8/§9). Disposition: `BY-DESIGN: property-disclaimed`. *(maintainer)*
+- "A configured `ReadOnlyStrategy` / `SubgraphStrategy` / `PartitionStrategy` was bypassed" — whether by
+  removing the strategy (bytecode `withoutStrategies()` or script) or by stepping around it (direct
+  `Vertex.property()`, `mergeV`/`mergeE`), a strategy is not an access-control boundary on its own (§9).
+  A finding only exists where a configured `Authorizer` pins the strategy and the pin is evaded (§8).
+  Disposition: `BY-DESIGN: property-disclaimed`. *(documented)*
 - "Calling application concatenates untrusted input into a Groovy string (Gremlin-injection)" — the calling
   application's responsibility (§9). A `gremlin-language` parser breakout is the opposite: an in-model
-  TinkerPop bug (§8). *(maintainer)*
+  TinkerPop bug (§8). Disposition: `BY-DESIGN: property-disclaimed`. *(maintainer)*
 - Findings in any test-only module, any module containing examples, or build tooling (e.g. `gremlin-test`,
-  `gremlin-examples`, `gremlin-tools`) — out of scope (§3). *(maintainer)*
+  `gremlin-examples`, `gremlin-tools`) — out of scope (§3). Disposition:
+  `OUT-OF-MODEL: unsupported-component`. *(maintainer)*
 
 ## §11b Known problems
 
@@ -481,17 +524,35 @@ Per-surface trust table:
 
 ## §13 Triage dispositions
 
-| Disposition | Meaning | Licensed by |
+A disposition is the answer a security report receives after triage: a TinkerPop bug that needs a fix,
+some other party's responsibility, or known and accepted behavior. A report may contain more than one
+finding, and each finding gets **exactly one** disposition from the table below. The rows do not
+overlap. A finding that seems to match two rows, or none, means the table itself has a defect and takes
+`MODEL-GAP` so that the model gets fixed (§12). A report claiming something the code simply does not do
+(for example, Gryo reachable over the network) is answered by correcting the facts and needs no
+disposition at all.
+
+A finding is classified by **what the attack needs in order to work**, not by the setup it happened to
+be demonstrated on. For example, a crash bug shown against a server running the insecure
+getting-started configuration does not need that configuration. The same crash works, without
+credentials, against a hardened server too, so it is `VALID`. The insecure default decides the outcome
+only when the finding is, in substance, "this particular server was left unhardened."
+
+The lists in §11a and §11b exist to save repeated work: each entry is a finding that keeps coming back,
+recorded together with the disposition it takes. They are worked examples of this table, not extra
+rules on top of it.
+
+| Disposition | Meaning | Based on |
 | --- | --- | --- |
-| `VALID` | Violates a §8 property via an in-scope adversary/input (auth/authz bypass, pre-auth/malformed-input crash/OOM/hang, deserializer RCE beyond the documented type set, parser memory-safety or grammar breakout / step injection). | §8, §6, §7 |
-| `VALID-HARDENING` | No §8 property broken, but a §11 misuse is easy enough to harden. | §11 |
-| `OUT-OF-MODEL: trusted-input` | Requires operator/host/config control. | §6, §7 |
-| `OUT-OF-MODEL: adversary-not-in-scope` | Requires a capability the model excludes (host control, side channel, or reaching a server left on the insecure getting-started default rather than a hardened deployment). | §3, §7 |
-| `OUT-OF-MODEL: unsupported-component` | Lands in a test-only / example module or build tooling, or in provider code / provider modifications to the reference code (including a code-sharing-free remote graph provider). Reproduces only with provider code, not on the unmodified reference distribution. | §3 |
-| `OUT-OF-MODEL: non-default-build` | Only manifests under a discouraged/non-default §5a setting (e.g. scripting unrestricted where the deployment intends bytecode-only). | §5a |
-| `BY-DESIGN: property-disclaimed` | Concerns a §9-disclaimed property (script or bytecode-lambda execution within its grant, no-TLS/no-auth default, ordinary resource exhaustion, malicious operator). | §9 |
-| `KNOWN-NON-FINDING` | Matches a §11a entry. | §11a |
-| `MODEL-GAP` | Cannot be cleanly routed, so triggers a §12 revision. | §12 |
+| `VALID` | A real TinkerPop bug: it breaks one of the §8 security properties through an attacker or input the model covers. Examples: bypassing authentication/authorization or slipping past a configured restriction, crashing or hanging the server with malformed or unauthenticated input, a deserializer executing code it should not, or the parser mishandling crafted input or letting a value escape its string literal. | §8, §6, §7 |
+| `VALID-HARDENING` | Not a vulnerability, but still useful: no §8 property is broken, and the report points at a practical change that would make one of the §11 misuse patterns harder to fall into. Example: "no authentication by default" is by design, but a startup warning when `AllowAllAuthenticator` is active would be a sensible outcome of that report and takes this disposition. Tracked as an ordinary improvement. | §11 |
+| `OUT-OF-MODEL: trusted-input` | The attack only works for someone who already has the operator's own access: the host, the server process, `gremlin-server.yaml`, or the data directory. This includes a malicious operator (§9). Someone with that access can already do anything the operator can, so the attack gains nothing new. | §6, §7 |
+| `OUT-OF-MODEL: adversary-not-in-scope` | The attack needs an attacker the model deliberately leaves out (side channels/timing), or the whole finding is that one specific deployment was left on the insecure getting-started default, which is that operator's mistake to fix. A complaint about the shipped default itself is `BY-DESIGN`. A real code bug that was merely demonstrated on an unhardened server is judged on its own needs, usually `VALID`. | §3, §7 |
+| `OUT-OF-MODEL: unsupported-component` | The buggy code is not TinkerPop's (§3 triage test): it is in a test-only or example module, in build tooling, or in a provider's own code or their modifications to the reference code (including a remote graph provider that shares no TinkerPop code). Sent to the provider. | §3 |
+| `OUT-OF-MODEL: non-default-build` | A genuine bug, but one that only exists when the operator turns on a discouraged, non-default §5a setting, for example a defect that only manifests with Gryo's registration lock disabled. Different from `BY-DESIGN`: behavior §9 already disclaims, such as scripts running code, is not a bug at all and takes that row instead. | §5a |
+| `BY-DESIGN: property-disclaimed` | The behavior is exactly what §9 says TinkerPop does not defend against: scripts or bytecode lambdas executing code within what the deployment allows, the shipped no-TLS/no-auth default, ordinary resource exhaustion from expensive queries, reading untrusted files through unlocked Gryo, or an application building queries out of its own users' raw input. The software works as documented. When the scenario needs the operator's own access, `trusted-input` applies instead. | §9 |
+| `KNOWN-PROBLEM` | Matches the acknowledged weakness in §11b (session sharing), which the §8 enforcement property explicitly excepts. Already known and accepted, not a new finding. A deployment that needs the missing protection must use a provider that adds it. | §11b |
+| `MODEL-GAP` | Fits no row, or more than one. That is a defect in the model itself, and §12 requires revising it. | §12 |
 
 ## §14 Open questions for the maintainers
 
