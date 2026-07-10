@@ -77,7 +77,7 @@ public class Connections {
             maxConnections(8).
             path("/gremlin").
             port(SERVER_PORT).
-            serializer(new GraphBinaryMessageSerializerV4()).
+            responseSerializer(new GraphBinaryMessageSerializerV4()).
             create();
         GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
 
@@ -95,7 +95,7 @@ public class Connections {
         MessageSerializer serializer = new GraphBinaryMessageSerializerV4(typeSerializerRegistry);
         Cluster cluster = Cluster.build(SERVER_HOST).
             port(SERVER_PORT).
-            serializer(serializer).
+            responseSerializer(serializer).
             create();
         Client client = cluster.connect();
         GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client, "g"));

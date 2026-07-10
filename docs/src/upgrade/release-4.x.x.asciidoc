@@ -115,9 +115,10 @@ These change runtime behavior on upgrade even if you do not change your configur
 ===== Driver-specific notes
 
 - *Java* (`gremlin-driver`): renamed `maxConnectionPoolSize`->`maxConnections`, `connectionSetupTimeoutMillis`->`connectTimeoutMillis`,
-  `idleConnectionTimeoutMillis`->`idleTimeoutMillis`, `resultIterationBatchSize`->`batchSize`, and `RequestOptions` `addG`->`traversalSource`;
-  old names are removed. New: `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`, `proxy(ProxyOptions)`,
-  `url(String)`, `ssl(SslContext)`. Removed `maxResponseContentLength`. `validationRequest` default reconciled to `g.inject(0)`.
+  `idleConnectionTimeoutMillis`->`idleTimeoutMillis`, `resultIterationBatchSize`->`batchSize`, `serializer`->`responseSerializer`,
+  and `RequestOptions` `addG`->`traversalSource`; old names are removed. New: `readTimeoutMillis`, `keepAliveTimeMillis`,
+  `maxResponseHeaderBytes`, `proxy(ProxyOptions)`, `url(String)`, `ssl(SslContext)`. Removed `maxResponseContentLength`.
+  `validationRequest` default reconciled to `g.inject(0)`.
 - *Python* (`gremlin-python`): renamed `pool_size`->`max_connections` (default 8->128) and `ssl_options`->`ssl` (old names removed).
   New: `connect_timeout_millis`, `read_timeout_millis`, `idle_timeout_millis`, `keep_alive_time_millis`, `compression`,
   `batch_size`, `proxy`, `trust_env`. `auth.sigv4` gained an optional credentials provider. Removed `headers` (use interceptors)
@@ -132,10 +133,10 @@ These change runtime behavior on upgrade even if you do not change your configur
   (`BasicAuth`/`SigV4Auth`/`SigV4AuthWithCredentials`) into a new `auth` sub-package (`auth.Basic`/`auth.SigV4`/`auth.SigV4WithCredentials`).
   New: `ReadTimeout(Millis)`, `MaxResponseHeaderBytes`, `Proxy` (defaults to `http.ProxyFromEnvironment`), `BatchSize`, `BulkResults`.
 - *JavaScript* (`gremlin-javascript`): adopted `undici` as a pinned dependency providing the default dispatcher built from the
-  options above. New: `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`, `proxy`, `compression`, `batchSize`,
-  `bulkResults`, `logger`. Removed `headers` (use interceptors) and the `ca`/`cert`/`pfx`/`rejectUnauthorized`/`agent` options
-  (TLS is configured through the Node/undici runtime). undici is swapped out in browser bundles, where these connection-pool
-  options are managed by the browser.
+  options above. Renamed `reader`->`responseSerializer`. New: `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`,
+  `proxy`, `compression`, `batchSize`, `bulkResults`, `logger`. Removed `headers` (use interceptors) and the
+  `ca`/`cert`/`pfx`/`rejectUnauthorized`/`agent` options (TLS is configured through the Node/undici runtime). undici is swapped
+  out in browser bundles, where these connection-pool options are managed by the browser.
 
 See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
 
@@ -241,6 +242,23 @@ For full details on the interceptor API for each language variant, refer to the 
 each GLV's documentation in the
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
 reference.
+
+==== Inconfigurable Request Serialization
+
+TinkerPop 3.x drivers used a single serializer configuration (for example, `serializer` in the Java driver or
+`message_serializer` in Python) that controlled both how a `RequestMessage` was serialized on the way to the server
+and how responses were deserialized on the way back. TinkerPop 4 splits these concerns. Requests are now always
+serialized as JSON (`application/json`) and that behavior is not configurable. The remaining serializer configuration
+is named `responseSerializer` (cased idiomatically per language) and controls only the `Accept` header and response
+deserialization.
+
+Applications that require a different request body encoding, such as GraphBinary for a server that expects it, can
+register a request interceptor that serializes the `RequestMessage` and replaces the body and `Content-Type` header.
+See the RequestInterceptor section for each GLV in the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
+reference.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3250[TINKERPOP-3250]
 
 ==== Gremlator
 
@@ -508,7 +526,7 @@ interface.
 The `GraphSONSerializersV4` class and the `gremlin_python.structure.io.graphsonV4` module have been removed.
 GraphBinary is the only supported wire format for the Python driver in TinkerPop 4. Code that constructed
 `GraphSONSerializersV4()` or imported from `gremlin_python.structure.io.graphsonV4` must switch to
-`GraphBinarySerializersV4` (the default `request_serializer` and `response_serializer`):
+`GraphBinarySerializersV4` (the default `response_serializer`):
 
 [source,python]
 ----
@@ -521,8 +539,8 @@ from gremlin_python.driver.connection import GremlinServerError
 
 The `protocol_factory` and `transport_factory` parameters have been removed from `Client`,
 `DriverRemoteConnection`, and `Connection`. Users who were passing a custom `protocol_factory` should use the
-`request_serializer`, `response_serializer`, `auth`, and `interceptors` parameters directly instead — these cover
-all functionality that `GremlinServerHTTPProtocol` previously provided.
+`response_serializer`, `auth`, and `interceptors` parameters directly instead. These cover all functionality that
+`GremlinServerHTTPProtocol` previously provided.
 
 Transport options like SSL and timeouts are now passed as keyword arguments directly:
 
@@ -546,7 +564,7 @@ Connection(url, traversal_source, protocol, transport_factory, executor, pool)
 
 # After
 Connection(url, traversal_source, executor, pool,
-           request_serializer=None, response_serializer=None,
+           response_serializer=None,
            auth=None, interceptors=None, **transport_kwargs)
 ----
 

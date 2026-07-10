@@ -209,7 +209,7 @@ public class ProfilingApplication {
                 .maxConnections(maxConnectionPoolSize)
                 .nioPoolSize(nioPoolSize)
                 .maxWaitForConnection(maxWaitForConnection)
-                .serializer(Serializers.valueOf(serializer))
+                .responseSerializer(Serializers.valueOf(serializer))
                 .workerPoolSize(workerPoolSize).create();
 
         try {

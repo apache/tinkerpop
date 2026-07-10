@@ -60,10 +60,11 @@ public final class Settings {
     public List<String> hosts = new ArrayList<>();
 
     /**
-     * The serializer that will be used when communicating with the server. Note that serializer settings should match
-     * what is available on the server.
+     * The serializer used to deserialize responses from the server. This selects the encoding requested via the
+     * {@code Accept} header; requests are always sent as JSON regardless of this setting. Note that this serializer
+     * should be supported by the server configuration.
      */
-    public SerializerSettings serializer = new SerializerSettings();
+    public SerializerSettings responseSerializer = new SerializerSettings();
 
     /**
      * Settings for connections and connection pool.
@@ -107,7 +108,7 @@ public final class Settings {
         final Constructor constructor = new Constructor(Settings.class, options);
         final TypeDescription settingsDescription = new TypeDescription(Settings.class);
         settingsDescription.addPropertyParameters("hosts", String.class);
-        settingsDescription.addPropertyParameters("serializer", SerializerSettings.class);
+        settingsDescription.addPropertyParameters("responseSerializer", SerializerSettings.class);
         constructor.addTypeDescription(settingsDescription);
 
         final Yaml yaml = new Yaml(constructor);
@@ -138,20 +139,20 @@ public final class Settings {
         if (conf.containsKey("hosts"))
             settings.hosts = conf.getList("hosts").stream().map(Object::toString).collect(Collectors.toList());
 
-        if (conf.containsKey("serializer.className")) {
+        if (conf.containsKey("responseSerializer.className")) {
             final SerializerSettings serializerSettings = new SerializerSettings();
-            final Configuration serializerConf = conf.subset("serializer");
+            final Configuration serializerConf = conf.subset("responseSerializer");
 
             if (serializerConf.containsKey("className"))
                 serializerSettings.className = serializerConf.getString("className");
 
-            final Configuration serializerConfigConf = conf.subset("serializer.config");
+            final Configuration serializerConfigConf = conf.subset("responseSerializer.config");
             if (IteratorUtils.count(serializerConfigConf.getKeys()) > 0) {
                 final Map<String,Object> m = new HashMap<>();
                 serializerConfigConf.getKeys().forEachRemaining(name -> m.put(name, serializerConfigConf.getProperty(name)));
                 serializerSettings.config = m;
             }
-            settings.serializer = serializerSettings;
+            settings.responseSerializer = serializerSettings;
         }
 
         final Configuration connectionPoolConf = conf.subset("connectionPool");

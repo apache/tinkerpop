@@ -50,7 +50,7 @@ public abstract class RemoteWorld implements World {
      * construct a RemoteWorld.
      */
     public static Cluster createTestCluster(final Serializers serializer) {
-        return TestClientFactory.build().serializer(serializer).create();
+        return TestClientFactory.build().responseSerializer(serializer).create();
     }
 
     public RemoteWorld(Cluster cluster) {
