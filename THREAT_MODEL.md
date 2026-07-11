@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-# Apache TinkerPop — Threat Model (v0 draft)
+# Apache TinkerPop — Threat Model
 
 ## §1 Header
 
