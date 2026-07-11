@@ -25,6 +25,12 @@ Apache TinkerPop is licensed under Apache License 2.0. Contributions must meet t
 * *The contributor remains responsible for what they submit.* Review generated output for licensing, correctness, and
   style before committing.
 
+## Security
+
+For Apache TinkerPop's threat model — trust boundaries, in-scope / out-of-scope, the security properties
+the project does and does not provide, and known non-findings — see [SECURITY.md](SECURITY.md), which
+points to [THREAT_MODEL.md](THREAT_MODEL.md). Consult it before triaging or reporting security issues.
+
 ***
 
 ## 1. Project overview
