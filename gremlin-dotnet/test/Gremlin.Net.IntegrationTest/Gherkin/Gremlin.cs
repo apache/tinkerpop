@@ -29,6 +29,8 @@
 
 #nullable disable
 
+#pragma warning disable CS0618, CS0078
+
 using System;
 using System.Numerics;
 using System.Collections.Generic;
