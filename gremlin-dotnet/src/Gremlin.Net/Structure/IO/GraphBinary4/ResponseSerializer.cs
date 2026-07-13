@@ -50,12 +50,12 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
             GraphBinaryReader reader,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            // Wrap in BufferedStream for efficient reads (8192 bytes, like Go's bufio).
-            // Intentionally not disposed — disposing BufferedStream would also close the
-            // underlying stream, which is owned by StreamingResponseContext.
-            var buffered = new BufferedStream(stream, 8192);
+            // Wrap the response stream in a GraphBinaryReadBuffer so already-buffered reads
+            // complete synchronously. Not disposed here; the underlying stream is owned by
+            // StreamingResponseContext.
+            var buffered = new GraphBinaryReadBuffer(stream);
 
-            // 1. Version byte — validate MSB is set
+            // 1. Version byte, validate MSB is set
             var version = await buffered.ReadByteAsync(cancellationToken).ConfigureAwait(false) & 0xFF;
             if (version >> 7 != 1)
             {

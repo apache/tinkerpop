@@ -55,7 +55,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
         {
             var length = (int)await reader.ReadNonNullableValueAsync<int>(stream, cancellationToken).ConfigureAwait(false);
             var bytes = new byte[length];
-            await stream.ReadAsync(bytes, 0, length, cancellationToken).ConfigureAwait(false);
+            await stream.ReadExactlyAsync(bytes, 0, length, cancellationToken).ConfigureAwait(false);
             return Encoding.UTF8.GetString(bytes);
         }
     }
