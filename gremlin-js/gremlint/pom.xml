@@ -38,7 +38,7 @@ limitations under the License.
                 <plugin>
                     <groupId>com.github.eirslett</groupId>
                     <artifactId>frontend-maven-plugin</artifactId>
-                    <version>2.0.0</version>
+                    <version>2.0.1</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -141,7 +141,6 @@ limitations under the License.
                         <configuration>
                             <skip>${skipTests}</skip>
                             <arguments>test --exit</arguments>
-                            <failOnError>true</failOnError>
                         </configuration>
                     </execution>
                 </executions>
