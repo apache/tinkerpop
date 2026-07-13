@@ -638,8 +638,12 @@ class EdgeIO(_GraphBinaryTypeIO):
         edgeid = r.read_object(b)
         # reading label list according to GraphBinaryV4
         edge_labels = r.to_object(b, DataType.list, False)
-        inv = Vertex(r.read_object(b), r.to_object(b, DataType.list, False)[0])
-        outv = Vertex(r.read_object(b), r.to_object(b, DataType.list, False)[0])
+        inv_id = r.read_object(b)
+        inv_labels = r.to_object(b, DataType.list, False)
+        inv = Vertex(inv_id, inv_labels[0] if inv_labels else "vertex", labels=inv_labels)
+        outv_id = r.read_object(b)
+        outv_labels = r.to_object(b, DataType.list, False)
+        outv = Vertex(outv_id, outv_labels[0] if outv_labels else "vertex", labels=outv_labels)
         b.read(2)
         props = r.read_object(b)
         # null properties are returned as empty lists

@@ -211,6 +211,17 @@ class TestGraphBinaryV4(object):
         assert x.inV == output.inV
         assert x.outV == output.outV
 
+    def test_edge_with_multi_labelled_endpoints(self):
+        # the edge itself remains single-labelled, but its endpoint vertices may carry
+        # multiple labels - see TINKERPOP-3261
+        in_vertex = Vertex(1, labels=["person", "employee"])
+        out_vertex = Vertex(10, labels=["software", "product"])
+        x = Edge(123, out_vertex, "developed", in_vertex)
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+        assert output.inV.labels == frozenset(["person", "employee"])
+        assert output.outV.labels == frozenset(["software", "product"])
+
     def test_path(self):
         x = Path(["x", "y", "z"], [1, 2, 3])
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
