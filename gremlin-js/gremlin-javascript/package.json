@@ -59,7 +59,7 @@
   "devDependencies": {
     "@cucumber/cucumber": "~13.0.0",
     "@eslint/js": "^10.0.1",
-    "@knighted/duel": "^4.0.2",
+    "@knighted/duel": "^4.1.1",
     "@tsconfig/node18": "^18.2.2",
     "antlr-ng": "^1.0.10",
     "chai": "^6.2.2",
@@ -75,7 +75,7 @@
     "prettier": "^3.0.0",
     "ts-node": "^10.9.2",
     "typedoc": "^0.28.18",
-    "typescript": "^5.4.2"
+    "typescript": "~6.0.3"
   },
   "repository": {
     "type": "git",

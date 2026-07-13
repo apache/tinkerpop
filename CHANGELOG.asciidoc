@@ -30,6 +30,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Enabled building and running with Java 21 and Java 25.
 * Bumped Groovy to 4.0.32, Hadoop to 3.4.3, Spark to 4.1.2 (Scala 2.13), and Netty to 4.2.7 to support Java 25.
 * Bumped `Microsoft.Extensions.Logging.Abstractions` and `Microsoft.Extensions.Logging.Console` to 10.0.9 for `gremlin-dotnet`.
+* Bumped TypeScript to 6.0 across the JavaScript modules; `gremlint` now compiles to ES2021 rather than ES5.
 * Standardized connection options across all GLVs (Java, Python, .NET, Go, JavaScript) per the TinkerPop 4.x GLV proposal; see the upgrade docs for the full per-driver table. *(breaking)*
 ** Aligned option names across drivers: `maxConnections` (128), `connectTimeoutMillis` (5000), `readTimeoutMillis` (off), `idleTimeoutMillis` (180000), `keepAliveTimeMillis` (30000), `compression` (on/`deflate`), `batchSize` (64), `bulkResults` (false), `maxResponseHeaderBytes`, `proxy`, `ssl`, and `responseSerializer`. Timeouts use a millisecond-suffixed canonical name with an idiomatic duration companion (Java `Duration`, Go `time.Duration`, .NET `TimeSpan`, Python seconds); JavaScript uses milliseconds only.
 ** Java: renamed `maxConnectionPoolSize`/`connectionSetupTimeoutMillis`/`idleConnectionTimeoutMillis`/`resultIterationBatchSize`/`serializer` and `RequestOptions.addG`->`traversalSource`; removed `maxResponseContentLength` (responses now stream); added `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`, `proxy`, `url(String)`, `ssl(SslContext)`. *(breaking)*
