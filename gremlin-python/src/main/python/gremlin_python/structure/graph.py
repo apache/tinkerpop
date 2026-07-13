@@ -65,9 +65,12 @@ class Element(object):
 
 class Vertex(Element):
     def __init__(self, id, label="vertex", properties=None, labels=None):
-        if labels is not None and len(labels) > 0:
+        if labels is not None:
+            # an explicit label set is authoritative, even when empty (zero-label vertex)
             self._labels = set(labels)
-            Element.__init__(self, id, next(iter(labels)), properties)
+            # the deprecated singular label is an arbitrary member, or "" when there are no labels
+            # (consistent with the Java and .NET drivers, which use "" for a label-less element)
+            Element.__init__(self, id, next(iter(labels)) if labels else "", properties)
         else:
             self._labels = {label} if label else {"vertex"}
             Element.__init__(self, id, label or "vertex", properties)
@@ -82,9 +85,12 @@ class Vertex(Element):
 
 class Edge(Element):
     def __init__(self, id, outV, label, inV, properties=None, labels=None):
-        if labels is not None and len(labels) > 0:
+        if labels is not None:
+            # an explicit label set is authoritative, even when empty (zero-label edge)
             self._labels = set(labels)
-            Element.__init__(self, id, next(iter(labels)), properties)
+            # the deprecated singular label is an arbitrary member, or "" when there are no labels
+            # (consistent with the Java and .NET drivers, which use "" for a label-less element)
+            Element.__init__(self, id, next(iter(labels)) if labels else "", properties)
         else:
             self._labels = {label} if label else {"edge"}
             Element.__init__(self, id, label or "edge", properties)

@@ -222,6 +222,18 @@ class TestGraphBinaryV4(object):
         assert output.inV.labels == frozenset(["person", "employee"])
         assert output.outV.labels == frozenset(["software", "product"])
 
+    def test_edge_with_zero_label_endpoints(self):
+        # endpoint vertices may carry no labels at all under ZERO_OR_MORE cardinality - see TINKERPOP-3261
+        in_vertex = Vertex(1, labels=[])
+        out_vertex = Vertex(10, labels=[])
+        x = Edge(123, out_vertex, "developed", in_vertex)
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+        assert output.inV.labels == frozenset()
+        assert output.outV.labels == frozenset()
+        assert output.inV.label == ""
+        assert output.outV.label == ""
+
     def test_path(self):
         x = Path(["x", "y", "z"], [1, 2, 3])
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
@@ -236,6 +248,21 @@ class TestGraphBinaryV4(object):
         x = Vertex(123, "person")
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
+
+    def test_vertex_with_multiple_labels(self):
+        # vertices may carry multiple labels under ONE_OR_MORE/ZERO_OR_MORE cardinality - see TINKERPOP-3261
+        x = Vertex(123, labels=["person", "employee"])
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+        assert output.labels == frozenset(["person", "employee"])
+
+    def test_vertex_with_no_labels(self):
+        # vertices may carry no labels under ZERO_OR_MORE cardinality - see TINKERPOP-3261
+        x = Vertex(123, labels=[])
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+        assert output.labels == frozenset()
+        assert output.label == ""
 
     def test_vertexproperty(self):
         x = VertexProperty(123, "name", "stephen", None)

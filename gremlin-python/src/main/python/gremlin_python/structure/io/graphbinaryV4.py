@@ -610,17 +610,17 @@ class EdgeIO(_GraphBinaryTypeIO):
 
         writer.to_dict(obj.id, to_extend)
         # serializing labels as list according to GraphBinaryV4
-        if hasattr(obj, '_labels') and obj._labels:
+        if hasattr(obj, '_labels'):
             ListIO.dictify(list(obj._labels), writer, to_extend, True, False)
         else:
             ListIO.dictify([obj.label], writer, to_extend, True, False)
         writer.to_dict(obj.inV.id, to_extend)
-        if hasattr(obj.inV, '_labels') and obj.inV._labels:
+        if hasattr(obj.inV, '_labels'):
             ListIO.dictify(list(obj.inV._labels), writer, to_extend, True, False)
         else:
             ListIO.dictify([obj.inV.label], writer, to_extend, True, False)
         writer.to_dict(obj.outV.id, to_extend)
-        if hasattr(obj.outV, '_labels') and obj.outV._labels:
+        if hasattr(obj.outV, '_labels'):
             ListIO.dictify(list(obj.outV._labels), writer, to_extend, True, False)
         else:
             ListIO.dictify([obj.outV.label], writer, to_extend, True, False)
@@ -640,10 +640,10 @@ class EdgeIO(_GraphBinaryTypeIO):
         edge_labels = r.to_object(b, DataType.list, False)
         inv_id = r.read_object(b)
         inv_labels = r.to_object(b, DataType.list, False)
-        inv = Vertex(inv_id, inv_labels[0] if inv_labels else "vertex", labels=inv_labels)
+        inv = Vertex(inv_id, labels=inv_labels)
         outv_id = r.read_object(b)
         outv_labels = r.to_object(b, DataType.list, False)
-        outv = Vertex(outv_id, outv_labels[0] if outv_labels else "vertex", labels=outv_labels)
+        outv = Vertex(outv_id, labels=outv_labels)
         b.read(2)
         props = r.read_object(b)
         # null properties are returned as empty lists
@@ -831,7 +831,7 @@ class VertexIO(_GraphBinaryTypeIO):
         cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
         writer.to_dict(obj.id, to_extend)
         # serializing labels as list according to GraphBinaryV4
-        if hasattr(obj, '_labels') and obj._labels:
+        if hasattr(obj, '_labels'):
             ListIO.dictify(list(obj._labels), writer, to_extend, True, False)
         else:
             ListIO.dictify([obj.label], writer, to_extend, True, False)
@@ -850,7 +850,7 @@ class VertexIO(_GraphBinaryTypeIO):
         props = r.read_object(b)
         # null properties are returned as empty lists
         properties = [] if props is None else props
-        vertex = Vertex(vertex_id, vertex_labels[0] if vertex_labels else "vertex", properties, labels=vertex_labels)
+        vertex = Vertex(vertex_id, properties=properties, labels=vertex_labels)
         return vertex
 
 

@@ -69,7 +69,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
             CancellationToken cancellationToken)
         {
             await writer.WriteAsync(vertex.Id, stream, cancellationToken).ConfigureAwait(false);
-            await writer.WriteNonNullableValueAsync(new List<string> { vertex.Label }, stream, cancellationToken)
+            await writer.WriteNonNullableValueAsync(new List<string>(vertex.Labels), stream, cancellationToken)
                 .ConfigureAwait(false);
 
             var vertexProperties = AsList<VertexProperty>(vertex.Properties);
@@ -95,7 +95,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
             CancellationToken cancellationToken)
         {
             await writer.WriteAsync(edge.Id, stream, cancellationToken).ConfigureAwait(false);
-            await writer.WriteNonNullableValueAsync(new List<string> { edge.Label }, stream, cancellationToken)
+            await writer.WriteNonNullableValueAsync(new List<string>(edge.Labels), stream, cancellationToken)
                 .ConfigureAwait(false);
 
             await writer.WriteAsync(edge.InV.Id, stream, cancellationToken).ConfigureAwait(false);
