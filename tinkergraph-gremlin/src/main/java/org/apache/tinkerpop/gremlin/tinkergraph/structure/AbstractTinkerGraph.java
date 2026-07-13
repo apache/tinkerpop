@@ -175,8 +175,9 @@ public abstract class AbstractTinkerGraph implements Graph {
 
     /**
      * Returns the number of vertices with the given label. A {@code null} label returns the
-     * total vertex count. The default implementation does a full vertex scan; subclasses that
-     * maintain a label index should override this for O(1) performance.
+     * total vertex count. The default implementation does a full vertex scan and accounts for
+     * vertices carrying multiple labels; subclasses that maintain a label index should override
+     * this for O(1) performance.
      */
     @Override
     public long countVerticesByLabel(final String label) {
@@ -184,7 +185,7 @@ public abstract class AbstractTinkerGraph implements Graph {
         long count = 0;
         final Iterator<Vertex> it = vertices();
         while (it.hasNext()) {
-            if (label.equals(it.next().label())) count++;
+            if (it.next().labels().contains(label)) count++;
         }
         return count;
     }
@@ -200,7 +201,7 @@ public abstract class AbstractTinkerGraph implements Graph {
         long count = 0;
         final Iterator<Edge> it = edges();
         while (it.hasNext()) {
-            if (label.equals(it.next().label())) count++;
+            if (it.next().labels().contains(label)) count++;
         }
         return count;
     }
@@ -384,10 +385,13 @@ public abstract class AbstractTinkerGraph implements Graph {
      * Called when a vertex's labels are modified to allow the graph to update any internal label indices.
      * The default implementation is a no-op since TinkerGraph does not maintain a separate label index.
      *
-     * @param vertex the vertex whose labels have changed
+     * @param vertex          the vertex whose labels have changed
+     * @param previousLabels  the vertex's label set immediately prior to the mutation, so that implementations
+     *                        can diff against {@link TinkerVertex#labels()} to determine which labels were
+     *                        added or removed
      * @since 4.0.0
      */
-    public void updateVertexLabelIndex(final TinkerVertex vertex) {
+    public void updateVertexLabelIndex(final TinkerVertex vertex, final Set<String> previousLabels) {
         // no-op by default - TinkerGraph does not maintain a separate label index
     }
 

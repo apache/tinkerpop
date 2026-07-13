@@ -241,6 +241,21 @@ public class TinkerGraph extends AbstractTinkerGraph {
     }
 
     @Override
+    public void updateVertexLabelIndex(final TinkerVertex vertex, final Set<String> previousLabels) {
+        final Set<String> currentLabels = vertex.labels();
+        for (final String removed : previousLabels) {
+            if (!currentLabels.contains(removed)) {
+                vertexLabelCounts.computeIfPresent(removed, (k, c) -> { c.decrementAndGet(); return c; });
+            }
+        }
+        for (final String added : currentLabels) {
+            if (!previousLabels.contains(added)) {
+                vertexLabelCounts.computeIfAbsent(added, k -> new AtomicInteger()).incrementAndGet();
+            }
+        }
+    }
+
+    @Override
     public void clear() {
         super.clear();
         this.vertices.clear();

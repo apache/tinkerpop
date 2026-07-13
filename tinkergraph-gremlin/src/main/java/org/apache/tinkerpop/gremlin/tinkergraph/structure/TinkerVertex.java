@@ -157,31 +157,34 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         }
         LabelCardinalityValidator.validateAdd(this.graph.vertexLabelCardinality, this.vertexLabels, label, labels);
         graph.touch(this);
+        final Set<String> previousLabels = new HashSet<>(this.vertexLabels);
         ensureMutableLabels();
         this.vertexLabels.add(label);
         Collections.addAll(this.vertexLabels, labels);
-        this.graph.updateVertexLabelIndex(this);
+        this.graph.updateVertexLabelIndex(this, previousLabels);
     }
 
     @Override
     public void dropLabels() {
         LabelCardinalityValidator.validateDropAll(this.graph.vertexLabelCardinality, this.vertexLabels);
         graph.touch(this);
+        final Set<String> previousLabels = new HashSet<>(this.vertexLabels);
         ensureMutableLabels();
         this.vertexLabels.clear();
-        this.graph.updateVertexLabelIndex(this);
+        this.graph.updateVertexLabelIndex(this, previousLabels);
     }
 
     @Override
     public void dropLabel(final String label, final String... labels) {
         LabelCardinalityValidator.validateDrop(this.graph.vertexLabelCardinality, this.vertexLabels, label, labels);
         graph.touch(this);
+        final Set<String> previousLabels = new HashSet<>(this.vertexLabels);
         ensureMutableLabels();
         this.vertexLabels.remove(label);
         for (final String l : labels) {
             this.vertexLabels.remove(l);
         }
-        this.graph.updateVertexLabelIndex(this);
+        this.graph.updateVertexLabelIndex(this, previousLabels);
     }
 
     @Override

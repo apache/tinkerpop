@@ -57,6 +57,30 @@ public class TinkerTransactionGraphTest {
     ///// vertex tests
 
     @Test
+    public void shouldCountVerticesByLabelAccountingForMultipleLabels() {
+        final org.apache.commons.configuration2.Configuration config = new org.apache.commons.configuration2.BaseConfiguration();
+        config.setProperty(org.apache.tinkerpop.gremlin.structure.Graph.GRAPH, TinkerTransactionGraph.class.getName());
+        config.setProperty(AbstractTinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, "ZERO_OR_MORE");
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open(config);
+
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV("person").next();
+        final Vertex multiLabelled = gtx.addV("person").addLabel("employee").next();
+        gtx.tx().commit();
+
+        assertEquals(2L, g.countVerticesByLabel("person"));
+        assertEquals(1L, g.countVerticesByLabel("employee"));
+        assertEquals(0L, g.countVerticesByLabel("customer"));
+
+        gtx.V(multiLabelled.id()).next();
+        ((Vertex) gtx.V(multiLabelled.id()).next()).dropLabel("person");
+        gtx.tx().commit();
+
+        assertEquals(1L, g.countVerticesByLabel("person"));
+        assertEquals(1L, g.countVerticesByLabel("employee"));
+    }
+
+    @Test
     public void shouldReturnSameVertexInstanceInsideTransaction() {
         final TinkerTransactionGraph g = TinkerTransactionGraph.open();
 
