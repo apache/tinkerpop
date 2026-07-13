@@ -68,11 +68,6 @@ public class ArgumentVisitorTest {
     @Parameterized.Parameters(name = "{1}")
     public static Iterable<Object[]> generateTestParameters() {
         return Arrays.asList(new Object[][]{
-                {Boolean.class, "x", new VariableResolverException("x"), createAntlr(VariableResolver.NoVariableResolver.instance())},
-                {Boolean.class, "true", true, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", true)))},
-                {Boolean.class, "false", false, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", true)))},
-                {Boolean.class, "x", GValue.of("x", true), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", true)))},
-                {Boolean.class, "x", true, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", true)))},
                 {Integer.class, "x", new VariableResolverException("x"), createAntlr(VariableResolver.NoVariableResolver.instance())},
                 {Integer.class, "0", 0, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", 100)))},
                 {Integer.class, "0i", 0, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", 100)))},
@@ -127,12 +122,7 @@ public class ArgumentVisitorTest {
     public void shouldParse() {
         final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
         final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
-        if (clazz.equals(Boolean.class)) {
-            assertParsing(() -> {
-                final GremlinParser.BooleanArgumentContext ctx = parser.booleanArgument();
-                return antlrToLanguage.argumentVisitor.visitBooleanArgument(ctx);
-            });
-        } else if (clazz.equals(Integer.class)) {
+        if (clazz.equals(Integer.class)) {
             assertParsing(() -> {
                 final GremlinParser.IntegerArgumentContext ctx = parser.integerArgument();
                 return antlrToLanguage.argumentVisitor.visitIntegerArgument(ctx);

@@ -1544,11 +1544,6 @@ ioOptionsStringConstant
     : K_IOU
     ;
 
-booleanArgument
-    : booleanLiteral
-    | variable
-    ;
-
 integerArgument
     : integerLiteral
     | variable
@@ -1568,11 +1563,6 @@ stringNullableArgumentVarargs
     : (stringNullableArgument (COMMA stringNullableArgument)*)?
     ;
 
-dateArgument
-    : dateLiteral
-    | variable
-    ;
-
 genericArgument
     : genericLiteral
     | variable
@@ -1590,11 +1580,6 @@ genericMapArgument
 genericMapNullableArgument
     : genericMapNullableLiteral
     | variable
-    ;
-
-nullableGenericLiteralMap
-    : genericMapLiteral
-    | nullLiteral
     ;
 
 traversalStrategyVarargs
