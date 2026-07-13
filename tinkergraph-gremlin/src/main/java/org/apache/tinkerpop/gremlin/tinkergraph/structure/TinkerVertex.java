@@ -59,7 +59,8 @@ public class TinkerVertex extends TinkerElement implements Vertex {
 
     /**
      * Multi-label storage for this vertex. Starts as an immutable set (lightweight) and is
-     * upgraded to a mutable ConcurrentHashMap-backed set on first label mutation.
+     * upgraded to a mutable ConcurrentHashMap-backed set on first label mutation. Concurrent
+     * label mutation on the same vertex from multiple threads is not supported.
      */
     protected Set<String> vertexLabels;
 
@@ -117,8 +118,8 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     /**
-     * Upgrades the label set to a mutable ConcurrentHashMap-backed set on first mutation.
-     * This is a one-time cost per vertex that actually needs label mutation.
+     * Upgrades the label set to a mutable set on first mutation. This is a one-time cost per vertex
+     * that actually needs label mutation.
      */
     private void ensureMutableLabels() {
         if (!(this.vertexLabels instanceof ConcurrentHashMap.KeySetView)) {
@@ -157,34 +158,42 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         }
         LabelCardinalityValidator.validateAdd(this.graph.vertexLabelCardinality, this.vertexLabels, label, labels);
         graph.touch(this);
-        final Set<String> previousLabels = new HashSet<>(this.vertexLabels);
+        final Set<String> added = new HashSet<>();
+        if (!this.vertexLabels.contains(label)) added.add(label);
+        for (final String l : labels) {
+            if (!this.vertexLabels.contains(l)) added.add(l);
+        }
         ensureMutableLabels();
         this.vertexLabels.add(label);
         Collections.addAll(this.vertexLabels, labels);
-        this.graph.updateVertexLabelIndex(this, previousLabels);
+        if (!added.isEmpty()) this.graph.addVertexLabels(this, added);
     }
 
     @Override
     public void dropLabels() {
         LabelCardinalityValidator.validateDropAll(this.graph.vertexLabelCardinality, this.vertexLabels);
         graph.touch(this);
-        final Set<String> previousLabels = new HashSet<>(this.vertexLabels);
+        final Set<String> removed = new HashSet<>(this.vertexLabels);
         ensureMutableLabels();
         this.vertexLabels.clear();
-        this.graph.updateVertexLabelIndex(this, previousLabels);
+        if (!removed.isEmpty()) this.graph.removeVertexLabels(this, removed);
     }
 
     @Override
     public void dropLabel(final String label, final String... labels) {
         LabelCardinalityValidator.validateDrop(this.graph.vertexLabelCardinality, this.vertexLabels, label, labels);
         graph.touch(this);
-        final Set<String> previousLabels = new HashSet<>(this.vertexLabels);
+        final Set<String> removed = new HashSet<>();
+        if (this.vertexLabels.contains(label)) removed.add(label);
+        for (final String l : labels) {
+            if (this.vertexLabels.contains(l)) removed.add(l);
+        }
         ensureMutableLabels();
         this.vertexLabels.remove(label);
         for (final String l : labels) {
             this.vertexLabels.remove(l);
         }
-        this.graph.updateVertexLabelIndex(this, previousLabels);
+        if (!removed.isEmpty()) this.graph.removeVertexLabels(this, removed);
     }
 
     @Override

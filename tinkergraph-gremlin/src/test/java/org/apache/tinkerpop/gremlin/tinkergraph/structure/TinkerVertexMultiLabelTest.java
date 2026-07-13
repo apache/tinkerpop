@@ -200,47 +200,47 @@ public class TinkerVertexMultiLabelTest {
     @Test
     public void shouldUpdateVertexLabelCountWhenAddingLabel() {
         final Vertex v = g.addV("person").next();
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("person"), is(1L));
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("employee"), is(0L));
+        assertThat(graph.countVerticesByLabel("person"), is(1L));
+        assertThat(graph.countVerticesByLabel("employee"), is(0L));
 
         v.addLabel("employee");
 
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("person"), is(1L));
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("employee"), is(1L));
+        assertThat(graph.countVerticesByLabel("person"), is(1L));
+        assertThat(graph.countVerticesByLabel("employee"), is(1L));
     }
 
     @Test
     public void shouldUpdateVertexLabelCountWhenDroppingSpecificLabel() {
         final Vertex v = g.addV("person").addLabel("employee").next();
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("person"), is(1L));
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("employee"), is(1L));
+        assertThat(graph.countVerticesByLabel("person"), is(1L));
+        assertThat(graph.countVerticesByLabel("employee"), is(1L));
 
         v.dropLabel("person");
 
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("person"), is(0L));
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("employee"), is(1L));
+        assertThat(graph.countVerticesByLabel("person"), is(0L));
+        assertThat(graph.countVerticesByLabel("employee"), is(1L));
     }
 
     @Test
     public void shouldUpdateVertexLabelCountWhenDroppingAllLabels() {
         final Vertex v = g.addV("person").addLabel("employee").next();
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("person"), is(1L));
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("employee"), is(1L));
+        assertThat(graph.countVerticesByLabel("person"), is(1L));
+        assertThat(graph.countVerticesByLabel("employee"), is(1L));
 
         v.dropLabels();
 
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("person"), is(0L));
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("employee"), is(0L));
+        assertThat(graph.countVerticesByLabel("person"), is(0L));
+        assertThat(graph.countVerticesByLabel("employee"), is(0L));
     }
 
     @Test
     public void shouldNotChangeVertexLabelCountWhenAddingIdempotentLabel() {
         final Vertex v = g.addV("person").next();
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("person"), is(1L));
+        assertThat(graph.countVerticesByLabel("person"), is(1L));
 
         v.addLabel("person");
 
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("person"), is(1L));
+        assertThat(graph.countVerticesByLabel("person"), is(1L));
     }
 
     @Test
@@ -249,8 +249,8 @@ public class TinkerVertexMultiLabelTest {
         g.addV("person").addLabel("employee").next();
         g.addV("person").addLabel("customer").next();
 
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("person"), is(3L));
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("employee"), is(1L));
-        assertThat(((TinkerGraph) graph).countVerticesByLabel("customer"), is(1L));
+        assertThat(graph.countVerticesByLabel("person"), is(3L));
+        assertThat(graph.countVerticesByLabel("employee"), is(1L));
+        assertThat(graph.countVerticesByLabel("customer"), is(1L));
     }
 }

@@ -175,9 +175,8 @@ public abstract class AbstractTinkerGraph implements Graph {
 
     /**
      * Returns the number of vertices with the given label. A {@code null} label returns the
-     * total vertex count. The default implementation does a full vertex scan and accounts for
-     * vertices carrying multiple labels; subclasses that maintain a label index should override
-     * this for O(1) performance.
+     * total vertex count. The default implementation does a full vertex scan; subclasses that
+     * maintain a label index should override this for O(1) performance.
      */
     @Override
     public long countVerticesByLabel(final String label) {
@@ -382,16 +381,26 @@ public abstract class AbstractTinkerGraph implements Graph {
     public abstract void removeEdgeFromAdjacency(final TinkerEdge edge, final String label);
 
     /**
-     * Called when a vertex's labels are modified to allow the graph to update any internal label indices.
-     * The default implementation is a no-op since TinkerGraph does not maintain a separate label index.
+     * Called when one or more labels have been added to an existing vertex, allowing the graph to update
+     * any internal label indices.
      *
-     * @param vertex          the vertex whose labels have changed
-     * @param previousLabels  the vertex's label set immediately prior to the mutation, so that implementations
-     *                        can diff against {@link TinkerVertex#labels()} to determine which labels were
-     *                        added or removed
+     * @param vertex     the vertex to which labels were added
+     * @param labelsAdded the labels that were newly added to the vertex
      * @since 4.0.0
      */
-    public void updateVertexLabelIndex(final TinkerVertex vertex, final Set<String> previousLabels) {
+    public void addVertexLabels(final TinkerVertex vertex, final Set<String> labelsAdded) {
+        // no-op by default - TinkerGraph does not maintain a separate label index
+    }
+
+    /**
+     * Called when one or more labels have been removed from an existing vertex, allowing the graph to update
+     * any internal label indices.
+     *
+     * @param vertex       the vertex from which labels were removed
+     * @param labelsRemoved the labels that were actually removed from the vertex
+     * @since 4.0.0
+     */
+    public void removeVertexLabels(final TinkerVertex vertex, final Set<String> labelsRemoved) {
         // no-op by default - TinkerGraph does not maintain a separate label index
     }
 
