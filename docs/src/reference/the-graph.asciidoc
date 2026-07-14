@@ -95,10 +95,11 @@ different considering that reference graphs will typically be immutable.
 == Optional Data Model Variances
 
 The simplest property graph model consists of vertices and edges, each with a single label and a set of key/value
-properties. This is the lowest common denominator that every TinkerPop-enabled graph supports. Beyond that
-baseline, TinkerPop allows graph providers to optionally support certain variances on the data model that extend
-what a graph element can represent. Support for these variances differs from provider to provider and can be
-discovered at runtime via <<features,`Feature`>>. The variances covered in this section are:
+properties. This baseline is consistent with the labelled property graph model and is the setup most widely
+supported across TinkerPop-enabled graphs. Beyond that baseline, TinkerPop allows graph providers to optionally
+support certain advanced variances on the data model that extend what a graph element can represent. Support for
+these variances differs from provider to provider and can be discovered at runtime via <<features,`Feature`>>. The
+variances covered in this section are:
 
 * Multiple properties (*multi-properties*): a vertex property key can have multiple values.
 * Properties on properties (*meta-properties*): a vertex property can itself have properties.
@@ -192,9 +193,15 @@ g.V().has('name','gremlin').inE('uses').
 === Vertex Labels
 
 In the simplest property graph model, a vertex has exactly one immutable label assigned at creation, the same as an
-edge. TinkerPop also allows graph providers to optionally support a different vertex label cardinality, in which
-case a vertex may carry multiple labels, or none at all. Whether a graph supports this, and to what degree, is
-governed by its configured `LabelCardinality`:
+edge. This single-label form is sufficient whenever an element has one clear type, and it is the most portable
+choice across providers. TinkerPop also allows graph providers to optionally support a different vertex label
+cardinality, in which case a vertex may carry multiple labels, or none at all. Multiple labels are useful when an
+element legitimately belongs to more than one type at once (a vertex that is both a `Person` and an `Employee`) or when
+the roles an element plays change over time, so that a label can be added or removed as a role is gained or lost. They
+can also serve as coarse-grained classifications that a provider can index and query more efficiently than an ordinary
+property. Attributes that are fine-grained, or that change frequently without really describing the element's type, are
+still better modeled as properties. Whether a graph supports multiple labels, and to what degree, is governed by its
+configured `LabelCardinality`:
 
 * `ONE` fixes exactly one immutable label per vertex
 * `ONE_OR_MORE` requires at least one label but permits additional labels to be added or removed
@@ -202,8 +209,7 @@ governed by its configured `LabelCardinality`:
 
 It is up to each graph provider to decide which of these cardinalities it supports and, where more than one is
 supported, what its default is or whether the choice is left to the user to configure. See the
-link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_label_cardinality[provider documentation] for configuration
-details and the <<label-step,label()>>, <<labels-step,labels()>>, <<addlabel-step,addLabel()>>, and
+<<label-step,label()>>, <<labels-step,labels()>>, <<addlabel-step,addLabel()>>, and
 <<droplabel-step,dropLabel()>> steps for traversal access.
 
 [[nullable-property-values]]

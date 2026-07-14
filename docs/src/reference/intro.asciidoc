@@ -138,7 +138,7 @@ tutorial.
 
 .Primary components of the TinkerPop *structure* API
  * `Graph`: maintains a set of vertices and edges, and access to database functions such as transactions.
- * `Element`: maintains a collection of properties and one or more string labels denoting the element type.
+ * `Element`: maintains a collection of properties with the option for multiple labels to help classify the element type.
   ** `Vertex`: extends Element and maintains a set of incoming and outgoing edges.
   ** `Edge`: extends Element and maintains an incoming and outgoing vertex.
  * `Property<V>`: a string key associated with a `V` value.

@@ -247,9 +247,6 @@ The `hasLabel()` step works with multi-label vertices using OR semantics: `hasLa
 has label "a" OR label "b". To match vertices having both labels, chain multiple `hasLabel()` calls:
 `hasLabel("a").hasLabel("b")`.
 
-This multi-label support applies to vertices only; an `Edge` must have exactly one label regardless of the
-graph's configured `vertexLabelCardinality`.
-
 [[tinkergraph-gremlin-tx]]
 === Transactions
 
