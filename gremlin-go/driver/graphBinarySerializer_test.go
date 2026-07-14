@@ -567,6 +567,55 @@ func TestGraphSerializerRoundTrip(t *testing.T) {
 	})
 }
 
+// TestVertexEdgeLabelRoundTrip verifies that multi-label and zero-label vertices (and edge
+// endpoints) survive a GraphBinary round-trip. The deprecated singular Label holds the first
+// label, or "" when the element has no labels. See TINKERPOP-3261.
+func TestVertexEdgeLabelRoundTrip(t *testing.T) {
+	serializer := graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
+
+	roundTrip := func(t *testing.T, in interface{}) interface{} {
+		var buffer bytes.Buffer
+		assert.Nil(t, serializer.write(in, &buffer))
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buffer.Bytes()))
+		out, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		return out
+	}
+
+	t.Run("multi-label vertex preserves all labels", func(t *testing.T) {
+		v := &Vertex{Element: Element{Id: int32(1)}, Labels: []string{"person", "employee"}}
+		out := roundTrip(t, v)
+		rv, ok := out.(*Vertex)
+		assert.True(t, ok, "expected *Vertex, got %T", out)
+		assert.Equal(t, []string{"person", "employee"}, rv.Labels)
+		assert.Equal(t, "person", rv.Label)
+	})
+
+	t.Run("zero-label vertex round-trips to empty labels", func(t *testing.T) {
+		v := &Vertex{Element: Element{Id: int32(2)}, Labels: []string{}}
+		out := roundTrip(t, v)
+		rv, ok := out.(*Vertex)
+		assert.True(t, ok, "expected *Vertex, got %T", out)
+		assert.Equal(t, 0, len(rv.Labels))
+		assert.Equal(t, "", rv.Label)
+	})
+
+	t.Run("edge with multi-label and zero-label endpoints", func(t *testing.T) {
+		inV := Vertex{Element: Element{Id: int32(1)}, Labels: []string{"person", "employee"}}
+		outV := Vertex{Element: Element{Id: int32(2)}, Labels: []string{}}
+		e := &Edge{Element: Element{Id: int32(3)}, Labels: []string{"knows"}, InV: inV, OutV: outV}
+		out := roundTrip(t, e)
+		re, ok := out.(*Edge)
+		assert.True(t, ok, "expected *Edge, got %T", out)
+		assert.Equal(t, []string{"knows"}, re.Labels)
+		assert.Equal(t, "knows", re.Label)
+		assert.Equal(t, []string{"person", "employee"}, re.InV.Labels)
+		assert.Equal(t, "person", re.InV.Label)
+		assert.Equal(t, 0, len(re.OutV.Labels))
+		assert.Equal(t, "", re.OutV.Label)
+	})
+}
+
 // TestWriterErrorPropagation tests that errors from io.Writer are properly propagated
 // through the serialization chain.
 // Feature: serializer-writer-refactor, Property 4: Writer Error Propagation

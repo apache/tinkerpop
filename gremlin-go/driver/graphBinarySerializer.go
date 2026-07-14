@@ -269,9 +269,11 @@ func vertexWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTyp
 		return err
 	}
 
-	// Write all labels as a list. Use Labels slice if populated, otherwise fall back to single Label.
+	// Write all labels as a list. A non-nil Labels slice is authoritative (including an empty
+	// slice, i.e. a zero-label vertex); fall back to the deprecated single Label only when
+	// Labels was never populated (nil).
 	labels := v.Labels
-	if len(labels) == 0 {
+	if labels == nil {
 		labels = []string{v.Label}
 	}
 	if err := typeSerializer.writeValue(labels, w, false); err != nil {
@@ -289,9 +291,10 @@ func edgeWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeS
 		return err
 	}
 
-	// Write all labels as a list. Use Labels slice if populated, otherwise fall back to single Label.
+	// Write all labels as a list. A non-nil Labels slice is authoritative; fall back to the
+	// deprecated single Label only when Labels was never populated (nil).
 	labels := e.Labels
-	if len(labels) == 0 {
+	if labels == nil {
 		labels = []string{e.Label}
 	}
 	if err := typeSerializer.writeValue(labels, w, false); err != nil {
@@ -305,7 +308,7 @@ func edgeWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeS
 
 	// Write in-vertex labels
 	inVLabels := e.InV.Labels
-	if len(inVLabels) == 0 {
+	if inVLabels == nil {
 		inVLabels = []string{e.InV.Label}
 	}
 	if err := typeSerializer.writeValue(inVLabels, w, false); err != nil {
@@ -318,7 +321,7 @@ func edgeWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeS
 
 	// Write out-vertex labels
 	outVLabels := e.OutV.Labels
-	if len(outVLabels) == 0 {
+	if outVLabels == nil {
 		outVLabels = []string{e.OutV.Label}
 	}
 	if err := typeSerializer.writeValue(outVLabels, w, false); err != nil {

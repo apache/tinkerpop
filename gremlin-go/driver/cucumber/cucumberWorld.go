@@ -158,10 +158,7 @@ func (t *CucumberWorld) cleanEmptyDataGraph(g *gremlingo.GraphTraversalSource) e
 
 func getVertices(g *gremlingo.GraphTraversalSource) map[string]*gremlingo.Vertex {
 	vertexMap := make(map[string]*gremlingo.Vertex)
-	// Use Project to get id and label as primitives instead of Tail() which returns full
-	// Vertex objects. This avoids GraphBinary deserialization failures for zero-label vertices
-	// whose empty label list cannot be deserialized as a Vertex.
-	res, err := g.V().Group().By("name").By(gremlingo.T__.Project("id", "label").By(gremlingo.T__.Id()).By(gremlingo.T__.Label())).Next()
+	res, err := g.V().Group().By("name").By(gremlingo.T__.Tail()).Next()
 	if res == nil {
 		return nil
 	}
@@ -177,13 +174,7 @@ func getVertices(g *gremlingo.GraphTraversalSource) map[string]*gremlingo.Vertex
 	for _, k := range keys {
 		convKey := k.Convert(v.Type().Key())
 		val := v.MapIndex(convKey)
-		projMap := val.Interface().(map[interface{}]interface{})
-		id := projMap["id"]
-		label := ""
-		if l, ok := projMap["label"].(string); ok {
-			label = l
-		}
-		vertexMap[k.Interface().(string)] = &gremlingo.Vertex{Element: gremlingo.Element{Id: id, Label: label}}
+		vertexMap[k.Interface().(string)] = val.Interface().(*gremlingo.Vertex)
 	}
 	return vertexMap
 }

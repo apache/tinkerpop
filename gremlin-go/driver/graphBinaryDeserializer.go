@@ -366,18 +366,22 @@ func (d *GraphBinaryDeserializer) readVertex(withProps bool) (*Vertex, error) {
 		return nil, err
 	}
 	labelSlice, ok := labels.([]interface{})
-	if !ok || len(labelSlice) == 0 {
-		return nil, newError(err0404ReadNullTypeError)
-	}
-	label, ok := labelSlice[0].(string)
 	if !ok {
 		return nil, newError(err0404ReadNullTypeError)
 	}
+	// A vertex may carry zero or more labels. The deprecated singular Label holds the first
+	// label for backward compatibility, or "" when the vertex has no labels.
 	allLabels := make([]string, 0, len(labelSlice))
 	for _, l := range labelSlice {
-		if s, ok := l.(string); ok {
-			allLabels = append(allLabels, s)
+		s, ok := l.(string)
+		if !ok {
+			return nil, newError(err0404ReadNullTypeError)
 		}
+		allLabels = append(allLabels, s)
+	}
+	label := ""
+	if len(allLabels) > 0 {
+		label = allLabels[0]
 	}
 	v := &Vertex{Element: Element{Id: id, Label: label}, Labels: allLabels}
 	if withProps {
@@ -403,18 +407,22 @@ func (d *GraphBinaryDeserializer) readEdge() (*Edge, error) {
 		return nil, err
 	}
 	labelSlice, ok := labels.([]interface{})
-	if !ok || len(labelSlice) == 0 {
-		return nil, newError(err0404ReadNullTypeError)
-	}
-	label, ok := labelSlice[0].(string)
 	if !ok {
 		return nil, newError(err0404ReadNullTypeError)
 	}
+	// An edge carries a single label in practice, but the label is read as a list for symmetry
+	// with vertices. The deprecated singular Label holds the first label, or "" when absent.
 	allLabels := make([]string, 0, len(labelSlice))
 	for _, l := range labelSlice {
-		if s, ok := l.(string); ok {
-			allLabels = append(allLabels, s)
+		s, ok := l.(string)
+		if !ok {
+			return nil, newError(err0404ReadNullTypeError)
 		}
+		allLabels = append(allLabels, s)
+	}
+	label := ""
+	if len(allLabels) > 0 {
+		label = allLabels[0]
 	}
 	inV, err := d.readVertex(false)
 	if err != nil {
