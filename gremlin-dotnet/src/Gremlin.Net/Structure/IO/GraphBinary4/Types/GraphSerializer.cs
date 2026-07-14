@@ -152,6 +152,11 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
             var vLabelList = (List<string?>)await reader
                 .ReadNonNullableValueAsync<List<string?>>(stream, cancellationToken).ConfigureAwait(false);
             var vLabel = vLabelList.Count > 0 ? vLabelList[0] ?? "" : "";
+            var vLabels = new List<string>();
+            foreach (var l in vLabelList)
+            {
+                if (l != null) vLabels.Add(l);
+            }
 
             var vpCount = (int)await reader.ReadNonNullableValueAsync<int>(stream, cancellationToken)
                 .ConfigureAwait(false);
@@ -174,7 +179,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
                 vertexProperties.Add(new VertexProperty(vpId, vpLabel, vpValue, null, metaPropsArray));
             }
 
-            return new Vertex(vId, vLabel, vertexProperties.Cast<object>().ToArray());
+            return new Vertex(vId, vLabel, vertexProperties.Cast<object>().ToArray(), vLabels);
         }
 
         private static async Task<Edge> ReadEdgeAsync(Graph graph, Stream stream, GraphBinaryReader reader,
@@ -184,6 +189,11 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
             var eLabelList = (List<string?>)await reader
                 .ReadNonNullableValueAsync<List<string?>>(stream, cancellationToken).ConfigureAwait(false);
             var eLabel = eLabelList.Count > 0 ? eLabelList[0] ?? "" : "";
+            var eLabels = new List<string>();
+            foreach (var l in eLabelList)
+            {
+                if (l != null) eLabels.Add(l);
+            }
 
             var inVId = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             // discard the in-vertex label placeholder (always null on the wire)
@@ -201,7 +211,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
             var inVertex = ResolveVertex(graph, inVId);
             var outVertex = ResolveVertex(graph, outVId);
 
-            return new Edge(eId, outVertex, eLabel, inVertex, edgePropsArray);
+            return new Edge(eId, outVertex, eLabel, inVertex, edgePropsArray, eLabels);
         }
 
         private static Vertex ResolveVertex(Graph graph, object? vertexId)

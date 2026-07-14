@@ -355,6 +355,34 @@ class TestGraphBinaryV4(object):
         assert re1.properties[0].key == "weight"
         assert re1.properties[0].value == 0.5
 
+    def test_graph_with_multi_labelled_vertices(self):
+        # a graph containing vertices with multiple labels - see TINKERPOP-3261
+        graph = Graph()
+        graph.vertices[1] = Vertex(1, labels=["person", "employee"])
+        graph.vertices[2] = Vertex(2, labels=["software", "product"])
+        graph.edges[3] = Edge(3, graph.vertices[1], "created", graph.vertices[2])
+
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(graph))
+
+        assert isinstance(output, Graph)
+        assert output.vertices[1].labels == frozenset(["person", "employee"])
+        assert output.vertices[2].labels == frozenset(["software", "product"])
+
+    def test_graph_with_zero_labelled_vertices(self):
+        # a graph containing vertices with no labels - see TINKERPOP-3261
+        graph = Graph()
+        graph.vertices[1] = Vertex(1, labels=[])
+        graph.vertices[2] = Vertex(2, labels=[])
+        graph.edges[3] = Edge(3, graph.vertices[1], "created", graph.vertices[2])
+
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(graph))
+
+        assert isinstance(output, Graph)
+        assert output.vertices[1].labels == frozenset()
+        assert output.vertices[1].label == ""
+        assert output.vertices[2].labels == frozenset()
+        assert output.vertices[2].label == ""
+
     def test_provider_defined_type(self):
         pdt = CompositePDT('Point', {'x': 1, 'y': 2})
         result = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(pdt))

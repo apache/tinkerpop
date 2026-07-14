@@ -744,7 +744,7 @@ class TinkerGraphIO(_GraphBinaryTypeIO):
         IntIO.dictify(len(vertices), writer, to_extend, True, False)
         for v in vertices:
             writer.to_dict(v.id, to_extend)
-            if hasattr(v, '_labels') and v._labels:
+            if hasattr(v, '_labels'):
                 ListIO.dictify(list(v._labels), writer, to_extend, True, False)
             else:
                 ListIO.dictify([v.label], writer, to_extend, True, False)
@@ -760,7 +760,7 @@ class TinkerGraphIO(_GraphBinaryTypeIO):
         IntIO.dictify(len(edges), writer, to_extend, True, False)
         for e in edges:
             writer.to_dict(e.id, to_extend)
-            if hasattr(e, '_labels') and e._labels:
+            if hasattr(e, '_labels'):
                 ListIO.dictify(list(e._labels), writer, to_extend, True, False)
             else:
                 ListIO.dictify([e.label], writer, to_extend, True, False)

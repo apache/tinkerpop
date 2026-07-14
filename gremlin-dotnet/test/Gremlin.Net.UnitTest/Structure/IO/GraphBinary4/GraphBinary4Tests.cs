@@ -781,6 +781,119 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             Assert.Equal(expected, actual);
         }
         
+        [Fact]
+        public async Task TestVertexWithMultipleLabels()
+        {
+            var expected = new Vertex(1, "person", labels: new[] { "person", "employee" });
+            var writer = CreateGraphBinaryWriter();
+            var reader = CreateGraphBinaryReader();
+            var serializationStream = new MemoryStream();
+
+            await writer.WriteAsync(expected, serializationStream);
+            serializationStream.Position = 0;
+            var actual = (Vertex)(await reader.ReadAsync(serializationStream))!;
+
+            Assert.Equal(expected.Id, actual.Id);
+            Assert.Equal(new HashSet<string> { "person", "employee" }, actual.Labels);
+        }
+
+        [Fact]
+        public async Task TestVertexWithZeroLabels()
+        {
+            var expected = new Vertex(2, "", labels: new string[] { });
+            var writer = CreateGraphBinaryWriter();
+            var reader = CreateGraphBinaryReader();
+            var serializationStream = new MemoryStream();
+
+            await writer.WriteAsync(expected, serializationStream);
+            serializationStream.Position = 0;
+            var actual = (Vertex)(await reader.ReadAsync(serializationStream))!;
+
+            Assert.Equal(expected.Id, actual.Id);
+            Assert.Empty(actual.Labels);
+            Assert.Equal("", actual.Label);
+        }
+
+        [Fact]
+        public async Task TestEdgeWithMultiLabelEndpoints()
+        {
+            var inV = new Vertex(10, "person", labels: new[] { "person", "employee" });
+            var outV = new Vertex(20, "software", labels: new[] { "software", "project" });
+            var expected = new Edge(100, outV, "developed", inV);
+            var writer = CreateGraphBinaryWriter();
+            var reader = CreateGraphBinaryReader();
+            var serializationStream = new MemoryStream();
+
+            await writer.WriteAsync(expected, serializationStream);
+            serializationStream.Position = 0;
+            var actual = (Edge)(await reader.ReadAsync(serializationStream))!;
+
+            Assert.Equal(expected.Id, actual.Id);
+            Assert.Equal(new HashSet<string> { "person", "employee" }, actual.InV.Labels);
+            Assert.Equal(new HashSet<string> { "software", "project" }, actual.OutV.Labels);
+        }
+
+        [Fact]
+        public async Task TestEdgeWithZeroLabelEndpoints()
+        {
+            var inV = new Vertex(10, "", labels: new string[] { });
+            var outV = new Vertex(20, "", labels: new string[] { });
+            var expected = new Edge(100, outV, "knows", inV);
+            var writer = CreateGraphBinaryWriter();
+            var reader = CreateGraphBinaryReader();
+            var serializationStream = new MemoryStream();
+
+            await writer.WriteAsync(expected, serializationStream);
+            serializationStream.Position = 0;
+            var actual = (Edge)(await reader.ReadAsync(serializationStream))!;
+
+            Assert.Equal(expected.Id, actual.Id);
+            Assert.Empty(actual.InV.Labels);
+            Assert.Equal("", actual.InV.Label);
+            Assert.Empty(actual.OutV.Labels);
+            Assert.Equal("", actual.OutV.Label);
+        }
+
+        [Fact]
+        public async Task TestGraphWithMultiLabelVertices()
+        {
+            var graph = new Graph();
+            graph.Vertices[1] = new Vertex(1, "person", labels: new[] { "person", "employee" });
+            graph.Vertices[2] = new Vertex(2, "software", labels: new[] { "software", "project" });
+            graph.Edges[100] = new Edge(100, graph.Vertices[2], "created", graph.Vertices[1]);
+            var writer = CreateGraphBinaryWriter();
+            var reader = CreateGraphBinaryReader();
+            var serializationStream = new MemoryStream();
+
+            await writer.WriteAsync(graph, serializationStream);
+            serializationStream.Position = 0;
+            var actual = (Graph)(await reader.ReadAsync(serializationStream))!;
+
+            Assert.Equal(new HashSet<string> { "person", "employee" }, actual.Vertices[1].Labels);
+            Assert.Equal(new HashSet<string> { "software", "project" }, actual.Vertices[2].Labels);
+        }
+
+        [Fact]
+        public async Task TestGraphWithZeroLabelVertices()
+        {
+            var graph = new Graph();
+            graph.Vertices[1] = new Vertex(1, "", labels: new string[] { });
+            graph.Vertices[2] = new Vertex(2, "", labels: new string[] { });
+            graph.Edges[100] = new Edge(100, graph.Vertices[2], "knows", graph.Vertices[1]);
+            var writer = CreateGraphBinaryWriter();
+            var reader = CreateGraphBinaryReader();
+            var serializationStream = new MemoryStream();
+
+            await writer.WriteAsync(graph, serializationStream);
+            serializationStream.Position = 0;
+            var actual = (Graph)(await reader.ReadAsync(serializationStream))!;
+
+            Assert.Empty(actual.Vertices[1].Labels);
+            Assert.Equal("", actual.Vertices[1].Label);
+            Assert.Empty(actual.Vertices[2].Labels);
+            Assert.Equal("", actual.Vertices[2].Label);
+        }
+
         private static GraphBinaryWriter CreateGraphBinaryWriter()
         {
             return new GraphBinaryWriter();
