@@ -30,6 +30,9 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.IOException;
@@ -37,6 +40,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -61,25 +65,49 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
         conf.setProperty("gremlin.tinkergraph.defaultVertexPropertyCardinality", "list");
 
         try {
-            final Graph graph = (Graph) openMethod.invoke(null, conf);
+            // Parse vertices into temporary buffer before creating the graph, to determine if
+            // multilabel is required on the graph.
             final int vertexCount = context.readValue(buffer, Integer.class, false);
+            final List<DetachedVertex> parsedVertices = new ArrayList<>(vertexCount);
+            boolean requiresMultiLabelCardinality = false;
             for (int ix = 0; ix < vertexCount; ix++) {
-                final Vertex v = graph.addVertex(T.id, context.read(buffer), T.label, context.readValue(buffer, List.class, false).get(0));
-                final int vertexPropertyCount = context.readValue(buffer, Integer.class, false);
+                final Object vertexId = context.read(buffer);
+                final List<String> labelList = context.readValue(buffer, List.class, false);
+                if (labelList == null || labelList.size() != 1)
+                    requiresMultiLabelCardinality = true;
 
+                final DetachedVertex.Builder vertexBuilder = DetachedVertex.build().setId(vertexId);
+                if (labelList != null && !labelList.isEmpty()) {
+                    if (labelList.size() == 1)
+                        vertexBuilder.setLabel(labelList.get(0));
+                    else
+                        vertexBuilder.setLabels(new LinkedHashSet<>(labelList));
+                }
+
+                final int vertexPropertyCount = context.readValue(buffer, Integer.class, false);
                 for (int iy = 0; iy < vertexPropertyCount; iy++) {
                     final Object id = context.read(buffer);
                     // reading single string value for now according to GraphBinaryV4
                     final String label = (String) context.readValue(buffer, List.class, false).get(0);
                     final Object val = context.read(buffer);
                     context.read(buffer); // toss parent as it's always null
-                    final VertexProperty<Object> vp = v.property(VertexProperty.Cardinality.list, label, val, T.id, id);
-
-                    final List<Property> edgeProperties = context.readValue(buffer, List.class, false);
-                    for (Property p : edgeProperties) {
-                        vp.property(p.key(), p.value());
-                    }
+                    final List<Property> metaProperties = context.readValue(buffer, List.class, false);
+                    final Map<String, Object> metaPropertyMap = new HashMap<>();
+                    for (final Property p : metaProperties)
+                        metaPropertyMap.put(p.key(), p.value());
+                    vertexBuilder.addProperty(new DetachedVertexProperty<>(id, label, val, metaPropertyMap));
                 }
+                parsedVertices.add(vertexBuilder.create());
+            }
+
+            // Only enable multilabel on the graph when the parsed data actually requires it.
+            if (requiresMultiLabelCardinality)
+                conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE");
+
+            final Graph graph = (Graph) openMethod.invoke(null, conf);
+
+            for (final DetachedVertex parsedVertex : parsedVertices) {
+                parsedVertex.attach(Attachable.Method.getOrCreate(graph));
             }
 
             final int edgeCount = context.readValue(buffer, Integer.class, false);
@@ -134,9 +162,9 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
         final List<VertexProperty<Object>> vertexProperties = IteratorUtils.list(vertex.properties());
 
         context.write(vertex.id(), buffer);
-        // serializing label as list here for now according to GraphBinaryV4
-        final String vLabel = vertex.label();
-        context.writeValue(vLabel == null ? Collections.emptyList() : Collections.singletonList(vLabel), buffer, false);
+        // Write all labels as List<String> for multi-label support.
+        final java.util.Set<String> labels = vertex.labels();
+        context.writeValue(labels == null ? Collections.emptyList() : new ArrayList<>(labels), buffer, false);
         context.writeValue(vertexProperties.size(), buffer, false);
 
         for (VertexProperty<Object> vp : vertexProperties) {

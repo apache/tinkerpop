@@ -303,10 +303,17 @@ public interface Attachable<V> {
 
         public static Vertex createVertex(final Attachable<Vertex> attachableVertex, final Graph hostGraph) {
             final Vertex baseVertex = attachableVertex.get();
-            final Vertex vertex = hostGraph.features().vertex().willAllowId(baseVertex.id()) ?
-                    hostGraph.addVertex(T.id, baseVertex.id(), T.label, baseVertex.label()) :
-                    hostGraph.addVertex(T.label, baseVertex.label());
             final Set<String> labels = baseVertex.labels();
+            final boolean allowId = hostGraph.features().vertex().willAllowId(baseVertex.id());
+            final Vertex vertex;
+            if (labels.isEmpty()) {
+                // zero-label vertex: add it without a label so the host graph does not inject a default label
+                vertex = allowId ? hostGraph.addVertex(T.id, baseVertex.id()) : hostGraph.addVertex();
+            } else {
+                vertex = allowId ?
+                        hostGraph.addVertex(T.id, baseVertex.id(), T.label, baseVertex.label()) :
+                        hostGraph.addVertex(T.label, baseVertex.label());
+            }
             if (labels.size() > 1) {
                 final List<String> additionalLabels = labels.stream().filter(l -> !l.equals(baseVertex.label())).collect(Collectors.toList());
                 if (!additionalLabels.isEmpty())

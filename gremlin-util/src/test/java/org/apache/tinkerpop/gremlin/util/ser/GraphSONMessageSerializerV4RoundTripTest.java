@@ -40,7 +40,8 @@ public class GraphSONMessageSerializerV4RoundTripTest extends AbstractRoundTripT
     public final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
 
     private static final List<String> skippedTests
-            = Arrays.asList("ReferenceVertex", "ReferenceVertexProperty", "ReferenceProperty", "Graph", "BulkList"); // enable BulkList after implemented
+            = Arrays.asList("ReferenceVertex", "ReferenceVertexProperty", "ReferenceProperty", "Graph", "BulkList",
+                    "GraphWithMultiLabelVertices", "GraphWithZeroLabelVertices"); // enable BulkList after implemented
 
     @Test
     public void shouldWriteAndRead() throws Exception {
