@@ -20,13 +20,11 @@
 package org.apache.tinkerpop.gremlin.tinkergraph;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerMemoryGraph;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,10 +45,6 @@ public class TinkerMemoryGraphUUIDProvider extends TinkerMemoryGraphProvider {
             put(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, idMaker);
             if (requiresListCardinalityAsDefault(loadGraphWith, test, testMethodName))
                 put(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
-            if (requiresPersistence(test, testMethodName)) {
-                put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
-                put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, TestHelper.makeTestDataFile(test, "temp", testMethodName + ".kryo"));
-            }
         }};
     }
 }
