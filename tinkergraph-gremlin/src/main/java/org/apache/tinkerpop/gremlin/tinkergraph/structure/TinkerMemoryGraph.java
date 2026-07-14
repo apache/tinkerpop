@@ -50,8 +50,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * The in-memory (with optional persistence on calls to {@link #close()}) implementation of the {@link TinkerGraph}
- * interface and the reference implementation of the property graph interfaces provided by TinkerPop.
+ * The purely in-memory implementation of the {@link TinkerGraph} interface and the reference implementation of the
+ * property graph interfaces provided by TinkerPop. This graph holds no data across JVM restarts; use
+ * {@code g.io(...).write()} / {@code g.io(...).read()} for interchange, or {@link TinkerStorageGraph} for durable
+ * persistence.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -98,15 +100,6 @@ public class TinkerMemoryGraph extends AbstractTinkerGraph {
         edgeLabelCardinality = LabelCardinality.ONE;
         defaultVertexLabel = Vertex.DEFAULT_LABEL;
         defaultEdgeLabel = Edge.DEFAULT_LABEL;
-
-        graphLocation = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
-        graphFormat = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_FORMAT, null);
-
-        if ((graphLocation != null && null == graphFormat) || (null == graphLocation && graphFormat != null))
-            throw new IllegalStateException(String.format("The %s and %s must both be specified if either is present",
-                    GREMLIN_TINKERGRAPH_GRAPH_LOCATION, GREMLIN_TINKERGRAPH_GRAPH_FORMAT));
-
-        if (graphLocation != null) loadGraph();
 
         serviceRegistry = new TinkerServiceRegistry(this);
         configuration.getList(String.class, GREMLIN_TINKERGRAPH_SERVICE, Collections.emptyList()).forEach(serviceClass ->
@@ -444,6 +437,11 @@ public class TinkerMemoryGraph extends AbstractTinkerGraph {
 
         @Override
         public boolean supportsThreadedTransactions() {
+            return false;
+        }
+
+        @Override
+        public boolean supportsPersistence() {
             return false;
         }
 
