@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
-import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -35,8 +34,9 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
 import org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DefaultStorage;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Iterator;
@@ -72,7 +72,18 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
 
     protected Configuration configuration;
     protected String graphLocation;
-    protected String graphFormat;
+
+    /**
+     * The pluggable durable storage engine, or {@code null} when the graph holds data only in memory. Only set by
+     * transactional implementations that support persistence.
+     */
+    protected TinkerStorage storage;
+
+    /**
+     * Guard set while a graph is replaying its storage log on open. While {@code true}, mutations must not be
+     * re-persisted, otherwise replay would append the loaded data back to the log.
+     */
+    protected volatile boolean loading = false;
 
     /**
      * {@inheritDoc}
@@ -238,54 +249,6 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
         return vertexProperties.containsKey(id);
     }
 
-    protected void loadGraph() {
-        final File f = new File(graphLocation);
-        if (f.exists() && f.isFile()) {
-            try {
-                if (graphFormat.equals("graphml")) {
-                    io(IoCore.graphml()).readGraph(graphLocation);
-                } else if (graphFormat.equals("graphson")) {
-                    io(IoCore.graphson()).readGraph(graphLocation);
-                } else if (graphFormat.equals("gryo")) {
-                    io(IoCore.gryo()).readGraph(graphLocation);
-                } else {
-                    io(IoCore.createIoBuilder(graphFormat)).readGraph(graphLocation);
-                }
-            } catch (Exception ex) {
-                throw new RuntimeException(String.format("Could not load graph at %s with %s", graphLocation, graphFormat), ex);
-            }
-        }
-    }
-
-    protected void saveGraph() {
-        final File f = new File(graphLocation);
-        if (f.exists()) {
-            f.delete();
-        } else {
-            final File parent = f.getParentFile();
-
-            // the parent would be null in the case of an relative path if the graphLocation was simply: "f.gryo"
-            if (parent != null && !parent.exists()) {
-                parent.mkdirs();
-            }
-        }
-
-        try {
-            if (graphFormat.equals("graphml")) {
-                io(IoCore.graphml()).writeGraph(graphLocation);
-            } else if (graphFormat.equals("graphson")) {
-                io(IoCore.graphson()).writeGraph(graphLocation);
-            } else if (graphFormat.equals("gryo")) {
-                io(IoCore.gryo()).writeGraph(graphLocation);
-            } else {
-                io(IoCore.createIoBuilder(graphFormat)).writeGraph(graphLocation);
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException(String.format("Could not save graph at %s with %s", graphLocation, graphFormat), ex);
-        }
-    }
-
-
     @Override
     public <I extends Io> I io(final Io.Builder<I> builder) {
         if (builder.requiresVersion(GryoVersion.V1_0) || builder.requiresVersion(GraphSONVersion.V1_0))
@@ -332,13 +295,18 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
     }
 
     /**
-     * This method only has an effect if the {@link TinkerGraph#GREMLIN_TINKERGRAPH_GRAPH_LOCATION} is set, in which case the
-     * data in the graph is persisted to that location. This method may be called multiple times and does not release
-     * resources.
+     * Closes the graph, releasing any resources held by its {@link TinkerServiceRegistry}. This method may be called
+     * multiple times and is a no-op with respect to graph data for the in-memory implementation. Transactional
+     * implementations that are backed by a {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage}
+     * engine flush and close that engine here.
      */
     @Override
     public void close() {
-        if (graphLocation != null) saveGraph();
+        if (storage != null) {
+            storage.flush();
+            storage.compact(this);
+            storage.close();
+        }
         serviceRegistry.close();
         GqlDeclarativeMatchStrategy.evict(this);
     }
@@ -479,6 +447,28 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
                 return (IdManager) Class.forName(idManagerConfigValue).newInstance();
             } catch (Exception ex) {
                 throw new IllegalStateException(String.format("Could not configure TinkerGraph %s id manager with %s", clazz.getSimpleName(), idManagerConfigValue));
+            }
+        }
+    }
+
+    ///////////// Storage engine ///////////////
+    /**
+     * Construct a {@link TinkerStorage} engine from the TinkerGraph {@code Configuration}, or return {@code null} when
+     * no storage engine is configured. The configuration value is either a {@link DefaultStorage} enum name (matched
+     * case-insensitively, e.g. {@code graphbinary}) or the fully-qualified class name of a {@link TinkerStorage}
+     * implementation with a public no-argument constructor. Mirrors {@link #selectIdManager}.
+     */
+    protected static TinkerStorage selectStorage(final Configuration config, final String configKey) {
+        final String storageConfigValue = config.getString(configKey, null);
+        if (null == storageConfigValue)
+            return null;
+        try {
+            return DefaultStorage.valueOf(storageConfigValue.toUpperCase()).get();
+        } catch (IllegalArgumentException iae) {
+            try {
+                return (TinkerStorage) Class.forName(storageConfigValue).newInstance();
+            } catch (Exception ex) {
+                throw new IllegalStateException(String.format("Could not configure TinkerGraph storage engine with %s", storageConfigValue), ex);
             }
         }
     }

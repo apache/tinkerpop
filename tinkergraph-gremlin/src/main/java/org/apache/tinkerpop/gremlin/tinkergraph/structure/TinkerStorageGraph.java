@@ -89,17 +89,25 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         allowNullPropertyValues = configuration.getBoolean(GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, false);
 
         graphLocation = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
-        graphFormat = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_FORMAT, null);
+        storage = selectStorage(configuration, GREMLIN_TINKERGRAPH_STORAGE);
 
-        if ((graphLocation != null && null == graphFormat) || (null == graphLocation && graphFormat != null))
-            throw new IllegalStateException(String.format("The %s and %s must both be specified if either is present",
-                    GREMLIN_TINKERGRAPH_GRAPH_LOCATION, GREMLIN_TINKERGRAPH_GRAPH_FORMAT));
-
-        if (graphLocation != null) loadGraph();
+        if (storage != null && null == graphLocation)
+            throw new IllegalStateException(String.format("The %s must be specified when %s is set",
+                    GREMLIN_TINKERGRAPH_GRAPH_LOCATION, GREMLIN_TINKERGRAPH_STORAGE));
 
         serviceRegistry = new TinkerServiceRegistry(this);
         configuration.getList(String.class, GREMLIN_TINKERGRAPH_SERVICE, Collections.emptyList()).forEach(serviceClass ->
                 serviceRegistry.registerService(instantiate(serviceClass)));
+
+        if (storage != null) {
+            storage.open(this, configuration);
+            loading = true;
+            try {
+                storage.replay(this);
+            } finally {
+                loading = false;
+            }
+        }
     }
 
     /**
@@ -280,6 +288,17 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         super.clear();
         this.vertices.clear();
         this.edges.clear();
+    }
+
+    /**
+     * Fold the durable storage log into a compact snapshot of the current committed state, reclaiming space. Has no
+     * effect when no storage engine is configured.
+     */
+    public void compact() {
+        if (storage != null) {
+            storage.flush();
+            storage.compact(this);
+        }
     }
 
     @Override
@@ -476,6 +495,11 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         @Override
         public boolean supportsTransactions() {
             return true;
+        }
+
+        @Override
+        public boolean supportsPersistence() {
+            return storage != null;
         }
 
         @Override

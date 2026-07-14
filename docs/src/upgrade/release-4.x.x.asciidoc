@@ -103,6 +103,56 @@ which affects providers that extended them.
 
 See: link:https://lists.apache.org/thread/2zt62kvfssh6xz5vnf2lk1g7cstq9vod[DISCUSS thread]
 
+==== TinkerStorageGraph Pluggable Disk Storage
+
+`TinkerStorageGraph` gained the optional disk storage anticipated by its rename. A storage engine is selected with the
+new `gremlin.tinkergraph.storage` configuration key, and `gremlin.tinkergraph.graphLocation` names the directory that
+holds the durable data. When a storage engine is configured, each committed transaction is durably written to disk and
+the graph is rebuilt from that data when it is opened again, so a graph survives a restart of the JVM.
+
+The reference engine, `graphbinary`, records committed transactions as an append-only log serialized with GraphBinary
+and folds that log into a compact snapshot on close. The storage layer is pluggable: the value of the storage key may
+also be the fully-qualified class name of a custom engine, following the same convention as the `IdManager` selection.
+
+[source,groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty('gremlin.graph', 'org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph')
+conf.setProperty('gremlin.tinkergraph.storage', 'graphbinary')
+conf.setProperty('gremlin.tinkergraph.graphLocation', '/data/mygraph')
+
+graph = TinkerStorageGraph.open(conf)
+g = traversal().with(graph)
+g.addV('person').property('name','marko').iterate()
+g.tx().commit()
+graph.close()
+
+// reopening the same location restores the committed data
+graph = TinkerStorageGraph.open(conf)
+g = traversal().with(graph)
+g.V().count().next()
+==>1
+----
+
+The in-memory `TinkerMemoryGraph` no longer persists to disk. Earlier versions of TinkerGraph would automatically read
+from `gremlin.tinkergraph.graphLocation` on open and write back to it on close, using the `gremlin.tinkergraph.graphFormat`
+interchange format. That automatic behavior is removed, and `TinkerMemoryGraph` now ignores both keys and reports
+`FEATURE_PERSISTENCE` as `false`. Durable persistence is the responsibility of `TinkerStorageGraph` and its storage
+engine, while moving data in and out of any graph in an interchange format remains the job of the `io()` step:
+
+[source,groovy]
+----
+// interchange, on demand, for any graph
+g.io('/tmp/graph.kryo').write().iterate()
+g.io('/tmp/graph.kryo').read().iterate()
+----
+
+Configurations that previously relied on the in-memory graph loading itself from `graphLocation` on open must either
+call `io().read()` explicitly or switch to `TinkerStorageGraph` with a storage engine. The `gremlin.tinkergraph.graphFormat`
+key is retired.
+
+See: <<tinkergraph-gremlin,TinkerGraph>>
+
 ==== Standardizing GLV Connection Options
 
 TinkerPop 4.x standardizes connection option names and defaults across all five Gremlin Language Variants (Java, Python,

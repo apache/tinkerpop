@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.GraphHelper;
-import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -38,7 +37,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
@@ -62,11 +60,8 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.junit.Test;
 
 import java.awt.Color;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,7 +73,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
@@ -91,7 +85,6 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
-import static org.mockito.Mockito.mock;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -387,13 +380,6 @@ public class TinkerMemoryGraphTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void shouldRequireGraphLocationIfFormatIsSet() {
-        final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "graphml");
-        TinkerGraph.open(conf);
-    }
-
-    @Test(expected = IllegalStateException.class)
     public void shouldNotModifyAVertexThatWasRemoved() {
         final TinkerGraph graph = TinkerGraph.open();
         final Vertex v = graph.addVertex();
@@ -425,137 +411,6 @@ public class TinkerMemoryGraphTest {
         assertEquals("stephen", v.value("name"));
         v.remove();
         v.value("name");
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void shouldRequireGraphFormatIfLocationIsSet() {
-        final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, TestHelper.makeTestDataDirectory(TinkerMemoryGraphTest.class));
-        TinkerGraph.open(conf);
-    }
-
-    @Test
-    public void shouldPersistToGraphML() {
-        final String graphLocation = TestHelper.makeTestDataFile(TinkerMemoryGraphTest.class, "shouldPersistToGraphML.xml");
-        final File f = new File(graphLocation);
-        if (f.exists() && f.isFile()) f.delete();
-
-        final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "graphml");
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, graphLocation);
-        final TinkerGraph graph = TinkerGraph.open(conf);
-        TinkerFactory.generateModern(graph);
-        graph.close();
-
-        final TinkerGraph reloadedGraph = TinkerGraph.open(conf);
-        IoTest.assertModernGraph(reloadedGraph, true, true);
-        reloadedGraph.close();
-    }
-
-    @Test
-    public void shouldPersistToGraphSON() {
-        final String graphLocation = TestHelper.makeTestDataFile(TinkerMemoryGraphTest.class, "shouldPersistToGraphSON.json");
-        final File f = new File(graphLocation);
-        if (f.exists() && f.isFile()) f.delete();
-
-        final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "graphson");
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, graphLocation);
-        final TinkerGraph graph = TinkerGraph.open(conf);
-        TinkerFactory.generateModern(graph);
-        graph.close();
-
-        final TinkerGraph reloadedGraph = TinkerGraph.open(conf);
-        IoTest.assertModernGraph(reloadedGraph, true, false);
-        reloadedGraph.close();
-    }
-
-    @Test
-    public void shouldPersistToGryo() {
-        final String graphLocation = TestHelper.makeTestDataFile(TinkerMemoryGraphTest.class, "shouldPersistToGryo.kryo");
-        final File f = new File(graphLocation);
-        if (f.exists() && f.isFile()) f.delete();
-
-        final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, graphLocation);
-        final TinkerGraph graph = TinkerGraph.open(conf);
-        TinkerFactory.generateModern(graph);
-        graph.close();
-
-        final TinkerGraph reloadedGraph = TinkerGraph.open(conf);
-        IoTest.assertModernGraph(reloadedGraph, true, false);
-        reloadedGraph.close();
-    }
-
-    @Test
-    public void shouldPersistToGryoAndHandleMultiProperties() {
-        final String graphLocation = TestHelper.makeTestDataFile(TinkerMemoryGraphTest.class, "shouldPersistToGryoMulti.kryo");
-        final File f = new File(graphLocation);
-        if (f.exists() && f.isFile()) f.delete();
-
-        final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, graphLocation);
-        final TinkerGraph graph = TinkerGraph.open(conf);
-        TinkerFactory.generateTheCrew(graph);
-        graph.close();
-
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.toString());
-        final TinkerGraph reloadedGraph = TinkerGraph.open(conf);
-        IoTest.assertCrewGraph(reloadedGraph, false);
-        reloadedGraph.close();
-    }
-
-    @Test
-    public void shouldPersistWithRelativePath() {
-        final String graphLocation = TestHelper.convertToRelative(TinkerMemoryGraphTest.class,
-                                                                  TestHelper.makeTestDataPath(TinkerMemoryGraphTest.class))
-                                     + "shouldPersistToGryoRelative.kryo";
-        final File f = new File(graphLocation);
-        if (f.exists() && f.isFile()) f.delete();
-
-        final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, graphLocation);
-        final TinkerGraph graph = TinkerGraph.open(conf);
-        TinkerFactory.generateModern(graph);
-        graph.close();
-
-        final TinkerGraph reloadedGraph = TinkerGraph.open(conf);
-        IoTest.assertModernGraph(reloadedGraph, true, false);
-        reloadedGraph.close();
-    }
-
-    @Test
-    public void shouldPersistToAnyGraphFormat() {
-        final String graphLocation = TestHelper.makeTestDataFile(TinkerMemoryGraphTest.class, "shouldPersistToAnyGraphFormat.dat");
-        final File f = new File(graphLocation);
-        if (f.exists() && f.isFile()) f.delete();
-
-        final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, TestIoBuilder.class.getName());
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, graphLocation);
-        final TinkerGraph graph = TinkerGraph.open(conf);
-        TinkerFactory.generateModern(graph);
-
-        //Test write graph
-        graph.close();
-        assertEquals(TestIoBuilder.calledOnMapper, 1);
-        assertEquals(TestIoBuilder.calledGraph, 1);
-        assertEquals(TestIoBuilder.calledCreate, 1);
-
-        try (BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(f))){
-            os.write("dummy string".getBytes());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        //Test read graph
-        final TinkerGraph readGraph = TinkerGraph.open(conf);
-        assertEquals(TestIoBuilder.calledOnMapper, 1);
-        assertEquals(TestIoBuilder.calledGraph, 1);
-        assertEquals(TestIoBuilder.calledCreate, 1);
     }
 
     @Test
@@ -1026,38 +881,4 @@ public class TinkerMemoryGraphTest {
         }
     }
 
-    public static class TestIoBuilder implements Io.Builder {
-
-        static int calledGraph, calledCreate, calledOnMapper;
-
-        public TestIoBuilder(){
-            //Looks awkward to reset static vars inside a constructor, but makes sense from testing perspective
-            calledGraph = 0;
-            calledCreate = 0;
-            calledOnMapper = 0;
-        }
-
-        @Override
-        public Io.Builder<? extends Io> onMapper(final Consumer onMapper) {
-            calledOnMapper++;
-            return this;
-        }
-
-        @Override
-        public Io.Builder<? extends Io> graph(final Graph graph) {
-            calledGraph++;
-            return this;
-        }
-
-        @Override
-        public Io create() {
-            calledCreate++;
-            return mock(Io.class);
-        }
-
-        @Override
-        public boolean requiresVersion(final Object version) {
-            return false;
-        }
-    }
 }

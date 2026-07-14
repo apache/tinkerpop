@@ -45,8 +45,20 @@ public interface TinkerGraph extends Graph {
     String GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER = "gremlin.tinkergraph.edgeIdManager";
     String GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER = "gremlin.tinkergraph.vertexPropertyIdManager";
     String GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY = "gremlin.tinkergraph.defaultVertexPropertyCardinality";
+    /**
+     * The filesystem directory that a {@link TinkerStorageGraph} uses for its durable storage engine. Ignored by
+     * {@link TinkerMemoryGraph}, which is purely in-memory. Only meaningful when {@link #GREMLIN_TINKERGRAPH_STORAGE}
+     * is also set.
+     */
     String GREMLIN_TINKERGRAPH_GRAPH_LOCATION = "gremlin.tinkergraph.graphLocation";
-    String GREMLIN_TINKERGRAPH_GRAPH_FORMAT = "gremlin.tinkergraph.graphFormat";
+    /**
+     * Selects the pluggable storage engine used by {@link TinkerStorageGraph} to durably persist transactions to the
+     * {@link #GREMLIN_TINKERGRAPH_GRAPH_LOCATION} directory. The value is either a
+     * {@code TinkerStorageGraph.DefaultStorage} enum name (e.g. {@code graphbinary}) or the fully-qualified class name
+     * of a {@code org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage} implementation. When unset,
+     * the graph holds data only in memory. Not valid on {@link TinkerMemoryGraph}.
+     */
+    String GREMLIN_TINKERGRAPH_STORAGE = "gremlin.tinkergraph.storage";
     String GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES = "gremlin.tinkergraph.allowNullPropertyValues";
     String GREMLIN_TINKERGRAPH_SERVICE = "gremlin.tinkergraph.service";
 

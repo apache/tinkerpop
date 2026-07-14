@@ -39,13 +39,13 @@ under the License.
 </dependency>
 ----
 
-image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory (with optional
-persistence), graph engine that provides both OLTP and OLAP functionality. It is non-transactional by default but does
+image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory graph engine that
+provides both OLTP and OLAP functionality. It is non-transactional by default but does
 have a lightweight transactional form that can be instantiated offering simple `ThreadLocal` transactions supporting
-`read committed` transaction isolation. As of 4.0.0, `TinkerGraph` is an interface with two implementations:
-`TinkerMemoryGraph`, the in-memory, non-transactional implementation that `TinkerGraph.open()` constructs, and
-`TinkerStorageGraph`, the transactional implementation formerly named `TinkerTransactionGraph`. TinkerGraph is
-deployed with TinkerPop and serves as the reference
+`read committed` transaction isolation, with optional durable persistence to disk. As of 4.0.0, `TinkerGraph` is an
+interface with two implementations: `TinkerMemoryGraph`, the in-memory, non-transactional implementation that
+`TinkerGraph.open()` constructs, and `TinkerStorageGraph`, the transactional implementation formerly named
+`TinkerTransactionGraph`. TinkerGraph is deployed with TinkerPop and serves as the reference
 implementation for other providers to study in order to understand the semantics of the various methods of the
 TinkerPop API. Its status as a reference implementation does not however imply that it is not suitable for production.
 TinkerGraph has many practical use cases in production applications and their development. Some examples of TinkerGraph
@@ -171,19 +171,16 @@ TinkerGraph has several settings that can be provided on creation via `Configura
 |gremlin.tinkergraph.vertexPropertyIdManager |The `IdManager` implementation to use for vertex properties.
 |gremlin.tinkergraph.defaultVertexPropertyCardinality |The default `VertexProperty.Cardinality` to use when `Vertex.property(k,v)` is called.
 |gremlin.tinkergraph.allowNullPropertyValues |A boolean value that determines whether or not `null` property values are allowed and defaults to `false`.
-|gremlin.tinkergraph.graphLocation |The path and file name for where TinkerGraph should persist the graph data. If a
-value is specified here, the `gremlin.tinkergraph.graphFormat` should also be specified.  If this value is not
-included (default), then the graph will stay in-memory and not be loaded/persisted to disk.
-|gremlin.tinkergraph.graphFormat |The format to use to serialize the graph which may be one of the following:
-`graphml`, `graphson`, `gryo`, or a fully qualified class name that implements Io.Builder interface (which allows for
-external third party graph reader/writer formats to be used for persistence).
-If a value is specified here, then the `gremlin.tinkergraph.graphLocation` should
-also be specified.  If this value is not included (default), then the graph will stay in-memory and not be
-loaded/persisted to disk.
+|gremlin.tinkergraph.storage |The durable storage engine used by `TinkerStorageGraph` to persist committed transactions
+to disk. The value is either a built-in engine name (`graphbinary`) or a fully qualified class name of a
+`TinkerStorage` implementation. When not specified (default), the graph holds data only in memory. This setting is
+only valid on `TinkerStorageGraph` and is ignored by the in-memory `TinkerMemoryGraph`.
+|gremlin.tinkergraph.graphLocation |The directory in which `TinkerStorageGraph` stores its durable data. Required when
+`gremlin.tinkergraph.storage` is set and ignored otherwise.
 |=========================================================
 
-NOTE: To use <<tinkergraph-gremlin-tx, transactions>>, configure `gremlin.graph` as
-`org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph`.
+NOTE: To use <<tinkergraph-gremlin-tx, transactions>> and <<tinkergraph-gremlin-persistence, persistence>>, configure
+`gremlin.graph` as `org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph`.
 
 The `IdManager` settings above refer to how TinkerGraph will control identifiers for vertices, edges and vertex
 properties.  There are several options for each of these settings: `ANY`, `LONG`, `INTEGER`, `UUID`, `STRING` or the
@@ -196,15 +193,10 @@ type as well as generate new identifiers with that specified type.
 
 TIP: Setting the `IdManager` to `ANY` also allows `String` type ID values to be used.                                              
 
-If the TinkerGraph is configured for persistence with `gremlin.tinkergraph.graphLocation` and
-`gremlin.tinkergraph.graphFormat`, then the graph will be written to the specified location with the specified
-format when `Graph.close()` is called.  In addition, if these settings are present, TinkerGraph will attempt to
-load the graph from the specified location.
-
-IMPORTANT: If choosing `graphson` as the `gremlin.tinkergraph.graphFormat`, be sure to also establish the  various
-`IdManager` settings as well to ensure that identifiers are properly coerced to the appropriate types as GraphSON
-can lose the identifier's type during serialization (i.e. it will assume `Integer` when the default for TinkerGraph
-is `Long`, which could lead to load errors that result in a message like, "Vertex with id already exists").
+Durable persistence is provided by `TinkerStorageGraph` through its pluggable storage layer and is described in the
+<<tinkergraph-gremlin-persistence, persistence section>>. The in-memory `TinkerMemoryGraph` holds no data across JVM
+restarts. Moving data in and out of any TinkerGraph in an interchange format is handled on demand by the `io()` step
+rather than by graph configuration, as shown below.
 
 It is important to consider the data being imported to TinkerGraph with respect to `defaultVertexPropertyCardinality`
 setting.  For example, if a `.gryo` file is known to contain multi-property data, be sure to set the default
@@ -378,6 +370,53 @@ g.V().valueMap()
 <3> Commit the add vertex operation
 <4> Add a second vertex without committing
 <5> Rollback the change
+
+[[tinkergraph-gremlin-persistence]]
+=== Persistence
+
+`TinkerStorageGraph` can durably persist to disk through a pluggable storage layer built on its transaction support.
+When a storage engine is configured, the changeset of each committed transaction is written to disk, and the graph is
+rebuilt from that data when it is opened again. The in-memory `TinkerMemoryGraph` does not retain data across restarts.
+
+A storage engine is selected with the `gremlin.tinkergraph.storage` configuration key, and
+`gremlin.tinkergraph.graphLocation` names the directory that holds the durable data. The value of the storage key is
+either a built-in engine name or the fully qualified class name of a `TinkerStorage` implementation, following the same
+enum-name-or-class-name convention as the `IdManager` settings. The built-in `graphbinary` engine records committed
+transactions as an append-only log serialized with GraphBinary and folds that log into a compact snapshot when the
+graph is closed.
+
+[source,groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.graph", "org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph")
+conf.setProperty("gremlin.tinkergraph.storage", "graphbinary")
+conf.setProperty("gremlin.tinkergraph.graphLocation", "/data/mygraph")
+
+graph = TinkerStorageGraph.open(conf)
+g = traversal().with(graph)
+g.addV("person").property("name","marko").iterate()
+g.tx().commit()
+graph.close()
+
+// reopening the same location restores the committed data
+graph = TinkerStorageGraph.open(conf)
+g = traversal().with(graph)
+g.V().count()
+==>1
+----
+
+The graph remains the authoritative in-memory copy and is mirrored to disk, so a persisted graph must still fit in
+memory. The write to the storage log happens before the in-memory commit is applied, so a failure to persist aborts the
+transaction and leaves the on-disk data and the in-memory graph consistent.
+
+Persistence is distinct from interchange. `TinkerMemoryGraph` is purely in-memory and does not persist. To move data in
+or out of any TinkerGraph in an interchange format such as GraphML, GraphSON, or Gryo, use the `io()` step directly:
+
+[source,groovy]
+----
+g.io("/tmp/graph.kryo").write().iterate()
+g.io("/tmp/graph.kryo").read().iterate()
+----
 
 [[tinkergraph-gql]]
 === Declarative Pattern Matching (TinkerGQL)

@@ -21,14 +21,17 @@ package org.apache.tinkerpop.gremlin.server.auth;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialTraversal;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialTraversalDsl;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialTraversalSource;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -80,10 +83,54 @@ public class SimpleAuthenticator implements Authenticator {
             // have to create the indices because they are not stored in gryo
             final TinkerGraph tinkerGraph = (TinkerGraph) graph;
             tinkerGraph.createIndex(PROPERTY_USERNAME, Vertex.class);
+
+            // TinkerGraph no longer auto-loads from graphLocation on open, so read the credential store here from
+            // the configured location/format. TinkerStorageGraph (which persists via its own storage engine) manages
+            // its own data and is left untouched.
+            loadCredentialStore(tinkerGraph);
         }
 
         credentialStore = graph.traversal(CredentialTraversalSource.class);
         logger.info("CredentialGraph initialized at {}", credentialStore);
+    }
+
+    /**
+     * Reads the credential store into the supplied in-memory {@link TinkerGraph} from the {@code graphLocation}
+     * declared in its configuration, if any. TinkerGraph no longer loads from disk automatically on open, so the
+     * credential file must be read explicitly here. A {@code TinkerStorageGraph} configured with a durable storage
+     * engine manages its own data and is skipped (it has no {@code graphFormat}).
+     */
+    private static void loadCredentialStore(final TinkerGraph graph) {
+        final Configuration conf = graph.configuration();
+        final String location = conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
+        // a storage engine manages its own persistence and is not an interchange-format load
+        final String storage = conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, null);
+        if (null == location || storage != null)
+            return;
+
+        final File f = new File(location);
+        if (!f.exists() || !f.isFile())
+            return;
+
+        final String format = conf.getString("gremlin.tinkergraph.graphFormat", "gryo");
+        try {
+            switch (format) {
+                case "graphml":
+                    graph.io(IoCore.graphml()).readGraph(location);
+                    break;
+                case "graphson":
+                    graph.io(IoCore.graphson()).readGraph(location);
+                    break;
+                case "gryo":
+                    graph.io(IoCore.gryo()).readGraph(location);
+                    break;
+                default:
+                    graph.io(IoCore.createIoBuilder(format)).readGraph(location);
+                    break;
+            }
+        } catch (Exception ex) {
+            throw new IllegalStateException(String.format("Could not load credential store at %s with format %s", location, format), ex);
+        }
     }
 
     @Override

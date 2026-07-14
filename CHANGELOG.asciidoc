@@ -44,6 +44,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `gremlin-python` read timeout to derive from a single source (aiohttp `sock_read`), removing a redundant `async_timeout` read wrapper that could race it; a read timeout now deterministically raises `ReadTimeoutError` (a builtin `TimeoutError` subclass).
 * Made `TinkerGraph` an interface and renamed the in-memory implementation to `TinkerMemoryGraph`; `TinkerGraph.open()` and `gremlin.graph=...TinkerGraph` behave as before. *(breaking)*
 * Renamed `TinkerTransactionGraph` to `TinkerStorageGraph`. *(breaking)*
+* Added a pluggable storage layer to `TinkerStorageGraph` that durably persists each committed transaction to disk, selected with the `gremlin.tinkergraph.storage` config key and shipping a GraphBinary engine.
+* Removed automatic persistence from `TinkerMemoryGraph`, which is now purely in-memory and ignores `gremlin.tinkergraph.graphLocation`/`graphFormat`. Use `TinkerStorageGraph` for durability or `g.io()` for interchange. *(breaking)*
 * Removed `Transaction.open()` in favor of `begin()`, which is now the single transaction-start primitive across embedded and remote contexts.
 * Changed `begin()` and `close()` to be idempotent and calling it when a transaction is already in that state no longer throws.
 * Added `maxTransactionLifetime` setting to Gremlin Server, an absolute cap on the total age of an HTTP transaction that interrupts a running operation and rolls the transaction back when it fires (default 600000ms, set to `0` to disable).
