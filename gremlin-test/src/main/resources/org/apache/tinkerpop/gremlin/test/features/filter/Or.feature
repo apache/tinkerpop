@@ -60,3 +60,17 @@ Feature: Step - or()
       | v[josh] |
       | v[ripple] |
       | v[peter]  |
+
+  @MultiLabel
+  Scenario: g_V_orXhasLabelXbirdX_hasLabelXreptileXX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().or(__.hasLabel("bird"), __.hasLabel("reptile")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tux |
+      | atlas |
+      | monty |

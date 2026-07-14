@@ -68,6 +68,23 @@
         ]
     },
     {
+        "scenario": "g_V_hasLabelXhabitat_reptileX_branchXidentityX_optionXhasLabelXaquaticXX_optionXhasLabelXreptileXX_optionXhasLabelXhabitatXX_multilabel",
+        "traversals": [
+            {
+                "original": "g.V().hasLabel(\"habitat\", \"reptile\").branch(__.identity()).option(__.hasLabel(\"aquatic\"), __.constant(\"wet\")).option(__.hasLabel(\"reptile\"), __.constant(\"scaly\")).option(__.hasLabel(\"habitat\"), __.constant(\"place\"))",
+                "language": "g.V().hasLabel(\"habitat\", \"reptile\").branch(__.identity()).option(__.hasLabel(\"aquatic\"), __.constant(\"wet\")).option(__.hasLabel(\"reptile\"), __.constant(\"scaly\")).option(__.hasLabel(\"habitat\"), __.constant(\"place\"))",
+                "canonical": "g.V().hasLabel(\"habitat\", \"reptile\").branch(__.identity()).option(__.hasLabel(\"aquatic\"), __.constant(\"wet\")).option(__.hasLabel(\"reptile\"), __.constant(\"scaly\")).option(__.hasLabel(\"habitat\"), __.constant(\"place\"))",
+                "anonymized": "g.V().hasLabel(string0, string1).branch(__.identity()).option(__.hasLabel(string2), __.constant(string3)).option(__.hasLabel(string1), __.constant(string4)).option(__.hasLabel(string0), __.constant(string5))",
+                "dotnet": "g.V().HasLabel(\"habitat\", \"reptile\").Branch<object>(__.Identity()).Option(__.HasLabel(\"aquatic\"), __.Constant<object>(\"wet\")).Option(__.HasLabel(\"reptile\"), __.Constant<object>(\"scaly\")).Option(__.HasLabel(\"habitat\"), __.Constant<object>(\"place\"))",
+                "go": "g.V().HasLabel(\"habitat\", \"reptile\").Branch(gremlingo.T__.Identity()).Option(gremlingo.T__.HasLabel(\"aquatic\"), gremlingo.T__.Constant(\"wet\")).Option(gremlingo.T__.HasLabel(\"reptile\"), gremlingo.T__.Constant(\"scaly\")).Option(gremlingo.T__.HasLabel(\"habitat\"), gremlingo.T__.Constant(\"place\"))",
+                "groovy": "g.V().hasLabel(\"habitat\", \"reptile\").branch(__.identity()).option(__.hasLabel(\"aquatic\"), __.constant(\"wet\")).option(__.hasLabel(\"reptile\"), __.constant(\"scaly\")).option(__.hasLabel(\"habitat\"), __.constant(\"place\"))",
+                "java": "g.V().hasLabel(\"habitat\", \"reptile\").branch(__.identity()).option(__.hasLabel(\"aquatic\"), __.constant(\"wet\")).option(__.hasLabel(\"reptile\"), __.constant(\"scaly\")).option(__.hasLabel(\"habitat\"), __.constant(\"place\"))",
+                "javascript": "g.V().hasLabel(\"habitat\", \"reptile\").branch(__.identity()).option(__.hasLabel(\"aquatic\"), __.constant(\"wet\")).option(__.hasLabel(\"reptile\"), __.constant(\"scaly\")).option(__.hasLabel(\"habitat\"), __.constant(\"place\"))",
+                "python": "g.V().has_label('habitat', 'reptile').branch(__.identity()).option(__.has_label('aquatic'), __.constant('wet')).option(__.has_label('reptile'), __.constant('scaly')).option(__.has_label('habitat'), __.constant('place'))"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_chooseXout_countX_optionX2L_nameX_optionX3L_ageX",
         "traversals": [
             {
@@ -727,6 +744,40 @@
                 "java": "g.V().hasLabel(\"person\").choose(__.values(\"name\")).option(P.eq(\"marko\"), __.values(\"age\")).option(Pick.none, __.values(\"name\"))",
                 "javascript": "g.V().hasLabel(\"person\").choose(__.values(\"name\")).option(P.eq(\"marko\"), __.values(\"age\")).option(Pick.none, __.values(\"name\"))",
                 "python": "g.V().has_label('person').choose(__.values('name')).option(P.eq('marko'), __.values('age')).option(Pick.none, __.values('name'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasLabelXhabitat_reptileX_chooseXhasLabelXaquaticX_constantXwetX_constantXdryXX_multilabel",
+        "traversals": [
+            {
+                "original": "g.V().hasLabel(\"habitat\", \"reptile\").choose(__.hasLabel(\"aquatic\"), __.constant(\"wet\"), __.constant(\"dry\"))",
+                "language": "g.V().hasLabel(\"habitat\", \"reptile\").choose(__.hasLabel(\"aquatic\"), __.constant(\"wet\"), __.constant(\"dry\"))",
+                "canonical": "g.V().hasLabel(\"habitat\", \"reptile\").choose(__.hasLabel(\"aquatic\"), __.constant(\"wet\"), __.constant(\"dry\"))",
+                "anonymized": "g.V().hasLabel(string0, string1).choose(__.hasLabel(string2), __.constant(string3), __.constant(string4))",
+                "dotnet": "g.V().HasLabel(\"habitat\", \"reptile\").Choose<object>(__.HasLabel(\"aquatic\"), __.Constant<object>(\"wet\"), __.Constant<object>(\"dry\"))",
+                "go": "g.V().HasLabel(\"habitat\", \"reptile\").Choose(gremlingo.T__.HasLabel(\"aquatic\"), gremlingo.T__.Constant(\"wet\"), gremlingo.T__.Constant(\"dry\"))",
+                "groovy": "g.V().hasLabel(\"habitat\", \"reptile\").choose(__.hasLabel(\"aquatic\"), __.constant(\"wet\"), __.constant(\"dry\"))",
+                "java": "g.V().hasLabel(\"habitat\", \"reptile\").choose(__.hasLabel(\"aquatic\"), __.constant(\"wet\"), __.constant(\"dry\"))",
+                "javascript": "g.V().hasLabel(\"habitat\", \"reptile\").choose(__.hasLabel(\"aquatic\"), __.constant(\"wet\"), __.constant(\"dry\"))",
+                "python": "g.V().has_label('habitat', 'reptile').choose(__.has_label('aquatic'), __.constant('wet'), __.constant('dry'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_tuxX_chooseXlabelX_optionXanimal_bird_aquatic_endangeredX_multilabel",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", \"tux\").choose(T.label).option(\"animal\", __.constant(\"is-animal\")).option(\"bird\", __.constant(\"is-bird\")).option(\"aquatic\", __.constant(\"is-aquatic\")).option(\"endangered\", __.constant(\"is-endangered\"))",
+                "language": "g.V().has(\"name\", \"tux\").choose(T.label).option(\"animal\", __.constant(\"is-animal\")).option(\"bird\", __.constant(\"is-bird\")).option(\"aquatic\", __.constant(\"is-aquatic\")).option(\"endangered\", __.constant(\"is-endangered\"))",
+                "canonical": "g.V().has(\"name\", \"tux\").choose(T.label).option(\"animal\", __.constant(\"is-animal\")).option(\"bird\", __.constant(\"is-bird\")).option(\"aquatic\", __.constant(\"is-aquatic\")).option(\"endangered\", __.constant(\"is-endangered\"))",
+                "anonymized": "g.V().has(string0, string1).choose(T.label).option(string2, __.constant(string3)).option(string4, __.constant(string5)).option(string6, __.constant(string7)).option(string8, __.constant(string9))",
+                "dotnet": "g.V().Has(\"name\", \"tux\").Choose<object>(T.Label).Option(\"animal\", __.Constant<object>(\"is-animal\")).Option(\"bird\", __.Constant<object>(\"is-bird\")).Option(\"aquatic\", __.Constant<object>(\"is-aquatic\")).Option(\"endangered\", __.Constant<object>(\"is-endangered\"))",
+                "go": "g.V().Has(\"name\", \"tux\").Choose(gremlingo.T.Label).Option(\"animal\", gremlingo.T__.Constant(\"is-animal\")).Option(\"bird\", gremlingo.T__.Constant(\"is-bird\")).Option(\"aquatic\", gremlingo.T__.Constant(\"is-aquatic\")).Option(\"endangered\", gremlingo.T__.Constant(\"is-endangered\"))",
+                "groovy": "g.V().has(\"name\", \"tux\").choose(T.label).option(\"animal\", __.constant(\"is-animal\")).option(\"bird\", __.constant(\"is-bird\")).option(\"aquatic\", __.constant(\"is-aquatic\")).option(\"endangered\", __.constant(\"is-endangered\"))",
+                "java": "g.V().has(\"name\", \"tux\").choose(T.label).option(\"animal\", __.constant(\"is-animal\")).option(\"bird\", __.constant(\"is-bird\")).option(\"aquatic\", __.constant(\"is-aquatic\")).option(\"endangered\", __.constant(\"is-endangered\"))",
+                "javascript": "g.V().has(\"name\", \"tux\").choose(T.label).option(\"animal\", __.constant(\"is-animal\")).option(\"bird\", __.constant(\"is-bird\")).option(\"aquatic\", __.constant(\"is-aquatic\")).option(\"endangered\", __.constant(\"is-endangered\"))",
+                "python": "g.V().has('name', 'tux').choose(T.label).option('animal', __.constant('is-animal')).option('bird', __.constant('is-bird')).option('aquatic', __.constant('is-aquatic')).option('endangered', __.constant('is-endangered'))"
             }
         ]
     },
@@ -6092,6 +6143,23 @@
         ]
     },
     {
+        "scenario": "g_V_andXhasLabelXmammalX_hasLabelXendangeredXX_name_multilabel",
+        "traversals": [
+            {
+                "original": "g.V().and(__.hasLabel(\"mammal\"), __.hasLabel(\"endangered\")).values(\"name\")",
+                "language": "g.V().and(__.hasLabel(\"mammal\"), __.hasLabel(\"endangered\")).values(\"name\")",
+                "canonical": "g.V().and(__.hasLabel(\"mammal\"), __.hasLabel(\"endangered\")).values(\"name\")",
+                "anonymized": "g.V().and(__.hasLabel(string0), __.hasLabel(string1)).values(string2)",
+                "dotnet": "g.V().And(__.HasLabel(\"mammal\"), __.HasLabel(\"endangered\")).Values<object>(\"name\")",
+                "go": "g.V().And(gremlingo.T__.HasLabel(\"mammal\"), gremlingo.T__.HasLabel(\"endangered\")).Values(\"name\")",
+                "groovy": "g.V().and(__.hasLabel(\"mammal\"), __.hasLabel(\"endangered\")).values(\"name\")",
+                "java": "g.V().and(__.hasLabel(\"mammal\"), __.hasLabel(\"endangered\")).values(\"name\")",
+                "javascript": "g.V().and(__.hasLabel(\"mammal\"), __.hasLabel(\"endangered\")).values(\"name\")",
+                "python": "g.V().and_(__.has_label('mammal'), __.has_label('endangered')).values('name')"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_valuesXageX_anyXgtX32XX",
         "traversals": [
             {
@@ -6957,6 +7025,23 @@
                 "java": "g.V().both().has(T.label, \"software\").dedup().by(\"lang\").by(\"name\").values(\"name\")",
                 "javascript": "g.V().both().has(T.label, \"software\").dedup().by(\"lang\").by(\"name\").values(\"name\")",
                 "python": "g.V().both().has(T.label, 'software').dedup().by('lang').by('name').values('name')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasLabelXhabitatX_dedup_byXlabels_order_foldX_localXlabels_order_foldX_multilabel",
+        "traversals": [
+            {
+                "original": "g.V().hasLabel(\"habitat\").dedup().by(__.labels().order().fold()).local(__.labels().order().fold())",
+                "language": "g.V().hasLabel(\"habitat\").dedup().by(__.labels().order().fold()).local(__.labels().order().fold())",
+                "canonical": "g.V().hasLabel(\"habitat\").dedup().by(__.labels().order().fold()).local(__.labels().order().fold())",
+                "anonymized": "g.V().hasLabel(string0).dedup().by(__.labels().order().fold()).local(__.labels().order().fold())",
+                "dotnet": "g.V().HasLabel(\"habitat\").Dedup().By(__.Labels().Order().Fold()).Local<object>(__.Labels().Order().Fold())",
+                "go": "g.V().HasLabel(\"habitat\").Dedup().By(gremlingo.T__.Labels().Order().Fold()).Local(gremlingo.T__.Labels().Order().Fold())",
+                "groovy": "g.V().hasLabel(\"habitat\").dedup().by(__.labels().order().fold()).local(__.labels().order().fold())",
+                "java": "g.V().hasLabel(\"habitat\").dedup().by(__.labels().order().fold()).local(__.labels().order().fold())",
+                "javascript": "g.V().hasLabel(\"habitat\").dedup().by(__.labels().order().fold()).local(__.labels().order().fold())",
+                "python": "g.V().has_label('habitat').dedup().by(__.labels().order().fold()).local(__.labels().order().fold())"
             }
         ]
     },
@@ -8950,6 +9035,57 @@
         ]
     },
     {
+        "scenario": "g_V_hasXlabel_aquaticX_name_multilabel",
+        "traversals": [
+            {
+                "original": "g.V().has(T.label, \"aquatic\").values(\"name\")",
+                "language": "g.V().has(T.label, \"aquatic\").values(\"name\")",
+                "canonical": "g.V().has(T.label, \"aquatic\").values(\"name\")",
+                "anonymized": "g.V().has(T.label, string0).values(string1)",
+                "dotnet": "g.V().Has(T.Label, \"aquatic\").Values<object>(\"name\")",
+                "go": "g.V().Has(gremlingo.T.Label, \"aquatic\").Values(\"name\")",
+                "groovy": "g.V().has(T.label, \"aquatic\").values(\"name\")",
+                "java": "g.V().has(T.label, \"aquatic\").values(\"name\")",
+                "javascript": "g.V().has(T.label, \"aquatic\").values(\"name\")",
+                "python": "g.V().has(T.label, 'aquatic').values('name')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXlabel_withinXreptile_birdXX_name_multilabel",
+        "traversals": [
+            {
+                "original": "g.V().has(T.label, P.within(\"reptile\", \"bird\")).values(\"name\")",
+                "language": "g.V().has(T.label, P.within(\"reptile\", \"bird\")).values(\"name\")",
+                "canonical": "g.V().has(T.label, P.within(\"reptile\", \"bird\")).values(\"name\")",
+                "anonymized": "g.V().has(T.label, P.within(string0, string1)).values(string2)",
+                "dotnet": "g.V().Has(T.Label, P.Within(\"reptile\", \"bird\")).Values<object>(\"name\")",
+                "go": "g.V().Has(gremlingo.T.Label, gremlingo.P.Within(\"reptile\", \"bird\")).Values(\"name\")",
+                "groovy": "g.V().has(T.label, P.within(\"reptile\", \"bird\")).values(\"name\")",
+                "java": "g.V().has(T.label, P.within(\"reptile\", \"bird\")).values(\"name\")",
+                "javascript": "g.V().has(T.label, P.within(\"reptile\", \"bird\")).values(\"name\")",
+                "python": "g.V().has(T.label, P.within('reptile', 'bird')).values('name')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXlabel_withoutXanimalXX_name_multilabel",
+        "traversals": [
+            {
+                "original": "g.V().has(T.label, P.without(\"animal\")).values(\"name\")",
+                "language": "g.V().has(T.label, P.without(\"animal\")).values(\"name\")",
+                "canonical": "g.V().has(T.label, P.without(\"animal\")).values(\"name\")",
+                "anonymized": "g.V().has(T.label, P.without(string0)).values(string1)",
+                "dotnet": "g.V().Has(T.Label, P.Without(\"animal\")).Values<object>(\"name\")",
+                "go": "g.V().Has(gremlingo.T.Label, gremlingo.P.Without(\"animal\")).Values(\"name\")",
+                "groovy": "g.V().has(T.label, P.without(\"animal\")).values(\"name\")",
+                "java": "g.V().has(T.label, P.without(\"animal\")).values(\"name\")",
+                "javascript": "g.V().has(T.label, P.without(\"animal\")).values(\"name\")",
+                "python": "g.V().has(T.label, P.without('animal')).values('name')"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_hasIdXemptyX_count",
         "traversals": [
             {
@@ -9769,6 +9905,57 @@
                 "java": "g.V().properties().hasLabel(null)",
                 "javascript": "g.V().properties().hasLabel(null)",
                 "python": "g.V().properties().has_label(None)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasLabelXbirdX_name_multilabel",
+        "traversals": [
+            {
+                "original": "g.V().hasLabel(\"bird\").values(\"name\")",
+                "language": "g.V().hasLabel(\"bird\").values(\"name\")",
+                "canonical": "g.V().hasLabel(\"bird\").values(\"name\")",
+                "anonymized": "g.V().hasLabel(string0).values(string1)",
+                "dotnet": "g.V().HasLabel(\"bird\").Values<object>(\"name\")",
+                "go": "g.V().HasLabel(\"bird\").Values(\"name\")",
+                "groovy": "g.V().hasLabel(\"bird\").values(\"name\")",
+                "java": "g.V().hasLabel(\"bird\").values(\"name\")",
+                "javascript": "g.V().hasLabel(\"bird\").values(\"name\")",
+                "python": "g.V().has_label('bird').values('name')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasLabelXaquaticX_name_multilabel",
+        "traversals": [
+            {
+                "original": "g.V().hasLabel(\"aquatic\").values(\"name\")",
+                "language": "g.V().hasLabel(\"aquatic\").values(\"name\")",
+                "canonical": "g.V().hasLabel(\"aquatic\").values(\"name\")",
+                "anonymized": "g.V().hasLabel(string0).values(string1)",
+                "dotnet": "g.V().HasLabel(\"aquatic\").Values<object>(\"name\")",
+                "go": "g.V().HasLabel(\"aquatic\").Values(\"name\")",
+                "groovy": "g.V().hasLabel(\"aquatic\").values(\"name\")",
+                "java": "g.V().hasLabel(\"aquatic\").values(\"name\")",
+                "javascript": "g.V().hasLabel(\"aquatic\").values(\"name\")",
+                "python": "g.V().has_label('aquatic').values('name')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasLabelXreptile_birdX_name_multilabel",
+        "traversals": [
+            {
+                "original": "g.V().hasLabel(\"reptile\", \"bird\").values(\"name\")",
+                "language": "g.V().hasLabel(\"reptile\", \"bird\").values(\"name\")",
+                "canonical": "g.V().hasLabel(\"reptile\", \"bird\").values(\"name\")",
+                "anonymized": "g.V().hasLabel(string0, string1).values(string2)",
+                "dotnet": "g.V().HasLabel(\"reptile\", \"bird\").Values<object>(\"name\")",
+                "go": "g.V().HasLabel(\"reptile\", \"bird\").Values(\"name\")",
+                "groovy": "g.V().hasLabel(\"reptile\", \"bird\").values(\"name\")",
+                "java": "g.V().hasLabel(\"reptile\", \"bird\").values(\"name\")",
+                "javascript": "g.V().hasLabel(\"reptile\", \"bird\").values(\"name\")",
+                "python": "g.V().has_label('reptile', 'bird').values('name')"
             }
         ]
     },
@@ -10623,6 +10810,23 @@
         ]
     },
     {
+        "scenario": "g_V_notXhasLabelXanimalXX_name_multilabel",
+        "traversals": [
+            {
+                "original": "g.V().not(__.hasLabel(\"animal\")).values(\"name\")",
+                "language": "g.V().not(__.hasLabel(\"animal\")).values(\"name\")",
+                "canonical": "g.V().not(__.hasLabel(\"animal\")).values(\"name\")",
+                "anonymized": "g.V().not(__.hasLabel(string0)).values(string1)",
+                "dotnet": "g.V().Not(__.HasLabel(\"animal\")).Values<object>(\"name\")",
+                "go": "g.V().Not(gremlingo.T__.HasLabel(\"animal\")).Values(\"name\")",
+                "groovy": "g.V().not(__.hasLabel(\"animal\")).values(\"name\")",
+                "java": "g.V().not(__.hasLabel(\"animal\")).values(\"name\")",
+                "javascript": "g.V().not(__.hasLabel(\"animal\")).values(\"name\")",
+                "python": "g.V().not_(__.has_label('animal')).values('name')"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_orXhasXage_gt_27X__outE_count_gte_2X_name",
         "traversals": [
             {
@@ -10670,6 +10874,23 @@
                 "java": "g.V().as(\"a\").or(__.select(\"a\"), __.select(\"a\"))",
                 "javascript": "g.V().as(\"a\").or(__.select(\"a\"), __.select(\"a\"))",
                 "python": "g.V().as_('a').or_(__.select('a'), __.select('a'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_orXhasLabelXbirdX_hasLabelXreptileXX_name_multilabel",
+        "traversals": [
+            {
+                "original": "g.V().or(__.hasLabel(\"bird\"), __.hasLabel(\"reptile\")).values(\"name\")",
+                "language": "g.V().or(__.hasLabel(\"bird\"), __.hasLabel(\"reptile\")).values(\"name\")",
+                "canonical": "g.V().or(__.hasLabel(\"bird\"), __.hasLabel(\"reptile\")).values(\"name\")",
+                "anonymized": "g.V().or(__.hasLabel(string0), __.hasLabel(string1)).values(string2)",
+                "dotnet": "g.V().Or(__.HasLabel(\"bird\"), __.HasLabel(\"reptile\")).Values<object>(\"name\")",
+                "go": "g.V().Or(gremlingo.T__.HasLabel(\"bird\"), gremlingo.T__.HasLabel(\"reptile\")).Values(\"name\")",
+                "groovy": "g.V().or(__.hasLabel(\"bird\"), __.hasLabel(\"reptile\")).values(\"name\")",
+                "java": "g.V().or(__.hasLabel(\"bird\"), __.hasLabel(\"reptile\")).values(\"name\")",
+                "javascript": "g.V().or(__.hasLabel(\"bird\"), __.hasLabel(\"reptile\")).values(\"name\")",
+                "python": "g.V().or_(__.has_label('bird'), __.has_label('reptile')).values('name')"
             }
         ]
     },
@@ -36190,6 +36411,23 @@
         ]
     },
     {
+        "scenario": "g_V_hasLabelXhabitatX_order_byXlabels_order_foldX_name_multilabel",
+        "traversals": [
+            {
+                "original": "g.V().hasLabel(\"habitat\").order().by(__.labels().order().fold()).values(\"name\")",
+                "language": "g.V().hasLabel(\"habitat\").order().by(__.labels().order().fold()).values(\"name\")",
+                "canonical": "g.V().hasLabel(\"habitat\").order().by(__.labels().order().fold()).values(\"name\")",
+                "anonymized": "g.V().hasLabel(string0).order().by(__.labels().order().fold()).values(string1)",
+                "dotnet": "g.V().HasLabel(\"habitat\").Order().By(__.Labels().Order().Fold()).Values<object>(\"name\")",
+                "go": "g.V().HasLabel(\"habitat\").Order().By(gremlingo.T__.Labels().Order().Fold()).Values(\"name\")",
+                "groovy": "g.V().hasLabel(\"habitat\").order().by(__.labels().order().fold()).values(\"name\")",
+                "java": "g.V().hasLabel(\"habitat\").order().by(__.labels().order().fold()).values(\"name\")",
+                "javascript": "g.V().hasLabel(\"habitat\").order().by(__.labels().order().fold()).values(\"name\")",
+                "python": "g.V().has_label('habitat').order().by(__.labels().order().fold()).values('name')"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_pageRank_hasXpageRankX",
         "traversals": [
             {
@@ -46583,6 +46821,57 @@
         ]
     },
     {
+        "scenario": "g_V_hasLabelXhabitatX_group_byXlabelX_byXcountX",
+        "traversals": [
+            {
+                "original": "g.V().hasLabel(\"habitat\").group().by(T.label).by(__.count())",
+                "language": "g.V().hasLabel(\"habitat\").group().by(T.label).by(__.count())",
+                "canonical": "g.V().hasLabel(\"habitat\").group().by(T.label).by(__.count())",
+                "anonymized": "g.V().hasLabel(string0).group().by(T.label).by(__.count())",
+                "dotnet": "g.V().HasLabel(\"habitat\").Group<object, object>().By(T.Label).By(__.Count())",
+                "go": "g.V().HasLabel(\"habitat\").Group().By(gremlingo.T.Label).By(gremlingo.T__.Count())",
+                "groovy": "g.V().hasLabel(\"habitat\").group().by(T.label).by(__.count())",
+                "java": "g.V().hasLabel(\"habitat\").group().by(T.label).by(__.count())",
+                "javascript": "g.V().hasLabel(\"habitat\").group().by(T.label).by(__.count())",
+                "python": "g.V().has_label('habitat').group().by(T.label).by(__.count())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_tuxX_group_byXlabelX_byXcountX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", \"tux\").group().by(__.label()).by(__.count())",
+                "language": "g.V().has(\"name\", \"tux\").group().by(__.label()).by(__.count())",
+                "canonical": "g.V().has(\"name\", \"tux\").group().by(__.label()).by(__.count())",
+                "anonymized": "g.V().has(string0, string1).group().by(__.label()).by(__.count())",
+                "dotnet": "g.V().Has(\"name\", \"tux\").Group<object, object>().By(__.Label()).By(__.Count())",
+                "go": "g.V().Has(\"name\", \"tux\").Group().By(gremlingo.T__.Label()).By(gremlingo.T__.Count())",
+                "groovy": "g.V().has(\"name\", \"tux\").group().by(__.label()).by(__.count())",
+                "java": "g.V().has(\"name\", \"tux\").group().by(__.label()).by(__.count())",
+                "javascript": "g.V().has(\"name\", \"tux\").group().by(__.label()).by(__.count())",
+                "python": "g.V().has('name', 'tux').group().by(__.label()).by(__.count())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasLabelXreptileX_group_byXlabels_order_foldX_byXname_foldX",
+        "traversals": [
+            {
+                "original": "g.V().hasLabel(\"reptile\").group().by(__.labels().order().fold()).by(__.values(\"name\").fold())",
+                "language": "g.V().hasLabel(\"reptile\").group().by(__.labels().order().fold()).by(__.values(\"name\").fold())",
+                "canonical": "g.V().hasLabel(\"reptile\").group().by(__.labels().order().fold()).by(__.values(\"name\").fold())",
+                "anonymized": "g.V().hasLabel(string0).group().by(__.labels().order().fold()).by(__.values(string1).fold())",
+                "dotnet": "g.V().HasLabel(\"reptile\").Group<object, object>().By(__.Labels().Order().Fold()).By(__.Values<object>(\"name\").Fold())",
+                "go": "g.V().HasLabel(\"reptile\").Group().By(gremlingo.T__.Labels().Order().Fold()).By(gremlingo.T__.Values(\"name\").Fold())",
+                "groovy": "g.V().hasLabel(\"reptile\").group().by(__.labels().order().fold()).by(__.values(\"name\").fold())",
+                "java": "g.V().hasLabel(\"reptile\").group().by(__.labels().order().fold()).by(__.values(\"name\").fold())",
+                "javascript": "g.V().hasLabel(\"reptile\").group().by(__.labels().order().fold()).by(__.values(\"name\").fold())",
+                "python": "g.V().has_label('reptile').group().by(__.labels().order().fold()).by(__.values('name').fold())"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_outXcreatedX_groupCount_byXnameX",
         "traversals": [
             {
@@ -46919,6 +47208,40 @@
                 "java": "g.V().local(__.groupCount(\"a\").select(\"a\").count(Scope.local))",
                 "javascript": "g.V().local(__.groupCount(\"a\").select(\"a\").count(Scope.local))",
                 "python": "g.V().local(__.group_count('a').select('a').count(Scope.local))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_tuxX_groupCount_byXlabelX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", \"tux\").groupCount().by(T.label)",
+                "language": "g.V().has(\"name\", \"tux\").groupCount().by(T.label)",
+                "canonical": "g.V().has(\"name\", \"tux\").groupCount().by(T.label)",
+                "anonymized": "g.V().has(string0, string1).groupCount().by(T.label)",
+                "dotnet": "g.V().Has(\"name\", \"tux\").GroupCount<object>().By(T.Label)",
+                "go": "g.V().Has(\"name\", \"tux\").GroupCount().By(gremlingo.T.Label)",
+                "groovy": "g.V().has(\"name\", \"tux\").groupCount().by(T.label)",
+                "java": "g.V().has(\"name\", \"tux\").groupCount().by(T.label)",
+                "javascript": "g.V().has(\"name\", \"tux\").groupCount().by(T.label)",
+                "python": "g.V().has('name', 'tux').group_count().by(T.label)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_labels_groupCount",
+        "traversals": [
+            {
+                "original": "g.V().labels().groupCount()",
+                "language": "g.V().labels().groupCount()",
+                "canonical": "g.V().labels().groupCount()",
+                "anonymized": "g.V().labels().groupCount()",
+                "dotnet": "g.V().Labels().GroupCount<object>()",
+                "go": "g.V().Labels().GroupCount()",
+                "groovy": "g.V().labels().groupCount()",
+                "java": "g.V().labels().groupCount()",
+                "javascript": "g.V().labels().groupCount()",
+                "python": "g.V().labels().group_count()"
             }
         ]
     },

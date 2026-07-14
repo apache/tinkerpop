@@ -549,3 +549,16 @@ Feature: Step - order()
     Then the result should be unordered
       | result |
       | d[29].i |
+
+  @MultiLabel
+  Scenario: g_V_hasLabelXhabitatX_order_byXlabels_order_foldX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().hasLabel("habitat").order().by(__.labels().order().fold()).values("name")
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | lagoon |
+      | canopy |
