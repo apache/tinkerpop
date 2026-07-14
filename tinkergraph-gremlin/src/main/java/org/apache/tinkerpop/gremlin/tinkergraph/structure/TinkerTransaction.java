@@ -21,9 +21,12 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.util.AbstractThreadLocalTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorageMutation;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -174,6 +177,14 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
             final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
             if (edgeIndex != null) edgeIndex.commit(changedEdges);
 
+            // write-ahead: durably persist the changeset before applying the in-memory commit, so a failure here
+            // aborts the commit (via the catch below) and leaves memory and disk consistent. Skipped while the graph
+            // is replaying its storage log on open.
+            if (graph.storage != null && !graph.loading) {
+                graph.storage.persist(txVersion, toVertexMutations(changedVertices), toEdgeMutations(changedEdges));
+                graph.storage.flush();
+            }
+
             // commit all changes
             changedVertices.forEach(v -> v.commit(txVersion));
             changedEdges.forEach(e -> e.commit(txVersion));
@@ -207,6 +218,34 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
 
             txNumber.set(NOT_STARTED);
         }
+    }
+
+    /**
+     * Convert the changed vertex containers into the storage-facing {@link TinkerStorageMutation} view. Called during
+     * commit, before {@code commit()} is applied to the containers, so the modified value is still available via
+     * {@link TinkerElementContainer#getModified()}.
+     */
+    private static List<TinkerStorageMutation<TinkerVertex>> toVertexMutations(final Set<TinkerElementContainer<TinkerVertex>> changed) {
+        final List<TinkerStorageMutation<TinkerVertex>> mutations = new ArrayList<>(changed.size());
+        for (final TinkerElementContainer<TinkerVertex> c : changed) {
+            mutations.add(c.isDeleted()
+                    ? new TinkerStorageMutation<>(c.getElementId(), null)
+                    : new TinkerStorageMutation<>(c.getElementId(), c.getModified()));
+        }
+        return mutations;
+    }
+
+    /**
+     * Convert the changed edge containers into the storage-facing {@link TinkerStorageMutation} view.
+     */
+    private static List<TinkerStorageMutation<TinkerEdge>> toEdgeMutations(final Set<TinkerElementContainer<TinkerEdge>> changed) {
+        final List<TinkerStorageMutation<TinkerEdge>> mutations = new ArrayList<>(changed.size());
+        for (final TinkerElementContainer<TinkerEdge> c : changed) {
+            mutations.add(c.isDeleted()
+                    ? new TinkerStorageMutation<>(c.getElementId(), null)
+                    : new TinkerStorageMutation<>(c.getElementId(), c.getModified()));
+        }
+        return mutations;
     }
 
     /**
