@@ -193,8 +193,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 isTransactionalOp ? transactionManager.get(requestCtx.getTransactionId()) : Optional.empty();
 
         // per-request timeout override falls back to the server-configured default when not supplied
-        final Long timeoutMs = requestMessage.getField(Tokens.TIMEOUT_MS);
-        final long seto = (null != timeoutMs) ? timeoutMs : requestCtx.getSettings().getTimeoutMs();
+        final Long timeoutMillis = requestMessage.getField(Tokens.TIMEOUT_MILLIS);
+        final long seto = (null != timeoutMillis) ? timeoutMillis : requestCtx.getSettings().getTimeoutMillis();
 
         final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
             try {
@@ -322,7 +322,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     executionFuture.cancel(true);
                     // If the lifetime cap fired for this same operation (it flags the Context before interrupting),
                     // report the cap's 504 even when this eval-timeout task is the one that writes - so a cap-kill is
-                    // never mislabeled as a generic "increase timeoutMs" 500 just because of writer ordering.
+                    // never mislabeled as a generic "increase timeoutMillis" 500 just because of writer ordering.
                     coordinator.writeError(requestCtx.isClosedByLifetimeCap()
                             ? GremlinError.transactionTimeout(requestCtx.getTransactionId(), "execute")
                             : GremlinError.timeout(requestMessage));
@@ -402,7 +402,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             // An interrupt here is normally an evaluation timeout, but it is also how a transaction's absolute lifetime
             // cap stops a running operation. In the cap case the transaction flagged this request's Context before
             // interrupting, so report an accurate transaction-timeout (504) rather than the generic "increase
-            // timeoutMs" error (500), whose advice would be misleading for a lifetime-cap kill.
+            // timeoutMillis" error (500), whose advice would be misleading for a lifetime-cap kill.
             if (requestCtx != null && requestCtx.isClosedByLifetimeCap()) {
                 return GremlinError.transactionTimeout(requestCtx.getTransactionId(), "execute");
             }

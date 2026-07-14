@@ -2746,7 +2746,7 @@ The following `RequestMessage` is an example of a simple sessionless request for
 {
   "gremlin": "g.V(x)",
   "materializeProperties": "tokens",
-  "timeoutMs": {
+  "timeoutMillis": {
     "@type": "g:Int64",
     "@value": 1000
   },
@@ -2770,7 +2770,7 @@ The following `RequestMessage` is an example of a simple sessionless request for
 {
   "gremlin": "g.V(x)",
   "materializeProperties": "tokens",
-  "timeoutMs": 1000,
+  "timeoutMillis": 1000,
   "g": "g",
   "parameters": {
     "x": 1

@@ -1197,7 +1197,7 @@ Gremlin-Hints: <hints>
 
 {
   "gremlin": string,
-  "timeoutMs": number,
+  "timeoutMillis": number,
   "parameters": string,
   "g": string,
   "language" : string,
@@ -1257,7 +1257,7 @@ the serializer specified by the `Content-Type` header. The following are the key
 |=========================================================
 |Key |Description |Value |Required
 |gremlin |The Gremlin query to execute. |String containing script |Yes
-|timeoutMs |The maximum time a query is allowed to execute in milliseconds. |Number between 0 and 2^31-1 |No
+|timeoutMillis |The maximum time a query is allowed to execute in milliseconds. |Number between 0 and 2^31-1 |No
 |parameters |A gremlin-lang string that encodes a map of key/value pairs used during query execution. Its usage depends on "language". For "gremlin-groovy", these are applied as script variable bindings. For "gremlin-lang", these are the query parameters. |String containing a gremlin-lang map literal |No
 |g |The name of the graph traversal source to which the query applies. Default: "g" |String containing traversal source name |No
 |language |The name of the ScriptEngine to use to parse the gremlin query. Default: "gremlin-lang" |String containing ScriptEngine name |No
@@ -1430,15 +1430,15 @@ rejects it with HTTP 400. This prevents cross-graph operations within a single t
 
 ==== Transaction Timeout and Idle Reclamation
 
-A transaction can be bounded at three independent scopes, each disabled with `0`. The `timeoutMs` bounds a single
-operation. The `idleTransactionTimeout` (default 60000ms) bounds the idle gaps between operations: how long a
+A transaction can be bounded at three independent scopes, each disabled with `0`. The `timeoutMillis` bounds a single
+operation. The `idleTransactionTimeoutMillis` (default 60000ms) bounds the idle gaps between operations: how long a
 transaction may remain idle, with no operation running or queued, before it is rolled back and removed; once it is
-removed, a subsequent request with that transaction ID receives a 404. The `maxTransactionLifetime` (default 600000ms)
+removed, a subsequent request with that transaction ID receives a 404. The `maxTransactionLifetimeMillis` (default 600000ms)
 bounds the total age of the transaction regardless of activity, and so may end a transaction while an operation is still
 running; the in-flight request then receives a 504 (`TransactionException`) and subsequent requests receive a 404.
 
 The defaults bound a transaction without any operator configuration; disabling them is a deliberate choice, and a
-per-request `timeoutMs` is honored as sent rather than overridden by the server. How promptly a running operation is
+per-request `timeoutMillis` is honored as sent rather than overridden by the server. How promptly a running operation is
 actually interrupted when a bound fires is a property of the provider's execution and traversal machinery, not
 guaranteed by these settings.
 

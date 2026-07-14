@@ -151,8 +151,8 @@ public class SettingsTest {
 
         // Out of the box a transaction is bounded without any operator configuration: idle reclamation at 1 minute and
         // an absolute lifetime cap at 10 minutes.
-        assertEquals(60000L, settings.idleTransactionTimeout);
-        assertEquals(600000L, settings.maxTransactionLifetime);
+        assertEquals(60000L, settings.idleTransactionTimeoutMillis);
+        assertEquals(600000L, settings.maxTransactionLifetimeMillis);
     }
 
     @Test
@@ -161,6 +161,6 @@ public class SettingsTest {
         final Settings settings = Settings.read(stream);
 
         // Confirms a YAML-provided value overrides the code default (600000); the resource sets it to 480000.
-        assertEquals(480000L, settings.maxTransactionLifetime);
+        assertEquals(480000L, settings.maxTransactionLifetimeMillis);
     }
 }

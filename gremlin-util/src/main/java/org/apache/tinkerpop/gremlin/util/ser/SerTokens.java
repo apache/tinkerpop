@@ -34,7 +34,7 @@ public final class SerTokens {
     public static final String TOKEN_LANGUAGE = "language";
     public static final String TOKEN_PARAMETERS = "parameters";
     public static final String TOKEN_G = "g";
-    public static final String TOKEN_TIMEOUT_MS = "timeoutMs";
+    public static final String TOKEN_TIMEOUT_MILLIS = "timeoutMillis";
     public static final String TOKEN_MATERIALIZE_PROPERTIES = "materializeProperties";
 
     public static final String MIME_JSON = "application/json";

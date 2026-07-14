@@ -135,8 +135,8 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                 final SSLFactory sslFactory = createSSLFactoryBuilder(settings).withSwappableTrustMaterial().withSwappableIdentityMaterial().build();
                 this.sslContext = Optional.of(createSSLContext(sslFactory));
 
-                if (settings.ssl.refreshInterval > 0) {
-                    // At the scheduled refreshInterval, check whether the keyStore or trustStore has been modified. If they were,
+                if (settings.ssl.refreshIntervalMillis > 0) {
+                    // At the scheduled refreshIntervalMillis, check whether the keyStore or trustStore has been modified. If they were,
                     // reload the SSLFactory which will reload the underlying KeyManager/TrustManager that Netty SSLHandler uses.
                     scheduledExecutorService.scheduleAtFixedRate(
                             new SSLStoreFilesModificationWatcher(settings.ssl.keyStore, settings.ssl.trustStore, () -> {
@@ -147,7 +147,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                                     logger.error("Failed to reload SSLFactory", e);
                                 }
                             }),
-                            settings.ssl.refreshInterval, settings.ssl.refreshInterval, TimeUnit.MILLISECONDS
+                            settings.ssl.refreshIntervalMillis, settings.ssl.refreshIntervalMillis, TimeUnit.MILLISECONDS
                     );
                 }
             }
@@ -174,8 +174,8 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         // checks for no activity on a channel and triggers an event that is consumed by the OpSelectorHandler
         // and either closes the connection or sends a ping to see if the client is still alive
         if (supportsIdleMonitor()) {
-            final int idleConnectionTimeout = (int) (settings.idleConnectionTimeout / 1000);
-            final int keepAliveInterval = (int) (settings.keepAliveInterval / 1000);
+            final int idleConnectionTimeout = (int) (settings.idleConnectionTimeoutMillis / 1000);
+            final int keepAliveInterval = (int) (settings.keepAliveIntervalMillis / 1000);
             pipeline.addLast(new IdleStateHandler(idleConnectionTimeout, keepAliveInterval, 0));
         }
 

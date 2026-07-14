@@ -29,7 +29,7 @@ import java.util.Optional;
 
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_BATCH_SIZE;
 import static org.apache.tinkerpop.gremlin.util.Tokens.BULK_RESULTS;
-import static org.apache.tinkerpop.gremlin.util.Tokens.TIMEOUT_MS;
+import static org.apache.tinkerpop.gremlin.util.Tokens.TIMEOUT_MILLIS;
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_G;
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_LANGUAGE;
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_MATERIALIZE_PROPERTIES;
@@ -46,7 +46,7 @@ public final class RequestOptions {
     private final String graphOrTraversalSource;
     private final String parameters;
     private final Integer batchSize;
-    private final Long timeoutMs;
+    private final Long timeoutMillis;
     private final String language;
     private final String materializeProperties;
     private final String bulkResults;
@@ -56,7 +56,7 @@ public final class RequestOptions {
         this.graphOrTraversalSource = builder.graphOrTraversalSource;
         this.parameters = builder.parametersString;
         this.batchSize = builder.batchSize;
-        this.timeoutMs = builder.timeoutMs;
+        this.timeoutMillis = builder.timeoutMillis;
         this.language = builder.language;
         this.materializeProperties = builder.materializeProperties;
         this.bulkResults = builder.bulkResults;
@@ -75,8 +75,8 @@ public final class RequestOptions {
         return Optional.ofNullable(batchSize);
     }
 
-    public Optional<Long> getTimeoutMs() {
-        return Optional.ofNullable(timeoutMs);
+    public Optional<Long> getTimeoutMillis() {
+        return Optional.ofNullable(timeoutMillis);
     }
 
     public Optional<String> getLanguage() {
@@ -99,8 +99,8 @@ public final class RequestOptions {
         while (itty.hasNext()) {
             final OptionsStrategy optionsStrategy = itty.next();
             final Map<String, Object> options = optionsStrategy.getOptions();
-            if (options.containsKey(TIMEOUT_MS))
-                builder.timeoutMs(((Number) options.get(TIMEOUT_MS)).longValue());
+            if (options.containsKey(TIMEOUT_MILLIS))
+                builder.timeoutMillis(((Number) options.get(TIMEOUT_MILLIS)).longValue());
             if (options.containsKey(ARGS_BATCH_SIZE))
                 builder.batchSize(((Number) options.get(ARGS_BATCH_SIZE)).intValue());
             if (options.containsKey(ARGS_MATERIALIZE_PROPERTIES))
@@ -126,7 +126,7 @@ public final class RequestOptions {
         private Map<String, Object> internalParameters = null;
         private String parametersString = null;
         private Integer batchSize = null;
-        private Long timeoutMs = null;
+        private Long timeoutMillis = null;
         private String materializeProperties = null;
         private String language = null;
         private String bulkResults = null;
@@ -142,7 +142,7 @@ public final class RequestOptions {
             builder.graphOrTraversalSource = options.graphOrTraversalSource;
             builder.parametersString = options.parameters;
             builder.batchSize = options.batchSize;
-            builder.timeoutMs = options.timeoutMs;
+            builder.timeoutMillis = options.timeoutMillis;
             builder.materializeProperties = options.materializeProperties;
             builder.language = options.language;
             builder.bulkResults = options.bulkResults;
@@ -208,12 +208,12 @@ public final class RequestOptions {
         }
 
         /**
-         * The per client request override in milliseconds for the server configured {@code timeoutMs} (the maximum
+         * The per client request override in milliseconds for the server configured {@code timeoutMillis} (the maximum
          * time a request is allowed to execute on the server before it times out). If this value is not set, then the
          * configuration for the server is used.
          */
-        public Builder timeoutMs(final long timeoutMs) {
-            this.timeoutMs = timeoutMs;
+        public Builder timeoutMillis(final long timeoutMillis) {
+            this.timeoutMillis = timeoutMillis;
             return this;
         }
 

@@ -99,7 +99,7 @@ public class RequestMessageTest {
     public void shouldSetTimeout() {
         final long timeout = 101L;
         final RequestMessage msg = RequestMessage.build("g").addTimeoutMillis(timeout).create();
-        assertEquals(timeout, (long) msg.getField(Tokens.TIMEOUT_MS));
+        assertEquals(timeout, (long) msg.getField(Tokens.TIMEOUT_MILLIS));
     }
 
     @Test

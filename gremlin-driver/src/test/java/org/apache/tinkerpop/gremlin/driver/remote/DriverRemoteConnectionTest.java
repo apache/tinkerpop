@@ -39,20 +39,20 @@ public class DriverRemoteConnectionTest {
                 g.with("x").
                         with("y", 100).
                         with(Tokens.ARGS_BATCH_SIZE, 1000).
-                        with(Tokens.TIMEOUT_MS, 100000L).
+                        with(Tokens.TIMEOUT_MILLIS, 100000L).
                         with(Tokens.ARGS_USER_AGENT, "test").
                         V().asAdmin().getGremlinLang());
         assertEquals(1000, options.getBatchSize().get().intValue());
-        assertEquals(100000L, options.getTimeoutMs().get().longValue());
+        assertEquals(100000L, options.getTimeoutMillis().get().longValue());
     }
 
     @Test
     public void shouldBuildRequestOptionsWithNumerics() {
         final RequestOptions options = getRequestOptions(
                 g.with(Tokens.ARGS_BATCH_SIZE, 100).
-                  with(Tokens.TIMEOUT_MS, 1000).
+                  with(Tokens.TIMEOUT_MILLIS, 1000).
                   V().asAdmin().getGremlinLang());
         assertEquals(Integer.valueOf(100), options.getBatchSize().get());
-        assertEquals(Long.valueOf(1000), options.getTimeoutMs().get());
+        assertEquals(Long.valueOf(1000), options.getTimeoutMillis().get());
     }
 }

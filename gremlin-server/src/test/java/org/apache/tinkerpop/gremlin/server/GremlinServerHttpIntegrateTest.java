@@ -77,7 +77,7 @@ import static org.apache.tinkerpop.gremlin.server.handler.HttpRequestIdHandler.R
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_MATERIALIZE_PROPERTIES;
 import static org.apache.tinkerpop.gremlin.util.Tokens.MATERIALIZE_PROPERTIES_ALL;
 import static org.apache.tinkerpop.gremlin.util.Tokens.MATERIALIZE_PROPERTIES_TOKENS;
-import static org.apache.tinkerpop.gremlin.util.Tokens.TIMEOUT_MS;
+import static org.apache.tinkerpop.gremlin.util.Tokens.TIMEOUT_MILLIS;
 import static org.apache.tinkerpop.gremlin.util.ser.SerTokens.TOKEN_DATA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -138,8 +138,8 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             case "should200OnPOSTWithAuthorizationHeader":
                 configureForAuthentication(settings);
                 break;
-            case "should500OnPOSTWithTimeoutMs":
-                settings.timeoutMs = 5000;
+            case "should500OnPOSTWithTimeoutMillis":
+                settings.timeoutMillis = 5000;
                 settings.gremlinPool = 1;
                 break;
             case "shouldRespectCorsAllowedOrigins":
@@ -924,7 +924,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test(timeout = 10000) // Add test timeout to prevent incorrect timeout behavior from stopping test run.
-    public void should500OnPOSTWithTimeoutMs() throws Exception {
+    public void should500OnPOSTWithTimeoutMillis() throws Exception {
         // Related to TINKERPOP-2769. This is a similar test to the one for the WebSocketChannelizer.
         final CloseableHttpClient firstClient = HttpClients.createDefault();
         final CloseableHttpClient secondClient = HttpClients.createDefault();
@@ -1314,7 +1314,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
 
     @Test
     public void shouldAcceptTimeoutInRequestBody() throws Exception {
-        final String body = "{ \"gremlin\": \"" + "Thread.sleep(5000)" + "\",\"language\":\"gremlin-groovy\",\"" + TIMEOUT_MS + "\":\"100\"}";
+        final String body = "{ \"gremlin\": \"" + "Thread.sleep(5000)" + "\",\"language\":\"gremlin-groovy\",\"" + TIMEOUT_MILLIS + "\":\"100\"}";
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");

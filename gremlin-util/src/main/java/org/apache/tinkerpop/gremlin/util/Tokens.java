@@ -87,10 +87,10 @@ public final class Tokens {
 
     /**
      * The key for the per request server-side timeout in milliseconds. This overrides the server's configured
-     * default ({@code timeoutMs}) and determines the maximum time a request is allowed to execute on the server
+     * default ({@code timeoutMillis}) and determines the maximum time a request is allowed to execute on the server
      * before it times out.
      */
-    public static final String TIMEOUT_MS = "timeoutMs";
+    public static final String TIMEOUT_MILLIS = "timeoutMillis";
 
     /**
      * The key for server to bulk result as a form of optimization for driver requests.

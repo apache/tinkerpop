@@ -26,9 +26,9 @@ import (
 )
 
 func TestRequestOptions(t *testing.T) {
-	t.Run("Test RequestOptionsBuilder with custom timeoutMs", func(t *testing.T) {
-		r := new(RequestOptionsBuilder).SetTimeoutMs(1234).Create()
-		assert.Equal(t, 1234, r.timeoutMs)
+	t.Run("Test RequestOptionsBuilder with custom timeoutMillis", func(t *testing.T) {
+		r := new(RequestOptionsBuilder).SetTimeoutMillis(1234).Create()
+		assert.Equal(t, 1234, r.timeoutMillis)
 	})
 	t.Run("Test RequestOptionsBuilder with custom batchSize", func(t *testing.T) {
 		r := new(RequestOptionsBuilder).SetBatchSize(123).Create()

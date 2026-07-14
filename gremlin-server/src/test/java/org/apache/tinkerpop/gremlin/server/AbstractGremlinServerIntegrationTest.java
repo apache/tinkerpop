@@ -73,10 +73,10 @@ public abstract class AbstractGremlinServerIntegrationTest {
      * the running server.
      * @param timeoutInMillis new request timeout in milliseconds
      */
-    protected void overrideTimeoutMs(final long timeoutInMillis) {
+    protected void overrideTimeoutMillis(final long timeoutInMillis) {
         // Note: overriding settings in a running server is not guaranteed to work for all settings.
         // It works for the timeout, though, because GremlinExecutor is re-created for each evaluation.
-        overriddenSettings.timeoutMs = timeoutInMillis;
+        overriddenSettings.timeoutMillis = timeoutInMillis;
     }
 
     public InputStream getSettingsInputStream() {

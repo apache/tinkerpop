@@ -212,7 +212,7 @@ public class UnmanagedTransaction {
      * Invoked from {@link SingleThreadTransactionExecutor#beforeExecute} and, as a backstop, from {@link #submit}.
      * <p>
      * A long-running operation must not trip the idle timeout: while an operation is in progress the idle timer is
-     * simply not armed (the operation's own duration is bounded by the per-request {@code timeoutMs} instead).
+     * simply not armed (the operation's own duration is bounded by the per-request {@code timeoutMillis} instead).
      */
     private void cancelIdleTimer() {
         idleFuture.updateAndGet(future -> {

@@ -174,9 +174,9 @@ namespace Gremlin.Net.Driver.Messages
             /// </summary>
             /// <param name="timeout">The timeout value in milliseconds.</param>
             /// <returns>The <see cref="Builder" />.</returns>
-            public Builder AddTimeoutMs(object timeout)
+            public Builder AddTimeoutMillis(object timeout)
             {
-                _fields[Tokens.ArgsTimeoutMs] = timeout;
+                _fields[Tokens.ArgsTimeoutMillis] = timeout;
                 return this;
             }
 

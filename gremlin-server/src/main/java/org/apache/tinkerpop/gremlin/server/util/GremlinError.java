@@ -100,7 +100,7 @@ public class GremlinError {
 
     // execution errors
     public static GremlinError timeout(final RequestMessage requestMessage ) {
-        final String message = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to timeoutMs (the maximum time in milliseconds a request may execute on the server)",
+        final String message = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to timeoutMillis (the maximum time in milliseconds a request may execute on the server)",
                 requestMessage);
         return new GremlinError(HttpResponseStatus.INTERNAL_SERVER_ERROR, message, "ServerTimeoutExceededException");
     }

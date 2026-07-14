@@ -17,7 +17,7 @@
 
 host: localhost
 port: 8182
-timeoutMs: 30000
+timeoutMillis: 30000
 channelizer: org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
 graphs: {
   graph: conf/tinkergraph-empty.properties}
@@ -27,10 +27,10 @@ serializers:
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3] }}            # application/json
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4}                                                                                                            # application/vnd.graphbinary-v4.0
 metrics: {
-  slf4jReporter: {enabled: true, interval: 180000}}
+  slf4jReporter: {enabled: true, intervalMillis: 180000}}
 strictTransactionManagement: false
-idleConnectionTimeout: 0
-keepAliveInterval: 0
+idleConnectionTimeoutMillis: 0
+keepAliveIntervalMillis: 0
 maxInitialLineLength: 4096
 maxHeaderSize: 8192
 maxChunkSize: 8192

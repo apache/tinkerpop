@@ -54,7 +54,7 @@ public class GremlinExecutorOverGraphTest {
 
         final ExecutorService evalExecutor = Executors.newSingleThreadExecutor(testingThreadFactory);
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .timeoutMs(60000)
+                .timeoutMillis(60000)
                 .afterSuccess(b -> {
                     final GraphTraversalSource ig = (GraphTraversalSource) b.get("g");
                     if (ig.getGraph().features().graph().supportsTransactions())
@@ -66,11 +66,11 @@ public class GremlinExecutorOverGraphTest {
         bindings.put("g", g);
 
         try {
-            gremlinExecutor.eval("g.with('timeoutMs',100).V().repeat(both()).toList()", bindings).get();
+            gremlinExecutor.eval("g.with('timeoutMillis',100).V().repeat(both()).toList()", bindings).get();
             fail("Should have timed out");
         } catch (ExecutionException ex) {
             // should die in 100ms not 60000
-            assertThat(ex.getCause().getMessage(), startsWith("Evaluation exceeded the configured 'timeoutMs' threshold of 100 ms"));
+            assertThat(ex.getCause().getMessage(), startsWith("Evaluation exceeded the configured 'timeoutMillis' threshold of 100 ms"));
         }
     }
 

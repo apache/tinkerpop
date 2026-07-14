@@ -143,7 +143,7 @@ public class ServerGremlinExecutor {
         allowedEngines.add("gremlin-lang");
 
         final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.build()
-                .timeoutMs(settings.getTimeoutMs())
+                .timeoutMillis(settings.getTimeoutMillis())
                 .afterFailure((b, e) -> this.graphManager.rollbackAll())
                 .beforeEval(b -> this.graphManager.rollbackAll())
                 .afterTimeout((b, e) -> this.graphManager.rollbackAll())
@@ -179,7 +179,7 @@ public class ServerGremlinExecutor {
                 if (!engineName.equals("gremlin-lang") && !engineName.equals("groovy-test")) {
                     // use no timeout on the engine initialization - perhaps this can be a configuration later
                     final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build().
-                            timeoutMsOverride(0L).create();
+                            timeoutMillisOverride(0L).create();
                     gremlinExecutor.eval("1+1", engineName, new SimpleBindings(Collections.emptyMap()), lifeCycle).join();
                 }
 
@@ -306,10 +306,10 @@ public class ServerGremlinExecutor {
         transactionManager = new TransactionManager(
                 scheduledExecutorService,
                 graphManager,
-                settings.idleTransactionTimeout,
-                settings.maxTransactionLifetime,
+                settings.idleTransactionTimeoutMillis,
+                settings.maxTransactionLifetimeMillis,
                 settings.maxConcurrentTransactions,
-                settings.perGraphCloseTimeout
+                settings.perGraphCloseTimeoutMillis
         );
     }
 

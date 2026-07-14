@@ -154,25 +154,25 @@ As with the earlier JDK 17 support, some libraries still rely on deep reflection
 library used with OLAP), so it may be necessary to `--add-opens` or `--add-exports` certain modules at runtime. The set
 of options used by TinkerPop's own tests is unchanged.
 
-==== Renaming `evaluationTimeout` to `timeoutMs`
+==== Renaming `evaluationTimeout` to `timeoutMillis`
 
-The per-request execution timeout is now referred to by a single name, `timeoutMs`, everywhere. `timeoutMs` is the
-maximum time in milliseconds that a request is allowed to execute on the server before it times out. It can be
+The per-request execution timeout is now referred to by a single name, `timeoutMillis`, everywhere. `timeoutMillis` is
+the maximum time in milliseconds that a request is allowed to execute on the server before it times out. It can be
 configured server-wide and overridden on a per-request basis. Previously the same concept was called
-`evaluationTimeout` in the server configuration, the `with()` script token, and several driver APIs, while the wire
-protocol already used `timeoutMs`. Collapsing to one name removes that inconsistency.
+`evaluationTimeout` in the server configuration, the `with()` script token, and several driver APIs. The `Millis`
+suffix aligns it with the driver connection options such as `connectTimeoutMillis` and `readTimeoutMillis`.
 
 This is a breaking change with no backward-compatible alias. The old `evaluationTimeout` name (and the long-deprecated
 `scriptEvaluationTimeout`) are no longer recognized anywhere. Update each surface as follows:
 
-- *Server config*: the `gremlin-server.yaml` key `evaluationTimeout` becomes `timeoutMs` (default still 30000).
-- *Script token*: `g.with('evaluationTimeout', 500)` becomes `g.with('timeoutMs', 500)`.
-- *Java driver*: `RequestOptions.Builder.timeout(long)` becomes `timeoutMs(long)` and `getTimeout()` becomes `getTimeoutMs()`.
-- *Go driver*: `RequestOptionsBuilder.SetEvaluationTimeout(int)` becomes `SetTimeoutMs(int)`.
-- *.NET driver*: `Tokens.ArgsEvalTimeout` becomes `Tokens.ArgsTimeoutMs` and `RequestMessage.Builder.AddEvaluationTimeout(...)`
-  becomes `AddTimeoutMs(...)`.
-- *JavaScript driver*: the request option `{ evaluationTimeout: N }` becomes `{ timeoutMs: N }`.
-- *Python driver*: use the token `timeoutMs` (e.g. `g.with_('timeoutMs', 500)` or `request_options={'timeoutMs': 500}`).
+- *Server config*: the `gremlin-server.yaml` key `evaluationTimeout` becomes `timeoutMillis` (default still 30000).
+- *Script token*: `g.with('evaluationTimeout', 500)` becomes `g.with('timeoutMillis', 500)`.
+- *Java driver*: `RequestOptions.Builder.timeout(long)` becomes `timeoutMillis(long)` and `getTimeout()` becomes `getTimeoutMillis()`.
+- *Go driver*: `RequestOptionsBuilder.SetEvaluationTimeout(int)` becomes `SetTimeoutMillis(int)`.
+- *.NET driver*: `Tokens.ArgsEvalTimeout` becomes `Tokens.ArgsTimeoutMillis` and `RequestMessage.Builder.AddEvaluationTimeout(...)`
+  becomes `AddTimeoutMillis(...)`.
+- *JavaScript driver*: the request option `{ evaluationTimeout: N }` becomes `{ timeoutMillis: N }`.
+- *Python driver*: use the token `timeoutMillis` (e.g. `g.with_('timeoutMillis', 500)` or `request_options={'timeoutMillis': 500}`).
 
 Driver and server should be upgraded together. A driver sending the old `evaluationTimeout` field to a 4.x server has
 that field silently ignored and falls back to the server's default timeout, as with any unrecognized request argument.
@@ -1013,6 +1013,25 @@ if (hasContainer.hasTraversal()) continue;  // skip - dynamic value, cannot fold
 `GraphStep.processHasContainerIds()` already includes this guard. Providers that implement their own `HasContainer`
 folding strategy should add the same check. Without it, the container's value is read before it has been resolved
 against a traverser, so an unresolved value would be folded into the index lookup and produce incorrect results.
+
+===== Millisecond Server Settings Renamed
+
+The millisecond-valued Gremlin Server settings now carry a `Millis` suffix so that their unit is explicit in the name,
+matching `timeoutMillis` and the driver connection options such as `connectTimeoutMillis`. Providers that ship their
+own `gremlin-server.yaml`, generate server configuration, or read these fields from the `Settings` object must update
+the following keys.
+
+[source,text]
+----
+idleConnectionTimeout        ->  idleConnectionTimeoutMillis
+keepAliveInterval            ->  keepAliveIntervalMillis
+ssl.refreshInterval          ->  ssl.refreshIntervalMillis
+metrics.<reporter>.interval  ->  metrics.<reporter>.intervalMillis
+----
+
+There is no backward-compatible alias, so the old keys are no longer recognized. The transaction settings
+`idleTransactionTimeoutMillis`, `maxTransactionLifetimeMillis`, and `perGraphCloseTimeoutMillis` are new in 4.x and
+also use the suffix.
 
 ==== Graph Driver Providers
 

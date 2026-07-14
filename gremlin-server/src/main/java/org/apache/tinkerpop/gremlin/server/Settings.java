@@ -108,7 +108,7 @@ public class Settings {
      * The maximum time in milliseconds that a request is allowed to execute on the server before it times out.
      * Serves as the server-wide default which may be overridden on a per-request basis. Defaults to 30000.
      */
-    public long timeoutMs = 30000L;
+    public long timeoutMillis = 30000L;
 
     /**
      * Number of items in a particular resultset to iterate and serialize prior to pushing the data down the wire
@@ -162,19 +162,19 @@ public class Settings {
     /**
      * Time in milliseconds that the server will allow a channel to not receive requests from a client before it
      * automatically closes. If enabled, the value provided should typically exceed the amount of time given to
-     * {@link #keepAliveInterval}. Note that while this value is to be provided as milliseconds it will resolve to
+     * {@link #keepAliveIntervalMillis}. Note that while this value is to be provided as milliseconds it will resolve to
      * second precision. Set this value to 0 to disable this feature.
      */
-    public long idleConnectionTimeout = 0;
+    public long idleConnectionTimeoutMillis = 0;
 
     /**
      * Time in milliseconds that the server will allow a channel to not send responses to a client before it sends
      * a "ping" to see if it is still present. If it is present, the client should respond with a "pong" which will
-     * thus reset the {@link #idleConnectionTimeout} and keep the channel open. If enabled, this number should be
-     * smaller than the value provided to the {@link #idleConnectionTimeout}. Note that while this value is to be
+     * thus reset the {@link #idleConnectionTimeoutMillis} and keep the channel open. If enabled, this number should be
+     * smaller than the value provided to the {@link #idleConnectionTimeoutMillis}. Note that while this value is to be
      * provided as milliseconds it will resolve to second precision. Set this value to 0 to disable this feature.
      */
-    public long keepAliveInterval = 0;
+    public long keepAliveIntervalMillis = 0;
 
     /**
      * If set to {@code true} the {@code aliases} option is required on requests and Gremlin Server will use that
@@ -189,16 +189,16 @@ public class Settings {
      * Time in milliseconds that a transaction can remain idle (no operation running or queued) before it is
      * automatically rolled back. This prevents resource leaks from abandoned transactions. The idle timer is suspended
      * while an operation is in progress, so a long-running operation does not trip it (its duration is instead bounded
-     * by {@link #timeoutMs}). Set to {@code 0} to disable idle reclamation entirely. Default is 60000
+     * by {@link #timeoutMillis}). Set to {@code 0} to disable idle reclamation entirely. Default is 60000
      * (1 minute).
      */
-    public long idleTransactionTimeout = 60000L;
+    public long idleTransactionTimeoutMillis = 60000L;
 
     /**
      * Time in milliseconds to wait for a transaction commit or rollback operation to complete.
      * Default is 10000 (10 seconds).
      */
-    public long perGraphCloseTimeout = 10000L;
+    public long perGraphCloseTimeoutMillis = 10000L;
 
     /**
      * Maximum number of concurrent transactions allowed on the server.
@@ -208,14 +208,14 @@ public class Settings {
 
     /**
      * Absolute ceiling, in milliseconds, on the total age of a transaction regardless of activity. Unlike
-     * {@link #idleTransactionTimeout} (which only reclaims idle transactions), this cap fires even while an operation is
+     * {@link #idleTransactionTimeoutMillis} (which only reclaims idle transactions), this cap fires even while an operation is
      * running, interrupting it and rolling the transaction back, so it bounds how long a single transaction can hold its
      * dedicated worker thread and concurrency slot. The bound on transaction lifetime and slot occupancy is absolute;
-     * the bound on thread occupancy is best-effort in the same way {@link #timeoutMs} is, since interrupting a
+     * the bound on thread occupancy is best-effort in the same way {@link #timeoutMillis} is, since interrupting a
      * running operation only takes effect when it reaches an interruptible point. Set to {@code 0} to disable the cap.
      * Default is 600000 (10 minutes).
      */
-    public long maxTransactionLifetime = 600000L;
+    public long maxTransactionLifetimeMillis = 600000L;
 
     /**
      * The full class name of the {@link Channelizer} to use in Gremlin Server.
@@ -331,8 +331,8 @@ public class Settings {
         return Optional.ofNullable(ssl);
     }
 
-    public long getTimeoutMs() {
-        return timeoutMs;
+    public long getTimeoutMillis() {
+        return timeoutMillis;
     }
 
     /**
@@ -651,7 +651,7 @@ public class Settings {
          * The interval, in milliseconds, at which the trustStore and keyStore files are checked for updates.
          * The default interval is 60 seconds.
          */
-        public long refreshInterval = 60000L;
+        public long refreshIntervalMillis = 60000L;
 
         private SslContext sslContext;
 
@@ -768,7 +768,7 @@ public class Settings {
     }
 
     public static abstract class IntervalMetrics extends BaseMetrics {
-        public long interval = 60000;
+        public long intervalMillis = 60000;
     }
 
     public static abstract class BaseMetrics {

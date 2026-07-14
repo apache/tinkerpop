@@ -44,6 +44,6 @@ public class GremlinScriptCheckerBenchmark extends AbstractBenchmarkBase {
 
     @Benchmark
     public GremlinScriptChecker.Result testParseAll() {
-        return GremlinScriptChecker.parse("g.with('timeoutMs', 1000L).with('materializeProperties', 'all').with('requestId', '4F53FB59-CFC9-4984-B477-452073A352FD').with(true).V().out('knows')");
+        return GremlinScriptChecker.parse("g.with('timeoutMillis', 1000L).with('materializeProperties', 'all').with('requestId', '4F53FB59-CFC9-4984-B477-452073A352FD').with(true).V().out('knows')");
     }
 }

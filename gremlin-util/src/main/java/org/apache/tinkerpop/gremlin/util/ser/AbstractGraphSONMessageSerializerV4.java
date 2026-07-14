@@ -327,9 +327,9 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
             if (data.containsKey(SerTokens.TOKEN_PARAMETERS)) {
                 builder.addParameters(data.get(SerTokens.TOKEN_PARAMETERS).toString());
             }
-            if (data.containsKey(Tokens.TIMEOUT_MS)) {
+            if (data.containsKey(Tokens.TIMEOUT_MILLIS)) {
                 // Can be int for untyped JSON and long for typed GraphSON.
-                builder.addTimeoutMillis(Long.parseLong(data.get(Tokens.TIMEOUT_MS).toString()));
+                builder.addTimeoutMillis(Long.parseLong(data.get(Tokens.TIMEOUT_MILLIS).toString()));
             }
             if (data.containsKey(Tokens.ARGS_MATERIALIZE_PROPERTIES)) {
                 builder.addMaterializeProperties(data.get(Tokens.ARGS_MATERIALIZE_PROPERTIES).toString());

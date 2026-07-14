@@ -83,7 +83,7 @@ export default class DriverRemoteConnection extends RemoteConnection {
     if (strategies.length > 0) {
       requestOptions = {};
       const allowedKeys = [
-        'timeoutMs',
+        'timeoutMillis',
         'batchSize',
         'requestId',
         'userAgent',

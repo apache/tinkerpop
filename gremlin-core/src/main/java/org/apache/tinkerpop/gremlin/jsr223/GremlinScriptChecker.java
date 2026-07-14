@@ -42,7 +42,7 @@ public class GremlinScriptChecker {
      * At least one of these tokens should be present somewhere in the Gremlin string for {@link #parse(String)} to
      * take any action at all.
      */
-    private static final Set<String> tokens = new HashSet<>(Arrays.asList("timeoutMs", "TIMEOUT_MS",
+    private static final Set<String> tokens = new HashSet<>(Arrays.asList("timeoutMillis", "TIMEOUT_MILLIS",
             "requestId", "REQUEST_ID", "materializeProperties", "ARGS_MATERIALIZE_PROPERTIES"));
 
     /**
@@ -77,12 +77,12 @@ public class GremlinScriptChecker {
     /**
      * Regex fragment for the timeout tokens to look for. There are basically two:
      * <ul>
-     *     <li>{@code timeoutMs} which is a string value and thus single or double quoted</li>
-     *     <li>{@code TIMEOUT_MS} which is a enum type of value which can be referenced with or without a {@code Tokens} qualifier</li>
+     *     <li>{@code timeoutMillis} which is a string value and thus single or double quoted</li>
+     *     <li>{@code TIMEOUT_MILLIS} which is a enum type of value which can be referenced with or without a {@code Tokens} qualifier</li>
      * </ul>
      * See {@link #patternWithOptions} for explain as this regex is embedded in there.
      */
-    private static final String timeoutTokens = "[\"']timeoutMs[\"']|(?:Tokens\\.)?TIMEOUT_MS";
+    private static final String timeoutTokens = "[\"']timeoutMillis[\"']|(?:Tokens\\.)?TIMEOUT_MILLIS";
 
     /**
      * Regex fragment for the timeout tokens to look for. There are basically four:

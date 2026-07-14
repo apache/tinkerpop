@@ -48,7 +48,7 @@ public class ClientWithOptionsIntegrateTest extends AbstractGremlinServerIntegra
         final Client client = cluster.connect();
         final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client, "ggrateful"));
         assertThrows(CompletionException.class, () -> {
-            final List<Vertex> res = g.with("timeoutMs", 1).V().both().both().both().toList();
+            final List<Vertex> res = g.with("timeoutMillis", 1).V().both().both().both().toList();
             fail("Failed to time out. Result: " + res);
         });
     }
@@ -58,7 +58,7 @@ public class ClientWithOptionsIntegrateTest extends AbstractGremlinServerIntegra
         final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect().alias("ggrateful");
         assertThrows(ExecutionException.class, () -> {
-            final List<Result> res = client.submit("g.with(\"timeoutMs\", 1).V().both().both().both();").all().get();
+            final List<Result> res = client.submit("g.with(\"timeoutMillis\", 1).V().both().both().both();").all().get();
             fail("Failed to time out. Result: " + res);
         });
     }
@@ -68,7 +68,7 @@ public class ClientWithOptionsIntegrateTest extends AbstractGremlinServerIntegra
         final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();
         assertThrows(ExecutionException.class, () -> {
-            final List<Result> res = client.submit("ggrateful.with(\"timeoutMs\", 1).V().both().both().both();").all().get();
+            final List<Result> res = client.submit("ggrateful.with(\"timeoutMillis\", 1).V().both().both().both();").all().get();
             fail("Failed to time out. Result: " + res);
         });
     }

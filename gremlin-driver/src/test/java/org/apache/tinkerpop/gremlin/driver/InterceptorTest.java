@@ -171,7 +171,7 @@ public class InterceptorTest {
         assertEquals("g.V()", json.get("gremlin").asText());
         assertEquals("g", json.get("g").asText());
         assertEquals("gremlin-lang", json.get("language").asText());
-        assertEquals(5000, json.get("timeoutMs").asLong());
+        assertEquals(5000, json.get("timeoutMillis").asLong());
         assertEquals("true", json.get("bulkResults").asText());
     }
 

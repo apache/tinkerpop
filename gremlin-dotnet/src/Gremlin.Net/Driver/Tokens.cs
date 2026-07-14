@@ -72,7 +72,7 @@ namespace Gremlin.Net.Driver
         ///     Argument name that allows the override of the server setting that determines the maximum time in
         ///     milliseconds a request is allowed to execute on the server before it times out.
         /// </summary>
-        public const string ArgsTimeoutMs = "timeoutMs";
+        public const string ArgsTimeoutMillis = "timeoutMillis";
 
         /// <summary>
         ///     Argument name that allows the override of handling properties.

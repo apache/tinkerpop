@@ -922,36 +922,37 @@ The following table describes the various YAML configuration options that Gremli
 |graphs.<name>.traversalSources[X].language |The `ScriptEngine` language to use for evaluating `gremlinExpression`.  Falls back to the sole configured engine if only one is present, or `gremlin-lang` otherwise. |_auto-detected_
 |gremlinPool |The number of "Gremlin" threads available to execute actual scripts in a `ScriptEngine`. This pool represents the workers available to handle blocking operations in Gremlin Server. When set to `0`, Gremlin Server will use the value provided by `Runtime.availableProcessors()`. |0
 |host |The name of the host to bind the server to. |localhost
-|idleConnectionTimeout |Time in milliseconds that the server will allow a channel to not receive requests from a client before it automatically closes. If enabled, the value provided should typically exceed the amount of time given to `keepAliveInterval`. Note that while this value is to be provided as milliseconds it will resolve to second precision. Set this value to `0` to disable this feature. |0
-|idleTransactionTimeout |Time in milliseconds that a transaction can remain idle (no operation running or queued) before the server forcibly rolls it back and removes it. The idle timer is suspended while an operation is running, so a long-running operation does not trip it (its duration is instead bounded by `timeoutMs`); the timer is armed only once the transaction returns to idle. Set to `0` to disable idle reclamation. |60000
-|keepAliveInterval |Time in milliseconds that the server will allow a channel to not send responses to a client before it sends a "ping" to see if it is still present. If it is present, the client should respond with a "pong" which will thus reset the `idleConnectionTimeout` and keep the channel open. If enabled, this number should be smaller than the value provided to the `idleConnectionTimeout`. Note that while this value is to be provided as milliseconds it will resolve to second precision. Set this value to `0` to disable this feature. |0
+|idleConnectionTimeoutMillis |Time in milliseconds that the server will allow a channel to not receive requests from a client before it automatically closes. If enabled, the value provided should typically exceed the amount of time given to `keepAliveIntervalMillis`. Note that while this value is to be provided as milliseconds it will resolve to second precision. Set this value to `0` to disable this feature. |0
+|idleTransactionTimeoutMillis |Time in milliseconds that a transaction can remain idle (no operation running or queued) before the server forcibly rolls it back and removes it. The idle timer is suspended while an operation is running, so a long-running operation does not trip it (its duration is instead bounded by `timeoutMillis`); the timer is armed only once the transaction returns to idle. Set to `0` to disable idle reclamation. |60000
+|keepAliveIntervalMillis |Time in milliseconds that the server will allow a channel to not send responses to a client before it sends a "ping" to see if it is still present. If it is present, the client should respond with a "pong" which will thus reset the `idleConnectionTimeoutMillis` and keep the channel open. If enabled, this number should be smaller than the value provided to the `idleConnectionTimeoutMillis`. Note that while this value is to be provided as milliseconds it will resolve to second precision. Set this value to `0` to disable this feature. |0
 |maxAccumulationBufferComponents |Maximum number of request components that can be aggregated for a message. |1024
 |maxChunkSize |The maximum length of the content or each chunk.  If the content length exceeds this value, the transfer encoding of the decoded request will be converted to 'chunked' and the content will be split into multiple `HttpContent` objects.  If the transfer encoding of the HTTP request is 'chunked' already, each chunk will be split into smaller chunks if the length of the chunk exceeds this value. |8192
 |maxConcurrentTransactions |The maximum number of concurrent open transactions allowed. When this limit is reached, new `g.tx().begin()` requests are rejected with HTTP 503. Slots are freed when transactions close via commit, rollback, or timeout. |1000
 |maxHeaderSize |The maximum length of all headers. |8192
 |maxInitialLineLength |The maximum length of the initial line (e.g.  "GET / HTTP/1.0") processed in a request, which essentially controls the maximum length of the submitted URI. |4096
 |maxParameters |The maximum number of parameters that can be passed on a request. Larger numbers may impact performance for scripts. This configuration only applies to the `HttpChannelizer`. |16
-|maxTransactionLifetime |Absolute cap in milliseconds on the total age of a transaction regardless of activity. Unlike `idleTransactionTimeout`, it fires even while an operation is running, interrupting it and rolling the transaction back. Set to `0` to disable the cap. |600000
+|maxTransactionLifetimeMillis |Absolute cap in milliseconds on the total age of a transaction regardless of activity. Unlike `idleTransactionTimeoutMillis`, it fires even while an operation is running, interrupting it and rolling the transaction back. Set to `0` to disable the cap. |600000
+|perGraphCloseTimeoutMillis |Time in milliseconds to wait for a transaction commit or rollback operation to complete when closing a graph. |10000
 |maxRequestContentLength |The maximum length of the aggregated content for a request message.  Works in concert with `maxChunkSize` where chunked requests are accumulated back into a single message.  A request exceeding this size will return a `413 - Request Entity Too Large` status code. |10485760
 |maxWorkQueueSize |The maximum size the general processing queue can grow before the `gremlinPool` starts to reject requests. |8192
 |metrics.consoleReporter.enabled |Turns on console reporting of metrics. |false
-|metrics.consoleReporter.interval |Time in milliseconds between reports of metrics to console. |180000
+|metrics.consoleReporter.intervalMillis |Time in milliseconds between reports of metrics to console. |180000
 |metrics.csvReporter.enabled |Turns on CSV reporting of metrics. |false
 |metrics.csvReporter.fileName |The file to write metrics to. |_none_
-|metrics.csvReporter.interval |Time in milliseconds between reports of metrics to file. |180000
+|metrics.csvReporter.intervalMillis |Time in milliseconds between reports of metrics to file. |180000
 |metrics.gangliaReporter.addressingMode |Set to `MULTICAST` or `UNICAST`. |_none_
 |metrics.gangliaReporter.enabled |Turns on Ganglia reporting of metrics. Additional link:https://tinkerpop.apache.org/docs/x.y.z/reference/#metrics[setup] is required. |false
 |metrics.gangliaReporter.host |Define the Ganglia host to report Metrics to. |localhost
-|metrics.gangliaReporter.interval |Time in milliseconds between reports of metrics for Ganglia. |180000
+|metrics.gangliaReporter.intervalMillis |Time in milliseconds between reports of metrics for Ganglia. |180000
 |metrics.gangliaReporter.port |Define the Ganglia port to report Metrics to. |8649
 |metrics.graphiteReporter.enabled |Turns on Graphite reporting of metrics. Additional link:https://tinkerpop.apache.org/docs/x.y.z/reference/#metrics[setup] is required. |false
 |metrics.graphiteReporter.host |Define the Graphite host to report Metrics to. |localhost
-|metrics.graphiteReporter.interval |Time in milliseconds between reports of metrics for Graphite. |180000
+|metrics.graphiteReporter.intervalMillis |Time in milliseconds between reports of metrics for Graphite. |180000
 |metrics.graphiteReporter.port |Define the Graphite port to report Metrics to. |2003
 |metrics.graphiteReporter.prefix |Define a "prefix" to append to metrics keys reported to Graphite. |_none_
 |metrics.jmxReporter.enabled |Turns on JMX reporting of metrics. |false
 |metrics.slf4jReporter.enabled |Turns on SLF4j reporting of metrics. |false
-|metrics.slf4jReporter.interval |Time in milliseconds between reports of metrics to SLF4j. |180000
+|metrics.slf4jReporter.intervalMillis |Time in milliseconds between reports of metrics to SLF4j. |180000
 |port |The port to bind the server to. |8182
 |resultIterationBatchSize |Defines the size in which the result of a request is "batched" back to the client.  In other words, if set to `1`, then a result that had ten items in it would get each result sent back individually.  If set to `2` the same ten results would come back in five batches of two each. |64
 |scriptEngines |A `Map` of `ScriptEngine` implementations to expose through Gremlin Server, where the key is the name given by the `ScriptEngine` implementation.  The key must match the name exactly for the `ScriptEngine` to be constructed.  The value paired with this key is itself a `Map` of configuration for that `ScriptEngine`.  If this value is not set, it will default to "gremlin-lang". |_gremlin-lang_
@@ -970,6 +971,7 @@ The following table describes the various YAML configuration options that Gremli
 |ssl.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
 |ssl.keyStoreType |`PKCS12` |_none_
 |ssl.needClientAuth | Optional. One of NONE, REQUIRE.  Enables client certificate authentication at the enforcement level specified. Can be used in combination with Authenticator. |_none_
+|ssl.refreshIntervalMillis |The interval, in milliseconds, at which the trustStore and keyStore files are checked for updates. |60000
 |ssl.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
 |ssl.sslEnabledProtocols |The list of SSL protocols to support for SSL connections. If specified, only the protocols that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
 |ssl.trustStore |Required when needClientAuth is REQUIRE. Trusted certificates for verifying the remote endpoint's certificate. If this value is not provided and SSL is enabled, the default `TrustManager` will be used, which will have a set of common public certificates installed to it. |_none_
@@ -977,7 +979,7 @@ The following table describes the various YAML configuration options that Gremli
 |strictTransactionManagement |Set to `true` to require `aliases` to be submitted on every requests, where the `aliases` become the scope of transaction management. |false
 |threadPoolBoss |The number of threads available to Gremlin Server for accepting connections. Should always be set to `1`. |1
 |threadPoolWorker |The number of threads available to Gremlin Server for processing non-blocking reads and writes. |1
-|timeoutMs |The maximum amount of time in milliseconds that a request is allowed to execute on the server before it times out. This is the server-wide default and may be overridden on a per-request basis with the `timeoutMs` request argument. This feature can be turned off by setting the value to `0`. |30000
+|timeoutMillis |The maximum amount of time in milliseconds that a request is allowed to execute on the server before it times out. This is the server-wide default and may be overridden on a per-request basis with the `timeoutMillis` request argument. This feature can be turned off by setting the value to `0`. |30000
 |useEpollEventLoop |Try to use epoll event loops (works only on Linux os) instead of netty NIO. |false
 |writeBufferHighWaterMark | If the number of bytes in the network send buffer exceeds this value then the channel is no longer writeable, accepting no additional writes until buffer is drained and the `writeBufferLowWaterMark` is met. |65536
 |writeBufferLowWaterMark | Once the number of bytes queued in the network send buffer exceeds the `writeBufferHighWaterMark`, the channel will not become writeable again until the buffer is drained and it drops below this value. |32768
@@ -1762,7 +1764,7 @@ continuously:
 client = Cluster.build("localhost").port(8182).create().connect()
 ==>org.apache.tinkerpop.gremlin.driver.Client$ClusteredClient@42ff9a77
 client.submit("while(true) { }")
-org.apache.tinkerpop.gremlin.driver.exception.ResponseException: A timeout occurred during traversal evaluation of [RequestMessage{, fields={parameters={}, language=gremlin-groovy, batchSize=64}, gremlin=while(true) { }}] - consider increasing the limit given to timeoutMs (the maximum time in milliseconds a request may execute on the server)
+org.apache.tinkerpop.gremlin.driver.exception.ResponseException: A timeout occurred during traversal evaluation of [RequestMessage{, fields={parameters={}, language=gremlin-groovy, batchSize=64}, gremlin=while(true) { }}] - consider increasing the limit given to timeoutMillis (the maximum time in milliseconds a request may execute on the server)
 
 The `GroovyCompilerGremlinPlugin` has a number of configuration options:
 
@@ -1916,11 +1918,11 @@ generally means being measured in the low hundreds of milliseconds and "slow" me
 * Requests that are "slow" can really hurt Gremlin Server if they are not properly accounted for. Since these requests
 block a thread until the job is complete or successfully interrupted, lots of long-run requests will eventually consume
 the `gremlinPool` preventing other requests from getting processed from the queue.
-** To limit the impact of this problem, consider properly setting the `timeoutMs` to something "sane".
+** To limit the impact of this problem, consider properly setting the `timeoutMillis` to something "sane".
 In other words, test the traversals being sent to Gremlin Server and determine the maximum time they take to evaluate
 and iterate over results, then set the timeout value accordingly. Also, consider setting a shorter global timeout for
 requests and then use longer per-request timeouts for those specific ones that might execute at a longer rate.
-** Note that `timeoutMs` can only attempt to interrupt the evaluation on timeout.  It allows Gremlin
+** Note that `timeoutMillis` can only attempt to interrupt the evaluation on timeout.  It allows Gremlin
 Server to "ignore" the result of that evaluation, which means the thread in the `gremlinPool` that did the evaluation
 may still be consumed after the timeout if interruption does not succeed on the thread.
 * When using transactions, the server dedicates resources to maintain transaction state for each open transaction. For
@@ -2253,25 +2255,25 @@ IMPORTANT: Not all graph implementations support explicit transactions (for exam
 Use `TinkerTransactionGraph` or another graph implementation that supports explicit transactions. Attempting to begin
 an explicit transaction on a graph that does not support them will result in an error.
 
-Several settings in the Gremlin Server YAML control transaction resource usage. The `idleTransactionTimeout`
+Several settings in the Gremlin Server YAML control transaction resource usage. The `idleTransactionTimeoutMillis`
 (default 60000ms) governs how long a transaction can remain idle (no operation running or queued) before the
 server forcibly rolls it back. The idle timer is suspended while an operation is running, so a long-running operation
 does not trip it; it is armed only once the transaction returns to idle. Set it to `0` to disable idle reclamation. The
-`maxTransactionLifetime` (default 600000ms) is an absolute cap on the total age of a transaction regardless of
-activity. Unlike `idleTransactionTimeout`, it fires even while an operation is running, interrupting it and rolling the
-transaction back. It bounds transaction lifetime and concurrency-slot occupancy absolutely; like `timeoutMs`, its
+`maxTransactionLifetimeMillis` (default 600000ms) is an absolute cap on the total age of a transaction regardless of
+activity. Unlike `idleTransactionTimeoutMillis`, it fires even while an operation is running, interrupting it and rolling the
+transaction back. It bounds transaction lifetime and concurrency-slot occupancy absolutely; like `timeoutMillis`, its
 ability to free the underlying worker thread depends on the operation reaching an interruptible point. Set it to
 `0` to disable the cap. Finally, `maxConcurrentTransactions` (default 1000) caps the number of open transactions
 allowed; when the limit is reached, new begin requests are rejected with HTTP 503.
 
-These compose with the per-operation `timeoutMs` (configurable server-wide and overridable per request) to bound a
-transaction at three independent scopes: a single operation (`timeoutMs`), the gaps between operations
-(`idleTransactionTimeout`), and the transaction as a whole (`maxTransactionLifetime`). The defaults keep a transaction
-bounded out of the box; disabling all of them is a deliberate operator choice, and a per-request `timeoutMs` is always
+These compose with the per-operation `timeoutMillis` (configurable server-wide and overridable per request) to bound a
+transaction at three independent scopes: a single operation (`timeoutMillis`), the gaps between operations
+(`idleTransactionTimeoutMillis`), and the transaction as a whole (`maxTransactionLifetimeMillis`). The defaults keep a transaction
+bounded out of the box; disabling all of them is a deliberate operator choice, and a per-request `timeoutMillis` is always
 honored as sent.
 
 Each open transaction consumes a dedicated thread on the server to maintain thread-local transaction state for the
-underlying graph. Ensure that clients close transactions promptly and that the `idleTransactionTimeout` is set to
+underlying graph. Ensure that clients close transactions promptly and that the `idleTransactionTimeoutMillis` is set to
 reclaim abandoned ones. The `transactions` gauge metric can be used to monitor usage.
 
 In load-balanced deployments, all requests within a transaction must reach the same server instance because
@@ -2673,4 +2675,3 @@ create large or frequently changing value sets, improving performance and stabil
 
 Consult the MCP client documentation for how environment variables are supplied and how tool calls are approved and
 presented to the user.
-

@@ -147,14 +147,14 @@ namespace Gremlin.Net.UnitTest.Driver
             gl.AddStep("V", Array.Empty<object>());
             gl.OptionsStrategies.Add(new OptionsStrategy(new Dictionary<string, object>
             {
-                { Tokens.ArgsTimeoutMs, 5000L },
+                { Tokens.ArgsTimeoutMillis, 5000L },
                 { Tokens.ArgsBatchSize, 100 }
             }));
 
             await connection.SubmitAsync<object, object>(gl);
 
             Assert.NotNull(capturedRequest);
-            Assert.Equal(5000L, capturedRequest!.Fields[Tokens.ArgsTimeoutMs]);
+            Assert.Equal(5000L, capturedRequest!.Fields[Tokens.ArgsTimeoutMillis]);
             Assert.Equal(100, capturedRequest.Fields[Tokens.ArgsBatchSize]);
         }
 

@@ -322,8 +322,8 @@ describe('Traversal', function () {
       });
       return g.V().out().iterate().then(() => assert.fail("should have tanked"), (err) => assert.strictEqual(err.statusCode, 500));
     });
-    it('should allow with_(timeoutMs,10)', function() {
-      const g = anon.traversal().with_(connection).with_('x').with_('timeoutMs', 10);
+    it('should allow with_(timeoutMillis,10)', function() {
+      const g = anon.traversal().with_(connection).with_('x').with_('timeoutMillis', 10);
       return g.V().repeat(__.both()).iterate().then(() => assert.fail("should have tanked"), (err) => assert.strictEqual(err.statusCode, 500));
     });
     it('should allow SeedStrategy', function () {

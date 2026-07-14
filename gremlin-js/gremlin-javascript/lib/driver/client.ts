@@ -25,7 +25,7 @@ export type RequestOptions = {
   parameters?: any;
   language?: string;
   accept?: string;
-  timeoutMs?: number;
+  timeoutMillis?: number;
   batchSize?: number;
   userAgent?: string;
   materializeProperties?: string;
@@ -123,8 +123,8 @@ export default class Client {
     if (requestOptions?.materializeProperties) {
       requestBuilder.addMaterializeProperties(requestOptions.materializeProperties);
     }
-    if (requestOptions?.timeoutMs) {
-      requestBuilder.addTimeoutMillis(requestOptions.timeoutMs);
+    if (requestOptions?.timeoutMillis) {
+      requestBuilder.addTimeoutMillis(requestOptions.timeoutMillis);
     }
     // Per-request value wins (including an explicit `false`); otherwise apply the
     // connection-level default only when it is true.
