@@ -431,8 +431,14 @@ func graphWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryType
 		if err := typeSerializer.write(v.Id, w); err != nil {
 			return err
 		}
-		// {labels} list<string> value-only, 1 element
-		if err := typeSerializer.writeValue([1]string{v.Label}, w, false); err != nil {
+		// {labels} list<string> value-only. A non-nil Labels slice is authoritative (including
+		// an empty slice, i.e. a zero-label vertex); fall back to the deprecated single Label
+		// only when Labels was never populated (nil).
+		vLabels := v.Labels
+		if vLabels == nil {
+			vLabels = []string{v.Label}
+		}
+		if err := typeSerializer.writeValue(vLabels, w, false); err != nil {
 			return err
 		}
 
@@ -478,8 +484,13 @@ func graphWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryType
 		if err := typeSerializer.write(e.Id, w); err != nil {
 			return err
 		}
-		// {labels} list<string> value-only, 1 element
-		if err := typeSerializer.writeValue([1]string{e.Label}, w, false); err != nil {
+		// {labels} list<string> value-only. A non-nil Labels slice is authoritative; fall back
+		// to the deprecated single Label only when Labels was never populated (nil).
+		eLabels := e.Labels
+		if eLabels == nil {
+			eLabels = []string{e.Label}
+		}
+		if err := typeSerializer.writeValue(eLabels, w, false); err != nil {
 			return err
 		}
 		// {inV_id} fully-qualified
