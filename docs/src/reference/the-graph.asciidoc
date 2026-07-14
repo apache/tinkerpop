@@ -214,9 +214,8 @@ supported, what its default is or whether the choice is left to the user to conf
 
 [[the-zoo-toy-graph]]
 TIP: A toy graph demonstrating multi-label vertices alongside a variety of property types is available at
-`TinkerFactory.createTheZoo()` and `data/tinkerpop-zoo*`. Unlike "The Crew" above, which requires a graph configured
-for vertex multi-properties and meta-properties, "The Zoo" requires a `LabelCardinality` of `ONE_OR_MORE` or
-`ZERO_OR_MORE`.
+`TinkerFactory.createTheZoo()` and `data/tinkerpop-zoo*`. "The Zoo" requires a graph supporting a `LabelCardinality` of
+`ONE_OR_MORE` or `ZERO_OR_MORE`.
 
 .The Zoo
 image::the-zoo-graph.png[width=685]
