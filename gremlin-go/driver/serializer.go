@@ -199,6 +199,7 @@ func initSerializers() {
 		propertyType:       propertyWriter,
 		vertexPropertyType: vertexPropertyWriter,
 		pathType:           pathWriter,
+		treeType:           treeWriter,
 		graphType:          graphWriter,
 		datetimeType:       dateTimeWriter,
 		durationType:       durationWriter,
@@ -211,5 +212,6 @@ func initSerializers() {
 		byteBuffer:         byteBufferWriter,
 		markerType:         markerWriter,
 		compositePDTType:   pdtWriter,
+		primitivePDTType:   primitivePdtWriter,
 	}
 }

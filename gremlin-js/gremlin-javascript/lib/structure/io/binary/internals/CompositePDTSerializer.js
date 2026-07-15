@@ -18,7 +18,7 @@
  */
 
 import { Buffer } from 'buffer';
-import { ProviderDefinedType } from '../../../graph.js';
+import { CompositePDT } from '../../../graph.js';
 
 export default class CompositePDTSerializer {
   constructor(ioc) {
@@ -27,7 +27,7 @@ export default class CompositePDTSerializer {
   }
 
   canBeUsedFor(value) {
-    return value instanceof ProviderDefinedType;
+    return value instanceof CompositePDT;
   }
 
   serialize(item, fullyQualifiedFormat = true) {
@@ -57,11 +57,11 @@ export default class CompositePDTSerializer {
     }
     const fieldsRaw = await this.ioc.anySerializer.deserialize(reader);
     const fields = fieldsRaw instanceof Map ? Object.fromEntries(fieldsRaw) : fieldsRaw || {};
-    const pdt = new ProviderDefinedType(name, fields);
+    const pdt = new CompositePDT(name, fields);
     const pdtRegistry = reader.pdtRegistry;
     if (pdtRegistry) {
       const hydrated = pdtRegistry.hydrate(pdt);
-      if (!(hydrated instanceof ProviderDefinedType)) {
+      if (!(hydrated instanceof CompositePDT)) {
         return hydrated;
       }
     }

@@ -30,7 +30,6 @@
  * TODO: it has the following open topics:
  * Core Data Types support:
  * - [] 0x22: BigDecimal
- * - [] 0x2b: Tree
  * Extended Types support:
  * - [] 0x80: Char
  * - [] 0x81: Duration
@@ -53,6 +52,7 @@ import SetSerializer from './internals/SetSerializer.js';
 import UuidSerializer from './internals/UuidSerializer.js';
 import EdgeSerializer from './internals/EdgeSerializer.js';
 import PathSerializer from './internals/PathSerializer.js';
+import TreeSerializer from './internals/TreeSerializer.js';
 import PropertySerializer from './internals/PropertySerializer.js';
 import VertexSerializer from './internals/VertexSerializer.js';
 import VertexPropertySerializer from './internals/VertexPropertySerializer.js';
@@ -67,6 +67,7 @@ import UnspecifiedNullSerializer from './internals/UnspecifiedNullSerializer.js'
 import EnumSerializer from './internals/EnumSerializer.js';
 import StubSerializer from './internals/StubSerializer.js';
 import CompositePDTSerializer from './internals/CompositePDTSerializer.js';
+import PrimitivePDTSerializer from './internals/PrimitivePDTSerializer.js';
 import NumberSerializationStrategy from './internals/NumberSerializationStrategy.js';
 import AnySerializer from './internals/AnySerializer.js';
 import GraphBinaryReader from './internals/GraphBinaryReader.js';
@@ -107,10 +108,8 @@ function createIoc(anySerializerOptions) {
   ioc.unspecifiedNullSerializer = new UnspecifiedNullSerializer(ioc);
   ioc.enumSerializer = new EnumSerializer(ioc);
   ioc.compositePDTSerializer = new CompositePDTSerializer(ioc);
-
-  // Register stub serializers for unimplemented v4 types
-  new StubSerializer(ioc, ioc.DataType.TREE, 'Tree');
-  new StubSerializer(ioc, ioc.DataType.PRIMITIVEPDT, 'PrimitivePDT');
+  ioc.primitivePDTSerializer = new PrimitivePDTSerializer(ioc);
+  ioc.treeSerializer = new TreeSerializer(ioc);
 
   ioc.pdtRegistry = null;
 
@@ -177,6 +176,8 @@ export const {
   unspecifiedNullSerializer,
   enumSerializer,
   compositePDTSerializer,
+  primitivePDTSerializer,
+  treeSerializer,
   numberSerializationStrategy,
   anySerializer,
   graphBinaryReader,

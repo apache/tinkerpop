@@ -45,7 +45,6 @@ echo
 echo Available Gremlin Server instances:
 echo "http://${IP}:45940/gremlin with anonymous access"
 echo "http://${IP}:45941/gremlin with basic authentication (stephen/password)"
-echo "http://${IP}:45942/gremlin with kerberos authentication (stephen/password)"
 echo
 echo "See docker/gremlin-server/docker-entrypoints.sh for transcripts per GLV."
 echo "#############################################################################"
@@ -70,21 +69,13 @@ dos2unix /opt/gremlin-server/bin/gremlin-server.conf
 # docker/gremlin-server.sh
 
 # cd ${APACHE_TINKERPOP}                              # second terminal
-# export KRB5_CONFIG=`pwd`/docker/gremlin-server/krb5.conf
-# echo 'password' | kinit stephen
-# klist
 
 # Gremlin-Groovy
 # --------------
-# KRB5_OPTION="-Djava.security.krb5.conf=`pwd`/docker/gremlin-server/krb5.conf"
-# JAAS_OPTION="-Djava.security.auth.login.config=`pwd`/docker/gremlin-server/gremlin-console-jaas.conf"
-# export JAVA_OPTIONS="${KRB5_OPTION} ${JAAS_OPTION}"
 # cd gremlin-console/target/apache-tinkerpop-gremlin-console-3.x.y-SNAPSHOT-standalone
-# If necessary (versions 3.4.2-3.4.6): in bin/gremlin.sh replace JVM_OPTS+=( "${JAVA_OPTIONS}" ) by JVM_OPTS+=( ${JAVA_OPTIONS} )
 # bin/gremlin.sh
 # gremlin> cluster = Cluster.build("172.17.0.2").port(45940).create()
 # gremlin> cluster = Cluster.build("172.17.0.2").port(45941).credentials("stephen", "password").create()
-# gremlin> cluster = Cluster.build("172.17.0.2").port(45942).addContactPoint("gremlin-server-test").protocol("test-service").jaasEntry("GremlinConsole").create()
 # gremlin> g = traversal().withRemote(DriverRemoteConnection.using(cluster, "gmodern"))
 # gremlin> g.V()
 
@@ -97,5 +88,4 @@ dos2unix /opt/gremlin-server/bin/gremlin-server.conf
 # >>> from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 # >>> g = traversal().withRemote(DriverRemoteConnection('ws://172.17.0.2:45940/gremlin','gmodern'))
 # >>> g = traversal().withRemote(DriverRemoteConnection('ws://172.17.0.2:45941/gremlin','gmodern', username='stephen', password='password'))
-# >>> g = traversal().withRemote(DriverRemoteConnection('ws://172.17.0.2:45942/gremlin','gmodern', kerberized_service='test-service@gremlin-server-test'))
 # >>> g.V().toList()

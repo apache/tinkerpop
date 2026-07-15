@@ -46,7 +46,7 @@ public interface World {
             "not @GraphComputerVerificationInjectionNotSupported and " +
             "not @GraphComputerVerificationStarGraphExceeded and not @GraphComputerVerificationReferenceOnly and " +
             "not @TinkerServiceRegistry and not @InsertionOrderingRequired and " +
-            "not @GraphComputerVerificationOrderingNotSupported and not @TinkerGQL";
+            "not @GraphComputerVerificationOrderingNotSupported and not @TinkerGQL and not @MultiLabelDefault";
 
     /**
      * Gets a {@link GraphTraversalSource} that is backed by the specified {@link GraphData}. For {@code null}, the
@@ -54,6 +54,18 @@ public interface World {
      * that use an empty graph will change its state.
      */
     public GraphTraversalSource getGraphTraversalSource(final GraphData graphData);
+
+    /**
+     * Gets a {@link GraphTraversalSource} configured for multi-label support (ZERO_OR_MORE vertex label cardinality).
+     * This source is used by {@code @MultiLabel} tagged scenarios that require label mutation operations such as
+     * {@code addLabel()} and {@code dropLabel()}. The default implementation delegates to
+     * {@link #getGraphTraversalSource(GraphData)} with {@code null} which works for embedded graphs that already
+     * have multi-label cardinality configured. Remote implementations should override this to connect to a
+     * dedicated multi-label traversal source.
+     */
+    public default GraphTraversalSource getMultiLabelGraphTraversalSource() {
+        return getGraphTraversalSource(null);
+    }
 
     /**
      * Called before each individual test is executed which provides an opportunity to do some setup. For example,

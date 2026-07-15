@@ -20,7 +20,6 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "useDefineForClassFields": true,
-    "baseUrl": ".",
     "paths": {
       "gremlin/language": ["./node_modules/gremlin/lib/language"]
     }

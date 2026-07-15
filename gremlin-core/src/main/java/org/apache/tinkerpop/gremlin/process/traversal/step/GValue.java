@@ -48,9 +48,6 @@ public class GValue<V> implements Serializable, Cloneable {
     }
 
     private GValue(final String name, final V value) {
-        if (name != null && name.startsWith("_")) {
-            throw new IllegalArgumentException(String.format("Invalid GValue name [%s]. Should not start with _.", name));
-        }
         if (value instanceof GValue) {
             throw new IllegalArgumentException("GValues cannot be nested");
         }

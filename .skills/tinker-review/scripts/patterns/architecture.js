@@ -18,6 +18,7 @@
  */
 
 import gremlin from "gremlin";
+import { changedAny } from "../graph/change-levels.js";
 
 const { process: { t } } = gremlin;
 
@@ -31,16 +32,30 @@ const { process: { t } } = gremlin;
  * @param {object} g - gremlin-js GraphTraversalSource (already connected)
  * @param {object} params
  * @param {object} [params.clusterResult] - Output from clusterAnalysis() (connectedComponent clusters)
- * @param {boolean} [params.changedOnly] - Only include changed files (default: false)
+ * @param {boolean} [params.changedOnly] - Only include changed files — any level
+ *   but NONE (default: false)
  * @param {number} [params.maxNodes] - Cap on nodes to render (default: 40)
- * @returns {Promise<{nodes: Array, edges: Array}>}
+ * @returns {Promise<ArchitectureResult>}
+ */
+
+/**
+ * @typedef {Object} ArchitectureNode
+ * @property {string}  id
+ * @property {string}  label
+ * @property {string}  cluster  the cluster/community the node belongs to
+ * @property {boolean} changed  whether the PR modified it (changeLevel !== NONE)
+ * @property {string}  changeLevel  how the PR moved it (NONE | FORMATTING | BEHAVIORAL | STRUCTURAL)
+ *
+ * @typedef {Object} ArchitectureResult
+ * @property {ArchitectureNode[]} nodes
+ * @property {{from: string, to: string}[]} edges  directed dependency edges between nodes
  */
 export async function architecture(g, params = {}) {
   const { clusterResult, changedOnly = false, maxNodes = 40 } = params;
 
   let traversal = g.V().hasLabel("File");
   if (changedOnly) {
-    traversal = traversal.has("changed", true);
+    traversal = traversal.has("changeLevel", changedAny());
   }
 
   const fileVertices = await traversal.elementMap().toList();
@@ -53,12 +68,13 @@ export async function architecture(g, params = {}) {
 
   let nodes = fileVertices.map((fileMap) => {
     const path = fileMap.get("path");
-    const changed = fileMap.get("changed") || false;
+    const changeLevel = fileMap.get("changeLevel") || "NONE";
+    const changed = changeLevel !== "NONE";
     const id = path;
     const label = shortLabel(path);
     const cluster = clusterAssignment.get(path) || dirCluster(path);
 
-    return { id, label, cluster, changed };
+    return { id, label, cluster, changed, changeLevel };
   });
 
   if (nodes.length > maxNodes) {

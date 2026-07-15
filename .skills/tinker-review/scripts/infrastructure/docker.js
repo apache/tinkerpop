@@ -19,16 +19,15 @@
 
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { createServer } from "node:net";
-import { get } from "node:http";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+
+import { findAvailablePort, waitForHttp } from "./net.js";
 
 const exec = promisify(execFile);
 
 const DEFAULT_IMAGE = "tinkerpop/gremlin-server:3.8.1";
 const DEFAULT_TIMEOUT_MS = 30000;
-const POLL_INTERVAL_MS = 500;
 
 const INIT_GROOVY = `def globals = [:]
 globals << [g : traversal().withEmbedded(graph)]
@@ -53,7 +52,9 @@ export async function startServer(options = {}) {
   const image = options.image || DEFAULT_IMAGE;
   const timeoutMs = options.timeoutMs || DEFAULT_TIMEOUT_MS;
 
-  const port = await findAvailablePort();
+  // A fixed port lets a review be regenerated on the same endpoint; otherwise an
+  // OS-assigned free port is used.
+  const port = options.port || await findAvailablePort();
   const configDir = `/tmp/gremlin-review-${port}`;
 
   await mkdir(join(configDir, "scripts"), { recursive: true });
@@ -73,7 +74,7 @@ export async function startServer(options = {}) {
   const handle = { port, containerId, url, configDir };
 
   try {
-    await waitForReady(port, timeoutMs);
+    await waitForHttp(port, timeoutMs);
   } catch (err) {
     await stopServer(handle).catch(() => {});
     throw err;
@@ -91,38 +92,4 @@ export async function startServer(options = {}) {
 export async function stopServer(handle) {
   await exec("docker", ["stop", handle.containerId]).catch(() => {});
   await exec("docker", ["rm", handle.containerId]).catch(() => {});
-}
-
-function findAvailablePort() {
-  return new Promise((resolve, reject) => {
-    const srv = createServer();
-    srv.listen(0, () => {
-      const { port } = srv.address();
-      srv.close(() => resolve(port));
-    });
-    srv.on("error", reject);
-  });
-}
-
-function waitForReady(port, timeoutMs) {
-  const deadline = Date.now() + timeoutMs;
-
-  return new Promise((resolve, reject) => {
-    function poll() {
-      if (Date.now() > deadline) {
-        reject(new Error(`Gremlin Server did not become ready within ${timeoutMs}ms`));
-        return;
-      }
-
-      const req = get(`http://localhost:${port}/gremlin`, (res) => {
-        res.resume();
-        resolve();
-      });
-      req.on("error", () => {
-        setTimeout(poll, POLL_INTERVAL_MS);
-      });
-    }
-
-    poll();
-  });
 }

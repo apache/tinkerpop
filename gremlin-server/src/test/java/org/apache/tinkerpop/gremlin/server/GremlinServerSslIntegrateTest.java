@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.junit.Test;
 
 import javax.net.ssl.SSLException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -171,12 +172,12 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             bindings.put("x", 123);
             bindings.put("y", 123);
             final RequestMessage request = RequestMessage.build("x+y")
-                    .addBindings(bindings).addLanguage("gremlin-groovy").create();
+                    .addParameters(bindings).addLanguage("gremlin-groovy").create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
                 System.out.println(result.getStatus());
-                if (result.getStatus().getCode() != HttpResponseStatus.PARTIAL_CONTENT) {
+                if (result.getStatus().getCode() != HttpResponseStatus.NO_CONTENT) {
                     pass.set(HttpResponseStatus.OK == result.getStatus().getCode() &&
                             (((int) ((List) result.getResult().getData()).get(0) == 246)));
                 }
@@ -217,7 +218,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             fail("Should throw exception because ssl is enabled on the server but not on client");
         } catch(Exception x) {
             final Throwable root = ExceptionHelper.getRootCause(x);
-            assertThat(root, instanceOf(RuntimeException.class));
+            assertThat(root, instanceOf(IOException.class));
             assertThat(root.getMessage(), containsString("The server may be expecting SSL to be enabled"));
         } finally {
             cluster.close();
@@ -260,7 +261,9 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             client.submit("g.inject('test')").one();
             fail("Should throw exception because ssl client auth is enabled on the server but client does not have a cert");
         } catch (Exception x) {
-            assertSslException(x, "bad_certificate");
+            // Under TLS 1.3 (default on Java 17+) a client-certificate rejection may reach the client as the specific
+            // alert or, depending on handshake timing, as a generic engine-closed error.
+            assertSslException(x, "bad_certificate", "certificate_required", "SSLEngine closed already");
         } finally {
             cluster.close();
         }
@@ -276,7 +279,9 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
             client.submit("g.inject('test')").one();
             fail("Should throw exception because ssl client auth is enabled on the server but does not trust client's cert");
         } catch (Exception x) {
-            assertSslException(x, "bad_certificate");
+            // Under TLS 1.3 (default on Java 17+) a client-certificate rejection may reach the client as the specific
+            // alert or, depending on handshake timing, as a generic engine-closed error.
+            assertSslException(x, "bad_certificate", "certificate_required", "SSLEngine closed already");
         } finally {
             cluster.close();
         }
@@ -342,10 +347,16 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         }
     }
 
-    private static void assertSslException(Exception x, String expectedSubstring) {
+    private static void assertSslException(final Exception x, final String... acceptableSubstrings) {
         logger.warn("Exception caught: {}", x.getMessage(), x);
         final Throwable root = ExceptionHelper.getRootCause(x);
         assertThat(root, instanceOf(SSLException.class));
-        assertThat(root.getMessage(), containsString(expectedSubstring));
+        final String message = root.getMessage();
+        // The exact TLS alert can vary by JDK/TLS version (for example a missing client certificate is reported as
+        // "bad_certificate" under TLS 1.2 but "certificate_required" under the TLS 1.3 that is default on Java 17+),
+        // so accept any of the provided substrings.
+        final boolean matched = message != null && Arrays.stream(acceptableSubstrings).anyMatch(message::contains);
+        assertThat("Expected SSL exception message <" + message + "> to contain one of " +
+                Arrays.toString(acceptableSubstrings), matched, is(true));
     }
 }

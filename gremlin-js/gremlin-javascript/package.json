@@ -20,6 +20,10 @@
   "type": "module",
   "main": "./build/cjs/index.cjs",
   "types": "./build/esm/index.d.ts",
+  "browser": {
+    "./build/esm/driver/dispatcher.js": "./build/esm/driver/dispatcher.browser.js",
+    "./build/cjs/driver/dispatcher.cjs": "./build/cjs/driver/dispatcher.browser.cjs"
+  },
   "exports": {
     ".": {
       "import": "./build/esm/index.js",
@@ -29,6 +33,10 @@
     "./language": {
       "import": "./build/esm/language/index.js",
       "types": "./build/esm/language/index.d.ts"
+    },
+    "./io": {
+      "import": "./build/esm/structure/io/binary/GraphBinary.js",
+      "types": "./build/esm/structure/io/binary/GraphBinary.d.ts"
     }
   },
   "typesVersions": {
@@ -44,7 +52,8 @@
   "dependencies": {
     "antlr4ng": "3.0.16",
     "buffer": "^6.0.3",
-    "eventemitter3": "^5.0.1"
+    "eventemitter3": "^5.0.1",
+    "undici": "6.27.0"
   },
   "optionalDependencies": {
     "@aws-sdk/credential-providers": "^3.967.0",
@@ -54,7 +63,7 @@
   "devDependencies": {
     "@cucumber/cucumber": "~13.0.0",
     "@eslint/js": "^10.0.1",
-    "@knighted/duel": "^4.0.2",
+    "@knighted/duel": "^4.1.1",
     "@tsconfig/node18": "^18.2.2",
     "antlr-ng": "^1.0.10",
     "chai": "^6.2.2",
@@ -70,7 +79,7 @@
     "prettier": "^3.0.0",
     "ts-node": "^10.9.2",
     "typedoc": "^0.28.18",
-    "typescript": "^5.4.2"
+    "typescript": "~6.0.3"
   },
   "repository": {
     "type": "git",
@@ -91,10 +100,12 @@
     "integration-test": "npm run integration-test-graphbinary",
     "integration-test-graphbinary": "cross-env TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.graphbinary-v4.0' mocha test/integration -t 5000",
     "TODO": "# test other mime types like graphbinary stringd",
-    "features": "npm run features-graphbinary",
+    "features": "npm run features-graphbinary && npm run features-graphbinary-params",
     "features-graphbinary": "cross-env NODE_OPTIONS='--loader ts-node/esm' TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.graphbinary-v4.0' cucumber-js --tags \"not @DataBigDecimal and not @DataBigInt and not @DataUUID and not @DataLong and not @StepWrite\" --import test/cucumber ../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/",
-    "features-docker": "npm run features-graphbinary-docker",
-    "features-graphbinary-docker": "cross-env NODE_OPTIONS='--loader ts-node/esm' TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.graphbinary-v4.0' cucumber-js --tags \"not @DataBigDecimal and not @DataBigInt and not @DataUUID and not @DataLong and not @StepWrite\" --import test/cucumber ../gremlin-test/",
+    "features-graphbinary-params": "cross-env NODE_OPTIONS='--loader ts-node/esm' TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.graphbinary-v4.0' PARAMETERIZE=true cucumber-js --tags \"not @DataBigDecimal and not @DataBigInt and not @DataUUID and not @DataLong and not @StepWrite\" --import test/cucumber ../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/",
+    "features-docker": "npm run features-graphbinary-docker && npm run features-graphbinary-params-docker",
+    "features-graphbinary-docker": "cross-env NODE_OPTIONS='--loader ts-node/esm' TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.graphbinary-v4.0' cucumber-js --tags \"not @DataBigDecimal and not @DataBigInt and not @DataUUID and not @DataLong and not @StepWrite\" --import test/cucumber /gremlin-test/",
+    "features-graphbinary-params-docker": "cross-env NODE_OPTIONS='--loader ts-node/esm' TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.graphbinary-v4.0' PARAMETERIZE=true cucumber-js --tags \"not @DataBigDecimal and not @DataBigInt and not @DataUUID and not @DataLong and not @StepWrite\" --import test/cucumber /gremlin-test/",
     "lint": "eslint --ext .js .",
     "doc": "typedoc --out doc --readme README.md --entryPointStrategy expand --entryPoints 'lib/**/*.ts' --tsconfig tsconfig.json --exclude 'lib/language/grammar/**'"
   },

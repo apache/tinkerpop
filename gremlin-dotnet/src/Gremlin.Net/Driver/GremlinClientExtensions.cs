@@ -34,7 +34,7 @@ namespace Gremlin.Net.Driver
     public static class GremlinClientExtensions
     {
         /// <summary>
-        ///     Submits a request message that consists of a script with bindings as an asynchronous operation where only a single
+        ///     Submits a request message that consists of a script with parameters as an asynchronous operation where only a single
         ///     result gets returned.
         /// </summary>
         /// <remarks>
@@ -44,7 +44,7 @@ namespace Gremlin.Net.Driver
         /// <typeparam name="T">The type of the expected result.</typeparam>
         /// <param name="gremlinClient">The <see cref="IGremlinClient" /> that submits the request.</param>
         /// <param name="requestScript">The Gremlin request script to send.</param>
-        /// <param name="bindings">Bindings for parameters used in the requestScript.</param>
+        /// <param name="parameters">Parameters used in the requestScript.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>A single result received from the Gremlin Server.</returns>
         /// <exception cref="Exceptions.ResponseException">
@@ -53,10 +53,10 @@ namespace Gremlin.Net.Driver
         /// </exception>
         public static async Task<T?> SubmitWithSingleResultAsync<T>(this IGremlinClient gremlinClient,
             string requestScript,
-            Dictionary<string, object>? bindings = null,
+            Dictionary<string, object>? parameters = null,
             CancellationToken cancellationToken = default)
         {
-            await using var resultSet = await gremlinClient.SubmitAsync<T>(requestScript, bindings, cancellationToken)
+            await using var resultSet = await gremlinClient.SubmitAsync<T>(requestScript, parameters, cancellationToken)
                 .ConfigureAwait(false);
             await foreach (var item in resultSet.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
@@ -94,12 +94,12 @@ namespace Gremlin.Net.Driver
         }
 
         /// <summary>
-        ///     Submits a request message that consists of a script with bindings as an asynchronous operation without returning
+        ///     Submits a request message that consists of a script with parameters as an asynchronous operation without returning
         ///     the result received from the Gremlin Server.
         /// </summary>
         /// <param name="gremlinClient">The <see cref="IGremlinClient" /> that submits the request.</param>
         /// <param name="requestScript">The Gremlin request script to send.</param>
-        /// <param name="bindings">Bindings for parameters used in the requestScript.</param>
+        /// <param name="parameters">Parameters used in the requestScript.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
         /// <exception cref="Exceptions.ResponseException">
@@ -107,9 +107,9 @@ namespace Gremlin.Net.Driver
         ///     that an error occurred.
         /// </exception>
         public static async Task SubmitAsync(this IGremlinClient gremlinClient, string requestScript,
-            Dictionary<string, object>? bindings = null, CancellationToken cancellationToken = default)
+            Dictionary<string, object>? parameters = null, CancellationToken cancellationToken = default)
         {
-            await using var resultSet = await gremlinClient.SubmitAsync<object>(requestScript, bindings, cancellationToken).ConfigureAwait(false);
+            await using var resultSet = await gremlinClient.SubmitAsync<object>(requestScript, parameters, cancellationToken).ConfigureAwait(false);
             // Drain the stream to ensure the background task completes and resources are released.
             await foreach (var _ in resultSet.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
@@ -139,12 +139,12 @@ namespace Gremlin.Net.Driver
         }
 
         /// <summary>
-        ///     Submits a request message that consists of a script with bindings as an asynchronous operation.
+        ///     Submits a request message that consists of a script with parameters as an asynchronous operation.
         /// </summary>
         /// <typeparam name="T">The type of the expected results.</typeparam>
         /// <param name="gremlinClient">The <see cref="IGremlinClient" /> that submits the request.</param>
         /// <param name="requestScript">The Gremlin request script to send.</param>
-        /// <param name="bindings">Bindings for parameters used in the requestScript.</param>
+        /// <param name="parameters">Parameters used in the requestScript.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>A <see cref="ResultSet{T}"/> containing the data and status attributes returned from the server.</returns>
         /// <exception cref="Exceptions.ResponseException">
@@ -153,12 +153,12 @@ namespace Gremlin.Net.Driver
         /// </exception>
         public static async Task<ResultSet<T>> SubmitAsync<T>(this IGremlinClient gremlinClient,
             string requestScript,
-            Dictionary<string, object>? bindings = null,
+            Dictionary<string, object>? parameters = null,
             CancellationToken cancellationToken = default)
         {
             var msgBuilder = RequestMessage.Build(requestScript);
-            if (bindings != null)
-                msgBuilder.AddBindings(bindings);
+            if (parameters != null)
+                msgBuilder.AddParameters(parameters);
             var msg = msgBuilder.Create();
             return await gremlinClient.SubmitAsync<T>(msg, cancellationToken).ConfigureAwait(false);
         }

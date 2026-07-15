@@ -26,13 +26,19 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ReadOnlyTraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.RequirementsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ReadOnlyChildValidator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -95,6 +101,34 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
                 }
             }
 
+        }
+
+        // Reject a traversal source configured with both with("multilabel") and with("singlelabel") — the
+        // options are mutually exclusive and combining them has no sensible interpretation.
+        final boolean hasConflictingLabelOptions = traversal.getStrategies().getStrategy(OptionsStrategy.class)
+                .map(os -> os.getOptions().containsKey(WithOptions.MULTILABEL_KEY)
+                        && os.getOptions().containsKey(WithOptions.SINGLELABEL_KEY))
+                .orElse(false);
+        if (hasConflictingLabelOptions) {
+            throw new VerificationException(
+                    "with(\"multilabel\") and with(\"singlelabel\") are mutually exclusive and cannot both be configured on the same traversal source.",
+                    traversal);
+        }
+
+        // Reject label().drop() and labels().drop() patterns — users should use dropLabel(label) or dropLabels() instead
+        for (final DropStep<?> dropStep : TraversalHelper.getStepsOfAssignableClass(DropStep.class, traversal)) {
+            Step<?, ?> current = dropStep.getPreviousStep();
+
+            // Walk backward through filter steps (IsStep, HasStep, WhereStep, NotStep, etc.)
+            while (current instanceof FilterStep) {
+                current = current.getPreviousStep();
+            }
+
+            if (current instanceof LabelsStep || current instanceof LabelStep) {
+                throw new VerificationException(
+                        "label().drop() and labels().drop() are not supported. Use dropLabel(label) or dropLabels() instead.",
+                        traversal);
+            }
         }
 
         // The ProfileSideEffectStep must be one of the following

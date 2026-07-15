@@ -33,14 +33,14 @@ func TestPDTRegistryRegisterFuncsAndHydrate(t *testing.T) {
 		return [2]int{fields["x"].(int), fields["y"].(int)}, nil
 	}, nil)
 
-	pdt := &ProviderDefinedType{Name: "x:Point", Fields: map[string]interface{}{"x": 1, "y": 2}}
+	pdt := &CompositePDT{Name: "x:Point", Fields: map[string]interface{}{"x": 1, "y": 2}}
 	result := reg.Hydrate(pdt)
 	assert.Equal(t, [2]int{1, 2}, result)
 }
 
 func TestPDTRegistryNoAdapterReturnsRawPDT(t *testing.T) {
 	reg := NewPDTRegistry()
-	pdt := &ProviderDefinedType{Name: "x:Unknown", Fields: map[string]interface{}{"a": "b"}}
+	pdt := &CompositePDT{Name: "x:Unknown", Fields: map[string]interface{}{"a": "b"}}
 	result := reg.Hydrate(pdt)
 	assert.Equal(t, pdt, result)
 }
@@ -51,7 +51,7 @@ func TestPDTRegistryAdapterErrorReturnsRawPDT(t *testing.T) {
 		return nil, errors.New("fail")
 	}, nil)
 
-	pdt := &ProviderDefinedType{Name: "x:Bad", Fields: map[string]interface{}{}}
+	pdt := &CompositePDT{Name: "x:Bad", Fields: map[string]interface{}{}}
 	result := reg.Hydrate(pdt)
 	assert.Equal(t, pdt, result)
 }
@@ -65,8 +65,8 @@ func TestPDTRegistryNestedHydration(t *testing.T) {
 		return "outer:" + fields["child"].(string), nil
 	}, nil)
 
-	inner := &ProviderDefinedType{Name: "x:Inner", Fields: map[string]interface{}{"val": "hi"}}
-	outer := &ProviderDefinedType{Name: "x:Outer", Fields: map[string]interface{}{"child": inner}}
+	inner := &CompositePDT{Name: "x:Inner", Fields: map[string]interface{}{"val": "hi"}}
+	outer := &CompositePDT{Name: "x:Outer", Fields: map[string]interface{}{"child": inner}}
 	result := reg.Hydrate(outer)
 	assert.Equal(t, "outer:hi!", result)
 }
@@ -81,7 +81,7 @@ func TestPDTRegistryRegisterType(t *testing.T) {
 	reg := NewPDTRegistry()
 	reg.RegisterType("x:Point", reflect.TypeOf(testPoint{}))
 
-	pdt := &ProviderDefinedType{Name: "x:Point", Fields: map[string]interface{}{"x": 3, "y": 4, "L": "label"}}
+	pdt := &CompositePDT{Name: "x:Point", Fields: map[string]interface{}{"x": 3, "y": 4, "L": "label"}}
 	result := reg.Hydrate(pdt)
 	assert.Equal(t, testPoint{X: 3, Y: 4, L: "label"}, result)
 }
@@ -99,18 +99,83 @@ func TestPDTRegistryNestedHydration_UnregisteredOuter(t *testing.T) {
 		return [2]int{fields["x"].(int), fields["y"].(int)}, nil
 	}, nil)
 
-	inner := &ProviderDefinedType{Name: "x:Inner", Fields: map[string]interface{}{"x": 10, "y": 20}}
-	outer := &ProviderDefinedType{Name: "x:Unregistered", Fields: map[string]interface{}{"loc": inner, "label": "test"}}
+	inner := &CompositePDT{Name: "x:Inner", Fields: map[string]interface{}{"x": 10, "y": 20}}
+	outer := &CompositePDT{Name: "x:Unregistered", Fields: map[string]interface{}{"loc": inner, "label": "test"}}
 
 	result := reg.Hydrate(outer)
 
-	// The outer should remain a raw *ProviderDefinedType (no adapter registered for it).
-	pdt, ok := result.(*ProviderDefinedType)
-	assert.True(t, ok, "outer must remain *ProviderDefinedType, got %T", result)
+	// The outer should remain a raw *CompositePDT (no adapter registered for it).
+	pdt, ok := result.(*CompositePDT)
+	assert.True(t, ok, "outer must remain *CompositePDT, got %T", result)
 	assert.Equal(t, "x:Unregistered", pdt.Name)
 
 	// The inner field "loc" must be hydrated to [2]int{10,20} because x:Inner IS registered.
 	assert.Equal(t, [2]int{10, 20}, pdt.Fields["loc"], "inner registered PDT must be hydrated even inside unregistered outer")
 	// Non-PDT fields remain unchanged.
 	assert.Equal(t, "test", pdt.Fields["label"])
+}
+
+func TestPDTRegistryPrimitiveRegisterFuncsAndHydrate(t *testing.T) {
+	reg := NewPDTRegistry()
+	reg.RegisterPrimitiveFuncs("x:Uint32", func(s string) (interface{}, error) {
+		return "uint32:" + s, nil
+	}, nil)
+
+	pdt := &PrimitivePDT{Name: "x:Uint32", Value: "42"}
+	result := reg.HydratePrimitive(pdt)
+	assert.Equal(t, "uint32:42", result)
+}
+
+func TestPDTRegistryPrimitiveNoAdapterReturnsRawPDT(t *testing.T) {
+	reg := NewPDTRegistry()
+	pdt := &PrimitivePDT{Name: "x:Unknown", Value: "val"}
+	result := reg.HydratePrimitive(pdt)
+	assert.Equal(t, pdt, result)
+}
+
+func TestPDTRegistryPrimitiveAdapterErrorReturnsRawPDT(t *testing.T) {
+	reg := NewPDTRegistry()
+	reg.RegisterPrimitiveFuncs("x:Bad", func(s string) (interface{}, error) {
+		return nil, errors.New("fail")
+	}, nil)
+
+	pdt := &PrimitivePDT{Name: "x:Bad", Value: "val"}
+	result := reg.HydratePrimitive(pdt)
+	assert.Equal(t, pdt, result)
+}
+
+func TestPDTRegistryPrimitiveHydrateNil(t *testing.T) {
+	reg := NewPDTRegistry()
+	assert.Nil(t, reg.HydratePrimitive(nil))
+}
+
+func TestPDTRegistryPrimitiveInsideComposite(t *testing.T) {
+	reg := NewPDTRegistry()
+	reg.RegisterPrimitiveFuncs("x:Uint32", func(s string) (interface{}, error) {
+		return "uint32:" + s, nil
+	}, nil)
+
+	inner := &PrimitivePDT{Name: "x:Uint32", Value: "7"}
+	outer := &CompositePDT{Name: "x:Outer", Fields: map[string]interface{}{"id": inner}}
+	result := reg.Hydrate(outer)
+
+	pdt, ok := result.(*CompositePDT)
+	assert.True(t, ok)
+	assert.Equal(t, "uint32:7", pdt.Fields["id"])
+}
+
+func TestPDTRegistryPrimitiveWithType(t *testing.T) {
+	type myID string
+	reg := NewPDTRegistry()
+	reg.RegisterPrimitiveFuncsWithType("x:MyID", reflect.TypeOf(myID("")),
+		func(s string) (interface{}, error) {
+			return myID(s), nil
+		},
+		func(obj interface{}) (string, error) {
+			return string(obj.(myID)), nil
+		})
+
+	adapter := reg.GetPrimitiveAdapterByType(reflect.TypeOf(myID("")))
+	assert.NotNil(t, adapter)
+	assert.Equal(t, "x:MyID", adapter.TypeName)
 }

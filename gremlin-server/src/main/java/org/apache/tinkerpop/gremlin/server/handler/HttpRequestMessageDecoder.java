@@ -189,8 +189,8 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
 
         final RequestMessage.Builder builder = RequestMessage.build(scriptNode.asText());
 
-        final JsonNode bindingsNode = body.get(Tokens.ARGS_BINDINGS);
-        if (bindingsNode != null) builder.addBindings(bindingsNode.asText());
+        final JsonNode parametersNode = body.get(Tokens.ARGS_PARAMETERS);
+        if (parametersNode != null) builder.addParameters(parametersNode.asText());
 
         final JsonNode gNode = body.get(Tokens.ARGS_G);
         if (null != gNode) builder.addG(gNode.asText());
@@ -201,8 +201,8 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
         final JsonNode chunkSizeNode = body.get(Tokens.ARGS_BATCH_SIZE);
         if (null != chunkSizeNode) builder.addChunkSize(chunkSizeNode.asInt());
 
-        final JsonNode timeoutMsNode = body.get(Tokens.TIMEOUT_MS);
-        if (null != timeoutMsNode) builder.addTimeoutMillis(timeoutMsNode.asLong());
+        final JsonNode timeoutMillisNode = body.get(Tokens.TIMEOUT_MILLIS);
+        if (null != timeoutMillisNode) builder.addTimeoutMillis(timeoutMillisNode.asLong());
 
         final JsonNode matPropsNode = body.get(Tokens.ARGS_MATERIALIZE_PROPERTIES);
         if (null != matPropsNode) builder.addMaterializeProperties(matPropsNode.asText());

@@ -80,7 +80,7 @@ public class GremlinExecutor implements AutoCloseable {
     private GremlinScriptEngineManager gremlinScriptEngineManager;
 
     private final Map<String, Map<String, Map<String,Object>>> plugins;
-    private final long evaluationTimeout;
+    private final long timeoutMillis;
     private final Bindings globalBindings;
     private final ExecutorService executorService;
     private final ScheduledExecutorService scheduledExecutorService;
@@ -101,7 +101,7 @@ public class GremlinExecutor implements AutoCloseable {
         this.afterTimeout = builder.afterTimeout;
         this.afterFailure = builder.afterFailure;
         this.plugins = builder.plugins;
-        this.evaluationTimeout = builder.evaluationTimeout;
+        this.timeoutMillis = builder.timeoutMillis;
         this.globalBindings = builder.globalBindings;
 
         this.gremlinScriptEngineManager = new CachedGremlinScriptEngineManager(builder.allowedEngineNames);
@@ -264,7 +264,7 @@ public class GremlinExecutor implements AutoCloseable {
     public CompletableFuture<Object> eval(final String gremlin, final String language, final Bindings boundVars, final Long timeOut,
                                           final Function<Object, Object> transformResult, final Consumer<Object> withResult) {
         final LifeCycle lifeCycle = LifeCycle.build()
-                .evaluationTimeoutOverride(timeOut)
+                .timeoutMillisOverride(timeOut)
                 .transformResult(transformResult)
                 .withResult(withResult).create();
 
@@ -294,7 +294,7 @@ public class GremlinExecutor implements AutoCloseable {
         // options then allow that value to override what's provided on the lifecycle
         final Optional<Long> timeoutDefinedInScript = GremlinScriptChecker.parse(gremlin).getTimeout();
         final long scriptEvalTimeOut = timeoutDefinedInScript.orElse(
-                lifeCycle.getEvaluationTimeoutOverride().orElse(evaluationTimeout));
+                lifeCycle.getTimeoutMillisOverride().orElse(timeoutMillis));
 
         final CompletableFuture<Object> evaluationFuture = new CompletableFuture<>();
         final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
@@ -333,7 +333,7 @@ public class GremlinExecutor implements AutoCloseable {
                         || root instanceof InterruptedIOException) {
                     lifeCycle.getAfterTimeout().orElse(afterTimeout).accept(bindings, root);
                     evaluationFuture.completeExceptionally(new TimeoutException(
-                            String.format("Evaluation exceeded the configured 'evaluationTimeout' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]: %s", scriptEvalTimeOut, gremlin, root.getMessage())));
+                            String.format("Evaluation exceeded the configured 'timeoutMillis' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]: %s", scriptEvalTimeOut, gremlin, root.getMessage())));
                 } else {
                     lifeCycle.getAfterFailure().orElse(afterFailure).accept(bindings, root);
                     evaluationFuture.completeExceptionally(root);
@@ -352,7 +352,7 @@ public class GremlinExecutor implements AutoCloseable {
                     final CompletableFuture<Object> ef = evaluationFutureRef.get();
                     if (ef != null) {
                         ef.completeExceptionally(new TimeoutException(
-                                String.format("Evaluation exceeded the configured 'evaluationTimeout' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]", scriptEvalTimeOut, gremlin)));
+                                String.format("Evaluation exceeded the configured 'timeoutMillis' threshold of %s ms or evaluation was otherwise cancelled directly for request [%s]", scriptEvalTimeOut, gremlin)));
                     }
                 }
             }, scriptEvalTimeOut, TimeUnit.MILLISECONDS);
@@ -488,7 +488,7 @@ public class GremlinExecutor implements AutoCloseable {
     }
 
     public final static class Builder {
-        private long evaluationTimeout = 8000;
+        private long timeoutMillis = 8000;
 
         private Map<String, Map<String, Map<String,Object>>> plugins = new HashMap<>();
 
@@ -544,11 +544,11 @@ public class GremlinExecutor implements AutoCloseable {
          * as well as any time needed for a post result transformation (if the transformation function is supplied
          * to the {@link GremlinExecutor#eval}).
          *
-         * @param evaluationTimeout Time in milliseconds that an evaluation is allowed to run and its
+         * @param timeoutMillis Time in milliseconds that an evaluation is allowed to run and its
          *                          results potentially transformed. Set to zero to have no timeout set.
          */
-        public Builder evaluationTimeout(final long evaluationTimeout) {
-            this.evaluationTimeout = evaluationTimeout;
+        public Builder timeoutMillis(final long timeoutMillis) {
+            this.timeoutMillis = timeoutMillis;
             return this;
         }
 
@@ -655,7 +655,7 @@ public class GremlinExecutor implements AutoCloseable {
         private final Optional<Consumer<Bindings>> afterSuccess;
         private final Optional<BiConsumer<Bindings, Throwable>> afterTimeout;
         private final Optional<BiConsumer<Bindings, Throwable>> afterFailure;
-        private final Optional<Long> evaluationTimeoutOverride;
+        private final Optional<Long> timeoutMillisOverride;
 
         private LifeCycle(final Builder builder) {
             beforeEval = Optional.ofNullable(builder.beforeEval);
@@ -664,11 +664,11 @@ public class GremlinExecutor implements AutoCloseable {
             afterSuccess = Optional.ofNullable(builder.afterSuccess);
             afterTimeout = Optional.ofNullable(builder.afterTimeout);
             afterFailure = Optional.ofNullable(builder.afterFailure);
-            evaluationTimeoutOverride = Optional.ofNullable(builder.evaluationTimeoutOverride);
+            timeoutMillisOverride = Optional.ofNullable(builder.timeoutMillisOverride);
         }
 
-        public Optional<Long> getEvaluationTimeoutOverride() {
-            return evaluationTimeoutOverride;
+        public Optional<Long> getTimeoutMillisOverride() {
+            return timeoutMillisOverride;
         }
 
         public Optional<Consumer<Bindings>> getBeforeEval() {
@@ -706,7 +706,7 @@ public class GremlinExecutor implements AutoCloseable {
             private Consumer<Bindings> afterSuccess = null;
             private BiConsumer<Bindings, Throwable> afterTimeout = null;
             private BiConsumer<Bindings, Throwable> afterFailure = null;
-            private Long evaluationTimeoutOverride = null;
+            private Long timeoutMillisOverride = null;
 
             /**
              * Specifies the function to execute prior to the script being evaluated.  This function can also be
@@ -783,11 +783,11 @@ public class GremlinExecutor implements AutoCloseable {
             }
 
             /**
-             * An override to the global {@code evaluationTimeout} setting on the script engine. If this value
+             * An override to the global {@code timeoutMillis} setting on the script engine. If this value
              * is set to {@code null} (the default) it will use the global setting.
              */
-            public Builder evaluationTimeoutOverride(final Long evaluationTimeoutOverride) {
-                this.evaluationTimeoutOverride = evaluationTimeoutOverride;
+            public Builder timeoutMillisOverride(final Long timeoutMillisOverride) {
+                this.timeoutMillisOverride = timeoutMillisOverride;
                 return this;
             }
 

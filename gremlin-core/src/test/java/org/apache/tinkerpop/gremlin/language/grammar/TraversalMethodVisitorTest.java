@@ -109,6 +109,104 @@ public class TraversalMethodVisitorTest {
     }
 
     @Test
+    public void shouldParseTraversalMethod_addV_MultipleLabels() throws Exception {
+        // mid-traversal multi-label addV
+        compare(g.V().addV("dog", "pet"), eval("g.V().addV(\"dog\",\"pet\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addV_MultipleLabelsThree() throws Exception {
+        // mid-traversal multi-label addV with three labels
+        compare(g.V().addV("dog", "pet", "animal"), eval("g.V().addV(\"dog\",\"pet\",\"animal\")"));
+    }
+
+    @Test
+    public void shouldParseSourceSpawnMethod_addV_MultipleLabels() throws Exception {
+        // source-spawned multi-label addV produces same structure as mid-traversal
+        compare(g.addV("dog", "pet"), eval("g.addV(\"dog\",\"pet\")"));
+    }
+
+    @Test
+    public void shouldParseSourceSpawnMethod_addV_MultipleLabelsThree() throws Exception {
+        // source-spawned multi-label addV with three labels
+        compare(g.addV("dog", "pet", "animal"), eval("g.addV(\"dog\",\"pet\",\"animal\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addV_TraversalVarargs() throws Exception {
+        // mid-traversal multi-label addV with traversal varargs
+        compare(g.V().addV(constant("a"), constant("b")), eval("g.V().addV(constant(\"a\"),constant(\"b\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addV_TraversalVarargsThree() throws Exception {
+        // mid-traversal multi-label addV with three traversals
+        compare(g.V().addV(constant("a"), constant("b"), constant("c")), eval("g.V().addV(constant(\"a\"),constant(\"b\"),constant(\"c\"))"));
+    }
+
+    @Test
+    public void shouldParseSourceSpawnMethod_addV_TraversalVarargs() throws Exception {
+        // source-spawned multi-label addV with traversal varargs
+        compare(g.addV(constant("a"), constant("b")), eval("g.addV(constant(\"a\"),constant(\"b\"))"));
+    }
+
+    @Test
+    public void shouldParseSourceSpawnMethod_addV_TraversalVarargsThree() throws Exception {
+        // source-spawned multi-label addV with three traversals
+        compare(g.addV(constant("a"), constant("b"), constant("c")), eval("g.addV(constant(\"a\"),constant(\"b\"),constant(\"c\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addLabel_String() throws Exception {
+        compare(g.V().addLabel("dog"), eval("g.V().addLabel(\"dog\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addLabel_MultipleLabels() throws Exception {
+        compare(g.V().addLabel("dog", "pet"), eval("g.V().addLabel(\"dog\",\"pet\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addLabel_Traversal() throws Exception {
+        compare(g.V().addLabel(constant("dog")), eval("g.V().addLabel(constant(\"dog\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addLabel_TraversalVarargs() throws Exception {
+        compare(g.V().addLabel(constant("a"), constant("b")), eval("g.V().addLabel(constant(\"a\"),constant(\"b\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addLabel_TraversalVarargsThree() throws Exception {
+        compare(g.V().addLabel(constant("a"), constant("b"), constant("c")), eval("g.V().addLabel(constant(\"a\"),constant(\"b\"),constant(\"c\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_dropLabel_String() throws Exception {
+        compare(g.V().dropLabel("dog"), eval("g.V().dropLabel(\"dog\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_dropLabel_MultipleLabels() throws Exception {
+        compare(g.V().dropLabel("dog", "pet"), eval("g.V().dropLabel(\"dog\",\"pet\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_dropLabel_Traversal() throws Exception {
+        compare(g.V().dropLabel(constant("dog")), eval("g.V().dropLabel(constant(\"dog\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_dropLabel_TraversalVarargs() throws Exception {
+        compare(g.V().dropLabel(constant("a"), constant("b")), eval("g.V().dropLabel(constant(\"a\"),constant(\"b\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_dropLabel_TraversalVarargsThree() throws Exception {
+        compare(g.V().dropLabel(constant("a"), constant("b"), constant("c")), eval("g.V().dropLabel(constant(\"a\"),constant(\"b\"),constant(\"c\"))"));
+    }
+
+    @Test
     public void shouldParseTraversalMethod_aggregate() throws Exception {
         compare(g.V().aggregate("test"), eval("g.V().aggregate('test')"));
     }

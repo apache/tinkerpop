@@ -19,12 +19,13 @@
 
 import copy
 import math
+import re
 import threading
 import uuid
 import warnings
 
 from aenum import Enum
-from gremlin_python.structure.graph import Vertex, Edge, Path, Property, ProviderDefinedType
+from gremlin_python.structure.graph import Vertex, Edge, Path, Property, CompositePDT, PrimitivePDT
 
 from .. import statics
 from ..statics import long, SingleByte, SingleChar, short, bigint, BigDecimal
@@ -910,8 +911,11 @@ class GremlinLang(object):
             else:
                 return tmp
 
-        if isinstance(arg, ProviderDefinedType):
+        if isinstance(arg, CompositePDT):
             return f'PDT({self._arg_as_string(arg.name)},{self._process_dict(arg.fields)})'
+
+        if isinstance(arg, PrimitivePDT):
+            return f'PDT({self._arg_as_string(arg.name)},{self._arg_as_string(arg.value)})'
 
         if isinstance(arg, Vertex):
             return f'{self._arg_as_string(arg.id)}'
@@ -926,9 +930,8 @@ class GremlinLang(object):
 
         if isinstance(arg, GValue):
             key = arg.get_name()
-
-            if not key.isidentifier():
-                raise Exception(f'invalid parameter name {key}.')
+            if not re.fullmatch(r'(?:[^\W\d]|\$)(?:\w|\$)*', key):
+                raise Exception(f'Invalid parameter name [{key}].')
 
             if key in self.parameters:
                 if self.parameters[key] != arg.value:
@@ -960,10 +963,14 @@ class GremlinLang(object):
         # precedence over the @provider_defined decorator fallback below, allowing
         # explicit adapters to override decorator-derived behavior.
         if self.pdt_registry is not None:
-            adapter = self.pdt_registry.get_adapter_by_class(type(arg))
+            primitive_adapter = self.pdt_registry.get_primitive_adapter_by_class(type(arg))
+            if primitive_adapter is not None and primitive_adapter['to_value'] is not None:
+                value = primitive_adapter['to_value'](arg)
+                return self._arg_as_string(PrimitivePDT(primitive_adapter['type_name'], value))
+            adapter = self.pdt_registry.get_composite_adapter_by_class(type(arg))
             if adapter is not None and adapter['serialize'] is not None:
                 fields = adapter['serialize'](arg)
-                return self._arg_as_string(ProviderDefinedType(adapter['type_name'], fields))
+                return self._arg_as_string(CompositePDT(adapter['type_name'], fields))
 
         # Auto-dehydrate @provider_defined decorated objects
         if hasattr(arg, '_pdt_name'):
@@ -974,7 +981,7 @@ class GremlinLang(object):
                 fields = [f for f in fields if f in included]
             elif excluded:
                 fields = [f for f in fields if f not in excluded]
-            pdt = ProviderDefinedType(arg._pdt_name, {f: getattr(arg, f) for f in fields})
+            pdt = CompositePDT(arg._pdt_name, {f: getattr(arg, f) for f in fields})
             return self._arg_as_string(pdt)
 
         raise TypeError(f'GremlinLang contains at least one type [{type(arg).__name__}] that cannot be represented as text.')
@@ -1184,10 +1191,10 @@ class GremlinLang(object):
 
 class GValue:
     def __init__(self, name, value):
+        if isinstance(value, GValue):
+            raise Exception('GValues cannot be nested')
         if name is None:
-            raise Exception("The parameter name cannot be None.")
-        if name.startswith('_'):
-            raise Exception(f'invalid GValue name {name}. Should not start with _.')
+            raise Exception('GValue name cannot be null.')
         self.name = name
         self.value = value
 
@@ -1199,6 +1206,12 @@ class GValue:
 
     def get(self):
         return self.value
+
+    def __repr__(self):
+        return f'{self.name}={self.value}'
+
+    def __str__(self):
+        return f'{self.name}={self.value}'
 
 
 class CardinalityValue(GremlinLang):

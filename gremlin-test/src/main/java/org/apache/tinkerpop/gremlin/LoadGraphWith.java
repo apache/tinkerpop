@@ -94,7 +94,18 @@ public @interface LoadGraphWith {
          * Loads the air-routes graph, a real-world dataset of ~3,500 airports and ~50,000 routes suitable for
          * benchmarking and integration testing of traversals that benefit from larger, denser graphs.
          */
-        AIR_ROUTES;
+        AIR_ROUTES,
+
+        /**
+         * Loads "The Zoo" TinkerPop4 toy graph which showcases multi-label vertices and a variety of property
+         * types. Requires a graph configured with {@code LabelCardinality.ZERO_OR_MORE} (or {@code ONE_OR_MORE}).
+         * <p/>
+         * Note that this {@code GraphData} does not currently support {@link #location()} or
+         * {@link #featuresRequired()} since none of the serialization formats used to produce a data file for it
+         * (Gryo, GraphSON) correctly round-trip multi-label vertices yet. It is only usable via a
+         * {@link GraphProvider} that builds the graph directly, e.g. with {@code TinkerFactory.createTheZoo()}.
+         */
+        ZOO;
 
         private static final List<FeatureRequirement> featuresRequiredByClassic = new ArrayList<FeatureRequirement>() {{
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));

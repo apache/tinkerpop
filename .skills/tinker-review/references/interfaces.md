@@ -21,20 +21,24 @@ interface ExtractionResult {
   imports: ImportInfo[];
 }
 
+// How much the PR moved a vertex, graded by diffing base against PR-head.
+// Vocabulary/helpers: scripts/graph/change-levels.js.
+type ChangeLevel = "NONE" | "FORMATTING" | "BEHAVIORAL" | "STRUCTURAL";
+
 interface FileInfo {
-  path: string;          // relative to worktree root
-  language: string;      // e.g., "dart", "java", "go"
-  changed: boolean;      // true if modified in this PR
+  path: string;             // relative to worktree root
+  language: string;         // e.g., "dart", "java", "go"
+  changeLevel: ChangeLevel; // rollup of the file's members + import/export delta
 }
 
 interface FunctionInfo {
   name: string;
-  signature: string;     // full signature as string
+  signature: string;        // full signature as string
   visibility: "public" | "private" | "protected" | "internal";
-  filePath: string;      // which file this lives in
+  filePath: string;         // which file this lives in
   linesStart: number;
   linesEnd: number;
-  changed: boolean;      // true if modified in this PR
+  changeLevel: ChangeLevel; // graded per function (untouched helper = NONE)
 }
 
 interface TypeInfo {
@@ -42,6 +46,7 @@ interface TypeInfo {
   kind: "class" | "interface" | "struct" | "enum";
   visibility: "public" | "private" | "protected" | "internal";
   filePath: string;
+  changeLevel: ChangeLevel; // graded over the type's declaration surface
 }
 
 interface CallInfo {
@@ -68,54 +73,79 @@ interface ServerHandle {
 // === Graph Population ===
 
 interface PopulationSummary {
-  vertices: number;
-  edges: number;
-  breakdown: {
+  vertices: number;              // true count, queried from the graph after population
+  edges: number;                 // true count, queried from the graph after population
+  breakdown: {                   // per-type ATTEMPTED inserts (may exceed the real totals above)
     files: number;
     functions: number;
     types: number;
+    tests: number;
     calls: number;
     defines: number;
-    dependsOn: number;
+    testsEdges: number;
+    externalFunctions: number;   // stub Functions minted for unresolved callees
+    stubFiles: number;           // stub Files minted for changed files that weren't parsed
   };
 }
 
 // === Pattern Results ===
+//
+// Each check's result type is defined — WITH per-field meaning — as a @typedef
+// in the pattern file that produces it. Those typedefs are canonical; read them
+// when interpreting a field. Do not re-declare them here (that is what drifts).
+//
+//   CompletenessResult   scripts/patterns/completeness.js
+//   CoverageGapResult    scripts/patterns/coverage-gaps.js
+//   CentralityResult     scripts/patterns/centrality.js
+//   BlastRadiusResult    scripts/patterns/blast-radius.js
+//   ClusterResult        scripts/patterns/cluster-analysis.js
+//   ConfidenceResult     scripts/patterns/confidence-audit.js
+//   ExternalsResult      scripts/patterns/classify-externals.js
+//   OrphanResult         scripts/patterns/orphans.js
+//   ArchitectureResult   scripts/patterns/architecture.js
 
-interface CompletenessResult {
-  node: string;          // vertex id or identifier checked
-  present: string[];     // edge labels that exist
-  missing: string[];     // edge labels that are absent
-  score: number;         // present.length / (present.length + missing.length)
-}
+// === Evidence (evidence.json — what Phase 1 writes; the fields Interpret cites) ===
 
-interface CoverageGapResult {
-  uncovered: {
-    name: string;
-    signature: string;
-    filePath: string;
-    linesStart: number;
-    linesEnd: number;
-  }[];
-  totalChanged: number;
-  totalCovered: number;
-}
-
-// === Evidence Package (renderer input) ===
-
-interface EvidencePackage {
+interface Evidence {
   meta: {
     pr: number;
     title: string;
-    domain: string;
+    domains: string[];           // e.g. ["general", "glv", "driver-server"]
+    language: string;
+    changedFileCount: number;
     timestamp: string;
   };
-  summary: string;
   graphStats: PopulationSummary;
+  architecture: ArchitectureResult;
   checks: {
     completeness: CompletenessResult[];
     coverageGaps: CoverageGapResult;
+    centrality:   CentralityResult;
+    blastRadius:  BlastRadiusResult;
+    clusters:     ClusterResult;
+    confidence:   ConfidenceResult;
+    externals:    ExternalsResult;
+    orphans:      OrphanResult;
   };
+  discussions: DiscussionsResult;   // jiras[], devList[], secondary[], proposals[], prComments{}
+  changedFiles: string[];
+}
+
+// === ReportPackage (report.json — renderer input; Evidence + agent narrative) ===
+// The agent adds these fields in Phase 5; render.js consumes the whole thing.
+
+interface ReportPackage extends Evidence {
+  summary: string;                       // HTML
+  clusters: { assessment: string };      // narrative prose — distinct from checks.clusters
+  guidedWalk: { title; badge; badgeText; body }[];
+  findings: { title; snippet; body }[];
+  openQuestions: { title; body; meta }[];
+  functionalTest?: { plan; results: { name; pass; output }[]; observations };
+    // plan/observations: HTML, theme-level. results rows are THEMES, each `name`
+    // naming the scenario labels it spans — not one row per scenario.
+  appendixFunctional?: { environment; testCode; fullOutput };
+    // environment: HTML. testCode/fullOutput: RAW TEXT (renderer wraps in
+    // <pre><code>; do not pre-wrap). testCode is the COMPLETE labeled battery.
 }
 ```
 
@@ -134,6 +164,9 @@ interface EvidencePackage {
  * @param {string} language - Primary language to parse (e.g., "dart")
  * @param {object} options
  * @param {string[]} [options.changedFiles] - List of files changed in PR (relative paths)
+ * @param {Object<string,string>} [options.baseContents] - Base-version source of
+ *   each changed file, keyed by path, so each member's `changeLevel` can be graded
+ *   by diffing base against head. A missing entry = a file the PR added (STRUCTURAL).
  * @returns {Promise<ExtractionResult>}
  */
 export async function extract(directory, language, options = {}) {}
@@ -142,8 +175,8 @@ export async function extract(directory, language, options = {}) {}
 **Responsibilities:**
 - Load the appropriate tree-sitter grammar for the language
 - Walk the directory, parse each source file
-- Run queries to extract functions, types, call sites, imports
-- Mark `changed: true` on files/functions that appear in `options.changedFiles`
+- Grade each file/function/type's `changeLevel` against `options.baseContents`
+  (context / hierarchy-neighborhood files, absent from `changedFiles`, grade `NONE`)
 - Return the structured `ExtractionResult`
 
 **Does NOT:**
@@ -207,9 +240,9 @@ export async function populate(g, extraction) {}
 
 | Extraction data | Graph vertex | Key properties |
 |---|---|---|
-| `files[]` | `File` | path, language, changed |
-| `functions[]` | `Function` | name, signature, visibility, lines_start, lines_end, changed |
-| `types[]` | `Type` | name, kind, visibility |
+| `files[]` | `File` | path, language, changeLevel |
+| `functions[]` | `Function` | name, signature, visibility, lines_start, lines_end, changeLevel |
+| `types[]` | `Type` | name, kind, visibility, changeLevel |
 
 | Extraction data | Graph edge | From → To |
 |---|---|---|
@@ -258,7 +291,8 @@ export async function completeness(g, params) {}
  *
  * @param {object} g - gremlin-js GraphTraversalSource
  * @param {object} params
- * @param {boolean} [params.changedOnly] - Only check functions with changed=true (default: true)
+ * @param {boolean} [params.changedOnly] - Only check meaningfully-changed functions
+ *   — BEHAVIORAL or STRUCTURAL (default: true)
  * @returns {Promise<CoverageGapResult>}
  */
 export async function coverageGaps(g, params = {}) {}
@@ -312,10 +346,11 @@ export async function review(params) {}
 **Orchestration steps:**
 1. `git fetch origin pull/${pr}/head:pr-review/${pr}`
 2. `git worktree add /tmp/pr-review-${pr} pr-review/${pr}`
-3. Determine changed files via `git diff --name-only ${base}...pr-review/${pr}`
+3. Determine changed files via `git diff --name-only ${base}...pr-review/${pr}`, and
+   their base-version source via `git show ${base}:${path}` (for `changeLevel` grading)
 4. `startServer()`
 5. Connect gremlin-js to `handle.url`
-6. `extract(worktreePath, language, { changedFiles })`
+6. `extract(worktreePath, language, { changedFiles, baseContents })`
 7. `populate(g, extraction)`
 8. `completeness(g, { ... })`
 9. `coverageGaps(g, { ... })`

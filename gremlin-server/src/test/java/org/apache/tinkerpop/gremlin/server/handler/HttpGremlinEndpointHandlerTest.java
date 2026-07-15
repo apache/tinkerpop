@@ -85,7 +85,7 @@ public class HttpGremlinEndpointHandlerTest {
     }
 
     @Test
-    public void shouldMapInterruptToEvaluationTimeoutWhenNotClosedByLifetimeCap() {
+    public void shouldMapInterruptToTimeoutMillisWhenNotClosedByLifetimeCap() {
         // An ordinary evaluation-timeout interrupt (cap flag unset) must keep the existing 500 timeout behavior.
         final RequestMessage message = RequestMessage.build("g.V()").create();
         final Context ctx = mock(Context.class);

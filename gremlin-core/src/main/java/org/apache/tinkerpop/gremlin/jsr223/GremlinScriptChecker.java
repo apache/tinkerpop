@@ -42,9 +42,8 @@ public class GremlinScriptChecker {
      * At least one of these tokens should be present somewhere in the Gremlin string for {@link #parse(String)} to
      * take any action at all.
      */
-    private static final Set<String> tokens = new HashSet<>(Arrays.asList("evaluationTimeout", "scriptEvaluationTimeout",
-            "ARGS_EVAL_TIMEOUT", "ARGS_SCRIPT_EVAL_TIMEOUT", "requestId", "REQUEST_ID", "materializeProperties",
-            "ARGS_MATERIALIZE_PROPERTIES"));
+    private static final Set<String> tokens = new HashSet<>(Arrays.asList("timeoutMillis", "TIMEOUT_MILLIS",
+            "requestId", "REQUEST_ID", "materializeProperties", "ARGS_MATERIALIZE_PROPERTIES"));
 
     /**
      * Matches single line comments, multi-line comments and space characters.
@@ -76,16 +75,14 @@ public class GremlinScriptChecker {
     private static final Pattern patternClean = Pattern.compile("//.*$|/\\*(.|[\\r\\n])*?\\*/|\\s", Pattern.MULTILINE);
 
     /**
-     * Regex fragment for the timeout tokens to look for. There are basically four:
+     * Regex fragment for the timeout tokens to look for. There are basically two:
      * <ul>
-     *     <li>{@code evaluationTimeout} which is a string value and thus single or double quoted</li>
-     *     <li>{@code scriptEvaluationTimeout} which is a string value and thus single or double quoted</li>
-     *     <li>{@code ARGS_EVAL_TIMEOUT} which is a enum type of value which can be referenced with or without a {@code Tokens} qualifier</li>
-     *     <li>{@code ARGS_SCRIPT_EVAL_TIMEOUT} which is a enum type of value which can be referenced with or without a {@code Tokens} qualifier</li>
+     *     <li>{@code timeoutMillis} which is a string value and thus single or double quoted</li>
+     *     <li>{@code TIMEOUT_MILLIS} which is a enum type of value which can be referenced with or without a {@code Tokens} qualifier</li>
      * </ul>
      * See {@link #patternWithOptions} for explain as this regex is embedded in there.
      */
-    private static final String timeoutTokens = "[\"']evaluationTimeout[\"']|[\"']scriptEvaluationTimeout[\"']|(?:Tokens\\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\\.)?ARGS_SCRIPT_EVAL_TIMEOUT";
+    private static final String timeoutTokens = "[\"']timeoutMillis[\"']|(?:Tokens\\.)?TIMEOUT_MILLIS";
 
     /**
      * Regex fragment for the timeout tokens to look for. There are basically four:

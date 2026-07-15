@@ -81,7 +81,7 @@ public class MessageSerializerTest {
                 .addTimeoutMillis(500)
                 .addG("g1")
                 .addLanguage("some-lang")
-                .addBindings("['k':'v']")
+                .addParameters("['k':'v']")
                 .create();
 
         final ByteBuf buffer = serializer.serializeRequestAsBinary(request, allocator);
@@ -149,7 +149,7 @@ public class MessageSerializerTest {
 
     @Test
     public void shouldDeserializeRequestWithIntegerNumericFields() throws SerializationException, IOException {
-        // Simulates what happens when a client (e.g., JavaScript) serializes timeoutMs and batchSize
+        // Simulates what happens when a client (e.g., JavaScript) serializes timeoutMillis and batchSize
         // as GraphBinary INT (4 bytes) instead of LONG/INT. The server must handle both numeric widths.
         final GraphBinaryWriter writer = new GraphBinaryWriter();
         final GraphBinaryReader reader = new GraphBinaryReader();
@@ -159,7 +159,7 @@ public class MessageSerializerTest {
         // Build a fields map with Integer values (as a JS client would produce for INT32-range values)
         final Map<String, Object> fields = new HashMap<>();
         fields.put(SerTokens.TOKEN_LANGUAGE, "gremlin-lang");
-        fields.put(Tokens.TIMEOUT_MS, 5000);          // Integer, not Long
+        fields.put(Tokens.TIMEOUT_MILLIS, 5000);          // Integer, not Long
         fields.put(Tokens.ARGS_BATCH_SIZE, 64);        // Integer, not Long (though normally int)
 
         final String gremlin = "g.V()";
@@ -172,7 +172,7 @@ public class MessageSerializerTest {
         writer.writeValue(gremlin, buffer, false);
 
         final RequestMessage deserialized = requestSerializer.readValue(byteBuf, reader);
-        assertEquals(5000L, (long) deserialized.getField(Tokens.TIMEOUT_MS));
+        assertEquals(5000L, (long) deserialized.getField(Tokens.TIMEOUT_MILLIS));
         assertEquals(64, (int) deserialized.getField(Tokens.ARGS_BATCH_SIZE));
         assertEquals(gremlin, deserialized.getGremlin());
 

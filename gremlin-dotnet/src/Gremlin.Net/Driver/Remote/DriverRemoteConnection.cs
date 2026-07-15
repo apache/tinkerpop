@@ -45,9 +45,9 @@ namespace Gremlin.Net.Driver.Remote
         private readonly ILogger<DriverRemoteConnection> _logger;
 
         /// <summary>
-        ///     Gets or sets the <see cref="ProviderDefinedTypeRegistry"/> for registry-based dehydration.
+        ///     Gets or sets the <see cref="PDTRegistry"/> for registry-based dehydration.
         /// </summary>
-        public ProviderDefinedTypeRegistry? PdtRegistry { get; set; }
+        public PDTRegistry? PdtRegistry { get; set; }
 
         // All OptionsStrategy keys are passed through to the request fields.
         // The server filters out options that don't apply, and this allows
@@ -69,7 +69,7 @@ namespace Gremlin.Net.Driver.Remote
         public DriverRemoteConnection(string host, int port, string traversalSource = "g",
             ILoggerFactory? loggerFactory = null,
             IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null,
-            ProviderDefinedTypeRegistry? pdtRegistry = null) : this(
+            PDTRegistry? pdtRegistry = null) : this(
             new GremlinClient(new GremlinServer(host, port), loggerFactory: loggerFactory, interceptors: interceptors, pdtRegistry: pdtRegistry),
             traversalSource,
             logger: loggerFactory?.CreateLogger<DriverRemoteConnection>() ?? NullLogger<DriverRemoteConnection>.Instance)
@@ -85,7 +85,7 @@ namespace Gremlin.Net.Driver.Remote
         /// <param name="pdtRegistry">An optional registry for PDT hydration.</param>
         /// <exception cref="ArgumentNullException">Thrown when client or the traversalSource is null.</exception>
         public DriverRemoteConnection(IGremlinClient client, string traversalSource = "g",
-            ProviderDefinedTypeRegistry? pdtRegistry = null)
+            PDTRegistry? pdtRegistry = null)
             : this(client, traversalSource, logger: null)
         {
             PdtRegistry = pdtRegistry;
@@ -126,7 +126,7 @@ namespace Gremlin.Net.Driver.Remote
             var parametersString = gremlinLang.GetParametersAsString();
             if (parametersString != "[:]")
             {
-                requestMsg.AddBindingsString(parametersString);
+                requestMsg.AddParametersString(parametersString);
             }
 
             foreach (var optionsStrategy in gremlinLang.OptionsStrategies)

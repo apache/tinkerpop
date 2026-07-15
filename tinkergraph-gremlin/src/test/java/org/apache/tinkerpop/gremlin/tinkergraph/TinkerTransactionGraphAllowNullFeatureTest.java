@@ -31,7 +31,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "@AllowNullPropertyValues",
+        tags = "@AllowNullPropertyValues and not @MultiLabelDefault",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = TinkerTransactionGraphAllowNullFeatureTest.TinkerGraphGuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.LabelCardinality;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -250,6 +251,191 @@ public final class TinkerFactory {
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
+    }
+
+    /**
+     * Create "the zoo" graph — a TinkerPop 4.x toy graph showcasing multi-label vertex support
+     * and diverse property types. Contains 13 vertices, 20 edges with animals classified across
+     * taxonomy, behavior, and conservation axes.
+     */
+    public static TinkerGraph createTheZoo() {
+        final Configuration conf = getConfigurationWithCurrentNumberManager();
+        conf.setProperty(AbstractTinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, LabelCardinality.ZERO_OR_MORE.name());
+        final TinkerGraph g = TinkerGraph.open(conf);
+        generateTheZoo(g);
+        return g;
+    }
+
+    /**
+     * Generate the graph in {@link #createTheZoo()} into an existing graph. The graph must support
+     * multi-label vertices (LabelCardinality of ONE_OR_MORE or ZERO_OR_MORE).
+     */
+    public static void generateTheZoo(final AbstractTinkerGraph g) {
+        // Animals
+        final Vertex tux = g.addVertex(T.id, 1, T.label, "animal");
+        tux.addLabel("bird", "aquatic", "endangered");
+        tux.property("name", "tux");
+        tux.property("species", "african penguin");
+        tux.property("weight", 3.7d);
+        tux.property("age", 5);
+        tux.property("captiveBorn", true);
+        tux.property(VertexProperty.Cardinality.list, "diet", "fish");
+        tux.property(VertexProperty.Cardinality.list, "diet", "krill");
+        tux.property(VertexProperty.Cardinality.list, "diet", "squid");
+
+        final Vertex atlas = g.addVertex(T.id, 2, T.label, "animal");
+        atlas.addLabel("reptile", "aquatic", "endangered");
+        atlas.property("name", "atlas");
+        atlas.property("species", "green sea turtle");
+        atlas.property("weight", 180.5d);
+        atlas.property("age", 30);
+        atlas.property("captiveBorn", false);
+        atlas.property(VertexProperty.Cardinality.list, "diet", "seagrass");
+        atlas.property(VertexProperty.Cardinality.list, "diet", "algae");
+
+        final Vertex ripple = g.addVertex(T.id, 3, T.label, "animal");
+        ripple.addLabel("mammal", "aquatic");
+        ripple.property("name", "ripple");
+        ripple.property("species", "bottlenose dolphin");
+        ripple.property("weight", 220.0d);
+        ripple.property("age", 12);
+        ripple.property("captiveBorn", true);
+        ripple.property(VertexProperty.Cardinality.list, "diet", "fish");
+        ripple.property(VertexProperty.Cardinality.list, "diet", "squid");
+
+        final Vertex monty = g.addVertex(T.id, 4, T.label, "animal");
+        monty.addLabel("reptile", "nocturnal");
+        monty.property("name", "monty");
+        monty.property("species", "ball python");
+        monty.property("weight", 1.8d);
+        monty.property("age", 8);
+        monty.property("captiveBorn", true);
+        monty.property("venomous", false);
+        monty.property(VertexProperty.Cardinality.list, "diet", "mice");
+        monty.property(VertexProperty.Cardinality.list, "diet", "rats");
+
+        final Vertex echo = g.addVertex(T.id, 5, T.label, "animal");
+        echo.addLabel("mammal", "flying", "nocturnal");
+        echo.property("name", "echo");
+        echo.property("species", "fruit bat");
+        echo.property("weight", 0.3d);
+        echo.property("age", 3);
+        echo.property("captiveBorn", true);
+        echo.property(VertexProperty.Cardinality.list, "diet", "fruit");
+        echo.property(VertexProperty.Cardinality.list, "diet", "nectar");
+
+        final Vertex blaze = g.addVertex(T.id, 6, T.label, "animal");
+        blaze.addLabel("mammal", "endangered", "nocturnal");
+        blaze.property("name", "blaze");
+        blaze.property("species", "red panda");
+        blaze.property("weight", 5.4d);
+        blaze.property("age", 4);
+        blaze.property("captiveBorn", false);
+        blaze.property(VertexProperty.Cardinality.list, "diet", "bamboo");
+        blaze.property(VertexProperty.Cardinality.list, "diet", "fruit");
+        blaze.property(VertexProperty.Cardinality.list, "diet", "insects");
+
+        final Vertex titan = g.addVertex(T.id, 7, T.label, "animal");
+        titan.addLabel("mammal", "endangered");
+        titan.property("name", "titan");
+        titan.property("species", "african elephant");
+        titan.property("weight", 4000.0d);
+        titan.property("age", 15);
+        titan.property("captiveBorn", false);
+        titan.property(VertexProperty.Cardinality.list, "diet", "grass");
+        titan.property(VertexProperty.Cardinality.list, "diet", "leaves");
+        titan.property(VertexProperty.Cardinality.list, "diet", "bark");
+
+        final Vertex bitsy = g.addVertex(T.id, 8, T.label, "animal");
+        bitsy.addLabel("mammal", "nocturnal");
+        bitsy.property("name", "bitsy");
+        bitsy.property("species", "harvest mouse");
+        bitsy.property("weight", 0.006d);
+        bitsy.property("age", 1);
+        bitsy.property("captiveBorn", true);
+        bitsy.property(VertexProperty.Cardinality.list, "diet", "seeds");
+        bitsy.property(VertexProperty.Cardinality.list, "diet", "insects");
+
+        final Vertex splash = g.addVertex(T.id, 9, T.label, "animal");
+        splash.addLabel("mammal", "aquatic", "nocturnal", "endangered");
+        splash.property("name", "splash");
+        splash.property("species", "fishing cat");
+        splash.property("weight", 8.2d);
+        splash.property("age", 2);
+        splash.property("captiveBorn", false);
+        splash.property(VertexProperty.Cardinality.list, "diet", "fish");
+        splash.property(VertexProperty.Cardinality.list, "diet", "frogs");
+        splash.property(VertexProperty.Cardinality.list, "diet", "crustaceans");
+
+        final Vertex tinker = g.addVertex(T.id, 10, T.label, "animal");
+        tinker.addLabel("mammal", "nocturnal", "endangered");
+        tinker.property("name", "tinker");
+        tinker.property("species", "bengal tiger");
+        tinker.property("weight", 220.0d);
+        tinker.property("age", 5);
+        tinker.property("captiveBorn", false);
+        tinker.property(VertexProperty.Cardinality.list, "diet", "deer");
+        tinker.property(VertexProperty.Cardinality.list, "diet", "boar");
+        tinker.property(VertexProperty.Cardinality.list, "diet", "snakes");
+
+        // Habitats
+        final Vertex lagoon = g.addVertex(T.id, 11, T.label, "habitat");
+        lagoon.addLabel("aquatic");
+        lagoon.property("name", "lagoon");
+        lagoon.property("biome", "marine");
+        lagoon.property("capacity", 8);
+        lagoon.property("openAir", true);
+
+        final Vertex canopy = g.addVertex(T.id, 12, T.label, "habitat");
+        canopy.property("name", "canopy");
+        canopy.property("biome", "tropical");
+        canopy.property("capacity", 8);
+        canopy.property("openAir", false);
+
+        // People
+        final Vertex drGremlin = g.addVertex(T.id, 13, T.label, "person");
+        drGremlin.addLabel("veterinarian", "keeper");
+        drGremlin.property("name", "dr_gremlin");
+        drGremlin.property("since", 2015);
+        drGremlin.property(VertexProperty.Cardinality.list, "specialties", "conservation");
+        drGremlin.property(VertexProperty.Cardinality.list, "specialties", "surgery");
+        drGremlin.property(VertexProperty.Cardinality.list, "specialties", "nutrition");
+
+        // Edges: livesIn
+        tux.addEdge("livesIn", lagoon, T.id, 14, "since", 2020);
+        atlas.addEdge("livesIn", lagoon, T.id, 15, "since", 2018);
+        ripple.addEdge("livesIn", lagoon, T.id, 16, "since", 2019);
+        splash.addEdge("livesIn", lagoon, T.id, 17, "since", 2023);
+        monty.addEdge("livesIn", canopy, T.id, 18, "since", 2021);
+        echo.addEdge("livesIn", canopy, T.id, 19, "since", 2022);
+        blaze.addEdge("livesIn", canopy, T.id, 20, "since", 2023);
+        bitsy.addEdge("livesIn", canopy, T.id, 21, "since", 2024);
+        tinker.addEdge("livesIn", canopy, T.id, 22, "since", 2020);
+        titan.addEdge("livesIn", canopy, T.id, 23, "since", 2019);
+
+        // Edges: careFor
+        drGremlin.addEdge("careFor", atlas, T.id, 24, "specialty", "conservation");
+        drGremlin.addEdge("careFor", blaze, T.id, 25, "specialty", "conservation");
+        drGremlin.addEdge("careFor", splash, T.id, 26, "specialty", "conservation");
+        drGremlin.addEdge("careFor", tinker, T.id, 27, "specialty", "conservation");
+
+        // Edges: friendsWith
+        tux.addEdge("friendsWith", atlas, T.id, 28, "since", 2020);
+        ripple.addEdge("friendsWith", tux, T.id, 29, "since", 2020);
+        titan.addEdge("friendsWith", blaze, T.id, 30, "since", 2022);
+
+        // Edges: eats (food chain: tinker → monty → bitsy)
+        tinker.addEdge("eats", monty, T.id, 31);
+        monty.addEdge("eats", bitsy, T.id, 32);
+
+        // Edges: avoids
+        echo.addEdge("avoids", bitsy, T.id, 33);
+
+        g.variables().set("name", "the-zoo");
+        g.variables().set("creator", "tinkerpop");
+        g.variables().set("comment",
+                "this graph showcases multi-label vertex support and diverse " +
+                "property types introduced in tinkerpop 4.x");
     }
 
     private static TinkerGraph getTinkerGraphWithCurrentNumberManager() {

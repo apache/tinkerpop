@@ -24,7 +24,7 @@ import json
 import re
 import uuid
 from gremlin_python.statics import long, bigdecimal, SingleChar
-from gremlin_python.structure.graph import Path, Vertex, Graph, Edge, VertexProperty, Property
+from gremlin_python.structure.graph import Path, Vertex, Graph, Edge, VertexProperty, Property, Tree
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.traversal import Barrier, Cardinality, P, TextP, Pop, Scope, Column, Order, Direction, T, \
@@ -82,19 +82,26 @@ def choose_graph(step, graph_name):
         step.context.ignore = "AllowNullPropertyValues" in tagset
 
     if not step.context.ignore:
-        step.context.ignore = "StepTree" in tagset
-    if not step.context.ignore:
         step.context.ignore = "StepWrite" in tagset
 
     # TINKERPOP-3055
     if not step.context.ignore:
         step.context.ignore = "WithReservedKeysVerificationStrategy" in tagset
 
+    if not step.context.ignore:
+        step.context.ignore = "MultiLabelDefault" in tagset
+
     if (step.context.ignore):
         return
 
-    step.context.graph_name = graph_name
-    step.context.g = traversal().with_(step.context.remote_conn[graph_name]).with_('language', 'gremlin-lang')
+    # Multi-label tests use the gmultilabel traversal source for empty graphs
+    is_multilabel = "MultiLabel" in tagset
+    if is_multilabel and graph_name == "empty":
+        step.context.graph_name = "multilabel"
+        step.context.g = traversal().with_(step.context.remote_conn["multilabel"]).with_('language', 'gremlin-lang')
+    else:
+        step.context.graph_name = graph_name
+        step.context.g = traversal().with_(step.context.remote_conn[graph_name]).with_('language', 'gremlin-lang')
 
 
 @given("the graph initializer of")
@@ -285,6 +292,77 @@ def assert_subgraph(step):
             assert_that(actual.inV.id, equal_to(expected.inV.id))
 
 
+class _TreeNode(object):
+    """One node of an expected tree parsed from a Gherkin ascii-tree docstring:
+    a parsed key value with its ordered children."""
+
+    def __init__(self, value):
+        self.value = value
+        self.children = []
+
+
+def _parse_tree(ascii_tree, ctx):
+    """Parses an ascii-tree docstring into root nodes. A line's depth is its
+    leading-space count divided by three; the node value is the line with the
+    leading ``|--`` stripped, trimmed, and passed through ``_convert``. An empty
+    docstring yields no roots."""
+    roots = []
+    if not ascii_tree:
+        return roots
+
+    level_map = {}
+    for line in re.split(r"\r\n|\r|\n", ascii_tree):
+        if len(line) == 0:
+            continue
+
+        leading_spaces = len(line) - len(line.lstrip(" "))
+        level = leading_spaces // 3  # 3 spaces per level
+        raw_value = line.replace("|--", "", 1).strip()
+
+        node = _TreeNode(_convert(raw_value, ctx))
+        if level == 0:
+            roots.append(node)
+        else:
+            level_map[level - 1].children.append(node)
+        level_map[level] = node
+
+    return roots
+
+
+def _validate_tree_structure(actual_tree, expected_node):
+    """Recursively asserts that ``actual_tree`` matches ``expected_node``: the
+    child count must match and every expected child must be present and
+    recursively match."""
+    assert_that(len(actual_tree.root_nodes()), equal_to(len(expected_node.children)),
+                "tree child count does not match at " + str(expected_node.value))
+    for child in expected_node.children:
+        assert_that(actual_tree.has_child(child.value), equal_to(True),
+                    "tree not matching at " + str(child.value))
+        _validate_tree_structure(actual_tree.child_at(child.value), child)
+
+
+@then("the result should be a tree with a structure of")
+def assert_tree_structure(step):
+    if step.context.ignore:
+        return
+
+    assert_that(step.context.failed, equal_to(False), step.context.failed_message)
+
+    # The traversal yields a single Tree (via "iterated next").
+    tree = step.context.result[0]
+    assert_that(tree, instance_of(Tree))
+
+    # an empty docstring represents an empty tree
+    roots = _parse_tree(step.text, step.context)
+
+    assert_that(len(tree.root_nodes()), equal_to(len(roots)),
+                "tree root node count does not match expected structure")
+    for root in roots:
+        assert_that(tree.has_child(root.value), equal_to(True),
+                    "tree not matching at " + str(root.value))
+        _validate_tree_structure(tree.child_at(root.value), root)
+
+
 @then("the graph should return {count:d} for count of {traversal_string:QuotedString}")
 def assert_side_effects(step, count, traversal_string):
     if step.context.ignore:
@@ -455,6 +533,13 @@ def __find_cached_element(ctx, graph_name, identifier, element_type):
             cache = world.create_lookup_vp(ctx.remote_conn["empty"])
         else:
             cache = world.create_lookup_e(ctx.remote_conn["empty"])
+    elif graph_name == "multilabel":
+        if element_type == "v":
+            cache = world.create_lookup_v(ctx.remote_conn["multilabel"])
+        elif element_type == "vp":
+            cache = world.create_lookup_vp(ctx.remote_conn["multilabel"])
+        else:
+            cache = world.create_lookup_e(ctx.remote_conn["multilabel"])
     else:
         if element_type == "v":
             cache = ctx.lookup_v[graph_name]

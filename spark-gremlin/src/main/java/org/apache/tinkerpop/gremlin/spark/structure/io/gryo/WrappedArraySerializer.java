@@ -23,29 +23,32 @@ import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
-import scala.collection.JavaConversions;
-import scala.collection.mutable.WrappedArray;
+import scala.collection.immutable.ArraySeq;
 
 /**
+ * Serializer for Scala's immutable {@link ArraySeq}. In Scala 2.13 (the Scala version Spark is built against) wrapping
+ * a reference array produces an {@code immutable.ArraySeq.ofRef}, which replaced the {@code WrappedArray} used under
+ * Scala 2.12.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WrappedArraySerializer<T> extends Serializer<WrappedArray<T>> {
+public final class WrappedArraySerializer<T> extends Serializer<ArraySeq<T>> {
 
     @Override
-    public void write(final Kryo kryo, final Output output, final WrappedArray<T> iterable) {
+    public void write(final Kryo kryo, final Output output, final ArraySeq<T> iterable) {
         output.writeVarInt(iterable.size(), true);
-        JavaConversions.asJavaCollection(iterable).forEach(t -> {
-            kryo.writeClassAndObject(output, t);
-        });
+        for (int i = 0; i < iterable.size(); i++) {
+            kryo.writeClassAndObject(output, iterable.apply(i));
+        }
     }
 
     @Override
-    public WrappedArray<T> read(final Kryo kryo, final Input input, final Class<WrappedArray<T>> aClass) {
+    public ArraySeq<T> read(final Kryo kryo, final Input input, final Class<ArraySeq<T>> aClass) {
         final int size = input.readVarInt(true);
         final Object[] array = new Object[size];
         for (int i = 0; i < size; i++) {
             array[i] = kryo.readClassAndObject(input);
         }
-        return new WrappedArray.ofRef<>((T[]) array);
+        return new ArraySeq.ofRef<>((T[]) array);
     }
 }

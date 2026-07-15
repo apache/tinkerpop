@@ -39,7 +39,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 {
     internal class ScenarioData : IDisposable
     {
-        private static readonly string[] GraphNames = {"modern", "classic", "crew", "grateful", "sink"};
+        private static readonly string[] GraphNames = {"modern", "classic", "crew", "grateful", "sink", "zoo"};
 
         private static readonly IDictionary<string, Vertex> EmptyVertices =
             new ReadOnlyDictionary<string, Vertex>(new Dictionary<string, Vertex>());
@@ -74,6 +74,12 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             g.V().Drop().Iterate();
         }
 
+        public void CleanMultilabelData()
+        {
+            var g = Traversal().With(GetByGraphName("multilabel").Connection);
+            g.V().Drop().Iterate();
+        }
+
         public void ReloadEmptyData()
         {
             var graphData = _dataPerGraph["empty"];
@@ -82,6 +88,17 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             graphData.Edges = GetEdges(g);
             graphData.VertexProperties = GetVertexProperties(g);
         }
+
+        public void ReloadMultilabelData()
+        {
+            var graphData = _dataPerGraph["multilabel"];
+            var g = Traversal().With(graphData.Connection);
+            graphData.Vertices = GetVertices(g);
+            graphData.Edges = GetEdges(g);
+            graphData.VertexProperties = GetVertexProperties(g);
+        }
+
+
 
         private readonly IDictionary<string, ScenarioDataPerGraph> _dataPerGraph;
         
@@ -92,6 +109,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             var empty = new ScenarioDataPerGraph("empty", _connectionFactory.CreateRemoteConnection("ggraph"),
                 new Dictionary<string, Vertex>(0), new Dictionary<string, Edge>(), new Dictionary<string, VertexProperty>());
             _dataPerGraph.Add("empty", empty);
+            var multilabel = new ScenarioDataPerGraph("multilabel", _connectionFactory.CreateRemoteConnection("gmultilabel"),
+                new Dictionary<string, Vertex>(0), new Dictionary<string, Edge>(), new Dictionary<string, VertexProperty>());
+            _dataPerGraph.Add("multilabel", multilabel);
         }
 
         private Dictionary<string, ScenarioDataPerGraph> LoadDataPerGraph()

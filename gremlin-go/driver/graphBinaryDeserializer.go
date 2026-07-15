@@ -61,7 +61,7 @@ type GraphBinaryDeserializer struct {
 	buf         [8]byte
 	err         error        // sticky error
 	bulked      bool         // whether the response stream uses bulked encoding
-	pdtRegistry *PDTRegistry // optional: auto-hydrates ProviderDefinedType results
+	pdtRegistry *PDTRegistry // optional: auto-hydrates CompositePDT results
 }
 
 // GraphBinary flag for bulked list/set
@@ -74,7 +74,7 @@ func NewGraphBinaryDeserializer(r io.Reader) *GraphBinaryDeserializer {
 }
 
 // NewGraphBinaryDeserializerWithRegistry creates a new GraphBinaryDeserializer with a PDTRegistry
-// for automatic hydration of ProviderDefinedType values.
+// for automatic hydration of CompositePDT values.
 func NewGraphBinaryDeserializerWithRegistry(r io.Reader, registry *PDTRegistry) *GraphBinaryDeserializer {
 	return &GraphBinaryDeserializer{r: bufio.NewReaderSize(r, 8192), pdtRegistry: registry}
 }
@@ -254,6 +254,8 @@ func (d *GraphBinaryDeserializer) readValue(dt dataType, flag byte) (interface{}
 		return d.readGraph()
 	case pathType:
 		return d.readPath()
+	case treeType:
+		return d.readTree()
 	case propertyType:
 		return d.readProperty()
 	case vertexPropertyType:
@@ -278,6 +280,8 @@ func (d *GraphBinaryDeserializer) readValue(dt dataType, flag byte) (interface{}
 		return d.readEnum(dt)
 	case compositePDTType:
 		return d.readCompositePDT()
+	case primitivePDTType:
+		return d.readPrimitivePDT()
 	default:
 		return nil, newError(err0408GetSerializerToReadUnknownTypeError, dt)
 	}
@@ -362,14 +366,24 @@ func (d *GraphBinaryDeserializer) readVertex(withProps bool) (*Vertex, error) {
 		return nil, err
 	}
 	labelSlice, ok := labels.([]interface{})
-	if !ok || len(labelSlice) == 0 {
-		return nil, newError(err0404ReadNullTypeError)
-	}
-	label, ok := labelSlice[0].(string)
 	if !ok {
 		return nil, newError(err0404ReadNullTypeError)
 	}
-	v := &Vertex{Element: Element{Id: id, Label: label}}
+	// A vertex may carry zero or more labels. The deprecated singular Label holds the first
+	// label for backward compatibility, or "" when the vertex has no labels.
+	allLabels := make([]string, 0, len(labelSlice))
+	for _, l := range labelSlice {
+		s, ok := l.(string)
+		if !ok {
+			return nil, newError(err0404ReadNullTypeError)
+		}
+		allLabels = append(allLabels, s)
+	}
+	label := ""
+	if len(allLabels) > 0 {
+		label = allLabels[0]
+	}
+	v := &Vertex{Element: Element{Id: id, Label: label}, Labels: allLabels}
 	if withProps {
 		props, err := d.ReadFullyQualified()
 		if err != nil {
@@ -393,12 +407,22 @@ func (d *GraphBinaryDeserializer) readEdge() (*Edge, error) {
 		return nil, err
 	}
 	labelSlice, ok := labels.([]interface{})
-	if !ok || len(labelSlice) == 0 {
-		return nil, newError(err0404ReadNullTypeError)
-	}
-	label, ok := labelSlice[0].(string)
 	if !ok {
 		return nil, newError(err0404ReadNullTypeError)
+	}
+	// An edge carries a single label in practice, but the label is read as a list for symmetry
+	// with vertices. The deprecated singular Label holds the first label, or "" when absent.
+	allLabels := make([]string, 0, len(labelSlice))
+	for _, l := range labelSlice {
+		s, ok := l.(string)
+		if !ok {
+			return nil, newError(err0404ReadNullTypeError)
+		}
+		allLabels = append(allLabels, s)
+	}
+	label := ""
+	if len(allLabels) > 0 {
+		label = allLabels[0]
 	}
 	inV, err := d.readVertex(false)
 	if err != nil {
@@ -419,6 +443,7 @@ func (d *GraphBinaryDeserializer) readEdge() (*Edge, error) {
 		Element: Element{Id: id, Label: label},
 		InV:     *inV,
 		OutV:    *outV,
+		Labels:  allLabels,
 	}
 	e.Properties = make([]interface{}, 0)
 	if props != nil {
@@ -443,21 +468,30 @@ func (d *GraphBinaryDeserializer) readGraph() (*Graph, error) {
 			return nil, err
 		}
 
-		// {labels} list<string> value-only, take first element
+		// {labels} list<string> value-only. A vertex may carry zero or more labels; the
+		// deprecated singular Label holds the first label, or "" when there are none.
 		vLabels, err := d.readList(false)
 		if err != nil {
 			return nil, err
 		}
 		labelSlice, ok := vLabels.([]interface{})
-		if !ok || len(labelSlice) == 0 {
-			return nil, newError(err0404ReadNullTypeError)
-		}
-		vLabel, ok := labelSlice[0].(string)
 		if !ok {
 			return nil, newError(err0404ReadNullTypeError)
 		}
+		vAllLabels := make([]string, 0, len(labelSlice))
+		for _, l := range labelSlice {
+			s, ok := l.(string)
+			if !ok {
+				return nil, newError(err0404ReadNullTypeError)
+			}
+			vAllLabels = append(vAllLabels, s)
+		}
+		vLabel := ""
+		if len(vAllLabels) > 0 {
+			vLabel = vAllLabels[0]
+		}
 
-		v := &Vertex{Element: Element{Id: vId, Label: vLabel}}
+		v := &Vertex{Element: Element{Id: vId, Label: vLabel}, Labels: vAllLabels}
 
 		// {vp_count} value-only int32
 		vpCount, err := d.readInt32()
@@ -544,18 +578,27 @@ func (d *GraphBinaryDeserializer) readGraph() (*Graph, error) {
 			return nil, err
 		}
 
-		// {labels} list<string> value-only, take first element
+		// {labels} list<string> value-only. The deprecated singular Label holds the first
+		// label, or "" when there are none.
 		eLabels, err := d.readList(false)
 		if err != nil {
 			return nil, err
 		}
 		labelSlice, ok := eLabels.([]interface{})
-		if !ok || len(labelSlice) == 0 {
-			return nil, newError(err0404ReadNullTypeError)
-		}
-		eLabel, ok := labelSlice[0].(string)
 		if !ok {
 			return nil, newError(err0404ReadNullTypeError)
+		}
+		eAllLabels := make([]string, 0, len(labelSlice))
+		for _, l := range labelSlice {
+			s, ok := l.(string)
+			if !ok {
+				return nil, newError(err0404ReadNullTypeError)
+			}
+			eAllLabels = append(eAllLabels, s)
+		}
+		eLabel := ""
+		if len(eAllLabels) > 0 {
+			eLabel = eAllLabels[0]
 		}
 
 		// {inV_id} fully-qualified
@@ -601,6 +644,7 @@ func (d *GraphBinaryDeserializer) readGraph() (*Graph, error) {
 			Element: Element{Id: eId, Label: eLabel},
 			InV:     *inV,
 			OutV:    *outV,
+			Labels:  eAllLabels,
 		}
 		e.Properties = make([]interface{}, 0)
 		if props != nil {
@@ -640,6 +684,30 @@ func (d *GraphBinaryDeserializer) readPath() (*Path, error) {
 		}
 	}
 	return path, nil
+}
+
+func (d *GraphBinaryDeserializer) readTree() (interface{}, error) {
+	return d.readTreeValue()
+}
+
+func (d *GraphBinaryDeserializer) readTreeValue() (*Tree, error) {
+	length, err := d.readInt32()
+	if err != nil {
+		return nil, err
+	}
+	tree := &Tree{}
+	for i := int32(0); i < length; i++ {
+		key, err := d.ReadFullyQualified()
+		if err != nil {
+			return nil, err
+		}
+		child, err := d.readTreeValue()
+		if err != nil {
+			return nil, err
+		}
+		tree.GetOrCreateChild(key).AddTree(child)
+	}
+	return tree, nil
 }
 
 func (d *GraphBinaryDeserializer) readProperty() (*Property, error) {
@@ -814,7 +882,7 @@ func (d *GraphBinaryDeserializer) readCompositePDT() (interface{}, error) {
 	}
 	name, ok := nameObj.(string)
 	if !ok || name == "" {
-		return nil, fmt.Errorf("ProviderDefinedType name must be a non-empty string")
+		return nil, fmt.Errorf("CompositePDT name must be a non-empty string")
 	}
 	fieldsObj, err := d.ReadFullyQualified()
 	if err != nil {
@@ -824,16 +892,43 @@ func (d *GraphBinaryDeserializer) readCompositePDT() (interface{}, error) {
 	if fieldsObj != nil {
 		raw, ok := fieldsObj.(map[interface{}]interface{})
 		if !ok {
-			return nil, fmt.Errorf("ProviderDefinedType fields must be a map")
+			return nil, fmt.Errorf("CompositePDT fields must be a map")
 		}
 		fields = make(map[string]interface{}, len(raw))
 		for k, v := range raw {
 			fields[fmt.Sprint(k)] = v
 		}
 	}
-	pdt := &ProviderDefinedType{Name: name, Fields: fields}
+	pdt := &CompositePDT{Name: name, Fields: fields}
 	if d.pdtRegistry != nil {
 		hydrated := d.pdtRegistry.Hydrate(pdt)
+		if hydrated != pdt {
+			return hydrated, nil
+		}
+	}
+	return pdt, nil
+}
+
+func (d *GraphBinaryDeserializer) readPrimitivePDT() (interface{}, error) {
+	nameObj, err := d.ReadFullyQualified()
+	if err != nil {
+		return nil, err
+	}
+	name, ok := nameObj.(string)
+	if !ok || name == "" {
+		return nil, fmt.Errorf("PrimitivePDT name must be a non-empty string")
+	}
+	valueObj, err := d.ReadFullyQualified()
+	if err != nil {
+		return nil, err
+	}
+	value, ok := valueObj.(string)
+	if !ok {
+		return nil, fmt.Errorf("PrimitivePDT value must be a string")
+	}
+	pdt := &PrimitivePDT{Name: name, Value: value}
+	if d.pdtRegistry != nil {
+		hydrated := d.pdtRegistry.HydratePrimitive(pdt)
 		if hydrated != pdt {
 			return hydrated, nil
 		}

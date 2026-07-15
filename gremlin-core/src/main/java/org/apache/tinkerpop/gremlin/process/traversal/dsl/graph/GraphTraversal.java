@@ -66,6 +66,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStepPl
 import org.apache.tinkerpop.gremlin.process.traversal.step.PropertiesHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddLabelStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.DropLabelsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
@@ -133,6 +135,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.IntersectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LTrimGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LTrimLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
@@ -233,6 +236,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -352,10 +356,24 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link LabelStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#label-step" target="_blank">Reference Documentation - Label Step</a>
      * @since 3.0.0-incubating
+     * @deprecated As of release 4.0.0, replaced by {@link #labels()}.
      */
+    @Deprecated
     public default GraphTraversal<S, String> label() {
         this.asAdmin().getGremlinLang().addStep(Symbols.label);
         return this.asAdmin().addStep(new LabelStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Map the {@link Element} to its labels, emitting each label as a separate traverser.
+     * For vertices with multiple labels, each label is emitted individually.
+     *
+     * @return the traversal with an appended {@link LabelsStep}.
+     * @since 4.0.0
+     */
+    public default GraphTraversal<S, String> labels() {
+        this.asAdmin().getGremlinLang().addStep(Symbols.labels);
+        return this.asAdmin().addStep(new LabelsStep<>(this.asAdmin()));
     }
 
     /**
@@ -1447,42 +1465,55 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * Adds a {@link Vertex}.
      *
-     * @param vertexLabel the label of the {@link Vertex} to add
+     * @param label the first (or only) label of the {@link Vertex} to add
+     * @param additionalLabels  additional labels (may be empty for single-label)
      * @return the traversal with the {@link AddVertexStepContract} added
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step" target="_blank">Reference Documentation - AddVertex Step</a>
      * @since 3.1.0-incubating
      */
-    public default GraphTraversal<S, Vertex> addV(final String vertexLabel) {
-        if (null == vertexLabel) throw new IllegalArgumentException("vertexLabel cannot be null");
-        this.asAdmin().getGremlinLang().addStep(Symbols.addV, vertexLabel);
-        return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), vertexLabel));
+    public default GraphTraversal<S, Vertex> addV(final String label, final String... additionalLabels) {
+        if (null == label) throw new IllegalArgumentException("label cannot be null");
+        for (final String l : additionalLabels) {
+            if (null == l) throw new IllegalArgumentException("label cannot be null");
+        }
+        if (additionalLabels.length == 0) {
+            this.asAdmin().getGremlinLang().addStep(Symbols.addV, label);
+            return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), label));
+        } else {
+            this.asAdmin().getGremlinLang().addStep(Symbols.addV, label, additionalLabels);
+            final Set<Object> allLabels = new LinkedHashSet<>();
+            allLabels.add(label);
+            Collections.addAll(allLabels, additionalLabels);
+            return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), allLabels));
+        }
     }
 
     /**
-     * Adds a {@link Vertex} with a vertex label determined by a {@link Traversal}.
+     * Adds a {@link Vertex} with one or more labels each determined by a {@link Traversal}.
      *
+     * @param first the first (or only) label traversal
+     * @param more  additional label traversals (may be empty for single-traversal behavior)
      * @return the traversal with the {@link AddVertexStepContract} added
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step" target="_blank">Reference Documentation - AddVertex Step</a>
      * @since 3.3.1
      */
-    public default GraphTraversal<S, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
-        if (null == vertexLabelTraversal) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
-        this.asAdmin().getGremlinLang().addStep(Symbols.addV, vertexLabelTraversal);
-        return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), vertexLabelTraversal.asAdmin()));
-    }
-
-    /**
-     * Adds a {@link Vertex}.
-     *
-     * @param vertexLabel the label of the {@link Vertex} to add
-     * @return the traversal with the {@link AddVertexStepContract} added
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step" target="_blank">Reference Documentation - AddVertex Step</a>
-     * @since 3.8.0
-     */
-    public default GraphTraversal<S, Vertex> addV(final GValue<String> vertexLabel) {
-        if (null == vertexLabel || null == vertexLabel.get()) throw new IllegalArgumentException("vertexLabel cannot be null");
-        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.addV, vertexLabel);
-        return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), vertexLabel));
+    public default GraphTraversal<S, Vertex> addV(final Traversal<?, ?> first, final Traversal<?, ?>... more) {
+        if (null == first) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
+        for (final Traversal<?, ?> t : more) {
+            if (null == t) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
+        }
+        if (more.length == 0) {
+            this.asAdmin().getGremlinLang().addStep(Symbols.addV, first);
+            return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), first.asAdmin()));
+        } else {
+            this.asAdmin().getGremlinLang().addStep(Symbols.addV, first, more);
+            final Collection<Object> allTraversals = new LinkedHashSet<>(more.length + 1);
+            allTraversals.add(first.asAdmin());
+            for (final Traversal<?, ?> t : more) {
+                allTraversals.add(t.asAdmin());
+            }
+            return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), allTraversals));
+        }
     }
 
     /**
@@ -1490,11 +1521,36 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @return the traversal with the {@link AddVertexStepContract} added
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step" target="_blank">Reference Documentation - AddVertex Step</a>
-     * @since 3.1.0-incubating
+     * @since 3.8.0
      */
     public default GraphTraversal<S, Vertex> addV() {
         this.asAdmin().getGremlinLang().addStep(Symbols.addV);
         return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), (String) null));
+    }
+
+    /**
+     * Adds a {@link Vertex}.
+     *
+     * @param label the label (or only) label
+     * @param additionalLabels  additional labels. May be empty for single-label)
+     * @return the traversal with the {@link AddVertexStepContract} added
+     * @since 3.8.0
+     */
+    public default GraphTraversal<S, Vertex> addV(final GValue<String> label, final GValue<String>... additionalLabels) {
+        if (null == label || null == label.get()) throw new IllegalArgumentException("vertexLabel cannot be null");
+        for (final GValue<String> l : additionalLabels) {
+            if (null == l || null == l.get()) throw new IllegalArgumentException("vertexLabel cannot be null");
+        }
+        if (additionalLabels.length == 0) {
+            this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.addV, label);
+            return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), label));
+        } else {
+            this.asAdmin().getGremlinLang().addStep(Symbols.addV, label, additionalLabels);
+            final Collection<Object> allLabels = new LinkedHashSet<>();
+            allLabels.add(label);
+            Collections.addAll(allLabels, additionalLabels);
+            return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), allLabels));
+        }
     }
 
     /**
@@ -3615,6 +3671,88 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * Adds labels to the current element. This is a side-effect step that passes the element through unchanged.
+     *
+     * @param label      the first label to add
+     * @param moreLabels additional labels to add
+     * @return the traversal with an appended {@link AddLabelStep}
+     * @since 4.0.0
+     */
+    public default GraphTraversal<S, E> addLabel(final String label, final String... moreLabels) {
+        this.asAdmin().getGremlinLang().addStep(Symbols.addLabel, label, moreLabels);
+        return this.asAdmin().addStep((AddLabelStep) new AddLabelStep<>(this.asAdmin(), label, moreLabels));
+    }
+
+    /**
+     * Adds labels to the current element. This is a side-effect step that passes the element through unchanged.
+     *
+     * @param labelTraversal      the first (or only) label traversal
+     * @param moreLabelTraversals additional label traversals (may be empty for single-traversal behavior)
+     * @return the traversal with an appended {@link AddLabelStep}
+     * @since 4.0.0
+     */
+    public default GraphTraversal<S, E> addLabel(final Traversal<?, ?> labelTraversal, final Traversal<?, ?>... moreLabelTraversals) {
+        final List<Traversal<?, ?>> all = TraversalHelper.asVarargsList(labelTraversal, moreLabelTraversals, "labelTraversal");
+        if (moreLabelTraversals.length == 0) {
+            this.asAdmin().getGremlinLang().addStep(Symbols.addLabel, labelTraversal);
+        } else {
+            this.asAdmin().getGremlinLang().addStep(Symbols.addLabel, labelTraversal, moreLabelTraversals);
+        }
+        final List<Traversal.Admin<?, ?>> allAdmins = new ArrayList<>(all.size());
+        for (final Traversal<?, ?> t : all) {
+            allAdmins.add(t.asAdmin());
+        }
+        return this.asAdmin().addStep((AddLabelStep) new AddLabelStep(this.asAdmin(), allAdmins));
+    }
+
+    /**
+     * Removes all labels from the current element, triggering the provider's default label behavior.
+     * This is a side-effect step that passes the element through unchanged.
+     *
+     * @return the traversal with an appended {@link DropLabelsStep}
+     * @since 4.0.0
+     */
+    public default GraphTraversal<S, E> dropLabels() {
+        this.asAdmin().getGremlinLang().addStep(Symbols.dropLabels);
+        return this.asAdmin().addStep((DropLabelsStep) new DropLabelsStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Removes labels from the current element. This is a side-effect step that passes the element through unchanged.
+     *
+     * @param label      the first label to remove
+     * @param moreLabels additional labels to remove
+     * @return the traversal with an appended {@link DropLabelsStep}
+     * @since 4.0.0
+     */
+    public default GraphTraversal<S, E> dropLabel(final String label, final String... moreLabels) {
+        this.asAdmin().getGremlinLang().addStep(Symbols.dropLabel, label, moreLabels);
+        return this.asAdmin().addStep((DropLabelsStep) new DropLabelsStep<>(this.asAdmin(), label, moreLabels));
+    }
+
+    /**
+     * Removes labels from the current element. This is a side-effect step that passes the element through unchanged.
+     *
+     * @param labelTraversal      the first (or only) label traversal
+     * @param moreLabelTraversals additional label traversals (may be empty for single-traversal behavior)
+     * @return the traversal with an appended {@link DropLabelsStep}
+     * @since 4.0.0
+     */
+    public default GraphTraversal<S, E> dropLabel(final Traversal<?, String> labelTraversal, final Traversal<?, String>... moreLabelTraversals) {
+        final List<Traversal<?, String>> all = TraversalHelper.asVarargsList(labelTraversal, moreLabelTraversals, "labelTraversal");
+        if (moreLabelTraversals.length == 0) {
+            this.asAdmin().getGremlinLang().addStep(Symbols.dropLabel, labelTraversal);
+        } else {
+            this.asAdmin().getGremlinLang().addStep(Symbols.dropLabel, labelTraversal, moreLabelTraversals);
+        }
+        final List<Traversal.Admin<?, ?>> allAdmins = new ArrayList<>(all.size());
+        for (final Traversal<?, String> t : all) {
+            allAdmins.add(t.asAdmin());
+        }
+        return this.asAdmin().addStep((DropLabelsStep) new DropLabelsStep(this.asAdmin(), allAdmins));
+    }
+
+    /**
      * Filters <code>E</code> lists given the provided {@code predicate}.
      *
      * @param predicate the filter to apply
@@ -4947,6 +5085,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String flatMap = "flatMap";
         public static final String id = "id";
         public static final String label = "label";
+        public static final String labels = "labels";
         public static final String identity = "identity";
         public static final String constant = "constant";
         public static final String V = "V";
@@ -5053,6 +5192,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String sample = "sample";
 
         public static final String drop = "drop";
+        public static final String addLabel = "addLabel";
+        public static final String dropLabels = "dropLabels";
+        public static final String dropLabel = "dropLabel";
 
         public static final String sideEffect = "sideEffect";
         public static final String cap = "cap";

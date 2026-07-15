@@ -44,7 +44,10 @@ public enum Translator {
     ANONYMIZED("Anonymized", AnonymizedTranslatorVisitor::new),
 
     /**
-     * Translates to gremlin-dotnet.
+     * Translates to gremlin-dotnet. Note that variable arguments are translated to bare literals. To instead preserve
+     * variables as strongly-typed {@code GValue<T>} instances in the translated output, construct a
+     * {@link DotNetTranslateVisitor#DotNetTranslateVisitor(String, boolean)} with {@code parameterize} set to
+     * {@code true} and translate via {@link GremlinTranslator#translate(String, TranslateVisitor)}.
      */
     DOTNET("DotNet", DotNetTranslateVisitor::new),
 

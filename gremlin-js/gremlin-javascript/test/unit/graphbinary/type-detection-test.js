@@ -25,7 +25,7 @@
  */
 
 import { assert } from 'chai';
-import { Vertex, Edge, Property, VertexProperty, Path } from '../../../lib/structure/graph.js';
+import { Graph, Vertex, Edge, Property, VertexProperty, Path } from '../../../lib/structure/graph.js';
 import { direction, t, merge } from '../../../lib/process/traversal.js';
 import ioc, { DataType } from '../../../lib/structure/io/binary/GraphBinary.js';
 import StreamReader from '../../../lib/structure/io/binary/internals/StreamReader.js';
@@ -393,6 +393,102 @@ describe('Type Detection Tests', () => {
         const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
         assert.strictEqual(deserialized, value);
       }
+    });
+
+    it('multi-label vertex round-trips preserving all labels', async () => {
+      const vertex = new Vertex(1, 'person', [], ['person', 'employee']);
+      const serialized = anySerializer.serialize(vertex);
+      const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+      assert.strictEqual(deserialized.id, 1);
+      assert.strictEqual(deserialized.label, 'person');
+      assert.instanceOf(deserialized.labels, Set);
+      assert.strictEqual(deserialized.labels.size, 2);
+      assert.isTrue(deserialized.labels.has('person'));
+      assert.isTrue(deserialized.labels.has('employee'));
+    });
+
+    it('zero-label vertex round-trips to empty label set', async () => {
+      const vertex = new Vertex(2, 'unused', [], []);
+      const serialized = anySerializer.serialize(vertex);
+      const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+      assert.strictEqual(deserialized.id, 2);
+      assert.instanceOf(deserialized.labels, Set);
+      assert.strictEqual(deserialized.labels.size, 0);
+    });
+
+    it('edge with multi-label endpoint vertices round-trips preserving endpoint labels', async () => {
+      const outV = new Vertex(10, 'person', [], ['person', 'employee']);
+      const inV = new Vertex(20, 'software', [], ['software', 'project']);
+      const edge = new Edge(100, outV, 'created', inV, [], ['created']);
+      const serialized = anySerializer.serialize(edge);
+      const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+      assert.strictEqual(deserialized.id, 100);
+      assert.strictEqual(deserialized.label, 'created');
+      // outV labels
+      assert.instanceOf(deserialized.outV.labels, Set);
+      assert.strictEqual(deserialized.outV.labels.size, 2);
+      assert.isTrue(deserialized.outV.labels.has('person'));
+      assert.isTrue(deserialized.outV.labels.has('employee'));
+      // inV labels
+      assert.instanceOf(deserialized.inV.labels, Set);
+      assert.strictEqual(deserialized.inV.labels.size, 2);
+      assert.isTrue(deserialized.inV.labels.has('software'));
+      assert.isTrue(deserialized.inV.labels.has('project'));
+    });
+
+    it('edge with zero-label endpoint vertices round-trips to empty endpoint label sets', async () => {
+      const outV = new Vertex(30, 'unused', [], []);
+      const inV = new Vertex(40, 'unused', [], []);
+      const edge = new Edge(200, outV, 'connects', inV, [], ['connects']);
+      const serialized = anySerializer.serialize(edge);
+      const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+      assert.strictEqual(deserialized.id, 200);
+      // outV labels
+      assert.instanceOf(deserialized.outV.labels, Set);
+      assert.strictEqual(deserialized.outV.labels.size, 0);
+      // inV labels
+      assert.instanceOf(deserialized.inV.labels, Set);
+      assert.strictEqual(deserialized.inV.labels.size, 0);
+    });
+
+    it('Graph with multi-labelled vertices round-trips preserving labels', async () => {
+      const graph = new Graph();
+      const v1 = new Vertex(1, 'person', [], ['person', 'employee']);
+      const v2 = new Vertex(2, 'software', [], ['software', 'project']);
+      graph.vertices.set(v1.id, v1);
+      graph.vertices.set(v2.id, v2);
+      const serialized = anySerializer.serialize(graph);
+      const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+      assert.instanceOf(deserialized, Graph);
+      assert.strictEqual(deserialized.vertices.size, 2);
+      const dv1 = deserialized.vertices.get(1);
+      assert.instanceOf(dv1.labels, Set);
+      assert.strictEqual(dv1.labels.size, 2);
+      assert.isTrue(dv1.labels.has('person'));
+      assert.isTrue(dv1.labels.has('employee'));
+      const dv2 = deserialized.vertices.get(2);
+      assert.instanceOf(dv2.labels, Set);
+      assert.strictEqual(dv2.labels.size, 2);
+      assert.isTrue(dv2.labels.has('software'));
+      assert.isTrue(dv2.labels.has('project'));
+    });
+
+    it('Graph with zero-labelled vertices round-trips to empty label sets', async () => {
+      const graph = new Graph();
+      const v1 = new Vertex(1, 'unused', [], []);
+      const v2 = new Vertex(2, 'unused', [], []);
+      graph.vertices.set(v1.id, v1);
+      graph.vertices.set(v2.id, v2);
+      const serialized = anySerializer.serialize(graph);
+      const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+      assert.instanceOf(deserialized, Graph);
+      assert.strictEqual(deserialized.vertices.size, 2);
+      const dv1 = deserialized.vertices.get(1);
+      assert.instanceOf(dv1.labels, Set);
+      assert.strictEqual(dv1.labels.size, 0);
+      const dv2 = deserialized.vertices.get(2);
+      assert.instanceOf(dv2.labels, Set);
+      assert.strictEqual(dv2.labels.size, 0);
     });
   });
 });

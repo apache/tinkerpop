@@ -66,4 +66,9 @@ public class SparkIoRegistryCheck extends AbstractIoRegistryCheck {
     public void shouldSupportGraphSONIoRegistry() throws Exception {
         super.checkGraphSONIoRegistryCompliance((HadoopGraph) graph, SparkGraphComputer.class);
     }
+
+    @Test
+    public void shouldPreserveMultipleLabelsThroughGraphSONV4() throws Exception {
+        super.checkMultiLabelGraphSONV4Compliance((HadoopGraph) graph, SparkGraphComputer.class);
+    }
 }

@@ -124,10 +124,10 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
      */
     public static final Meter writePausesMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "channels", "write-pauses"));
 
-    protected static final Set<String> INVALID_BINDINGS_KEYS = new HashSet<>();
+    protected static final Set<String> INVALID_PARAMETERS_KEYS = new HashSet<>();
 
     static {
-        INVALID_BINDINGS_KEYS.addAll(Arrays.asList(
+        INVALID_PARAMETERS_KEYS.addAll(Arrays.asList(
                 T.id.name(), T.key.name(),
                 T.label.name(), T.value.name(),
                 T.id.getAccessor(), T.key.getAccessor(),
@@ -136,23 +136,23 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 T.label.getAccessor().toUpperCase(), T.value.getAccessor().toUpperCase()));
 
         for (Column enumItem : Column.values()) {
-            INVALID_BINDINGS_KEYS.add(enumItem.name());
+            INVALID_PARAMETERS_KEYS.add(enumItem.name());
         }
 
         for (Order enumItem : Order.values()) {
-            INVALID_BINDINGS_KEYS.add(enumItem.name());
+            INVALID_PARAMETERS_KEYS.add(enumItem.name());
         }
 
         for (Operator enumItem : Operator.values()) {
-            INVALID_BINDINGS_KEYS.add(enumItem.name());
+            INVALID_PARAMETERS_KEYS.add(enumItem.name());
         }
 
         for (Scope enumItem : Scope.values()) {
-            INVALID_BINDINGS_KEYS.add(enumItem.name());
+            INVALID_PARAMETERS_KEYS.add(enumItem.name());
         }
 
         for (Pop enumItem : Pop.values()) {
-            INVALID_BINDINGS_KEYS.add(enumItem.name());
+            INVALID_PARAMETERS_KEYS.add(enumItem.name());
         }
     }
 
@@ -192,16 +192,15 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final Optional<UnmanagedTransaction> txForRequest =
                 isTransactionalOp ? transactionManager.get(requestCtx.getTransactionId()) : Optional.empty();
 
-        // timeout override - handle both deprecated and newly named configuration. earlier logic should prevent
-        // both configurations from being submitted at the same time
-        final Long timeoutMs = requestMessage.getField(Tokens.TIMEOUT_MS);
-        final long seto = (null != timeoutMs) ? timeoutMs : requestCtx.getSettings().getEvaluationTimeout();
+        // per-request timeout override falls back to the server-configured default when not supplied
+        final Long timeoutMillis = requestMessage.getField(Tokens.TIMEOUT_MILLIS);
+        final long seto = (null != timeoutMillis) ? timeoutMillis : requestCtx.getSettings().getTimeoutMillis();
 
         final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
             try {
-                logger.debug("Processing request containing script [{}] and bindings of [{}] on {}",
+                logger.debug("Processing request containing script [{}] and parameters of [{}] on {}",
                         requestMessage.getFieldOrDefault(Tokens.ARGS_GREMLIN, ""),
-                        requestMessage.getFieldOrDefault(Tokens.ARGS_BINDINGS, "[:]"),
+                        requestMessage.getFieldOrDefault(Tokens.ARGS_PARAMETERS, "[:]"),
                         Thread.currentThread().getName());
                 if (settings.enableAuditLog) {
                     AuthenticatedUser user = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
@@ -254,30 +253,30 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     throw new ProcessingException(GremlinError.scriptEngineNotAvailable(language));
                 }
 
-                // Guard against bad parameters while trying to parse string-based bindings into a Map<String, Object>
-                if (requestMessage.optionalField(Tokens.ARGS_BINDINGS).isPresent()) {
-                    Map<String, Object> bindings = null;
-                    final String bindingsString = (String) requestMessage.getFields().get(Tokens.ARGS_BINDINGS);
+                // Guard against bad parameters while trying to parse string-based parameters into a Map<String, Object>
+                if (requestMessage.optionalField(Tokens.ARGS_PARAMETERS).isPresent()) {
+                    Map<String, Object> parameters = null;
+                    final String parametersString = (String) requestMessage.getFields().get(Tokens.ARGS_PARAMETERS);
                     try {
-                        bindings = GremlinQueryParser.parseParameters(bindingsString);
+                        parameters = GremlinQueryParser.parseParameters(parametersString);
                     } catch (GremlinParserException e) {
-                        throw new ProcessingException(GremlinError.incorrectParameterFormat(bindingsString, e));
+                        throw new ProcessingException(GremlinError.incorrectParameterFormat(parametersString, e));
                     }
 
                     if ("gremlin-groovy".equals(language)) {
-                        final Set<String> badBindings = IteratorUtils.set(IteratorUtils.<String>filter(
-                                bindings.keySet().iterator(),
-                                INVALID_BINDINGS_KEYS::contains));
-                        if (!badBindings.isEmpty()) {
-                            throw new ProcessingException(GremlinError.binding(badBindings));
+                        final Set<String> badParameters = IteratorUtils.set(IteratorUtils.<String>filter(
+                                parameters.keySet().iterator(),
+                                INVALID_PARAMETERS_KEYS::contains));
+                        if (!badParameters.isEmpty()) {
+                            throw new ProcessingException(GremlinError.parameter(badParameters));
                         }
                     }
 
-                    if (bindings.size() > settings.maxParameters) {
-                        throw new ProcessingException(GremlinError.binding(bindings.size(), settings.maxParameters));
+                    if (parameters.size() > settings.maxParameters) {
+                        throw new ProcessingException(GremlinError.parameter(parameters.size(), settings.maxParameters));
                     }
 
-                    requestCtx.setParameters(bindings);
+                    requestCtx.setParameters(parameters);
                 }
 
                 // Send back the 200 OK response header here since the response is always chunk transfer encoded. Any
@@ -323,7 +322,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     executionFuture.cancel(true);
                     // If the lifetime cap fired for this same operation (it flags the Context before interrupting),
                     // report the cap's 504 even when this eval-timeout task is the one that writes - so a cap-kill is
-                    // never mislabeled as a generic "increase evaluationTimeout" 500 just because of writer ordering.
+                    // never mislabeled as a generic "increase timeoutMillis" 500 just because of writer ordering.
                     coordinator.writeError(requestCtx.isClosedByLifetimeCap()
                             ? GremlinError.transactionTimeout(requestCtx.getTransactionId(), "execute")
                             : GremlinError.timeout(requestMessage));
@@ -403,7 +402,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             // An interrupt here is normally an evaluation timeout, but it is also how a transaction's absolute lifetime
             // cap stops a running operation. In the cap case the transaction flagged this request's Context before
             // interrupting, so report an accurate transaction-timeout (504) rather than the generic "increase
-            // evaluationTimeout" error (500), whose advice would be misleading for a lifetime-cap kill.
+            // timeoutMillis" error (500), whose advice would be misleading for a lifetime-cap kill.
             if (requestCtx != null && requestCtx.isClosedByLifetimeCap()) {
                 return GremlinError.transactionTimeout(requestCtx.getTransactionId(), "execute");
             }

@@ -50,6 +50,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
                 {typeof(Edge), new EdgeSerializer()},
                 {typeof(Graph), new GraphSerializer()},
                 {typeof(Path), new PathSerializer()},
+                {typeof(Tree), new TreeSerializer()},
                 {typeof(Property), new PropertySerializer()},
                 {typeof(Vertex), new VertexSerializer()},
                 {typeof(VertexProperty), new VertexPropertySerializer()},
@@ -65,7 +66,8 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
                 {typeof(char), new CharSerializer()},
                 {typeof(TimeSpan), new DurationSerializer()},
                 {typeof(Marker), SingleTypeSerializers.MarkerSerializer},
-                {typeof(ProviderDefinedType), new CompositePDTSerializer()},
+                {typeof(CompositePDT), new CompositePDTSerializer()},
+                {typeof(PrimitivePDT), new PrimitivePDTSerializer()},
             };
 
         private readonly Dictionary<DataType, ITypeSerializer> _serializerByDataType =
@@ -84,6 +86,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
                 {DataType.Edge, new EdgeSerializer()},
                 {DataType.Graph, new GraphSerializer()},
                 {DataType.Path, new PathSerializer()},
+                {DataType.Tree, new TreeSerializer()},
                 {DataType.Property, new PropertySerializer()},
                 {DataType.Vertex, new VertexSerializer()},
                 {DataType.VertexProperty, new VertexPropertySerializer()},
@@ -100,6 +103,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
                 {DataType.Duration, new DurationSerializer()},
                 {DataType.Marker, SingleTypeSerializers.MarkerSerializer},
                 {DataType.CompositePDT, new CompositePDTSerializer()},
+                {DataType.PrimitivePDT, new PrimitivePDTSerializer()},
             };
 
         /// <summary>

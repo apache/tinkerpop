@@ -18,21 +18,39 @@
  */
 
 import gremlin from "gremlin";
+import { changedMeaningful } from "../graph/change-levels.js";
 
 /**
  * Find changed functions that have no incoming 'tests' edge.
  *
  * @param {object} g - gremlin-js GraphTraversalSource
  * @param {object} params
- * @param {boolean} [params.changedOnly] - Only check functions with changed=true (default: true)
+ * @param {boolean} [params.changedOnly] - Only check meaningfully-changed functions
+ *   — BEHAVIORAL or STRUCTURAL (default: true)
  * @returns {Promise<CoverageGapResult>}
+ */
+
+/**
+ * @typedef {Object} UncoveredFunction
+ * @property {string} name
+ * @property {string} signature
+ * @property {string} filePath
+ * @property {number} linesStart
+ * @property {number} linesEnd
+ *
+ * @typedef {Object} CoverageGapResult
+ * @property {UncoveredFunction[]} uncovered     changed functions with no incoming `tests` edge
+ * @property {number}              totalChanged  changed functions considered
+ * @property {number}              totalCovered  changed functions that do have a test
  */
 export async function coverageGaps(g, params = {}) {
   const changedOnly = params.changedOnly !== false;
 
   let traversal = g.V().hasLabel("Function");
   if (changedOnly) {
-    traversal = traversal.has("changed", true);
+    // A formatting-only change does not create a coverage gap; a real body or
+    // signature change without a test does.
+    traversal = traversal.has("changeLevel", changedMeaningful());
   }
 
   const functions = await traversal.elementMap().toList();

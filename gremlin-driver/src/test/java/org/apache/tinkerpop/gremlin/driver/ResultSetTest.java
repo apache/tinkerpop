@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -61,12 +62,119 @@ public class ResultSetTest extends AbstractResultSetTest {
     }
 
     @Test
+    public void shouldKeepFirstErrorWhenMarkedFailedTwice() throws InterruptedException {
+        // Two threads can race to fail the same stream (e.g. a read-timeout on the event loop and end-of-stream on
+        // the reader thread). The first error must win consistently across both the completed future and the error
+        // observed via getAvailableItemCount(), so the recorded cause and the future's completion never disagree.
+        final CompletableFuture<Void> all = resultSet.allItemsAvailableAsync();
+        final RuntimeException first = new RuntimeException("first");
+        final RuntimeException second = new RuntimeException("second");
+
+        resultSet.markError(first);
+        resultSet.markError(second);
+
+        pool.awaitTermination(2, TimeUnit.SECONDS);
+        assertThat(all.isCompletedExceptionally(), is(true));
+
+        try {
+            resultSet.getAvailableItemCount();
+            fail("Expected the recorded error to be thrown");
+        } catch (RuntimeException ex) {
+            assertEquals(first, ex.getCause());
+        }
+    }
+
+    @Test
     public void shouldHaveAllItemsAvailableOnReadComplete() throws InterruptedException {
         assertThat(resultSet.allItemsAvailable(), is(false));
         resultSet.markComplete();
         // flush all tasks in pool
         pool.awaitTermination(2, TimeUnit.SECONDS);
         assertThat(resultSet.allItemsAvailable(), is(true));
+    }
+
+    @Test
+    public void shouldCompleteHeadersReceivedOnMarkHeadersReceived() throws Exception {
+        final CompletableFuture<Void> headers = resultSet.headersReceivedAsync();
+        assertThat(headers.isDone(), is(false));
+
+        resultSet.markHeadersReceived();
+
+        headers.get(2, TimeUnit.SECONDS);
+        assertThat(headers.isDone(), is(true));
+        assertThat(headers.isCompletedExceptionally(), is(false));
+    }
+
+    @Test
+    public void shouldCompleteHeadersReceivedBeforeReadCompleted() throws Exception {
+        // models the streaming path: headers decode first, then body chunks stream in, then read completes. A caller
+        // blocked on headersReceivedAsync() must be released strictly before the full body is available.
+        final CompletableFuture<Void> headers = resultSet.headersReceivedAsync();
+        final CompletableFuture<Void> all = resultSet.allItemsAvailableAsync();
+        assertThat(headers.isDone(), is(false));
+        assertThat(all.isDone(), is(false));
+
+        // headers arrive first
+        resultSet.markHeadersReceived();
+        headers.get(2, TimeUnit.SECONDS);
+        assertThat(headers.isDone(), is(true));
+        // the body is not finished yet, so the "all" future is still outstanding
+        assertThat(all.isDone(), is(false));
+
+        // body finishes streaming
+        resultSet.add(new Result("test1"));
+        resultSet.markComplete();
+        all.get(2, TimeUnit.SECONDS);
+        assertThat(all.isDone(), is(true));
+    }
+
+    @Test
+    public void shouldCompleteHeadersReceivedAsBackstopOnMarkComplete() throws Exception {
+        // models the non-streaming (aggregator) path which never signals headers explicitly: markComplete() must trip
+        // the headers future too, otherwise a caller blocked on it would hang on that path.
+        final CompletableFuture<Void> headers = resultSet.headersReceivedAsync();
+        assertThat(headers.isDone(), is(false));
+
+        resultSet.markComplete();
+
+        headers.get(2, TimeUnit.SECONDS);
+        assertThat(headers.isDone(), is(true));
+        assertThat(headers.isCompletedExceptionally(), is(false));
+    }
+
+    @Test
+    public void shouldCompleteHeadersReceivedExceptionallyOnErrorBeforeHeaders() throws Exception {
+        // an error can arrive before any header was signaled (e.g. a write failure or a non-streaming error response);
+        // the headers future must fail rather than hang so a caller blocked on it observes the error.
+        final CompletableFuture<Void> headers = resultSet.headersReceivedAsync();
+        assertThat(headers.isDone(), is(false));
+
+        resultSet.markError(new RuntimeException("boom"));
+
+        try {
+            headers.get(2, TimeUnit.SECONDS);
+            fail("headersReceivedAsync() should have completed exceptionally");
+        } catch (ExecutionException ex) {
+            assertThat(ex.getCause().getMessage(), is("boom"));
+        }
+        assertThat(headers.isDone(), is(true));
+        assertThat(headers.isCompletedExceptionally(), is(true));
+    }
+
+    @Test
+    public void shouldKeepHeadersReceivedSuccessfulWhenErrorArrivesAfterHeaders() throws Exception {
+        // headers come back OK and only then does the body fail (e.g. a server-side error in the body footer). The
+        // headers future already completed successfully and must not be flipped to a failure by the later error.
+        final CompletableFuture<Void> headers = resultSet.headersReceivedAsync();
+        resultSet.markHeadersReceived();
+        headers.get(2, TimeUnit.SECONDS);
+        assertThat(headers.isCompletedExceptionally(), is(false));
+
+        resultSet.markError(new RuntimeException("late boom"));
+
+        // still successfully completed - the late error does not retroactively fail the headers future
+        assertThat(headers.isDone(), is(true));
+        assertThat(headers.isCompletedExceptionally(), is(false));
     }
 
     @Test

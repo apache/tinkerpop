@@ -40,6 +40,8 @@ export default defineConfig({
     extensions: ['.mjs', '.ts', '.js', '.mts', '.jsx', '.tsx', '.json'],
   },
   server: {
+    // 5174 keeps gremlator off gremlint's default 5173 so both can run at once
+    port: 5174,
     fs: {
       allow: ['..'],
     },

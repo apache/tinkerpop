@@ -20,7 +20,7 @@ under the License.
 import datetime
 import uuid
 from gremlin_python.statics import short, long, bigint, BigDecimal, SingleByte
-from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Path
+from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Path, Tree
 from gremlin_python.process.traversal import Direction, Traverser, T
 
 """
@@ -37,7 +37,6 @@ nan-float            single precision float not supported in Python
 pos-inf-float        single precision float not supported in Python
 neg-inf-float        single precision float not supported in Python
 neg-zero-float       single precision float not supported in Python
-traversal-tree       Tree type not implemented
 """
 
 model = {}
@@ -99,6 +98,13 @@ model["traversal-path"] = Path(
     [Vertex(1, "person"), Vertex(10, "software"), Vertex(11, "software")]
 )
 model["empty-path"] = Path([], [])
+
+# tree for g.V(10).out().tree(): v[10] -> v[11]
+_traversal_tree = Tree()
+_traversal_tree.get_or_create_child(Vertex(10, "software")).get_or_create_child(Vertex(11, "software"))
+model["traversal-tree"] = _traversal_tree
+model["empty-tree"] = Tree()
+
 model["prop-path"] = Path(
     [set(), set(), set()],
     [

@@ -19,6 +19,8 @@
 
 import gremlin from "gremlin";
 
+import { changedMeaningful, atLeastP, atLeast } from "../graph/change-levels.js";
+
 const INHERENTLY_CENTRAL = new Set([
   "equals", "hashCode", "toString", "clone", "close", "compareTo",
   "iterator", "hasNext", "next", "get", "set", "size", "isEmpty",
@@ -26,10 +28,19 @@ const INHERENTLY_CENTRAL = new Set([
   "finalize", "notify", "notifyAll", "wait",
 ]);
 
+const { statics: __, t: T } = gremlin.process;
+
 /**
- * Calculate blast radius — how many functions are reachable downstream
- * from changed functions via call edges. High blast radius means a change
- * here affects many callers.
+ * Calculate blast radius — how far a change ripples. Two seeds:
+ *
+ *  - Function-seeded: from each changed function, count what's reachable
+ *    upstream via `calls` AND `overrides`. The `overrides` hop is what makes
+ *    this see impact flowing through interface/abstract hierarchies — change an
+ *    interface method and every override counts, which a call-only walk misses.
+ *  - Type-seeded (hierarchy bucket): from each changed Type (typically an
+ *    interface), count the functions declared by everything that implements or
+ *    extends it. Reported separately so call/override impact and pure
+ *    type-hierarchy impact stay legible rather than summed into one number.
  *
  * Methods that are inherently central (equals, toString, etc.) are filtered
  * out UNLESS they were modified in this PR.
@@ -37,30 +48,65 @@ const INHERENTLY_CENTRAL = new Set([
  * @param {object} g - gremlin-js GraphTraversalSource
  * @param {object} params
  * @param {number} [params.depth] - Max hops to traverse (default: 3)
- * @param {boolean} [params.changedOnly] - Start from changed functions only (default: true)
+ * @param {boolean} [params.changedOnly] - Start from changed functions only (default: true).
+ *   Function seed defaults to the meaningful tiers (BEHAVIORAL, STRUCTURAL); the
+ *   type seed is STRUCTURAL-only.
+ * @param {string} [params.minChangeLevel] - Narrow the function seed to this
+ *   level and above (e.g. "STRUCTURAL")
  * @returns {Promise<BlastRadiusResult>}
+ */
+
+/**
+ * @typedef {Object} BlastRadiusFn
+ * @property {string}  name
+ * @property {string}  filePath
+ * @property {string}  signature
+ * @property {number}  linesStart
+ * @property {number}  linesEnd
+ * @property {string}  changeLevel     how the PR moved this function (NONE | FORMATTING | BEHAVIORAL | STRUCTURAL)
+ * @property {number}  reachableCount  callers + overriders reachable within `depth` hops upstream;
+ *                                      high = the change ripples widely (for driver/server this is expected)
+ * @property {number}  depth           hop limit used for this row
+ *
+ * @typedef {Object} BlastRadiusType
+ * @property {string}  name
+ * @property {string}  filePath
+ * @property {string}  kind            class | interface | struct | enum
+ * @property {number}  implementerCount functions declared by types that implement/extend this one
+ * @property {number}  depth
+ *
+ * @typedef {Object} BlastRadiusResult
+ * @property {BlastRadiusFn[]}   functions        changed functions and how far each one's change reaches
+ * @property {BlastRadiusType[]} types            changed types and how many implementers' functions they reach
+ * @property {number}            maxReachable     largest reachableCount across changed functions
+ * @property {number}            totalWithCallers changed functions that have any upstream callers/overriders
+ * @property {number}            depth            hop limit applied
  */
 export async function blastRadius(g, params = {}) {
   const depth = params.depth || 3;
   const changedOnly = params.changedOnly !== false;
+  // Function seed uses the meaningful tiers; `minChangeLevel` can narrow further.
+  const changePredicate = params.minChangeLevel
+    ? atLeastP(params.minChangeLevel)
+    : changedMeaningful();
 
-  let traversal = g.V().hasLabel("Function");
+  let traversal = g.V().hasLabel("Function").hasNot("external");
   if (changedOnly) {
-    traversal = traversal.has("changed", true);
+    traversal = traversal.has("changeLevel", changePredicate);
   }
 
   const functions = await traversal.elementMap().toList();
   const results = [];
 
   for (const fnMap of functions) {
-    const vertexId = fnMap.get(gremlin.process.t.id);
+    const vertexId = fnMap.get(T.id);
     const name = fnMap.get("name");
-    const changed = fnMap.get("changed");
+    const changeLevel = fnMap.get("changeLevel");
 
-    if (INHERENTLY_CENTRAL.has(name) && !changed) continue;
+    if (INHERENTLY_CENTRAL.has(name) && !atLeast(changeLevel || "NONE", "BEHAVIORAL")) continue;
 
     const reachable = await g.V(vertexId)
-      .repeat(gremlin.process.statics.in_("calls"))
+      .repeat(__.union(__.in_("calls"), __.in_("overrides")).dedup())
       .times(depth)
       .emit()
       .dedup()
@@ -75,7 +121,7 @@ export async function blastRadius(g, params = {}) {
         signature: fnMap.get("signature"),
         linesStart: fnMap.get("lines_start"),
         linesEnd: fnMap.get("lines_end"),
-        changed,
+        changeLevel,
         reachableCount: count,
         depth,
       });
@@ -84,8 +130,49 @@ export async function blastRadius(g, params = {}) {
 
   results.sort((a, b) => b.reachableCount - a.reachableCount);
 
+  // Type-seeded hierarchy impact: functions declared by everything that
+  // implements/extends a changed type, walked in the implementer->supertype
+  // direction (`in`) up to `depth` levels of the hierarchy.
+  // Type seed is STRUCTURAL-only: a hierarchy ripples through implementers only
+  // when the type's contract (kind/supertypes/member set) moved — a body-only
+  // (BEHAVIORAL) or formatting change to the declaring file does not.
+  let typeTraversal = g.V().hasLabel("Type").hasNot("external");
+  if (changedOnly) {
+    typeTraversal = typeTraversal.has("changeLevel", "STRUCTURAL");
+  }
+  const changedTypes = await typeTraversal.elementMap().toList();
+  const typeResults = [];
+
+  for (const typeMap of changedTypes) {
+    const vertexId = typeMap.get(T.id);
+    const implementerCount = await g.V(vertexId)
+      .repeat(__.in_("implements", "extends").dedup())
+      .times(depth)
+      .emit()
+      .dedup()
+      .out("declares")
+      .hasNot("external")
+      .dedup()
+      .count()
+      .next();
+
+    const count = Number(implementerCount.value);
+    if (count > 0) {
+      typeResults.push({
+        name: typeMap.get("name"),
+        filePath: typeMap.get("filePath"),
+        kind: typeMap.get("kind"),
+        implementerCount: count,
+        depth,
+      });
+    }
+  }
+
+  typeResults.sort((a, b) => b.implementerCount - a.implementerCount);
+
   return {
     functions: results,
+    types: typeResults,
     maxReachable: results.length > 0 ? results[0].reachableCount : 0,
     totalWithCallers: results.length,
     depth,

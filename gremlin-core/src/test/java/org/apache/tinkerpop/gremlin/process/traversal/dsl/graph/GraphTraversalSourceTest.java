@@ -90,7 +90,7 @@ public class GraphTraversalSourceTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailAddVWithNullVertexLabelTraversal() {
-        g.addV((Traversal<?, String>) null);
+        g.addV((Traversal<?, ?>) null);
     }
 
     @Test(expected = IllegalArgumentException.class)

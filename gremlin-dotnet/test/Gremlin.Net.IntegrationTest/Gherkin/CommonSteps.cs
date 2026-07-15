@@ -43,6 +43,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 {
     internal class CommonSteps : StepDefinition
     {
+        private static readonly bool Parameterize =
+            Environment.GetEnvironmentVariable("PARAMETERIZE") == "true";
+
         private GraphTraversalSource? _g;
         private string? _graphName;
         private readonly IDictionary<string, object?> _parameters = new Dictionary<string, object?>();
@@ -105,13 +108,27 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         [Given("the (\\w+) graph")]
         public void ChooseModernGraph(string graphName)
         {
-            if (graphName == "empty")
+            var isMultiLabel = ScenarioData.CurrentScenario != null &&
+                (ScenarioData.CurrentScenario.Tags.Any(t => t.Name == "@MultiLabel") ||
+                 (ScenarioData.CurrentFeature != null && ScenarioData.CurrentFeature.Tags.Any(t => t.Name == "@MultiLabel")));
+
+            if (isMultiLabel && graphName == "empty")
             {
-                ScenarioData.CleanEmptyData();
+                ScenarioData.CleanMultilabelData();
+                var data = ScenarioData.GetByGraphName("multilabel");
+                _graphName = "multilabel";
+                _g = Traversal().With(data.Connection);
             }
-            var data = ScenarioData.GetByGraphName(graphName);
-            _graphName = graphName;
-            _g = Traversal().With(data.Connection);
+            else
+            {
+                if (graphName == "empty")
+                {
+                    ScenarioData.CleanEmptyData();
+                }
+                var data = ScenarioData.GetByGraphName(graphName);
+                _graphName = graphName;
+                _g = Traversal().With(data.Connection);
+            }
         }
 
         [Given("using the parameter (\\w+) defined as \"(.*)\"")]
@@ -148,21 +165,40 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 _g = _g.WithComputer();
             }
 
-            _traversal =
-                Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
+            if (Parameterize)
+            {
+                _traversal =
+                    Gremlin.UseParameterizedTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
+            }
+            else
+            {
+                _traversal =
+                    Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
+            }
         }
 
         [Given("the graph initializer of")]
         public void InitTraversal(string traversalText)
         {
-            var traversal =
-                Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
+            ITraversal traversal;
+            if (Parameterize)
+            {
+                traversal = Gremlin.UseParameterizedTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
+            }
+            else
+            {
+                traversal = Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
+            }
             traversal.Iterate();
             
-            // We may have modified the so-called `empty` graph
+            // We may have modified the so-called `empty` or `multilabel` graph
             if (_graphName == "empty")
             {
                 ScenarioData.ReloadEmptyData();
+            }
+            else if (_graphName == "multilabel")
+            {
+                ScenarioData.ReloadMultilabelData();
             }
         }
 
@@ -220,6 +256,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         // Graph is a container of vertices/edges but not iterable itself; wrap in a
                         // single-element array so assertions like AssertSubgraphStructure can find it.
                         _result = new object?[] { graphResult };
+                        return;
+                    case Tree treeResult:
+                        // Tree should be treated as a single result so AssertTreeStructure can inspect it;
+                        // wrap it in a single-element array rather than letting a later case flatten it.
+                        _result = new object?[] { treeResult };
                         return;
                     case IEnumerable enumerableResult:
                         _result = enumerableResult.Cast<object>().ToArray();
@@ -296,7 +337,95 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         [Then("the result should be a tree with a structure of")]
         public void AssertTreeStructure(string expectedTree)
         {
+            AssertThatNoErrorWasThrown();
 
+            // The traversal yields a single Tree as the only result.
+            Assert.NotNull(_result);
+            var tree = Assert.IsType<Tree>(_result![0]);
+
+            // an empty doc string represents an empty tree
+            var roots = ParseTree(expectedTree);
+
+            // validate that the tree matches the parsed expected structure
+            Assert.Equal(roots.Count, tree.RootNodes().Count);
+            foreach (var root in roots)
+            {
+                Assert.True(tree.HasChild(root.Value), $"Tree not matching at {root.Value}");
+                ValidateTreeStructure(tree.ChildAt(root.Value), root);
+            }
+        }
+
+        private static void ValidateTreeStructure(Tree actualTree, TreeNode expectedNode)
+        {
+            Assert.Equal(expectedNode.Children.Count, actualTree.RootNodes().Count);
+            foreach (var child in expectedNode.Children)
+            {
+                Assert.True(actualTree.HasChild(child.Value), $"Tree not matching at {child.Value}");
+                ValidateTreeStructure(actualTree.ChildAt(child.Value), child);
+            }
+        }
+
+        /// <summary>
+        ///     Parses the ascii-tree structure as taken from the Gherkin feature file. Mirrors the Java
+        ///     <c>StepDefinition.parseTree</c>: a line's depth is the number of leading spaces divided by three,
+        ///     and the node value is the line with the leading <c>|--</c> marker stripped and trimmed.
+        /// </summary>
+        private List<TreeNode> ParseTree(string asciiTree)
+        {
+            var roots = new List<TreeNode>();
+            if (string.IsNullOrEmpty(asciiTree)) return roots;
+
+            var lines = Regex.Split(asciiTree, "\r\n|\r|\n");
+            var levelMap = new Dictionary<int, TreeNode>();
+
+            foreach (var line in lines)
+            {
+                if (line.Length == 0) continue;
+
+                var level = CountLeadingTreeLevels(line);
+                var value = line.Replace("|--", "").Trim();
+
+                var node = new TreeNode(ParseValue(value, _graphName!));
+                if (level == 0)
+                {
+                    roots.Add(node);
+                }
+                else
+                {
+                    levelMap[level - 1].Children.Add(node);
+                }
+
+                levelMap[level] = node;
+            }
+
+            return roots;
+        }
+
+        private static int CountLeadingTreeLevels(string line)
+        {
+            var count = 0;
+            foreach (var c in line)
+            {
+                if (c == ' ') count++;
+                else break;
+            }
+
+            return count / 3; // 3 spaces per level
+        }
+
+        /// <summary>
+        ///     An internal tree-structure that holds the expected tree defined in the gherkin feature files.
+        /// </summary>
+        private sealed class TreeNode
+        {
+            public object? Value { get; }
+            public List<TreeNode> Children { get; }
+
+            public TreeNode(object? value)
+            {
+                Value = value;
+                Children = new List<TreeNode>();
+            }
         }
 
         [Then("the result should be a subgraph with the following")]
@@ -481,7 +610,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 traversalText = traversalText.Substring(1, traversalText.Length - 2);
             }
             
-            var traversal = (ITraversal) Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
+            var traversal = Parameterize
+                ? (ITraversal) Gremlin.UseParameterizedTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects)
+                : (ITraversal) Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
             
             var count = 0;
             while (traversal.MoveNextAsync().AsTask().GetAwaiter().GetResult())

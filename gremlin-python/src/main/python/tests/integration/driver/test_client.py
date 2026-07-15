@@ -24,16 +24,16 @@ import uuid
 import pytest
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.connection import GremlinServerError
+from gremlin_python.driver.exceptions import ReadTimeoutError
 from gremlin_python.driver.request import RequestMessage
 from gremlin_python.driver.serializer import GraphBinarySerializersV4
-from gremlin_python.structure.graph import ProviderDefinedType
+from gremlin_python.structure.graph import CompositePDT, PrimitivePDT
 from gremlin_python.process.graph_traversal import __, GraphTraversalSource
 from gremlin_python.process.traversal import TraversalStrategies, GValue
 from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.structure.graph import Graph, Vertex
 from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
 from gremlin_python.statics import *
-from asyncio import TimeoutError
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -97,7 +97,7 @@ def test_client_deflate_compression_round_trip():
         client.close()
 
 
-def test_client_simple_eval_bindings(client):
+def test_client_simple_eval_parameters(client):
     assert client.submit('g.V(x).values("age")', {'x': 1}).all().result()[0] == 29
 
 
@@ -105,18 +105,18 @@ def test_client_eval_traversal(client):
     assert len(client.submit('g.V()').all().result()) == 6
 
 
-def test_client_eval_traversal_bindings(client):
-    assert client.submit('g.V(x).values("name")', bindings={'x': 1}).all().result()[0] == 'marko'
+def test_client_eval_traversal_parameters(client):
+    assert client.submit('g.V(x).values("name")', parameters={'x': 1}).all().result()[0] == 'marko'
 
 
-def test_client_eval_traversal_request_options_bindings(client):
-    assert client.submit('g.V(x).values("name")', request_options={'bindings': {'x': 1}}).all().result()[0] == 'marko'
+def test_client_eval_traversal_request_options_parameters(client):
+    assert client.submit('g.V(x).values("name")', request_options={'parameters': {'x': 1}}).all().result()[0] == 'marko'
 
 
-def test_client_eval_traversal_bindings_request_options_bindings(client):
-    # Note that parameters from request_options[bindings] is applied later and will replace bindings if key is the same
-    assert client.submit('g.V(x).values("name")', bindings={'x': 1},
-                         request_options={'bindings': {'x': 2}}).all().result()[0] == 'vadas'
+def test_client_eval_traversal_parameters_request_options_parameters(client):
+    # Note that parameters from request_options[parameters] is applied later and will replace parameters if key is the same
+    assert client.submit('g.V(x).values("name")', parameters={'x': 1},
+                         request_options={'parameters': {'x': 2}}).all().result()[0] == 'vadas'
 
 
 def test_client_error(client):
@@ -191,9 +191,12 @@ def test_client_side_timeout_set_for_aiohttp(client):
         # should fire an exception
         client.submit('Thread.sleep(2000);1', request_options={'language': 'gremlin-groovy'}).all().result()
         assert False
-    except TimeoutError as err:
-        # asyncio TimeoutError has no message.
-        assert str(err) == ""
+    except ReadTimeoutError as err:
+        # The driver normalizes a read timeout to a single ReadTimeoutError (a builtin
+        # TimeoutError subclass) with a deterministic message, so we assert on both the
+        # type (still catchable via `except TimeoutError`) and the message.
+        assert isinstance(err, TimeoutError)
+        assert str(err) == "Read timed out after 1.0s waiting for response data."
 
     # still can submit after failure
     assert client.submit('g.V(x).values("age")', {'x': 1}).all().result()[0] == 29
@@ -269,22 +272,22 @@ def test_client_gremlin_lang_options(client):
     assert len(result_set.all().result()) == 6
 
 
-def test_client_gremlin_lang_request_options_with_binding(client):
+def test_client_gremlin_lang_request_options_with_parameter(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
-    # Note that bindings for constructed traversals is done via Parameter only
+    # Note that parameters for constructed traversals is done via Parameter only
     t = g.with_('language', 'gremlin-lang').V(GValue('x', [1, 2, 3])).count()
-    request_opts = {'language': 'gremlin-lang', 'bindings': {'x': [1, 2, 3]}}
+    request_opts = {'language': 'gremlin-lang', 'parameters': {'x': [1, 2, 3]}}
     message = create_basic_request_message(t)
     result_set = client.submit(message, request_options=request_opts)
     assert result_set.all().result()[0] == 3
     # We can re-use the extracted request options in script submission
     result_set = client.submit('g.V(x).values("name")', request_options=request_opts)
     assert result_set.all().result()[0] == 'marko'
-    # For script submission only, we can also add bindings to request options and they will be applied
-    request_opts2 = {'language': 'gremlin-lang', 'bindings': {'y': 4}}
+    # For script submission only, we can also add parameters to request options and they will be applied
+    request_opts2 = {'language': 'gremlin-lang', 'parameters': {'y': 4}}
     result_set = client.submit('g.V(y).values("name")', request_options=request_opts2)
     assert result_set.all().result()[0] == 'josh'
-    result_set = client.submit('g.V(z).values("name")', bindings={'z': 5})
+    result_set = client.submit('g.V(z).values("name")', parameters={'z': 5})
     assert result_set.all().result()[0] == 'ripple'
 
 
@@ -572,7 +575,7 @@ def test_simple_pdt_round_trip(client):
 
     assert len(results) == 1
     pdt = results[0]
-    assert isinstance(pdt, ProviderDefinedType)
+    assert isinstance(pdt, CompositePDT)
     assert pdt.name == 'Point'
     assert pdt.fields['x'] == 1
     assert pdt.fields['y'] == 2
@@ -587,13 +590,13 @@ def test_nested_pdt(client):
 
     assert len(results) == 1
     pdt = results[0]
-    assert isinstance(pdt, ProviderDefinedType)
+    assert isinstance(pdt, CompositePDT)
     assert pdt.name == 'Person'
     assert pdt.fields['name'] == 'Alice'
     assert pdt.fields['age'] == 30
 
     address = pdt.fields['address']
-    assert isinstance(address, ProviderDefinedType)
+    assert isinstance(address, CompositePDT)
     assert address.name == 'Address'
     assert address.fields['street'] == '123 Main St'
     assert address.fields['city'] == 'Springfield'
@@ -611,12 +614,12 @@ def test_pdt_in_collection(client):
     assert isinstance(pdt_list, list)
     assert len(pdt_list) == 2
 
-    assert isinstance(pdt_list[0], ProviderDefinedType)
+    assert isinstance(pdt_list[0], CompositePDT)
     assert pdt_list[0].name == 'Point'
     assert pdt_list[0].fields['x'] == 1
     assert pdt_list[0].fields['y'] == 2
 
-    assert isinstance(pdt_list[1], ProviderDefinedType)
+    assert isinstance(pdt_list[1], CompositePDT)
     assert pdt_list[1].name == 'Point'
     assert pdt_list[1].fields['x'] == 3
     assert pdt_list[1].fields['y'] == 4
@@ -664,3 +667,54 @@ def test_interceptor_errors_propagate():
         assert 2 == result
     finally:
         client.close()
+
+
+def test_primitive_pdt_round_trip(client):
+    """Inject and retrieve a primitive Uint32 PDT (opaque string value)."""
+    results = client.submit(
+        "g.inject(PDT(\"Uint32\", \"4294967295\"))"
+    ).all().result()
+
+    assert len(results) == 1
+    pdt = results[0]
+    assert isinstance(pdt, PrimitivePDT)
+    assert pdt.name == 'Uint32'
+    assert pdt.value == '4294967295'
+
+
+def test_primitive_pdt_in_collection(client):
+    """Retrieve multiple primitive PDTs of different kinds as a list."""
+    results = client.submit(
+        "g.inject([PDT(\"Uint32\", \"42\"), PDT(\"TinkerId\", \"abc-123\")])"
+    ).all().result()
+
+    assert len(results) == 1
+    pdt_list = results[0]
+    assert isinstance(pdt_list, list)
+    assert len(pdt_list) == 2
+
+    assert isinstance(pdt_list[0], PrimitivePDT)
+    assert pdt_list[0].name == 'Uint32'
+    assert pdt_list[0].value == '42'
+
+    assert isinstance(pdt_list[1], PrimitivePDT)
+    assert pdt_list[1].name == 'TinkerId'
+    assert pdt_list[1].value == 'abc-123'
+
+
+def test_primitive_pdt_nested_in_composite(client):
+    """Inject and retrieve a composite PDT containing a nested primitive PDT."""
+    results = client.submit(
+        "g.inject(PDT(\"Measurement\", [\"unit\":\"meters\", \"quantity\":PDT(\"Uint32\", \"100\")]))"
+    ).all().result()
+
+    assert len(results) == 1
+    pdt = results[0]
+    assert isinstance(pdt, CompositePDT)
+    assert pdt.name == 'Measurement'
+    assert pdt.fields['unit'] == 'meters'
+
+    quantity = pdt.fields['quantity']
+    assert isinstance(quantity, PrimitivePDT)
+    assert quantity.name == 'Uint32'
+    assert quantity.value == '100'

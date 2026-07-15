@@ -240,6 +240,21 @@ describe('GraphBinary v4 Model Tests', () => {
   runWriteRead('set-cardinality-vertexproperty', setCardinalityComparator);
   runWriteRead('traversal-vertex');
 
+  // Tree
+  runWriteRead('traversal-tree'); // vertex properties aren't serialized
+
+  // empty-tree has no .gbin resource, so exercise an in-memory round trip
+  describe('empty-tree', () => {
+    it('in-memory round trip', async () => {
+      const empty = model['empty-tree'];
+      const roundTripped = await anySerializer.deserialize(
+        StreamReader.fromBuffer(anySerializer.serialize(empty)),
+      );
+      assert.deepStrictEqual(roundTripped, empty);
+      assert.isTrue(roundTripped.isLeaf());
+    });
+  });
+
   // runRead mode (5 entries)
   runRead('neg-zero-float', negZeroComparator);
   runRead('max-offsetdatetime', invalidDateComparator);
@@ -247,10 +262,9 @@ describe('GraphBinary v4 Model Tests', () => {
   runRead('prop-path');
   runRead('var-type-map');
 
-  // skip mode (8 entries)
+  // skip mode (7 entries)
   skip('single-byte-char', 'Char type (0x80) not implemented');
   skip('multi-byte-char', 'Char type (0x80) not implemented');
-  skip('traversal-tree', 'Tree type not implemented');
   skip('tinker-graph', 'Graph type not implemented');
   skip('pos-bigdecimal', 'BigDecimal type not implemented');
   skip('neg-bigdecimal', 'BigDecimal type not implemented');

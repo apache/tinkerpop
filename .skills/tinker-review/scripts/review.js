@@ -25,7 +25,7 @@ import { existsSync } from "node:fs";
 import gremlin from "gremlin";
 
 import { startServer, stopServer } from "./infrastructure/docker.js";
-import { extract } from "./extraction/tree-sitter.js";
+import { extractMulti } from "./extraction/tree-sitter.js";
 import { populate } from "./graph/populate.js";
 import { populateDiscussions } from "./graph/populate-discussions.js";
 import { completeness } from "./patterns/completeness.js";
@@ -33,7 +33,12 @@ import { coverageGaps } from "./patterns/coverage-gaps.js";
 import { highCentrality } from "./patterns/centrality.js";
 import { blastRadius } from "./patterns/blast-radius.js";
 import { clusterAnalysis } from "./patterns/cluster-analysis.js";
+import { communityDetection } from "./patterns/community-detection.js";
 import { architecture } from "./patterns/architecture.js";
+import { confidenceAudit } from "./patterns/confidence-audit.js";
+import { classifyExternals } from "./patterns/classify-externals.js";
+import { findRemovalRefs } from "./patterns/removal-refs.js";
+import { orphans } from "./patterns/orphans.js";
 import { createPrDiscussion } from "./enrichment/api.js";
 import { discoverDiscussions } from "./discovery/discussions.js";
 
@@ -53,7 +58,10 @@ function log(msg) {
   process.stdout.write(`[review] ${msg}\n`);
 }
 
-function detectLanguage(changedFiles) {
+// Every language present among the changed files, most-changed first. The graph
+// is built from all of them (extractMulti); by-name edges stay language-scoped so
+// mixing languages doesn't invent cross-language edges. Falls back to ["java"].
+function detectLanguages(changedFiles) {
   const extCounts = new Map();
   for (const file of changedFiles) {
     const ext = extname(file).slice(1);
@@ -61,16 +69,8 @@ function detectLanguage(changedFiles) {
       extCounts.set(LANGUAGE_HINTS[ext], (extCounts.get(LANGUAGE_HINTS[ext]) || 0) + 1);
     }
   }
-
-  let best = null;
-  let bestCount = 0;
-  for (const [lang, count] of extCounts) {
-    if (count > bestCount) {
-      best = lang;
-      bestCount = count;
-    }
-  }
-  return best || "java";
+  const langs = [...extCounts.entries()].sort((a, b) => b[1] - a[1]).map(([lang]) => lang);
+  return langs.length > 0 ? langs : ["java"];
 }
 
 async function getChangedFiles(repoPath, prBranch, remote = "upstream", baseBranch = "master") {
@@ -85,6 +85,67 @@ async function getChangedFiles(repoPath, prBranch, remote = "upstream", baseBran
     { cwd: repoPath }
   );
   return diffOutput.trim().split("\n").filter(Boolean);
+}
+
+/**
+ * The base-version source text of each changed file, keyed by path, so extraction
+ * can diff base against head and grade every member's `changeLevel`. Reads
+ * `git show <merge-base>:<path>`; a path git can't produce — added by the PR, or
+ * binary — is omitted, and extraction treats a missing entry as an added file
+ * (STRUCTURAL). Returns `{ [path]: content }`.
+ */
+export async function getBaseContents(repoPath, prBranch, changedFiles, remote = "upstream", baseBranch = "master") {
+  const { stdout: baseCommit } = await exec(
+    "git", ["merge-base", prBranch, `${remote}/${baseBranch}`], { cwd: repoPath }
+  );
+  const base = baseCommit.trim();
+  const contents = {};
+  await Promise.all(changedFiles.map(async (path) => {
+    try {
+      const { stdout } = await exec(
+        "git", ["show", `${base}:${path}`], { cwd: repoPath, maxBuffer: 32 * 1024 * 1024 }
+      );
+      contents[path] = stdout;
+    } catch {
+      // Absent at base (added by the PR) or unreadable (binary) — leave unset.
+    }
+  }));
+  return contents;
+}
+
+/**
+ * Per-file line churn and deletion status for the PR, so downstream analysis can
+ * describe *how* code changed (reduced vs. expanded), not just that it changed.
+ * Merges `--numstat` (line counts) with `--name-status` (A/M/D/R). Binary files
+ * report 0/0. Returns `{ [path]: { added, removed, deleted } }`.
+ */
+export async function computeChurn(repoPath, prBranch, remote = "upstream", baseBranch = "master") {
+  const { stdout: baseCommit } = await exec(
+    "git", ["merge-base", prBranch, `${remote}/${baseBranch}`], { cwd: repoPath }
+  );
+  const range = `${baseCommit.trim()}...${prBranch}`;
+
+  const [numstat, nameStatus] = await Promise.all([
+    exec("git", ["diff", "--numstat", range], { cwd: repoPath }).then((r) => r.stdout).catch(() => ""),
+    exec("git", ["diff", "--name-status", range], { cwd: repoPath }).then((r) => r.stdout).catch(() => ""),
+  ]);
+
+  const churn = {};
+  for (const line of numstat.trim().split("\n").filter(Boolean)) {
+    const [added, removed, ...pathParts] = line.split("\t");
+    const path = pathParts.join("\t");
+    if (!path) continue;
+    churn[path] = { added: added === "-" ? 0 : Number(added), removed: removed === "-" ? 0 : Number(removed), deleted: false };
+  }
+  for (const line of nameStatus.trim().split("\n").filter(Boolean)) {
+    const [status, ...pathParts] = line.split("\t");
+    const path = pathParts.join("\t");
+    if (status && status[0] === "D" && path) {
+      churn[path] = churn[path] || { added: 0, removed: 0 };
+      churn[path].deleted = true;
+    }
+  }
+  return churn;
 }
 
 function classifyDomains(changedFiles) {
@@ -111,20 +172,62 @@ function classifyDomains(changedFiles) {
   return domains;
 }
 
-function extractKeywords(changedFiles, prTitle) {
-  const keywords = new Set();
+// Structural/infra filenames that describe packaging, not a topic — they match
+// boilerplate (e.g. NOTICE lives in every ASF license header) and must never
+// become search keywords.
+const STRUCTURAL_NAMES = new Set([
+  "index", "package", "pom", "build", "notice", "license", "dockerfile",
+  "docker-compose", "readme", "changelog", "makefile", "setup", "config",
+]);
+// Generic verbs/nouns in PR titles that carry no topic signal.
+const GENERIC_WORDS = new Set([
+  "remove", "removes", "removed", "removal", "add", "adds", "added", "fix",
+  "fixes", "fixed", "update", "updates", "updated", "support", "refactor",
+  "improve", "improves", "cleanup", "bump", "upgrade", "migrate", "implement",
+  "introduce", "enable", "disable", "allow", "the", "and", "for", "with",
+]);
+// Tokens so common across the repo that matching on them finds everything.
+const UBIQUITOUS_TOKENS = new Set([
+  "gremlin", "server", "client", "test", "tests", "docker", "tinkerpop",
+  "apache", "core", "impl", "util", "utils", "common", "base", "default",
+  "abstract", "main", "java", "python",
+]);
+
+// Split an identifier/filename into lowercased word tokens (camelCase and
+// non-alphanumeric boundaries), e.g. "Krb5Authenticator" -> ["krb5","authenticator"].
+function tokenizeName(name) {
+  return name
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .split(/[^A-Za-z0-9]+/)
+    .map((t) => t.toLowerCase())
+    .filter((t) => t.length >= 3);
+}
+
+// Keywords for discovery search (dev-list + proposals). Topic first: PR-title
+// words (the human statement of intent) lead so they can't be truncated by the
+// cap, then distinctive tokens from changed-file basenames. Structural names,
+// generic verbs, and repo-ubiquitous tokens are filtered out so we don't search
+// on noise like "NOTICE" or "gremlin-server". Exported for testing.
+export function extractKeywords(changedFiles, prTitle) {
+  const keywords = [];
+  const seen = new Set();
+  const push = (word) => {
+    const k = word.toLowerCase();
+    if (k.length < 3 || seen.has(k)) return;
+    if (GENERIC_WORDS.has(k) || UBIQUITOUS_TOKENS.has(k)) return;
+    seen.add(k);
+    keywords.push(k);
+  };
+
+  for (const w of prTitle.split(/[\s\-_:,.()]+/)) {
+    if (!/^\d+$/.test(w)) push(w);
+  }
   for (const file of changedFiles) {
-    const parts = file.split("/");
-    const filename = parts[parts.length - 1].replace(/\.\w+$/, "");
-    if (filename.length > 3 && !["index", "package", "pom", "build"].includes(filename.toLowerCase())) {
-      keywords.add(filename);
-    }
+    const base = file.split("/").pop().replace(/\.\w+$/, "");
+    if (STRUCTURAL_NAMES.has(base.toLowerCase())) continue;
+    for (const tok of tokenizeName(base)) push(tok);
   }
-  const titleWords = prTitle.split(/[\s\-_:]+/).filter((w) => w.length > 3 && !/^\d+$/.test(w));
-  for (const w of titleWords.slice(0, 3)) {
-    keywords.add(w);
-  }
-  return [...keywords].slice(0, 6);
+  return keywords.slice(0, 8);
 }
 
 async function cleanupWorktree(repoPath, worktreePath, prBranch) {
@@ -189,12 +292,13 @@ export async function setup(params) {
   await exec("git", ["worktree", "add", worktreePath, prBranch], { cwd: repoPath });
 
   const changedFiles = await getChangedFiles(repoPath, prBranch, remote, baseBranch);
-  const language = detectLanguage(changedFiles);
+  const languages = detectLanguages(changedFiles);
+  const language = languages[0];
   const domains = classifyDomains(changedFiles);
-  log(`PR #${pr} — classified as: ${domains.join(", ")} (${language}, ${changedFiles.length} files changed)`);
+  log(`PR #${pr} — classified as: ${domains.join(", ")} (${languages.join("+")}, ${changedFiles.length} files changed)`);
 
   log(`Starting Gremlin Server...`);
-  const handle = await startServer();
+  const handle = await startServer({ port: options.port });
   log(`Gremlin Server ready on port ${handle.port}`);
 
   const connection = new gremlin.driver.DriverRemoteConnection(handle.url);
@@ -223,6 +327,7 @@ export async function setup(params) {
     worktreePath,
     changedFiles,
     language,
+    languages,
     domains,
     handle,
     connection,
@@ -234,18 +339,25 @@ export async function setup(params) {
 
 // ============================================================
 // PHASE 1 — extract, populate, discover, run checks
-// Writes evidence JSON to workDir. Server stays alive.
+// Writes evidence JSON to workDir. The Gremlin Server container stays alive for
+// enrichment; the CLI process itself exits once Phase 1 completes (see main()).
 // ============================================================
 
 export async function phase1(session) {
   const { pr, repoPath, remote, baseBranch = "master", prBranch, workDir, worktreePath, changedFiles, language, domains, g, a } = session;
+  const languages = session.languages || [language];
 
-  log(`Phase 1: Extracting structure (${language})...`);
-  const extraction = await extract(worktreePath, language, { changedFiles });
+  log(`Phase 1: Extracting structure (${languages.join("+")})...`);
+  const baseContents = await getBaseContents(repoPath, prBranch, changedFiles, remote, baseBranch);
+  const extraction = await extractMulti(worktreePath, languages, { changedFiles, baseContents });
   log(`Phase 1 complete: ${extraction.files.length} files, ${extraction.functions.length} functions, ${extraction.types.length} types`);
+  const neighborhood = extraction.hierarchyNeighborhood;
+  if (neighborhood && neighborhood.files > 0) {
+    log(`  hierarchy neighborhood: +${neighborhood.files} context files parsed for override/hierarchy edges${neighborhood.truncated ? " (TRUNCATED — hierarchy blast radius is a lower bound)" : ""}`);
+  }
 
   log(`Populating graph...`);
-  const graphStats = await populate(g, extraction);
+  const graphStats = await populate(g, extraction, { changedFiles, worktreePath });
   log(`Graph populated: ${graphStats.vertices} vertices, ${graphStats.edges} edges`);
 
   let prTitle = `PR #${pr}`;
@@ -293,6 +405,14 @@ export async function phase1(session) {
   log(`Loading discussions into graph...`);
   await populateDiscussions(g, discussions, { pr, prTitle: prTitle.trim(), changedFiles });
 
+  log(`Classifying external callees...`);
+  const externalsResult = await classifyExternals(g, worktreePath);
+  log(`  externals: ${externalsResult.library.length} library / ${externalsResult.project.length} project / ${externalsResult.unresolved.length} unresolved`);
+
+  log(`Finding references to removed code...`);
+  const removalRefsResult = await findRemovalRefs(g, worktreePath);
+  log(`  removal_refs: ${removalRefsResult.total} surviving references to ${removalRefsResult.deletedCodeSymbols.length} removed symbols`);
+
   log(`Running checks...`);
   const completenessResults = await completeness(g, {
     vertexLabel: "File",
@@ -302,12 +422,20 @@ export async function phase1(session) {
   const coverageResult = await coverageGaps(g, { changedOnly: true });
   const centralityResult = await highCentrality(g, { changedOnly: true, topN: 10, minDegree: 3 });
   const blastResult = await blastRadius(g, { depth: 3, changedOnly: true });
+  blastResult.neighborhood = extraction.hierarchyNeighborhood || null;
   const clusterResult = await clusterAnalysis(a, { changedOnly: true });
+  const churn = await computeChurn(repoPath, prBranch, remote, baseBranch).catch(() => null);
+  const communityResult = await communityDetection(g, { churn });
+  const confidenceResult = await confidenceAudit(g);
+  const orphansResult = await orphans(g, { vertexLabel: "Function", expectedEdge: "tests", direction: "in", changedOnly: true });
   log(`  completeness: ${completenessResults.filter(r => r.missing.length > 0).length} gaps found`);
   log(`  coverage_gaps: ${coverageResult.uncovered.length} functions without tests`);
   log(`  centrality: ${centralityResult.aboveThreshold} hotspots`);
-  log(`  blast_radius: max ${blastResult.maxReachable} reachable`);
+  log(`  blast_radius: max ${blastResult.maxReachable} reachable, ${blastResult.types.length} changed types with hierarchy impact`);
   log(`  clusters: ${clusterResult.clusterCount} (${clusterResult.coherent ? "coherent" : "fragmented"})`);
+  log(`  communities: ${communityResult.communityCount} themes, modularity ${communityResult.modularity} (${communityResult.isolatedCount} isolated)`);
+  log(`  confidence: ${confidenceResult.distribution.EXTRACTED} extracted / ${confidenceResult.distribution.INFERRED} inferred / ${confidenceResult.distribution.AMBIGUOUS} ambiguous`);
+  log(`  orphans: ${orphansResult.totalOrphaned} functions with no test`);
 
   log(`Generating architecture map...`);
   const architectureResult = await architecture(g, { clusterResult, changedOnly: true });
@@ -319,6 +447,7 @@ export async function phase1(session) {
       title: prTitle.trim(),
       domains,
       language,
+      languages,
       changedFileCount: changedFiles.length,
       timestamp: new Date().toISOString(),
     },
@@ -330,6 +459,11 @@ export async function phase1(session) {
       centrality: centralityResult,
       blastRadius: blastResult,
       clusters: clusterResult,
+      communities: communityResult,
+      confidence: confidenceResult,
+      externals: externalsResult,
+      removalRefs: removalRefsResult,
+      orphans: orphansResult,
     },
     discussions,
     changedFiles,
@@ -348,11 +482,12 @@ export async function phase1(session) {
 // ============================================================
 
 export async function teardown(sessionOrWorkDir) {
-  let repoPath, worktreePath, prBranch, containerId;
+  let repoPath, worktreePath, prBranch, containerId, workDir;
 
   if (typeof sessionOrWorkDir === "string") {
     // Called with just a workDir path — read session.json
     const { readFile: rf } = await import("node:fs/promises");
+    workDir = sessionOrWorkDir;
     const sessionData = JSON.parse(await rf(join(sessionOrWorkDir, "session.json"), "utf-8"));
     repoPath = sessionData.repoPath;
     worktreePath = sessionData.worktreePath;
@@ -361,12 +496,26 @@ export async function teardown(sessionOrWorkDir) {
   } else {
     // Called with a live session object
     const session = sessionOrWorkDir;
+    workDir = session.workDir;
     repoPath = session.repoPath;
     worktreePath = session.worktreePath;
     prBranch = session.prBranch;
     containerId = session.handle?.containerId;
     if (session.aConnection) await session.aConnection.close().catch(() => {});
     if (session.connection) await session.connection.close().catch(() => {});
+  }
+
+  // Stop the functional-test server and remove its build worktree, if one was
+  // stood up (step 4 persists its handle to functional.json).
+  if (workDir) {
+    const { readFile: rf } = await import("node:fs/promises");
+    const handle = await rf(join(workDir, "functional.json"), "utf-8")
+      .then((s) => JSON.parse(s))
+      .catch(() => null);
+    if (handle) {
+      const { stop: stopFunctional } = await import("./functional/setup.js");
+      await stopFunctional(handle, { repoPath }).catch(() => {});
+    }
   }
 
   if (containerId) {
@@ -399,6 +548,16 @@ if (process.argv[1] && basename(process.argv[1]) === "review.js") {
     log(`Work directory: ${session.workDir}`);
     log(`Worktree: ${session.worktreePath}`);
     log(`To teardown: call teardown(session) or stop container ${session.handle.containerId}`);
+
+    // Phase 1 is done. Close OUR Gremlin connections so this process exits
+    // cleanly and completion is detectable (exit code 0 + the sentinel line
+    // below). The Gremlin Server container stays up independently — enrichment
+    // (scripts/enrichment/cli.js) opens its own connection per command from
+    // session.json, so nothing depends on this process lingering.
+    await session.connection.close().catch(() => {});
+    await session.aConnection.close().catch(() => {});
+    log(`PHASE1_COMPLETE pr=${pr} evidence=${jsonPath} port=${session.handle.port} container=${session.handle.containerId}`);
+    process.exit(0);
   } catch (err) {
     await teardown(session).catch(() => {});
     throw err;

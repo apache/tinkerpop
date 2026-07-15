@@ -44,8 +44,8 @@ public class SettingsTest {
         conf.setProperty("auth.username", "user1");
         conf.setProperty("auth.password", "password1");
         conf.setProperty("hosts", Arrays.asList("255.0.0.1", "255.0.0.2", "255.0.0.3"));
-        conf.setProperty("serializer.className", "my.serializers.MySerializer");
-        conf.setProperty("serializer.config.any", "thing");
+        conf.setProperty("responseSerializer.className", "my.serializers.MySerializer");
+        conf.setProperty("responseSerializer.config.any", "thing");
         conf.setProperty("enableUserAgentOnConnect", false);
         conf.setProperty("bulkResults", true);
         conf.setProperty("connectionPool.enableSsl", true);
@@ -84,8 +84,8 @@ public class SettingsTest {
         assertEquals("user1", settings.auth.username);
         assertEquals("password1", settings.auth.password);
         assertEquals(Arrays.asList("255.0.0.1", "255.0.0.2", "255.0.0.3"), settings.hosts);
-        assertEquals("my.serializers.MySerializer", settings.serializer.className);
-        assertEquals("thing", settings.serializer.config.get("any"));
+        assertEquals("my.serializers.MySerializer", settings.responseSerializer.className);
+        assertEquals("thing", settings.responseSerializer.config.get("any"));
         assertEquals(false, settings.enableUserAgentOnConnect);
         assertTrue(settings.bulkResults);
         assertThat(settings.connectionPool.enableSsl, is(true));

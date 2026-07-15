@@ -1026,3 +1026,60 @@ Feature: Step - has()
       | result |
       | e[marko-knows->vadas] |
       | e[marko-knows->josh] |
+
+  @MultiLabel
+  Scenario: g_V_hasXlabel_aquaticX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().has(T.label, "aquatic").values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tux |
+      | atlas |
+      | ripple |
+      | splash |
+      | lagoon |
+
+  @MultiLabel
+  Scenario: g_V_hasXlabel_withinXreptile_birdXX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().has(T.label, P.within("reptile", "bird")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tux |
+      | atlas |
+      | monty |
+
+  # Because label predicates match if ANY label satisfies them, has(T.label, without("animal")) matches
+  # every vertex that carries some label other than "animal" - which is all of them. To exclude vertices
+  # labeled "animal", use not(hasLabel("animal")) instead (see the Not step).
+  @MultiLabel
+  Scenario: g_V_hasXlabel_withoutXanimalXX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().has(T.label, P.without("animal")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tux |
+      | atlas |
+      | ripple |
+      | monty |
+      | echo |
+      | blaze |
+      | titan |
+      | bitsy |
+      | splash |
+      | tinker |
+      | lagoon |
+      | canopy |
+      | dr_gremlin |

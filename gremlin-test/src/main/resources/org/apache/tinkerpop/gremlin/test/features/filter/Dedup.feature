@@ -431,3 +431,16 @@ Feature: Step - dedup()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Dedup step can only have one by modulator"
+
+  @MultiLabel
+  Scenario: g_V_hasLabelXhabitatX_dedup_byXlabels_order_foldX_localXlabels_order_foldX_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().hasLabel("habitat").dedup().by(__.labels().order().fold()).local(__.labels().order().fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[aquatic,habitat] |
+      | l[habitat] |

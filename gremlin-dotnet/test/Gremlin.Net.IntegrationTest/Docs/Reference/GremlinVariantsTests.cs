@@ -130,7 +130,7 @@ using var gremlinClient = new GremlinClient(gremlinServer);
 var response =
     await gremlinClient.SubmitWithSingleResultAsync<string>(
         RequestMessage.Build("g.V().count()").
-            AddField(Tokens.ArgsEvalTimeout, 500).
+            AddField(Tokens.ArgsTimeoutMillis, 500).
             Create());
 // end::submittingScriptsWithTimeout[]
         }

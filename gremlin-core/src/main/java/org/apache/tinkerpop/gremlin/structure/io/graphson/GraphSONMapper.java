@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.shaded.jackson.annotation.JsonTypeInfo;
 import org.apache.tinkerpop.shaded.jackson.core.JsonFactory;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
@@ -72,7 +72,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
     private final GraphSONVersion version;
     private final TypeInfo typeInfo;
     private final StreamReadConstraints streamReadConstraints;
-    private final ProviderDefinedTypeRegistry pdtRegistry;
+    private final PDTRegistry pdtRegistry;
 
     private GraphSONMapper(final Builder builder) {
         this.customModules = builder.customModules;
@@ -105,6 +105,9 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         if ((version == GraphSONVersion.V4_0 || version == GraphSONVersion.V3_0 || version == GraphSONVersion.V2_0) &&
                 typeInfo != TypeInfo.NO_TYPES) {
             final GraphSONTypeIdResolver graphSONTypeIdResolver = new GraphSONTypeIdResolver();
+            if (pdtRegistry != null && version == GraphSONVersion.V4_0) {
+                graphSONTypeIdResolver.setPdtRegistry(pdtRegistry);
+            }
             final TypeResolverBuilder typer = new GraphSONTypeResolverBuilder(version)
                     .typesEmbedding(this.typeInfo)
                     .valuePropertyName(GraphSONTokens.VALUEPROP)
@@ -160,6 +163,10 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         if (version != GraphSONVersion.V4_0) {
             // this provider toStrings all unknown classes and converts keys in Map objects that are Object to String.
             final DefaultSerializerProvider provider = new GraphSONSerializerProvider(version);
+            om.setSerializerProvider(provider);
+        } else if (pdtRegistry != null) {
+            // For V4 with a pdtRegistry, set a provider that converts adapter-registered types to PDT
+            final DefaultSerializerProvider provider = new PdtGraphSONSerializerProviderV4(pdtRegistry);
             om.setSerializerProvider(provider);
         }
 
@@ -224,7 +231,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         private StreamReadConstraints.Builder streamReadConstraintsBuilder = StreamReadConstraints.builder()
                 .maxNumberLength(DEFAULT_MAX_NUMBER_LENGTH);
         private TypeInfo typeInfo = null;
-        private ProviderDefinedTypeRegistry pdtRegistry = null;
+        private PDTRegistry pdtRegistry = null;
 
         private Builder() {
         }
@@ -310,10 +317,10 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         }
 
         /**
-         * Set the {@link ProviderDefinedTypeRegistry} to enable automatic hydration of
-         * {@link org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType} values during deserialization.
+         * Set the {@link PDTRegistry} to enable automatic hydration of
+         * {@link org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT} values during deserialization.
          */
-        public Builder pdtRegistry(final ProviderDefinedTypeRegistry pdtRegistry) {
+        public Builder pdtRegistry(final PDTRegistry pdtRegistry) {
             this.pdtRegistry = pdtRegistry;
             return this;
         }

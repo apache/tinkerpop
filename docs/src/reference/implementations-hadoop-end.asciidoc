@@ -16,6 +16,9 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+// Continues the Spark/Hadoop OLAP examples (Scala 2.12), so exclude neo4j-gremlin (Scala 2.11)
+// to keep it off the console's flat classpath.
+[gremlin-docs-plugins-exclude="neo4j-gremlin"]
 === Input/Output Formats
 
 WARNING: The Hadoop and Spark modules are not included in the 4.0.0-beta.2 distribution. The examples in
@@ -163,12 +166,12 @@ The results of any OLAP operation are stored in HDFS accessible via `hdfs`. For 
 ----
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
 graph.compute(SparkGraphComputer).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey('clusterCount').create()).submit().get();
-hdfs.ls()
+hdfs.ls('tinkerpop-modern.kryo')
 hdfs.ls('output')
 hdfs.head('output', GryoInputFormat)
 hdfs.head('output', 'clusterCount', SequenceFileInputFormat)
 hdfs.rm('output')
-hdfs.ls()
+hdfs.ls('tinkerpop-modern.kryo')
 ----
 
 [[interacting-with-spark]]

@@ -21,8 +21,8 @@ package org.apache.tinkerpop.gremlin.util.ser.binary;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
@@ -50,11 +50,11 @@ public class GraphBinaryPdtSpiAutoWiringTest {
         // The default no-arg constructor should pick up TestPointAdapter via SPI
         final GraphBinaryMessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4();
 
-        // Build a response containing a raw ProviderDefinedType matching the test adapter's typeName
+        // Build a response containing a raw CompositePDT matching the test adapter's typeName
         final Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("x", 10);
         fields.put("y", 20);
-        final ProviderDefinedType pdt = new ProviderDefinedType("test.Point", fields);
+        final CompositePDT pdt = new CompositePDT("test.Point", fields);
 
         final ResponseMessage response = ResponseMessage.build()
                 .result(Collections.singletonList(pdt))
@@ -88,7 +88,7 @@ public class GraphBinaryPdtSpiAutoWiringTest {
         final Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("x", 5);
         fields.put("y", 15);
-        final ProviderDefinedType pdt = new ProviderDefinedType("test.Point", fields);
+        final CompositePDT pdt = new CompositePDT("test.Point", fields);
 
         final ResponseMessage response = ResponseMessage.build()
                 .result(Collections.singletonList(pdt))
@@ -107,14 +107,14 @@ public class GraphBinaryPdtSpiAutoWiringTest {
     @Test
     public void shouldUseExplicitPdtRegistryOverSpiDefault() throws SerializationException {
         // An empty registry should NOT hydrate since it has no adapters registered
-        final ProviderDefinedTypeRegistry emptyRegistry = ProviderDefinedTypeRegistry.empty();
+        final PDTRegistry emptyRegistry = PDTRegistry.empty();
         final GraphBinaryMessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4(
                 TypeSerializerRegistry.INSTANCE, emptyRegistry);
 
         final Map<String, Object> fields = new LinkedHashMap<>();
         fields.put("x", 1);
         fields.put("y", 2);
-        final ProviderDefinedType pdt = new ProviderDefinedType("test.Point", fields);
+        final CompositePDT pdt = new CompositePDT("test.Point", fields);
 
         final ResponseMessage response = ResponseMessage.build()
                 .result(Collections.singletonList(pdt))
@@ -124,9 +124,9 @@ public class GraphBinaryPdtSpiAutoWiringTest {
         try {
             final ResponseMessage deserialized = serializer.readChunk(buffer, true);
             final Object result = deserialized.getResult().getData().get(0);
-            // With empty registry, should remain as raw ProviderDefinedType (no hydration)
-            assertTrue("Expected raw ProviderDefinedType with explicit empty registry but got: " + result.getClass().getName(),
-                    result instanceof ProviderDefinedType);
+            // With empty registry, should remain as raw CompositePDT (no hydration)
+            assertTrue("Expected raw CompositePDT with explicit empty registry but got: " + result.getClass().getName(),
+                    result instanceof CompositePDT);
         } finally {
             buffer.release();
         }

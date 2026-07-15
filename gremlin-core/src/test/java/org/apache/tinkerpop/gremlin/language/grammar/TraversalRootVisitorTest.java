@@ -1535,4 +1535,33 @@ public class TraversalRootVisitorTest {
     private GremlinAntlrToJava createAntlr(final VariableResolver resolver) {
         return new GremlinAntlrToJava("g", EmptyGraph.instance(), __::start, g, resolver);
     }
+
+    @Test
+    public void shouldParseTraversalMethod_addV_MultiLabel_StringVarargs() {
+        compare(g.V().map(__.addV("person", "employee")), eval("g.V().map(__.addV(\"person\",\"employee\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addV_MultiLabel_GValue() {
+        antlrToLanguage = createAntlr(new VariableResolver.DefaultVariableResolver(
+                ElementHelper.asMap("l1", "person", "l2", "employee")));
+        compare(g.V().map(__.addV(GValue.of("l1", "person"), GValue.of("l2", "employee"))),
+                eval("g.V().map(__.addV(l1, l2))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_addV_MultiLabel_MixedGValueAndLiteral() {
+        antlrToLanguage = createAntlr(new VariableResolver.DefaultVariableResolver(
+                ElementHelper.asMap("l1", "person")));
+        compare(g.V().map(__.addV(GValue.of("l1", "person"), GValue.of("employee"))),
+                eval("g.V().map(__.addV(l1, \"employee\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalSourceSpawnMethod_addV_MultiLabel_GValue() {
+        antlrToLanguage = createAntlr(new VariableResolver.DefaultVariableResolver(
+                ElementHelper.asMap("l1", "person", "l2", "employee")));
+        compare(g.addV(GValue.of("l1", "person"), GValue.of("l2", "employee")),
+                eval("g.addV(l1, l2)"));
+    }
 }

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser.binary;
 
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * Test-only adapter registered via META-INF/services for SPI auto-wiring validation.
  */
-public class TestPointAdapter implements ProviderDefinedTypeAdapter<TestPointAdapter.TestPoint> {
+public class TestPointAdapter implements CompositePDTAdapter<TestPointAdapter.TestPoint> {
 
     public static class TestPoint {
         public final int x;

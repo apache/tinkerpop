@@ -226,8 +226,10 @@ public interface Channelizer extends ChannelHandler {
                 useStreaming = true;
                 final GraphBinaryReader graphBinaryReader =
                         ((GraphBinaryMessageSerializerV4) serializer).getMapper().getReader();
+                // Pass the connection's readTimeout so the reader thread can arm a backstop timeout longer than it,
+                // letting the pipeline ReadTimeoutHandler fire first on a stalled connection (see the handler).
                 streamingResponseHandler = new HttpStreamingResponseHandler(
-                        graphBinaryReader, pending, cluster.streamingReaderPool());
+                        graphBinaryReader, pending, cluster.streamingReaderPool(), cluster.getReadTimeout());
             } else {
                 useStreaming = false;
                 gremlinResponseDecoder = new HttpGremlinResponseDecoder(serializer);

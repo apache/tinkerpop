@@ -63,13 +63,13 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         NullPropertyValuesNotSupportedOnTestGraph,
 
         /// <summary>
-        /// tree() is not supported yet
-        /// </summary>
-        TreeStepNotSupported,
-
-        /// <summary>
         /// write() is not supported yet for testing
         /// </summary>
-        WriteStepTestingNotSupported
+        WriteStepTestingNotSupported,
+
+        /// <summary>
+        /// The GLV suite does not test against a graph that defaults to multi-label output.
+        /// </summary>
+        MultiLabelDefaultNotSupportedOnTestGraph
     }
 }

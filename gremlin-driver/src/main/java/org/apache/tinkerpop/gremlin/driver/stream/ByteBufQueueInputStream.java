@@ -37,11 +37,30 @@ public class ByteBufQueueInputStream extends InputStream {
     private static final ByteBuf END_OF_STREAM = Unpooled.buffer(0);
 
     private final BlockingQueue<ByteBuf> queue;
+    private final long timeoutMillis;
     private ByteBuf current;
     private volatile boolean eof;
 
     public ByteBufQueueInputStream() {
+        this(0L);
+    }
+
+    /**
+     * @param timeoutMillis the effective maximum time a read blocks waiting for the next chunk. A value {@code <= 0}
+     *                      makes the read block indefinitely, deferring the liveness bound to the connection's
+     *                      {@code readTimeout} (see {@link org.apache.tinkerpop.gremlin.driver.handler.ReadTimeoutHandler}).
+     *                      A positive value acts only as a backstop and is expected to be set longer than
+     *                      {@code readTimeout} so the pipeline read-timeout fires first on a stalled connection.
+     *                      <p>
+     *                      This takes the already-resolved bound rather than a {@code readTimeout} to translate: the
+     *                      translation (adding the backstop grace) lives with its caller in
+     *                      {@link org.apache.tinkerpop.gremlin.driver.handler.HttpStreamingResponseHandler}. Keeping
+     *                      the constructor parameter as the effective bound also lets tests exercise the timeout with
+     *                      small values instead of paying the full backstop grace.
+     */
+    public ByteBufQueueInputStream(final long timeoutMillis) {
         this.queue = new LinkedBlockingQueue<>();
+        this.timeoutMillis = timeoutMillis;
     }
 
     /**
@@ -72,13 +91,7 @@ public class ByteBufQueueInputStream extends InputStream {
 
         while (current == null || !current.isReadable()) {
             releaseCurrent();
-            try {
-                current = queue.poll(30, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new IOException("Interrupted while waiting for data", e);
-            }
-            if (current == null) throw new IOException("Timed out waiting for streaming response data");
+            current = awaitNext();
             if (current == END_OF_STREAM) {
                 eof = true;
                 current = null;
@@ -96,13 +109,7 @@ public class ByteBufQueueInputStream extends InputStream {
         // Block until at least one byte is available, then return what we have (short read).
         while (current == null || !current.isReadable()) {
             releaseCurrent();
-            try {
-                current = queue.poll(30, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new IOException("Interrupted while waiting for data", e);
-            }
-            if (current == null) throw new IOException("Timed out waiting for streaming response data");
+            current = awaitNext();
             if (current == END_OF_STREAM) {
                 eof = true;
                 current = null;
@@ -112,6 +119,25 @@ public class ByteBufQueueInputStream extends InputStream {
         final int readable = Math.min(current.readableBytes(), len);
         current.readBytes(b, off, readable);
         return readable;
+    }
+
+    /**
+     * Waits for the next buffer. When {@code timeoutMillis <= 0} this blocks indefinitely so the wait is bounded only
+     * by the connection's read-timeout (which, when it fires, closes the channel and delivers {@code END_OF_STREAM}
+     * here). A positive {@code timeoutMillis} is a backstop: if it elapses without a buffer, the connection's
+     * read-timeout should already have fired, so reaching this point signals that the normal termination path failed.
+     */
+    private ByteBuf awaitNext() throws IOException {
+        try {
+            final ByteBuf next = timeoutMillis <= 0
+                    ? queue.take()
+                    : queue.poll(timeoutMillis, TimeUnit.MILLISECONDS);
+            if (next == null) throw new IOException("Timed out waiting for streaming response data");
+            return next;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while waiting for data", e);
+        }
     }
 
     @Override

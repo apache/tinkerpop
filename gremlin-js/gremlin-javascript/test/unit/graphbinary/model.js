@@ -17,13 +17,12 @@
  *  under the License.
  */
 
-import { Vertex, Edge, Property, VertexProperty, Path } from '../../../lib/structure/graph.js';
+import { Vertex, Edge, Property, VertexProperty, Path, Tree } from '../../../lib/structure/graph.js';
 import { direction, t } from '../../../lib/process/traversal.js';
 
 /*
  * Unsupported types (no map entries, .gbin files exist but types not implemented):
  * - single-byte-char, multi-byte-char (Char 0x80 not implemented)
- * - traversal-tree (Tree type not implemented)
  * - tinker-graph (Graph type not implemented)
  * - pos-bigdecimal, neg-bigdecimal (BigDecimal type not implemented)
  * - forever-duration, zero-duration (Duration type not implemented)
@@ -119,6 +118,13 @@ model['traversal-path'] = new Path(
   [new Vertex(1, 'person'), new Vertex(10, 'software'), new Vertex(11, 'software')]
 );
 model['empty-path'] = new Path([], []);
+
+// Tree values
+// tree for g.V(10).out().tree(): v[10] -> v[11]
+const traversalTree = new Tree();
+traversalTree.getOrCreateChild(new Vertex(10, 'software')).getOrCreateChild(new Vertex(11, 'software'));
+model['traversal-tree'] = traversalTree;
+model['empty-tree'] = new Tree();
 
 // Complex path with nested properties
 const propPathVertex = new Vertex(1, 'person', [

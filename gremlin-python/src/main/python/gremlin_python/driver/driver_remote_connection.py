@@ -75,12 +75,12 @@ class DriverRemoteConnection(RemoteConnection):
                                          request_options=self.extract_request_options(gremlin_lang))
         return RemoteTraversal(result_set)
 
-    def submitAsync(self, message, bindings=None, request_options=None):
+    def submitAsync(self, message, parameters=None, request_options=None):
         warnings.warn(
             "gremlin_python.driver.driver_remote_connection.DriverRemoteConnection.submitAsync will be replaced by "
             "gremlin_python.driver.driver_remote_connection.DriverRemoteConnection.submit_async.",
             DeprecationWarning)
-        self.submit_async(message, bindings, request_options)
+        self.submit_async(message, parameters, request_options)
 
     def submit_async(self, gremlin_lang):
         log.debug("submit_async with gremlin lang script '%s'", gremlin_lang.get_gremlin())
@@ -114,6 +114,6 @@ class DriverRemoteConnection(RemoteConnection):
 
         parameters_string = gremlin_lang.get_parameters_as_string()
         if parameters_string != '[:]':
-            request_options["bindings"] = parameters_string
+            request_options["parameters"] = parameters_string
 
         return request_options

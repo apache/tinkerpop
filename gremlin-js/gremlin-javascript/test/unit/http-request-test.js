@@ -107,7 +107,7 @@ describe('HttpRequest', function () {
       assert.strictEqual(parsed.gremlin, "g.V().has('age',x)");
       assert.strictEqual(parsed.g, 'gCustom');
       assert.strictEqual(parsed.language, 'gremlin-lang');
-      assert.strictEqual(parsed.timeoutMs, 5000);
+      assert.strictEqual(parsed.timeoutMillis, 5000);
       assert.strictEqual(parsed.materializeProperties, 'all');
       assert.strictEqual(parsed.bulkResults, true);
       assert.strictEqual(parsed.customKey, 'customValue');

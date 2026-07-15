@@ -115,6 +115,7 @@ public class SparkGraphFeatureIntegrateTest {
         private static final HadoopGraph crew = HadoopGraph.open(new MapConfiguration(getBaseConfiguration(GraphData.CREW)));
         private static final HadoopGraph sink = HadoopGraph.open(new MapConfiguration(getBaseConfiguration(GraphData.SINK)));
         private static final HadoopGraph grateful = HadoopGraph.open(new MapConfiguration(getBaseConfiguration(GraphData.GRATEFUL)));
+        private static final HadoopGraph zoo = HadoopGraph.open(new MapConfiguration(getBaseConfiguration(GraphData.ZOO)));
 
         static {
             readIntoGraph(modern, GraphData.MODERN);
@@ -122,6 +123,7 @@ public class SparkGraphFeatureIntegrateTest {
             readIntoGraph(crew, GraphData.CREW);
             readIntoGraph(sink, GraphData.SINK);
             readIntoGraph(grateful, GraphData.GRATEFUL);
+            readIntoGraph(zoo, GraphData.ZOO);
         }
 
         @Override
@@ -138,6 +140,8 @@ public class SparkGraphFeatureIntegrateTest {
                 return sink.traversal().withComputer(Computer.compute(SparkGraphComputer.class).workers(AVAILABLE_PROCESSORS));
             else if (graphData == GraphData.GRATEFUL)
                 return grateful.traversal().withComputer(Computer.compute(SparkGraphComputer.class).workers(AVAILABLE_PROCESSORS));
+            else if (graphData == GraphData.ZOO)
+                return zoo.traversal().withComputer(Computer.compute(SparkGraphComputer.class).workers(AVAILABLE_PROCESSORS));
             else
                 throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
         }

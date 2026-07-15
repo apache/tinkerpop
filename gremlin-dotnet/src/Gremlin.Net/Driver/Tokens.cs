@@ -47,10 +47,10 @@ namespace Gremlin.Net.Driver
         public const string ArgsBatchSize = "batchSize";
 
         /// <summary>
-        ///     Argument name that allows definition of a map of key/value pairs to apply as variables in the
+        ///     Argument name that allows definition of a map of key/value pairs to apply as query parameters in the
         ///     context of the Gremlin request sent to the server.
         /// </summary>
-        public const string ArgsBindings = "bindings";
+        public const string ArgsParameters = "parameters";
 
         /// <summary>
         ///     Argument name that corresponds to the Gremlin to evaluate.
@@ -69,10 +69,10 @@ namespace Gremlin.Net.Driver
         public const string ArgsLanguage = "language";
 
         /// <summary>
-        ///     Argument name that allows the override of the server setting that determines the maximum time to wait for a
-        ///     request to execute on the server.
+        ///     Argument name that allows the override of the server setting that determines the maximum time in
+        ///     milliseconds a request is allowed to execute on the server before it times out.
         /// </summary>
-        public const string ArgsEvalTimeout = "evaluationTimeout";
+        public const string ArgsTimeoutMillis = "timeoutMillis";
 
         /// <summary>
         ///     Argument name that allows the override of handling properties.

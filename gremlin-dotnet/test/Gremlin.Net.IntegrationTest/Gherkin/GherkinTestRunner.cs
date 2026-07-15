@@ -88,6 +88,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             WriteOutput($"Starting Gherkin-based tests with serializer: {messageSerializer.GetType().Name}");
             Gremlin.InstantiateTranslationsForTestRun();
+            if (Environment.GetEnvironmentVariable("PARAMETERIZE") == "true")
+            {
+                Gremlin.InstantiateParameterizedTranslationsForTestRun();
+            }
             var stepDefinitionTypes = GetStepDefinitionTypes();
             var results = new List<ResultFeature>();
             using var scenarioData = new ScenarioData(messageSerializer);
@@ -113,12 +117,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         continue;
                     }
 
-                    if (scenario.Tags.Concat(feature.Tags).Any(t => t.Name == "@StepTree"))
+                    if (scenario.Tags.Any(t => t.Name == "@MultiLabelDefault"))
                     {
-                        failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.TreeStepNotSupported));
+                        failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.MultiLabelDefaultNotSupportedOnTestGraph));
                         continue;
                     }
-
                     if (scenario.Tags.Concat(feature.Tags).Any(t => t.Name == "@StepWrite"))
                     {
                         failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.WriteStepTestingNotSupported));

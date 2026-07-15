@@ -29,9 +29,11 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDTAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
@@ -91,6 +93,10 @@ public class GremlinLangTest {
                 {g.V().count(), "g.V().count()"},
                 {g.addV("test"), "g.addV(\"test\")"},
                 {g.addV("t\"'est"), "g.addV(\"t\\\"'est\")"},
+                {g.addV("dog", "pet"), "g.addV(\"dog\",\"pet\")"},
+                {g.addV("dog", "pet", "animal"), "g.addV(\"dog\",\"pet\",\"animal\")"},
+                {g.addV(__.constant("a"), __.constant("b")), "g.addV(__.constant(\"a\"),__.constant(\"b\"))"},
+                {g.addV(__.constant("a"), __.constant("b"), __.constant("c")), "g.addV(__.constant(\"a\"),__.constant(\"b\"),__.constant(\"c\"))"},
                 {g.inject(true, (byte) 1, (short) 2, 3, 4L, 5f, 6d, BigInteger.valueOf(7L), BigDecimal.valueOf(8L)),
                         "g.inject(true,1B,2S,3,4L,5.0F,6.0D,7N,8M)"},
                 {g.inject(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY),
@@ -123,7 +129,7 @@ public class GremlinLangTest {
                                 "by(__.out(\"knows\").values(\"name\").fold())"},
                 {g.inject(new int[]{5, 6}).union(__.V(Arrays.asList(1, 2)), __.V(Arrays.asList(3L, new int[]{4}))),
                         "g.inject([5,6]).union(__.V([1,2]),__.V([3L,[4]]))"},
-                {g.with("evaluationTimeout", 1000).V(), "g.V()"},
+                {g.with("timeoutMillis", 1000).V(), "g.V()"},
                 {g.withSideEffect("a", 1).V(), "g.withSideEffect(\"a\",1).V()"},
                 {g.withStrategies(ReadOnlyStrategy.instance()).V(), "g.withStrategies(ReadOnlyStrategy).V()"},
                 {g.withoutStrategies(ReadOnlyStrategy.class).V(), "g.withoutStrategies(ReadOnlyStrategy).V()"},
@@ -145,17 +151,17 @@ public class GremlinLangTest {
                 {g.inject(new byte[]{}), "g.inject(Binary(\"\"))"},
                 {g.inject(new byte[]{0}), "g.inject(Binary(\"AA==\"))"},
                 // PDT
-                {g.inject(new ProviderDefinedType("MyType", asMap("x", 1, "y", "hello"))),
+                {g.inject(new CompositePDT("MyType", asMap("x", 1, "y", "hello"))),
                         "g.inject(PDT(\"MyType\",[\"x\":1,\"y\":\"hello\"]))"},
-                {g.inject(new ProviderDefinedType("Empty", Collections.emptyMap())),
+                {g.inject(new CompositePDT("Empty", Collections.emptyMap())),
                         "g.inject(PDT(\"Empty\",[:]))"},
                 // PDT with special characters in name
-                {g.inject(new ProviderDefinedType("say\"hello\"", asMap("v", 1))),
+                {g.inject(new CompositePDT("say\"hello\"", asMap("v", 1))),
                         "g.inject(PDT(\"say\\\"hello\\\"\",[\"v\":1]))"},
-                {g.inject(new ProviderDefinedType("back\\slash", asMap("v", 1))),
+                {g.inject(new CompositePDT("back\\slash", asMap("v", 1))),
                         "g.inject(PDT(\"back\\\\slash\",[\"v\":1]))"},
                 // Nested PDT
-                {g.inject(new ProviderDefinedType("Outer", asMap("inner", new ProviderDefinedType("Inner", asMap("v", 1))))),
+                {g.inject(new CompositePDT("Outer", asMap("inner", new CompositePDT("Inner", asMap("v", 1))))),
                         "g.inject(PDT(\"Outer\",[\"inner\":PDT(\"Inner\",[\"v\":1])]))"},
                 // match(String) — declarative pattern match spawn, no params
                 {g.match("MATCH (p:person)"), "g.match(\"MATCH (p:person)\")"},
@@ -164,6 +170,11 @@ public class GremlinLangTest {
                         "g.match(\"MATCH (p:person {name: $who})-[:knows]->(f:person)\",[\"who\":\"marko\"])"},
                 {g.match("MATCH (p:person {age: $age})-[:knows]->(f:person)", asMap("age", 29)),
                         "g.match(\"MATCH (p:person {age: $age})-[:knows]->(f:person)\",[\"age\":29])"},
+                // Primitive PDT
+                {g.inject(new PrimitivePDT("Uint32", "42")),
+                        "g.inject(PDT(\"Uint32\",\"42\"))"},
+                {g.inject(new PrimitivePDT("Empty", "")),
+                        "g.inject(PDT(\"Empty\",\"\"))"},
         });
     }
 
@@ -184,9 +195,10 @@ public class GremlinLangTest {
             g.V(GValue.of("1a", new int[]{1, 2, 3}));
         }
 
-        @Test(expected = IllegalArgumentException.class)
-        public void shouldCheckParameterNameIsNotReserved() {
-            g.V(GValue.of("_1", new int[]{1, 2, 3}));
+        @Test
+        public void shouldAllowParameterNameStartingWithUnderscore() {
+            final GremlinLang gremlin = g.V(GValue.of("_1", new int[]{1, 2, 3})).asAdmin().getGremlinLang();
+            assertEquals("g.V(_1)", gremlin.getGremlin());
         }
 
         @Test(expected = IllegalArgumentException.class)
@@ -476,8 +488,8 @@ public class GremlinLangTest {
 
         @Test
         public void shouldUseAdapterOverAnnotation() {
-            final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
-            registry.register(new ProviderDefinedTypeAdapter<DualType>() {
+            final PDTRegistry registry = PDTRegistry.empty();
+            registry.register(new CompositePDTAdapter<DualType>() {
                 @Override public String typeName() { return "AdapterName"; }
                 @Override public Class<DualType> targetClass() { return DualType.class; }
                 @Override public Map<String, Object> toFields(final DualType obj) {
@@ -506,8 +518,8 @@ public class GremlinLangTest {
 
         @Test
         public void shouldDehydrateRegisteredTypeNestedInsideUnregisteredOuterPdt() {
-            final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
-            registry.register(new ProviderDefinedTypeAdapter<TestPoint>() {
+            final PDTRegistry registry = PDTRegistry.empty();
+            registry.register(new CompositePDTAdapter<TestPoint>() {
                 @Override public String typeName() { return "Point"; }
                 @Override public Class<TestPoint> targetClass() { return TestPoint.class; }
                 @Override public Map<String, Object> toFields(final TestPoint obj) {
@@ -521,16 +533,38 @@ public class GremlinLangTest {
                 }
             });
 
-            // Outer is a raw ProviderDefinedType whose "location" field value is a registered domain object
+            // Outer is a raw CompositePDT whose "location" field value is a registered domain object
             final Map<String, Object> outerFields = new LinkedHashMap<>();
             outerFields.put("location", new TestPoint(3, 7));
-            final ProviderDefinedType outerPdt = new ProviderDefinedType("Container", outerFields);
+            final CompositePDT outerPdt = new CompositePDT("Container", outerFields);
 
             final GraphTraversalSource g2 = traversal().with(EmptyGraph.instance());
             g2.getGremlinLang().setPdtRegistry(registry);
             final String gremlin = g2.inject(outerPdt).asAdmin().getGremlinLang().getGremlin();
 
             assertEquals("g.inject(PDT(\"Container\",[\"location\":PDT(\"Point\",[\"x\":3,\"y\":7])]))", gremlin);
+        }
+
+        private static class Uint32 {
+            final long value;
+            Uint32(final long value) { this.value = value; }
+        }
+
+        @Test
+        public void shouldDehydratePrimitiveRegisteredType() {
+            final PDTRegistry registry = PDTRegistry.empty();
+            registry.register(new PrimitivePDTAdapter<Uint32>() {
+                @Override public String typeName() { return "Uint32"; }
+                @Override public Class<Uint32> targetClass() { return Uint32.class; }
+                @Override public String toValue(final Uint32 obj) { return String.valueOf(obj.value); }
+                @Override public Uint32 fromValue(final String value) { return new Uint32(Long.parseLong(value)); }
+            });
+
+            final GraphTraversalSource g2 = traversal().with(EmptyGraph.instance());
+            g2.getGremlinLang().setPdtRegistry(registry);
+            final String gremlin = g2.inject(new Uint32(99)).asAdmin().getGremlinLang().getGremlin();
+
+            assertEquals("g.inject(PDT(\"Uint32\",\"99\"))", gremlin);
         }
     }
 

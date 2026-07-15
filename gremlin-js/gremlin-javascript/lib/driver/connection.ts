@@ -23,7 +23,7 @@
 
 import { Buffer } from 'buffer';
 import { EventEmitter } from 'eventemitter3';
-import type { Agent } from 'node:http';
+import type { Dispatcher } from 'undici';
 import ioc, { createPreciseReader } from '../structure/io/binary/GraphBinary.js';
 import GraphBinaryReader from '../structure/io/binary/internals/GraphBinaryReader.js';
 import StreamReader from '../structure/io/binary/internals/StreamReader.js';
@@ -33,6 +33,8 @@ import {RequestMessage} from "./request-message.js";
 import { HttpRequest, RequestInterceptor } from './http-request.js';
 import ResponseError from './response-error.js';
 import { Traverser } from '../process/traversal.js';
+import { buildDispatcher, httpFetch } from './dispatcher.js';
+import { Logger, LoggerCallback, normalizeLogger } from './logger.js';
 
 const responseStatusCode = {
   success: 200,
@@ -40,35 +42,65 @@ const responseStatusCode = {
   partialContent: 206,
 };
 
+/**
+ * Selects the content encoding requested from, and decoded for, the server. `'deflate'` (the
+ * default) sends an `Accept-Encoding: deflate` header and decodes deflate responses; `'none'`
+ * turns compression off.
+ */
+export type Compression = 'none' | 'deflate';
+
 export type ConnectionOptions = {
-  ca?: string[];
-  cert?: string | string[] | Buffer;
-  pfx?: string | Buffer;
   preciseNumbers?: boolean;
   pdtRegistry?: any;
-  reader?: any;
-  rejectUnauthorized?: boolean;
+  responseSerializer?: any;
   traversalSource?: string;
-  headers?: Record<string, string | string[]>;
   enableUserAgentOnConnect?: boolean;
-  agent?: Agent;
+  /** Maximum number of concurrent connections per origin. Defaults to 128. */
+  maxConnections?: number;
+  /** Idle-read (body) timeout in milliseconds, applied to the default dispatcher. */
+  readTimeoutMillis?: number;
+  /** Maximum size of the response headers in bytes, applied to the default dispatcher. */
+  maxResponseHeaderBytes?: number;
+  /**
+   * Idle time in milliseconds before TCP keep-alive probes begin on a connection. Defaults to
+   * 30000 (30s) when unset. Set to `0` to disable keep-alive entirely.
+   */
+  keepAliveTimeMillis?: number;
+  /** HTTP proxy URI. When set, requests are routed through an undici `ProxyAgent`. */
+  proxy?: string;
+  /** Response compression codec. Defaults to `'deflate'` (on). */
+  compression?: Compression;
+  /** Connection-level default that fills a request's `batchSize` when it is left unset. Defaults to 64. */
+  batchSize?: number;
+  /** Connection-level default for `bulkResults`, applied to every request unless overridden per-request. Defaults to `false`. */
+  bulkResults?: boolean;
+  /** An optional logger (a logger object or a callback). Logging is disabled when unset. */
+  logger?: Logger;
   interceptors?: RequestInterceptor | RequestInterceptor[];
   /** An optional auth interceptor. As a convenience, this is always appended to the end of the
    *  interceptor list so it runs last, after any user interceptors have modified the request. */
   auth?: RequestInterceptor;
 };
 
+/** The default per-request batch size used when neither the request nor the connection sets one. */
+export const DEFAULT_BATCH_SIZE = 64;
+
 /**
  * Represents a single connection to a Gremlin Server.
  */
 export default class Connection extends EventEmitter {
-  private readonly _reader: any;
+  private readonly _responseSerializer: any;
 
   isOpen = true;
   traversalSource: string;
 
   private readonly _enableUserAgentOnConnect: boolean;
   private readonly _interceptors: RequestInterceptor[];
+  private readonly _dispatcher: Dispatcher | undefined;
+  private readonly _compression: Compression;
+  private readonly _batchSize: number;
+  private readonly _bulkResults: boolean;
+  private readonly _log: LoggerCallback;
 
   /**
    * Creates a new instance of {@link Connection}.
@@ -81,12 +113,36 @@ export default class Connection extends EventEmitter {
   ) {
     super();
 
-    this._reader = options.reader || (options.preciseNumbers === true ? createPreciseReader() : new GraphBinaryReader(ioc));
+    this._responseSerializer =
+      options.responseSerializer || (options.preciseNumbers === true ? createPreciseReader() : new GraphBinaryReader(ioc));
     if (options.pdtRegistry) {
-      this._reader.pdtRegistry = options.pdtRegistry;
+      this._responseSerializer.pdtRegistry = options.pdtRegistry;
     }
     this.traversalSource = options.traversalSource || 'g';
     this._enableUserAgentOnConnect = options.enableUserAgentOnConnect !== false;
+    this._log = normalizeLogger(options.logger);
+
+    if (options.compression === undefined) {
+      this._compression = 'deflate';
+    } else if (options.compression === 'none' || options.compression === 'deflate') {
+      this._compression = options.compression;
+    } else {
+      throw new TypeError(`compression must be 'none' or 'deflate'`);
+    }
+
+    this._batchSize = options.batchSize ?? DEFAULT_BATCH_SIZE;
+    this._bulkResults = options.bulkResults ?? false;
+
+    // The driver builds and owns the undici dispatcher from the discrete options.
+    // TLS is configured through the Node/undici runtime (e.g. NODE_EXTRA_CA_CERTS),
+    // not through a driver option.
+    this._dispatcher = buildDispatcher({
+      maxConnections: options.maxConnections,
+      readTimeoutMillis: options.readTimeoutMillis,
+      maxResponseHeaderBytes: options.maxResponseHeaderBytes,
+      keepAliveTimeMillis: options.keepAliveTimeMillis,
+      proxy: options.proxy,
+    });
 
     const interceptors = options.interceptors;
     if (typeof interceptors === 'function') {
@@ -103,6 +159,23 @@ export default class Connection extends EventEmitter {
     if (options.auth) {
       this._interceptors.push(options.auth);
     }
+
+    this._log('debug', `Connection created for ${this.url}`);
+  }
+
+  /**
+   * The connection-level default batch size, used to fill a request's `batchSize` when unset.
+   */
+  get batchSize(): number {
+    return this._batchSize;
+  }
+
+  /**
+   * The connection-level default for `bulkResults`, applied to every request unless overridden
+   * per-request. Defaults to `false`.
+   */
+  get bulkResults(): boolean {
+    return this._bulkResults;
   }
 
   /**
@@ -178,7 +251,7 @@ export default class Connection extends EventEmitter {
     }
 
     if (!response.body) {
-      // 204 No Content — nothing to yield
+      // 204 No Content - nothing to yield
       return;
     }
 
@@ -186,11 +259,11 @@ export default class Connection extends EventEmitter {
 
     let completed = false;
     try {
-      yield* this._reader.readResponseStream(streamReader);
+      yield* this._responseSerializer.readResponseStream(streamReader);
       completed = true;
     } finally {
       if (!completed) {
-        // Consumer broke out early or an error occurred — abort to release the connection
+        // Consumer broke out early or an error occurred - abort to release the connection
         abortController.abort();
       }
     }
@@ -198,11 +271,11 @@ export default class Connection extends EventEmitter {
 
   #getReaderForContentType(contentType: string | null) {
     if (!contentType) {
-      return this._reader;
+      return this._responseSerializer;
     }
 
-    if (contentType === this._reader.mimeType) {
-      return this._reader;
+    if (contentType === this._responseSerializer.mimeType) {
+      return this._responseSerializer;
     }
 
     return null;
@@ -210,20 +283,18 @@ export default class Connection extends EventEmitter {
 
   async #makeHttpRequest(request: RequestMessage, signal?: AbortSignal): Promise<Response> {
     const headers: Record<string, string> = {
-      'Accept': this._reader.mimeType,
+      'Accept': this._responseSerializer.mimeType,
     };
+
+    if (this._compression === 'deflate') {
+      headers['Accept-Encoding'] = 'deflate';
+    }
 
     if (this._enableUserAgentOnConnect) {
       const userAgent = await utils.getUserAgent();
       if (userAgent !== undefined) {
         headers[utils.getUserAgentHeader()] = userAgent;
       }
-    }
-
-    if (this.options.headers) {
-      Object.entries(this.options.headers).forEach(([key, value]) => {
-        headers[key] = Array.isArray(value) ? value.join(', ') : value;
-      });
     }
 
     const httpRequest = new HttpRequest('POST', this.url, headers, request);
@@ -249,12 +320,17 @@ export default class Connection extends EventEmitter {
     // Auto-serialize body to JSON after interceptors run (idempotent if already serialized)
     httpRequest.serializeBody();
 
-    return fetch(httpRequest.url, {
+    this._log('debug', `Sending ${httpRequest.method} request to ${httpRequest.url}`);
+
+    return httpFetch.fetch(httpRequest.url, {
       method: httpRequest.method,
       headers: httpRequest.headers,
       body: httpRequest.body,
       signal,
-    });
+      // Node only: the undici dispatcher carries the connection-pool options. In the browser
+      // it is undefined and the field is omitted, letting the user agent manage the transport.
+      ...(this._dispatcher ? { dispatcher: this._dispatcher } : {}),
+    } as RequestInit);
   }
 
   async #handleResponse(response: Response) {
@@ -293,7 +369,7 @@ export default class Connection extends EventEmitter {
     }
 
     if (!reader) {
-      throw new Error(`Response Content-Type '${contentType}' does not match the configured reader (expected '${this._reader.mimeType}')`);
+      throw new Error(`Response Content-Type '${contentType}' does not match the configured response serializer (expected '${this._responseSerializer.mimeType}')`);
     }
 
     const deserialized = await reader.readResponse(buffer);
@@ -321,7 +397,8 @@ export default class Connection extends EventEmitter {
    * Closes the Connection.
    * @return {Promise}
    */
-  close() {
-    return Promise.resolve();
+  async close() {
+    this._log('debug', `Closing connection to ${this.url}`);
+    await this._dispatcher?.close();
   }
 }

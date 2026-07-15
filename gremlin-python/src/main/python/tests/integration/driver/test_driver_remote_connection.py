@@ -26,7 +26,7 @@ from gremlin_python.statics import long
 from gremlin_python.process.traversal import TraversalStrategy, P, Order, T, DT, GValue, Cardinality, Scope
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
-from gremlin_python.structure.graph import Vertex, Edge, Graph, ProviderDefinedType, provider_defined
+from gremlin_python.structure.graph import Vertex, Edge, Graph, CompositePDT, PrimitivePDT, provider_defined
 from gremlin_python.process.strategies import SubgraphStrategy, SeedStrategy, ReservedKeysVerificationStrategy
 from gremlin_python.structure.io.util import HashableDict
 from gremlin_python.driver.connection import GremlinServerError
@@ -46,23 +46,23 @@ class TestDriverRemoteConnection(object):
 
     def test_extract_request_options(self, remote_connection):
         g = traversal().with_(remote_connection)
-        t = g.with_("evaluationTimeout", 1000).with_("batchSize", 100).V().count()
+        t = g.with_("timeoutMillis", 1000).with_("batchSize", 100).V().count()
         assert remote_connection.extract_request_options(t.gremlin_lang) == {'batchSize': 100,
-                                                                             'evaluationTimeout': 1000,
+                                                                             'timeoutMillis': 1000,
                                                                              'bulkResults': True}
         assert 6 == t.to_list()[0]
 
-    @pytest.mark.skip(reason="investigate why 'ids' parameter name fails to parse in gremlin-lang")
+    @pytest.mark.skip(reason="TINKERPOP-3126: g.V() with a variable/parameter argument fails to parse in gremlin-lang")
     def test_extract_request_options_with_params(self, remote_connection):
         g = traversal().with_(remote_connection)
-        t = g.with_("evaluationTimeout",
+        t = g.with_("timeoutMillis",
                     1000).with_("batchSize", 100).with_("userAgent",
                                                         "test").V(GValue('ids', [1, 2, 3])).count()
         assert remote_connection.extract_request_options(t.gremlin_lang) == {'batchSize': 100,
-                                                                             'evaluationTimeout': 1000,
+                                                                             'timeoutMillis': 1000,
                                                                              'userAgent': 'test',
                                                                              'bulkResults': True,
-                                                                             'params': {'ids': [1, 2, 3]}}
+                                                                             'parameters': "['ids':[1,2,3]]"}
         assert 3 == t.to_list()[0]
 
     def test_traversals(self, remote_connection):
@@ -161,6 +161,51 @@ class TestDriverRemoteConnection(object):
         for e in sg.edges.values():
             assert isinstance(e, Edge)
             assert e.label == 'knows'
+
+    def test_tree(self, remote_connection):
+        from gremlin_python.structure.graph import Tree
+        g = traversal().with_(remote_connection)
+        # modern graph: marko -> josh -> lop/ripple, depth 2
+        tree = g.V(1).out().out().tree().by('name').next()
+        assert isinstance(tree, Tree)
+
+        # root level: only marko
+        assert tree.root_nodes() == ['marko']
+
+        # marko's child subtree is rooted at josh
+        marko_subtree = tree.child_at('marko')
+        assert marko_subtree.root_nodes() == ['josh']
+
+        # total key count across marko/josh/lop/ripple
+        assert tree.node_count() == 4
+
+        # depth navigation
+        assert tree.get_nodes_at_depth(0) == ['marko']
+        depth_two = tree.get_nodes_at_depth(2)
+        assert set(depth_two) == {'lop', 'ripple'}
+
+        # leaf nodes are lop and ripple (order-insensitive)
+        assert set(tree.get_leaf_nodes()) == {'lop', 'ripple'}
+
+        # root tree is not a leaf
+        assert tree.is_leaf() is False
+
+        # pretty print produces the ASCII tree style
+        printed = tree.pretty_print()
+        assert isinstance(printed, str)
+        # lop and ripple are siblings at depth 2 with unspecified order
+        option_a = "|--marko\n   |--josh\n      |--lop\n      |--ripple"
+        option_b = "|--marko\n   |--josh\n      |--ripple\n      |--lop"
+        assert tree.pretty_print() in (option_a, option_b)
+
+    def test_tree_with_vertices(self, remote_connection):
+        from gremlin_python.structure.graph import Tree
+        g = traversal().with_(remote_connection)
+        # no by(): keys are the vertices themselves (the default user-facing shape)
+        tree = g.V(1).out().out().tree().next()
+        assert isinstance(tree, Tree)
+        assert tree.node_count() == 4
+        assert len(tree.root_nodes()) == 1
 
     def test_set_with_unhashable_elements(self, remote_connection):
         g = traversal().withRemote(remote_connection)
@@ -292,9 +337,9 @@ class TestDriverRemoteConnection(object):
 
     def test_pdt_round_trip_via_traversal(self, remote_connection):
         g = traversal().with_(remote_connection)
-        pdt = ProviderDefinedType('Point', {'x': 1, 'y': 2})
+        pdt = CompositePDT('Point', {'x': 1, 'y': 2})
         result = g.inject(pdt).next()
-        assert isinstance(result, ProviderDefinedType)
+        assert isinstance(result, CompositePDT)
         assert result.name == 'Point'
         assert result.fields == {'x': 1, 'y': 2}
 
@@ -320,3 +365,20 @@ class TestDriverRemoteConnection(object):
         assert isinstance(result, TestPoint)
         assert result.x == 5
         assert result.y == 10
+
+    def test_primitive_pdt_round_trip_via_traversal(self, remote_connection):
+        g = traversal().with_(remote_connection)
+        pdt = PrimitivePDT('Uint32', '4294967295')
+        result = g.inject(pdt).next()
+        assert isinstance(result, PrimitivePDT)
+        assert result.name == 'Uint32'
+        assert result.value == '4294967295'
+
+    def test_primitive_pdt_registry_round_trip_via_traversal(self, remote_connection_with_primitive_registry,
+                                                             registry_uint32_class):
+        g = traversal().with_(remote_connection_with_primitive_registry)
+        u = registry_uint32_class(value=42)
+        result = g.inject(u).next()
+        # Registry auto-dehydrates on send (to_value) and auto-hydrates on receive (from_value)
+        assert isinstance(result, registry_uint32_class)
+        assert result.value == 42

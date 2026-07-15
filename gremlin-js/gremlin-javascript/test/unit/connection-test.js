@@ -20,19 +20,20 @@
 import assert from 'assert';
 import Connection from '../../lib/driver/connection.js';
 import { RequestMessage } from '../../lib/driver/request-message.js';
+import { httpFetch } from '../../lib/driver/dispatcher.js';
 
 // Connection-level unit tests that verify interceptor wiring and auto-serialization
-// by mocking the global fetch and capturing what the Connection sends.
+// by mocking the driver's fetch (httpFetch.fetch) and capturing what the Connection sends.
 describe('Connection (request pipeline)', function () {
   let originalFetch;
   let captured;
 
   beforeEach(function () {
     captured = null;
-    originalFetch = global.fetch;
+    originalFetch = httpFetch.fetch;
     // Return an error response so we don't need a valid GraphBinary body; the test only
     // cares about what was sent to fetch. The resulting ResponseError is swallowed per-test.
-    global.fetch = (url, init) => {
+    httpFetch.fetch = (url, init) => {
       captured = { url, init };
       return Promise.resolve({
         ok: false,
@@ -45,7 +46,7 @@ describe('Connection (request pipeline)', function () {
   });
 
   afterEach(function () {
-    global.fetch = originalFetch;
+    httpFetch.fetch = originalFetch;
   });
 
   function makeConnection(options = {}) {
@@ -146,5 +147,63 @@ describe('Connection (request pipeline)', function () {
     await submitAndIgnoreError(conn, RequestMessage.build('g.V()').addG('g').create());
 
     assert.deepStrictEqual(order, [1, 2, 3], 'auth interceptor should always run last');
+  });
+
+  it('sends Accept-Encoding: deflate by default (compression on)', async function () {
+    const conn = makeConnection();
+    await submitAndIgnoreError(conn, RequestMessage.build('g.V()').addG('g').create());
+
+    assert.strictEqual(captured.init.headers['Accept-Encoding'], 'deflate');
+  });
+
+  it('does not send an Accept-Encoding header when compression is explicitly off', async function () {
+    const conn = makeConnection({ compression: 'none' });
+    await submitAndIgnoreError(conn, RequestMessage.build('g.V()').addG('g').create());
+
+    assert.strictEqual(captured.init.headers['Accept-Encoding'], undefined);
+  });
+
+  it('throws for an invalid compression value', function () {
+    assert.throws(
+      () => makeConnection({ compression: 'gzip' }),
+      /compression must be/);
+  });
+
+  it('passes the default dispatcher to fetch', async function () {
+    const conn = makeConnection();
+    await submitAndIgnoreError(conn, RequestMessage.build('g.V()').addG('g').create());
+
+    assert.ok(captured.init.dispatcher, 'fetch should receive a dispatcher');
+  });
+
+  it('closes its built dispatcher on close()', async function () {
+    const conn = makeConnection();
+    await submitAndIgnoreError(conn, RequestMessage.build('g.V()').addG('g').create());
+
+    const built = captured.init.dispatcher;
+    assert.ok(built, 'a dispatcher should have been built and passed to fetch');
+
+    await conn.close();
+    // A closed undici Agent reports itself as destroyed; closing it again is a no-op.
+    assert.strictEqual(built.closed === true || built.destroyed === true, true,
+      'the connection-built dispatcher should be closed on close()');
+  });
+
+  it('exposes the default batch size of 64', function () {
+    const conn = makeConnection();
+    assert.strictEqual(conn.batchSize, 64);
+  });
+
+  it('honors a custom batchSize', function () {
+    const conn = makeConnection({ batchSize: 250 });
+    assert.strictEqual(conn.batchSize, 250);
+  });
+
+  it('invokes a logger callback during the request lifecycle', async function () {
+    const lines = [];
+    const conn = makeConnection({ logger: (level, message) => lines.push([level, message]) });
+    await submitAndIgnoreError(conn, RequestMessage.build('g.V()').addG('g').create());
+
+    assert.ok(lines.some(([, m]) => /Sending POST request/.test(m)), 'should log the outgoing request');
   });
 });

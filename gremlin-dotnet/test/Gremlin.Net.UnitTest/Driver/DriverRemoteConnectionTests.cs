@@ -103,7 +103,7 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
-        public async Task ShouldBuildRequestWithBindings()
+        public async Task ShouldBuildRequestWithParameters()
         {
             RequestMessage? capturedRequest = null;
             var client = CreateCapturingClient(msg => capturedRequest = msg);
@@ -116,8 +116,8 @@ namespace Gremlin.Net.UnitTest.Driver
             await connection.SubmitAsync<object, object>(gl);
 
             Assert.NotNull(capturedRequest);
-            var bindingsString = (string)capturedRequest!.Fields[Tokens.ArgsBindings];
-            Assert.Contains("\"x\":42", bindingsString);
+            var parametersString = (string)capturedRequest!.Fields[Tokens.ArgsParameters];
+            Assert.Contains("\"x\":42", parametersString);
         }
 
         [Fact]
@@ -147,14 +147,14 @@ namespace Gremlin.Net.UnitTest.Driver
             gl.AddStep("V", Array.Empty<object>());
             gl.OptionsStrategies.Add(new OptionsStrategy(new Dictionary<string, object>
             {
-                { Tokens.ArgsEvalTimeout, 5000L },
+                { Tokens.ArgsTimeoutMillis, 5000L },
                 { Tokens.ArgsBatchSize, 100 }
             }));
 
             await connection.SubmitAsync<object, object>(gl);
 
             Assert.NotNull(capturedRequest);
-            Assert.Equal(5000L, capturedRequest!.Fields[Tokens.ArgsEvalTimeout]);
+            Assert.Equal(5000L, capturedRequest!.Fields[Tokens.ArgsTimeoutMillis]);
             Assert.Equal(100, capturedRequest.Fields[Tokens.ArgsBatchSize]);
         }
 

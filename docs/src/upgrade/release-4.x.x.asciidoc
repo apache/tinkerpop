@@ -32,207 +32,150 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
-==== Standardizing .NET Connection Options
+==== Bindings are now Parameters
 
-TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In `gremlin-dotnet`, several
-`ConnectionSettings` properties and the `Auth` factory methods have been renamed for consistency. Because this is a
-major version, the old names have been removed rather than retained as aliases, and a number of new options have been
-added. The notes below describe the .NET changes. See <<glv-driver-changes, GLV Driver Changes>> for the
-equivalent changes in the other drivers.
+The map of named values substituted into a Gremlin query was previously called "bindings" in some places and
+"parameters" in others. TinkerPop now refers to these consistently as *query parameters*, reserving "bindings" for
+the distinct concept of `ScriptEngine` variable bindings. As a result, the driver methods for supplying query
+parameters have been renamed. Update any code that sets them:
 
-Renames (breaking). The following members have been renamed and the old names removed. Migrate to the new names:
+- Java: `RequestMessage.Builder.addBindings(...)` is now `addParameters(...)`.
+- Python: `client.submit(..., bindings=...)` is now `submit(..., parameters=...)`, and the `request_options`
+key `bindings` is now `parameters`.
+- Go: `SetBindings`/`SetBindingsString`/`AddBinding` are now
+`SetParameters`/`SetParametersString`/`AddParameter`.
+- .NET: `AddBinding`/`AddBindings`/`AddBindingsString` are now
+`AddParameter`/`AddParameters`/`AddParametersString`.
+- JavaScript: `addBinding`/`addBindings`/`addBindingsString` are now
+`addParameter`/`addParameters`/`addParametersString`, and the `RequestOptions.bindings` field is now `parameters`.
 
-- `ConnectionTimeout` is now `ConnectTimeout`.
-- `MaxConnectionsPerServer` is now `MaxConnections`.
-- `IdleConnectionTimeout` is now `IdleTimeout`.
-- `KeepAliveInterval` is now `KeepAliveTime`.
-- `EnableCompression` is now `Compression`.
-- The `Auth.BasicAuth` and `Auth.SigV4Auth` factory methods are now `Auth.Basic` and `Auth.Sigv4`.
-
-Behavior changes. These change runtime behavior on upgrade, even if you do not change your configuration:
-
-- `ConnectTimeout` now defaults to 5s (lowered from 15s).
-- `KeepAliveTime` is now wired to a real TCP keep-alive socket option rather than the inert HTTP/2 ping timeout. It
-enables `SO_KEEPALIVE` and sets the per-socket idle time on Windows, Linux, and macOS; on other platforms keep-alive
-stays enabled at the OS default idle time.
-- `Compression` is now a `{None, Deflate}` enum defaulting to `Deflate` (compression on by default), so the driver
-sends `Accept-Encoding: deflate` by default. Set `Compression.None` to disable. The old `EnableCompression` `bool`
-has been removed.
-
-New options:
-
-- `Ssl` (an `SslClientAuthenticationOptions` for client certificates and custom CAs; `SkipCertificateValidation` is
-applied to an internal copy rather than mutating the supplied options).
-- `BatchSize` (default 64): a connection-level default that fills the per-request batch size when unset.
-- `MaxResponseHeaderBytes`: the maximum allowed size, in bytes, of the response headers.
-- `ReadTimeout`: a per-read idle timeout applied to each individual read of the response stream.
-- Each timeout is also settable in milliseconds via an `int` companion property (`ConnectTimeoutMillis`, `IdleTimeoutMillis`,
-  `ReadTimeoutMillis`, `KeepAliveTimeMillis`); the unsuffixed `TimeSpan` property is the idiomatic form.
-- `Proxy`: routes connections through an `IWebProxy`.
-
-See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
-
-==== Standardizing Go Connection Options
-
-TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In `gremlin-go`, several
-`DriverRemoteConnectionSettings`/`ClientSettings` options introduced for the HTTP driver in 4.0.0-beta.2 have been
-renamed for consistency, the authentication helpers have moved into a dedicated `auth` sub-package, and a number of
-new options have been added. The notes below describe the Go changes. See <<glv-driver-changes, GLV Driver Changes>>
-for the equivalent changes in the other drivers.
-
-Renames (breaking). The following settings fields have been renamed. Because they are struct fields, they cannot be
-aliased, so existing code must be updated to the new names:
-
-- `MaximumConcurrentConnections` is now `MaxConnections` (default 128).
-- `IdleConnectionTimeout` is now `IdleTimeoutMillis` (default 180000), an `int` of milliseconds. The `time.Duration` companion `IdleTimeout` may be set instead (set only one).
-- `KeepAliveInterval` is now `KeepAliveTimeMillis` (default 30000), an `int` of milliseconds. The `time.Duration` companion `KeepAliveTime` may be set instead (set only one).
-- `ConnectionTimeout` is now `ConnectTimeoutMillis` (default 5000), an `int` of milliseconds. The `time.Duration` companion `ConnectTimeout` may be set instead (set only one).
-- `TlsConfig` (`*tls.Config`) is now `Ssl`.
-- `RequestInterceptors` is now `Interceptors`.
-- `EnableCompression` is now `Compression`.
-- The `BasicAuth`, `SigV4Auth`, and `SigV4AuthWithCredentials` functions have moved out of package `gremlingo` into a
-new `auth` sub-package (`github.com/apache/tinkerpop/gremlin-go/v4/driver/auth`) as `auth.Basic`, `auth.SigV4`, and
-`auth.SigV4WithCredentials`. The flat `gremlingo` functions have been removed; use the `auth` sub-package.
-
-Behavior changes. These change runtime behavior on upgrade, even if you do not change your configuration:
-
-- `Compression` is now a typed `Compression` const (`gremlingo.CompressionNone`/`gremlingo.CompressionDeflate`)
-defaulting to `CompressionDeflate` (compression on by default), so the driver sends `Accept-Encoding: deflate` by
-default. Set `gremlingo.CompressionNone` to disable it. The manual per-chunk deflate decode path is retained.
-- `http.Transport.Proxy` now defaults to `http.ProxyFromEnvironment`, so the standard `HTTP_PROXY`/`HTTPS_PROXY`/
-`NO_PROXY` environment variables are honored. Previously the custom transport left `Proxy` unset, silently dropping
-any environment proxy configuration.
-
-New options:
-
-- `ReadTimeoutMillis` (default 0, disabled), an `int` of milliseconds: a per-read idle timeout reset on each read of
-the response body and re-armed across pooled-connection reuse, so it never fires while a pooled connection is idle
-between requests. The `time.Duration` companion `ReadTimeout` may be set instead (set only one).
-- `MaxResponseHeaderBytes`: exposes `http.Transport.MaxResponseHeaderBytes` (native bytes).
-- `Proxy`: an explicit `func(*http.Request) (*url.URL, error)` proxy override for the transport.
-- `BatchSize` (default 64): a connection-level default that fills a request's `batchSize` when it is left
-unset.
-- `BulkResults` (default false): a connection-level default for `bulkResults` applied to every request unless
-overridden per-request. The `DriverRemoteConnection` traversal path defaults to `true` regardless of this setting.
-
-See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
-
-==== Standardizing Python Connection Options
-
-TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In `gremlin-python`, several
-connection options passed to `Client`/`DriverRemoteConnection` have been renamed for consistency. Because this is a
-major version, the old names have been removed rather than retained as aliases, and a number of new options have been
-added. The notes below describe the Python changes. See <<glv-driver-changes, GLV Driver Changes>> for the equivalent changes in
-the other drivers.
-
-Renames (breaking). The following options have been renamed and the old names removed. Migrate to the new names:
-
-- `pool_size` is now `max_connections` (default raised from 8 to 128). `max_connections` is also applied to the
-  aiohttp `TCPConnector` `limit`, so the transport layer reflects the option in addition to sizing the connection
-  pool.
-- `ssl_options` is now `ssl` (accepts an `ssl.SSLContext`).
-
-Behavior changes. These change runtime behavior on upgrade, even if you do not change your configuration:
-
-- `compression` is a new option that defaults to `'deflate'` (on), so the driver advertises `Accept-Encoding: deflate`
-  by default. Set `compression='none'` to disable it; when disabled, aiohttp's automatic `Accept-Encoding` injection is
-  suppressed so compression is not silently negotiated. Defaulting compression on is a deliberate deviation from the
-  proposal's agreed default-off, applied consistently across the GLVs by later agreement.
-- `connect_timeout` now defaults to 5s. Together with `read_timeout` it is wired into a single aiohttp `ClientTimeout`
-  via the socket-level `sock_connect`/`sock_read` knobs rather than a whole-request `total`, so long but legitimate
-  streaming responses are not aborted while a stalled server no longer hangs forever.
-- The minimum supported `aiohttp` has been raised to `3.11` (required for the `socket_factory` used by
-  `keep_alive_time`). *(breaking)*
-
-New options:
-
-- `connect_timeout` (default 5s): a new socket-connect timeout. It is combined with the existing `read_timeout`
-  (rewired into a single aiohttp `ClientTimeout` via `sock_connect`/`sock_read`, as described above).
-  Each timeout option's primary form is the millisecond-suffixed name (`connect_timeout_millis`, `idle_timeout_millis`,
-  `read_timeout_millis`, `keep_alive_time_millis`); the unsuffixed canonical name (`connect_timeout`, etc.) accepts the
-  idiomatic seconds value.
-- `idle_timeout` (default 180s): mapped to the aiohttp `TCPConnector` keep-alive timeout.
-- `keep_alive_time` (default 30s): enables TCP keep-alive probes via the connector socket factory
-  (`TCP_KEEPIDLE`/`TCP_KEEPALIVE`, guarded by platform availability).
-- `compression` (`'none'`/`'deflate'`, default `'deflate'`): the wire compression negotiated with the server.
-- `batch_size` (default 64): a connection-level default that fills the per-request `batchSize` when unset.
-- `proxy` and `trust_env`: explicit HTTP proxy and environment-trust options surfaced on the aiohttp `ClientSession`.
-- `auth.sigv4` gains a credentials-provider variant that accepts an optional credentials provider or callable, falling
-  back to the AWS environment variables.
-
-Removals (breaking):
-
-- The `max_content_length` kwarg has been removed (it was previously accepted but discarded).
-- The standalone `headers` kwarg has been removed from `Client`/`DriverRemoteConnection`; custom headers must now be
-  set via interceptors.
-
-See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
-
-==== Standardizing Java Connection Options
-
-TinkerPop 4.x standardizes connection option names and defaults across the GLVs. In the Java reference driver
-(`gremlin-driver`), several `Cluster.Builder` options have been renamed for consistency. As this is a major version,
-the old names have been removed rather than retained as aliases, and a number of new options have been added. The notes
-below describe the Java changes. See <<glv-driver-changes, GLV Driver Changes>> for the equivalent changes in the
-other drivers.
-
-Renames (breaking). The following builder methods have been renamed and the old names removed; migrate to the new
-names:
-
-- `maxConnectionPoolSize` is now `maxConnections` (default 128).
-- `idleConnectionTimeoutMillis` is now `idleTimeout` (default 180000 ms), settable as `idleTimeout(Duration)` or `idleTimeoutMillis(long)` (YAML key `connectionPool.idleTimeoutMillis`).
-- `connectionSetupTimeoutMillis` is now `connectTimeout`, settable as `connectTimeout(Duration)` or `connectTimeoutMillis(int)` (YAML key `connectionPool.connectTimeoutMillis`).
-- `resultIterationBatchSize` is now `batchSize` (default 64); it sets the connection-level default that fills a request's per-request `batchSize` when unset (mirroring how `bulkResults` shares one name across connection and per-request scopes).
-- A new `ssl(SslContext)` builder accepts a fully configured Netty `SslContext`.
-- On `RequestOptions`, `addG` is now `traversalSource`.
-
-Behavior changes. These change runtime behavior on upgrade, even if you do not change your configuration:
-
-- `idleTimeout` now applies only to connections sitting idle in the pool between requests. Previously its underlying
-  Netty `IdleStateHandler` also watched the in-flight read window, so a stalled in-flight response could be closed
-  by `idleTimeout` even with `readTimeout` disabled. That in-flight coverage is now solely `readTimeout`'s job, so
-  if you relied on `idleTimeout` to bound a hung in-flight request, set `readTimeout` explicitly.
-- `connectTimeout` now defaults to 5s (lowered from 15s) and is now actually applied to the connection bootstrap.
-  Previously `connectionSetupTimeoutMillis` was validated but never enforced, so the connection setup was effectively
-  unbounded. A slow TCP or TLS setup now fails after 5s where it previously did not time out. If you rely on the old
-  behavior, set `connectTimeout` explicitly to a larger value.
-- `compression` now defaults to `Compression.DEFLATE` (on), so the driver sends `Accept-Encoding: deflate` by default.
-  This preserves the pre-4.x always-on Java behavior. Set `compression(Compression.NONE)` to disable it.
-- The `validationRequest` builder default has been reconciled to `g.inject(0)` (it was previously an empty string in
-  the builder, which did not match the config-file default).
-
-New options:
-
-- `readTimeout` (default 0, disabled): a streaming-safe idle-read timeout that fires only if no response chunk arrives
-  within the interval. It is armed per request and does not affect idle pooled connections. Settable as
-  `readTimeout(Duration)` or `readTimeoutMillis(long)` (YAML key `connectionPool.readTimeoutMillis`).
-- `keepAliveTime` (default 30000 ms): the idle time before TCP keep-alive probes begin. It enables `SO_KEEPALIVE` and
-  sets `TCP_KEEPIDLE` where supported (JDK 11+ on Linux and macOS). Set 0 to disable. Settable as
-  `keepAliveTime(Duration)` or `keepAliveTimeMillis(long)` (YAML key `connectionPool.keepAliveTimeMillis`).
-- `maxResponseHeaderBytes` (default 8192): the maximum response header size, which was previously hardcoded.
-- `proxy(ProxyOptions)`: routes connections through an HTTP proxy.
-- `url(String)`: configures the endpoint from a single URL (scheme, host, port, and path). The existing
-  `addContactPoint`/`addContactPoints`, `port`, and `path` options remain for multi-host configurations.
-
-The `maxResponseContentLength` setting has been removed. Responses are now streamed rather than aggregated
-and size-capped. The new idle `readTimeout` is the partial mitigation for unbounded or slow responses.
-
-Note that none of the driver timeouts bound the *total* time of a request: `readTimeout` only bounds the gap between
-response chunks, so a response that keeps producing chunks will not time out no matter how long it runs overall. If
-you need an overall deadline, impose it in your application around the asynchronous API, for example by wrapping a
-`CompletableFuture` with a timeout:
+For example, in the Java driver:
 
 [source,java]
 ----
-// bound the entire request (submit plus full result iteration) to 30 seconds
-final List<Result> results = client.submitAsync("g.V().out().out()")
-        .thenCompose(ResultSet::all)
-        .orTimeout(30, TimeUnit.SECONDS)
-        .get();
+final Map<String, Object> params = new HashMap<>();
+params.put("x", 1);
+
+// 3.x
+RequestMessage.build("g.V(x)").addBindings(params).create();
+
+// 4.x
+RequestMessage.build("g.V(x)").addParameters(params).create();
 ----
 
-See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4
-].
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3262[TINKERPOP-3262]
+
+==== Standardizing GLV Connection Options
+
+TinkerPop 4.x standardizes connection option names and defaults across all five Gremlin Language Variants (Java, Python,
+.NET, Go, and JavaScript). Each driver using its language-idiomatic casing (`camelCase`, `PascalCase`, or `snake_case`).
+Renames are breaking: the old option names have been removed (no deprecated aliases), so existing code must be updated.
+
+NOTE: Timeouts use a millisecond-suffixed canonical name (`connectTimeoutMillis`, `readTimeoutMillis`,
+`idleTimeoutMillis`, `keepAliveTimeMillis`, and the `_millis` form in Python). Java, Go, .NET, and Python also accept an
+idiomatic duration companion for the same setting (Java `Duration`, Go `time.Duration`, .NET `TimeSpan`, Python seconds);
+set only one form per option. JavaScript exposes only the millisecond form.
+
+===== Standardized options (cross-GLV)
+
+The table lists each standardized option by driver. Defaults are shown in parentheses; "n/a" means the driver does not
+expose that option.
+
+[width="100%",cols="2,2,2,2,2,2",options="header"]
+|=========================================================
+|Concept |Java (`Cluster.Builder`) |Python (kwarg) |.NET (`ConnectionSettings`) |Go (settings field) |JavaScript (option)
+|Max pooled connections |`maxConnections` (128) |`max_connections` (128) |`MaxConnections` (128) |`MaxConnections` (128) |`maxConnections` (128)
+|Connect timeout |`connectTimeoutMillis` (5000) |`connect_timeout_millis` (5000) |`ConnectTimeoutMillis` (5000) |`ConnectTimeoutMillis` (5000) |n/a
+|Idle-read timeout |`readTimeoutMillis` (0/off) |`read_timeout_millis` (off) |`ReadTimeoutMillis` (0/off) |`ReadTimeoutMillis` (0/off) |`readTimeoutMillis` (undici default)
+|Pool idle timeout |`idleTimeoutMillis` (180000) |`idle_timeout_millis` (180000) |`IdleTimeout` (180s) |`IdleTimeoutMillis` (180000) |n/a
+|TCP keep-alive idle |`keepAliveTimeMillis` (30000) |`keep_alive_time_millis` (30000) |`KeepAliveTime` (30s) |`KeepAliveTimeMillis` (30000) |`keepAliveTimeMillis` (30000)
+|Compression |`compression` (`DEFLATE`) |`compression` (`'deflate'`) |`Compression` (`Deflate`) |`Compression` (`CompressionDeflate`) |`compression` (`'deflate'`)
+|Connection-level batch size |`batchSize` (64) |`batch_size` (64) |`BatchSize` (64) |`BatchSize` (64) |`batchSize` (64)
+|Connection-level bulkResults |`bulkResults` (false) |`bulk_results` (false) |`BulkResults` (false) |`BulkResults` (false) |`bulkResults` (false)
+|Max response header bytes |`maxResponseHeaderBytes` (8192) |n/a |`MaxResponseHeaderBytes` (handler default) |`MaxResponseHeaderBytes` (net/http default) |`maxResponseHeaderBytes` (undici default)
+|TLS configuration |`ssl(SslContext)` + keystore builders |`ssl` (`SSLContext`) |`Ssl` (`SslClientAuthenticationOptions`) |`Ssl` (`*tls.Config`) |runtime (`NODE_EXTRA_CA_CERTS`, etc.)
+|HTTP proxy |`proxy(ProxyOptions)` |`proxy` |`Proxy` (`IWebProxy`) |`Proxy` (env default) |`proxy` (undici `ProxyAgent`)
+|Request interceptors |`interceptors` |`interceptors` |interceptor delegates |`Interceptors` |`interceptors`
+|=========================================================
+
+===== Behavior changes (all drivers)
+
+These change runtime behavior on upgrade even if you do not change your configuration:
+
+- *Compression defaults to on.* Every driver now defaults compression to `deflate` and sends `Accept-Encoding: deflate`.
+  Disable it with the compression option's "none" value (`Compression.NONE`, `'none'`, `Compression.None`,
+  `CompressionNone`).
+- *Connect timeout lowered to 5s* (from 15s, where applicable) and is now actually applied to transport establishment
+  (TCP connect plus TLS handshake), not the whole request.
+- *`readTimeout` is an idle-read timeout*, reset on each inbound response chunk, so it is streaming-safe and bounds only
+  the gap between chunks, not total response duration. It is off by default.
+- *`idleTimeout` reaps only pooled connections* that are idle between requests; it no longer bounds an in-flight
+  response (that is `readTimeout`'s job).
+
+===== Driver-specific notes
+
+- *Java* (`gremlin-driver`): renamed `maxConnectionPoolSize`->`maxConnections`, `connectionSetupTimeoutMillis`->`connectTimeoutMillis`,
+  `idleConnectionTimeoutMillis`->`idleTimeoutMillis`, `resultIterationBatchSize`->`batchSize`, `serializer`->`responseSerializer`,
+  and `RequestOptions` `addG`->`traversalSource`; old names are removed. New: `readTimeoutMillis`, `keepAliveTimeMillis`,
+  `maxResponseHeaderBytes`, `proxy(ProxyOptions)`, `url(String)`, `ssl(SslContext)`. Removed `maxResponseContentLength`.
+  `validationRequest` default reconciled to `g.inject(0)`.
+- *Python* (`gremlin-python`): renamed `pool_size`->`max_connections` (default 8->128) and `ssl_options`->`ssl` (old names removed).
+  New: `connect_timeout_millis`, `read_timeout_millis`, `idle_timeout_millis`, `keep_alive_time_millis`, `compression`,
+  `batch_size`, `proxy`, `trust_env`. `auth.sigv4` gained an optional credentials provider. Removed `headers` (use interceptors)
+  and `max_content_length`. Requires `aiohttp>=3.11`.
+- *.NET* (`gremlin-dotnet`): renamed `MaxConnectionsPerServer`->`MaxConnections`, `ConnectionTimeout`->`ConnectTimeout`,
+  `IdleConnectionTimeout`->`IdleTimeout`, `KeepAliveInterval`->`KeepAliveTime`, `EnableCompression`->`Compression`, and
+  `Auth.BasicAuth`/`Auth.SigV4Auth`->`Auth.Basic`/`Auth.Sigv4`; old names removed. New: `ReadTimeout`, `MaxResponseHeaderBytes`,
+  `Proxy`, `Ssl`, `BulkResults`. `KeepAliveTime` now drives a real TCP keep-alive socket option instead of the inert HTTP/2 ping.
+- *Go* (`gremlin-go`): renamed `MaximumConcurrentConnections`->`MaxConnections`, `IdleConnectionTimeout`->`IdleTimeout`,
+  `KeepAliveInterval`->`KeepAliveTime`, `ConnectionTimeout`->`ConnectTimeout`, `TlsConfig`->`Ssl`, `RequestInterceptors`->`Interceptors`,
+  `EnableCompression`->`Compression`; old struct fields removed. Auth helpers moved from package `gremlingo`
+  (`BasicAuth`/`SigV4Auth`/`SigV4AuthWithCredentials`) into a new `auth` sub-package (`auth.Basic`/`auth.SigV4`/`auth.SigV4WithCredentials`).
+  New: `ReadTimeout(Millis)`, `MaxResponseHeaderBytes`, `Proxy` (defaults to `http.ProxyFromEnvironment`), `BatchSize`, `BulkResults`.
+- *JavaScript* (`gremlin-javascript`): adopted `undici` as a pinned dependency providing the default dispatcher built from the
+  options above. Renamed `reader`->`responseSerializer`. New: `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`,
+  `proxy`, `compression`, `batchSize`, `bulkResults`, `logger`. Removed `headers` (use interceptors) and the
+  `ca`/`cert`/`pfx`/`rejectUnauthorized`/`agent` options (TLS is configured through the Node/undici runtime). undici is swapped
+  out in browser bundles, where these connection-pool options are managed by the browser.
+
+See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
+
+==== Java 17 Required; Java 21 and 25 Supported
+
+TinkerPop 4.0 raises the minimum Java version from 11 to 17 for both building and running, and adds support for running
+on Java 21 and Java 25, so that every LTS release from the new minimum upward is covered by TinkerPop's automated
+tests. *(breaking)* Supporting Java 25 required upgrading Groovy to 4.0.32 (whose bundled ASM can parse Java 25
+bytecode) and Hadoop to 3.4.3 (which moved off the `Subject.getSubject()` API that was removed along with the Security
+Manager). Spark was upgraded to 4.1.x, built on Scala 2.13 — the first Spark line that supports Java 25. Because Spark 4
+requires Java 17 as its minimum, and `spark-gremlin` is part of the build, the project-wide minimum is now Java 17.
+Netty was upgraded to 4.2.x as required by Spark 4.
+
+As with the earlier JDK 17 support, some libraries still rely on deep reflection (most notably the Kryo serialization
+library used with OLAP), so it may be necessary to `--add-opens` or `--add-exports` certain modules at runtime. The set
+of options used by TinkerPop's own tests is unchanged.
+
+==== Renaming `evaluationTimeout` to `timeoutMillis`
+
+The per-request execution timeout is now referred to by a single name, `timeoutMillis`, everywhere. `timeoutMillis` is
+the maximum time in milliseconds that a request is allowed to execute on the server before it times out. It can be
+configured server-wide and overridden on a per-request basis. Previously the same concept was called
+`evaluationTimeout` in the server configuration, the `with()` script token, and several driver APIs. The `Millis`
+suffix aligns it with the driver connection options such as `connectTimeoutMillis` and `readTimeoutMillis`.
+
+This is a breaking change with no backward-compatible alias. The old `evaluationTimeout` name (and the long-deprecated
+`scriptEvaluationTimeout`) are no longer recognized anywhere. Update each surface as follows:
+
+- *Server config*: the `gremlin-server.yaml` key `evaluationTimeout` becomes `timeoutMillis` (default still 30000).
+- *Script token*: `g.with('evaluationTimeout', 500)` becomes `g.with('timeoutMillis', 500)`.
+- *Java driver*: `RequestOptions.Builder.timeout(long)` becomes `timeoutMillis(long)` and `getTimeout()` becomes `getTimeoutMillis()`.
+- *Go driver*: `RequestOptionsBuilder.SetEvaluationTimeout(int)` becomes `SetTimeoutMillis(int)`.
+- *.NET driver*: `Tokens.ArgsEvalTimeout` becomes `Tokens.ArgsTimeoutMillis` and `RequestMessage.Builder.AddEvaluationTimeout(...)`
+  becomes `AddTimeoutMillis(...)`.
+- *JavaScript driver*: the request option `{ evaluationTimeout: N }` becomes `{ timeoutMillis: N }`.
+- *Python driver*: use the token `timeoutMillis` (e.g. `g.with_('timeoutMillis', 500)` or `request_options={'timeoutMillis': 500}`).
+
+Driver and server should be upgraded together. A driver sending the old `evaluationTimeout` field to a 4.x server has
+that field silently ignored and falls back to the server's default timeout, as with any unrecognized request argument.
 
 ==== Declarative Pattern Matching
 
@@ -322,6 +265,108 @@ For full details on the interceptor API for each language variant, refer to the 
 each GLV's documentation in the
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
 reference.
+
+==== Multi-Label Support
+
+Until now, vertices in the property graph model were limited to a single, immutable label assigned at creation. This
+release introduces configurable label cardinality, allowing vertices to carry multiple labels that can be added and
+removed over their lifetime.
+
+The feature is controlled by `LabelCardinality`, a graph-level setting that defaults to `ONE`, preserving the
+existing single-label behavior. To enable multi-label in TinkerGraph, set the vertex label cardinality in the graph
+properties:
+
+```
+gremlin.tinkergraph.vertexLabelCardinality=ZERO_OR_MORE
+```
+
+The three modes are `ONE` (single, immutable, the 3.x default), `ONE_OR_MORE` (mutable, minimum one), and
+`ZERO_OR_MORE` (fully flexible). Edge labels remain fixed at `ONE`.
+
+With multi-label enabled, several new traversal steps become available:
+
+```text
+gremlin> g.addV('person','employee').property('name','marko')
+==>v[0]
+gremlin> g.V().has('name','marko').addLabel('manager')
+==>v[0]
+gremlin> g.V().has('name','marko').labels()
+==>person
+==>employee
+==>manager
+gremlin> g.V().has('name','marko').dropLabel('employee').labels()
+==>person
+==>manager
+```
+
+The `labels()` step is a flatMap that emits one traverser per label, unlike `label()` which returns a single string.
+For single-label vertices the two behave identically.
+
+The `mergeV()` step accepts a list for `T.label` to match or create multi-label vertices. The `onMatch` option uses
+append-only semantics: new labels are added, existing labels are preserved:
+
+```text
+gremlin> g.mergeV([(T.label): ['person','employee'], name: 'marko'])
+==>v[0]
+gremlin> g.mergeV([(T.label): 'person', name: 'marko']).option(Merge.onMatch, [(T.label): 'director'])
+==>v[0]
+```
+
+By default, `elementMap()` and `valueMap()` continue to return labels as a single string. To receive all labels as a
+set, use `with("multilabel")` either per-traversal or as a persistent source configuration:
+
+```text
+// assuming a vertex with labels [person, employee, manager] and name "marko"
+gremlin> g.with("multilabel").V().has('name','marko').elementMap()
+==>{id=0, label=[manager, person, employee], name=marko}
+gremlin> g.V().has('name','marko').elementMap()
+==>{id=0, label=manager, name=marko}
+```
+
+To avoid repeating `with("multilabel")` on every traversal, create a persistent source:
+
+```text
+gremlin> gml = g.with("multilabel")
+==>graphtraversalsource[tinkergraph[vertices:1 edges:0], standard]
+gremlin> gml.V().has('name','marko').elementMap()
+==>{id=0, label=[manager, person, employee], name=marko}
+gremlin> gml.V().has('name','marko').valueMap(true)
+==>{id=0, label=[manager, person, employee], name=[marko]}
+```
+
+Note the following behavioral details:
+
+* The deprecated `label()` step returns a single, non-deterministic label when multiple labels are present. Always
+  use `labels()` to retrieve the full set reliably.
+* When a source is configured with `with("multilabel")`, the label output can be forced back to a single string
+  per-traversal using `with("singlelabel")`. This is useful for providers that enable multi-label output by default
+  but need an escape hatch for backward compatibility. Note that when both options are present on the same source,
+  `"singlelabel"` always takes precedence regardless of the order in which they were applied.
+* Adding a label that already exists on the vertex is a no-op (when multi-label is enabled). Dropping a label that
+  does not exist is also a no-op. With cardinality `ONE`, both `addLabel()` and `dropLabel()` throw since labels are
+  immutable.
+* `hasLabel()` tests the predicate against each label on the element and returns `true` if at least one label
+  satisfies it. For multi-label vertices, this means `hasLabel(P.neq("person"))` returns `true` when the vertex also
+  carries other labels, a natural consequence of testing a negation predicate against a set of labels, where the
+  non-matching labels will satisfy `neq`. To exclude vertices that carry a specific label, use the negation pattern:
+  `g.V().not(__.hasLabel("person"))`. For single-label vertices the behavior is unchanged.
+
+==== Inconfigurable Request Serialization
+
+TinkerPop 3.x drivers used a single serializer configuration (for example, `serializer` in the Java driver or
+`message_serializer` in Python) that controlled both how a `RequestMessage` was serialized on the way to the server
+and how responses were deserialized on the way back. TinkerPop 4 splits these concerns. Requests are now always
+serialized as JSON (`application/json`) and that behavior is not configurable. The remaining serializer configuration
+is named `responseSerializer` (cased idiomatically per language) and controls only the `Accept` header and response
+deserialization.
+
+Applications that require a different request body encoding, such as GraphBinary for a server that expects it, can
+register a request interceptor that serializes the `RequestMessage` and replaces the body and `Content-Type` header.
+See the RequestInterceptor section for each GLV in the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
+reference.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3250[TINKERPOP-3250]
 
 ==== Gremlator
 
@@ -589,7 +634,7 @@ interface.
 The `GraphSONSerializersV4` class and the `gremlin_python.structure.io.graphsonV4` module have been removed.
 GraphBinary is the only supported wire format for the Python driver in TinkerPop 4. Code that constructed
 `GraphSONSerializersV4()` or imported from `gremlin_python.structure.io.graphsonV4` must switch to
-`GraphBinarySerializersV4` (the default `request_serializer` and `response_serializer`):
+`GraphBinarySerializersV4` (the default `response_serializer`):
 
 [source,python]
 ----
@@ -602,8 +647,8 @@ from gremlin_python.driver.connection import GremlinServerError
 
 The `protocol_factory` and `transport_factory` parameters have been removed from `Client`,
 `DriverRemoteConnection`, and `Connection`. Users who were passing a custom `protocol_factory` should use the
-`request_serializer`, `response_serializer`, `auth`, and `interceptors` parameters directly instead — these cover
-all functionality that `GremlinServerHTTPProtocol` previously provided.
+`response_serializer`, `auth`, and `interceptors` parameters directly instead. These cover all functionality that
+`GremlinServerHTTPProtocol` previously provided.
 
 Transport options like SSL and timeouts are now passed as keyword arguments directly:
 
@@ -627,7 +672,7 @@ Connection(url, traversal_source, protocol, transport_factory, executor, pool)
 
 # After
 Connection(url, traversal_source, executor, pool,
-           request_serializer=None, response_serializer=None,
+           response_serializer=None,
            auth=None, interceptors=None, **transport_kwargs)
 ----
 
@@ -861,6 +906,22 @@ beyond this limit will be rejected with an error.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3247[TINKERPOP-3247]
 
+==== GValue in the Language Variants
+
+`GValue`, the named query-parameter wrapper introduced for Java in 3.8.0, is now available as a client-side API in all
+of the Gremlin Language Variants. Users of the Python, JavaScript, .NET, and Go drivers can construct a `GValue` and
+pass it to a parameterizable step; the driver sends the value to the server as a named parameter rather than inlining
+it as a literal. See the "GValue Parameterization" reference documentation for
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-java-gvalue[Java],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-python-gvalue[Python],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-javascript-gvalue[JavaScript],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-dotnet-gvalue[.NET], and
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-go-gvalue[Go] for construction syntax and examples.
+
+The leading-underscore restriction on `GValue` names that was present in 3.8.0 has been removed. Parameter names
+beginning with `_` are now accepted in Java and across all language variants. The only remaining constraints are that
+a `GValue` may not wrap another `GValue`, and (in the non-Java drivers) its name may not be null.
+
 ==== JavaScript Typed Numeric Wrappers
 
 JavaScript has a single `Number` type (IEEE 754 double) which loses the distinction between Gremlin numeric types like
@@ -924,7 +985,7 @@ re-query elements against the original graph, extract their ids and call `g.V(id
 
 Graph providers may now expose custom types as Provider Defined Types (PDT) (replacing the old `CustomTypeSerializer`
 mechanism). The key improvement is that the default case now works out of the box — drivers deserialize PDT values
-as `ProviderDefinedType` objects containing a `name` and a `fields` map without any configuration, eliminating
+as `CompositePDT` objects containing a `name` and a `fields` map without any configuration, eliminating
 the serializer errors that occurred with unknown custom types in TP3. For automatic conversion between PDT values and
 application-specific types, each driver supports an optional registry or annotation mechanism, which requires similar
 effort to the old custom serializer approach but is entirely optional for basic usage:
@@ -934,6 +995,10 @@ effort to the old custom serializer approach but is entirely optional for basic 
 * <<gremlin-javascript-pdt,Gremlin-JavaScript>>
 * <<gremlin-dotnet-pdt,Gremlin.Net>>
 * <<gremlin-go-pdt,Gremlin-Go>>
+
+PDTs come in two flavors: *Composite* (a type name plus a map of fields, for structured types) and *Primitive* (a type
+name plus a single opaque string value, for types expressible as a single stringified value). The gremlin-lang grammar
+supports both forms via the `PDT("name",[map])` and `PDT("name","value")` literals respectively.
 
 
 ==== Tree No Longer Extends HashMap
@@ -983,12 +1048,22 @@ implementations must be migrated: providers expose their custom types by annotat
 or, for types they don't own, by implementing `ProviderDefinedTypeAdapter<T>`. Adapters are discovered automatically
 via ServiceLoader, so this requires similar effort to the old approach.
 
-The key improvement is that driver users now receive PDT values as structured `ProviderDefinedType` objects by
+The key improvement is that driver users now receive PDT values as structured `CompositePDT` objects by
 default, without any configuration — eliminating the serializer errors that unknown custom types caused in TP3, and
 benefiting all driver users transparently.
 
 See <<provider-defined-types>> for full details on annotation usage, field filtering, nested types, and ServiceLoader
 registration.
+
+===== Primitive Provider Defined Types
+
+In addition to composite PDTs (which carry a map of fields), providers can now expose *Primitive PDTs* — types
+represented as a single opaque stringified value (GraphBinary type `0xf1`, GraphSON type `g:PrimitivePdt`). This is
+ideal for types with no native TinkerPop representation that can be expressed as a single string, such as unsigned
+integers or WKT geometry strings. Each GLV provides an adapter interface for primitive PDTs
+(`PrimitivePDTAdapter` in Java, `register_primitive` in Python, `registerPrimitive` in JavaScript,
+`RegisterPrimitiveFuncs` in Go, `IPrimitivePdtAdapter<T>` in .NET). A type may be registered as composite or
+primitive, not both. See <<primitive-provider-defined-types>> for details.
 
 `Tree` no longer extends `HashMap`. Provider code that inspected or rebuilt a `Tree` via `Map` methods
 (`get`, `put`, `keySet`, `entrySet`, `size`) must use the tree-shaped API instead: read with `rootNodes()` +
@@ -1009,6 +1084,36 @@ serializer. As a result, Gryo-serialized `Tree` data written by 3.x cannot be re
 Gryo type registration id (`61`) is unchanged and 4.x-to-4.x Gryo round-trips correctly; this Gryo break is
 expected for the 4.0.0 major release.
 
+===== Multi-Label Support
+
+Providers declare their supported label cardinality via `Graph.Features.getLabelCardinality()`, which defaults to
+`LabelCardinality.ONE` (single label, immutable, the 3.x behavior). To support multi-label, return `ONE_OR_MORE` or
+`ZERO_OR_MORE` from this method. This value may be a static constant for a graphs which do not offer configurable label
+cardinality. The label cardinality should reflect the current `Graph` instance.
+
+The `LabelCardinality` enum exposes `min()`, `max()`, and `supportsMutation()` for programmatic introspection of
+constraints. Constraint enforcement is handled by the `LabelCardinalityValidator` utility class, which providers may
+use directly or replace with their own validation logic tailored to their storage backend.
+
+Providers implementing multi-label must:
+
+- Store and return a `Set<String>` from `Element.labels()`
+- Implement `Element.addLabel(String, String...)` and `Element.dropLabel(String, String...)`
+- Ensure `hasLabel("a", "b")` uses OR semantics (matches vertices with label "a" or "b")
+- Serialize/deserialize the label set via the V4 GraphBinary format (which sends labels as a list)
+
+The default `elementMap()` and `valueMap()` implementations determine label output format solely from the
+`with("multilabel")` source option, not from the graph's `LabelCardinality`. This means a multi-label graph still
+returns a single label string from these steps unless `with("multilabel")` is explicitly configured. The intent is
+to eventually deprecate the single-string path entirely and always return labels as a set, aligning `elementMap()`
+and `valueMap()` with `labels()`. Until then, `with("singlelabel")` allows users to override a source-level
+`with("multilabel")` back to single-string output.
+
+Providers who want `elementMap()`/`valueMap()` to return the full label set by default (without requiring users to
+set `with("multilabel")`) should override `PropertyMapStep` and `ElementMapStep` to tie label output to their
+server-side label cardinality configuration. In that case, `with("singlelabel")` should still be respected as an
+explicit user override back to single-string output.
+
 ===== Traversal-Accepting Steps - HasContainer Guard
 
 Steps and predicates now accept child traversals resolved at runtime. `HasContainer` instances that hold a child
@@ -1023,6 +1128,25 @@ if (hasContainer.hasTraversal()) continue;  // skip - dynamic value, cannot fold
 `GraphStep.processHasContainerIds()` already includes this guard. Providers that implement their own `HasContainer`
 folding strategy should add the same check. Without it, the container's value is read before it has been resolved
 against a traverser, so an unresolved value would be folded into the index lookup and produce incorrect results.
+
+===== Millisecond Server Settings Renamed
+
+The millisecond-valued Gremlin Server settings now carry a `Millis` suffix so that their unit is explicit in the name,
+matching `timeoutMillis` and the driver connection options such as `connectTimeoutMillis`. Providers that ship their
+own `gremlin-server.yaml`, generate server configuration, or read these fields from the `Settings` object must update
+the following keys.
+
+[source,text]
+----
+idleConnectionTimeout        ->  idleConnectionTimeoutMillis
+keepAliveInterval            ->  keepAliveIntervalMillis
+ssl.refreshInterval          ->  ssl.refreshIntervalMillis
+metrics.<reporter>.interval  ->  metrics.<reporter>.intervalMillis
+----
+
+There is no backward-compatible alias, so the old keys are no longer recognized. The transaction settings
+`idleTransactionTimeoutMillis`, `maxTransactionLifetimeMillis`, and `perGraphCloseTimeoutMillis` are new in 4.x and
+also use the suffix.
 
 ==== Graph Driver Providers
 

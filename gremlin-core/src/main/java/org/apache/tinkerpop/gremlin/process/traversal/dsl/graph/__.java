@@ -129,6 +129,48 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#labels()
+     */
+    public static <A extends Element> GraphTraversal<A, String> labels() {
+        return __.<A>start().labels();
+    }
+
+    /**
+     * @see GraphTraversal#addLabel(String, String...)
+     */
+    public static <A extends Element> GraphTraversal<A, A> addLabel(final String label, final String... moreLabels) {
+        return __.<A>start().addLabel(label, moreLabels);
+    }
+
+    /**
+     * @see GraphTraversal#addLabel(Traversal, Traversal...)
+     */
+    public static <A extends Element> GraphTraversal<A, A> addLabel(final Traversal<?, ?> labelTraversal, final Traversal<?, ?>... moreLabelTraversals) {
+        return __.<A>start().addLabel(labelTraversal, moreLabelTraversals);
+    }
+
+    /**
+     * @see GraphTraversal#dropLabels()
+     */
+    public static <A extends Element> GraphTraversal<A, A> dropLabels() {
+        return __.<A>start().dropLabels();
+    }
+
+    /**
+     * @see GraphTraversal#dropLabel(String, String...)
+     */
+    public static <A extends Element> GraphTraversal<A, A> dropLabel(final String label, final String... moreLabels) {
+        return __.<A>start().dropLabel(label, moreLabels);
+    }
+
+    /**
+     * @see GraphTraversal#dropLabel(Traversal, Traversal...)
+     */
+    public static <A extends Element> GraphTraversal<A, A> dropLabel(final Traversal<?, String> labelTraversal, final Traversal<?, String>... moreLabelTraversals) {
+        return __.<A>start().dropLabel(labelTraversal, moreLabelTraversals);
+    }
+
+    /**
      * @see GraphTraversal#id()
      */
     public static <A extends Element> GraphTraversal<A, Object> id() {
@@ -659,24 +701,25 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#addV(String)
+     * @see GraphTraversal#addV(String, String...)
      */
-    public static <A> GraphTraversal<A, Vertex> addV(final String vertexLabel) {
-        return __.<A>start().addV(vertexLabel);
+    public static <A> GraphTraversal<A, Vertex> addV(final String label, final String... additionalLabels) {
+        return __.<A>start().addV(label, additionalLabels);
     }
 
     /**
-     * @see GraphTraversal#addV(GValue)
+     * @see GraphTraversal#addV(GValue, GValue...)
      */
-    public static <A> GraphTraversal<A, Vertex> addV(final GValue<String> vertexLabel) {
-        return __.<A>start().addV(vertexLabel);
+    @SafeVarargs
+    public static <A> GraphTraversal<A, Vertex> addV(final GValue<String> label, final GValue<String>... additionalLabels) {
+        return __.<A>start().addV(label, additionalLabels);
     }
 
     /**
-     * @see GraphTraversal#addV(org.apache.tinkerpop.gremlin.process.traversal.Traversal)
+     * @see GraphTraversal#addV(Traversal, Traversal...)
      */
-    public static <A> GraphTraversal<A, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
-        return __.<A>start().addV(vertexLabelTraversal);
+    public static <A> GraphTraversal<A, Vertex> addV(final Traversal<?, ?> label, final Traversal<?, ?>... additionalLabels) {
+        return __.<A>start().addV(label, additionalLabels);
     }
 
     /**

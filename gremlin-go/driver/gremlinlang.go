@@ -22,7 +22,6 @@ package gremlingo
 import (
 	"encoding/base64"
 	"fmt"
-	"go/token"
 	"math"
 	"math/big"
 	"reflect"
@@ -30,6 +29,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/google/uuid"
 )
@@ -137,6 +137,22 @@ func escapeString(s string) string {
 }
 
 
+func isValidParameterName(name string) bool {
+	runes := []rune(name)
+	if len(runes) == 0 {
+		return false
+	}
+	if !unicode.IsLetter(runes[0]) && runes[0] != '_' && runes[0] != '$' {
+		return false
+	}
+	for _, r := range runes[1:] {
+		if !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '_' && r != '$' {
+			return false
+		}
+	}
+	return true
+}
+
 func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 	if arg == nil {
 		return "null", nil
@@ -205,7 +221,7 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 	case dt:
 		name := reflect.ValueOf(v).Type().Name()
 		return fmt.Sprintf("%s.%s", strings.ToUpper(name), v), nil
-	case *ProviderDefinedType:
+	case *CompositePDT:
 		fields := v.Fields
 		if fields == nil {
 			fields = map[string]interface{}{}
@@ -215,6 +231,8 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 			return "", err
 		}
 		return fmt.Sprintf("PDT(\"%s\",%s)", escapeString(v.Name), mapStr), nil
+	case *PrimitivePDT:
+		return fmt.Sprintf("PDT(\"%s\",\"%s\")", escapeString(v.Name), escapeString(v.Value)), nil
 	case *Vertex:
 		return gl.argAsString(v.Id)
 	case textP:
@@ -260,22 +278,17 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		}
 		return v.GetGremlin("__"), nil
 	case GValue:
-		key := v.Name()
-		if !token.IsIdentifier(key) {
-			panic(fmt.Sprintf("invalid parameter name '%v'.", key))
+		key := v.Name
+		if !isValidParameterName(key) {
+			panic(fmt.Sprintf("invalid parameter name [%v]", key))
 		}
-		value := v.Value()
+		value := v.Value
 		if val, ok := gl.parameters[key]; ok {
-			if reflect.TypeOf(val).Kind() == reflect.Slice || reflect.TypeOf(value).Kind() == reflect.Slice ||
-				reflect.TypeOf(val).Kind() == reflect.Map || reflect.TypeOf(value).Kind() == reflect.Map {
-				if !reflect.DeepEqual(val, value) {
-					panic(fmt.Sprintf("parameter with name '%v' already exists.", key))
-				}
-			} else if val != value {
+			if !reflect.DeepEqual(val, value) {
 				panic(fmt.Sprintf("parameter with name '%v' already exists.", key))
 			}
 		} else {
-			gl.parameters[key] = v.Value()
+			gl.parameters[key] = v.Value
 		}
 		return key, nil
 	case uuid.UUID:
@@ -303,11 +316,20 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		// over any reflection/struct-based fallback, allowing explicit adapters to override
 		// default behavior for a given Go type.
 		if gl.pdtRegistry != nil {
+			// Check primitive adapter before composite (mandatory per Python review lesson).
+			primitiveAdapter := gl.pdtRegistry.GetPrimitiveAdapterByType(reflect.TypeOf(arg))
+			if primitiveAdapter != nil && primitiveAdapter.ToString != nil {
+				s, err := primitiveAdapter.ToString(arg)
+				if err == nil {
+					pdt := &PrimitivePDT{Name: primitiveAdapter.TypeName, Value: s}
+					return gl.argAsString(pdt)
+				}
+			}
 			adapter := gl.pdtRegistry.GetAdapterByType(reflect.TypeOf(arg))
 			if adapter != nil && adapter.ToFields != nil {
 				fields, err := adapter.ToFields(arg)
 				if err == nil {
-					pdt := &ProviderDefinedType{Name: adapter.TypeName, Fields: fields}
+					pdt := &CompositePDT{Name: adapter.TypeName, Fields: fields}
 					return gl.argAsString(pdt)
 				}
 			}
@@ -569,6 +591,13 @@ func (gl *GremlinLang) buildStrategyArgs(args ...interface{}) string {
 		// special handling for OptionsStrategy
 		if strategy.name == "OptionsStrategy" {
 			gl.optionsStrategies = append(gl.optionsStrategies, strategy)
+			// Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
+			if _, ok := strategy.configuration["multilabel"]; ok {
+				gl.gremlin = append(gl.gremlin, ".with(\"multilabel\")")
+			}
+			if _, ok := strategy.configuration["singlelabel"]; ok {
+				gl.gremlin = append(gl.gremlin, ".with(\"singlelabel\")")
+			}
 			continue
 		}
 		if len(strategy.configuration) == 0 {

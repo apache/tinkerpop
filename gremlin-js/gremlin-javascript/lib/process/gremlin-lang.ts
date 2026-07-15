@@ -20,15 +20,19 @@
 import { P, TextP, EnumValue } from './traversal.js';
 import { OptionsStrategy, TraversalStrategy } from './traversal-strategy.js';
 import { Long, Int, Float, Double, Short, Byte, INT32_MIN, INT32_MAX } from '../utils.js';
-import { Vertex, ProviderDefinedType } from '../structure/graph.js';
-import { ProviderDefinedTypeRegistry } from '../structure/ProviderDefinedTypeRegistry.js';
+import { Vertex, CompositePDT, PrimitivePDT } from '../structure/graph.js';
+import { PDTRegistry } from '../structure/PDTRegistry.js';
+import { GValue } from './gvalue.js';
+import { isDeepStrictEqual } from 'node:util';
 import { Buffer } from 'buffer';
+
+const PARAM_NAME_PATTERN = /^[\p{L}_$][\p{L}\p{Nd}_$]*$/u;
 
 export default class GremlinLang {
   private gremlin: string = '';
   private optionsStrategies: OptionsStrategy[] = [];
   private parameters: Map<string, any> = new Map();
-  pdtRegistry: ProviderDefinedTypeRegistry | null = null;
+  pdtRegistry: PDTRegistry | null = null;
   
   constructor(toClone?: GremlinLang) {
     if (toClone) {
@@ -41,6 +45,10 @@ export default class GremlinLang {
   
   getOptionsStrategies(): OptionsStrategy[] {
     return this.optionsStrategies;
+  }
+
+  appendGremlin(text: string): void {
+    this.gremlin += text;
   }
 
   addG(g: string): void {
@@ -120,6 +128,20 @@ export default class GremlinLang {
       const escaped = JSON.stringify(arg).slice(1, -1).replace(/'/g, "\\'");
       return `'${escaped}'`;
     }
+    if (arg instanceof GValue) {
+      const key = arg.name;
+      if (!PARAM_NAME_PATTERN.test(key)) {
+        throw new Error(`Invalid parameter name [${key}].`);
+      }
+      if (this.parameters.has(key)) {
+        if (!isDeepStrictEqual(this.parameters.get(key), arg.value)) {
+          throw new Error(`Parameter with name ${key} already exists.`);
+        }
+      } else {
+        this.parameters.set(key, arg.value);
+      }
+      return key;
+    }
     if (arg instanceof P || arg instanceof TextP) {
       return this._predicateAsString(arg);
     }
@@ -138,7 +160,14 @@ export default class GremlinLang {
     if (typeof arg === 'function' && arg.prototype instanceof TraversalStrategy) {
       return arg.name;
     }
-    if (arg instanceof ProviderDefinedType) {
+    if (arg instanceof PrimitivePDT) {
+      // PDT literals use double-quoted strings (consistent with the composite PDT form below);
+      // JSON.stringify handles special-character escaping, then the outer quotes are stripped.
+      const escapedName = JSON.stringify(arg.name).slice(1, -1);
+      const escapedValue = JSON.stringify(arg.value).slice(1, -1);
+      return `PDT("${escapedName}","${escapedValue}")`;
+    }
+    if (arg instanceof CompositePDT) {
       const fields = arg.fields;
       const keys = Object.keys(fields);
       const escapedName = JSON.stringify(arg.name).slice(1, -1);
@@ -150,6 +179,9 @@ export default class GremlinLang {
       return this._argAsString(arg.id);
     }
     if (arg instanceof GremlinLang) {
+      // Merge the child's parameters so GValue bindings nested inside a child
+      // traversal are still sent to the server alongside the rendered query.
+      arg.parameters.forEach((v, k) => this.parameters.set(k, v));
       return arg.getGremlin('__');
     }
     if (typeof arg.getGremlinLang === 'function') {
@@ -157,7 +189,11 @@ export default class GremlinLang {
       if (arg.graph != null) {
         throw new Error('Child traversal must be anonymous - use __ not g');
       }
-      return arg.getGremlinLang().getGremlin('__');
+      const childLang = arg.getGremlinLang();
+      // Merge the child's parameters so GValue bindings nested inside a child
+      // traversal are still sent to the server alongside the rendered query.
+      childLang.parameters.forEach((v: any, k: string) => this.parameters.set(k, v));
+      return childLang.getGremlin('__');
     }
     if (arg instanceof Uint8Array) {
       return `Binary("${Buffer.from(arg.buffer, arg.byteOffset, arg.byteLength).toString('base64')}")`;
@@ -187,10 +223,15 @@ export default class GremlinLang {
     }
     // Registry-based dehydration
     if (this.pdtRegistry && typeof arg === 'object' && arg.constructor) {
+      const primitiveEntry = this.pdtRegistry.getPrimitiveAdapterByClass(arg.constructor);
+      if (primitiveEntry) {
+        const value = primitiveEntry.toValue(arg);
+        return this._argAsString(new PrimitivePDT(primitiveEntry.typeName, value));
+      }
       const entry = this.pdtRegistry.getAdapterByClass(arg.constructor);
       if (entry) {
         const fields = entry.serialize(arg);
-        return this._argAsString(new ProviderDefinedType(entry.typeName, fields));
+        return this._argAsString(new CompositePDT(entry.typeName, fields));
       }
     }
     throw new TypeError(`GremlinLang contains at least one type [${arg?.constructor?.name ?? typeof arg}] that cannot be represented as text.`);
@@ -213,6 +254,13 @@ export default class GremlinLang {
       for (const strategy of args) {
         if (strategy instanceof OptionsStrategy) {
           this.optionsStrategies.push(strategy);
+          // Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
+          if (strategy.configuration['multilabel'] !== undefined) {
+            this.gremlin += '.with("multilabel")';
+          }
+          if (strategy.configuration['singlelabel'] !== undefined) {
+            this.gremlin += '.with("singlelabel")';
+          }
         } else {
           nonOptionsStrategies.push(strategy);
         }

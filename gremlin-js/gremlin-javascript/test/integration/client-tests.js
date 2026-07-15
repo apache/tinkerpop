@@ -18,7 +18,7 @@
  */
 
 import assert from 'assert';
-import { Vertex, Edge, VertexProperty, ProviderDefinedType } from '../../lib/structure/graph.js';
+import { Vertex, Edge, VertexProperty, CompositePDT, PrimitivePDT } from '../../lib/structure/graph.js';
 import { getClient, serverUrl } from '../helper.js';
 import { cardinality } from '../../lib/process/traversal.js';
 import Client from '../../lib/driver/client.js';
@@ -45,7 +45,7 @@ describe('Client', function () {
           assert.ok(result.first() instanceof Vertex);
         });
     });
-    it('should send and parse a script with bindings', function () {
+    it('should send and parse a script with parameters', function () {
       return client.submit('g.V().has("name", x).values("age")', { x: 'marko' })
         .then(function (result) {
           assert.ok(result);
@@ -210,7 +210,7 @@ function assertVertexProperties(vertex) {
   assert.strictEqual(end.value, 2000);
 }
 
-describe('ProviderDefinedType - Client', function () {
+describe('CompositePDT - Client', function () {
   let pdtClient;
   before(function () {
     pdtClient = getClient('gmodern');
@@ -225,7 +225,7 @@ describe('ProviderDefinedType - Client', function () {
       .then(function (result) {
         assert.strictEqual(result.length, 1);
         const pdt = result.first();
-        assert.ok(pdt instanceof ProviderDefinedType);
+        assert.ok(pdt instanceof CompositePDT);
         assert.strictEqual(pdt.name, 'Point');
         assert.strictEqual(pdt.fields.x, 1);
         assert.strictEqual(pdt.fields.y, 2);
@@ -239,13 +239,13 @@ describe('ProviderDefinedType - Client', function () {
       .then(function (result) {
         assert.strictEqual(result.length, 1);
         const pdt = result.first();
-        assert.ok(pdt instanceof ProviderDefinedType);
+        assert.ok(pdt instanceof CompositePDT);
         assert.strictEqual(pdt.name, 'Person');
         assert.strictEqual(pdt.fields.name, 'Alice');
         assert.strictEqual(pdt.fields.age, 30);
 
         const address = pdt.fields.address;
-        assert.ok(address instanceof ProviderDefinedType);
+        assert.ok(address instanceof CompositePDT);
         assert.strictEqual(address.name, 'Address');
         assert.strictEqual(address.fields.street, '123 Main St');
         assert.strictEqual(address.fields.city, 'Springfield');
@@ -262,12 +262,12 @@ describe('ProviderDefinedType - Client', function () {
         assert.ok(Array.isArray(list));
         assert.strictEqual(list.length, 2);
 
-        assert.ok(list[0] instanceof ProviderDefinedType);
+        assert.ok(list[0] instanceof CompositePDT);
         assert.strictEqual(list[0].name, 'Point');
         assert.strictEqual(list[0].fields.x, 1);
         assert.strictEqual(list[0].fields.y, 2);
 
-        assert.ok(list[1] instanceof ProviderDefinedType);
+        assert.ok(list[1] instanceof CompositePDT);
         assert.strictEqual(list[1].name, 'Point');
         assert.strictEqual(list[1].fields.x, 3);
         assert.strictEqual(list[1].fields.y, 4);
@@ -358,5 +358,52 @@ describe('Client interceptor integration', function () {
     } finally {
       await interceptorClient.close();
     }
+  });
+});
+
+describe('PrimitivePDT - Client', function () {
+  let pdtClient;
+  before(function () {
+    pdtClient = getClient('gmodern');
+    return pdtClient.open();
+  });
+  after(function () {
+    return pdtClient.close();
+  });
+
+  it('should round-trip a simple primitive PDT', function () {
+    return pdtClient.submit('g.inject(PDT("Uint32","42"))')
+      .then(function (result) {
+        assert.strictEqual(result.length, 1);
+        const pdt = result.first();
+        assert.ok(pdt instanceof PrimitivePDT);
+        assert.strictEqual(pdt.name, 'Uint32');
+        assert.strictEqual(pdt.value, '42');
+      });
+  });
+
+  it('should round-trip a primitive PDT with leading zeros', function () {
+    return pdtClient.submit('g.inject(PDT("TinkerId","007"))')
+      .then(function (result) {
+        assert.strictEqual(result.length, 1);
+        const pdt = result.first();
+        assert.ok(pdt instanceof PrimitivePDT);
+        assert.strictEqual(pdt.name, 'TinkerId');
+        assert.strictEqual(pdt.value, '007');
+      });
+  });
+
+  it('should handle primitive PDTs in a collection', function () {
+    return pdtClient.submit('g.inject([PDT("Uint32","1"), PDT("Uint32","2")])')
+      .then(function (result) {
+        assert.strictEqual(result.length, 1);
+        const list = result.first();
+        assert.ok(Array.isArray(list));
+        assert.strictEqual(list.length, 2);
+        assert.ok(list[0] instanceof PrimitivePDT);
+        assert.strictEqual(list[0].value, '1');
+        assert.ok(list[1] instanceof PrimitivePDT);
+        assert.strictEqual(list[1].value, '2');
+      });
   });
 });

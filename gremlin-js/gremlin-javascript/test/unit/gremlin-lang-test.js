@@ -25,10 +25,12 @@ import { P, TextP, t as T, order as Order, scope as Scope, column as Column,
          withOptions as WithOptions, direction } from '../../lib/process/traversal.js';
 import { ReadOnlyStrategy, SubgraphStrategy, OptionsStrategy,
          PartitionStrategy, SeedStrategy } from '../../lib/process/traversal-strategy.js';
-import { Graph, Vertex, ProviderDefinedType } from '../../lib/structure/graph.js';
+import { Graph, Vertex, CompositePDT, PrimitivePDT } from '../../lib/structure/graph.js';
 import { TraversalStrategies } from '../../lib/process/traversal-strategy.js';
 import { Long, toFloat, toDouble, toShort, toByte, toInt, toLong } from '../../lib/utils.js';
 import GremlinLang from '../../lib/process/gremlin-lang.js';
+import { GValue } from '../../lib/process/gvalue.js';
+import { PDTRegistry } from '../../lib/structure/PDTRegistry.js';
 
 const g = new GraphTraversalSource(new Graph(), new TraversalStrategies());
 
@@ -224,9 +226,9 @@ describe('GremlinLang', function () {
       // #93
       [g.withStrategies(new ReadOnlyStrategy(), new SubgraphStrategy({vertices: __.has('region','US-TX')})).V().count(), "g.withStrategies(ReadOnlyStrategy,new SubgraphStrategy(vertices:__.has('region','US-TX'))).V().count()"],
       // #94 - OptionsStrategy extracted, not serialized
-      [g.with_('evaluationTimeout',500).V().count(), 'g.V().count()'],
+      [g.with_('timeoutMillis',500).V().count(), 'g.V().count()'],
       // #95 - OptionsStrategy extracted, not serialized
-      [g.withStrategies(new OptionsStrategy({evaluationTimeout: 500})).V().count(), 'g.V().count()'],
+      [g.withStrategies(new OptionsStrategy({timeoutMillis: 500})).V().count(), 'g.V().count()'],
       // #96
       [g.withStrategies(new PartitionStrategy({partitionKey: '_partition', writePartition: 'a', readPartitions: ['a','b']})).addV('test'), "g.withStrategies(new PartitionStrategy(partitionKey:'_partition',writePartition:'a',readPartitions:['a','b'])).addV('test')"],
       // #97
@@ -371,7 +373,7 @@ describe('GremlinLang', function () {
     });
 
     it('should handle OptionsStrategy extraction', function () {
-      const t = g.with_('evaluationTimeout', 500).V().count();
+      const t = g.with_('timeoutMillis', 500).V().count();
       assert.strictEqual(t.getGremlinLang().getGremlin(), 'g.V().count()');
       assert.strictEqual(t.getGremlinLang().getOptionsStrategies().length, 1);
     });
@@ -629,7 +631,7 @@ describe('GremlinLang', function () {
 
   describe('PDT gremlin-lang tests', function () {
     it('should handle basic PDT', function () {
-      const pdt = new ProviderDefinedType('Point', { x: 1, y: 2 });
+      const pdt = new CompositePDT('Point', { x: 1, y: 2 });
       assert.strictEqual(
         g.inject(pdt).getGremlinLang().getGremlin(),
         "g.inject(PDT(\"Point\",['x':1,'y':2]))"
@@ -637,7 +639,7 @@ describe('GremlinLang', function () {
     });
 
     it('should handle PDT with special chars in name (quotes)', function () {
-      const pdt = new ProviderDefinedType('my"type', { a: 1 });
+      const pdt = new CompositePDT('my"type', { a: 1 });
       assert.strictEqual(
         g.inject(pdt).getGremlinLang().getGremlin(),
         "g.inject(PDT(\"my\\\"type\",['a':1]))"
@@ -645,8 +647,8 @@ describe('GremlinLang', function () {
     });
 
     it('should handle nested PDT', function () {
-      const inner = new ProviderDefinedType('Inner', { v: 42 });
-      const outer = new ProviderDefinedType('Outer', { child: inner });
+      const inner = new CompositePDT('Inner', { v: 42 });
+      const outer = new CompositePDT('Outer', { child: inner });
       assert.strictEqual(
         g.inject(outer).getGremlinLang().getGremlin(),
         "g.inject(PDT(\"Outer\",['child':PDT(\"Inner\",['v':42])]))"
@@ -654,11 +656,212 @@ describe('GremlinLang', function () {
     });
 
     it('should handle PDT with empty fields', function () {
-      const pdt = new ProviderDefinedType('Empty', {});
+      const pdt = new CompositePDT('Empty', {});
       assert.strictEqual(
         g.inject(pdt).getGremlinLang().getGremlin(),
         "g.inject(PDT(\"Empty\",[:]))"
       );
+    });
+  });
+
+  describe('GValue', function () {
+    it('should construct with name and value accessors', function () {
+      const gv = new GValue('myName', 42);
+      assert.strictEqual(gv.name, 'myName');
+      assert.strictEqual(gv.value, 42);
+    });
+
+    it('should return true for isNull() with null value', function () {
+      assert.strictEqual(new GValue('x', null).isNull(), true);
+    });
+
+    it('should return true for isNull() with undefined value', function () {
+      assert.strictEqual(new GValue('x', undefined).isNull(), true);
+    });
+
+    it('should return false for isNull() with non-null value', function () {
+      assert.strictEqual(new GValue('x', 0).isNull(), false);
+    });
+
+    it('should accept name starting with underscore', function () {
+      const gv = new GValue('_x', 1);
+      assert.strictEqual(gv.name, '_x');
+    });
+
+    it('should accept name with $ character', function () {
+      const gv = new GValue('$x', 1);
+      assert.strictEqual(gv.name, '$x');
+    });
+
+    it('should accept name with mid-string underscore', function () {
+      const gv = new GValue('a_b', 1);
+      assert.strictEqual(gv.name, 'a_b');
+    });
+
+    it('should accept Unicode letter name', function () {
+      const gv = new GValue('café', 1);
+      assert.strictEqual(gv.name, 'café');
+    });
+
+    it('should accept language keyword as name', function () {
+      const gv = new GValue('for', 1);
+      assert.strictEqual(gv.name, 'for');
+    });
+
+    it('should reject nested GValue', function () {
+      assert.throws(() => new GValue('x', new GValue('y', 1)), /GValues cannot be nested/);
+    });
+
+    it('should return name=value from toString()', function () {
+      const gv = new GValue('ids', 'hello');
+      assert.strictEqual(gv.toString(), 'ids=hello');
+    });
+
+    it('should render name in gremlin string and store value in parameters', function () {
+      const traversal = g.V(new GValue('ids', [1, 2, 3]));
+      const gl = traversal.getGremlinLang();
+      assert.strictEqual(gl.getGremlin(), 'g.V(ids)');
+      assert.deepStrictEqual(gl.getParameters().get('ids'), [1, 2, 3]);
+    });
+
+    it('should throw when duplicate name has different value', function () {
+      assert.throws(() => {
+        g.V(new GValue('x', 1)).has('name', new GValue('x', 2));
+      }, /Parameter with name x already exists/);
+    });
+
+    it('should allow reuse of same name with equal value', function () {
+      const traversal = g.V(new GValue('ids', [1, 2, 3])).has('name', new GValue('ids', [1, 2, 3]));
+      const gl = traversal.getGremlinLang();
+      assert.strictEqual(gl.getGremlin(), "g.V(ids).has('name',ids)");
+      assert.deepStrictEqual(gl.getParameters().get('ids'), [1, 2, 3]);
+    });
+
+    it('should merge bindings from a GValue nested in a child traversal', function () {
+      const traversal = g.V().where(__.is(new GValue('xx1', 1)));
+      const gl = traversal.getGremlinLang();
+      assert.strictEqual(gl.getGremlin(), 'g.V().where(__.is(xx1))');
+      assert.deepStrictEqual(gl.getParameters().get('xx1'), 1);
+    });
+
+    it('should merge bindings from GValues nested across multiple child traversals', function () {
+      const traversal = g.union(__.V(new GValue('vid1', 1)), __.V(new GValue('vid4', 4))).values('name');
+      const gl = traversal.getGremlinLang();
+      assert.strictEqual(gl.getGremlin(), "g.union(__.V(vid1),__.V(vid4)).values('name')");
+      assert.deepStrictEqual(gl.getParameters().get('vid1'), 1);
+      assert.deepStrictEqual(gl.getParameters().get('vid4'), 4);
+    });
+
+    it('should reject null name', function () {
+      assert.throws(() => new GValue(null, 'v'), /GValue name cannot be null/);
+    });
+
+    it('should validate name starting with underscore in traversal', function () {
+      const traversal = g.V(new GValue('_1', [1, 2, 3]));
+      const gl = traversal.getGremlinLang();
+      assert.strictEqual(gl.getGremlin(), 'g.V(_1)');
+      assert.deepStrictEqual(gl.getParameters().get('_1'), [1, 2, 3]);
+    });
+
+    it('should throw for invalid identifier name when used in traversal', function () {
+      assert.throws(() => {
+        g.V(new GValue('1a', 1));
+      }, /Invalid parameter name/);
+    });
+  });
+
+  describe('Primitive PDT gremlin-lang tests', function () {
+    it('should handle basic primitive PDT', function () {
+      const pdt = new PrimitivePDT('Uint32', '42');
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        'g.inject(PDT("Uint32","42"))'
+      );
+    });
+
+    it('should handle primitive PDT with leading zeros', function () {
+      const pdt = new PrimitivePDT('TinkerId', '007');
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        'g.inject(PDT("TinkerId","007"))'
+      );
+    });
+
+    it('should handle primitive PDT with large number', function () {
+      const pdt = new PrimitivePDT('BigNum', '99999999999999999999');
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        'g.inject(PDT("BigNum","99999999999999999999"))'
+      );
+    });
+
+    it('should handle primitive PDT with non-numeric value', function () {
+      const pdt = new PrimitivePDT('CustomId', 'abc-def-123');
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        'g.inject(PDT("CustomId","abc-def-123"))'
+      );
+    });
+
+    it('should handle primitive PDT with empty value', function () {
+      const pdt = new PrimitivePDT('Empty', '');
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        'g.inject(PDT("Empty",""))'
+      );
+    });
+
+    it('should handle primitive PDT with special chars in name', function () {
+      const pdt = new PrimitivePDT('my"type', '1');
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        'g.inject(PDT("my\\"type","1"))'
+      );
+    });
+
+    it('should handle primitive PDT with special chars in value', function () {
+      const pdt = new PrimitivePDT('Str', 'hello"world');
+      assert.strictEqual(
+        g.inject(pdt).getGremlinLang().getGremlin(),
+        'g.inject(PDT("Str","hello\\"world"))'
+      );
+    });
+
+    it('should auto-dehydrate registered primitive types', function () {
+      class Uint32 {
+        constructor(v) { this.v = v; }
+      }
+      const registry = new PDTRegistry();
+      registry.registerPrimitive('Uint32', {
+        toValue: (obj) => String(obj.v),
+        fromValue: (value) => new Uint32(parseInt(value, 10)),
+      }, Uint32);
+
+      const gl = new GremlinLang();
+      gl.pdtRegistry = registry;
+      gl.addStep('inject', [new Uint32(99)]);
+      assert.strictEqual(gl.getGremlin(), 'g.inject(PDT("Uint32","99"))');
+    });
+
+    it('should prefer primitive adapter over composite when both are registered', function () {
+      class DualType {
+        constructor(v) { this.v = v; }
+      }
+      const registry = new PDTRegistry();
+      registry.registerPrimitive('DualType', {
+        toValue: (obj) => String(obj.v),
+        fromValue: (value) => new DualType(value),
+      }, DualType);
+      registry.register('DualType', {
+        serialize: (obj) => ({ v: obj.v }),
+        deserialize: (fields) => new DualType(fields.v),
+      }, DualType);
+
+      const gl = new GremlinLang();
+      gl.pdtRegistry = registry;
+      gl.addStep('inject', [new DualType('hello')]);
+      // primitive should win
+      assert.strictEqual(gl.getGremlin(), 'g.inject(PDT("DualType","hello"))');
     });
   });
 });

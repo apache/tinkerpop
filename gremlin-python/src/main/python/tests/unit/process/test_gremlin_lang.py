@@ -362,11 +362,11 @@ class TestGremlinLang(object):
                       "g.withStrategies(ReadOnlyStrategy,new SubgraphStrategy(vertices:__.has('region','US-TX'))).V().count()"])
 
         # 95 Note with_() options are now extracted into request message and is no longer sent with the script
-        tests.append([g.with_('evaluationTimeout', 500).V().count(),
+        tests.append([g.with_('timeoutMillis', 500).V().count(),
                       "g.V().count()"])
 
         # 96 Note OptionsStrategy are now extracted into request message and is no longer sent with the script
-        tests.append([g.with_strategies(OptionsStrategy(evaluationTimeout=500)).V().count(),
+        tests.append([g.with_strategies(OptionsStrategy(timeoutMillis=500)).V().count(),
                       "g.V().count()"])
 
         # 97
@@ -483,39 +483,24 @@ class TestGremlinLang(object):
             assert gremlin_lang == tests[t][1]
 
     def test_gvalue_name_cannot_be_null(self):
-        g = traversal().with_(None)
         try:
-            g.V(GValue(None, [1, 2, 3]))
+            GValue(None, [1, 2, 3])
+            assert False, 'expected exception for null name'
         except Exception as ex:
-            assert str(ex) == 'The parameter name cannot be None.'
+            assert str(ex) == 'GValue name cannot be null.'
 
-    def test_gvalue_name_dont_need_escaping(self):
-        g = traversal().with_(None)
-        try:
-            g.V(GValue('\"', [1, 2, 3]))
-        except Exception as ex:
-            assert str(ex) == 'invalid parameter name ".'
+    def test_gvalue_name_mid_string_dollar_accepted(self):
+        assert GValue('a$b', [1, 2, 3]).get_name() == 'a$b'
 
-    def test_gvalue_is_not_number(self):
+    def test_gvalue_name_unicode_letter_accepted(self):
         g = traversal().with_(None)
-        try:
-            g.V(GValue('1', [1, 2, 3]))
-        except Exception as ex:
-            assert str(ex) == 'invalid parameter name 1.'
+        p = GValue('café', 42)
+        gremlin = g.V(p).gremlin_lang
+        assert 'g.V(café)' == gremlin.get_gremlin()
+        assert 42 == gremlin.get_parameters().get('café')
 
-    def test_gvalue_is_valid_identifier(self):
-        g = traversal().with_(None)
-        try:
-            g.V(GValue('1a', [1, 2, 3]))
-        except Exception as ex:
-            assert str(ex) == 'invalid parameter name 1a.'
-
-    def test_gvalue_is_not_reserved(self):
-        g = traversal().with_(None)
-        try:
-            g.V(GValue('_1', [1, 2, 3]))
-        except Exception as ex:
-            assert str(ex) == 'invalid GValue name _1. Should not start with _.'
+    def test_gvalue_underscore_name_accepted(self):
+        assert GValue('_1', [1, 2, 3]).get_name() == '_1'
 
     def test_gvalue_is_not_duplicate(self):
         g = traversal().with_(None)
@@ -531,6 +516,67 @@ class TestGremlinLang(object):
         gremlin = g.inject(p).V(p).gremlin_lang
         assert 'g.inject(ids).V(ids)' == gremlin.get_gremlin()
         assert val == gremlin.get_parameters().get('ids')
+
+    def test_gvalue_nested_in_child_traversal(self):
+        g = traversal().with_(None)
+        gremlin = g.V().where(__.is_(GValue('xx1', 1))).gremlin_lang
+        assert 'g.V().where(__.is(xx1))' == gremlin.get_gremlin()
+        assert 1 == gremlin.get_parameters().get('xx1')
+
+    def test_gvalue_nested_across_multiple_child_traversals(self):
+        g = traversal().with_(None)
+        gremlin = g.V().union(__.V(GValue('vid1', 1)), __.V(GValue('vid4', 4))).gremlin_lang
+        assert 'g.V().union(__.V(vid1),__.V(vid4))' == gremlin.get_gremlin()
+        assert 1 == gremlin.get_parameters().get('vid1')
+        assert 4 == gremlin.get_parameters().get('vid4')
+
+    def test_gvalue_mid_string_underscore_accepted(self):
+        g = traversal().with_(None)
+        p = GValue('a_b', 42)
+        gremlin = g.V(p).gremlin_lang
+        assert 'g.V(a_b)' == gremlin.get_gremlin()
+        assert 42 == gremlin.get_parameters().get('a_b')
+
+    def test_gvalue_underscore_start_name_in_traversal(self):
+        g = traversal().with_(None)
+        gremlin = g.V(GValue('_1', [1, 2, 3])).gremlin_lang
+        assert 'g.V(_1)' == gremlin.get_gremlin()
+        assert [1, 2, 3] == gremlin.get_parameters().get('_1')
+
+    def test_gvalue_dollar_name_in_traversal(self):
+        g = traversal().with_(None)
+        gremlin = g.V(GValue('a$b', 1)).gremlin_lang
+        assert 'g.V(a$b)' == gremlin.get_gremlin()
+        assert 1 == gremlin.get_parameters().get('a$b')
+
+    def test_gvalue_invalid_name_raises_in_traversal(self):
+        import pytest
+        g = traversal().with_(None)
+        with pytest.raises(Exception, match='Invalid parameter name'):
+            g.V(GValue('1a', 1)).gremlin_lang.get_gremlin()
+
+    def test_gvalue_construction_and_accessors(self):
+        p = GValue('x', 1)
+        assert 'x' == p.get_name()
+        assert 1 == p.get()
+        assert p.is_null() is False
+
+    def test_gvalue_is_null(self):
+        p = GValue('n', None)
+        assert p.is_null() is True
+        q = GValue('m', 0)
+        assert q.is_null() is False
+
+    def test_gvalue_string_representation(self):
+        p = GValue('x', 1)
+        assert repr(p) == 'x=1'
+        assert str(p) == 'x=1'
+
+    def test_gvalue_cannot_be_nested(self):
+        try:
+            GValue('x', GValue('y', 1))
+        except Exception as ex:
+            assert str(ex) == 'GValues cannot be nested'
 
     def test_unsupported_type_throws(self):
         g = traversal().with_(None)
@@ -581,7 +627,7 @@ class TestGremlinLang(object):
         assert "it" in result
 
     def test_provider_defined_auto_dehydration(self):
-        from gremlin_python.structure.graph import ProviderDefinedType, provider_defined
+        from gremlin_python.structure.graph import CompositePDT, provider_defined
         g = traversal().with_(None)
 
         @provider_defined(name="com.example.Point")
@@ -595,7 +641,7 @@ class TestGremlinLang(object):
         assert "PDT('com.example.Point',['x':1,'y':2])" in gremlin
 
     def test_pdt_adapter_takes_precedence_over_decorator(self):
-        from gremlin_python.structure.graph import ProviderDefinedTypeRegistry, provider_defined
+        from gremlin_python.structure.graph import PDTRegistry, provider_defined
         g = traversal().with_(None)
 
         @provider_defined(name="com.example.Point")
@@ -604,7 +650,7 @@ class TestGremlinLang(object):
                 self.x = x
                 self.y = y
 
-        registry = ProviderDefinedTypeRegistry()
+        registry = PDTRegistry()
         registry.register("com.adapter.Point",
                           deserialize_fn=lambda fields: Point(fields["a"], fields["b"]),
                           serialize_fn=lambda p: {"a": p.x, "b": p.y},
@@ -617,30 +663,30 @@ class TestGremlinLang(object):
         assert "PDT('com.adapter.Point',['a':3,'b':4])" in gremlin
 
     def test_pdt_special_characters_in_name(self):
-        from gremlin_python.structure.graph import ProviderDefinedType
+        from gremlin_python.structure.graph import CompositePDT
         g = traversal().with_(None)
 
-        pdt = ProviderDefinedType('say"hello"', {'v': 1})
+        pdt = CompositePDT('say"hello"', {'v': 1})
         gremlin = g.inject(pdt).gremlin_lang.get_gremlin()
         assert "PDT('say\"hello\"',['v':1])" in gremlin
 
-        pdt2 = ProviderDefinedType('back\\slash', {'v': 1})
+        pdt2 = CompositePDT('back\\slash', {'v': 1})
         gremlin2 = g.inject(pdt2).gremlin_lang.get_gremlin()
         assert "PDT('back\\\\slash',['v':1])" in gremlin2
 
     def test_pdt_nested(self):
-        from gremlin_python.structure.graph import ProviderDefinedType
+        from gremlin_python.structure.graph import CompositePDT
         g = traversal().with_(None)
 
-        inner = ProviderDefinedType('Inner', {'v': 1})
-        outer = ProviderDefinedType('Outer', {'inner': inner})
+        inner = CompositePDT('Inner', {'v': 1})
+        outer = CompositePDT('Outer', {'inner': inner})
         gremlin = g.inject(outer).gremlin_lang.get_gremlin()
         assert "PDT('Outer',['inner':PDT('Inner',['v':1])])" in gremlin
 
     def test_dehydrate_inner_decorated_in_unregistered_outer(self):
         """A @provider_defined inner object must dehydrate to PDT form even when nested
-        as a field value inside a raw (unregistered/undecorated) ProviderDefinedType."""
-        from gremlin_python.structure.graph import ProviderDefinedType, provider_defined
+        as a field value inside a raw (unregistered/undecorated) CompositePDT."""
+        from gremlin_python.structure.graph import CompositePDT, provider_defined
         g = traversal().with_(None)
 
         @provider_defined(name="com.example.Inner")
@@ -649,8 +695,8 @@ class TestGremlinLang(object):
                 self.val = val
 
         inner_obj = Inner(99)
-        # Outer is a raw ProviderDefinedType — no adapter, no decorator
-        outer_pdt = ProviderDefinedType("com.example.Outer", {"child": inner_obj, "count": 7})
+        # Outer is a raw CompositePDT — no adapter, no decorator
+        outer_pdt = CompositePDT("com.example.Outer", {"child": inner_obj, "count": 7})
 
         gremlin = g.inject(outer_pdt).gremlin_lang.get_gremlin()
         # The inner decorated object MUST be dehydrated to its PDT representation

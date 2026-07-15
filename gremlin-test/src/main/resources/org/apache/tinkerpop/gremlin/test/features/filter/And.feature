@@ -80,3 +80,18 @@ Feature: Step - and()
     Then the result should be unordered
       | result |
       | v[marko] |
+
+  @MultiLabel
+  Scenario: g_V_andXhasLabelXmammalX_hasLabelXendangeredXX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().and(__.hasLabel("mammal"), __.hasLabel("endangered")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | blaze |
+      | titan |
+      | splash |
+      | tinker |

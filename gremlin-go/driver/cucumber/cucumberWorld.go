@@ -87,7 +87,7 @@ func NewCucumberWorld() *CucumberWorld {
 	}
 }
 
-var graphNames = []string{"modern", "classic", "crew", "grateful", "sink", "empty"}
+var graphNames = []string{"modern", "classic", "crew", "grateful", "sink", "zoo", "empty", "multilabel"}
 
 func (t *CucumberWorld) getDataGraphFromMap(name string) *DataGraph {
 	if val, ok := t.graphDataMap[name]; ok {
@@ -101,6 +101,8 @@ func (t *CucumberWorld) loadAllDataGraph() {
 	for _, name := range graphNames {
 		if name == "empty" {
 			t.loadEmptyDataGraph()
+		} else if name == "multilabel" {
+			t.loadMultilabelDataGraph()
 		} else {
 			connection, err := gremlingo.NewDriverRemoteConnection(scenarioUrl(),
 				func(settings *gremlingo.DriverRemoteConnectionSettings) {
@@ -128,8 +130,22 @@ func (t *CucumberWorld) loadEmptyDataGraph() {
 	t.graphDataMap["empty"] = &DataGraph{connection: connection}
 }
 
+func (t *CucumberWorld) loadMultilabelDataGraph() {
+	connection, _ := gremlingo.NewDriverRemoteConnection(scenarioUrl(), func(settings *gremlingo.DriverRemoteConnectionSettings) {
+		settings.TraversalSource = "gmultilabel"
+	})
+	t.graphDataMap["multilabel"] = &DataGraph{connection: connection}
+}
+
 func (t *CucumberWorld) reloadEmptyData() {
 	graphData := t.getDataGraphFromMap("empty")
+	g := gremlingo.Traversal_().With(graphData.connection).With("language", "gremlin-lang")
+	graphData.vertices = getVertices(g)
+	graphData.edges = getEdges(g)
+}
+
+func (t *CucumberWorld) reloadMultilabelData() {
+	graphData := t.getDataGraphFromMap("multilabel")
 	g := gremlingo.Traversal_().With(graphData.connection).With("language", "gremlin-lang")
 	graphData.vertices = getVertices(g)
 	graphData.edges = getEdges(g)
@@ -243,6 +259,10 @@ func (t *CucumberWorld) recreateAllDataGraphConnection() error {
 		if name == "empty" {
 			t.getDataGraphFromMap(name).connection, err = gremlingo.NewDriverRemoteConnection(scenarioUrl(), func(settings *gremlingo.DriverRemoteConnectionSettings) {
 				settings.TraversalSource = "ggraph"
+			})
+		} else if name == "multilabel" {
+			t.getDataGraphFromMap(name).connection, err = gremlingo.NewDriverRemoteConnection(scenarioUrl(), func(settings *gremlingo.DriverRemoteConnectionSettings) {
+				settings.TraversalSource = "gmultilabel"
 			})
 		} else {
 			t.getDataGraphFromMap(name).connection, err = gremlingo.NewDriverRemoteConnection(scenarioUrl(), func(settings *gremlingo.DriverRemoteConnectionSettings) {

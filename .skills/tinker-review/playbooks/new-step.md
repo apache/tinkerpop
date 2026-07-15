@@ -7,41 +7,47 @@ The proposal (dev list or JIRA) is the source of truth for intended
 semantics.
 
 ## Enrich
-Link the step's core implementation to its canonical name. The step
-class (e.g., TreeStep) contains internal methods — only the method on
-GraphTraversal/GraphTraversalSource that users call should map to the step.
+- `getCanonicalSteps` — validate the step name before mapping.
+- `mapStep` — link the core implementation to its canonical name. Map the
+  `GraphTraversal`/`GraphTraversalSource` method users call, not the internal
+  methods on the Step class (e.g., `TreeStep`).
+- `mapCoverage` — record each test that exercises the step (`covers`), so
+  completeness/coverageGaps can confirm the new step is tested.
+- `linkDoc` — record the documentation that references the step.
+- `linkDiscussion` — record the proposal or JIRA that defines the step's semantics.
 
-Check for:
-- A linked proposal (TINKERPOP-XXXX in title/description, or dev list thread)
-- Whether the step appears in Gremlin.g4 (grammar rule)
-- Whether GLV implementations exist for the step
-- Whether documentation references the step
+## Inspect
+- Default interface implementations — justified? If something implements an
+  interface, should it have a proper implementation?
+- Naming — consistent with sibling steps?
+- Class design — wrapping and extending the same parent is suspicious.
+- Type restrictions — not too narrow (provider implementations vary).
+- Cross-GLV signatures — parameter count should match; types differ by language.
+  Judge semantic equivalence, not syntactic identity.
 
-For API design concerns (mined from TinkerPop reviewer patterns):
-- Default implementations on interfaces need justification — if something
-  implements an interface, should it have a proper implementation?
-- Naming should be consistent with existing patterns (look at sibling steps)
-- Class design: wrapping + extending the same parent is suspicious
-- Type restrictions should not be too narrow (provider implementations vary)
-
-## Checks
-- completeness(step, ["in:implements_step", "out:has_rule", "in:covers", "in:documents", "out:proposed_in"])
-- coverage_gaps(pr.tests(), pr.modified())
-- high_centrality(pr.modified())
-- blast_radius(pr.modified(), 3)
+## Verify
+- Test the step in every active GLV, not just Java — a new step must work
+  end-to-end per language. Submit native queries against the built server from
+  each GLV client.
+- Drive the step's documented signature: required args, optional args, and the
+  no-arg form if the docs describe one.
+- Adversarial: wrong argument types, the step in an illegal position (start vs
+  mid-traversal), and composition with a common neighbor step (`by`, `as`).
+- Cross-check observed behavior against the step's Gherkin feature — the results
+  should agree with what the feature asserts.
 
 ## Interpret
-A step missing from some GLVs is acceptable if tracked in a follow-up
-issue — check if the PR or linked JIRA mentions phased rollout. Missing
-documentation is not acceptable — a step without docs is undiscoverable.
-
-When comparing signatures across GLVs, parameter count should match but
-parameter types will differ by language. Focus on semantic equivalence,
-not syntactic identity.
-
-High centrality in step infrastructure (TraversalStrategy, Step interface
-implementations) is expected — these are shared abstractions. Flag it
-for attention but don't treat it as a problem.
+- `checks.completeness` over `implements_step` / `has_rule` / `covers` /
+  `documents` / `proposed_in` — what's missing. Missing from some GLVs is
+  acceptable if a follow-up issue tracks it (check the PR or linked JIRA for
+  phased rollout). Missing docs (no `documents`) — blocking; an undocumented
+  step is undiscoverable. Missing tests (`checks.coverageGaps`, no `covers`) —
+  blocking; a new step must be exercised.
+- `checks.blastRadius` — usually low (nothing calls a new step yet); high means
+  it hooks into shared infrastructure — verify those integration points.
+- `checks.centrality` — high in step infrastructure (TraversalStrategy, Step
+  implementations) is expected; note it, don't treat it as a problem. Ignore
+  out-degree that's just library calls (`checks.externals`, origin=library).
 
 ## Escape
 - if missing: proposal — "Cannot assess intent — need human to confirm expected semantics"

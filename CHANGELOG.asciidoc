@@ -25,69 +25,46 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* Standardized `gremlin-dotnet` connection options per the TinkerPop 4.x GLV proposal:
-** Renamed the `Auth.BasicAuth`/`Auth.SigV4Auth` factory methods to `Auth.Basic`/`Auth.Sigv4` (breaking; the old methods have been removed). *(breaking)*
-** Renamed `MaxConnectionsPerServer` to `MaxConnections`, `IdleConnectionTimeout` to `IdleTimeout`, and `KeepAliveInterval` to `KeepAliveTime` (now wired to a real TCP keep-alive socket option rather than the inert HTTP/2 ping timeout, enabling `SO_KEEPALIVE` and setting the per-socket idle time on Windows, Linux, and macOS, with a no-op fallback to the OS default idle time on other platforms); the old property names have been removed. *(breaking)*
-** Renamed `ConnectionTimeout` to `ConnectTimeout` (default lowered from 15s to 5s; old name removed). *(breaking)*
-** Renamed `EnableCompression` to `Compression`, now a `{None, Deflate}` enum defaulting to `Deflate` (compression on by default; set `None` to disable). The old `EnableCompression` `bool` has been removed. *(breaking)*
-** Added `Ssl` (an `SslClientAuthenticationOptions`; `SkipCertificateValidation` is applied to an internal copy rather than mutating the caller's options).
-** Added `BatchSize` (default 64), a connection-level default that fills the per-request `batchSize` when unset.
-** Added `MaxResponseHeaderBytes`, exposing the handler's maximum response header size.
-** Added `ReadTimeout`, a per-read idle timeout applied to each read of the response stream.
-** Each timeout option is also settable in milliseconds via an `int` companion property (`ConnectTimeoutMillis`, `IdleTimeoutMillis`, `ReadTimeoutMillis`, `KeepAliveTimeMillis`); the unsuffixed `TimeSpan` property remains the idiomatic form and both reflect the same value.
-** Added `Proxy`, routing connections through an `IWebProxy`.
+* Added GraphBinary `Tree` (`0x2b`) serialization and deserialization with a native tree-shaped API to `gremlin-python`, `gremlin-dotnet`, `gremlin-go`, and `gremlin-javascript`.
+* Added a `gremlin/io` package export in `gremlin-javascript` exposing the GraphBinary type serializers.
+* Raised the minimum Java version to 17 for building and running *(breaking)*.
+* Enabled building and running with Java 21 and Java 25.
+* Bumped Groovy to 4.0.32, Hadoop to 3.4.3, Spark to 4.1.2 (Scala 2.13), and Netty to 4.2.7 to support Java 25.
+* Bumped `Microsoft.Extensions.Logging.Abstractions` and `Microsoft.Extensions.Logging.Console` to 10.0.9 for `gremlin-dotnet`.
+* Bumped TypeScript to 6.0 across the JavaScript modules; `gremlint` now compiles to ES2021 rather than ES5.
+* Standardized connection options across all GLVs (Java, Python, .NET, Go, JavaScript) per the TinkerPop 4.x GLV proposal; see the upgrade docs for the full per-driver table. *(breaking)*
+** Aligned option names across drivers: `maxConnections` (128), `connectTimeoutMillis` (5000), `readTimeoutMillis` (off), `idleTimeoutMillis` (180000), `keepAliveTimeMillis` (30000), `compression` (on/`deflate`), `batchSize` (64), `bulkResults` (false), `maxResponseHeaderBytes`, `proxy`, `ssl`, and `responseSerializer`. Timeouts use a millisecond-suffixed canonical name with an idiomatic duration companion (Java `Duration`, Go `time.Duration`, .NET `TimeSpan`, Python seconds); JavaScript uses milliseconds only.
+** Java: renamed `maxConnectionPoolSize`/`connectionSetupTimeoutMillis`/`idleConnectionTimeoutMillis`/`resultIterationBatchSize`/`serializer` and `RequestOptions.addG`->`traversalSource`; removed `maxResponseContentLength` (responses now stream); added `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`, `proxy`, `url(String)`, `ssl(SslContext)`. *(breaking)*
+** Python: renamed `pool_size`->`max_connections` (8->128) and `ssl_options`->`ssl`; removed `headers` (use interceptors) and `max_content_length`; added the timeout, `compression`, `batch_size`, `proxy`, and `trust_env` options; requires `aiohttp>=3.11`. *(breaking)*
+** .NET: renamed `MaxConnectionsPerServer`/`ConnectionTimeout`/`IdleConnectionTimeout`/`KeepAliveInterval`/`EnableCompression` and `Auth.BasicAuth`/`Auth.SigV4Auth`->`Auth.Basic`/`Auth.Sigv4`; `KeepAliveTime` now uses a real TCP keep-alive socket option; added `ReadTimeout`, `MaxResponseHeaderBytes`, `Proxy`, `Ssl`, `BulkResults`. *(breaking)*
+** Go: renamed `MaximumConcurrentConnections`/`IdleConnectionTimeout`/`KeepAliveInterval`/`ConnectionTimeout`/`TlsConfig`/`RequestInterceptors`/`EnableCompression`; moved auth helpers into an `auth` sub-package (`auth.Basic`/`auth.SigV4`/`auth.SigV4WithCredentials`); added `ReadTimeout`, `MaxResponseHeaderBytes`, `Proxy`, `BatchSize`, `BulkResults`. *(breaking)*
+** JavaScript: adopted `undici` for the default dispatcher; renamed `reader`->`responseSerializer`; added `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`, `proxy`, `compression`, `batchSize`, `bulkResults`, `logger`; removed `headers` (use interceptors) and `ca`/`cert`/`pfx`/`rejectUnauthorized`/`agent` (TLS via the Node/undici runtime); undici is swapped out in browser bundles. *(breaking)*
+** All drivers: compression now defaults on; `connectTimeout` lowered to 5s and applied to transport establishment; `readTimeout` is a streaming-safe idle-read timeout (off by default); `idleTimeout` reaps only pooled connections.
+* Changed all GLV drivers to always serialize requests as JSON (`application/json`). Request serialization is no longer configurable and the serializer options (now `responseSerializer`) control only response deserialization.
+* Fixed `gremlin-javascript` `Client.submit()` so that an explicit `bulkResults: false` request option is forwarded to the server instead of being silently dropped.
 * Fixed `gremlin-dotnet` deflate response decompression, which threw on the server's zlib-framed output because it used `DeflateStream` (raw DEFLATE, RFC 1951) instead of `ZLibStream` (zlib, RFC 1950); the bug was previously masked because compression was off by default.
 * Fixed `gremlin-dotnet` SSL options cloning (used on the skip-certificate-validation path) to copy `ClientCertificateContext` and `AllowTlsResume`, which were previously dropped, breaking mTLS client certificates and silently re-enabling TLS resumption.
-* Standardized `gremlin-python` connection options per the TinkerPop 4.x GLV proposal:
-** Renamed `pool_size` to `max_connections` (breaking; the old name has been removed) and changed the default from 8 to 128; `max_connections` is now also applied to the aiohttp `TCPConnector` `limit` so the transport layer reflects the option in addition to sizing the Connection pool.
-** Renamed `ssl_options` to `ssl` accepting an `ssl.SSLContext` (breaking; the old name has been removed).
-** Added `connect_timeout` (default 5s) and rewired the existing `read_timeout` into a single aiohttp `ClientTimeout` (`sock_connect`/`sock_read`); the socket-level knobs are used rather than a whole-request `total` so long but legitimate streaming responses are not aborted, while a stalled server no longer hangs forever.
-** Added `idle_timeout` (default 180s) mapped to the aiohttp `TCPConnector` keep-alive timeout.
-** Added `keep_alive_time` (default 30s) enabling TCP keep-alive probes via the connector socket factory (`TCP_KEEPIDLE`/`TCP_KEEPALIVE` guarded by platform availability); this required raising the minimum `aiohttp` to `3.11` (the `socket_factory` floor). *(breaking)*
-** Each timeout option is named with a millisecond suffix as the primary form (`connect_timeout_millis`, `idle_timeout_millis`, `read_timeout_millis`, `keep_alive_time_millis`); the unsuffixed canonical name (`connect_timeout`, etc.) accepts the idiomatic seconds value. Both resolve to seconds internally for aiohttp.
-** Added `compression` accepting `'none'`/`'deflate'`, default `'deflate'` (on), advertising `Accept-Encoding: deflate` by default; when set to `'none'`, aiohttp's automatic `Accept-Encoding` injection is suppressed so compression is not silently negotiated.
-** Added `batch_size` (default 64) connection-level default that fills the per-request `batchSize` when unset.
-** Added explicit HTTP `proxy` and `trust_env` options surfaced on the aiohttp `ClientSession`.
-** Added a credentials-provider variant to `auth.sigv4` that accepts an optional credentials provider or callable, falling back to the AWS environment variables.
-** Removed the `max_content_length` kwarg from the `gremlin-python` driver (previously accepted but discarded).
-** Removed the standalone `headers` kwarg from `gremlin-python` `Client`/`DriverRemoteConnection`; custom headers must now be set via interceptors.
-** Fixed `gremlin-python` `Client.submit`/`submit_async` mutating a caller-supplied `RequestMessage` in place; the message fields are now cloned before applying `request_options`/`batch_size`, so resubmitting the same message no longer accumulates state, matching the no-mutate contract of the .NET/JS drivers.
-** Fixed `gremlin-python` `Client.submit`/`submit_async` mutating a caller-supplied `RequestMessage` in place; the message fields are now cloned before applying `request_options`/`default_batch_size`, so resubmitting the same message no longer accumulates state, matching the no-mutate contract of the .NET/JS drivers.
-* Standardized `gremlin-driver` (Java) connection options
-** Renamed the `connectionSetupTimeoutMillis` builder option to `connectTimeout` (default lowered from 15s to 5s) and actually wired it to `ChannelOption.CONNECT_TIMEOUT_MILLIS` on the connection bootstrap; it previously was validated but never applied. The old name is removed. Settable as `connectTimeout(Duration)` or `connectTimeoutMillis(int)` (YAML key `connectionPool.connectTimeoutMillis`). *(breaking)*
-** Renamed `maxConnectionPoolSize` to `maxConnections` (default 128), `idleConnectionTimeoutMillis` to `idleTimeout` (default 180s), and `resultIterationBatchSize` to `batchSize` (default 64; the connection-level default that fills a request's per-request `batchSize` when unset, mirroring how `bulkResults` shares one name across scopes); the old builder methods, accessors, and YAML keys are removed. *(breaking)*
-** Added `readTimeout` (default 0/off), a per-request idle-read timeout armed when a request is written and reset on each inbound response chunk via a new `ReadTimeoutHandler` inserted after the HTTP codec, so it never fires while a pooled connection is idle between requests. Settable as `readTimeout(Duration)` or `readTimeoutMillis(long)` (YAML key `connectionPool.readTimeoutMillis`).
-** Scoped `idleTimeout` to pooled connections only: an idle event that fires while a request is in flight is now ignored, so `idleTimeout` reaps only connections idle in the pool and no longer overlaps `readTimeout` on the in-flight window. A stalled in-flight response is bounded solely by `readTimeout`. Settable as `idleTimeout(Duration)` or `idleTimeoutMillis(long)` (YAML key `connectionPool.idleTimeoutMillis`). *(breaking)*
-** Renamed `RequestOptions.Builder.addG` to `traversalSource`; the old name is removed. *(breaking)*
-** Added `keepAliveTime` (default 30s/30000ms), the idle time before TCP keep-alive probes begin, enabling `ChannelOption.SO_KEEPALIVE` on the connection bootstrap and configuring the per-socket idle time via the JDK `TCP_KEEPIDLE` extended socket option where supported (JDK 11+ on Linux/macOS); it is a no-op fallback to the OS default idle time on platforms/JDKs where that option is unavailable. Set to `0` to disable. Settable as `keepAliveTime(Duration)` or `keepAliveTimeMillis(long)` (YAML key `connectionPool.keepAliveTimeMillis`).
-** Added a `url(String)` builder method that configures the endpoint from a single URL, deriving SSL from the scheme (`https` enables, `http` disables), the contact point from the host, and the port and path when present; `addContactPoint(s)`/`port`/`path` remain for multi-host configurations.
-** Added `compression`, a `{NONE, DEFLATE}` enum defaulting to `DEFLATE` (compression on by default; set `NONE` to disable). `Accept-Encoding: deflate` is sent whenever `compression == DEFLATE`.
-** Added `maxResponseHeaderBytes` (default 8192) exposing the Netty `HttpClientCodec` max header size, previously hardcoded.
-** Added an `ssl(SslContext)` builder accepting a fully configured Netty `SslContext`.
-** Added a `proxy(ProxyOptions)` builder that inserts a Netty `HttpProxyHandler` into the pipeline before the SSL handler.
-** Removed the `maxResponseContentLength` connection option and its `HttpObjectAggregator` cap; responses are streamed and the new `readTimeout` is the partial mitigation.
-** Reconciled the `validationRequest` default: the builder default is now `g.inject(0)` to match the `Settings` default (it was previously `''`).
+* Fixed `gremlin-python` read timeout to derive from a single source (aiohttp `sock_read`), removing a redundant `async_timeout` read wrapper that could race it; a read timeout now deterministically raises `ReadTimeoutError` (a builtin `TimeoutError` subclass).
 * Removed `Transaction.open()` in favor of `begin()`, which is now the single transaction-start primitive across embedded and remote contexts.
 * Changed `begin()` and `close()` to be idempotent and calling it when a transaction is already in that state no longer throws.
-* Added `maxTransactionLifetime` setting to Gremlin Server, an absolute cap on the total age of an HTTP transaction that interrupts a running operation and rolls the transaction back when it fires (default 600000ms, set to `0` to disable).
-* Changed the Gremlin Server HTTP transaction idle timer to suspend while an operation is running (so a long-running operation is bounded by `evaluationTimeout` rather than the idle timeout) and to honor `0` as "disable idle reclamation"; the `idleTransactionTimeout` default is now 60000ms.
+* Added `maxTransactionLifetimeMillis` setting to Gremlin Server, an absolute cap on the total age of an HTTP transaction that interrupts a running operation and rolls the transaction back when it fires (default 600000ms, set to `0` to disable).
+* Changed the Gremlin Server HTTP transaction idle timer to suspend while an operation is running (so a long-running operation is bounded by `timeoutMillis` rather than the idle timeout) and to honor `0` as "disable idle reclamation"; the `idleTransactionTimeoutMillis` default is now 60000ms.
 * Added configurable CORS `allowedOrigins` setting to Gremlin Server; warns when wildcard origin is used alongside authentication.
-* Standardized `gremlin-go` connection options per the TinkerPop 4.x GLV proposal:
-** Moved `BasicAuth`/`SigV4Auth`/`SigV4AuthWithCredentials` out of package `gremlingo` into a new `auth` sub-package as `auth.Basic`/`auth.SigV4`/`auth.SigV4WithCredentials`. The flat `gremlingo` functions have been removed; use the `auth` sub-package.
-** Renamed `MaximumConcurrentConnections` to `MaxConnections` (default 128), `IdleConnectionTimeout` to `IdleTimeoutMillis` (default 180000), `KeepAliveInterval` to `KeepAliveTimeMillis` (default 30000), `ConnectionTimeout` to `ConnectTimeoutMillis` (default 5000), `TlsConfig` to `Ssl` (`*tls.Config`), and `RequestInterceptors` to `Interceptors`. Each timeout has a `time.Duration` companion (`IdleTimeout`/`KeepAliveTime`/`ConnectTimeout`); set only one form per option. *(breaking)*
-** Renamed `EnableCompression` to `Compression`, now a typed `Compression` const (`CompressionNone`/`CompressionDeflate`) defaulting to `CompressionDeflate` (compression on by default; set `CompressionNone` to disable); `Accept-Encoding: deflate` is sent by default and the manual per-chunk deflate decode path is retained. *(breaking)*
-** Added `BatchSize` (default 64), a connection-level default that fills the per-request `batchSize` when unset.
-** Added `MaxResponseHeaderBytes`, exposing `http.Transport.MaxResponseHeaderBytes`.
-** Added `Proxy` and set `http.Transport.Proxy` to `http.ProxyFromEnvironment` by default, fixing a regression where a custom transport silently dropped environment proxy configuration.
-** Added `ReadTimeoutMillis` (with a `time.Duration` companion `ReadTimeout`; set only one), an idle-read timeout reset on each read (via `SetReadDeadline`) that is re-armed across pooled-connection reuse and does not set `http.Client.Timeout`.
-** Added `BulkResults` (default false), a connection-level default for `bulkResults` applied to every request unless overridden per-request, aligning gremlin-go with the other GLVs which already expose a connection-level setting; the `DriverRemoteConnection` traversal path defaults to `true` regardless of this setting.
 * Fixed `ByteBuf` leak in `GraphBinaryMessageSerializerV4` when serialization throws an `IOException`.
 * Changed `Tree` to no longer extend `HashMap`; it is now a final class with a tree-shaped API (`childAt`, `hasChild`, `contains`, `findSubtree`, `getOrCreateChild`, `getNodesAtDepth`, `getLeafNodes`, `nodeCount`) and is no longer a `Map`.
 * Changed `count(local)` on a `Tree` to return the total node count (`Tree.nodeCount()`) instead of the root-entry count.
 * Changed Tree class in Java to not extend from HashMap and offered a new tree-shaped API for navigation.
+* Added multi-label support for vertices with configurable `LabelCardinality` (`ONE`, `ONE_OR_MORE`, `ZERO_OR_MORE`).
+* Added `labels()` step to emit each vertex label as a separate traverser.
+* Added `addLabel()` and `dropLabel()`/`dropLabels()` steps for vertex label mutation.
+* Added `LabelCardinalityValidator` utility for constraint enforcement separated from the `LabelCardinality` enum.
+* Added `with("multilabel")` source configuration for `elementMap()` and `valueMap()` to return labels as a set.
+* Added `labels().drop()` rejection to `StandardVerificationStrategy` to prevent accidental usage.
+* Added multi-label syntax to `addV()` and `mergeV()` with append-only `onMatch` semantics.
 * Added typed numeric wrappers and `preciseNumbers` connection option to `gremlin-javascript` for explicit control over numeric type serialization and deserialization.
 * Added `NextN(n)` to `Traversal` in `gremlin-go` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs, and updated the Go translators in `gremlin-core` and `gremlin-javascript` to emit `NextN(n)` for the batched form.
 * Added Provider Defined Types (PDT) support — graph providers can define custom types via `@ProviderDefined` annotation that serialize/deserialize seamlessly across all GLVs without driver-side configuration. Replaces TP3 custom type mechanism.
+* Added Primitive Provider Defined Types (PrimitivePDT) — a single opaque stringified value variant of PDT for types with no native TinkerPop representation (e.g. unsigned integers). Supported across all GLVs via adapter registration.
 * Added Gremlator, a single page web application, that translates Gremlin into various programming languages like Javascript and Python.
 * Added explicit transaction support to all non-Java GLVs (gremlin-python, gremlin-go, gremlin-javascript, gremlin-dotnet).
 * Added transaction closure methods (`executeInTx`/`evaluateInTx`) on `GraphTraversalSource` in all GLVs that wrap the begin/commit/rollback lifecycle, so a lambda receives the transaction-bound `g` and is auto-committed on success or rolled back on error.
@@ -122,10 +99,15 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated Groovy-based `LifeCycleHook` and `TraversalSource` creation via init scripts in favor of YAML configuration.
 * Updated all default Gremlin Server configs to remove Groovy dependency from initialization.
 * Added script engine allowlist to Gremlin Server - the `scriptEngines` YAML configuration now restricts which engines can serve requests; `gremlin-lang` is always available.
+* Modified the request timeout to a single name `timeoutMillis` across the server and GLVs.
+* Renamed the millisecond-valued Gremlin Server settings to carry a `Millis` suffix: `idleConnectionTimeout`, `keepAliveInterval`, `ssl.refreshInterval`, and the metrics reporter `interval` became `idleConnectionTimeoutMillis`, `keepAliveIntervalMillis`, `ssl.refreshIntervalMillis`, and `intervalMillis`.
 * Modified request parameters from `Map<String, Object>` to gremlin-lang compatible `String`.
+* Renamed the request `bindings` field to `parameters` across the HTTP request body, GraphBinary, and GraphSON, standardizing terminology for query parameters.
 * Modified HTTP API to expect gremlin-lang strings for parameters and update all GLVs to send requests in new format.
 * Added string parameter parsing to `GremlinServer` to prevent traversal injection and excessive nesting depths.
 * Modified all GLVs to detect unsupported types in `GremlinLang` and throw consistent error for that case.
+* Extended `GValue` parameterization to all GLVs (`gremlin-python`, `gremlin-go`, `gremlin-javascript`, `gremlin-dotnet`), allowing parameters to be passed directly in traversals as in Java.
+* Relaxed `GValue` name validation by removing the reserved leading underscore restriction.
 * Added GraphBinary 4.0 `Graph` (`0x10`) serializer/deserializer to `gremlin-javascript`, `gremlin-dotnet`, and `gremlin-go` so that `subgraph()` results are returned as a detached `Graph` data container.
 * Added `match(string)` and `match(string, IDictionary)` overloads for declarative pattern matching.
 * Deprecated the traversal-based `match(Traversal[])` in favor of the new string-based API.

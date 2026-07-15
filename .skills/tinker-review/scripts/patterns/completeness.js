@@ -31,6 +31,14 @@ import gremlin from "gremlin";
  *   e.g., ["out:has_rule", "in:implements_step", "in:covers", "in:documents"]
  * @returns {Promise<CompletenessResult[]>}
  */
+
+/**
+ * @typedef {Object} CompletenessResult
+ * @property {string}   node     the vertex checked (name or identifier)
+ * @property {string[]} present  expected edge specs that exist (e.g. "out:defines")
+ * @property {string[]} missing  expected edge specs that are absent — the gaps to weigh
+ * @property {number}   score    present / (present + missing), 0..1
+ */
 export async function completeness(g, params) {
   const { vertexLabel, vertexName, expectedEdges } = params;
 

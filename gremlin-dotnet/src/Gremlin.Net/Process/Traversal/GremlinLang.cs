@@ -50,9 +50,9 @@ namespace Gremlin.Net.Process.Traversal
         private List<OptionsStrategy> _optionsStrategies = new();
 
         /// <summary>
-        ///     Gets or sets the <see cref="ProviderDefinedTypeRegistry"/> for registry-based dehydration.
+        ///     Gets or sets the <see cref="PDTRegistry"/> for registry-based dehydration.
         /// </summary>
-        public ProviderDefinedTypeRegistry? PdtRegistry { get; set; }
+        public PDTRegistry? PdtRegistry { get; set; }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GremlinLang" /> class.
@@ -98,6 +98,14 @@ namespace Gremlin.Net.Process.Traversal
         public void AddG(string g)
         {
             _parameters["g"] = g;
+        }
+
+        /// <summary>
+        ///     Appends raw text to the gremlin string. Used for temporary options rendering.
+        /// </summary>
+        internal void Append(string text)
+        {
+            _gremlin.Append(text);
         }
 
         /// <summary>
@@ -311,11 +319,6 @@ namespace Gremlin.Net.Process.Traversal
             {
                 var key = gValue.Name;
 
-                if (key == null)
-                {
-                    return ArgAsString(gValue.ObjectValue);
-                }
-
                 if (!IsValidIdentifier(key))
                 {
                     throw new ArgumentException($"Invalid parameter name [{key}].");
@@ -323,7 +326,7 @@ namespace Gremlin.Net.Process.Traversal
 
                 if (_parameters.ContainsKey(key))
                 {
-                    if (!Equals(_parameters[key], gValue.ObjectValue))
+                    if (!ValuesEqual(_parameters[key], gValue.ObjectValue))
                     {
                         throw new ArgumentException($"Parameter with name [{key}] already defined.");
                     }
@@ -338,7 +341,7 @@ namespace Gremlin.Net.Process.Traversal
             if (arg is CardinalityValue cv)
                 return $"Cardinality.{cv.Cardinality!.EnumValue}({ArgAsString(cv.Value)})";
 
-            if (arg is ProviderDefinedType pdt)
+            if (arg is CompositePDT pdt)
             {
                 var sb2 = new StringBuilder("[");
                 var count = pdt.Fields.Count;
@@ -356,6 +359,11 @@ namespace Gremlin.Net.Process.Traversal
                 }
                 sb2.Append(']');
                 return $"PDT(\"{EscapeJava(pdt.Name)}\",{sb2})";
+            }
+
+            if (arg is PrimitivePDT primitivePdt)
+            {
+                return $"PDT(\"{EscapeJava(primitivePdt.Name)}\",\"{EscapeJava(primitivePdt.Value)}\")";
             }
             if (arg is IDictionary dict)
                 return AsString(dict);
@@ -378,14 +386,22 @@ namespace Gremlin.Net.Process.Traversal
 
             // Precedence: a registered adapter intentionally takes priority over the [ProviderDefined]
             // attribute so that explicit adapters can override attribute-derived dehydration behavior.
+            // Check primitive adapter first, then composite.
             if (PdtRegistry != null)
             {
-                var adapterInfo = PdtRegistry.GetAdapterByType(arg.GetType());
+                var primitiveInfo = PdtRegistry.GetPrimitiveAdapterByType(arg.GetType());
+                if (primitiveInfo != null)
+                {
+                    var (adapterTypeName, toStr) = primitiveInfo.Value;
+                    return ArgAsString(new PrimitivePDT(adapterTypeName, toStr(arg)));
+                }
+
+                var adapterInfo = PdtRegistry.GetCompositeAdapterByType(arg.GetType());
                 if (adapterInfo != null)
                 {
                     var (adapterTypeName, toFields) = adapterInfo.Value;
                     var fields = toFields(arg);
-                    return ArgAsString(new ProviderDefinedType(adapterTypeName,
+                    return ArgAsString(new CompositePDT(adapterTypeName,
                         new Dictionary<string, object?>(fields)));
                 }
             }
@@ -401,7 +417,7 @@ namespace Gremlin.Net.Process.Traversal
                 {
                     fields[property.Name] = property.GetValue(arg);
                 }
-                return ArgAsString(new ProviderDefinedType(typeName, fields));
+                return ArgAsString(new CompositePDT(typeName, fields));
             }
 
             throw new ArgumentException(
@@ -592,6 +608,15 @@ namespace Gremlin.Net.Process.Traversal
                 if (arg is OptionsStrategy optionsStrategy)
                 {
                     _optionsStrategies.Add(optionsStrategy);
+                    // Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
+                    if (optionsStrategy.Configuration.ContainsKey("multilabel"))
+                    {
+                        _gremlin.Append(".with(\"multilabel\")");
+                    }
+                    if (optionsStrategy.Configuration.ContainsKey("singlelabel"))
+                    {
+                        _gremlin.Append(".with(\"singlelabel\")");
+                    }
                     continue;
                 }
 
@@ -784,11 +809,11 @@ namespace Gremlin.Net.Process.Traversal
         {
             if (string.IsNullOrEmpty(name))
                 return false;
-            if (!char.IsLetter(name[0]))
+            if (!char.IsLetter(name[0]) && name[0] != '_' && name[0] != '$')
                 return false;
             for (int i = 1; i < name.Length; i++)
             {
-                if (!char.IsLetterOrDigit(name[i]))
+                if (!char.IsLetterOrDigit(name[i]) && name[i] != '_' && name[i] != '$')
                     return false;
             }
             return true;
@@ -825,6 +850,47 @@ namespace Gremlin.Net.Process.Traversal
                 }
                 return (typeName, filtered.ToArray());
             });
+        }
+
+        private static bool ValuesEqual(object? a, object? b)
+        {
+            if (Equals(a, b)) return true;
+            if (a == null || b == null) return false;
+
+            if (a is IDictionary dictA && b is IDictionary dictB)
+            {
+                if (dictA.Count != dictB.Count) return false;
+                foreach (DictionaryEntry entry in dictA)
+                {
+                    if (!dictB.Contains(entry.Key)) return false;
+                    if (!ValuesEqual(entry.Value, dictB[entry.Key])) return false;
+                }
+                return true;
+            }
+
+            if (a is string || b is string) return false;
+
+            if (a is IEnumerable enumA && b is IEnumerable enumB)
+            {
+                var enumeratorA = enumA.GetEnumerator();
+                var enumeratorB = enumB.GetEnumerator();
+                try
+                {
+                    while (enumeratorA.MoveNext())
+                    {
+                        if (!enumeratorB.MoveNext()) return false;
+                        if (!ValuesEqual(enumeratorA.Current, enumeratorB.Current)) return false;
+                    }
+                    return !enumeratorB.MoveNext();
+                }
+                finally
+                {
+                    if (enumeratorA is IDisposable dA) dA.Dispose();
+                    if (enumeratorB is IDisposable dB) dB.Dispose();
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -136,6 +136,11 @@ public final class ComputerGraph implements Graph {
         }
 
         @Override
+        public Set<String> labels() {
+            return this.element.labels();
+        }
+
+        @Override
         public Graph graph() {
             return ComputerGraph.this;
         }
@@ -453,6 +458,11 @@ public final class ComputerGraph implements Graph {
 
         @Override
         public String label() {
+            throw GraphComputer.Exceptions.adjacentVertexLabelsCanNotBeRead();
+        }
+
+        @Override
+        public Set<String> labels() {
             throw GraphComputer.Exceptions.adjacentVertexLabelsCanNotBeRead();
         }
 

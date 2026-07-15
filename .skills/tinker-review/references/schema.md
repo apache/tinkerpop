@@ -4,14 +4,84 @@
 
 ### Code structure
 
-**File** `{ path, language, changed }`
-A source file in the PR. `changed: true` if modified in this PR.
+**File** `{ path, language, changeLevel }`
+A source file in the PR. `changeLevel` grades how much the PR moved it (see
+**Change levels** below); a file the PR touched is anything but `NONE`.
 
-**Function** `{ name, signature, visibility, filePath, lines_start, lines_end, changed }`
-A function or method. The primary unit of analysis.
+*Stub Files* `{ path, language, changeLevel: "STRUCTURAL", parsed: false, deleted }`
+are markers for changed files the extractor didn't parse, so the PR's `modifies`
+edge still lands. Unparsed, so no fingerprint is possible — graded `STRUCTURAL`
+conservatively. `deleted: true` means the PR removed the file (absent from the
+PR-head worktree); `deleted: false` means it's present but an unparsed type
+(non-code, or a non-primary language). Real Files have no `parsed` property, so
+select materialized files with `.hasNot("parsed")` and markers with
+`.has("parsed", false)`.
 
-**Type** `{ name, kind, visibility, filePath }`
-A class, interface, struct, or enum. `kind` is one of: class, interface, struct, enum.
+**Function** `{ name, signature, visibility, filePath, language, lines_start, lines_end, changeLevel }`
+A function or method. The primary unit of analysis. `changeLevel` is graded per
+function by diffing the base against the PR-head version — so an untouched helper
+in a changed file grades `NONE`, not "changed". `language` is the source
+language (java, python, javascript, go, csharp, dart); by-name edges (`calls`,
+`tests`) resolve only within a language, so a multi-language PR never invents
+cross-language edges.
+
+*External stub Functions* `{ name, external: true, resolved: false, changeLevel: "NONE", origin?, definedIn? }`
+are markers created when a `calls`/`tests` edge targets a function by name that
+wasn't extracted (a library/JDK call, or a function in a file this PR didn't
+change). They keep the edge from vanishing and let blast-radius/centrality see
+the call; they lack `filePath`/`signature`/`visibility`. Filter them out with
+`.has("external", false)` — or, since real Functions have no `external` property,
+`.hasNot("external")` — when you only want materialized code.
+
+`classifyExternals` tags each stub with `origin`: `library` (a known JDK/accessor
+name — noise), `project` (a repo source declares a type with this name;
+`definedIn` records the file), or `unresolved` (unknown). Centrality drops
+`origin: library` calls from out-degree so ubiquitous accessor calls don't
+inflate hotspots.
+
+**Type** `{ name, kind, visibility, filePath, language, changeLevel }`
+A class, interface, struct, or enum. `kind` is one of: class, interface, struct,
+enum. `changeLevel` grades the type's declaration surface: a change to its
+kind/visibility/supertypes/member-set is `STRUCTURAL`; a change to method bodies
+in the declaration leaves it `BEHAVIORAL`/`FORMATTING`. `language` scopes
+`extends`/`implements` resolution so hierarchies never cross languages.
+
+*External stub Types* `{ name, external: true, resolved: false }` are markers
+created when an `extends`/`implements` edge names a supertype that wasn't
+extracted — typically a JDK/library class outside the worktree. In-repo
+supertypes are usually materialized by the extractor's hierarchy-neighborhood
+expansion (which pulls a changed type's ancestors and descendants in as context),
+so stubs mostly stand for third-party types. They lack `kind`/`filePath`; filter
+them with `.has("external", false)` or `.hasNot("external")`.
+
+#### Change levels
+
+`changeLevel` (on File, Function, Type) grades how much the PR moved a vertex,
+computed by diffing the base version of each changed file against PR-head. It
+replaces the old boolean `changed` — because that was stamped per file, it could
+not tell an untouched helper in a changed file from the code the PR rewrote.
+
+| Level | Meaning |
+|-------|---------|
+| `NONE` | byte-identical to base (untouched; also context / hierarchy-neighborhood files and external stubs) |
+| `FORMATTING` | only comments or whitespace moved; the tokens are identical |
+| `BEHAVIORAL` | the body changed for real, but the signature is stable |
+| `STRUCTURAL` | the signature/declaration changed, or the member/file was added or removed, or imports/exports changed |
+
+Query the two useful sets directly: **any real change** is
+`.has("changeLevel", within("FORMATTING","BEHAVIORAL","STRUCTURAL"))` (inclusion-
+oriented checks — orphans, cluster-analysis, architecture); **meaningful change**
+is `.has("changeLevel", within("BEHAVIORAL","STRUCTURAL"))` (risk checks —
+centrality, blast-radius, coverage-gaps, which discount NONE and FORMATTING by
+default). The vocabulary and predicate helpers live in
+`scripts/graph/change-levels.js`.
+
+*Analysis-written property* — `community: number` is stamped onto Function, Type,
+File and Test vertices by community detection (`communityDetection`, Louvain
+modularity over the code subgraph). Vertices sharing a value are one densely-tied
+theme; query a theme with `.has("community", n)`. Vertices with no in-subgraph code
+edge are left unstamped. This is distinct from `connectedComponent()`, which the
+`clusterAnalysis` guard runs on the `a` (OLAP) source without persisting a property.
 
 ### TinkerPop domain
 
@@ -21,13 +91,11 @@ A Gremlin traversal step as a concept (e.g., "addV", "has", "out"). Created duri
 **GrammarRule** `{ name, production }`
 An ANTLR production in Gremlin.g4.
 
-**GLV** `{ language }`
-A Gremlin Language Variant (e.g., "dart", "go", "python").
-
 ### Verification
 
-**Test** `{ name, type }`
-A test function. `type` is one of: unit, integration, suite.
+**Test** `{ name, type, filePath, language }`
+A test function. `type` is one of: unit, integration, suite. `language` scopes
+the `tests` edge to same-language functions.
 
 **Doc** `{ path, section }`
 A documentation file or section that references code.
@@ -41,7 +109,27 @@ The PR itself is a Discussion with `source: "pr"`.
 **Comment** `{ author, body, timestamp }`
 A comment on a Discussion.
 
-## Edges (14 labels)
+## Edges (16 implemented + 1 planned)
+
+One edge is marked ⚠️ *planned* below (`depends_on`) — documented but intentionally
+not populated.
+
+### Edge confidence (every edge)
+
+Every edge carries a `confidence` property recording how the relationship was
+established, so downstream analysis and the reviewer can separate observed fact
+from deduction:
+
+| Value | Meaning | Examples |
+|-------|---------|----------|
+| `EXTRACTED` | Explicitly present in source or the git diff | `defines`, `modifies`, `has_comment`, an `addresses` link stated in the PR body/diff (`found_in: pr`/`diff`) |
+| `INFERRED` | Reasonable deduction | `calls`/`tests` (resolved by name match), `proposed_in`, a cross-referenced `addresses` (`found_in: jira_body`/`devlist_body`), agent `implements_step`/`documents` mappings |
+| `AMBIGUOUS` | Uncertain; flagged for human review | keyword-search `addresses` (`found_in: search`), low-confidence agent guesses |
+
+Enrichment write commands (`mapStep`, `linkDiscussion`, `linkDoc`) accept an
+optional `--confidence` flag (default `INFERRED`). `auditConfidence` reports the
+distribution and lists every `AMBIGUOUS` edge; the review's structural appendix
+renders this as the **Signal Confidence** panel.
 
 ### Code relationships
 
@@ -49,23 +137,26 @@ A comment on a Discussion.
 |------|------|----|---------|
 | `calls` | Function | Function | Function invokes another function |
 | `defines` | File | Function or Type | File contains this definition |
-| `implements` | Function | Type | Function implements an interface |
-| `depends_on` | File | File | File imports/requires another file |
+| `declares` | Type | Function | Type's body declares this method (the membership edge; both endpoints pinned to the same file). `EXTRACTED` |
+| `extends` | Type | Type | Subclass extends a superclass, or interface extends an interface. Supertype resolved by simple name; unresolved parents get an external Type stub. `INFERRED` |
+| `implements` | Type | Type | Class implements an interface. Same resolution/stub behavior as `extends`. (Java splits `extends`/`implements` precisely; other languages label all bases `extends`.) `INFERRED` |
+| `overrides` | Function | Function | A method overrides a same-named method declared by an ancestor type (transitive over `extends`/`implements`). Derived after population by `deriveOverrides`. `INFERRED` |
+| `depends_on` | File | File | ⚠️ *planned, not populated.* File imports/requires another file. Intentionally omitted — call/defines edges already carry file connectivity (see `populate.js`). |
+| `references` | File | File (deleted) | A surviving file still mentions a symbol from a file the PR deleted. Added during a removal review via `addReference`; carries `symbol` and `location` properties. |
 
 ### Domain relationships
 
 | Edge | From | To | Meaning |
 |------|------|----|---------|
 | `implements_step` | Function | Step | This function is a GLV's implementation of a Gremlin step |
-| `has_rule` | Step | GrammarRule | This step is defined by this grammar production |
-| `provides` | GLV | Step | This GLV implements this step |
+| `has_rule` | Step | GrammarRule | This step is defined by this grammar production. Written by `linkRule` (after `addGrammarRule` creates the rule vertex). `INFERRED` |
 
 ### Verification
 
 | Edge | From | To | Meaning |
 |------|------|----|---------|
 | `tests` | Test | Function | This test exercises this function |
-| `covers` | Test | Step | This test covers this step's behavior |
+| `covers` | Test | Step | This test covers this step's behavior. Written by `mapCoverage`. The `new-step` playbook treats a missing `covers` as a coverage gap. `INFERRED` |
 | `documents` | Doc | Step, Function, or Type | This doc describes this entity |
 
 ### Discussion
@@ -74,7 +165,7 @@ A comment on a Discussion.
 |------|------|----|---------|
 | `has_comment` | Discussion | Comment | Discussion contains this comment |
 | `addresses` | Discussion | Discussion | One discussion references another (e.g., PR addresses a JIRA) |
-| `proposed_in` | Step | Discussion | This step was proposed/discussed here |
+| `proposed_in` | Discussion(proposal) | Discussion(pr) | A `docs/src/dev/future` proposal that this PR appears to relate to. Confidence tracks how it was found (see properties below). |
 | `modifies` | Discussion(pr) | Function or File | The PR modifies this code |
 
 #### `addresses` edge properties
@@ -83,4 +174,11 @@ A comment on a Discussion.
 |----------|--------|---------|
 | `found_in` | `pr`, `diff`, `search`, `jira_body`, `devlist_body` | Where the link was discovered |
 | `found_via` | JIRA ID or URL | Which discussion contained the reference (for secondary links) |
+
+#### `proposed_in` edge properties
+
+| Property | Values | Meaning |
+|----------|--------|---------|
+| `matched_in` | `reference`, `title`, `body` | How the proposal was linked: an explicit path reference in the PR (`EXTRACTED`), a keyword in the proposal's title/heading (`INFERRED`), or keywords in its body (`AMBIGUOUS`). |
+| `matched_keywords` | comma-separated terms | The keywords that matched, so the link is self-explanatory. |
 

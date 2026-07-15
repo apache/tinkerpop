@@ -113,6 +113,9 @@ labels are defined and the "weight" edge property is a `double` rather than a `f
 * `createTheCrew()` - A graph that demonstrates usage of the new structural features of TinkerPop 3.x such as
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-properties[vertex meta-properties and multi-properties]
 (link:https://tinkerpop.apache.org/docs/x.y.z/images/the-crew-graph.png[diagram]).
+* `createTheZoo()` - A graph that demonstrates usage of TinkerPop 4.x
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-labels[multi-label vertices] alongside a variety of
+property types (link:https://tinkerpop.apache.org/docs/x.y.z/images/the-zoo-graph.png[diagram]).
 
 [gremlin-groovy]
 ----

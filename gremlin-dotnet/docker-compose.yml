@@ -28,8 +28,6 @@ services:
     ports:
       - "45940:45940"
       - "45941:45941"
-      - "45942:45942"
-      - "4588:4588"
     volumes:
       - ${HOME}/.groovy:/root/.groovy
       - ${HOME}/.m2:/root/.m2
@@ -75,6 +73,10 @@ services:
       EXIT_CODE=$$?;
       /root/.dotnet/tools/trx || true;
       if [ $$EXIT_CODE -ne 0 ]; then echo '❌ dotnet test FAILED (exit code '$$EXIT_CODE') — build or test errors above'; fi;
+      echo 'Running parameterize Gherkin tests...';
+      PARAMETERIZE=true dotnet test ./Gremlin.Net.sln -c Release --logger trx --filter FullyQualifiedName~Gremlin.Net.IntegrationTest.Gherkin.GherkinTestRunner --no-build;
+      PARAM_EXIT=$$?;
+      if [ $$PARAM_EXIT -ne 0 ]; then echo '❌ parameterize Gherkin test FAILED (exit code '$$PARAM_EXIT')'; EXIT_CODE=$$PARAM_EXIT; fi;
       echo 'Running examples...';
       dotnet run --project Examples/BasicGremlin/BasicGremlin.csproj;
       dotnet run --project Examples/Connections/Connections.csproj;

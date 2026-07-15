@@ -17,9 +17,12 @@
  * under the License.
  */
 
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import gremlin from "gremlin";
+import { CONFIDENCE } from "./confidence.js";
 
-const { process: { statics: __ } } = gremlin;
+const { process: { statics: __, P } } = gremlin;
 
 const BATCH_SIZE = 50;
 
@@ -29,28 +32,102 @@ async function submitBatch(batch) {
 }
 
 /**
+ * Derive `overrides` edges (Function -> Function) from the type hierarchy.
+ *
+ * For each real Function `f` declared by some Type, walk that type's transitive
+ * supertypes (extends/implements) and, for every ancestor method sharing `f`'s
+ * name, add `f -overrides-> ancestorMethod`. This is what lets blast radius see
+ * impact flowing through interface/abstract hierarchies: change an interface
+ * method and every override is reachable via `in("overrides")`.
+ *
+ * Requires the `extends`/`implements` and `declares` edges to already be in the
+ * graph, so it runs as a final pass after population. INFERRED — the match is by
+ * method name (arity isn't reliably captured across languages).
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @returns {Promise<number>} count of overrides edges created
+ */
+export async function deriveOverrides(g) {
+  // Only functions that have a declaring type can override anything.
+  const fnIds = await g.V().hasLabel("Function").hasNot("external")
+    .where(__.in_("declares")).id().toList();
+
+  let created = 0;
+  for (const fid of fnIds) {
+    // One scoped walk per function: a global dedup() here would dedup ancestor
+    // types ACROSS seeds, so a shared ancestor (e.g. a common interface) would
+    // be walked only once total and most overrides would be lost. Per-seed keeps
+    // each walk independent.
+    const result = await g.V(fid).as("f")
+      .in_("declares")
+      .repeat(__.out("extends", "implements")).emit().times(6)
+      .dedup()
+      .out("declares").hasNot("external")
+      .where(P.eq("f")).by("name")
+      .where(P.neq("f"))
+      .dedup()
+      .addE("overrides").from_("f")
+      .property("confidence", CONFIDENCE.INFERRED)
+      .count().next();
+    created += Number(result.value);
+  }
+  return created;
+}
+
+/**
  * Populate TinkerGraph with extraction data.
  * Creates vertices and edges matching the PR knowledge graph schema.
  *
  * @param {object} g - gremlin-js GraphTraversalSource (already connected)
  * @param {ExtractionResult} extraction - Output from tree-sitter module
+ * @param {object} [options]
+ * @param {string[]} [options.changedFiles] - Full changed-file list for the PR
+ *   (used to mark files the PR touched but the extractor didn't parse)
+ * @param {string} [options.worktreePath] - PR-head worktree, to tell a deleted
+ *   file (absent on disk) from an unparsed one (present but not a parsed language)
  * @returns {Promise<PopulationSummary>}
  */
-export async function populate(g, extraction) {
+export async function populate(g, extraction, options = {}) {
+  const { changedFiles = [], worktreePath = "" } = options;
   const counts = {
     vertices: 0,
     edges: 0,
-    breakdown: { files: 0, functions: 0, types: 0, tests: 0, calls: 0, defines: 0, testsEdges: 0 },
+    breakdown: { files: 0, functions: 0, types: 0, tests: 0, calls: 0, defines: 0, testsEdges: 0, externalFunctions: 0, stubFiles: 0, externalTypes: 0, extendsEdges: 0, implementsEdges: 0, declares: 0, overrides: 0 },
   };
 
   for (const file of extraction.files) {
     await g.addV("File")
       .property("path", file.path)
       .property("language", file.language)
-      .property("changed", file.changed)
+      .property("changeLevel", file.changeLevel)
       .next();
     counts.vertices++;
     counts.breakdown.files++;
+  }
+
+  // Mark changed files the extractor didn't parse. The PR's `modifies` edges
+  // target every changed file by path, but only parsed files (right language,
+  // present on disk) get a File vertex above — so a deleted or non-code file
+  // would have no vertex to land on and its `modifies` edge would vanish. Create
+  // a stub File as a marker (keyed by unique path, so it's race-free). A file
+  // absent from the PR-head worktree was deleted by the PR; one still on disk was
+  // simply not parsed (unsupported language). These markers are especially
+  // meaningful on removal PRs — they record exactly what the PR took out.
+  // Unparsed, so no fingerprint is possible — graded STRUCTURAL conservatively.
+  const extractedPaths = new Set(extraction.files.map((f) => f.path));
+  for (const filePath of changedFiles) {
+    if (extractedPaths.has(filePath)) continue;
+    const onDisk = worktreePath ? existsSync(join(worktreePath, filePath)) : true;
+    const ext = filePath.includes(".") ? filePath.split(".").pop() : "";
+    await g.addV("File")
+      .property("path", filePath)
+      .property("language", ext)
+      .property("changeLevel", "STRUCTURAL")
+      .property("parsed", false)
+      .property("deleted", !onDisk)
+      .next();
+    counts.vertices++;
+    counts.breakdown.stubFiles++;
   }
 
   for (const fn of extraction.functions) {
@@ -59,9 +136,10 @@ export async function populate(g, extraction) {
       .property("signature", fn.signature)
       .property("visibility", fn.visibility)
       .property("filePath", fn.filePath)
+      .property("language", fn.language || "")
       .property("lines_start", fn.linesStart)
       .property("lines_end", fn.linesEnd)
-      .property("changed", fn.changed)
+      .property("changeLevel", fn.changeLevel)
       .next();
     counts.vertices++;
     counts.breakdown.functions++;
@@ -73,6 +151,8 @@ export async function populate(g, extraction) {
       .property("kind", type.kind)
       .property("visibility", type.visibility)
       .property("filePath", type.filePath)
+      .property("language", type.language || "")
+      .property("changeLevel", type.changeLevel || "NONE")
       .next();
     counts.vertices++;
     counts.breakdown.types++;
@@ -84,6 +164,7 @@ export async function populate(g, extraction) {
       .property("name", test.name)
       .property("type", test.type)
       .property("filePath", test.filePath)
+      .property("language", test.language || "")
       .next();
     counts.vertices++;
     counts.breakdown.tests++;
@@ -91,10 +172,54 @@ export async function populate(g, extraction) {
 
   let batch = [];
 
+  // Resolve-or-mark callee vertices. Call/test edges target a function by name;
+  // when the callee isn't among the extracted functions (a library/JDK call, or
+  // a function in a file this PR didn't change) there is no vertex to land on
+  // and the edge would silently vanish. Materialize a lightweight "external"
+  // stub as a marker so the edge survives and downstream analysis (blast radius,
+  // centrality) can see the call. Stubs are keyed by (name, language) — the same
+  // name in two languages is two distinct stubs, so cross-language edges are
+  // never invented — and created up front so this is idempotent and race-free
+  // under batched inserts. MUST be flushed before the calls/tests edges below.
+  const langKey = (name, language) => `${language || ""}\u0000${name}`;
+  const extractedFunctionKeys = new Set(extraction.functions.map((f) => langKey(f.name, f.language)));
+  const unresolvedCallees = new Map();
+  const markUnresolved = (name, language) => {
+    const key = langKey(name, language);
+    if (!extractedFunctionKeys.has(key)) unresolvedCallees.set(key, { name, language: language || "" });
+  };
+  for (const call of extraction.calls) markUnresolved(call.calleeName, call.language);
+  for (const test of tests) {
+    for (const calledFn of (test.calledFunctions || [])) markUnresolved(calledFn, test.language);
+  }
+
+  for (const { name, language } of unresolvedCallees.values()) {
+    batch.push(
+      g.addV("Function")
+        .property("name", name)
+        .property("language", language)
+        .property("external", true)
+        .property("resolved", false)
+        .property("changeLevel", "NONE")
+    );
+    counts.vertices++;
+    counts.breakdown.externalFunctions++;
+
+    if (batch.length >= BATCH_SIZE) {
+      await submitBatch(batch);
+      batch = [];
+    }
+  }
+  if (batch.length > 0) {
+    await submitBatch(batch);
+    batch = [];
+  }
+
   for (const fn of extraction.functions) {
     batch.push(
       g.V().hasLabel("File").has("path", fn.filePath)
         .addE("defines")
+        .property("confidence", CONFIDENCE.EXTRACTED)
         .to(__.V().hasLabel("Function").has("name", fn.name).has("filePath", fn.filePath))
     );
     counts.edges++;
@@ -110,6 +235,7 @@ export async function populate(g, extraction) {
     batch.push(
       g.V().hasLabel("File").has("path", type.filePath)
         .addE("defines")
+        .property("confidence", CONFIDENCE.EXTRACTED)
         .to(__.V().hasLabel("Type").has("name", type.name).has("filePath", type.filePath))
     );
     counts.edges++;
@@ -122,12 +248,18 @@ export async function populate(g, extraction) {
   }
 
   for (const call of extraction.calls) {
+    // INFERRED: the call site is real, but the callee is resolved by name alone
+    // (it matches any Function with that name, across files/overloads), so the
+    // edge target is a deduction rather than a directly observed fact. Scoped to
+    // the caller's language so a name that also exists in another language can't
+    // pull a spurious cross-language edge.
     batch.push(
       g.V().hasLabel("Function")
         .has("name", call.callerName)
         .has("filePath", call.callerFile)
         .addE("calls")
-        .to(__.V().hasLabel("Function").has("name", call.calleeName))
+        .property("confidence", CONFIDENCE.INFERRED)
+        .to(__.V().hasLabel("Function").has("name", call.calleeName).has("language", call.language || ""))
     );
     counts.edges++;
     counts.breakdown.calls++;
@@ -140,10 +272,13 @@ export async function populate(g, extraction) {
 
   for (const test of tests) {
     for (const calledFn of test.calledFunctions) {
+      // INFERRED: a test is linked to a function by name match on the callee,
+      // scoped to the test's language (a Java test can't land on a Python fn).
       batch.push(
         g.V().hasLabel("Test").has("name", test.name).has("filePath", test.filePath)
           .addE("tests")
-          .to(__.V().hasLabel("Function").has("name", calledFn))
+          .property("confidence", CONFIDENCE.INFERRED)
+          .to(__.V().hasLabel("Function").has("name", calledFn).has("language", test.language || ""))
       );
       counts.edges++;
       counts.breakdown.testsEdges++;
@@ -152,6 +287,77 @@ export async function populate(g, extraction) {
         await submitBatch(batch);
         batch = [];
       }
+    }
+  }
+
+  // Resolve-or-mark supertypes. Like callees, a supertype is named in the source
+  // but its declaration is often outside the changed set (a JDK class, or a base
+  // type in a file this PR didn't touch). Materialize an external Type stub for
+  // any supertype name not among the extracted types so the extends/implements
+  // edge has a vertex to land on. Keyed by (name, language) like Function stubs.
+  // Flushed before the edges below reference them.
+  const extractedTypeKeys = new Set(extraction.types.map((t) => langKey(t.name, t.language)));
+  const unresolvedSupertypes = new Map();
+  for (const type of extraction.types) {
+    for (const s of (type.supertypes || [])) {
+      const key = langKey(s.name, type.language);
+      if (!extractedTypeKeys.has(key)) unresolvedSupertypes.set(key, { name: s.name, language: type.language || "" });
+    }
+  }
+  for (const { name, language } of unresolvedSupertypes.values()) {
+    batch.push(
+      g.addV("Type")
+        .property("name", name)
+        .property("language", language)
+        .property("external", true)
+        .property("resolved", false)
+    );
+    counts.breakdown.externalTypes++;
+    if (batch.length >= BATCH_SIZE) {
+      await submitBatch(batch);
+      batch = [];
+    }
+  }
+  if (batch.length > 0) {
+    await submitBatch(batch);
+    batch = [];
+  }
+
+  // Type hierarchy edges (Type -> Type). INFERRED: the supertype is resolved by
+  // simple name, so the target is a deduction (like `calls`). Scoped to the
+  // subtype's language so hierarchies never cross language families. `relation`
+  // is "extends" or "implements" as the source declared it.
+  for (const type of extraction.types) {
+    for (const s of (type.supertypes || [])) {
+      batch.push(
+        g.V().hasLabel("Type").has("name", type.name).has("filePath", type.filePath)
+          .addE(s.relation)
+          .property("confidence", CONFIDENCE.INFERRED)
+          .to(__.V().hasLabel("Type").has("name", s.name).has("language", type.language || ""))
+      );
+      if (s.relation === "extends") counts.breakdown.extendsEdges++;
+      else counts.breakdown.implementsEdges++;
+      if (batch.length >= BATCH_SIZE) {
+        await submitBatch(batch);
+        batch = [];
+      }
+    }
+  }
+
+  // Membership edges (Type -> Function). EXTRACTED: the method sits directly in
+  // the type's body — a directly observed fact, and both endpoints are pinned to
+  // the same file so the resolution is exact.
+  for (const decl of (extraction.declares || [])) {
+    batch.push(
+      g.V().hasLabel("Type").has("name", decl.typeName).has("filePath", decl.filePath)
+        .addE("declares")
+        .property("confidence", CONFIDENCE.EXTRACTED)
+        .to(__.V().hasLabel("Function").has("name", decl.functionName).has("filePath", decl.filePath))
+    );
+    counts.breakdown.declares++;
+    if (batch.length >= BATCH_SIZE) {
+      await submitBatch(batch);
+      batch = [];
     }
   }
 
@@ -164,7 +370,20 @@ export async function populate(g, extraction) {
 
   if (batch.length > 0) {
     await submitBatch(batch);
+    batch = [];
   }
+
+  // Derive `overrides` edges now that the hierarchy and membership edges exist.
+  counts.breakdown.overrides = await deriveOverrides(g);
+
+  // Report the true graph size. The per-type breakdown above counts attempted
+  // inserts; query the graph itself for the authoritative vertex/edge totals so
+  // the summary can't drift from reality (e.g. an edge whose endpoints matched
+  // multiple vertices, or a vertex insert that failed).
+  const realV = await g.V().count().next();
+  const realE = await g.E().count().next();
+  counts.vertices = Number(realV.value);
+  counts.edges = Number(realE.value);
 
   return counts;
 }

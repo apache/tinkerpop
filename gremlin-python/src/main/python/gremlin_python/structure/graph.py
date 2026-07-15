@@ -64,18 +64,36 @@ class Element(object):
 
 
 class Vertex(Element):
-    def __init__(self, id, label="vertex", properties=None):
-        Element.__init__(self, id, label, properties)
+    def __init__(self, id, label="vertex", properties=None, labels=None):
+        if labels is not None:
+            self._labels = set(labels)
+            Element.__init__(self, id, next(iter(labels)) if labels else "", properties)
+        else:
+            self._labels = {label} if label else {"vertex"}
+            Element.__init__(self, id, label or "vertex", properties)
+
+    @property
+    def labels(self):
+        return frozenset(self._labels)
 
     def __repr__(self):
         return "v[" + str(self.id) + "]"
 
 
 class Edge(Element):
-    def __init__(self, id, outV, label, inV, properties=None):
-        Element.__init__(self, id, label, properties)
+    def __init__(self, id, outV, label, inV, properties=None, labels=None):
+        if labels is not None:
+            self._labels = set(labels)
+            Element.__init__(self, id, next(iter(labels)) if labels else "", properties)
+        else:
+            self._labels = {label} if label else {"edge"}
+            Element.__init__(self, id, label or "edge", properties)
         self.outV = outV
         self.inV = inV
+
+    @property
+    def labels(self):
+        return frozenset(self._labels)
 
     def __repr__(self):
         return "e[" + str(self.id) + "][" + str(self.outV.id) + "-" + self.label + "->" + str(self.inV.id) + "]"
@@ -143,14 +161,14 @@ class Path(object):
         return len(self.objects)
 
 
-class ProviderDefinedType(object):
+class CompositePDT(object):
     def __init__(self, name, fields):
         if not name:
             raise ValueError("name cannot be null or empty")
         self._name = name
         self._fields = dict(fields) if fields else {}
         if any(not isinstance(k, str) for k in self._fields):
-            raise TypeError("ProviderDefinedType field keys must be strings")
+            raise TypeError("CompositePDT field keys must be strings")
 
     @property
     def name(self):
@@ -161,7 +179,7 @@ class ProviderDefinedType(object):
         return self._fields
 
     def __eq__(self, other):
-        return isinstance(other, ProviderDefinedType) and self._name == other._name and self._fields == other._fields
+        return isinstance(other, CompositePDT) and self._name == other._name and self._fields == other._fields
 
     def __hash__(self):
         try:
@@ -173,21 +191,72 @@ class ProviderDefinedType(object):
         return f"pdt[{self._name}]{self._fields}"
 
 
-class ProviderDefinedTypeRegistry(object):
+class PrimitivePDT(object):
+    """An immutable primitive provider-defined type consisting of a name and an opaque string value."""
+
+    def __init__(self, name, value):
+        if not name:
+            raise ValueError("name cannot be null or empty")
+        if value is None:
+            raise ValueError("value cannot be null")
+        self._name = name
+        self._value = value
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def value(self):
+        return self._value
+
+    def __eq__(self, other):
+        return isinstance(other, PrimitivePDT) and self._name == other._name and self._value == other._value
+
+    def __hash__(self):
+        return hash((self._name, self._value))
+
+    def __repr__(self):
+        return f"pdt[{self._name}]({self._value})"
+
+
+class PDTRegistry(object):
     def __init__(self):
-        self._adapters_by_name = {}
-        self._adapters_by_class = {}
+        self._composite_adapters_by_name = {}
+        self._composite_adapters_by_class = {}
+        self._primitive_adapters_by_name = {}
+        self._primitive_adapters_by_class = {}
 
     def register(self, type_name, deserialize_fn, serialize_fn=None, target_class=None):
-        self._adapters_by_name[type_name] = {
+        self._composite_adapters_by_name[type_name] = {
             'deserialize': deserialize_fn,
             'serialize': serialize_fn,
             'target_class': target_class
         }
         if target_class is not None:
-            self._adapters_by_class[target_class] = {
+            self._composite_adapters_by_class[target_class] = {
                 'type_name': type_name,
                 'serialize': serialize_fn,
+            }
+
+    def register_primitive(self, type_name, from_value, to_value=None, target_class=None):
+        """Register a primitive PDT adapter.
+
+        Args:
+            type_name: The PDT type name string.
+            from_value: Callable(str) -> object for deserialization.
+            to_value: Callable(object) -> str for serialization (optional).
+            target_class: The Python class this adapter produces (optional).
+        """
+        self._primitive_adapters_by_name[type_name] = {
+            'from_value': from_value,
+            'to_value': to_value,
+            'target_class': target_class
+        }
+        if target_class is not None:
+            self._primitive_adapters_by_class[target_class] = {
+                'type_name': type_name,
+                'to_value': to_value,
             }
 
     @classmethod
@@ -221,25 +290,30 @@ class ProviderDefinedTypeRegistry(object):
         return registry
 
     def hydrate(self, pdt):
-        """Attempt to hydrate a ProviderDefinedType. Returns typed object or raw PDT."""
-        if not isinstance(pdt, ProviderDefinedType):
+        """Attempt to hydrate a CompositePDT. Returns typed object or raw PDT."""
+        if not isinstance(pdt, CompositePDT):
             return pdt
 
         # Always recurse into fields to hydrate nested registered PDTs.
         changed = False
         hydrated_fields = {}
         for k, v in pdt.fields.items():
-            if isinstance(v, ProviderDefinedType):
+            if isinstance(v, CompositePDT):
                 h = self.hydrate(v)
+                if h is not v:
+                    changed = True
+                hydrated_fields[k] = h
+            elif isinstance(v, PrimitivePDT):
+                h = self.hydrate_primitive(v)
                 if h is not v:
                     changed = True
                 hydrated_fields[k] = h
             else:
                 hydrated_fields[k] = v
 
-        adapter = self._adapters_by_name.get(pdt.name)
+        adapter = self._composite_adapters_by_name.get(pdt.name)
         if adapter is None:
-            return ProviderDefinedType(pdt.name, hydrated_fields) if changed else pdt
+            return CompositePDT(pdt.name, hydrated_fields) if changed else pdt
         try:
             return adapter['deserialize'](hydrated_fields)
         except Exception as e:
@@ -247,9 +321,27 @@ class ProviderDefinedTypeRegistry(object):
             logging.getLogger(__name__).warning(f"PDT hydration failed for '{pdt.name}': {e}")
             return pdt
 
-    def get_adapter_by_class(self, cls):
+    def hydrate_primitive(self, pdt):
+        """Attempt to hydrate a PrimitivePDT. Returns typed object or raw PDT."""
+        if not isinstance(pdt, PrimitivePDT):
+            return pdt
+        adapter = self._primitive_adapters_by_name.get(pdt.name)
+        if adapter is None:
+            return pdt
+        try:
+            return adapter['from_value'](pdt.value)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Primitive PDT hydration failed for '{pdt.name}': {e}")
+            return pdt
+
+    def get_composite_adapter_by_class(self, cls):
         """Return (type_name, serialize_fn) tuple for the given class, or None."""
-        return self._adapters_by_class.get(cls)
+        return self._composite_adapters_by_class.get(cls)
+
+    def get_primitive_adapter_by_class(self, cls):
+        """Return adapter dict for the given class, or None."""
+        return self._primitive_adapters_by_class.get(cls)
 
 
 # Module-level registry of @provider_defined decorated classes keyed by PDT name.
@@ -265,3 +357,232 @@ def provider_defined(name=None, included_fields=None, excluded_fields=None):
         _pdt_decorated_types[cls._pdt_name] = cls
         return cls
     return decorator
+
+
+class Tree(object):
+    """
+    A tree data structure with a tree-shaped public API.
+
+    Children are backed by an ordered list of ``(key, subtree)`` entries,
+    preserving insertion order and using value-equality (``==``) for key lookup
+    so keys need not be hashable. ``None`` keys are supported.
+    """
+
+    def __init__(self, entries=None):
+        # internal ordered list of [key, subtree] pairs
+        self._entries = []
+        if entries is not None:
+            for key, child in entries:
+                if not isinstance(child, Tree):
+                    raise TypeError("Tree entries must map a key to a Tree, got: " + repr(child))
+                self._entries.append([key, child])
+
+    # ------------------------------------------------------------------
+    # internal helpers
+    # ------------------------------------------------------------------
+
+    def _find_entry(self, key):
+        for entry in self._entries:
+            if entry[0] == key:
+                return entry
+        return None
+
+    # ------------------------------------------------------------------
+    # navigation
+    # ------------------------------------------------------------------
+
+    def root_nodes(self):
+        """Returns the list of keys at the root of this tree, in insertion order."""
+        return [entry[0] for entry in self._entries]
+
+    def child_at(self, key):
+        """
+        Returns the child subtree for the given key.
+
+        :raises KeyError: if no immediate child exists for the given key
+        """
+        entry = self._find_entry(key)
+        if entry is None:
+            raise KeyError("Tree has no child for key: " + str(key))
+        return entry[1]
+
+    def has_child(self, key):
+        """Returns True if the given key is an immediate child of this tree."""
+        return self._find_entry(key) is not None
+
+    def contains(self, value):
+        """Returns True if the given value appears as a key anywhere in this tree (recursive)."""
+        for key, child in self._entries:
+            if key == value or child.contains(value):
+                return True
+        return False
+
+    def find_subtree(self, key):
+        """
+        Recursively searches the tree for the first subtree rooted at ``key`` and
+        returns it, or ``None`` if not found. Direct children are visited before
+        recursing.
+        """
+        for k, child in self._entries:
+            if k == key:
+                return child
+        for _, child in self._entries:
+            found = child.find_subtree(key)
+            if found is not None:
+                return found
+        return None
+
+    def get_or_create_child(self, key):
+        """Returns the existing child for ``key``, or inserts and returns a new empty Tree if absent."""
+        entry = self._find_entry(key)
+        if entry is None:
+            child = Tree()
+            self._entries.append([key, child])
+            return child
+        return entry[1]
+
+    # ------------------------------------------------------------------
+    # structural
+    # ------------------------------------------------------------------
+
+    def is_leaf(self):
+        """Returns True if this tree has no children. An empty tree is considered a leaf."""
+        return len(self._entries) == 0
+
+    def node_count(self):
+        """Returns the total number of nodes (keys) in the tree, counted recursively."""
+        count = len(self._entries)
+        for _, child in self._entries:
+            count += child.node_count()
+        return count
+
+    def get_nodes_at_depth(self, depth):
+        """
+        Returns the keys at the given depth. Depth 0 returns the root keys.
+
+        Negative depths and depths beyond the tree's height return an empty list.
+        """
+        nodes = []
+        for tree in self.get_trees_at_depth(depth):
+            nodes.extend(tree.root_nodes())
+        return nodes
+
+    def get_trees_at_depth(self, depth):
+        """
+        Returns the trees at the given depth. Depth 0 returns a singleton list
+        containing this tree. Negative depths and depths beyond the tree's
+        height return an empty list.
+        """
+        if depth < 0:
+            return []
+        current = [self]
+        for _ in range(depth):
+            nxt = []
+            for tree in current:
+                nxt.extend(entry[1] for entry in tree._entries)
+            if not nxt:
+                return []
+            current = nxt
+        return current
+
+    def get_leaf_nodes(self):
+        """Returns all keys whose subtrees are leaves (recursive)."""
+        leaves = []
+        self._collect_leaf_keys(leaves)
+        return leaves
+
+    def _collect_leaf_keys(self, out):
+        for key, child in self._entries:
+            if child.is_leaf():
+                out.append(key)
+            else:
+                child._collect_leaf_keys(out)
+
+    def get_leaf_trees(self):
+        """Returns single-key trees representing each leaf key in this tree (recursive)."""
+        leaves = []
+        self._collect_leaf_trees(leaves)
+        return leaves
+
+    def _collect_leaf_trees(self, out):
+        for key, child in self._entries:
+            if child.is_leaf():
+                out.append(Tree([(key, child)]))
+            else:
+                child._collect_leaf_trees(out)
+
+    # ------------------------------------------------------------------
+    # composition
+    # ------------------------------------------------------------------
+
+    def add_tree(self, other):
+        """
+        Recursively merges ``other`` into this tree. For overlapping keys (by
+        value-equality) child subtrees are merged in turn. For keys present only
+        in ``other`` the corresponding subtree reference is adopted directly.
+        """
+        for key, child in other._entries:
+            entry = self._find_entry(key)
+            if entry is None:
+                self._entries.append([key, child])
+            else:
+                entry[1].add_tree(child)
+
+    def split_parents(self):
+        """
+        Splits this tree into one tree per root key. If the tree has a single
+        root, returns a singleton list containing this tree.
+        """
+        if len(self._entries) == 1:
+            return [self]
+        return [Tree([(key, child)]) for key, child in self._entries]
+
+    # ------------------------------------------------------------------
+    # output
+    # ------------------------------------------------------------------
+
+    def pretty_print(self):
+        """
+        Produces a formatted string representation of the tree structure using a
+        ``|--`` ASCII style, matching Java's ``Tree.prettyPrint``.
+
+        Each level is indented by 3 spaces relative to its parent. The returned
+        string has no trailing newline.
+        """
+        lines = []
+        self._pretty_print(lines, "")
+        return "\n".join(lines)
+
+    def _pretty_print(self, lines, prefix):
+        for key, child in self._entries:
+            lines.append(prefix + "|--" + str(key))
+            child._pretty_print(lines, prefix + "   ")
+
+    # ------------------------------------------------------------------
+    # identity
+    # ------------------------------------------------------------------
+
+    def __eq__(self, other):
+        if not isinstance(other, Tree):
+            return NotImplemented
+        if len(self._entries) != len(other._entries):
+            return False
+        for key, child in self._entries:
+            matched = False
+            for okey, ochild in other._entries:
+                if okey == key:
+                    if ochild != child:
+                        return False
+                    matched = True
+                    break
+            if not matched:
+                return False
+        return True
+
+    def __hash__(self):
+        # structurally-equal trees share the same number of root entries, so this
+        # is consistent with __eq__ while remaining valid for unhashable keys.
+        return hash(len(self._entries))
+
+    def __repr__(self):
+        return "{" + ", ".join(str(key) + "=" + repr(child) for key, child in self._entries) + "}"

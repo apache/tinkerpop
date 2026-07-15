@@ -23,7 +23,7 @@ from collections import OrderedDict
 
 from datetime import datetime, timedelta, timezone
 from gremlin_python.statics import long, bigint, BigDecimal, SingleByte, SingleChar
-from gremlin_python.structure.graph import Graph, Vertex, Edge, Property, VertexProperty, Path, ProviderDefinedType
+from gremlin_python.structure.graph import Graph, Vertex, Edge, Property, VertexProperty, Path, CompositePDT
 from gremlin_python.structure.io.graphbinaryV4 import GraphBinaryWriter, GraphBinaryReader
 from gremlin_python.process.traversal import Direction
 from gremlin_python.structure.io.util import Marker
@@ -211,6 +211,29 @@ class TestGraphBinaryV4(object):
         assert x.inV == output.inV
         assert x.outV == output.outV
 
+    def test_edge_with_multi_labelled_endpoints(self):
+        # the edge itself remains single-labelled, but its endpoint vertices may carry
+        # multiple labels - see TINKERPOP-3261
+        in_vertex = Vertex(1, labels=["person", "employee"])
+        out_vertex = Vertex(10, labels=["software", "product"])
+        x = Edge(123, out_vertex, "developed", in_vertex)
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+        assert output.inV.labels == frozenset(["person", "employee"])
+        assert output.outV.labels == frozenset(["software", "product"])
+
+    def test_edge_with_zero_label_endpoints(self):
+        # endpoint vertices may carry no labels at all under ZERO_OR_MORE cardinality - see TINKERPOP-3261
+        in_vertex = Vertex(1, labels=[])
+        out_vertex = Vertex(10, labels=[])
+        x = Edge(123, out_vertex, "developed", in_vertex)
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+        assert output.inV.labels == frozenset()
+        assert output.outV.labels == frozenset()
+        assert output.inV.label == ""
+        assert output.outV.label == ""
+
     def test_path(self):
         x = Path(["x", "y", "z"], [1, 2, 3])
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
@@ -225,6 +248,21 @@ class TestGraphBinaryV4(object):
         x = Vertex(123, "person")
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
+
+    def test_vertex_with_multiple_labels(self):
+        # vertices may carry multiple labels under ONE_OR_MORE/ZERO_OR_MORE cardinality - see TINKERPOP-3261
+        x = Vertex(123, labels=["person", "employee"])
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+        assert output.labels == frozenset(["person", "employee"])
+
+    def test_vertex_with_no_labels(self):
+        # vertices may carry no labels under ZERO_OR_MORE cardinality - see TINKERPOP-3261
+        x = Vertex(123, labels=[])
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+        assert output.labels == frozenset()
+        assert output.label == ""
 
     def test_vertexproperty(self):
         x = VertexProperty(123, "name", "stephen", None)
@@ -317,24 +355,52 @@ class TestGraphBinaryV4(object):
         assert re1.properties[0].key == "weight"
         assert re1.properties[0].value == 0.5
 
+    def test_graph_with_multi_labelled_vertices(self):
+        # a graph containing vertices with multiple labels - see TINKERPOP-3261
+        graph = Graph()
+        graph.vertices[1] = Vertex(1, labels=["person", "employee"])
+        graph.vertices[2] = Vertex(2, labels=["software", "product"])
+        graph.edges[3] = Edge(3, graph.vertices[1], "created", graph.vertices[2])
+
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(graph))
+
+        assert isinstance(output, Graph)
+        assert output.vertices[1].labels == frozenset(["person", "employee"])
+        assert output.vertices[2].labels == frozenset(["software", "product"])
+
+    def test_graph_with_zero_labelled_vertices(self):
+        # a graph containing vertices with no labels - see TINKERPOP-3261
+        graph = Graph()
+        graph.vertices[1] = Vertex(1, labels=[])
+        graph.vertices[2] = Vertex(2, labels=[])
+        graph.edges[3] = Edge(3, graph.vertices[1], "created", graph.vertices[2])
+
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(graph))
+
+        assert isinstance(output, Graph)
+        assert output.vertices[1].labels == frozenset()
+        assert output.vertices[1].label == ""
+        assert output.vertices[2].labels == frozenset()
+        assert output.vertices[2].label == ""
+
     def test_provider_defined_type(self):
-        pdt = ProviderDefinedType('Point', {'x': 1, 'y': 2})
+        pdt = CompositePDT('Point', {'x': 1, 'y': 2})
         result = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(pdt))
-        assert isinstance(result, ProviderDefinedType)
+        assert isinstance(result, CompositePDT)
         assert result.name == 'Point'
         assert result.fields == {'x': 1, 'y': 2}
 
     def test_provider_defined_type_nested(self):
-        inner = ProviderDefinedType('Address', {'street': 'Main'})
-        outer = ProviderDefinedType('Person', {'name': 'Alice', 'address': inner})
+        inner = CompositePDT('Address', {'street': 'Main'})
+        outer = CompositePDT('Person', {'name': 'Alice', 'address': inner})
         result = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(outer))
         assert result.name == 'Person'
         assert result.fields['name'] == 'Alice'
-        assert isinstance(result.fields['address'], ProviderDefinedType)
+        assert isinstance(result.fields['address'], CompositePDT)
         assert result.fields['address'].name == 'Address'
 
     def test_provider_defined_type_null_field(self):
-        pdt = ProviderDefinedType('NullableType', {'value': None, 'name': 'test'})
+        pdt = CompositePDT('NullableType', {'value': None, 'name': 'test'})
         result = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(pdt))
         assert result.fields['value'] is None
         assert result.fields['name'] == 'test'

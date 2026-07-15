@@ -65,10 +65,10 @@ namespace Gremlin.Net.Driver
             CancellationToken cancellationToken = default);
 
         /// <summary>
-        ///     Sets the <see cref="ProviderDefinedTypeRegistry"/> for automatic hydration
+        ///     Sets the <see cref="PDTRegistry"/> for automatic hydration
         ///     of provider-defined types during deserialization. The default implementation
         ///     is a no-op for serializers that do not support PDT hydration.
         /// </summary>
-        void SetPdtRegistry(ProviderDefinedTypeRegistry pdtRegistry) { }
+        void SetPdtRegistry(PDTRegistry pdtRegistry) { }
     }
 }

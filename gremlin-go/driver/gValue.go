@@ -21,35 +21,23 @@ package gremlingo
 
 import (
 	"fmt"
-	"strings"
 )
 
-// GValue is a variable or literal value that is used in a Traversal. It is composed of a key-value pair where the key
-// is the name given to the variable and the value is the object that the variable resolved to.
+// GValue is a variable or literal value that is used in a Traversal. It is composed of a key-value
+// pair where Name is the name given to the variable and Value is the object that the variable
+// resolves to. Construct one directly with a struct literal, e.g. GValue{Name: "x", Value: 1}.
+// A GValue's Value must not itself be a GValue (GValues cannot be nested).
 type GValue struct {
-	name  string
-	value interface{}
-}
-
-// NewGValue creates a new GValue to be used in traversals. The GValue name cannot begin with "_".
-func NewGValue(name string, value interface{}) GValue {
-	if strings.HasPrefix(name, "_") {
-		panic(fmt.Sprintf("invalid GValue name '%v'. Should not start with _.", name))
-	}
-	return GValue{name, value}
-}
-
-// Name returns the name of the GValue.
-func (gv GValue) Name() string {
-	return gv.name
+	Name  string
+	Value interface{}
 }
 
 // IsNil determines if the value held is of a nil value.
 func (gv GValue) IsNil() bool {
-	return gv.value == nil
+	return gv.Value == nil
 }
 
-// Value returns the value held by the GValue.
-func (gv GValue) Value() interface{} {
-	return gv.value
+// String returns the string representation of the GValue in the format "name=value".
+func (gv GValue) String() string {
+	return fmt.Sprintf("%v=%v", gv.Name, gv.Value)
 }

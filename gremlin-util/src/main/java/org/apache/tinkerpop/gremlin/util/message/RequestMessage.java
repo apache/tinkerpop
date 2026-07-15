@@ -125,23 +125,23 @@ public final class RequestMessage {
         }
 
         /**
-         * Sets the bindings as a gremlin-lang map literal string. Calling this method multiple
-         * times will replace the previous bindings (last-one-wins).
+         * Sets the query parameters as a gremlin-lang map literal string. Calling this method multiple
+         * times will replace the previous parameters (last-one-wins).
          */
-        public Builder addBindings(final String bindingsString) {
-            Objects.requireNonNull(bindingsString, "bindings argument cannot be null.");
-            this.fields.put(Tokens.ARGS_BINDINGS, bindingsString);
+        public Builder addParameters(final String parametersString) {
+            Objects.requireNonNull(parametersString, "parameters argument cannot be null.");
+            this.fields.put(Tokens.ARGS_PARAMETERS, parametersString);
             return this;
         }
 
         /**
-         * Sets the bindings from a map by converting it to a gremlin-lang map literal string
+         * Sets the query parameters from a map by converting it to a gremlin-lang map literal string
          * using {@link GremlinLang#convertParametersToString(Map)}. Calling this method multiple
-         * times will replace the previous bindings (last-one-wins).
+         * times will replace the previous parameters (last-one-wins).
          */
-        public Builder addBindings(final Map<String, Object> otherBindings) {
-            Objects.requireNonNull(otherBindings, "bindings argument cannot be null.");
-            this.fields.put(Tokens.ARGS_BINDINGS, GremlinLang.convertParametersToString(otherBindings));
+        public Builder addParameters(final Map<String, Object> otherParameters) {
+            Objects.requireNonNull(otherParameters, "parameters argument cannot be null.");
+            this.fields.put(Tokens.ARGS_PARAMETERS, GremlinLang.convertParametersToString(otherParameters));
             return this;
         }
 
@@ -169,7 +169,7 @@ public final class RequestMessage {
         public Builder addTimeoutMillis(final long timeout) {
             if (timeout < 0) throw new IllegalArgumentException("timeout argument cannot be negative.");
 
-            this.fields.put(Tokens.TIMEOUT_MS, timeout);
+            this.fields.put(Tokens.TIMEOUT_MILLIS, timeout);
             return this;
         }
 

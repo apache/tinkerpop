@@ -126,8 +126,13 @@ func (gts *GraphTraversalSource) WithoutStrategies(args ...TraversalStrategy) *G
 }
 
 // With provides a configuration to a traversal in the form of a key value pair.
-func (gts *GraphTraversalSource) With(key interface{}, value interface{}) *GraphTraversalSource {
+func (gts *GraphTraversalSource) With(key interface{}, value ...interface{}) *GraphTraversalSource {
 	source := gts.clone()
+
+	val := interface{}(true)
+	if len(value) > 0 {
+		val = value[0]
+	}
 
 	//TODO verify remote when connection is set-up
 	var optionsStrategy TraversalStrategy = nil
@@ -136,12 +141,19 @@ func (gts *GraphTraversalSource) With(key interface{}, value interface{}) *Graph
 	}
 
 	if optionsStrategy == nil {
-		optionsStrategy = OptionsStrategy(map[string]interface{}{key.(string): value})
+		optionsStrategy = OptionsStrategy(map[string]interface{}{key.(string): val})
 		return source.WithStrategies(optionsStrategy)
 	}
 
 	options := optionsStrategy.(*traversalStrategy)
-	options.configuration[key.(string)] = value
+	options.configuration[key.(string)] = val
+
+	// Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
+	k := key.(string)
+	if k == "multilabel" || k == "singlelabel" {
+		source.gremlinLang.gremlin = append(source.gremlinLang.gremlin, ".with(\""+k+"\")")
+	}
+
 	return source
 }
 

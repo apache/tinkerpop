@@ -21,7 +21,6 @@
 # Changes to this file need to be appropriately replicated to
 #
 # - docker/gremlin-server/gremlin-server-integration.yaml
-# - docker/gremlin-server/gremlin-server-integration-krb5.yaml
 # - docker/gremlin-server/gremlin-server-integration-secure.yaml
 #
 # Without such changes, the test docker server can't be started for independent
@@ -30,14 +29,17 @@
 
 host: 0.0.0.0
 port: 45940
-evaluationTimeout: 30000
+timeoutMillis: 30000
 # Set below the code default (600000) so SettingsTest can confirm a YAML-provided value is honored; still far larger
 # than any integration test's runtime (8 minutes), so it never fires during a test.
-maxTransactionLifetime: 480000
+maxTransactionLifetimeMillis: 480000
 graphs: {
   graph: {
     configuration: conf/tinkergraph-empty.properties,
     traversalSources: [{name: g}, {name: ggraph}]},
+  multilabel: {
+    configuration: conf/tinkergraph-multilabel.properties,
+    traversalSources: [{name: gmultilabel}]},
   classic: {
     configuration: conf/tinkergraph-empty.properties,
     traversalSources: [{name: gclassic}]},
@@ -53,6 +55,9 @@ graphs: {
   sink: {
     configuration: conf/tinkergraph-empty.properties,
     traversalSources: [{name: gsink}]},
+  zoo: {
+    configuration: conf/tinkergraph-multilabel.properties,
+    traversalSources: [{name: gzoo}]},
   tx: {
     configuration: conf/tinkertransactiongraph-empty.properties,
     traversalSources: [{name: gtx}]}}
@@ -62,6 +67,7 @@ lifecycleHooks:
   - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: crew, dataset: crew}}
   - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: grateful, dataset: grateful}}
   - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: sink, dataset: sink}}
+  - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: zoo, dataset: zoo}}
 scriptEngines: {
   gremlin-lang : {},
   groovy-test: {},
@@ -80,11 +86,11 @@ serializers:
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1 }
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1, config: { serializeResultToString: true }}
 metrics: {
-  slf4jReporter: {enabled: true, interval: 180000}}
+  slf4jReporter: {enabled: true, intervalMillis: 180000}}
 gremlinPool: 8
 strictTransactionManagement: false
-idleConnectionTimeout: 0
-keepAliveInterval: 0
+idleConnectionTimeoutMillis: 0
+keepAliveIntervalMillis: 0
 maxInitialLineLength: 4096
 maxHeaderSize: 8192
 maxChunkSize: 8192

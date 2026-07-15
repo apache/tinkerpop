@@ -661,6 +661,46 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV(java.lang.String)++[`addV(String)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`addV(Traversal)`]
 
+[[addlabel-step]]
+=== AddLabel Step
+
+The `addLabel()`-step (*sideEffect*) adds one or more labels to an element. Because it mutates the set of labels on
+an element, `addLabel()` can only be used on a graph configured with a `LabelCardinality` that allows more than one
+label, namely `ZERO_OR_MORE` or `ONE_OR_MORE`.
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+g.addV('person').property('name','marko').addLabel('employee').labels()
+g.V().has('name','marko').hasLabel('person')
+g.V().has('name','marko').hasLabel('employee')
+g.V().has('name','marko').addLabel('employee').labels() <1>
+----
+
+<1> marko already carries the "employee" label, so adding it again leaves the set of labels unchanged.
+
+By contrast, calling `addLabel()` against a vertex whose graph is configured with `LabelCardinality.ONE`, which
+fixes a single, immutable label for every vertex, results in an exception since there is no set of labels to
+mutate:
+
+[source,groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ONE")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+// results in: Label mutation is not supported with cardinality ONE. Labels are immutable once assigned.
+g.addV('person').property('name','marko').addLabel('employee')
+----
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addLabel(java.lang.String,java.lang.String...)++[`addLabel(String, String...)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addLabel(org.apache.tinkerpop.gremlin.process.traversal.Traversal,org.apache.tinkerpop.gremlin.process.traversal.Traversal...)++[`addLabel(Traversal, Traversal...)`]
+
 [[aggregate-step]]
 === [[store-step]]Aggregate Step
 
@@ -713,7 +753,7 @@ g.V().local(aggregate('x')).limit(1).cap('x')
 
 [gremlin-groovy,modern]
 ----
-g.E().local(aggregate('x')).by('weight').cap('x')
+g.E().local(aggregate('x').by('weight')).cap('x')
 ----
 
 *Additional References*
@@ -1089,6 +1129,23 @@ on a step-by-step level and thus, as discussed in their respective section of th
 * <<valuemap-step, `valueMap()`>>: transform the result of the values in the resulting `Map` using the `by()` modulator.
 * <<where-step, `where()`>>: determine the predicate given the testing of the results of `by()`-modulation.
 
+NOTE: `by(label)` (or the equivalent `by(T.label)`) modulates using the <<label-step,`label()`>> step, which for a
+multi-label vertex returns only one label chosen non-deterministically. Steps like `group()`, `groupCount()`,
+`dedup()`, `order()`, `path()`, `simplePath()`, and `tree()` that modulate `by(label)` will therefore behave
+unpredictably on multi-label vertices.
+
+[gremlin-groovy,theZoo]
+----
+g.V().group().by(label).by(values('name').fold())            <1>
+g.V().group().by(labels().fold()).by(values('name').fold())  <2>
+----
+
+<1> `atlas` carries the "animal", "reptile", "aquatic", and "endangered" labels, but is grouped under only one of
+them, chosen non-deterministically, so this grouping is not reliable for multi-label vertices.
+<2> Grouping by the full set of labels instead keeps each animal under its own distinct combination of labels.
+Prefer this pattern with the <<labels-step,`labels()`>> step over `by(label)` for graphs that support multiple
+labels per vertex.
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#by()++[`by()`],
@@ -1277,6 +1334,22 @@ g.V().choose(T.label).
 
 <1> For person vertices, traverse to the software they created; for software vertices, traverse to the people who
 created them.
+
+On the "modern" graph, that works reliably because each vertex has exactly one label. A vertex with multiple labels
+tells a different story, since `choose(T.label)` still selects a branch based on a single label chosen
+non-deterministically from the full set:
+
+[gremlin-groovy,theZoo]
+----
+g.V().has('name','tux').choose(T.label).
+        option('bird', constant('routed as a bird')).
+        option('aquatic', constant('routed as aquatic')) <1>
+----
+
+<1> `tux` carries the "animal", "bird", "aquatic", and "endangered" labels, so which `option()` branch is taken
+depends on which label the graph happens to return from `label()` and is not guaranteed to be consistent. Filtering
+with <<has-step,`hasLabel()`>> beforehand, or restructuring the choice around `labels()`, gives predictable results
+for multi-label vertices.
 
 The `Pick` enum was introduced in an example earlier to handle non-matching scenarios. The following `Pick` options may
 be used with `choose()`:
@@ -1787,6 +1860,44 @@ g.V()
 
 * link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#drop()++[`drop()`]
 
+[[droplabel-step]]
+=== DropLabel Step
+
+The `dropLabel()`-step (*sideEffect*) removes one or more specific labels from an element and `dropLabels()`
+removes all of them. Like `addLabel()`, both require a `LabelCardinality` of `ZERO_OR_MORE` or `ONE_OR_MORE`.
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+v = g.addV('person').property('name','marko').addLabel('employee').addLabel('manager').next()
+g.V(v).labels()
+g.V(v).dropLabel('manager').labels() <1>
+g.V(v).dropLabel('manager').labels() <2>
+g.V(v).dropLabels().labels() <3>
+g.V(v).labels().count() <4>
+----
+
+<1> Removes the "manager" label.
+<2> Dropping a label that is not present has no effect.
+<3> Removes all remaining labels.
+<4> Confirms zero labels remain.
+
+NOTE: With `LabelCardinality.ONE_OR_MORE`, `dropLabels()` always throws and `dropLabel()` throws if it would
+leave the element with zero labels.
+
+IMPORTANT: Do not confuse `dropLabel()` with `labels().drop()`. The standalone `drop()` step either drops an
+`Element` from the `Graph`, or a `Property` from it's `Element`. Since a label is simply a `String` object,
+the `drop()` step cannot operate on it.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dropLabel(java.lang.String,java.lang.String...)++[`dropLabel(String, String...)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dropLabel(org.apache.tinkerpop.gremlin.process.traversal.Traversal,org.apache.tinkerpop.gremlin.process.traversal.Traversal...)++[`dropLabel(Traversal, Traversal...)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dropLabels()++[`dropLabels()`]
+
 [[e-step]]
 === E Step
 
@@ -1856,6 +1967,41 @@ g.V().has('name','marko').properties('location').elementMap()
 
 IMPORTANT: The `elementMap()`-step does not return the vertex labels for incident vertices when using `GraphComputer`
 as the `id` is the only available data to the star graph.
+
+For multi-label graphs, `elementMap()` returns labels as a single string by default. To receive all labels as a
+set, use `with("multilabel")` either per-traversal or on a persistent source:
+
+[gremlin-groovy,theZoo]
+----
+g.V().has('name','tux').elementMap()                         <1>
+g.with("multilabel").V().has('name','tux').elementMap()      <2>
+gml = g.with("multilabel")
+gml.V().has('name','tux').elementMap()                       <3>
+gml.V().has('name','tux').valueMap(true)                     <4>
+----
+
+<1> Without `"multilabel"`, the label entry is a single string.
+<2> Per-traversal `with("multilabel")` returns all labels as a set.
+<3> A persistent source avoids repeating `with("multilabel")` on each traversal.
+<4> `valueMap(true)` also respects the `"multilabel"` configuration.
+
+When a source is configured with `with("multilabel")`, the `with("singlelabel")` option can be used per-traversal to
+force single-string label output:
+
+[source, groovy]
+----
+gml = g.with("multilabel")
+gml.V().has('name','marko').elementMap()
+// results in: with("multilabel") and with("singlelabel") are mutually exclusive
+//             and cannot both be configured on the same traversal source.
+gml.with("singlelabel").V().has('name','marko').elementMap()
+----
+
+Since `"multilabel"` and `"singlelabel"` request opposite output formats, configuring both on the same traversal
+source is rejected. Attempting to combine them, for example by calling `g.with("multilabel").with("singlelabel")`
+will raise a `VerificationException`. The label format is controlled entirely by these source options and is independent of the
+graph's `LabelCardinality` setting, so a graph configured for `ZERO_OR_MORE` labels will still return a single
+string per element unless `with("multilabel")` is applied.
 
 *Additional References*
 
@@ -2165,7 +2311,6 @@ It is possible to filter vertices, edges, and vertex properties based on their p
 [gremlin-groovy,modern]
 ----
 g.V().hasLabel('person')
-g.V().hasLabel('person','name','marko')
 g.V().hasLabel('person').out().has('name',within('vadas','josh'))
 g.V().hasLabel('person').out().has('name',within('vadas','josh')).
       outE().hasLabel('created')
@@ -2178,11 +2323,13 @@ g.V().properties().hasKey('age').value() <6>
 g.V().hasNot('age').values('name') <7>
 g.V().has('person','name', startingWith('m')) <8>
 g.V().has(null, 'vadas') <9>
+g.V().has('person','name','marko')
 g.V().has('person', 'name', regex('r')).values('name') <10>
 g.V().has('age', P.gt(__.V(1).values('age'))) <11>
 g.V().has('name', __.V(1).values('name')) <12>
 g.V().hasLabel(__.V(1).label()) <13>
 g.withSack(30).V().has('age', P.gt(__.sack())).values('name') <14>
+g.V().hasLabel('person', 'software').count() <15>
 ----
 
 <1> Find all vertices whose ages are between 20 (exclusive) and 30 (exclusive). In other words, the age must be greater than 20 and less than 30.
@@ -2201,6 +2348,20 @@ is evaluated per-traverser and its first result becomes the comparison value.
 <12> Find all vertices whose name equals marko's name using a traversal as the value argument.
 <13> Find all vertices whose label equals the label of vertex 1.
 <14> Find all people older than a threshold carried in the traverser's `sack()` rather than read from the graph.
+<15> Find all vertices containing the label "person" or "software".
+
+Chained `hasLabel()` calls requires that a vertex carry all of the specified labels, which matters in cases
+where a vertex can have more than one label:
+
+[gremlin-groovy,theZoo]
+----
+g.V().hasLabel('bird','reptile').values('name')             <1>
+g.V().hasLabel('bird').hasLabel('aquatic').values('name')    <2>
+----
+
+<1> OR semantics: matches `tux`, `atlas`, and `monty`, since each has at least one of "bird" or "reptile".
+<2> Chaining `hasLabel()` calls requires both labels to be present, matching only `tux`, which has both "bird" and
+"aquatic".
 
 NOTE: When a `Traversal` is provided directly as the value argument (not inside a `P`), it is internally wrapped in
 `P.eq(traversal)`. Child traversals must be read-only. Mutating steps like `addV()` or `property()` are rejected with
@@ -2602,9 +2763,38 @@ g.V(1).outE().label()
 g.V(1).properties().label()
 ----
 
+For elements that carry exactly one label, as in the "modern" graph above, `label()` behaves as expected. A
+multi-label vertex complicates matters, since `label()` still returns only a single `String`:
+
+[gremlin-groovy,theZoo]
+----
+g.V().has('name','tux').label()   <1>
+g.V().has('name','tux').labels()  <2>
+----
+
+<1> `tux` carries the "animal", "bird", "aquatic", and "endangered" labels, but `label()` returns only one of them,
+chosen non-deterministically.
+<2> Use the <<labels-step,`labels()`>> step instead to reliably retrieve every label a vertex carries.
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#label()++[`label()`]
+
+[[labels-step]]
+=== Labels Step
+
+The `labels()`-step (*flatMap*) takes an `Element` and emits each of its labels as a separate traverser. For elements
+with a single label this behaves identically to `label()`. For multi-label elements, it emits one traverser per label.
+
+[gremlin-groovy,theZoo]
+----
+g.V().labels()
+g.V().labels().count()
+----
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#labels()++[`labels()`]
 
 [[length-step]]
 === Length Step
@@ -3042,7 +3232,7 @@ and pass the value in the params map via `match(String, Map)`:
 
 [gremlin-groovy,modern]
 ----
-g.match("MATCH (p:person {name: $personName})-[:knows]->(f:person)",
+g.match('MATCH (p:person {name: $personName})-[:knows]->(f:person)',
         ["personName": "marko"]).
   select("p", "f").by("name")
 ----
@@ -3404,6 +3594,38 @@ g.V().hasLabel('Dog').valueMap().with(WithOptions.tokens)
 
 NOTE: The example above is written with `gremlin-groovy` and evaluated in Gremlin Console as a Groovy script thus
 allowing link:https://groovy-lang.org/syntax.html#_maps[Groovy syntax] for initializing a `Map`.
+
+On graphs that support multiple labels per vertex, `T.label` in the `mergeV()` `Map` may be supplied as a single
+`String` or as a `Collection<String>` (a `List` or `Set`) to work with multiple labels at once.
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+g.mergeV([(T.label):['person','employee'], name:'marko']) <1>
+g.V().has('name','marko').labels()
+----
+
+<1> Create a vertex for marko with both the "person" and "employee" labels.
+
+IMPORTANT: When `T.label` is used to *search* for a match with a `Collection` of labels, the match uses AND
+semantics, meaning a vertex must carry *all* of the specified labels to match, unlike the OR semantics of
+<<has-step,`hasLabel()`>>. When `T.label` is used in `Merge.onCreate` or `Merge.onMatch`, the specified labels are
+*added* to the vertex using <<addlabel-step,`addLabel()`>> semantics.
+
+[gremlin-groovy,existing]
+----
+g.mergeV([(T.label):['person','employee'], name:'marko']) <1>
+g.mergeV([(T.label):'person', name:'marko']).
+  option(Merge.onMatch,[(T.label):'manager']) <2>
+g.V().has('name','marko').labels()
+----
+
+<1> Matches the vertex created above since it carries both labels (AND semantics).
+<2> Matches on the single "person" label and adds "manager" to the vertex's existing labels rather than replacing
+them.
 
 If a vertex already exists that matches the map passed to `mergeV()`, the existing
 vertex will be returned, otherwise a new one will  be created. In this way, `mergeV()`
@@ -4204,7 +4426,7 @@ g.V(4).property(
       by(__.out('created').values('name'))) <7>
 g.V(4).valueMap()
 g.addV().property(T.label,'person').valueMap().with(WithOptions.tokens) <8>
-g.addV().property(null) <9>
+g.addV().property((Map) null) <9>
 g.addV().property(set, null)
 ----
 
@@ -5493,6 +5715,23 @@ g.V().hasLabel('person').valueMap().with(WithOptions.tokens)
 g.V().hasLabel('person').valueMap('name').with(WithOptions.tokens, WithOptions.labels)
 g.V().hasLabel('person').properties('location').valueMap().with(WithOptions.tokens, WithOptions.values)
 ----
+
+For multi-label graphs, the label value in the map is a single string by default. Use `with("multilabel")` to
+receive all labels as a set:
+
+[gremlin-groovy,theZoo]
+----
+g.V().has('name','tux').valueMap(true)                       <1>
+g.with("multilabel").V().has('name','tux').valueMap(true)    <2>
+----
+
+<1> Without `"multilabel"`, the label entry is a single string.
+<2> With `"multilabel"`, all labels are returned as a set.
+
+When a source is configured with `with("multilabel")`, the `with("singlelabel")` option can be used per-traversal to
+force single-string label output. Since the two options request opposite output formats, configuring both on the
+same traversal source is rejected with a `VerificationException`. As with `elementMap()`, the label format is controlled
+entirely by these source options and is independent of the graph's `LabelCardinality` setting.
 
 *Additional References*
 

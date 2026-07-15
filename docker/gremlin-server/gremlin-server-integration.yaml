@@ -17,12 +17,15 @@
 
 host: 0.0.0.0
 port: 45940
-evaluationTimeout: 30000
+timeoutMillis: 30000
 channelizer: org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
 graphs: {
   graph: {
     configuration: conf/tinkergraph-service.properties,
     traversalSources: [{name: g}, {name: ggraph}]},
+  multilabel: {
+    configuration: conf/tinkergraph-multilabel.properties,
+    traversalSources: [{name: gmultilabel}]},
   immutable: {
     configuration: conf/tinkergraph-service.properties,
     traversalSources: [{name: gimmutable}]},
@@ -41,6 +44,9 @@ graphs: {
   sink: {
     configuration: conf/tinkergraph-service.properties,
     traversalSources: [{name: gsink}]},
+  zoo: {
+    configuration: conf/tinkergraph-multilabel.properties,
+    traversalSources: [{name: gzoo}]},
   tx: {
     configuration: conf/tinkertransactiongraph-service.properties,
     traversalSources: [{name: gtx}]}}
@@ -50,6 +56,7 @@ lifecycleHooks:
   - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: crew, dataset: crew}}
   - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: grateful, dataset: grateful}}
   - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: sink, dataset: sink}}
+  - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: zoo, dataset: zoo}}
 scriptEngines: {
   gremlin-lang : {},
   gremlin-groovy: {
@@ -62,11 +69,11 @@ serializers:
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4 }                                                                                                           # application/vnd.graphbinary-v1.0
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4, config: { serializeResultToString: true }}
 metrics: {
-  slf4jReporter: {enabled: true, interval: 180000}}
+  slf4jReporter: {enabled: true, intervalMillis: 180000}}
 gremlinPool: 8
 strictTransactionManagement: false
-idleConnectionTimeout: 0
-keepAliveInterval: 0
+idleConnectionTimeoutMillis: 0
+keepAliveIntervalMillis: 0
 maxInitialLineLength: 4096
 maxHeaderSize: 8192
 maxChunkSize: 8192

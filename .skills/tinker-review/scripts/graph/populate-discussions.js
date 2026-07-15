@@ -18,6 +18,7 @@
  */
 
 import gremlin from "gremlin";
+import { CONFIDENCE, confidenceForFoundIn } from "./confidence.js";
 
 const { process: { statics: __ } } = gremlin;
 
@@ -49,15 +50,21 @@ export async function populateDiscussions(g, discussions, context) {
 
   const prUrl = `https://github.com/apache/tinkerpop/pull/${context.pr}`;
 
-  // Create the PR itself as a Discussion vertex
-  await g.addV("Discussion")
-    .property("url", prUrl)
-    .property("source", "pr")
-    .property("title", context.prTitle || `PR #${context.pr}`)
-    .property("body", "")
-    .next();
-  counts.vertices++;
-  counts.breakdown.discussions++;
+  // Create the PR itself as a Discussion vertex. Idempotent: review.js may have
+  // already created it via createPrDiscussion(). A duplicate PR vertex would make
+  // `.V().has("url", prUrl)` match two start vertices and double every PR-sourced
+  // edge (modifies, addresses, has_comment).
+  const prExists = await g.V().hasLabel("Discussion").has("url", prUrl).hasNext();
+  if (!prExists) {
+    await g.addV("Discussion")
+      .property("url", prUrl)
+      .property("source", "pr")
+      .property("title", context.prTitle || `PR #${context.pr}`)
+      .property("body", "")
+      .next();
+    counts.vertices++;
+    counts.breakdown.discussions++;
+  }
 
   // Create Discussion vertices for JIRAs
   for (const jira of discussions.jiras) {
@@ -158,6 +165,7 @@ export async function populateDiscussions(g, discussions, context) {
     batch.push(
       g.V().hasLabel("Discussion").has("url", prUrl)
         .addE("has_comment")
+        .property("confidence", CONFIDENCE.EXTRACTED)
         .to(__.V().hasLabel("Comment").has("author", comment.author).has("timestamp", comment.timestamp || ""))
     );
     counts.edges++;
@@ -169,6 +177,7 @@ export async function populateDiscussions(g, discussions, context) {
     batch.push(
       g.V().hasLabel("Discussion").has("url", prUrl)
         .addE("has_comment")
+        .property("confidence", CONFIDENCE.EXTRACTED)
         .to(__.V().hasLabel("Comment").has("author", comment.author).has("timestamp", comment.timestamp || ""))
     );
     counts.edges++;
@@ -182,6 +191,7 @@ export async function populateDiscussions(g, discussions, context) {
       batch.push(
         g.V().hasLabel("Discussion").has("url", jira.url)
           .addE("has_comment")
+        .property("confidence", CONFIDENCE.EXTRACTED)
           .to(__.V().hasLabel("Comment").has("author", comment.author).has("timestamp", comment.timestamp || ""))
       );
       counts.edges++;
@@ -196,6 +206,7 @@ export async function populateDiscussions(g, discussions, context) {
       batch.push(
         g.V().hasLabel("Discussion").has("url", sec.url)
           .addE("has_comment")
+        .property("confidence", CONFIDENCE.EXTRACTED)
           .to(__.V().hasLabel("Comment").has("author", comment.author).has("timestamp", comment.timestamp || ""))
       );
       counts.edges++;
@@ -210,6 +221,7 @@ export async function populateDiscussions(g, discussions, context) {
       g.V().hasLabel("Discussion").has("url", prUrl)
         .addE("addresses")
         .property("found_in", jira.found_in || "pr")
+        .property("confidence", confidenceForFoundIn(jira.found_in || "pr"))
         .to(__.V().hasLabel("Discussion").has("url", jira.url))
     );
     counts.edges++;
@@ -223,6 +235,7 @@ export async function populateDiscussions(g, discussions, context) {
       g.V().hasLabel("Discussion").has("url", prUrl)
         .addE("addresses")
         .property("found_in", thread.found_in || "pr")
+        .property("confidence", confidenceForFoundIn(thread.found_in || "pr"))
         .to(__.V().hasLabel("Discussion").has("url", thread.url))
     );
     counts.edges++;
@@ -240,6 +253,7 @@ export async function populateDiscussions(g, discussions, context) {
         .addE("addresses")
         .property("found_in", sec.found_in || "")
         .property("found_via", sec.found_via || "")
+        .property("confidence", confidenceForFoundIn(sec.found_in))
         .to(__.V().hasLabel("Discussion").has("url", sec.url))
     );
     counts.edges++;
@@ -247,11 +261,22 @@ export async function populateDiscussions(g, discussions, context) {
     if (batch.length >= BATCH_SIZE) { await submitBatch(batch); batch = []; }
   }
 
-  // proposed_in: link proposals to the PR Discussion
+  // proposed_in: link proposals to the PR Discussion. Confidence tracks how the
+  // link was found: an explicit reference is EXTRACTED, a title/heading keyword
+  // match is INFERRED, a body-only match is AMBIGUOUS (so it surfaces for human
+  // review). The matched terms and location ride on the edge so the link is
+  // self-explanatory — mirroring `addresses`' found_in/found_via.
+  const confForMatch = (matchedIn) =>
+    matchedIn === "reference" ? CONFIDENCE.EXTRACTED
+    : matchedIn === "title" ? CONFIDENCE.INFERRED
+    : CONFIDENCE.AMBIGUOUS;
   for (const proposal of (discussions.proposals || [])) {
     batch.push(
       g.V().hasLabel("Discussion").has("source", "proposal").has("title", proposal.title)
         .addE("proposed_in")
+        .property("confidence", confForMatch(proposal.matchedIn))
+        .property("matched_in", proposal.matchedIn || "search")
+        .property("matched_keywords", (proposal.matchedKeywords || []).join(", "))
         .to(__.V().hasLabel("Discussion").has("url", prUrl))
     );
     counts.edges++;
@@ -264,6 +289,7 @@ export async function populateDiscussions(g, discussions, context) {
     batch.push(
       g.V().hasLabel("Discussion").has("url", prUrl)
         .addE("modifies")
+        .property("confidence", CONFIDENCE.EXTRACTED)
         .to(__.V().hasLabel("File").has("path", filePath))
     );
     counts.edges++;

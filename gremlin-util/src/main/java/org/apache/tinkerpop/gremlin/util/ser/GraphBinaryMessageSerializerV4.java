@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.Marker;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatus;
@@ -56,19 +56,19 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
 
     /**
      * Creates a new instance of the message serializer using the default type serializers and
-     * an SPI-discovered {@link ProviderDefinedTypeRegistry} for automatic PDT hydration.
+     * an SPI-discovered {@link PDTRegistry} for automatic PDT hydration.
      */
     public GraphBinaryMessageSerializerV4() {
-        this(TypeSerializerRegistry.INSTANCE, ProviderDefinedTypeRegistry.create());
+        this(TypeSerializerRegistry.INSTANCE, PDTRegistry.create());
     }
 
     public GraphBinaryMessageSerializerV4(final TypeSerializerRegistry registry) {
-        this(registry, ProviderDefinedTypeRegistry.create());
+        this(registry, PDTRegistry.create());
     }
 
-    public GraphBinaryMessageSerializerV4(final TypeSerializerRegistry registry, final ProviderDefinedTypeRegistry pdtRegistry) {
+    public GraphBinaryMessageSerializerV4(final TypeSerializerRegistry registry, final PDTRegistry pdtRegistry) {
         reader = new GraphBinaryReader(registry, pdtRegistry);
-        writer = new GraphBinaryWriter(registry);
+        writer = new GraphBinaryWriter(registry, pdtRegistry);
         mapper = new GraphBinaryMapper(writer, reader);
 
         requestSerializer = new RequestMessageSerializer();
@@ -101,8 +101,8 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
         }
 
         final TypeSerializerRegistry registry = builder.create();
-        reader = new GraphBinaryReader(registry, ProviderDefinedTypeRegistry.create());
-        writer = new GraphBinaryWriter(registry);
+        reader = new GraphBinaryReader(registry, PDTRegistry.create());
+        writer = new GraphBinaryWriter(registry, PDTRegistry.create());
 
         requestSerializer = new RequestMessageSerializer();
     }

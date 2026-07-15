@@ -704,3 +704,70 @@ Feature: Step - addV()
     Then the result should be unordered
       | result |
       | d[2010].i |
+
+  @MultiLabel
+  Scenario: g_addVXa_bX_labels
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV("a", "b").labels().fold()
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().hasLabel(\"a\").hasLabel(\"b\")"
+
+  @MultiLabel
+  Scenario: g_addVXa_b_cX_labels_count
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV("a", "b", "c").labels().count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[3].l |
+
+  @MultiLabel
+  Scenario: g_addVXconstantXaX_constantXbXX_labels
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV(__.constant("a"), __.constant("b")).labels().fold()
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().hasLabel(\"a\").hasLabel(\"b\")"
+
+  @MultiLabel
+  Scenario: g_addVXconstantXaX_constantXbX_constantXcXX_labels_count
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV(__.constant("a"), __.constant("b"), __.constant("c")).labels().count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[3].l |
+
+  @MultiLabel
+  Scenario: g_addVXconstantX_a_b_XX_labels
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV(__.constant(["a", "b"])).labels().fold()
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().hasLabel(\"a\").hasLabel(\"b\")"
+
+  @MultiLabel
+  Scenario: g_addVXconstantXa_bX_constantXcXX_label_error
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV(__.constant(["a", "b"]), __.constant("c")).labels().fold()
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "must produce a scalar String when multiple traversals are provided"

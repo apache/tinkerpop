@@ -51,7 +51,7 @@ import org.apache.tinkerpop.gremlin.util.SystemUtil;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.collection.mutable.WrappedArray;
+import scala.collection.immutable.ArraySeq;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -206,7 +206,7 @@ public class GryoRegistrator implements KryoRegistrator {
         } catch (final ClassNotFoundException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-        m.put(WrappedArray.ofRef.class, null);
+        m.put(ArraySeq.ofRef.class, null);
         m.put(MessagePayload.class, null);
         m.put(ViewIncomingPayload.class, null);
         m.put(ViewOutgoingPayload.class, null);

@@ -18,6 +18,10 @@ under the License.
 ////
 
 anchor:gremlin-variants[]
+// This book exercises only remote driver connections, but its predecessors leave Neo4j/Spark/Hadoop
+// plugins active. Exclude all three to restart the console with a clean classpath and avoid the
+// Scala 2.11/2.12 (and related) conflicts those plugins introduce.
+[gremlin-docs-plugins-exclude="neo4j-gremlin,spark-gremlin,hadoop-gremlin"]
 [[gremlin-drivers-variants]]
 = Gremlin Drivers and Variants
 
@@ -116,6 +120,27 @@ string is valid within the ANTLR grammar:
 
 For example, a string value `say "hello"` would be serialized as `"say \"hello\""` in the canonical Gremlin string.
 
+==== PDT Literals
+
+The gremlin-lang grammar supports Provider Defined Type literals in two forms:
+
+* Composite: `PDT("typeName",[key:"value",...])`  — creates a `CompositePDT` with a map of fields.
+* Primitive: `PDT("typeName","value")` — creates a `PrimitivePDT` with an opaque string value.
+
+Both forms share the `PDT(` prefix. The second argument determines the variant: a map literal produces a composite PDT,
+a string literal produces a primitive PDT.
+
+Examples:
+
+[source,groovy]
+----
+// Composite PDT — a Point with x and y fields
+g.inject(PDT("mygraph:Point",["x":1.0,"y":2.0]))
+
+// Primitive PDT — an unsigned 32-bit integer as a stringified value
+g.inject(PDT("mygraph:Uint32","4294967295"))
+----
+
 The following sections describe each language variant and driver that is officially TinkerPop a part of the project,
 providing more detailed information about usage, configuration and known limitations.
 
@@ -213,11 +238,11 @@ Some connection options can also be set on individual requests made through the 
 
 [source,go]
 ----
-results, err := g.With("evaluationTimeout", 500).V().Out("knows").ToList()
+results, err := g.With("timeoutMillis", 500).V().Out("knows").ToList()
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent` and
-`evaluationTimeout`.
+`timeoutMillis`.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
 to optimize result transfer. For direct `Client.Submit()` calls, set the connection-level `BulkResults` option to
@@ -278,6 +303,10 @@ link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provide
 |PDTRegistry |A `*PDTRegistry` for hydrating and dehydrating <<gremlin-go-pdt,Provider Defined Types>>. |`nil`
 |Auth |A single RequestInterceptor for authentication (e.g. `auth.Basic`). Always appended to the end of the interceptor list so it runs last. |nil
 |=========================================================
+
+Serialization is not configurable in Gremlin-Go. Requests are always serialized as JSON and responses are always
+deserialized as GraphBinary. A request body encoding other than JSON can only be produced through a
+<<gremlin-go-interceptors,request interceptor>>.
 
 Note that no driver timeout bounds the *total* duration of a request once it is under way. `ReadTimeout` only bounds
 the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
@@ -445,7 +474,8 @@ the traversal to utilize a parameter in place of a literal.
 
 [source,go]
 ----
-g.V().Has("name", gremlingo.NewGValue("name", "marko"))
+g.V().Has("name", gremlingo.GValue{Name: "name", Value: "marko"})
+g.MergeV(gremlingo.GValue{Name: "vertexPattern", Value: map[interface{}]interface{}{"name": "marko"}})
 ----
 
 [[gremlin-go-scripts]]
@@ -484,29 +514,29 @@ Both the `Client` and `DriverRemoteConnection` types have a `SubmitWithOptions(t
 of the standard `Submit()` method. These methods allow a `RequestOptions` struct to be passed in which will augment the
 execution on the server. `RequestOptions` can be constructed
 using `RequestOptionsBuilder`. A good use-case for this feature is to set a per-request override to the
-`evaluationTimeout` so that it only applies to the current request.
+`timeoutMillis` so that it only applies to the current request.
 
 [source,go]
 ----
 options := new(RequestOptionsBuilder).
-			SetEvaluationTimeout(5000).
+			SetTimeoutMillis(5000).
 			SetBatchSize(32).
 			SetMaterializeProperties("tokens").
-			AddBinding("x", 100).
+			AddParameter("x", 100).
 			Create()
 resultSet, err := client.SubmitWithOptions("g.V(x).count()", options)
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
-`evaluationTimeout` and `materializeProperties`.
-`RequestOptions` may also contain a map of variable `bindings` to be applied to the supplied
+`timeoutMillis` and `materializeProperties`.
+`RequestOptions` may also contain a map of query `parameters` to be applied to the supplied
 traversal string.
 
 [source,go]
 ----
-resultSet, err := client.SubmitWithOptions("g.with('evaluationTimeout', 500).addV().iterate();"+
+resultSet, err := client.SubmitWithOptions("g.with('timeoutMillis', 500).addV().iterate();"+
   "g.addV().iterate();"+
-  "g.with('evaluationTimeout', 500).addV();", new(RequestOptionsBuilder).SetEvaluationTimeout(500).Create())
+  "g.with('timeoutMillis', 500).addV();", new(RequestOptionsBuilder).SetTimeoutMillis(500).Create())
 results, err := resultSet.All()
 ----
 
@@ -767,18 +797,18 @@ go run modern_traversals.go
 === Provider Defined Types
 
 Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
-`*ProviderDefinedType` structs containing a `Name` and `Fields` map without any configuration.
+`*CompositePDT` structs containing a `Name` and `Fields` map without any configuration.
 Consult your graph provider's documentation for the list of PDTs they support.
 
 [source,go]
 ----
 results, err := g.V().Has("location").Values("location").ToList()
-pdt := results[0].GetInterface().(*gremlingo.ProviderDefinedType)
+pdt := results[0].GetInterface().(*gremlingo.CompositePDT)
 fmt.Println(pdt.Name)   // "x:Point"
 fmt.Println(pdt.Fields) // map[x:1.0 y:2.0]
 ----
 
-Working with raw `*ProviderDefinedType` values is always available. Using a `PDTRegistry` is an optional
+Working with raw `*CompositePDT` values is always available. Using a `PDTRegistry` is an optional
 convenience that automates conversion between PDT values and application types on both the request and response paths.
 
 Using a `PDTRegistry` for hydration and dehydration:
@@ -897,6 +927,7 @@ The following table outlines recommended runtime versions by the release in whic
 |3.6.0 | Java 8, 11
 |3.7.0 | Java 8, 11, 17
 |3.8.0 | Java 11, 17
+|4.0.0 | Java 17, 21, 25
 |===
 
 [[gremlin-java-connecting]]
@@ -1008,11 +1039,11 @@ on the `TraversalSource`. For instance to set request timeout to 500 millisecond
 [source,java]
 ----
 GraphTraversalSource g = traversal().with(conf);
-List<Vertex> vertices = g.with(Tokens.ARGS_EVAL_TIMEOUT, 500L).V().out("knows").toList()
+List<Vertex> vertices = g.with(Tokens.TIMEOUT_MILLIS, 500L).V().out("knows").toList()
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
-`materializeProperties` and `evaluationTimeout`. Use of `Tokens` to reference these options is preferred.
+`materializeProperties` and `timeoutMillis`. Use of `Tokens` to reference these options is preferred.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
 to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
@@ -1086,8 +1117,8 @@ The following table describes the various configuration options for the Gremlin 
 |password |The password to submit on requests that require authentication. |_none_
 |path |The URL path to the Gremlin Server. |_/gremlin_
 |port |The port of the Gremlin Server to connect to. The same port will be applied for all hosts. |8182
-|serializer.className |The fully qualified class name of the `MessageSerializer` that will be used to deserialize responses from the server. Note that the serializer configured on the client should be supported by the server configuration. |_none_
-|serializer.config |A `Map` of configuration settings for the serializer. |_none_
+|responseSerializer.className |The fully qualified class name of the `MessageSerializer` that will be used to deserialize responses from the server. Note that the serializer configured on the client should be supported by the server configuration. Requests are always serialized as JSON and can only be customized through a <<gremlin-java-interceptors,request interceptor>>. |_none_
+|responseSerializer.config |A `Map` of configuration settings for the serializer. |_none_
 |username |The username to submit on requests that require authentication. |_none_
 |workerPoolSize |Size of the pool for handling background work. |available processors * 2
 |=========================================================
@@ -1193,8 +1224,10 @@ tx.close(); // commits instead of rolling back
 === Serialization
 
 Remote systems like Gremlin Server and Remote Gremlin Providers respond to requests made in a particular serialization
-format and respond by serializing results to some format to be interpreted by the client. For JVM-based languages,
-there is a single option for serialization: GraphBinary.
+format and respond by serializing results to some format to be interpreted by the client. Requests are always
+serialized as JSON (`application/json`) and that behavior is not configurable. The `responseSerializer` option
+controls only the `Accept` header sent with each request and the deserialization of the response. For JVM-based
+languages, there is a single option for response serialization: GraphBinary.
 
 IMPORTANT: 4.0.0-beta.2 Release - There is temporary support for GraphSON in the Java driver which will help with
 testing, but it is expected that the drivers will only support GraphBinary when 4.0 is fully released.
@@ -1210,7 +1243,7 @@ IoRegistry registry = ...; // an IoRegistry instance exposed by a specific graph
 TypeSerializerRegistry typeSerializerRegistry = TypeSerializerRegistry.build().addRegistry(registry).create();
 MessageSerializer serializer = new GraphBinaryMessageSerializerV4(typeSerializerRegistry);
 Cluster cluster = Cluster.build().
-                          serializer(serializer).
+                          responseSerializer(serializer).
                           create();
 Client client = cluster.connect();
 GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(client, "g"));
@@ -1218,9 +1251,7 @@ GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(client, "
 
 The `IoRegistry` tells the serializer what classes from the graph provider to auto-register during serialization.
 Gremlin Server roughly uses this same approach when it configures its serializers, so using this same model will
-ensure compatibility when making requests. Obviously, it is possible to switch to GraphSON or GraphBinary by using
-the appropriate `MessageSerializer` (e.g. `GraphSONMessageSerializerV4` or `GraphBinaryMessageSerializerV4` respectively)
-in the same way and building that into the `Cluster` object.
+ensure compatibility when making requests.
 
 [[gremlin-java-gvalue]]
 === GValue Parameterization
@@ -1350,28 +1381,27 @@ which will boost performance and reduce resources required on the server.
 
 There are a number of overloads to `Client.submit()` that accept a `RequestOptions` object. The `RequestOptions`
 provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
-this feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current
-request.
+this feature is to set a per-request override to the `timeoutMillis` so that it only applies to the current request.
 
 [source,java]
 ----
 Cluster cluster = Cluster.open();
 Client client = cluster.connect();
-RequestOptions options = RequestOptions.build().timeout(500).create();
+RequestOptions options = RequestOptions.build().timeoutMillis(500).create();
 List<Result> result = client.submit("g.V().repeat(both()).times(100)", options).all().get();
 ----
 
-The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar with
-bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Gremlin Server will respect timeouts set this way
-in scripts as well. With scripts of course, it is possible to send multiple traversals at once in the same script.
+The preferred method for setting a per-request timeout for scripts is demonstrated above, but a script may also use
+`g.with("timeoutMillis", 500)`. Gremlin Server will respect timeouts set this way in scripts as well. With scripts of
+course, it is possible to send multiple traversals at once in the same script.
 In such events, the timeout for the request is interpreted as a sum of all timeouts identified in the script.
 
 [source,java]
 ----
-RequestOptions options = RequestOptions.build().timeout(500).create();
-List<Result> result = client.submit("g.with(EVALUATION_TIMEOUT, 500).addV().iterate();" +
+RequestOptions options = RequestOptions.build().timeoutMillis(500).create();
+List<Result> result = client.submit("g.with(\"timeoutMillis\", 500).addV().iterate();" +
                                     "g.addV().iterate();" + 
-                                    "g.with(EVALUATION_TIMEOUT, 500).addV();", options).all().get();
+                                    "g.with(\"timeoutMillis\", 500).addV();", options).all().get();
 ----
 
 In the above example, `RequestOptions` defines a timeout of 500 milliseconds, but the script has three traversals with
@@ -1406,6 +1436,7 @@ g2Client.submit("g.V()")
 The above code demonstrates how the `alias` method can be used such that the script need only contain a reference
 to "g" and "g1" and "g2" are automatically rebound into "g" on the server-side.
 
+[[gremlin-java-interceptors]]
 ==== RequestInterceptor
 
 Gremlin-Java allows for modification of the underlying HTTP request through the use of `RequestInterceptors`. This is
@@ -1749,22 +1780,22 @@ java -cp target/run-examples-shaded.jar examples.ModernTraversals
 === Provider Defined Types
 
 Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
-`ProviderDefinedType` objects containing a name and fields map without any configuration.
+`CompositePDT` objects containing a name and fields map without any configuration.
 Consult your graph provider's documentation for the list of PDTs they support.
 
 Receiving a raw PDT:
 
 [source,java]
 ----
-ProviderDefinedType pdt = (ProviderDefinedType) g.V().has("location").values("location").next();
+CompositePDT pdt = (CompositePDT) g.V().has("location").values("location").next();
 String typeName = pdt.getName();                   // "x:Point"
 Map<String, Object> fields = pdt.getFields();      // {x: 1.0, y: 2.0}
 ----
 
-Working with raw `ProviderDefinedType` objects is always available. The following two approaches are optional
+Working with raw `CompositePDT` objects is always available. The following two approaches are optional
 conveniences that automate conversion between PDT values and application types on both the request and response paths.
 
-Using a `ProviderDefinedTypeRegistry` for hydration and dehydration:
+Using a `PDTRegistry` for hydration and dehydration:
 ----
 public class PointAdapter implements ProviderDefinedTypeAdapter<Point> {
     @Override public String typeName() { return "x:Point"; }
@@ -1908,11 +1939,11 @@ Some connection options can also be set on individual requests made through the 
 
 [source,javascript]
 ----
-const vertices = await g.with_('evaluationTimeout', 500).V().out('knows').toList()
+const vertices = await g.with_('timeoutMillis', 500).V().out('knows').toList()
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent`,
-`bulkResults`, `materializeProperties` and `evaluationTimeout`.
+`bulkResults`, `materializeProperties` and `timeoutMillis`.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
 to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
@@ -1984,17 +2015,41 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |Key |Type |Description |Default
 |url |String |The resource uri. |None
 |options |Object |The connection options. |{}
-|options.traversalSource |String |The traversal source. |'g'
-|options.headers |Object |Additional HTTP header key/values included with each request. |undefined
-|options.interceptors |RequestInterceptor/RequestInterceptor[] |One or more functions that can modify the HTTP request before it is sent. |undefined
+|options.traversalSource |String |The name of the remote `GraphTraversalSource`. |'g'
+|options.maxConnections |Number |Caps the number of concurrent connections per origin on the default dispatcher. |128
+|options.readTimeoutMillis |Number |A per-read idle timeout in milliseconds (undici `bodyTimeout`). It resets per chunk, so it is safe for streaming. |runtime default
+|options.maxResponseHeaderBytes |Number |The maximum size of the response headers in bytes (undici `maxHeaderSize`). |runtime default
+|options.keepAliveTimeMillis |Number |Idle time in milliseconds before TCP keep-alive probes begin. Enables `SO_KEEPALIVE` on the socket. Set to `0` to disable. |30000
+|options.proxy |String |An HTTP proxy URI. When set, requests are routed through an undici `ProxyAgent`. |undefined
+|options.compression |String |Response compression codec, `'none'` or `'deflate'`. |'deflate'
+|options.batchSize |Number |Connection-level default that fills a request's `batchSize` when it is left unset. |64
+|options.bulkResults |Boolean |Connection-level default for `bulkResults`, applied to every request unless overridden per-request. The `DriverRemoteConnection` traversal path defaults to `true` regardless of this setting. |false
+|options.logger |Object/Function |A logger object (with `debug`/`info`/`warn`/`error` methods, e.g. `console`) or a `(level, message, ...args)` callback. |none (disabled)
+|options.interceptors |RequestInterceptor/RequestInterceptor[] |One or more functions that can modify the HTTP request before it is sent, run in order. |undefined
 |options.auth |RequestInterceptor |An auth interceptor that is always appended to the end of the interceptor list so it runs last. |undefined
 |options.preciseNumbers |Boolean |When `true`, wraps deserialized numbers in typed wrappers that preserve the server's original type. |undefined
-|options.reader |GraphBinaryReader |The reader to use for deserializing responses. |GraphBinaryReader
-|options.writer |GraphBinaryWriter |The writer to use for serializing requests. |GraphBinaryWriter
+|options.responseSerializer |GraphBinaryReader |The reader to use for deserializing responses. Requests are always serialized as JSON and can only be customized through a <<gremlin-javascript-interceptors,request interceptor>>. |GraphBinaryReader
 |options.enableUserAgentOnConnect |Boolean |Determines if a user agent header will be sent with requests. |true
-|options.agent |Agent |A custom `node:http` or `node:https` Agent for connection pooling or proxy configuration. |undefined
-|options.pdtRegistry |ProviderDefinedTypeRegistry |A registry for hydrating and dehydrating <<gremlin-javascript-pdt,Provider Defined Types>>. |undefined
+|options.pdtRegistry |PDTRegistry |A registry for hydrating and dehydrating <<gremlin-javascript-pdt,Provider Defined Types>>. |undefined
 |=========================================================
+
+TLS is configured through the Node.js/undici runtime (for example the `NODE_EXTRA_CA_CERTS` or
+`NODE_TLS_REJECT_UNAUTHORIZED` environment variables), not through driver options. Custom headers are set via an
+interceptor rather than a `headers` option, for example `interceptors: (req) => { req.headers['X-Custom'] = 'value'; }`.
+
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `readTimeoutMillis` only bounds
+the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
+runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
+your application around the call by racing the `submit` promise against a timeout:
+
+[source,javascript]
+----
+// bound the entire request to 30 seconds
+const results = await Promise.race([
+  client.submit('g.V().out().out()'),
+  new Promise((_, reject) => setTimeout(() => reject(new Error('request timed out')), 30000)),
+]);
+----
 
 [[gremlin-javascript-interceptors]]
 === RequestInterceptor
@@ -2188,8 +2243,17 @@ Promise.all([
 [[gremlin-javascript-gvalue]]
 === GValue Parameterization
 
-IMPORTANT: 4.0.0-beta.2 Release - `GValue` parameterization is not yet implemented for the JavaScript driver. This
-functionality is planned for a future release.
+A `GValue` is an encapsulation of a parameter name and value. A <<traversal-parameterization,subset of gremlin steps>>
+are able to accept GValues. When constructing a `GraphTraversal` with such steps in JavaScript, a GValue may be passed
+in the traversal to utilize a parameter in place of a literal.
+
+[source,javascript]
+----
+const GValue = gremlin.process.GValue;
+
+g.V().has('name', new GValue('name', 'marko'));
+g.mergeV(new GValue('vertexPattern', { name: 'marko' }));
+----
 
 [[gremlin-javascript-scripts]]
 === Submitting Scripts
@@ -2216,19 +2280,18 @@ for (const vertex of result2) {
 
 The `client.submit()` functions accept a `requestOptions` which expects a dictionary. The `requestOptions`
 provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
-this feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current
-request.
+this feature is to set a per-request override to the `timeoutMillis` so that it only applies to the current request.
 
 [source,javascript]
 ----
-const result = await client.submit("g.V().repeat(both()).times(100)", null, { evaluationTimeout: 5000 })
+const result = await client.submit("g.V().repeat(both()).times(100)", null, { timeoutMillis: 5000 })
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent`,
-`bulkResults`, `materializeProperties` and `evaluationTimeout`.
+`bulkResults`, `materializeProperties` and `timeoutMillis`.
 
-IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
-with bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Scripts with multiple traversals and multiple
+IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but a script may
+also use `g.with("timeoutMillis", 500)`. Scripts with multiple traversals and multiple
 timeouts will be interpreted as a sum of all timeouts identified in the script for that request.
 
 ==== Streaming Results
@@ -2256,13 +2319,13 @@ for await (const item of client.stream('g.V()', null)) {
 }
 ----
 
-`client.stream()` accepts the same parameters as `client.submit()`: a script string, optional bindings, and optional
+`client.stream()` accepts the same arguments as `client.submit()`: a script string, optional parameters, and optional
 per-request settings.
 
 [source,javascript]
 ----
 try {
-  for await (const item of client.stream('g.V().has("age", gt(age))', { age: 30 }, { evaluationTimeout: 5000 })) {
+  for await (const item of client.stream('g.V().has("age", gt(age))', { age: 30 }, { timeoutMillis: 5000 })) {
     console.log(item);
   }
 } catch (err) {
@@ -2511,7 +2574,7 @@ node modern-traversals.js
 === Provider Defined Types
 
 Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
-`ProviderDefinedType` objects containing a `name` and `fields` map without any configuration.
+`CompositePDT` objects containing a `name` and `fields` map without any configuration.
 Consult your graph provider's documentation for the list of PDTs they support.
 
 Receiving a raw PDT:
@@ -2524,15 +2587,15 @@ console.log(pdt.name);   // "x:Point"
 console.log(pdt.fields); // { x: 1.0, y: 2.0 }
 ----
 
-Working with raw `ProviderDefinedType` objects is always available. Using a `ProviderDefinedTypeRegistry` is an
+Working with raw `CompositePDT` objects is always available. Using a `PDTRegistry` is an
 optional convenience that automates conversion between PDT values and application types on both the request and
 response paths.
 
 [source,javascript]
 ----
-const { ProviderDefinedTypeRegistry } = require('gremlin');
+const { PDTRegistry } = require('gremlin');
 
-const registry = new ProviderDefinedTypeRegistry();
+const registry = new PDTRegistry();
 registry.register('x:Point', {
     serialize: (point) => ({ x: point.x, y: point.y }),
     deserialize: (fields) => new Point(fields.x, fields.y)
@@ -2614,12 +2677,12 @@ For instance to set request timeout to 500 milliseconds:
 
 [source,csharp]
 ----
-var l = g.With(Tokens.ArgsEvalTimeout, 500).V().Out("knows").Count().ToList();
+var l = g.With(Tokens.ArgsTimeoutMillis, 500).V().Out("knows").Count().ToList();
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
-`materializeProperties`, and `evaluationTimeout`. These options are available as constants on the
-`Gremlin.Net.Driver.Tokens` class.
+`materializeProperties`, and `timeoutMillis`. These options are available as constants on the `Gremlin.Net.Driver.Tokens`
+class.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
 to optimize result transfer. This does not apply to direct `GremlinClient.SubmitAsync()` calls, where `bulkResults`
@@ -2695,13 +2758,11 @@ The following options can be passed to the `GremlinClient` constructor:
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|messageSerializer |A single `IMessageSerializer` used for both request and response. |`GraphBinary4MessageSerializer`
-|requestSerializer |The serializer for outgoing requests. When `null`, interceptors must serialize the body. |`GraphBinary4MessageSerializer`
-|responseSerializer |The serializer for incoming responses. Always required. |`GraphBinary4MessageSerializer`
+|responseSerializer |The serializer for incoming responses. Requests are always serialized as JSON and can only be customized through a <<gremlin-dotnet-interceptors,request interceptor>>. |`GraphBinary4MessageSerializer`
 |connectionSettings |The `ConnectionSettings` for the HTTP connection. |default `ConnectionSettings`
 |loggerFactory |An `ILoggerFactory` for logging. |`NullLoggerFactory`
 |interceptors |A list of `Func<HttpRequestContext, Task>` that modify HTTP requests before sending. |_none_
-|pdtRegistry |A `ProviderDefinedTypeRegistry` for hydrating and dehydrating <<gremlin-dotnet-pdt,Provider Defined Types>>. |`null`
+|pdtRegistry |A `PDTRegistry` for hydrating and dehydrating <<gremlin-dotnet-pdt,Provider Defined Types>>. |`null`
 |auth |A single `Func<HttpRequestContext, Task>` for authentication. Always appended to the end of the interceptor list so it runs last. |_none_
 |=========================================================
 
@@ -2762,8 +2823,9 @@ include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference
 [[gremlin-dotnet-serialization]]
 === Serialization
 
-The Gremlin.Net driver uses GraphBinary 4.0 by default. A custom serializer can be provided when creating the
-`GremlinClient`. The driver supports separate request and response serializers, or a single serializer for both:
+The Gremlin.Net driver uses GraphBinary 4.0 for responses by default. A custom response serializer can be provided
+when creating the `GremlinClient`. Requests are always serialized as JSON (`application/json`) and that behavior is
+not configurable, however it can be modified with a `RequestInterceptor`:
 
 [source,csharp]
 ----
@@ -2858,6 +2920,8 @@ the traversal to utilize a parameter in place of a literal.
 [source,csharp]
 ----
 g.V().Has("name", new GValue<string>("name", "marko"));
+g.MergeV(new GValue<IDictionary<object, object>>("vertexPattern",
+    new Dictionary<object, object> { { "name", "marko" } }));
 ----
 
 [[gremlin-dotnet-scripts]]
@@ -2880,7 +2944,7 @@ include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference
 ==== Per Request Settings
 
 A `RequestMessage` can be built with additional fields using the builder pattern. A good use-case for this
-feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current request.
+feature is to set a per-request override to the `timeoutMillis` so that it only applies to the current request.
 
 [source,csharp]
 ----
@@ -2888,7 +2952,7 @@ include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`, `materializeProperties`
-and `evaluationTimeout`. These options are available as constants on the `Gremlin.Net.Driver.Tokens` class.
+and `timeoutMillis`. These options are available as constants on the `Gremlin.Net.Driver.Tokens` class.
 
 ==== Request Interceptors
 
@@ -2902,9 +2966,9 @@ var client = new GremlinClient(new GremlinServer("localhost", 8182),
     interceptors: new[] { Auth.Basic("username", "password") });
 ----
 
-When `requestSerializer` is set to `null`, the request body is passed as a `RequestMessage` to interceptors, and an
-interceptor is responsible for serializing it to `byte[]` and setting the `Content-Type` header. This follows the
-Python driver's `request_serializer=None` pattern and is useful for custom serialization workflows.
+Each interceptor receives the request body as a `RequestMessage`. By default, the driver serializes the body to JSON
+(`application/json`) after all interceptors have run. An interceptor that requires a different body encoding can
+serialize the `RequestMessage` to `byte[]` itself and set the `Content-Type` header accordingly.
 
 anchor:gremlin-net-dsl[]
 [[gremlin-dotnet-dsl]]
@@ -3116,22 +3180,22 @@ dotnet run --project ModernTraversals
 === Provider Defined Types
 
 Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
-`ProviderDefinedType` objects containing a `Name` and `Fields` dictionary without any configuration.
+`CompositePDT` objects containing a `Name` and `Fields` dictionary without any configuration.
 Consult your graph provider's documentation for the list of PDTs they support.
 
 Receiving a raw PDT:
 
 [source,csharp]
 ----
-var pdt = (ProviderDefinedType) g.V().Has("location").Values<object>("location").Next();
+var pdt = (CompositePDT) g.V().Has("location").Values<object>("location").Next();
 Console.WriteLine(pdt.Name);   // "x:Point"
 Console.WriteLine(pdt.Fields); // { x: 1.0, y: 2.0 }
 ----
 
-Working with raw `ProviderDefinedType` objects is always available. The following two approaches are optional
+Working with raw `CompositePDT` objects is always available. The following two approaches are optional
 conveniences that automate conversion between PDT values and application types on both the request and response paths.
 
-Using a `ProviderDefinedTypeRegistry` for hydration and dehydration:
+Using a `PDTRegistry` for hydration and dehydration:
 
 [source,csharp]
 ----
@@ -3146,13 +3210,13 @@ public class PointAdapter : IProviderDefinedTypeAdapter<Point>
         new Dictionary<string, object?> { ["x"] = value.X, ["y"] = value.Y };
 }
 
-var registry = new ProviderDefinedTypeRegistry();
+var registry = new PDTRegistry();
 registry.Register(new PointAdapter());
 
 using var client = new GremlinClient(new GremlinServer("localhost", 8182), pdtRegistry: registry);
 ----
 
-The `ProviderDefinedTypeRegistry.Create()` method scans loaded assemblies for `IProviderDefinedTypeAdapter<T>`
+The `PDTRegistry.Create()` method scans loaded assemblies for `IProviderDefinedTypeAdapter<T>`
 implementations and registers them automatically.
 
 For simpler cases where you own the type, annotate it directly to avoid writing an adapter:
@@ -3273,11 +3337,11 @@ Some connection options can also be set on individual requests made through the 
 
 [source,python]
 ----
-vertices = g.with_('evaluationTimeout', 500).V().out('knows').to_list()
+vertices = g.with_('timeoutMillis', 500).V().out('knows').to_list()
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `language`,
-`materializeProperties`, `userAgent`, and `evaluationTimeout`.
+`materializeProperties`, `userAgent`, and `timeoutMillis`.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `True` per-request
 to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
@@ -3369,7 +3433,7 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 |=========================================================
 |Key |Description |Default
 |max_workers |Maximum number of worker threads. |Same as `max_connections` (128)
-|response_serializer |The response serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
+|response_serializer |The response serializer implementation. Requests are always serialized as JSON and can only be customized through a <<gremlin-python-interceptors,request interceptor>>.|`gremlin_python.driver.serializer.GraphBinarySerializersV4`
 |interceptors |The request interceptors to run before the request body is serialized.|`None`
 |auth |An authentication interceptor. Always appended to the end of the interceptor list so it runs last. |`None`
 |max_connections |The maximum number of connections used by the pool. |128
@@ -3387,7 +3451,7 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|True
 |bulk_results |Enables bulking of results on the server. |False
-|pdt_registry |A `ProviderDefinedTypeRegistry` for hydrating and dehydrating <<gremlin-python-pdt,Provider Defined Types>>. |`None`
+|pdt_registry |A `PDTRegistry` for hydrating and dehydrating <<gremlin-python-pdt,Provider Defined Types>>. |`None`
 |=========================================================
 
 Transport options such as SSL and timeouts can be passed as keyword arguments to `Client` or
@@ -3626,27 +3690,26 @@ returns a `concurrent.futures.Future` that resolves to a list when it is complet
 
 The `client.submit()` functions accept a `request_options` which expects a dictionary. The `request_options`
 provide a way to include options that are specific to the request made with the call to `submit()`. A good use-case for
-this feature is to set a per-request override to the `evaluationTimeout` so that it only applies to the current
-request.
+this feature is to set a per-request override to the `timeoutMillis` so that it only applies to the current request.
 
 [source,python]
 ----
-result_set = client.submit('g.V().repeat(both()).times(100)', request_options={'evaluationTimeout': 5000})
+result_set = client.submit('g.V().repeat(both()).times(100)', request_options={'timeoutMillis': 5000})
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `requestId`, `userAgent`,
-`materializeProperties` and `evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
+`materializeProperties` and `timeoutMillis`.
 
-IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar
-with bytecode may try `g.with(EVALUATION_TIMEOUT, 500)` within a script. Scripts with multiple traversals and multiple
+IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but a script may
+also use `g.with("timeoutMillis", 500)`. Scripts with multiple traversals and multiple
 timeouts will be interpreted as a sum of all timeouts identified in the script for that request.
 
 [source,java]
 ----
-RequestOptions options = RequestOptions.build().timeout(500).create();
-List<Result> result = client.submit("g.with(EVALUATION_TIMEOUT, 500).addV().iterate();" +
-                                    "g.addV().iterate();
-                                    "g.with(EVALUATION_TIMEOUT, 500).addV();", options).all().get();
+RequestOptions options = RequestOptions.build().timeoutMillis(500).create();
+List<Result> result = client.submit("g.with(\"timeoutMillis\", 500).addV().iterate();" +
+                                    "g.addV().iterate();" +
+                                    "g.with(\"timeoutMillis\", 500).addV();", options).all().get();
 ----
 
 In the above example, `RequestOptions` defines a timeout of 500 milliseconds, but the script has three traversals with
@@ -3886,7 +3949,7 @@ python modern_traversals.py
 === Provider Defined Types
 
 Provider Defined Types (PDTs) allow graph providers to expose custom types through the driver. PDT values arrive as
-`ProviderDefinedType` objects containing a `name` and `fields` dict without any configuration.
+`CompositePDT` objects containing a `name` and `fields` dict without any configuration.
 Consult your graph provider's documentation for the list of PDTs they support.
 
 Receiving a raw PDT:
@@ -3898,16 +3961,16 @@ print(pdt.name)   # "x:Point"
 print(pdt.fields) # {'x': 1.0, 'y': 2.0}
 ----
 
-Working with raw `ProviderDefinedType` objects is always available. The following two approaches are optional
+Working with raw `CompositePDT` objects is always available. The following two approaches are optional
 conveniences that automate conversion between PDT values and application types on both the request and response paths.
 
-Using a `ProviderDefinedTypeRegistry` for hydration and dehydration:
+Using a `PDTRegistry` for hydration and dehydration:
 
 [source,python]
 ----
-from gremlin_python.structure.graph import ProviderDefinedTypeRegistry
+from gremlin_python.structure.graph import PDTRegistry
 
-registry = ProviderDefinedTypeRegistry()
+registry = PDTRegistry()
 registry.register('x:Point',
     deserialize_fn=lambda fields: Point(fields['x'], fields['y']),
     serialize_fn=lambda p: {'x': p.x, 'y': p.y},
@@ -3917,7 +3980,7 @@ g = traversal().with_(DriverRemoteConnection('http://localhost:8182/gremlin', 'g
     pdt_registry=registry))
 ----
 
-The `ProviderDefinedTypeRegistry.create()` class method discovers adapters via `entry_points` in `pyproject.toml`
+The `PDTRegistry.create()` class method discovers adapters via `entry_points` in `pyproject.toml`
 under the `tinkerpop.pdt` group.
 
 For simpler cases where you own the type, the `@provider_defined` decorator enables automatic round-trip conversion

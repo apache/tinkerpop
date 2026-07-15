@@ -104,7 +104,7 @@ public class GremlinGroovyScriptEngineBenchmark extends AbstractBenchmarkBase {
         if (binding && id != null) throw new IllegalArgumentException("If binding is true then the id should be null");
 
         final StringBuilder b = new StringBuilder();
-        b.append("g.with('evaluationTimeout', 1000L).addV('person').property(id,");
+        b.append("g.with('timeoutMillis', 1000L).addV('person').property(id,");
 
         if (!binding) b.append("'");
         b.append(null == id ? "x" : id);
