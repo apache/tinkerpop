@@ -19,6 +19,8 @@
 
 import gremlin from "gremlin";
 
+import { changedMeaningful, atLeastP, atLeast } from "../graph/change-levels.js";
+
 const INHERENTLY_CENTRAL = new Set([
   "equals", "hashCode", "toString", "clone", "close", "compareTo",
   "iterator", "hasNext", "next", "get", "set", "size", "isEmpty",
@@ -46,7 +48,11 @@ const { statics: __, t: T } = gremlin.process;
  * @param {object} g - gremlin-js GraphTraversalSource
  * @param {object} params
  * @param {number} [params.depth] - Max hops to traverse (default: 3)
- * @param {boolean} [params.changedOnly] - Start from changed functions only (default: true)
+ * @param {boolean} [params.changedOnly] - Start from changed functions only (default: true).
+ *   Function seed defaults to the meaningful tiers (BEHAVIORAL, STRUCTURAL); the
+ *   type seed is STRUCTURAL-only.
+ * @param {string} [params.minChangeLevel] - Narrow the function seed to this
+ *   level and above (e.g. "STRUCTURAL")
  * @returns {Promise<BlastRadiusResult>}
  */
 
@@ -57,7 +63,7 @@ const { statics: __, t: T } = gremlin.process;
  * @property {string}  signature
  * @property {number}  linesStart
  * @property {number}  linesEnd
- * @property {boolean} changed         whether the PR modified this function
+ * @property {string}  changeLevel     how the PR moved this function (NONE | FORMATTING | BEHAVIORAL | STRUCTURAL)
  * @property {number}  reachableCount  callers + overriders reachable within `depth` hops upstream;
  *                                      high = the change ripples widely (for driver/server this is expected)
  * @property {number}  depth           hop limit used for this row
@@ -79,10 +85,14 @@ const { statics: __, t: T } = gremlin.process;
 export async function blastRadius(g, params = {}) {
   const depth = params.depth || 3;
   const changedOnly = params.changedOnly !== false;
+  // Function seed uses the meaningful tiers; `minChangeLevel` can narrow further.
+  const changePredicate = params.minChangeLevel
+    ? atLeastP(params.minChangeLevel)
+    : changedMeaningful();
 
   let traversal = g.V().hasLabel("Function").hasNot("external");
   if (changedOnly) {
-    traversal = traversal.has("changed", true);
+    traversal = traversal.has("changeLevel", changePredicate);
   }
 
   const functions = await traversal.elementMap().toList();
@@ -91,9 +101,9 @@ export async function blastRadius(g, params = {}) {
   for (const fnMap of functions) {
     const vertexId = fnMap.get(T.id);
     const name = fnMap.get("name");
-    const changed = fnMap.get("changed");
+    const changeLevel = fnMap.get("changeLevel");
 
-    if (INHERENTLY_CENTRAL.has(name) && !changed) continue;
+    if (INHERENTLY_CENTRAL.has(name) && !atLeast(changeLevel || "NONE", "BEHAVIORAL")) continue;
 
     const reachable = await g.V(vertexId)
       .repeat(__.union(__.in_("calls"), __.in_("overrides")).dedup())
@@ -111,7 +121,7 @@ export async function blastRadius(g, params = {}) {
         signature: fnMap.get("signature"),
         linesStart: fnMap.get("lines_start"),
         linesEnd: fnMap.get("lines_end"),
-        changed,
+        changeLevel,
         reachableCount: count,
         depth,
       });
@@ -123,9 +133,12 @@ export async function blastRadius(g, params = {}) {
   // Type-seeded hierarchy impact: functions declared by everything that
   // implements/extends a changed type, walked in the implementer->supertype
   // direction (`in`) up to `depth` levels of the hierarchy.
+  // Type seed is STRUCTURAL-only: a hierarchy ripples through implementers only
+  // when the type's contract (kind/supertypes/member set) moved — a body-only
+  // (BEHAVIORAL) or formatting change to the declaring file does not.
   let typeTraversal = g.V().hasLabel("Type").hasNot("external");
   if (changedOnly) {
-    typeTraversal = typeTraversal.has("changed", true);
+    typeTraversal = typeTraversal.has("changeLevel", "STRUCTURAL");
   }
   const changedTypes = await typeTraversal.elementMap().toList();
   const typeResults = [];

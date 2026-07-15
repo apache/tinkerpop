@@ -32,6 +32,18 @@ function esc(str) {
     .replace(/"/g, "&quot;");
 }
 
+// Render a function/type's change level as a badge. STRUCTURAL (signature churn)
+// reads loudest; BEHAVIORAL is a body change; FORMATTING is muted; NONE shows
+// nothing.
+function changeLevelBadge(level) {
+  switch (level) {
+    case "STRUCTURAL": return `<span class="badge badge-structural">structural</span>`;
+    case "BEHAVIORAL": return `<span class="badge badge-modified">behavioral</span>`;
+    case "FORMATTING": return `<span class="badge badge-formatting">formatting</span>`;
+    default: return "";
+  }
+}
+
 /**
  * Fields typed as raw *code* (appendixFunctional.testCode / .fullOutput) are
  * wrapped by the renderer in its own `<pre><code>` and escaped. Agents
@@ -498,12 +510,12 @@ function renderAppendixStructural(checks, graphStats) {
   const confidenceHtml = renderConfidence(checks?.confidence);
 
   const hotspotRows = hotspots.slice(0, 10).map(h => {
-    const badge = (h.inherentlyCentral && h.changed) ? `<span class="badge badge-modified">modified</span>` : "";
+    const badge = changeLevelBadge(h.changeLevel);
     return `<tr><td class="fn-name">${esc(h.name)}</td><td>${esc((h.filePath || "").split("/").pop())}</td><td class="num">${h.inDegree}</td><td class="num">${h.outDegree}</td><td class="num"><strong>${h.totalDegree}</strong></td><td>${badge}</td></tr>`;
   }).join("\n      ");
 
   const blastRows = blast.slice(0, 10).map(b => {
-    const badge = b.changed ? `<span class="badge badge-modified">modified</span>` : "";
+    const badge = changeLevelBadge(b.changeLevel);
     return `<tr><td class="fn-name">${esc(b.name)}</td><td>${esc((b.filePath || "").split("/").pop())}</td><td class="num">${b.reachableCount}</td><td>${badge}</td></tr>`;
   }).join("\n      ");
 

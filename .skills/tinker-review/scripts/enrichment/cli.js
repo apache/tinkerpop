@@ -92,7 +92,7 @@ async function main() {
     console.log("       node cli.js <command> --workDir /tmp/pr-review-3448 [--key value ...]");
     console.log("");
     console.log("Commands:");
-    console.log("  listFunctions   [--changed true] [--visibility public]");
+    console.log("  listFunctions   [--changeLevel STRUCTURAL] [--changed true] [--visibility public]");
     console.log("  listTypes       [--kind class]");
     console.log("  getCallsFrom    --function <name> --file <path>");
     console.log("  getCanonicalSteps");
@@ -150,7 +150,7 @@ async function main() {
 
     switch (command) {
       case "listFunctions":
-        result = await fn(g, { changed: args.changed, visibility: args.visibility, filePath: args.file });
+        result = await fn(g, { changeLevel: args.changeLevel, changed: args.changed, visibility: args.visibility, filePath: args.file });
         break;
       case "listTypes":
         result = await fn(g, { kind: args.kind, filePath: args.file });

@@ -18,6 +18,7 @@
  */
 
 import gremlin from "gremlin";
+import { changedAny } from "../graph/change-levels.js";
 
 /**
  * Find orphan vertices — nodes that are missing expected relationships.
@@ -29,7 +30,8 @@ import gremlin from "gremlin";
  * @param {string} params.vertexLabel - Label to check (e.g., "Step", "Function")
  * @param {string} params.expectedEdge - Edge label that should exist
  * @param {string} [params.direction] - "in" or "out" (default: "in")
- * @param {boolean} [params.changedOnly] - Only check changed vertices (default: false)
+ * @param {boolean} [params.changedOnly] - Only check changed vertices — any level
+ *   but NONE (default: false)
  * @returns {Promise<OrphanResult>}
  */
 
@@ -52,7 +54,7 @@ export async function orphans(g, params) {
 
   let traversal = g.V().hasLabel(vertexLabel);
   if (changedOnly) {
-    traversal = traversal.has("changed", true);
+    traversal = traversal.has("changeLevel", changedAny());
   }
 
   const vertices = await traversal.elementMap().toList();

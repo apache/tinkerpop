@@ -69,7 +69,7 @@ export async function createReferenceEdge(g, params) {
     await g.addV("File")
       .property("path", fromPath)
       .property("language", extOf(fromPath))
-      .property("changed", false)
+      .property("changeLevel", "NONE")
       .property("parsed", false)
       .property("deleted", false)
       .next();

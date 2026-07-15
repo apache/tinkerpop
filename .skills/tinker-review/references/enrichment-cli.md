@@ -55,8 +55,10 @@ before enriching and to pull the verification worklist.
 
 ### listFunctions
 Lists functions the graph knows about. **Your first orientation read.**
-`--changed true` narrows to just what the PR touched; `--visibility public`
-narrows to the API surface. Returns each function's signature and line span so
+`--changeLevel STRUCTURAL` narrows to signature-level changes (also `BEHAVIORAL`,
+`FORMATTING`, `NONE`); `--changed true` is a back-compat alias for "anything but
+NONE" (and `--changed false` for NONE only); `--visibility public` narrows to the
+API surface. Each result carries its `changeLevel`, signature, and line span so
 you can open it in the worktree. Reach for it at the top of almost any playbook.
 
 ### listTypes

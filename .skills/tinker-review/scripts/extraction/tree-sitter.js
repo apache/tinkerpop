@@ -22,9 +22,11 @@ const require = createRequire(import.meta.url);
 const TreeSitter = require("web-tree-sitter");
 import { readdir } from "node:fs/promises";
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
+import { CHANGE_LEVEL, gradeMember, gradeFile } from "../graph/change-levels.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -248,7 +250,34 @@ function extractSignature(node, language) {
   return `${name}${params}`;
 }
 
-function extractFunctionsFromTree(tree, filePath, language, fileChanged) {
+function sha256(text) {
+  return createHash("sha256").update(text).digest("hex");
+}
+
+// Hash of a node's exact source text — distinguishes NONE (identical) from any
+// edit, including a pure reformat.
+function rawHash(node) {
+  return sha256(node.text);
+}
+
+// Hash of a node's leaf tokens with comment nodes skipped. tree-sitter does not
+// emit whitespace as tokens, so this is "code, minus formatting and comments":
+// two bodies with the same normHash differ only in whitespace/comments
+// (FORMATTING); differing normHash means the tokens themselves moved (BEHAVIORAL).
+function normHash(node) {
+  const tokens = [];
+  (function walk(n) {
+    if (n.type.includes("comment")) return;
+    if (n.childCount === 0) {
+      tokens.push(n.text);
+      return;
+    }
+    for (let i = 0; i < n.childCount; i++) walk(n.child(i));
+  })(node);
+  return sha256(tokens.join(" "));
+}
+
+function extractFunctionsFromTree(tree, filePath, language) {
   const functions = [];
 
   function visit(node) {
@@ -263,7 +292,8 @@ function extractFunctionsFromTree(tree, filePath, language, fileChanged) {
           language,
           linesStart: node.startPosition.row + 1,
           linesEnd: node.endPosition.row + 1,
-          changed: fileChanged,
+          rawHash: rawHash(node),
+          normHash: normHash(node),
         });
       }
     }
@@ -404,21 +434,50 @@ function extractSupertypes(node, language) {
   return supers;
 }
 
-function extractTypesFromTree(tree, filePath, language, fileChanged) {
+// The function names declared anywhere inside a type node. Used only to build a
+// type's structural signature, so over-inclusion (e.g. a nested type's methods)
+// is harmless as long as it is consistent between the base and head parse.
+function declaredMemberNames(typeNode, language) {
+  const names = [];
+  (function walk(n) {
+    if (isFunctionNode(n, language)) {
+      const fname = extractFunctionName(n, language);
+      if (fname) names.push(fname);
+    }
+    for (let i = 0; i < n.childCount; i++) walk(n.child(i));
+  })(typeNode);
+  return names;
+}
+
+// A type's structural signature: its declaration surface. A change here (kind,
+// visibility, supertypes, or the set of declared members) is STRUCTURAL; a
+// change to method bodies only leaves it stable and grades FORMATTING/BEHAVIORAL.
+function typeSignature(node, language, kind, visibility, supertypes) {
+  const supers = supertypes.map((s) => `${s.relation}:${s.name}`).sort().join(",");
+  const members = declaredMemberNames(node, language).sort().join(",");
+  return `${kind}|${visibility}|extends[${supers}]|members[${members}]`;
+}
+
+function extractTypesFromTree(tree, filePath, language) {
   const types = [];
 
   function visit(node) {
     if (isTypeNode(node, language)) {
       const name = extractTypeName(node, language);
       if (name) {
+        const kind = inferTypeKind(node, language);
+        const visibility = getVisibility(node, language);
+        const supertypes = extractSupertypes(node, language);
         types.push({
           name,
-          kind: inferTypeKind(node, language),
-          visibility: getVisibility(node, language),
+          kind,
+          visibility,
           filePath,
           language,
-          changed: fileChanged,
-          supertypes: extractSupertypes(node, language),
+          supertypes,
+          signature: typeSignature(node, language, kind, visibility, supertypes),
+          rawHash: rawHash(node),
+          normHash: normHash(node),
         });
       }
     }
@@ -631,10 +690,43 @@ function classifyTestType(filePath, language) {
   return "unit";
 }
 
-// Parse one source file and append everything it yields to `result`. Shared by
-// the changed-file pass and the hierarchy-neighborhood pass; `file.changed`
-// flows onto every function/type so context files land as changed:false.
-function parseSourceFile(parser, file, language, result) {
+// A canonical key for a file's import set, so a change to what it imports (a
+// dependency-surface move) can be detected between base and head.
+function importSetKey(imports) {
+  return imports
+    .map((i) => `${i.importedPath || ""}::${i.importedName || ""}`)
+    .sort()
+    .join("|");
+}
+
+// Grade each head member against the base version, matching by name and
+// disambiguating overloads by signature. Returns levels aligned to `headMembers`.
+function gradeMembersAgainstBase(headMembers, baseMembers) {
+  const baseByName = new Map();
+  for (const b of baseMembers) {
+    if (!baseByName.has(b.name)) baseByName.set(b.name, []);
+    baseByName.get(b.name).push(b);
+  }
+  return headMembers.map((h) => {
+    const candidates = baseByName.get(h.name);
+    if (!candidates || candidates.length === 0) return CHANGE_LEVEL.STRUCTURAL;
+    // Prefer an exact-signature match; if the name is unique fall back to it so a
+    // signature change grades STRUCTURAL rather than "added". An ambiguous
+    // overload with no signature match means the overload set moved — STRUCTURAL.
+    let base = candidates.find((b) => b.signature === h.signature);
+    if (!base) base = candidates.length === 1 ? candidates[0] : null;
+    if (!base) return CHANGE_LEVEL.STRUCTURAL;
+    return gradeMember(base, h);
+  });
+}
+
+// Parse one source file and append everything it yields to `result`, stamping a
+// `changeLevel` on the file and each member. Shared by the changed-file pass and
+// the hierarchy-neighborhood pass; context files (`file.changed === false`) are
+// unchanged by the PR and grade NONE. A changed file is graded against its base
+// version from `baseContents`; a changed file with no base entry was added by
+// the PR and grades STRUCTURAL.
+function parseSourceFile(parser, file, language, result, baseContents = {}) {
   let content;
   try {
     content = readFileSync(file.fullPath, "utf-8");
@@ -647,16 +739,47 @@ function parseSourceFile(parser, file, language, result) {
   const tree = parser.parse(content);
   if (!tree) return;
 
-  result.files.push({ path: file.path, language, changed: file.changed });
+  const fileFunctions = extractFunctionsFromTree(tree, file.path, language);
+  const fileTypes = extractTypesFromTree(tree, file.path, language);
+  const fileImports = extractImportsFromTree(tree, file.path, language);
 
-  const fileFunctions = extractFunctionsFromTree(tree, file.path, language, file.changed);
+  let fileLevel;
+  if (!file.changed) {
+    fileLevel = CHANGE_LEVEL.NONE;
+    for (const fn of fileFunctions) fn.changeLevel = CHANGE_LEVEL.NONE;
+    for (const t of fileTypes) t.changeLevel = CHANGE_LEVEL.NONE;
+  } else if (Object.prototype.hasOwnProperty.call(baseContents, file.path)) {
+    const baseContent = baseContents[file.path];
+    const baseTree = parser.parse(baseContent);
+    const baseFunctions = baseTree ? extractFunctionsFromTree(baseTree, file.path, language) : [];
+    const baseTypes = baseTree ? extractTypesFromTree(baseTree, file.path, language) : [];
+    const baseImports = baseTree ? extractImportsFromTree(baseTree, file.path, language) : [];
+    if (baseTree) baseTree.delete();
+
+    const fnLevels = gradeMembersAgainstBase(fileFunctions, baseFunctions);
+    fileFunctions.forEach((fn, i) => { fn.changeLevel = fnLevels[i]; });
+    const typeLevels = gradeMembersAgainstBase(fileTypes, baseTypes);
+    fileTypes.forEach((t, i) => { t.changeLevel = typeLevels[i]; });
+
+    fileLevel = gradeFile({
+      memberLevels: [...fnLevels, ...typeLevels],
+      importExportChanged: importSetKey(fileImports) !== importSetKey(baseImports),
+      rawFileChanged: sha256(content) !== sha256(baseContent),
+    });
+  } else {
+    fileLevel = CHANGE_LEVEL.STRUCTURAL;
+    for (const fn of fileFunctions) fn.changeLevel = CHANGE_LEVEL.STRUCTURAL;
+    for (const t of fileTypes) t.changeLevel = CHANGE_LEVEL.STRUCTURAL;
+  }
+
+  result.files.push({ path: file.path, language, changeLevel: fileLevel });
   result.functions.push(...fileFunctions);
-  result.types.push(...extractTypesFromTree(tree, file.path, language, file.changed));
+  result.types.push(...fileTypes);
   result.declares.push(...extractDeclaresFromTree(tree, file.path, language));
 
   const fileCalls = extractCallsFromTree(tree, file.path, language, fileFunctions);
   result.calls.push(...fileCalls);
-  result.imports.push(...extractImportsFromTree(tree, file.path, language));
+  result.imports.push(...fileImports);
 
   if (isTestFile(file.path, language)) {
     for (const fn of fileFunctions) {
@@ -789,6 +912,7 @@ async function hierarchyNeighborhood(directory, extensions, language, changedTyp
 export async function extract(directory, language, options = {}) {
   const changedFiles = options.changedFiles || [];
   const changedSet = new Set(changedFiles);
+  const baseContents = options.baseContents || {};
 
   const extensions = LANGUAGE_EXTENSIONS[language];
   if (!extensions) {
@@ -821,7 +945,7 @@ export async function extract(directory, language, options = {}) {
   };
 
   for (const file of sourceFiles) {
-    parseSourceFile(parser, file, language, result);
+    parseSourceFile(parser, file, language, result, baseContents);
   }
 
   // Hierarchy-neighborhood expansion: in changed-files mode the graph only holds

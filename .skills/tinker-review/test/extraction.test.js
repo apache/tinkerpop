@@ -87,11 +87,11 @@ test("declares maps each method to its enclosing type", async () => {
   );
 });
 
-test("types carry the changed flag from their file", async () => {
+test("a changed file with no base version grades its members STRUCTURAL (added file)", async () => {
   await withJavaSources(
     { "Traversal.java": "package x;\npublic interface Traversal { Object next(); }\n" },
     (r) => {
-      assert.equal(r.types.find((t) => t.name === "Traversal").changed, true);
+      assert.equal(r.types.find((t) => t.name === "Traversal").changeLevel, "STRUCTURAL");
     },
   );
 });
@@ -120,20 +120,20 @@ async function withChanged(files, changedFiles, fn) {
 
 test("changing only an interface pulls its implementers in as context (downward)", async () => {
   await withChanged(HIERARCHY, ["Traversal.java"], (r) => {
-    const byPath = r.files.reduce((m, f) => ((m[f.path] = f.changed), m), {});
-    assert.equal(byPath["Traversal.java"], true);
-    assert.equal(byPath["AbstractStep.java"], false, "direct implementer pulled in");
-    assert.equal(byPath["MapStep.java"], false, "transitive subtype pulled in");
+    const byPath = r.files.reduce((m, f) => ((m[f.path] = f.changeLevel), m), {});
+    assert.equal(byPath["Traversal.java"], "STRUCTURAL");
+    assert.equal(byPath["AbstractStep.java"], "NONE", "direct implementer pulled in as context");
+    assert.equal(byPath["MapStep.java"], "NONE", "transitive subtype pulled in as context");
     assert.equal(byPath["Unrelated.java"], undefined, "unrelated type not pulled in");
   });
 });
 
 test("changing only a subclass pulls its ancestors in as context (upward)", async () => {
   await withChanged(HIERARCHY, ["MapStep.java"], (r) => {
-    const byPath = r.files.reduce((m, f) => ((m[f.path] = f.changed), m), {});
-    assert.equal(byPath["MapStep.java"], true);
-    assert.equal(byPath["AbstractStep.java"], false, "parent pulled in");
-    assert.equal(byPath["Traversal.java"], false, "transitive ancestor pulled in");
+    const byPath = r.files.reduce((m, f) => ((m[f.path] = f.changeLevel), m), {});
+    assert.equal(byPath["MapStep.java"], "STRUCTURAL");
+    assert.equal(byPath["AbstractStep.java"], "NONE", "parent pulled in as context");
+    assert.equal(byPath["Traversal.java"], "NONE", "transitive ancestor pulled in as context");
     assert.equal(byPath["Unrelated.java"], undefined, "unrelated type not pulled in");
   });
 });

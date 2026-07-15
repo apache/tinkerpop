@@ -17,6 +17,8 @@
  * under the License.
  */
 
+import { changedAny } from "../graph/change-levels.js";
+
 /**
  * Determine whether a PR's changed files form one coherent change or multiple
  * disconnected clusters. Uses connectedComponent() via the OLAP traversal source.
@@ -47,7 +49,7 @@ export async function clusterAnalysis(a, params = {}) {
 
   let traversal = a.V().hasLabel("File");
   if (changedOnly) {
-    traversal = traversal.has("changed", true);
+    traversal = traversal.has("changeLevel", changedAny());
   }
 
   const results = await traversal

@@ -88,6 +88,32 @@ async function getChangedFiles(repoPath, prBranch, remote = "upstream", baseBran
 }
 
 /**
+ * The base-version source text of each changed file, keyed by path, so extraction
+ * can diff base against head and grade every member's `changeLevel`. Reads
+ * `git show <merge-base>:<path>`; a path git can't produce — added by the PR, or
+ * binary — is omitted, and extraction treats a missing entry as an added file
+ * (STRUCTURAL). Returns `{ [path]: content }`.
+ */
+export async function getBaseContents(repoPath, prBranch, changedFiles, remote = "upstream", baseBranch = "master") {
+  const { stdout: baseCommit } = await exec(
+    "git", ["merge-base", prBranch, `${remote}/${baseBranch}`], { cwd: repoPath }
+  );
+  const base = baseCommit.trim();
+  const contents = {};
+  await Promise.all(changedFiles.map(async (path) => {
+    try {
+      const { stdout } = await exec(
+        "git", ["show", `${base}:${path}`], { cwd: repoPath, maxBuffer: 32 * 1024 * 1024 }
+      );
+      contents[path] = stdout;
+    } catch {
+      // Absent at base (added by the PR) or unreadable (binary) — leave unset.
+    }
+  }));
+  return contents;
+}
+
+/**
  * Per-file line churn and deletion status for the PR, so downstream analysis can
  * describe *how* code changed (reduced vs. expanded), not just that it changed.
  * Merges `--numstat` (line counts) with `--name-status` (A/M/D/R). Binary files
@@ -322,7 +348,8 @@ export async function phase1(session) {
   const languages = session.languages || [language];
 
   log(`Phase 1: Extracting structure (${languages.join("+")})...`);
-  const extraction = await extractMulti(worktreePath, languages, { changedFiles });
+  const baseContents = await getBaseContents(repoPath, prBranch, changedFiles, remote, baseBranch);
+  const extraction = await extractMulti(worktreePath, languages, { changedFiles, baseContents });
   log(`Phase 1 complete: ${extraction.files.length} files, ${extraction.functions.length} functions, ${extraction.types.length} types`);
   const neighborhood = extraction.hierarchyNeighborhood;
   if (neighborhood && neighborhood.files > 0) {

@@ -4,24 +4,28 @@
 
 ### Code structure
 
-**File** `{ path, language, changed }`
-A source file in the PR. `changed: true` if modified in this PR.
+**File** `{ path, language, changeLevel }`
+A source file in the PR. `changeLevel` grades how much the PR moved it (see
+**Change levels** below); a file the PR touched is anything but `NONE`.
 
-*Stub Files* `{ path, language, changed: true, parsed: false, deleted }` are
-markers for changed files the extractor didn't parse, so the PR's `modifies`
-edge still lands. `deleted: true` means the PR removed the file (absent from the
+*Stub Files* `{ path, language, changeLevel: "STRUCTURAL", parsed: false, deleted }`
+are markers for changed files the extractor didn't parse, so the PR's `modifies`
+edge still lands. Unparsed, so no fingerprint is possible — graded `STRUCTURAL`
+conservatively. `deleted: true` means the PR removed the file (absent from the
 PR-head worktree); `deleted: false` means it's present but an unparsed type
 (non-code, or a non-primary language). Real Files have no `parsed` property, so
 select materialized files with `.hasNot("parsed")` and markers with
 `.has("parsed", false)`.
 
-**Function** `{ name, signature, visibility, filePath, language, lines_start, lines_end, changed }`
-A function or method. The primary unit of analysis. `language` is the source
+**Function** `{ name, signature, visibility, filePath, language, lines_start, lines_end, changeLevel }`
+A function or method. The primary unit of analysis. `changeLevel` is graded per
+function by diffing the base against the PR-head version — so an untouched helper
+in a changed file grades `NONE`, not "changed". `language` is the source
 language (java, python, javascript, go, csharp, dart); by-name edges (`calls`,
 `tests`) resolve only within a language, so a multi-language PR never invents
 cross-language edges.
 
-*External stub Functions* `{ name, external: true, resolved: false, changed: false, origin?, definedIn? }`
+*External stub Functions* `{ name, external: true, resolved: false, changeLevel: "NONE", origin?, definedIn? }`
 are markers created when a `calls`/`tests` edge targets a function by name that
 wasn't extracted (a library/JDK call, or a function in a file this PR didn't
 change). They keep the edge from vanishing and let blast-radius/centrality see
@@ -35,10 +39,12 @@ name — noise), `project` (a repo source declares a type with this name;
 `origin: library` calls from out-degree so ubiquitous accessor calls don't
 inflate hotspots.
 
-**Type** `{ name, kind, visibility, filePath, language, changed }`
+**Type** `{ name, kind, visibility, filePath, language, changeLevel }`
 A class, interface, struct, or enum. `kind` is one of: class, interface, struct,
-enum. `changed: true` if the PR modified the file it's declared in. `language`
-scopes `extends`/`implements` resolution so hierarchies never cross languages.
+enum. `changeLevel` grades the type's declaration surface: a change to its
+kind/visibility/supertypes/member-set is `STRUCTURAL`; a change to method bodies
+in the declaration leaves it `BEHAVIORAL`/`FORMATTING`. `language` scopes
+`extends`/`implements` resolution so hierarchies never cross languages.
 
 *External stub Types* `{ name, external: true, resolved: false }` are markers
 created when an `extends`/`implements` edge names a supertype that wasn't
@@ -47,6 +53,28 @@ supertypes are usually materialized by the extractor's hierarchy-neighborhood
 expansion (which pulls a changed type's ancestors and descendants in as context),
 so stubs mostly stand for third-party types. They lack `kind`/`filePath`; filter
 them with `.has("external", false)` or `.hasNot("external")`.
+
+#### Change levels
+
+`changeLevel` (on File, Function, Type) grades how much the PR moved a vertex,
+computed by diffing the base version of each changed file against PR-head. It
+replaces the old boolean `changed` — because that was stamped per file, it could
+not tell an untouched helper in a changed file from the code the PR rewrote.
+
+| Level | Meaning |
+|-------|---------|
+| `NONE` | byte-identical to base (untouched; also context / hierarchy-neighborhood files and external stubs) |
+| `FORMATTING` | only comments or whitespace moved; the tokens are identical |
+| `BEHAVIORAL` | the body changed for real, but the signature is stable |
+| `STRUCTURAL` | the signature/declaration changed, or the member/file was added or removed, or imports/exports changed |
+
+Query the two useful sets directly: **any real change** is
+`.has("changeLevel", within("FORMATTING","BEHAVIORAL","STRUCTURAL"))` (inclusion-
+oriented checks — orphans, cluster-analysis, architecture); **meaningful change**
+is `.has("changeLevel", within("BEHAVIORAL","STRUCTURAL"))` (risk checks —
+centrality, blast-radius, coverage-gaps, which discount NONE and FORMATTING by
+default). The vocabulary and predicate helpers live in
+`scripts/graph/change-levels.js`.
 
 *Analysis-written property* — `community: number` is stamped onto Function, Type,
 File and Test vertices by community detection (`communityDetection`, Louvain

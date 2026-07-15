@@ -21,6 +21,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import gremlin from "gremlin";
 import { CONFIDENCE, normalizeConfidence, isValidConfidence } from "../graph/confidence.js";
+import { changedAny, normalizeChangeLevel } from "../graph/change-levels.js";
 import { symbolFromPath, createReferenceEdge } from "../graph/references.js";
 
 const { process: { statics: __ } } = gremlin;
@@ -31,29 +32,40 @@ let cachedSteps = null;
 
 /**
  * List Function vertices, optionally filtered. The go-to orientation read:
- * `--changed true` shows just the functions this PR touched; `--visibility
- * public` narrows to the API surface. Returns signature and line span so you can
- * jump to source in the worktree.
+ * `--changeLevel STRUCTURAL` shows just the signature-level changes;
+ * `--changed true` (alias for "any level but NONE") shows everything the PR
+ * touched; `--visibility public` narrows to the API surface. Returns signature
+ * and line span so you can jump to source in the worktree.
  *
  * @param {object} g - gremlin-js GraphTraversalSource (already connected)
- * @param {object} [filter] - { changed?: boolean, visibility?: string, filePath?: string }
- * @returns {Promise<{name, signature, filePath, visibility, changed, linesStart, linesEnd}[]>}
+ * @param {object} [filter] - { changeLevel?: string, changed?: boolean, visibility?: string, filePath?: string }
+ * @returns {Promise<{name, signature, filePath, visibility, changeLevel, changed, linesStart, linesEnd}[]>}
  */
 export async function listFunctions(g, filter = {}) {
   let t = g.V().hasLabel("Function");
-  if (filter.changed !== undefined) t = t.has("changed", filter.changed);
+  if (filter.changeLevel) {
+    // Exact-grade filter.
+    t = t.has("changeLevel", normalizeChangeLevel(filter.changeLevel, filter.changeLevel));
+  } else if (filter.changed !== undefined) {
+    // Back-compat alias: changed=true → anything but NONE; changed=false → NONE.
+    t = filter.changed ? t.has("changeLevel", changedAny()) : t.has("changeLevel", "NONE");
+  }
   if (filter.visibility) t = t.has("visibility", filter.visibility);
   if (filter.filePath) t = t.has("filePath", filter.filePath);
   const results = await t.elementMap().toList();
-  return results.map(m => ({
-    name: m.get("name"),
-    signature: m.get("signature"),
-    filePath: m.get("filePath"),
-    visibility: m.get("visibility"),
-    changed: m.get("changed"),
-    linesStart: m.get("lines_start"),
-    linesEnd: m.get("lines_end"),
-  }));
+  return results.map(m => {
+    const changeLevel = m.get("changeLevel");
+    return {
+      name: m.get("name"),
+      signature: m.get("signature"),
+      filePath: m.get("filePath"),
+      visibility: m.get("visibility"),
+      changeLevel,
+      changed: changeLevel !== undefined && changeLevel !== "NONE",
+      linesStart: m.get("lines_start"),
+      linesEnd: m.get("lines_end"),
+    };
+  });
 }
 
 /**

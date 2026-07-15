@@ -19,6 +19,7 @@
 
 import Graph from "graphology";
 import louvain from "graphology-communities-louvain";
+import { atLeast } from "../graph/change-levels.js";
 
 /**
  * Louvain modularity community detection over the PR's *code* subgraph.
@@ -68,7 +69,7 @@ const EDGE_LABELS = ["calls", "defines", "declares", "extends", "implements", "o
  * @property {string[]} files         files this community touches (rolled up), largest share first
  * @property {string}   dominantFile  the file contributing the most members
  * @property {Object}   labelCounts   member count per vertex label (Function/Type/File/Test)
- * @property {number}   changedCount  members with changed:true
+ * @property {number}   changedCount  members meaningfully changed (BEHAVIORAL or STRUCTURAL)
  * @property {string}   dominantLabel most common vertex label
  * @property {number}   testShare     fraction of members living in test files — drives the role
  * @property {?Object}  churn         `{ added, removed, mode }` for the community's files, when churn is supplied
@@ -108,7 +109,10 @@ async function extractCodeSubgraph(g) {
 
   const nodes = vRaw.map((m) => {
     const o = mapToObj(m);
-    return { id: String(o.id), label: o.label, name: o.name, filePath: o.filePath || o.path, changed: o.changed === true };
+    // "changed" here means a meaningful change (BEHAVIORAL/STRUCTURAL); the
+    // changed-share reading distinguishes real change from context, and a
+    // formatting-only touch is context for that purpose.
+    return { id: String(o.id), label: o.label, name: o.name, filePath: o.filePath || o.path, changed: atLeast(o.changeLevel || "NONE", "BEHAVIORAL") };
   });
 
   const edges = eRaw.map((m) => {
