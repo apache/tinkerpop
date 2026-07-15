@@ -686,12 +686,13 @@ By contrast, calling `addLabel()` against a vertex whose graph is configured wit
 fixes a single, immutable label for every vertex, results in an exception since there is no set of labels to
 mutate:
 
-[gremlin-groovy]
+[source,groovy]
 ----
 conf = new BaseConfiguration()
 conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ONE")
 graph = TinkerGraph.open(conf)
 g = traversal().with(graph)
+// results in: Label mutation is not supported with cardinality ONE. Labels are immutable once assigned.
 g.addV('person').property('name','marko').addLabel('employee')
 ----
 
@@ -1987,10 +1988,12 @@ gml.V().has('name','tux').valueMap(true)                     <4>
 When a source is configured with `with("multilabel")`, the `with("singlelabel")` option can be used per-traversal to
 force single-string label output:
 
-[gremlin-groovy]
+[source, groovy]
 ----
 gml = g.with("multilabel")
 gml.V().has('name','marko').elementMap()
+// results in: with("multilabel") and with("singlelabel") are mutually exclusive
+//             and cannot both be configured on the same traversal source.
 gml.with("singlelabel").V().has('name','marko').elementMap()
 ----
 
