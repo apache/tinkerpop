@@ -53,6 +53,13 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed `Tree` to no longer extend `HashMap`; it is now a final class with a tree-shaped API (`childAt`, `hasChild`, `contains`, `findSubtree`, `getOrCreateChild`, `getNodesAtDepth`, `getLeafNodes`, `nodeCount`) and is no longer a `Map`.
 * Changed `count(local)` on a `Tree` to return the total node count (`Tree.nodeCount()`) instead of the root-entry count.
 * Changed Tree class in Java to not extend from HashMap and offered a new tree-shaped API for navigation.
+* Added multi-label support for vertices with configurable `LabelCardinality` (`ONE`, `ONE_OR_MORE`, `ZERO_OR_MORE`).
+* Added `labels()` step to emit each vertex label as a separate traverser.
+* Added `addLabel()` and `dropLabel()`/`dropLabels()` steps for vertex label mutation.
+* Added `LabelCardinalityValidator` utility for constraint enforcement separated from the `LabelCardinality` enum.
+* Added `with("multilabel")` source configuration for `elementMap()` and `valueMap()` to return labels as a set.
+* Added `labels().drop()` rejection to `StandardVerificationStrategy` to prevent accidental usage.
+* Added multi-label syntax to `addV()` and `mergeV()` with append-only `onMatch` semantics.
 * Added typed numeric wrappers and `preciseNumbers` connection option to `gremlin-javascript` for explicit control over numeric type serialization and deserialization.
 * Added `NextN(n)` to `Traversal` in `gremlin-go` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs, and updated the Go translators in `gremlin-core` and `gremlin-javascript` to emit `NextN(n)` for the batched form.
 * Added Provider Defined Types (PDT) support — graph providers can define custom types via `@ProviderDefined` annotation that serialize/deserialize seamlessly across all GLVs without driver-side configuration. Replaces TP3 custom type mechanism.

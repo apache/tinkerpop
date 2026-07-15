@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser;
 
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
@@ -28,11 +30,15 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -47,6 +53,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,8 +61,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
@@ -182,6 +187,53 @@ public abstract class AbstractRoundTripTest {
                 }},
                 new Object[] {"Tree", tree, null},
 
+                // multi-label and zero-label elements (TINKERPOP-3261)
+                new Object[] {"MultiLabelVertex",
+                        DetachedVertex.build().setId(100)
+                                .setLabels(new LinkedHashSet<>(Arrays.asList("person", "employee"))).create(),
+                        (Consumer<Vertex>) v -> {
+                            assertEquals(new LinkedHashSet<>(Arrays.asList("person", "employee")), v.labels());
+                }},
+                new Object[] {"ZeroLabelVertex",
+                        DetachedVertex.build().setId(200).create(),
+                        (Consumer<Vertex>) v -> {
+                            assertEquals(Collections.emptySet(), v.labels());
+                            assertEquals("", v.label());
+                }},
+                new Object[] {"EdgeWithMultiLabelVertices",
+                        DetachedEdge.build().setId(300).setLabel("knows")
+                                .setOutV(DetachedVertex.build().setId(301)
+                                        .setLabels(new LinkedHashSet<>(Arrays.asList("person", "employee"))).create())
+                                .setInV(DetachedVertex.build().setId(302)
+                                        .setLabels(new LinkedHashSet<>(Arrays.asList("software", "project"))).create())
+                                .create(),
+                        (Consumer<org.apache.tinkerpop.gremlin.structure.Edge>) e -> {
+                            assertEquals(new LinkedHashSet<>(Arrays.asList("person", "employee")),
+                                    e.outVertex().labels());
+                            assertEquals(new LinkedHashSet<>(Arrays.asList("software", "project")),
+                                    e.inVertex().labels());
+                }},
+                new Object[] {"EdgeWithZeroLabelVertices",
+                        DetachedEdge.build().setId(400).setLabel("connects")
+                                .setOutV(DetachedVertex.build().setId(401).create())
+                                .setInV(DetachedVertex.build().setId(402).create())
+                                .create(),
+                        (Consumer<org.apache.tinkerpop.gremlin.structure.Edge>) e -> {
+                            assertEquals(Collections.emptySet(), e.outVertex().labels());
+                            assertEquals(Collections.emptySet(), e.inVertex().labels());
+                }},
+                new Object[] {"GraphWithMultiLabelVertices", createMultiLabelGraph(),
+                        (Consumer<Graph>) graph -> {
+                            final Vertex v = graph.vertices(500).next();
+                            assertEquals(new LinkedHashSet<>(Arrays.asList("person", "employee")), v.labels());
+                }},
+                new Object[] {"GraphWithZeroLabelVertices", createZeroLabelGraph(),
+                        (Consumer<Graph>) graph -> {
+                            final Vertex v = graph.vertices(600).next();
+                            assertEquals(Collections.emptySet(), v.labels());
+                            assertEquals("", v.label());
+                }},
+
                 // collections
                 new Object[] {"ListSingle", list, null},
                 new Object[] {"ListNested", nestedList, null},
@@ -190,6 +242,29 @@ public abstract class AbstractRoundTripTest {
                 new Object[] {"OrderedMap", orderedMap, null},
                 new Object[] {"Set", set, null},
                 new Object[] {"SetNested", nestedSet, null});
+    }
+
+    /**
+     * Creates a TinkerGraph with ZERO_OR_MORE vertex label cardinality containing a multi-label vertex.
+     */
+    private static Graph createMultiLabelGraph() {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(AbstractTinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, "ZERO_OR_MORE");
+        final TinkerGraph graph = TinkerGraph.open(conf);
+        final Vertex v = graph.addVertex(T.id, 500, T.label, "person");
+        v.addLabel("employee");
+        return graph;
+    }
+
+    /**
+     * Creates a TinkerGraph with ZERO_OR_MORE vertex label cardinality containing a zero-label vertex.
+     */
+    private static Graph createZeroLabelGraph() {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(AbstractTinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, "ZERO_OR_MORE");
+        final TinkerGraph graph = TinkerGraph.open(conf);
+        graph.addVertex(T.id, 600);
+        return graph;
     }
 
     @Parameterized.Parameter(value = 0)

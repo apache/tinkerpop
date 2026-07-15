@@ -85,6 +85,16 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addE step with multiple labels to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, Edge> AddE(string label1, string label2, params string[] moreLabels)
+        {
+            return moreLabels is { Length: 0 }
+                ? new GraphTraversal<object, Edge>().AddE(label1, label2)
+                : new GraphTraversal<object, Edge>().AddE(label1, label2, moreLabels);            
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addV step to that traversal.
         /// </summary>
         public static GraphTraversal<object, Vertex> AddV()
@@ -95,9 +105,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addV step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Vertex> AddV(string vertexLabel)
+        public static GraphTraversal<object, Vertex> AddV(string label, params string[] additionalLabels)
         {
-            return new GraphTraversal<object, Vertex>().AddV(vertexLabel);            
+            return new GraphTraversal<object, Vertex>().AddV(label, additionalLabels);            
         }
 
         /// <summary>
@@ -111,9 +121,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addV step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Vertex> AddV(ITraversal vertexLabelTraversal)
+        public static GraphTraversal<object, Vertex> AddV(ITraversal label, params ITraversal[] additionalLabels)
         {
-            return new GraphTraversal<object, Vertex>().AddV(vertexLabelTraversal);            
+            return new GraphTraversal<object, Vertex>().AddV(label, additionalLabels);            
         }
 
         /// <summary>
@@ -1020,6 +1030,58 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, string> Label()
         {
             return new GraphTraversal<object, string>().Label();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the labels step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, string> Labels()
+        {
+            return new GraphTraversal<object, string>().Labels();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addLabel step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> AddLabel(string label, params string[] moreLabels)
+        {
+            return moreLabels is { Length: 0 }
+                ? new GraphTraversal<object, object>().AddLabel(label)
+                : new GraphTraversal<object, object>().AddLabel(label, moreLabels);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the addLabel step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> AddLabel(ITraversal labelTraversal, params ITraversal[] moreLabelTraversals)
+        {
+            return new GraphTraversal<object, object>().AddLabel(labelTraversal, moreLabelTraversals);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the dropLabels step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> DropLabels()
+        {
+            return new GraphTraversal<object, object>().DropLabels();            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the dropLabel step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> DropLabel(string label, params string[] moreLabels)
+        {
+            return moreLabels is { Length: 0 }
+                ? new GraphTraversal<object, object>().DropLabel(label)
+                : new GraphTraversal<object, object>().DropLabel(label, moreLabels);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the dropLabel step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> DropLabel(ITraversal labelTraversal, params ITraversal[] moreLabelTraversals)
+        {
+            return new GraphTraversal<object, object>().DropLabel(labelTraversal, moreLabelTraversals);            
         }
         
         /// <summary>

@@ -101,6 +101,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Appends raw text to the gremlin string. Used for temporary options rendering.
+        /// </summary>
+        internal void Append(string text)
+        {
+            _gremlin.Append(text);
+        }
+
+        /// <summary>
         ///     Gets the gremlin-lang compatible string representation prefixed with "g".
         /// </summary>
         /// <returns>The gremlin-lang string.</returns>
@@ -600,6 +608,15 @@ namespace Gremlin.Net.Process.Traversal
                 if (arg is OptionsStrategy optionsStrategy)
                 {
                     _optionsStrategies.Add(optionsStrategy);
+                    // Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
+                    if (optionsStrategy.Configuration.ContainsKey("multilabel"))
+                    {
+                        _gremlin.Append(".with(\"multilabel\")");
+                    }
+                    if (optionsStrategy.Configuration.ContainsKey("singlelabel"))
+                    {
+                        _gremlin.Append(".with(\"singlelabel\")");
+                    }
                     continue;
                 }
 

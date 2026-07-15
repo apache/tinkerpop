@@ -24,13 +24,16 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.LabelCardinalityValidator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,31 +57,156 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     private boolean allowNullPropertyValues;
     private final boolean isTxMode;
 
+    /**
+     * Multi-label storage for this vertex. Starts as an immutable set (lightweight) and is
+     * upgraded to a mutable ConcurrentHashMap-backed set on first label mutation. Concurrent
+     * label mutation on the same vertex from multiple threads is not supported.
+     */
+    protected Set<String> vertexLabels;
+
     protected TinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph) {
-        super(id, label);
-        this.graph = graph;
-        this.isTxMode = graph instanceof TinkerTransactionGraph;
-        this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
+        this(id, Collections.singleton(label != null ? label : Vertex.DEFAULT_LABEL), graph, -1);
     }
 
     protected TinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph, final long currentVersion) {
-        super(id, label, currentVersion);
+        this(id, Collections.singleton(label != null ? label : Vertex.DEFAULT_LABEL), graph, currentVersion);
+    }
+
+    /**
+     * Constructs a TinkerVertex with multiple labels.
+     */
+    protected TinkerVertex(final Object id, final Set<String> labels, final AbstractTinkerGraph graph) {
+        this(id, labels, graph, -1);
+    }
+
+    /**
+     * Canonical constructor. Constructs a TinkerVertex with multiple labels and a specific version (for transactional graphs).
+     * Uses a single-switch pattern to handle default label injection per the configured cardinality.
+     */
+    protected TinkerVertex(final Object id, final Set<String> labels, final AbstractTinkerGraph graph, final long currentVersion) {
+        super(id, null, currentVersion);  // labels are set below
         this.graph = graph;
         this.isTxMode = graph instanceof TinkerTransactionGraph;
         this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
+
+        final Set<String> initial = new LinkedHashSet<>();
+        switch (graph.vertexLabelCardinality) {
+            case ONE:
+                // Exactly 1 label: use provided or default
+                if (labels != null && !labels.isEmpty())
+                    initial.addAll(labels); // Will be rejected by LabelCardinalityValidator below if labels.size() > 1
+                else
+                    initial.add(graph.defaultVertexLabel);
+                break;
+            case ONE_OR_MORE:
+                // Default label always present alongside any user labels
+                initial.add(graph.defaultVertexLabel);
+                if (labels != null) initial.addAll(labels);
+                break;
+            case ZERO_OR_MORE:
+                if (labels != null) initial.addAll(labels);
+                break;
+        }
+
+        // Validate the resulting set conforms to cardinality
+        LabelCardinalityValidator.validateCreation(graph.vertexLabelCardinality, initial);
+
+        // Store as immutable — will be upgraded on first mutation via ensureMutableLabels()
+        this.vertexLabels = initial.size() <= 1
+                ? (initial.isEmpty() ? Collections.emptySet() : Collections.singleton(initial.iterator().next()))
+                : Collections.unmodifiableSet(initial);
+    }
+
+    /**
+     * Upgrades the label set to a mutable set on first mutation. This is a one-time cost per vertex
+     * that actually needs label mutation.
+     */
+    private void ensureMutableLabels() {
+        if (!(this.vertexLabels instanceof ConcurrentHashMap.KeySetView)) {
+            final Set<String> mutable = ConcurrentHashMap.newKeySet();
+            mutable.addAll(this.vertexLabels);
+            this.vertexLabels = mutable;
+        }
+    }
+
+    @Override
+    public Set<String> labels() {
+        if (this.vertexLabels.isEmpty()) {
+            return Collections.emptySet();
+        }
+        // If already immutable (pre-mutation), return directly. If mutable (post-mutation), wrap.
+        if (this.vertexLabels instanceof ConcurrentHashMap.KeySetView) {
+            return Collections.unmodifiableSet(this.vertexLabels);
+        }
+        return this.vertexLabels; // already immutable from construction
+    }
+
+    @Override
+    @Deprecated
+    public String label() {
+        if (this.vertexLabels.isEmpty()) {
+            return "";
+        }
+        return this.vertexLabels.iterator().next();
+    }
+
+    @Override
+    public void addLabel(final String label, final String... labels) {
+        ElementHelper.validateLabel(label);
+        for (final String l : labels) {
+            ElementHelper.validateLabel(l);
+        }
+        LabelCardinalityValidator.validateAdd(this.graph.vertexLabelCardinality, this.vertexLabels, label, labels);
+        graph.touch(this);
+        final Set<String> added = new HashSet<>();
+        if (!this.vertexLabels.contains(label)) added.add(label);
+        for (final String l : labels) {
+            if (!this.vertexLabels.contains(l)) added.add(l);
+        }
+        ensureMutableLabels();
+        this.vertexLabels.add(label);
+        Collections.addAll(this.vertexLabels, labels);
+        if (!added.isEmpty()) this.graph.addVertexLabels(this, added);
+    }
+
+    @Override
+    public void dropLabels() {
+        LabelCardinalityValidator.validateDropAll(this.graph.vertexLabelCardinality, this.vertexLabels);
+        graph.touch(this);
+        final Set<String> removed = new HashSet<>(this.vertexLabels);
+        ensureMutableLabels();
+        this.vertexLabels.clear();
+        if (!removed.isEmpty()) this.graph.removeVertexLabels(this, removed);
+    }
+
+    @Override
+    public void dropLabel(final String label, final String... labels) {
+        LabelCardinalityValidator.validateDrop(this.graph.vertexLabelCardinality, this.vertexLabels, label, labels);
+        graph.touch(this);
+        final Set<String> removed = new HashSet<>();
+        if (this.vertexLabels.contains(label)) removed.add(label);
+        for (final String l : labels) {
+            if (this.vertexLabels.contains(l)) removed.add(l);
+        }
+        ensureMutableLabels();
+        this.vertexLabels.remove(label);
+        for (final String l : labels) {
+            this.vertexLabels.remove(l);
+        }
+        if (!removed.isEmpty()) this.graph.removeVertexLabels(this, removed);
     }
 
     @Override
     public Object clone() {
         if (!isTxMode) {
-            final TinkerVertex vertex = new TinkerVertex(id, label, graph, currentVersion);
+            final TinkerVertex vertex = new TinkerVertex(id, new LinkedHashSet<>(vertexLabels), graph);
             vertex.inEdgesId = inEdgesId;
             vertex.outEdgesId = outEdgesId;
             vertex.properties = properties;
             return vertex;
         }
 
-        final TinkerVertex vertex = new TinkerVertex(id, label, graph, currentVersion);
+        final TinkerVertex vertex = new TinkerVertex(id, new LinkedHashSet<>(vertexLabels), graph, currentVersion);
         if (inEdgesId != null)
             vertex.inEdgesId = CollectionUtil.clone((ConcurrentHashMap<String, Set<Object>>) inEdgesId);
 
@@ -196,6 +324,7 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         final List<Edge> edges = new ArrayList<>();
         this.edges(Direction.BOTH).forEachRemaining(edge -> edges.add(edge));
         edges.stream().filter(edge -> !((TinkerEdge) edge).removed).forEach(Edge::remove);
+
         TinkerIndexHelper.removeElementIndex(this);
         if (null != this.properties)
             this.properties.values().forEach(vpList -> vpList.forEach(vp -> graph.vertexProperties.remove(vp.id())));

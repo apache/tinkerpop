@@ -366,14 +366,24 @@ func (d *GraphBinaryDeserializer) readVertex(withProps bool) (*Vertex, error) {
 		return nil, err
 	}
 	labelSlice, ok := labels.([]interface{})
-	if !ok || len(labelSlice) == 0 {
-		return nil, newError(err0404ReadNullTypeError)
-	}
-	label, ok := labelSlice[0].(string)
 	if !ok {
 		return nil, newError(err0404ReadNullTypeError)
 	}
-	v := &Vertex{Element: Element{Id: id, Label: label}}
+	// A vertex may carry zero or more labels. The deprecated singular Label holds the first
+	// label for backward compatibility, or "" when the vertex has no labels.
+	allLabels := make([]string, 0, len(labelSlice))
+	for _, l := range labelSlice {
+		s, ok := l.(string)
+		if !ok {
+			return nil, newError(err0404ReadNullTypeError)
+		}
+		allLabels = append(allLabels, s)
+	}
+	label := ""
+	if len(allLabels) > 0 {
+		label = allLabels[0]
+	}
+	v := &Vertex{Element: Element{Id: id, Label: label}, Labels: allLabels}
 	if withProps {
 		props, err := d.ReadFullyQualified()
 		if err != nil {
@@ -397,12 +407,22 @@ func (d *GraphBinaryDeserializer) readEdge() (*Edge, error) {
 		return nil, err
 	}
 	labelSlice, ok := labels.([]interface{})
-	if !ok || len(labelSlice) == 0 {
-		return nil, newError(err0404ReadNullTypeError)
-	}
-	label, ok := labelSlice[0].(string)
 	if !ok {
 		return nil, newError(err0404ReadNullTypeError)
+	}
+	// An edge carries a single label in practice, but the label is read as a list for symmetry
+	// with vertices. The deprecated singular Label holds the first label, or "" when absent.
+	allLabels := make([]string, 0, len(labelSlice))
+	for _, l := range labelSlice {
+		s, ok := l.(string)
+		if !ok {
+			return nil, newError(err0404ReadNullTypeError)
+		}
+		allLabels = append(allLabels, s)
+	}
+	label := ""
+	if len(allLabels) > 0 {
+		label = allLabels[0]
 	}
 	inV, err := d.readVertex(false)
 	if err != nil {
@@ -423,6 +443,7 @@ func (d *GraphBinaryDeserializer) readEdge() (*Edge, error) {
 		Element: Element{Id: id, Label: label},
 		InV:     *inV,
 		OutV:    *outV,
+		Labels:  allLabels,
 	}
 	e.Properties = make([]interface{}, 0)
 	if props != nil {
@@ -447,21 +468,30 @@ func (d *GraphBinaryDeserializer) readGraph() (*Graph, error) {
 			return nil, err
 		}
 
-		// {labels} list<string> value-only, take first element
+		// {labels} list<string> value-only. A vertex may carry zero or more labels; the
+		// deprecated singular Label holds the first label, or "" when there are none.
 		vLabels, err := d.readList(false)
 		if err != nil {
 			return nil, err
 		}
 		labelSlice, ok := vLabels.([]interface{})
-		if !ok || len(labelSlice) == 0 {
-			return nil, newError(err0404ReadNullTypeError)
-		}
-		vLabel, ok := labelSlice[0].(string)
 		if !ok {
 			return nil, newError(err0404ReadNullTypeError)
 		}
+		vAllLabels := make([]string, 0, len(labelSlice))
+		for _, l := range labelSlice {
+			s, ok := l.(string)
+			if !ok {
+				return nil, newError(err0404ReadNullTypeError)
+			}
+			vAllLabels = append(vAllLabels, s)
+		}
+		vLabel := ""
+		if len(vAllLabels) > 0 {
+			vLabel = vAllLabels[0]
+		}
 
-		v := &Vertex{Element: Element{Id: vId, Label: vLabel}}
+		v := &Vertex{Element: Element{Id: vId, Label: vLabel}, Labels: vAllLabels}
 
 		// {vp_count} value-only int32
 		vpCount, err := d.readInt32()
@@ -548,18 +578,27 @@ func (d *GraphBinaryDeserializer) readGraph() (*Graph, error) {
 			return nil, err
 		}
 
-		// {labels} list<string> value-only, take first element
+		// {labels} list<string> value-only. The deprecated singular Label holds the first
+		// label, or "" when there are none.
 		eLabels, err := d.readList(false)
 		if err != nil {
 			return nil, err
 		}
 		labelSlice, ok := eLabels.([]interface{})
-		if !ok || len(labelSlice) == 0 {
-			return nil, newError(err0404ReadNullTypeError)
-		}
-		eLabel, ok := labelSlice[0].(string)
 		if !ok {
 			return nil, newError(err0404ReadNullTypeError)
+		}
+		eAllLabels := make([]string, 0, len(labelSlice))
+		for _, l := range labelSlice {
+			s, ok := l.(string)
+			if !ok {
+				return nil, newError(err0404ReadNullTypeError)
+			}
+			eAllLabels = append(eAllLabels, s)
+		}
+		eLabel := ""
+		if len(eAllLabels) > 0 {
+			eLabel = eAllLabels[0]
 		}
 
 		// {inV_id} fully-qualified
@@ -605,6 +644,7 @@ func (d *GraphBinaryDeserializer) readGraph() (*Graph, error) {
 			Element: Element{Id: eId, Label: eLabel},
 			InV:     *inV,
 			OutV:    *outV,
+			Labels:  eAllLabels,
 		}
 		e.Properties = make([]interface{}, 0)
 		if props != nil {

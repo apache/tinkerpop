@@ -205,10 +205,16 @@ their own identifiers and ignore assigned identifiers that you attempt to assign
 A graph with elements that just have identifiers does not make for much of a database. To give some meaning to
 this basic structure, vertices and edges can each be given labels to categorize them.
 
+NOTE: An edge always has exactly one label. In the graph used throughout this tutorial, a vertex also has exactly
+one label assigned at creation, as shown here, but TinkerPop also allows graph providers to optionally support a
+vertex carrying multiple labels or none at all. See the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-labels[Vertex Labels] section of the Reference
+Documentation for details.
+
 image:modern-edge-1-to-3-2.png[width=300]
 
 You can now see that vertex "1" is a "person" and vertex "3" is a "software" vertex. They are joined by a "created"
-edge which allows you to see that a "person created software". The "label" and the "id" are reserved attributes of
+edge which allows you to see that a "person created software". The `label(s)` and the `id` are reserved attributes of
 vertices and edges, but you can add your own arbitrary properties as well:
 
 image:modern-edge-1-to-3-3.png[width=325]
@@ -478,6 +484,12 @@ modulator to `group()` to transform the values.
 ----
 g.V().group().by(label).by('name')
 ----
+
+NOTE: `by(label)` groups using the `label()` step, which returns only one label per vertex. This is fine for graphs
+like "modern" where every vertex has exactly one label, but for graphs configured to allow multiple labels per
+vertex, `by(label)` will only account for one of them. See the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#by-step[By Step] section of the Reference Documentation for
+grouping patterns that work reliably with multi-label vertices.
 
 In this section, you have learned a bit more about what property graphs are and how Gremlin interacts with them.
 You also learned how to envision Gremlin moving about a graph and how to use some of the more complex, but commonly

@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Collection;
 import java.util.Objects;
 
 public abstract class AbstractAddVertexStepPlaceholder<S> extends AbstractAddElementStepPlaceholder<S, Vertex, Event.VertexAddedEvent>
@@ -33,22 +34,29 @@ public abstract class AbstractAddVertexStepPlaceholder<S> extends AbstractAddEle
 
     protected AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final String label) {
         super(traversal, label);
-        userProvidedLabel = label != null;
     }
 
     protected AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final GValue<String> label) {
         super(traversal, label);
-        userProvidedLabel = label != null;
     }
 
-    protected AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<S,String> vertexLabelTraversal) {
+    protected AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<S,?> vertexLabelTraversal) {
         super(traversal, vertexLabelTraversal);
-        userProvidedLabel = vertexLabelTraversal != null;
+    }
+
+    protected AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final Collection<Object> labels) {
+        super(traversal, labels);
     }
 
     @Override
     protected String getDefaultLabel() {
         return Vertex.DEFAULT_LABEL;
+    }
+
+    @Override
+    public void setLabel(Object label) {
+        super.setLabel(label);
+        userProvidedLabel = true;
     }
 
     @Override

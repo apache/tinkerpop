@@ -64,18 +64,36 @@ class Element(object):
 
 
 class Vertex(Element):
-    def __init__(self, id, label="vertex", properties=None):
-        Element.__init__(self, id, label, properties)
+    def __init__(self, id, label="vertex", properties=None, labels=None):
+        if labels is not None:
+            self._labels = set(labels)
+            Element.__init__(self, id, next(iter(labels)) if labels else "", properties)
+        else:
+            self._labels = {label} if label else {"vertex"}
+            Element.__init__(self, id, label or "vertex", properties)
+
+    @property
+    def labels(self):
+        return frozenset(self._labels)
 
     def __repr__(self):
         return "v[" + str(self.id) + "]"
 
 
 class Edge(Element):
-    def __init__(self, id, outV, label, inV, properties=None):
-        Element.__init__(self, id, label, properties)
+    def __init__(self, id, outV, label, inV, properties=None, labels=None):
+        if labels is not None:
+            self._labels = set(labels)
+            Element.__init__(self, id, next(iter(labels)) if labels else "", properties)
+        else:
+            self._labels = {label} if label else {"edge"}
+            Element.__init__(self, id, label or "edge", properties)
         self.outV = outV
         self.inV = inV
+
+    @property
+    def labels(self):
+        return frozenset(self._labels)
 
     def __repr__(self):
         return "e[" + str(self.id) + "][" + str(self.outV.id) + "-" + self.label + "->" + str(self.inV.id) + "]"

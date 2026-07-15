@@ -502,10 +502,22 @@ func (tg *tinkerPopGraph) nothingShouldHappenBecause(arg1 *godog.DocString) erro
 
 // Choose the graph.
 func (tg *tinkerPopGraph) chooseGraph(graphName string) error {
-	tg.graphName = graphName
-	data := tg.graphDataMap[graphName]
+	// Multi-label tests use the gmultilabel traversal source for empty graphs
+	isMultiLabel := false
+	for _, tag := range tg.scenario.Tags {
+		if tag.Name == "@MultiLabel" {
+			isMultiLabel = true
+		}
+	}
+
+	if isMultiLabel && graphName == "empty" {
+		tg.graphName = "multilabel"
+	} else {
+		tg.graphName = graphName
+	}
+	data := tg.graphDataMap[tg.graphName]
 	tg.g = gremlingo.Traversal_().With(data.connection).With("language", "gremlin-lang")
-	if graphName == "empty" {
+	if tg.graphName == "empty" || tg.graphName == "multilabel" {
 		err := tg.cleanEmptyDataGraph(tg.g)
 		if err != nil {
 			return err
@@ -518,6 +530,9 @@ func (tg *tinkerPopGraph) chooseGraph(graphName string) error {
 		} else if tag.Name == "@AllowNullPropertyValues" {
 			// The GLV suite does not test against a graph that has null property values enabled, skipping via Pending Error
 			return godog.ErrPending
+		} else if tag.Name == "@MultiLabelDefault" {
+			// The GLV suite does not test against a graph that defaults to multi-label output, skipping via Pending Error
+			return godog.ErrPending
 		}
 	}
 	return nil
@@ -529,7 +544,17 @@ func (tg *tinkerPopGraph) theGraphInitializerOf(arg1 *godog.DocString) error {
 		return err
 	}
 	future := traversal.Iterate()
-	return <-future
+	err = <-future
+	if err != nil {
+		return err
+	}
+	// Reload vertex/edge data for dynamic graphs after initializer adds data
+	if tg.graphName == "empty" {
+		tg.reloadEmptyData()
+	} else if tg.graphName == "multilabel" {
+		tg.reloadMultilabelData()
+	}
+	return nil
 }
 
 func (tg *tinkerPopGraph) theResultShouldHaveACountOf(expectedCount int) error {
@@ -1112,6 +1137,8 @@ func (tg *tinkerPopGraph) theTraversalOf(arg1 *godog.DocString) error {
 func (tg *tinkerPopGraph) usingTheParameterDefined(name string, params string) error {
 	if tg.graphName == "empty" {
 		tg.reloadEmptyData()
+	} else if tg.graphName == "multilabel" {
+		tg.reloadMultilabelData()
 	}
 	val := parseValue(strings.Replace(params, "\\\"", "\"", -1), tg.graphName)
 	if parameterize {
@@ -1137,6 +1164,8 @@ func (tg *tinkerPopGraph) usingTheParameterOfP(paramName, pVal, stringVal string
 func (tg *tinkerPopGraph) usingTheSideEffectDefined(key string, value string) error {
 	if tg.graphName == "empty" {
 		tg.reloadEmptyData()
+	} else if tg.graphName == "multilabel" {
+		tg.reloadMultilabelData()
 	}
 	tg.sideEffects[key] = parseValue(strings.Replace(value, "\\\"", "\"", -1), tg.graphName)
 	return nil
@@ -1253,7 +1282,7 @@ func TestCucumberFeatures(t *testing.T) {
 		TestSuiteInitializer: InitializeTestSuite,
 		ScenarioInitializer:  InitializeScenario,
 		Options: &godog.Options{
-			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepWrite && ~@DataChar",
+			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepWrite && ~@DataChar && ~@MultiLabelDefault",
 			Format:   "pretty",
 			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features")},
 			TestingT: t, // Testing instance that will run subtests.

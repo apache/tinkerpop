@@ -359,6 +359,14 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
         if (ctx?.variable() != null || ctx?.stringLiteral() != null) this.sb.push('(string) ');
     }
 
+    private visitStringArgumentVarargsWithCast(ctx: any): void {
+        for (let ix = 0; ix < ctx.getChildCount(); ix++) {
+            const child = ctx.getChild(ix);
+            if (child.constructor?.name === 'StringArgumentContext') this.tryAppendCastToString_StringArg(child);
+            this.visit(child);
+        }
+    }
+
     private tryAppendCastToString_StringNullableLit(ctx: any): void {
         if (ctx?.K_NULL != null && ctx.K_NULL() != null) this.sb.push('(string) ');
     }
@@ -421,11 +429,12 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
         this.sb.push(')');
     }
 
-    visitTraversalSourceSpawnMethod_addV(ctx: any): void {
+    visitTraversalSourceSpawnMethod_addV_String(ctx: any): void {
         this.sb.push(capitalize(ctx.getChild(0).getText()));
         for (let ix = 1; ix < ctx.getChildCount(); ix++) {
             const child = ctx.getChild(ix);
             if (child.constructor?.name === 'StringArgumentContext') this.tryAppendCastToString_StringArg(child);
+            else if (child.constructor?.name === 'StringArgumentVarargsContext') { this.visitStringArgumentVarargsWithCast(child); continue; }
             this.visit(child);
         }
     }
@@ -610,6 +619,7 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
         for (let ix = 1; ix < ctx.getChildCount(); ix++) {
             const child = ctx.getChild(ix);
             if (child.constructor?.name === 'StringArgumentContext') this.tryAppendCastToString_StringArg(child);
+            else if (child.constructor?.name === 'StringArgumentVarargsContext') { this.visitStringArgumentVarargsWithCast(child); continue; }
             this.visit(child);
         }
     }
@@ -619,6 +629,7 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
         for (let ix = 1; ix < ctx.getChildCount(); ix++) {
             const child = ctx.getChild(ix);
             if (child.constructor?.name === 'StringArgumentContext') this.tryAppendCastToString_StringArg(child);
+            else if (child.constructor?.name === 'StringArgumentVarargsContext') { this.visitStringArgumentVarargsWithCast(child); continue; }
             this.visit(child);
         }
     }

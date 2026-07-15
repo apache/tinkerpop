@@ -266,3 +266,9 @@ g.V().choose(label).
 <1> Note, that tokens use a `fold()` reducer by default.
 <2> `by("name")` doesn't use a token, but falls into the same category as the String `"name"` is translated into an optimized traversal.
 
+NOTE: The `label` token used above is equivalent to the `label()` step, which on a vertex with multiple labels
+returns only one of them, chosen non-deterministically. On graphs configured for multiple labels per vertex, prefer
+`by(labels().fold())` in place of `by(label)` so that every label a vertex carries is accounted for. See the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#by-step[By Step] section of the Reference Documentation for
+further details.
+

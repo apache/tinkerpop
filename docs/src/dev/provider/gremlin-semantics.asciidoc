@@ -582,6 +582,84 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddVertexStartStep.java[source (start)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addvertex-step[reference]
 
+=== addLabel()
+
+*Description:* Adds one or more labels to an element.
+
+*Syntax:* `addLabel(String label, String... moreLabels)` | `addLabel(Traversal<?, ?> labelTraversal, Traversal<?, ?>... moreLabelTraversals)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Element` |`Element`
+|=========================================================
+
+*Arguments:*
+
+* `label` - The label to add.
+* `moreLabels` - Additional labels to add.
+* `labelTraversal` - The first (or only) traversal that produces a label to add.
+* `moreLabelTraversals` - Additional label-producing traversals (may be empty for single-traversal behavior).
+
+*Considerations:*
+
+Label add and remove operations require a `LabelCardinality` that permits changing the set of labels on an element
+(`ONE_OR_MORE` or `ZERO_OR_MORE`). When `LabelCardinality` is `ONE`, the vertex's label is fixed at creation and
+cannot be added to or removed.
+Adding a label that already exists on the element is a no-op. The step returns the element (sideEffect semantics).
+Each traversal argument is iterated for a single result only. If exactly one traversal is provided and it produces
+a `Collection<String>`, the collection will be automatically unfolded into the set of labels added; if more than one
+traversal is provided, each must resolve to a single `String` label.
+
+*Exceptions*
+
+* If the graph's `LabelCardinality` does not permit label modification, an `IllegalStateException` will be thrown.
+* If any label argument is null or empty, an `IllegalArgumentException` will be thrown.
+* If more than one traversal is provided and any of them produces a `Collection`, an `IllegalArgumentException` will
+be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/AddLabelStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addlabel-step[reference]
+
+=== dropLabel()
+
+*Description:* Removes one or more specific labels from an element, or removes all labels.
+
+*Syntax:* `dropLabel(String label, String... moreLabels)` | `dropLabel(Traversal<?, String> labelTraversal, Traversal<?, String>... moreLabelTraversals)` | `dropLabels()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Element` |`Element`
+|=========================================================
+
+*Arguments:*
+
+* `label` - The label to remove.
+* `moreLabels` - Additional labels to remove.
+* `labelTraversal` - The first (or only) traversal that produces a label to remove.
+* `moreLabelTraversals` - Additional label-producing traversals (may be empty for single-traversal behavior).
+
+*Considerations:*
+
+Label add and remove operations require a `LabelCardinality` that permits changing the set of labels on an element
+(`ONE_OR_MORE` or `ZERO_OR_MORE`). Dropping a label that does not exist
+on the element is a no-op. `dropLabels()` removes all labels (only valid with `ZERO_OR_MORE`). The step returns the
+element (sideEffect semantics).
+Each traversal argument is iterated for a single result only. If exactly one traversal is provided and it produces
+a `Collection<String>`, the collection will be automatically unfolded into the set of labels removed; if more than
+one traversal is provided, each must resolve to a single `String` label.
+
+*Exceptions*
+
+* If the graph's `LabelCardinality` does not permit label modification, an `IllegalStateException` will be thrown.
+* If `dropLabel()` or `dropLabels()` would violate the minimum label count, an `IllegalStateException` will be thrown.
+* If more than one traversal is provided and any of them produces a `Collection`, an `IllegalArgumentException` will
+be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/DropLabelsStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#droplabel-step[reference]
+
 [[all-step]]
 === all()
 
@@ -1585,6 +1663,41 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ElementStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#element-step[reference]
 
+[[elementmap-step]]
+=== elementMap()
+
+*Description:* Converts elements to a `Map` representation containing the element's `id`, `label`, and properties.
+For an `Edge`, the map also includes the `IN` and `OUT` vertex structures (each a nested map of `id` and `label`).
+
+*Syntax:* `elementMap(String... propertyKeys)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Element` |`Map`
+|=========================================================
+
+*Arguments:*
+
+* `propertyKeys` - If `elementMap()` is provided a list of propertyKeys, then the result map will only contain
+property entries specified by propertyKeys. If the list is empty, then all properties are included.
+
+*Considerations:*
+
+The label format in the map is controlled by source-level `with("multilabel")` and `with("singlelabel")` options, not
+by the graph's `LabelCardinality`. When `"multilabel"` is present, the label value is a `Set<String>`; likewise when
+`"singlelabel"` is present, it is a single `String`. The two options are mutually exclusive, configuring both
+`"multilabel"` and `"singlelabel"` on the same source is rejected with a `VerificationException`. Note that is a
+provider choice whether an unconfigured `GraphTraversal` defaults to `multilabel` or `singlelabel` semantics. The
+reference implementation defaults to `singlelabel` semantics.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ElementMapStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#elementmap-step[reference]
+
 [[e-step]]
 === E()
 
@@ -1939,6 +2052,49 @@ None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/HasStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
+
+[[label-step]]
+=== label()
+
+*Description:* Maps an element to its label as a single string value.
+
+*Syntax:* `label()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Element` |`String`
+|=========================================================
+
+*Considerations:*
+
+The `label()` step returns exactly one label string per element. For graphs that support multiple labels per vertex,
+`label()` returns only one of the vertex's labels and the choice is non-deterministic (implementation-dependent
+ordering). Use `labels()` to retrieve all labels reliably.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LabelStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#label-step[reference]
+
+[[labels-step]]
+=== labels()
+
+*Description:* Maps an element to its labels, emitting one traverser per label.
+
+*Syntax:* `labels()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Element` |`String`
+|=========================================================
+
+*Considerations:*
+
+For vertices with a single label, `labels()` emits one traverser (equivalent to `label()`). For multi-label vertices,
+it emits one traverser per label. For vertices with zero labels (`ZERO_OR_MORE` mode), no traversers are emitted.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LabelsStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#labels-step[reference]
 
 [[length-step]]
 === length()
@@ -3057,6 +3213,17 @@ the possible values are:
 A `Vertex` may carry multiple values for a single property key (`Cardinality.list` or `Cardinality.set`). For such
 keys, the resulting map entry contains a `LIST` of the values. An `Edge` and a `VertexProperty` have at most one
 value per key and the value is returned directly.
+
+The label format in the map is controlled by source-level `with("multilabel")` and `with("singlelabel")` options, not
+by the graph's `LabelCardinality`. When `"multilabel"` is present, the label value is a `Set<String>`; likewise when
+`"singlelabel"` is present, it is a single `String`. The two options are mutually exclusive, configuring both
+`"multilabel"` and `"singlelabel"` on the same source is rejected with a `VerificationException`. Note that is a
+provider choice whether an unconfigured `GraphTraversal` defaults to `multilabel` or `singlelabel` semantics. The
+reference implementation defaults to `singlelabel` semantics.
+
+*Exceptions*
+
+None
 
 *Exceptions:*
 

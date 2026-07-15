@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.features.World;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
@@ -100,6 +101,18 @@ public abstract class RemoteWorld implements World {
     }
 
     @Override
+    public GraphTraversalSource getMultiLabelGraphTraversalSource() {
+        final Client client = cluster.connect();
+        try { // Clear data before run because tests are allowed to modify data for the multi-label graph.
+            final RequestOptions options = RequestOptions.build().traversalSource("gmultilabel").create();
+            client.submit("g.V().drop()", options).all().get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return AnonymousTraversalSource.traversal().withRemote(DriverRemoteConnection.using(client, "gmultilabel"));
+    }
+
+    @Override
     public String changePathToDataFile(final String pathToFileFromGremlin) {
         return ".." + File.separator + pathToFileFromGremlin;
     }
@@ -135,6 +148,11 @@ public abstract class RemoteWorld implements World {
                 default:
                     throw new IllegalStateException("This state should not have occurred: " + state);
             }
+        }
+
+        @Override
+        public GraphTraversalSource getMultiLabelGraphTraversalSource() {
+            throw new AssumptionViolatedException("GraphComputer does not support mutation");
         }
 
         @Override

@@ -269,8 +269,14 @@ func vertexWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTyp
 		return err
 	}
 
-	// Not fully qualified.
-	if err := typeSerializer.writeValue([1]string{v.Label}, w, false); err != nil {
+	// Write all labels as a list. A non-nil Labels slice is authoritative (including an empty
+	// slice, i.e. a zero-label vertex); fall back to the deprecated single Label only when
+	// Labels was never populated (nil).
+	labels := v.Labels
+	if labels == nil {
+		labels = []string{v.Label}
+	}
+	if err := typeSerializer.writeValue(labels, w, false); err != nil {
 		return err
 	}
 	// Note that as TinkerPop currently send "references" only, properties will always be null
@@ -285,8 +291,13 @@ func edgeWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeS
 		return err
 	}
 
-	// Not fully qualified
-	if err := typeSerializer.writeValue([1]string{e.Label}, w, false); err != nil {
+	// Write all labels as a list. A non-nil Labels slice is authoritative; fall back to the
+	// deprecated single Label only when Labels was never populated (nil).
+	labels := e.Labels
+	if labels == nil {
+		labels = []string{e.Label}
+	}
+	if err := typeSerializer.writeValue(labels, w, false); err != nil {
 		return err
 	}
 
@@ -295,8 +306,12 @@ func edgeWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeS
 		return err
 	}
 
-	// Not fully qualified.
-	if err := typeSerializer.writeValue([1]string{e.InV.Label}, w, false); err != nil {
+	// Write in-vertex labels
+	inVLabels := e.InV.Labels
+	if inVLabels == nil {
+		inVLabels = []string{e.InV.Label}
+	}
+	if err := typeSerializer.writeValue(inVLabels, w, false); err != nil {
 		return err
 	}
 	// Write out-vertex
@@ -304,8 +319,12 @@ func edgeWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeS
 		return err
 	}
 
-	// Not fully qualified.
-	if err := typeSerializer.writeValue([1]string{e.OutV.Label}, w, false); err != nil {
+	// Write out-vertex labels
+	outVLabels := e.OutV.Labels
+	if outVLabels == nil {
+		outVLabels = []string{e.OutV.Label}
+	}
+	if err := typeSerializer.writeValue(outVLabels, w, false); err != nil {
 		return err
 	}
 
@@ -412,8 +431,14 @@ func graphWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryType
 		if err := typeSerializer.write(v.Id, w); err != nil {
 			return err
 		}
-		// {labels} list<string> value-only, 1 element
-		if err := typeSerializer.writeValue([1]string{v.Label}, w, false); err != nil {
+		// {labels} list<string> value-only. A non-nil Labels slice is authoritative (including
+		// an empty slice, i.e. a zero-label vertex); fall back to the deprecated single Label
+		// only when Labels was never populated (nil).
+		vLabels := v.Labels
+		if vLabels == nil {
+			vLabels = []string{v.Label}
+		}
+		if err := typeSerializer.writeValue(vLabels, w, false); err != nil {
 			return err
 		}
 
@@ -459,8 +484,13 @@ func graphWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryType
 		if err := typeSerializer.write(e.Id, w); err != nil {
 			return err
 		}
-		// {labels} list<string> value-only, 1 element
-		if err := typeSerializer.writeValue([1]string{e.Label}, w, false); err != nil {
+		// {labels} list<string> value-only. A non-nil Labels slice is authoritative; fall back
+		// to the deprecated single Label only when Labels was never populated (nil).
+		eLabels := e.Labels
+		if eLabels == nil {
+			eLabels = []string{e.Label}
+		}
+		if err := typeSerializer.writeValue(eLabels, w, false); err != nil {
 			return err
 		}
 		// {inV_id} fully-qualified

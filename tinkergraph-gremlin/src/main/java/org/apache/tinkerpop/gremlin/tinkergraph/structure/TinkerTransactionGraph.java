@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.LabelCardinality;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -87,6 +88,12 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
                 configuration.getString(GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.single.name()));
         allowNullPropertyValues = configuration.getBoolean(GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, false);
 
+        vertexLabelCardinality = LabelCardinality.valueOf(
+                configuration.getString(GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, LabelCardinality.ONE.name()));
+        edgeLabelCardinality = LabelCardinality.ONE;
+        defaultVertexLabel = Vertex.DEFAULT_LABEL;
+        defaultEdgeLabel = Edge.DEFAULT_LABEL;
+
         graphLocation = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
         graphFormat = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_FORMAT, null);
 
@@ -139,7 +146,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         Object idValue = vertexIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
         if (null == idValue)
             idValue = vertexIdManager.getNextId(this);
-        final String label = ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL);
+        final Set<String> labels = ElementHelper.getLabelsValue(keyValues).orElse(null);
 
         this.tx().readWrite();
         final long txNumber = transaction.getTxNumber();
@@ -164,7 +171,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         if (container == null)
             container = newContainer;
 
-        final TinkerVertex vertex = new TinkerVertex(idValue, label, this, version);
+        final TinkerVertex vertex = new TinkerVertex(idValue, labels, this, version);
         ElementHelper.attachProperties(vertex, VertexProperty.Cardinality.list, keyValues);
         container.setDraft(vertex, (TinkerTransaction) tx());
 
@@ -307,7 +314,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     public long countVerticesByLabel(final String label) {
         if (label == null) return getVerticesCount();
         return vertices.values().stream()
-                .filter(c -> c.get() != null && label.equals(c.get().label()))
+                .filter(c -> c.get() != null && c.get().labels().contains(label))
                 .count();
     }
 
@@ -315,7 +322,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     public long countEdgesByLabel(final String label) {
         if (label == null) return getEdgesCount();
         return edges.values().stream()
-                .filter(c -> c.get() != null && label.equals(c.get().label()))
+                .filter(c -> c.get() != null && c.get().labels().contains(label))
                 .count();
     }
 
@@ -408,6 +415,40 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
             vertex.inEdgesId.put(label, edges);
         }
         edges.add(edge.id());
+    }
+
+    @Override
+    public void addEdgeToAdjacency(final TinkerEdge edge, final String label) {
+        final TinkerVertex outV = (TinkerVertex) edge.outVertex();
+        final TinkerVertex inV = (TinkerVertex) edge.inVertex();
+        touch(outV);
+        touch(inV);
+        if (null == outV.outEdgesId) outV.outEdgesId = new ConcurrentHashMap<>();
+        outV.outEdgesId.computeIfAbsent(label, k -> ConcurrentHashMap.newKeySet()).add(edge.id());
+        if (null == inV.inEdgesId) inV.inEdgesId = new ConcurrentHashMap<>();
+        inV.inEdgesId.computeIfAbsent(label, k -> ConcurrentHashMap.newKeySet()).add(edge.id());
+    }
+
+    @Override
+    public void removeEdgeFromAdjacency(final TinkerEdge edge, final String label) {
+        final TinkerVertex outV = (TinkerVertex) edge.outVertex();
+        final TinkerVertex inV = (TinkerVertex) edge.inVertex();
+        touch(outV);
+        touch(inV);
+        if (outV.outEdgesId != null) {
+            final Set<Object> edges = outV.outEdgesId.get(label);
+            if (edges != null) {
+                edges.remove(edge.id());
+                if (edges.isEmpty()) outV.outEdgesId.remove(label);
+            }
+        }
+        if (inV.inEdgesId != null) {
+            final Set<Object> edges = inV.inEdgesId.get(label);
+            if (edges != null) {
+                edges.remove(edge.id());
+                if (edges.isEmpty()) inV.inEdgesId.remove(label);
+            }
+        }
     }
 
     /**

@@ -48,7 +48,7 @@ public class DefaultGraphManagerTest {
         final Set<String> graphNames = graphManager.getGraphNames();
 
         assertNotNull(graphNames);
-        assertEquals(7, graphNames.size());
+        assertEquals(8, graphNames.size());
 
         assertThat(graphNames.contains("graph"), is(true));
         assertThat(graphNames.contains("classic"), is(true));
@@ -68,7 +68,7 @@ public class DefaultGraphManagerTest {
         final Bindings bindings = graphManager.getAsBindings();
 
         assertNotNull(bindings);
-        assertEquals(7, bindings.size());
+        assertEquals(8, bindings.size());
         assertThat(bindings.containsKey("graph"), is(true));
         assertThat(bindings.containsKey("classic"), is(true));
         assertThat(bindings.containsKey("modern"), is(true));
@@ -99,7 +99,7 @@ public class DefaultGraphManagerTest {
 
         final Set<String> graphNames = graphManager.getGraphNames();
         assertNotNull(graphNames);
-        assertEquals(8, graphNames.size());
+        assertEquals(9, graphNames.size());
         assertThat(graphNames.contains("newGraph"), is(true));
         assertThat(graphNames.contains("graph"), is(true));
         assertThat(graphNames.contains("classic"), is(true));
@@ -120,14 +120,14 @@ public class DefaultGraphManagerTest {
         graphManager.putGraph("newGraph", graph);
         final Set<String> graphNames = graphManager.getGraphNames();
         assertNotNull(graphNames);
-        assertEquals(8, graphNames.size());
+        assertEquals(9, graphNames.size());
         assertThat(graphNames.contains("newGraph"), is(true));
         assertThat(graphManager.getGraph("newGraph"), instanceOf(TinkerGraph.class));
 
         graphManager.removeGraph("newGraph");
 
         final Set<String> graphNames2 = graphManager.getGraphNames();
-        assertEquals(7, graphNames2.size());
+        assertEquals(8, graphNames2.size());
         assertThat(graphNames2.contains("newGraph"), is(false));
     }
 

@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -61,6 +62,7 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
 
     protected Parameters parameters = new Parameters();
     protected Traversal.Admin<K, E> valueTraversal;
+    private Boolean multilabelEnabled;
 
     public PropertyMapStep(final Traversal.Admin traversal, final PropertyType propertyType, final String... propertyKeys) {
         super(traversal);
@@ -200,9 +202,29 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
                 if (includeToken(WithOptions.keys)) map.put(T.key, getVertexPropertyKey((VertexProperty<?>) element));
                 if (includeToken(WithOptions.values)) map.put(T.value, getVertexPropertyValue((VertexProperty<?>) element));
             } else {
-                if (includeToken(WithOptions.labels)) map.put(T.label, getElementLabel(element));
+                if (includeToken(WithOptions.labels)) {
+                    if (isMultilabelEnabled()) {
+                        map.put(T.label, element.labels());
+                    } else {
+                        final String label = getElementLabel(element);
+                        if (!label.isEmpty()) {
+                            map.put(T.label, label);
+                        }
+                    }
+                }
             }
         }
+    }
+
+    /**
+     * Checks if multilabel mode is enabled via source-level {@code g.with("multilabel")}.
+     * Result is cached since strategies are immutable after traversal compilation.
+     */
+    private boolean isMultilabelEnabled() {
+        if (multilabelEnabled == null) {
+            multilabelEnabled = TraversalHelper.isMultilabelEnabled(getTraversal());
+        }
+        return multilabelEnabled;
     }
 
     protected Object getElementId(Element element){

@@ -47,7 +47,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
             CancellationToken cancellationToken = default)
         {
             await writer.WriteAsync(value.Id, stream, cancellationToken).ConfigureAwait(false);
-            await writer.WriteNonNullableValueAsync(new List<string> { value.Label }, stream, cancellationToken).ConfigureAwait(false);
+            await writer.WriteNonNullableValueAsync(new List<string>(value.Labels), stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteAsync(null, stream, cancellationToken).ConfigureAwait(false); // properties
         }
 
@@ -58,11 +58,16 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
             var id = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             var labelList = (List<string?>)await reader.ReadNonNullableValueAsync<List<string?>>(stream, cancellationToken).ConfigureAwait(false);
             var label = labelList.Count > 0 ? labelList[0] ?? "" : "";
+            var labels = new List<string>();
+            foreach (var l in labelList)
+            {
+                if (l != null) labels.Add(l);
+            }
 
             var properties = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             var propertiesAsArray = null == properties ? Array.Empty<object>() : (properties as List<object>)?.ToArray();
 
-            return new Vertex(id, label, propertiesAsArray);
+            return new Vertex(id, label, propertiesAsArray, labels);
         }
     }
 }

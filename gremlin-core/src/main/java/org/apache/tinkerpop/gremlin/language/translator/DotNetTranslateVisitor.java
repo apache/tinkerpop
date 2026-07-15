@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.language.translator;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.StringUtils;
@@ -315,39 +316,64 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitTraversalSourceSpawnMethod_addV(final GremlinParser.TraversalSourceSpawnMethod_addVContext ctx) {
+    public Void visitTraversalSourceSpawnMethod_addV_Empty(final GremlinParser.TraversalSourceSpawnMethod_addV_EmptyContext ctx) {
+        return visitAddVLikeMethod(ctx);
+    }
+
+    @Override
+    public Void visitTraversalSourceSpawnMethod_addV_String(final GremlinParser.TraversalSourceSpawnMethod_addV_StringContext ctx) {
+        return visitAddVLikeMethod(ctx);
+    }
+
+    @Override
+    public Void visitTraversalSourceSpawnMethod_addV_Traversal(final GremlinParser.TraversalSourceSpawnMethod_addV_TraversalContext ctx) {
+        return visitAddVLikeMethod(ctx);
+    }
+
+    @Override
+    public Void visitTraversalMethod_addV_String(GremlinParser.TraversalMethod_addV_StringContext ctx) {
+        return visitAddVLikeMethod(ctx);
+    }
+
+    /**
+     * Shared rendering logic for the {@code addV} alternatives (source-spawned or mid-traversal, empty, string
+     * varargs, or traversal varargs): renders the step name followed by each child, applying a "cast to string"
+     * where a {@code stringArgumentVarargs} child is encountered.
+     */
+    private Void visitAddVLikeMethod(final ParserRuleContext ctx) {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
 
         for (int ix = 1; ix < ctx.getChildCount(); ix++) {
-            if (ctx.getChild(ix) instanceof GremlinParser.StringArgumentContext) {
-                final GremlinParser.StringArgumentContext sac = (GremlinParser.StringArgumentContext) ctx.getChild(ix);
-                tryAppendCastToString(sac);
-                visit(sac);
-                afterCastToString(sac);
+            final ParseTree child = ctx.getChild(ix);
+            if (child instanceof GremlinParser.StringArgumentVarargsContext) {
+                visitStringArgumentVarargsWithCast((GremlinParser.StringArgumentVarargsContext) child);
             } else {
-                visit(ctx.getChild(ix));
+                visit(child);
             }
         }
         return null;
     }
 
-    @Override
-    public Void visitTraversalMethod_addV_String(GremlinParser.TraversalMethod_addV_StringContext ctx) {
-        final String step = ctx.getChild(0).getText();
-        sb.append(convertToPascalCase(step));
-
-        for (int ix = 1; ix < ctx.getChildCount(); ix++) {
-            if (ctx.getChild(ix) instanceof GremlinParser.StringArgumentContext) {
-                final GremlinParser.StringArgumentContext sac = (GremlinParser.StringArgumentContext) ctx.getChild(ix);
+    /**
+     * Visits each child of a {@code stringArgumentVarargs} rule context (a flat sequence of {@code StringArgument}
+     * and {@code COMMA} nodes), applying the same "cast to string" logic that would apply to a directly-nested
+     * {@code StringArgumentContext} child.
+     */
+    private void visitStringArgumentVarargsWithCast(final GremlinParser.StringArgumentVarargsContext ctx) {
+        for (int ix = 0; ix < ctx.getChildCount(); ix++) {
+            final ParseTree child = ctx.getChild(ix);
+            if (child instanceof GremlinParser.StringArgumentContext) {
+                // note revisit tryAppendCastToString() method after GValue/.NET implementation in 4,
+                // in this case only ctx.variable() matters, (string) isn't needed for ctx.stringLiteral()
+                final GremlinParser.StringArgumentContext sac = (GremlinParser.StringArgumentContext) child;
                 tryAppendCastToString(sac);
                 visit(sac);
                 afterCastToString(sac);
             } else {
-                visit(ctx.getChild(ix));
+                visit(child);
             }
         }
-        return null;
     }
 
     @Override

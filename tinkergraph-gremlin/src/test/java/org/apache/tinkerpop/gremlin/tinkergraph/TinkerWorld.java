@@ -68,6 +68,16 @@ public abstract class TinkerWorld implements World {
         return conf;
     }
 
+    /**
+     * Like {@link #getNumberIdManagerConfiguration()} but configured with {@code ZERO_OR_MORE} vertex label
+     * cardinality for use by graphs backing {@code @MultiLabel} tagged scenarios.
+     */
+    protected static Configuration getMultiLabelConfiguration() {
+        final Configuration conf = getNumberIdManagerConfiguration();
+        conf.setProperty(AbstractTinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, "ZERO_OR_MORE");
+        return conf;
+    }
+
     protected static AbstractTinkerGraph registerTestServices(final AbstractTinkerGraph graph) {
         graph.getServiceRegistry().registerService(new TinkerTextSearchFactory(graph));
         graph.getServiceRegistry().registerService(new TinkerDegreeCentralityFactory(graph));
@@ -103,6 +113,11 @@ public abstract class TinkerWorld implements World {
                 return grateful.traversal();
             else
                 throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
+        }
+
+        @Override
+        public GraphTraversalSource getMultiLabelGraphTraversalSource() {
+            return registerTestServices(TinkerGraph.open(getMultiLabelConfiguration())).traversal();
         }
 
         @Override
@@ -195,6 +210,11 @@ public abstract class TinkerWorld implements World {
         }
 
         @Override
+        public GraphTraversalSource getMultiLabelGraphTraversalSource() {
+            return registerTestServices(TinkerTransactionGraph.open(getMultiLabelConfiguration())).traversal();
+        }
+
+        @Override
         public AbstractTinkerGraph open(final Configuration configuration) {
             return TinkerTransactionGraph.open(configuration);
         }
@@ -247,6 +267,11 @@ public abstract class TinkerWorld implements World {
                 return grateful.traversal();
             else
                 throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
+        }
+
+        @Override
+        public GraphTraversalSource getMultiLabelGraphTraversalSource() {
+            return registerTestServices(TinkerGraph.open(getMultiLabelConfiguration())).traversal();
         }
 
         @Override

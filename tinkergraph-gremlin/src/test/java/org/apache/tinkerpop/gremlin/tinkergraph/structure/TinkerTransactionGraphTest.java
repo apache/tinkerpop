@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,30 @@ public class TinkerTransactionGraphTest {
     final Object vid = 100;
 
     ///// vertex tests
+
+    @Test
+    public void shouldCountVerticesByLabelAccountingForMultipleLabels() {
+        final org.apache.commons.configuration2.Configuration config = new org.apache.commons.configuration2.BaseConfiguration();
+        config.setProperty(org.apache.tinkerpop.gremlin.structure.Graph.GRAPH, TinkerTransactionGraph.class.getName());
+        config.setProperty(AbstractTinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, "ZERO_OR_MORE");
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open(config);
+
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV("person").next();
+        final Vertex multiLabelled = gtx.addV("person").addLabel("employee").next();
+        gtx.tx().commit();
+
+        assertEquals(2L, g.countVerticesByLabel("person"));
+        assertEquals(1L, g.countVerticesByLabel("employee"));
+        assertEquals(0L, g.countVerticesByLabel("customer"));
+
+        gtx.V(multiLabelled.id()).next();
+        ((Vertex) gtx.V(multiLabelled.id()).next()).dropLabel("person");
+        gtx.tx().commit();
+
+        assertEquals(1L, g.countVerticesByLabel("person"));
+        assertEquals(1L, g.countVerticesByLabel("employee"));
+    }
 
     @Test
     public void shouldReturnSameVertexInstanceInsideTransaction() {
@@ -1844,7 +1869,299 @@ public class TinkerTransactionGraphTest {
             throw validationException.get();
         }
     }
-    
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfVertexLabelAddForReadOnlyTransaction() throws InterruptedException {
+        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").next();
+        gtx.tx().commit();
+
+        // tx1 adds a label but does not commit
+        gtx.V(v.id()).addLabel("employee").iterate();
+
+        // a read-only transaction on another thread must not observe the uncommitted label
+        final Set<String> readerLabels = readLabelsInNewThreadTx(g, v.id());
+        assertEquals(Set.of("person"), readerLabels);
+
+        // tx1 sees its own change
+        assertEquals(Set.of("person", "employee"),
+                new HashSet<>(gtx.V(v.id()).next().labels()));
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfVertexLabelDropForReadOnlyTransaction() throws InterruptedException {
+        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").addLabel("employee").next();
+        gtx.tx().commit();
+
+        // tx1 drops a label but does not commit
+        gtx.V(v.id()).dropLabel("employee").iterate();
+
+        // a read-only transaction on another thread must still observe the not-yet-dropped label
+        final Set<String> readerLabels = readLabelsInNewThreadTx(g, v.id());
+        assertEquals(Set.of("person", "employee"), readerLabels);
+
+        // tx1 sees its own change
+        assertEquals(Set.of("person"),
+                new HashSet<>(gtx.V(v.id()).next().labels()));
+    }
+
+    @Test
+    public void shouldNotAllowDirtyReadsOfVertexLabelDropAllForReadOnlyTransaction() throws InterruptedException {
+        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").addLabel("employee").next();
+        gtx.tx().commit();
+
+        // tx1 drops all labels but does not commit
+        gtx.V(v.id()).dropLabels().iterate();
+
+        // a read-only transaction on another thread must still observe both labels
+        final Set<String> readerLabels = readLabelsInNewThreadTx(g, v.id());
+        assertEquals(Set.of("person", "employee"), readerLabels);
+
+        // tx1 sees the empty label set (ZERO_OR_MORE cardinality)
+        assertTrue(gtx.V(v.id()).next().labels().isEmpty());
+    }
+
+    // tx1 adds label "employee", tx2 concurrently adds label "customer" to the same vertex
+    @Test
+    public void shouldHandleConcurrentChangeForVertexLabel() throws InterruptedException {
+        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").next();
+        gtx.tx().commit();
+
+        // tx1 adds a label
+        gtx.V(v.id()).addLabel("employee").iterate();
+
+        // tx2 concurrently adds a different label and commits first
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v.id()).addLabel("customer").iterate();
+            gtx2.tx().commit();
+        });
+
+        // tx1 must fail because the vertex was modified in another transaction
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+            assertEquals("Conflict: element modified in another transaction", e.getMessage());
+        }
+
+        // committed state should reflect only tx2's change
+        assertEquals(Set.of("person", "customer"),
+                readLabelsInNewThreadTx(g, v.id()));
+    }
+
+    // tx1 drops label "employee", tx2 concurrently drops the same label
+    @Test
+    public void shouldHandleConcurrentDropOfSameVertexLabel() throws InterruptedException {
+        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").addLabel("employee").next();
+        gtx.tx().commit();
+
+        // tx1 drops the label
+        gtx.V(v.id()).dropLabel("employee").iterate();
+
+        // tx2 concurrently drops the same label and commits first
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v.id()).dropLabel("employee").iterate();
+            gtx2.tx().commit();
+        });
+
+        // tx1 must fail because the vertex was modified in another transaction
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+            assertEquals("Conflict: element modified in another transaction", e.getMessage());
+        }
+
+        // committed state should reflect only tx2's change
+        assertEquals(Set.of("person"),
+                readLabelsInNewThreadTx(g, v.id()));
+    }
+
+    // tx1 adds a label to v1, tx2 deletes v1
+    @Test
+    public void shouldHandleAddingLabelWhenOtherTxDeleteVertex() throws InterruptedException {
+        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").next();
+        gtx.tx().commit();
+
+        // tx1 adds a label
+        gtx.V(v.id()).addLabel("employee").iterate();
+
+        // tx2 concurrently deletes the vertex and commits first
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v.id()).drop().iterate();
+            gtx2.tx().commit();
+        });
+
+        // tx1 must fail because the vertex was deleted in another transaction
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+            assertEquals("Conflict: element modified in another transaction", e.getMessage());
+        }
+
+        assertEquals(0, (long) gtx.V().count().next());
+        countElementsInNewThreadTx(g, 0, 0);
+    }
+
+    // tx1 adds a label to v1, tx2 attempts to delete v1 but rolls back
+    @Test
+    public void shouldHandleAddingLabelWhenOtherTxAttemptsDeleteThenRollsback() throws InterruptedException {
+        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").next();
+        gtx.tx().commit();
+
+        // tx1 adds a label
+        gtx.V(v.id()).addLabel("employee").iterate();
+
+        // tx2 attempts to delete the vertex but rolls back
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v.id()).drop().iterate();
+            gtx2.tx().rollback();
+        });
+
+        // tx1 should commit successfully
+        gtx.tx().commit();
+
+        assertEquals(1, (long) gtx.V().count().next());
+        assertEquals(Set.of("person", "employee"),
+                readLabelsInNewThreadTx(g, v.id()));
+    }
+
+    // tx1 adds a label to v1, tx2 concurrently updates a property of v1 - both touch the vertex
+    @Test
+    public void shouldHandleConcurrentLabelAddAndPropertyChange() throws InterruptedException {
+        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").next();
+        gtx.tx().commit();
+
+        // tx1 adds a label
+        gtx.V(v.id()).addLabel("employee").iterate();
+
+        // tx2 concurrently changes a property on the same vertex and commits first
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(v.id()).property("age", 30).iterate();
+            gtx2.tx().commit();
+        });
+
+        // tx1 must fail because the vertex was modified in another transaction
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+            assertEquals("Conflict: element modified in another transaction", e.getMessage());
+        }
+
+        // committed state should reflect only tx2's property change, no "employee" label
+        final GraphTraversalSource gtx3 = g.tx().begin();
+        final Vertex committed = gtx3.V(v.id()).next();
+        assertEquals(30, (int) committed.value("age"));
+        assertFalse(committed.labels().contains("employee"));
+        assertTrue(committed.labels().contains("person"));
+    }
+
+    @Test
+    public void shouldIsolateVertexLabelCountAcrossTransactions() throws InterruptedException {
+        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").next();
+        gtx.tx().commit();
+
+        // tx1 adds a label but does not commit
+        gtx.V(v.id()).addLabel("employee").iterate();
+
+        // another transaction must not observe the uncommitted label in its counts
+        assertEquals(0L, countByLabelInNewThreadTx(g, "employee"));
+        assertEquals(1L, countByLabelInNewThreadTx(g, "person"));
+
+        // tx1 observes its own uncommitted change
+        assertEquals(1L, g.countVerticesByLabel("employee"));
+        assertEquals(1L, g.countVerticesByLabel("person"));
+
+        // rolling back tx1 must restore the committed counts
+        gtx.tx().rollback();
+        assertEquals(0L, g.countVerticesByLabel("employee"));
+        assertEquals(1L, g.countVerticesByLabel("person"));
+        assertEquals(Set.of("person"),
+                readLabelsInNewThreadTx(g, v.id()));
+    }
+
+    @Test
+    public void shouldRollbackVertexLabelDrop() throws InterruptedException {
+        final TinkerTransactionGraph g = openMultiLabelGraph();
+        final GraphTraversalSource gtx = g.tx().begin();
+
+        final Vertex v = gtx.addV("person").addLabel("employee").next();
+        gtx.tx().commit();
+
+        // tx1 drops a label
+        gtx.V(v.id()).dropLabel("employee").iterate();
+        // tx1 observes its own uncommitted change
+        assertFalse(gtx.V(v.id()).next().labels().contains("employee"));
+
+        // rolling back must restore the dropped label
+        gtx.tx().rollback();
+
+        assertEquals(Set.of("person", "employee"),
+                readLabelsInNewThreadTx(g, v.id()));
+    }
+
+    private TinkerTransactionGraph openMultiLabelGraph() {
+        final org.apache.commons.configuration2.Configuration config = new org.apache.commons.configuration2.BaseConfiguration();
+        config.setProperty(org.apache.tinkerpop.gremlin.structure.Graph.GRAPH, TinkerTransactionGraph.class.getName());
+        config.setProperty(AbstractTinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, "ZERO_OR_MORE");
+        return TinkerTransactionGraph.open(config);
+    }
+
+    private Set<String> readLabelsInNewThreadTx(final TinkerTransactionGraph g, final Object id) throws InterruptedException {
+        final AtomicReference<Set<String>> result = new AtomicReference<>();
+        final Thread thread = new Thread(() -> {
+            final GraphTraversalSource gtx = g.tx().begin();
+            result.set(new HashSet<>(gtx.V(id).next().labels()));
+        });
+        thread.start();
+        thread.join();
+        return result.get();
+    }
+
+    private long countByLabelInNewThreadTx(final TinkerTransactionGraph g, final String label) throws InterruptedException {
+        final AtomicLong count = new AtomicLong(-1);
+        final Thread thread = new Thread(() -> {
+            g.tx().begin();
+            count.set(g.countVerticesByLabel(label));
+        });
+        thread.start();
+        thread.join();
+        return count.get();
+    }
+
     private void runInNewThread(final Runnable runnable) {
         final Thread thread = new Thread(runnable);
         thread.start();

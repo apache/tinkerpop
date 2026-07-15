@@ -67,12 +67,23 @@ export class Vertex<
     [P in keyof TProperties]: P extends string ? VertexProperties<P, TProperties[P]> : never;
   },
 > extends Element<TLabel, TId> {
+  readonly labels: Set<string>;
+
   constructor(
     id: TId,
-    label: TLabel,
+    label: TLabel | string[],
     properties: Property[] | null = [],
+    labels?: string[],
   ) {
-    super(id, label, properties ?? []);
+    // Determine the canonical labels array from either explicit labels param or label param
+    const resolvedLabels: string[] = labels
+      ? labels
+      : Array.isArray(label) ? label
+      : label ? [label as string]
+      : ['vertex'];
+    const primaryLabel = (resolvedLabels.length > 0 ? resolvedLabels[0] : 'vertex') as TLabel;
+    super(id, primaryLabel, properties ?? []);
+    this.labels = new Set(resolvedLabels);
   }
 
   toString() {
@@ -87,14 +98,25 @@ export class Edge<
   TProperties extends Record<string, any> = Record<string, any>,
   TId = number,
 > extends Element<TLabel, TId> {
+  readonly labels: Set<string>;
+
   constructor(
     id: TId,
     readonly outV: TOutVertex,
-    readonly label: TLabel,
+    label: TLabel | string[],
     readonly inV: TInVertex,
     properties: Property[] | null = [],
+    labels?: string[],
   ) {
-    super(id, label, properties ?? []);
+    // Determine the canonical labels array from either explicit labels param or label param
+    const resolvedLabels: string[] = labels
+      ? labels
+      : Array.isArray(label) ? label
+      : label ? [label as string]
+      : ['edge'];
+    const primaryLabel = (resolvedLabels.length > 0 ? resolvedLabels[0] : 'edge') as TLabel;
+    super(id, primaryLabel, properties ?? []);
+    this.labels = new Set(resolvedLabels);
   }
 
   toString() {

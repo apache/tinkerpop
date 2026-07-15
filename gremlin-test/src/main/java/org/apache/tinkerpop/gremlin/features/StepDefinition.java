@@ -111,6 +111,7 @@ public final class StepDefinition {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private World world;
+    private Scenario currentScenario;
     private GraphTraversalSource g;
     private File tempWorkingDir;
     private final Map<String, Object> stringParameters = new HashMap<>();
@@ -316,6 +317,7 @@ public final class StepDefinition {
 
     @Before
     public void beforeEachScenario(final Scenario scenario) throws Exception {
+        this.currentScenario = scenario;
         world.beforeEachScenario(scenario);
         stringParameters.clear();
         if (traversal != null) {
@@ -355,10 +357,16 @@ public final class StepDefinition {
 
     @Given("the {word} graph")
     public void givenTheXGraph(final String graphName) {
-        if (graphName.equals("empty"))
-            this.g = world.getGraphTraversalSource(null);
-        else
+        final boolean isMultiLabel = currentScenario != null &&
+                currentScenario.getSourceTagNames().contains("@MultiLabel");
+        if (graphName.equals("empty")) {
+            if (isMultiLabel)
+                this.g = world.getMultiLabelGraphTraversalSource();
+            else
+                this.g = world.getGraphTraversalSource(null);
+        } else {
             this.g = world.getGraphTraversalSource(GraphData.valueOf(graphName.toUpperCase()));
+        }
     }
 
     @Given("the graph initializer of")
