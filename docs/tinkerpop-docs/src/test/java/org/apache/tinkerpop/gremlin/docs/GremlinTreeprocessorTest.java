@@ -82,7 +82,7 @@ public class GremlinTreeprocessorTest {
             final String input = "= Test\n\n[gremlin-groovy]\n----\n1+1\n----\n";
             final String result = asciidoctor.convert(input, Options.builder().build());
             assertThat(result, is(notNullValue()));
-            assertThat(executor.statements.contains("graph = TinkerGraph.open()"), is(true));
+            assertThat(executor.statements.contains("graph = TinkerGraph.open(conf)"), is(true));
             assertThat(executor.statements.contains("g = graph.traversal()"), is(true));
         }
     }
