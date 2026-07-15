@@ -33,6 +33,10 @@
     "./language": {
       "import": "./build/esm/language/index.js",
       "types": "./build/esm/language/index.d.ts"
+    },
+    "./io": {
+      "import": "./build/esm/structure/io/binary/GraphBinary.js",
+      "types": "./build/esm/structure/io/binary/GraphBinary.d.ts"
     }
   },
   "typesVersions": {
