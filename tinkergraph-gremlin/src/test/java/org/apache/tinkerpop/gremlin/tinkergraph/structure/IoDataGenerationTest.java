@@ -147,6 +147,16 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
+    public void shouldWriteTheZooGraphAsGryoV3() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-zoo-v3.kryo"));
+        GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createTheZoo());
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
     public void shouldWriteDEFAULTClassicGraphAsGryoV3() throws IOException {
         final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-classic.kryo"));
         GryoWriter.build().mapper(GryoMapper.build().version(GryoVersion.V3_0).create()).create().writeGraph(os, TinkerFactory.createClassic());

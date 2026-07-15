@@ -42,7 +42,8 @@ public class TestFiles {
                     "grateful-dead-v3.kryo",
                     "tinkerpop-classic-v3.kryo",
                     "tinkerpop-crew-v3.kryo",
-                    "tinkerpop-sink-v3.kryo");
+                    "tinkerpop-sink-v3.kryo",
+                    "tinkerpop-zoo-v3.kryo");
             for (final String fileName : kryoResources) {
                 PATHS.put(fileName,
                         Storage.toPath(TestHelper.generateTempFileFromResource(GryoResourceAccess.class, fileName, "")));
@@ -93,7 +94,13 @@ public class TestFiles {
             return PATHS.get("tinkerpop-crew" + type);
         else if (graphData.equals(LoadGraphWith.GraphData.SINK))
             return PATHS.get("tinkerpop-sink" + type);
-        else
+        else if (graphData.equals(LoadGraphWith.GraphData.ZOO)) {
+            // the zoo graph is multi-label; GraphSON V1/V2/V3 (like Gryo prior to multi-label support) can only
+            // carry a single label per vertex, so there is no "-v3.json" resource for it - only Gryo is supported.
+            if (useGraphSON)
+                throw new RuntimeException("The zoo graph is multi-label and cannot be read from GraphSON V1/V2/V3");
+            return PATHS.get("tinkerpop-zoo" + type);
+        } else
             throw new RuntimeException("Could not load graph with " + graphData);
     }
 

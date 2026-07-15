@@ -276,3 +276,32 @@ Feature: Step - groupCount()
       | d[4].l |
       | d[5].l |
       | d[6].l |
+
+
+  @MultiLabel
+  Scenario: g_V_hasXname_tuxX_groupCount_byXlabelX
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().has("name", "tux").groupCount().by(T.label)
+      """
+    When iterated to list
+    Then the result should be of
+      | result |
+      | m[{"animal":"d[1].l"}] |
+      | m[{"bird":"d[1].l"}] |
+      | m[{"aquatic":"d[1].l"}] |
+      | m[{"endangered":"d[1].l"}] |
+    And the result should have a count of 1
+
+  @MultiLabel
+  Scenario: g_V_labels_groupCount
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().labels().groupCount()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"animal":"d[10].l","mammal":"d[7].l","nocturnal":"d[6].l","endangered":"d[6].l","aquatic":"d[5].l","reptile":"d[2].l","habitat":"d[2].l","bird":"d[1].l","flying":"d[1].l","person":"d[1].l","veterinarian":"d[1].l","keeper":"d[1].l"}] |

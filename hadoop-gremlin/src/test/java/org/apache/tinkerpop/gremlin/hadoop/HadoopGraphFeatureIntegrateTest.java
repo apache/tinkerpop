@@ -42,12 +42,10 @@ import org.junit.AssumptionViolatedException;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 
@@ -91,6 +89,7 @@ public class HadoopGraphFeatureIntegrateTest {
         private static final HadoopGraph crew = HadoopGraph.open(new MapConfiguration(getBaseConfiguration(GraphData.CREW)));
         private static final HadoopGraph sink = HadoopGraph.open(new MapConfiguration(getBaseConfiguration(GraphData.SINK)));
         private static final HadoopGraph grateful = HadoopGraph.open(new MapConfiguration(getBaseConfiguration(GraphData.GRATEFUL)));
+        private static final HadoopGraph zoo = HadoopGraph.open(new MapConfiguration(getBaseConfiguration(GraphData.ZOO)));
 
         static {
             readIntoGraph(modern, GraphData.MODERN);
@@ -98,6 +97,7 @@ public class HadoopGraphFeatureIntegrateTest {
             readIntoGraph(crew, GraphData.CREW);
             readIntoGraph(sink, GraphData.SINK);
             readIntoGraph(grateful, GraphData.GRATEFUL);
+            readIntoGraph(zoo, GraphData.ZOO);
         }
 
         @Override
@@ -114,6 +114,8 @@ public class HadoopGraphFeatureIntegrateTest {
                 return sink.traversal();
             else if (graphData == GraphData.GRATEFUL)
                 return grateful.traversal();
+            else if (graphData == GraphData.ZOO)
+                return zoo.traversal();
             else
                 throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
         }

@@ -92,6 +92,9 @@ public abstract class RemoteWorld implements World {
                 case GRATEFUL:
                     remoteTraversalSource = "ggrateful";
                     break;
+                case ZOO:
+                    remoteTraversalSource = "gzoo";
+                    break;
                 default:
                     throw new UnsupportedOperationException("GraphData not supported: " + graphData.name());
             }

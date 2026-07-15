@@ -55,6 +55,9 @@ graphs: {
   sink: {
     configuration: conf/tinkergraph-empty.properties,
     traversalSources: [{name: gsink}]},
+  zoo: {
+    configuration: conf/tinkergraph-multilabel.properties,
+    traversalSources: [{name: gzoo}]},
   tx: {
     configuration: conf/tinkertransactiongraph-empty.properties,
     traversalSources: [{name: gtx}]}}
@@ -64,6 +67,7 @@ lifecycleHooks:
   - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: crew, dataset: crew}}
   - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: grateful, dataset: grateful}}
   - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: sink, dataset: sink}}
+  - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: zoo, dataset: zoo}}
 scriptEngines: {
   gremlin-lang : {},
   groovy-test: {},

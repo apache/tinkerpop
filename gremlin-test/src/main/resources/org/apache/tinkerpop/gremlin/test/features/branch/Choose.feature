@@ -698,3 +698,42 @@ Feature: Step - choose()
       | vadas |
       | josh |
       | peter |
+
+  # choose() with a boolean predicate branches on label set membership (hasLabel matches if ANY label
+  # matches), so the aquatic habitats/reptiles take the true branch and the rest take the false branch.
+  @MultiLabel
+  Scenario: g_V_hasLabelXhabitat_reptileX_chooseXhasLabelXaquaticX_constantXwetX_constantXdryXX_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().hasLabel("habitat", "reptile").choose(__.hasLabel("aquatic"), __.constant("wet"), __.constant("dry"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | wet |
+      | wet |
+      | dry |
+      | dry |
+
+  # choose(T.label) selects the option matching a single, arbitrary label from the vertex's label set, so
+  # for the multi-label vertex tux any one of its four label branches may be taken.
+  @MultiLabel
+  Scenario: g_V_hasXname_tuxX_chooseXlabelX_optionXanimal_bird_aquatic_endangeredX_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().has("name", "tux").choose(T.label).
+              option("animal", __.constant("is-animal")).
+              option("bird", __.constant("is-bird")).
+              option("aquatic", __.constant("is-aquatic")).
+              option("endangered", __.constant("is-endangered"))
+      """
+    When iterated to list
+    Then the result should be of
+      | result |
+      | is-animal |
+      | is-bird |
+      | is-aquatic |
+      | is-endangered |
+    And the result should have a count of 1

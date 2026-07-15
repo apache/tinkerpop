@@ -211,3 +211,45 @@ Feature: Step - hasLabel()
     """
     When iterated to list
     Then the result should be empty
+
+  @MultiLabel
+  Scenario: g_V_hasLabelXbirdX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().hasLabel("bird").values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tux |
+
+  @MultiLabel
+  Scenario: g_V_hasLabelXaquaticX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().hasLabel("aquatic").values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tux |
+      | atlas |
+      | ripple |
+      | splash |
+      | lagoon |
+
+  @MultiLabel
+  Scenario: g_V_hasLabelXreptile_birdX_name_multilabel
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().hasLabel("reptile", "bird").values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | tux |
+      | atlas |
+      | monty |

@@ -34,14 +34,10 @@ Feature: Step - label()
 
   @MultiLabel
   Scenario: g_V_label_deprecated_multilabel
-    Given the empty graph
-    And the graph initializer of
-      """
-      g.addV("a", "b").property("name", "test")
-      """
+    Given the zoo graph
     And the traversal of
       """
-      g.V().label().count()
+      g.V().has("name", "tux").label().count()
       """
     When iterated to list
     Then the result should be unordered
@@ -50,14 +46,10 @@ Feature: Step - label()
 
   @MultiLabel
   Scenario: g_V_label_deprecated_multilabel_value_is_one_of_labels
-    Given the empty graph
-    And the graph initializer of
-      """
-      g.addV("a", "b").property("name", "test")
-      """
+    Given the zoo graph
     And the traversal of
       """
-      g.V().filter(__.label().is(P.within("a", "b")))
+      g.V().has("name", "tux").filter(__.label().is(P.within("animal", "bird", "aquatic", "endangered")))
       """
     When iterated to list
     Then the result should have a count of 1

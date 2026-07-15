@@ -407,3 +407,45 @@ Feature: Step - group()
     Then the result should be unordered
       | result |
       | m[{"marko":"d[3].l", "vadas":"d[1].l", "lop":"d[3].l", "josh":"d[3].l", "ripple":"d[1].l", "peter":"d[1].l"}] |
+
+  @MultiLabel
+  Scenario: g_V_hasLabelXhabitatX_group_byXlabelX_byXcountX
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().hasLabel("habitat").group().by(T.label).by(__.count())
+      """
+    When iterated to list
+    Then the result should be of
+      | result |
+      | m[{"habitat":"d[2].l"}] |
+      | m[{"aquatic":"d[1].l","habitat":"d[1].l"}] |
+    And the result should have a count of 1
+
+  @MultiLabel
+  Scenario: g_V_hasXname_tuxX_group_byXlabelX_byXcountX
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().has("name", "tux").group().by(__.label()).by(__.count())
+      """
+    When iterated to list
+    Then the result should be of
+      | result |
+      | m[{"animal":"d[1].l"}] |
+      | m[{"bird":"d[1].l"}] |
+      | m[{"aquatic":"d[1].l"}] |
+      | m[{"endangered":"d[1].l"}] |
+    And the result should have a count of 1
+
+  @MultiLabel
+  Scenario: g_V_hasLabelXreptileX_group_byXlabels_order_foldX_byXname_foldX
+    Given the zoo graph
+    And the traversal of
+      """
+      g.V().hasLabel("reptile").group().by(__.labels().order().fold()).by(__.values("name").fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"l[animal,aquatic,endangered,reptile]":["atlas"],"l[animal,nocturnal,reptile]":["monty"]}] |

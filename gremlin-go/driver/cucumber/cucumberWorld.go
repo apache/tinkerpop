@@ -87,7 +87,7 @@ func NewCucumberWorld() *CucumberWorld {
 	}
 }
 
-var graphNames = []string{"modern", "classic", "crew", "grateful", "sink", "empty", "multilabel"}
+var graphNames = []string{"modern", "classic", "crew", "grateful", "sink", "zoo", "empty", "multilabel"}
 
 func (t *CucumberWorld) getDataGraphFromMap(name string) *DataGraph {
 	if val, ok := t.graphDataMap[name]; ok {

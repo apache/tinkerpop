@@ -76,6 +76,13 @@ public static class DeepEqualityExtensions
         {
             return second is Dictionary<object, object> dict2 && dict1.DeepEqual(dict2);
         }
+        if (first is ISet<object?> set1)
+        {
+            // Sets are unordered by definition, so comparing them with a SequenceEqual below is not reliable -
+            // different insertion histories/capacities can yield different enumeration orders for otherwise
+            // identical sets (e.g. a multi-label vertex's set of labels).
+            return second is ISet<object?> set2 && set1.SetEquals(set2);
+        }
         var objectEnum1 = first.ToObjectEnumerable();
         var objectEnum2 = second.ToObjectEnumerable();
             

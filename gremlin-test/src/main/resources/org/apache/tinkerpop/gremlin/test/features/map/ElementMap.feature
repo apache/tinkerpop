@@ -144,19 +144,15 @@ Feature: Step - elementMap()
 
   @MultiLabel
   Scenario: g_withXmultilabelX_V_elementMap_multilabel
-    Given the empty graph
-    And the graph initializer of
-      """
-      g.addV("person").addLabel("employee").property("name", "marko")
-      """
+    Given the zoo graph
     And the traversal of
       """
-      g.with("multilabel").V().elementMap()
+      g.with("multilabel").V().has("name", "tux").elementMap("name", "species")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "v[marko].id", "t[label]": "s[person,employee]", "name": "marko"}] |
+      | m[{"t[id]": "v[tux].id", "t[label]": "s[animal,bird,aquatic,endangered]", "name": "tux", "species": "african penguin"}] |
 
   @MultiLabel @MultiLabelDefault
   Scenario: g_V_elementMap_multi_label_default
@@ -176,21 +172,17 @@ Feature: Step - elementMap()
 
   @MultiLabel @MultiLabelDefault
   Scenario: g_withXsinglelabelX_V_elementMap_multi_label_default
-    Given the empty graph
-    And the graph initializer of
-      """
-      g.addV("person").addLabel("employee").property("name", "marko")
-      """
+    Given the zoo graph
     And the traversal of
       """
-      g.with("singlelabel").V().elementMap()
+      g.with("singlelabel").V().has("name", "lagoon").elementMap("name", "biome")
       """
     When iterated to list
     Then the result should have a count of 1
     And the result should be of
       | result |
-      | m[{"t[id]": "v[marko].id", "t[label]": "person", "name": "marko"}] |
-      | m[{"t[id]": "v[marko].id", "t[label]": "employee", "name": "marko"}] |
+      | m[{"t[id]": "v[lagoon].id", "t[label]": "habitat", "name": "lagoon", "biome": "marine"}] |
+      | m[{"t[id]": "v[lagoon].id", "t[label]": "aquatic", "name": "lagoon", "biome": "marine"}] |
 
   @MultiLabel @MultiLabelDefault
   Scenario: g_V_elementMap_single_label_vertex_multi_label_default
@@ -272,21 +264,17 @@ Feature: Step - elementMap()
       | result |
       | m[{"t[id]": "v[nobody].id", "name": "nobody"}] |
 
-  @MultiLabel
+  @GraphComputerVerificationReferenceOnly @MultiLabel
   Scenario: g_withXmultilabelX_E_elementMap
-    Given the empty graph
-    And the graph initializer of
-      """
-      g.addV("person").property("name", "marko").as("a").addV("person").property("name", "josh").as("b").addE("knows").from("a").to("b").property("weight", 0.5)
-      """
+    Given the zoo graph
     And the traversal of
       """
-      g.with("multilabel").E().elementMap()
+      g.with("multilabel").E().has("since", 2018).hasLabel("livesIn").elementMap()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "e[marko-knows->josh].id", "t[label]": "s[knows]", "weight": "d[0.5].d", "D[OUT]": "m[{\\"t[id]\\": \\"v[marko].id\\", \\"t[label]\\": \\"s[person]\\"}]", "D[IN]": "m[{\\"t[id]\\": \\"v[josh].id\\", \\"t[label]\\": \\"s[person]\\"}]"}] |
+      | m[{"t[id]": "e[atlas-livesIn->lagoon].id", "t[label]": "s[livesIn]", "since": 2018, "D[OUT]": "m[{\\"t[id]\\": \\"v[atlas].id\\", \\"t[label]\\": \\"s[animal,reptile,aquatic,endangered]\\"}]", "D[IN]": "m[{\\"t[id]\\": \\"v[lagoon].id\\", \\"t[label]\\": \\"s[habitat,aquatic]\\"}]"}] |
 
   @GraphComputerVerificationReferenceOnly @MultiLabel @MultiLabelDefault
   Scenario: g_E_elementMap_multi_label_default
