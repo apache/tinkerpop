@@ -199,7 +199,7 @@ org.apache.tinkerpop.gremlin.sparql.jsr223.SparqlGremlinPlugin
 EOF
 
 # 5. Copy hadoop config to console classpath
-HADOOP_CONF_SRC="tools/tinkerpop-docs/src/main/resources/hadoop-conf"
+HADOOP_CONF_SRC="docs/tinkerpop-docs/src/main/resources/hadoop-conf"
 cp "${HADOOP_CONF_SRC}/core-site.xml" "${CONSOLE_HOME}/conf/"
 cp "${HADOOP_CONF_SRC}/hadoop-docs.properties" "${CONSOLE_HOME}/conf/"
 
