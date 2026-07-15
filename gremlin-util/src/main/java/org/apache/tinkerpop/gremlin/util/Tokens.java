@@ -69,12 +69,6 @@ public final class Tokens {
     public static final String ARGS_LANGUAGE = "language";
 
     /**
-     * Argument name that allows the override of the server setting that determines the maximum time to wait for a
-     * request to execute on the server.
-     */
-    public static final String ARGS_EVAL_TIMEOUT = "evaluationTimeout";
-
-    /**
      * The name of the argument that allows to control the serialization of properties on the server.
      */
     public static final String ARGS_MATERIALIZE_PROPERTIES = "materializeProperties";
@@ -92,9 +86,11 @@ public final class Tokens {
     public static final String MATERIALIZE_PROPERTIES_TOKENS = "tokens";
 
     /**
-     * The key for the per request server-side timeout in milliseconds.
+     * The key for the per request server-side timeout in milliseconds. This overrides the server's configured
+     * default ({@code timeoutMillis}) and determines the maximum time a request is allowed to execute on the server
+     * before it times out.
      */
-    public static final String TIMEOUT_MS = "timeoutMs";
+    public static final String TIMEOUT_MILLIS = "timeoutMillis";
 
     /**
      * The key for server to bulk result as a form of optimization for driver requests.

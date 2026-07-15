@@ -160,12 +160,12 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 useTinkerTransactionGraph(settings);
                 break;
             case "shouldProcessSessionRequestsInOrderAfterTimeout":
-                settings.evaluationTimeout = 250;
+                settings.timeoutMillis = 250;
                 settings.threadPoolWorker = 1;
                 break;
             case "shouldProcessTraversalInterruption":
             case "shouldProcessEvalInterruption":
-                settings.evaluationTimeout = 1500;
+                settings.timeoutMillis = 1500;
                 break;
         }
 

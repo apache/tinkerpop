@@ -141,14 +141,14 @@ public abstract class AbstractCompatibilityTest {
         assertEquals(resource.<Map>getField(SerTokens.TOKEN_PARAMETERS), recycled.getField(SerTokens.TOKEN_PARAMETERS));
         assertEquals(resource.<String>getField(SerTokens.TOKEN_LANGUAGE), recycled.getField(SerTokens.TOKEN_LANGUAGE));
         assertEquals(resource.<String>getField(SerTokens.TOKEN_G), recycled.getField(SerTokens.TOKEN_G));
-        assertEquals(resource.<Long>getField(SerTokens.TOKEN_TIMEOUT_MS), recycled.getField(SerTokens.TOKEN_TIMEOUT_MS));
+        assertEquals(resource.<Long>getField(SerTokens.TOKEN_TIMEOUT_MILLIS), recycled.getField(SerTokens.TOKEN_TIMEOUT_MILLIS));
         assertEquals(resource.<String>getField(SerTokens.TOKEN_MATERIALIZE_PROPERTIES), recycled.getField(SerTokens.TOKEN_MATERIALIZE_PROPERTIES));
 
         assertEquals(resource.getGremlin(), fromStatic.getGremlin());
         assertEquals(resource.<Map>getField(SerTokens.TOKEN_PARAMETERS), fromStatic.getField(SerTokens.TOKEN_PARAMETERS));
         assertEquals(resource.<String>getField(SerTokens.TOKEN_LANGUAGE), fromStatic.getField(SerTokens.TOKEN_LANGUAGE));
         assertEquals(resource.<String>getField(SerTokens.TOKEN_G), fromStatic.getField(SerTokens.TOKEN_G));
-        assertEquals(resource.<Long>getField(SerTokens.TOKEN_TIMEOUT_MS), fromStatic.getField(SerTokens.TOKEN_TIMEOUT_MS));
+        assertEquals(resource.<Long>getField(SerTokens.TOKEN_TIMEOUT_MILLIS), fromStatic.getField(SerTokens.TOKEN_TIMEOUT_MILLIS));
         assertEquals(resource.<String>getField(SerTokens.TOKEN_MATERIALIZE_PROPERTIES), fromStatic.getField(SerTokens.TOKEN_MATERIALIZE_PROPERTIES));
     }
 }

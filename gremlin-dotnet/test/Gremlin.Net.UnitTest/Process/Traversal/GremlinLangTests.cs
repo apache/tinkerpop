@@ -731,7 +731,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         {
             // OptionsStrategy is extracted, not rendered in the script
             Assert.Equal("g.V().count()",
-                _g.WithStrategies(new OptionsStrategy(new Dictionary<string, object> { { "evaluationTimeout", 500 } })).V().Count().GremlinLang.GetGremlin());
+                _g.WithStrategies(new OptionsStrategy(new Dictionary<string, object> { { "timeoutMillis", 500 } })).V().Count().GremlinLang.GetGremlin());
         }
 
         [Fact]

@@ -49,36 +49,36 @@ public class TransactionManager {
     private final ConcurrentMap<String, ScheduledFuture<?>> lifetimeTimers = new ConcurrentHashMap<>();
     private final ScheduledExecutorService scheduledExecutorService;
     private final GraphManager graphManager;
-    private final long idleTransactionTimeoutMs;
-    private final long maxTransactionLifetimeMs;
+    private final long idleTransactionTimeoutMillis;
+    private final long maxTransactionLifetimeMillis;
     private final int maxConcurrentTransactions;
-    private final long perGraphCloseMs;
+    private final long perGraphCloseMillis;
 
     /**
      * Creates a new TransactionManager with the specified configuration.
      *
      * @param scheduledExecutorService Scheduler for timeout management
      * @param graphManager The graph manager for accessing traversal sources
-     * @param idleTransactionTimeoutMs Inactivity timeout in milliseconds before auto-rollback; {@code 0} disables it
-     * @param maxTransactionLifetimeMs Absolute cap in milliseconds on total transaction age; {@code 0} disables it
+     * @param idleTransactionTimeoutMillis Inactivity timeout in milliseconds before auto-rollback; {@code 0} disables it
+     * @param maxTransactionLifetimeMillis Absolute cap in milliseconds on total transaction age; {@code 0} disables it
      * @param maxConcurrentTransactions Maximum number of concurrent transactions allowed
      */
     public TransactionManager(final ScheduledExecutorService scheduledExecutorService,
                               final GraphManager graphManager,
-                              final long idleTransactionTimeoutMs,
-                              final long maxTransactionLifetimeMs,
+                              final long idleTransactionTimeoutMillis,
+                              final long maxTransactionLifetimeMillis,
                               final int maxConcurrentTransactions,
-                              final long perGraphCloseMs) {
+                              final long perGraphCloseMillis) {
         this.scheduledExecutorService = scheduledExecutorService;
         this.graphManager = graphManager;
-        this.idleTransactionTimeoutMs = idleTransactionTimeoutMs;
-        this.maxTransactionLifetimeMs = maxTransactionLifetimeMs;
+        this.idleTransactionTimeoutMillis = idleTransactionTimeoutMillis;
+        this.maxTransactionLifetimeMillis = maxTransactionLifetimeMillis;
         this.maxConcurrentTransactions = maxConcurrentTransactions;
-        this.perGraphCloseMs = perGraphCloseMs;
+        this.perGraphCloseMillis = perGraphCloseMillis;
 
         MetricManager.INSTANCE.getGauge(transactions::size, name(GremlinServer.class, "transactions"));
-        logger.info("TransactionManager initialized with idleTransactionTimeout={}ms, maxTransactionLifetime={}ms, maxTransactions={}",
-                idleTransactionTimeoutMs, maxTransactionLifetimeMs, maxConcurrentTransactions);
+        logger.info("TransactionManager initialized with idleTransactionTimeoutMillis={}, maxTransactionLifetimeMillis={}, maxTransactions={}",
+                idleTransactionTimeoutMillis, maxTransactionLifetimeMillis, maxConcurrentTransactions);
     }
 
     /**
@@ -138,8 +138,8 @@ public class TransactionManager {
                     traversalSourceName,
                     graph,
                     scheduledExecutorService,
-                    idleTransactionTimeoutMs,
-                    perGraphCloseMs
+                    idleTransactionTimeoutMillis,
+                    perGraphCloseMillis
             );
         } while (transactions.putIfAbsent(transactionId, transaction) != null);
 
@@ -149,10 +149,10 @@ public class TransactionManager {
         // unreclaimable transaction holding a worker thread and slot. Scheduling after registration guarantees the cap
         // can always tear the transaction down; destroy() cancels it on every close path. The clock effectively starts
         // at construction (registration follows within microseconds), so it bounds total transaction age including begin.
-        if (maxTransactionLifetimeMs > 0) {
+        if (maxTransactionLifetimeMillis > 0) {
             final UnmanagedTransaction registered = transaction; // effectively-final copy for the scheduled method ref
             lifetimeTimers.put(transactionId, scheduledExecutorService.schedule(
-                    registered::onLifetimeCap, maxTransactionLifetimeMs, TimeUnit.MILLISECONDS));
+                    registered::onLifetimeCap, maxTransactionLifetimeMillis, TimeUnit.MILLISECONDS));
         }
 
         return transaction;

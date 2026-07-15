@@ -169,13 +169,14 @@ namespace Gremlin.Net.Driver.Messages
             public bool HasField(string key) => _fields.ContainsKey(key);
 
             /// <summary>
-            ///     Sets the evaluation timeout for this request.
+            ///     Sets the timeout in milliseconds for this request. This is the maximum time the request is
+            ///     allowed to execute on the server before it times out.
             /// </summary>
-            /// <param name="timeout">The timeout value.</param>
+            /// <param name="timeout">The timeout value in milliseconds.</param>
             /// <returns>The <see cref="Builder" />.</returns>
-            public Builder AddEvaluationTimeout(object timeout)
+            public Builder AddTimeoutMillis(object timeout)
             {
-                _fields[Tokens.ArgsEvalTimeout] = timeout;
+                _fields[Tokens.ArgsTimeoutMillis] = timeout;
                 return this;
             }
 

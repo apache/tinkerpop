@@ -17,7 +17,7 @@
 
 host: 0.0.0.0
 port: 45941
-evaluationTimeout: 30000
+timeoutMillis: 30000
 graphs: {
   graph: {
     configuration: conf/tinkergraph-empty.properties,
@@ -51,11 +51,11 @@ serializers:
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4 }                                                                                                           # application/vnd.graphbinary-v1.0
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4, config: { serializeResultToString: true }}
 metrics: {
-  slf4jReporter: {enabled: true, interval: 180000}}
+  slf4jReporter: {enabled: true, intervalMillis: 180000}}
 gremlinPool: 8
 strictTransactionManagement: false
-idleConnectionTimeout: 0
-keepAliveInterval: 0
+idleConnectionTimeoutMillis: 0
+keepAliveIntervalMillis: 0
 maxInitialLineLength: 4096
 maxHeaderSize: 8192
 maxChunkSize: 8192

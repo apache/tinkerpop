@@ -25,7 +25,7 @@ const Tokens = {
   ARGS_PARAMETERS: 'parameters',
   ARGS_G: 'g',
   ARGS_MATERIALIZE_PROPERTIES: 'materializeProperties',
-  TIMEOUT_MS: 'timeoutMs',
+  TIMEOUT_MILLIS: 'timeoutMillis',
   BULK_RESULTS: 'bulkResults',
   BATCH_SIZE: 'batchSize',
   MATERIALIZE_PROPERTIES_TOKENS: 'tokens',
@@ -38,7 +38,7 @@ const Tokens = {
 export class RequestMessage {
   private gremlin: string;
   private language: string;
-  private timeoutMs?: number;
+  private timeoutMillis?: number;
   private parameters?: object;
   private g?: string;
   private materializeProperties?: string;
@@ -49,7 +49,7 @@ export class RequestMessage {
   private constructor(
     gremlin: string,
     language: string,
-    timeoutMs: number | undefined,
+    timeoutMillis: number | undefined,
     parameters: object | undefined,
     g: string | undefined,
     materializeProperties: string | undefined,
@@ -63,7 +63,7 @@ export class RequestMessage {
 
     this.gremlin = gremlin;
     this.language = language;
-    this.timeoutMs = timeoutMs;
+    this.timeoutMillis = timeoutMillis;
     this.parameters = parameters;
     this.g = g;
     this.materializeProperties = materializeProperties;
@@ -80,8 +80,8 @@ export class RequestMessage {
     return this.language;
   }
 
-  getTimeoutMs(): number | undefined {
-    return this.timeoutMs;
+  getTimeoutMillis(): number | undefined {
+    return this.timeoutMillis;
   }
 
   getParameters(): object | undefined {
@@ -128,8 +128,8 @@ export class RequestMessage {
     if (this.parameters !== undefined) {
       payload['parameters'] = this.parameters;
     }
-    if (this.timeoutMs !== undefined) {
-      payload['timeoutMs'] = this.timeoutMs;
+    if (this.timeoutMillis !== undefined) {
+      payload['timeoutMillis'] = this.timeoutMillis;
     }
     if (this.materializeProperties) {
       payload['materializeProperties'] = this.materializeProperties;
@@ -162,7 +162,7 @@ export class Builder {
   private readonly parameters = {};
   private parametersString?: string;
   public language: string;
-  public timeoutMs?: number;
+  public timeoutMillis?: number;
   public g?: string;
   public materializeProperties?: string;
   public bulkResults?: boolean;
@@ -233,7 +233,7 @@ export class Builder {
 
   addTimeoutMillis(timeout: number): Builder {
     if (timeout < 0) throw new Error('timeout argument cannot be negative.');
-    this.timeoutMs = timeout;
+    this.timeoutMillis = timeout;
     return this;
   }
 
@@ -269,7 +269,7 @@ export class Builder {
     return new RequestMessage(
       this.gremlin,
       this.language || 'gremlin-lang',
-      this.timeoutMs,
+      this.timeoutMillis,
       parameters,
       this.g,
       this.materializeProperties,

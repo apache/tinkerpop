@@ -52,9 +52,9 @@ export default class GraphBinaryWriter {
       if (parameters && Object.keys(parameters).length > 0) {
         fields.set('parameters', parameters);
       }
-      const timeoutMs = requestMessage.getTimeoutMs();
-      if (timeoutMs !== undefined) {
-        fields.set('timeoutMs', timeoutMs);
+      const timeoutMillis = requestMessage.getTimeoutMillis();
+      if (timeoutMillis !== undefined) {
+        fields.set('timeoutMillis', timeoutMillis);
       }
       const materializeProperties = requestMessage.getMaterializeProperties();
       if (materializeProperties) {

@@ -362,11 +362,11 @@ class TestGremlinLang(object):
                       "g.withStrategies(ReadOnlyStrategy,new SubgraphStrategy(vertices:__.has('region','US-TX'))).V().count()"])
 
         # 95 Note with_() options are now extracted into request message and is no longer sent with the script
-        tests.append([g.with_('evaluationTimeout', 500).V().count(),
+        tests.append([g.with_('timeoutMillis', 500).V().count(),
                       "g.V().count()"])
 
         # 96 Note OptionsStrategy are now extracted into request message and is no longer sent with the script
-        tests.append([g.with_strategies(OptionsStrategy(evaluationTimeout=500)).V().count(),
+        tests.append([g.with_strategies(OptionsStrategy(timeoutMillis=500)).V().count(),
                       "g.V().count()"])
 
         # 97

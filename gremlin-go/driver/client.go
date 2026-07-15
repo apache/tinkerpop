@@ -324,7 +324,7 @@ func applyOptionsConfig(builder *RequestOptionsBuilder, config map[string]interf
 	// via SetParametersString in submitGremlinLang, and including it here would
 	// trigger the mutual exclusion panic between SetParameters and SetParametersString.
 	setterMap := map[string]string{
-		"evaluationTimeout":     "SetEvaluationTimeout",
+		"timeoutMillis":         "SetTimeoutMillis",
 		"batchSize":             "SetBatchSize",
 		"userAgent":             "SetUserAgent",
 		"materializeProperties": "SetMaterializeProperties",

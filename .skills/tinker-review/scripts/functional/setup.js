@@ -68,7 +68,7 @@ globals << [a : traversal().withEmbedded(graph).withComputer()]
 function serverYaml(port) {
   return `host: localhost
 port: ${port}
-evaluationTimeout: 30000
+timeoutMillis: 30000
 channelizer: org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
 graphs: {
   graph: conf/tinkergraph-review.properties}

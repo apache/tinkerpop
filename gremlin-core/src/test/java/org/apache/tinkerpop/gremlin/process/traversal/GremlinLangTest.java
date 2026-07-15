@@ -129,7 +129,7 @@ public class GremlinLangTest {
                                 "by(__.out(\"knows\").values(\"name\").fold())"},
                 {g.inject(new int[]{5, 6}).union(__.V(Arrays.asList(1, 2)), __.V(Arrays.asList(3L, new int[]{4}))),
                         "g.inject([5,6]).union(__.V([1,2]),__.V([3L,[4]]))"},
-                {g.with("evaluationTimeout", 1000).V(), "g.V()"},
+                {g.with("timeoutMillis", 1000).V(), "g.V()"},
                 {g.withSideEffect("a", 1).V(), "g.withSideEffect(\"a\",1).V()"},
                 {g.withStrategies(ReadOnlyStrategy.instance()).V(), "g.withStrategies(ReadOnlyStrategy).V()"},
                 {g.withoutStrategies(ReadOnlyStrategy.class).V(), "g.withoutStrategies(ReadOnlyStrategy).V()"},

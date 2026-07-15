@@ -226,9 +226,9 @@ describe('GremlinLang', function () {
       // #93
       [g.withStrategies(new ReadOnlyStrategy(), new SubgraphStrategy({vertices: __.has('region','US-TX')})).V().count(), "g.withStrategies(ReadOnlyStrategy,new SubgraphStrategy(vertices:__.has('region','US-TX'))).V().count()"],
       // #94 - OptionsStrategy extracted, not serialized
-      [g.with_('evaluationTimeout',500).V().count(), 'g.V().count()'],
+      [g.with_('timeoutMillis',500).V().count(), 'g.V().count()'],
       // #95 - OptionsStrategy extracted, not serialized
-      [g.withStrategies(new OptionsStrategy({evaluationTimeout: 500})).V().count(), 'g.V().count()'],
+      [g.withStrategies(new OptionsStrategy({timeoutMillis: 500})).V().count(), 'g.V().count()'],
       // #96
       [g.withStrategies(new PartitionStrategy({partitionKey: '_partition', writePartition: 'a', readPartitions: ['a','b']})).addV('test'), "g.withStrategies(new PartitionStrategy(partitionKey:'_partition',writePartition:'a',readPartitions:['a','b'])).addV('test')"],
       // #97
@@ -373,7 +373,7 @@ describe('GremlinLang', function () {
     });
 
     it('should handle OptionsStrategy extraction', function () {
-      const t = g.with_('evaluationTimeout', 500).V().count();
+      const t = g.with_('timeoutMillis', 500).V().count();
       assert.strictEqual(t.getGremlinLang().getGremlin(), 'g.V().count()');
       assert.strictEqual(t.getGremlinLang().getOptionsStrategies().length, 1);
     });

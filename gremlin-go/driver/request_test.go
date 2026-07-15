@@ -34,10 +34,10 @@ func TestRequest(t *testing.T) {
 		assert.Nil(t, r.Fields["parameters"])
 	})
 
-	t.Run("Test makeStringRequest() with custom evaluationTimeout", func(t *testing.T) {
+	t.Run("Test makeStringRequest() with custom timeoutMillis", func(t *testing.T) {
 		r := MakeStringRequest("g.V()", "g",
-			new(RequestOptionsBuilder).SetEvaluationTimeout(1234).Create())
-		assert.Equal(t, 1234, r.Fields["evaluationTimeout"])
+			new(RequestOptionsBuilder).SetTimeoutMillis(1234).Create())
+		assert.Equal(t, 1234, r.Fields["timeoutMillis"])
 	})
 
 	t.Run("Test makeStringRequest() with custom batchSize", func(t *testing.T) {

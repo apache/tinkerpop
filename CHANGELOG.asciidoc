@@ -47,8 +47,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `gremlin-python` read timeout to derive from a single source (aiohttp `sock_read`), removing a redundant `async_timeout` read wrapper that could race it; a read timeout now deterministically raises `ReadTimeoutError` (a builtin `TimeoutError` subclass).
 * Removed `Transaction.open()` in favor of `begin()`, which is now the single transaction-start primitive across embedded and remote contexts.
 * Changed `begin()` and `close()` to be idempotent and calling it when a transaction is already in that state no longer throws.
-* Added `maxTransactionLifetime` setting to Gremlin Server, an absolute cap on the total age of an HTTP transaction that interrupts a running operation and rolls the transaction back when it fires (default 600000ms, set to `0` to disable).
-* Changed the Gremlin Server HTTP transaction idle timer to suspend while an operation is running (so a long-running operation is bounded by `evaluationTimeout` rather than the idle timeout) and to honor `0` as "disable idle reclamation"; the `idleTransactionTimeout` default is now 60000ms.
+* Added `maxTransactionLifetimeMillis` setting to Gremlin Server, an absolute cap on the total age of an HTTP transaction that interrupts a running operation and rolls the transaction back when it fires (default 600000ms, set to `0` to disable).
+* Changed the Gremlin Server HTTP transaction idle timer to suspend while an operation is running (so a long-running operation is bounded by `timeoutMillis` rather than the idle timeout) and to honor `0` as "disable idle reclamation"; the `idleTransactionTimeoutMillis` default is now 60000ms.
 * Added configurable CORS `allowedOrigins` setting to Gremlin Server; warns when wildcard origin is used alongside authentication.
 * Fixed `ByteBuf` leak in `GraphBinaryMessageSerializerV4` when serialization throws an `IOException`.
 * Changed `Tree` to no longer extend `HashMap`; it is now a final class with a tree-shaped API (`childAt`, `hasChild`, `contains`, `findSubtree`, `getOrCreateChild`, `getNodesAtDepth`, `getLeafNodes`, `nodeCount`) and is no longer a `Map`.
@@ -99,6 +99,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated Groovy-based `LifeCycleHook` and `TraversalSource` creation via init scripts in favor of YAML configuration.
 * Updated all default Gremlin Server configs to remove Groovy dependency from initialization.
 * Added script engine allowlist to Gremlin Server - the `scriptEngines` YAML configuration now restricts which engines can serve requests; `gremlin-lang` is always available.
+* Modified the request timeout to a single name `timeoutMillis` across the server and GLVs.
+* Renamed the millisecond-valued Gremlin Server settings to carry a `Millis` suffix: `idleConnectionTimeout`, `keepAliveInterval`, `ssl.refreshInterval`, and the metrics reporter `interval` became `idleConnectionTimeoutMillis`, `keepAliveIntervalMillis`, `ssl.refreshIntervalMillis`, and `intervalMillis`.
 * Modified request parameters from `Map<String, Object>` to gremlin-lang compatible `String`.
 * Renamed the request `bindings` field to `parameters` across the HTTP request body, GraphBinary, and GraphSON, standardizing terminology for query parameters.
 * Modified HTTP API to expect gremlin-lang strings for parameters and update all GLVs to send requests in new format.

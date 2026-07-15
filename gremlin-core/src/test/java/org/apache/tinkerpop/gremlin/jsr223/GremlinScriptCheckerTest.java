@@ -50,17 +50,17 @@ public class GremlinScriptCheckerTest {
     @Test
     public void shouldNotFindTimeoutCozWeCommentedItOut() {
         assertEquals(Optional.empty(), GremlinScriptChecker.parse("g.\n" +
-                "                                                  // with('evaluationTimeout', 1000L).\n" +
+                "                                                  // with('timeoutMillis', 1000L).\n" +
                 "                                                  with(true).V().out('knows')").getTimeout());
     }
 
     @Test
     public void shouldIdentifyTimeoutWithOddSpacing() {
-        assertEquals(1000, GremlinScriptChecker.parse("g.with('evaluationTimeout' , 1000L).with(true).V().out('knows')").
+        assertEquals(1000, GremlinScriptChecker.parse("g.with('timeoutMillis' , 1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
-        assertEquals(1000, GremlinScriptChecker.parse("g.with('scriptEvaluationTimeout'   ,  1000L).with(true).V().out('knows')").
+        assertEquals(1000, GremlinScriptChecker.parse("g.with('timeoutMillis'   ,  1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
-        assertEquals(1000, GremlinScriptChecker.parse("g.with('evaluationTimeout',1000L).with(true).V().out('knows')").
+        assertEquals(1000, GremlinScriptChecker.parse("g.with('timeoutMillis',1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
     }
 
@@ -84,25 +84,25 @@ public class GremlinScriptCheckerTest {
 
     @Test
     public void shouldIdentifyTimeoutWithLowerL() {
-        assertEquals(1000, GremlinScriptChecker.parse("g.with('evaluationTimeout', 1000l).with(true).V().out('knows')").
+        assertEquals(1000, GremlinScriptChecker.parse("g.with('timeoutMillis', 1000l).with(true).V().out('knows')").
                 getTimeout().get().longValue());
-        assertEquals(1000, GremlinScriptChecker.parse("g.with('scriptEvaluationTimeout', 1000L).with(true).V().out('knows')").
+        assertEquals(1000, GremlinScriptChecker.parse("g.with('timeoutMillis', 1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
     }
 
     @Test
     public void shouldIdentifyTimeoutWithNoL() {
-        assertEquals(1000, GremlinScriptChecker.parse("g.with('evaluationTimeout', 1000).with(true).V().out('knows')").
+        assertEquals(1000, GremlinScriptChecker.parse("g.with('timeoutMillis', 1000).with(true).V().out('knows')").
                 getTimeout().get().longValue());
-        assertEquals(1000, GremlinScriptChecker.parse("g.with('scriptEvaluationTimeout', 1000).with(true).V().out('knows')").
+        assertEquals(1000, GremlinScriptChecker.parse("g.with('timeoutMillis', 1000).with(true).V().out('knows')").
                 getTimeout().get().longValue());
     }
 
     @Test
     public void shouldIdentifyTimeoutAsStringKeySingleQuoted() {
-        assertEquals(1000, GremlinScriptChecker.parse("g.with('evaluationTimeout', 1000L).with(true).V().out('knows')").
+        assertEquals(1000, GremlinScriptChecker.parse("g.with('timeoutMillis', 1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
-        assertEquals(1000, GremlinScriptChecker.parse("g.with('scriptEvaluationTimeout', 1000L).with(true).V().out('knows')").
+        assertEquals(1000, GremlinScriptChecker.parse("g.with('timeoutMillis', 1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
     }
 
@@ -116,9 +116,7 @@ public class GremlinScriptCheckerTest {
 
     @Test
     public void shouldIdentifyTimeoutAsStringKeyDoubleQuoted() {
-        assertEquals(1000, GremlinScriptChecker.parse("g.with(\"evaluationTimeout\", 1000L).with(true).V().out('knows')").
-                getTimeout().get().longValue());
-        assertEquals(1000, GremlinScriptChecker.parse("g.with(\"scriptEvaluationTimeout\", 1000L).with(true).V().out('knows')").
+        assertEquals(1000, GremlinScriptChecker.parse("g.with(\"timeoutMillis\", 1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
     }
 
@@ -132,9 +130,9 @@ public class GremlinScriptCheckerTest {
 
     @Test
     public void shouldIdentifyTimeoutAsTokenKey() {
-        assertEquals(1000, GremlinScriptChecker.parse("g.with(Tokens.ARGS_EVAL_TIMEOUT, 1000L).with(true).V().out('knows')").
+        assertEquals(1000, GremlinScriptChecker.parse("g.with(Tokens.TIMEOUT_MILLIS, 1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
-        assertEquals(1000, GremlinScriptChecker.parse("g.with(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, 1000L).with(true).V().out('knows')").
+        assertEquals(1000, GremlinScriptChecker.parse("g.with(Tokens.TIMEOUT_MILLIS, 1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
     }
 
@@ -148,9 +146,9 @@ public class GremlinScriptCheckerTest {
 
     @Test
     public void shouldIdentifyTimeoutAsTokenKeyWithoutClassName() {
-        assertEquals(1000, GremlinScriptChecker.parse("g.with(ARGS_EVAL_TIMEOUT, 1000L).with(true).V().out('knows')").
+        assertEquals(1000, GremlinScriptChecker.parse("g.with(TIMEOUT_MILLIS, 1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
-        assertEquals(1000, GremlinScriptChecker.parse("g.with(ARGS_SCRIPT_EVAL_TIMEOUT, 1000L).with(true).V().out('knows')").
+        assertEquals(1000, GremlinScriptChecker.parse("g.with(TIMEOUT_MILLIS, 1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
     }
 
@@ -164,17 +162,17 @@ public class GremlinScriptCheckerTest {
 
     @Test
     public void shouldIdentifyMultipleTimeouts() {
-        assertEquals(6000, GremlinScriptChecker.parse("g.with('evaluationTimeout', 1000L).with(true).V().out('knows');" +
-                "g.with('evaluationTimeout', 1000L).with(true).V().out('knows');\n" +
-                "                                                   //g.with('evaluationTimeout', 1000L).with(true).V().out('knows');\n" +
-                "                                                   /* g.with('evaluationTimeout', 1000L).with(true).V().out('knows');*/\n" +
+        assertEquals(6000, GremlinScriptChecker.parse("g.with('timeoutMillis', 1000L).with(true).V().out('knows');" +
+                "g.with('timeoutMillis', 1000L).with(true).V().out('knows');\n" +
+                "                                                   //g.with('timeoutMillis', 1000L).with(true).V().out('knows');\n" +
+                "                                                   /* g.with('timeoutMillis', 1000L).with(true).V().out('knows');*/\n" +
                 "                                                   /* \n" +
-                "g.with('evaluationTimeout', 1000L).with(true).V().out('knows'); \n" +
+                "g.with('timeoutMillis', 1000L).with(true).V().out('knows'); \n" +
                 "*/ \n" +
-                "                                                   g.with('evaluationTimeout', 1000L).with(true).V().out('knows');\n" +
-                "                                                   g.with(Tokens.ARGS_SCRIPT_EVAL_TIMEOUT, 1000L).with(true).V().out('knows');\n" +
-                "                                                   g.with(ARGS_EVAL_TIMEOUT, 1000L).with(true).V().out('knows');\n" +
-                "                                                   g.with('scriptEvaluationTimeout', 1000L).with(true).V().out('knows');").
+                "                                                   g.with('timeoutMillis', 1000L).with(true).V().out('knows');\n" +
+                "                                                   g.with(Tokens.TIMEOUT_MILLIS, 1000L).with(true).V().out('knows');\n" +
+                "                                                   g.with(TIMEOUT_MILLIS, 1000L).with(true).V().out('knows');\n" +
+                "                                                   g.with('timeoutMillis', 1000L).with(true).V().out('knows');").
                 getTimeout().get().longValue());
     }
 
@@ -241,7 +239,7 @@ public class GremlinScriptCheckerTest {
     @Test
     public void shouldFindAllResults() {
         final GremlinScriptChecker.Result r = GremlinScriptChecker.parse(
-                "g.with('evaluationTimeout', 1000).with(true).with(REQUEST_ID, \"db024fca-ed15-4375-95de-4c6106aef895\").with(\"materializeProperties\", 'all').V().out('knows')");
+                "g.with('timeoutMillis', 1000).with(true).with(REQUEST_ID, \"db024fca-ed15-4375-95de-4c6106aef895\").with(\"materializeProperties\", 'all').V().out('knows')");
         assertEquals(1000, r.getTimeout().get().longValue());
         assertEquals("db024fca-ed15-4375-95de-4c6106aef895", r.getRequestId().get());
         assertEquals("all", r.getMaterializeProperties().get());
@@ -249,7 +247,7 @@ public class GremlinScriptCheckerTest {
 
     @Test
     public void shouldParseLong() {
-        assertEquals(1000, GremlinScriptChecker.parse("g.with('evaluationTimeout', 1000L).addV().property(id, 'blue').as('b').\n" +
+        assertEquals(1000, GremlinScriptChecker.parse("g.with('timeoutMillis', 1000L).addV().property(id, 'blue').as('b').\n" +
                 "  addV().property(id, 'orange').as('o').\n" +
                 "  addV().property(id, 'red').as('r').\n" +
                 "  addV().property(id, 'green').as('g').\n" +

@@ -93,32 +93,32 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
                 break;
             case "shouldTimeoutFreeSlotUnderMaxConcurrentTransactions":
                 settings.maxConcurrentTransactions = 1;
-                settings.idleTransactionTimeout = 1000;
+                settings.idleTransactionTimeoutMillis = 1000;
                 break;
             case "shouldTimeoutIdleTransactionWithNoOperations":
-                settings.idleTransactionTimeout = 500;
+                settings.idleTransactionTimeoutMillis = 500;
                 break;
             case "shouldTimeoutAndRejectLateCommit":
             case "shouldTrackTransactionCountAccurately":
-                settings.idleTransactionTimeout = 1000;
+                settings.idleTransactionTimeoutMillis = 1000;
                 break;
             case "shouldRollbackAbandonedTransaction":
-                settings.idleTransactionTimeout = 300;
+                settings.idleTransactionTimeoutMillis = 300;
                 break;
             case "shouldNotIdleTimeoutLongRunningOperation":
                 // Short idle timeout, but a single long operation must NOT trip it (idle suspended while busy).
-                settings.idleTransactionTimeout = 500;
+                settings.idleTransactionTimeoutMillis = 500;
                 break;
             case "shouldReclaimTransactionExceedingMaxLifetime":
                 // Short absolute cap with the idle timer disabled, so only the lifetime cap can reclaim the transaction.
-                settings.idleTransactionTimeout = 0;
-                settings.maxTransactionLifetime = 800;
+                settings.idleTransactionTimeoutMillis = 0;
+                settings.maxTransactionLifetimeMillis = 800;
                 break;
-            case "shouldHonorPerRequestTimeoutMsZeroInTransaction":
-                // Both transaction timers disabled: a per-request timeoutMs of 0 is honored (not silently overridden),
+            case "shouldHonorPerRequestTimeoutMillisZeroInTransaction":
+                // Both transaction timers disabled: a per-request timeoutMillis of 0 is honored (not silently overridden),
                 // so the operation is bounded only by its own request, exactly as on the non-transactional path.
-                settings.idleTransactionTimeout = 0;
-                settings.maxTransactionLifetime = 0;
+                settings.idleTransactionTimeoutMillis = 0;
+                settings.maxTransactionLifetimeMillis = 0;
                 break;
             case "shouldRejectMismatchedGraphAliasInTransaction": {
                 final Settings.GraphSettings gs = new Settings.GraphSettings();
@@ -547,7 +547,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
     public void shouldNotIdleTimeoutLongRunningOperation() throws Exception {
         // With a short idle timeout (500ms), a single operation that runs LONGER than the idle timeout must still
         // succeed -- the idle timer is suspended while an operation is in progress, so a long-running op is not
-        // reclaimed mid-execution (it is instead bounded by evaluationTimeout, left at its default here).
+        // reclaimed mid-execution (it is instead bounded by timeoutMillis, left at its default here).
         final String txId = beginTx(client, GTX);
 
         // Seed two vertices and an edge so repeat(both()) has something to traverse and keeps the executor busy. Each
@@ -612,8 +612,8 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
     }
 
     @Test
-    public void shouldHonorPerRequestTimeoutMsZeroInTransaction() throws Exception {
-        // With both transaction timers disabled, a per-request timeoutMs of 0 is honored rather than overridden: the
+    public void shouldHonorPerRequestTimeoutMillisZeroInTransaction() throws Exception {
+        // With both transaction timers disabled, a per-request timeoutMillis of 0 is honored rather than overridden: the
         // server does not reject the begin or silently substitute another timeout - the operation runs as requested.
         // (Server-side defaults keep transactions bounded out of the box; disabling them is a deliberate operator
         // choice and must not turn into a client-facing failure.)
@@ -621,7 +621,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
 
         try (final CloseableHttpResponse r = postJson(client,
                 "{\"gremlin\":\"g.addV()\",\"g\":\"" + GTX +
-                "\",\"transactionId\":\"" + txId + "\",\"timeoutMs\":\"0\"}")) {
+                "\",\"transactionId\":\"" + txId + "\",\"timeoutMillis\":\"0\"}")) {
             assertEquals(200, r.getStatusLine().getStatusCode());
             // The operation runs and returns a normal result body, with no timeout error: the request was honored, not
             // bounded by a substituted timeout or rejected at begin.

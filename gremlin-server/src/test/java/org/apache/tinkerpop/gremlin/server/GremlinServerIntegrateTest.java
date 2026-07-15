@@ -82,7 +82,7 @@ import static org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPl
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE;
 import static org.apache.tinkerpop.gremlin.process.remote.RemoteConnection.GREMLIN_REMOTE_CONNECTION_CLASS;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.util.Tokens.TIMEOUT_MILLIS;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -152,7 +152,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.writeBufferLowWaterMark = 32;
                 break;
             case "shouldReceiveFailureTimeOutOnScriptEval":
-                settings.evaluationTimeout = 1000;
+                settings.timeoutMillis = 1000;
                 break;
             case "shouldBlockRequestWhenTooBig":
                 settings.maxRequestContentLength = 1024;
@@ -177,7 +177,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.maxParameters = 1;
                 break;
             case "shouldTimeOutRemoteTraversal":
-                settings.evaluationTimeout = 500;
+                settings.timeoutMillis = 500;
                 break;
             case "ensureScriptEngineDefaultsToGremlinLang":
                 settings.scriptEngines = new HashMap<>();
@@ -388,7 +388,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             // tests sleeping thread
-            g.with(ARGS_EVAL_TIMEOUT, 500L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(10000)")).iterate();
+            g.with(TIMEOUT_MILLIS, 500L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(10000)")).iterate();
             fail("This traversal should have timed out");
         } catch (Exception ex) {
             final Throwable t = ex.getCause();
@@ -401,7 +401,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             // tests an "unending" traversal
-            g.with(ARGS_EVAL_TIMEOUT, 500L).V().repeat(__.out()).until(__.outE().count().is(0)).iterate();
+            g.with(TIMEOUT_MILLIS, 500L).V().repeat(__.out()).until(__.outE().count().is(0)).iterate();
             fail("This traversal should have timed out");
         } catch (Exception ex) {
             final Throwable t = ex.getCause();
@@ -429,7 +429,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         // Note: this test may have a false negative result, but a failure  would indicate a real problem.
         for(int i = 0; i < 30; i++) {
             int timeout = 1 + i;
-            overrideEvaluationTimeout(timeout);
+            overrideTimeoutMillis(timeout);
 
             try {
                 client.submit("g.inject(2)").all().get().get(0).getInt();
@@ -712,7 +712,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldReceiveFailureTimeOutOnScriptEvalOfOutOfControlLoop() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()){
             // timeout configured for 1 second so the timed interrupt should trigger prior to the
-            // evaluationTimeout which is at 30 seconds by default
+            // timeoutMillis which is at 30 seconds by default
             final List<ResponseMessage> responses = client.submit(
                     RequestMessage.build("while(true){}").addLanguage("gremlin-groovy").create()
             );
@@ -963,9 +963,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldHandleMultipleLambdaTranslationsInParallel() throws Exception {
         final GraphTraversalSource g = traversal().withRemote(conf);
 
-        final CompletableFuture<Traversal<Object, Object>> firstRes = g.with("evaluationTimeout", 90000L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(100)")).promise(Traversal::iterate);
-        final CompletableFuture<Traversal<Object, Object>> secondRes = g.with("evaluationTimeout", 90000L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(100)")).promise(Traversal::iterate);
-        final CompletableFuture<Traversal<Object, Object>> thirdRes = g.with("evaluationTimeout", 90000L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(100)")).promise(Traversal::iterate);
+        final CompletableFuture<Traversal<Object, Object>> firstRes = g.with("timeoutMillis", 90000L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(100)")).promise(Traversal::iterate);
+        final CompletableFuture<Traversal<Object, Object>> secondRes = g.with("timeoutMillis", 90000L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(100)")).promise(Traversal::iterate);
+        final CompletableFuture<Traversal<Object, Object>> thirdRes = g.with("timeoutMillis", 90000L).inject(1).sideEffect(Lambda.consumer("Thread.sleep(100)")).promise(Traversal::iterate);
 
         try {
             firstRes.get();

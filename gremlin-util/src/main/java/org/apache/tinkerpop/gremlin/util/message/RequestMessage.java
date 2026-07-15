@@ -169,7 +169,7 @@ public final class RequestMessage {
         public Builder addTimeoutMillis(final long timeout) {
             if (timeout < 0) throw new IllegalArgumentException("timeout argument cannot be negative.");
 
-            this.fields.put(Tokens.TIMEOUT_MS, timeout);
+            this.fields.put(Tokens.TIMEOUT_MILLIS, timeout);
             return this;
         }
 

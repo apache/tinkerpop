@@ -116,7 +116,7 @@ class TestSerializeBody:
 
     def test_includes_all_fields_in_json(self):
         msg = RequestMessage(
-            fields={"g": "g", "language": "gremlin-lang", "timeoutMs": 5000},
+            fields={"g": "g", "language": "gremlin-lang", "timeoutMillis": 5000},
             gremlin="g.V()"
         )
         request = HttpRequest(method="POST", url="http://localhost:8182/gremlin",
@@ -127,7 +127,7 @@ class TestSerializeBody:
         assert parsed["gremlin"] == "g.V()"
         assert parsed["g"] == "g"
         assert parsed["language"] == "gremlin-lang"
-        assert parsed["timeoutMs"] == 5000
+        assert parsed["timeoutMillis"] == 5000
 
     def test_raises_on_unsupported_body_type(self):
         request = HttpRequest(method="POST", url="http://localhost:8182/gremlin",

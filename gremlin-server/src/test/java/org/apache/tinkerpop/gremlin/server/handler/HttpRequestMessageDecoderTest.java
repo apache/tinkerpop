@@ -314,7 +314,7 @@ public class HttpRequestMessageDecoderTest {
         final UUID rid = UUID.randomUUID();
         final ByteBuf buffer = allocator.buffer();
         buffer.writeCharSequence("{\"gremlin\":\"g.V().limit(2)\",\"batchSize\":\"10\",\"language\":\"gremlin-lang\"," +
-                "\"g\":\"gmodern\",\"parameters\":\"[\\\"x\\\":1]\",\"timeoutMs\":\"12\"," +
+                "\"g\":\"gmodern\",\"parameters\":\"[\\\"x\\\":1]\",\"timeoutMillis\":\"12\"," +
                 "\"materializeProperties\":\"" + Tokens.MATERIALIZE_PROPERTIES_TOKENS + "\"}", CharsetUtil.UTF_8);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
@@ -332,7 +332,7 @@ public class HttpRequestMessageDecoderTest {
         assertEquals("gremlin-lang", decodedRequest.getField(Tokens.ARGS_LANGUAGE));
         assertEquals("gmodern", decodedRequest.getField(Tokens.ARGS_G));
         assertEquals("[\"x\":1]", decodedRequest.getField(Tokens.ARGS_PARAMETERS));
-        assertEquals(12, (long) decodedRequest.getField(Tokens.TIMEOUT_MS));
+        assertEquals(12, (long) decodedRequest.getField(Tokens.TIMEOUT_MILLIS));
         assertEquals(Tokens.MATERIALIZE_PROPERTIES_TOKENS, decodedRequest.getField(Tokens.ARGS_MATERIALIZE_PROPERTIES));
     }
 }

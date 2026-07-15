@@ -274,9 +274,9 @@ Per-surface trust table:
   read and buffered (bounded by `maxRequestContentLength`) before the server can even check credentials.
   A deserializer bug is in-model either way. The ordering only sets its severity. *(documented — §4 flow;
   `HttpChannelizer` pipeline order)*
-- **Shape / rate:** Gremlin Server has per-request limits (`evaluationTimeout`, `maxRequestContentLength`,
-  `maxParameters`, `maxWorkQueueSize`) and transaction bounds (`idleTransactionTimeout`,
-  `maxTransactionLifetime`, `maxConcurrentTransactions`) but **no traversal-depth or result-count cap**.
+- **Shape / rate:** Gremlin Server has per-request limits (`timeoutMillis`, `maxRequestContentLength`,
+  `maxParameters`, `maxWorkQueueSize`) and transaction bounds (`idleTransactionTimeoutMillis`,
+  `maxTransactionLifetimeMillis`, `maxConcurrentTransactions`) but **no traversal-depth or result-count cap**.
   The bug-vs-capacity line is the §8 resource split. *(documented — `gremlin-applications.asciidoc` config
   table)*
 - **Script-cache growth (`gremlin-groovy` only):** with the opt-in Groovy engine enabled, a client
@@ -457,7 +457,7 @@ Per-surface trust table:
 - Enable audit logging (`enableAuditLog`, off by default) where attribution of requests is needed.
 - Use the wire serializers (GraphBinary recommended for drivers). Keep Gryo locked
   (`registrationRequired=true`), and do not read untrusted files through **unlocked** Gryo.
-- Apply per-request resource limits (`evaluationTimeout`, `maxRequestContentLength`, etc.) appropriate to capacity.
+- Apply per-request resource limits (`timeoutMillis`, `maxRequestContentLength`, etc.) appropriate to capacity.
 - Set filesystem permissions so only the server user can read the config / data directories.
 
 ## §11 Known misuse patterns
