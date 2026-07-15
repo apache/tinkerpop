@@ -24,7 +24,7 @@ import { join, basename } from "node:path";
 const JIRA_BASE = "https://issues.apache.org/jira";
 const DEV_LIST_API = "https://lists.apache.org/api/stats.lua";
 const TINKERPOP_JIRA_PATTERN = /TINKERPOP-(\d+)/g;
-const DEV_LIST_LINK_PATTERN = /https?:\/\/lists\.apache\.org\/[^\s)\]>"]*/g;
+const DEV_LIST_LINK_PATTERN = /https?:\/\/lists\.apache\.org\/[^\s)\]>"[]*/g;
 const PROPOSAL_DIR = "docs/src/dev/future";
 
 function httpGet(url) {
