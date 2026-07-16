@@ -79,7 +79,7 @@ public class ProxyBehaviorIntegrateTest {
         return Cluster.build("localhost")
                 .validationRequest(SocketServerConstants.GREMLIN_SINGLE_VERTEX)
                 .port(PORT)
-                .serializer(new GraphBinaryMessageSerializerV4());
+                .responseSerializer(new GraphBinaryMessageSerializerV4());
     }
 
     private static String getRecorded() throws Exception {
