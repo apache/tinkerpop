@@ -2009,6 +2009,13 @@ None
 * Equivalent to `has(T.label, ...)`.
 * Child traversals must be read-only; mutating steps are rejected with an `Argument Error`.
 
+The label test is applied to each label the element carries and the element is retained when at least one label
+satisfies it. For single-label elements this is equivalent to testing the label directly. For multi-label vertices a
+negation predicate therefore retains any vertex carrying at least one other label, so a vertex labelled both "person"
+and "employee" satisfies `hasLabel(neq("person"))`. Excluding every element that carries a given label requires
+`not(hasLabel("person"))`. The same rule makes `hasLabel("a", "b")` a disjunction, matching when either label is
+present, while chained `hasLabel("a").hasLabel("b")` is a conjunction.
+
 *Exceptions:*
 
 * An `Argument Error` is raised if a child traversal contains mutating steps.
