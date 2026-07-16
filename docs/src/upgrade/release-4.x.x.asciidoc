@@ -84,11 +84,13 @@ NOTE: The traversal-based form of `match` (e.g. `g.V().match(as("a").out().as("b
 TinkerPop 4.0.0 and will be removed in a future release. Users should migrate to the new `match(String)` API.
 
 TinkerPop ships a reference GQL engine for `match()` via the optional `gql-gremlin` module. The engine implements the
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergql[TinkerGQL] dialect — a deliberate minimal subset of
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergql[TinkerGQL] dialect — a deliberate minimal subset of
 ISO GQL `MATCH` syntax — and works against any `Graph` implementation through a thin set of default interface methods.
 TinkerGraph uses it out of the box with no configuration required. Graph providers that want to offer TinkerGQL support
 can add the `gql-gremlin` dependency and register `GqlDeclarativeMatchStrategy` as described in the
-link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#tinkerpop-providers-tinkergql[provider documentation].
+link:https://tinkerpop.apache.org/docs/4.0.0/dev/provider/#tinkerpop-providers-tinkergql[provider documentation].
+
+See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#match-step[match()], link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergql[TinkerGQL]
 
 ==== Multi-Label Support
 
@@ -157,6 +159,10 @@ gremlin> gml.V().has('name','marko').valueMap(true)
 ==>{id=0, label=[manager, person, employee], name=[marko]}
 ```
 
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3261[TINKERPOP-3261],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergraph-multi-label[Multi-Label], link:https://tinkerpop.apache.org/docs/4.0.0/reference/#labels-step[labels()],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#the-zoo-toy-graph[The Zoo]
+
 ==== Transactions
 
 TinkerPop 4.0 brings a set of related transaction changes across the drivers and embedded graphs: explicit remote
@@ -222,7 +228,7 @@ and does not throw. Instead it returns a `TraversalSource` bound to the existing
 replaces the previous behavior where opening an already-open transaction threw an exception, so review and remove any
 code that catches or relies on a second open failing. For the semantics of `begin()` and how it interacts with
 `AUTO`/`MANUAL` transactions, see the
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#transactions[Traversal Transactions] reference documentation.
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#transactions[Traversal Transactions] reference documentation.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3252[TINKERPOP-3252]
 
@@ -386,6 +392,8 @@ This is a breaking change with no backward-compatible alias. The old `evaluation
 Driver and server should be upgraded together. A driver sending the old `evaluationTimeout` field to a 4.x server has
 that field silently ignored and falls back to the server's default timeout, as with any unrecognized request argument.
 
+See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-server[Gremlin Server]
+
 ==== Java Runtime Upgrade
 
 TinkerPop 4.0 raises the minimum Java version from 11 to 17 for both building and running, and adds support for running
@@ -428,8 +436,12 @@ that return interceptors and can be registered alongside custom ones.
 
 For full details on the interceptor API for each language variant, refer to the RequestInterceptor section in
 each GLV's documentation in the
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
 reference.
+
+See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-java-interceptors[Java], link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-python-interceptors[Python],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-javascript-interceptors[JavaScript], link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-dotnet-interceptors[.NET],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-go-interceptors[Go]
 
 ==== Inconfigurable Request Serialization
 
@@ -443,7 +455,7 @@ deserialization.
 Applications that require a different request body encoding, such as GraphBinary for a server that expects it, can
 register a request interceptor that serializes the `RequestMessage` and replaces the body and `Content-Type` header.
 See the RequestInterceptor section for each GLV in the
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
 reference.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3250[TINKERPOP-3250]
@@ -620,6 +632,8 @@ Connection(url, traversal_source, executor, pool,
 
 Custom transport implementations are no longer supported. The driver uses `AiohttpHTTPTransport` directly.
 
+See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-python[Gremlin-Python]
+
 ==== Removal of sparql-gremlin
 
 The `sparql-gremlin` module has been removed following a prolonged period of inactivity. There is currently no direct
@@ -722,6 +736,9 @@ try {
 
 The traversal API is not affected — `Next()`, `ToList()`, etc. still throw `ResponseException` directly since they
 block on the async stream internally.
+
+See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#connecting-via-http[Connecting via HTTP],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
 
 ==== More Secure Gremlin Server
 
@@ -895,6 +912,10 @@ The leading-underscore restriction on `GValue` names that was present in 3.8.0 h
 beginning with `_` are now accepted in Java and across all language variants. The only remaining constraints are that
 a `GValue` may not wrap another `GValue`, and (in the non-Java drivers) its name may not be null.
 
+See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-java-gvalue[Java], link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-python-gvalue[Python],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-javascript-gvalue[JavaScript], link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-dotnet-gvalue[.NET],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-go-gvalue[Go]
+
 ==== JavaScript Typed Numeric Wrappers
 
 JavaScript has a single `Number` type (IEEE 754 double) which loses the distinction between Gremlin numeric types like
@@ -942,6 +963,8 @@ unwrap(toInt(29));  // 29
 unwrap('hello');    // 'hello'
 ----
 
+See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-javascript-numeric-types[Numeric Types]
+
 ==== Provider Defined Types
 
 Graph providers may now expose custom types as Provider Defined Types (PDT) (replacing the old `CustomTypeSerializer`
@@ -960,6 +983,9 @@ effort to the old custom serializer approach but is entirely optional for basic 
 PDTs come in two flavors: *Composite* (a type name plus a map of fields, for structured types) and *Primitive* (a type
 name plus a single opaque string value, for types expressible as a single stringified value). The gremlin-lang grammar
 supports both forms via the `PDT("name",[map])` and `PDT("name","value")` literals respectively.
+
+See: link:https://tinkerpop.apache.org/docs/4.0.0/dev/provider/#provider-defined-types[Provider Defined Types],
+link:https://tinkerpop.apache.org/docs/4.0.0/dev/provider/#primitive-provider-defined-types[Primitive Provider Defined Types]
 
 
 ==== Tree No Longer Extends HashMap
@@ -1116,7 +1142,7 @@ GLVs: interceptors receive a mutable HTTP request object, can modify headers/bod
 the request body to JSON after all interceptors have run.
 
 For the full specification of how interceptors should behave, see the
-link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_http_request_interceptor[HTTP Request Interceptor]
+link:https://tinkerpop.apache.org/docs/4.0.0/dev/provider/#_http_request_interceptor[HTTP Request Interceptor]
 section in the provider documentation.
 
 ===== match() Support
@@ -1150,7 +1176,7 @@ first use and caches them for the lifetime of the graph, sharing the planner's q
 traversals. Optional performance hints are available via `countVerticesByLabel()`, `countEdgesByLabel()`,
 and `Graph.Index`. See `GqlMatchStep` and `GqlDeclarativeMatchStrategy` in `gql-gremlin` for the complete
 reference implementation, and the
-link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#tinkerpop-providers-tinkergql[provider documentation]
+link:https://tinkerpop.apache.org/docs/4.0.0/dev/provider/#tinkerpop-providers-tinkergql[provider documentation]
 for wiring instructions.
 
 == TinkerPop 4.0.0-beta.2
