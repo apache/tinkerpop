@@ -16,9 +16,25 @@ anywhere with `<<anchor,display text>>`:
 ... see the <<where-step,where()-step>> for a related filter.
 ```
 
-Anchors are how the whole documentation set links together. Give every section a
-stable, descriptive anchor and prefer cross-referencing an existing section over
-restating its content.
+Give every section a stable, descriptive anchor and prefer cross-referencing an
+existing section over restating its content.
+
+**`<<anchor>>` only resolves inside its own book.** Each book under `docs/src/`
+builds as a separate document, so a cross-reference from one book to another does
+not work even when the anchor exists. It also fails *silently* rather than
+breaking the build: `<<subgraph-step>>` renders as the literal text
+`[subgraph-step]`, and `<<gremlin-java-pdt,Gremlin-Java>>` renders as a dead
+same-page link to a fragment the page does not contain.
+
+To point at another book, use a full `link:` to the published site instead:
+
+```
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#labels-step[labels()]
+```
+
+This matters most in the upgrade book, which is nearly always talking about
+reference, provider, or IO material that lives elsewhere. Note that upgrade docs
+pin a concrete version rather than `x.y.z` — see the exception below.
 
 ## The `x.y.z` version placeholder
 
