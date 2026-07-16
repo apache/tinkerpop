@@ -124,7 +124,7 @@ an issue when working with SNAPSHOT dependencies.
 === Documentation Environment
 
 The core of the documentation generation process is an link:https://asciidoctor.org/[AsciidoctorJ] extension
-(`tools/tinkerpop-docs`) which walks each AsciiDoc book, executes the `[gremlin-groovy]` code blocks against a long-lived
+(`docs/tinkerpop-docs`) which walks each AsciiDoc book, executes the `[gremlin-groovy]` code blocks against a long-lived
 Gremlin Console subprocess, and renders the console output as tabbed HTML. The orchestration script
 `bin/process-docs.sh` wraps this and acts as the entrypoint: it validates the Gremlin Console and Gremlin Server
 distributions, installs the required plugins into the console, starts a Gremlin Server (for the `:remote` examples) and

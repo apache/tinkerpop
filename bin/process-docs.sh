@@ -55,12 +55,25 @@ done
 GREMLIN_SERVER_PID=""
 GEPHI_MOCK_PID=""
 
+# The console subprocesses spawned by the docs extension drive JLine, which puts the shared
+# controlling terminal into raw mode (echo off) even though its own stdin/stdout are pipes. A
+# console that is killed rather than shut down cleanly never restores those settings, leaving
+# the invoking shell unable to echo typed characters. Snapshot the settings here and restore
+# them on exit.
+STTY_SAVED=""
+if [ -t 0 ]; then
+  STTY_SAVED=$(stty -g 2>/dev/null || true)
+fi
+
 cleanup() {
   set +e
   [ -n "${GREMLIN_SERVER_PID}" ] && kill "${GREMLIN_SERVER_PID}" 2>/dev/null
   [ -n "${GEPHI_MOCK_PID}" ] && kill "${GEPHI_MOCK_PID}" 2>/dev/null
+  [ -n "${STTY_SAVED}" ] && stty "${STTY_SAVED}" 2>/dev/null
 }
 trap cleanup EXIT
+trap 'cleanup; exit 130' INT
+trap 'cleanup; exit 143' TERM
 
 # ---------------------------------------------------------------------------
 # Dry-run mode
@@ -199,7 +212,7 @@ org.apache.tinkerpop.gremlin.sparql.jsr223.SparqlGremlinPlugin
 EOF
 
 # 5. Copy hadoop config to console classpath
-HADOOP_CONF_SRC="tools/tinkerpop-docs/src/main/resources/hadoop-conf"
+HADOOP_CONF_SRC="docs/tinkerpop-docs/src/main/resources/hadoop-conf"
 cp "${HADOOP_CONF_SRC}/core-site.xml" "${CONSOLE_HOME}/conf/"
 cp "${HADOOP_CONF_SRC}/hadoop-docs.properties" "${CONSOLE_HOME}/conf/"
 
