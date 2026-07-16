@@ -67,11 +67,7 @@ describe('Client Behavior', function () {
   });
 
   it('should handle connection close before response and recover', async function () {
-    await assert.rejects(client.submit(GREMLIN_CLOSE_CONNECTION), (err) => {
-      assert.strictEqual(err.name, 'ResponseError');
-      assert.match(err.message, /Connection to server closed unexpectedly/);
-      return true;
-    });
+    await assert.rejects(client.submit(GREMLIN_CLOSE_CONNECTION), /fetch failed/);
     const result = await client.submit(GREMLIN_SINGLE_VERTEX);
     assert.strictEqual(result.length, 1);
   });
@@ -97,11 +93,7 @@ describe('Client Behavior', function () {
   });
 
   it('should handle partial content close and recover', async function () {
-    await assert.rejects(client.submit(GREMLIN_PARTIAL_CONTENT_CLOSE), (err) => {
-      assert.strictEqual(err.name, 'ResponseError');
-      assert.match(err.message, /Connection to server closed unexpectedly/);
-      return true;
-    });
+    await assert.rejects(client.submit(GREMLIN_PARTIAL_CONTENT_CLOSE), /terminated/);
     const result = await client.submit(GREMLIN_SINGLE_VERTEX);
     assert.strictEqual(result.length, 1);
   });

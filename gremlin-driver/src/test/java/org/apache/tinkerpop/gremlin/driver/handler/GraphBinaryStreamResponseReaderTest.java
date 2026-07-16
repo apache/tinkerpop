@@ -225,7 +225,7 @@ public class GraphBinaryStreamResponseReaderTest {
     }
 
     @Test
-    public void shouldProduceClearErrorOnEmptyBody() throws Exception {
+    public void shouldProduceClearErrorOnEmptyBody() {
         final ResultSet rs = new ResultSet(executor, RequestMessage.build("g.V()").create(), null);
         final AtomicReference<ResultSet> pending = new AtomicReference<>(rs);
 

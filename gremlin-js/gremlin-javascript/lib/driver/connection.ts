@@ -322,39 +322,20 @@ export default class Connection extends EventEmitter {
 
     this._log('debug', `Sending ${httpRequest.method} request to ${httpRequest.url}`);
 
-    try {
-      return await httpFetch.fetch(httpRequest.url, {
-        method: httpRequest.method,
-        headers: httpRequest.headers,
-        body: httpRequest.body,
-        signal,
-        // Node only: the undici dispatcher carries the connection-pool options. In the browser
-        // it is undefined and the field is omitted, letting the user agent manage the transport.
-        ...(this._dispatcher ? { dispatcher: this._dispatcher } : {}),
-      } as RequestInit);
-    } catch (err: any) {
-      const e = new ResponseError(
-        'Connection to server closed unexpectedly. Ensure that the server is still reachable and the connection has not been closed by the server or a network device.',
-        { code: 599, message: err.message || 'Connection failed' },
-      );
-      e.cause = err;
-      throw e;
-    }
+    return httpFetch.fetch(httpRequest.url, {
+      method: httpRequest.method,
+      headers: httpRequest.headers,
+      body: httpRequest.body,
+      signal,
+      // Node only: the undici dispatcher carries the connection-pool options. In the browser
+      // it is undefined and the field is omitted, letting the user agent manage the transport.
+      ...(this._dispatcher ? { dispatcher: this._dispatcher } : {}),
+    } as RequestInit);
   }
 
   async #handleResponse(response: Response) {
-    let buffer: Buffer;
-    try {
-      buffer = Buffer.from(await response.arrayBuffer());
-    } catch (err: any) {
-      const e = new ResponseError(
-        'Connection to server closed unexpectedly. Ensure that the server is still reachable and the connection has not been closed by the server or a network device.',
-        { code: 599, message: err.message || 'Connection failed' },
-      );
-      e.cause = err;
-      throw e;
-    }
     const contentType = response.headers.get("Content-Type");
+    const buffer = Buffer.from(await response.arrayBuffer());
     const reader = this.#getReaderForContentType(contentType);
 
     if (!response.ok) {
