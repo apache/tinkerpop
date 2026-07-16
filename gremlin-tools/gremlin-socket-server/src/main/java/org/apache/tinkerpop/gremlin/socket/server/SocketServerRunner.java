@@ -28,6 +28,10 @@ public class SocketServerRunner {
     public static void main(final String[] args) throws InterruptedException {
         final SimpleTestServer server = new SimpleTestServer(SocketServerConstants.PORT);
         final Channel channel = server.start(new TestHttpServerInitializer());
+
+        final RecordingProxyServer proxyServer = new RecordingProxyServer(SocketServerConstants.PROXY_PORT);
+        proxyServer.start();
+
         while (channel.isOpen()) {
             Thread.sleep(1000);
         }

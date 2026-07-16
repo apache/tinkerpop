@@ -27,6 +27,23 @@
             <artifactId>netty-all</artifactId>
             <version>${netty.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.littleproxy</groupId>
+            <artifactId>littleproxy</artifactId>
+            <version>2.8.0</version>
+            <exclusions>
+                <!--
+                littleproxy 2.8.0 pulls its own Netty modules at a different patch level (4.2.15) than
+                the project-managed ${netty.version}. Exclude all of littleproxy's Netty so it runs
+                against the project Netty, satisfying the enforcer DependencyConvergence rule. Both are
+                Netty 4.2.x, so littleproxy is binary-compatible with the project version.
+                -->
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <!-- LOGGING -->
         <dependency>
             <groupId>org.slf4j</groupId>

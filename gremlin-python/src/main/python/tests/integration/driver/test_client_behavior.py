@@ -18,8 +18,10 @@
 #
 
 import asyncio
+import json
 import os
 import time
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pytest
@@ -43,6 +45,7 @@ from .socket_server_constants import (
 )
 
 url = os.environ.get('GREMLIN_SOCKET_SERVER_URL', 'http://localhost:{}/gremlin'.format(PORT))
+proxy_url = os.environ.get('GREMLIN_SOCKET_SERVER_PROXY_URL', 'http://localhost:45944')
 
 
 @pytest.fixture(scope="module")
@@ -50,7 +53,8 @@ def socket_server_client():
     try:
         client = Client(url, 'g')
         # Verify connectivity
-        client.submit(GREMLIN_SINGLE_VERTEX).all().result()
+        result = client.submit(GREMLIN_SINGLE_VERTEX).all().result()
+        assert len(result) == 1
     except Exception:
         pytest.skip("Socket server is not available at {}".format(url))
     yield client
@@ -195,3 +199,34 @@ def test_should_handle_concurrent_mixed_requests(socket_server_client):
 
     assert len(vertex_results) == 5
     assert len(close_errors) == 5
+
+
+def test_proxy_routes_socket_server_traffic():
+    # Reset the recording proxy, route a client through it, and confirm the
+    # proxy observed traffic to the socket server on port 45943.
+    urllib.request.urlopen(urllib.request.Request(proxy_url + '/__reset', method='POST'))
+
+    client = Client(url, 'g', proxy=proxy_url)
+    try:
+        result = client.submit(GREMLIN_SINGLE_VERTEX).all().result()
+        assert len(result) == 1
+
+        recorded = json.loads(urllib.request.urlopen(proxy_url + '/__recorded').read().decode())
+        assert any(target.endswith(':45943') for target in recorded)
+    finally:
+        client.close()
+
+
+def test_proxy_negative_control():
+    # Negative control: without the proxy kwarg the client connects directly,
+    # so the recording proxy should observe no traffic to the socket server.
+    urllib.request.urlopen(urllib.request.Request(proxy_url + '/__reset', method='POST'))
+
+    client = Client(url, 'g')
+    try:
+        client.submit(GREMLIN_SINGLE_VERTEX).all().result()
+
+        recorded = json.loads(urllib.request.urlopen(proxy_url + '/__recorded').read().decode())
+        assert not any(target.endswith(':45943') for target in recorded)
+    finally:
+        client.close()
