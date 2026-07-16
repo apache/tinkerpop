@@ -173,11 +173,12 @@ namespace Gremlin.Net.IntegrationTest.Driver
         {
             SkipIfServerUnavailable();
 
-            var ex = await Assert.ThrowsAsync<ResponseDeserializationException>(async () =>
+            var ex = await Assert.ThrowsAsync<ResponseException>(async () =>
             {
                 var resultSet = await _client!.SubmitAsync<dynamic>(SocketServerConstants.GremlinMalformedResponse);
                 await resultSet.ToListAsync();
             });
+            Assert.Equal(ResponseException.NoStatusCode, ex.StatusCode);
             Assert.NotNull(ex.InnerException);
 
             // Recovery
@@ -191,11 +192,12 @@ namespace Gremlin.Net.IntegrationTest.Driver
         {
             SkipIfServerUnavailable();
 
-            var ex = await Assert.ThrowsAsync<ResponseDeserializationException>(async () =>
+            var ex = await Assert.ThrowsAsync<ResponseException>(async () =>
             {
                 var resultSet = await _client!.SubmitAsync<dynamic>(SocketServerConstants.GremlinEmptyBody);
                 await resultSet.ToListAsync();
             });
+            Assert.Equal(ResponseException.NoStatusCode, ex.StatusCode);
             Assert.IsType<System.IO.IOException>(ex.InnerException);
             Assert.Contains("Unexpected end of stream", ex.InnerException!.Message);
 

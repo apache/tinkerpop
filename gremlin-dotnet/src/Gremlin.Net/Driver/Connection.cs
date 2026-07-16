@@ -383,7 +383,7 @@ namespace Gremlin.Net.Driver
                                                     and not HttpIOException)
                     {
                         channel.Writer.Complete(
-                            new ResponseDeserializationException(ex));
+                            new ResponseException(ex));
                     }
                     catch (Exception ex)
                     {

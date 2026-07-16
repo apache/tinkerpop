@@ -44,7 +44,26 @@ namespace Gremlin.Net.Driver.Exceptions
         }
 
         /// <summary>
-        ///     Gets the status code from the GraphBinary status footer.
+        ///     Initializes a new instance of the <see cref="ResponseException" /> class for a response that
+        ///     could not be deserialized. There is no status code from the server in this case since the
+        ///     failure occurred locally while reading the response.
+        /// </summary>
+        /// <param name="innerException">The exception that caused the deserialization failure.</param>
+        public ResponseException(Exception innerException)
+            : base("Failed to deserialize the response received from Gremlin Server.", innerException)
+        {
+            StatusCode = NoStatusCode;
+        }
+
+        /// <summary>
+        ///     The <see cref="StatusCode" /> value used when the exception was not raised from a status
+        ///     code reported by the server (e.g. a local deserialization failure).
+        /// </summary>
+        public const int NoStatusCode = -1;
+
+        /// <summary>
+        ///     Gets the status code from the GraphBinary status footer, or <see cref="NoStatusCode" /> if this
+        ///     exception represents a local deserialization failure rather than a server-reported error.
         /// </summary>
         public int StatusCode { get; }
 
