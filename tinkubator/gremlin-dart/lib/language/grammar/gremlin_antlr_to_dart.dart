@@ -336,8 +336,8 @@ class GremlinAntlrToDart {
       return _splitArgs(inner).map(_parseValue).toSet();
     }
 
-    if (_looksLikeTraversal(text)) return _parseAnonymousTraversal(text);
     if (_looksLikePredicate(text)) return _parsePredicate(text);
+    if (_looksLikeTraversal(text)) return _parseAnonymousTraversal(text);
     if (_looksLikeStrategy(text)) return _parseStrategy(text);
 
     final enumValue = _parseEnum(text);

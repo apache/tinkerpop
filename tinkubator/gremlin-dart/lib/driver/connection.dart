@@ -315,7 +315,7 @@ class Connection {
 
     if (deserialized['status'] != null) {
       final code = deserialized['status']['code'] as int?;
-      if (code != null && code != 200 && code != 204 && code != 206) {
+      if (code != null && code != 0 && code != 200 && code != 204 && code != 206) {
         throw ResponseError(
           'Server error (code $code)',
           statusCode: code,

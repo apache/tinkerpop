@@ -48,8 +48,7 @@ class DriverRemoteConnection extends RemoteConnection
           maxConnectionsPerHost: options.maxConnectionsPerHost,
           ssl: options.ssl,
           retryOptions: options.retryOptions,
-          // httpClientAdapter is intentionally excluded — each dedicated
-          // connection builds its own adapter from ssl/tls config.
+          httpClientAdapter: options.httpClientAdapter,
         ),
       );
 

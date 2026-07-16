@@ -26,10 +26,11 @@ and explore new ideas at a faster pace with a lower barrier for acceptance.
 
 ## Current Projects
 
-| Project   | Description                                                           | Stage |
-|:----------|:----------------------------------------------------------------------|:-----:|
-| Project A | This is a project that does something interesting for agentic memory. |   1   |
-| Project B | This is a Gremlin Language Variant for RPG IV.                        |   2   |
+| Project      | Description                                                                      | Stage |
+|:-------------|:---------------------------------------------------------------------------------|:-----:|
+| Project A    | This is a project that does something interesting for agentic memory.            |   1   |
+| Project B    | This is a Gremlin Language Variant for RPG IV.                                   |   2   |
+| gremlin-dart | Dart/Flutter language variant for TinkerPop 4.x. HTTP + GraphBinary transport.  |   1   |
 
 ## Project Stages
 
@@ -56,4 +57,3 @@ that are to be considered for inclusion in the Tinkubator:
 
 While these are the minimum requirements, meeting them does not automatically mean a project is accepted. Project
 maintainers retain the option to decline acceptance for any reason and may impose additional requirements.
-

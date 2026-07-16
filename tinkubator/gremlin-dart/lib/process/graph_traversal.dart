@@ -529,4 +529,15 @@ class GraphTraversal extends Traversal {
       _step('dateDiff', [other, if (chronoUnit != null) chronoUnit]);
 
   GraphTraversal clone_() => _step('clone');
+
+  // ---- OLAP steps ----
+
+  GraphTraversal pageRank([double? alpha]) =>
+      _step('pageRank', alpha != null ? [alpha] : null);
+
+  GraphTraversal peerPressure() => _step('peerPressure');
+
+  GraphTraversal connectedComponent() => _step('connectedComponent');
+
+  GraphTraversal shortestPath() => _step('shortestPath');
 }

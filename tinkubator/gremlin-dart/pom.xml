@@ -18,17 +18,23 @@ limitations under the License.
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.apache.tinkerpop</groupId>
-        <artifactId>tinkerpop</artifactId>
-        <version>4.0.0-SNAPSHOT</version>
-    </parent>
+    <groupId>org.apache.tinkerpop</groupId>
     <artifactId>gremlin-dart</artifactId>
+    <version>4.0.0-SNAPSHOT</version>
     <name>Apache TinkerPop :: Gremlin Dart</name>
     <properties>
+        <tinkerpop.version>4.0.0-beta.2</tinkerpop.version>
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
     </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-core</artifactId>
+            <version>${tinkerpop.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
     <build>
         <plugins>
             <!-- No Java source — skip JVM build artifacts -->
@@ -75,7 +81,7 @@ limitations under the License.
                             <skip>${skipTests}</skip>
                             <environmentVariables>
                                 <GREMLIN_SERVER>${project.version}</GREMLIN_SERVER>
-                                <ABS_PROJECT_HOME>${project.parent.basedir}</ABS_PROJECT_HOME>
+                                <ABS_PROJECT_HOME>${project.basedir}/../..</ABS_PROJECT_HOME>
                             </environmentVariables>
                             <executable>bash</executable>
                             <!--
