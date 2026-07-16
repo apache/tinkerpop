@@ -17,7 +17,7 @@ java -jar /path/to/antlr-4.13.2-complete.jar \
   -visitor \
   -no-listener \
   -Xexact-output-dir \
-  -o gremlin-dart/lib/language/grammar \
+  -o tinkubator/gremlin-dart/lib/language/grammar \
   gremlin-language/src/main/antlr4/Gremlin.g4
 ```
 

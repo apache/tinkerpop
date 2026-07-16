@@ -23,6 +23,7 @@ import 'package:uuid/uuid_value.dart';
 
 import 'cucumber_world.dart';
 import 'feature_runner.dart';
+import 'gremlin.dart';
 import 'graph_setup.dart';
 import 'value_parser.dart';
 
@@ -55,6 +56,7 @@ class FeatureSteps {
 
   Future<void> run(FeatureScenario scenario) async {
     world.resetScenario(scenario.tags);
+    world.scenarioName = scenario.name;
     world.ignore = scenario.tags.any(skipTags.contains);
     for (final step in scenario.steps) {
       await runStep(step);
@@ -253,6 +255,12 @@ class FeatureSteps {
   }
 
   GraphTraversal _buildPendingTraversal() {
+    final generatedTraversal = generatedTraversals[world.scenarioName];
+    if (generatedTraversal != null) {
+      final traversal = generatedTraversal(_sourceWithSideEffects());
+      if (traversal is GraphTraversal) return traversal;
+    }
+
     final parsed = GremlinAntlrToDart.parse(
       _sourceWithSideEffects(),
       (world.pendingTraversal ?? '').trim(),

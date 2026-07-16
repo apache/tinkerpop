@@ -21,6 +21,7 @@ class CucumberWorld {
   final String serverUrl;
   GraphTraversalSource? g;
   String graphName = '';
+  String scenarioName = '';
   String? pendingTraversal;
   Map<String, dynamic> params = <String, dynamic>{};
   List<dynamic> result = <dynamic>[];
@@ -38,6 +39,7 @@ class CucumberWorld {
   void resetScenario(Set<String> scenarioTags) {
     tags = scenarioTags;
     graphName = '';
+    scenarioName = '';
     pendingTraversal = null;
     params = <String, dynamic>{};
     sideEffects = <String, dynamic>{};

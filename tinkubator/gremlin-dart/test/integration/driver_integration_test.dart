@@ -107,9 +107,9 @@ void main() {
       );
       expect(result.items.length, 1);
       final age = result.items.first;
-      // age comes back as GInt (GraphBinary int32)
-      expect(age, isA<GInt>());
-      expect((age as GInt).value, 29);
+      // age comes back as a Dart int (GraphBinary int32 decoded)
+      expect(age, isA<int>());
+      expect(age, 29);
     });
   });
 
@@ -146,7 +146,7 @@ void main() {
       final g = traversal().withRemote(remote);
       final ages = await g.V().has('name', 'marko').values(['age']).toList();
       expect(ages.length, 1);
-      expect((ages.first as GInt).value, 29);
+      expect(ages.first, 29);
     });
 
     test('g.V().hasLabel("person") returns 4 people', () async {
@@ -181,7 +181,7 @@ void main() {
       expect(results.length, 1);
       final row = results.first as Map;
       expect(row['name'], 'marko');
-      expect((row['age'] as GInt).value, 29);
+      expect(row['age'], 29);
     });
 
     test('g.inject() with list returns elements', () async {

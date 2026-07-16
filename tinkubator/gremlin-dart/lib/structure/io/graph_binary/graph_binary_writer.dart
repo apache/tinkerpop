@@ -164,6 +164,9 @@ class _GraphBinaryValueWriter {
   }
 
   void writeShort(int value, {bool fullyQualified = true}) {
+    if (value < -32768 || value > 32767) {
+      throw ArgumentError.value(value, 'value', 'GShort must be in range -32768..32767');
+    }
     _writeHeader(DataType.short, fullyQualified);
     final data = ByteData(2)..setInt16(0, value, Endian.big);
     _builder.add(data.buffer.asUint8List());
@@ -175,6 +178,9 @@ class _GraphBinaryValueWriter {
   }
 
   void writeByte(int value, {bool fullyQualified = true}) {
+    if (value < -128 || value > 127) {
+      throw ArgumentError.value(value, 'value', 'GByte must be in range -128..127');
+    }
     _writeHeader(DataType.byte_, fullyQualified);
     addByte(value);
   }

@@ -1,4 +1,6 @@
 .dart_tool/
 build/
+!build/*.groovy
 .packages
 doc/api/
+coverage/
