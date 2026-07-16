@@ -213,6 +213,39 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                             requestMessage.getGremlin());
                 }
 
+                // Validate the request before any transaction lifecycle side effects.
+                final Map<String, Object> args = requestMessage.getFields();
+                final String language = args.containsKey(Tokens.ARGS_LANGUAGE) ? (String) args.get(Tokens.ARGS_LANGUAGE) : "gremlin-lang";
+                if (gremlinExecutor.getScriptEngineManager().getEngineByName(language) == null) {
+                    throw new ProcessingException(GremlinError.scriptEngineNotAvailable(language));
+                }
+
+                // Guard against bad parameters while trying to parse string-based parameters into a Map<String, Object>
+                if (requestMessage.optionalField(Tokens.ARGS_PARAMETERS).isPresent()) {
+                    Map<String, Object> parameters = null;
+                    final String parametersString = (String) requestMessage.getFields().get(Tokens.ARGS_PARAMETERS);
+                    try {
+                        parameters = GremlinQueryParser.parseParameters(parametersString);
+                    } catch (GremlinParserException e) {
+                        throw new ProcessingException(GremlinError.incorrectParameterFormat(parametersString, e));
+                    }
+
+                    if ("gremlin-groovy".equals(language)) {
+                        final Set<String> badParameters = IteratorUtils.set(IteratorUtils.<String>filter(
+                                parameters.keySet().iterator(),
+                                INVALID_PARAMETERS_KEYS::contains));
+                        if (!badParameters.isEmpty()) {
+                            throw new ProcessingException(GremlinError.parameter(badParameters));
+                        }
+                    }
+
+                    if (parameters.size() > settings.maxParameters) {
+                        throw new ProcessingException(GremlinError.parameter(parameters.size(), settings.maxParameters));
+                    }
+
+                    requestCtx.setParameters(parameters);
+                }
+
                 // These guards prevent any obvious failures from returning 200 OK early by detecting them here and
                 // throwing before any other processing starts so the user gets a better error code.
                 final String txId = requestCtx.getTransactionId();
@@ -244,39 +277,6 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 } else if ((txId == null) && (requestCtx.isTransactionCommit() || requestCtx.isTransactionRollback())) {
                     // Logically, commit/rollback should only be allowed on a transactional request.
                     throw new ProcessingException(GremlinError.transactionalControlRequiresTransaction());
-                }
-
-                // validate script engine availability before committing the 200 response
-                final Map<String, Object> args = requestMessage.getFields();
-                final String language = args.containsKey(Tokens.ARGS_LANGUAGE) ? (String) args.get(Tokens.ARGS_LANGUAGE) : "gremlin-lang";
-                if (gremlinExecutor.getScriptEngineManager().getEngineByName(language) == null) {
-                    throw new ProcessingException(GremlinError.scriptEngineNotAvailable(language));
-                }
-
-                // Guard against bad parameters while trying to parse string-based parameters into a Map<String, Object>
-                if (requestMessage.optionalField(Tokens.ARGS_PARAMETERS).isPresent()) {
-                    Map<String, Object> parameters = null;
-                    final String parametersString = (String) requestMessage.getFields().get(Tokens.ARGS_PARAMETERS);
-                    try {
-                        parameters = GremlinQueryParser.parseParameters(parametersString);
-                    } catch (GremlinParserException e) {
-                        throw new ProcessingException(GremlinError.incorrectParameterFormat(parametersString, e));
-                    }
-
-                    if ("gremlin-groovy".equals(language)) {
-                        final Set<String> badParameters = IteratorUtils.set(IteratorUtils.<String>filter(
-                                parameters.keySet().iterator(),
-                                INVALID_PARAMETERS_KEYS::contains));
-                        if (!badParameters.isEmpty()) {
-                            throw new ProcessingException(GremlinError.parameter(badParameters));
-                        }
-                    }
-
-                    if (parameters.size() > settings.maxParameters) {
-                        throw new ProcessingException(GremlinError.parameter(parameters.size(), settings.maxParameters));
-                    }
-
-                    requestCtx.setParameters(parameters);
                 }
 
                 // Send back the 200 OK response header here since the response is always chunk transfer encoded. Any
@@ -522,7 +522,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     private void doBegin(final Context ctx) throws Exception {
         final String traversalSourceName = ctx.getRequestMessage().getField(Tokens.ARGS_G);
 
-        final UnmanagedTransaction txCtx;
+        UnmanagedTransaction txCtx = null;
+        boolean closeTransactionOnFailure = true;
         try {
             txCtx = transactionManager.create(traversalSourceName);
             ctx.setTransactionId(txCtx.getTransactionId());
@@ -531,6 +532,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 graph.tx().begin();
                 return null;
             }), ctx).get(5000, TimeUnit.MILLISECONDS); // Not an option for now, but 5s should be plenty.
+            closeTransactionOnFailure = false;
         } catch (IllegalStateException ise) {
             throw new ProcessingException(GremlinError.maxTransactionsExceeded(ise.getMessage()));
         } catch (IllegalArgumentException iae) {
@@ -539,6 +541,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             throw new ProcessingException(GremlinError.transactionNotSupported(uoe));
         } catch (ExecutionException | TimeoutException e) {
             throw new ProcessingException(GremlinError.transactionUnableToStart(e.getMessage()));
+        } finally {
+            if (closeTransactionOnFailure && txCtx != null) txCtx.close(false);
         }
     }
 

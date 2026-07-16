@@ -354,6 +354,25 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
     }
 
     @Test
+    public void shouldNotCreateTransactionWhenBeginRequestValidationFails() throws Exception {
+        final TransactionManager txManager = server.getServerGremlinExecutor().getTransactionManager();
+
+        try (final CloseableHttpResponse r = postJson(client,
+                "{\"gremlin\":\"g.tx().begin()\",\"g\":\"" + GTX + "\",\"language\":\"not-an-engine\"}")) {
+            assertEquals(400, r.getStatusLine().getStatusCode());
+            assertTrue(extractStatusMessage(r).contains("Script engine [not-an-engine] is not available"));
+        }
+        assertEquals(0, txManager.getActiveTransactionCount());
+
+        try (final CloseableHttpResponse r = postJson(client,
+                "{\"gremlin\":\"g.tx().begin()\",\"g\":\"" + GTX + "\",\"parameters\":\"[x:]\"}")) {
+            assertEquals(400, r.getStatusLine().getStatusCode());
+            assertTrue(extractStatusMessage(r).contains("could not be converted into a Map"));
+        }
+        assertEquals(0, txManager.getActiveTransactionCount());
+    }
+
+    @Test
     public void shouldTimeoutIdleTransactionWithNoOperations() throws Exception {
         final String txId = beginTx(client, GTX);
 
