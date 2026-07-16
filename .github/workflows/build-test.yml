@@ -342,7 +342,7 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
       - name: Set up .NET 8.0.x
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '8.0.x'
       - name: Get Cached Server Base Image
@@ -388,7 +388,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: '1.25'
       - name: Get Cached Server Base Image
