@@ -258,6 +258,28 @@ Feature: Step - group()
       | result |
       | m[{"v[peter]":"v[lop]"}] |
 
+  Scenario: g_V_group_byXvaluesXnameXX_byXvaluesXageX_fold_unfoldX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group().by(values("name")).by(values("age").fold().unfold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"marko":"d[29].i", "vadas":"d[27].i", "josh":"d[32].i", "peter":"d[35].i"}] |
+
+  Scenario: g_V_group_byXvaluesXnameXX_byXout_fold_countXlocalX_isXgtX0XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group().by(values("name")).by(__.out().fold().count(local).is(P.gt(0)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"marko":"d[3].l", "josh":"d[2].l", "peter":"d[1].l"}] |
+
   Scenario: g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_order_countX
     Given the modern graph
     And the traversal of

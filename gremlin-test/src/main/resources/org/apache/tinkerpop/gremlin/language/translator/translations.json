@@ -46651,6 +46651,40 @@
         ]
     },
     {
+        "scenario": "g_V_group_byXvaluesXnameXX_byXvaluesXageX_fold_unfoldX",
+        "traversals": [
+            {
+                "original": "g.V().group().by(values(\"name\")).by(values(\"age\").fold().unfold())",
+                "language": "g.V().group().by(__.values(\"name\")).by(__.values(\"age\").fold().unfold())",
+                "canonical": "g.V().group().by(__.values(\"name\")).by(__.values(\"age\").fold().unfold())",
+                "anonymized": "g.V().group().by(__.values(string0)).by(__.values(string1).fold().unfold())",
+                "dotnet": "g.V().Group<object, object>().By(__.Values<object>(\"name\")).By(__.Values<object>(\"age\").Fold().Unfold<object>())",
+                "go": "g.V().Group().By(gremlingo.T__.Values(\"name\")).By(gremlingo.T__.Values(\"age\").Fold().Unfold())",
+                "groovy": "g.V().group().by(__.values(\"name\")).by(__.values(\"age\").fold().unfold())",
+                "java": "g.V().group().by(__.values(\"name\")).by(__.values(\"age\").fold().unfold())",
+                "javascript": "g.V().group().by(__.values(\"name\")).by(__.values(\"age\").fold().unfold())",
+                "python": "g.V().group().by(__.values('name')).by(__.values('age').fold().unfold())"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_group_byXvaluesXnameXX_byXout_fold_countXlocalX_isXgtX0XXX",
+        "traversals": [
+            {
+                "original": "g.V().group().by(values(\"name\")).by(__.out().fold().count(local).is(P.gt(0)))",
+                "language": "g.V().group().by(__.values(\"name\")).by(__.out().fold().count(Scope.local).is(P.gt(0)))",
+                "canonical": "g.V().group().by(__.values(\"name\")).by(__.out().fold().count(Scope.local).is(P.gt(0)))",
+                "anonymized": "g.V().group().by(__.values(string0)).by(__.out().fold().count(Scope.local).is(P.gt(number0)))",
+                "dotnet": "g.V().Group<object, object>().By(__.Values<object>(\"name\")).By(__.Out().Fold().Count(Scope.Local).Is(P.Gt(0)))",
+                "go": "g.V().Group().By(gremlingo.T__.Values(\"name\")).By(gremlingo.T__.Out().Fold().Count(gremlingo.Scope.Local).Is(gremlingo.P.Gt(0)))",
+                "groovy": "g.V().group().by(__.values(\"name\")).by(__.out().fold().count(Scope.local).is(P.gt(0)))",
+                "java": "g.V().group().by(__.values(\"name\")).by(__.out().fold().count(Scope.local).is(P.gt(0)))",
+                "javascript": "g.V().group().by(__.values(\"name\")).by(__.out().fold().count(Scope.local).is(P.gt(0)))",
+                "python": "g.V().group().by(__.values('name')).by(__.out().fold().count(Scope.local).is_(P.gt(0)))"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_order_countX",
         "traversals": [
             {

@@ -2265,6 +2265,8 @@ const gremlins = {
     g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_order_foldX: [function({g}) { return g.V().has("person", "name", P.within("vadas", "peter")).group().by().by(__.out().order().fold()) }], 
     g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_foldX: [function({g}) { return g.V().has("person", "name", P.within("vadas", "peter")).group().by().by(__.out().fold()) }], 
     g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_orderX: [function({g}) { return g.V().has("person", "name", P.within("vadas", "peter")).group().by().by(__.out().order()) }], 
+    g_V_group_byXvaluesXnameXX_byXvaluesXageX_fold_unfoldX: [function({g}) { return g.V().group().by(__.values("name")).by(__.values("age").fold().unfold()) }], 
+    g_V_group_byXvaluesXnameXX_byXout_fold_countXlocalX_isXgtX0XXX: [function({g}) { return g.V().group().by(__.values("name")).by(__.out().fold().count(Scope.local).is(P.gt(0))) }], 
     g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_order_countX: [function({g}) { return g.V().has("person", "name", P.within("vadas", "peter")).group().by().by(__.out().order().count()) }], 
     g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_order_fold_countXlocalXX: [function({g}) { return g.V().has("person", "name", P.within("vadas", "peter")).group().by().by(__.out().order().fold().count(Scope.local)) }], 
     g_V_group_by_byXout_label_foldX_selectXvaluesX_unfold_orderXlocalX: [function({g}) { return g.V().group().by().by(__.out().label().fold()).select(Column.values).unfold().order(Scope.local) }], 
