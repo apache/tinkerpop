@@ -113,6 +113,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             case "should200OnPOSTTransactionalGraph":
             case "shouldRollbackOnFailedMutatingTraversal":
             case "shouldCommitMutatingTraversalWithEmptyResult":
+            case "should400OnTransactionBeginWithNonPositiveBatchSize":
                 useTinkerTransactionGraph(settings);
                 break;
             case "should200OnPOSTTransactionalGraphInStrictMode":
@@ -1361,6 +1362,141 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertNull(node.get("result").get(TOKEN_DATA).get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.PROPERTIES));
+        }
+    }
+
+    @Test(timeout = 10000) // Add test timeout to prevent incorrect timeout behavior from stopping test run.
+    public void shouldAcceptTimeoutMillisEmbeddedInScript() throws Exception {
+        // Regression: a with('timeoutMillis', ...) embedded in a raw-string script must be honored by the server.
+        // Previously the server computed but never applied this value, so the query ran to completion instead of
+        // timing out.
+        final String body = "{ \"gremlin\": \"" + "g.with('timeoutMillis', 100).inject(1).sideEffect{Thread.sleep(50000)}"
+                + "\",\"language\":\"gremlin-groovy\"}";
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity(body, Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            final String json = EntityUtils.toString(response.getEntity());
+            assertTrue(json.contains("timeout occurred"));
+        }
+    }
+
+    @Test
+    public void shouldAcceptMaterializePropertiesTokensEmbeddedInScript() throws Exception {
+        final String body = "{ \"gremlin\": \"" + "gmodern.with('materializeProperties', 'tokens').V().limit(1)"
+                + "\",\"language\":\"gremlin-groovy\"}";
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity(body, Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertNull(node.get("result").get(TOKEN_DATA).get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).get(GraphSONTokens.PROPERTIES));
+        }
+    }
+
+    @Test
+    public void shouldPreferScriptEmbeddedTimeoutOverRequestField() throws Exception {
+        // Precedence: script-embedded with() wins over the request field. The script sets a small timeout that fires;
+        // the (larger) field value must not override it.
+        final String body = "{ \"gremlin\": \"" + "g.with('timeoutMillis', 100).inject(1).sideEffect{Thread.sleep(5000)}"
+                + "\",\"language\":\"gremlin-groovy\",\"" + TIMEOUT_MILLIS + "\":\"8000\"}";
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity(body, Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            final String json = EntityUtils.toString(response.getEntity());
+            assertTrue(json.contains("timeout occurred"));
+        }
+    }
+
+    @Test
+    public void should400OnScriptEmbeddedNonPositiveBatchSize() throws Exception {
+        // a non-positive batchSize would stall result iteration, so it is rejected as a bad request.
+        final String body = "{ \"gremlin\": \"" + "g.with('batchSize', 0).inject(1)" + "\",\"language\":\"gremlin-groovy\"}";
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity(body, Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(400, response.getStatusLine().getStatusCode());
+        }
+    }
+
+    @Test
+    public void should400OnScriptEmbeddedOverflowBatchSize() throws Exception {
+        // a batchSize above Integer.MAX_VALUE cannot be applied; it must be a clean 400, not an uncaught error (500).
+        final String body = "{ \"gremlin\": \"" + "g.with('batchSize', 2147483648).inject(1)" + "\",\"language\":\"gremlin-groovy\"}";
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity(body, Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(400, response.getStatusLine().getStatusCode());
+        }
+    }
+
+    @Test
+    public void should400OnRequestFieldNonPositiveBatchSize() throws Exception {
+        final String body = "{ \"gremlin\": \"g.inject(1)\",\"batchSize\":0}";
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity(body, Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(400, response.getStatusLine().getStatusCode());
+        }
+    }
+
+    @Test
+    public void shouldAcceptLanguageEmbeddedInScript() throws Exception {
+        // a with('language', ...) embedded in the script selects the script engine. this uses a groovy-only
+        // construct (a closure), which only evaluates if the groovy engine was selected from the embedded option.
+        final String body = "{ \"gremlin\": \"" + "g.with('language', 'gremlin-groovy').inject(1).map{it.get() + 1}" + "\"}";
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity(body, Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(2, node.get("result").get(TOKEN_DATA).get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
+        }
+    }
+
+    @Test
+    public void shouldAcceptBulkResultsEmbeddedInScript() throws Exception {
+        // bulking applies only for gremlin-lang over GraphBinary. a with('bulkResults', true) embedded in the script
+        // must enable it, observable via the bulked flag on the response.
+        final String gremlin = "g.with('bulkResults', true).inject(1, 2, 3, 2, 1)";
+        final GraphBinaryMessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4();
+        final ByteBuf serializedRequest = serializer.serializeRequestAsBinary(
+                RequestMessage.build(gremlin).create(), new UnpooledByteBufAllocator(false));
+
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader(HttpHeaders.CONTENT_TYPE, Serializers.GRAPHBINARY_V4.getValue());
+        httppost.addHeader(HttpHeaders.ACCEPT, Serializers.GRAPHBINARY_V4.getValue());
+        httppost.setEntity(new ByteArrayEntity(serializedRequest.array()));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            final ResponseMessage responseMessage = serializer.readChunk(toByteBuf(response.getEntity()), true);
+            assertTrue(responseMessage.getResult().isBulked());
         }
     }
 

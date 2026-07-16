@@ -36,14 +36,16 @@ public class GremlinScriptChecker {
     /**
      * An empty result whose properties return as empty.
      */
-    public static final Result EMPTY_RESULT = new Result(null, null, null);
+    public static final Result EMPTY_RESULT = new Result(null, null, null, null, null);
 
     /**
      * At least one of these tokens should be present somewhere in the Gremlin string for {@link #parse(String)} to
      * take any action at all.
      */
     private static final Set<String> tokens = new HashSet<>(Arrays.asList("timeoutMillis", "TIMEOUT_MILLIS",
-            "requestId", "REQUEST_ID", "materializeProperties", "ARGS_MATERIALIZE_PROPERTIES"));
+            "materializeProperties", "ARGS_MATERIALIZE_PROPERTIES",
+            "language", "ARGS_LANGUAGE", "batchSize", "ARGS_BATCH_SIZE",
+            "bulkResults", "BULK_RESULTS"));
 
     /**
      * Matches single line comments, multi-line comments and space characters.
@@ -85,16 +87,6 @@ public class GremlinScriptChecker {
     private static final String timeoutTokens = "[\"']timeoutMillis[\"']|(?:Tokens\\.)?TIMEOUT_MILLIS";
 
     /**
-     * Regex fragment for the timeout tokens to look for. There are basically four:
-     * <ul>
-     *     <li>{@code requestId} which is a string value and thus single or double quoted</li>
-     *     <li>{@code REQUEST_ID} which is a enum type of value which can be referenced with or without a {@code Tokens} qualifier</li>
-     * </ul>
-     * See {@link #patternWithOptions} for a full explain as this regex is embedded in there.
-     */
-    private static final String requestIdTokens = "[\"']requestId[\"']|(?:Tokens\\.)?REQUEST_ID";
-
-    /**
      * Regex fragment for the materializeProperties to look for. There are basically four:
      * <ul>
      *     <li>{@code materializeProperties} which is a string value and thus single or double quoted</li>
@@ -104,13 +96,40 @@ public class GremlinScriptChecker {
     private static final String materializePropertiesTokens = "[\"']materializeProperties[\"']|(?:Tokens\\.)?ARGS_MATERIALIZE_PROPERTIES";
 
     /**
+     * Regex fragment for the {@code language} tokens to look for:
+     * <ul>
+     *     <li>{@code language} which is a string value and thus single or double quoted</li>
+     *     <li>{@code ARGS_LANGUAGE} which can be referenced with or without a {@code Tokens} qualifier</li>
+     * </ul>
+     */
+    private static final String languageTokens = "[\"']language[\"']|(?:Tokens\\.)?ARGS_LANGUAGE";
+
+    /**
+     * Regex fragment for the {@code batchSize} tokens to look for:
+     * <ul>
+     *     <li>{@code batchSize} which is a string value and thus single or double quoted</li>
+     *     <li>{@code ARGS_BATCH_SIZE} which can be referenced with or without a {@code Tokens} qualifier</li>
+     * </ul>
+     */
+    private static final String batchSizeTokens = "[\"']batchSize[\"']|(?:Tokens\\.)?ARGS_BATCH_SIZE";
+
+    /**
+     * Regex fragment for the {@code bulkResults} tokens to look for:
+     * <ul>
+     *     <li>{@code bulkResults} which is a string value and thus single or double quoted</li>
+     *     <li>{@code BULK_RESULTS} which can be referenced with or without a {@code Tokens} qualifier</li>
+     * </ul>
+     */
+    private static final String bulkResultsTokens = "[\"']bulkResults[\"']|(?:Tokens\\.)?BULK_RESULTS";
+
+    /**
      * Matches {@code .with({timeout-token},{timeout})} with a matching group on the {@code timeout}.
      * input: g.with('materializeProperties',100)
      * <pre>
      * From https://regex101.com/
      *
      * \.with\((((?:["']materializeProperties["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)|((?:["']materializeProperties["']|(?:Tokens\.)?ARGS_MATERIALIZE_PROPERTIES),["'](?<mp>.*?)["']?)|((?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?)["']))\)
-     * 
+     *
      * gm
      * \. matches the character . with index 4610 (2E16 or 568) literally (case sensitive)
      * with matches the characters with literally (case sensitive)
@@ -178,7 +197,9 @@ public class GremlinScriptChecker {
             Pattern.compile("\\.with\\((((?:"
                     + timeoutTokens + "),(?<to>\\d*)(:?L|l)?)|((?:"
                     + materializePropertiesTokens + "),[\"'](?<mp>.*?)[\"']?)|((?:"
-                    + requestIdTokens + "),[\"'](?<rid>.*?)[\"']))\\)");
+                    + languageTokens + "),[\"'](?<lang>.*?)[\"'])|((?:"
+                    + batchSizeTokens + "),(?<bs>\\d+))|((?:"
+                    + bulkResultsTokens + "),(?<br>true|false)))\\)");
 
     /**
      * Parses a Gremlin script and extracts a {@code Result} containing properties that are relevant to the checker.
@@ -199,8 +220,10 @@ public class GremlinScriptChecker {
 
         // arguments given to Result class as null mean they weren't assigned (or the parser didn't find them somehow - eek!)
         Long timeout = null;
-        String requestId = null;
         String materializeProperties = null;
+        String language = null;
+        String batchSize = null;
+        Boolean bulkResults = null;
         do {
             // timeout is added up across all scripts
             final String to = m.group("to");
@@ -209,16 +232,26 @@ public class GremlinScriptChecker {
                 timeout += Long.parseLong(to);
             }
 
-            // request id just uses the last one found
-            final String rid = m.group("rid");
-            if (rid != null) requestId = rid;
-
             //materializeProperties just uses the last one found
             final String mp = m.group("mp");
             if (mp != null) materializeProperties = mp;
+
+            // language just uses the last one found
+            final String lang = m.group("lang");
+            if (lang != null) language = lang;
+
+            // batchSize just uses the last one found. it is captured as the raw string (not parsed to a number) so
+            // that an out-of-range value does not throw here in the Context constructor - the server parses and
+            // validates it where a bad value can be surfaced as a bad request rather than an uncaught error.
+            final String bs = m.group("bs");
+            if (bs != null) batchSize = bs;
+
+            // bulkResults just uses the last one found
+            final String br = m.group("br");
+            if (br != null) bulkResults = Boolean.parseBoolean(br);
         } while (m.find());
 
-        return new Result(timeout, requestId, materializeProperties);
+        return new Result(timeout, materializeProperties, language, batchSize, bulkResults);
     }
 
     /**
@@ -226,13 +259,18 @@ public class GremlinScriptChecker {
      */
     public static class Result {
         private final Long timeout;
-        private final String requestId;
         private final String materializeProperties;
+        private final String language;
+        private final String batchSize;
+        private final Boolean bulkResults;
 
-        private Result(final Long timeout, final String requestId, final String materializeProperties) {
+        private Result(final Long timeout, final String materializeProperties,
+                       final String language, final String batchSize, final Boolean bulkResults) {
             this.timeout = timeout;
-            this.requestId = requestId;
             this.materializeProperties = materializeProperties;
+            this.language = language;
+            this.batchSize = batchSize;
+            this.bulkResults = bulkResults;
         }
 
         /**
@@ -244,14 +282,6 @@ public class GremlinScriptChecker {
         }
 
         /**
-         * Gets the value of the request identifier supplied using the {@link GraphTraversal#with(String, Object)} source step.
-         * If there are multiple commands using this step, the last usage should represent the id returned here.
-         */
-        public Optional<String> getRequestId() {
-            return null == requestId ? Optional.empty() : Optional.of(requestId);
-        }
-
-        /**
          * Gets the value of the materializeProperties supplied using the {@link GraphTraversal#with(String, Object)} source step.
          * If there are multiple commands using this step, the last usage should represent the value returned here.
          */
@@ -259,12 +289,40 @@ public class GremlinScriptChecker {
             return null == materializeProperties ? Optional.empty() : Optional.of(materializeProperties);
         }
 
+        /**
+         * Gets the value of the language supplied using the {@link GraphTraversal#with(String, Object)} source step.
+         * If there are multiple commands using this step, the last usage should represent the value returned here.
+         */
+        public Optional<String> getLanguage() {
+            return null == language ? Optional.empty() : Optional.of(language);
+        }
+
+        /**
+         * Gets the raw, unparsed value of the batchSize supplied using the {@link GraphTraversal#with(String, Object)}
+         * source step. It is returned as the raw string (rather than a parsed number) so that parsing and range
+         * validation happen where an invalid value can be surfaced as a bad request rather than an uncaught error.
+         * If there are multiple commands using this step, the last usage should represent the value returned here.
+         */
+        public Optional<String> getBatchSize() {
+            return null == batchSize ? Optional.empty() : Optional.of(batchSize);
+        }
+
+        /**
+         * Gets the value of the bulkResults flag supplied using the {@link GraphTraversal#with(String, Object)} source step.
+         * If there are multiple commands using this step, the last usage should represent the value returned here.
+         */
+        public Optional<Boolean> getBulkResults() {
+            return null == bulkResults ? Optional.empty() : Optional.of(bulkResults);
+        }
+
         @Override
         public String toString() {
             return "GremlinScriptChecker.Result{" +
                     "timeout=" + timeout +
-                    ", requestId='" + requestId + '\'' +
                     ", materializeProperties='" + materializeProperties + '\'' +
+                    ", language='" + language + '\'' +
+                    ", batchSize=" + batchSize +
+                    ", bulkResults=" + bulkResults +
                     '}';
         }
     }

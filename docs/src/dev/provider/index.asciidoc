@@ -1261,10 +1261,20 @@ the serializer specified by the `Content-Type` header. The following are the key
 |parameters |A gremlin-lang string that encodes a map of key/value pairs used during query execution. Its usage depends on "language". For "gremlin-groovy", these are applied as script variable bindings. For "gremlin-lang", these are the query parameters. |String containing a gremlin-lang map literal |No
 |g |The name of the graph traversal source to which the query applies. Default: "g" |String containing traversal source name |No
 |language |The name of the ScriptEngine to use to parse the gremlin query. Default: "gremlin-lang" |String containing ScriptEngine name |No
+|batchSize |The number of results to include in each response chunk, overriding the server configured `resultIterationBatchSize`. |Number between 1 and 2^31-1 |No
 |materializeProperties |Whether to include all properties for results. One of "tokens" or "all". |String |No
 |bulkResults |Whether the results should be bulked by the server (only applies to GraphBinary) |Boolean |No
 |transactionId |A server-generated UUID that identifies an active transaction. Must be included in all non-begin requests within that transaction. Omit for non-transactional requests and for the initial begin request. |String |No
 |=========================================================
+
+Several of these options may alternatively be supplied inside the Gremlin query itself using the `with()` source step
+(for example `g.with('timeoutMillis', 500).V()`) when submitting a script. The server recognizes the following options
+this way: `timeoutMillis`, `materializeProperties`, `batchSize`, `bulkResults`, and `language`. When the same option is
+supplied both in the query via `with()` and as a request field, the value in the query takes precedence. The full
+precedence order is: value embedded in the query via `with()`, then the request field, then the server/connection
+default. The `parameters`, `transactionId`, `g`, and `gremlin` keys cannot be set through `with()` and must be supplied
+as request fields; `g` is excluded because of the complex interactions between different script engines and
+transactions.
 
 ==== HTTP Response
 

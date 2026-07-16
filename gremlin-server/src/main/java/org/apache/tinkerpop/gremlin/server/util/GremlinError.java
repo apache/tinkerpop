@@ -88,6 +88,12 @@ public class GremlinError {
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
+    public static GremlinError batchSize(final String batchSize) {
+        final String message = String.format("The message specifies a batchSize of %s but it must be an integer between 1 and %s",
+                batchSize, Integer.MAX_VALUE);
+        return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
+    }
+
     public static GremlinError binding(final String aliased) {
         final String message = String.format("Could not alias [%s] to [%s] as [%s] not in the Graph or TraversalSource global bindings",
                 Tokens.ARGS_G, aliased, aliased);

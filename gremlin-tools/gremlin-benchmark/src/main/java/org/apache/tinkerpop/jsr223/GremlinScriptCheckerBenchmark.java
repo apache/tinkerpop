@@ -33,8 +33,8 @@ import java.util.Optional;
 public class GremlinScriptCheckerBenchmark extends AbstractBenchmarkBase {
 
     @Benchmark
-    public Optional<String> testParseRequestId() {
-        return GremlinScriptChecker.parse("g.with('requestId', '4F53FB59-CFC9-4984-B477-452073A352FD').with(true).V().out('knows')").getRequestId();
+    public Optional<Long> testParseTimeout() {
+        return GremlinScriptChecker.parse("g.with('timeoutMillis', 1000L).with(true).V().out('knows')").getTimeout();
     }
 
     @Benchmark
@@ -44,6 +44,6 @@ public class GremlinScriptCheckerBenchmark extends AbstractBenchmarkBase {
 
     @Benchmark
     public GremlinScriptChecker.Result testParseAll() {
-        return GremlinScriptChecker.parse("g.with('timeoutMillis', 1000L).with('materializeProperties', 'all').with('requestId', '4F53FB59-CFC9-4984-B477-452073A352FD').with(true).V().out('knows')");
+        return GremlinScriptChecker.parse("g.with('timeoutMillis', 1000L).with('materializeProperties', 'all').with('language', 'gremlin-lang').with('batchSize', 100).with('bulkResults', true).with(true).V().out('knows')");
     }
 }
