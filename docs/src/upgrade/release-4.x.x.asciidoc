@@ -32,6 +32,229 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Declarative Pattern Matching
+
+Gremlin has always offered both imperative and declarative styles to writing graph queries. While the imperative style
+has largely dominated examples and usages, the `match` step has always provided a declarative way to express queries.
+The syntax for `match` looked something like this:
+
+[source,text]
+----
+gremlin> g.V().match(__.as("a").hasLabel("person").out("created").hasLabel("software").as("s"),
+......1>             __.as("s").hasLabel("software").in("created").hasLabel("person").as("b")).
+......2>   where("a", neq("b")).
+......3>   select("a", "b", "s").by("name")
+==>[a:marko,b:josh,s:lop]
+==>[a:marko,b:peter,s:lop]
+==>[a:josh,b:marko,s:lop]
+==>[a:josh,b:peter,s:lop]
+==>[a:peter,b:marko,s:lop]
+==>[a:peter,b:josh,s:lop]
+----
+
+While this approach worked, it was syntactically complex and since `match` took an arbitrary `Traversal` as arguments,
+the declarative style wasn't necessarily enforced well. Moreover, providers found it complicated to optimize `match` as
+a step, which meant that, more often than not, it was more performant to simply write the imperative form of the query,
+which could take advantage of normal optimization patterns. As a result, `match` never really gained a main stream sort
+of usage beyond some fairly narrow use cases.
+
+In TinkerPop 4.0.0, `match` has a new direction. Instead of taking Gremlin traversals to define the match pattern, it
+takes a query string that could technically be any declarative graph query language. Using
+link:https://www.iso.org/standard/76120.html[GQL] as an example, the previous Gremlin query using the old `match` style
+would look like this:
+
+[source,text]
+----
+gremlin> g.match("MATCH (a:person)-[:created]->(s:software), (b:person)-[:created]->(s)").
+......1>   where("a", neq("b")).
+......2>   select("a", "b", "s").by("name")
+==>[a:marko,b:josh,s:lop]
+==>[a:marko,b:peter,s:lop]
+==>[a:josh,b:marko,s:lop]
+==>[a:josh,b:peter,s:lop]
+==>[a:peter,b:marko,s:lop]
+==>[a:peter,b:josh,s:lop]
+----
+
+With `match` redesigned in this way users have the opportunity to take advantage of the strengths of declarative query
+languages, where it makes sense, while equally retaining the power and feel that Gremlin has always had. The promise of
+Gremlin being both imperative and declarative offers a much more compelling story with this model.
+
+NOTE: The traversal-based form of `match` (e.g. `g.V().match(as("a").out().as("b"))`) is deprecated as of
+TinkerPop 4.0.0 and will be removed in a future release. Users should migrate to the new `match(String)` API.
+
+TinkerPop ships a reference GQL engine for `match()` via the optional `gql-gremlin` module. The engine implements the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergql[TinkerGQL] dialect — a deliberate minimal subset of
+ISO GQL `MATCH` syntax — and works against any `Graph` implementation through a thin set of default interface methods.
+TinkerGraph uses it out of the box with no configuration required. Graph providers that want to offer TinkerGQL support
+can add the `gql-gremlin` dependency and register `GqlDeclarativeMatchStrategy` as described in the
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#tinkerpop-providers-tinkergql[provider documentation].
+
+==== Multi-Label Support
+
+Until now, vertices in the property graph model were limited to a single, immutable label assigned at creation. This
+release introduces configurable label cardinality, allowing vertices to carry multiple labels that can be added and
+removed over their lifetime. This is an optional feature for graph providers and not all will support it in the same
+way. TinkerGraph offers a configurable approach to enabling the the feature using one of the `LabelCardinality` settings
+as a graph-level setting that defaults to `ONE`, preserving the existing single-label behavior. To enable multi-label
+in TinkerGraph, set the vertex label cardinality in the graph properties:
+
+```
+gremlin.tinkergraph.vertexLabelCardinality=ZERO_OR_MORE
+```
+
+The three modes are `ONE` (single, immutable, the 3.x default), `ONE_OR_MORE` (mutable, minimum one), and
+`ZERO_OR_MORE` (fully flexible). Edge labels remain fixed at `ONE`.
+
+The following examples demonstrate how Gremlin behaves with multi-label enabled:
+
+```text
+gremlin> g.addV('person','employee').property('name','marko')
+==>v[0]
+gremlin> g.V().has('name','marko').addLabel('manager')
+==>v[0]
+gremlin> g.V().has('name','marko').labels()
+==>person
+==>employee
+==>manager
+gremlin> g.V().has('name','marko').dropLabel('employee').labels()
+==>person
+==>manager
+```
+
+The `labels()` step is a flatMap that emits one traverser per label, unlike `label()` which returns a single string.
+For single-label vertices the two behave identically.
+
+The `mergeV()` step accepts a list for `T.label` to match or create multi-label vertices. The `onMatch` option uses
+append-only semantics: new labels are added, existing labels are preserved:
+
+```text
+gremlin> g.mergeV([(T.label): ['person','employee'], name: 'marko'])
+==>v[0]
+gremlin> g.mergeV([(T.label): 'person', name: 'marko']).option(Merge.onMatch, [(T.label): 'director'])
+==>v[0]
+```
+
+By default, `elementMap()` and `valueMap()` continue to return labels as a single string. To receive all labels as a
+set, use `with("multilabel")` either per-traversal or as a persistent source configuration:
+
+```text
+// assuming a vertex with labels [person, employee, manager] and name "marko"
+gremlin> g.with("multilabel").V().has('name','marko').elementMap()
+==>{id=0, label=[manager, person, employee], name=marko}
+gremlin> g.V().has('name','marko').elementMap()
+==>{id=0, label=manager, name=marko}
+```
+
+To avoid repeating `with("multilabel")` on every traversal, create a persistent source:
+
+```text
+gremlin> gml = g.with("multilabel")
+==>graphtraversalsource[tinkergraph[vertices:1 edges:0], standard]
+gremlin> gml.V().has('name','marko').elementMap()
+==>{id=0, label=[manager, person, employee], name=marko}
+gremlin> gml.V().has('name','marko').valueMap(true)
+==>{id=0, label=[manager, person, employee], name=[marko]}
+```
+
+==== Transactions
+
+TinkerPop 4.0 brings a set of related transaction changes across the drivers and embedded graphs: explicit remote
+transaction support in every GLV, closure-based managed transaction blocks, the replacement of `open()` with
+`begin()`, and a safer default close behavior. Each is described below.
+
+===== GLV Transaction Support
+
+All non-Java Gremlin Language Variants (gremlin-python, gremlin-go, gremlin-javascript, gremlin-dotnet) now support
+explicit remote transactions over HTTP. The transaction model is the same across all GLVs: begin a transaction, submit
+traversals within it, then commit or rollback. Data is isolated until committed.
+
+Each GLV provides two entry points:
+
+* **Traversal API**: `g.tx().begin()` returns a transaction-bound `GraphTraversalSource`
+* **Driver API**: `client.transact()` (or `client.Transact()` in .NET) returns a `Transaction` with `submit()` methods
+
+Key behaviors consistent across all GLVs:
+
+* Transactions are not thread-safe. All operations must be sequential.
+* The default close behavior is rollback (partial work discarded if commit is not called explicitly).
+* Transactions are single-use. After commit or rollback, a new transaction must be created.
+* `gtx.tx()` returns the same transaction object (enabling `gtx.tx().commit()` pattern from the Traversal API).
+
+See the <<gremlin-drivers-variants,Gremlin Drivers and Variants>> reference documentation for language-specific
+syntax and examples.
+
+===== Managed Transaction Blocks
+
+In addition to the manual `begin()`/`commit()`/`rollback()` lifecycle, every GLV (including the Java driver and embedded
+Java graphs) now offers closure-based convenience methods directly on `GraphTraversalSource` (`g`). You hand `g` a
+function that receives the transaction-bound `g` (`gtx`), and the transaction lifecycle is managed for you: the
+transaction is begun, your function runs, and it is committed on normal completion or rolled back if your function
+raises. This reduces the common begin/do-work/commit boilerplate and makes it harder to accidentally run a traversal
+against the non-transactional `g`, since only the transactional source is in scope inside the closure. The methods are a
+Traversal-API convenience (they live on `g`, not on the `Transaction` returned by `g.tx()`).
+
+The method naming follows each language's idiom (the value-returning form is `evaluateInTx` rather than `call`, because
+`call` is already the `call()` service step on `GraphTraversalSource`):
+
+* **Java**: `g.executeInTx(Consumer)` (no return) and `g.evaluateInTx(Function)` (returns the body's value).
+* **Python**: `g.execute_in_tx(fn)` — a single method that returns whatever the function returns.
+* **JavaScript**: `await g.executeInTx(fn)` — the callback may be `async`; resolves to the callback's return value.
+* **.NET**: `g.ExecuteInTxAsync(Func<..,Task>)` and `g.EvaluateInTxAsync<T>(Func<..,Task<T>>)`, both accepting an optional `CancellationToken`.
+* **Go**: `g.ExecuteInTx(func(*GraphTraversalSource) error) error` and `g.EvaluateInTx(func(*GraphTraversalSource) (interface{}, error)) (interface{}, error)`.
+
+The closure runs the transaction exactly once (no automatic retry). If the function fails, the original error is
+re-raised after rollback; if `commit()` fails, the commit error is raised and a rollback is still attempted to release
+server-side resources. The manual `begin()`/`commit()`/`rollback()` API remains available and unchanged for advanced
+use. See the <<gremlin-drivers-variants,Gremlin Drivers and Variants>> reference documentation for language-specific
+examples.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3253[TINKERPOP-3253]
+
+===== `Transaction.open()` Replaced by `begin()`
+
+The `open()` method has been removed from the `Transaction` API. Use `begin()` instead, which is now the single
+transaction-start method for both embedded and remote contexts. Replace any `tx.open()` or `g.tx().open()` calls with
+`begin()`. This is a compile-time break and is straightforward to find and fix.
+
+In addition, `begin()` is idempotent. Calling it when a transaction is already open does not start a new transaction
+and does not throw. Instead it returns a `TraversalSource` bound to the existing transaction. For embedded graphs this
+replaces the previous behavior where opening an already-open transaction threw an exception, so review and remove any
+code that catches or relies on a second open failing. For the semantics of `begin()` and how it interacts with
+`AUTO`/`MANUAL` transactions, see the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#transactions[Traversal Transactions] reference documentation.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3252[TINKERPOP-3252]
+
+===== Transaction Default Close Behavior Changed
+
+The default behavior of `close()` on a remote transaction has been changed from `commit` to `rollback` across all
+GLVs (including the Java driver). This aligns with the embedded graph transaction default and is the safer behavior:
+partial work is discarded if the user forgets to call `commit()`. In Java (both remote and embedded mode), the behavior
+can still be overridden via `tx.onClose(Transaction.CLOSE_BEHAVIOR.COMMIT)`. The non-Java GLVs do not support
+configuring close behavior and always rollback.
+
+==== Subgraph Support in GLVs
+
+All GLVs now support the `subgraph()` step. Previously, calling `subgraph()` from a GLV produced an unknown-type error
+because the variant could not interpret the `Graph` payload that the server returned. Applications can now extract a
+portion of a remote graph as part of a normal traversal and inspect its vertices and edges directly from the client,
+without having to re-issue queries to reconstruct the result. See: <<subgraph-step>>.
+
+In the GLVs, the result is a detached snapshot of the captured vertices and edges, not a traversable `Graph` instance.
+It cannot be passed to `traversal().with(...)`, and mutating its collections has no effect on the source graph. To
+re-query elements against the original graph, extract their ids and call `g.V(id)` or `g.E(id)` against the original
+`GraphTraversalSource`.
+
+==== Gremlator
+
+link:https://gremlator.com[Gremlator] has been rebuilt entirely in JavaScript as a browser-based single-page
+application and is now an official part of the Apache TinkerPop project. It translates Gremlin queries into
+equivalent representations in all supported language variants: Groovy, Java, Python, JavaScript, Go, .NET, and an
+anonymized form. The original gremlator.com was a prototype built by TinkerPop committer Dave Bechberger; the
+previous implementation required Java and a running Gremlin Server, whereas the new version runs entirely in the
+browser with no server infrastructure needed.
+
 ==== Bindings are now Parameters
 
 The map of named values substituted into a Gremlin query was previously called "bindings" in some places and
@@ -177,64 +400,6 @@ of options used by TinkerPop's own tests is unchanged.
 
 The minimum target framework is now `net8.0` (previously `netstandard2.0;net6.0`).
 
-==== Declarative Pattern Matching
-
-Gremlin has always offered both imperative and declarative styles to writing graph queries. While the imperative style
-has largely dominated examples and usages, the `match` step has always provided a declarative way to express queries.
-The syntax for `match` looked something like this:
-
-[source,text]
-----
-gremlin> g.V().match(__.as("a").hasLabel("person").out("created").hasLabel("software").as("s"),
-......1>             __.as("s").hasLabel("software").in("created").hasLabel("person").as("b")).
-......2>   where("a", neq("b")).
-......3>   select("a", "b", "s").by("name")
-==>[a:marko,b:josh,s:lop]
-==>[a:marko,b:peter,s:lop]
-==>[a:josh,b:marko,s:lop]
-==>[a:josh,b:peter,s:lop]
-==>[a:peter,b:marko,s:lop]
-==>[a:peter,b:josh,s:lop]
-----
-
-While this approach worked, it was syntactically complex and since `match` took an arbitrary `Traversal` as arguments,
-the declarative style wasn't necessarily enforced well. Moreover, providers found it complicated to optimize `match` as
-a step, which meant that, more often than not, it was more performant to simply write the imperative form of the query,
-which could take advantage of normal optimization patterns. As a result, `match` never really gained a main stream sort
-of usage beyond some fairly narrow use cases.
-
-In TinkerPop 4.0.0, `match` has a new direction. Instead of taking Gremlin traversals to define the match pattern, it
-takes a query string that could technically be any declarative graph query language. Using
-link:https://www.iso.org/standard/76120.html[GQL] as an example, the previous Gremlin query using the old `match` style
-would look like this:
-
-[source,text]
-----
-gremlin> g.match("MATCH (a:person)-[:created]->(s:software), (b:person)-[:created]->(s)").
-......1>   where("a", neq("b")).
-......2>   select("a", "b", "s").by("name")
-==>[a:marko,b:josh,s:lop]
-==>[a:marko,b:peter,s:lop]
-==>[a:josh,b:marko,s:lop]
-==>[a:josh,b:peter,s:lop]
-==>[a:peter,b:marko,s:lop]
-==>[a:peter,b:josh,s:lop]
-----
-
-With `match` redesigned in this way users have the opportunity to take advantage of the strengths of declarative query
-languages, where it makes sense, while equally retaining the power and feel that Gremlin has always had. The promise of
-Gremlin being both imperative and declarative offers a much more compelling story with this model.
-
-NOTE: The traversal-based form of `match` (e.g. `g.V().match(as("a").out().as("b"))`) is deprecated as of
-TinkerPop 4.0.0 and will be removed in a future release. Users should migrate to the new `match(String)` API.
-
-TinkerPop ships a reference GQL engine for `match()` via the optional `gql-gremlin` module. The engine implements the
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergql[TinkerGQL] dialect — a deliberate minimal subset of
-ISO GQL `MATCH` syntax — and works against any `Graph` implementation through a thin set of default interface methods.
-TinkerGraph uses it out of the box with no configuration required. Graph providers that want to offer TinkerGQL support
-can add the `gql-gremlin` dependency and register `GqlDeclarativeMatchStrategy` as described in the
-link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#tinkerpop-providers-tinkergql[provider documentation].
-
 ==== Request Interceptors
 
 When TinkerPop supported WebSockets prior to 4.0.0, the Java driver offered a `RequestInterceptor` interface (and
@@ -266,91 +431,6 @@ each GLV's documentation in the
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
 reference.
 
-==== Multi-Label Support
-
-Until now, vertices in the property graph model were limited to a single, immutable label assigned at creation. This
-release introduces configurable label cardinality, allowing vertices to carry multiple labels that can be added and
-removed over their lifetime.
-
-The feature is controlled by `LabelCardinality`, a graph-level setting that defaults to `ONE`, preserving the
-existing single-label behavior. To enable multi-label in TinkerGraph, set the vertex label cardinality in the graph
-properties:
-
-```
-gremlin.tinkergraph.vertexLabelCardinality=ZERO_OR_MORE
-```
-
-The three modes are `ONE` (single, immutable, the 3.x default), `ONE_OR_MORE` (mutable, minimum one), and
-`ZERO_OR_MORE` (fully flexible). Edge labels remain fixed at `ONE`.
-
-With multi-label enabled, several new traversal steps become available:
-
-```text
-gremlin> g.addV('person','employee').property('name','marko')
-==>v[0]
-gremlin> g.V().has('name','marko').addLabel('manager')
-==>v[0]
-gremlin> g.V().has('name','marko').labels()
-==>person
-==>employee
-==>manager
-gremlin> g.V().has('name','marko').dropLabel('employee').labels()
-==>person
-==>manager
-```
-
-The `labels()` step is a flatMap that emits one traverser per label, unlike `label()` which returns a single string.
-For single-label vertices the two behave identically.
-
-The `mergeV()` step accepts a list for `T.label` to match or create multi-label vertices. The `onMatch` option uses
-append-only semantics: new labels are added, existing labels are preserved:
-
-```text
-gremlin> g.mergeV([(T.label): ['person','employee'], name: 'marko'])
-==>v[0]
-gremlin> g.mergeV([(T.label): 'person', name: 'marko']).option(Merge.onMatch, [(T.label): 'director'])
-==>v[0]
-```
-
-By default, `elementMap()` and `valueMap()` continue to return labels as a single string. To receive all labels as a
-set, use `with("multilabel")` either per-traversal or as a persistent source configuration:
-
-```text
-// assuming a vertex with labels [person, employee, manager] and name "marko"
-gremlin> g.with("multilabel").V().has('name','marko').elementMap()
-==>{id=0, label=[manager, person, employee], name=marko}
-gremlin> g.V().has('name','marko').elementMap()
-==>{id=0, label=manager, name=marko}
-```
-
-To avoid repeating `with("multilabel")` on every traversal, create a persistent source:
-
-```text
-gremlin> gml = g.with("multilabel")
-==>graphtraversalsource[tinkergraph[vertices:1 edges:0], standard]
-gremlin> gml.V().has('name','marko').elementMap()
-==>{id=0, label=[manager, person, employee], name=marko}
-gremlin> gml.V().has('name','marko').valueMap(true)
-==>{id=0, label=[manager, person, employee], name=[marko]}
-```
-
-Note the following behavioral details:
-
-* The deprecated `label()` step returns a single, non-deterministic label when multiple labels are present. Always
-  use `labels()` to retrieve the full set reliably.
-* When a source is configured with `with("multilabel")`, the label output can be forced back to a single string
-  per-traversal using `with("singlelabel")`. This is useful for providers that enable multi-label output by default
-  but need an escape hatch for backward compatibility. Note that when both options are present on the same source,
-  `"singlelabel"` always takes precedence regardless of the order in which they were applied.
-* Adding a label that already exists on the vertex is a no-op (when multi-label is enabled). Dropping a label that
-  does not exist is also a no-op. With cardinality `ONE`, both `addLabel()` and `dropLabel()` throw since labels are
-  immutable.
-* `hasLabel()` tests the predicate against each label on the element and returns `true` if at least one label
-  satisfies it. For multi-label vertices, this means `hasLabel(P.neq("person"))` returns `true` when the vertex also
-  carries other labels, a natural consequence of testing a negation predicate against a set of labels, where the
-  non-matching labels will satisfy `neq`. To exclude vertices that carry a specific label, use the negation pattern:
-  `g.V().not(__.hasLabel("person"))`. For single-label vertices the behavior is unchanged.
-
 ==== Inconfigurable Request Serialization
 
 TinkerPop 3.x drivers used a single serializer configuration (for example, `serializer` in the Java driver or
@@ -367,92 +447,6 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants
 reference.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3250[TINKERPOP-3250]
-
-==== Gremlator
-
-link:https://gremlator.com[Gremlator] has been rebuilt entirely in JavaScript as a browser-based single-page
-application and is now an official part of the Apache TinkerPop project. It translates Gremlin queries into
-equivalent representations in all supported language variants: Groovy, Java, Python, JavaScript, Go, .NET, and an
-anonymized form. The original gremlator.com was a prototype built by TinkerPop committer Dave Bechberger; the
-previous implementation required Java and a running Gremlin Server, whereas the new version runs entirely in the
-browser with no server infrastructure needed.
-
-==== Transactions
-
-TinkerPop 4.0 brings a set of related transaction changes across the drivers and embedded graphs: explicit remote
-transaction support in every GLV, closure-based managed transaction blocks, the replacement of `open()` with
-`begin()`, and a safer default close behavior. Each is described below.
-
-===== GLV Transaction Support
-
-All non-Java Gremlin Language Variants (gremlin-python, gremlin-go, gremlin-javascript, gremlin-dotnet) now support
-explicit remote transactions over HTTP. The transaction model is the same across all GLVs: begin a transaction, submit
-traversals within it, then commit or rollback. Data is isolated until committed.
-
-Each GLV provides two entry points:
-
-* **Traversal API**: `g.tx().begin()` returns a transaction-bound `GraphTraversalSource`
-* **Driver API**: `client.transact()` (or `client.Transact()` in .NET) returns a `Transaction` with `submit()` methods
-
-Key behaviors consistent across all GLVs:
-
-* Transactions are not thread-safe. All operations must be sequential.
-* The default close behavior is rollback (partial work discarded if commit is not called explicitly).
-* Transactions are single-use. After commit or rollback, a new transaction must be created.
-* `gtx.tx()` returns the same transaction object (enabling `gtx.tx().commit()` pattern from the Traversal API).
-
-See the <<gremlin-drivers-variants,Gremlin Drivers and Variants>> reference documentation for language-specific
-syntax and examples.
-
-===== Managed Transaction Blocks
-
-In addition to the manual `begin()`/`commit()`/`rollback()` lifecycle, every GLV (including the Java driver and embedded
-Java graphs) now offers closure-based convenience methods directly on `GraphTraversalSource` (`g`). You hand `g` a
-function that receives the transaction-bound `g` (`gtx`), and the transaction lifecycle is managed for you: the
-transaction is begun, your function runs, and it is committed on normal completion or rolled back if your function
-raises. This reduces the common begin/do-work/commit boilerplate and makes it harder to accidentally run a traversal
-against the non-transactional `g`, since only the transactional source is in scope inside the closure. The methods are a
-Traversal-API convenience (they live on `g`, not on the `Transaction` returned by `g.tx()`).
-
-The method naming follows each language's idiom (the value-returning form is `evaluateInTx` rather than `call`, because
-`call` is already the `call()` service step on `GraphTraversalSource`):
-
-* **Java**: `g.executeInTx(Consumer)` (no return) and `g.evaluateInTx(Function)` (returns the body's value).
-* **Python**: `g.execute_in_tx(fn)` — a single method that returns whatever the function returns.
-* **JavaScript**: `await g.executeInTx(fn)` — the callback may be `async`; resolves to the callback's return value.
-* **.NET**: `g.ExecuteInTxAsync(Func<..,Task>)` and `g.EvaluateInTxAsync<T>(Func<..,Task<T>>)`, both accepting an optional `CancellationToken`.
-* **Go**: `g.ExecuteInTx(func(*GraphTraversalSource) error) error` and `g.EvaluateInTx(func(*GraphTraversalSource) (interface{}, error)) (interface{}, error)`.
-
-The closure runs the transaction exactly once (no automatic retry). If the function fails, the original error is
-re-raised after rollback; if `commit()` fails, the commit error is raised and a rollback is still attempted to release
-server-side resources. The manual `begin()`/`commit()`/`rollback()` API remains available and unchanged for advanced
-use. See the <<gremlin-drivers-variants,Gremlin Drivers and Variants>> reference documentation for language-specific
-examples.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-3253[TINKERPOP-3253]
-
-===== `Transaction.open()` Replaced by `begin()`
-
-The `open()` method has been removed from the `Transaction` API. Use `begin()` instead, which is now the single
-transaction-start method for both embedded and remote contexts. Replace any `tx.open()` or `g.tx().open()` calls with
-`begin()`. This is a compile-time break and is straightforward to find and fix.
-
-In addition, `begin()` is idempotent. Calling it when a transaction is already open does not start a new transaction
-and does not throw. Instead it returns a `TraversalSource` bound to the existing transaction. For embedded graphs this
-replaces the previous behavior where opening an already-open transaction threw an exception, so review and remove any
-code that catches or relies on a second open failing. For the semantics of `begin()` and how it interacts with
-`AUTO`/`MANUAL` transactions, see the
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#transactions[Traversal Transactions] reference documentation.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-3252[TINKERPOP-3252]
-
-===== Transaction Default Close Behavior Changed
-
-The default behavior of `close()` on a remote transaction has been changed from `commit` to `rollback` across all
-GLVs (including the Java driver). This aligns with the embedded graph transaction default and is the safer behavior:
-partial work is discarded if the user forgets to call `commit()`. In Java (both remote and embedded mode), the behavior
-can still be overridden via `tx.onClose(Transaction.CLOSE_BEHAVIOR.COMMIT)`. The non-Java GLVs do not support
-configuring close behavior and always rollback.
 
 ==== Expanding Dynamic Arguments to Additional Steps
 
@@ -947,18 +941,6 @@ const { unwrap } = gremlin.structure;
 unwrap(toInt(29));  // 29
 unwrap('hello');    // 'hello'
 ----
-
-==== Subgraph Support in GLVs
-
-All GLVs now support the `subgraph()` step. Previously, calling `subgraph()` from a GLV produced an unknown-type error
-because the variant could not interpret the `Graph` payload that the server returned. Applications can now extract a
-portion of a remote graph as part of a normal traversal and inspect its vertices and edges directly from the client,
-without having to re-issue queries to reconstruct the result. See: <<subgraph-step>>.
-
-In the GLVs, the result is a detached snapshot of the captured vertices and edges, not a traversable `Graph` instance.
-It cannot be passed to `traversal().with(...)`, and mutating its collections has no effect on the source graph. To
-re-query elements against the original graph, extract their ids and call `g.V(id)` or `g.E(id)` against the original
-`GraphTraversalSource`.
 
 ==== Provider Defined Types
 
