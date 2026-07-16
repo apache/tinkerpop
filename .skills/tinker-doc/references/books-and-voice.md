@@ -245,15 +245,36 @@ The semantics document is language-agnostic: it specifies Gremlin behavior for
 every GLV. Do not name Java-specific types, exception classes, syntax, or library
 functions in normative prose. The reference implementation is linked from each
 step's `See:` block, and that is the appropriate place for any Java-flavored
-specifics. For exceptions, name the TinkerPop error category (`Argument Error`,
-`State Error`, `Type Error`, `Arithmetic Error`, `Unsupported Operation`) rather
-than a Java exception class. For types, use the `GType` enum names (`STRING`,
-`INT`, `LONG`, `BIGINT`, `BIGDECIMAL`, `FLOAT`, `DOUBLE`, `BOOLEAN`, `UUID`,
-`DATETIME`, `DURATION`, `BINARY`, `CHAR`, `NULL`, `NUMBER`, `LIST`, `SET`, `MAP`,
-plus graph types). Type definitions live in `== Types`; per-type Equality,
-Comparability, and Orderability behavior lives in the Comparability chapter. Do
-not duplicate definitions across the two. The `Java reference exception` column
-of the Errors table is the one intentional Java reference in the document.
+specifics. For exceptions, name the TinkerPop error category rather than a Java
+exception class. The categories are defined by the Errors table near the top of
+the document, which is the authority on which ones exist — do not use a category
+that is not a row in that table.
+
+For types, use the `GType` enum names (`STRING`, `INT`, `LONG`, `BIGINT`,
+`BIGDECIMAL`, `FLOAT`, `DOUBLE`, `BOOLEAN`, `UUID`, `DATETIME`, `DURATION`,
+`BINARY`, `CHAR`, `NULL`, `NUMBER`, `LIST`, `SET`, `MAP`, plus graph types), not
+the Java class names that back them. This applies to collections and generics as
+much as to scalars: write `SET<STRING>`, `LIST<STRING>`, `MAP<STRING, any>`, and
+`Traversal<any, STRING>` — never `Set<String>`, `Collection<String>`, or
+`Traversal<?, ?>`. Use `any` for an unconstrained type parameter.
+
+Note that `GType` has no `Collection` supertype, so there is nothing to translate
+`Collection<String>` directly into. `LIST` and `SET` are distinct types and
+neither subsumes the other, so a step accepting either takes "a `LIST` or `SET` of
+`STRING`". Check the step's source rather than assuming, since narrowing the
+contract to one of them is a real error.
+
+Java-specific naming also leaks in through configuration and enum names, not just
+types and exceptions. `LabelCardinality` and its constants (`ONE`, `ONE_OR_MORE`,
+`ZERO_OR_MORE`) are a Java-side concept that never appears in the grammar, so the
+capability is described in prose instead ("a graph that permits the set of labels
+on an element to change"). If a name is not in `Gremlin.g4` and not a `GType`, it
+probably does not belong in normative prose.
+
+Type definitions live in `== Types`; per-type Equality, Comparability, and
+Orderability behavior lives in the Comparability chapter. Do not duplicate
+definitions across the two. The `Java reference exception` column of the Errors
+table is the one intentional Java reference in the document.
 
 The document has two parts. The conceptual sections near the top (equality,
 comparability, orderability, equivalence, type promotion) specify the
