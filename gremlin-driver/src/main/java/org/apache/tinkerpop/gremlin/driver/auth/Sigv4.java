@@ -137,17 +137,13 @@ public class Sigv4 implements Auth {
         checkNotNull(request.getUri(), "The request URI must not be null");
         checkNotNull(request.getMethod(), "The request method must not be null");
 
-        // convert the headers to the internal API format
-        final Map<String, String> headers = request.headers();
+        // Sign an empty header set: the signer adds (and signs) the Host, X-Amz-Date and
+        // X-Amz-Content-Sha256 headers itself (plus X-Amz-Security-Token for session
+        // credentials). The request's own headers (accept, content-type, accept-encoding,
+        // user-agent, ...) are deliberately NOT signed: transport-managed headers may be added or
+        // rewritten after this interceptor runs, so a signature covering them would no longer
+        // match the bytes actually sent.
         final Map<String, List<String>> headersInternal = new HashMap<>();
-
-        // we don't want to add the Host header as the Signer always adds the host header.
-        for (Map.Entry<String, String> header : headers.entrySet()) {
-            // Skip adding the Host header as the signing process will add one.
-            if (!header.getKey().equalsIgnoreCase(HttpRequest.Headers.HOST)) {
-                headersInternal.put(header.getKey(), Collections.singletonList(header.getValue()));
-            }
-        }
 
         // convert the parameters to the internal API format
         final URI uri = request.getUri();

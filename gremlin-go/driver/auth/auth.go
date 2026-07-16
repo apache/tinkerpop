@@ -26,6 +26,8 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -98,17 +100,39 @@ func SigV4WithCredentials(region, service string, credentialsProvider aws.Creden
 			return err
 		}
 
-		stdReq, err := req.ToStdRequest()
+		// Signed header set: host, x-amz-date, x-amz-content-sha256, and (for session
+		// credentials) x-amz-security-token. The request's own headers (accept, content-type,
+		// ...) are deliberately NOT signed: the HTTP client manages transport headers such as
+		// Content-Length and Accept-Encoding after this interceptor runs, so a signature covering
+		// them would not match the bytes actually sent.
+
+		// Strip the default port (443 for https, 80 for http) from the host so the signed
+		// canonical Host and the Host header sent on the wire both omit it, matching what a
+		// spec-compliant verifier reconstructs (a bare host). Mutating req.URL here is safe: the
+		// driver parses a fresh URL per request, and this also fixes the Host sent on the wire.
+		// Trim only the trailing ":port" so IPv6 literals keep their brackets (using
+		// URL.Hostname() would drop them, yielding an unparseable host like "::1").
+		port := req.URL.Port()
+		if (req.URL.Scheme == "https" && port == "443") || (req.URL.Scheme == "http" && port == "80") {
+			req.URL.Host = strings.TrimSuffix(req.URL.Host, ":"+port)
+		}
+
+		payloadHash := req.PayloadHash()
+		stdReq, err := http.NewRequest(req.Method, req.URL.String(), nil)
 		if err != nil {
 			return err
 		}
-		stdReq.Body = nil // Body is handled separately via payload hash
+		stdReq.Host = req.URL.Host
+		// Set the payload hash header BEFORE signing so it is part of the signed set:
+		// aws-sdk-go-v2's SignHTTP takes the hash as a parameter but does not add the header
+		// itself, and a present-but-unsigned header is rejected by the server.
+		stdReq.Header.Set("X-Amz-Content-Sha256", payloadHash)
 
-		if err := signer.SignHTTP(ctx, creds, stdReq, req.PayloadHash(), service, region, time.Now()); err != nil {
+		if err := signer.SignHTTP(ctx, creds, stdReq, payloadHash, service, region, time.Now()); err != nil {
 			return err
 		}
 
-		// Copy signed headers back to HttpRequest
+		// Copy the SigV4 output headers back onto the request.
 		for k, v := range stdReq.Header {
 			req.Headers[k] = v
 		}

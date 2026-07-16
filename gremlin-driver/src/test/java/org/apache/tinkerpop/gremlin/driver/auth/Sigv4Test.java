@@ -49,7 +49,7 @@ import static software.amazon.awssdk.http.auth.aws.internal.signer.util.SignerCo
 import static software.amazon.awssdk.http.auth.aws.internal.signer.util.SignerConstant.X_AMZ_SECURITY_TOKEN;
 
 public class Sigv4Test {
-    private static final String REGION = "us-west-2";
+    private static final String REGION = "region-1";
     private static final String SERVICE_NAME = "service-name";
     private static final String HOST = "localhost";
     private static final String URI_WITH_QUERY_PARAMS = "http://" + HOST + ":8182?a=1&b=2";
@@ -141,5 +141,45 @@ public class Sigv4Test {
                 allOf(startsWith("AWS4-HMAC-SHA256 Credential=" + KEY),
                         containsString("/" + REGION + "/service-name/aws4_request"),
                         containsString("Signature=")));
+    }
+
+    @Test
+    public void shouldSignOnlyMinimalHeaderSetForBasicCredentials() throws Exception {
+        when(credentialsProvider.resolveCredentials()).thenReturn(AwsBasicCredentials.create(KEY, SECRET));
+        final HttpRequest httpRequest = createRequestWithTransportHeaders();
+        sigv4.intercept(httpRequest);
+
+        // Only host and the headers the AWS SDK adds itself are signed. Transport-managed headers
+        // (accept-encoding, content-type, ...) are never signed, or the signature would not match
+        // what the server reconstructs.
+        assertEquals("host;x-amz-content-sha256;x-amz-date", signedHeaders(httpRequest));
+    }
+
+    @Test
+    public void shouldSignSecurityTokenForSessionCredentials() throws Exception {
+        when(credentialsProvider.resolveCredentials())
+                .thenReturn(AwsSessionCredentials.create(KEY, SECRET, "session-token"));
+        final HttpRequest httpRequest = createRequestWithTransportHeaders();
+        sigv4.intercept(httpRequest);
+
+        assertEquals("host;x-amz-content-sha256;x-amz-date;x-amz-security-token", signedHeaders(httpRequest));
+    }
+
+    private HttpRequest createRequestWithTransportHeaders() throws Exception {
+        final byte[] body = "{\"gremlin\":\"g.V().count()\"}".getBytes();
+        final HttpRequest httpRequest = new HttpRequest(new HashMap<>(), body, new URI(URI_WITH_QUERY_PARAMS));
+        // Seed transport-managed / content headers that must NOT end up in SignedHeaders.
+        httpRequest.headers().put("Accept", "application/vnd.graphbinary-v4.0");
+        httpRequest.headers().put("Content-Type", "application/json");
+        httpRequest.headers().put("Accept-Encoding", "deflate");
+        httpRequest.headers().put("User-Agent", "gremlin-java-test");
+        return httpRequest;
+    }
+
+    private static String signedHeaders(final HttpRequest httpRequest) {
+        final String authorization = httpRequest.headers().get(AUTHORIZATION);
+        final int start = authorization.indexOf("SignedHeaders=") + "SignedHeaders=".length();
+        final int end = authorization.indexOf(',', start);
+        return authorization.substring(start, end < 0 ? authorization.length() : end);
     }
 }

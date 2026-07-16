@@ -115,5 +115,51 @@ describe('auth', function () {
       // Signing adds at least authorization and x-amz-date on top of the originals
       assert.ok(Object.keys(request.headers).length >= preSignKeys.length + 2);
     });
+
+    // Extracts the SignedHeaders list from an Authorization header value.
+    function signedHeaders(authHeader) {
+      const marker = 'SignedHeaders=';
+      const start = authHeader.indexOf(marker) + marker.length;
+      const end = authHeader.indexOf(',', start);
+      return end < 0 ? authHeader.substring(start) : authHeader.substring(start, end);
+    }
+
+    // Only host and the headers the AWS SDK adds itself are signed. Transport-managed headers
+    // (accept-encoding, content-type, ...) are never signed, and the session token is signed only
+    // when session credentials are used.
+    function createRequestWithTransportHeaders() {
+      return new HttpRequest('POST', 'https://example.com:8182/gremlin', {
+        'accept': 'application/vnd.graphbinary-v4.0',
+        'content-type': 'application/json',
+        'accept-encoding': 'deflate',
+        'user-agent': 'gremlin-js-test',
+      }, Buffer.from('{"gremlin":"g.V().count()"}'));
+    }
+
+    it('should sign only the minimal header set for basic credentials', async function () {
+      const request = createRequestWithTransportHeaders();
+      const interceptor = sigv4('region-1', 'example-service', mockProvider);
+      await interceptor(request);
+
+      // smithy's SignatureV4 includes x-amz-content-sha256 in the signed set; that is its
+      // natural behavior and is intentionally left as-is.
+      assert.strictEqual(signedHeaders(request.headers['authorization']),
+        'host;x-amz-content-sha256;x-amz-date');
+    });
+
+    it('should sign the security token for session credentials', async function () {
+      const providerWithToken = () => ({
+        accessKeyId: 'MOCK_ACCESS_KEY',
+        secretAccessKey: 'MOCK_SECRET_KEY',
+        sessionToken: 'MOCK_SESSION_TOKEN',
+      });
+      const request = createRequestWithTransportHeaders();
+      const interceptor = sigv4('region-1', 'example-service', providerWithToken);
+      await interceptor(request);
+
+      assert.strictEqual(signedHeaders(request.headers['authorization']),
+        'host;x-amz-content-sha256;x-amz-date;x-amz-security-token');
+      assert.strictEqual(request.headers['x-amz-security-token'], 'MOCK_SESSION_TOKEN');
+    });
   });
 });

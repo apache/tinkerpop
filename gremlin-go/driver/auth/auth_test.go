@@ -22,6 +22,7 @@ package auth
 import (
 	"context"
 	"encoding/base64"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -139,4 +140,100 @@ func TestSigV4(t *testing.T) {
 		assert.NotEmpty(t, req.Headers.Get("X-Amz-Date"))
 		assert.Contains(t, req.Headers.Get("Authorization"), "AWS4-HMAC-SHA256")
 	})
+}
+
+// signedHeadersFromAuth extracts the SignedHeaders list from an Authorization header value.
+func signedHeadersFromAuth(authHeader string) string {
+	const marker = "SignedHeaders="
+	idx := strings.Index(authHeader, marker)
+	if idx < 0 {
+		return ""
+	}
+	rest := authHeader[idx+len(marker):]
+	if end := strings.Index(rest, ","); end >= 0 {
+		return rest[:end]
+	}
+	return rest
+}
+
+// TestSigV4SignedHeaders pins the signed header set: only host and the headers the AWS SDK adds
+// itself are signed, transport-managed headers such as accept-encoding are never signed even when
+// present on the request, and the session token is signed only when session credentials are used.
+func TestSigV4SignedHeaders(t *testing.T) {
+	// A default-port (443) https URL so the test also covers host:port stripping: the signed Host
+	// must be the bare hostname, matching what a spec-compliant verifier reconstructs.
+	newRequest := func() *gremlingo.HttpRequest {
+		req, err := gremlingo.NewHttpRequest("POST", "https://example.com:443/gremlin")
+		assert.NoError(t, err)
+		// Seed transport-managed and content headers that must NOT end up signed.
+		req.Headers.Set("Accept", graphBinaryMimeType)
+		req.Headers.Set("Content-Type", "application/json")
+		req.Headers.Set("Accept-Encoding", "deflate")
+		req.Headers.Set("User-Agent", "gremlin-go-test")
+		req.Body = []byte(`{"gremlin":"g.V().count()"}`)
+		return req
+	}
+
+	t.Run("basic credentials sign only host, date, content-sha256", func(t *testing.T) {
+		req := newRequest()
+		provider := &mockCredentialsProvider{accessKey: "MOCK_ID", secretKey: "MOCK_KEY"}
+		err := SigV4WithCredentials("region-1", "example-service", provider)(req)
+		assert.NoError(t, err)
+
+		signedHeaders := signedHeadersFromAuth(req.Headers.Get("Authorization"))
+		// aws-sdk-go-v2 leaves x-amz-content-sha256 in the signed set (see auth.go); that is the
+		// SDK's natural behavior and is intentionally left as-is.
+		assert.Equal(t, "host;x-amz-content-sha256;x-amz-date", signedHeaders)
+		assert.NotContains(t, signedHeaders, "accept-encoding")
+		assert.NotContains(t, signedHeaders, "content-type")
+		assert.NotContains(t, signedHeaders, "x-amz-security-token")
+
+		// The signed (and sent) Host must omit the default :443 port.
+		assert.Equal(t, "example.com", req.URL.Host)
+	})
+
+	t.Run("session credentials also sign the security token", func(t *testing.T) {
+		req := newRequest()
+		provider := &mockCredentialsProvider{accessKey: "MOCK_ID", secretKey: "MOCK_KEY", sessionToken: "MOCK_TOKEN"}
+		err := SigV4WithCredentials("region-1", "example-service", provider)(req)
+		assert.NoError(t, err)
+
+		signedHeaders := signedHeadersFromAuth(req.Headers.Get("Authorization"))
+		assert.Equal(t, "host;x-amz-content-sha256;x-amz-date;x-amz-security-token", signedHeaders)
+		assert.Equal(t, "MOCK_TOKEN", req.Headers.Get("X-Amz-Security-Token"))
+	})
+}
+
+// TestSigV4HostPortStripping verifies that the default port is removed from the host for signing
+// while non-default ports are preserved, and that IPv6 literals keep their brackets (stripping the
+// port must not corrupt the host into an unparseable form).
+func TestSigV4HostPortStripping(t *testing.T) {
+	cases := []struct {
+		url      string
+		wantHost string
+	}{
+		{"https://example.com:443/gremlin", "example.com"},
+		{"http://example.com:80/gremlin", "example.com"},
+		{"https://example.com:8182/gremlin", "example.com:8182"},
+		{"https://example.com/gremlin", "example.com"},
+		{"https://[::1]:443/gremlin", "[::1]"},
+		{"https://[2001:db8::1]:443/gremlin", "[2001:db8::1]"},
+		{"https://[::1]:8182/gremlin", "[::1]:8182"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.url, func(t *testing.T) {
+			req, err := gremlingo.NewHttpRequest("POST", tc.url)
+			assert.NoError(t, err)
+			req.Body = []byte(`{"gremlin":"g.V()"}`)
+			provider := &mockCredentialsProvider{accessKey: "MOCK_ID", secretKey: "MOCK_KEY"}
+
+			err = SigV4WithCredentials("region-1", "example-service", provider)(req)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.wantHost, req.URL.Host)
+			// The mutated URL must remain parseable (an IPv6 host that lost its brackets would
+			// fail to re-parse, breaking the wire request built from req.URL.String()).
+			_, parseErr := url.Parse(req.URL.String())
+			assert.NoError(t, parseErr)
+		})
+	}
 }

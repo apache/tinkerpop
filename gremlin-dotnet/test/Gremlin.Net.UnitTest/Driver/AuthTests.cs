@@ -241,5 +241,55 @@ namespace Gremlin.Net.UnitTest.Driver
 
             Assert.Contains("byte[]", ex.Message);
         }
+
+        // Only host and the headers the AWS SDK adds itself are signed. Transport-managed headers
+        // (accept-encoding, content-type, ...) are never signed, and the session token is signed
+        // only when session credentials are used.
+        private static HttpRequestContext CreateSigv4ContextWithTransportHeaders()
+        {
+            return new HttpRequestContext("POST", new Uri("https://example.com:8182/gremlin"),
+                new Dictionary<string, string>
+                {
+                    { "Accept", "application/vnd.graphbinary-v4.0" },
+                    { "Content-Type", "application/json" },
+                    { "Accept-Encoding", "deflate" },
+                    { "User-Agent", "gremlin-dotnet-test" },
+                },
+                Encoding.UTF8.GetBytes("{\"gremlin\":\"g.V().count()\"}"));
+        }
+
+        private static string SignedHeaders(HttpRequestContext context)
+        {
+            var authorization = context.Headers["Authorization"];
+            const string marker = "SignedHeaders=";
+            var start = authorization.IndexOf(marker, StringComparison.Ordinal) + marker.Length;
+            var end = authorization.IndexOf(',', start);
+            return end < 0 ? authorization.Substring(start) : authorization.Substring(start, end - start);
+        }
+
+        [Fact]
+        public async Task SigV4AuthShouldSignOnlyMinimalHeaderSetForBasicCredentials()
+        {
+            var interceptor = Auth.Sigv4("region-1", "example-service", TestBasicCredentials);
+            var context = CreateSigv4ContextWithTransportHeaders();
+
+            await interceptor(context);
+
+            // The .NET SDK signer includes x-amz-content-sha256 in the signed set; that is its
+            // natural behavior and is intentionally left as-is.
+            Assert.Equal("host;x-amz-content-sha256;x-amz-date", SignedHeaders(context));
+        }
+
+        [Fact]
+        public async Task SigV4AuthShouldSignSecurityTokenForSessionCredentials()
+        {
+            var interceptor = Auth.Sigv4("region-1", "example-service", TestSessionCredentials);
+            var context = CreateSigv4ContextWithTransportHeaders();
+
+            await interceptor(context);
+
+            Assert.Equal("host;x-amz-content-sha256;x-amz-date;x-amz-security-token", SignedHeaders(context));
+            Assert.Equal("MOCK_TOKEN", context.Headers["X-Amz-Security-Token"]);
+        }
     }
 }

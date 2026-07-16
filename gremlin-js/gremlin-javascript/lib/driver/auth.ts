@@ -65,6 +65,11 @@ export function sigv4(region: string, service: string, credentialsProvider?: Aws
     }
 
     const url = new URL(request.url);
+    // Sign only the Host header; the signer itself adds (and signs) x-amz-date, the payload hash,
+    // and x-amz-security-token for session credentials. The request's own headers (accept,
+    // content-type, ...) are deliberately NOT fed into the signature: the HTTP stack may add or
+    // rewrite transport-managed headers such as accept-encoding after this interceptor runs, so a
+    // signature covering them would no longer match the bytes actually sent.
     const signed = await signer.sign({
       method: request.method,
       protocol: url.protocol,
@@ -72,12 +77,13 @@ export function sigv4(region: string, service: string, credentialsProvider?: Aws
       port: url.port ? Number(url.port) : undefined,
       path: url.pathname + url.search,
       headers: {
-        ...request.headers,
         host: url.host,
       },
       body: request.body,
     });
 
-    request.headers = signed.headers;
+    // Merge the signed auth headers onto the request; the request's other headers (accept,
+    // content-type, ...) still reach the wire, they are simply not part of the signature.
+    request.headers = { ...request.headers, ...signed.headers };
   };
 }
