@@ -118,6 +118,26 @@ namespace Gremlin.Net.UnitTest.Driver
             Assert.NotNull(capturedRequest);
             var parametersString = (string)capturedRequest!.Fields[Tokens.ArgsParameters];
             Assert.Contains("\"x\":42", parametersString);
+            Assert.DoesNotContain("\"g\":", parametersString);
+        }
+
+        [Fact]
+        public async Task ShouldNotBuildRequestWithTraversalSourceAsParameter()
+        {
+            RequestMessage? capturedRequest = null;
+            var client = CreateCapturingClient(msg => capturedRequest = msg);
+            var connection = new DriverRemoteConnection(client, "mySource");
+
+            var gl = new GremlinLang();
+            gl.AddStep("V", Array.Empty<object>());
+
+            await connection.SubmitAsync<object, object>(gl);
+
+            Assert.NotNull(capturedRequest);
+            var parametersString = capturedRequest!.Fields.TryGetValue(Tokens.ArgsParameters, out var parameters)
+                ? (string) parameters
+                : "";
+            Assert.DoesNotContain("\"g\":", parametersString);
         }
 
         [Fact]

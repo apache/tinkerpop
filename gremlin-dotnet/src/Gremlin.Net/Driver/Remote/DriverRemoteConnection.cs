@@ -118,8 +118,6 @@ namespace Gremlin.Net.Driver.Remote
             CancellationToken cancellationToken = default)
         {
             _logger.SubmittingGremlinLang(gremlinLang);
-            gremlinLang.AddG(_traversalSource);
-
             var requestMsg = RequestMessage.Build(gremlinLang.GetGremlin())
                 .AddG(_traversalSource);
 

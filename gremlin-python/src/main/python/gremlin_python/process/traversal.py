@@ -1090,9 +1090,6 @@ class GremlinLang(object):
             parts.append(f'{helper._arg_as_string(k)}:{helper._arg_as_string(v)}')
         return '[' + ','.join(parts) + ']'
 
-    def add_g(self, g):
-        self.parameters['g'] = g
-
     def add_source(self, source_name, *args):
 
         if source_name == 'withStrategies' and len(args) != 0:

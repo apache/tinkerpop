@@ -496,13 +496,6 @@ public class GremlinLang implements Cloneable, Serializable {
     }
 
     /**
-     * The alias to set.
-     */
-    public void addG(final String g) {
-        parameters.put("g", g);
-    }
-
-    /**
      * Add a {@link TraversalSource} instruction to the GremlinLang.
      *
      * @param sourceName the traversal source method name (e.g. withSack())

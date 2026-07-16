@@ -21,6 +21,7 @@
 DriverRemoteConnection, and the SigV4 credentials-provider variant."""
 
 import warnings
+from concurrent.futures import Future
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -28,6 +29,7 @@ import pytest
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.connection import Connection
 from gremlin_python.driver.request import RequestMessage
+from gremlin_python.process.traversal import GremlinLang, GValue
 
 
 # Patch Connection so Client._fill_pool does not attempt any real connections.
@@ -196,6 +198,97 @@ class TestDriverRemoteConnectionOptions:
         params = list(inspect.signature(DriverRemoteConnection.submit_async).parameters)
         # self + gremlin_lang only
         assert params == ['self', 'gremlin_lang']
+
+    def test_submit_does_not_send_traversal_source_as_parameter(self):
+        from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
+        with patch('gremlin_python.driver.driver_remote_connection.client.Client') as MockClient:
+            instance = MockClient.return_value
+            instance._url = 'http://localhost:8182/gremlin'
+            instance._traversal_source = 'mySource'
+            instance.submit.return_value = []
+            connection = DriverRemoteConnection('http://localhost:8182/gremlin', 'mySource')
+            gremlin_lang = GremlinLang()
+            gremlin_lang.add_step('V')
+
+            connection.submit(gremlin_lang)
+
+        request_options = instance.submit.call_args.kwargs['request_options']
+        assert "'g':" not in request_options.get('parameters', '')
+
+    def test_submit_sends_only_explicit_parameters(self):
+        from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
+        with patch('gremlin_python.driver.driver_remote_connection.client.Client') as MockClient:
+            instance = MockClient.return_value
+            instance._url = 'http://localhost:8182/gremlin'
+            instance._traversal_source = 'mySource'
+            instance.submit.return_value = []
+            connection = DriverRemoteConnection('http://localhost:8182/gremlin', 'mySource')
+            gremlin_lang = GremlinLang()
+            gremlin_lang.add_step('V', GValue('x', 42))
+
+            connection.submit(gremlin_lang)
+
+        request_options = instance.submit.call_args.kwargs['request_options']
+        assert request_options['parameters'] == "['x':42]"
+        assert "'g':" not in request_options['parameters']
+
+    def test_submit_async_does_not_send_traversal_source_as_parameter(self):
+        from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
+        with patch('gremlin_python.driver.driver_remote_connection.client.Client') as MockClient:
+            instance = MockClient.return_value
+            instance._url = 'http://localhost:8182/gremlin'
+            instance._traversal_source = 'mySource'
+            result = Future()
+            result.set_result([])
+            instance.submit_async.return_value = result
+            connection = DriverRemoteConnection('http://localhost:8182/gremlin', 'mySource')
+            gremlin_lang = GremlinLang()
+            gremlin_lang.add_step('V')
+
+            connection.submit_async(gremlin_lang).result()
+
+        request_options = instance.submit_async.call_args.kwargs['request_options']
+        assert "'g':" not in request_options.get('parameters', '')
+
+    def test_transaction_submit_does_not_send_traversal_source_as_parameter(self):
+        from gremlin_python.driver.transaction import TransactionRemoteConnection
+        client = MagicMock()
+        client._url = 'http://localhost:8182/gremlin'
+        client._traversal_source = 'mySource'
+        client.submit.return_value = []
+        transaction = MagicMock()
+        transaction._client = client
+        transaction.is_open = True
+        transaction.transaction_id = 'tx-1'
+        connection = TransactionRemoteConnection(transaction)
+        gremlin_lang = GremlinLang()
+        gremlin_lang.add_step('V')
+
+        connection.submit(gremlin_lang)
+
+        request_options = client.submit.call_args.kwargs['request_options']
+        assert "'g':" not in request_options.get('parameters', '')
+
+    def test_transaction_submit_sends_only_explicit_parameters(self):
+        from gremlin_python.driver.transaction import TransactionRemoteConnection
+        client = MagicMock()
+        client._url = 'http://localhost:8182/gremlin'
+        client._traversal_source = 'mySource'
+        client.submit.return_value = []
+        transaction = MagicMock()
+        transaction._client = client
+        transaction.is_open = True
+        transaction.transaction_id = 'tx-1'
+        connection = TransactionRemoteConnection(transaction)
+        gremlin_lang = GremlinLang()
+        gremlin_lang.add_step('V', GValue('x', 42))
+
+        connection.submit(gremlin_lang)
+
+        request_options = client.submit.call_args.kwargs['request_options']
+        assert request_options['transactionId'] == 'tx-1'
+        assert request_options['parameters'] == "['x':42]"
+        assert "'g':" not in request_options['parameters']
 
 
 

@@ -76,8 +76,6 @@ export default class DriverRemoteConnection extends RemoteConnection {
   }
 
   #buildRequestArgs(gremlinLang: GremlinLang) {
-    gremlinLang.addG(this.options.traversalSource || 'g');
-
     let requestOptions: RequestOptions | undefined = undefined;
     const strategies = gremlinLang.getOptionsStrategies();
     if (strategies.length > 0) {
