@@ -125,13 +125,13 @@ categories rather than to Java exception class names, since the categories are l
 category onto its language's idiomatic error type, and remote responses surface the server message text (which
 providers may localize while preserving the category).
 
-[width="100%",options="header"]
+[width="100%",cols="2,6,3,4",options="header"]
 |=========================================================
 |Category |Description |Java reference exception |Example message
-|`Argument Error` |The caller supplied an invalid argument such as the wrong type, `null` where forbidden, an out-of-range value, or unparseable input. |`IllegalArgumentException`, `NumberFormatException` |`"Format string for Format step can't be null."`
-|`State Error` |The traversal construction or runtime state is invalid for the operation being attempted. |`IllegalStateException` |`"The repeat()-traversal was not defined"`
-|`Arithmetic Error` |A numeric operation cannot produce a defined result, such as overflow during type narrowing or division by zero. |`ArithmeticException` |`"long overflow"`
-|`Unsupported Operation` |The requested step, modulator, or option is not implemented or not supported by the current provider or execution mode. |`UnsupportedOperationException` |`"Option Merge.outV for Merge is not supported"`
+|`Argument Error` |The caller supplied an invalid argument such as the wrong type, `null` where forbidden, an out-of-range value, or unparseable input. |`IllegalArgumentException`, `NumberFormatException` |"Format string for Format step can't be null."
+|`State Error` |The traversal construction or runtime state is invalid for the operation being attempted, including a traversal rejected during strategy verification. |`IllegalStateException`, `VerificationException` |"The repeat()-traversal was not defined"
+|`Arithmetic Error` |A numeric operation cannot produce a defined result, such as overflow during type narrowing or division by zero. |`ArithmeticException` |"long overflow"
+|`Unsupported Operation` |The requested step, modulator, or option is not implemented or not supported by the current provider or execution mode. |`UnsupportedOperationException` |"Option Merge.outV for Merge is not supported"
 |=========================================================
 
 [[gremlin-semantics-concepts]]
@@ -586,7 +586,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addvertex-step[reference
 
 *Description:* Adds one or more labels to an element.
 
-*Syntax:* `addLabel(String label, String... moreLabels)` | `addLabel(Traversal<?, ?> labelTraversal, Traversal<?, ?>... moreLabelTraversals)`
+*Syntax:* `addLabel(label: STRING, moreLabels: STRING...)` | `addLabel(labelTraversal: Traversal<any, STRING>, moreLabelTraversals: Traversal<any, STRING>...)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -603,20 +603,18 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addvertex-step[reference
 
 *Considerations:*
 
-Label add and remove operations require a `LabelCardinality` that permits changing the set of labels on an element
-(`ONE_OR_MORE` or `ZERO_OR_MORE`). When `LabelCardinality` is `ONE`, the vertex's label is fixed at creation and
-cannot be added to or removed.
+Label add and remove operations require a graph that permits the set of labels on an element to change. Where a graph
+fixes a single immutable label per vertex, that label is assigned at creation and can be neither added to nor removed.
 Adding a label that already exists on the element is a no-op. The step returns the element (sideEffect semantics).
 Each traversal argument is iterated for a single result only. If exactly one traversal is provided and it produces
-a `Collection<String>`, the collection will be automatically unfolded into the set of labels added; if more than one
-traversal is provided, each must resolve to a single `String` label.
+a `LIST` or `SET` of `STRING`, the collection will be automatically unfolded into the set of labels added. If more
+than one traversal is provided, each must resolve to a single `STRING` label.
 
 *Exceptions*
 
-* If the graph's `LabelCardinality` does not permit label modification, an `IllegalStateException` will be thrown.
-* If any label argument is null or empty, an `IllegalArgumentException` will be thrown.
-* If more than one traversal is provided and any of them produces a `Collection`, an `IllegalArgumentException` will
-be thrown.
+* If the graph does not permit label modification, a `State Error` is raised.
+* If any label argument is null or empty, an `Argument Error` is raised.
+* If more than one traversal is provided and any of them produces a `LIST` or `SET`, an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/AddLabelStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addlabel-step[reference]
@@ -625,7 +623,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addlabel-step[reference]
 
 *Description:* Removes one or more specific labels from an element, or removes all labels.
 
-*Syntax:* `dropLabel(String label, String... moreLabels)` | `dropLabel(Traversal<?, String> labelTraversal, Traversal<?, String>... moreLabelTraversals)` | `dropLabels()`
+*Syntax:* `dropLabel(label: STRING, moreLabels: STRING...)` | `dropLabel(labelTraversal: Traversal<any, STRING>, moreLabelTraversals: Traversal<any, STRING>...)` | `dropLabels()`
 
 [width="100%",options="header"]
 |=========================================================
@@ -642,20 +640,20 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addlabel-step[reference]
 
 *Considerations:*
 
-Label add and remove operations require a `LabelCardinality` that permits changing the set of labels on an element
-(`ONE_OR_MORE` or `ZERO_OR_MORE`). Dropping a label that does not exist
-on the element is a no-op. `dropLabels()` removes all labels (only valid with `ZERO_OR_MORE`). The step returns the
+Label add and remove operations require a graph that permits the set of labels on an element to change. Dropping a
+label that does not exist on the element is a no-op. `dropLabels()` removes all labels and is only valid on a graph
+that allows an element to carry no labels at all. The step returns the
 element (sideEffect semantics).
 Each traversal argument is iterated for a single result only. If exactly one traversal is provided and it produces
-a `Collection<String>`, the collection will be automatically unfolded into the set of labels removed; if more than
-one traversal is provided, each must resolve to a single `String` label.
+a `LIST` or `SET` of `STRING`, the collection will be automatically unfolded into the set of labels removed. If more
+than one traversal is provided, each must resolve to a single `STRING` label.
 
 *Exceptions*
 
-* If the graph's `LabelCardinality` does not permit label modification, an `IllegalStateException` will be thrown.
-* If `dropLabel()` or `dropLabels()` would violate the minimum label count, an `IllegalStateException` will be thrown.
-* If more than one traversal is provided and any of them produces a `Collection`, an `IllegalArgumentException` will
-be thrown.
+* If the graph does not permit label modification, a `State Error` is raised.
+* If `dropLabel()` or `dropLabels()` would leave the element with fewer labels than the graph requires, a `State Error`
+is raised.
+* If more than one traversal is provided and any of them produces a `LIST` or `SET`, an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/DropLabelsStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#droplabel-step[reference]
@@ -1685,9 +1683,10 @@ property entries specified by propertyKeys. If the list is empty, then all prope
 *Considerations:*
 
 The label format in the map is controlled by source-level `with("multilabel")` and `with("singlelabel")` options, not
-by the graph's `LabelCardinality`. When `"multilabel"` is present, the label value is a `Set<String>`; likewise when
-`"singlelabel"` is present, it is a single `String`. The two options are mutually exclusive, configuring both
-`"multilabel"` and `"singlelabel"` on the same source is rejected with a `VerificationException`. Note that is a
+by the number of labels the graph permits per element. When `"multilabel"` is present, the label value is a
+`SET<STRING>`. Likewise when
+`"singlelabel"` is present, it is a single `STRING`. The two options are mutually exclusive. Configuring both
+`"multilabel"` and `"singlelabel"` on the same source is rejected with a `State Error`. Note that it is a
 provider choice whether an unconfigured `GraphTraversal` defaults to `multilabel` or `singlelabel` semantics. The
 reference implementation defaults to `singlelabel` semantics.
 
@@ -2098,7 +2097,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#label-step[reference]
 *Considerations:*
 
 For vertices with a single label, `labels()` emits one traverser (equivalent to `label()`). For multi-label vertices,
-it emits one traverser per label. For vertices with zero labels (`ZERO_OR_MORE` mode), no traversers are emitted.
+it emits one traverser per label. For vertices that carry no labels, no traversers are emitted.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LabelsStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#labels-step[reference]
@@ -3222,9 +3221,10 @@ keys, the resulting map entry contains a `LIST` of the values. An `Edge` and a `
 value per key and the value is returned directly.
 
 The label format in the map is controlled by source-level `with("multilabel")` and `with("singlelabel")` options, not
-by the graph's `LabelCardinality`. When `"multilabel"` is present, the label value is a `Set<String>`; likewise when
-`"singlelabel"` is present, it is a single `String`. The two options are mutually exclusive, configuring both
-`"multilabel"` and `"singlelabel"` on the same source is rejected with a `VerificationException`. Note that is a
+by the number of labels the graph permits per element. When `"multilabel"` is present, the label value is a
+`SET<STRING>`. Likewise when
+`"singlelabel"` is present, it is a single `STRING`. The two options are mutually exclusive. Configuring both
+`"multilabel"` and `"singlelabel"` on the same source is rejected with a `State Error`. Note that it is a
 provider choice whether an unconfigured `GraphTraversal` defaults to `multilabel` or `singlelabel` semantics. The
 reference implementation defaults to `singlelabel` semantics.
 
