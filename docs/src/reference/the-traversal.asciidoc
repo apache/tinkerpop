@@ -1985,23 +1985,25 @@ gml.V().has('name','tux').valueMap(true)                     <4>
 <3> A persistent source avoids repeating `with("multilabel")` on each traversal.
 <4> `valueMap(true)` also respects the `"multilabel"` configuration.
 
-When a source is configured with `with("multilabel")`, the `with("singlelabel")` option can be used per-traversal to
-force single-string label output:
+The companion `with("singlelabel")` option requests the opposite format, returning the label as a single string.
+Since the two options call for conflicting output, they are mutually exclusive and configuring both on the same
+traversal source raises a `VerificationException`:
 
 [source, groovy]
 ----
-gml = g.with("multilabel")
-gml.V().has('name','marko').elementMap()
 // results in: with("multilabel") and with("singlelabel") are mutually exclusive
 //             and cannot both be configured on the same traversal source.
-gml.with("singlelabel").V().has('name','marko').elementMap()
+g.with("multilabel").with("singlelabel").V().has('name','tux').elementMap()
 ----
 
-Since `"multilabel"` and `"singlelabel"` request opposite output formats, configuring both on the same traversal
-source is rejected. Attempting to combine them, for example by calling `g.with("multilabel").with("singlelabel")`
-will raise a `VerificationException`. The label format is controlled entirely by these source options and is independent of the
-graph's `LabelCardinality` setting, so a graph configured for `ZERO_OR_MORE` labels will still return a single
-string per element unless `with("multilabel")` is applied.
+Whether a traversal source that specifies neither option produces single-string or set-valued labels is a provider
+choice. The reference implementation defaults to a single string, which leaves `with("singlelabel")` redundant
+against TinkerGraph. The option exists for providers whose default is multi-label output and which need a way to
+request the single-string form.
+
+The label format is controlled entirely by these source options and is independent of the graph's `LabelCardinality`
+setting, so a graph configured for `ZERO_OR_MORE` labels will still return a single string per element unless
+`with("multilabel")` is applied.
 
 *Additional References*
 
@@ -2362,6 +2364,21 @@ g.V().hasLabel('bird').hasLabel('aquatic').values('name')    <2>
 <1> OR semantics: matches `tux`, `atlas`, and `monty`, since each has at least one of "bird" or "reptile".
 <2> Chaining `hasLabel()` calls requires both labels to be present, matching only `tux`, which has both "bird" and
 "aquatic".
+
+More generally, `hasLabel()` applies its test to each label an element carries and retains the element when at least
+one label satisfies that test. For elements with a single label the distinction never surfaces, but it shapes the
+result of a negation predicate applied to a multi-label vertex:
+
+[gremlin-groovy,theZoo]
+----
+g.V().hasLabel(neq('bird')).values('name')  <1>
+g.V().not(hasLabel('bird')).values('name')  <2>
+----
+
+<1> `tux` carries the "bird" label and is still retained, because its remaining labels each satisfy `neq('bird')`.
+This follows from testing a negation against a set of labels rather than a single value.
+<2> Wrapping `hasLabel()` in <<not-step,`not()`>> excludes every vertex carrying the label, which is the pattern to
+reach for when the intent is to filter such vertices out.
 
 NOTE: When a `Traversal` is provided directly as the value argument (not inside a `P`), it is internally wrapped in
 `P.eq(traversal)`. Child traversals must be read-only. Mutating steps like `addV()` or `property()` are rejected with
@@ -5728,10 +5745,10 @@ g.with("multilabel").V().has('name','tux').valueMap(true)    <2>
 <1> Without `"multilabel"`, the label entry is a single string.
 <2> With `"multilabel"`, all labels are returned as a set.
 
-When a source is configured with `with("multilabel")`, the `with("singlelabel")` option can be used per-traversal to
-force single-string label output. Since the two options request opposite output formats, configuring both on the
-same traversal source is rejected with a `VerificationException`. As with `elementMap()`, the label format is controlled
-entirely by these source options and is independent of the graph's `LabelCardinality` setting.
+The companion `with("singlelabel")` option requests labels as a single string instead. As with `elementMap()`, the
+two options are mutually exclusive and configuring both on the same traversal source raises a `VerificationException`.
+The label format is controlled entirely by these source options and is independent of the graph's `LabelCardinality`
+setting. See <<elementmap-step,`elementMap()`>> for a fuller description of both options.
 
 *Additional References*
 
