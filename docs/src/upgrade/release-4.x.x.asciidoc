@@ -23,11 +23,11 @@ image::gremlins-wildest-dreams.png[width=185]
 
 *Gremlin's Wildest Dreams*
 
-== TinkerPop 4.0.0
+== TinkerPop 4.0.0-beta.3
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/4.0.0/CHANGELOG.asciidoc#release-4-0-0[changelog] for a
+Please see the link:https://github.com/apache/tinkerpop/blob/4.0.0-beta.3/CHANGELOG.asciidoc#release-4-0-0-beta-3[changelog] for a
 complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
@@ -69,7 +69,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3262[TINKERPOP-3262]
 
 TinkerPop 4.x standardizes connection option names and defaults across all five Gremlin Language Variants (Java, Python,
 .NET, Go, and JavaScript). Each driver using its language-idiomatic casing (`camelCase`, `PascalCase`, or `snake_case`).
-Renames are breaking: the old option names have been removed (no deprecated aliases), so existing code must be updated.
+These renames are breaking, the old option names have been removed.
 
 NOTE: Timeouts use a millisecond-suffixed canonical name (`connectTimeoutMillis`, `readTimeoutMillis`,
 `idleTimeoutMillis`, `keepAliveTimeMillis`, and the `_millis` form in Python). Java, Go, .NET, and Python also accept an
@@ -114,45 +114,31 @@ These change runtime behavior on upgrade even if you do not change your configur
 
 ===== Driver-specific notes
 
-- *Java* (`gremlin-driver`): renamed `maxConnectionPoolSize`->`maxConnections`, `connectionSetupTimeoutMillis`->`connectTimeoutMillis`,
+- *Java* (`gremlin-driver`): Renamed: `maxConnectionPoolSize`->`maxConnections`, `connectionSetupTimeoutMillis`->`connectTimeoutMillis`,
   `idleConnectionTimeoutMillis`->`idleTimeoutMillis`, `resultIterationBatchSize`->`batchSize`, `serializer`->`responseSerializer`,
-  and `RequestOptions` `addG`->`traversalSource`; old names are removed. New: `readTimeoutMillis`, `keepAliveTimeMillis`,
-  `maxResponseHeaderBytes`, `proxy(ProxyOptions)`, `url(String)`, `ssl(SslContext)`. Removed `maxResponseContentLength`.
+  and `RequestOptions` `addG`->`traversalSource`. New: `readTimeoutMillis`, `keepAliveTimeMillis`,
+  `maxResponseHeaderBytes`, `proxy(ProxyOptions)`, `url(String)`, `ssl(SslContext)`. Removed: `maxResponseContentLength`.
   `validationRequest` default reconciled to `g.inject(0)`.
-- *Python* (`gremlin-python`): renamed `pool_size`->`max_connections` (default 8->128) and `ssl_options`->`ssl` (old names removed).
+- *Python* (`gremlin-python`): Renamed: `pool_size`->`max_connections` (default 8->128) and `ssl_options`->`ssl`.
   New: `connect_timeout_millis`, `read_timeout_millis`, `idle_timeout_millis`, `keep_alive_time_millis`, `compression`,
-  `batch_size`, `proxy`, `trust_env`. `auth.sigv4` gained an optional credentials provider. Removed `headers` (use interceptors)
-  and `max_content_length`. Requires `aiohttp>=3.11`.
-- *.NET* (`gremlin-dotnet`): renamed `MaxConnectionsPerServer`->`MaxConnections`, `ConnectionTimeout`->`ConnectTimeout`,
+  `batch_size`, `proxy`, `trust_env`. `auth.sigv4` gained an optional credentials provider. Removed: `headers` (use interceptors)
+  and `max_content_length`.
+- *.NET* (`gremlin-dotnet`): Renamed: `MaxConnectionsPerServer`->`MaxConnections`, `ConnectionTimeout`->`ConnectTimeout`,
   `IdleConnectionTimeout`->`IdleTimeout`, `KeepAliveInterval`->`KeepAliveTime`, `EnableCompression`->`Compression`, and
-  `Auth.BasicAuth`/`Auth.SigV4Auth`->`Auth.Basic`/`Auth.Sigv4`; old names removed. New: `ReadTimeout`, `MaxResponseHeaderBytes`,
-  `Proxy`, `Ssl`, `BulkResults`. `KeepAliveTime` now drives a real TCP keep-alive socket option instead of the inert HTTP/2 ping.
-- *Go* (`gremlin-go`): renamed `MaximumConcurrentConnections`->`MaxConnections`, `IdleConnectionTimeout`->`IdleTimeout`,
+  `Auth.BasicAuth`/`Auth.SigV4Auth`->`Auth.Basic`/`Auth.Sigv4`. New: `ReadTimeout`, `MaxResponseHeaderBytes`,
+  `Proxy`, `Ssl`, `BulkResults`.
+- *Go* (`gremlin-go`): Renamed: `MaximumConcurrentConnections`->`MaxConnections`, `IdleConnectionTimeout`->`IdleTimeout`,
   `KeepAliveInterval`->`KeepAliveTime`, `ConnectionTimeout`->`ConnectTimeout`, `TlsConfig`->`Ssl`, `RequestInterceptors`->`Interceptors`,
-  `EnableCompression`->`Compression`; old struct fields removed. Auth helpers moved from package `gremlingo`
+  `EnableCompression`->`Compression`. Auth helpers moved from package `gremlingo`
   (`BasicAuth`/`SigV4Auth`/`SigV4AuthWithCredentials`) into a new `auth` sub-package (`auth.Basic`/`auth.SigV4`/`auth.SigV4WithCredentials`).
   New: `ReadTimeout(Millis)`, `MaxResponseHeaderBytes`, `Proxy` (defaults to `http.ProxyFromEnvironment`), `BatchSize`, `BulkResults`.
 - *JavaScript* (`gremlin-javascript`): adopted `undici` as a pinned dependency providing the default dispatcher built from the
-  options above. Renamed `reader`->`responseSerializer`. New: `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`,
+  options above. Renamed: `reader`->`responseSerializer`. New: `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`,
   `proxy`, `compression`, `batchSize`, `bulkResults`, `logger`. Removed `headers` (use interceptors) and the
   `ca`/`cert`/`pfx`/`rejectUnauthorized`/`agent` options (TLS is configured through the Node/undici runtime). undici is swapped
   out in browser bundles, where these connection-pool options are managed by the browser.
 
 See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
-
-==== Java 17 Required; Java 21 and 25 Supported
-
-TinkerPop 4.0 raises the minimum Java version from 11 to 17 for both building and running, and adds support for running
-on Java 21 and Java 25, so that every LTS release from the new minimum upward is covered by TinkerPop's automated
-tests. *(breaking)* Supporting Java 25 required upgrading Groovy to 4.0.32 (whose bundled ASM can parse Java 25
-bytecode) and Hadoop to 3.4.3 (which moved off the `Subject.getSubject()` API that was removed along with the Security
-Manager). Spark was upgraded to 4.1.x, built on Scala 2.13 — the first Spark line that supports Java 25. Because Spark 4
-requires Java 17 as its minimum, and `spark-gremlin` is part of the build, the project-wide minimum is now Java 17.
-Netty was upgraded to 4.2.x as required by Spark 4.
-
-As with the earlier JDK 17 support, some libraries still rely on deep reflection (most notably the Kryo serialization
-library used with OLAP), so it may be necessary to `--add-opens` or `--add-exports` certain modules at runtime. The set
-of options used by TinkerPop's own tests is unchanged.
 
 ==== Renaming `evaluationTimeout` to `timeoutMillis`
 
@@ -176,6 +162,20 @@ This is a breaking change with no backward-compatible alias. The old `evaluation
 
 Driver and server should be upgraded together. A driver sending the old `evaluationTimeout` field to a 4.x server has
 that field silently ignored and falls back to the server's default timeout, as with any unrecognized request argument.
+
+==== Java Runtime Upgrade
+
+TinkerPop 4.0 raises the minimum Java version from 11 to 17 for both building and running, and adds support for running
+on Java 21 and Java 25. Supporting Java 25 required upgrading Groovy to 4.0.32, Hadoop to 3.4.3, Spark to 4.1.x, and
+Netty to 4.2.x. These upgrades collectively prohibit building on Java 11, but enable support in Java 21 and 25.
+
+As with the earlier JDK 17 support, some libraries still rely on deep reflection (most notably the Kryo serialization
+library used with OLAP), so it may be necessary to `--add-opens` or `--add-exports` certain modules at runtime. The set
+of options used by TinkerPop's own tests is unchanged.
+
+==== .NET Runtime Upgrade
+
+The minimum target framework is now `net8.0` (previously `netstandard2.0;net6.0`).
 
 ==== Declarative Pattern Matching
 
@@ -377,7 +377,13 @@ anonymized form. The original gremlator.com was a prototype built by TinkerPop c
 previous implementation required Java and a running Gremlin Server, whereas the new version runs entirely in the
 browser with no server infrastructure needed.
 
-==== GLV Transaction Support
+==== Transactions
+
+TinkerPop 4.0 brings a set of related transaction changes across the drivers and embedded graphs: explicit remote
+transaction support in every GLV, closure-based managed transaction blocks, the replacement of `open()` with
+`begin()`, and a safer default close behavior. Each is described below.
+
+===== GLV Transaction Support
 
 All non-Java Gremlin Language Variants (gremlin-python, gremlin-go, gremlin-javascript, gremlin-dotnet) now support
 explicit remote transactions over HTTP. The transaction model is the same across all GLVs: begin a transaction, submit
@@ -398,7 +404,7 @@ Key behaviors consistent across all GLVs:
 See the <<gremlin-drivers-variants,Gremlin Drivers and Variants>> reference documentation for language-specific
 syntax and examples.
 
-==== Managed Transaction Blocks
+===== Managed Transaction Blocks
 
 In addition to the manual `begin()`/`commit()`/`rollback()` lifecycle, every GLV (including the Java driver and embedded
 Java graphs) now offers closure-based convenience methods directly on `GraphTraversalSource` (`g`). You hand `g` a
@@ -425,7 +431,7 @@ examples.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3253[TINKERPOP-3253]
 
-==== `Transaction.open()` Replaced by `begin()`
+===== `Transaction.open()` Replaced by `begin()`
 
 The `open()` method has been removed from the `Transaction` API. Use `begin()` instead, which is now the single
 transaction-start method for both embedded and remote contexts. Replace any `tx.open()` or `g.tx().open()` calls with
@@ -440,7 +446,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#transactions[Traversal T
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3252[TINKERPOP-3252]
 
-==== Transaction Default Close Behavior Changed
+===== Transaction Default Close Behavior Changed
 
 The default behavior of `close()` on a remote transaction has been changed from `commit` to `rollback` across all
 GLVs (including the Java driver). This aligns with the embedded graph transaction default and is the safer behavior:
@@ -505,43 +511,6 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-2777[TINKERPOP-2777],
 link:https://issues.apache.org/jira/browse/TINKERPOP-3005[TINKERPOP-3005],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1463[TINKERPOP-1463]
 
-==== Removed `uuid` Dependency in gremlin-javascript
-
-The `uuid` npm package has been removed from `gremlin-javascript`. UUID generation now uses the built-in
-`globalThis.crypto.randomUUID()` API, which is available in Node.js 19+ and all modern browsers.
-
-This change has no impact on how UUID values are sent to or received from the server — UUID serialization and
-deserialization in GraphBinary is unchanged. Applications that depend on the `uuid` package solely because
-`gremlin-javascript` brought it in as a transitive dependency should add it directly to their own `package.json`
-if they still need it.
-
-==== JS HTTP Streaming Response Support
-
-The JavaScript driver now supports incremental HTTP streaming. Results are deserialized from the server response as
-they arrive, rather than buffering the entire response before processing.
-
-Traversal API terminal steps (`next()`, `toList()`, `hasNext()`) are now truly incremental. `next()`
-returns the first result as soon as it is deserialized from the wire, without waiting for the full response.
-In 3.x, `next()` waited for all WebSocket frames before returning.
-
-`Client.stream()` now returns an `AsyncGenerator` for direct incremental consumption. This is a breaking change
-from 3.x where `stream()` returned a Node.js `Readable`. The new return type works in both Node.js and browsers:
-
-[source,javascript]
-----
-// 3.x — Readable stream (no longer supported)
-// const stream = client.stream('g.V()');
-// stream.on('data', (resultSet) => { ... });
-
-// 4.0 — AsyncGenerator
-for await (const item of client.stream('g.V()', null)) {
-  console.log(item);
-  if (someCondition) break; // stops reading from the HTTP stream
-}
-----
-
-`Client.submit()` remains unchanged. It still buffers the full response and returns `Promise<ResultSet>`.
-
 ==== New Gremlin-Lang Literals
 
 The canonical Gremlin grammar now includes literal syntax for `Character`, `Duration`, and `Binary` types. These
@@ -600,27 +569,6 @@ g.V().has("blob",P.eq(Binary("AQID")))
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3153[TINKERPOP-3153]
-
-==== Python HTTP Streaming Response Support
-
-The Python driver now streams results directly from the HTTP response body through the configured
-`response_serializer`. Results are available to the caller as they arrive from the server, rather than waiting for
-the full response to be buffered in memory. This improves memory efficiency for large result sets and reduces
-time-to-first-result.
-
-Traversal API terminal steps (`next()`, `to_list()`, `has_next()`) are now truly incremental. `next()` returns the
-first result as soon as it is deserialized from the wire, without waiting for the full response. In 3.x, `next()`
-waited for all data to be buffered before returning.
-
-The following internal APIs have changed:
-
-- `max_content_length` is no longer supported. Response size limits should be configured server-side via
-  `maxRequestContentLength`.
-- The built-in response serializer is `GraphBinarySerializersV4`. The receive path dispatches through the
-  configured `response_serializer`.
-- `ResultSet` now yields individual items instead of lists when iterated. Code that uses `results += result`
-  to accumulate results from a `ResultSet` iterator must change to `results.append(result)`. The `to_list()`
-  and `all()` APIs are unaffected and remain the recommended way to collect results.
 
 ==== Python Driver Simplification — Removed GraphSON, Abstract Base Classes, and Protocol Layer
 
@@ -685,19 +633,59 @@ replacement planned for this functionality.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3249[TINKERPOP-3249]
 
-==== Runtime Upgrades
+==== HTTP Streaming Response Support
 
-The minimum target framework is now `net8.0` (previously `netstandard2.0;net6.0`). .NET 6 reached end-of-life in
-November 2024; .NET 8 is the current LTS release.
+With the move to HTTP, the drivers now deserialize responses incrementally, delivering results to the caller as they
+arrive from the server rather than buffering the entire response before processing. This reduces time-to-first-result
+and memory usage for large result sets. The runtime behavior and API impact differ per language variant, as described
+below.
 
-==== .NET HTTP Streaming Response Support
+===== Java
 
-The .NET driver (`Gremlin.Net`) now uses streaming deserialization, results are deserialized incrementally from the
-HTTP response stream as bytes arrive over the network, rather than buffering the entire response before processing.
-This reduces memory usage and latency for large result sets.
+Results are delivered to the `ResultSet` as they arrive. Streaming applies only when using the default GraphBinary
+serializer, custom `MessageSerializer` implementations fall back to the non-streaming pipeline that buffers the full
+response before deserialization. The `ResultSet` API is unchanged.
 
-The traversal API (`Next()`, `ToList()`, `HasNext()`, `ToSet()`, `Iterate()`) is unchanged — these methods block
-internally on the async stream, so existing traversal code works without modification.
+===== Python
+
+The Python driver streams results through the configured `response_serializer`.
+
+Traversal API terminal steps (`next()`, `to_list()`, `has_next()`) are now truly incremental. `next()` returns the
+first result as soon as it is deserialized from the wire, without waiting for the full response. In 3.x, `next()`
+waited for all data to be buffered before returning.
+
+Note: `ResultSet` now yields individual items instead of lists when iterated. Code that uses `results += result` to
+accumulate results from a `ResultSet` iterator must change to `results.append(result)`. The `to_list()` and `all()` APIs
+are unaffected and remain the recommended way to collect results.
+
+===== JavaScript
+
+Traversal API terminal steps (`next()`, `toList()`, `hasNext()`) are now truly incremental. `next()`
+returns the first result as soon as it is deserialized from the wire, without waiting for the full response.
+In 3.x, `next()` waited for all WebSocket frames before returning.
+
+`Client.stream()` now returns an `AsyncGenerator` for direct incremental consumption. This is a breaking change
+from 3.x where `stream()` returned a Node.js `Readable`. The new return type works in both Node.js and browsers:
+
+[source,javascript]
+----
+// 3.x — Readable stream (no longer supported)
+const stream = client.stream('g.V()');
+stream.on('data', (resultSet) => { ... });
+
+// 4.0 — AsyncGenerator
+for await (const item of client.stream('g.V()', null)) {
+  console.log(item);
+  if (someCondition) break; // stops reading from the HTTP stream
+}
+----
+
+`Client.submit()` remains unchanged. It still buffers the full response and returns `Promise<ResultSet>`.
+
+===== .NET
+
+The traversal API (`Next()`, `ToList()`, `HasNext()`, `ToSet()`, `Iterate()`) in `Gremlin.Net` is unchanged. These
+methods block internally on the async stream, so existing traversal code works without modification.
 
 `ResultSet<T>` no longer implements `IReadOnlyCollection<T>`. It now implements `IAsyncEnumerable<T>`, backed by a
 `Channel<T>` that receives items from a background deserialization task. Users who access `ResultSet<T>` directly
@@ -740,15 +728,6 @@ try {
 
 The traversal API is not affected — `Next()`, `ToList()`, etc. still throw `ResponseException` directly since they
 block on the async stream internally.
-
-==== Streaming Response Deserialization in gremlin-driver
-
-The Java driver now deserializes HTTP responses incrementally, delivering results to the `ResultSet` as they arrive
-rather than buffering the entire response. This reduces time-to-first-result for large result sets.
-
-This change is automatic and requires no code changes. It applies only when using the default GraphBinary serializer.
-Custom `MessageSerializer` implementations fall back to the non-streaming pipeline that buffers the full response
-before deserialization. The `ResultSet` API is unchanged.
 
 ==== More Secure Gremlin Server
 
@@ -883,7 +862,7 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-3107[TINKERPOP-3107]
 
 ==== `gremlin-lang` based Parameters
 
-Bindings/parameters that are sent as part of the request are now `gremlin-lang` string maps rather than an actual Map
+Parameters that are sent as part of the request are now `gremlin-lang` string maps rather than an actual Map
 that would have been serialized based on the serializer used for the request. A side effect of this is that the map key
 must be a valid Java identifier. This means that certain items can no longer be sent like `#jsr223` control flags that
 were used for the `gremlin-groovy` ScriptEngine. Ensure that you are using valid Java identifiers (e.g. start with a
@@ -912,11 +891,11 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3247[TINKERPOP-3247]
 of the Gremlin Language Variants. Users of the Python, JavaScript, .NET, and Go drivers can construct a `GValue` and
 pass it to a parameterizable step; the driver sends the value to the server as a named parameter rather than inlining
 it as a literal. See the "GValue Parameterization" reference documentation for
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-java-gvalue[Java],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-python-gvalue[Python],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-javascript-gvalue[JavaScript],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-dotnet-gvalue[.NET], and
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-go-gvalue[Go] for construction syntax and examples.
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-java-gvalue[Java],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-python-gvalue[Python],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-javascript-gvalue[JavaScript],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-dotnet-gvalue[.NET], and
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-go-gvalue[Go] for construction syntax and examples.
 
 The leading-underscore restriction on `GValue` names that was present in 3.8.0 has been removed. Parameter names
 beginning with `_` are now accepted in Java and across all language variants. The only remaining constraints are that
@@ -1055,9 +1034,7 @@ benefiting all driver users transparently.
 See <<provider-defined-types>> for full details on annotation usage, field filtering, nested types, and ServiceLoader
 registration.
 
-===== Primitive Provider Defined Types
-
-In addition to composite PDTs (which carry a map of fields), providers can now expose *Primitive PDTs* — types
+In addition to composite PDTs (which carry a map of fields), providers can also expose *Primitive PDTs*, types
 represented as a single opaque stringified value (GraphBinary type `0xf1`, GraphSON type `g:PrimitivePdt`). This is
 ideal for types with no native TinkerPop representation that can be expressed as a single string, such as unsigned
 integers or WKT geometry strings. Each GLV provides an adapter interface for primitive PDTs
@@ -1065,10 +1042,6 @@ integers or WKT geometry strings. Each GLV provides an adapter interface for pri
 `RegisterPrimitiveFuncs` in Go, `IPrimitivePdtAdapter<T>` in .NET). A type may be registered as composite or
 primitive, not both. See <<primitive-provider-defined-types>> for details.
 
-`Tree` no longer extends `HashMap`. Provider code that inspected or rebuilt a `Tree` via `Map` methods
-(`get`, `put`, `keySet`, `entrySet`, `size`) must use the tree-shaped API instead: read with `rootNodes()` +
-`childAt(key)` and build with `getOrCreateChild(key)` + `addTree(subtree)`. The GraphSON (`g:Tree`) and
-GraphBinary (`0x2b`) wire formats are unchanged, so no GraphSON- or GraphBinary-serialized data or cross-version
 ===== Tree Serialization and API Changes
 
 `Tree` no longer extends `HashMap`.
