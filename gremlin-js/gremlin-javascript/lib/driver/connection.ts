@@ -80,8 +80,6 @@ export type ConnectionOptions = {
   /** An optional auth interceptor. As a convenience, this is always appended to the end of the
    *  interceptor list so it runs last, after any user interceptors have modified the request. */
   auth?: RequestInterceptor;
-  /** Maximum time in milliseconds to wait for a server response before aborting the request. Undefined means no timeout. */
-  requestTimeout?: number;
 };
 
 /** The default per-request batch size used when neither the request nor the connection sets one. */
@@ -324,44 +322,23 @@ export default class Connection extends EventEmitter {
 
     this._log('debug', `Sending ${httpRequest.method} request to ${httpRequest.url}`);
 
-    let effectiveSignal = signal;
-    const timeoutMs = this.options.requestTimeout;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    let timeoutController: AbortController | undefined;
-
-    if (timeoutMs !== undefined) {
-      timeoutController = new AbortController();
-      timeoutId = setTimeout(() => timeoutController!.abort(new DOMException('TimeoutError', 'TimeoutError')), timeoutMs);
-      effectiveSignal = signal ? AbortSignal.any([signal, timeoutController.signal]) : timeoutController.signal;
-    }
-
     try {
       return await httpFetch.fetch(httpRequest.url, {
         method: httpRequest.method,
         headers: httpRequest.headers,
         body: httpRequest.body,
-        signal: effectiveSignal,
+        signal,
         // Node only: the undici dispatcher carries the connection-pool options. In the browser
         // it is undefined and the field is omitted, letting the user agent manage the transport.
         ...(this._dispatcher ? { dispatcher: this._dispatcher } : {}),
       } as RequestInit);
     } catch (err: any) {
-      if (timeoutController?.signal.aborted) {
-        const e = new ResponseError(
-          `Request timed out after ${timeoutMs}ms - the server did not respond in time`,
-          { code: 598, message: `Request timeout: ${timeoutMs}ms exceeded` },
-        );
-        e.cause = err;
-        throw e;
-      }
       const e = new ResponseError(
         'Connection to server closed unexpectedly. Ensure that the server is still reachable and the connection has not been closed by the server or a network device.',
         { code: 599, message: err.message || 'Connection failed' },
       );
       e.cause = err;
       throw e;
-    } finally {
-      if (timeoutId !== undefined) clearTimeout(timeoutId);
     }
   }
 

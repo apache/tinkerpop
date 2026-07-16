@@ -115,12 +115,6 @@ type ClientSettings struct {
 	// uses http.ProxyFromEnvironment (HTTP_PROXY/HTTPS_PROXY/NO_PROXY).
 	Proxy func(*http.Request) (*url.URL, error)
 
-	// RequestTimeout is the maximum time to wait for a response after sending a request.
-	// This bounds the time between finishing writing the request and receiving the response
-	// headers from the server. It is independent of ConnectionTimeout which only governs
-	// connection establishment. Set to 0 to disable (no timeout). Default: 0 (disabled).
-	RequestTimeout time.Duration
-
 	EnableUserAgentOnConnect bool
 
 	// PDTRegistry enables automatic hydration of CompositePDT values during deserialization.
@@ -189,7 +183,6 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		ssl:                      settings.Ssl,
 		connectTimeout:           connectTimeout,
 		readTimeout:              readTimeout,
-		requestTimeout:           settings.RequestTimeout,
 		maxConnsPerHost:          settings.MaxConnections,
 		maxIdleConnsPerHost:      settings.MaxIdleConnections,
 		idleTimeout:              idleTimeout,

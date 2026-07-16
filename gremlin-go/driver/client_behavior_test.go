@@ -287,7 +287,7 @@ func TestShouldHandleSlowResponse(t *testing.T) {
 func TestShouldTimeoutWhenServerNeverResponds(t *testing.T) {
 	url := socketServerURL()
 	client, err := NewClient(url, func(settings *ClientSettings) {
-		settings.RequestTimeout = 2 * time.Second
+		settings.ReadTimeout = 2 * time.Second
 	})
 	if err != nil {
 		t.Skip("Socket server not available")

@@ -50,7 +50,6 @@ type connectionSettings struct {
 	ssl                      *tls.Config
 	connectTimeout           time.Duration
 	readTimeout              time.Duration
-	requestTimeout           time.Duration
 	maxConnsPerHost          int
 	maxIdleConnsPerHost      int
 	idleTimeout              time.Duration
@@ -166,10 +165,6 @@ func newConnection(handler *logHandler, url string, connSettings *connectionSett
 		// generic HTTP compression, so the manual decode path in getReader handles
 		// decompression. Disable net/http's transparent (gzip-only) handling.
 		DisableCompression: true,
-		// Bounds the time between finishing writing the request and receiving response
-		// headers. Independent of connectTimeout, which only governs connection
-		// establishment. Zero disables the timeout.
-		ResponseHeaderTimeout: connSettings.requestTimeout,
 	}
 
 	return &connection{
