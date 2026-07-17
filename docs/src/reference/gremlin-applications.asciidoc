@@ -840,8 +840,7 @@ possible to define the language to utilize to process the request:
 [source,text]
 curl -X POST -d "{\"gremlin\":\"100-x\", \"language\":\"gremlin-groovy\", \"parameters\":\"[x:1]\"}" "http://localhost:8182"
 
-By default this value is set to `gremlin-groovy`.  If using a `GET` operation, this value can be set as a query
-string argument with by setting the `language` key.
+By default this value is set to `gremlin-lang`. The value is set in the request body with the `language` key.
 
 [[server-configuring]]
 === Configuring
@@ -955,7 +954,7 @@ The following table describes the various YAML configuration options that Gremli
 |metrics.slf4jReporter.intervalMillis |Time in milliseconds between reports of metrics to SLF4j. |180000
 |port |The port to bind the server to. |8182
 |resultIterationBatchSize |Defines the size in which the result of a request is "batched" back to the client.  In other words, if set to `1`, then a result that had ten items in it would get each result sent back individually.  If set to `2` the same ten results would come back in five batches of two each. |64
-|scriptEngines |A `Map` of `ScriptEngine` implementations to expose through Gremlin Server, where the key is the name given by the `ScriptEngine` implementation.  The key must match the name exactly for the `ScriptEngine` to be constructed.  The value paired with this key is itself a `Map` of configuration for that `ScriptEngine`.  If this value is not set, it will default to "gremlin-lang". |_gremlin-lang_
+|scriptEngines |A `Map` of `ScriptEngine` configurations keyed by `ScriptEngine` name. See <<server-scriptengines-behavior>>. |_gremlin-lang_
 |scriptEngines.<name>.imports |A comma separated list of classes/packages to make available to the `ScriptEngine`. |_none_
 |scriptEngines.<name>.staticImports |A comma separated list of "static" imports to make available to the `ScriptEngine`. |_none_
 |scriptEngines.<name>.scripts |A comma separated list of script files to execute on `ScriptEngine` initialization. Deprecated — use `traversalSources` and `lifecycleHooks` instead.|_none_
@@ -986,6 +985,28 @@ The following table describes the various YAML configuration options that Gremli
 |=========================================================
 
 See the <<metrics,Metrics>> section for more information on how to configure Ganglia and Graphite.
+
+[[server-scriptengines-behavior]]
+==== scriptEngines Behavior
+
+The `scriptEngines` configuration identifies the `ScriptEngine` implementations to expose through Gremlin Server.
+The key is the name given by the `ScriptEngine` implementation and must match that name exactly. The value paired with
+this key is itself a `Map` of configuration for that `ScriptEngine`.
+
+Only `ScriptEngine` implementations listed in the configuration will accept requests. The `gremlin-lang`
+`ScriptEngine` is always available regardless of configuration.
+
+A request that specifies an unlisted `language` will receive a `400 Bad Request` response. Enabling `gremlin-groovy` or
+another `ScriptEngine` therefore requires an explicit entry in `scriptEngines`:
+
+[source,yaml]
+----
+scriptEngines: {
+  gremlin-lang: {},
+  gremlin-groovy: {
+    plugins: {
+      org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {}}}}
+----
 
 ==== Serialization
 

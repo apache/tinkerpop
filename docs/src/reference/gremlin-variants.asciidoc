@@ -419,6 +419,9 @@ err = tx.Commit()
 if err != nil { log.Fatal(err) }
 ----
 
+The transaction-bound source retains its owning transaction. Calling `gtx.Tx()` returns the same `Transaction`, so
+lifecycle operations can also be performed from the source with calls such as `gtx.Tx().Commit()`.
+
 ==== Managed Transaction Blocks
 
 To avoid the manual begin/commit/rollback boilerplate, `g` provides closure methods that manage the
@@ -723,6 +726,8 @@ therefore cardinality functions that take a value like `list()`, `set()`, and `s
 
 [[gremlin-go-limitations]]
 === Limitations
+
+* The Gremlin `Character` type is not supported by Gremlin-Go.
 
 * There is no default `set` type in Go. Any set type code from server will be deserialized into slices with the list
 type implementation. To input a set into Gremlin-Go, a custom struct which implements the `gremlingo.Set` interface
@@ -1152,6 +1157,9 @@ try {
 
 Traversals spawned from `gtx` are bound to the transaction. The driver handles host pinning and transaction ID
 propagation automatically.
+
+The transaction-bound source retains its owning transaction. Calling `gtx.tx()` returns the same `Transaction`, so
+lifecycle operations can also be performed from the source with calls such as `gtx.tx().commit()`.
 
 ==== Managed Transaction Blocks
 
@@ -1640,9 +1648,7 @@ where this occurs:
 The latter of the two can be addressed from the driver side in the following ways:
 
 * Increase the `maxWaitForConnection` allowing the client to wait a bit longer for a connection to become available.
-* Increase the number of requests allowed per connection by increasing the `maxSimultaneousUsagePerConnection` and
-`maxInProcessPerConnection` settings.
-* Increase the number of connections available in the connection pool by increasing the `maxConnectionPoolSize`.
+* Increase the number of connections available in the connection pool by increasing the `maxConnections`.
 
 The exception and logs (assuming they are enabled) should contain information about the state of the connection pool
 along with its connections which can help shed more light on which of these scenarios caused the problem. Some examples
@@ -1660,7 +1666,7 @@ _Client is likely issuing more requests than the pool size can handle_
 
 [source,text]
 ----
-Timed-out (150 MILLISECONDS) waiting for connection on Host{address=localhost/127.0.0.1:45940, hostUri=http://localhost:45940/gremlin}. Potential Cause: Number of active requests exceeds pool size. Consider increasing the value for maxConnectionPoolSize.
+Timed-out (150 MILLISECONDS) waiting for connection on Host{address=localhost/127.0.0.1:45940, hostUri=http://localhost:45940/gremlin}. Potential Cause: Number of active requests (1) exceeds pool size (1). Consider increasing the value for maxConnections.
 ConnectionPool (Host{address=localhost/127.0.0.1:45940, hostUri=http://localhost:45940/gremlin})
 Connection Pool Status (size=1 available=1 max=1 toCreate=0 bin=0 waiter=0)
 > Connection{channel=5a859d62 isDead=false borrowed=1 pending=1 markedReplaced=false closing=false created=2022-12-19T21:08:21.569613100Z thread=gremlin-driver-conn-scheduler-1}
@@ -2180,6 +2186,9 @@ await gtx.addV("person").property("name", "josh").iterate();
 await tx.commit();
 ----
 
+The transaction-bound source retains its owning transaction. Calling `gtx.tx()` returns the same `Transaction`, so
+lifecycle operations can also be performed from the source with calls such as `await gtx.tx().commit()`.
+
 ==== Managed Transaction Blocks
 
 To avoid the manual begin/commit/rollback boilerplate, `g` provides an `executeInTx` method that manages the
@@ -2501,6 +2510,7 @@ exact type sent to the server — see <<gremlin-javascript-numeric-types>>.
 signed range are unsuffixed (Int), integers beyond that up to `Number.MAX_SAFE_INTEGER` use the `L` suffix (Long),
 non-integer numbers and integers beyond the safe range use the `D` suffix (Double), and `BigInt` values use the `N`
 suffix (BigInteger).
+* Gremlin `Character` and `Duration` values are not supported.
 * The `subgraph()`-step returns a detached `Graph` data container exposing
 `vertices: Map<any, Vertex>` and `edges: Map<any, Edge>`. The result is not a live `Graph` instance: mutating the
 collections has no effect on the source graph, and it cannot be passed to `traversal().with(...)`. To re-query
@@ -2866,6 +2876,9 @@ await gtx.AddV("person").Property("name", "josh").Promise(t => t.Iterate());
 
 await tx.CommitAsync();
 ----
+
+The transaction-bound source retains its owning transaction. Calling `gtx.Tx()` returns the same `RemoteTransaction`,
+so lifecycle operations can also be performed from the source with calls such as `await gtx.Tx().CommitAsync()`.
 
 ==== Managed Transaction Blocks
 
@@ -3576,6 +3589,9 @@ gtx.addV('person').property('name', 'josh').iterate()
 
 tx.commit()
 ----
+
+The transaction-bound source retains its owning transaction. Calling `gtx.tx()` returns the same `Transaction`, so
+lifecycle operations can also be performed from the source with calls such as `gtx.tx().commit()`.
 
 ==== Managed Transaction Blocks
 

@@ -58,7 +58,7 @@ public abstract class Client implements RequestSubmitter, RequestSubmitterAsync 
 
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
     public static final String TOO_MANY_IN_FLIGHT_REQUESTS = "Number of active requests (%s) exceeds pool size (%s). " +
-            "Consider increasing the value for maxConnectionPoolSize.";
+            "Consider increasing the value for maxConnections.";
 
     protected final Cluster cluster;
     protected volatile boolean initialized;

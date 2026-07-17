@@ -214,33 +214,40 @@ Each GLV provides two entry points:
 * **Traversal API**: `g.tx().begin()` returns a transaction-bound `GraphTraversalSource`
 * **Driver API**: `client.transact()` (or `client.Transact()` in .NET) returns a `Transaction` with `submit()` methods
 
-See the <<gremlin-drivers-variants,Gremlin Drivers and Variants>> reference documentation for language-specific
-syntax and examples.
+See the link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
+reference documentation for language-specific syntax and examples.
 
 ===== Managed Transaction Blocks
 
-In addition to the manual `begin()`/`commit()`/`rollback()` lifecycle, every GLV (including the Java driver and embedded
-Java graphs) now offers closure-based convenience methods directly on `GraphTraversalSource` (`g`). You hand `g` a
-function that receives the transaction-bound `g` (`gtx`), and the transaction lifecycle is managed for you: the
-transaction is begun, your function runs, and it is committed on normal completion or rolled back if your function
-raises. This reduces the common begin/do-work/commit boilerplate and makes it harder to accidentally run a traversal
-against the non-transactional `g`, since only the transactional source is in scope inside the closure. The methods are a
-Traversal-API convenience (they live on `g`, not on the `Transaction` returned by `g.tx()`).
+Managed transaction blocks provide a shorter way to run a unit of work in a transaction. The application passes a
+closure to `g`, receives a transaction-bound `gtx`, and the transaction will be committed when the closure completes
+normally or rolled back when the closure throws.
 
-The method naming follows each language's idiom (the value-returning form is `evaluateInTx` rather than `call`, because
-`call` is already the `call()` service step on `GraphTraversalSource`):
+[source,java]
+----
+// before: manage the transaction lifecycle directly
+Transaction tx = g.tx();
+GraphTraversalSource gtx = tx.begin();
+try {
+    gtx.addV("person").property("name", "alice").iterate();
+    gtx.addV("software").property("name", "graph-app").iterate();
+    tx.commit();
+} catch (RuntimeException ex) {
+    tx.rollback();
+    throw ex;
+}
 
-* **Java**: `g.executeInTx(Consumer)` (no return) and `g.evaluateInTx(Function)` (returns the body's value).
-* **Python**: `g.execute_in_tx(fn)` — a single method that returns whatever the function returns.
-* **JavaScript**: `await g.executeInTx(fn)` — the callback may be `async`; resolves to the callback's return value.
-* **.NET**: `g.ExecuteInTxAsync(Func<..,Task>)` and `g.EvaluateInTxAsync<T>(Func<..,Task<T>>)`, both accepting an optional `CancellationToken`.
-* **Go**: `g.ExecuteInTx(func(*GraphTraversalSource) error) error` and `g.EvaluateInTx(func(*GraphTraversalSource) (interface{}, error)) (interface{}, error)`.
+// now: let the traversal source manage the lifecycle
+g.executeInTx(gtx -> {
+    gtx.addV("person").property("name", "alice").iterate();
+    gtx.addV("software").property("name", "graph-app").iterate();
+});
+----
 
-The closure runs the transaction exactly once (no automatic retry). If the function fails, the original error is
-re-raised after rollback; if `commit()` fails, the commit error is raised and a rollback is still attempted to release
-server-side resources. The manual `begin()`/`commit()`/`rollback()` API remains available and unchanged for advanced
-use. See the <<gremlin-drivers-variants,Gremlin Drivers and Variants>> reference documentation for language-specific
-examples.
+The same managed transaction pattern is supported in every GLV, with method names following each language's
+conventions. See the
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
+reference documentation for language-specific syntax and error-handling details.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3253[TINKERPOP-3253]
 
@@ -527,8 +534,6 @@ A character literal is a single-character string with a `c` suffix:
 g.V().has("initial","M"c)
 ----
 
-NOTE: Character is not supported in gremlin-go or gremlin-javascript.
-
 ===== Duration
 
 A duration literal uses seconds and nanoseconds with an optional sign flag:
@@ -567,48 +572,26 @@ g.V().has("blob",P.eq(Binary("AQID")))
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3153[TINKERPOP-3153]
 
-==== Python Driver Simplification — Removed GraphSON, Abstract Base Classes, and Protocol Layer
+==== Python Driver Simplification
 
-The `AbstractBaseTransport`, `AbstractBaseProtocol`, and `GremlinServerHTTPProtocol` classes have been removed from
-`gremlin-python`. The protocol layer's request-building logic (serialization, headers, interceptors, auth) has been
-merged directly into `Connection`. The driver now uses `AiohttpHTTPTransport` directly without an abstract transport
-interface.
-
-`GremlinServerError` has moved from `gremlin_python.driver.protocol` to `gremlin_python.driver.connection`:
-
-The `GraphSONSerializersV4` class and the `gremlin_python.structure.io.graphsonV4` module have been removed.
-GraphBinary is the only supported wire format for the Python driver in TinkerPop 4. Code that constructed
-`GraphSONSerializersV4()` or imported from `gremlin_python.structure.io.graphsonV4` must switch to
-`GraphBinarySerializersV4` (the default `response_serializer`):
-
-[source,python]
-----
-# Before
-from gremlin_python.driver.protocol import GremlinServerError
-
-# After
-from gremlin_python.driver.connection import GremlinServerError
-----
-
-The `protocol_factory` and `transport_factory` parameters have been removed from `Client`,
-`DriverRemoteConnection`, and `Connection`. Users who were passing a custom `protocol_factory` should use the
-`response_serializer`, `auth`, and `interceptors` parameters directly instead. These cover all functionality that
-`GremlinServerHTTPProtocol` previously provided.
-
-Transport options like SSL and timeouts are now passed as keyword arguments directly:
+Gremlin for Python has been heavily refactored for this release, simplifying driver usage and removing unnecessary
+infrastructure. Key areas for change to consider when upgrading include removal of the old mechanism used to configure
+a custom `transport_factory`, which was commonly used to pass SSL and timeout options into the underlying transport.
+Those settings now pass directly to `Client` or `DriverRemoteConnection`:
 
 [source,python]
 ----
 # Before
 from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
+
 Client(url, 'g', transport_factory=lambda: AiohttpHTTPTransport(ssl_options=ctx, read_timeout=30))
 
 # After
 Client(url, 'g', ssl=ctx, read_timeout=30)
 ----
 
-The `Connection` constructor signature has changed. The `protocol` and `transport_factory` positional arguments have
-been removed. Transport kwargs are forwarded to `AiohttpHTTPTransport` internally:
+The lower-level `Connection` API follows the same simplification. The old protocol and transport factory arguments have
+been removed, and serializer, authentication, interceptor, and transport settings are configured directly:
 
 [source,python]
 ----
@@ -621,9 +604,18 @@ Connection(url, traversal_source, executor, pool,
            auth=None, interceptors=None, **transport_kwargs)
 ----
 
-Custom transport implementations are no longer supported. The driver uses `AiohttpHTTPTransport` directly.
+`GremlinServerError` now imports from `gremlin_python.driver.connection`:
 
-See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-python[Gremlin-Python]
+[source,python]
+----
+# Before
+from gremlin_python.driver.protocol import GremlinServerError
+
+# After
+from gremlin_python.driver.connection import GremlinServerError
+----
+
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-python[Gremlin-Python]
 
 ==== Removal of sparql-gremlin
 

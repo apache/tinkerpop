@@ -153,6 +153,10 @@ GraphTraversalSource gtx2 = tx2.begin();
 // g operates outside of both tx1 and tx2
 ----
 
+The transaction-bound `GraphTraversalSource` can also act as the transaction handle. Calling `gtx.tx()` (or the
+language-specific casing equivalent) returns the same `Transaction`, which allows code that only passes `gtx` through a
+helper to still close the transaction with `gtx.tx().commit()` or `gtx.tx().rollback()`.
+
 In remote cases, `GraphTraversalSource` instances spawned from `begin()` are safe to use from a single thread. The
 default behavior of `close()` on a `Transaction` for remote cases is to `rollback()`, ensuring partial work is
 discarded if the user forgets to commit. Users must call `commit()` explicitly to persist data.
@@ -6173,6 +6177,46 @@ By default, `GType` enumerations are registered using their simple class names a
 ----
 g.V().values('age','name').is(P.typeOf('Integer'))
 ----
+
+[[canonical-gremlin-literal-types]]
+=== Canonical Gremlin Literal Types
+
+Canonical Gremlin represents typed values as text so that scripts and GLV requests can be expressed in the
+`gremlin-lang` language and parsed by the `gremlin-lang` script engine. The authoritative definition of this syntax is
+the link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-language/src/main/antlr4/Gremlin.g4[Gremlin.g4 ANTLR grammar].
+This section summarizes the commonly used literal forms for convenience when reading canonical Gremlin or writing direct
+script requests.
+
+[width="100%",cols="2,3,6",options="header"]
+|=========================================================
+|Type |Canonical form |Expected input
+|null |`null` |The literal keyword `null`.
+|Boolean |`true`, `false` |The literal keywords `true` and `false`.
+|String |`"marko"`, `'marko'`, `"M"s` |A single-quoted or double-quoted string. The optional `s` suffix still produces a `String`.
+|Character |`"M"c`, `'M'c` |A single-quoted or double-quoted value that is one character.
+|Byte |`1B` |An integer with a `B` suffix and a value within the bounds of `Byte`.
+|Short |`1S` |An integer with an `S` suffix and a value within the bounds of `Short`.
+|Integer |`1`, `1I` |An integer within the bounds of `Integer`. The `I` suffix forces `Integer`.
+|Long |`1L` |An integer with an `L` suffix and a value within the bounds of `Long`.
+|BigInteger |`1N` |An integer with an `N` suffix.
+|Float |`1.0F` |A floating-point number with an `F` suffix and a value within the bounds of `Float`.
+|Double |`1.0`, `1.0D` |A floating-point number with an optional `D` suffix.
+|BigDecimal |`1.0M` |A floating-point number with an `M` suffix.
+|DateTime |`DateTime("2018-03-22T00:35:44Z")`, `DateTime()` |An ISO-8601 date or date-time string. `DateTime()` evaluates to the current time.
+|UUID |`UUID("f47af10b-58cc-4372-a567-0f02b2f3d479")`, `UUID()` |A UUID string in the textual form written as 8-4-4-4-12 hexadecimal digit groups. `UUID()` generates a random UUID.
+|Duration |`Duration(3600,0)`, `Duration(30,0,false)` |The first argument is non-negative seconds. The second is nanoseconds from `0` to `999999999`. The optional third argument is a boolean sign flag with `false` negating the duration.
+|Binary |`Binary("AQID")` |A Base64-encoded string.
+|Enum |`T.id`, `Cardinality.single`, `Direction.OUT` |A Gremlin enum token from `T`, `Cardinality`, `Direction`, `Merge`, `Pick`, `DT`, or `GType`.
+|List |`[1,"two",null]` |A comma-separated sequence of generic literals inside square brackets.
+|Set |`{1,"two"}` |A comma-separated sequence of generic literals inside braces.
+|Map |`[:]`, `["name":"marko", "age":29]` |An empty map is `[:]`. A populated map is a comma-separated sequence of `key:value` entries inside square brackets.
+|Provider Defined Type |`PDT("Point",["x":1,"y":2])`, `PDT("Uint32","42")` |The first argument is the provider-defined type name. The composite form expects a map literal with string keys. The primitive form expects an opaque string value.
+|=========================================================
+
+NOTE: Numeric values may be signed, and integer values may use decimal, hexadecimal (`0x`), or octal (`0`) notation.
+Underscores may appear between digits. Numeric type suffixes are accepted in either uppercase or lowercase form, though
+the examples above use uppercase suffixes. Special floating-point values are expressed as `NaN`, `Infinity`,
+`+Infinity`, or `-Infinity`.
 
 [[a-note-on-maps]]
 == A Note on Maps

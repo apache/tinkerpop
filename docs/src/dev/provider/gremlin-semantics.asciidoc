@@ -250,19 +250,29 @@ any non-`null` value.
 
 For Booleans, `TRUE == TRUE`, `FALSE == FALSE`, `TRUE != FALSE`, and `FALSE < TRUE`.
 
-===== STRING
+===== STRING / CHAR
 
-We assume the common lexicographical order over unicode strings. `A` and `B` are compared lexicographically, and
-`A == B` if `A` and `B` are lexicographically equal.
+We assume the common lexicographical order over unicode strings and characters. `A` and `B` are compared
+lexicographically, and `A == B` if `A` and `B` are of the same type and lexicographically equal.
 
 ===== UUID
 
 UUID is evaluated based on its String representation. However, `UUID("b46d37e9-755c-477e-9ab6-44aabea51d50")` and the
 String `"b46d37e9-755c-477e-9ab6-44aabea51d50"` are not <<Equality,Equal>> and not <<Comparability,Comparable>>.
 
+===== BINARY
+
+Binary values are evaluated based on lexicographical comparison of their byte sequences, comparing each byte as a
+signed 8-bit value. `A == B` if `A` and `B` have the same bytes in the same order.
+
 ===== DATETIME
 
 Dates are evaluated based on the numerical comparison of Unix Epoch time.
+
+===== DURATION
+
+Durations are evaluated based on the numerical comparison of their total length. `A == B` if `A` and `B` represent the
+same total length.
 
 ===== Graph Elements (VERTEX / EDGE / VPROPERTY)
 
