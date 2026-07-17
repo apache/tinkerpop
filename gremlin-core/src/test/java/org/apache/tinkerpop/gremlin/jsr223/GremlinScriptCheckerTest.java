@@ -434,10 +434,24 @@ public class GremlinScriptCheckerTest {
     }
 
     @Test
+    public void shouldCaptureNegativeBatchSizeUnparsed() {
+        assertEquals("-1", GremlinScriptChecker.parse("g.with('batchSize', -1).V()").
+                getBatchSize().get());
+    }
+
+    @Test
     public void shouldIdentifyBulkResultsStringKey() {
         assertEquals(Boolean.TRUE, GremlinScriptChecker.parse("g.with('bulkResults', true).V().out('knows')").
                 getBulkResults().get());
         assertEquals(Boolean.FALSE, GremlinScriptChecker.parse("g.with(\"bulkResults\", false).V().out('knows')").
+                getBulkResults().get());
+    }
+
+    @Test
+    public void shouldIdentifyBulkResultsCaseInsensitive() {
+        assertEquals(Boolean.TRUE, GremlinScriptChecker.parse("g.with('bulkResults', TRUE).V().out('knows')").
+                getBulkResults().get());
+        assertEquals(Boolean.FALSE, GremlinScriptChecker.parse("g.with('bulkResults', False).V().out('knows')").
                 getBulkResults().get());
     }
 
@@ -453,6 +467,12 @@ public class GremlinScriptCheckerTest {
     public void shouldIdentifyMultipleBulkResultsUsingLast() {
         assertEquals(Boolean.FALSE, GremlinScriptChecker.parse("g.with('bulkResults', true).with('bulkResults', false).V()").
                 getBulkResults().get());
+    }
+
+    @Test
+    public void shouldNotIdentifyInvalidBulkResults() {
+        assertEquals(Optional.empty(), GremlinScriptChecker.parse("g.with('bulkResults', maybe).V()").
+                getBulkResults());
     }
 
     @Test

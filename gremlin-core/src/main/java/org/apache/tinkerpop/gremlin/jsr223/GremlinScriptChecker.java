@@ -123,83 +123,15 @@ public class GremlinScriptChecker {
     private static final String bulkResultsTokens = "[\"']bulkResults[\"']|(?:Tokens\\.)?BULK_RESULTS";
 
     /**
-     * Matches {@code .with({timeout-token},{timeout})} with a matching group on the {@code timeout}.
-     * input: g.with('materializeProperties',100)
-     * <pre>
-     * From https://regex101.com/
-     *
-     * \.with\((((?:["']materializeProperties["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)|((?:["']materializeProperties["']|(?:Tokens\.)?ARGS_MATERIALIZE_PROPERTIES),["'](?<mp>.*?)["']?)|((?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?)["']))\)
-     *
-     * gm
-     * \. matches the character . with index 4610 (2E16 or 568) literally (case sensitive)
-     * with matches the characters with literally (case sensitive)
-     * \( matches the character ( with index 4010 (2816 or 508) literally (case sensitive)
-     * 1st Capturing Group (((?:["']materializeProperties["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)|((?:["']materializeProperties["']|(?:Tokens\.)?ARGS_MATERIALIZE_PROPERTIES),["'](?<mp>.*?)["']?)|((?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?)["']))
-     * 1st Alternative ((?:["']materializeProperties["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)
-     * 2nd Capturing Group ((?:["']materializeProperties["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT),(?<to>\d*)(:?L|l)?)
-     * Non-capturing group (?:["']materializeProperties["']|["']scriptEvaluationTimeout["']|(?:Tokens\.)?ARGS_EVAL_TIMEOUT|(?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT)
-     * 1st Alternative ["']materializeProperties["']
-     * Match a single character present in the list below ["']
-     * "' matches a single character in the list "' (case sensitive)
-     * materializeProperties
-     *  matches the characters materializeProperties literally (case sensitive)
-     * Match a single character present in the list below ["']
-     * "' matches a single character in the list "' (case sensitive)
-     * 2nd Alternative ["']scriptEvaluationTimeout["']
-     * Match a single character present in the list below ["']
-     * "' matches a single character in the list "' (case sensitive)
-     * scriptEvaluationTimeout matches the characters scriptEvaluationTimeout literally (case sensitive)
-     * Match a single character present in the list below ["']
-     * "' matches a single character in the list "' (case sensitive)
-     * 3rd Alternative (?:Tokens\.)?ARGS_EVAL_TIMEOUT
-     * Non-capturing group (?:Tokens\.)?
-     * ? matches the previous token between zero and one times, as many times as possible, giving back as needed (greedy)
-     * Tokens matches the characters Tokens literally (case sensitive)
-     * \. matches the character . with index 4610 (2E16 or 568) literally (case sensitive)
-     * ARGS_EVAL_TIMEOUT matches the characters ARGS_EVAL_TIMEOUT literally (case sensitive)
-     * 4th Alternative (?:Tokens\.)?ARGS_SCRIPT_EVAL_TIMEOUT
-     * Non-capturing group (?:Tokens\.)?
-     * ? matches the previous token between zero and one times, as many times as possible, giving back as needed (greedy)
-     * Tokens matches the characters Tokens literally (case sensitive)
-     * \. matches the character . with index 4610 (2E16 or 568) literally (case sensitive)
-     * ARGS_SCRIPT_EVAL_TIMEOUT matches the characters ARGS_SCRIPT_EVAL_TIMEOUT literally (case sensitive)
-     * , matches the character , with index 4410 (2C16 or 548) literally (case sensitive)
-     * Named Capture Group to (?<to>\d*)
-     * \d matches a digit (equivalent to [0-9])
-     * * matches the previous token between zero and unlimited times, as many times as possible, giving back as needed (greedy)
-     * 4th Capturing Group (:?L|l)?
-     * ? matches the previous token between zero and one times, as many times as possible, giving back as needed (greedy)
-     * 1st Alternative :?L
-     * : matches the character : with index 5810 (3A16 or 728) literally (case sensitive)
-     * ? matches the previous token between zero and one times, as many times as possible, giving back as needed (greedy)
-     * L matches the character L with index 7610 (4C16 or 1148) literally (case sensitive)
-     * 2nd Alternative l
-     * l matches the character l with index 10810 (6C16 or 1548) literally (case sensitive)
-     * 2nd Alternative ((?:["']materializeProperties["']|(?:Tokens\.)?ARGS_MATERIALIZE_PROPERTIES),["'](?<mp>.*?)["']?)
-     * 5th Capturing Group ((?:["']materializeProperties["']|(?:Tokens\.)?ARGS_MATERIALIZE_PROPERTIES),["'](?<mp>.*?)["']?)
-     * Non-capturing group (?:["']materializeProperties["']|(?:Tokens\.)?ARGS_MATERIALIZE_PROPERTIES)
-     * 1st Alternative ["']materializeProperties["']
-     * 2nd Alternative (?:Tokens\.)?ARGS_MATERIALIZE_PROPERTIES
-     * , matches the character , with index 4410 (2C16 or 548) literally (case sensitive)
-     * Match a single character present in the list below ["']
-     * "' matches a single character in the list "' (case sensitive)
-     * Named Capture Group mp (?<mp>.*?)
-     * Match a single character present in the list below ["']
-     * 3rd Alternative ((?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?)["'])
-     * 7th Capturing Group ((?:["']requestId["']|(?:Tokens\.)?REQUEST_ID),["'](?<rid>.*?)["'])
-     * \) matches the character ) with index 4110 (2916 or 518) literally (case sensitive)
-     * Global pattern flags
-     * g modifier: global. All matches (don't return after first match)
-     * m modifier: multi line. Causes ^ and $ to match the begin/end of each line (not only begin/end of string)
-     * </pre>
+     * Matches supported traversal source request options supplied via {@code with()} and captures their values.
      */
     private static final Pattern patternWithOptions =
             Pattern.compile("\\.with\\((((?:"
                     + timeoutTokens + "),(?<to>\\d*)(:?L|l)?)|((?:"
                     + materializePropertiesTokens + "),[\"'](?<mp>.*?)[\"']?)|((?:"
                     + languageTokens + "),[\"'](?<lang>.*?)[\"'])|((?:"
-                    + batchSizeTokens + "),(?<bs>\\d+))|((?:"
-                    + bulkResultsTokens + "),(?<br>true|false)))\\)");
+                    + batchSizeTokens + "),(?<bs>-?\\d+))|((?:"
+                    + bulkResultsTokens + "),(?<br>(?i:true|false))))\\)");
 
     /**
      * Parses a Gremlin script and extracts a {@code Result} containing properties that are relevant to the checker.

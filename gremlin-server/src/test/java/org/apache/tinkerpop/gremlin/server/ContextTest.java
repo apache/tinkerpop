@@ -169,6 +169,9 @@ public class ContextTest {
         final RequestMessage fromScript = RequestMessage.build("g.with('batchSize', 0).V()").create();
         assertThrows(ProcessingException.class, () -> newContext(fromScript).getBatchSize());
 
+        final RequestMessage negativeFromScript = RequestMessage.build("g.with('batchSize', -1).V()").create();
+        assertThrows(ProcessingException.class, () -> newContext(negativeFromScript).getBatchSize());
+
         final RequestMessage fromField = RequestMessage.build("g.V()").addChunkSize(0).create();
         assertThrows(ProcessingException.class, () -> newContext(fromField).getBatchSize());
     }

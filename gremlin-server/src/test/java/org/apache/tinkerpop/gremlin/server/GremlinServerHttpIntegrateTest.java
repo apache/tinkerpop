@@ -1422,14 +1422,17 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void should400OnScriptEmbeddedNonPositiveBatchSize() throws Exception {
         // a non-positive batchSize would stall result iteration, so it is rejected as a bad request.
-        final String body = "{ \"gremlin\": \"" + "g.with('batchSize', 0).inject(1)" + "\",\"language\":\"gremlin-groovy\"}";
-        final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
-        httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity(body, Consts.UTF_8));
+        try (final CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            for (final String batchSize : new String[] {"0", "-1"}) {
+                final String body = "{ \"gremlin\": \"" + "g.with('batchSize', " + batchSize + ").inject(1)" + "\",\"language\":\"gremlin-groovy\"}";
+                final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+                httppost.addHeader("Content-Type", "application/json");
+                httppost.setEntity(new StringEntity(body, Consts.UTF_8));
 
-        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
-            assertEquals(400, response.getStatusLine().getStatusCode());
+                try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+                    assertEquals(400, response.getStatusLine().getStatusCode());
+                }
+            }
         }
     }
 
