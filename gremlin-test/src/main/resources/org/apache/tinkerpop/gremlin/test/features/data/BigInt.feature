@@ -33,6 +33,21 @@ Feature: Data - BIGINT
       | result |
       | d[456].n |
 
+  Scenario: g_V_valuesXintX_asNumberXGType_BIGINTX_negative_isXtypeOfXGType_BIGINTXX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("data").property("int", -456)
+      """
+    And the traversal of
+      """
+      g.V().values("int").asNumber(GType.BIGINT).is(P.typeOf(GType.BIGINT))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[-456].n |
+
   Scenario: g_V_valuesXintX_asNumberXGType_BIGINTX_isXtypeOfXGType_BIGINTXX_mathXmulX1000XX
     Given the empty graph
     And the graph initializer of

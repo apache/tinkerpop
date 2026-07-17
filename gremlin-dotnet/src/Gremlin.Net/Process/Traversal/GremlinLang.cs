@@ -459,7 +459,7 @@ namespace Gremlin.Net.Process.Traversal
                 // For predicates like between/inside, the value is an object[] with 2 elements
                 if (p.Value is object[] valArr)
                 {
-                    if (valArr.Length > 1 && p.OperatorName != "between" && p.OperatorName != "inside")
+                    if (valArr.Length > 1 && p.OperatorName != "between" && p.OperatorName != "inside" && p.OperatorName != "outside")
                     {
                         sb.Append('[');
                         for (int i = 0; i < valArr.Length; i++)

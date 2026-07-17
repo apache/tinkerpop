@@ -66,6 +66,18 @@ Feature: Step - is()
       | d[27].i |
       | d[29].i |
 
+  Scenario: g_V_valuesXageX_isXoutsideX28_33XX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").is(P.outside(28, 33))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[27].i |
+      | d[35].i |
+
   Scenario: g_V_valuesXageX_isXgte_29X_isXlt_34X
     Given the modern graph
     And the traversal of
