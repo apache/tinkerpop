@@ -163,6 +163,63 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3261[TINKERPOP-3261],
 link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergraph-multi-label[Multi-Label], link:https://tinkerpop.apache.org/docs/4.0.0/reference/#labels-step[labels()],
 link:https://tinkerpop.apache.org/docs/4.0.0/reference/#the-zoo-toy-graph[The Zoo]
 
+==== More Dynamic Arguments in Gremlin
+
+Prior to 4.0, comparing a traverser's value against a dynamically computed reference required several coordinated
+step labels and `where()` comparison. For example, finding all people older than "marko" previously required:
+
+[source,groovy]
+----
+// Old way: label marko's age, compare via where()
+gremlin> g.V(1).values("age").as("markosAge").
+......1>   V().hasLabel("person").as("p").
+......2>   values("age").as("otherAge").
+......3>   where("otherAge", gt("markosAge")).
+......4>   select("p").values("name")
+==>josh
+==>peter
+----
+
+This pattern required several coordinated step labels and could not easily compose with other predicates. With
+traversal-accepting arguments, the same query becomes a single, readable step:
+
+[source,groovy]
+----
+// New way: traversal inside the predicate
+gremlin> g.V().has("age", P.gt(__.V(1).values("age"))).values("name")
+==>josh
+==>peter
+----
+
+Steps and predicates that previously only accepted literal values now accept child traversals resolved per-traverser
+at runtime. Affected steps: `has()`, `hasId()`, `hasKey()`, `hasLabel()`, `hasValue()`, `V()`, `E()`, `property()`,
+`is()`, `where(P)`, and all `P` and `TextP` predicates.
+
+[source,groovy]
+----
+// Multi-source filtering with within() - combine sources in one traversal with union().fold()
+gremlin> g.V().has("name", P.within(__.union(__.V(1).out("knows").values("name"), __.constant("peter")).fold()))
+==>v[2]
+==>v[4]
+==>v[6]
+
+// Set multiple properties from a computed Map
+gremlin> g.V(4).property(__.V(1).project("friendCount").by(__.out("knows").count()))
+==>v[4]
+----
+
+Users should look to simplify existing traversals that use `as()`/`where()`/`select()` patterns solely to compare
+a traverser against a dynamically computed value. In particular, patterns of the form
+`__.as("x")...where("x", P.gt("y"))` can often be replaced with a single `has()` or `is()` step containing
+a traversal predicate.
+
+See: <<has-step,has()>>, <<v-step,V()>>, <<property-step,property()>>, <<is-step,is()>>,
+<<where-step,where()>>,
+link:https://issues.apache.org/jira/browse/TINKERPOP-2586[TINKERPOP-2586],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2777[TINKERPOP-2777],
+link:https://issues.apache.org/jira/browse/TINKERPOP-3005[TINKERPOP-3005],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1463[TINKERPOP-1463]
+
 ==== Transactions
 
 TinkerPop 4.0 brings a set of related transaction changes across the drivers and embedded graphs: explicit remote
@@ -179,13 +236,6 @@ Each GLV provides two entry points:
 
 * **Traversal API**: `g.tx().begin()` returns a transaction-bound `GraphTraversalSource`
 * **Driver API**: `client.transact()` (or `client.Transact()` in .NET) returns a `Transaction` with `submit()` methods
-
-Key behaviors consistent across all GLVs:
-
-* Transactions are not thread-safe. All operations must be sequential.
-* The default close behavior is rollback (partial work discarded if commit is not called explicitly).
-* Transactions are single-use. After commit or rollback, a new transaction must be created.
-* `gtx.tx()` returns the same transaction object (enabling `gtx.tx().commit()` pattern from the Traversal API).
 
 See the <<gremlin-drivers-variants,Gremlin Drivers and Variants>> reference documentation for language-specific
 syntax and examples.
@@ -245,7 +295,7 @@ configuring close behavior and always rollback.
 All GLVs now support the `subgraph()` step. Previously, calling `subgraph()` from a GLV produced an unknown-type error
 because the variant could not interpret the `Graph` payload that the server returned. Applications can now extract a
 portion of a remote graph as part of a normal traversal and inspect its vertices and edges directly from the client,
-without having to re-issue queries to reconstruct the result. See: <<subgraph-step>>.
+without having to re-issue queries to reconstruct the result.
 
 In the GLVs, the result is a detached snapshot of the captured vertices and edges, not a traversable `Graph` instance.
 It cannot be passed to `traversal().with(...)`, and mutating its collections has no effect on the source graph. To
@@ -257,9 +307,9 @@ re-query elements against the original graph, extract their ids and call `g.V(id
 link:https://gremlator.com[Gremlator] has been rebuilt entirely in JavaScript as a browser-based single-page
 application and is now an official part of the Apache TinkerPop project. It translates Gremlin queries into
 equivalent representations in all supported language variants: Groovy, Java, Python, JavaScript, Go, .NET, and an
-anonymized form. The original gremlator.com was a prototype built by TinkerPop committer Dave Bechberger; the
-previous implementation required Java and a running Gremlin Server, whereas the new version runs entirely in the
-browser with no server infrastructure needed.
+anonymized form. The original gremlator.com was a prototype built by TinkerPop committer Dave Bechberger. This previous
+implementation required Java and a running Gremlin Server, whereas the new version runs entirely in the browser with
+no server infrastructure needed.
 
 ==== Bindings are now Parameters
 
@@ -327,11 +377,6 @@ TinkerPop 4.x standardizes connection option names and defaults across all five 
 .NET, Go, and JavaScript). Each driver using its language-idiomatic casing (`camelCase`, `PascalCase`, or `snake_case`).
 These renames are breaking, the old option names have been removed.
 
-NOTE: Timeouts use a millisecond-suffixed canonical name (`connectTimeoutMillis`, `readTimeoutMillis`,
-`idleTimeoutMillis`, `keepAliveTimeMillis`, and the `_millis` form in Python). Java, Go, .NET, and Python also accept an
-idiomatic duration companion for the same setting (Java `Duration`, Go `time.Duration`, .NET `TimeSpan`, Python seconds);
-set only one form per option. JavaScript exposes only the millisecond form.
-
 ===== Standardized options (cross-GLV)
 
 The table lists each standardized option by driver. Defaults are shown in parentheses; "n/a" means the driver does not
@@ -396,7 +441,7 @@ These change runtime behavior on upgrade even if you do not change your configur
 
 See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
 
-==== Renaming `evaluationTimeout` to `timeoutMillis`
+===== Renaming `evaluationTimeout` to `timeoutMillis`
 
 The per-request execution timeout is now referred to by a single name, `timeoutMillis`, everywhere. `timeoutMillis` is
 the maximum time in milliseconds that a request is allowed to execute on the server before it times out. It can be
@@ -421,7 +466,11 @@ that field silently ignored and falls back to the server's default timeout, as w
 
 See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-server[Gremlin Server]
 
-==== Java Runtime Upgrade
+==== Runtime Upgrades
+
+TinkerPop 4.0 introduces major upgrades to its various runtimes.
+
+===== Java Runtime Upgrade
 
 TinkerPop 4.0 raises the minimum Java version from 11 to 17 for both building and running, and adds support for running
 on Java 21 and Java 25. Supporting Java 25 required upgrading Groovy to 4.0.32, Hadoop to 3.4.3, Spark to 4.1.x, and
@@ -431,7 +480,7 @@ As with the earlier JDK 17 support, some libraries still rely on deep reflection
 library used with OLAP), so it may be necessary to `--add-opens` or `--add-exports` certain modules at runtime. The set
 of options used by TinkerPop's own tests is unchanged.
 
-==== .NET Runtime Upgrade
+===== .NET Runtime Upgrade
 
 The minimum target framework is now `net8.0` (previously `netstandard2.0;net6.0`).
 
@@ -470,7 +519,7 @@ See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-java-interc
 link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-javascript-interceptors[JavaScript], link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-dotnet-interceptors[.NET],
 link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-go-interceptors[Go]
 
-==== Inconfigurable Request Serialization
+==== Non-configurable Request Serialization
 
 TinkerPop 3.x drivers used a single serializer configuration (for example, `serializer` in the Java driver or
 `message_serializer` in Python) that controlled both how a `RequestMessage` was serialized on the way to the server
@@ -486,63 +535,6 @@ link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-drivers-variants
 reference.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3250[TINKERPOP-3250]
-
-==== Expanding Dynamic Arguments to Additional Steps
-
-Prior to 4.0, comparing a traverser's value against a dynamically computed reference required several coordinated
-step labels and `where()` comparison. For example, finding all people older than "marko" previously required:
-
-[source,groovy]
-----
-// Old way: label marko's age, compare via where()
-gremlin> g.V(1).values("age").as("markosAge").
-......1>   V().hasLabel("person").as("p").
-......2>   values("age").as("otherAge").
-......3>   where("otherAge", gt("markosAge")).
-......4>   select("p").values("name")
-==>josh
-==>peter
-----
-
-This pattern required several coordinated step labels and could not easily compose with other predicates. With
-traversal-accepting arguments, the same query becomes a single, readable step:
-
-[source,groovy]
-----
-// New way: traversal inside the predicate
-gremlin> g.V().has("age", P.gt(__.V(1).values("age"))).values("name")
-==>josh
-==>peter
-----
-
-Steps and predicates that previously only accepted literal values now accept child traversals resolved per-traverser
-at runtime. Affected steps: `has()`, `hasId()`, `hasKey()`, `hasLabel()`, `hasValue()`, `V()`, `E()`, `property()`,
-`is()`, `where(P)`, and all `P` and `TextP` predicates.
-
-[source,groovy]
-----
-// Multi-source filtering with within() - combine sources in one traversal with union().fold()
-gremlin> g.V().has("name", P.within(__.union(__.V(1).out("knows").values("name"), __.constant("peter")).fold()))
-==>v[2]
-==>v[4]
-==>v[6]
-
-// Set multiple properties from a computed Map
-gremlin> g.V(4).property(__.V(1).project("friendCount").by(__.out("knows").count()))
-==>v[4]
-----
-
-Users should look to simplify existing traversals that use `as()`/`where()`/`select()` patterns solely to compare
-a traverser against a dynamically computed value. In particular, patterns of the form
-`__.as("x")...where("x", P.gt("y"))` can often be replaced with a single `has()` or `is()` step containing
-a traversal predicate.
-
-See: <<has-step,has()>>, <<v-step,V()>>, <<property-step,property()>>, <<is-step,is()>>,
-<<where-step,where()>>,
-link:https://issues.apache.org/jira/browse/TINKERPOP-2586[TINKERPOP-2586],
-link:https://issues.apache.org/jira/browse/TINKERPOP-2777[TINKERPOP-2777],
-link:https://issues.apache.org/jira/browse/TINKERPOP-3005[TINKERPOP-3005],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1463[TINKERPOP-1463]
 
 ==== New Gremlin-Lang Literals
 
@@ -578,11 +570,6 @@ negative durations.
 ----
 g.V().has("length",P.gt(Duration(3600,0)))
 ----
-
-NOTE: Python's `timedelta` has microsecond resolution, so sub-microsecond nanosecond values are truncated.
-.NET's `TimeSpan` has 100-nanosecond tick resolution, so sub-100ns values are truncated.
-
-NOTE: Duration is not supported in gremlin-javascript.
 
 ===== Binary
 
