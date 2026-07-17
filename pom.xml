@@ -1096,7 +1096,7 @@ limitations under the License.
                         <dependencies>
                             <dependency>
                                 <groupId>org.apache.tinkerpop</groupId>
-                                <artifactId>tinkerpop-docs</artifactId>
+                                <artifactId>tinkeradoc-extension</artifactId>
                                 <version>${project.version}</version>
                             </dependency>
                         </dependencies>
