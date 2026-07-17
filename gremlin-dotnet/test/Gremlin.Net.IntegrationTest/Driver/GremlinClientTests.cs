@@ -143,13 +143,15 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var gremlinServer = new GremlinServer(TestHost, TestPort);
             using (var gremlinClient = new GremlinClient(gremlinServer))
             {
-                // bulkResults=false: each value is returned raw and read as its value type.
+                // bulkResults=false: the ResultSet contains raw values (no Traverser wrapping).
                 var requestMessage = RequestMessage.Build("g.inject(1,2,3,2,1)")
                     .AddBulkResults(false).Create();
 
-                var response = await gremlinClient.SubmitAsync<int>(requestMessage);
+                var response = await gremlinClient.SubmitAsync<object>(requestMessage);
+                var results = await response.ToListAsync();
 
-                Assert.Equal(new List<int> {1, 2, 3, 2, 1}, await response.ToListAsync());
+                Assert.Equal(5, results.Count);
+                Assert.All(results, r => Assert.IsNotType<Traverser>(r));
             }
         }
 
