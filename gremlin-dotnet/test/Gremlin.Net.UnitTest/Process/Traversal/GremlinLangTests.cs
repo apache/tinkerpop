@@ -735,6 +735,20 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         }
 
         [Fact]
+        public void g_With_multilabel_V_uses_single_quotes()
+        {
+            // source-level multilabel with-clause renders with single quotes
+            Assert.Equal("g.with('multilabel').V()", _g.With("multilabel").V().GremlinLang.GetGremlin());
+        }
+
+        [Fact]
+        public void g_With_singlelabel_V_uses_single_quotes()
+        {
+            // source-level singlelabel with-clause renders with single quotes
+            Assert.Equal("g.with('singlelabel').V()", _g.With("singlelabel").V().GremlinLang.GetGremlin());
+        }
+
+        [Fact]
         public void g_WithStrategies_PartitionStrategy_AddV_test()
         {
             var result = _g.WithStrategies(new PartitionStrategy(

@@ -733,6 +733,16 @@ func Test_GremlinLang(t *testing.T) {
 			},
 			equals: "g.V().match(\"MATCH (p:person)\",[\"name\":\"marko\"])",
 		},
+		{
+			name:   "GTS source-level multilabel with-clause uses single quotes",
+			assert: func(g *GraphTraversalSource) *GraphTraversal { return g.With("multilabel").V() },
+			equals: "g.with('multilabel').V()",
+		},
+		{
+			name:   "GTS source-level singlelabel with-clause uses single quotes",
+			assert: func(g *GraphTraversalSource) *GraphTraversal { return g.With("singlelabel").V() },
+			equals: "g.with('singlelabel').V()",
+		},
 	}
 
 	var testsToRun []test

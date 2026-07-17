@@ -145,7 +145,7 @@ class GraphTraversalSource(object):
 
         # Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
         if k == 'multilabel' or k == 'singlelabel':
-            source.gremlin_lang.gremlin.extend(['.', 'with', '(', f'"{k}"', ')'])
+            source.gremlin_lang.gremlin.extend(['.', 'with', '(', f"'{k}'", ')'])
 
         return source
 

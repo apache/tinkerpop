@@ -209,7 +209,7 @@ export class GraphTraversalSource {
     const gl = new GremlinLang(this.gremlinLang);
     // Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
     if (key === 'multilabel' || key === 'singlelabel') {
-      gl.appendGremlin(`.with("${key}")`);
+      gl.appendGremlin(`.with('${key}')`);
     }
     return new this.graphTraversalSourceClass(
       this.graph,

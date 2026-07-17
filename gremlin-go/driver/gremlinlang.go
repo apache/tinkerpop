@@ -593,10 +593,10 @@ func (gl *GremlinLang) buildStrategyArgs(args ...interface{}) string {
 			gl.optionsStrategies = append(gl.optionsStrategies, strategy)
 			// Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
 			if _, ok := strategy.configuration["multilabel"]; ok {
-				gl.gremlin = append(gl.gremlin, ".with(\"multilabel\")")
+				gl.gremlin = append(gl.gremlin, ".with('multilabel')")
 			}
 			if _, ok := strategy.configuration["singlelabel"]; ok {
-				gl.gremlin = append(gl.gremlin, ".with(\"singlelabel\")")
+				gl.gremlin = append(gl.gremlin, ".with('singlelabel')")
 			}
 			continue
 		}

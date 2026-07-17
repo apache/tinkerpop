@@ -531,10 +531,10 @@ public class GremlinLang implements Cloneable, Serializable {
                 // Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
                 final Configuration configuration = ((OptionsStrategy) arguments[i]).getConfiguration();
                 if (configuration.containsKey("multilabel")) {
-                    gremlin.append(".with(\"multilabel\")");
+                    gremlin.append(".with('multilabel')");
                 }
                 if (configuration.containsKey("singlelabel")) {
-                    gremlin.append(".with(\"singlelabel\")");
+                    gremlin.append(".with('singlelabel')");
                 }
                 break;
             }

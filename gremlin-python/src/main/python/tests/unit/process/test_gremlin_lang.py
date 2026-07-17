@@ -482,6 +482,16 @@ class TestGremlinLang(object):
             gremlin_lang = tests[t][0].gremlin_lang.get_gremlin()
             assert gremlin_lang == tests[t][1]
 
+    def test_source_multilabel_with_clause_uses_single_quotes(self):
+        g = traversal().with_(None)
+        gremlin = g.with_('multilabel').V().element_map().gremlin_lang.get_gremlin()
+        assert gremlin == "g.with('multilabel').V().elementMap()"
+
+    def test_source_singlelabel_with_clause_uses_single_quotes(self):
+        g = traversal().with_(None)
+        gremlin = g.with_('singlelabel').V().element_map().gremlin_lang.get_gremlin()
+        assert gremlin == "g.with('singlelabel').V().elementMap()"
+
     def test_gvalue_name_cannot_be_null(self):
         try:
             GValue(None, [1, 2, 3])

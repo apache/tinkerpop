@@ -611,11 +611,11 @@ namespace Gremlin.Net.Process.Traversal
                     // Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
                     if (optionsStrategy.Configuration.ContainsKey("multilabel"))
                     {
-                        _gremlin.Append(".with(\"multilabel\")");
+                        _gremlin.Append(".with('multilabel')");
                     }
                     if (optionsStrategy.Configuration.ContainsKey("singlelabel"))
                     {
-                        _gremlin.Append(".with(\"singlelabel\")");
+                        _gremlin.Append(".with('singlelabel')");
                     }
                     continue;
                 }

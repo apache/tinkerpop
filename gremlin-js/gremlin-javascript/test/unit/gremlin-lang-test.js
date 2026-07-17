@@ -308,6 +308,14 @@ describe('GremlinLang', function () {
   });
 
   describe('JS-specific tests', function () {
+    it('should render source-level multilabel with-clause using single quotes', function () {
+      assert.strictEqual(g.with_('multilabel').V().getGremlinLang().getGremlin(), "g.with('multilabel').V()");
+    });
+
+    it('should render source-level singlelabel with-clause using single quotes', function () {
+      assert.strictEqual(g.with_('singlelabel').V().getGremlinLang().getGremlin(), "g.with('singlelabel').V()");
+    });
+
     it('should handle Long values', function () {
       assert.strictEqual(g.V(new Long('9007199254740993')).getGremlinLang().getGremlin(), 'g.V(9007199254740993L)');
     });

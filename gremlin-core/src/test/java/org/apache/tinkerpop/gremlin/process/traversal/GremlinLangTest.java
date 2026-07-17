@@ -130,6 +130,9 @@ public class GremlinLangTest {
                 {g.inject(new int[]{5, 6}).union(__.V(Arrays.asList(1, 2)), __.V(Arrays.asList(3L, new int[]{4}))),
                         "g.inject([5,6]).union(__.V([1,2]),__.V([3L,[4]]))"},
                 {g.with("timeoutMillis", 1000).V(), "g.V()"},
+                // source-level multilabel/singlelabel with-clause renders with single quotes
+                {g.with("multilabel").V(), "g.with('multilabel').V()"},
+                {g.with("singlelabel").V(), "g.with('singlelabel').V()"},
                 {g.withSideEffect("a", 1).V(), "g.withSideEffect(\"a\",1).V()"},
                 {g.withStrategies(ReadOnlyStrategy.instance()).V(), "g.withStrategies(ReadOnlyStrategy).V()"},
                 {g.withoutStrategies(ReadOnlyStrategy.class).V(), "g.withoutStrategies(ReadOnlyStrategy).V()"},

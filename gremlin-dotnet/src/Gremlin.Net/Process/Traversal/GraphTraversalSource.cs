@@ -109,7 +109,7 @@ namespace Gremlin.Net.Process.Traversal
             // Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
             if (key == "multilabel" || key == "singlelabel")
             {
-                source.GremlinLang.Append($".with(\"{key}\")");
+                source.GremlinLang.Append($".with('{key}')");
             }
             return source;
         }

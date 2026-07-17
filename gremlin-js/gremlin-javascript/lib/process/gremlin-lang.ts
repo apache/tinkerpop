@@ -256,10 +256,10 @@ export default class GremlinLang {
           this.optionsStrategies.push(strategy);
           // Render multilabel/singlelabel in gremlin text (temporary until these options are removed)
           if (strategy.configuration['multilabel'] !== undefined) {
-            this.gremlin += '.with("multilabel")';
+            this.gremlin += ".with('multilabel')";
           }
           if (strategy.configuration['singlelabel'] !== undefined) {
-            this.gremlin += '.with("singlelabel")';
+            this.gremlin += ".with('singlelabel')";
           }
         } else {
           nonOptionsStrategies.push(strategy);
