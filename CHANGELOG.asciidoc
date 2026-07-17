@@ -27,6 +27,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Fixed `gremlin-python` `GremlinLang` equality (`__eq__`) which compared a traversal to itself, so traversals with different steps but equal parameters were incorrectly considered equal.
 * Removed the deprecated `gremlin-python` `DriverRemoteConnection.submitAsync` method in favor of `submit_async`.
+* Fixed `gremlin-go` GraphBinary deserialization of negative `BigInteger` and negative-unscaled `BigDecimal` values, which decoded to incorrect values because the two's-complement width was computed one byte too wide.
+* Fixed `gremlin-go` `P.outside()` gremlin-lang generation to emit comma-separated arguments (`outside(a,b)`) like `between`/`inside`, instead of the invalid list-wrapped form (`outside([a,b])`) that the server could not parse.
 * Added GraphBinary `Tree` (`0x2b`) serialization and deserialization with a native tree-shaped API to `gremlin-python`, `gremlin-dotnet`, `gremlin-go`, and `gremlin-javascript`.
 * Added a `gremlin/io` package export in `gremlin-javascript` exposing the GraphBinary type serializers.
 * Raised the minimum Java version to 17 for building and running *(breaking)*.

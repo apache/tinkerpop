@@ -136,7 +136,6 @@ func escapeString(s string) string {
 	return sb.String()
 }
 
-
 func isValidParameterName(name string) bool {
 	runes := []rune(name)
 	if len(runes) == 0 {
@@ -481,7 +480,7 @@ func (gl *GremlinLang) translatePValue(operator string, values []interface{}) (s
 		}
 	}
 
-	if len(values) > 1 && !allTraversals && operator != "between" && operator != "inside" {
+	if len(values) > 1 && !allTraversals && operator != "between" && operator != "inside" && operator != "outside" {
 		sb.WriteString("[")
 	}
 
@@ -496,7 +495,7 @@ func (gl *GremlinLang) translatePValue(operator string, values []interface{}) (s
 		}
 	}
 
-	if len(values) > 1 && !allTraversals && operator != "between" && operator != "inside" {
+	if len(values) > 1 && !allTraversals && operator != "between" && operator != "inside" && operator != "outside" {
 		sb.WriteString("]")
 	}
 	sb.WriteString(")")
