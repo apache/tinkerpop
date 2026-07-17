@@ -1138,7 +1138,7 @@ class GremlinLang(object):
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return ''.join(self.gremlin) == ''.join(self.gremlin) and self.parameters == other.parameters
+            return ''.join(self.gremlin) == ''.join(other.gremlin) and self.parameters == other.parameters
         else:
             return False
 
