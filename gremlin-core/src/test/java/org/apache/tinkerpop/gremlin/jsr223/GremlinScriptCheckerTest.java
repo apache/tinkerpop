@@ -34,7 +34,6 @@ public class GremlinScriptCheckerTest {
     public void shouldNotFindAResult() {
         final GremlinScriptChecker.Result r = GremlinScriptChecker.parse("g.with(true).V().out('knows')");
         assertEquals(Optional.empty(), r.getTimeout());
-        assertEquals(Optional.empty(), r.getRequestId());
         assertEquals(Optional.empty(), r.getMaterializeProperties());
     }
 
@@ -43,7 +42,6 @@ public class GremlinScriptCheckerTest {
         final GremlinScriptChecker.Result r = GremlinScriptChecker.parse("");
         assertSame(EMPTY_RESULT, r);
         assertEquals(Optional.empty(), r.getTimeout());
-        assertEquals(Optional.empty(), r.getRequestId());
         assertEquals(Optional.empty(), r.getMaterializeProperties());
     }
 
@@ -62,24 +60,6 @@ public class GremlinScriptCheckerTest {
                 getTimeout().get().longValue());
         assertEquals(1000, GremlinScriptChecker.parse("g.with('timeoutMillis',1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
-    }
-
-    @Test
-    public void shouldIdentifyRequestIdWithOddSpacing() {
-        assertEquals("4F53FB59-CFC9-4984-B477-452073A352FD", GremlinScriptChecker.parse("g.with('requestId' , '4F53FB59-CFC9-4984-B477-452073A352FD').with(true).V().out('knows')").
-                getRequestId().get());
-        assertEquals("4F53FB59-CFC9-4984-B477-452073A352FD", GremlinScriptChecker.parse("g.with('requestId'   ,  '4F53FB59-CFC9-4984-B477-452073A352FD').with(true).V().out('knows')").
-                getRequestId().get());
-        assertEquals("4F53FB59-CFC9-4984-B477-452073A352FD", GremlinScriptChecker.parse("g.with('requestId','4F53FB59-CFC9-4984-B477-452073A352FD').with(true).V().out('knows')").
-                getRequestId().get());
-    }
-
-    @Test
-    public void shouldIdentifyRequestIdWithEmbeddedQuote() {
-        assertEquals("te\"st", GremlinScriptChecker.parse("g.with('requestId','te\"st').with(true).V().out('knows')").
-                getRequestId().get());
-        assertEquals("te\\\"st", GremlinScriptChecker.parse("g.with('requestId', \"te\\\"st\").with(true).V().out('knows')").
-                getRequestId().get());
     }
 
     @Test
@@ -107,25 +87,9 @@ public class GremlinScriptCheckerTest {
     }
 
     @Test
-    public void shouldIdentifyRequestIdAsStringKeySingleQuoted() {
-        assertEquals("db024fca-ed15-4375-95de-4c6106aef895", GremlinScriptChecker.parse("g.with('requestId', 'db024fca-ed15-4375-95de-4c6106aef895').with(true).V().out('knows')").
-                getRequestId().get());
-        assertEquals("db024fca-ed15-4375-95de-4c6106aef895", GremlinScriptChecker.parse("g.with(\"requestId\", 'db024fca-ed15-4375-95de-4c6106aef895').with(true).V().out('knows')").
-                getRequestId().get());
-    }
-
-    @Test
     public void shouldIdentifyTimeoutAsStringKeyDoubleQuoted() {
         assertEquals(1000, GremlinScriptChecker.parse("g.with(\"timeoutMillis\", 1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
-    }
-
-    @Test
-    public void shouldIdentifyRequestIdAsStringKeyDoubleQuoted() {
-        assertEquals("db024fca-ed15-4375-95de-4c6106aef895", GremlinScriptChecker.parse("g.with(\"requestId\", \"db024fca-ed15-4375-95de-4c6106aef895\").with(true).V().out('knows')").
-                getRequestId().get());
-        assertEquals("db024fca-ed15-4375-95de-4c6106aef895", GremlinScriptChecker.parse("g.with(\"requestId\", \"db024fca-ed15-4375-95de-4c6106aef895\").with(true).V().out('knows')").
-                getRequestId().get());
     }
 
     @Test
@@ -137,27 +101,11 @@ public class GremlinScriptCheckerTest {
     }
 
     @Test
-    public void shouldIdentifyRequestIdAsTokenKey() {
-        assertEquals("db024fca-ed15-4375-95de-4c6106aef895", GremlinScriptChecker.parse("g.with(Tokens.REQUEST_ID, \"db024fca-ed15-4375-95de-4c6106aef895\").with(true).V().out('knows')").
-                getRequestId().get());
-        assertEquals("db024fca-ed15-4375-95de-4c6106aef895", GremlinScriptChecker.parse("g.with(Tokens.REQUEST_ID, \"db024fca-ed15-4375-95de-4c6106aef895\").with(true).V().out('knows')").
-                getRequestId().get());
-    }
-
-    @Test
     public void shouldIdentifyTimeoutAsTokenKeyWithoutClassName() {
         assertEquals(1000, GremlinScriptChecker.parse("g.with(TIMEOUT_MILLIS, 1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
         assertEquals(1000, GremlinScriptChecker.parse("g.with(TIMEOUT_MILLIS, 1000L).with(true).V().out('knows')").
                 getTimeout().get().longValue());
-    }
-
-    @Test
-    public void shouldIdentifyRequestIdAsTokenKeyWithoutClassName() {
-        assertEquals("db024fca-ed15-4375-95de-4c6106aef895", GremlinScriptChecker.parse("g.with(REQUEST_ID, \"db024fca-ed15-4375-95de-4c6106aef895\").with(true).V().out('knows')").
-                getRequestId().get());
-        assertEquals("db024fca-ed15-4375-95de-4c6106aef895", GremlinScriptChecker.parse("g.with(REQUEST_ID, 'db024fca-ed15-4375-95de-4c6106aef895').with(true).V().out('knows')").
-                getRequestId().get());
     }
 
     @Test
@@ -174,22 +122,6 @@ public class GremlinScriptCheckerTest {
                 "                                                   g.with(TIMEOUT_MILLIS, 1000L).with(true).V().out('knows');\n" +
                 "                                                   g.with('timeoutMillis', 1000L).with(true).V().out('knows');").
                 getTimeout().get().longValue());
-    }
-
-    @Test
-    public void shouldIdentifyMultipleRequestIds() {
-        assertEquals("test9", GremlinScriptChecker.parse("g.with('requestId', 'test1').with(true).V().out('knows');" +
-                        "g.with('requestId', 'test2').with(true).V().out('knows');\n" +
-                        "                                                   //g.with('requestId', 'test3').with(true).V().out('knows');\n" +
-                        "                                                   /* g.with('requestId', 'test4').with(true).V().out('knows');*/\n" +
-                        "                                                   /* \n" +
-                        "g.with('requestId', 'test5').with(true).V().out('knows'); \n" +
-                        "*/ \n" +
-                        "                                                   g.with('requestId', 'test6').with(true).V().out('knows');\n" +
-                        "                                                   g.with(Tokens.REQUEST_ID, 'test7').with(true).V().out('knows');\n" +
-                        "                                                   g.with(REQUEST_ID, 'test8').with(true).V().out('knows');\n" +
-                        "                                                   g.with('requestId', 'test9').with(true).V().out('knows');").
-                getRequestId().get());
     }
 
     @Test
@@ -239,9 +171,8 @@ public class GremlinScriptCheckerTest {
     @Test
     public void shouldFindAllResults() {
         final GremlinScriptChecker.Result r = GremlinScriptChecker.parse(
-                "g.with('timeoutMillis', 1000).with(true).with(REQUEST_ID, \"db024fca-ed15-4375-95de-4c6106aef895\").with(\"materializeProperties\", 'all').V().out('knows')");
+                "g.with('timeoutMillis', 1000).with(true).with(\"materializeProperties\", 'all').V().out('knows')");
         assertEquals(1000, r.getTimeout().get().longValue());
-        assertEquals("db024fca-ed15-4375-95de-4c6106aef895", r.getRequestId().get());
         assertEquals("all", r.getMaterializeProperties().get());
     }
 
@@ -448,5 +379,142 @@ public class GremlinScriptCheckerTest {
                 "  addE('bridge').from('o').to('r').\n" +
                 "  addE('bridge').from('o').to('r').iterate()").
                 getTimeout().get().longValue());
+    }
+
+    @Test
+    public void shouldIdentifyLanguageStringKey() {
+        assertEquals("gremlin-groovy", GremlinScriptChecker.parse("g.with('language', 'gremlin-groovy').V().out('knows')").
+                getLanguage().get());
+        assertEquals("gremlin-groovy", GremlinScriptChecker.parse("g.with(\"language\", \"gremlin-groovy\").V().out('knows')").
+                getLanguage().get());
+    }
+
+    @Test
+    public void shouldIdentifyLanguageAsTokenKey() {
+        assertEquals("gremlin-groovy", GremlinScriptChecker.parse("g.with(ARGS_LANGUAGE, 'gremlin-groovy').V().out('knows')").
+                getLanguage().get());
+        assertEquals("gremlin-groovy", GremlinScriptChecker.parse("g.with(Tokens.ARGS_LANGUAGE, 'gremlin-groovy').V().out('knows')").
+                getLanguage().get());
+    }
+
+    @Test
+    public void shouldIdentifyMultipleLanguagesUsingLast() {
+        assertEquals("gremlin-lang", GremlinScriptChecker.parse("g.with('language', 'gremlin-groovy').with('language', 'gremlin-lang').V()").
+                getLanguage().get());
+    }
+
+    @Test
+    public void shouldIdentifyBatchSizeStringKey() {
+        assertEquals("10", GremlinScriptChecker.parse("g.with('batchSize', 10).V().out('knows')").
+                getBatchSize().get());
+        assertEquals("10", GremlinScriptChecker.parse("g.with(\"batchSize\", 10).V().out('knows')").
+                getBatchSize().get());
+    }
+
+    @Test
+    public void shouldIdentifyBatchSizeAsTokenKey() {
+        assertEquals("25", GremlinScriptChecker.parse("g.with(ARGS_BATCH_SIZE, 25).V().out('knows')").
+                getBatchSize().get());
+        assertEquals("25", GremlinScriptChecker.parse("g.with(Tokens.ARGS_BATCH_SIZE, 25).V().out('knows')").
+                getBatchSize().get());
+    }
+
+    @Test
+    public void shouldIdentifyMultipleBatchSizesUsingLast() {
+        assertEquals("64", GremlinScriptChecker.parse("g.with('batchSize', 10).with('batchSize', 64).V()").
+                getBatchSize().get());
+    }
+
+    @Test
+    public void shouldCaptureBatchSizeAboveIntegerMaxUnparsed() {
+        // the checker captures the raw string without parsing, so a value above Integer.MAX_VALUE is returned as-is
+        // (rather than throwing) and the server can reject it as a bad request.
+        assertEquals("2147483648", GremlinScriptChecker.parse("g.with('batchSize', 2147483648).V()").
+                getBatchSize().get());
+    }
+
+    @Test
+    public void shouldCaptureNegativeBatchSizeUnparsed() {
+        assertEquals("-1", GremlinScriptChecker.parse("g.with('batchSize', -1).V()").
+                getBatchSize().get());
+    }
+
+    @Test
+    public void shouldIdentifyBulkResultsStringKey() {
+        assertEquals(Boolean.TRUE, GremlinScriptChecker.parse("g.with('bulkResults', true).V().out('knows')").
+                getBulkResults().get());
+        assertEquals(Boolean.FALSE, GremlinScriptChecker.parse("g.with(\"bulkResults\", false).V().out('knows')").
+                getBulkResults().get());
+    }
+
+    @Test
+    public void shouldIdentifyBulkResultsCaseInsensitive() {
+        assertEquals(Boolean.TRUE, GremlinScriptChecker.parse("g.with('bulkResults', TRUE).V().out('knows')").
+                getBulkResults().get());
+        assertEquals(Boolean.FALSE, GremlinScriptChecker.parse("g.with('bulkResults', False).V().out('knows')").
+                getBulkResults().get());
+    }
+
+    @Test
+    public void shouldIdentifyBulkResultsAsTokenKey() {
+        assertEquals(Boolean.TRUE, GremlinScriptChecker.parse("g.with(BULK_RESULTS, true).V().out('knows')").
+                getBulkResults().get());
+        assertEquals(Boolean.TRUE, GremlinScriptChecker.parse("g.with(Tokens.BULK_RESULTS, true).V().out('knows')").
+                getBulkResults().get());
+    }
+
+    @Test
+    public void shouldIdentifyMultipleBulkResultsUsingLast() {
+        assertEquals(Boolean.FALSE, GremlinScriptChecker.parse("g.with('bulkResults', true).with('bulkResults', false).V()").
+                getBulkResults().get());
+    }
+
+    @Test
+    public void shouldNotIdentifyInvalidBulkResults() {
+        assertEquals(Optional.empty(), GremlinScriptChecker.parse("g.with('bulkResults', maybe).V()").
+                getBulkResults());
+    }
+
+    @Test
+    public void shouldNotIdentifyBindingsFromScript() {
+        // parameters is intentionally NOT scraped from a script (field/header-only)
+        final GremlinScriptChecker.Result r = GremlinScriptChecker.parse("g.with('parameters', '[\"x\":1]').V(x)");
+        assertEquals(Optional.empty(), r.getTimeout());
+        assertEquals(Optional.empty(), r.getLanguage());
+        assertEquals(Optional.empty(), r.getBatchSize());
+        assertEquals(Optional.empty(), r.getBulkResults());
+    }
+
+    @Test
+    public void shouldNotIdentifyTransactionIdFromScript() {
+        // transactionId is intentionally NOT scraped from a script (field/header-only)
+        final GremlinScriptChecker.Result r = GremlinScriptChecker.parse("g.with('transactionId', 'abc').V()");
+        assertEquals(Optional.empty(), r.getTimeout());
+        assertEquals(Optional.empty(), r.getLanguage());
+        assertEquals(Optional.empty(), r.getBatchSize());
+        assertEquals(Optional.empty(), r.getBulkResults());
+    }
+
+    @Test
+    public void shouldNotIdentifyGFromScript() {
+        // g is intentionally NOT scraped from a script due to the complex interactions between different script
+        // engines and transactions - it must be supplied as a request field.
+        final GremlinScriptChecker.Result r = GremlinScriptChecker.parse("g.with('g', 'myGraph').V().out('knows')");
+        assertEquals(Optional.empty(), r.getTimeout());
+        assertEquals(Optional.empty(), r.getLanguage());
+        assertEquals(Optional.empty(), r.getBatchSize());
+        assertEquals(Optional.empty(), r.getBulkResults());
+    }
+
+    @Test
+    public void shouldFindAllFiveResults() {
+        final GremlinScriptChecker.Result r = GremlinScriptChecker.parse(
+                "g.with('timeoutMillis', 1000).with('materializeProperties', 'all').with('language', 'gremlin-groovy')." +
+                "with('batchSize', 32).with('bulkResults', true).V().out('knows')");
+        assertEquals(1000, r.getTimeout().get().longValue());
+        assertEquals("all", r.getMaterializeProperties().get());
+        assertEquals("gremlin-groovy", r.getLanguage().get());
+        assertEquals("32", r.getBatchSize().get());
+        assertEquals(Boolean.TRUE, r.getBulkResults().get());
     }
 }

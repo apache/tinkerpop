@@ -106,6 +106,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Renamed the request `bindings` field to `parameters` across the HTTP request body, GraphBinary, and GraphSON, standardizing terminology for query parameters.
 * Modified HTTP API to expect gremlin-lang strings for parameters and update all GLVs to send requests in new format.
 * Added string parameter parsing to `GremlinServer` to prevent traversal injection and excessive nesting depths.
+* Modified how the server honors per-request options embedded in a script via `with()`, extending `GremlinScriptChecker` to recognize `language`, `batchSize`, and `bulkResults` (in addition to `timeoutMillis` and `materializeProperties`) with uniform precedence.
 * Modified all GLVs to detect unsupported types in `GremlinLang` and throw consistent error for that case.
 * Extended `GValue` parameterization to all GLVs (`gremlin-python`, `gremlin-go`, `gremlin-javascript`, `gremlin-dotnet`), allowing parameters to be passed directly in traversals as in Java.
 * Relaxed `GValue` name validation by removing the reserved leading underscore restriction.

@@ -81,7 +81,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -192,9 +191,9 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final Optional<UnmanagedTransaction> txForRequest =
                 isTransactionalOp ? transactionManager.get(requestCtx.getTransactionId()) : Optional.empty();
 
-        // per-request timeout override falls back to the server-configured default when not supplied
-        final Long timeoutMillis = requestMessage.getField(Tokens.TIMEOUT_MILLIS);
-        final long seto = (null != timeoutMillis) ? timeoutMillis : requestCtx.getSettings().getTimeoutMillis();
+        // consume the Context-resolved timeout (rather than re-reading the field) so that a timeout embedded in a
+        // raw-string script's with() is actually applied.
+        final long seto = requestCtx.getRequestTimeout();
 
         final FutureTask<Void> evalFuture = new FutureTask<>(() -> {
             try {
@@ -214,8 +213,14 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 }
 
                 // Validate the request before any transaction lifecycle side effects.
-                final Map<String, Object> args = requestMessage.getFields();
-                final String language = args.containsKey(Tokens.ARGS_LANGUAGE) ? (String) args.get(Tokens.ARGS_LANGUAGE) : "gremlin-lang";
+
+                // batchSize must parse to a positive int (1..Integer.MAX_VALUE); getBatchSize() throws a
+                // ProcessingException (-> bad request) for a non-numeric, non-positive, or out-of-range value. This
+                // runs before any transaction lifecycle side effects and before the 200 OK is committed.
+                requestCtx.getBatchSize();
+
+                // validate script engine availability.
+                final String language = requestCtx.getLanguage();
                 if (gremlinExecutor.getScriptEngineManager().getEngineByName(language) == null) {
                     throw new ProcessingException(GremlinError.scriptEngineNotAvailable(language));
                 }
@@ -434,8 +439,10 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     private void iterateScriptEvalResult(final Context context, MessageSerializer<?> serializer, final RequestMessage message,
                                          final HttpResponseCoordinator coordinator)
             throws ProcessingException, InterruptedException, ScriptException {
-        final Map<String, Object> args = message.getFields();
-        final String language = args.containsKey(Tokens.ARGS_LANGUAGE) ? (String) args.get(Tokens.ARGS_LANGUAGE) : "gremlin-lang";
+        final String language = context.getLanguage();
+        // resolve batchSize here (this method declares ProcessingException) so it is not parsed again downstream in
+        // handleIterator; it was already validated by the pre-200 guard, so this will not throw.
+        final int resultIterationBatchSize = context.getBatchSize();
         final GremlinScriptEngine scriptEngine = gremlinExecutor.getScriptEngineManager().getEngineByName(language);
 
         if (scriptEngine == null) {
@@ -463,23 +470,19 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         try {
             final Object result = scriptEngine.eval(message.getGremlin(), mergedBindings);
 
-            final String bulkingSetting = context.getChannelHandlerContext().channel().attr(StateKey.REQUEST_HEADERS).get().get(Tokens.BULK_RESULTS);
-            // bulking only applies if it's gremlin-lang, and per request token setting takes precedence over header setting.
+            // bulking only applies if it's gremlin-lang and the serializer supports it.
             // The serializer check is temporarily needed because GraphSON hasn't been removed yet and doesn't support bulking.
-            final boolean bulking = language.equals("gremlin-lang") && serializer instanceof GraphBinaryMessageSerializerV4 ?
-                    (args.containsKey(Tokens.BULK_RESULTS) ?
-                            Objects.equals(args.get(Tokens.BULK_RESULTS), "true") :
-                            Objects.equals(bulkingSetting, "true")) :
-                    false;
+            final boolean bulking = language.equals("gremlin-lang") && serializer instanceof GraphBinaryMessageSerializerV4 &&
+                    context.getBulkResults();
 
             if (bulking) {
                 // optimization for driver requests
                 ((Traversal.Admin<?, ?>) result).applyStrategies();
                 itty = new TraverserIterator((Traversal.Admin<?, ?>) result);
-                handleIterator(context, itty, coordinator, true);
+                handleIterator(context, itty, coordinator, true, resultIterationBatchSize);
             } else {
                 itty = IteratorUtils.asIterator(result);
-                handleIterator(context, itty, coordinator, false);
+                handleIterator(context, itty, coordinator, false, resultIterationBatchSize);
             }
 
             if (autoCommit && graph.tx().isOpen()) graph.tx().commit();
@@ -598,10 +601,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         return bindings;
     }
 
-    private void handleIterator(final Context context, final Iterator itty, final HttpResponseCoordinator coordinator, final boolean bulking) throws InterruptedException {
+    private void handleIterator(final Context context, final Iterator itty, final HttpResponseCoordinator coordinator, final boolean bulking, final int resultIterationBatchSize) throws InterruptedException {
         final ChannelHandlerContext nettyContext = context.getChannelHandlerContext();
-        final RequestMessage msg = context.getRequestMessage();
-        final Settings settings = context.getSettings();
 
         // used to limit warnings for when netty fills the buffer and hits the high watermark - prevents
         // over-logging of the same message.
@@ -619,9 +620,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             return;
         }
 
-        // the batch size can be overridden by the request
-        final int resultIterationBatchSize = (Integer) msg.optionalField(Tokens.ARGS_BATCH_SIZE)
-                .orElse(settings.resultIterationBatchSize);
+        // batch size was resolved and validated by the caller.
         List<Object> aggregate = new ArrayList<>(resultIterationBatchSize);
 
         // use an external control to manage the loop as opposed to just checking hasNext() in the while.  this
