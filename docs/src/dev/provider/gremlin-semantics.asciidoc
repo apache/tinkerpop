@@ -552,7 +552,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addedge-step[reference]
 
 *Description:* Adds a vertex to the graph.
 
-*Syntax:* `addV()` | `addV(vertexLabel: STRING)` | `addV(vertexLabelTraversal: Traversal<any, STRING>)`
+*Syntax:* `addV()` | `addV(vertexLabel: STRING, moreLabels: STRING...)` | `addV(vertexLabelTraversal: Traversal<any, STRING>, moreLabelTraversals: Traversal<any, STRING>...)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -563,7 +563,9 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addedge-step[reference]
 *Arguments:*
 
 * `vertexLabel` - The label of the vertex to add.
+* `moreLabels` - Additional labels for the vertex, on graphs that permit more than one label per vertex.
 * `vertexLabelTraversal` - A traversal that produces the label of the vertex to add.
+* `moreLabelTraversals` - Additional traversals that each produce a further label for the vertex.
 
 *Modulation:*
 
@@ -572,11 +574,15 @@ None
 *Considerations:*
 
 The `addV()` step can be used as both a start step and a mid-traversal step. If no label is provided, the default
-vertex label for the graph will be used.
+vertex label for the graph will be used. On a graph that permits more than one label per vertex, additional labels
+may be supplied to create a multi-label vertex; the resulting set of labels must satisfy the graph's label
+cardinality.
 
 *Exceptions:*
 
 * If the vertex label is null, an `Argument Error` is raised.
+* If the number of labels supplied violates the graph's label cardinality (for example, more than one label on a
+single-label graph), a `State Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddVertexStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddVertexStartStep.java[source (start)],

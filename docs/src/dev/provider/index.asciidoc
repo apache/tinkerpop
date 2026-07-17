@@ -192,11 +192,51 @@ The following bullets provide some tips to consider when implementing the struct
 `Graph open(Configuration)` method where the `Configuration` is an Apache Commons class of that name. Alternatively, the
 `Graph` implementation can have the `GraphFactoryClass` annotation which specifies a class with that static
 `Graph open(Configuration)` method.
+* `Vertex`
+** By default a vertex has exactly one immutable label. Graphs that want to support multiple, mutable, or zero
+labels should follow the <<multi-label-support,Multi-Label Support>> section below.
 * `VertexProperty`
 ** This interface is both a `Property` and an `Element` as `VertexProperty` is a first-class graph element in that it
 can have its own properties (i.e. meta-properties). Even if the implementation does not intend to support
 meta-properties, the `VertexProperty` needs to be implemented as an `Element`. `VertexProperty` should return empty
 iterable for properties if meta-properties is not supported.
+
+[[multi-label-support]]
+==== Multi-Label Support
+
+By default a vertex has exactly one immutable label, matching the 3.x behavior. Providers that want to support
+multiple, mutable, or zero labels declare their supported label cardinality via
+`Graph.Features.VertexFeatures#getLabelCardinality()`, which defaults to `LabelCardinality.ONE`. To support
+multi-label, return `ONE_OR_MORE` or `ZERO_OR_MORE` from this method. This value may be a static constant for
+graphs which do not offer configurable label cardinality. The label cardinality should reflect the current `Graph`
+instance.
+
+The `LabelCardinality` enum exposes `min()`, `max()`, and `supportsMutation()` for programmatic introspection of
+constraints. Constraint enforcement is handled by the `LabelCardinalityValidator` utility class, which providers may
+use directly or replace with their own validation logic tailored to their storage backend.
+
+Providers implementing multi-label must:
+
+- Store and return a `Set<String>` from `Element.labels()`
+- Implement `Element.addLabel(String, String...)`, `Element.dropLabel(String, String...)`, and `Element.dropLabels()`
+- Ensure `hasLabel("a", "b")` uses OR semantics (matches vertices with label "a" or "b")
+- Serialize/deserialize the label set via the V4 GraphBinary format (which sends labels as a list)
+
+The default `elementMap()` and `valueMap()` implementations determine label output format solely from the
+`with("multilabel")` source option, not from the graph's `LabelCardinality`. This means a multi-label graph still
+returns a single label string from these steps unless `with("multilabel")` is explicitly configured. The intent is
+to eventually deprecate the single-string path entirely and always return labels as a set, aligning `elementMap()`
+and `valueMap()` with `labels()`. Until then, `with("singlelabel")` lets users force single-string output on sources
+that default to multi-label semantics. Because the two options request opposite formats, they cannot both be set on
+the same source — doing so raises a `VerificationException`.
+
+Providers who want `elementMap()`/`valueMap()` to return the full label set by default (without requiring users to
+set `with("multilabel")`) should override `PropertyMapStep` and `ElementMapStep` to tie label output to their
+server-side label cardinality configuration. In that case, `with("singlelabel")` should still be respected as an
+explicit user override back to single-string output.
+
+See the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-labels[Vertex Labels] reference and the
+<<gremlin-semantics,Gremlin Semantics>> section for the behavioral details.
 
 [[olap-implementations]]
 ==== OLAP Implementations

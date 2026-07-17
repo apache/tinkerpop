@@ -655,10 +655,27 @@ g.V().has('name','nothing')
 g.V().has('name','nothing').bothE()
 ----
 
+On a graph configured with a `LabelCardinality` that permits more than one label (`ONE_OR_MORE` or `ZERO_OR_MORE`),
+`addV()` accepts additional labels so a vertex can be created with several labels at once:
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.vertexLabelCardinality", "ZERO_OR_MORE")
+graph = TinkerGraph.open(conf)
+g = traversal().with(graph)
+g.addV('person','employee').property('name','marko').labels() <1>
+----
+
+<1> The vertex is created carrying both the "person" and "employee" labels. Use <<addlabel-step,`addLabel()`>> to
+add further labels after creation. With the default `LabelCardinality.ONE`, supplying more than one label to `addV()`
+throws, since a vertex may carry only a single immutable label.
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV()++[`addV()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV(java.lang.String)++[`addV(String)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV(java.lang.String,java.lang.String...)++[`addV(String, String...)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`addV(Traversal)`]
 
 [[addlabel-step]]
@@ -2773,6 +2790,9 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 
 The `label()`-step (*map*) takes an `Element` and extracts its label from it.
 
+NOTE: As of 4.0.0, `label()` is deprecated in favor of the <<labels-step,`labels()`>> step, which reliably returns
+every label an element carries.
+
 [gremlin-groovy,modern]
 ----
 g.V().label()
@@ -2802,6 +2822,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 
 The `labels()`-step (*flatMap*) takes an `Element` and emits each of its labels as a separate traverser. For elements
 with a single label this behaves identically to `label()`. For multi-label elements, it emits one traverser per label.
+A vertex with no labels (possible only under `LabelCardinality.ZERO_OR_MORE`) emits nothing.
 
 [gremlin-groovy,theZoo]
 ----

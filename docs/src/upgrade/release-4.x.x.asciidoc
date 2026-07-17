@@ -97,9 +97,8 @@ See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#match-step[match()]
 Until now, vertices in the property graph model were limited to a single, immutable label assigned at creation. This
 release introduces configurable label cardinality, allowing vertices to carry multiple labels that can be added and
 removed over their lifetime. This is an optional feature for graph providers and not all will support it in the same
-way. TinkerGraph offers a configurable approach to enabling the the feature using one of the `LabelCardinality` settings
-as a graph-level setting that defaults to `ONE`, preserving the existing single-label behavior. To enable multi-label
-in TinkerGraph, set the vertex label cardinality in the graph properties:
+way. TinkerGraph enables it through a graph-level `LabelCardinality` setting that defaults to `ONE`, preserving the
+existing single-label behavior:
 
 ```
 gremlin.tinkergraph.vertexLabelCardinality=ZERO_OR_MORE
@@ -108,14 +107,13 @@ gremlin.tinkergraph.vertexLabelCardinality=ZERO_OR_MORE
 The three modes are `ONE` (single, immutable, the 3.x default), `ONE_OR_MORE` (mutable, minimum one), and
 `ZERO_OR_MORE` (fully flexible). Edge labels remain fixed at `ONE`.
 
-The following examples demonstrate how Gremlin behaves with multi-label enabled:
+With multi-label enabled, `addLabel()` and `dropLabel()` mutate a vertex's labels, and the new `labels()` step
+reliably returns every label — unlike `label()`, which returns only one and is now deprecated:
 
 ```text
 gremlin> g.addV('person','employee').property('name','marko')
 ==>v[0]
-gremlin> g.V().has('name','marko').addLabel('manager')
-==>v[0]
-gremlin> g.V().has('name','marko').labels()
+gremlin> g.V().has('name','marko').addLabel('manager').labels()
 ==>person
 ==>employee
 ==>manager
@@ -124,43 +122,17 @@ gremlin> g.V().has('name','marko').dropLabel('employee').labels()
 ==>manager
 ```
 
-The `labels()` step is a flatMap that emits one traverser per label, unlike `label()` which returns a single string.
-For single-label vertices the two behave identically.
-
-The `mergeV()` step accepts a list for `T.label` to match or create multi-label vertices. The `onMatch` option uses
-append-only semantics: new labels are added, existing labels are preserved:
-
-```text
-gremlin> g.mergeV([(T.label): ['person','employee'], name: 'marko'])
-==>v[0]
-gremlin> g.mergeV([(T.label): 'person', name: 'marko']).option(Merge.onMatch, [(T.label): 'director'])
-==>v[0]
-```
-
-By default, `elementMap()` and `valueMap()` continue to return labels as a single string. To receive all labels as a
-set, use `with("multilabel")` either per-traversal or as a persistent source configuration:
-
-```text
-// assuming a vertex with labels [person, employee, manager] and name "marko"
-gremlin> g.with("multilabel").V().has('name','marko').elementMap()
-==>{id=0, label=[manager, person, employee], name=marko}
-gremlin> g.V().has('name','marko').elementMap()
-==>{id=0, label=manager, name=marko}
-```
-
-To avoid repeating `with("multilabel")` on every traversal, create a persistent source:
-
-```text
-gremlin> gml = g.with("multilabel")
-==>graphtraversalsource[tinkergraph[vertices:1 edges:0], standard]
-gremlin> gml.V().has('name','marko').elementMap()
-==>{id=0, label=[manager, person, employee], name=marko}
-gremlin> gml.V().has('name','marko').valueMap(true)
-==>{id=0, label=[manager, person, employee], name=[marko]}
-```
+`mergeV()` accepts a list for `T.label` to match or create multi-label vertices, with append-only `onMatch`
+semantics. By default `elementMap()` and `valueMap()` still return a single label string; use `with("multilabel")`,
+per-traversal or as a persistent source, to receive the full set. The reference documentation covers each of these
+behaviors in detail.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3261[TINKERPOP-3261],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergraph-multi-label[Multi-Label], link:https://tinkerpop.apache.org/docs/4.0.0/reference/#labels-step[labels()],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergraph-multi-label[Multi-Label],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#vertex-labels[Vertex Labels],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#labels-step[labels()],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#addlabel-step[addLabel()],
+link:https://tinkerpop.apache.org/docs/4.0.0/reference/#elementmap-step[elementMap()],
 link:https://tinkerpop.apache.org/docs/4.0.0/reference/#the-zoo-toy-graph[The Zoo]
 
 ==== Transactions
@@ -1094,33 +1066,16 @@ expected for the 4.0.0 major release.
 
 ===== Multi-Label Support
 
-Providers declare their supported label cardinality via `Graph.Features.getLabelCardinality()`, which defaults to
-`LabelCardinality.ONE` (single label, immutable, the 3.x behavior). To support multi-label, return `ONE_OR_MORE` or
-`ZERO_OR_MORE` from this method. This value may be a static constant for a graphs which do not offer configurable label
-cardinality. The label cardinality should reflect the current `Graph` instance.
+Providers declare their supported label cardinality via `Graph.Features.VertexFeatures#getLabelCardinality()`, which
+defaults to `LabelCardinality.ONE` (the immutable single-label 3.x behavior). Returning `ONE_OR_MORE` or
+`ZERO_OR_MORE` opts a graph into multi-label, which then requires storing and returning a `Set<String>` from
+`Element.labels()`, implementing the `addLabel()`/`dropLabel()`/`dropLabels()` mutators, applying OR semantics in
+`hasLabel()`, and serializing labels as a list over the V4 GraphBinary format. The `LabelCardinalityValidator` utility
+enforces the min/max/mutation constraints of each cardinality. Label output from `elementMap()`/`valueMap()` is driven
+by the `with("multilabel")`/`with("singlelabel")` source options rather than the graph's cardinality.
 
-The `LabelCardinality` enum exposes `min()`, `max()`, and `supportsMutation()` for programmatic introspection of
-constraints. Constraint enforcement is handled by the `LabelCardinalityValidator` utility class, which providers may
-use directly or replace with their own validation logic tailored to their storage backend.
-
-Providers implementing multi-label must:
-
-- Store and return a `Set<String>` from `Element.labels()`
-- Implement `Element.addLabel(String, String...)` and `Element.dropLabel(String, String...)`
-- Ensure `hasLabel("a", "b")` uses OR semantics (matches vertices with label "a" or "b")
-- Serialize/deserialize the label set via the V4 GraphBinary format (which sends labels as a list)
-
-The default `elementMap()` and `valueMap()` implementations determine label output format solely from the
-`with("multilabel")` source option, not from the graph's `LabelCardinality`. This means a multi-label graph still
-returns a single label string from these steps unless `with("multilabel")` is explicitly configured. The intent is
-to eventually deprecate the single-string path entirely and always return labels as a set, aligning `elementMap()`
-and `valueMap()` with `labels()`. Until then, `with("singlelabel")` allows users to override a source-level
-`with("multilabel")` back to single-string output.
-
-Providers who want `elementMap()`/`valueMap()` to return the full label set by default (without requiring users to
-set `with("multilabel")`) should override `PropertyMapStep` and `ElementMapStep` to tie label output to their
-server-side label cardinality configuration. In that case, `with("singlelabel")` should still be respected as an
-explicit user override back to single-string output.
+See the link:https://tinkerpop.apache.org/docs/4.0.0/dev/provider/#multi-label-support[provider documentation] for the
+full implementation checklist and `elementMap()`/`valueMap()` override guidance.
 
 ===== Traversal-Accepting Steps - HasContainer Guard
 
