@@ -62,7 +62,15 @@ public class HttpHandlerUtil {
      */
     public static void sendError(final ChannelHandlerContext ctx, final HttpResponseStatus status, final String message,
                                   final CharSequence... headers) {
-        logger.warn(String.format("Invalid request - responding with %s and %s", status, message));
+        // Server errors (5xx) are logged at WARN since they signal a problem with the server itself. Client errors
+        // (4xx and other non-5xx) are expected during normal operation - bad credentials, favicon probes, unsupported
+        // methods, malformed requests - so they log at DEBUG to avoid flooding the log with routine client mistakes
+        // while remaining available for diagnosis when needed.
+        if (status.code() >= 500) {
+            logger.warn("Invalid request - responding with {} and {}", status, message);
+        } else if (logger.isDebugEnabled()) {
+            logger.debug("Invalid request - responding with {} and {}", status, message);
+        }
         errorMeter.mark();
 
         final ObjectNode node = mapper.createObjectNode();

@@ -84,6 +84,8 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
             } catch (Exception ex) {
                 final String message = String.format(
                         "%s is not ready to handle requests - unknown error", authorizer.getClass().getSimpleName());
+                logger.error("Unexpected error authorizing HTTP request for user {} with {}", user.getName(),
+                        authorizer.getClass().getSimpleName(), ex);
                 HttpHandlerUtil.sendError(ctx, INTERNAL_SERVER_ERROR, message);
                 ReferenceCountUtil.release(msg);
             }

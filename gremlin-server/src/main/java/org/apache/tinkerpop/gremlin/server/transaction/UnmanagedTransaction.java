@@ -239,7 +239,8 @@ public class UnmanagedTransaction {
         idleFuture.updateAndGet(future -> {
             if (future != null) future.cancel(false);
             return scheduledExecutorService.schedule(() -> {
-                logger.info("Transaction {} timed out after {} ms of inactivity", transactionId, idleTimeout);
+                logger.info("Transaction {} for source {} timed out after {} ms of inactivity",
+                        transactionId, traversalSourceName, idleTimeout);
                 close(false);
             }, idleTimeout, TimeUnit.MILLISECONDS);
         });
@@ -273,7 +274,8 @@ public class UnmanagedTransaction {
             running.future.cancel(true);                                                // interrupt only the running op
         }
 
-        logger.warn("Transaction {} exceeded its maximum lifetime and is being closed", transactionId);
+        logger.warn("Transaction {} for source {} exceeded its maximum lifetime and is being closed",
+                transactionId, traversalSourceName);
         close(false);
     }
 

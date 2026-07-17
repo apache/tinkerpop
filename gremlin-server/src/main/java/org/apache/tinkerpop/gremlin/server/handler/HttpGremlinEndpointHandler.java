@@ -432,7 +432,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             return GremlinError.parsing((GremlinParserException) t);
         }
 
-        logger.warn(String.format("Exception processing request [%s].", requestMessage));
+        logger.warn("Exception processing request [{}].", requestMessage, t);
         return GremlinError.general(t);
     }
 
@@ -543,6 +543,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         } catch (UnsupportedOperationException uoe) {
             throw new ProcessingException(GremlinError.transactionNotSupported(uoe));
         } catch (ExecutionException | TimeoutException e) {
+            logger.warn("Unable to start transaction {} for source {}",
+                    txCtx == null ? "<unassigned>" : txCtx.getTransactionId(), traversalSourceName, e);
             throw new ProcessingException(GremlinError.transactionUnableToStart(e.getMessage()));
         } finally {
             if (closeTransactionOnFailure && txCtx != null) txCtx.close(false);

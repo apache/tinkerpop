@@ -141,6 +141,9 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
                     try {
                         readerPool.submit(streamReader::run);
                     } catch (RejectedExecutionException e) {
+                        logger.warn("Failed to schedule streaming response reader for channel {} with status {} " +
+                                        "and content type {}",
+                                ctx.channel().id().asShortText(), responseStatus, contentType, e);
                         queueInputStream.signalEndOfStream();
                         rs.markError(e);
                         pendingResultSet.compareAndSet(rs, null);

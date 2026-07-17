@@ -92,6 +92,8 @@ public class TransactionManager {
      */
     public UnmanagedTransaction create(final String traversalSourceName) {
         if (transactions.size() >= maxConcurrentTransactions) {
+            logger.warn("Rejecting new transaction for source {} because active transaction count {} reached max {}",
+                    traversalSourceName, transactions.size(), maxConcurrentTransactions);
             throw new IllegalStateException(
                 "Maximum concurrent transactions exceeded (" + maxConcurrentTransactions + ")");
         }
@@ -195,8 +197,8 @@ public class TransactionManager {
             try {
                 transaction.close(false);
             } catch (Exception e) {
-                logger.warn("Error rolling back transaction {} during shutdown: {}",
-                    transaction.getTransactionId(), e.getMessage());
+                logger.warn("Error rolling back transaction {} during shutdown",
+                        transaction.getTransactionId(), e);
             }
         });
 

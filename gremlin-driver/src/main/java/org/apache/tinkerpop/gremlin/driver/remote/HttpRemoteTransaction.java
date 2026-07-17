@@ -211,7 +211,7 @@ public class HttpRemoteTransaction implements RemoteTransaction {
             submitInternal(closeScript).all().get(CLOSING_MAX_WAIT_MS, TimeUnit.MILLISECONDS);
             cleanUp();
         } catch (Exception e) {
-            logger.warn("Failed to {} transaction on {}", closeScript, pinnedHost);
+            logger.warn("Failed to {} transaction {} on {}", closeScript, transactionId, pinnedHost, e);
             throw new TransactionException("Failed to " + closeScript, e);
         }
     }
