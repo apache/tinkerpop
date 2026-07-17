@@ -21,7 +21,7 @@ import datetime
 import uuid
 from gremlin_python.statics import short, long, bigint, BigDecimal, SingleByte
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Path, Tree
-from gremlin_python.process.traversal import Direction, Traverser, T
+from gremlin_python.process.traversal import Direction, T
 
 """
 The following models aren't supported.
@@ -158,4 +158,3 @@ model["traversal-vertex"] = Vertex(1, "person", [
     Property("name", name, None), Property("location", [
         san_diego, santa_cruz, brussels, santa_fe
     ], None)])
-model["vertex-traverser"] = Traverser(model["traversal-vertex"], 1)

@@ -23,7 +23,6 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -164,10 +163,6 @@ public class Model {
         bulkSet.add("josh", 2);
         addGraphProcessEntry(bulkSet, "var-bulklist", "");
         addGraphProcessEntry(new BulkSet(), "empty-bulklist", "");
-
-        addGraphProcessEntry(g.V().hasLabel("person").asAdmin().nextTraverser(), "vertex-traverser", "");
-        addGraphProcessEntry(g.V().both().barrier().asAdmin().nextTraverser(), "bulked-traverser", "");
-        addGraphProcessEntry(EmptyTraverser.instance(), "empty-traverser", "");
 
         addExtendedEntry(new BigDecimal("123.456789987654321123456789987654321"), "pos-bigdecimal", "");
         addExtendedEntry(new BigDecimal("-123.456789987654321123456789987654321"), "neg-bigdecimal", "");
