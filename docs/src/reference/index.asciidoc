@@ -42,9 +42,8 @@ include::gremlin-variants.asciidoc[]
 include::implementations-intro.asciidoc[]
 include::implementations-tinkergraph.asciidoc[]
 
-// The hadoop section is split into parts so the Neo4j/Spark plugins (incompatible Scala versions)
-// are not active at the same time. Console restarts are now driven by the
-// :gremlin-docs-plugins-exclude: attribute on each chapter heading (see implementations-neo4j,
+// The hadoop section is split into parts. Console restarts are now driven by the
+// :gremlin-docs-plugins-exclude: attribute on each chapter heading (see
 // implementations-hadoop-start, implementations-spark) rather than by page boundaries.
 include::implementations-hadoop-start.asciidoc[]
 include::implementations-spark.asciidoc[]

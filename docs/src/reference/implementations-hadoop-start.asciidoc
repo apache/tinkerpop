@@ -16,9 +16,9 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
-// Spark requires Scala 2.12 while Neo4j 3.4 requires Scala 2.11; they cannot share the console's
-// flat classpath, so exclude neo4j-gremlin to restart the console without Neo4j's jars.
-[gremlin-docs-plugins-exclude="neo4j-gremlin"]
+// Re-includes spark-gremlin and hadoop-gremlin, which gremlin-variants.asciidoc excluded for its
+// driver-only examples: an empty exclude list resets the console to every plugin enabled.
+[gremlin-docs-plugins-exclude=""]
 [[hadoop-gremlin]]
 == Hadoop-Gremlin
 
@@ -148,10 +148,7 @@ WARNING: OLTP operations on `HadoopGraph` are not efficient. They require linear
 for large graphs. In such large graph situations, make use of <<traversalvertexprogram,TraversalVertexProgram>>
 which is the OLAP Gremlin machine.
 
-WARNING: The Hadoop and Spark modules are not included in the 4.0.0-beta.2 distribution. These examples will
-be restored in a future release.
-
-[source,groovy]
+[gremlin-groovy]
 ----
 hdfs.copyFromLocal('data/tinkerpop-modern.kryo', 'tinkerpop-modern.kryo')
 hdfs.ls('tinkerpop-modern.kryo')

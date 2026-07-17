@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 /**
  * Physically toggles plugin availability in a Gremlin Console distribution so that conflicting
- * plugins (e.g. Neo4j's Scala 2.11 vs Spark's Scala 2.12) never share one classpath.
+ * plugins never share one classpath.
  * <p>
  * The console's {@code bin/gremlin.sh} composes its classpath from {@code lib/*.jar} plus
  * {@code ext/<plugin>/plugin/*}. To exclude a plugin this handler moves {@code ext/<plugin>}
@@ -45,7 +45,6 @@ final class PluginDirectoryRestartHandler implements ConsoleRestartHandler {
 
     /** Toggleable plugin directory -> activation class written to ext/plugins.txt. */
     private static final Map<String, String> TOGGLEABLE = Collections.unmodifiableMap(new LinkedHashMap<String, String>() {{
-        put("neo4j-gremlin", "org.apache.tinkerpop.gremlin.neo4j.jsr223.Neo4jGremlinPlugin");
         put("spark-gremlin", "org.apache.tinkerpop.gremlin.spark.jsr223.SparkGremlinPlugin");
         put("hadoop-gremlin", "org.apache.tinkerpop.gremlin.hadoop.jsr223.HadoopGremlinPlugin");
     }});

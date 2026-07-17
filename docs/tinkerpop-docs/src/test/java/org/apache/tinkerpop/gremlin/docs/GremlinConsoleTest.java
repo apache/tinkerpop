@@ -139,9 +139,10 @@ public class GremlinConsoleTest {
 
     @Test
     public void shouldDismissErrorPromptOnStderr() throws Exception {
-        // The async dismisser must answer the "Display stack trace? [yN]" prompt on stderr
-        // (sending a newline to stdin) so the console process is never left blocked. Surfacing
-        // the error to the caller is covered by shouldThrowExecutionExceptionWhenErrorPromptSeen.
+        // The async dismisser must answer the "Display stack trace? [yN]" prompt with "y" (so
+        // the console prints the full trace, captured by GremlinExecutionException) rather than
+        // leaving the console process blocked. Surfacing the error to the caller is covered by
+        // shouldThrowExecutionExceptionWhenErrorPromptSeen.
         final String fullStdout = "gremlin>";
         final String stderrContent = "Display stack trace? [yN]";
         final ByteArrayOutputStream capturedStdin = new ByteArrayOutputStream();
@@ -153,9 +154,9 @@ public class GremlinConsoleTest {
             while (capturedStdin.size() == 0 && System.currentTimeMillis() < deadline) {
                 Thread.sleep(10);
             }
-            // Verify that a newline was sent to dismiss the error prompt
+            // Verify that "y" followed by a newline was sent to dismiss the error prompt
             final String sent = capturedStdin.toString(StandardCharsets.UTF_8.name());
-            assertThat(sent.contains("\n"), is(true));
+            assertThat(sent.contains("y\n"), is(true));
         } finally {
             console.close();
         }
@@ -193,13 +194,21 @@ public class GremlinConsoleTest {
             Thread.sleep(200);
             stderrFeeder.write("fail() Step Triggered\nDisplay stack trace? [yN]".getBytes(StandardCharsets.UTF_8));
             stderrFeeder.flush();
-            // Wait for the dismisser to answer (an extra newline beyond the statement itself,
-            // which execute() also wrote to stdin), then release the next prompt on stdout.
+            // Wait for the dismisser to answer "y" (beyond the statement itself, which
+            // execute() also wrote to stdin) before the console prints the stack trace.
             final int statementBytes = "g.V().fail('boom')\n".getBytes(StandardCharsets.UTF_8).length;
             final long deadline = System.currentTimeMillis() + 5000;
             while (capturedStdin.size() <= statementBytes && System.currentTimeMillis() < deadline) {
                 Thread.sleep(10);
             }
+            // Mirrors the real console: the stack trace prints to stderr next, then (only once
+            // the console has returned to its REPL loop) the next gremlin> prompt appears on
+            // stdout. Release the stdout prompt after the drain's quiet period has had time to
+            // observe the trace, so this doesn't race the dismisser's capture.
+            stderrFeeder.write("java.lang.RuntimeException: boom\n\tat SomeClass.someMethod(SomeClass.java:1)\n"
+                    .getBytes(StandardCharsets.UTF_8));
+            stderrFeeder.flush();
+            Thread.sleep(500);
             stdoutFeeder.write("gremlin>".getBytes(StandardCharsets.UTF_8));
             stdoutFeeder.flush();
             exec.join(5000);
@@ -211,6 +220,9 @@ public class GremlinConsoleTest {
         assertThat(thrown.get(), is(notNullValue()));
         assertThat(thrown.get(), instanceOf(GremlinConsole.GremlinExecutionException.class));
         assertThat(thrown.get().getMessage(), containsString("g.V().fail('boom')"));
+        assertThat(thrown.get().getMessage(), containsString("fail() Step Triggered"));
+        assertThat(thrown.get().getMessage(), containsString("java.lang.RuntimeException: boom"));
+        assertThat(thrown.get().getMessage(), containsString("at SomeClass.someMethod"));
     }
 
     @Test

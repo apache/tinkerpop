@@ -16,13 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
-// Continues the Spark/Hadoop OLAP examples (Scala 2.12), so exclude neo4j-gremlin (Scala 2.11)
-// to keep it off the console's flat classpath.
-[gremlin-docs-plugins-exclude="neo4j-gremlin"]
 === Input/Output Formats
-
-WARNING: The Hadoop and Spark modules are not included in the 4.0.0-beta.2 distribution. The examples in
-this section are presented as static code and will be restored in a future release.
 
 image:adjacency-list.png[width=300,float=right] Hadoop-Gremlin provides various I/O formats -- i.e. Hadoop
 `InputFormat` and `OutputFormat`. All of the formats make use of an link:http://en.wikipedia.org/wiki/Adjacency_list[adjacency list]
@@ -162,7 +156,7 @@ Hadoop-Gremlin provides two implementations of the `Storage` API:
 The distributed file system of Hadoop is called link:http://en.wikipedia.org/wiki/Apache_Hadoop#Hadoop_distributed_file_system[HDFS].
 The results of any OLAP operation are stored in HDFS accessible via `hdfs`. For local file system access, there is `fs`.
 
-[source,groovy]
+[gremlin-groovy]
 ----
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
 graph.compute(SparkGraphComputer).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey('clusterCount').create()).submit().get();
@@ -181,7 +175,7 @@ If a Spark context is persisted, then Spark RDDs will remain the Spark cache and
 RDDs are retrieved and saved to the `SparkContext` via `PersistedInputRDD` and `PersistedOutputRDD` respectively.
 Persisted RDDs can be accessed using `spark`.
 
-[source,groovy]
+[gremlin-groovy]
 ----
 Spark.create('local[4]')
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')

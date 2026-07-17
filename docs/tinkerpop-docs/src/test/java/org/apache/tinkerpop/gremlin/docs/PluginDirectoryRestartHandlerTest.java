@@ -44,9 +44,7 @@ public class PluginDirectoryRestartHandlerTest {
     @Rule
     public final TemporaryFolder tmp = new TemporaryFolder();
 
-    private static final String NEO4J = "neo4j-gremlin";
     private static final String SPARK = "spark-gremlin";
-    private static final String NEO4J_CLASS = "org.apache.tinkerpop.gremlin.neo4j.jsr223.Neo4jGremlinPlugin";
     private static final String SPARK_CLASS = "org.apache.tinkerpop.gremlin.spark.jsr223.SparkGremlinPlugin";
 
     private Path consoleHome;
@@ -62,12 +60,12 @@ public class PluginDirectoryRestartHandlerTest {
         disabled = consoleHome.resolve("ext-disabled");
         pluginsTxt = ext.resolve("plugins.txt");
         // Seed a populated plugin layout with a non-empty plugin dir for each toggleable plugin.
-        for (final String p : Arrays.asList(NEO4J, SPARK, "hadoop-gremlin")) {
+        for (final String p : Arrays.asList(SPARK, "hadoop-gremlin")) {
             installPlugin(p);
         }
         Files.write(pluginsTxt, Arrays.asList(
                 "org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin",
-                NEO4J_CLASS, SPARK_CLASS,
+                SPARK_CLASS,
                 "org.apache.tinkerpop.gremlin.hadoop.jsr223.HadoopGremlinPlugin"));
         handler = new PluginDirectoryRestartHandler(consoleHome);
     }
@@ -95,28 +93,29 @@ public class PluginDirectoryRestartHandlerTest {
 
     @Test
     public void shouldBeIdempotentWhenExcludingTwice() throws IOException {
-        handler.onRestart(Collections.singletonList(NEO4J));
-        // Excluding the same plugin again must not throw, even though ext-disabled/neo4j already exists.
-        handler.onRestart(Collections.singletonList(NEO4J));
-        assertThat(Files.isDirectory(ext.resolve(NEO4J)), is(false));
-        assertThat(Files.isDirectory(disabled.resolve(NEO4J)), is(true));
+        handler.onRestart(Collections.singletonList("hadoop-gremlin"));
+        // Excluding the same plugin again must not throw, even though ext-disabled/hadoop-gremlin already exists.
+        handler.onRestart(Collections.singletonList("hadoop-gremlin"));
+        assertThat(Files.isDirectory(ext.resolve("hadoop-gremlin")), is(false));
+        assertThat(Files.isDirectory(disabled.resolve("hadoop-gremlin")), is(true));
     }
 
     @Test
     public void shouldRecoverFromStaleDisabledDirectoryLeftByInterruptedRun() throws IOException {
-        // Simulate a crashed prior run: a non-empty ext-disabled/neo4j exists AND ext/neo4j was
-        // re-installed by process-docs.sh, so the plugin is present in BOTH locations.
-        Files.createDirectories(disabled.resolve(NEO4J).resolve("plugin"));
-        Files.write(disabled.resolve(NEO4J).resolve("plugin").resolve("stale.jar"),
+        // Simulate a crashed prior run: a non-empty ext-disabled/hadoop-gremlin exists AND
+        // ext/hadoop-gremlin was re-installed by process-docs.sh, so the plugin is present in
+        // BOTH locations.
+        Files.createDirectories(disabled.resolve("hadoop-gremlin").resolve("plugin"));
+        Files.write(disabled.resolve("hadoop-gremlin").resolve("plugin").resolve("stale.jar"),
                 "stale".getBytes(StandardCharsets.UTF_8));
 
         // Disabling must not throw (the move target already exists and is non-empty).
-        handler.onRestart(Collections.singletonList(NEO4J));
-        assertThat(Files.isDirectory(ext.resolve(NEO4J)), is(false));
-        assertThat(Files.isDirectory(disabled.resolve(NEO4J)), is(true));
+        handler.onRestart(Collections.singletonList("hadoop-gremlin"));
+        assertThat(Files.isDirectory(ext.resolve("hadoop-gremlin")), is(false));
+        assertThat(Files.isDirectory(disabled.resolve("hadoop-gremlin")), is(true));
         // The authoritative active copy replaced the stale one (no stale.jar remains).
-        assertThat(Files.exists(disabled.resolve(NEO4J).resolve("plugin").resolve("stale.jar")), is(false));
-        assertThat(Files.exists(disabled.resolve(NEO4J).resolve("plugin").resolve(NEO4J + ".jar")), is(true));
+        assertThat(Files.exists(disabled.resolve("hadoop-gremlin").resolve("plugin").resolve("stale.jar")), is(false));
+        assertThat(Files.exists(disabled.resolve("hadoop-gremlin").resolve("plugin").resolve("hadoop-gremlin.jar")), is(true));
     }
 
     @Test

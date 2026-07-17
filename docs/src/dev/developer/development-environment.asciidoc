@@ -127,10 +127,10 @@ Gremlin Console subprocess, and renders the console output as tabbed HTML. The o
 distributions, installs the required plugins into the console, starts a Gremlin Server (for the `:remote` examples) and
 a Gephi mock, then invokes Maven to run the extension. Javadocs should be built using Java 17.
 
-Before generating documentation, build the build all of the dependencies that the process consumes:
+Before generating documentation, build all the dependencies that the process consumes:
 
 [source,text]
-mvn clean install -pl :gremlin-console,:gremlin-server:spark-gremlin,:neo4j-gremlin -am -DskipTests -DincludeNeo4j
+mvn clean install -pl :gremlin-console,:gremlin-server,:spark-gremlin -am -DskipTests
 
 Documentation can then be generated locally with:
 
@@ -148,11 +148,11 @@ failed`. It often helps in this case to delete the directories for the dependenc
 in the `.m2` (`~/.m2/`) and in the `grapes` (`~/.groovy/grapes/`) cache. E.g., if the error is about
 `asm#asm;3.2!asm.jar`, then remove the `asm/asm` sub directory in both directories.
 
-NOTE: Unexpected failures with OLAP often point to a jar conflict that arises when Hadoop, Spark, or Neo4j
+NOTE: Unexpected failures with OLAP often point to a jar conflict that arises when Hadoop or Spark
 dependencies are modified and collide on the console's classpath. It is not picked up by the enforcer plugin because
-the inconsistency arises through plugin installation in the Gremlin Console at document generation time. The most
-common case -- Neo4j (Scala 2.11) and Spark (Scala 2.12) -- is handled by the per-book plugin exclusion mechanism
-described in <<docs-plugin-exclusions>>. For other conflicts, the `<manifestEntries>` (`Gremlin-Plugin-Paths` /
+the inconsistency arises through plugin installation in the Gremlin Console at document generation time. Such
+conflicts are handled by the per-book plugin exclusion mechanism described in <<docs-plugin-exclusions>>. For other
+conflicts, the `<manifestEntries>` (`Gremlin-Plugin-Paths` /
 `Gremlin-Lib-Paths`) on the plugin jar control how the `DependencyGrabber` lays jars out under `ext/<plugin>/plugin`
 and `ext/<plugin>/lib`, which can be adjusted to resolve ordering or duplicate-jar problems. The easiest way to see
 the underlying error is to run the offending example directly in the Gremlin Console, which displays it more plainly
@@ -161,15 +161,14 @@ than the documentation build does.
 [[docs-plugin-exclusions]]
 ==== Per-book Plugin Exclusions
 
-Some plugins cannot share the documentation console's classpath. Most notably, Neo4j 3.4 requires Scala 2.11 while
-Spark requires Scala 2.12, so activating both at once causes runtime failures (e.g. `NoSuchMethodError:
-scala.Product.$init$`). To avoid this, a book can restart the console with certain plugins removed by declaring the
-`gremlin-docs-plugins-exclude` attribute (a comma-separated list of plugin directory names) on a section heading:
+Some plugins cannot share the documentation console's classpath due to transitive dependency conflicts (e.g.
+incompatible Scala versions). To avoid this, a book can restart the console with certain plugins removed by declaring
+the `gremlin-docs-plugins-exclude` attribute (a comma-separated list of plugin directory names) on a section heading:
 
 [source,asciidoc]
 ----
-[gremlin-docs-plugins-exclude="neo4j-gremlin"]
-==== SparkGraphComputer
+[gremlin-docs-plugins-exclude="spark-gremlin"]
+==== SomeSection
 ----
 
 When the `GremlinTreeprocessor` reaches a section carrying this attribute, it closes the current console, moves the
@@ -179,7 +178,7 @@ section declares a different set, so each conflicting chapter declares its compl
 old preprocessor's per-file plugin juggling; `bin/process-docs.sh` installs each plugin's dependencies into
 `ext/<plugin>/plugin/` (not the shared `lib/`) precisely so they can be toggled this way.
 
-To generate the web site locally, there is no need for any of the above infrastructure. Site generation is a simple
+To generate the website locally, there is no need for any of the above infrastructure. Site generation is a simple
 shell script:
 
 [source,text]

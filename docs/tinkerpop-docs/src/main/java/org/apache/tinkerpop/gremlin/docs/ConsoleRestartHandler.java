@@ -36,7 +36,7 @@ public interface ConsoleRestartHandler {
      * with a changed value. The handler should close the current console, exclude the specified
      * plugin directories, and start a new console.
      *
-     * @param excludedPlugins list of plugin directory names to exclude (e.g., "neo4j-gremlin")
+     * @param excludedPlugins list of plugin directory names to exclude (e.g., "spark-gremlin")
      * @throws IOException if the restart operation fails
      */
     void onRestart(List<String> excludedPlugins) throws IOException;

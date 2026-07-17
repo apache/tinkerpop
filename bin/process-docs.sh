@@ -127,10 +127,10 @@ echo "Installing plugins into console..."
 
 # Copy a plugin's dependency jars onto the console classpath via ext/<plugin>/plugin/ (which
 # bin/gremlin.sh globs) rather than the shared lib/. This keeps each plugin's transitive deps
-# isolatable so the docs extension can exclude conflicting plugins per-book (e.g. Neo4j's
-# Scala 2.11 vs Spark's 2.12) by moving the plugin directory off the classpath. Jars already
-# present in lib/ (core gremlin deps) and slf4j/logback-classic are skipped to avoid duplicate
-# classpath entries and logger bindings -- mirroring the console's own :install (DependencyGrabber).
+# isolatable so the docs extension can exclude conflicting plugins per-book by moving the
+# plugin directory off the classpath. Jars already present in lib/ (core gremlin deps) and
+# slf4j/logback-classic are skipped to avoid duplicate classpath entries and logger bindings --
+# mirroring the console's own :install (DependencyGrabber).
 copy_deps_to_plugin() {
   local src_dir="$1" plugin="$2"
   local plugin_dir="${CONSOLE_HOME}/ext/${plugin}/plugin"
@@ -145,7 +145,7 @@ copy_deps_to_plugin() {
   done
 }
 
-PLUGINS="hadoop-gremlin spark-gremlin neo4j-gremlin sparql-gremlin"
+PLUGINS="hadoop-gremlin spark-gremlin"
 for plugin in ${PLUGINS}; do
   PLUGIN_DIR="${plugin}/target/${plugin}-${TP_VERSION}-standalone"
   if [ -d "${PLUGIN_DIR}" ]; then
@@ -168,31 +168,6 @@ for plugin in ${PLUGINS}; do
   fi
 done
 
-# 3b. Resolve the Neo4j database implementation onto the console classpath.
-# neo4j-gremlin declares neo4j-tinkerpop-api-impl as a Gremlin-Plugin-Dependencies manifest
-# entry (test-scoped / gated behind the includeNeo4j profile), so it is not bundled by the
-# local jar copy above. The old console ':install' flow fetched it via DependencyGrabber;
-# here we resolve it (and its transitive deps) from Maven so Neo4jGraph blocks can execute.
-NEO4J_IMPL_VERSION="0.9-3.4.0"
-NEO4J_PLUGIN_LIB="${CONSOLE_HOME}/ext/neo4j-gremlin/lib"
-if [ -d "${NEO4J_PLUGIN_LIB}" ] && ! ls "${NEO4J_PLUGIN_LIB}"/neo4j-tinkerpop-api-impl-*.jar >/dev/null 2>&1; then
-  echo " * resolving Neo4j implementation (neo4j-tinkerpop-api-impl:${NEO4J_IMPL_VERSION})"
-  NEO4J_POM="${TP_HOME}/target/neo4j-impl-pom.xml"
-  cat > "${NEO4J_POM}" <<POM
-<project xmlns="http://maven.apache.org/POM/4.0.0"><modelVersion>4.0.0</modelVersion>
-<groupId>org.apache.tinkerpop.docs</groupId><artifactId>neo4j-impl-resolver</artifactId><version>1</version>
-<dependencies><dependency><groupId>org.neo4j</groupId><artifactId>neo4j-tinkerpop-api-impl</artifactId><version>${NEO4J_IMPL_VERSION}</version></dependency></dependencies></project>
-POM
-  mvn -q -f "${NEO4J_POM}" dependency:copy-dependencies -DoutputDirectory="${NEO4J_PLUGIN_LIB}"
-  # Drop ONLY the conflicting io.netty 4.x jar that Neo4j pulls in (netty-all-4.1.24): it
-  # contains an older io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker13 that
-  # shadows the console driver's 4.1.125 class and breaks ':remote' server connections with a
-  # NoSuchMethodError. Keep netty-3.9.x (org.jboss.netty package) -- it does NOT conflict and
-  # is required by Neo4j 3.4's IO layer.
-  rm -f "${NEO4J_PLUGIN_LIB}"/netty-all-4.*.jar
-  copy_deps_to_plugin "${NEO4J_PLUGIN_LIB}" "neo4j-gremlin"
-fi
-
 # 4. Register plugins in console
 echo "Registering plugins..."
 # Write plugins.txt deterministically rather than appending to whatever state a prior run left:
@@ -207,8 +182,6 @@ org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin
 org.apache.tinkerpop.gremlin.groovy.jsr223.dsl.credential.CredentialGraphGremlinPlugin
 org.apache.tinkerpop.gremlin.hadoop.jsr223.HadoopGremlinPlugin
 org.apache.tinkerpop.gremlin.spark.jsr223.SparkGremlinPlugin
-org.apache.tinkerpop.gremlin.neo4j.jsr223.Neo4jGremlinPlugin
-org.apache.tinkerpop.gremlin.sparql.jsr223.SparqlGremlinPlugin
 EOF
 
 # 5. Copy hadoop config to console classpath

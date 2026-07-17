@@ -18,10 +18,9 @@ under the License.
 ////
 
 anchor:gremlin-variants[]
-// This book exercises only remote driver connections, but its predecessors leave Neo4j/Spark/Hadoop
-// plugins active. Exclude all three to restart the console with a clean classpath and avoid the
-// Scala 2.11/2.12 (and related) conflicts those plugins introduce.
-[gremlin-docs-plugins-exclude="neo4j-gremlin,spark-gremlin,hadoop-gremlin"]
+// This book exercises only remote driver connections, but its predecessors leave Spark/Hadoop
+// plugins active. Exclude both to restart the console with a clean classpath.
+[gremlin-docs-plugins-exclude="spark-gremlin,hadoop-gremlin"]
 [[gremlin-drivers-variants]]
 = Gremlin Drivers and Variants
 

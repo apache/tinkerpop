@@ -16,9 +16,6 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
-// SparkGraphComputer requires Scala 2.12 while Neo4j 3.4 requires Scala 2.11; they cannot share
-// the console's flat classpath, so exclude neo4j-gremlin to restart the console without Neo4j's jars.
-[gremlin-docs-plugins-exclude="neo4j-gremlin"]
 [[sparkgraphcomputer]]
 ==== SparkGraphComputer
 
@@ -46,10 +43,7 @@ bin/hadoop/init-tp-spark.sh /usr/local/spark spark@10.0.0.1 spark@10.0.0.2 spark
 
 Once the `lib/` directory is distributed, `SparkGraphComputer` can be used as follows.
 
-WARNING: The Hadoop and Spark modules are not included in the 4.0.0-beta.2 distribution. These examples will
-be restored in a future release.
-
-[source,groovy]
+[gremlin-groovy]
 ----
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
 g = traversal().with(graph).withComputer(SparkGraphComputer)
@@ -133,7 +127,7 @@ The <<clonevertexprogram, CloneVertexProgram>> copies a whole graph from any gra
 The example below takes a Hadoop graph as the input (in `GryoInputFormat`) and exports it as a GraphSON file
 (`GraphSONOutputFormat`).
 
-[source,groovy]
+[gremlin-groovy]
 ----
 hdfs.copyFromLocal('data/tinkerpop-modern.kryo', 'tinkerpop-modern.kryo')
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')

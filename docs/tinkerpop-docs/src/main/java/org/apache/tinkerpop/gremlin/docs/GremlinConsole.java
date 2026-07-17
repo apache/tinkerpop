@@ -210,6 +210,13 @@ public class GremlinConsole implements Closeable {
      * recorded so {@link #execute(String)} can surface it as a {@link GremlinExecutionException}.
      * Error report text precedes the prompt on stderr, so it is captured for the message.
      */
+    /**
+     * Background thread that monitors stderr and automatically dismisses error prompts.
+     * The {@code Display stack trace? [yN]} prompt is the signal that the current statement
+     * raised a Gremlin error; the prompt is answered with {@code y} so the console prints the
+     * full stack trace to stderr, which is captured (along with the preceding error report
+     * text) so {@link #execute(String)} can surface it as a {@link GremlinExecutionException}.
+     */
     private void dismissErrorPrompts() {
         final int windowSize = ERROR_PROMPT.length();
         final StringBuilder errBuffer = new StringBuilder();
@@ -225,11 +232,15 @@ public class GremlinConsole implements Closeable {
                         }
 
                         if (errBuffer.toString().contains(ERROR_PROMPT)) {
-                            stdin.write("\n");
+                            // Answer "y" so the console prints the full stack trace to stderr,
+                            // then keep draining stderr (still holding the lock) until it goes
+                            // quiet for a beat, capturing the trace before surfacing the error.
+                            stdin.write("y\n");
                             stdin.flush();
+                            errBuffer.setLength(0);
+                            drainStackTrace();
                             lastErrorText = errorCapture.toString().trim();
                             errorPromptSeen = true;
-                            errBuffer.setLength(0);
                             errorCapture.setLength(0);
                         } else if (errBuffer.length() > windowSize) {
                             errBuffer.delete(0, errBuffer.length() - windowSize);
@@ -242,6 +253,29 @@ public class GremlinConsole implements Closeable {
             // Expected on shutdown
         } catch (final IOException e) {
             // Process closed, exit silently
+        }
+    }
+
+    /**
+     * After answering the {@code Display stack trace?} prompt with {@code y}, reads stderr
+     * into {@link #errorCapture} until output stops arriving for a short quiet period,
+     * capturing the full trace the console prints before it returns to the {@code gremlin>}
+     * prompt. Must be called while holding {@link #stderrStdinLock}.
+     */
+    private void drainStackTrace() throws IOException, InterruptedException {
+        final long quietPeriodMs = 300;
+        long lastReadAt = System.currentTimeMillis();
+        while (System.currentTimeMillis() - lastReadAt < quietPeriodMs) {
+            if (stderr.ready()) {
+                final int ch = stderr.read();
+                if (ch == -1) return;
+                if (errorCapture.length() < MAX_ERROR_CAPTURE) {
+                    errorCapture.append((char) ch);
+                }
+                lastReadAt = System.currentTimeMillis();
+            } else {
+                Thread.sleep(20);
+            }
         }
     }
 

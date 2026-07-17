@@ -663,14 +663,12 @@ public class GremlinTreeprocessor extends Treeprocessor {
             return;
         }
 
-        // Clear file-backed graph stores reused across blocks. Neo4j holds an exclusive
-        // store lock, so a stale '/tmp/neo4j' left by a prior block (or prior build run)
-        // makes the next Neo4jGraph.open('/tmp/neo4j') hang acquiring the lock. Close any
-        // prior graph to release its lock, then delete the dirs -- mirroring the old
-        // preprocessor which cleared these before every graph-init block.
+        // Close any prior graph to release resources, then delete file-backed stores reused
+        // across blocks so stale state from a prior block (or prior build run) doesn't leak
+        // into the next graph-init -- mirroring the old preprocessor which cleared these
+        // before every graph-init block.
         executeSafely("try { if (binding.hasVariable('graph') && graph != null) graph.close() } catch (e) {}");
-        executeSafely("['/tmp/neo4j', '/tmp/tinkergraph.kryo'].each { p -> "
-                + "def f = new File(p); if (f.exists()) f.deleteDir() }");
+        executeSafely("def f = new File('/tmp/tinkergraph.kryo'); if (f.exists()) f.deleteDir()");
 
         final String initStatement;
         if (graphName == null) {
