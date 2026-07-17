@@ -218,20 +218,88 @@ namespace Gremlin.Net.UnitTest.Driver
             Assert.Equal(false, capturedRequest!.Fields[Tokens.ArgsBulkResults]);
         }
 
+        [Fact]
+        public async Task ShouldYieldRawScalarFromNonBulkedResponse()
+        {
+            // A raw (non-bulked) scalar must be yielded directly, not cast-failed as a Traverser.
+            var client = CreateResultClient(10L);
+            var connection = new DriverRemoteConnection(client, "g");
+            var gl = new GremlinLang();
+            gl.AddStep("V", Array.Empty<object>());
+
+            var traversal = await connection.SubmitAsync<object, long>(gl);
+            var results = traversal.ToList();
+
+            Assert.Equal(new long[] { 10L }, results);
+        }
+
+        [Fact]
+        public async Task ShouldExpandBulkedTraverserFromResponse()
+        {
+            // A bulked Traverser must be expanded by its bulk count.
+            var client = CreateResultClient(new Traverser("a", 3));
+            var connection = new DriverRemoteConnection(client, "g");
+            var gl = new GremlinLang();
+            gl.AddStep("V", Array.Empty<object>());
+
+            var traversal = await connection.SubmitAsync<object, string>(gl);
+            var results = traversal.ToList();
+
+            Assert.Equal(new[] { "a", "a", "a" }, results);
+        }
+
+        [Fact]
+        public async Task ShouldHandleMixOfRawValuesAndTraversers()
+        {
+            // Raw values and bulked Traversers may interleave in one response.
+            var client = CreateResultClient(1L, new Traverser(2L, 2), 3L);
+            var connection = new DriverRemoteConnection(client, "g");
+            var gl = new GremlinLang();
+            gl.AddStep("V", Array.Empty<object>());
+
+            var traversal = await connection.SubmitAsync<object, long>(gl);
+            var results = traversal.ToList();
+
+            Assert.Equal(new long[] { 1L, 2L, 2L, 3L }, results);
+        }
+
+        /// <summary>
+        ///     Creates a mock IGremlinClient whose submission returns a ResultSet streaming the
+        ///     provided items (raw values and/or Traverser instances).
+        /// </summary>
+        private static IGremlinClient CreateResultClient(params object[] items)
+        {
+            var client = Substitute.For<IGremlinClient>();
+            client.SubmitAsync<object>(Arg.Any<RequestMessage>(), Arg.Any<CancellationToken>())
+                .Returns(_ =>
+                {
+                    var channel = System.Threading.Channels.Channel.CreateUnbounded<object>();
+                    foreach (var item in items)
+                    {
+                        channel.Writer.TryWrite(item);
+                    }
+                    channel.Writer.Complete();
+                    var cts = new CancellationTokenSource();
+                    var resultSet = new ResultSet<object>(channel.Reader, cts, Task.CompletedTask);
+                    return Task.FromResult(resultSet);
+                });
+            return client;
+        }
+
         /// <summary>
         ///     Creates a mock IGremlinClient that captures the submitted RequestMessage.
         /// </summary>
         private static IGremlinClient CreateCapturingClient(Action<RequestMessage> capture)
         {
             var client = Substitute.For<IGremlinClient>();
-            client.SubmitAsync<Traverser>(Arg.Any<RequestMessage>(), Arg.Any<CancellationToken>())
+            client.SubmitAsync<object>(Arg.Any<RequestMessage>(), Arg.Any<CancellationToken>())
                 .Returns(callInfo =>
                 {
                     capture(callInfo.Arg<RequestMessage>());
                     var channel = System.Threading.Channels.Channel.CreateUnbounded<object>();
                     channel.Writer.Complete();
                     var cts = new CancellationTokenSource();
-                    var emptyResult = new ResultSet<Traverser>(
+                    var emptyResult = new ResultSet<object>(
                         channel.Reader, cts, Task.CompletedTask);
                     return Task.FromResult(emptyResult);
                 });

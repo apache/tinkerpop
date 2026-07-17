@@ -87,7 +87,7 @@ namespace Gremlin.Net.Driver.Remote
             requestMsg.AddField(Tokens.ArgsTransactionId, _transactionId);
 
             // Route through Transaction's serialized submission to guarantee ordering
-            var resultSet = await _transaction.SubmitAsync<Traverser>(requestMsg.Create(), cancellationToken)
+            var resultSet = await _transaction.SubmitAsync<object>(requestMsg.Create(), cancellationToken)
                 .ConfigureAwait(false);
             return new DriverRemoteTraversal<TStart, TEnd>(resultSet);
         }

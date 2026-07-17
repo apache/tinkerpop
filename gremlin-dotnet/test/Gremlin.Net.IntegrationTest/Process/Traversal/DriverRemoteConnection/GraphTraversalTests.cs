@@ -62,6 +62,34 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         }
 
         [Fact]
+        public void g_V_Count_WithBulkResultsFalse()
+        {
+            // bulkResults=false makes the server return a raw scalar instead of a bulked Traverser.
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().With(connection)
+                .With(Tokens.ArgsBulkResults, false);
+
+            var count = g.V().Count().Next();
+
+            Assert.Equal(6, count);
+        }
+
+        [Fact]
+        public void g_V_Values_WithBulkResultsFalse()
+        {
+            // Non-bulked multi-result response: each raw value must be yielded.
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().With(connection)
+                .With(Tokens.ArgsBulkResults, false);
+
+            var names = g.V().Values<string>("name").ToList();
+
+            Assert.Equal(6, names.Count);
+            Assert.Contains("marko", names);
+            Assert.Contains("lop", names);
+        }
+
+        [Fact]
         public void g_V_Count_Clone()
         {
             var connection = _connectionFactory.CreateRemoteConnection();

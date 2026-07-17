@@ -22,22 +22,37 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.Driver.Remote
 {
     /// <summary>
     ///     A traversal returned from a remote Gremlin Server submission, wrapping a
-    ///     <see cref="ResultSet{T}"/> of <see cref="Traverser"/> instances.
+    ///     <see cref="ResultSet{T}"/> of result objects.
     /// </summary>
     internal class DriverRemoteTraversal<TStart, TEnd> : DefaultTraversal<TStart, TEnd>
     {
-        public DriverRemoteTraversal(ResultSet<Traverser> resultSet)
+        public DriverRemoteTraversal(ResultSet<object> resultSet)
         {
-            Traversers = resultSet;
+            Traversers = AdaptResults(resultSet);
         }
 
         /// <inheritdoc />
         public override GremlinLang GremlinLang => throw new NotSupportedException("Remote traversals do not have GremlinLang");
+
+        // Bulked responses arrive as Traversers; non-bulked responses arrive as raw values
+        // (e.g. a long for g.V().count()) and are wrapped with a bulk of 1, as the other GLVs do.
+        private static async IAsyncEnumerable<Traverser> AdaptResults(ResultSet<object> resultSet,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await foreach (var item in resultSet.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                yield return item as Traverser ?? new Traverser(item, 1);
+            }
+        }
     }
 }

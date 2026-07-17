@@ -142,7 +142,7 @@ namespace Gremlin.Net.Driver.Remote
                 requestMsg.AddField(Tokens.ArgsBulkResults, true);
             }
 
-            var resultSet = await _client.SubmitAsync<Traverser>(requestMsg.Create(), cancellationToken)
+            var resultSet = await _client.SubmitAsync<object>(requestMsg.Create(), cancellationToken)
                 .ConfigureAwait(false);
             return new DriverRemoteTraversal<TStart, TEnd>(resultSet);
         }
