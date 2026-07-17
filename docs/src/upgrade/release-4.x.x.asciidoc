@@ -363,8 +363,9 @@ These change runtime behavior on upgrade even if you do not change your configur
   `CompressionNone`).
 - *Connect timeout lowered to 5s* (from 15s, where applicable) and is now actually applied to transport establishment
   (TCP connect plus TLS handshake), not the whole request.
-- *`readTimeout` is an idle-read timeout*, reset on each inbound response chunk, so it is streaming-safe and bounds only
-  the gap between chunks, not total response duration. It is off by default.
+- *`readTimeout` is an idle-read timeout*, armed when the request is sent and reset on each inbound response chunk, so it
+  is streaming-safe and bounds the wait for the first response as well as the idle gap between chunks, but not total
+  response duration. It is off by default.
 - *`idleTimeout` reaps only pooled connections* that are idle between requests; it no longer bounds an in-flight
   response (that is `readTimeout`'s job).
 

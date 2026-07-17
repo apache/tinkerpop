@@ -1168,6 +1168,26 @@ namespace Gremlin.Net.UnitTest.Driver
             });
         }
 
+        [Fact]
+        public async Task ShouldTimeOutWhenServerNeverSendsResponseWhenReadTimeoutSet()
+        {
+            // A server that accepts the request but never sends a response should trigger the
+            // read timeout during the header wait, so the exception surfaces directly from
+            // SubmitAsync (before any results can be enumerated).
+            var handler = new NeverRespondingHandler();
+            var httpClient = new HttpClient(handler);
+            var serializer = CreateReadingSerializer();
+            var settings = new ConnectionSettings
+            {
+                ReadTimeout = TimeSpan.FromMilliseconds(100)
+            };
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            var ex = await Assert.ThrowsAsync<TimeoutException>(async () =>
+                await connection.SubmitAsync<object>(CreateTestRequest()));
+            Assert.Contains("waiting for the initial server response", ex.Message);
+        }
+
         private static IMessageSerializer CreateReadingSerializer(
             string mimeType = SerializationTokens.GraphBinary4MimeType)
         {
@@ -1311,8 +1331,19 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         /// <summary>
-        ///     A stream wrapper that tracks read operations.
+        ///     A mock handler whose SendAsync never returns until cancelled, simulating a server
+        ///     that accepts the request but never sends a response. Used to exercise the read
+        ///     timeout during the initial header wait.
         /// </summary>
+        private class NeverRespondingHandler : HttpMessageHandler
+        {
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+                CancellationToken cancellationToken)
+            {
+                await Task.Delay(Timeout.Infinite, cancellationToken).ConfigureAwait(false);
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+        }
         private class TrackingStream : Stream
         {
             private readonly Stream _inner;

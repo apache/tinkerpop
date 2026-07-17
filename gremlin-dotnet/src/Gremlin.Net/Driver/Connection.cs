@@ -303,8 +303,7 @@ namespace Gremlin.Net.Driver
                     }
                 }
 
-                response = await _httpClient.SendAsync(httpRequest,
-                    HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                response = await SendWithReadTimeoutAsync(httpRequest, cancellationToken)
                     .ConfigureAwait(false);
             }
 
@@ -411,6 +410,45 @@ namespace Gremlin.Net.Driver
                 }
                 disposeCts?.Dispose();
                 throw;
+            }
+        }
+
+        /// <summary>
+        ///     Sends the request and waits for the response headers, bounding that wait by
+        ///     <see cref="ConnectionSettings.ReadTimeout"/> when it is positive. This uses the same
+        ///     disambiguation idiom as <see cref="ReadTimeoutStream"/>: a timeout
+        ///     <see cref="CancellationTokenSource"/> linked with the caller token, armed with
+        ///     <see cref="CancellationTokenSource.CancelAfter(TimeSpan)"/>, so a fired timeout
+        ///     (when the caller token did not fire) surfaces as a <see cref="TimeoutException"/>.
+        ///     When <see cref="ConnectionSettings.ReadTimeout"/> is non-positive the caller token is
+        ///     passed straight through with no wrapping. The timeout CTS is disposed once headers are
+        ///     read so its timer does not linger into body streaming.
+        /// </summary>
+        private async Task<HttpResponseMessage> SendWithReadTimeoutAsync(HttpRequestMessage httpRequest,
+            CancellationToken cancellationToken)
+        {
+            if (_settings.ReadTimeout <= TimeSpan.Zero)
+            {
+                return await _httpClient.SendAsync(httpRequest,
+                    HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            using var timeoutCts = new CancellationTokenSource();
+            using var linkedCts =
+                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+            timeoutCts.CancelAfter(_settings.ReadTimeout);
+            try
+            {
+                return await _httpClient.SendAsync(httpRequest,
+                    HttpCompletionOption.ResponseHeadersRead, linkedCts.Token)
+                    .ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested &&
+                                                     !cancellationToken.IsCancellationRequested)
+            {
+                throw new TimeoutException(
+                    $"Timed out after {_settings.ReadTimeout.TotalSeconds:0.###}s waiting for the initial server response.");
             }
         }
 

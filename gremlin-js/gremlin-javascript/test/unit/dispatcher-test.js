@@ -76,9 +76,16 @@ describe('dispatcher', function () {
   });
 
   describe('buildAgentOptions (undici option mapping)', function () {
-    it('maps readTimeoutMillis to the undici Agent bodyTimeout', function () {
+    it('maps readTimeoutMillis to the undici Agent bodyTimeout and headersTimeout', function () {
       const opts = buildAgentOptions({ readTimeoutMillis: 1234 });
       assert.strictEqual(opts.bodyTimeout, 1234);
+      assert.strictEqual(opts.headersTimeout, 1234);
+    });
+
+    it('maps readTimeoutMillis 0 to bodyTimeout and headersTimeout 0 (undici disables the timer)', function () {
+      const opts = buildAgentOptions({ readTimeoutMillis: 0 });
+      assert.strictEqual(opts.bodyTimeout, 0);
+      assert.strictEqual(opts.headersTimeout, 0);
     });
 
     it('maps maxResponseHeaderBytes to the undici Agent maxHeaderSize', function () {
@@ -99,12 +106,14 @@ describe('dispatcher', function () {
     it('omits bodyTimeout and maxHeaderSize when their options are unset', function () {
       const opts = buildAgentOptions();
       assert.strictEqual(opts.bodyTimeout, undefined);
+      assert.strictEqual(opts.headersTimeout, undefined);
       assert.strictEqual(opts.maxHeaderSize, undefined);
     });
 
     it('maps both readTimeoutMillis and maxResponseHeaderBytes together', function () {
       const opts = buildAgentOptions({ readTimeoutMillis: 2000, maxResponseHeaderBytes: 8192 });
       assert.strictEqual(opts.bodyTimeout, 2000);
+      assert.strictEqual(opts.headersTimeout, 2000);
       assert.strictEqual(opts.maxHeaderSize, 8192);
     });
 

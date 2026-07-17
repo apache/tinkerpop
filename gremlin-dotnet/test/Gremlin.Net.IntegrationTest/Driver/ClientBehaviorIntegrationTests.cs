@@ -245,6 +245,31 @@ namespace Gremlin.Net.IntegrationTest.Driver
         }
 
         [Fact]
+        public async Task ShouldTimeoutWhenServerNeverRespondsUsingReadTimeout()
+        {
+            SkipIfServerUnavailable();
+
+            // A short ReadTimeout must bound the wait for the initial server response even
+            // when the caller supplies no cancellation token.
+            var settings = new ConnectionSettings { ReadTimeout = TimeSpan.FromSeconds(2) };
+            using var timeoutClient = new GremlinClient(
+                new GremlinServer(Host, SocketServerConstants.Port), connectionSettings: settings);
+
+            var ex = await Assert.ThrowsAsync<TimeoutException>(async () =>
+            {
+                var resultSet = await timeoutClient.SubmitAsync<dynamic>(
+                    SocketServerConstants.GremlinNoResponse);
+                await resultSet.ToListAsync();
+            });
+            Assert.Contains("waiting for the initial server response", ex.Message);
+
+            // Recovery with main client
+            var resultSet = await _client!.SubmitAsync<dynamic>(SocketServerConstants.GremlinSingleVertex);
+            var results = await resultSet.ToListAsync();
+            Assert.Single(results);
+        }
+
+        [Fact]
         public async Task ShouldHandleAsyncRequestsDuringConnectionClose()
         {
             SkipIfServerUnavailable();
