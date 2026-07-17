@@ -554,10 +554,6 @@ func ConvertParametersToString(params map[string]interface{}) string {
 	return sb.String()
 }
 
-func (gl *GremlinLang) AddG(g string) {
-	gl.parameters["g"] = g
-}
-
 func (gl *GremlinLang) AddSource(name string, arguments ...interface{}) {
 	if (name == "withStrategies" || name == "withoutStrategies") && len(arguments) != 0 {
 		args := gl.buildStrategyArgs(arguments...)

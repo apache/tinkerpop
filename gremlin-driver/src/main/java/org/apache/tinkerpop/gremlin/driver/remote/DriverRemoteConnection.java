@@ -240,7 +240,6 @@ public class DriverRemoteConnection implements RemoteConnection {
         }
 
         try {
-            gremlinLang.addG(remoteTraversalSourceName);
             return client.submitAsync(gremlinLang.getGremlin(), getRequestOptions(gremlinLang))
                     .thenApply(rs -> new DriverRemoteTraversal<>(rs, client, attachElements, conf));
         } catch (Exception ex) {

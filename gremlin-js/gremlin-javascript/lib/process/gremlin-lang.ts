@@ -51,10 +51,6 @@ export default class GremlinLang {
     this.gremlin += text;
   }
 
-  addG(g: string): void {
-    this.parameters.set('g', g);
-  }
-
   getParameters(): Map<string, any> {
     return this.parameters;
   }

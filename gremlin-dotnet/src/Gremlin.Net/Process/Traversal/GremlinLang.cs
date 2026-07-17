@@ -92,15 +92,6 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
-        ///     Sets the alias for the traversal source.
-        /// </summary>
-        /// <param name="g">The alias to set.</param>
-        public void AddG(string g)
-        {
-            _parameters["g"] = g;
-        }
-
-        /// <summary>
         ///     Appends raw text to the gremlin string. Used for temporary options rendering.
         /// </summary>
         internal void Append(string text)

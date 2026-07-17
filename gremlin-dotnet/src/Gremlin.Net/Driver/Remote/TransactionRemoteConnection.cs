@@ -60,8 +60,6 @@ namespace Gremlin.Net.Driver.Remote
                 throw new InvalidOperationException("Transaction is not open");
             }
 
-            gremlinLang.AddG(_traversalSource);
-
             var requestMsg = RequestMessage.Build(gremlinLang.GetGremlin())
                 .AddG(_traversalSource);
 

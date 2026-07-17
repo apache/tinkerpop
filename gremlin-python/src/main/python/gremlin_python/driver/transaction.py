@@ -166,8 +166,6 @@ class TransactionRemoteConnection(RemoteConnection):
         if not self._transaction.is_open:
             raise Exception("Transaction is not open")
 
-        gremlin_lang.add_g(self._traversal_source)
-
         from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
         request_options = DriverRemoteConnection.extract_request_options(gremlin_lang)
         request_options['transactionId'] = self._transaction.transaction_id

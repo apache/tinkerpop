@@ -70,7 +70,6 @@ class DriverRemoteConnection(RemoteConnection):
 
     def submit(self, gremlin_lang):
         log.debug("submit with gremlin lang script '%s'", gremlin_lang.get_gremlin())
-        gremlin_lang.add_g(self._traversal_source)
         result_set = self._client.submit(gremlin_lang.get_gremlin(),
                                          request_options=self.extract_request_options(gremlin_lang))
         return RemoteTraversal(result_set)
@@ -85,7 +84,6 @@ class DriverRemoteConnection(RemoteConnection):
     def submit_async(self, gremlin_lang):
         log.debug("submit_async with gremlin lang script '%s'", gremlin_lang.get_gremlin())
         future = Future()
-        gremlin_lang.add_g(self._traversal_source)
         future_result_set = self._client.submit_async(gremlin_lang.get_gremlin(),
                                                       request_options=self.extract_request_options(gremlin_lang))
 

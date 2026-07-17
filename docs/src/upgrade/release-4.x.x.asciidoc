@@ -294,6 +294,33 @@ RequestMessage.build("g.V(x)").addParameters(params).create();
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3262[TINKERPOP-3262]
 
+==== Traversal Source Not In Parameters
+
+The traversal source alias for an HTTP request is selected with the top-level `g` request field. Query `parameters`
+are only the named values referenced by the Gremlin string. Earlier 3.8.x driver builds could place the traversal
+source alias into `bindings` as `g` (reminder: `bindings` have been renamed to `parameters`). Gremlin Server will ignore
+this "g" value in "parameters" so use the `g` field instead.
+
+Applications that construct HTTP requests directly should keep the traversal source alias out of `parameters` and set
+the top-level `g` field instead:
+
+[source,text]
+----
+// old
+{
+  "gremlin": "g.V(x)",
+  "parameters": "[\"g\":\"gmodern\",\"x\":1]"
+}
+
+// new
+{
+  "gremlin": "g.V(x)",
+  "g": "gmodern",
+  "parameters": "[\"x\":1]"
+}
+----
+
+
 ==== Standardizing GLV Connection Options
 
 TinkerPop 4.x standardizes connection option names and defaults across all five Gremlin Language Variants (Java, Python,
