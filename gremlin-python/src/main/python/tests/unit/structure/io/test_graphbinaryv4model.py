@@ -228,7 +228,7 @@ def test_out_direction():
 def test_var_bulklist():
     run_read("var-bulklist")
 
-def test_var_bulklist():
+def test_empty_bulklist():
     run_read("empty-bulklist")
 
 def test_single_byte_char():
