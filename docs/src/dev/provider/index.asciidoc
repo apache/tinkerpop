@@ -192,6 +192,12 @@ The following bullets provide some tips to consider when implementing the struct
 `Graph open(Configuration)` method where the `Configuration` is an Apache Commons class of that name. Alternatively, the
 `Graph` implementation can have the `GraphFactoryClass` annotation which specifies a class with that static
 `Graph open(Configuration)` method.
+* `Vertex`
+** Providers must opt into a specific `VertexLabelCardinality` of `ONE`, `ONE_OR_MORE`, or `ZERO_OR_MORE`. Any graph
+supporting a `VertexLabelCardinality` of `ONE_OR_MORE`, or `ZERO_OR_MORE` must use a `Vertex` implementation which
+overrides the default `Element.labels()`, `Element.addLabel(String, String...)`, `Element.dropLabel(String, String...)`,
+and `Element.dropLabels()` methods. See the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-labels[Vertex Labels] reference docs for more details.
 * `VertexProperty`
 ** This interface is both a `Property` and an `Element` as `VertexProperty` is a first-class graph element in that it
 can have its own properties (i.e. meta-properties). Even if the implementation does not intend to support
