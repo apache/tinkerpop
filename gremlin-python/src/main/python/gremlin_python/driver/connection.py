@@ -19,7 +19,7 @@ import queue
 from concurrent.futures import Future
 
 from aiohttp.client_exceptions import (
-    ClientConnectionError,
+    ClientOSError,
     ClientPayloadError,
     ServerDisconnectedError,
 )
@@ -30,8 +30,7 @@ from gremlin_python.driver.http_request import HttpRequest
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
-_TRANSPORT_ERRORS = (ClientConnectionError, ClientPayloadError, ServerDisconnectedError, asyncio.IncompleteReadError)
-
+_TRANSPORT_ERRORS = (ClientOSError, ClientPayloadError, ServerDisconnectedError, asyncio.IncompleteReadError)
 _CONNECTION_ERROR_MSG = (
     "Connection to server closed unexpectedly. "
     "Ensure that the server is still reachable and the connection has not been closed by the server or a network device."
