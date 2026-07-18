@@ -17,15 +17,26 @@
  *  under the License.
  */
 
-import { Vertex, Edge, Property, VertexProperty, Path, Tree } from '../../../lib/structure/graph.js';
-import { direction, t } from '../../../lib/process/traversal.js';
+import {
+  Graph,
+  Vertex,
+  Edge,
+  Property,
+  VertexProperty,
+  Path,
+  Tree,
+  CompositePDT,
+  PrimitivePDT
+} from '../../../lib/structure/graph.js';
+import { direction, merge, t } from '../../../lib/process/traversal.js';
 
 /*
  * Unsupported types (no map entries, .gbin files exist but types not implemented):
- * - single-byte-char, multi-byte-char (Char 0x80 not implemented)
- * - tinker-graph (Graph type not implemented)
- * - pos-bigdecimal, neg-bigdecimal (BigDecimal type not implemented)
- * - forever-duration, zero-duration (Duration type not implemented)
+ * - single-byte-char, two-byte-char, three-byte-char, four-byte-char (Char 0x80 not implemented)
+ * - pos-bigdecimal, neg-bigdecimal, zero-bigdecimal, scale-zero-bigdecimal,
+ *   negative-scale-bigdecimal, small-decimal-bigdecimal (BigDecimal type not implemented)
+ * - forever-duration, zero-duration, positive-duration, negative-duration,
+ *   nanos-duration (Duration type not implemented)
  */
 
 const model = {};
@@ -33,6 +44,13 @@ const model = {};
 // BigInteger values
 model['pos-biginteger'] = BigInt('123456789987654321123456789987654321');
 model['neg-biginteger'] = BigInt('-123456789987654321123456789987654321');
+model['zero-biginteger'] = 0n;
+model['sign-boundary-pos-biginteger'] = 128n;
+model['sign-boundary-neg-biginteger'] = -129n;
+
+// Provider-defined type values
+model['uint8-primitive-pdt'] = new PrimitivePDT('Uint8', '10');
+model['point-composite-pdt'] = new CompositePDT('Point', { x: 1, y: 2 });
 
 // Byte values (JS has no byte type, deserializes to Number)
 model['min-byte'] = -128;
@@ -64,6 +82,12 @@ model['neg-zero-float'] = -0;
 
 // Null
 model['unspecified-null'] = null;
+model['null-int'] = null;
+model['null-long'] = null;
+model['null-string'] = null;
+model['null-list'] = null;
+model['null-map'] = null;
+model['null-set'] = null;
 
 // Boolean values
 model['true-boolean'] = true;
@@ -72,6 +96,7 @@ model['false-boolean'] = false;
 // String values
 model['single-byte-string'] = 'abc';
 model['mixed-string'] = 'abc\u0391\u0392\u0393';
+model['empty-string'] = '';
 
 // List values
 model['var-bulklist'] = ['marko', 'josh', 'josh'];
@@ -111,6 +136,14 @@ model['var-type-map'] = new Map([
   ['test', 123]
 ]);
 model['empty-map'] = new Map();
+model['ordered-string-int-map'] = new Map([
+  ['delta', 4],
+  ['alpha', 1],
+  ['charlie', 3],
+  ['bravo', 2],
+  ['echo', 5],
+  ['foxtrot', 6]
+]);
 
 // Path values
 model['traversal-path'] = new Path(
@@ -118,6 +151,8 @@ model['traversal-path'] = new Path(
   [new Vertex(1, 'person'), new Vertex(10, 'software'), new Vertex(11, 'software')]
 );
 model['empty-path'] = new Path([], []);
+model['path-zero-labels'] = new Path([new Set()], ['marko']);
+model['path-multiple-labels'] = new Path([new Set(['a', 'b'])], ['marko']);
 
 // Tree values
 // tree for g.V(10).out().tree(): v[10] -> v[11]
@@ -125,6 +160,16 @@ const traversalTree = new Tree();
 traversalTree.getOrCreateChild(new Vertex(10, 'software')).getOrCreateChild(new Vertex(11, 'software'));
 model['traversal-tree'] = traversalTree;
 model['empty-tree'] = new Tree();
+const treeNullKey = new Tree();
+treeNullKey.getOrCreateChild(null);
+model['tree-null-key'] = treeNullKey;
+const treeMixedKeyTypes = new Tree();
+treeMixedKeyTypes.getOrCreateChild('name');
+treeMixedKeyTypes.getOrCreateChild(123);
+model['tree-mixed-key-types'] = treeMixedKeyTypes;
+const treeDeepNesting = new Tree();
+treeDeepNesting.getOrCreateChild('root').getOrCreateChild('branch').getOrCreateChild('leaf');
+model['tree-deep-nesting'] = treeDeepNesting;
 
 // Complex path with nested properties
 const propPathVertex = new Vertex(1, 'person', [
@@ -183,6 +228,10 @@ model['set-cardinality-vertexproperty'] = new VertexProperty(1, 'person', new Se
 // Enum values
 model['id-t'] = t.id;
 model['out-direction'] = direction.out;
+model['merge-on-create'] = merge.onCreate;
+model['merge-on-match'] = merge.onMatch;
+model['merge-out-v'] = merge.outV;
+model['merge-in-v'] = merge.inV;
 
 // Complex vertex with properties (from .gbin deserialization structure)
 const name = new VertexProperty(0, 'name', 'marko');
@@ -202,9 +251,86 @@ const santaFe = new VertexProperty(9, 'location', 'santa fe', [
   new Property('startTime', 2005)
 ]);
 model['traversal-vertex'] = new Vertex(1, 'person', [name, sanDiego, santaCruz, brussels, santaFe]);
+model['multi-label-vertex'] = new Vertex(1, ['person', 'employee']);
+model['empty-label-vertex'] = new Vertex(1, 'vertex', [], []);
 
 // DateTime values (invalid dates for overflow cases)
 model['max-offsetdatetime'] = new Date(NaN);  // Year 999999999 overflows JS Date
 model['min-offsetdatetime'] = new Date(NaN);  // Year -999999999 overflows JS Date
+
+class CrewGraphFactory {
+  static vertexProperty(id, label, value, metaProperties = []) {
+    return new VertexProperty(
+      id,
+      label,
+      value,
+      metaProperties.map(([key, metaValue]) => new Property(key, metaValue))
+    );
+  }
+
+  static addVertex(graph, id, label, propertySpecs) {
+    const vertex = new Vertex(id, label);
+    for (const spec of propertySpecs) {
+      vertex.properties.push(CrewGraphFactory.vertexProperty(spec[0], spec[1], spec[2], spec[3] || []));
+    }
+    graph.vertices.set(id, vertex);
+    return vertex;
+  }
+
+  static addEdge(graph, id, outV, label, inV, properties = []) {
+    const edge = new Edge(id, outV, label, inV, properties.map(([key, value]) => new Property(key, value)));
+    graph.edges.set(id, edge);
+    return edge;
+  }
+
+  static create() {
+    const graph = new Graph();
+    const v1 = CrewGraphFactory.addVertex(graph, 1, 'person', [
+      [0, 'name', 'marko'],
+      [6, 'location', 'san diego', [['startTime', 1997], ['endTime', 2001]]],
+      [7, 'location', 'santa cruz', [['startTime', 2001], ['endTime', 2004]]],
+      [8, 'location', 'brussels', [['startTime', 2004], ['endTime', 2005]]],
+      [9, 'location', 'santa fe', [['startTime', 2005]]]
+    ]);
+    const v7 = CrewGraphFactory.addVertex(graph, 7, 'person', [
+      [1, 'name', 'stephen'],
+      [10, 'location', 'centreville', [['startTime', 1990], ['endTime', 2000]]],
+      [11, 'location', 'dulles', [['startTime', 2000], ['endTime', 2006]]],
+      [12, 'location', 'purcellville', [['startTime', 2006]]]
+    ]);
+    const v8 = CrewGraphFactory.addVertex(graph, 8, 'person', [
+      [2, 'name', 'matthias'],
+      [13, 'location', 'bremen', [['startTime', 2004], ['endTime', 2007]]],
+      [14, 'location', 'baltimore', [['startTime', 2007], ['endTime', 2011]]],
+      [15, 'location', 'oakland', [['startTime', 2011], ['endTime', 2014]]],
+      [16, 'location', 'seattle', [['startTime', 2014]]]
+    ]);
+    const v9 = CrewGraphFactory.addVertex(graph, 9, 'person', [
+      [3, 'name', 'daniel'],
+      [17, 'location', 'spremberg', [['startTime', 1982], ['endTime', 2005]]],
+      [18, 'location', 'kaiserslautern', [['startTime', 2005], ['endTime', 2009]]],
+      [19, 'location', 'aachen', [['startTime', 2009]]]
+    ]);
+    const v10 = CrewGraphFactory.addVertex(graph, 10, 'software', [[4, 'name', 'gremlin']]);
+    const v11 = CrewGraphFactory.addVertex(graph, 11, 'software', [[5, 'name', 'tinkergraph']]);
+    CrewGraphFactory.addEdge(graph, 13, v1, 'develops', v10, [['since', 2009]]);
+    CrewGraphFactory.addEdge(graph, 14, v1, 'develops', v11, [['since', 2010]]);
+    CrewGraphFactory.addEdge(graph, 15, v1, 'uses', v10, [['skill', 4]]);
+    CrewGraphFactory.addEdge(graph, 16, v1, 'uses', v11, [['skill', 5]]);
+    CrewGraphFactory.addEdge(graph, 17, v7, 'develops', v10, [['since', 2010]]);
+    CrewGraphFactory.addEdge(graph, 18, v7, 'develops', v11, [['since', 2011]]);
+    CrewGraphFactory.addEdge(graph, 19, v7, 'uses', v10, [['skill', 5]]);
+    CrewGraphFactory.addEdge(graph, 20, v7, 'uses', v11, [['skill', 4]]);
+    CrewGraphFactory.addEdge(graph, 21, v8, 'develops', v10, [['since', 2012]]);
+    CrewGraphFactory.addEdge(graph, 22, v8, 'uses', v10, [['skill', 3]]);
+    CrewGraphFactory.addEdge(graph, 23, v8, 'uses', v11, [['skill', 3]]);
+    CrewGraphFactory.addEdge(graph, 24, v9, 'uses', v10, [['skill', 5]]);
+    CrewGraphFactory.addEdge(graph, 25, v9, 'uses', v11, [['skill', 3]]);
+    CrewGraphFactory.addEdge(graph, 26, v10, 'traverses', v11);
+    return graph;
+  }
+}
+
+model['tinker-graph'] = CrewGraphFactory.create();
 
 export { model };

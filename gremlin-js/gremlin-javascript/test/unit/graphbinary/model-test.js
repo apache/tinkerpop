@@ -124,13 +124,6 @@ function runRead(name, comparator = assertEqual) {
   });
 }
 
-// unimplemented type
-function skip(name, reason) {
-  describe(name, () => {
-    it.skip(`${reason}`, () => {});
-  });
-}
-
 function assertEqual(actual, expected) {
   if (Number.isNaN(expected) && Number.isNaN(actual)) return;
   if (Object.is(expected, -0) && Object.is(actual, -0)) return;
@@ -165,6 +158,89 @@ function setComparator(actual, expected) {
   assert.deepStrictEqual([...actual].sort(), [...expected].sort());
 }
 
+function orderedMapComparator(actual, expected) {
+  assert.instanceOf(actual, Map);
+  assert.instanceOf(expected, Map);
+  assert.deepStrictEqual([...actual.entries()], [...expected.entries()]);
+}
+
+function treeComparator(actual, expected) {
+  assert.isTrue(actual.equals(expected));
+}
+
+function pathComparator(actual, expected) {
+  assert.deepStrictEqual(actual.objects, expected.objects);
+  assert.strictEqual(actual.labels.length, expected.labels.length);
+  for (let ix = 0; ix < actual.labels.length; ix++) {
+    setComparator(actual.labels[ix], expected.labels[ix]);
+  }
+}
+
+function vertexLabelComparator(actual, expected) {
+  assert.strictEqual(actual.id, expected.id);
+  setComparator(actual.labels, expected.labels);
+}
+
+function propertyComparator(actual, expected) {
+  assert.strictEqual(actual.key, expected.key);
+  assert.deepStrictEqual(actual.value, expected.value);
+}
+
+function vertexPropertyComparator(actual, expected) {
+  assert.strictEqual(actual.id, expected.id);
+  assert.strictEqual(actual.label, expected.label);
+  assert.deepStrictEqual(actual.value, expected.value);
+  assert.strictEqual(actual.properties.length, expected.properties.length);
+  for (let ix = 0; ix < actual.properties.length; ix++) {
+    propertyComparator(actual.properties[ix], expected.properties[ix]);
+  }
+}
+
+function vertexComparator(actual, expected) {
+  assert.strictEqual(actual.id, expected.id);
+  assert.strictEqual(actual.label, expected.label);
+  setComparator(actual.labels, expected.labels);
+  assert.strictEqual(actual.properties.length, expected.properties.length);
+  for (let ix = 0; ix < actual.properties.length; ix++) {
+    vertexPropertyComparator(actual.properties[ix], expected.properties[ix]);
+  }
+}
+
+function edgeComparator(actual, expected) {
+  assert.strictEqual(actual.id, expected.id);
+  assert.strictEqual(actual.label, expected.label);
+  setComparator(actual.labels, expected.labels);
+  assert.strictEqual(actual.outV.id, expected.outV.id);
+  assert.strictEqual(actual.inV.id, expected.inV.id);
+  assert.strictEqual(actual.properties.length, expected.properties.length);
+  for (let ix = 0; ix < actual.properties.length; ix++) {
+    propertyComparator(actual.properties[ix], expected.properties[ix]);
+  }
+}
+
+function graphComparator(actual, expected) {
+  assert.strictEqual(actual.vertices.size, expected.vertices.size);
+  assert.strictEqual(actual.edges.size, expected.edges.size);
+  assert.deepStrictEqual([...actual.vertices.keys()], [...expected.vertices.keys()]);
+  assert.deepStrictEqual([...actual.edges.keys()], [...expected.edges.keys()]);
+  for (const [id, expectedVertex] of expected.vertices) {
+    vertexComparator(actual.vertices.get(id), expectedVertex);
+  }
+  for (const [id, expectedEdge] of expected.edges) {
+    edgeComparator(actual.edges.get(id), expectedEdge);
+  }
+}
+
+function primitivePdtComparator(actual, expected) {
+  assert.strictEqual(actual.name, expected.name);
+  assert.strictEqual(actual.value, expected.value);
+}
+
+function compositePdtComparator(actual, expected) {
+  assert.strictEqual(actual.name, expected.name);
+  assert.deepStrictEqual(actual.fields, expected.fields);
+}
+
 function setCardinalityComparator(actual, expected) {
   assert.strictEqual(actual.id, expected.id);
   assert.strictEqual(actual.label, expected.label);
@@ -182,9 +258,14 @@ function invalidDateComparator(actual, expected) {
 }
 
 describe('GraphBinary v4 Model Tests', () => {
-  // run mode (31 entries)
+  // run mode
   run('pos-biginteger');
   run('neg-biginteger');
+  run('zero-biginteger');
+  run('sign-boundary-pos-biginteger');
+  run('sign-boundary-neg-biginteger');
+  run('uint8-primitive-pdt', primitivePdtComparator);
+  run('point-composite-pdt', compositePdtComparator);
   run('empty-binary');
   run('str-binary');
   run('max-double');
@@ -199,6 +280,7 @@ describe('GraphBinary v4 Model Tests', () => {
   run('false-boolean');
   run('single-byte-string');
   run('mixed-string');
+  run('empty-string');
   run('var-type-list');
   run('empty-list');
   run('no-prop-edge');
@@ -207,15 +289,26 @@ describe('GraphBinary v4 Model Tests', () => {
   run('empty-map');
   run('traversal-path');
   run('empty-path');
+  run('path-zero-labels', pathComparator);
+  run('empty-tree', treeComparator);
+  run('tree-null-key', treeComparator);
+  run('tree-mixed-key-types', treeComparator);
+  run('tree-deep-nesting', treeComparator);
   run('edge-property');
   run('null-property');
   run('empty-set');
   run('no-prop-vertex');
+  run('multi-label-vertex', vertexLabelComparator);
+  run('empty-label-vertex', vertexLabelComparator);
   run('id-t');
   run('out-direction');
+  run('merge-on-create');
+  run('merge-on-match');
+  run('merge-out-v');
+  run('merge-in-v');
   run('neg-zero-double', negZeroComparator);
 
-  // runWriteRead mode (23 entries)
+  // runWriteRead mode
   runWriteRead('min-byte');
   runWriteRead('max-byte');
   runWriteRead('max-float');
@@ -239,35 +332,29 @@ describe('GraphBinary v4 Model Tests', () => {
   runWriteRead('meta-vertexproperty');
   runWriteRead('set-cardinality-vertexproperty', setCardinalityComparator);
   runWriteRead('traversal-vertex');
+  // JS deserializes safe Long values to Number, so vertex-property ids can't be re-emitted byte-exactly.
+  runWriteRead('tinker-graph', graphComparator);
+  // label set ordering isn't guaranteed after a JS object round trip.
+  runWriteRead('path-multiple-labels', pathComparator);
+  // JS preserves Map entry order, but its writer doesn't emit the ordered-map value flag.
+  runWriteRead('ordered-string-int-map', orderedMapComparator);
+  runWriteRead('traversal-tree', treeComparator); // vertex properties aren't serialized
 
-  // Tree
-  runWriteRead('traversal-tree'); // vertex properties aren't serialized
-
-  // empty-tree has no .gbin resource, so exercise an in-memory round trip
-  describe('empty-tree', () => {
-    it('in-memory round trip', async () => {
-      const empty = model['empty-tree'];
-      const roundTripped = await anySerializer.deserialize(
-        StreamReader.fromBuffer(anySerializer.serialize(empty)),
-      );
-      assert.deepStrictEqual(roundTripped, empty);
-      assert.isTrue(roundTripped.isLeaf());
-    });
-  });
-
-  // runRead mode (5 entries)
+  // runRead mode
+  // JS Number can't re-emit this as a Float.
   runRead('neg-zero-float', negZeroComparator);
+  // invalid Date models can't be serialized back.
   runRead('max-offsetdatetime', invalidDateComparator);
   runRead('min-offsetdatetime', invalidDateComparator);
+  // properties aren't serialized in JS for this path fixture.
   runRead('prop-path');
+  // this fixture has complex keys that JS can't write back byte-exactly.
   runRead('var-type-map');
-
-  // skip mode (7 entries)
-  skip('single-byte-char', 'Char type (0x80) not implemented');
-  skip('multi-byte-char', 'Char type (0x80) not implemented');
-  skip('tinker-graph', 'Graph type not implemented');
-  skip('pos-bigdecimal', 'BigDecimal type not implemented');
-  skip('neg-bigdecimal', 'BigDecimal type not implemented');
-  skip('forever-duration', 'Duration type not implemented');
-  skip('zero-duration', 'Duration type not implemented');
+  // typed nulls deserialize to plain null, so the original type can't be re-emitted.
+  runRead('null-int');
+  runRead('null-long');
+  runRead('null-string');
+  runRead('null-list');
+  runRead('null-map');
+  runRead('null-set');
 });

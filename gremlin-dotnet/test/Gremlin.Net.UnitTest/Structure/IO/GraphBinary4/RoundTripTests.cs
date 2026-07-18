@@ -22,9 +22,17 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Gremlin.Net.Structure.IO.GraphBinary4;
+using GremlinEdge = Gremlin.Net.Structure.Edge;
+using GremlinGraph = Gremlin.Net.Structure.Graph;
+using GremlinPath = Gremlin.Net.Structure.Path;
+using GremlinProperty = Gremlin.Net.Structure.Property;
+using GremlinVertex = Gremlin.Net.Structure.Vertex;
+using GremlinVertexProperty = Gremlin.Net.Structure.VertexProperty;
 using Xunit;
 
 namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
@@ -159,12 +167,170 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             };
         }
 
+        private static bool OrderedMapComparator(object? x, object? y)
+        {
+            if (x is not IDictionary<object, object?> expected || y is not IDictionary<object, object?> actual)
+                return false;
+            if (expected.Count != actual.Count)
+                return false;
+
+            return expected.Zip(actual).All(pair =>
+                Equals(pair.First.Key, pair.Second.Key) && Equals(pair.First.Value, pair.Second.Value));
+        }
+
+        private static bool PathComparator(object? x, object? y)
+        {
+            if (x is not GremlinPath expected || y is not GremlinPath actual)
+                return false;
+            if (!expected.Objects.SequenceEqual(actual.Objects) || expected.Labels.Count != actual.Labels.Count)
+                return false;
+
+            for (var ix = 0; ix < expected.Labels.Count; ix++)
+            {
+                if (!expected.Labels[ix].SetEquals(actual.Labels[ix]))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private static bool VertexLabelComparator(object? x, object? y)
+        {
+            if (x is not GremlinVertex expected || y is not GremlinVertex actual)
+                return false;
+
+            return expected.Equals(actual) &&
+                   expected.Labels.Count == actual.Labels.Count &&
+                   expected.Labels.All(actual.Labels.Contains);
+        }
+
+        private static bool GraphComparator(object? x, object? y)
+        {
+            if (x is not GremlinGraph expected || y is not GremlinGraph actual)
+                return false;
+            if (expected.Vertices.Count != actual.Vertices.Count || expected.Edges.Count != actual.Edges.Count)
+                return false;
+
+            foreach (var pair in expected.Vertices)
+            {
+                if (!actual.Vertices.TryGetValue(pair.Key, out var actualVertex) ||
+                    !VertexComparator(pair.Value, actualVertex))
+                    return false;
+            }
+
+            foreach (var pair in expected.Edges)
+            {
+                if (!actual.Edges.TryGetValue(pair.Key, out var actualEdge) || !EdgeComparator(pair.Value, actualEdge))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private static bool VertexComparator(GremlinVertex expected, GremlinVertex actual)
+        {
+            return expected.Equals(actual) &&
+                   expected.Label == actual.Label &&
+                   LabelsEqual(expected.Labels, actual.Labels) &&
+                   VertexPropertiesEqual(expected.Properties, actual.Properties);
+        }
+
+        private static bool EdgeComparator(GremlinEdge expected, GremlinEdge actual)
+        {
+            return expected.Equals(actual) &&
+                   expected.Label == actual.Label &&
+                   LabelsEqual(expected.Labels, actual.Labels) &&
+                   Equals(expected.OutV.Id, actual.OutV.Id) &&
+                   Equals(expected.InV.Id, actual.InV.Id) &&
+                   PropertiesEqual(expected.Properties, actual.Properties);
+        }
+
+        private static bool VertexPropertiesEqual(dynamic[] expected, dynamic[] actual)
+        {
+            if (expected.Length != actual.Length)
+                return false;
+
+            for (var ix = 0; ix < expected.Length; ix++)
+            {
+                if (expected[ix] is not GremlinVertexProperty expectedProperty ||
+                    actual[ix] is not GremlinVertexProperty actualProperty ||
+                    !VertexPropertyComparator(expectedProperty, actualProperty))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private static bool VertexPropertyComparator(GremlinVertexProperty expected, GremlinVertexProperty actual)
+        {
+            return expected.Equals(actual) &&
+                   expected.Label == actual.Label &&
+                   Equals(expected.Value, actual.Value) &&
+                   PropertiesEqual(expected.Properties, actual.Properties);
+        }
+
+        private static bool PropertiesEqual(dynamic[] expected, dynamic[] actual)
+        {
+            if (expected.Length != actual.Length)
+                return false;
+
+            for (var ix = 0; ix < expected.Length; ix++)
+            {
+                if (expected[ix] is not GremlinProperty expectedProperty ||
+                    actual[ix] is not GremlinProperty actualProperty ||
+                    !PropertyComparator(expectedProperty, actualProperty))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private static bool PropertyComparator(GremlinProperty expected, GremlinProperty actual)
+        {
+            return expected.Key == actual.Key && Equals(expected.Value, actual.Value);
+        }
+
+        private static bool LabelsEqual(IReadOnlySet<string> expected, IReadOnlySet<string> actual)
+        {
+            return expected.Count == actual.Count && expected.All(actual.Contains);
+        }
+
         // BigInteger tests
         [Fact]
         public Task TestPosBigInteger() => Run("pos-biginteger");
 
         [Fact]
         public Task TestNegBigInteger() => Run("neg-biginteger");
+
+        [Fact]
+        public Task TestZeroBigInteger() => Run("zero-biginteger");
+
+        [Fact]
+        public Task TestSignBoundaryPosBigInteger() => Run("sign-boundary-pos-biginteger");
+
+        [Fact]
+        public Task TestSignBoundaryNegBigInteger() => Run("sign-boundary-neg-biginteger");
+
+        // BigDecimal tests
+        [Fact]
+        public Task TestZeroBigDecimal() => Run("zero-bigdecimal");
+
+        [Fact]
+        public Task TestScaleZeroBigDecimal() => Run("scale-zero-bigdecimal");
+
+        [Fact]
+        public Task TestNegativeScaleBigDecimal() =>
+            RunWriteRead("negative-scale-bigdecimal"); // decimal doesn't preserve negative scale for byte-exact writes
+
+        [Fact]
+        public Task TestSmallDecimalBigDecimal() => Run("small-decimal-bigdecimal");
+
+        // Provider-defined type tests
+        [Fact]
+        public Task TestUint8PrimitivePdt() => Run("uint8-primitive-pdt");
+
+        [Fact]
+        public Task TestPointCompositePdt() => Run("point-composite-pdt");
 
         // Byte tests
         [Fact]
@@ -235,11 +401,32 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         public Task TestSingleByteChar() => Run("single-byte-char");
 
         [Fact]
-        public Task TestMultiByteChar() => Run("multi-byte-char");
+        public Task TestTwoByteChar() => Run("two-byte-char");
+
+        [Fact]
+        public Task TestThreeByteChar() => Run("three-byte-char");
 
         // Null test
         [Fact]
         public Task TestUnspecifiedNull() => Run("unspecified-null");
+
+        [Fact]
+        public Task TestNullInt() => RunRead("null-int"); // typed nulls deserialize to plain null
+
+        [Fact]
+        public Task TestNullLong() => RunRead("null-long"); // typed nulls deserialize to plain null
+
+        [Fact]
+        public Task TestNullString() => RunRead("null-string"); // typed nulls deserialize to plain null
+
+        [Fact]
+        public Task TestNullList() => RunRead("null-list"); // typed nulls deserialize to plain null
+
+        [Fact]
+        public Task TestNullMap() => RunRead("null-map"); // typed nulls deserialize to plain null
+
+        [Fact]
+        public Task TestNullSet() => RunRead("null-set"); // typed nulls deserialize to plain null
 
         // Boolean tests
         [Fact]
@@ -255,16 +442,29 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public Task TestMixedString() => Run("mixed-string");
 
+        [Fact]
+        public Task TestEmptyString() => Run("empty-string");
+
         // BulkSet tests (read only - BulkSet deserialized as List)
         [Fact]
-        public Task TestVarBulkList() => RunRead("var-bulklist");
+        public Task TestVarBulkList() => RunRead("var-bulklist"); // BulkList deserializes as a plain List
 
         [Fact]
-        public Task TestEmptyBulkList() => RunRead("empty-bulklist");
+        public Task TestEmptyBulkList() => RunRead("empty-bulklist"); // BulkList deserializes as a plain List
 
         // Duration tests
         [Fact]
         public Task TestZeroDuration() => Run("zero-duration");
+
+        [Fact]
+        public Task TestPositiveDuration() => Run("positive-duration");
+
+        [Fact]
+        public Task TestNegativeDuration() => Run("negative-duration");
+
+        [Fact]
+        public Task TestNanosDuration() =>
+            RunWriteRead("nanos-duration"); // TimeSpan truncates sub-tick nanoseconds for byte-exact writes
 
         // Edge tests
         [Fact]
@@ -298,12 +498,23 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public Task TestEmptyMap() => Run("empty-map");
 
+        [Fact]
+        public Task TestOrderedStringIntMap() =>
+            RunWriteRead("ordered-string-int-map", OrderedMapComparator); // writer doesn't emit the ordered-map value flag
+
         // Path tests
         [Fact]
         public Task TestTraversalPath() => RunWriteRead("traversal-path"); // properties written as null not empty list
 
         [Fact]
         public Task TestEmptyPath() => Run("empty-path");
+
+        [Fact]
+        public Task TestPathZeroLabels() => Run("path-zero-labels", PathComparator);
+
+        [Fact]
+        public Task TestPathMultipleLabels() =>
+            RunWriteRead("path-multiple-labels", PathComparator); // label set ordering isn't guaranteed
 
         [Fact]
         public Task TestPropPath() => RunWriteRead("prop-path"); // properties aren't serialized
@@ -313,19 +524,16 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         public Task TestTraversalTree() => RunWriteRead("traversal-tree"); // vertex properties aren't serialized
 
         [Fact]
-        public Task TestEmptyTree() => TestEmptyTreeRoundTrip();
+        public Task TestEmptyTree() => Run("empty-tree");
 
-        private async Task TestEmptyTreeRoundTrip()
-        {
-            // no .gbin resource exists for an empty tree, so exercise an in-memory round trip
-            var empty = (Gremlin.Net.Structure.Tree)Model.Entries["empty-tree"]!;
-            using var writeStream = new MemoryStream();
-            await Writer.WriteAsync(empty, writeStream);
-            using var readStream = new MemoryStream(writeStream.ToArray());
-            var roundTripped = await Reader.ReadAsync(readStream);
-            Assert.Equal(empty, roundTripped);
-            Assert.True(((Gremlin.Net.Structure.Tree)roundTripped!).IsLeaf());
-        }
+        [Fact]
+        public Task TestTreeNullKey() => Run("tree-null-key");
+
+        [Fact]
+        public Task TestTreeMixedKeyTypes() => Run("tree-mixed-key-types");
+
+        [Fact]
+        public Task TestTreeDeepNesting() => Run("tree-deep-nesting");
 
         // Property tests
         [Fact]
@@ -362,6 +570,17 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public Task TestTraversalVertex() => RunWriteRead("traversal-vertex"); // properties aren't serialized
 
+        [Fact]
+        public Task TestTinkerGraph() => Run("tinker-graph", GraphComparator);
+
+        [Fact]
+        public Task TestMultiLabelVertex() =>
+            RunWriteRead("multi-label-vertex", VertexLabelComparator); // Vertex equality is id-only
+
+        [Fact]
+        public Task TestEmptyLabelVertex() =>
+            RunWriteRead("empty-label-vertex", VertexLabelComparator); // Vertex equality is id-only
+
         // VertexProperty tests
         [Fact]
         public Task TestTraversalVertexProperty() => RunWriteRead("traversal-vertexproperty"); // properties aren't serialized
@@ -379,5 +598,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         // Direction enum test
         [Fact]
         public Task TestOutDirection() => Run("out-direction");
+
+        // Merge enum tests
+        [Fact]
+        public Task TestMergeOnCreate() => Run("merge-on-create");
+
+        [Fact]
+        public Task TestMergeOnMatch() => Run("merge-on-match");
+
+        [Fact]
+        public Task TestMergeOutV() => Run("merge-out-v");
+
+        [Fact]
+        public Task TestMergeInV() => Run("merge-in-v");
     }
 }

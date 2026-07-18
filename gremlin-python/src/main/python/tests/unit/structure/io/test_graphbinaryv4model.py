@@ -38,6 +38,37 @@ test_resource_directory = os.environ.get('IO_TEST_DIRECTORY', default_dir + grem
 writer = GraphBinaryWriter()
 reader = GraphBinaryReader()
 
+def decimal_cmp(x, y):
+    return x.scale == y.scale and x.unscaled_value == y.unscaled_value and x.value == y.value
+
+def vertex_label_cmp(x, y):
+    return x == y and x.labels == y.labels
+
+def property_cmp(x, y):
+    return x.key == y.key and x.value == y.value
+
+def vertex_property_cmp(x, y):
+    return x == y and x.label == y.label and x.value == y.value and \
+           len(x.properties) == len(y.properties) and \
+           all(property_cmp(xp, yp) for xp, yp in zip(x.properties, y.properties))
+
+def vertex_cmp(x, y):
+    return x == y and x.label == y.label and x.labels == y.labels and \
+           len(x.properties) == len(y.properties) and \
+           all(vertex_property_cmp(xp, yp) for xp, yp in zip(x.properties, y.properties))
+
+def edge_cmp(x, y):
+    return x == y and x.label == y.label and x.labels == y.labels and \
+           x.outV == y.outV and x.inV == y.inV and \
+           len(x.properties) == len(y.properties) and \
+           all(property_cmp(xp, yp) for xp, yp in zip(x.properties, y.properties))
+
+def graph_cmp(x, y):
+    return x.vertices.keys() == y.vertices.keys() and \
+           x.edges.keys() == y.edges.keys() and \
+           all(vertex_cmp(x.vertices[k], y.vertices[k]) for k in x.vertices.keys()) and \
+           all(edge_cmp(x.edges[k], y.edges[k]) for k in x.edges.keys())
+
 def get_entry(title):
     return model[title]
 
@@ -47,22 +78,28 @@ def read_file_by_name(resource_name):
         return bytearray(resource_file.read())
 
 def test_pos_bigdecimal():
-    def decimal_cmp(x, y):
-        if x.scale == y.scale and x.unscaled_value == y.unscaled_value and x.value == y.value:
-            return True
-        else:
-            return False
-
+    # BigDecimal writes through Python BigInteger, which may not preserve byte-exact sign padding.
     run_writeread("pos-bigdecimal", decimal_cmp)
 
 def test_neg_bigdecimal():
-    def decimal_cmp(x, y):
-        if x.scale == y.scale and x.unscaled_value == y.unscaled_value and x.value == y.value:
-            return True
-        else:
-            return False
-
+    # BigDecimal writes through Python BigInteger, which may not preserve byte-exact sign padding.
     run_writeread("neg-bigdecimal", decimal_cmp)
+
+def test_zero_bigdecimal():
+    # Use the same reduced mode as other Python BigDecimal model cases.
+    run_writeread("zero-bigdecimal", decimal_cmp)
+
+def test_scale_zero_bigdecimal():
+    # Use the same reduced mode as other Python BigDecimal model cases.
+    run_writeread("scale-zero-bigdecimal", decimal_cmp)
+
+def test_negative_scale_bigdecimal():
+    # Use the same reduced mode as other Python BigDecimal model cases.
+    run_writeread("negative-scale-bigdecimal", decimal_cmp)
+
+def test_small_decimal_bigdecimal():
+    # Use the same reduced mode as other Python BigDecimal model cases.
+    run_writeread("small-decimal-bigdecimal", decimal_cmp)
 
 def test_pos_biginteger():
     # gremlin-python adds an extra 0 byte to the value.
@@ -71,6 +108,25 @@ def test_pos_biginteger():
 def test_neg_biginteger():
     # gremlin-python adds an extra 0 byte to the value.
     run_writeread("neg-biginteger")
+
+def test_zero_biginteger():
+    # gremlin-python may add an extra sign-padding byte to the value.
+    run_writeread("zero-biginteger")
+
+def test_sign_boundary_pos_biginteger():
+    # gremlin-python may add an extra sign-padding byte to the value.
+    run_writeread("sign-boundary-pos-biginteger")
+
+def test_sign_boundary_neg_biginteger():
+    # gremlin-python can't serialize -129 because BigIntIO computes a byte length
+    # that is too small for signed two's-complement encoding.
+    run_read("sign-boundary-neg-biginteger")
+
+def test_uint8_primitive_pdt():
+    run("uint8-primitive-pdt")
+
+def test_point_composite_pdt():
+    run("point-composite-pdt")
 
 def test_min_byte():
     run("min-byte")
@@ -116,6 +172,17 @@ def test_neg_zero_double():
 def test_zero_duration():
     run("zero-duration")
 
+def test_positive_duration():
+    run("positive-duration")
+
+def test_negative_duration():
+    # timedelta.seconds normalizes negative values, so the writer can't preserve the wire value.
+    run_read("negative-duration")
+
+def test_nanos_duration():
+    # Python timedelta only preserves microseconds, not arbitrary nanoseconds.
+    run_read("nanos-duration")
+
 def test_traversal_edge():
     # properties aren't serialized in gremlin-python
     run_writeread("traversal-edge")
@@ -151,6 +218,9 @@ def test_var_type_map():
 def test_empty_map():
     run("empty-map")
 
+def test_ordered_string_int_map():
+    run("ordered-string-int-map")
+
 def test_traversal_path():
     # gremlin-python serializes/deserializes "null" for props not empty list
     run_writeread("traversal-path")
@@ -158,19 +228,29 @@ def test_traversal_path():
 def test_empty_path():
     run("empty-path")
 
+def test_path_zero_labels():
+    run("path-zero-labels")
+
+def test_path_multiple_labels():
+    # label set ordering isn't guaranteed after a Python object round trip.
+    run_writeread("path-multiple-labels")
+
 def test_traversal_tree():
     # gremlin-python doesn't serialize vertex properties, so the read tree's
     # vertices have no properties; vertex equality is by id so the model matches.
     run_writeread("traversal-tree")
 
 def test_empty_tree():
-    # no .gbin resource exists for an empty tree, so exercise an in-memory round trip
-    from gremlin_python.structure.graph import Tree
-    empty = model["empty-tree"]
-    round_tripped = reader.read_object(writer.write_object(empty))
-    assert isinstance(round_tripped, Tree)
-    assert empty == round_tripped
-    assert round_tripped.is_leaf()
+    run("empty-tree")
+
+def test_tree_null_key():
+    run("tree-null-key")
+
+def test_tree_mixed_key_types():
+    run("tree-mixed-key-types")
+
+def test_tree_deep_nesting():
+    run("tree-deep-nesting")
 
 def test_prop_path():
     # gremlin-python doesn't serialize properties
@@ -226,22 +306,56 @@ def test_out_direction():
     run("out-direction")
 
 def test_var_bulklist():
+    # BulkList is deserialized as a plain list, so the writer emits a regular List.
     run_read("var-bulklist")
 
 def test_empty_bulklist():
+    # BulkList is deserialized as a plain list, so the writer emits a regular List.
     run_read("empty-bulklist")
 
 def test_single_byte_char():
     # char is serialized as string
     run_writeread("single-byte-char")
 
-def test_multi_byte_char():
+def test_two_byte_char():
     # char is serialized as string
-    run_writeread("multi-byte-char")
+    run_writeread("two-byte-char")
+
+def test_three_byte_char():
+    # char is serialized as string
+    run_writeread("three-byte-char")
+
+def test_four_byte_char():
+    # char is serialized as string
+    run_writeread("four-byte-char")
 
 def test_unspecified_null():
     # no serializer for plain null
     run_writeread("unspecified-null")
+
+def test_null_int():
+    # typed nulls deserialize to plain None, so the original type can't be re-emitted.
+    run_read("null-int")
+
+def test_null_long():
+    # typed nulls deserialize to plain None, so the original type can't be re-emitted.
+    run_read("null-long")
+
+def test_null_string():
+    # typed nulls deserialize to plain None, so the original type can't be re-emitted.
+    run_read("null-string")
+
+def test_null_list():
+    # typed nulls deserialize to plain None, so the original type can't be re-emitted.
+    run_read("null-list")
+
+def test_null_map():
+    # typed nulls deserialize to plain None, so the original type can't be re-emitted.
+    run_read("null-map")
+
+def test_null_set():
+    # typed nulls deserialize to plain None, so the original type can't be re-emitted.
+    run_read("null-set")
 
 def test_true_boolean():
     run("true-boolean")
@@ -254,6 +368,38 @@ def test_single_byte_string():
 
 def test_mixed_string():
     run("mixed-string")
+
+def test_empty_string():
+    run("empty-string")
+
+def test_traversal_vertex():
+    # properties aren't serialized in gremlin-python
+    run_writeread("traversal-vertex")
+
+def test_multi_label_vertex():
+    # Vertex equality is id-only, so compare labels explicitly.
+    run_writeread("multi-label-vertex", vertex_label_cmp)
+
+def test_empty_label_vertex():
+    # Vertex equality is id-only, so compare labels explicitly.
+    run_writeread("empty-label-vertex", vertex_label_cmp)
+
+def test_tinker_graph():
+    # The hand-built graph is structurally equivalent, but it doesn't preserve
+    # every wire-level numeric type tag needed for byte-exact writes.
+    run_writeread("tinker-graph", graph_cmp)
+
+def test_merge_on_create():
+    run("merge-on-create")
+
+def test_merge_on_match():
+    run("merge-on-match")
+
+def test_merge_out_v():
+    run("merge-out-v")
+
+def test_merge_in_v():
+    run("merge-in-v")
 
 def run(resource_name, comparator = None):
     """

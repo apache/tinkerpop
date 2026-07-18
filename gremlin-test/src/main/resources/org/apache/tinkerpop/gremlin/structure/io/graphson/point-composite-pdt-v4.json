@@ -1,0 +1,16 @@
+{
+  "@type" : "g:CompositePdt",
+  "@value" : {
+    "type" : "Point",
+    "fields" : {
+      "@type" : "g:Map",
+      "@value" : [ "x", {
+        "@type" : "g:Int32",
+        "@value" : 1
+      }, "y", {
+        "@type" : "g:Int32",
+        "@value" : 2
+      } ]
+    }
+  }
+}

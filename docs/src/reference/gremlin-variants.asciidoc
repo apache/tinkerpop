@@ -737,6 +737,11 @@ that can be used to fulfill the `gremlingo.Set` interface if desired.
 * Go does not support ordered maps natively as the built-in `map` type does not guarantee iteration order. Traversal
 results which contain maps may not preserve original ordering when deserialized into Go's native map types.
 
+* GraphBinary `Char` values are not supported.
+
+* GraphBinary permits map keys of any supported type, including composite values such as lists. Go's native `map` type
+only supports comparable keys, so GraphBinary maps with non-comparable keys are not supported.
+
 * The `subgraph()`-step returns a detached `*Graph` data container exposing
 `Vertices map[interface{}]*Vertex` and `Edges map[interface{}]*Edge`. The result is not a live `Graph` instance:
 mutating the maps has no effect on the source graph, and it cannot be passed to `traversal().with(...)`. To
@@ -1264,6 +1269,12 @@ ensure compatibility when making requests.
 The driver streams and deserializes a response incrementally as it arrives only when `GraphBinaryMessageSerializerV4`
 is configured, which is the default. Any other `MessageSerializer`, such as a GraphSON serializer, causes the driver to
 buffer the full response body before deserializing it.
+
+[[gremlin-java-limitations]]
+=== Limitations
+
+* Java `Character` values do not support values outside the Basic Multilingual Plane, which are mainly 4-byte UTF-8
+characters. Those GraphBinary `Char` values are not supported.
 
 [[gremlin-java-gvalue]]
 === GValue Parameterization
@@ -2507,12 +2518,15 @@ unwrap('hello');    // 'hello'
 
 * JavaScript's `Number` type is an IEEE 754 double-precision float. `Float`, `Byte`, and `Short` values from the server
 are deserialized as `Number` and lose their original type information. Use `preciseNumbers: true` to preserve the
-original types — see <<gremlin-javascript-numeric-types>>.
+original types. See <<gremlin-javascript-numeric-types>>.
 * `Long` values outside the safe integer range (|n| > 2^53 - 1) are deserialized as `BigInt` to preserve precision.
 Values within the safe range are deserialized as `Number`. The same server type may produce different JavaScript types.
 * `Number.isInteger(1.0)` is `true` in JavaScript, so the driver cannot distinguish integer values from whole-number
-doubles. `BigDecimal` is not implemented. Typed wrappers (e.g. `toInt()`, `toDouble()`) can be used to control the
-exact type sent to the server — see <<gremlin-javascript-numeric-types>>.
+doubles. Typed wrappers (e.g. `toInt()`, `toDouble()`) can be used to control the exact type sent to the server. See
+<<gremlin-javascript-numeric-types>>.
+* GraphBinary `BigDecimal`, `Char`, and `Duration` values are not implemented.
+* JavaScript `Date` values do not support the extreme values of GraphBinary's `DateTime` maximum and minimum. Those
+GraphBinary `DateTime` values are not supported.
 * The driver applies GremlinLang type suffixes automatically based on value characteristics: integers within the 32-bit
 signed range are unsuffixed (Int), integers beyond that up to `Number.MAX_SAFE_INTEGER` use the `L` suffix (Long),
 non-integer numbers and integers beyond the safe range use the `D` suffix (Double), and `BigInt` values use the `N`
@@ -3144,6 +3158,8 @@ so offset date-time values at those boundaries will fail to deserialize.
 `Duration.FOREVER`) that exceed `TimeSpan.MaxValue` or `TimeSpan.MinValue` will fail to deserialize.
 * Gremlin's `BigDecimal` supports up to 33 digits of precision while C#'s `decimal` type is limited to 28-29
 significant digits, so high-precision values may lose accuracy or fail to deserialize.
+* C# `char` values do not support values outside the Basic Multilingual Plane, which are mainly 4-byte UTF-8
+characters. Those GraphBinary `Char` values are not supported.
 * C# `Dictionary` does not allow `null` keys, so `Map` results with `null` keys (e.g. from `group()` or
 `groupCount()` on a missing property) will fail during deserialization.
 

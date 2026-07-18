@@ -338,8 +338,11 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
             assertEquals("g:CompositePdt", pdtNode.get("@type").asText());
             final JsonNode value = pdtNode.get(GraphSONTokens.VALUEPROP);
             assertEquals("Point", value.get("type").asText());
-            assertEquals(1, value.get("fields").get("x").get(GraphSONTokens.VALUEPROP).intValue());
-            assertEquals(2, value.get("fields").get("y").get(GraphSONTokens.VALUEPROP).intValue());
+            final JsonNode fields = value.get("fields").get(GraphSONTokens.VALUEPROP);
+            assertEquals("x", fields.get(0).asText());
+            assertEquals(1, fields.get(1).get(GraphSONTokens.VALUEPROP).intValue());
+            assertEquals("y", fields.get(2).asText());
+            assertEquals(2, fields.get(3).get(GraphSONTokens.VALUEPROP).intValue());
         }
     }
 

@@ -20,14 +20,22 @@ package org.apache.tinkerpop.gremlin.structure.io;
 
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -48,6 +56,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,6 +70,9 @@ import static org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFacto
 
 /**
  * Defines the supported types for IO and the versions (and configurations) to which they apply and are tested.
+ *
+ * The following GraphBinary model resources aren't supported by the Java model:
+ * four-byte-char            Character cannot represent a supplementary Unicode code point as a single scalar value
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -111,6 +124,14 @@ public class Model {
         map.put(null, null);
         addCoreEntry(map, "var-type-map", "Map is redefined so that to provide the ability to allow for non-String keys, which is not possible in JSON.");
         addCoreEntry(Collections.EMPTY_MAP, "empty-map");
+        final Map<Object,Object> orderedMap = new LinkedHashMap<>();
+        orderedMap.put("delta", 4);
+        orderedMap.put("alpha", 1);
+        orderedMap.put("charlie", 3);
+        orderedMap.put("bravo", 2);
+        orderedMap.put("echo", 5);
+        orderedMap.put("foxtrot", 6);
+        addCoreEntry(orderedMap, "ordered-string-int-map");
 
         addCoreEntry(new HashSet<>(Arrays.asList(2, "person", true, null)), "var-type-set", "Allows a JSON collection to behave as a Set.");
         addCoreEntry(Collections.EMPTY_SET, "empty-set");
@@ -120,19 +141,42 @@ public class Model {
 
         addCoreEntry(Direction.OUT, "out-direction", "");
         addCoreEntry(T.id, "id-t", "");
+        addCoreEntry(Merge.onCreate, "merge-on-create", "");
+        addCoreEntry(Merge.onMatch, "merge-on-match", "");
+        addCoreEntry(Merge.outV, "merge-out-v", "");
+        addCoreEntry(Merge.inV, "merge-in-v", "");
 
         addCoreEntry('a', "single-byte-char", "");
-        addCoreEntry('\u03A9', "multi-byte-char", "");
+        addCoreEntry('\u03A9', "two-byte-char", "");
+        addCoreEntry('\u20AC', "three-byte-char", "");
 
         addEntry("Core", () -> null, "unspecified-null", "");
+        addEntry("Typed Null", () -> null, "null-int", "");
+        addEntry("Typed Null", () -> null, "null-long", "");
+        addEntry("Typed Null", () -> null, "null-string", "");
+        addEntry("Typed Null", () -> null, "null-list", "");
+        addEntry("Typed Null", () -> null, "null-map", "");
+        addEntry("Typed Null", () -> null, "null-set", "");
 
         addCoreEntry(true, "true-boolean", "");
         addCoreEntry(false, "false-boolean", "");
 
         addCoreEntry("abc", "single-byte-string", "");
         addCoreEntry("abc\u0391\u0392\u0393", "mixed-string", "");
+        addCoreEntry("", "empty-string", "");
 
         addCoreEntry(g.V(10).out().tree().next(), "traversal-tree", "");
+        addCoreEntry(new Tree<>(), "empty-tree", "");
+        final Tree<Object> nullKeyTree = new Tree<>();
+        nullKeyTree.getOrCreateChild(null);
+        addCoreEntry(nullKeyTree, "tree-null-key", "");
+        final Tree<Object> mixedKeyTree = new Tree<>();
+        mixedKeyTree.getOrCreateChild("name");
+        mixedKeyTree.getOrCreateChild(123);
+        addCoreEntry(mixedKeyTree, "tree-mixed-key-types", "");
+        final Tree<Object> deepTree = new Tree<>();
+        deepTree.getOrCreateChild("root").getOrCreateChild("branch").getOrCreateChild("leaf");
+        addCoreEntry(deepTree, "tree-deep-nesting", "");
 
         addGraphStructureEntry(graph.edges().next(), "traversal-edge", "");
         addGraphStructureEntry(DetachedFactory.detach(graph.edges().next(), false), "no-prop-edge", "");
@@ -140,6 +184,10 @@ public class Model {
         addGraphStructureEntry(detach(g.V().out().out().path().next(), false), "traversal-path", "");
         addGraphStructureEntry(EmptyPath.instance(), "empty-path", "");
         addGraphStructureEntry(detach(g.V().out().out().path().next(), true), "prop-path", "");
+        final Path zeroLabelsPath = MutablePath.make().extend("marko", Collections.emptySet());
+        addGraphStructureEntry(zeroLabelsPath, "path-zero-labels", "");
+        final Path multipleLabelsPath = MutablePath.make().extend("marko", new LinkedHashSet<>(Arrays.asList("a", "b")));
+        addGraphStructureEntry(multipleLabelsPath, "path-multiple-labels", "");
 
         addGraphStructureEntry(graph.edges().next().properties().next(), "edge-property", "");
         addGraphStructureEntry(new DetachedProperty<>("", null), "null-property", "");
@@ -148,6 +196,16 @@ public class Model {
 
         addGraphStructureEntry(graph.vertices().next(), "traversal-vertex", "");
         addGraphStructureEntry(DetachedFactory.detach(graph.vertices().next(), false), "no-prop-vertex", "");
+        final Vertex multiLabelVertex = DetachedVertex.build()
+                .setId(1)
+                .setLabels(new LinkedHashSet<>(Arrays.asList("person", "employee")))
+                .create();
+        addGraphStructureEntry(multiLabelVertex, "multi-label-vertex", "");
+        final Vertex emptyLabelVertex = DetachedVertex.build()
+                .setId(1)
+                .setLabels(Collections.emptySet())
+                .create();
+        addGraphStructureEntry(emptyLabelVertex, "empty-label-vertex", "");
 
         addGraphStructureEntry(graph.vertices().next().properties().next(), "traversal-vertexproperty", "");
         final Map<String,Object> metaProperties = new HashMap<>();
@@ -166,9 +224,22 @@ public class Model {
 
         addExtendedEntry(new BigDecimal("123.456789987654321123456789987654321"), "pos-bigdecimal", "");
         addExtendedEntry(new BigDecimal("-123.456789987654321123456789987654321"), "neg-bigdecimal", "");
+        addExtendedEntry(BigDecimal.ZERO, "zero-bigdecimal", "");
+        addExtendedEntry(new BigDecimal(new BigInteger("1234"), 0), "scale-zero-bigdecimal", "");
+        addExtendedEntry(new BigDecimal(new BigInteger("1234"), -2), "negative-scale-bigdecimal", "");
+        addExtendedEntry(new BigDecimal("12.34"), "small-decimal-bigdecimal", "");
 
         addExtendedEntry(new BigInteger("123456789987654321123456789987654321"), "pos-biginteger", "");
         addExtendedEntry(new BigInteger("-123456789987654321123456789987654321"), "neg-biginteger", "");
+        addExtendedEntry(BigInteger.ZERO, "zero-biginteger", "");
+        addExtendedEntry(BigInteger.valueOf(128), "sign-boundary-pos-biginteger", "");
+        addExtendedEntry(BigInteger.valueOf(-129), "sign-boundary-neg-biginteger", "");
+
+        addExtendedEntry(new PrimitivePDT("Uint8", "10"), "uint8-primitive-pdt", "");
+        final Map<String,Object> pointFields = new LinkedHashMap<>();
+        pointFields.put("x", 1);
+        pointFields.put("y", 2);
+        addExtendedEntry(new CompositePDT("Point", pointFields), "point-composite-pdt", "");
 
         addExtendedEntry(Byte.MAX_VALUE, "max-byte", "");
         addExtendedEntry(Byte.MIN_VALUE, "min-byte", "");
@@ -178,6 +249,9 @@ public class Model {
 
         addExtendedEntry(Duration.ZERO, "zero-duration","The following example is a zero `Duration`");
         addExtendedEntry(ChronoUnit.FOREVER.getDuration(), "forever-duration","");
+        addExtendedEntry(Duration.ofSeconds(123), "positive-duration","");
+        addExtendedEntry(Duration.ofSeconds(-123), "negative-duration","");
+        addExtendedEntry(Duration.ofSeconds(123, 456789), "nanos-duration","");
 
         addExtendedEntry(OffsetDateTime.MAX, "max-offsetdatetime", "");
         addExtendedEntry(OffsetDateTime.MIN, "min-offsetdatetime", "");

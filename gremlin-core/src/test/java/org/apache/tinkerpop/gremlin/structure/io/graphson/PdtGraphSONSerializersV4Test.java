@@ -70,15 +70,18 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
         assertEquals("Point", value.get("type").asText());
 
         final JsonNode fields = value.get("fields");
-        assertEquals("g:Int32", fields.get("x").get("@type").asText());
-        assertEquals(1, fields.get("x").get("@value").asInt());
-        assertEquals("g:Int32", fields.get("y").get("@type").asText());
-        assertEquals(2, fields.get("y").get("@value").asInt());
+        assertEquals("g:Map", fields.get("@type").asText());
+        final JsonNode x = getMapValue(fields, "x");
+        assertEquals("g:Int32", x.get("@type").asText());
+        assertEquals(1, x.get("@value").asInt());
+        final JsonNode y = getMapValue(fields, "y");
+        assertEquals("g:Int32", y.get("@type").asText());
+        assertEquals(2, y.get("@value").asInt());
     }
 
     @Test
     public void shouldDeserializeValidJson() throws Exception {
-        final String json = "{\"@type\":\"g:CompositePdt\",\"@value\":{\"type\":\"Point\",\"fields\":{\"x\":{\"@type\":\"g:Int32\",\"@value\":1},\"y\":{\"@type\":\"g:Int32\",\"@value\":2}}}}";
+        final String json = "{\"@type\":\"g:CompositePdt\",\"@value\":{\"type\":\"Point\",\"fields\":{\"@type\":\"g:Map\",\"@value\":[\"x\",{\"@type\":\"g:Int32\",\"@value\":1},\"y\",{\"@type\":\"g:Int32\",\"@value\":2}]}}}";
         final CompositePDT pdt = mapper.readValue(json, CompositePDT.class);
 
         assertEquals("Point", pdt.getName());
@@ -117,7 +120,7 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
 
         assertEquals("g:CompositePdt", node.get("@type").asText());
         final JsonNode fields = node.get("@value").get("fields");
-        final JsonNode locationNode = fields.get("location");
+        final JsonNode locationNode = getMapValue(fields, "location");
         assertEquals("g:CompositePdt", locationNode.get("@type").asText());
         assertEquals("Point", locationNode.get("@value").get("type").asText());
 
@@ -318,7 +321,7 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
         final JsonNode node = plainMapper.readTree(json);
 
         assertEquals("g:CompositePdt", node.get("@type").asText());
-        final JsonNode durNode = node.get("@value").get("fields").get("dur");
+        final JsonNode durNode = getMapValue(node.get("@value").get("fields"), "dur");
         assertEquals("g:PrimitivePdt", durNode.get("@type").asText());
         assertEquals("Duration", durNode.get("@value").get("type").asText());
         assertEquals("PT1H", durNode.get("@value").get("value").asText());
@@ -330,6 +333,16 @@ public class PdtGraphSONSerializersV4Test extends AbstractGraphSONTest {
         final PrimitivePDT nestedResult = (PrimitivePDT) result.getFields().get("dur");
         assertEquals("Duration", nestedResult.getName());
         assertEquals("PT1H", nestedResult.getValue());
+    }
+
+    private JsonNode getMapValue(final JsonNode graphsonMap, final String key) {
+        final JsonNode values = graphsonMap.get("@value");
+        for (int ix = 0; ix < values.size(); ix = ix + 2) {
+            if (key.equals(values.get(ix).asText()))
+                return values.get(ix + 1);
+        }
+
+        throw new IllegalArgumentException("Could not find key in GraphSON map: " + key);
     }
 
     // helper types for primitive PDT hydration tests

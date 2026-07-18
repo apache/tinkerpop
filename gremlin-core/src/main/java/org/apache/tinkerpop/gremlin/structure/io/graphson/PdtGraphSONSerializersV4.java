@@ -57,12 +57,7 @@ final class PdtGraphSONSerializersV4 {
             jsonGenerator.writeStartObject();
             jsonGenerator.writeStringField("type", pdt.getName());
             jsonGenerator.writeFieldName("fields");
-            jsonGenerator.writeStartObject();
-            for (final Map.Entry<String, Object> entry : pdt.getFields().entrySet()) {
-                jsonGenerator.writeFieldName(entry.getKey());
-                jsonGenerator.writeObject(entry.getValue());
-            }
-            jsonGenerator.writeEndObject();
+            jsonGenerator.writeObject(pdt.getFields());
             jsonGenerator.writeEndObject();
         }
     }
@@ -92,12 +87,7 @@ final class PdtGraphSONSerializersV4 {
                     typeName = jsonParser.getText();
                 } else if ("fields".equals(fieldName)) {
                     jsonParser.nextToken();
-                    while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
-                        final String key = jsonParser.getCurrentName();
-                        jsonParser.nextToken();
-                        final Object value = deserializationContext.readValue(jsonParser, Object.class);
-                        fields.put(key, value);
-                    }
+                    fields = deserializationContext.readValue(jsonParser, Map.class);
                 }
             }
 

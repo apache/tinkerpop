@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
@@ -33,12 +34,12 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
     /// Defines the supported types for GraphBinary 4.0 IO and provides test entries for round-trip testing.
     /// 
     /// The following models aren't supported:
-    /// tinker-graph              Graph type not implemented
     /// max-offsetdatetime        DateTimeOffset.MaxValue exceeds serialization range
     /// min-offsetdatetime        DateTimeOffset.MinValue exceeds serialization range
     /// forever-duration          TimeSpan cannot represent Duration.FOREVER
     /// pos-bigdecimal            Java BigDecimal precision (33 digits) exceeds C# decimal (28-29 digits)
     /// neg-bigdecimal            Java BigDecimal precision (33 digits) exceeds C# decimal (28-29 digits)
+    /// four-byte-char            C# char cannot represent a supplementary Unicode code point as a single scalar value
     /// var-type-map              Dictionary doesn't support null key
     /// </summary>
     public static class Model
@@ -70,11 +71,50 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             return tree;
         }
 
+        private static Tree BuildNullKeyTree()
+        {
+            var tree = new Tree();
+            tree.GetOrCreateChild(null);
+            return tree;
+        }
+
+        private static Tree BuildMixedKeyTypesTree()
+        {
+            var tree = new Tree();
+            tree.GetOrCreateChild("name");
+            tree.GetOrCreateChild(123);
+            return tree;
+        }
+
+        private static Tree BuildDeepNestingTree()
+        {
+            var tree = new Tree();
+            tree.GetOrCreateChild("root").GetOrCreateChild("branch").GetOrCreateChild("leaf");
+            return tree;
+        }
+
         public static Dictionary<string, object?> Entries { get; } = new()
         {
+            // BigDecimal
+            ["zero-bigdecimal"] = 0m,
+            ["scale-zero-bigdecimal"] = 1234m,
+            ["negative-scale-bigdecimal"] = 123400m,
+            ["small-decimal-bigdecimal"] = 12.34m,
+
             // BigInteger
             ["pos-biginteger"] = BigInteger.Parse("123456789987654321123456789987654321"),
             ["neg-biginteger"] = BigInteger.Parse("-123456789987654321123456789987654321"),
+            ["zero-biginteger"] = BigInteger.Zero,
+            ["sign-boundary-pos-biginteger"] = new BigInteger(128),
+            ["sign-boundary-neg-biginteger"] = new BigInteger(-129),
+
+            // Provider-defined types
+            ["uint8-primitive-pdt"] = new PrimitivePDT("Uint8", "10"),
+            ["point-composite-pdt"] = new CompositePDT("Point", new Dictionary<string, object?>
+            {
+                { "x", 1 },
+                { "y", 2 },
+            }),
             
             // Byte (sbyte in C#)
             ["min-byte"] = sbyte.MinValue,  // -128
@@ -108,10 +148,17 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             
             // Char
             ["single-byte-char"] = 'a',
-            ["multi-byte-char"] = '\u03A9',  // Greek capital letter Omega
+            ["two-byte-char"] = '\u03A9',  // Greek capital letter Omega
+            ["three-byte-char"] = '\u20AC',
             
             // Null
             ["unspecified-null"] = null,
+            ["null-int"] = null,
+            ["null-long"] = null,
+            ["null-string"] = null,
+            ["null-list"] = null,
+            ["null-map"] = null,
+            ["null-set"] = null,
             
             // Boolean
             ["true-boolean"] = true,
@@ -120,6 +167,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             // String
             ["single-byte-string"] = "abc",
             ["mixed-string"] = "abc\u0391\u0392\u0393",  // abc + Greek letters Alpha, Beta, Gamma
+            ["empty-string"] = "",
             
             // BulkSet (represented as List with duplicates)
             ["var-bulklist"] = new List<object?> { "marko", "josh", "josh" },
@@ -127,11 +175,15 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             
             // Duration (TimeSpan)
             ["zero-duration"] = TimeSpan.Zero,
+            ["positive-duration"] = TimeSpan.FromSeconds(123),
+            ["negative-duration"] = TimeSpan.FromSeconds(-123),
+            ["nanos-duration"] = TimeSpan.FromSeconds(123) + TimeSpan.FromTicks(4567),
             
             // Edge
             ["traversal-edge"] = new Edge(13, new Vertex(1, "person"), "develops", new Vertex(10, "software"),
                 new dynamic[] { SinceProperty }),
             ["no-prop-edge"] = new Edge(13, new Vertex(1, "person"), "develops", new Vertex(10, "software")),
+            ["tinker-graph"] = CrewGraphFactory.Create(),
             
             // Int
             ["max-int"] = int.MaxValue,
@@ -154,16 +206,34 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
                 // Note: null key not supported in C# Dictionary
             },
             ["empty-map"] = new Dictionary<object, object?>(),
+            ["ordered-string-int-map"] = new Dictionary<object, object?>
+            {
+                { "delta", 4 },
+                { "alpha", 1 },
+                { "charlie", 3 },
+                { "bravo", 2 },
+                { "echo", 5 },
+                { "foxtrot", 6 },
+            },
             
             // Path
             ["traversal-path"] = new Path(
                 new List<ISet<string>> { new HashSet<string>(), new HashSet<string>(), new HashSet<string>() },
                 new List<object?> { new Vertex(1, "person"), new Vertex(10, "software"), new Vertex(11, "software") }),
             ["empty-path"] = new Path(new List<ISet<string>>(), new List<object?>()),
+            ["path-zero-labels"] = new Path(
+                new List<ISet<string>> { new HashSet<string>() },
+                new List<object?> { "marko" }),
+            ["path-multiple-labels"] = new Path(
+                new List<ISet<string>> { new HashSet<string> { "a", "b" } },
+                new List<object?> { "marko" }),
 
             // Tree
             ["traversal-tree"] = BuildTraversalTree(),
             ["empty-tree"] = new Tree(),
+            ["tree-null-key"] = BuildNullKeyTree(),
+            ["tree-mixed-key-types"] = BuildMixedKeyTypesTree(),
+            ["tree-deep-nesting"] = BuildDeepNestingTree(),
 
             ["prop-path"] = new Path(
                 new List<ISet<string>> { new HashSet<string>(), new HashSet<string>(), new HashSet<string>() },
@@ -199,6 +269,8 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             
             // Vertex
             ["no-prop-vertex"] = new Vertex(1, "person"),
+            ["multi-label-vertex"] = new Vertex(1, "person", labels: new[] { "person", "employee" }),
+            ["empty-label-vertex"] = new Vertex(1, "", labels: Array.Empty<string>()),
             ["traversal-vertex"] = new Vertex(1, "person", new dynamic[]
             {
                 new Property("name", NameMarko, null),
@@ -217,6 +289,92 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             
             // Direction enum
             ["out-direction"] = Direction.Out,
+
+            // Merge enum
+            ["merge-on-create"] = Merge.OnCreate,
+            ["merge-on-match"] = Merge.OnMatch,
+            ["merge-out-v"] = Merge.OutV,
+            ["merge-in-v"] = Merge.InV,
         };
+
+        private static class CrewGraphFactory
+        {
+            public static Graph Create()
+            {
+                var graph = new Graph();
+                var v1 = AddVertex(graph, 1, "person",
+                    Vp(0L, "name", "marko"),
+                    Vp(6L, "location", "san diego", new Property("startTime", 1997, null),
+                        new Property("endTime", 2001, null)),
+                    Vp(7L, "location", "santa cruz", new Property("startTime", 2001, null),
+                        new Property("endTime", 2004, null)),
+                    Vp(8L, "location", "brussels", new Property("startTime", 2004, null),
+                        new Property("endTime", 2005, null)),
+                    Vp(9L, "location", "santa fe", new Property("startTime", 2005, null)));
+                var v7 = AddVertex(graph, 7, "person",
+                    Vp(1L, "name", "stephen"),
+                    Vp(10L, "location", "centreville", new Property("startTime", 1990, null),
+                        new Property("endTime", 2000, null)),
+                    Vp(11L, "location", "dulles", new Property("startTime", 2000, null),
+                        new Property("endTime", 2006, null)),
+                    Vp(12L, "location", "purcellville", new Property("startTime", 2006, null)));
+                var v8 = AddVertex(graph, 8, "person",
+                    Vp(2L, "name", "matthias"),
+                    Vp(13L, "location", "bremen", new Property("startTime", 2004, null),
+                        new Property("endTime", 2007, null)),
+                    Vp(14L, "location", "baltimore", new Property("startTime", 2007, null),
+                        new Property("endTime", 2011, null)),
+                    Vp(15L, "location", "oakland", new Property("startTime", 2011, null),
+                        new Property("endTime", 2014, null)),
+                    Vp(16L, "location", "seattle", new Property("startTime", 2014, null)));
+                var v9 = AddVertex(graph, 9, "person",
+                    Vp(3L, "name", "daniel"),
+                    Vp(17L, "location", "spremberg", new Property("startTime", 1982, null),
+                        new Property("endTime", 2005, null)),
+                    Vp(18L, "location", "kaiserslautern", new Property("startTime", 2005, null),
+                        new Property("endTime", 2009, null)),
+                    Vp(19L, "location", "aachen", new Property("startTime", 2009, null)));
+                var v10 = AddVertex(graph, 10, "software", Vp(4L, "name", "gremlin"));
+                var v11 = AddVertex(graph, 11, "software", Vp(5L, "name", "tinkergraph"));
+
+                AddEdge(graph, 13, v1, "develops", v10, new Property("since", 2009, null));
+                AddEdge(graph, 14, v1, "develops", v11, new Property("since", 2010, null));
+                AddEdge(graph, 15, v1, "uses", v10, new Property("skill", 4, null));
+                AddEdge(graph, 16, v1, "uses", v11, new Property("skill", 5, null));
+                AddEdge(graph, 17, v7, "develops", v10, new Property("since", 2010, null));
+                AddEdge(graph, 18, v7, "develops", v11, new Property("since", 2011, null));
+                AddEdge(graph, 19, v7, "uses", v10, new Property("skill", 5, null));
+                AddEdge(graph, 20, v7, "uses", v11, new Property("skill", 4, null));
+                AddEdge(graph, 21, v8, "develops", v10, new Property("since", 2012, null));
+                AddEdge(graph, 22, v8, "uses", v10, new Property("skill", 3, null));
+                AddEdge(graph, 23, v8, "uses", v11, new Property("skill", 3, null));
+                AddEdge(graph, 24, v9, "uses", v10, new Property("skill", 5, null));
+                AddEdge(graph, 25, v9, "uses", v11, new Property("skill", 3, null));
+                AddEdge(graph, 26, v10, "traverses", v11);
+
+                return graph;
+            }
+
+            private static VertexProperty Vp(object id, string label, object? value, params Property[] metaProperties)
+            {
+                return new VertexProperty(id, label, value, null, metaProperties.Cast<dynamic>().ToArray());
+            }
+
+            private static Vertex AddVertex(Graph graph, object id, string label,
+                params VertexProperty[] vertexProperties)
+            {
+                var vertex = new Vertex(id, label, vertexProperties.Cast<dynamic>().ToArray());
+                graph.Vertices[id] = vertex;
+                return vertex;
+            }
+
+            private static Edge AddEdge(Graph graph, object id, Vertex outV, string label, Vertex inV,
+                params Property[] properties)
+            {
+                var edge = new Edge(id, outV, label, inV, properties.Cast<dynamic>().ToArray());
+                graph.Edges[id] = edge;
+                return edge;
+            }
+        }
     }
 }

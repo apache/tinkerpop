@@ -1,0 +1,22 @@
+{
+  "@type" : "g:Map",
+  "@value" : [ "delta", {
+    "@type" : "g:Int32",
+    "@value" : 4
+  }, "alpha", {
+    "@type" : "g:Int32",
+    "@value" : 1
+  }, "charlie", {
+    "@type" : "g:Int32",
+    "@value" : 3
+  }, "bravo", {
+    "@type" : "g:Int32",
+    "@value" : 2
+  }, "echo", {
+    "@type" : "g:Int32",
+    "@value" : 5
+  }, "foxtrot", {
+    "@type" : "g:Int32",
+    "@value" : 6
+  } ]
+}

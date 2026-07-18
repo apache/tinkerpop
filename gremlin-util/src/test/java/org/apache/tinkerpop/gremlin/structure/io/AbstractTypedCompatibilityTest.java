@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -41,6 +42,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.graphbinary.GraphBinaryCompatibilityTest;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTypedCompatibilityTest;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.CompositePDT;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.PrimitivePDT;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
@@ -72,6 +75,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -116,6 +120,57 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
+    public void shouldReadWriteZeroBigDecimal() throws Exception {
+        final String resourceName = "zero-bigdecimal";
+
+        final BigDecimal resource = findModelEntryObject(resourceName);
+        final BigDecimal fromStatic = read(readFromResource(resourceName), BigDecimal.class);
+        final BigDecimal recycled = read(write(fromStatic, BigDecimal.class, resourceName), BigDecimal.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteScaleZeroBigDecimal() throws Exception {
+        final String resourceName = "scale-zero-bigdecimal";
+
+        final BigDecimal resource = findModelEntryObject(resourceName);
+        final BigDecimal fromStatic = read(readFromResource(resourceName), BigDecimal.class);
+        final BigDecimal recycled = read(write(fromStatic, BigDecimal.class, resourceName), BigDecimal.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteNegativeScaleBigDecimal() throws Exception {
+        final String resourceName = "negative-scale-bigdecimal";
+
+        final BigDecimal resource = findModelEntryObject(resourceName);
+        final BigDecimal fromStatic = read(readFromResource(resourceName), BigDecimal.class);
+        final BigDecimal recycled = read(write(fromStatic, BigDecimal.class, resourceName), BigDecimal.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteSmallDecimalBigDecimal() throws Exception {
+        final String resourceName = "small-decimal-bigdecimal";
+
+        final BigDecimal resource = findModelEntryObject(resourceName);
+        final BigDecimal fromStatic = read(readFromResource(resourceName), BigDecimal.class);
+        final BigDecimal recycled = read(write(fromStatic, BigDecimal.class, resourceName), BigDecimal.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
     public void shouldReadWritePositiveBigInteger() throws Exception {
         final String resourceName = "pos-biginteger";
 
@@ -131,6 +186,44 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     @Test
     public void shouldReadWriteNegativeBigInteger() throws Exception {
         final String resourceName = "neg-biginteger";
+
+        final BigInteger resource = findModelEntryObject(resourceName);
+        final BigInteger fromStatic = read(readFromResource(resourceName), BigInteger.class);
+        final BigInteger recycled = read(write(fromStatic, BigInteger.class, resourceName), BigInteger.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteZeroBigInteger() throws Exception {
+        final String resourceName = "zero-biginteger";
+
+        final BigInteger resource = findModelEntryObject(resourceName);
+        final BigInteger fromStatic = read(readFromResource(resourceName), BigInteger.class);
+        final BigInteger recycled = read(write(fromStatic, BigInteger.class, resourceName), BigInteger.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteSignBoundaryPositiveBigInteger() throws Exception {
+        final String resourceName = "sign-boundary-pos-biginteger";
+
+        final BigInteger resource = findModelEntryObject(resourceName);
+        final BigInteger fromStatic = read(readFromResource(resourceName), BigInteger.class);
+        final BigInteger recycled = read(write(fromStatic, BigInteger.class, resourceName), BigInteger.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteSignBoundaryNegativeBigInteger() throws Exception {
+        final String resourceName = "sign-boundary-neg-biginteger";
 
         final BigInteger resource = findModelEntryObject(resourceName);
         final BigInteger fromStatic = read(readFromResource(resourceName), BigInteger.class);
@@ -318,6 +411,45 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     @Test
     public void shouldReadWriteForeverDuration() throws Exception {
         final String resourceName = "forever-duration";
+
+        final Duration resource = findModelEntryObject(resourceName);
+        final Duration fromStatic = read(readFromResource(resourceName), Duration.class);
+        final Duration recycled = read(write(fromStatic, Duration.class, resourceName), Duration.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWritePositiveDuration() throws Exception {
+        final String resourceName = "positive-duration";
+
+        final Duration resource = findModelEntryObject(resourceName);
+        final Duration fromStatic = read(readFromResource(resourceName), Duration.class);
+        final Duration recycled = read(write(fromStatic, Duration.class, resourceName), Duration.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteNegativeDuration() throws Exception {
+        final String resourceName = "negative-duration";
+
+        final Duration resource = findModelEntryObject(resourceName);
+        final Duration fromStatic = read(readFromResource(resourceName), Duration.class);
+        final Duration recycled = read(write(fromStatic, Duration.class, resourceName), Duration.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteNanosDuration() throws Exception {
+        final String resourceName = "nanos-duration";
 
         final Duration resource = findModelEntryObject(resourceName);
         final Duration fromStatic = read(readFromResource(resourceName), Duration.class);
@@ -559,6 +691,21 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
+    public void shouldReadWriteOrderedMap() throws Exception {
+        final String resourceName = "ordered-string-int-map";
+
+        final Map resource = findModelEntryObject(resourceName);
+        final Map fromStatic = read(readFromResource(resourceName), Map.class);
+        final Map recycled = read(write(fromStatic, Map.class, resourceName), Map.class);
+        assertThat(fromStatic instanceof LinkedHashMap, is(true));
+        assertThat(recycled instanceof LinkedHashMap, is(true));
+        assertEquals(new ArrayList<>(resource.keySet()), new ArrayList<>(fromStatic.keySet()));
+        assertEquals(new ArrayList<>(resource.keySet()), new ArrayList<>(recycled.keySet()));
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
     public void shouldReadWriteMaxOffsetDateTime() throws Exception {
         final String resourceName = "max-offsetdatetime";
 
@@ -613,6 +760,32 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     @Test
     public void shouldReadWritePathWithProperties() throws Exception {
         final String resourceName = "prop-path";
+
+        final Path resource = findModelEntryObject(resourceName);
+        final Path fromStatic = read(readFromResource(resourceName), Path.class);
+        final Path recycled = read(write(fromStatic, Path.class, resourceName), Path.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWritePathWithZeroLabels() throws Exception {
+        final String resourceName = "path-zero-labels";
+
+        final Path resource = findModelEntryObject(resourceName);
+        final Path fromStatic = read(readFromResource(resourceName), Path.class);
+        final Path recycled = read(write(fromStatic, Path.class, resourceName), Path.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWritePathWithMultipleLabels() throws Exception {
+        final String resourceName = "path-multiple-labels";
 
         final Path resource = findModelEntryObject(resourceName);
         final Path fromStatic = read(readFromResource(resourceName), Path.class);
@@ -764,6 +937,34 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
+    public void shouldReadWriteMultiLabelVertex() throws Exception {
+        final String resourceName = "multi-label-vertex";
+
+        final Vertex resource = findModelEntryObject(resourceName);
+        final Vertex fromStatic = read(readFromResource(resourceName), Vertex.class);
+        final Vertex recycled = read(write(fromStatic, Vertex.class, resourceName), Vertex.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(resource.id(), fromStatic.id());
+        assertEquals(resource.id(), recycled.id());
+        assertEquals(resource.labels(), fromStatic.labels());
+        assertEquals(resource.labels(), recycled.labels());
+    }
+
+    @Test
+    public void shouldReadWriteEmptyLabelVertex() throws Exception {
+        final String resourceName = "empty-label-vertex";
+
+        final Vertex resource = findModelEntryObject(resourceName);
+        final Vertex fromStatic = read(readFromResource(resourceName), Vertex.class);
+        final Vertex recycled = read(write(fromStatic, Vertex.class, resourceName), Vertex.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(resource.id(), fromStatic.id());
+        assertEquals(resource.id(), recycled.id());
+        assertEquals(resource.labels(), fromStatic.labels());
+        assertEquals(resource.labels(), recycled.labels());
+    }
+
+    @Test
     public void shouldReadWriteVertexProperty() throws Exception {
         final String resourceName = "traversal-vertexproperty";
 
@@ -833,6 +1034,80 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
+    public void shouldReadWriteMergeOnCreate() throws Exception {
+        final String resourceName = "merge-on-create";
+
+        final Merge resource = findModelEntryObject(resourceName);
+        final Merge fromStatic = read(readFromResource(resourceName), Merge.class);
+        final Merge recycled = read(write(fromStatic, Merge.class, resourceName), Merge.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteMergeOnMatch() throws Exception {
+        final String resourceName = "merge-on-match";
+
+        final Merge resource = findModelEntryObject(resourceName);
+        final Merge fromStatic = read(readFromResource(resourceName), Merge.class);
+        final Merge recycled = read(write(fromStatic, Merge.class, resourceName), Merge.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteMergeOutV() throws Exception {
+        final String resourceName = "merge-out-v";
+
+        final Merge resource = findModelEntryObject(resourceName);
+        final Merge fromStatic = read(readFromResource(resourceName), Merge.class);
+        final Merge recycled = read(write(fromStatic, Merge.class, resourceName), Merge.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteMergeInV() throws Exception {
+        final String resourceName = "merge-in-v";
+
+        final Merge resource = findModelEntryObject(resourceName);
+        final Merge fromStatic = read(readFromResource(resourceName), Merge.class);
+        final Merge recycled = read(write(fromStatic, Merge.class, resourceName), Merge.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWritePrimitiveProviderDefinedType() throws Exception {
+        final String resourceName = "uint8-primitive-pdt";
+
+        final PrimitivePDT resource = findModelEntryObject(resourceName);
+        final PrimitivePDT fromStatic = read(readFromResource(resourceName), PrimitivePDT.class);
+        final PrimitivePDT recycled = read(write(fromStatic, PrimitivePDT.class, resourceName), PrimitivePDT.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteCompositeProviderDefinedType() throws Exception {
+        final String resourceName = "point-composite-pdt";
+
+        final CompositePDT resource = findModelEntryObject(resourceName);
+        final CompositePDT fromStatic = read(readFromResource(resourceName), CompositePDT.class);
+        final CompositePDT recycled = read(write(fromStatic, CompositePDT.class, resourceName), CompositePDT.class);
+        assertNotSame(fromStatic, recycled);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
     public void shouldReadWriteVarBulkList() throws Exception {
         final String resourceName = "var-bulklist";
 
@@ -875,8 +1150,20 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     }
 
     @Test
-    public void shouldReadWriteMultiByteChar() throws Exception {
-        final String resourceName = "multi-byte-char";
+    public void shouldReadWriteTwoByteChar() throws Exception {
+        final String resourceName = "two-byte-char";
+
+        final Character resource = findModelEntryObject(resourceName);
+        final Character fromStatic = read(readFromResource(resourceName), Character.class);
+        final Character recycled = read(write(fromStatic, Character.class, resourceName), Character.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteThreeByteChar() throws Exception {
+        final String resourceName = "three-byte-char";
 
         final Character resource = findModelEntryObject(resourceName);
         final Character fromStatic = read(readFromResource(resourceName), Character.class);
@@ -925,6 +1212,18 @@ public abstract class AbstractTypedCompatibilityTest extends AbstractCompatibili
     @Test
     public void shouldReadWriteSingleByteString() throws Exception {
         final String resourceName = "single-byte-string";
+
+        final String resource = findModelEntryObject(resourceName);
+        final String fromStatic = read(readFromResource(resourceName), String.class);
+        final String recycled = read(write(fromStatic, String.class, resourceName), String.class);
+        assertEquals(fromStatic, recycled);
+        assertEquals(resource, fromStatic);
+        assertEquals(resource, recycled);
+    }
+
+    @Test
+    public void shouldReadWriteEmptyString() throws Exception {
+        final String resourceName = "empty-string";
 
         final String resource = findModelEntryObject(resourceName);
         final String fromStatic = read(readFromResource(resourceName), String.class);
