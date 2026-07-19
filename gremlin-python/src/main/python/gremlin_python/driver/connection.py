@@ -188,13 +188,13 @@ class Connection:
             for obj in self._response_serializer.deserialize_response_stream(stream):
                 self._result_set.stream.put_nowait(obj)
         except _TRANSPORT_ERRORS as err:
-            # Release the response to evict the dead connection from aiohttp's
-            # internal pool, ensuring subsequent requests get a fresh connection.
-            self._transport.release_response()
+            # Evict the dead connection from aiohttp's internal pool, ensuring subsequent
+            # requests get a fresh connection.
+            self._transport.evict_response()
             msg = 'Server returned an empty response body' if isinstance(err, asyncio.IncompleteReadError) and not err.partial else _CONNECTION_ERROR_MSG
             raise GremlinConnectionError(msg) from err
         except Exception:
-            self._transport.release_response()
+            self._transport.evict_response()
             raise
         finally:
             self._pool.put_nowait(self)

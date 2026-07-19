@@ -325,8 +325,10 @@ class AiohttpHTTPTransport:
         """Read the entire HTTP response body as bytes."""
         return _run_read(self._loop, self._read_timeout, self._http_req_resp.read())
 
-    def release_response(self):
-        """Release the current HTTP response, returning its connection to aiohttp's pool."""
+    def evict_response(self):
+        """Close the current HTTP response and its underlying connection, evicting it from
+        aiohttp's connection pool. Used after a transport failure so a dead/half-closed
+        connection is discarded rather than returned to the pool for reuse."""
         if self._http_req_resp is not None:
             self._http_req_resp.close()
             self._http_req_resp = None
