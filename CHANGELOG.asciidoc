@@ -27,6 +27,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from prior 3.7.x releases.
 
+* Added native-async WebSocket driver for Python: `AsyncAiohttpWSTransport`, `AsyncGremlinServerWSProtocol`, `AsyncResultSet`, `AsyncConnection`, and `AsyncClient` in `gremlin_python.driver` — enabling full asyncio usage without thread-pool wrappers.
+
 [[release-3-8-2]]
 === TinkerPop 3.8.2 (Release Date: September 1, 2026)
 
