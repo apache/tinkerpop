@@ -104,14 +104,14 @@ class AsyncAiohttpWSTransport(AbstractBaseTransport):
         async with _async_timeout(self._read_timeout):
             msg = await self._websocket.receive()
 
-        if msg.type == aiohttp.WSMsgType.close:
+        if msg.type == aiohttp.WSMsgType.CLOSE:
             await self.close()
             raise RuntimeError("Connection was closed by server.")
-        if msg.type == aiohttp.WSMsgType.closed:
+        if msg.type == aiohttp.WSMsgType.CLOSED:
             raise RuntimeError("Connection was already closed.")
-        if msg.type == aiohttp.WSMsgType.error:
+        if msg.type == aiohttp.WSMsgType.ERROR:
             raise RuntimeError("Received error on read: '" + str(msg.data) + "'")
-        if msg.type == aiohttp.WSMsgType.text:
+        if msg.type == aiohttp.WSMsgType.TEXT:
             return msg.data.strip().encode("utf-8")
         return msg.data
 
