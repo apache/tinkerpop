@@ -20,7 +20,7 @@ import asyncio
 import logging
 
 from gremlin_python.driver import protocol, request, serializer
-from gremlin_python.driver.async_connection import AsyncConnection
+from gremlin_python.driver.async_connection import AsyncConnection, InvalidatedConnectionError
 from gremlin_python.driver.async_protocol import AsyncGremlinServerWSProtocol
 from gremlin_python.driver.aiohttp.async_transport import AsyncAiohttpWSTransport
 from gremlin_python.driver.client import Client
@@ -39,7 +39,17 @@ class AsyncClient(Client):
     connection pool is an :class:`asyncio.Queue` and all submit/close
     methods are coroutines that must be awaited.
 
-    This class is intended to be used inside a running asyncio event loop::
+    Robustness features:
+
+    * Each connection runs a background WebSocket ping to prevent idle
+      disconnects (configurable via ``ping_interval``).
+    * On :class:`~gremlin_python.driver.async_connection.InvalidatedConnectionError`
+      the request is automatically retried on a fresh connection up to
+      *pool_size* times.
+    * *default_request_options* are merged into every request so options
+      like ``evaluationTimeout`` can be set once per client.
+
+    Usage::
 
         async with AsyncClient("ws://localhost:8182/gremlin", "g") as client:
             result_set = await client.submit("g.V().count()")
@@ -54,11 +64,9 @@ class AsyncClient(Client):
     protocol_factory:
         Zero-argument callable returning an
         :class:`~gremlin_python.driver.async_protocol.AsyncGremlinServerWSProtocol`.
-        A sensible default is constructed when omitted.
     transport_factory:
         Zero-argument callable returning an
         :class:`~gremlin_python.driver.aiohttp.async_transport.AsyncAiohttpWSTransport`.
-        A sensible default is constructed when omitted.
     pool_size:
         Number of concurrent WebSocket connections (default 8; forced to 1
         in session mode).
@@ -75,11 +83,15 @@ class AsyncClient(Client):
         Session UUID string to enable server-side sessions.
     enable_user_agent_on_connect:
         Send the driver user-agent header (default ``True``).
+    ping_interval:
+        Seconds between WebSocket keepalive pings (default 60, 0 to disable).
+    default_request_options:
+        Dict of request options merged into every request
+        (e.g. ``{"evaluationTimeout": 30000}``).  Per-request options take
+        precedence over defaults.
     **transport_kwargs:
         Extra keyword arguments forwarded to the default
-        :class:`~gremlin_python.driver.aiohttp.async_transport.AsyncAiohttpWSTransport`
-        constructor (e.g. ``read_timeout``, ``write_timeout``,
-        ``max_content_length``, ``ssl``).
+        :class:`~gremlin_python.driver.aiohttp.async_transport.AsyncAiohttpWSTransport`.
     """
 
     def __init__(
@@ -89,7 +101,7 @@ class AsyncClient(Client):
         protocol_factory=None,
         transport_factory=None,
         pool_size=None,
-        max_workers=None,  # noqa: ARG002 – accepted but not used (no thread pool)
+        max_workers=None,  # accepted but unused — no thread pool
         message_serializer=None,
         username="",
         password="",
@@ -97,18 +109,22 @@ class AsyncClient(Client):
         headers=None,
         session=None,
         enable_user_agent_on_connect=True,
+        ping_interval=60,
+        default_request_options=None,
         **transport_kwargs,
     ):
         log.info("Creating AsyncClient with url '%s'", url)
 
-        # Do NOT call super().__init__() – Client.__init__ creates a
+        # Do NOT call super().__init__() — Client.__init__ creates a
         # ThreadPoolExecutor and a threading queue, neither of which we want.
         self._closed = False
         self._url = url
         self._headers = headers
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         self._traversal_source = traversal_source
-        self._executor = None  # no thread pool; property exists on Client
+        self._executor = None  # no thread pool; attribute expected by Client
+        self._ping_interval = ping_interval
+        self._default_request_options = default_request_options or {}
 
         if "max_content_length" not in transport_kwargs:
             transport_kwargs["max_content_length"] = 10 * 1024 * 1024
@@ -149,7 +165,6 @@ class AsyncClient(Client):
             pool_size = 8
         self._pool_size = pool_size
 
-        # asyncio.Queue instead of queue.Queue – no blocking get()
         self._pool = asyncio.Queue()
         self._fill_pool()
 
@@ -164,10 +179,11 @@ class AsyncClient(Client):
             self._traversal_source,
             proto,
             self._transport_factory,
-            None,  # executor – not used by AsyncConnection
+            None,
             self._pool,
             headers=self._headers,
             enable_user_agent_on_connect=self._enable_user_agent_on_connect,
+            ping_interval=self._ping_interval,
         )
 
     # ------------------------------------------------------------------
@@ -184,8 +200,7 @@ class AsyncClient(Client):
         conns = []
         while not self._pool.empty():
             conns.append(self._pool.get_nowait())
-        for conn in conns:
-            await conn.close()
+        await asyncio.gather(*(conn.close() for conn in conns), return_exceptions=True)
         self._closed = True
 
     async def _close_session(self):
@@ -212,11 +227,28 @@ class AsyncClient(Client):
         await self.close()
 
     # ------------------------------------------------------------------
-    # Submit
+    # Submit (with retry)
     # ------------------------------------------------------------------
 
-    async def submit_async(self, message, bindings=None, request_options=None):
+    async def submit(self, message, bindings=None, request_options=None):
         """Submit *message* and return an :class:`~gremlin_python.driver.async_resultset.AsyncResultSet`.
+
+        Retries automatically up to *pool_size* times when a connection is
+        invalidated mid-request due to a network reset.
+        """
+        last_error = None
+        for _ in range(self._pool_size):
+            try:
+                return await self.submit_async(
+                    message, bindings=bindings, request_options=request_options
+                )
+            except InvalidatedConnectionError as exc:
+                log.warning("Connection invalidated, retrying: %s", exc.__cause__)
+                last_error = exc.__cause__
+        raise last_error or InvalidatedConnectionError("All retry attempts exhausted")
+
+    async def submit_async(self, message, bindings=None, request_options=None):
+        """Submit *message* without retry and return an :class:`~gremlin_python.driver.async_resultset.AsyncResultSet`.
 
         Returns before all results have arrived; the result set can be
         iterated asynchronously (``async for``) or consumed via
@@ -225,7 +257,6 @@ class AsyncClient(Client):
         if self.is_closed():
             raise Exception("Client is closed")
 
-        log.debug("message '%s'", str(message))
         args = {"gremlin": message, "aliases": {"g": self._traversal_source}}
         processor = ""
         op = "eval"
@@ -241,24 +272,19 @@ class AsyncClient(Client):
             processor = "session"
 
         if isinstance(message, (traversal.Bytecode, str)):
-            log.debug(
-                "processor='%s', op='%s', args='%s'",
-                processor, op, str(args)
-            )
             message = request.RequestMessage(
                 processor=processor, op=op, args=args
             )
 
         conn = await self._pool.get()
-        if request_options:
+
+        # Merge default options first; per-request options win.
+        if self._default_request_options:
+            merged = {**self._default_request_options}
+            if request_options:
+                merged.update(request_options)
+            message.args.update(merged)
+        elif request_options:
             message.args.update(request_options)
+
         return await conn.write(message)
-
-    async def submit(self, message, bindings=None, request_options=None):
-        """Submit *message* and return an :class:`~gremlin_python.driver.async_resultset.AsyncResultSet`.
-
-        Thin wrapper around :meth:`submit_async`.
-        """
-        return await self.submit_async(
-            message, bindings=bindings, request_options=request_options
-        )
