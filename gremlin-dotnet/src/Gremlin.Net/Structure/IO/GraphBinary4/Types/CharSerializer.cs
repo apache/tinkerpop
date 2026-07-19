@@ -78,7 +78,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
             {
                 bytes = new byte[byteLength];
                 bytes[0] = firstByte;
-                await stream.ReadAsync(bytes, 1, byteLength - 1, cancellationToken).ConfigureAwait(false);
+                await stream.ReadExactlyAsync(bytes, 1, byteLength - 1, cancellationToken).ConfigureAwait(false);
             }
 
             return Encoding.UTF8.GetChars(bytes)[0];
