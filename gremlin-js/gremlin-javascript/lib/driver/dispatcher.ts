@@ -29,7 +29,7 @@ export const DEFAULT_KEEP_ALIVE_TIME = 30000;
 export type DispatcherOptions = {
   /** Max concurrent connections per origin. Defaults to {@link DEFAULT_MAX_CONNECTIONS}. */
   maxConnections?: number;
-  /** Idle-read (body) timeout in ms. Maps to undici `bodyTimeout`. */
+  /** Read timeout in ms. Maps to undici `headersTimeout` (wait for first response byte) and `bodyTimeout` (idle between body chunks). */
   readTimeoutMillis?: number;
   /** Max response header size in bytes. Maps to undici `maxHeaderSize`. */
   maxResponseHeaderBytes?: number;
@@ -84,6 +84,7 @@ export function buildAgentOptions(options: DispatcherOptions = {}): Agent.Option
   // Connect/idle timeouts are intentionally left to undici defaults (the GLV spec marks the JS
   // connect/idle timeout as N/A), not exposed as driver options.
   if (options.readTimeoutMillis !== undefined) {
+    agentOptions.headersTimeout = options.readTimeoutMillis;
     agentOptions.bodyTimeout = options.readTimeoutMillis;
   }
   if (options.maxResponseHeaderBytes !== undefined) {

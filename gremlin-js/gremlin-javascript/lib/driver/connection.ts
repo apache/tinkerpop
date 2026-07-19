@@ -57,7 +57,7 @@ export type ConnectionOptions = {
   enableUserAgentOnConnect?: boolean;
   /** Maximum number of concurrent connections per origin. Defaults to 128. */
   maxConnections?: number;
-  /** Idle-read (body) timeout in milliseconds, applied to the default dispatcher. */
+  /** Read timeout in ms, applied to the default dispatcher. Maps to undici `headersTimeout` (wait for first response byte) and `bodyTimeout` (idle between body chunks). */
   readTimeoutMillis?: number;
   /** Maximum size of the response headers in bytes, applied to the default dispatcher. */
   maxResponseHeaderBytes?: number;

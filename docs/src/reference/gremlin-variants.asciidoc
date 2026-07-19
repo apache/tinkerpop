@@ -289,7 +289,7 @@ can be passed to the `NewClient` or `NewDriverRemoteConnection` functions as con
 |MaxIdleConnections | Maximum number of idle (keep-alive) connections in the pool. |8
 |IdleTimeoutMillis | How long in milliseconds idle connections remain in the pool before being closed. Also settable as `IdleTimeout` (a `time.Duration`); set only one. |180000
 |KeepAliveTimeMillis | Idle time in milliseconds before TCP keep-alive probes begin. Also settable as `KeepAliveTime` (a `time.Duration`); set only one. |30000
-|ReadTimeoutMillis | Idle-read timeout in milliseconds reset on each read of the response body. Set to `0` to disable. Also settable as `ReadTimeout` (a `time.Duration`); set only one. |0
+|ReadTimeoutMillis | Idle-read timeout in milliseconds. Bounds the wait for the initial server response and the idle time between response chunks, resetting per chunk. It is not a whole-request deadline. Set to `0` to disable. Also settable as `ReadTimeout` (a `time.Duration`); set only one. |0
 |Compression |The wire compression negotiated with the server (`gremlingo.CompressionNone` or `gremlingo.CompressionDeflate`). |gremlingo.CompressionDeflate
 |BatchSize |The connection-level default batch size used when a request does not specify one. |64
 |BulkResults |Connection-level default for `bulkResults`, applied to every request unless overridden per-request. The `DriverRemoteConnection` traversal path defaults to `true` regardless of this setting. |false
@@ -307,8 +307,8 @@ Serialization is not configurable in Gremlin-Go. Requests are always serialized 
 deserialized as GraphBinary. A request body encoding other than JSON can only be produced through a
 <<gremlin-go-interceptors,request interceptor>>.
 
-Note that no driver timeout bounds the *total* duration of a request once it is under way. `ReadTimeout` only bounds
-the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `ReadTimeout` bounds the
+wait for the initial server response and the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
 runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
 your application around the call. Because `Submit` does not accept a `context.Context`, run it in a goroutine and
 bound it with a `select`:
@@ -1105,7 +1105,7 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.maxWaitForClose |The amount of time in milliseconds to wait for pending messages to be returned from the server before closing the connection. |3000
 |connectionPool.reconnectInterval |The amount of time in milliseconds to wait before trying to reconnect to a dead host. |1000
 |connectionPool.batchSize |The default value for the per-request batch size used when a request does not specify one. |64
-|connectionPool.readTimeoutMillis |Idle-read timeout in milliseconds that bounds the time between inbound response chunks. Set to `0` to disable. On `Cluster.Builder` also settable as `readTimeout(Duration)`. |0
+|connectionPool.readTimeoutMillis |Idle-read timeout in milliseconds. Bounds the wait for the initial server response and the idle time between response chunks, resetting per chunk. It is not a whole-request deadline. Set to `0` to disable. On `Cluster.Builder` also settable as `readTimeout(Duration)`. |0
 |connectionPool.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
 |connectionPool.sslEnabledProtocols |The list of SSL protocols to support for SSL connections. If specified, only the protocols that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
 |connectionPool.sslSkipCertValidation |Configures the `TrustManager` to trust all certs without any validation. Should not be used in production.|false
@@ -1622,8 +1622,8 @@ Responses are now streamed rather than buffered to a fixed size, so this client-
 responses are causing timeouts, increase the `readTimeout` on the driver and consider applying server-side limits
 (such as result iteration or serialization limits) to constrain the size of responses being returned.
 
-Note that no driver timeout bounds the *total* duration of a request once it is under way. `readTimeout` only bounds
-the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `readTimeout` bounds the
+wait for the initial server response and the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
 runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
 your application around the asynchronous API, for example by wrapping a `CompletableFuture` with a timeout:
 
@@ -2022,7 +2022,7 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options |Object |The connection options. |{}
 |options.traversalSource |String |The name of the remote `GraphTraversalSource`. |'g'
 |options.maxConnections |Number |Caps the number of concurrent connections per origin on the default dispatcher. |128
-|options.readTimeoutMillis |Number |A per-read idle timeout in milliseconds (undici `bodyTimeout`). It resets per chunk, so it is safe for streaming. |runtime default
+|options.readTimeoutMillis |Number |Idle-read timeout in milliseconds. Bounds the wait for the initial server response and the idle time between response chunks, resetting per chunk. It is not a whole-request deadline. Maps to undici `headersTimeout` and `bodyTimeout`. |runtime default
 |options.maxResponseHeaderBytes |Number |The maximum size of the response headers in bytes (undici `maxHeaderSize`). |runtime default
 |options.keepAliveTimeMillis |Number |Idle time in milliseconds before TCP keep-alive probes begin. Enables `SO_KEEPALIVE` on the socket. Set to `0` to disable. |30000
 |options.proxy |String |An HTTP proxy URI. When set, requests are routed through an undici `ProxyAgent`. |undefined
@@ -2042,8 +2042,8 @@ TLS is configured through the Node.js/undici runtime (for example the `NODE_EXTR
 `NODE_TLS_REJECT_UNAUTHORIZED` environment variables), not through driver options. Custom headers are set via an
 interceptor rather than a `headers` option, for example `interceptors: (req) => { req.headers['X-Custom'] = 'value'; }`.
 
-Note that no driver timeout bounds the *total* duration of a request once it is under way. `readTimeoutMillis` only bounds
-the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `readTimeoutMillis` bounds the
+wait for the initial server response and the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
 runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
 your application around the call by racing the `submit` promise against a timeout:
 
@@ -2738,7 +2738,7 @@ constructor:
 |BatchSize |The connection-level default batch size used to fill the per-request batch size when it is unset. |64
 |Ssl |The `SslClientAuthenticationOptions` used for HTTPS connections (client certificates, custom CA, protocols, etc.). `SkipCertificateValidation` is applied to an internal copy of these options rather than mutating the object you provide. |`null`
 |MaxResponseHeaderBytes |The maximum allowed size, in bytes, of the response headers. `0` leaves the handler default unchanged (converted internally to the handler's native kilobyte unit). |0
-|ReadTimeoutMillis |The idle-read timeout in milliseconds applied to each individual read of the response stream. It resets per chunk. `0` (the default) disables it. Also settable as `ReadTimeout` (a `TimeSpan`; `Timeout.InfiniteTimeSpan` disables). |0
+|ReadTimeoutMillis |Idle-read timeout in milliseconds. Bounds the wait for the initial server response and the idle time between response chunks, resetting per chunk. It is not a whole-request deadline. `0` (the default) disables it. Also settable as `ReadTimeout` (a `TimeSpan`; `Timeout.InfiniteTimeSpan` disables). |0
 |Proxy |The `IWebProxy` used for connections. |`null`
 |EnableUserAgentOnConnect |Enables sending a user agent to the server on requests.
 More details can be found in provider docs
@@ -2747,8 +2747,9 @@ link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provide
 |SkipCertificateValidation |Whether to skip SSL certificate validation. Only use for testing with self-signed certificates. When `Ssl` is also provided, the accept-all callback is set on an internal copy so the supplied options object is never mutated. |false
 |=========================================================
 
-Note that no driver timeout bounds the *total* duration of a request once it is under way. `ReadTimeout` only bounds
-the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `ReadTimeout` bounds
+the wait for the initial server response and the gap between response chunks, so a response that keeps producing
+chunks will not time out no matter how long it
 runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
 your application by passing a cancellation token that cancels after the deadline:
 
@@ -3450,7 +3451,7 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 |auth |An authentication interceptor. Always appended to the end of the interceptor list so it runs last. |`None`
 |max_connections |The maximum number of connections used by the pool. |128
 |connect_timeout_millis |Timeout in milliseconds for establishing the connection (TCP connect plus TLS handshake). Also settable as `connect_timeout` (in seconds). |5000
-|read_timeout_millis |Per-read idle timeout in milliseconds applied while streaming a response. Resets per chunk. Also settable as `read_timeout` (in seconds). |`None`
+|read_timeout_millis |Idle-read timeout in milliseconds. Bounds the wait for the initial server response and the idle time between response chunks, resetting per chunk. It is not a whole-request deadline. Maps to aiohttp `sock_read`. Also settable as `read_timeout` (in seconds). |`None`
 |write_timeout |Timeout in seconds for writing a request to the transport. |`None`
 |ssl |An `ssl.SSLContext` used for TLS connections. |`None`
 |idle_timeout_millis |How long in milliseconds an idle connection remains in the pool before being closed. Also settable as `idle_timeout` (in seconds). |180000
@@ -3479,8 +3480,8 @@ g = traversal().with_(
                          read_timeout=30))
 ----
 
-Note that no driver timeout bounds the *total* duration of a request once it is under way. `read_timeout` only bounds
-the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
+Note that no driver timeout bounds the *total* duration of a request once it is under way. `read_timeout` bounds the
+wait for the initial server response and the gap between response chunks, so a response that keeps producing chunks will not time out no matter how long it
 runs overall, and there is no client-side "overall" request timeout. If you need an absolute deadline, impose it in
 your application. `submit_async()` and `ResultSet.all()` return `concurrent.futures.Future` objects, so pass a
 `timeout` to `result()`:

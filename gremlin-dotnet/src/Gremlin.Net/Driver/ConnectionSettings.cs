@@ -160,10 +160,12 @@ namespace Gremlin.Net.Driver
         public int MaxResponseHeaderBytes { get; set; } = 0;
 
         /// <summary>
-        ///     Gets or sets the idle-read timeout applied to each individual read of the response
-        ///     stream. It resets per chunk, so it is an idle-read timeout rather than a
-        ///     whole-request deadline. <see cref="System.Threading.Timeout.InfiniteTimeSpan"/>
-        ///     (the default) disables it.
+        ///     Gets or sets the read timeout. It bounds two waits: the wait for the initial server
+        ///     response (time to first byte / response headers), as a single deadline armed when the
+        ///     request is sent; and, once the response body is streaming, the idle time before each
+        ///     individual read of the stream, reset per read. It is therefore not a whole-request
+        ///     deadline and does not bound the total streaming duration once the server has begun
+        ///     responding.
         /// </summary>
         public TimeSpan ReadTimeout { get; set; } = System.Threading.Timeout.InfiniteTimeSpan;
 
@@ -171,6 +173,9 @@ namespace Gremlin.Net.Driver
         ///     Gets or sets <see cref="ReadTimeout"/> in whole milliseconds, where <c>0</c> disables it
         ///     (mapping to <see cref="System.Threading.Timeout.InfiniteTimeSpan"/>). This is the millisecond
         ///     view of the same setting; <see cref="ReadTimeout"/> is the idiomatic <see cref="TimeSpan"/> form.
+        ///     It bounds the wait for the initial server response (time to first byte / response
+        ///     headers) as well as the idle time between response body chunks, but it is not a
+        ///     whole-request deadline.
         /// </summary>
         public int ReadTimeoutMillis
         {

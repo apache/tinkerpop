@@ -117,10 +117,27 @@ describe('Client Behavior', function () {
     assert.ok(result.length > 0);
   });
 
-  it.skip('should timeout when server never responds - JS driver lacks client-side idle timeout', async function () {
-    const shortTimeoutClient = createClient({ requestTimeout: 1000 });
+  it('should timeout when server never responds', async function () {
+    const shortTimeoutClient = createClient({ readTimeoutMillis: 1000 });
     try {
-      await assert.rejects(shortTimeoutClient.submit(GREMLIN_NO_RESPONSE));
+      // undici's headersTimeout must fire well before its 300s default. The submit path does not
+      // wrap the fetch error, so it surfaces as a WHATWG `TypeError('fetch failed')` whose `cause`
+      // is undici's HeadersTimeoutError (`code: 'UND_ERR_HEADERS_TIMEOUT'`). Assert both that the
+      // rejection is fast and that it is a timeout error, so the intent is explicit.
+      const start = Date.now();
+      await assert.rejects(shortTimeoutClient.submit(GREMLIN_NO_RESPONSE), (err) => {
+        const cause = err && err.cause;
+        const code = (cause && cause.code) || err.code;
+        const message = `${(cause && cause.message) || ''} ${err.message || ''}`;
+        assert.ok(
+          code === 'UND_ERR_HEADERS_TIMEOUT' || /headers timeout|timeout|fetch failed/i.test(message),
+          `expected an undici timeout error, got: ${err.stack || err}`,
+        );
+        return true;
+      });
+      const elapsed = Date.now() - start;
+      assert.ok(elapsed < 10000, `expected timeout to fire quickly, but it took ${elapsed}ms`);
+
       const result = await shortTimeoutClient.submit(GREMLIN_SINGLE_VERTEX);
       assert.strictEqual(result.length, 1);
     } finally {
