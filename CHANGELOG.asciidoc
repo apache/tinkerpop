@@ -27,6 +27,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from prior 3.7.x releases.
 
+* Added native-async WebSocket driver for Python: `AsyncAiohttpWSTransport`, `AsyncGremlinServerWSProtocol`, `AsyncResultSet`, `AsyncConnection`, and `AsyncClient` in `gremlin_python.driver` — enabling full asyncio usage without thread-pool wrappers.
 * Enabled building and running with Java 21 and Java 25 (experimental; `spark-gremlin` excluded, as Spark 3.3.x only runs on Java 8 through 17).
 * Bumped to Groovy 4.0.32 which adds support for parsing Java 25 bytecode.
 * Bumped Hadoop to 3.4.3 (and Kerby to 2.0.3) to enable `hadoop-gremlin` to build and run on Java 25.
