@@ -537,6 +537,17 @@ public class IoDataGenerationTest {
         os.close();
     }
 
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteDEFAULTTheZooGraphAsGraphSONV4() throws IOException {
+        final OutputStream os = new FileOutputStream(new File(tempPath, "tinkerpop-zoo.json"));
+        GraphSONWriter.build().mapper(GraphSONMapper.build().version(GraphSONVersion.V4_0).create()).create()
+                .writeGraph(os, TinkerFactory.createTheZoo());
+        os.close();
+    }
+
     @Test
     public void shouldWriteSampleForGremlinServer() throws IOException {
         final Graph g = TinkerGraph.open();

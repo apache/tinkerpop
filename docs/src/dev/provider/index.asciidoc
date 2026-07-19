@@ -851,7 +851,7 @@ apply to embedded operations (i.e. running Gremlin in the same JVM as the `Graph
 
 ==== JVM Test Suite
 
-IMPORTANT: 4.0.0-beta.2 Release - The final form of the TinkerPop test suite for 4.0 is not wholly settled, but going
+IMPORTANT: 4.0.0-beta.3 Release - The final form of the TinkerPop test suite for 4.0 is not wholly settled, but going
 forward providers should focus on implementing the <<gherkin-tests-suite>> as opposed to the JVM suite.
 
 The JVM test suite is useful to graph system implementers who want to validate that their `Graph` implementation is
@@ -1903,8 +1903,9 @@ With this in place, `Point` objects round-trip transparently in both directions.
 serialization, and the registry handles inbound reconstruction. The same applies to any primitive type backed by a
 registered `PrimitivePDTAdapter`.
 
-For driver users consuming PDTs, see the <<gremlin-variants,Gremlin Variants>> reference documentation for
-each language driver.
+For driver users consuming PDTs, see the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
+reference documentation for each language driver.
 
 [[pdt-unregistered-values]]
 ==== Unregistered PDT Values

@@ -84,13 +84,13 @@ NOTE: The traversal-based form of `match` (e.g. `g.V().match(as("a").out().as("b
 TinkerPop 4.0.0 and will be removed in a future release. Users should migrate to the new `match(String)` API.
 
 TinkerPop ships a reference GQL engine for `match()` via the optional `gql-gremlin` module. The engine implements the
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergql[TinkerGQL] dialect — a deliberate minimal subset of
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#tinkergql[TinkerGQL] dialect — a deliberate minimal subset of
 ISO GQL `MATCH` syntax — and works against any `Graph` implementation through a thin set of default interface methods.
 TinkerGraph uses it out of the box with no configuration required. Graph providers that want to offer TinkerGQL support
 can add the `gql-gremlin` dependency and register `GqlDeclarativeMatchStrategy` as described in the
-link:https://tinkerpop.apache.org/docs/4.0.0/dev/provider/#tinkerpop-providers-tinkergql[provider documentation].
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/dev/provider/#tinkerpop-providers-tinkergql[provider documentation].
 
-See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#match-step[match()], link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergql[TinkerGQL]
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#match-step[match()], link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#tinkergql[TinkerGQL]
 
 ==== Multi-Label Support
 
@@ -131,14 +131,14 @@ gremlin> g.V().has('name','marko').dropLabel('employee').labels()
 behaviors in detail.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3261[TINKERPOP-3261],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergraph-multi-label[Multi-Label],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#vertex-labels[Vertex Labels],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#labels-step[labels()],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#addlabel-step[addLabel()],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#elementmap-step[elementMap()],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#valuemap-step[valueMap()],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#mergevertex-step[mergeV()],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#the-zoo-toy-graph[The Zoo]
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#tinkergraph-multi-label[Multi-Label],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#vertex-labels[Vertex Labels],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#labels-step[labels()],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#addlabel-step[addLabel()],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#elementmap-step[elementMap()],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#valuemap-step[valueMap()],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#mergevertex-step[mergeV()],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#the-zoo-toy-graph[The Zoo]
 
 ==== More Dynamic Arguments in Gremlin
 
@@ -262,7 +262,7 @@ and does not throw. Instead it returns a `TraversalSource` bound to the existing
 replaces the previous behavior where opening an already-open transaction threw an exception, so review and remove any
 code that catches or relies on a second open failing. For the semantics of `begin()` and how it interacts with
 `AUTO`/`MANUAL` transactions, see the
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#transactions[Traversal Transactions] reference documentation.
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#transactions[Traversal Transactions] reference documentation.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3252[TINKERPOP-3252]
 
@@ -449,7 +449,7 @@ This is a breaking change with no backward-compatible alias. The old `evaluation
 Driver and server should be upgraded together. A driver sending the old `evaluationTimeout` field to a 4.x server has
 that field silently ignored and falls back to the server's default timeout, as with any unrecognized request argument.
 
-See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-server[Gremlin Server]
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-server[Gremlin Server]
 
 ==== Runtime Upgrades
 
@@ -497,12 +497,12 @@ that return interceptors and can be registered alongside custom ones.
 
 For full details on the interceptor API for each language variant, refer to the RequestInterceptor section in
 each GLV's documentation in the
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
 reference.
 
-See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-java-interceptors[Java], link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-python-interceptors[Python],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-javascript-interceptors[JavaScript], link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-dotnet-interceptors[.NET],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-go-interceptors[Go]
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-java-interceptors[Java], link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-python-interceptors[Python],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-javascript-interceptors[JavaScript], link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-dotnet-interceptors[.NET],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-go-interceptors[Go]
 
 ==== Non-configurable Request Serialization
 
@@ -516,7 +516,7 @@ deserialization.
 Applications that require a different request body encoding, such as GraphBinary for a server that expects it, can
 register a request interceptor that serializes the `RequestMessage` and replaces the body and `Content-Type` header.
 See the RequestInterceptor section for each GLV in the
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
 reference.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3250[TINKERPOP-3250]
@@ -641,102 +641,19 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3249[TINKERPOP-3249]
 
 ==== HTTP Streaming Response Support
 
-With the move to HTTP, the drivers now deserialize responses incrementally, delivering results to the caller as they
-arrive from the server rather than buffering the entire response before processing. This reduces time-to-first-result
-and memory usage for large result sets. The runtime behavior and API impact differ per language variant, as described
-below.
+The move to HTTP for TinkerPop 4 initially came with a tradeoff: Gremlin Server's HTTP responses were buffered in
+full before the driver could begin deserializing them, so a request was not usable by the caller until the server had
+finished producing every result. The drivers now deserialize an HTTP response incrementally as it arrives, so a
+caller can begin working with the first results while the rest of the response is still in transit. This reduces
+time-to-first-result and memory use for large result sets, and lets a caller stop consuming and release the
+connection partway through a result set instead of waiting for it to complete.
 
-===== Java
+Streaming is active by default in all GLVs. The Reference Documentation covers additional details and
+nuances for certain drivers specific to their implementation.
 
-Results are delivered to the `ResultSet` as they arrive. Streaming applies only when using the default GraphBinary
-serializer, custom `MessageSerializer` implementations fall back to the non-streaming pipeline that buffers the full
-response before deserialization. The `ResultSet` API is unchanged.
-
-===== Python
-
-The Python driver streams results through the configured `response_serializer`.
-
-Traversal API terminal steps (`next()`, `to_list()`, `has_next()`) are now truly incremental. `next()` returns the
-first result as soon as it is deserialized from the wire, without waiting for the full response. In 3.x, `next()`
-waited for all data to be buffered before returning.
-
-Note: `ResultSet` now yields individual items instead of lists when iterated. Code that uses `results += result` to
-accumulate results from a `ResultSet` iterator must change to `results.append(result)`. The `to_list()` and `all()` APIs
-are unaffected and remain the recommended way to collect results.
-
-===== JavaScript
-
-Traversal API terminal steps (`next()`, `toList()`, `hasNext()`) are now truly incremental. `next()`
-returns the first result as soon as it is deserialized from the wire, without waiting for the full response.
-In 3.x, `next()` waited for all WebSocket frames before returning.
-
-`Client.stream()` now returns an `AsyncGenerator` for direct incremental consumption. This is a breaking change
-from 3.x where `stream()` returned a Node.js `Readable`. The new return type works in both Node.js and browsers:
-
-[source,javascript]
-----
-// 3.x — Readable stream (no longer supported)
-const stream = client.stream('g.V()');
-stream.on('data', (resultSet) => { ... });
-
-// 4.0 — AsyncGenerator
-for await (const item of client.stream('g.V()', null)) {
-  console.log(item);
-  if (someCondition) break; // stops reading from the HTTP stream
-}
-----
-
-`Client.submit()` remains unchanged. It still buffers the full response and returns `Promise<ResultSet>`.
-
-===== .NET
-
-The traversal API (`Next()`, `ToList()`, `HasNext()`, `ToSet()`, `Iterate()`) in `Gremlin.Net` is unchanged. These
-methods block internally on the async stream, so existing traversal code works without modification.
-
-`ResultSet<T>` no longer implements `IReadOnlyCollection<T>`. It now implements `IAsyncEnumerable<T>`, backed by a
-`Channel<T>` that receives items from a background deserialization task. Users who access `ResultSet<T>` directly
-via `GremlinClient.SubmitAsync<T>()` will need to update their code:
-
-[source,csharp]
-----
-// 3.x — ResultSet was IReadOnlyCollection<T>
-var resultSet = await client.SubmitAsync<int>("g.inject(1,2,3)");
-var count = resultSet.Count;              // no longer available
-foreach (var item in resultSet) { }       // no longer available
-
-// 4.0 — ResultSet is IAsyncEnumerable<T>
-var resultSet = await client.SubmitAsync<int>("g.inject(1,2,3)");
-var list = await resultSet.ToListAsync(); // materialize if you need Count
-await foreach (var item in resultSet) { } // async iteration
-----
-
-The `IMessageSerializer` interface has also changed: `DeserializeMessageAsync` now accepts a `Stream` and returns
-`IAsyncEnumerable<object>` instead of accepting `byte[]` and returning `Task<ResponseMessage<List<object>>>`.
-Custom serializer implementations will need to be updated. The `ResponseMessage<T>` type has been removed.
-
-With streaming, server errors (`ResponseException`) are now thrown during result iteration rather than during
-`SubmitAsync`. Code that catches `ResponseException` around `SubmitAsync` should be updated to catch around the
-result consumption instead:
-
-[source,csharp]
-----
-// 3.x — exception thrown during SubmitAsync
-try {
-    var resultSet = await client.SubmitAsync<int>("invalid");
-} catch (ResponseException ex) { ... }
-
-// 4.0 — exception thrown during iteration
-var resultSet = await client.SubmitAsync<int>("invalid");
-try {
-    var list = await resultSet.ToListAsync();
-} catch (ResponseException ex) { ... }
-----
-
-The traversal API is not affected — `Next()`, `ToList()`, etc. still throw `ResponseException` directly since they
-block on the async stream internally.
-
-See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#connecting-via-http[Connecting via HTTP],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-java-streaming[Java],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-javascript-streaming[JavaScript],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-dotnet-streaming[.NET]
 
 ==== More Secure Gremlin Server
 
@@ -756,92 +673,30 @@ release may remove Groovy as an installed option in the server distribution alto
 
 ===== Simplified Server Configuration
 
-The most basic server setup, initializing a basic graph with a traversal source, previously required a Groovy init
-script just to create the `g` binding.  Now, any graph defined in the `graphs` section automatically gets a
-`TraversalSource` according to these rules:
-
-* A graph named `graph` is implicitly bound to `g`
-* All others are bound to `g_<graph-name>` (e.g. `modern` gets `g_modern`)
-
-A fully functional minimal configuration is now simply:
-
-[source,yaml]
-----
-graphs: {
-  graph: conf/tinkergraph-empty.properties}
-----
-
-===== Strategy Configuration via `traversalSources`
-
-For cases that require custom traversalSource naming or strategies on a `TraversalSource` (e.g. `ReadOnlyStrategy`), the
-`traversalSources` list within a graph entry provides explicit control without scripting:
+Basic server setup, such as initializing a graph with a traversal source or loading sample data, previously required a
+Groovy init script just to create the `g` binding. That configuration is now entirely declarative. A graph defined in
+the `graphs` section automatically gets a `TraversalSource` bound to it, and the `traversalSources` list can define
+bindings explicitly, as well as optionally defining `with()`-configurations and traversal strategies. Startup and
+shutdown logic that goes beyond configuration, such as loading a sample dataset, is now handled by a Java-based
+`LifeCycleHook` referenced from the `lifecycleHooks` YAML section:
 
 [source,yaml]
 ----
 graphs: {
   graph: {
     configuration: conf/tinkergraph-empty.properties,
-    traversalSources: [
-      {name: g},
-      {name: gReadOnly, gremlinExpression: "g.withStrategies(ReadOnlyStrategy)"}]}}
-----
-
-Each entry specifies:
-
-- `name` (required): the binding name for the `TraversalSource`
-- `gremlinExpression` (optional): a Gremlin expression evaluated with a base traversal source bound as `g`
-- `language` (optional): which `ScriptEngine` to use for the expression (defaults to `gremlin-lang`, or the sole
-configured engine if only one is present)
-
-Graphs with explicit `traversalSources` entries are excluded from the implicitly defined traversal sources described in
-the previous section.
-
-===== Java-Based Lifecycle Hooks
-
-For startup and shutdown logic that goes beyond declarative configuration such as loading sample data, initializing
-caches, or custom setup, Java-based `LifeCycleHook` implementations can now replace Groovy init scripts:
-
-[source,yaml]
-----
-lifecycleHooks:
-  - className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader
-    config: {graph: graph, dataset: modern}
-----
-
-Each entry specifies a `className` implementing `LifeCycleHook` and an optional `config` map passed to the hook's
-`init()` method. The built-in `TinkerFactoryDataLoader` supports datasets: `airroutes`, `modern`, `classic`, `crew`,
-`grateful`, and `sink`.
-
-===== Migrating from Groovy Init Scripts
-
-Creating `TraversalSource` and `LifeCycleHook` instances via Groovy init scripts is now deprecated. Existing scripts
-continue to work when `GremlinGroovyScriptEngine` is explicitly configured, but a deprecation warning is logged at
-startup. Support for Groovy script initialization and customization may be dropped in a future release.
-
-*Before (Groovy init script):*
-
-[source,groovy]
-----
-def globals = [:]
-globals << [hook : [
-  onStartUp: { ctx ->
-    org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.generateModern(graph)
-  }
-] as LifeCycleHook]
-globals << [g : traversal().withEmbedded(graph)]
-----
-
-*After (YAML only):*
-
-[source,yaml]
-----
-graphs: {
-  graph: conf/tinkergraph-empty.properties}
+    traversalSources: [{name: g, gremlinExpression: "g.withStrategies(ReadOnlyStrategy)"}]}}
 lifecycleHooks:
   - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: graph, dataset: modern}}
 ----
 
-The `g` binding is implicitly created from the `graph` entry. No `scriptEngines` section is needed.
+Creating `TraversalSource` and `LifeCycleHook` instances via Groovy init scripts is now deprecated in favor of this YAML
+configuration. Existing scripts continue to work when `GremlinGroovyScriptEngine` is explicitly configured, but log a
+deprecation warning at startup, and support for them may be dropped in a future release.
+
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#server-auto-traversal-sources[Auto-Created TraversalSources],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#server-traversal-sources[Declarative TraversalSources],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#server-lifecycle-hooks[LifeCycleHooks]
 
 ===== `ScriptEngine` Allowlist
 
@@ -910,9 +765,9 @@ The leading-underscore restriction on `GValue` names that was present in 3.8.0 h
 beginning with `_` are now accepted in Java and across all language variants. The only remaining constraints are that
 a `GValue` may not wrap another `GValue`, and (in the non-Java drivers) its name may not be null.
 
-See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-java-gvalue[Java], link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-python-gvalue[Python],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-javascript-gvalue[JavaScript], link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-dotnet-gvalue[.NET],
-link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-go-gvalue[Go]
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-java-gvalue[Java], link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-python-gvalue[Python],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-javascript-gvalue[JavaScript], link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-dotnet-gvalue[.NET],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-go-gvalue[Go]
 
 ==== JavaScript Typed Numeric Wrappers
 
@@ -961,7 +816,7 @@ unwrap(toInt(29));  // 29
 unwrap('hello');    // 'hello'
 ----
 
-See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#gremlin-javascript-numeric-types[Numeric Types]
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-javascript-numeric-types[Numeric Types]
 
 ==== Provider Defined Types
 
@@ -982,8 +837,8 @@ PDTs come in two flavors: *Composite* (a type name plus a map of fields, for str
 name plus a single opaque string value, for types expressible as a single stringified value). The gremlin-lang grammar
 supports both forms via the `PDT("name",[map])` and `PDT("name","value")` literals respectively.
 
-See: link:https://tinkerpop.apache.org/docs/4.0.0/dev/provider/#provider-defined-types[Provider Defined Types],
-link:https://tinkerpop.apache.org/docs/4.0.0/dev/provider/#primitive-provider-defined-types[Primitive Provider Defined Types]
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/dev/provider/#provider-defined-types[Provider Defined Types],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/dev/provider/#primitive-provider-defined-types[Primitive Provider Defined Types]
 
 
 ==== Tree No Longer Extends HashMap
@@ -1078,7 +933,7 @@ into either of these behaviors. The reference implementation of `elementMap()` a
 "singlelabel" semantics for an unconfigured traversal. All providers must either skip the `@SingleLabelDefault` or the
 `@MultiLabelDefault` tagged feature tests depending on their choice of default behavior.
 
-See the link:https://tinkerpop.apache.org/docs/4.0.0/reference/#vertex-labels[vertex labels] reference docs more details
+See the link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#vertex-labels[vertex labels] reference docs more details
 regarding the new vertex label cardinalities.
 
 ===== Traversal-Accepting Steps - HasContainer Guard
@@ -1128,7 +983,7 @@ GLVs: interceptors receive a mutable HTTP request object, can modify headers/bod
 the request body to JSON after all interceptors have run.
 
 For the full specification of how interceptors should behave, see the
-link:https://tinkerpop.apache.org/docs/4.0.0/dev/provider/#_http_request_interceptor[HTTP Request Interceptor]
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/dev/provider/#_http_request_interceptor[HTTP Request Interceptor]
 section in the provider documentation.
 
 ===== match() Support
@@ -1162,7 +1017,7 @@ first use and caches them for the lifetime of the graph, sharing the planner's q
 traversals. Optional performance hints are available via `countVerticesByLabel()`, `countEdgesByLabel()`,
 and `Graph.Index`. See `GqlMatchStep` and `GqlDeclarativeMatchStrategy` in `gql-gremlin` for the complete
 reference implementation, and the
-link:https://tinkerpop.apache.org/docs/4.0.0/dev/provider/#tinkerpop-providers-tinkergql[provider documentation]
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/dev/provider/#tinkerpop-providers-tinkergql[provider documentation]
 for wiring instructions.
 
 == TinkerPop 4.0.0-beta.2
@@ -2067,7 +1922,7 @@ Server, you have to implement your own `Channelizer`.
 
 If you are a provider that makes use of the Gremlin Server, you may need to update server configuration YAML files that
 you provide to your users. With the change from WebSockets to HTTP, some of the previous default values are invalid and
-some of the fields no longer exist. See link:https://tinkerpop.apache.org/docs/4.0.0/reference/#_configuring_2[options]
+some of the fields no longer exist. See link:https://tinkerpop.apache.org/docs/4.0.0-beta.1/reference/#_configuring_2[options]
 for an updated list. One of the most important changes is to the `Channelizer` configuration as only the
 `HttpChannelizer` remains and the rest have been removed.
 
@@ -2083,7 +1938,7 @@ required.
 
 HTTP/1.1 is now the only supported application-layer protocol and WebSockets support is dropped. Please follow the
 instructions in the
-link:https://tinkerpop.apache.org/docs/4.0.0/dev/provider/#_graph_driver_provider_requirements[provider documentation]
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.1/dev/provider/#_graph_driver_provider_requirements[provider documentation]
 for more detailed information. The subprotocol remains fairly similar but has been adjusted to work better with HTTP.
 Also, the move to HTTP means that SASL has been removed as an authentication mechanism and only HTTP basic remains.
 

@@ -781,7 +781,7 @@ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 Once the server has started, issue a request.  Here's an example with link:http://curl.haxx.se/[cURL]:
 
 [source,text]
-curl -X POST -d "{\"gremlin\":\"100-1\"}" "http://localhost:8182"
+curl -X POST -d "{\"gremlin\":\"g.inject(99)\"}" "http://localhost:8182"
 
 returns:
 
@@ -808,7 +808,7 @@ returns:
 It is also preferred that Gremlin scripts be parameterized when possible via `parameters`:
 
 [source,text]
-curl -X POST -d "{\"gremlin\":\"100-x\", \"parameters\":\"[x:1]\"}" "http://localhost:8182"
+curl -X POST -d "{\"gremlin\":\"g.V(x)\", \"parameters\":\"[x:1]\"}" "http://localhost:8182"
 
 The `parameters` argument is a gremlin-lang string that encodes a map of key/value pairs where the keys become available
 as variables in the Gremlin script. Note that parameterization of requests is critical to performance, as repeated
@@ -834,7 +834,7 @@ $ curl -H "Accept:text/plain" -X POST -d "{\"gremlin\":\"g.V()\"}" "http://local
 ==>v[6]
 ----
 
-Finally, as Gremlin Server can host multiple `ScriptEngine` instances (e.g. `gremlin-groovy`, `nashorn`), it is
+Finally, as Gremlin Server can host multiple `ScriptEngine` instances (e.g. `gremlin-lang`, `gremlin-groovy`), it is
 possible to define the language to utilize to process the request:
 
 [source,text]

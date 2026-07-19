@@ -89,9 +89,6 @@ $ hdfs dfs -put data/tinkerpop-modern.kryo .
 $ . bin/spark-yarn.sh
 ----
 
-WARNING: The Hadoop and Spark modules are not included in the 4.0.0-beta.2 distribution. This recipe will
-be restored in a future release.
-
 [source,groovy]
 ----
 gremlin> hadoop = System.getenv('HADOOP_HOME')

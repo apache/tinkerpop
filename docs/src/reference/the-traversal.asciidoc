@@ -583,9 +583,9 @@ g.V().out('created').fill(results) <8>
 g.addV('person').iterate() <9>
 ----
 
-<1> `hasNext()` determines whether there are available results (not supported in `gremlin-javascript`).
+<1> `hasNext()` determines whether there are available results.
 <2> `next()` will return the next result.
-<3> `next(n)` will return the next `n` results in a list (not supported in `gremlin-javascript` or Gremlin.NET).
+<3> `next(n)` will return the next `n` results in a list.
 <4> `tryNext()` will return an `Optional` and thus, is a composite of `hasNext()`/`next()` (only supported for JVM languages).
 <5> `toList()` will return all results in a list.
 <6> `toSet()` will return all results in a set and thus, duplicates removed (not supported in `gremlin-javascript`).

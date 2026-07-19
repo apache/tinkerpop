@@ -427,7 +427,7 @@ has two such formats that it uses with link:https://tinkerpop.apache.org/docs/x.
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[GraphSON]. Users should prefer GraphBinary when available
 in the programming language being used.
 
-IMPORTANT: 4.0.0-beta.2 Release - There is temporary support for GraphSON in the Java driver which will help with
+IMPORTANT: 4.0.0-beta.3 Release - There is temporary support for GraphSON in the Java driver which will help with
 testing, but it is expected that the drivers will only support GraphBinary when 4.0 is fully released.
 
 A good example is the `subgraph()`-step which returns a `Graph` instance as its result. The subgraph returned from

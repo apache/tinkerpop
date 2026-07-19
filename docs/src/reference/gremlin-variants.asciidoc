@@ -1236,7 +1236,7 @@ serialized as JSON (`application/json`) and that behavior is not configurable. T
 controls only the `Accept` header sent with each request and the deserialization of the response. For JVM-based
 languages, there is a single option for response serialization: GraphBinary.
 
-IMPORTANT: 4.0.0-beta.2 Release - There is temporary support for GraphSON in the Java driver which will help with
+IMPORTANT: 4.0.0-beta.3 Release - There is temporary support for GraphSON in the Java driver which will help with
 testing, but it is expected that the drivers will only support GraphBinary when 4.0 is fully released.
 
 It is important that the client and server have the same serializers configured in the same way or else one or the
@@ -1259,6 +1259,11 @@ GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(client, "
 The `IoRegistry` tells the serializer what classes from the graph provider to auto-register during serialization.
 Gremlin Server roughly uses this same approach when it configures its serializers, so using this same model will
 ensure compatibility when making requests.
+
+[[gremlin-java-streaming]]
+The driver streams and deserializes a response incrementally as it arrives only when `GraphBinaryMessageSerializerV4`
+is configured, which is the default. Any other `MessageSerializer`, such as a GraphSON serializer, causes the driver to
+buffer the full response body before deserializing it.
 
 [[gremlin-java-gvalue]]
 === GValue Parameterization
@@ -1915,6 +1920,7 @@ const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gr
 
 Given that I/O operations in Node.js are asynchronous by default, <<terminal-steps,Terminal Steps>> return a `Promise`:
 
+* `Traversal.hasNext()`: Returns a `Promise` with a `Boolean` indicating whether a further result is available.
 * `Traversal.toList()`: Returns a `Promise` with an `Array` as result value.
 * `Traversal.next()`: Returns a `Promise` with a `{ value, done }` tuple as result value, according to the
 link:https://github.com/tc39/proposal-async-iteration[async iterator proposal].
@@ -2100,7 +2106,7 @@ link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-js/gremlin-javascrip
 [[gremlin-javascript-logging]]
 === Logging
 
-IMPORTANT: 4.0.0-beta.2 Release - Event-based logging is not yet implemented for the HTTP driver. Listeners can be registered
+IMPORTANT: 4.0.0-beta.3 Release - Event-based logging is not yet implemented for the HTTP driver. Listeners can be registered
 but will not currently receive any events. This functionality is planned for a future release.
 
 The Gremlin-JavaScript driver emits connection events for logging and monitoring, but these events are silently ignored unless a listener is attached. Use the `addListener()` method to subscribe to events after creating a `DriverRemoteConnection` or `Client`:
@@ -2302,6 +2308,7 @@ IMPORTANT: The preferred method for setting a per-request timeout for scripts is
 also use `g.with("timeoutMillis", 500)`. Scripts with multiple traversals and multiple
 timeouts will be interpreted as a sum of all timeouts identified in the script for that request.
 
+[[gremlin-javascript-streaming]]
 ==== Streaming Results
 
 `client.submit()` buffers the entire response before returning a `ResultSet`. When working with larger result sets it
@@ -2966,6 +2973,42 @@ include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`, `materializeProperties`
 and `timeoutMillis`. These options are available as constants on the `Gremlin.Net.Driver.Tokens` class.
+
+[[gremlin-dotnet-streaming]]
+==== Streaming Results
+
+`GremlinClient.SubmitAsync<T>()` returns a `ResultSet<T>` that implements `IAsyncEnumerable<T>`, backed by a channel
+that is filled as results are deserialized from the response. Results become available to the caller incrementally
+as they are received. `ResultSet<T>` can be consumed directly with `await foreach`, or materialized into a
+`List<T>` with `ToListAsync()` when that is more convenient:
+
+[source,csharp]
+----
+// consume incrementally
+var resultSet = await client.SubmitAsync<int>("g.inject(1,2,3)");
+await foreach (var item in resultSet) { }
+
+// or materialize into a list
+var otherResultSet = await client.SubmitAsync<int>("g.inject(1,2,3)");
+var list = await otherResultSet.ToListAsync();
+----
+
+Because results are consumed incrementally, a server-side error (`ResponseException`) surfaces while the result
+set is being iterated rather than when `SubmitAsync()` is called. Error handling should wrap the iteration or
+`ToListAsync()` call, not `SubmitAsync()` itself:
+
+[source,csharp]
+----
+var resultSet = await client.SubmitAsync<int>("invalid");
+try
+{
+    var list = await resultSet.ToListAsync();
+}
+catch (ResponseException ex) { }
+----
+
+The traversal API (`Next()`, `ToList()`, `HasNext()`, `ToSet()`, `Iterate()`) blocks internally on the underlying
+async stream, so it throws `ResponseException` directly from those methods.
 
 ==== Request Interceptors
 
