@@ -708,3 +708,33 @@ class TestGremlinLang(object):
         assert ("g.match('" + query + "')") == g.match(query).gremlin_lang.get_gremlin()
         params = {'name': 'marko'}
         assert ("g.match('" + query + "',['name':'marko'])") == g.match(query, params).gremlin_lang.get_gremlin()
+
+    def test_eq_different_gremlin_steps_not_equal(self):
+        # Same (empty) parameters but different gremlin steps must not compare equal.
+        g = traversal().with_(None)
+        count = g.V().count().gremlin_lang
+        drop = g.V().drop().gremlin_lang
+        assert count.parameters == drop.parameters
+        assert count.get_gremlin() != drop.get_gremlin()
+        assert count != drop
+        assert drop != count
+
+    def test_eq_equivalent_are_equal(self):
+        g = traversal().with_(None)
+        first = g.V().count().gremlin_lang
+        second = g.V().count().gremlin_lang
+        assert first == second
+
+    def test_eq_equal_gremlin_different_parameters_not_equal(self):
+        g = traversal().with_(None)
+        first = g.V(GValue('ids', 1)).gremlin_lang
+        second = g.V(GValue('ids', 2)).gremlin_lang
+        assert first.get_gremlin() == second.get_gremlin()
+        assert first != second
+
+    def test_eq_non_gremlinlang_not_equal(self):
+        g = traversal().with_(None)
+        gl = g.V().count().gremlin_lang
+        assert gl != 'g.V().count()'
+        assert gl != 42
+        assert gl != None

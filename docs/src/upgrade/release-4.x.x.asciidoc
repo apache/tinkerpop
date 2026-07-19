@@ -618,6 +618,20 @@ from gremlin_python.driver.connection import GremlinServerError
 
 See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-python[Gremlin-Python]
 
+==== Removal of Python DriverRemoteConnection.submitAsync
+
+The deprecated `DriverRemoteConnection.submitAsync()` method has been removed. After the TinkerPop 4 change to accept
+a single `GremlinLang` argument, it no longer functioned. Use `submit_async()` instead:
+
+[source,python]
+----
+# Before
+future = connection.submitAsync(gremlin_lang)
+
+# After
+future = connection.submit_async(gremlin_lang)
+----
+
 ==== Removal of sparql-gremlin
 
 The `sparql-gremlin` module has been removed following a prolonged period of inactivity. There is currently no direct
