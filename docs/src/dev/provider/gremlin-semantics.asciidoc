@@ -908,14 +908,14 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[reference]
 [[asNumber-step]]
 === asNumber()
 
-*Description:* converts the incoming traverser to the nearest parsable type if no argument is provided, or to the desired numerical type, based on the number token (`N`) provided.
+*Description:* converts the incoming traverser to the nearest parsable type if no argument is provided, or to the desired numerical type, based on the type token (`GType`) provided.
 
 *Syntax:* `asNumber()` | `asNumber(typeToken: GType)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`NUMBER`/`STRING` |`NUMBER`
+|N |Y |N |`NUMBER`/`STRING`/`DATE` |`NUMBER`
 |=========================================================
 
 *Arguments:*
@@ -928,13 +928,19 @@ None
 
 *Considerations:*
 
-If no type token is provided, the incoming number remains unchanged.
+*Modulation:*
+
+None
+
+*Considerations:*
+
+If no type token is provided, the incoming number remains unchanged. A `DATE` input is converted to milliseconds since epoch. A `null` input passes through as `null`.
 
 *Exceptions:*
 
 * If any overflow occurs during narrowing of types, an `Arithmetic Error` is raised.
 * If the incoming string cannot be parsed into a valid number format, an `Argument Error` is raised.
-* If the incoming traverser is a non-`STRING`/`NUMBER` (including `null`) value then an `Argument Error` is raised.
+* If the incoming traverser is a non-`STRING`/`NUMBER`/`DATE` value then an `Argument Error` is raised.
 * If the supplied type token is not a number type, then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsNumberStep.java[source],
