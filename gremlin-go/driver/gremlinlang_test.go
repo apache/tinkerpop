@@ -518,6 +518,18 @@ func Test_GremlinLang(t *testing.T) {
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.V().Has("runways", P.Outside(3, 5))
+			},
+			equals: "g.V().has(\"runways\",outside(3,5))",
+		},
+		{
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.V().Has("runways", P.Inside(3, 5))
+			},
+			equals: "g.V().has(\"runways\",inside(3,5))",
+		},
+		{
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("runways", P.Inside(3, 5))
 			},
 			equals: "g.V().has(\"runways\",inside(3,5))",

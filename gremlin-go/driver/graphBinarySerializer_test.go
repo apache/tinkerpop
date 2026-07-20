@@ -221,6 +221,29 @@ func TestGraphBinaryV4(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, new(big.Int).SetUint64(uint64(source)), res)
 		})
+		t.Run("read-write bigInt negative", func(t *testing.T) {
+			large, _ := new(big.Int).SetString("-1606938044258990275541962092341162602522202993782792835301376", 10)
+			for _, source := range []*big.Int{big.NewInt(-1), big.NewInt(-128), big.NewInt(-129), big.NewInt(-256), big.NewInt(-65535), large} {
+				var buffer bytes.Buffer
+				err := bigIntWriter(*source, &buffer, nil)
+				assert.Nil(t, err)
+				d := NewGraphBinaryDeserializer(bytes.NewReader(buffer.Bytes()))
+				res, err := d.readBigInt()
+				assert.Nil(t, err)
+				assert.Equal(t, source, res)
+			}
+		})
+		t.Run("read-write BigDecimal negative", func(t *testing.T) {
+			for _, source := range []*BigDecimal{{2, big.NewInt(-1234)}, {0, big.NewInt(-1)}, {4, big.NewInt(-256)}} {
+				var buffer bytes.Buffer
+				err := bigDecimalWriter(source, &buffer, nil)
+				assert.Nil(t, err)
+				d := NewGraphBinaryDeserializer(bytes.NewReader(buffer.Bytes()))
+				res, err := d.readBigDecimal()
+				assert.Nil(t, err)
+				assert.Equal(t, source, res)
+			}
+		})
 		t.Run("read-write list", func(t *testing.T) {
 			var buffer bytes.Buffer
 			source := []interface{}{int32(111), "str"}

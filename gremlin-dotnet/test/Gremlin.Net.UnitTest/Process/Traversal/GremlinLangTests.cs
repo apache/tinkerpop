@@ -368,6 +368,27 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         }
 
         [Fact]
+        public void g_V_Has_age_Outside_28_33()
+        {
+            Assert.Equal("g.V().has(\"age\",outside(28,33))",
+                _g.V().Has("age", P.Outside(28, 33)).GremlinLang.GetGremlin());
+        }
+
+        [Fact]
+        public void g_V_Has_age_Between_28_33()
+        {
+            Assert.Equal("g.V().has(\"age\",between(28,33))",
+                _g.V().Has("age", P.Between(28, 33)).GremlinLang.GetGremlin());
+        }
+
+        [Fact]
+        public void g_V_Has_age_Inside_28_33()
+        {
+            Assert.Equal("g.V().has(\"age\",inside(28,33))",
+                _g.V().Has("age", P.Inside(28, 33)).GremlinLang.GetGremlin());
+        }
+
+        [Fact]
         public void g_V_And_Has_runways_Gt_5_Has_region_USTX()
         {
             Assert.Equal("g.V().and(__.has(\"runways\",gt(5)),__.has(\"region\",\"US-TX\"))",

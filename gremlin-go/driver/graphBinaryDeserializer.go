@@ -780,7 +780,9 @@ func (d *GraphBinaryDeserializer) readBigInt() (*big.Int, error) {
 	bi := big.NewInt(0).SetBytes(b)
 	if b[0]&0x80 != 0 {
 		one := big.NewInt(1)
-		bitLen := uint((len(b)*8)/8+1) * 8
+		// High bit set: the bytes are a two's-complement negative, so recover the
+		// signed value by subtracting 2^(bit width), where the width is 8 bits per byte.
+		bitLen := uint(len(b)) * 8
 		bi.Sub(bi, new(big.Int).Lsh(one, bitLen))
 	}
 	return bi, nil
