@@ -140,7 +140,7 @@ link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#valuemap-step[val
 link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#mergevertex-step[mergeV()],
 link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#the-zoo-toy-graph[The Zoo]
 
-==== More Dynamic Arguments in Gremlin
+==== More Dynamic Arguments
 
 Prior to 4.0, comparing a traverser's value against a dynamically computed reference required several coordinated
 step labels and `where()` comparison. For example, finding all people older than "marko" previously required:
@@ -328,34 +328,7 @@ RequestMessage.build("g.V(x)").addParameters(params).create();
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3262[TINKERPOP-3262]
 
-==== Traversal Source Not In Parameters
-
-The traversal source alias for an HTTP request is selected with the top-level `g` request field. Query `parameters`
-are only the named values referenced by the Gremlin string. Earlier 3.8.x driver builds could place the traversal
-source alias into `bindings` as `g` (reminder: `bindings` have been renamed to `parameters`). Gremlin Server will ignore
-this "g" value in "parameters" so use the `g` field instead.
-
-Applications that construct HTTP requests directly should keep the traversal source alias out of `parameters` and set
-the top-level `g` field instead:
-
-[source,text]
-----
-// old
-{
-  "gremlin": "g.V(x)",
-  "parameters": "[\"g\":\"gmodern\",\"x\":1]"
-}
-
-// new
-{
-  "gremlin": "g.V(x)",
-  "g": "gmodern",
-  "parameters": "[\"x\":1]"
-}
-----
-
-
-==== Standardizing GLV Connection Options
+==== Standardizing GLV Connections
 
 TinkerPop 4.x standardizes connection option names and defaults across all five Gremlin Language Variants (Java, Python,
 .NET, Go, and JavaScript). Each driver using its language-idiomatic casing (`camelCase`, `PascalCase`, or `snake_case`).
@@ -504,7 +477,7 @@ See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-java
 link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-javascript-interceptors[JavaScript], link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-dotnet-interceptors[.NET],
 link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-go-interceptors[Go]
 
-==== Non-configurable Request Serialization
+==== Non-configurable Serialization
 
 TinkerPop 3.x drivers used a single serializer configuration (for example, `serializer` in the Java driver or
 `message_serializer` in Python) that controlled both how a `RequestMessage` was serialized on the way to the server
@@ -573,7 +546,7 @@ g.V().has("blob",P.eq(Binary("AQID")))
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3153[TINKERPOP-3153]
 
-==== Python Driver Simplification
+==== Python Driver Improvements
 
 Gremlin for Python has been heavily refactored for this release, simplifying driver usage and removing unnecessary
 infrastructure. Key areas for change to consider when upgrading include removal of the old mechanism used to configure
@@ -616,12 +589,7 @@ from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.connection import GremlinServerError
 ----
 
-See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-python[Gremlin-Python]
-
-==== Removal of Python DriverRemoteConnection.submitAsync
-
-The deprecated `DriverRemoteConnection.submitAsync()` method has been removed. After the TinkerPop 4 change to accept
-a single `GremlinLang` argument, it no longer functioned. Use `submit_async()` instead:
+The deprecated `DriverRemoteConnection.submitAsync()` method has been removed. Prefer use of `submit_async()` instead:
 
 [source,python]
 ----
@@ -632,6 +600,8 @@ future = connection.submitAsync(gremlin_lang)
 future = connection.submit_async(gremlin_lang)
 ----
 
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-python[Gremlin-Python]
+
 ==== Removal of sparql-gremlin
 
 The `sparql-gremlin` module has been removed following a prolonged period of inactivity. There is currently no direct
@@ -639,7 +609,7 @@ replacement planned for this functionality.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3249[TINKERPOP-3249]
 
-==== HTTP Streaming Response Support
+==== HTTP Streaming Responses
 
 The move to HTTP for TinkerPop 4 initially came with a tradeoff: Gremlin Server's HTTP responses were buffered in
 full before the driver could begin deserializing them, so a request was not usable by the caller until the server had
@@ -724,7 +694,11 @@ scriptEngines: {
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2720[TINKERPOP-2720],
 link:https://issues.apache.org/jira/browse/TINKERPOP-3107[TINKERPOP-3107]
 
-==== `gremlin-lang` based Parameters
+==== Parameters and GValue
+
+The following sections describe changes related to paramters passed to the server and the related concept of `GValue`.
+
+===== `gremlin-lang` based Parameters
 
 Parameters that are sent as part of the request are now `gremlin-lang` string maps rather than an actual Map
 that would have been serialized based on the serializer used for the request. A side effect of this is that the map key
@@ -749,7 +723,33 @@ beyond this limit will be rejected with an error.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3247[TINKERPOP-3247]
 
-==== GValue in the Language Variants
+===== Traversal Source Not In Parameters
+
+The traversal source alias for an HTTP request is selected with the top-level `g` request field. Query `parameters`
+are only the named values referenced by the Gremlin string. Earlier 3.8.x driver builds could place the traversal
+source alias into `bindings` as `g` (reminder: `bindings` have been renamed to `parameters`). Gremlin Server will ignore
+this "g" value in "parameters" so use the `g` field instead.
+
+Applications that construct HTTP requests directly should keep the traversal source alias out of `parameters` and set
+the top-level `g` field instead:
+
+[source,text]
+----
+// old
+{
+  "gremlin": "g.V(x)",
+  "parameters": "[\"g\":\"gmodern\",\"x\":1]"
+}
+
+// new
+{
+  "gremlin": "g.V(x)",
+  "g": "gmodern",
+  "parameters": "[\"x\":1]"
+}
+----
+
+===== GValue in the Language Variants
 
 `GValue`, the named query-parameter wrapper introduced for Java in 3.8.0, is now available as a client-side API in all
 of the Gremlin Language Variants. Users of the Python, JavaScript, .NET, and Go drivers can construct a `GValue` and
@@ -769,7 +769,7 @@ See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-java
 link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-javascript-gvalue[JavaScript], link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-dotnet-gvalue[.NET],
 link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-go-gvalue[Go]
 
-==== JavaScript Typed Numeric Wrappers
+==== JavaScript Typed Numerics
 
 JavaScript has a single `Number` type (IEEE 754 double) which loses the distinction between Gremlin numeric types like
 `int`, `float`, `long`, and `double`. The `gremlin-javascript` driver now provides typed wrapper classes and factory
