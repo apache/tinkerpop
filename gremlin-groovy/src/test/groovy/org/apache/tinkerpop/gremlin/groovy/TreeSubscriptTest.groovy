@@ -54,6 +54,15 @@ class TreeSubscriptTest {
     }
 
     @Test
+    public void shouldRenderNestedToStringViaSugar() {
+        def g = TinkerFactory.createModern().traversal()
+        Tree tree = g.V(1).out().out().tree().by('name').next()
+
+        // The mixin must not shadow Tree's toString() with the category delegate's identity string.
+        assertEquals('{marko={josh={ripple={}, lop={}}}}', tree.toString())
+    }
+
+    @Test
     public void shouldThrowOnMissingSubscriptKey() {
         def g = TinkerFactory.createModern().traversal()
         Tree tree = g.V(1).out().out().tree().by('name').next()

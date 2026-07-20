@@ -99,6 +99,13 @@ class SugarLoader {
         public static final Object getAt(final Tree tree, final Object key) {
             return tree.childAt(key);
         }
+
+        // Mixing this category into Tree.metaClass shadows Tree's own toString() with the
+        // category delegate's Object.toString(), which renders as "...$TreeCategory@<hash>".
+        // Reflectively invoke the real Tree.toString() so the console shows the nested nodes.
+        public String toString() {
+            return Tree.class.getMethod("toString").invoke(this.metaClass.owner);
+        }
     }
 
     public static class ElementCategory {
