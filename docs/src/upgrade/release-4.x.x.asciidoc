@@ -840,38 +840,37 @@ supports both forms via the `PDT("name",[map])` and `PDT("name","value")` litera
 See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/dev/provider/#provider-defined-types[Provider Defined Types],
 link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/dev/provider/#primitive-provider-defined-types[Primitive Provider Defined Types]
 
+==== Improving Tree
 
-==== Tree No Longer Extends HashMap
+The `Tree` object in Java, returned from the `tree()` step was originally built as an extension to `HashMap`. There is
+a certain convenience to that approach, but at times the API did not always feel tree-like. When working with a tree
+structure, developers tend to be used to accessing a "child" or a "node" and with TinkerPop's `Tree` it was necessary
+to shift into thinking in `Map` semantics to navigate. In 4.0, `Tree` no longer extends from `HashMap` and exposes an
+API that is consistent with how developers are used to working with this type of data structure.
 
-`Tree` no longer extends `HashMap`. It is now a `final` class that holds a `Map` internally and exposes a
-tree-shaped API instead of `Map` methods. This is a breaking change for code that treated a `tree()` result as a
-`Map`.
+The following shows an example of `Tree` access from versions prior to 4.0:
 
-Replacements for the common `Map`-based access patterns:
+[source,java]
+----
+Tree tree = g.V().out().out().tree().by("name").next();
 
-[options="header"]
-|=======================
-|3.x (`Tree` as `Map`) |4.x (`Tree` API)
-|`tree.get(key)` |`tree.childAt(key)` (throws if absent) or `tree.findSubtree(key)` (recursive, returns `Optional`)
-|`tree.containsKey(key)` |`tree.hasChild(key)`
-|`tree.keySet()` |`tree.rootNodes()`
-|`tree.size()` |`tree.rootNodes().size()` for root entries, or `tree.nodeCount()` for total nodes
-|`getObjectsAtDepth(d)` |`getNodesAtDepth(d)` (now 0-based: depth 0 returns the roots)
-|`getLeafObjects()` |`getLeafNodes()`
-|=======================
+// 3.x
+Tree<String> marko = tree.get("marko");                     // {josh={ripple={}, lop={}}}
+Tree<String> josh  = tree.get("marko").get("josh");         // {ripple={}, lop={}}
 
-A few Gremlin patterns that worked only because `Tree` was a `Map` (for example `select(keys)` and `unfold()`
-applied to a `Tree`) no longer compose. Process the `Tree` result client-side after `next()`, or reshape the
-upstream traversal.
+// 4.x
+Tree<String> marko = tree.childAt("marko");                 // {josh={ripple={}, lop={}}}
+Tree<String> josh  = tree.childAt("marko").childAt("josh"); // {ripple={}, lop={}}
 
-`count(local)` on a `Tree` has changed semantics. Previously, because `Tree` was a `Map`, it returned the
-number of root entries; it now returns the total number of nodes in the tree (`Tree.nodeCount()`), consistent
-with how `count(local)` counts the contents of other local objects (for example the objects in a `Path`). Use
-`rootNodes().size()` on the materialized `Tree` if the root-entry count is required.
+// 3.x
+List<String> depth  = tree.getObjectsAtDepth(3);            // [ripple, lop] (1-based depth)
+List<String> leaves = tree.getLeafObjects();                // [ripple, lop]
 
-`isLeaf()` no longer throws on an empty tree (it returns `true`), and a `Tree` keeps the long-standing limitation
-that sibling branches resolving to the same value collapse into one node; use `path()` or `subgraph()` when full
-path structure must be preserved.
+// 4.x
+List<String> depth  = tree.getNodesAtDepth(2);              // [ripple, lop] (0-based depth)
+List<String> leaves = tree.getLeafNodes();                  // [ripple, lop]
+Optional<Tree<String>> found = tree.findSubtree("josh");    // Optional[{ripple={}, lop={}}]
+----
 
 See: link:https://lists.apache.org/thread/o0nqh6kmrkdht531655p351ldjll045d[[DISCUSS] Make Tree no longer extend HashMap]
 
