@@ -705,23 +705,21 @@ configured by `CucumberOptions` on "*FeatureTest" setups.
 [[gremlin-socket-server-tests]]
 === Gremlin Socket Server Tests
 
-IMPORTANT: 4.0.0-beta.2 Release - Removes websockets. This section will be updated as the new HTTP test server falls into place.
-
-`gremlin-socket-server` is an included test server for driver tests which require predefined server
+`gremlin-socket-server` is an included HTTP test server for driver tests which require predefined server
 behavior. Typically, this is to test scenarios such as the server closing the connection or returning
 an error code but other response behavior can be added as needed for tests.
 
-Gremlin socket server uses the request id of incoming messages to determine how to respond.
-Request ids are defined in `gremlin-tools/gremlin-socket-server/conf/*.yaml`. The server side
-behavior for each request id is implemented in `TestWSGremlinInitializer`.
+Gremlin socket server uses the gremlin string of incoming requests to determine how to respond.
+These gremlin strings are defined as constants in `SocketServerConstants`. The server side
+behavior for each string is implemented in `TestHttpGremlinHandler`.
 
-To add new server side behavior, define a new request id in the config yaml, then add a corresponding
-field in `SocketServerSettings`. In `TestWSGremlinInitializer`, add a new block to the if else chain in the
-decode method which matches the request id. Define all server behavior and responses in this block.
+To add new server side behavior, define a new gremlin string constant in `SocketServerConstants`, then
+add a matching `case` to the switch statement in the `channelRead0` method of `TestHttpGremlinHandler`.
+Define all server behavior and responses in this block.
 
-To write the driver test, send a request message to the gremlin socket server port as if it were a normal
-gremlin server. Override the request id on the request with one defined in the config yaml and gremlin
-socket server will respond according to the defined behavior.
+To write the driver test, send an HTTP request to the gremlin socket server port as if it were a normal
+gremlin server, setting the `gremlin` field to one of the strings defined in `SocketServerConstants` and
+gremlin socket server will respond according to the defined behavior.
 
 Ensure that the socket server is running during driver tests. By default, a docker image for
 `gremlin-socket-server` is built during `mvn install`. The simplest way to use the socket server during

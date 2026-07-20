@@ -1266,6 +1266,8 @@ Gremlin Server roughly uses this same approach when it configures its serializer
 ensure compatibility when making requests.
 
 [[gremlin-java-streaming]]
+==== Streaming Deserialization
+
 The driver streams and deserializes a response incrementally as it arrives only when `GraphBinaryMessageSerializerV4`
 is configured, which is the default. Any other `MessageSerializer`, such as a GraphSON serializer, causes the driver to
 buffer the full response body before deserializing it.

@@ -62,8 +62,7 @@ limitations under the License.
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.0</version>
                 <configuration>
-                    <!-- AsciidoctorJ 2.5.x requires Java 11+ -->
-                    <release>11</release>
+                    <release>17</release>
                 </configuration>
             </plugin>
             <plugin>

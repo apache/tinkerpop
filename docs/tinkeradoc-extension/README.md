@@ -70,9 +70,6 @@ even though the code now lives in `org.apache.tinkerpop.tinkeradoc`.
 
     mvn clean install -f docs/tinkeradoc-extension/pom.xml
 
-Requires Java 11 or later, as AsciidoctorJ 2.5.x does. `asciidoctorj` is a `provided` dependency because the
-`asciidoctor-maven-plugin` supplies it at documentation build time.
-
 ## Generating the Docs
 
 Do not invoke this project directly to build documentation. `bin/process-docs.sh` is the entrypoint: it validates the
