@@ -818,28 +818,6 @@ unwrap('hello');    // 'hello'
 
 See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-javascript-numeric-types[Numeric Types]
 
-==== Provider Defined Types
-
-Graph providers may now expose custom types as Provider Defined Types (PDT) (replacing the old `CustomTypeSerializer`
-mechanism). The key improvement is that the default case now works out of the box — drivers deserialize PDT values
-as `CompositePDT` objects containing a `name` and a `fields` map without any configuration, eliminating
-the serializer errors that occurred with unknown custom types in TP3. For automatic conversion between PDT values and
-application-specific types, each driver supports an optional registry or annotation mechanism, which requires similar
-effort to the old custom serializer approach but is entirely optional for basic usage:
-
-* <<gremlin-java-pdt,Gremlin-Java>>
-* <<gremlin-python-pdt,Gremlin-Python>>
-* <<gremlin-javascript-pdt,Gremlin-JavaScript>>
-* <<gremlin-dotnet-pdt,Gremlin.Net>>
-* <<gremlin-go-pdt,Gremlin-Go>>
-
-PDTs come in two flavors: *Composite* (a type name plus a map of fields, for structured types) and *Primitive* (a type
-name plus a single opaque string value, for types expressible as a single stringified value). The gremlin-lang grammar
-supports both forms via the `PDT("name",[map])` and `PDT("name","value")` literals respectively.
-
-See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/dev/provider/#provider-defined-types[Provider Defined Types],
-link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/dev/provider/#primitive-provider-defined-types[Primitive Provider Defined Types]
-
 ==== Improving Tree
 
 The `Tree` object in Java, returned from the `tree()` step was originally built as an extension to `HashMap`. There is
