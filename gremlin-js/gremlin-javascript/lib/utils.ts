@@ -22,7 +22,7 @@
  * @author Jorge Bay Gondra
  */
 
-const gremlinVersion = '4.0.0-SNAPSHOT'; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
+const gremlinVersion = '4.0.0-beta.3'; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
 const INT64_MIN = -9223372036854775808n;
 const INT64_MAX = 9223372036854775807n;

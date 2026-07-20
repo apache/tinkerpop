@@ -274,7 +274,7 @@ function normHash(node) {
     }
     for (let i = 0; i < n.childCount; i++) walk(n.child(i));
   })(node);
-  return sha256(tokens.join(" "));
+  return sha256(tokens.join("\0"));
 }
 
 function extractFunctionsFromTree(tree, filePath, language) {
