@@ -295,135 +295,6 @@ anonymized form. The original gremlator.com was a prototype built by TinkerPop c
 implementation required Java and a running Gremlin Server, whereas the new version runs entirely in the browser with
 no server infrastructure needed.
 
-==== Bindings are now Parameters
-
-The map of named values substituted into a Gremlin query was previously called "bindings" in some places and
-"parameters" in others. TinkerPop now refers to these consistently as *query parameters*, reserving "bindings" for
-the distinct concept of `ScriptEngine` variable bindings. As a result, the driver methods for supplying query
-parameters have been renamed. Update any code that sets them:
-
-- Java: `RequestMessage.Builder.addBindings(...)` is now `addParameters(...)`.
-- Python: `client.submit(..., bindings=...)` is now `submit(..., parameters=...)`, and the `request_options`
-key `bindings` is now `parameters`.
-- Go: `SetBindings`/`SetBindingsString`/`AddBinding` are now
-`SetParameters`/`SetParametersString`/`AddParameter`.
-- .NET: `AddBinding`/`AddBindings`/`AddBindingsString` are now
-`AddParameter`/`AddParameters`/`AddParametersString`.
-- JavaScript: `addBinding`/`addBindings`/`addBindingsString` are now
-`addParameter`/`addParameters`/`addParametersString`, and the `RequestOptions.bindings` field is now `parameters`.
-
-For example, in the Java driver:
-
-[source,java]
-----
-final Map<String, Object> params = new HashMap<>();
-params.put("x", 1);
-
-// 3.x
-RequestMessage.build("g.V(x)").addBindings(params).create();
-
-// 4.x
-RequestMessage.build("g.V(x)").addParameters(params).create();
-----
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-3262[TINKERPOP-3262]
-
-==== Standardizing GLV Connections
-
-TinkerPop 4.x standardizes connection option names and defaults across all five Gremlin Language Variants (Java, Python,
-.NET, Go, and JavaScript). Each driver using its language-idiomatic casing (`camelCase`, `PascalCase`, or `snake_case`).
-These renames are breaking, the old option names have been removed.
-
-===== Standardized options (cross-GLV)
-
-The table lists each standardized option by driver. Defaults are shown in parentheses; "n/a" means the driver does not
-expose that option.
-
-[width="100%",cols="2,2,2,2,2,2",options="header"]
-|=========================================================
-|Concept |Java (`Cluster.Builder`) |Python (kwarg) |.NET (`ConnectionSettings`) |Go (settings field) |JavaScript (option)
-|Max pooled connections |`maxConnections` (128) |`max_connections` (128) |`MaxConnections` (128) |`MaxConnections` (128) |`maxConnections` (128)
-|Connect timeout |`connectTimeoutMillis` (5000) |`connect_timeout_millis` (5000) |`ConnectTimeoutMillis` (5000) |`ConnectTimeoutMillis` (5000) |n/a
-|Idle-read timeout |`readTimeoutMillis` (0/off) |`read_timeout_millis` (off) |`ReadTimeoutMillis` (0/off) |`ReadTimeoutMillis` (0/off) |`readTimeoutMillis` (undici default)
-|Pool idle timeout |`idleTimeoutMillis` (180000) |`idle_timeout_millis` (180000) |`IdleTimeout` (180s) |`IdleTimeoutMillis` (180000) |n/a
-|TCP keep-alive idle |`keepAliveTimeMillis` (30000) |`keep_alive_time_millis` (30000) |`KeepAliveTime` (30s) |`KeepAliveTimeMillis` (30000) |`keepAliveTimeMillis` (30000)
-|Compression |`compression` (`DEFLATE`) |`compression` (`'deflate'`) |`Compression` (`Deflate`) |`Compression` (`CompressionDeflate`) |`compression` (`'deflate'`)
-|Connection-level batch size |`batchSize` (64) |`batch_size` (64) |`BatchSize` (64) |`BatchSize` (64) |`batchSize` (64)
-|Connection-level bulkResults |`bulkResults` (false) |`bulk_results` (false) |`BulkResults` (false) |`BulkResults` (false) |`bulkResults` (false)
-|Max response header bytes |`maxResponseHeaderBytes` (8192) |n/a |`MaxResponseHeaderBytes` (handler default) |`MaxResponseHeaderBytes` (net/http default) |`maxResponseHeaderBytes` (undici default)
-|TLS configuration |`ssl(SslContext)` + keystore builders |`ssl` (`SSLContext`) |`Ssl` (`SslClientAuthenticationOptions`) |`Ssl` (`*tls.Config`) |runtime (`NODE_EXTRA_CA_CERTS`, etc.)
-|HTTP proxy |`proxy(ProxyOptions)` |`proxy` |`Proxy` (`IWebProxy`) |`Proxy` (env default) |`proxy` (undici `ProxyAgent`)
-|Request interceptors |`interceptors` |`interceptors` |interceptor delegates |`Interceptors` |`interceptors`
-|=========================================================
-
-===== Behavior changes (all drivers)
-
-These change runtime behavior on upgrade even if you do not change your configuration:
-
-- *Compression defaults to on.* Every driver now defaults compression to `deflate` and sends `Accept-Encoding: deflate`.
-  Disable it with the compression option's "none" value (`Compression.NONE`, `'none'`, `Compression.None`,
-  `CompressionNone`).
-- *Connect timeout lowered to 5s* (from 15s, where applicable) and is now actually applied to transport establishment
-  (TCP connect plus TLS handshake), not the whole request.
-- *`readTimeout` is an idle-read timeout*, armed when the request is sent and reset on each inbound response chunk, so it
-  is streaming-safe and bounds the wait for the first response as well as the idle gap between chunks, but not total
-  response duration. It is off by default.
-- *`idleTimeout` reaps only pooled connections* that are idle between requests; it no longer bounds an in-flight
-  response (that is `readTimeout`'s job).
-
-===== Driver-specific notes
-
-- *Java* (`gremlin-driver`): Renamed: `maxConnectionPoolSize`->`maxConnections`, `connectionSetupTimeoutMillis`->`connectTimeoutMillis`,
-  `idleConnectionTimeoutMillis`->`idleTimeoutMillis`, `resultIterationBatchSize`->`batchSize`, `serializer`->`responseSerializer`,
-  and `RequestOptions` `addG`->`traversalSource`. New: `readTimeoutMillis`, `keepAliveTimeMillis`,
-  `maxResponseHeaderBytes`, `proxy(ProxyOptions)`, `url(String)`, `ssl(SslContext)`. Removed: `maxResponseContentLength`.
-  `validationRequest` default reconciled to `g.inject(0)`.
-- *Python* (`gremlin-python`): Renamed: `pool_size`->`max_connections` (default 8->128) and `ssl_options`->`ssl`.
-  New: `connect_timeout_millis`, `read_timeout_millis`, `idle_timeout_millis`, `keep_alive_time_millis`, `compression`,
-  `batch_size`, `proxy`, `trust_env`. `auth.sigv4` gained an optional credentials provider. Removed: `headers` (use interceptors)
-  and `max_content_length`.
-- *.NET* (`gremlin-dotnet`): Renamed: `MaxConnectionsPerServer`->`MaxConnections`, `ConnectionTimeout`->`ConnectTimeout`,
-  `IdleConnectionTimeout`->`IdleTimeout`, `KeepAliveInterval`->`KeepAliveTime`, `EnableCompression`->`Compression`, and
-  `Auth.BasicAuth`/`Auth.SigV4Auth`->`Auth.Basic`/`Auth.Sigv4`. New: `ReadTimeout`, `MaxResponseHeaderBytes`,
-  `Proxy`, `Ssl`, `BulkResults`.
-- *Go* (`gremlin-go`): Renamed: `MaximumConcurrentConnections`->`MaxConnections`, `IdleConnectionTimeout`->`IdleTimeout`,
-  `KeepAliveInterval`->`KeepAliveTime`, `ConnectionTimeout`->`ConnectTimeout`, `TlsConfig`->`Ssl`, `RequestInterceptors`->`Interceptors`,
-  `EnableCompression`->`Compression`. Auth helpers moved from package `gremlingo`
-  (`BasicAuth`/`SigV4Auth`/`SigV4AuthWithCredentials`) into a new `auth` sub-package (`auth.Basic`/`auth.SigV4`/`auth.SigV4WithCredentials`).
-  New: `ReadTimeout(Millis)`, `MaxResponseHeaderBytes`, `Proxy` (defaults to `http.ProxyFromEnvironment`), `BatchSize`, `BulkResults`.
-- *JavaScript* (`gremlin-javascript`): adopted `undici` as a pinned dependency providing the default dispatcher built from the
-  options above. Renamed: `reader`->`responseSerializer`. New: `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`,
-  `proxy`, `compression`, `batchSize`, `bulkResults`, `logger`. Removed `headers` (use interceptors) and the
-  `ca`/`cert`/`pfx`/`rejectUnauthorized`/`agent` options (TLS is configured through the Node/undici runtime). undici is swapped
-  out in browser bundles, where these connection-pool options are managed by the browser.
-
-See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
-
-===== Renaming `evaluationTimeout` to `timeoutMillis`
-
-The per-request execution timeout is now referred to by a single name, `timeoutMillis`, everywhere. `timeoutMillis` is
-the maximum time in milliseconds that a request is allowed to execute on the server before it times out. It can be
-configured server-wide and overridden on a per-request basis. Previously the same concept was called
-`evaluationTimeout` in the server configuration, the `with()` script token, and several driver APIs. The `Millis`
-suffix aligns it with the driver connection options such as `connectTimeoutMillis` and `readTimeoutMillis`.
-
-This is a breaking change with no backward-compatible alias. The old `evaluationTimeout` name (and the long-deprecated
-`scriptEvaluationTimeout`) are no longer recognized anywhere. Update each surface as follows:
-
-- *Server config*: the `gremlin-server.yaml` key `evaluationTimeout` becomes `timeoutMillis` (default still 30000).
-- *Script token*: `g.with('evaluationTimeout', 500)` becomes `g.with('timeoutMillis', 500)`.
-- *Java driver*: `RequestOptions.Builder.timeout(long)` becomes `timeoutMillis(long)` and `getTimeout()` becomes `getTimeoutMillis()`.
-- *Go driver*: `RequestOptionsBuilder.SetEvaluationTimeout(int)` becomes `SetTimeoutMillis(int)`.
-- *.NET driver*: `Tokens.ArgsEvalTimeout` becomes `Tokens.ArgsTimeoutMillis` and `RequestMessage.Builder.AddEvaluationTimeout(...)`
-  becomes `AddTimeoutMillis(...)`.
-- *JavaScript driver*: the request option `{ evaluationTimeout: N }` becomes `{ timeoutMillis: N }`.
-- *Python driver*: use the token `timeoutMillis` (e.g. `g.with_('timeoutMillis', 500)` or `request_options={'timeoutMillis': 500}`).
-
-Driver and server should be upgraded together. A driver sending the old `evaluationTimeout` field to a 4.x server has
-that field silently ignored and falls back to the server's default timeout, as with any unrecognized request argument.
-
-See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-server[Gremlin Server]
-
 ==== Runtime Upgrades
 
 TinkerPop 4.0 introduces major upgrades to its various runtimes.
@@ -441,58 +312,6 @@ of options used by TinkerPop's own tests is unchanged.
 ===== .NET Runtime Upgrade
 
 The minimum target framework is now `net8.0` (previously `netstandard2.0;net6.0`).
-
-==== Request Interceptors
-
-When TinkerPop supported WebSockets prior to 4.0.0, the Java driver offered a `RequestInterceptor` interface (and
-its predecessor, `HandshakeInterceptor`) that allowed modification of the raw Netty `FullHttpRequest`. For WebSocket
-connections, the interceptor only ran on the initial HTTP upgrade handshake. With the move to HTTP, the notion of
-the "interceptor" has shifted to a per-request concern that is now standardized across all GLVs.
-
-All GLVs now support request interceptors, which allow modification of the HTTP request before it is sent to the
-server. An interceptor is a function that receives the mutable HTTP request object and can modify headers, the
-request body, the URI, or the HTTP method. Interceptors are run in the order they are registered.
-
-The most common use case for interceptors is authentication (e.g., SigV4 signing), but they can also be used to add
-provider-specific fields, inject custom headers, or transform the request body.
-
-Here is a simple Java example that adds a custom header:
-
-[source,java]
-----
-Cluster cluster = Cluster.build("localhost")
-    .interceptors(request -> request.headers().put("X-Custom-Header", "value"))
-    .create();
-----
-
-Authentication is also an interceptor. Each GLV provides convenience methods (e.g., `Auth.basic()`, `Auth.sigv4()`)
-that return interceptors and can be registered alongside custom ones.
-
-For full details on the interceptor API for each language variant, refer to the RequestInterceptor section in
-each GLV's documentation in the
-link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
-reference.
-
-See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-java-interceptors[Java], link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-python-interceptors[Python],
-link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-javascript-interceptors[JavaScript], link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-dotnet-interceptors[.NET],
-link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-go-interceptors[Go]
-
-==== Non-configurable Serialization
-
-TinkerPop 3.x drivers used a single serializer configuration (for example, `serializer` in the Java driver or
-`message_serializer` in Python) that controlled both how a `RequestMessage` was serialized on the way to the server
-and how responses were deserialized on the way back. TinkerPop 4 splits these concerns. Requests are now always
-serialized as JSON (`application/json`) and that behavior is not configurable. The remaining serializer configuration
-is named `responseSerializer` (cased idiomatically per language) and controls only the `Accept` header and response
-deserialization.
-
-Applications that require a different request body encoding, such as GraphBinary for a server that expects it, can
-register a request interceptor that serializes the `RequestMessage` and replaces the body and `Content-Type` header.
-See the RequestInterceptor section for each GLV in the
-link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
-reference.
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-3250[TINKERPOP-3250]
 
 ==== New Gremlin-Lang Literals
 
@@ -546,7 +365,225 @@ g.V().has("blob",P.eq(Binary("AQID")))
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3153[TINKERPOP-3153]
 
-==== Python Driver Improvements
+==== Driver Enhancements
+
+This version of TinkerPop introduced many enhancements and changes to the various language drivers. Some changes
+extended to all languages equally, while others were more specific to a single language. The following sections
+describe the relevant changes.
+
+===== HTTP Streaming Responses
+
+The move to HTTP for TinkerPop 4 initially came with a tradeoff: Gremlin Server's HTTP responses were buffered in
+full before the driver could begin deserializing them, so a request was not usable by the caller until the server had
+finished producing every result. The drivers now deserialize an HTTP response incrementally as it arrives, so a
+caller can begin working with the first results while the rest of the response is still in transit. This reduces
+time-to-first-result and memory use for large result sets, and lets a caller stop consuming and release the
+connection partway through a result set instead of waiting for it to complete.
+
+Streaming is active by default in all GLVs. The Reference Documentation covers additional details and
+nuances for certain drivers specific to their implementation.
+
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-java-streaming[Java],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-javascript-streaming[JavaScript],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-dotnet-streaming[.NET]
+
+===== Request Interceptors
+
+When TinkerPop supported WebSockets prior to 4.0.0, the Java driver offered a `RequestInterceptor` interface (and
+its predecessor, `HandshakeInterceptor`) that allowed modification of the raw Netty `FullHttpRequest`. For WebSocket
+connections, the interceptor only ran on the initial HTTP upgrade handshake. With the move to HTTP, the notion of
+the "interceptor" has shifted to a per-request concern that is now standardized across all GLVs.
+
+All GLVs now support request interceptors, which allow modification of the HTTP request before it is sent to the
+server. An interceptor is a function that receives the mutable HTTP request object and can modify headers, the
+request body, the URI, or the HTTP method. Interceptors are run in the order they are registered.
+
+The most common use case for interceptors is authentication (e.g., SigV4 signing), but they can also be used to add
+provider-specific fields, inject custom headers, or transform the request body.
+
+Here is a simple Java example that adds a custom header:
+
+[source,java]
+----
+Cluster cluster = Cluster.build("localhost")
+    .interceptors(request -> request.headers().put("X-Custom-Header", "value"))
+    .create();
+----
+
+Authentication is also an interceptor. Each GLV provides convenience methods (e.g., `Auth.basic()`, `Auth.sigv4()`)
+that return interceptors and can be registered alongside custom ones.
+
+For full details on the interceptor API for each language variant, refer to the RequestInterceptor section in
+each GLV's documentation in the
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
+reference.
+
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-java-interceptors[Java], link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-python-interceptors[Python],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-javascript-interceptors[JavaScript], link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-dotnet-interceptors[.NET],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-go-interceptors[Go]
+
+===== Non-configurable Serialization
+
+TinkerPop 3.x drivers used a single serializer configuration (for example, `serializer` in the Java driver or
+`message_serializer` in Python) that controlled both how a `RequestMessage` was serialized on the way to the server
+and how responses were deserialized on the way back. TinkerPop 4 splits these concerns. Requests are now always
+serialized as JSON (`application/json`) and that behavior is not configurable. The remaining serializer configuration
+is named `responseSerializer` (cased idiomatically per language) and controls only the `Accept` header and response
+deserialization.
+
+Applications that require a different request body encoding, such as GraphBinary for a server that expects it, can
+register a request interceptor that serializes the `RequestMessage` and replaces the body and `Content-Type` header.
+See the RequestInterceptor section for each GLV in the
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-drivers-variants[Gremlin Drivers and Variants]
+reference.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3250[TINKERPOP-3250]
+
+===== Standardized options (cross-GLV)
+
+TinkerPop 4.x standardizes connection option names and defaults across all five Gremlin Language Variants (Java, Python,
+.NET, Go, and JavaScript). Each driver using its language-idiomatic casing (`camelCase`, `PascalCase`, or `snake_case`).
+These renames are breaking, the old option names have been removed.
+
+The table lists each standardized option by driver. Defaults are shown in parentheses; "n/a" means the driver does not
+expose that option.
+
+[width="100%",cols="2,2,2,2,2,2",options="header"]
+|=========================================================
+|Concept |Java (`Cluster.Builder`) |Python (kwarg) |.NET (`ConnectionSettings`) |Go (settings field) |JavaScript (option)
+|Max pooled connections |`maxConnections` (128) |`max_connections` (128) |`MaxConnections` (128) |`MaxConnections` (128) |`maxConnections` (128)
+|Connect timeout |`connectTimeoutMillis` (5000) |`connect_timeout_millis` (5000) |`ConnectTimeoutMillis` (5000) |`ConnectTimeoutMillis` (5000) |n/a
+|Idle-read timeout |`readTimeoutMillis` (0/off) |`read_timeout_millis` (off) |`ReadTimeoutMillis` (0/off) |`ReadTimeoutMillis` (0/off) |`readTimeoutMillis` (undici default)
+|Pool idle timeout |`idleTimeoutMillis` (180000) |`idle_timeout_millis` (180000) |`IdleTimeout` (180s) |`IdleTimeoutMillis` (180000) |n/a
+|TCP keep-alive idle |`keepAliveTimeMillis` (30000) |`keep_alive_time_millis` (30000) |`KeepAliveTime` (30s) |`KeepAliveTimeMillis` (30000) |`keepAliveTimeMillis` (30000)
+|Compression |`compression` (`DEFLATE`) |`compression` (`'deflate'`) |`Compression` (`Deflate`) |`Compression` (`CompressionDeflate`) |`compression` (`'deflate'`)
+|Connection-level batch size |`batchSize` (64) |`batch_size` (64) |`BatchSize` (64) |`BatchSize` (64) |`batchSize` (64)
+|Connection-level bulkResults |`bulkResults` (false) |`bulk_results` (false) |`BulkResults` (false) |`BulkResults` (false) |`bulkResults` (false)
+|Max response header bytes |`maxResponseHeaderBytes` (8192) |n/a |`MaxResponseHeaderBytes` (handler default) |`MaxResponseHeaderBytes` (net/http default) |`maxResponseHeaderBytes` (undici default)
+|TLS configuration |`ssl(SslContext)` + keystore builders |`ssl` (`SSLContext`) |`Ssl` (`SslClientAuthenticationOptions`) |`Ssl` (`*tls.Config`) |runtime (`NODE_EXTRA_CA_CERTS`, etc.)
+|HTTP proxy |`proxy(ProxyOptions)` |`proxy` |`Proxy` (`IWebProxy`) |`Proxy` (env default) |`proxy` (undici `ProxyAgent`)
+|Request interceptors |`interceptors` |`interceptors` |interceptor delegates |`Interceptors` |`interceptors`
+|=========================================================
+
+===== Behavior changes (all drivers)
+
+These change runtime behavior on upgrade even if you do not change your configuration:
+
+- *Compression defaults to on.* Every driver now defaults compression to `deflate` and sends `Accept-Encoding: deflate`.
+Disable it with the compression option's "none" value (`Compression.NONE`, `'none'`, `Compression.None`,
+`CompressionNone`).
+- *Connect timeout lowered to 5s* (from 15s, where applicable) and is now actually applied to transport establishment
+(TCP connect plus TLS handshake), not the whole request.
+- *`readTimeout` is an idle-read timeout*, armed when the request is sent and reset on each inbound response chunk, so it
+is streaming-safe and bounds the wait for the first response as well as the idle gap between chunks, but not total
+response duration. It is off by default.
+- *`idleTimeout` reaps only pooled connections* that are idle between requests; it no longer bounds an in-flight
+response (that is `readTimeout`'s job).
+
+===== Driver-specific notes
+
+- *Java* (`gremlin-driver`): Renamed: `maxConnectionPoolSize`->`maxConnections`, `connectionSetupTimeoutMillis`->`connectTimeoutMillis`,
+`idleConnectionTimeoutMillis`->`idleTimeoutMillis`, `resultIterationBatchSize`->`batchSize`, `serializer`->`responseSerializer`,
+and `RequestOptions` `addG`->`traversalSource`. New: `readTimeoutMillis`, `keepAliveTimeMillis`,
+`maxResponseHeaderBytes`, `proxy(ProxyOptions)`, `url(String)`, `ssl(SslContext)`. Removed: `maxResponseContentLength`.
+`validationRequest` default reconciled to `g.inject(0)`.
+- *Python* (`gremlin-python`): Renamed: `pool_size`->`max_connections` (default 8->128) and `ssl_options`->`ssl`.
+New: `connect_timeout_millis`, `read_timeout_millis`, `idle_timeout_millis`, `keep_alive_time_millis`, `compression`,
+`batch_size`, `proxy`, `trust_env`. `auth.sigv4` gained an optional credentials provider. Removed: `headers` (use interceptors)
+and `max_content_length`.
+- *.NET* (`gremlin-dotnet`): Renamed: `MaxConnectionsPerServer`->`MaxConnections`, `ConnectionTimeout`->`ConnectTimeout`,
+`IdleConnectionTimeout`->`IdleTimeout`, `KeepAliveInterval`->`KeepAliveTime`, `EnableCompression`->`Compression`, and
+`Auth.BasicAuth`/`Auth.SigV4Auth`->`Auth.Basic`/`Auth.Sigv4`. New: `ReadTimeout`, `MaxResponseHeaderBytes`,
+`Proxy`, `Ssl`, `BulkResults`.
+- *Go* (`gremlin-go`): Renamed: `MaximumConcurrentConnections`->`MaxConnections`, `IdleConnectionTimeout`->`IdleTimeout`,
+`KeepAliveInterval`->`KeepAliveTime`, `ConnectionTimeout`->`ConnectTimeout`, `TlsConfig`->`Ssl`, `RequestInterceptors`->`Interceptors`,
+`EnableCompression`->`Compression`. Auth helpers moved from package `gremlingo`
+(`BasicAuth`/`SigV4Auth`/`SigV4AuthWithCredentials`) into a new `auth` sub-package (`auth.Basic`/`auth.SigV4`/`auth.SigV4WithCredentials`).
+New: `ReadTimeout(Millis)`, `MaxResponseHeaderBytes`, `Proxy` (defaults to `http.ProxyFromEnvironment`), `BatchSize`, `BulkResults`.
+- *JavaScript* (`gremlin-javascript`): adopted `undici` as a pinned dependency providing the default dispatcher built from the
+options above. Renamed: `reader`->`responseSerializer`. New: `readTimeoutMillis`, `keepAliveTimeMillis`, `maxResponseHeaderBytes`,
+`proxy`, `compression`, `batchSize`, `bulkResults`, `logger`. Removed `headers` (use interceptors) and the
+`ca`/`cert`/`pfx`/`rejectUnauthorized`/`agent` options (TLS is configured through the Node/undici runtime). undici is swapped
+out in browser bundles, where these connection-pool options are managed by the browser.
+
+See: link:https://lists.apache.org/thread/yqtr2wnb1kq2pqqq4002cz511q5o0bkg[[DISCUSS] Standardizing GLV connection options in TinkerPop 4].
+
+===== Renaming `evaluationTimeout` to `timeoutMillis`
+
+The per-request execution timeout is now referred to by a single name, `timeoutMillis`, everywhere. `timeoutMillis` is
+the maximum time in milliseconds that a request is allowed to execute on the server before it times out. It can be
+configured server-wide and overridden on a per-request basis. Previously the same concept was called
+`evaluationTimeout` in the server configuration, the `with()` script token, and several driver APIs. The `Millis`
+suffix aligns it with the driver connection options such as `connectTimeoutMillis` and `readTimeoutMillis`.
+
+This is a breaking change with no backward-compatible alias. The old `evaluationTimeout` name (and the long-deprecated
+`scriptEvaluationTimeout`) are no longer recognized anywhere. Update each surface as follows:
+
+- *Server config*: the `gremlin-server.yaml` key `evaluationTimeout` becomes `timeoutMillis` (default still 30000).
+- *Script token*: `g.with('evaluationTimeout', 500)` becomes `g.with('timeoutMillis', 500)`.
+- *Java driver*: `RequestOptions.Builder.timeout(long)` becomes `timeoutMillis(long)` and `getTimeout()` becomes `getTimeoutMillis()`.
+- *Go driver*: `RequestOptionsBuilder.SetEvaluationTimeout(int)` becomes `SetTimeoutMillis(int)`.
+- *.NET driver*: `Tokens.ArgsEvalTimeout` becomes `Tokens.ArgsTimeoutMillis` and `RequestMessage.Builder.AddEvaluationTimeout(...)`
+becomes `AddTimeoutMillis(...)`.
+- *JavaScript driver*: the request option `{ evaluationTimeout: N }` becomes `{ timeoutMillis: N }`.
+- *Python driver*: use the token `timeoutMillis` (e.g. `g.with_('timeoutMillis', 500)` or `request_options={'timeoutMillis': 500}`).
+
+Driver and server should be upgraded together. A driver sending the old `evaluationTimeout` field to a 4.x server has
+that field silently ignored and falls back to the server's default timeout, as with any unrecognized request argument.
+
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-server[Gremlin Server]
+
+===== JavaScript Typed Numerics
+
+JavaScript has a single `Number` type (IEEE 754 double) which loses the distinction between Gremlin numeric types like
+`int`, `float`, `long`, and `double`. The `gremlin-javascript` driver now provides typed wrapper classes and factory
+functions that give explicit control over how numbers are serialized and deserialized.
+
+On the *serialization* side, wrapping a value controls the GremlinLang type suffix and GraphBinary type code sent to
+the server:
+
+[source,javascript]
+----
+const { toInt, toLong, toFloat, toDouble } = gremlin.structure;
+
+g.V().has('age', toInt(29)).next();        // age sent as Int
+g.V().has('score', toFloat(3.14)).next();  // score sent as Float
+g.V().has('id', toLong('9007199254740993')).next(); // id sent as Long
+----
+
+`toLong()` accepts `number`, `string`, or `bigint`. Number inputs must be within the safe integer range (throws
+`RangeError` otherwise); string and bigint inputs support the full signed 64-bit range.
+
+Without wrappers, the driver continues to infer types automatically from the JavaScript value, so existing code is
+unaffected.
+
+On the *deserialization* side, a new `preciseNumbers: true` connection option wraps incoming numeric values in the
+same typed wrappers, preserving the server's original type information:
+
+[source,javascript]
+----
+const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin', {
+  preciseNumbers: true
+}));
+
+const v = await g.V(1).elementMap().next();
+const age = v.value.get('age');  // Int { value: 29, type: 'int' }
+age + 1;                         // 30 — wrappers support arithmetic via valueOf()
+----
+
+The `unwrap()` helper extracts the raw value from any wrapper, passing non-wrapper values through unchanged:
+
+[source,javascript]
+----
+const { unwrap } = gremlin.structure;
+unwrap(toInt(29));  // 29
+unwrap('hello');    // 'hello'
+----
+
+See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-javascript-numeric-types[Numeric Types]
+
+
+===== Python Driver Improvements
 
 Gremlin for Python has been heavily refactored for this release, simplifying driver usage and removing unnecessary
 infrastructure. Key areas for change to consider when upgrading include removal of the old mechanism used to configure
@@ -608,22 +645,6 @@ The `sparql-gremlin` module has been removed following a prolonged period of ina
 replacement planned for this functionality.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3249[TINKERPOP-3249]
-
-==== HTTP Streaming Responses
-
-The move to HTTP for TinkerPop 4 initially came with a tradeoff: Gremlin Server's HTTP responses were buffered in
-full before the driver could begin deserializing them, so a request was not usable by the caller until the server had
-finished producing every result. The drivers now deserialize an HTTP response incrementally as it arrives, so a
-caller can begin working with the first results while the rest of the response is still in transit. This reduces
-time-to-first-result and memory use for large result sets, and lets a caller stop consuming and release the
-connection partway through a result set instead of waiting for it to complete.
-
-Streaming is active by default in all GLVs. The Reference Documentation covers additional details and
-nuances for certain drivers specific to their implementation.
-
-See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-java-streaming[Java],
-link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-javascript-streaming[JavaScript],
-link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-dotnet-streaming[.NET]
 
 ==== More Secure Gremlin Server
 
@@ -698,6 +719,39 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-3107[TINKERPOP-3107]
 
 The following sections describe changes related to paramters passed to the server and the related concept of `GValue`.
 
+===== Bindings are now Parameters
+
+The map of named values substituted into a Gremlin query was previously called "bindings" in some places and
+"parameters" in others. TinkerPop now refers to these consistently as *query parameters*, reserving "bindings" for
+the distinct concept of `ScriptEngine` variable bindings. As a result, the driver methods for supplying query
+parameters have been renamed. Update any code that sets them:
+
+- Java: `RequestMessage.Builder.addBindings(...)` is now `addParameters(...)`.
+- Python: `client.submit(..., bindings=...)` is now `submit(..., parameters=...)`, and the `request_options`
+key `bindings` is now `parameters`.
+- Go: `SetBindings`/`SetBindingsString`/`AddBinding` are now
+`SetParameters`/`SetParametersString`/`AddParameter`.
+- .NET: `AddBinding`/`AddBindings`/`AddBindingsString` are now
+`AddParameter`/`AddParameters`/`AddParametersString`.
+- JavaScript: `addBinding`/`addBindings`/`addBindingsString` are now
+`addParameter`/`addParameters`/`addParametersString`, and the `RequestOptions.bindings` field is now `parameters`.
+
+For example, in the Java driver:
+
+[source,java]
+----
+final Map<String, Object> params = new HashMap<>();
+params.put("x", 1);
+
+// 3.x
+RequestMessage.build("g.V(x)").addBindings(params).create();
+
+// 4.x
+RequestMessage.build("g.V(x)").addParameters(params).create();
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3262[TINKERPOP-3262]
+
 ===== `gremlin-lang` based Parameters
 
 Parameters that are sent as part of the request are now `gremlin-lang` string maps rather than an actual Map
@@ -768,55 +822,6 @@ a `GValue` may not wrap another `GValue`, and (in the non-Java drivers) its name
 See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-java-gvalue[Java], link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-python-gvalue[Python],
 link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-javascript-gvalue[JavaScript], link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-dotnet-gvalue[.NET],
 link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-go-gvalue[Go]
-
-==== JavaScript Typed Numerics
-
-JavaScript has a single `Number` type (IEEE 754 double) which loses the distinction between Gremlin numeric types like
-`int`, `float`, `long`, and `double`. The `gremlin-javascript` driver now provides typed wrapper classes and factory
-functions that give explicit control over how numbers are serialized and deserialized.
-
-On the *serialization* side, wrapping a value controls the GremlinLang type suffix and GraphBinary type code sent to
-the server:
-
-[source,javascript]
-----
-const { toInt, toLong, toFloat, toDouble } = gremlin.structure;
-
-g.V().has('age', toInt(29)).next();        // age sent as Int
-g.V().has('score', toFloat(3.14)).next();  // score sent as Float
-g.V().has('id', toLong('9007199254740993')).next(); // id sent as Long
-----
-
-`toLong()` accepts `number`, `string`, or `bigint`. Number inputs must be within the safe integer range (throws
-`RangeError` otherwise); string and bigint inputs support the full signed 64-bit range.
-
-Without wrappers, the driver continues to infer types automatically from the JavaScript value, so existing code is
-unaffected.
-
-On the *deserialization* side, a new `preciseNumbers: true` connection option wraps incoming numeric values in the
-same typed wrappers, preserving the server's original type information:
-
-[source,javascript]
-----
-const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin', {
-  preciseNumbers: true
-}));
-
-const v = await g.V(1).elementMap().next();
-const age = v.value.get('age');  // Int { value: 29, type: 'int' }
-age + 1;                         // 30 — wrappers support arithmetic via valueOf()
-----
-
-The `unwrap()` helper extracts the raw value from any wrapper, passing non-wrapper values through unchanged:
-
-[source,javascript]
-----
-const { unwrap } = gremlin.structure;
-unwrap(toInt(29));  // 29
-unwrap('hello');    // 'hello'
-----
-
-See: link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#gremlin-javascript-numeric-types[Numeric Types]
 
 ==== Improving Tree
 
