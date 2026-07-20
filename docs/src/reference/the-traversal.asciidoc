@@ -2148,6 +2148,8 @@ g.V().project("name","count").by(values("name")).by(bothE().count()).format("%{n
 <3> A `format()` will use property `name` and traversal product for positional argument to resolve variable values.
 <4> A `format()` will use map produced by `project` step to resolve variable values.
 
+NOTE: If a `%{key}` placeholder references a property that does not exist on the incoming element, that traverser is silently dropped from the result.
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#format(java.lang.String)++[`format(String)`],
