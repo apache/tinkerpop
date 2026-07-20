@@ -36,6 +36,11 @@ This matters most in the upgrade book, which is nearly always talking about
 reference, provider, or IO material that lives elsewhere. Note that upgrade docs
 pin a concrete version rather than `x.y.z` — see the exception below.
 
+## Section titles must fit the TOC
+
+Section titles that publish to the table of contents (the `====` level and above)
+must not exceed 30 characters, or they wrap in the fixed-width TOC when published.
+
 ## The `x.y.z` version placeholder
 
 Links into version-specific resources use the literal placeholder `x.y.z` in

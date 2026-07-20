@@ -108,8 +108,9 @@ blocks — it does not.
 The authoring details — graph choice, output suppression, `<1>` callouts, and
 the multi-language story — are in
 [references/executable-blocks.md](references/executable-blocks.md). AsciiDoc
-structure (anchors, cross-references, the `x.y.z` version placeholder, per-book
-`index.asciidoc` wiring, admonitions, images) is in
+structure (anchors, cross-references, section-title length limits for the TOC,
+the `x.y.z` version placeholder, per-book `index.asciidoc` wiring, admonitions,
+images) is in
 [references/asciidoc-and-wiring.md](references/asciidoc-and-wiring.md).
 
 ## The semantics document is load-bearing
