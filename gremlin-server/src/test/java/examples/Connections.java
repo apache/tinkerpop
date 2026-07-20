@@ -35,9 +35,9 @@ import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
 public class Connections {
-    static final String SERVER_HOST = System.getenv().getOrDefault("GREMLIN_SERVER_HOST", "localhost");
-    static final int SERVER_PORT = Integer.parseInt(System.getenv().getOrDefault("GREMLIN_SERVER_PORT", "8182"));
-    static final String VERTEX_LABEL = System.getenv().getOrDefault("VERTEX_LABEL", "connection");
+    static final String SERVER_HOST = System.getProperty("GREMLIN_SERVER_HOST", "localhost");
+    static final int SERVER_PORT = Integer.parseInt(System.getProperty("GREMLIN_SERVER_PORT", "8182"));
+    static final String VERTEX_LABEL = System.getProperty("VERTEX_LABEL", "connection");
 
     public static void main(String[] args) throws Exception {
         withEmbedded();
