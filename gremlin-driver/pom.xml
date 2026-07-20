@@ -268,11 +268,6 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>examples/**</exclude>
-                    </excludes>
-                </configuration>
             </plugin>
         </plugins>
     </build>
