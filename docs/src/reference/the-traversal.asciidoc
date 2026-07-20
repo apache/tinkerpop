@@ -851,13 +851,14 @@ or to the desired numerical type, based on the type token (`GType`) provided. If
 Numerical input will pass through unless a type is specified by the number token. `ArithmeticException` will be thrown
 for any overflow during narrowing of types.
 
-String inputs are parsed into numeric values. By default, the value will be parsed as an integer if it represents a
-whole number, or as a double if it contains a decimal point. A `NumberFormatException` will be thrown if the string
-cannot be parsed into a valid number format.
+String inputs are parsed into numeric values, choosing the smallest type that can represent the value without loss of
+precision. A whole number is parsed as an `Integer`, widening to `Long` or `BigInteger` if it is too large to fit.
+A number with a decimal point is parsed as a `Float`, widening to `Double` or `BigDecimal` when higher precision is
+required. A `NumberFormatException` will be thrown if the string cannot be parsed into a valid number format.
 
 Date inputs are converted to milliseconds since epoch (January 1, 1970, 00:00:00 GMT).
 
-All other input types will result in `IllegalArgumentException`.
+A `null` input passes through as `null`. All other input types will result in `IllegalArgumentException`.
 
 [gremlin-groovy,modern]
 ----
@@ -872,30 +873,10 @@ g.inject("2023-08-02T00:00:00Z").asDate().asNumber() <4>
 <3> A double is converted into an int.
 <4> A date is converted into milliseconds since epoch.
 
-[NOTE, caption=Java]
-====
-The enums values `byte`, `short`, `int`, `long`, `float`, `double` are reserved word in Java, and therefore must be
-referred to in Gremlin with an underscore appended as a suffix: `byte_`, `short_`, `int_`, `long_`, `float_`, `double_`.
-====
-
-[NOTE, caption=Groovy & Gremlin Console]
-====
-The enums values `byte`, `short`, `int`, `long`, `float`, `double` are reserved word in Groovy, therefore as the Gremlin
-Console is Groovy-based, they must be referred to in Gremlin with an underscore appended as a suffix: `byte_`,
-`short_`, `int_`, `long_`, `float_`, `double_`.
-====
-
-[NOTE, caption=JavaScript]
-====
-The enums values `byte`, `short`, `int`, `long`, `float`, `double` are reserved word in Javascript, and therefore must
-be referred to in Gremlin with an underscore appended as a suffix: `byte_`, `short_`, `int_`, `long_`, `float_`,
-`double_`.
-====
-
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asNumber()++[`asNumber()`]
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asNumber(org.apache.tinkerpop.gremlin.process.traversal.N)++[`asNumber(N)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asNumber()++[`asNumber()`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asNumber(org.apache.tinkerpop.gremlin.process.traversal.GType)++[`asNumber(GType)`]
 
 [[barrier-step]]
 === Barrier Step

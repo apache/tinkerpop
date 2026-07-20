@@ -615,7 +615,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3083[TINKERPOP-3083]
 ===== asString() No Longer Allow Nulls
 
 The `asString()` step will no longer allow `null` input. An `IllegalArgumentException` will be thrown for consistency
-with all other parsing steps (i.e. `asDate()`, `asBool()`, `asNumber()`).
+with the `asDate()` and `asBool()` parsing steps. Note that `asNumber()` differs here and passes `null` through as
+`null` rather than throwing.
 
 See: link:https://lists.apache.org/thread/q76pgrvhprosb4lty63bnsnbw2ljyl7m[DISCUSS] thread
 
@@ -1436,8 +1437,10 @@ gremlin> g.inject(128).asNumber(GType.BYTE)
 ==> ArithmeticException
 ----
 
-String input will be parsed. By default, the smalled unit of number to be parsed into is `int` if no type token is
-provided. `NumberFormatException` will be thrown for any unparsable strings:
+String input will be parsed into the smallest type that can hold the value without losing precision when no type token
+is provided: a whole number defaults to `int` (widening to `long` or `BigInteger`), and a number with a decimal point
+defaults to `float` (widening to `double` or `BigDecimal`). `NumberFormatException` will be thrown for any unparsable
+strings:
 
 [source,text]
 ----
