@@ -23,11 +23,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.IntegrationTest.Util;
+using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -132,6 +134,43 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 var response = await gremlinClient.SubmitAsync<int>(requestMsg);
 
                 Assert.Equal(expectedResult, await response.ToListAsync());
+            }
+        }
+
+        [Fact]
+        public async Task ShouldReturnRawValuesWithBulkResultsFalse()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using (var gremlinClient = new GremlinClient(gremlinServer))
+            {
+                // bulkResults=false: the ResultSet contains raw values (no Traverser wrapping).
+                var requestMessage = RequestMessage.Build("g.inject(1,2,3,2,1)")
+                    .AddBulkResults(false).Create();
+
+                var response = await gremlinClient.SubmitAsync<object>(requestMessage);
+                var results = await response.ToListAsync();
+
+                Assert.Equal(5, results.Count);
+                Assert.All(results, r => Assert.IsNotType<Traverser>(r));
+            }
+        }
+
+        [Fact]
+        public async Task ShouldReturnTraversersWithBulkResultsTrue()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using (var gremlinClient = new GremlinClient(gremlinServer))
+            {
+                // bulkResults=true: values are bulked into Traversers, read as Traverser.
+                var requestMessage = RequestMessage.Build("g.inject(1,2,3,2,1)")
+                    .AddBulkResults(true).Create();
+
+                var response = await gremlinClient.SubmitAsync<Traverser>(requestMessage);
+                var results = await response.ToListAsync();
+
+                // 3 unique values with bulk counts summing to the 5 injected.
+                Assert.Equal(3, results.Count);
+                Assert.Equal(5L, results.Sum(t => t.Bulk));
             }
         }
 
