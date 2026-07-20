@@ -1,0 +1,7 @@
+{
+  "@type" : "g:PrimitivePdt",
+  "@value" : {
+    "type" : "Uint8",
+    "value" : "10"
+  }
+}

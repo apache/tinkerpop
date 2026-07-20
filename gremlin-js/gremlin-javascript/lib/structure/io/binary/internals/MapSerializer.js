@@ -111,7 +111,7 @@ export default class MapSerializer {
     if (value_flag === 0x01) {
       return null;
     }
-    if (value_flag !== 0x00) {
+    if (value_flag !== 0x00 && value_flag !== 0x02) {
       throw new Error(`MapSerializer: unexpected {value_flag}=0x${value_flag.toString(16)}`);
     }
     return this.deserializeValue(reader, value_flag, type_code);
