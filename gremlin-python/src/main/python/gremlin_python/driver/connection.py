@@ -14,14 +14,27 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import asyncio
 import queue
 from concurrent.futures import Future
+
+from aiohttp.client_exceptions import (
+    ClientOSError,
+    ClientPayloadError,
+    ServerDisconnectedError,
+)
 
 from gremlin_python.driver import resultset, useragent
 from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
 from gremlin_python.driver.http_request import HttpRequest
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
+
+_TRANSPORT_ERRORS = (ClientOSError, ClientPayloadError, ServerDisconnectedError, asyncio.IncompleteReadError)
+_CONNECTION_ERROR_MSG = (
+    "Connection to server closed unexpectedly. "
+    "Ensure that the server is still reachable and the connection has not been closed by the server or a network device."
+)
 
 
 class GremlinServerError(Exception):
@@ -30,6 +43,11 @@ class GremlinServerError(Exception):
         self.status_code = status['code']
         self.status_message = status['message']
         self.status_exception = status['exception']
+
+
+class GremlinConnectionError(Exception):
+    """Raised when a transport-level failure occurs communicating with the server."""
+    pass
 
 
 class Connection:
@@ -127,6 +145,11 @@ class Connection:
         def cb(f):
             try:
                 f.result()
+            except _TRANSPORT_ERRORS as e:
+                wrapped = GremlinConnectionError(_CONNECTION_ERROR_MSG)
+                wrapped.__cause__ = e
+                future.set_exception(wrapped)
+                self._pool.put_nowait(self)
             except Exception as e:
                 future.set_exception(e)
                 self._pool.put_nowait(self)
@@ -164,6 +187,15 @@ class Connection:
             stream = self._transport.get_stream()
             for obj in self._response_serializer.deserialize_response_stream(stream):
                 self._result_set.stream.put_nowait(obj)
+        except _TRANSPORT_ERRORS as err:
+            # Evict the dead connection from aiohttp's internal pool, ensuring subsequent
+            # requests get a fresh connection.
+            self._transport.evict_response()
+            msg = 'Server returned an empty response body' if isinstance(err, asyncio.IncompleteReadError) and not err.partial else _CONNECTION_ERROR_MSG
+            raise GremlinConnectionError(msg) from err
+        except Exception:
+            self._transport.evict_response()
+            raise
         finally:
             self._pool.put_nowait(self)
 

@@ -244,8 +244,8 @@ public class ClientBehaviorIntegrateTest {
         } catch (ExecutionException e) {
             // Empty body causes the stream reader to hit EOF immediately
             assertThat(e.getCause(), instanceOf(RuntimeException.class));
-            assertThat(e.getCause().getCause(), instanceOf(java.io.EOFException.class));
-            assertTrue(e.getCause().getMessage().contains("EOFException"));
+            assertTrue(e.getCause().getMessage().contains("empty response body"));
+            assertThat(ExceptionHelper.getRootCause(e.getCause()), instanceOf(java.io.EOFException.class));
         } catch (TimeoutException e) {
             fail("Driver hung on empty response body instead of throwing an error");
         }

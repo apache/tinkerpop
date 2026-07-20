@@ -30,6 +30,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process;
 
@@ -376,6 +377,13 @@ namespace Gremlin.Net.Driver
                                 .ConfigureAwait(false);
                         }
                         channel.Writer.Complete();
+                    }
+                    catch (Exception ex) when (ex is not ResponseException
+                                                    and not OperationCanceledException
+                                                    and not HttpIOException)
+                    {
+                        channel.Writer.Complete(
+                            new ResponseException(ex));
                     }
                     catch (Exception ex)
                     {

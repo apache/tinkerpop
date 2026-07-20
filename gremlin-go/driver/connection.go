@@ -395,7 +395,11 @@ func (c *connection) streamToResultSet(reader io.Reader, rs ResultSet) {
 		d = NewGraphBinaryDeserializer(reader)
 	}
 	if err := d.ReadHeader(); err != nil {
-		if err != io.EOF {
+		if err == io.EOF {
+			emptyBodyErr := fmt.Errorf("server returned an empty response body")
+			c.logHandler.logf(Error, failedToReceiveResponse, emptyBodyErr.Error())
+			rs.setError(emptyBodyErr)
+		} else {
 			c.logHandler.logf(Error, failedToReceiveResponse, err.Error())
 			rs.setError(err)
 		}
