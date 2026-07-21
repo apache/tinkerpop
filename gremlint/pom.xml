@@ -82,8 +82,17 @@ limitations under the License.
                                 <script>
                                     def versionForJs = mavenVersion.replace("-SNAPSHOT", "-alpha1")
                                     def platformAgnosticBaseDirPath = project.basedir.getAbsolutePath().replace("\\","/")
+
+                                    // Update package.json
                                     def file = new File(platformAgnosticBaseDirPath + "/package.json")
                                     file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\": \"" + versionForJs + "\","))
+
+                                    // Update package-lock.json
+                                    file = new File(platformAgnosticBaseDirPath + "/package-lock.json")
+                                    def lockContent = file.getText("UTF-8")
+                                    lockContent = lockContent.replaceFirst(/"version": ".*",\n\s+"lockfileVersion"/, "\"version\": \"" + versionForJs + "\",\n  \"lockfileVersion\"")
+                                    lockContent = lockContent.replaceFirst(/("": \{\n\s+"name": "gremlint",\n\s+"version": )".*"/, "\$1\"" + versionForJs + "\"")
+                                    file.write(lockContent)
                                 </script>
                             </scripts>
                         </configuration>

@@ -25,7 +25,7 @@
 
 const uuid = require('uuid');
 
-const gremlinVersion = '3.7.7-SNAPSHOT'; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
+const gremlinVersion = '3.7.7-alpha1'; // DO NOT MODIFY - Configured automatically by Maven build
 
 exports.toLong = function toLong(value) {
   return new Long(value);

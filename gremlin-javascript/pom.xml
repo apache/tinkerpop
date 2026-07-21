@@ -112,8 +112,21 @@ limitations under the License.
                                     def mavenVersion = "${project.version}"
                                     def versionForJs = mavenVersion.replace("-SNAPSHOT", "-alpha1")
                                     def platformAgnosticBaseDirPath = project.basedir.getAbsolutePath().replace("\\", "/")
+
+                                    // Update package.json
                                     def file = new File(platformAgnosticBaseDirPath + "/src/main/javascript/gremlin-javascript/package.json")
                                     file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\": \"" + versionForJs + "\","))
+
+                                    // Update package-lock.json
+                                    file = new File(platformAgnosticBaseDirPath + "/src/main/javascript/gremlin-javascript/package-lock.json")
+                                    def lockContent = file.getText("UTF-8")
+                                    lockContent = lockContent.replaceFirst(/"version": ".*",\n\s+"lockfileVersion"/, "\"version\": \"" + versionForJs + "\",\n  \"lockfileVersion\"")
+                                    lockContent = lockContent.replaceFirst(/("": \{\n\s+"name": "gremlin",\n\s+"version": )".*"/, "\$1\"" + versionForJs + "\"")
+                                    file.write(lockContent)
+
+                                    // Update utils.js
+                                    file = new File(platformAgnosticBaseDirPath + "/src/main/javascript/gremlin-javascript/lib/utils.js")
+                                    file.write(file.getText("UTF-8").replaceFirst(/gremlinVersion = '.*'/, "gremlinVersion = '" + versionForJs + "'"))
                                 </script>
                             </scripts>
                         </configuration>
@@ -223,6 +236,7 @@ limitations under the License.
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>replacer</artifactId>
                 <configuration>
+                    <skip>true</skip>
                     <file>src/main/javascript/gremlin-javascript/lib/utils.js</file>
                     <replacements>
                         <replacement>
