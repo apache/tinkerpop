@@ -170,7 +170,7 @@ NOTE: To use <<tinkergraph-gremlin-tx, transactions>>, configure `gremlin.graph`
 `org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerTransactionGraph`.
 
 The `IdManager` settings above refer to how TinkerGraph will control identifiers for vertices, edges and vertex
-properties.  There are several options for each of these settings: `ANY`, `LONG`, `INTEGER`, `UUID`, or the fully
+properties.  There are several options for each of these settings: `ANY`, `LONG`, `INTEGER`, `UUID`, `STRING`, or the fully
 qualified class name of an `IdManager` implementation on the classpath.  When not specified, the default values
 for all settings is `ANY`, meaning that the graph will work with any object on the JVM as the identifier and will
 generate new identifiers from `Long` when the identifier is not user supplied.  TinkerGraph will also expect the
@@ -266,7 +266,7 @@ public class GraphService {
 // suitable test graph replacement for our actual production graph.
 public class GraphServiceTest {
     private static final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
-    private static final GraphTraversalSource g = traversal.withEmbedded(graph);
+    private static final GraphTraversalSource g = traversal().withEmbedded(graph);
     private static final GraphService service = new GraphService(g);
 
     @Test
@@ -286,8 +286,8 @@ public class GraphServiceTest {
 // with this approach you could also configure your production graph directly or use custom
 // build options to trigger different test configurations for a more dynamic approach
 public class GraphServiceTest {
-    private static final GraphTraversalSource g = traversal.withRemote(
-            new DriverRemoteConnection('ws://localhost:8182/gremlin'));
+    private static final GraphTraversalSource g = traversal().withRemote(
+            new DriverRemoteConnection("ws://localhost:8182/gremlin"));
     private static final GraphService service = new GraphService(g);
 
     @Test
