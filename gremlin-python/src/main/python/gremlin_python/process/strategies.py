@@ -188,6 +188,8 @@ class PathRetractionStrategy(TraversalStrategy):
 class ProductiveByStrategy(TraversalStrategy):
     def __init__(self, productiveKeys=None):
         TraversalStrategy.__init__(self, fqcn=optimization_namespace + 'ProductiveByStrategy')
+        if productiveKeys is not None:
+            self.configuration["productiveKeys"] = productiveKeys
 
 
 class CountStrategy(TraversalStrategy):

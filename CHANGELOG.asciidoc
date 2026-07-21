@@ -35,6 +35,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Expanded `gremlin-python` CI matrix to test against Python 3.9, 3.10, 3.11, 3.12, and 3.13.
 * Add Node 26 support for `gremlin-javascript` and `gremlint`.
 * Corrected numerous inaccuracies in the reference documentation, including wrong default values (connection pool sizes, buffer sizes, ports, timeouts), stale serializer class names, removed options documented as available, and broken code examples across the JVM, Python, `.NET`, Go, and JavaScript drivers.
+* Fixed a panic in `gremlin-go` `PartitionStrategy` when `ReadPartitions` was left unset.
+* Fixed `gremlin-python` `ProductiveByStrategy` to pass through the `productiveKeys` argument, which was previously accepted but never serialized to the server.
 
 [[release-3-7-6]]
 === TinkerPop 3.7.6 (Release Date: April 1, 2026)

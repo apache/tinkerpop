@@ -110,6 +110,18 @@ class TestTraversalStrategies(object):
         assert 1 == len(strategy.configuration)
         assert __.has("name","marko") == strategy.configuration["vertices"]
         ###
+        bytecode = g.withStrategies(ProductiveByStrategy(productiveKeys=["name", "age"])).bytecode
+        assert 1 == len(bytecode.source_instructions)
+        assert 2 == len(bytecode.source_instructions[0])
+        assert "withStrategies" == bytecode.source_instructions[0][0]
+        assert ProductiveByStrategy() == bytecode.source_instructions[0][1]
+        strategy = bytecode.source_instructions[0][1]
+        assert 1 == len(strategy.configuration)
+        assert ["name", "age"] == strategy.configuration["productiveKeys"]
+        ###
+        bytecode = g.withStrategies(ProductiveByStrategy()).bytecode
+        assert 0 == len(bytecode.source_instructions[0][1].configuration)
+        ###
         bytecode = g.withStrategies(OptionsStrategy(options={"x": "test", "y": True})).bytecode
         assert 1 == len(bytecode.source_instructions)
         assert 2 == len(bytecode.source_instructions[0])
