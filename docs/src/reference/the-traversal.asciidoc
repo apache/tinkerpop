@@ -1646,14 +1646,14 @@ gremlin> g.V().has('person','name','stephen').fold().
 ......2>            fail('stephen should exist')).
 ......3>   property('k',100)
 fail() Step Triggered
-===========================================================================================================================
+=================================================================================================================================================
 Message > stephen should exist
 Traverser> []
   Bulk   > 1
-Traversal> fail()
-Parent   > CoalesceStep [V().has("person","name","stephen").fold().coalesce(__.unfold(),__.fail()).property("k",(int) 100)]
+Traversal> fail("stephen should exist")
+Parent   > CoalesceStep [V().has("person","name","stephen").fold().coalesce(__.unfold(),__.fail("stephen should exist")).property("k",(int) 100)]
 Metadata > {}
-===========================================================================================================================
+=================================================================================================================================================
 ----
 
 The code example above exemplifies the latter use case where there is essentially an assertion that there is a vertex
