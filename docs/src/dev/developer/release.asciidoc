@@ -247,6 +247,22 @@ for generating javadoc.
 . Submit for `[VOTE]` at `dev@tinkerpop.apache.org` (see email template below)
 . *Wait for vote acceptance* (72 hours)
 
+=== Reproducible Build Validation
+
+After a release is published, maintainers on trusted hardware can independently verify that the binary distributions
+match a clean rebuild from the tagged source:
+
+[source,bash]
+----
+bin/reproduce-distribution.sh xx.yy.zz
+----
+
+This script builds from the tag inside a pinned Docker container (Eclipse Temurin JDK 11 + Maven 3.9.6) and compares
+the resulting distribution artifacts entry-by-entry against those published on `dist.apache.org`. It establishes trust
+independently of the release manager's own checksums and signatures.
+
+NOTE: Docker must be installed and running to use this script.
+
 == Release & Promote
 
 NOTE: Certain steps can only be performed by a PMC member. If you are a committer, please enlist

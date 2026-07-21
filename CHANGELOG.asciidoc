@@ -32,6 +32,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed conjoin has incorrect null handling.
 * Expanded `gremlin-python` CI matrix to test against Python 3.9, 3.10, 3.11, 3.12, and 3.13.
 * Add Node 26 support for `gremlin-javascript` and `gremlint`.
+* Enabled reproducible builds by setting `project.build.outputTimestamp`, allowing release distributions to be rebuilt bit-for-bit from a tagged commit.
+* Added `bin/reproduce-distribution.sh` to independently validate published release artifacts against a clean rebuild from source in a pinned Docker toolchain.
 
 [[release-3-7-6]]
 === TinkerPop 3.7.6 (Release Date: April 1, 2026)
