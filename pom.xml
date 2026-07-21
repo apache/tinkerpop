@@ -184,6 +184,12 @@ limitations under the License.
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <!--
+        Enables Maven reproducible builds. Inherited by all child modules and honored by the
+        jar, assembly, source, and shade plugins to produce deterministic archives. The release
+        manager should update this value to the release date when cutting a release.
+        -->
+        <project.build.outputTimestamp>2024-01-01T00:00:00Z</project.build.outputTimestamp>
         <skipIntegrationTests>true</skipIntegrationTests>
         <suresafeArgs> </suresafeArgs>
 
