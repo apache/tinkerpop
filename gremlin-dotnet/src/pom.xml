@@ -26,10 +26,6 @@ limitations under the License.
     <artifactId>gremlin-dotnet-source</artifactId>
     <name>Apache TinkerPop :: Gremlin.Net - Source</name>
     <packaging>${packaging.type}</packaging>
-    <properties>
-        <nugetVersion>6.11.1</nugetVersion>
-        <nugetExe>nuget-${nugetVersion}.exe</nugetExe>
-    </properties>
 
     <build>
         <plugins>
@@ -235,8 +231,8 @@ limitations under the License.
                 <plugins>
                     <!--
                       not seeing much point to making this OS agnostic really. as far as it is known, no one who does
-                      deployments will do so from a windows machine. this part of the build requires mono. note that
-                      the "correct" version of nuget is downloaded as part of the process.
+                      deployments will do so from a windows machine. the dotnet CLI handles packing and pushing
+                      natively - no additional tooling required beyond the .NET SDK.
                      -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -250,30 +246,9 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <taskdef resource="net/sf/antcontrib/antcontrib.properties" />                                       
-                                        <if>
-                                            <available file="mono" filepath="${env.PATH}"/>
-                                            <then>
-                                                <if>
-                                                    <available file="${nugetExe}"/>
-                                                    <then>
-                                                        <echo>nuget.exe already downloaded.</echo>
-                                                    </then>
-
-                                                    <else>
-                                                        <exec executable="wget" failonerror="true">
-                                                            <arg line="https://dist.nuget.org/win-x86-commandline/v${nugetVersion}/nuget.exe -O ${nugetExe}"/>
-                                                        </exec>
-                                                    </else>
-                                                </if>
-                                                <exec executable="mono" failonerror="true">
-                                                    <arg line="${nugetExe} pack Gremlin.Net.Template/Gremlin.Net.Template.nuspec"/>
-                                                </exec>
-                                            </then>
-                                            <else>
-                                                <echo>Skipping packaging of Gremlin.Net.Template as mono is not available</echo>
-                                            </else>
-                                        </if>
+                                        <exec executable="dotnet" failonerror="true">
+                                            <arg line="pack Gremlin.Net.Template/Gremlin.Net.Template.csproj --configuration Release --output ."/>
+                                        </exec>
                                     </target>
                                 </configuration>
                             </execution>
@@ -285,41 +260,16 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
-                                        <if>
-                                            <available file="${nugetExe}"/>
-                                            <then>
-                                                <echo>nuget.exe already downloaded.</echo>
-                                            </then>
-
-                                            <else>
-                                                <exec executable="wget" failonerror="true">
-                                                    <arg line="https://dist.nuget.org/win-x86-commandline/v${nugetVersion}/nuget.exe -O ${nugetExe}"/>
-                                                </exec>
-                                            </else>
-                                        </if>
-
-                                        <!--
-                                        until https://github.com/NuGet/Home/issues/4095 we have to have to specify
-                                        the "ConfigFile" option to nuget.
-                                        -->
-                                        <exec executable="mono" failonerror="true">
-                                            <arg line="${nugetExe} push Gremlin.Net/bin/Gremlin.Net.${project.version}.nupkg -Source https://api.nuget.org/v3/index.json -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
+                                        <exec executable="dotnet" failonerror="true">
+                                            <arg line="nuget push Gremlin.Net/bin/Gremlin.Net.${project.version}.nupkg --source https://api.nuget.org/v3/index.json"/>
                                         </exec>
-                                        <exec executable="mono" failonerror="true">
-                                            <arg line="${nugetExe} push Gremlin.Net.Template.${project.version}.nupkg -Source https://api.nuget.org/v3/index.json -ConfigFile ${user.home}/.config/NuGet/NuGet.Config"/>
+                                        <exec executable="dotnet" failonerror="true">
+                                            <arg line="nuget push Gremlin.Net.Template.${project.version}.nupkg --source https://api.nuget.org/v3/index.json"/>
                                         </exec>
                                     </target>
                                 </configuration>
                             </execution>
                         </executions>
-                        <dependencies>
-                            <dependency>
-                                <groupId>ant-contrib</groupId>
-                                <artifactId>ant-contrib</artifactId>
-                                <version>20020829</version>
-                            </dependency>
-                        </dependencies>
                     </plugin>
                     <plugin>
                         <groupId>org.codehaus.gmavenplus</groupId>
