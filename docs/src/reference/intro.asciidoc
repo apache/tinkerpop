@@ -157,7 +157,7 @@ NOTE: The TinkerPop API rides a fine line between providing concise "query langu
 Java method naming standards. The general convention used throughout TinkerPop is that if a method is "user exposed,"
 then a concise name is provided (e.g. `out()`, `path()`, `repeat()`). If the method is primarily for graph systems
 providers, then the standard Java naming convention is followed (e.g. `getNextStep()`, `getSteps()`,
-`getElementComputeKeys()`).
+`getVertexComputeKeys()`).
 
 [[graph-structure]]
 === The Graph Structure
