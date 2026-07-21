@@ -250,10 +250,8 @@ and `test` directories of the `gremlin-dotnet` module which will signify to Mave
 The `.glv` file need not have any contents and is ignored by Git. A standard `mvn clean install` will then build
 `gremlin-dotnet` in full.
 
-In order to pack the Gremlin.Net.Template project, it is also necessary to install link:http://www.mono-project.com/[Mono].
-The template can still be built and tested without Mono but packing will be skipped.
-To pack the template (which will also download the link:https://docs.microsoft.com/en-us/nuget/tools/nuget-exe-cli-reference[NuGet CLI tool])
-the `nuget` property has to be set:
+Packing the Gremlin.Net.Template project uses `dotnet pack` directly — no additional tooling beyond the .NET SDK is
+required. To pack the template, the `nuget` property has to be set:
 
 [source,text]
 mvn clean install -Dnuget
@@ -377,21 +375,19 @@ link:https://pypi.org/manage/account/token/[account settings] and then the usern
 and the password to the token value. Please see link:https://pypi.org/help/#apitoken[PyPI documentation] for more
 details.
 
-For .NET releases, install link:http://www.mono-project.com/[Mono]. The release process is known to work with 6.12.0,
-so it is best to probably install that version. Release managers should probably also do an install of
-link:https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe[nuget 3.4.4] as it will help with environmental setup.
-To get an environment ready to deploy to NuGet, it is necessary to have a NuGet API key. First, create an account with
+For .NET releases, the .NET SDK (already required for building) provides all necessary tooling — no additional
+Mono or `nuget.exe` installation is needed. To get an environment ready to deploy to NuGet, it is necessary to have a
+NuGet API key. First, create an account with
 link:https://www.nuget.org[nuget] and request that a PMC member add your account to the Gremlin.Net and
 the Gremlin.Net.Template package in nuget so that you can deploy. Next, generate an API key for your account on the
-nuget website. The API key should be added to `NuGet.Config` with the following:
+nuget website. Unlike the old `nuget.exe setApiKey` approach, `dotnet nuget push` does not store the API key in a
+config file; instead, the build passes it via the `NUGET_API_KEY` environment variable, which the release manager
+must set before running `mvn deploy`:
 
 [source,text]
 ----
-mono nuget.exe setApiKey [your-api-key]
+export NUGET_API_KEY=[your-api-key]
 ----
-
-This should update `~/.config/NuGet/NuGet.Config` a file with an entry containing the encrypted API key. On
-`mvn deploy`, this file will be referenced on the automated `nuget push`.
 
 To deploy JavaScript / TypeScript artifacts on the link:https://www.npmjs.com[npm registry], the release manager must
 set the authentication information on the ~/.npmrc file. The easiest way to do that is to use the `npm adduser`

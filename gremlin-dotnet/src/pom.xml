@@ -260,11 +260,15 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <target>
+                                        <!--
+                                        the NuGet API key is read from the NUGET_API_KEY environment variable, which
+                                        must be set by the release manager prior to running "mvn deploy -Dnuget".
+                                        -->
                                         <exec executable="dotnet" failonerror="true">
-                                            <arg line="nuget push Gremlin.Net/bin/Gremlin.Net.${project.version}.nupkg --source https://api.nuget.org/v3/index.json"/>
+                                            <arg line="nuget push Gremlin.Net/bin/Gremlin.Net.${project.version}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${env.NUGET_API_KEY}"/>
                                         </exec>
                                         <exec executable="dotnet" failonerror="true">
-                                            <arg line="nuget push Gremlin.Net.Template.${project.version}.nupkg --source https://api.nuget.org/v3/index.json"/>
+                                            <arg line="nuget push Gremlin.Net.Template.${project.version}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${env.NUGET_API_KEY}"/>
                                         </exec>
                                     </target>
                                 </configuration>
