@@ -149,6 +149,7 @@ deployment.
 . `docker/build.sh -t -i -n`
 . `bin/publish-docs.sh <username>` - note that under a release candidate the documentation is published as SNAPSHOT
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update the project files to reference a non-SNAPSHOT version
+.. Update `<project.build.outputTimestamp>` in the root `pom.xml` to the release date in ISO-8601 form (for example `2024-05-20T00:00:00Z`). This keeps the published artifacts reproducible with a meaningful timestamp; because the value is committed into the source (and therefore into the source-release zip), it must be bumped together with the version.
 .. Manually update the `__version__` for `gremlin-python` in `gremlin-python/src/main/python/gremlin_python/__init__.py`
 . `mvn clean install -DskipTests` to update GLV versions
 .. Review `Gremlin.Net.csproj`, `Gremlin.Net.Template.csproj` and `Gremlin.Net.Template.nuspec` in `gremlin-dotnet`
@@ -210,6 +211,7 @@ current release was under development as this new release will have those change
 .. Update the release date.
 .. Update the link to `CHANGELOG.asciidoc` - this link may already be correct but will not exist until the repository is tagged.
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update project files to reference the non-SNAPSHOT version
+.. Update `<project.build.outputTimestamp>` in the root `pom.xml` to the release date in ISO-8601 form (for example `2024-05-20T00:00:00Z`). This keeps the published artifacts reproducible with a meaningful timestamp; because the value is committed into the source (and therefore into the source-release zip), it must be bumped together with the version.
 .. Manually update the `__version__` for `gremlin-python` in `gremlin-python/src/main/python/gremlin_python/__init__.py`
 . `mvn clean install -DskipTests` to update GLV versions
 .. Review `Gremlin.Net.csproj`, `Gremlin.Net.Template.csproj` and `Gremlin.Net.Template.nuspec` in `gremlin-dotnet`
