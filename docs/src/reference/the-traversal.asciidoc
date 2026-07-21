@@ -948,7 +948,7 @@ robust steps like <<choose-step, choose()>> and <<union-step,union()>>.
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#branch(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`map(Traversal)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#branch(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`branch(Traversal)`]
 
 [[by-step]]
 === By Step
@@ -1866,7 +1866,7 @@ information.
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#filter(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`map(Traversal)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#filter(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`filter(Traversal)`]
 
 [[flatmap-step]]
 === FlatMap Step
@@ -1889,7 +1889,7 @@ gremlin> g.withSack(1.0f).V(1).barrier().flatMap(sack(mult).by("age")).sack()
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#flatMap(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`map(Traversal)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#flatMap(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`flatMap(Traversal)`]
 
 [[format-step]]
 === Format Step
@@ -4590,7 +4590,7 @@ see the <<general-steps, General Steps>> section for more information.
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#sideEffect(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`map(Traversal)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#sideEffect(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`sideEffect(Traversal)`]
 
 [[simplepath-step]]
 === SimplePath Step
