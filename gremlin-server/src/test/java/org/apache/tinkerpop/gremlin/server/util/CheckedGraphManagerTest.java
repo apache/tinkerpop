@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.hasSize;
 import java.util.function.Function;
 
 import org.apache.tinkerpop.gremlin.server.GraphManager;
+import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
 
 import org.junit.Before;
@@ -36,8 +37,8 @@ public class CheckedGraphManagerTest {
 
     @Before
     public void before() throws Exception {
-        settings = Settings
-                .read(CheckedGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
+        var filePath = "classpath:" + GremlinServer.class.getPackageName().replace(".", "/") + "/gremlin-server-integration.yaml";
+        settings = Settings.read(filePath);
     }
 
     /**
