@@ -381,13 +381,15 @@ NuGet API key. First, create an account with
 link:https://www.nuget.org[nuget] and request that a PMC member add your account to the Gremlin.Net and
 the Gremlin.Net.Template package in nuget so that you can deploy. Next, generate an API key for your account on the
 nuget website. The old `mono nuget.exe setApiKey` approach stored the key encrypted (via Windows DPAPI) in
-`NuGet.Config`, which the `dotnet` CLI cannot decrypt on Linux/macOS. Instead, set the key in the `NUGET_API_KEY`
-environment variable before running `mvn deploy`, which the build passes explicitly to `dotnet nuget push --api-key`:
+`NuGet.Config`, which the `dotnet` CLI cannot decrypt on Linux/macOS. Instead, supply the key with the `nuget.apiKey`
+Maven property when running `mvn deploy`, which the build passes explicitly to `dotnet nuget push --api-key`:
 
 [source,text]
 ----
-export NUGET_API_KEY=[your-api-key]
+mvn deploy -pl :gremlin-dotnet-source -Dnuget -Dnuget.apiKey=[your-api-key]
 ----
+
+If `nuget.apiKey` is not supplied, the build will fail fast with a message explaining how to set it.
 
 To deploy JavaScript / TypeScript artifacts on the link:https://www.npmjs.com[npm registry], the release manager must
 set the authentication information on the ~/.npmrc file. The easiest way to do that is to use the `npm adduser`

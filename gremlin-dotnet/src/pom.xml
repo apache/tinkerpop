@@ -262,20 +262,23 @@ limitations under the License.
                                     <target>
                                         <!--
                                         the NuGet API key is passed explicitly via the "api-key" option, sourced
-                                        from the NUGET_API_KEY environment variable, which must be set by the
-                                        release manager prior to running "mvn deploy -Dnuget". NuGet 7.6+ (bundled
-                                        with .NET SDK 10.0.300+) can read NUGET_API_KEY automatically without that
-                                        option, but this build currently targets .NET SDK 8.0, whose bundled NuGet
-                                        CLI predates that feature, so the option is passed explicitly. The old
-                                        "nuget.exe setApiKey" config file approach is not viable here: it encrypts
-                                        the key with Windows DPAPI, which the dotnet CLI cannot decrypt on
+                                        from the "nuget.apiKey" Maven property, which the release manager must set
+                                        with "-Dnuget.apiKey=..." when running "mvn deploy -Dnuget". NuGet 7.6+
+                                        (bundled with .NET SDK 10.0.300+) can read a NUGET_API_KEY environment
+                                        variable automatically instead, but this build currently targets .NET SDK
+                                        8.0, whose bundled NuGet CLI predates that feature. The old
+                                        "nuget.exe setApiKey" config file approach is not viable here either: it
+                                        encrypts the key with Windows DPAPI, which the dotnet CLI cannot decrypt on
                                         Linux/macOS release hosts.
                                         -->
+                                        <fail unless="nuget.apiKey">
+Deploying to NuGet requires an API key. Please supply one with "-Dnuget.apiKey=[your-api-key]" when running "mvn deploy -Dnuget".
+                                        </fail>
                                         <exec executable="dotnet" failonerror="true">
-                                            <arg line="nuget push Gremlin.Net/bin/Gremlin.Net.${project.version}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${env.NUGET_API_KEY}"/>
+                                            <arg line="nuget push Gremlin.Net/bin/Gremlin.Net.${project.version}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${nuget.apiKey}"/>
                                         </exec>
                                         <exec executable="dotnet" failonerror="true">
-                                            <arg line="nuget push Gremlin.Net.Template.${project.version}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${env.NUGET_API_KEY}"/>
+                                            <arg line="nuget push Gremlin.Net.Template.${project.version}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${nuget.apiKey}"/>
                                         </exec>
                                     </target>
                                 </configuration>
