@@ -237,8 +237,7 @@ g.V().has('name','tux').out('livesIn').values('name','biome')        <3>
 not limited to exactly one for this graph.
 <2> Filtering by a single label, such as "endangered", surfaces every animal that carries it, regardless of what
 other labels are also present.
-<3> Habitats, like "lagoon" and "canopy", are modeled as ordinary single-labeled vertices connected to their
-resident animals with a "livesIn" edge.
+<3> Find the name and biome of the habitat that "tux" lives in.
 
 [[nullable-property-values]]
 === Nullable Property Values
