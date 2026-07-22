@@ -2390,28 +2390,19 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         else {
             this.asAdmin().getBytecode().addStep(Symbols.hasId, id, otherIds);
 
-            //using ArrayList given P.within() turns all arguments into lists
+            // a collection/array is only unrolled when it is the single argument, aligning hasId() with g.V()/g.E()
+            // where multiple arguments are each treated as a literal id (TINKERPOP-3273)
             final List<Object> ids = new ArrayList<>();
-            if (id instanceof Object[]) {
-                Collections.addAll(ids, (Object[]) id);
-            } else if (id instanceof Collection) {
-                // as ids are unrolled when it's in array, they should also be unrolled when it's a list.
-                // this also aligns with behavior of hasId() when it's pushed down to g.V() (TINKERPOP-2863)
-                ids.addAll((Collection<?>) id);
-            } else
+            if (otherIds == null || otherIds.length == 0) {
+                if (id instanceof Object[]) {
+                    Collections.addAll(ids, (Object[]) id);
+                } else if (id instanceof Collection) {
+                    ids.addAll((Collection<?>) id);
+                } else
+                    ids.add(id);
+            } else {
                 ids.add(id);
-
-            // unrolling ids from lists works cleaner with Collection too, as otherwise they will need to
-            // be turned into array first
-            if (otherIds != null) {
-                for (final Object i : otherIds) {
-                    if (id instanceof Object[]) {
-                        Collections.addAll(ids, (Object[]) i);
-                    } else if (i instanceof Collection) {
-                        ids.addAll((Collection<?>) i);
-                    } else
-                        ids.add(i);
-                }
+                Collections.addAll(ids, otherIds);
             }
 
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), ids.size() == 1 ? P.eq(ids.get(0)) : P.within(ids)));
