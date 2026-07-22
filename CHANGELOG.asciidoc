@@ -33,6 +33,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed conjoin has incorrect null handling.
 * Expanded `gremlin-python` CI matrix to test against Python 3.9, 3.10, 3.11, 3.12, and 3.13.
 * Add Node 26 support for `gremlin-javascript` and `gremlint`.
+* Corrected numerous inaccuracies in the reference documentation, including wrong default values (connection pool sizes, buffer sizes, ports, timeouts), stale serializer class names, removed options documented as available, and broken code examples across the JVM, Python, `.NET`, Go, and JavaScript drivers.
 
 [[release-3-7-6]]
 === TinkerPop 3.7.6 (Release Date: April 1, 2026)

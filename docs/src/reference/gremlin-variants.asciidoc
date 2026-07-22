@@ -167,7 +167,7 @@ provide most of the typical functionality required to use Gremlin:
 [source,go]
 ----
 import (
-	"github.com/apache/tinkerpop/gremlin-go/driver"
+	"github.com/apache/tinkerpop/gremlin-go/v3/driver"
 )
 ----
 
@@ -191,19 +191,19 @@ can be passed to the `NewClient` or `NewDriverRemoteConnection` functions as con
 |Key |Description |Default
 |TraversalSource |Traversal source. |"g"
 |TransporterType |Transporter type. |Gorilla
-|LogVerbosity |Log verbosity.|gremlingo.INFO
+|LogVerbosity |Log verbosity.|gremlingo.Info
 |Logger |Instance of logger. |log
 |Language |Language used for logging messages. |language.English
 |AuthInfo |Authentification info, can be build with BasicAuthInfo() or HeaderAuthInfo(). |empty
 |TlsConfig |TLS configuration. |empty
 |KeepAliveInterval |Keep connection alive interval. |5 seconds
 |WriteDeadline |Write deadline. |3 seconds
-|ConnectionTimeout | Timeout for establishing connection. |45 seconds
+|ConnectionTimeout | Timeout for establishing connection. |5 seconds
 |NewConnectionThreshold | Minimum amount of concurrent active traversals on a connection to trigger creation of a new connection. |4
 |MaximumConcurrentConnections | Maximum number of concurrent connections. |number of runtime processors
 |EnableCompression |Flag to enable compression. |false
-|ReadBufferSize |Specify I/O buffer sizes in bytes. If a buffer size is zero, then a useful default size is used |0
-|WriteBufferSize |Specify I/O buffer sizes in bytes. If a buffer size is zero, then a useful default size is used |0
+|ReadBufferSize |Specify I/O buffer sizes in bytes. If a buffer size is zero, then a useful default size is used |1048576
+|WriteBufferSize |Specify I/O buffer sizes in bytes. If a buffer size is zero, then a useful default size is used |1048576
 |Session |Session ID. |""
 |EnableUserAgentOnConnect |Enables sending a user agent to the server during connection requests.
 More details can be found in provider docs
@@ -849,14 +849,14 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.keyStore |The private key in JKS or PKCS#12 format. |_none_
 |connectionPool.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
 |connectionPool.keyStoreType |`JKS` (Java 8 default) or `PKCS12` (Java 9+ default)|_none_
-|connectionPool.maxContentLength |The maximum length in bytes that a message can be sent to the server. This number can be no greater than the setting of the same name in the server configuration. |65536
+|connectionPool.maxContentLength |The maximum length in bytes that a message can be sent to the server. This number can be no greater than the setting of the same name in the server configuration. |10485760
 |connectionPool.maxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |4
 |connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |16
 |connectionPool.maxSize |The maximum size of a connection pool for a host. |8
-|connectionPool.maxWaitForConnection |The amount of time in milliseconds to wait for a new connection before timing out. |3000
+|connectionPool.maxWaitForConnection |The amount of time in milliseconds to wait for a new connection before timing out. |16000
 |connectionPool.maxWaitForClose |The amount of time in milliseconds to wait for pending messages to be returned from the server before closing the connection. |3000
 |connectionPool.minInProcessPerConnection |The minimum number of in-flight requests that can occur on a connection. |1
-|connectionPool.minSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |8
+|connectionPool.minSimultaneousUsagePerConnection |The minimum number of times that a connection should be borrowed from the pool simultaneously before it can be released when under low use. |8
 |connectionPool.minSize |The minimum size of a connection pool for a host. |2
 |connectionPool.reconnectInterval |The amount of time in milliseconds to wait before trying to reconnect to a dead host. |1000
 |connectionPool.resultIterationBatchSize |The override value for the size of the result batches to be returned from the server. |64
@@ -874,7 +874,7 @@ The following table describes the various configuration options for the Gremlin 
 |nioPoolSize |Size of the pool for handling request/response operations. |available processors
 |password |The password to submit on requests that require authentication. |_none_
 |path |The URL path to the Gremlin Server. |_/gremlin_
-|port |The port of the Gremlin Server to connect to. The same port will be applied for all hosts. |8192
+|port |The port of the Gremlin Server to connect to. The same port will be applied for all hosts. |8182
 |protocol |Sets the `AuthProperties.Property.PROTOCOL` properties for authentication to Gremlin Server. |_none_
 |reuseConnectionsForSessions |Uses a `Client` that will attempt to reuse `Connections` when managing remote transactions with a `DriverRemoteConnection`. |false
 |serializer.className |The fully qualified class name of the `MessageSerializer` that will be used to communicate with the server. Note that the serializer configured on the client should be supported by the server configuration. |_none_
@@ -1569,7 +1569,7 @@ Some connection options can also be set on individual requests made through the 
 const vertices = await g.with_('evaluationTimeout', 500).V().out('knows').toList()
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent`, `materializeProperties` and
 `evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
 
 [[gremlin-javascript-imports]]
@@ -1601,7 +1601,6 @@ const order = gremlin.process.order
 const scope = gremlin.process.scope
 const t = gremlin.process.t
 const cardinality = gremlin.process.cardinality
-const CardinalityValue = gremlin.process.CardinalityValue
 ----
 
 By defining these imports it becomes possible to write Gremlin in the more shorthand, canonical style that is
@@ -1638,9 +1637,6 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options.enableCompression |Boolean |Enables permessage-deflate compression. Note that use of compression may increase vulnerability to attacks such as CRIME/BREACH.|false
 |options.enableUserAgentOnConnect |Boolean |Determines if a user agent will be sent during connection handshake. |true
 |options.headers |Object |An associative array containing the additional header key/values for the initial request. |undefined
-|options.pingEnabled |Boolean |Setup ping interval. |true
-|options.pingInterval |Number |Ping request interval in ms if ping enabled. |60000
-|options.pongTimeout |Number |Timeout of pong response in ms after sending a ping. |30000
 |=========================================================
 
 [[gremlin-javascript-logging]]
@@ -2110,8 +2106,8 @@ on the `ConnectionPoolSettings` instance that can be passed to the `GremlinClien
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|PoolSize |The size of the connection pool. |4
-|MaxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |32
+|PoolSize |The size of the connection pool. |8
+|MaxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |16
 |ReconnectionAttempts |The number of attempts to get an open connection from the pool to submit a request. |4
 |ReconnectionBaseDelay |The base delay used for the exponential backoff for the reconnection attempts. |1 s
 |EnableUserAgentOnConnect |Enables sending a user agent to the server during connection requests.
@@ -2119,7 +2115,7 @@ More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |=========================================================
 
-A `NoConnectionAvailableException` is thrown if all connections have reached the `MaxInProcessPerConnection` limit
+A `ConnectionPoolBusyException` is thrown if all connections have reached the `MaxInProcessPerConnection` limit
 when a new request comes in.
 A `ServerUnavailableException` is thrown if no connection is available to the server to submit a request after
 `ReconnectionAttempts` retries.
@@ -2548,7 +2544,7 @@ Some connection options can also be set on individual requests made through the 
 vertices = g.with_('evaluationTimeout', 500).V().out('knows').to_list()
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent` and
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent`, `materializeProperties` and
 `evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
 
 anchor:python-imports[]
@@ -2636,15 +2632,15 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|enable_compression |Enables sending a user agent to the server during connection requests. |False
+|enable_compression |Enables compression of messages sent to the server. |False
 |enable_user_agent_on_connect |Enables sending a user agent to the server during connection requests. More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|True
 |headers |Additional headers that will be added to each request message. |`None`
-|kerberized_service |the first part of the principal name configured for the gremlin service|"""
-|max_workers |Maximum number of worker threads. |Number of CPUs * 5
+|kerberized_service |the first part of the principal name configured for the gremlin service|""
+|max_workers |Maximum number of worker threads. |Same as pool_size (default 8)
 |message_serializer |The message serializer implementation.|`gremlin_python.driver.serializer.GraphBinarySerializersV1`
 |password |The password to submit on requests that require authentication. |""
-|pool_size |The number of connections used by the pool. |4
+|pool_size |The number of connections used by the pool. |8
 |protocol_factory |A callable that returns an instance of `AbstractBaseProtocol`. |`gremlin_python.driver.protocol.GremlinServerWSProtocol`
 |session | A unique string-based identifier (typically a UUID) to enable a <<sessions,session-based connection>>. This is not a valid configuration for `DriverRemoteConnection`. |None
 |transport_factory |A callable that returns an instance of `AbstractBaseTransport`. |`gremlin_python.driver.aiohttp.transport.AiohttpTransport`
