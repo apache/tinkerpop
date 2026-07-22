@@ -864,11 +864,11 @@ None
 
 *Considerations:*
 
-Booleans are passed as is, numbers evaluate to `true` if non-zero, and `false` if zero or `NaN`. Strings only accept "true" or "false" (case-insensitive).
+Booleans are passed as is, numbers evaluate to `true` if non-zero, and `false` if zero or `NaN`. Strings are accepted when, after trimming leading and trailing whitespace (spaces, tabs, newlines, and carriage returns), they equal "true" or "false" (case-insensitive). For example, " true", "false\t", and "\nTRUE" are all accepted.
 
 *Exceptions:*
 
-If the incoming traverser type is unsupported, a string other than "true" or "false", or `null`, then an `Argument Error` is raised.
+If the incoming traverser type is unsupported, a string that (after trimming leading and trailing whitespace) is neither "true" nor "false", or `null`, then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsBoolStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asBool-step[reference]
