@@ -1538,6 +1538,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_VX1X_valuesXageX_inject", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["xx1"]).Values<object>("age").Inject()}}, 
                {"g_injectXnull_1_3_nullX_asXaX_selectXaX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(null,1,3,null).As("a").Select<object>("a")}}, 
                {"g_injectX1_3lX_injectX100_300X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(1,3).Inject(100,300)}}, 
+               {"g_injectXbigintBoundaryValuesX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"],p["xx2"],p["xx3"])}}, 
                {"g_io_readXkryoX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Io<object>("data/tinkerpop-modern.kryo").Read(), (g,p) =>g.V(), (g,p) =>g.E()}}, 
                {"g_io_read_withXreader_gryoX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Io<object>("data/tinkerpop-modern.kryo").With("~tinkerpop.io.reader","gryo").Read(), (g,p) =>g.V(), (g,p) =>g.E()}}, 
                {"g_io_readXgraphsonX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Io<object>("data/tinkerpop-modern.json").Read(), (g,p) =>g.V(), (g,p) =>g.E()}}, 

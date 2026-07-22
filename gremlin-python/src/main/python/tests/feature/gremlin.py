@@ -1511,6 +1511,7 @@ world.gremlins = {
     'g_VX1X_valuesXageX_inject': [(lambda g, xx1=None:g.V(xx1).age.inject())], 
     'g_injectXnull_1_3_nullX_asXaX_selectXaX': [(lambda g:g.inject(None,1,3,None).as_('a').select('a'))], 
     'g_injectX1_3lX_injectX100_300X': [(lambda g:g.inject(1,3).inject(100,300))], 
+    'g_injectXbigintBoundaryValuesX': [(lambda g, xx1=None,xx3=None,xx2=None:g.inject(xx1,xx2,xx3))], 
     'g_io_readXkryoX': [(lambda g:g.io('data/tinkerpop-modern.kryo').read()), (lambda g:g.V()), (lambda g:g.E())], 
     'g_io_read_withXreader_gryoX': [(lambda g:g.io('data/tinkerpop-modern.kryo').with_('~tinkerpop.io.reader','gryo').read()), (lambda g:g.V()), (lambda g:g.E())], 
     'g_io_readXgraphsonX': [(lambda g:g.io('data/tinkerpop-modern.json').read()), (lambda g:g.V()), (lambda g:g.E())], 
