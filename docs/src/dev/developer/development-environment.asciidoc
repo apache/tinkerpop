@@ -380,9 +380,9 @@ Mono or `nuget.exe` installation is needed. To get an environment ready to deplo
 NuGet API key. First, create an account with
 link:https://www.nuget.org[nuget] and request that a PMC member add your account to the Gremlin.Net and
 the Gremlin.Net.Template package in nuget so that you can deploy. Next, generate an API key for your account on the
-nuget website. Unlike the old `nuget.exe setApiKey` approach, `dotnet nuget push` does not store the API key in a
-config file; instead, the build passes it via the `NUGET_API_KEY` environment variable, which the release manager
-must set before running `mvn deploy`:
+nuget website. The old `mono nuget.exe setApiKey` approach stored the key encrypted (via Windows DPAPI) in
+`NuGet.Config`, which the `dotnet` CLI cannot decrypt on Linux/macOS. Instead, set the key in the `NUGET_API_KEY`
+environment variable before running `mvn deploy`, which the build passes explicitly to `dotnet nuget push --api-key`:
 
 [source,text]
 ----
