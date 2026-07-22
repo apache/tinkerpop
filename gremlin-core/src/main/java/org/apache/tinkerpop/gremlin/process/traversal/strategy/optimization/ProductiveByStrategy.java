@@ -51,7 +51,10 @@ import java.util.Set;
  * {@link Traversal} argument or {@code null}. In this way, the {@code by()} is always "productive". This strategy
  * is an "optimization" but it is perhaps more of a "decoration", but it should follow
  * {@link ByModulatorOptimizationStrategy} which features optimizations relevant to this one.
+ *
+ * @deprecated As of release 3.7.7, not replaced. This strategy was added as a temporary way to mimic pre-3.5.0 null processing behavior.
  */
+@Deprecated
 public class ProductiveByStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
     public static final String PRODUCTIVE_KEYS = "productiveKeys";
 

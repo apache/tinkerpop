@@ -20,6 +20,7 @@
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 from gremlin_python.process.traversal import TraversalStrategy
+import warnings
 
 base_namespace = 'org.apache.tinkerpop.gremlin.process.traversal.strategy.'
 decoration_namespace = base_namespace + 'decoration.'
@@ -187,6 +188,10 @@ class PathRetractionStrategy(TraversalStrategy):
 
 class ProductiveByStrategy(TraversalStrategy):
     def __init__(self, productiveKeys=None):
+        warnings.warn(
+            "ProductiveByStrategy is deprecated as of 3.7.7, not replaced. It was added as a temporary way to "
+            "mimic pre-3.5.0 null processing behavior.",
+            DeprecationWarning)
         TraversalStrategy.__init__(self, fqcn=optimization_namespace + 'ProductiveByStrategy')
         if productiveKeys is not None:
             self.configuration["productiveKeys"] = productiveKeys

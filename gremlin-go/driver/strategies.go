@@ -364,6 +364,9 @@ func PathRetractionStrategy() TraversalStrategy {
 // the initial Traversal argument or null. In this way, the By() is always "productive". This strategy
 // is an "optimization" but it is perhaps more of a "decoration", but it should follow
 // ByModulatorOptimizationStrategy which features optimizations relevant to this one.
+//
+// Deprecated: As of release 3.7.7, not replaced. This strategy was added as a temporary way to mimic
+// pre-3.5.0 null processing behavior.
 func ProductiveByStrategy(config ProductiveByStrategyConfig) TraversalStrategy {
 	configMap := make(map[string]interface{})
 	configMap["productiveKeys"] = config.ProductiveKeys
@@ -373,6 +376,8 @@ func ProductiveByStrategy(config ProductiveByStrategyConfig) TraversalStrategy {
 
 // ProductiveByStrategyConfig provides configuration options for ProductiveByStrategy.
 // Zeroed (unset) values are used.
+//
+// Deprecated: As of release 3.7.7, not replaced.
 type ProductiveByStrategyConfig struct {
 	ProductiveKeys []string
 }
