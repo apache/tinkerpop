@@ -192,6 +192,34 @@ func TestGraphBinaryV1(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, new(big.Int).SetUint64(uint64(source)), res)
 		})
+		t.Run("write bigInt zero exact bytes", func(t *testing.T) {
+			var buffer bytes.Buffer
+			buf, err := bigIntWriter(*big.NewInt(0), &buffer, nil)
+			assert.Nil(t, err)
+			assert.Equal(t, []byte{0x00, 0x00, 0x00, 0x01, 0x00}, buf)
+		})
+		t.Run("read-write bigInt zero", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			source := big.NewInt(0)
+			buf, err := bigIntWriter(*source, &buffer, nil)
+			assert.Nil(t, err)
+			res, err := readBigInt(&buf, &pos)
+			assert.Nil(t, err)
+			assert.Equal(t, 0, source.Cmp(res.(*big.Int)))
+		})
+		t.Run("read-write bigDecimal zero unscaled", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			source := &BigDecimal{0, *big.NewInt(0)}
+			buf, err := bigDecimalWriter(source, &buffer, nil)
+			assert.Nil(t, err)
+			res, err := readBigDecimal(&buf, &pos)
+			assert.Nil(t, err)
+			actual := res.(*BigDecimal)
+			assert.Equal(t, source.Scale, actual.Scale)
+			assert.Equal(t, 0, source.UnscaledValue.Cmp(&actual.UnscaledValue))
+		})
 		t.Run("read-write list", func(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
