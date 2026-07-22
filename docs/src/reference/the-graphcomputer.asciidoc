@@ -459,8 +459,8 @@ The `ShortestPathVertexProgram.Builder` provides the following configuration met
 | `edgeTraversal(Traversal)` | Sets a traversal that emits the edges to traverse from the current vertex. | `__.bothE()`
 | `distanceProperty(String)` | Sets the edge property to use for the distance calculations. | none
 | `distanceTraversal(Traversal)` | Sets the traversal that calculates the distance for the current edge. | `__.constant(1)`
-| `maxDistance(Traversal)` | Limits the shortest path distance. | none
-| `includeEdges(Boolean)` | Whether to include edges in shortest paths or not. | `false`
+| `maxDistance(Number)` | Limits the shortest path distance. | none
+| `includeEdges(boolean)` | Whether to include edges in shortest paths or not. | `false`
 |=========================================================
 
 IMPORTANT: If a maximum distance is provided, the discovery process will only stop to follow a path at this distance if there was no

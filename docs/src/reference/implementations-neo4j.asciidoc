@@ -291,7 +291,7 @@ main difference is the usage of HA configuration options that enable the cluster
 from the TinkerPop perspective is largely the same.
 
 In configuring for HA the most important thing to realize is that all Neo4j HA settings are simply passed through the
-TinkerPop configuration settings given to the `GraphFactory.open()` or `Neo4j.open()` methods. For example, to
+TinkerPop configuration settings given to the `GraphFactory.open()` or `Neo4jGraph.open()` methods. For example, to
 provide the all-important `ha.server_id` configuration option through TinkerPop, simply prefix that key with the
 TinkerPop Neo4j key of `gremlin.neo4j.conf`.
 

@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 final class Settings {
 
     /**
-     * The port of the Gremlin Server to connect to which defaults to {@code 8192}. The same port will be applied for
+     * The port of the Gremlin Server to connect to which defaults to {@code 8182}. The same port will be applied for
      * all {@link #hosts}.
      */
     public int port = 8182;
@@ -382,7 +382,7 @@ final class Settings {
 
         /**
          * The amount of time in milliseconds to wait for a new connection before timing out where the default value
-         * is 3000.
+         * is 16000.
          */
         public int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
 
@@ -395,7 +395,7 @@ final class Settings {
 
         /**
          * The maximum length in bytes that a message can be sent to the server. This number can be no greater than
-         * the setting of the same name in the server configuration. The default value is 65536.
+         * the setting of the same name in the server configuration. The default value is 10485760.
          */
         public int maxContentLength = Connection.MAX_CONTENT_LENGTH;
 

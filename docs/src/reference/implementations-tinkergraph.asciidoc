@@ -97,7 +97,7 @@ Given the initial graph construction in the first code block, no index was defin
 However, if the graph was constructed as such, then an index lookup would be used.
 
 [source,java]
-Graph g = TinkerGraph.open();
+TinkerGraph g = TinkerGraph.open();
 g.createIndex("name",Vertex.class)
 
 The execution times for a vertex lookup by property is provided below for both no-index and indexed version of
@@ -277,7 +277,7 @@ public class GraphService {
 // suitable test graph replacement for our actual production graph.
 public class GraphServiceTest {
     private static final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
-    private static final GraphTraversalSource g = traversal.with(graph);
+    private static final GraphTraversalSource g = traversal().with(graph);
     private static final GraphService service = new GraphService(g);
 
     @Test
@@ -297,8 +297,8 @@ public class GraphServiceTest {
 // with this approach you could also configure your production graph directly or use custom
 // build options to trigger different test configurations for a more dynamic approach
 public class GraphServiceTest {
-    private static final GraphTraversalSource g = traversal.with(
-            new DriverRemoteConnection('ws://localhost:8182/gremlin'));
+    private static final GraphTraversalSource g = traversal().with(
+            new DriverRemoteConnection("ws://localhost:8182/gremlin"));
     private static final GraphService service = new GraphService(g);
 
     @Test
