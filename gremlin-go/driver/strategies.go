@@ -86,7 +86,7 @@ func PartitionStrategy(config PartitionStrategyConfig) TraversalStrategy {
 	if config.WritePartition != "" {
 		configMap["writePartition"] = config.WritePartition
 	}
-	if len(config.ReadPartitions.ToSlice()) != 0 {
+	if config.ReadPartitions != nil && len(config.ReadPartitions.ToSlice()) != 0 {
 		configMap["readPartitions"] = config.ReadPartitions
 	}
 	return &traversalStrategy{name: decorationNamespace + "PartitionStrategy", configuration: configMap}
