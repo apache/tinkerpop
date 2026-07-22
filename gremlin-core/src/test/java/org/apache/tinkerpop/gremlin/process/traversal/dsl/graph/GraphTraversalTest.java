@@ -46,6 +46,7 @@ import java.util.function.Consumer;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.aggregate;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -252,8 +253,23 @@ public class GraphTraversalTest {
         return temp.substring(temp.length() - (random.nextInt(2) + 1)) + s.replace("\"", "x").replace(",", "y").replace("'", "z");
     }
 
+    @Test
     public void hasIdShouldUnrollListOfIds() {
-        assertEquals(g.V().hasId(1,2,3,4,5,6,7,8),
-                g.V().hasId(new Integer[]{1, 2, 3}, new Integer[]{4, 5}, Arrays.asList(6, 7), 8));
+        // a single array or Collection argument is unrolled into individual ids (TINKERPOP-2863)
+        assertEquals(g.V().hasId(1, 2, 3), g.V().hasId(new Integer[]{1, 2, 3}));
+        assertEquals(g.V().hasId(1, 2, 3), g.V().hasId(Arrays.asList(1, 2, 3)));
+        // multiple arguments are treated as literal ids and are not unrolled (TINKERPOP-3273)
+        assertNotEquals(g.V().hasId(1, 2, 3), g.V().hasId(new Integer[]{1, 2}, 3));
+    }
+
+    @Test
+    public void hasIdShouldUnrollGValueListOfIds() {
+        // a single GValue wrapping an array or Collection is unrolled; the array and Collection forms
+        // of the same ids produce the same result (TINKERPOP-2863)
+        assertEquals(g.V().hasId(GValue.of("a", Arrays.asList(1, 2, 3))),
+                g.V().hasId(GValue.of("a", new Integer[]{1, 2, 3})));
+        // multiple arguments are treated as literal ids and are not unrolled (TINKERPOP-3273)
+        assertNotEquals(g.V().hasId(GValue.of("a", new Integer[]{1, 2}), GValue.of("b", 3)),
+                g.V().hasId(GValue.of("a", new Integer[]{1, 2, 3})));
     }
 }
