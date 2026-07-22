@@ -68,6 +68,19 @@ class Vertex extends Element {
     super(id, label, properties);
   }
 
+  /**
+   * Groups this vertex's properties by key.
+   * @returns {Object<string, VertexProperty[]>} a map of property key to the array of
+   *   VertexProperty objects for that key (empty object when there are no properties).
+   */
+  propertyMap() {
+    const map = Object.create(null);
+    for (const p of this.properties) {
+      (map[p.key] = map[p.key] || []).push(p);
+    }
+    return map;
+  }
+
   toString() {
     return `v[${this.id}]`;
   }

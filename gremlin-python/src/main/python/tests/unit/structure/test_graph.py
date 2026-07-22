@@ -92,6 +92,24 @@ class TestGraph(object):
                     assert i == j
                     assert i.__hash__() == hash(i)
 
+    def test_vertex_property_map(self):
+        v = Vertex(1, "person")
+        # multi-properties: two VertexProperty entries with the same key group together
+        name1 = VertexProperty(long(1), "name", "marko", v)
+        name2 = VertexProperty(long(2), "name", "marko a. rodriguez", v)
+        age = VertexProperty(long(3), "age", 29, v)
+        v.properties = [name1, name2, age]
+        pm = v.property_map()
+        assert set(pm.keys()) == {"name", "age"}
+        assert pm["name"] == [name1, name2]
+        assert len(pm["name"]) == 2
+        assert pm["age"] == [age]
+        # single-valued keys still map to 1-element lists
+        assert len(pm["age"]) == 1
+        #
+        # a vertex with no properties yields an empty dict
+        assert Vertex(2).property_map() == {}
+
     def test_path(self):
         path = Path([set(["a", "b"]), set(["c", "b"]), set([])], [1, Vertex(1), "hello"])
         assert "path[1, v[1], hello]" == str(path)

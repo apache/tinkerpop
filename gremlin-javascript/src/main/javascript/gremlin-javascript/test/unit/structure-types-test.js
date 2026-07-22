@@ -70,6 +70,34 @@ describe('Vertex', () => {
       assert.deepStrictEqual(vertex.properties, []);
     });
   });
+
+  describe('#propertyMap()', () => {
+    it('should group multi-properties of the same key into an array', () => {
+      const nameA = new VertexProperty(0, 'name', 'marko');
+      const nameB = new VertexProperty(1, 'name', 'marko a. rodriguez');
+      const vertex = new Vertex(1, 'person', [nameA, nameB]);
+      const pm = vertex.propertyMap();
+      // propertyMap() returns a null-prototype object, so compare by keys/values
+      // instead of deep-equal against a plain {} literal.
+      assert.deepStrictEqual(Object.keys(pm), ['name']);
+      assert.deepStrictEqual(pm.name, [nameA, nameB]);
+    });
+
+    it('should give single-element arrays for single-valued properties', () => {
+      const name = new VertexProperty(0, 'name', 'marko');
+      const age = new VertexProperty(1, 'age', 29);
+      const vertex = new Vertex(1, 'person', [name, age]);
+      const pm = vertex.propertyMap();
+      assert.deepStrictEqual(Object.keys(pm), ['name', 'age']);
+      assert.deepStrictEqual(pm.name, [name]);
+      assert.deepStrictEqual(pm.age, [age]);
+    });
+
+    it('should return an empty object when there are no properties', () => {
+      const vertex = new Vertex(1, 'person');
+      assert.deepStrictEqual(Object.keys(vertex.propertyMap()), []);
+    });
+  });
 });
 
 describe('VertexProperty', () => {
