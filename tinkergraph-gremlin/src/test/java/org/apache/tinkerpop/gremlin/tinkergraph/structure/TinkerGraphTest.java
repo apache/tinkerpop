@@ -69,6 +69,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -87,6 +88,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
@@ -704,6 +706,36 @@ public class TinkerGraphTest {
 
         assertEquals(expectedMidTraversal, g.V().has("name", "marko").outE("knows").inV().hasId(new Integer[]{2, 4}).toList());
         assertEquals(expectedMidTraversal, g.V().has("name", "marko").outE("knows").inV().hasId(Arrays.asList(2, 4)).toList());
+    }
+
+    /**
+     * Validating that hasId() only unrolls a collection when it is supplied as the single argument, matching the
+     * behavior of g.V()/g.E(). When multiple arguments are supplied, a collection argument is treated as a literal
+     * id rather than being unrolled (TINKERPOP-3273).
+     */
+    @Test
+    public void shouldNotUnrollCollectionWhenMidTraversalHasIdHasMultipleArguments() {
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
+
+        final List<Vertex> expected = g.V().has("name", "marko").outE("knows").inV().hasId(2).toList();
+        assertEquals(expected, g.V().has("name", "marko").outE("knows").inV().hasId(2, Collections.singletonList(4)).toList());
+    }
+
+    /**
+     * Validating that a start-step hasId() with multiple arguments where one is a collection is consistent with
+     * g.V()/g.E(): the collection is not unrolled and the graph rejects it as a non-convertible id (TINKERPOP-3273).
+     */
+    @Test
+    public void shouldBeConsistentWithVWhenStartStepHasIdHasMultipleArguments() {
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
+
+        final IllegalArgumentException vException = assertThrows(IllegalArgumentException.class,
+                () -> g.V(1, Arrays.asList(2, 4)).toList());
+        assertThat(vException.getMessage(), containsString("Expected an id that is convertible to"));
+
+        final IllegalArgumentException hasIdException = assertThrows(IllegalArgumentException.class,
+                () -> g.V().hasId(1, Arrays.asList(2, 4)).toList());
+        assertThat(hasIdException.getMessage(), containsString("Expected an id that is convertible to"));
     }
 
     @Test

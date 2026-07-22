@@ -73,8 +73,7 @@ public class HasStepTest extends StepTest {
                         __.hasId(1, 2),
                         __.hasId(within(1, 2)),
                         __.hasId(new Integer[]{1, 2}),
-                        __.hasId(Arrays.asList(1, 2)),
-                        __.hasId(Collections.singletonList(1), Collections.singletonList(2))),
+                        __.hasId(Arrays.asList(1, 2))),
 
                 // hasLabel(Object label, Object... moreLabels) should be compatible with hasLabel(Object... labels)
                 Arrays.asList(
