@@ -281,3 +281,17 @@ Feature: Step - hasId()
       | result |
       | v[marko] |
       | v[vadas] |
+
+  Scenario: g_VX1X_out_hasIdX2_listXid3_id4XX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
+    And using the parameter xx1 defined as "l[v[lop].id,v[josh].id]"
+    And the traversal of
+      """
+      g.V(vid1).out().hasId(vid2, xx1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |

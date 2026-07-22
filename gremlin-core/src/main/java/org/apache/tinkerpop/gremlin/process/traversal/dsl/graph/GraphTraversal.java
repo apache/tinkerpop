@@ -3032,51 +3032,34 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         } else {
             this.asAdmin().getGremlinLang().addStep(Symbols.hasId, id, otherIds);
 
-            //using ArrayList given P.within() turns all arguments into lists
+            // a collection/array is only unrolled when it is the single argument, aligning hasId() with g.V()/g.E()
+            // where multiple arguments are each treated as a literal id (TINKERPOP-3273)
             final List<Object> ids = new ArrayList<>();
-
-            if (id instanceof GValue) {
-                // the logic for dealing with hasId([]) is sketchy historically, just trying to maintain what we were
-                // originally testing prior to GValue.
-                Object value = ((GValue) id).get();
-                if (value instanceof Object[]) {
-                    ids.addAll(Arrays.asList(GValue.ensureGValues((Object[]) value)));
-                } else if (value instanceof Collection) {
-                    ids.addAll(Arrays.asList(GValue.ensureGValues(((Collection<?>) value).toArray())));
+            if (otherIds == null || otherIds.length == 0) {
+                if (id instanceof GValue) {
+                    // the logic for dealing with hasId([]) is sketchy historically, just trying to maintain what we were
+                    // originally testing prior to GValue. A GValue containing an array or Collection is unrolled into
+                    // individual GValues so the wrappings are preserved for parameterization.
+                    final Object value = ((GValue) id).get();
+                    if (value instanceof Object[]) {
+                        ids.addAll(Arrays.asList(GValue.ensureGValues((Object[]) value)));
+                    } else if (value instanceof Collection) {
+                        ids.addAll(Arrays.asList(GValue.ensureGValues(((Collection<?>) value).toArray())));
+                    } else {
+                        ids.add(id);
+                    }
+                } else if (id instanceof Object[]) {
+                    Collections.addAll(ids, (Object[]) id);
+                } else if (id instanceof Collection) {
+                    // as ids are unrolled when it's in array, they should also be unrolled when it's a list.
+                    // this also aligns with behavior of hasId() when it's pushed down to g.V() (TINKERPOP-2863)
+                    ids.addAll((Collection<?>) id);
                 } else {
                     ids.add(id);
                 }
-            } else if (id instanceof Object[]) {
-                Collections.addAll(ids, (Object[]) id);
-            } else if (id instanceof Collection) {
-                // as ids are unrolled when it's in array, they should also be unrolled when it's a list.
-                // this also aligns with behavior of hasId() when it's pushed down to g.V() (TINKERPOP-2863)
-                ids.addAll((Collection<?>) id);
-            } else if (id instanceof GValue && ((GValue<?>) id).get() instanceof Object[]) {
-                // If a GValue is passed in containing an array or Collection, it is unrolled similarly to literal
-                // arguments. This comes at the expense of losing the GValue wrappings, but it necessary for consistency
-                Collections.addAll(ids, (Object[]) ((GValue<?>) id).get());
-            } else if (id instanceof GValue && ((GValue<?>) id).get() instanceof Collection) {
-                ids.addAll((Collection<?>) ((GValue<?>) id).get());
-            }else {
+            } else {
                 ids.add(id);
-            }
-
-            // unrolling ids from lists works cleaner with Collection too, as otherwise they will need to
-            // be turned into array first
-            if (otherIds != null) {
-                for (final Object i : otherIds) {
-                    if (i instanceof Object[]) {
-                        Collections.addAll(ids, (Object[]) i);
-                    } else if (i instanceof Collection) {
-                        ids.addAll((Collection<?>) i);
-                    } else if (i instanceof GValue && ((GValue<?>) i).get() instanceof Object[]) {
-                        Collections.addAll(ids, (Object[]) ((GValue<?>) i).get());
-                    } else if (i instanceof GValue && ((GValue<?>) i).get() instanceof Collection) {
-                        ids.addAll((Collection<?>) ((GValue<?>) i).get());
-                    } else
-                        ids.add(i);
-                }
+                Collections.addAll(ids, otherIds);
             }
 
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.id.getAccessor(), ids.size() == 1 ? P.eq(ids.get(0)) : P.within(ids)));

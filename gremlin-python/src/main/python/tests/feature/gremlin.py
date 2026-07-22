@@ -521,6 +521,7 @@ world.gremlins = {
     'g_VX1X_out_hasXid_2_3X_inList': [(lambda g, xx1=None,vid1=None:g.V(vid1).out().has_id(xx1))], 
     'g_V_hasXid_1_2X': [(lambda g, vid2=None,vid1=None:g.V().has_id(vid1, vid2))], 
     'g_V_hasXid_1_2X_inList': [(lambda g, xx1=None:g.V().has_id(xx1))], 
+    'g_VX1X_out_hasIdX2_listXid3_id4XX': [(lambda g, xx1=None,vid2=None,vid1=None:g.V(vid1).out().has_id(vid2, xx1))], 
     'g_V_both_dedup_properties_hasKeyXageX_value': [(lambda g:g.V().both().properties().dedup().has_key('age').value())], 
     'g_V_both_properties_dedup_hasKeyXageX_hasValueXgtX30XX_value': [(lambda g:g.V().both().properties().dedup().has_key('age').has_value(P.gt(30)).value()), (lambda g:g.V().both().properties().dedup().has_key('age').has_value(P.gt(30)).value())], 
     'g_V_bothE_properties_dedup_hasKeyXweightX_value': [(lambda g:g.V().both_e().properties().dedup().has_key('weight').value())], 
