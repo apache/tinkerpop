@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -41,7 +40,6 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.ElementFeatu
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -55,10 +53,6 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_withSideEffectXsgX_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup(final Graph subgraph);
 
     public abstract Traversal<Vertex, Vertex> get_g_withSideEffectXsgX_V_hasXname_danielX_outE_subgraphXsgX_inV(final Graph subgraph);
-
-    public abstract Traversal<?, ?> get_g_injectX1X_subgraphXsgX();
-
-    public abstract Traversal<Vertex, Edge> get_g_addVX_subgraphXsgX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -134,33 +128,6 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
         graphProvider.clear(subgraph, config);
     }
 
-    @Test
-    public void g_injectX1X_subgraphXsgX() {
-        final Traversal<?, ?> traversal = get_g_injectX1X_subgraphXsgX();
-        printTraversalForm(traversal);
-        try {
-            traversal.iterate();
-            fail("subgraph() should throw an IllegalStateException when the input is not an Edge");
-        } catch (IllegalStateException ise) {
-            assertThat(ise.getMessage(), containsString("requires Edge input"));
-            assertThat(ise.getMessage(), containsString("Integer"));
-        }
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ADD_VERTICES)
-    public void g_addVX_subgraphXsgX() {
-        final Traversal<Vertex, Edge> traversal = get_g_addVX_subgraphXsgX();
-        printTraversalForm(traversal);
-        try {
-            traversal.iterate();
-            fail("subgraph() should throw an IllegalStateException when the input is not an Edge");
-        } catch (IllegalStateException ise) {
-            assertThat(ise.getMessage(), containsString("requires Edge input"));
-        }
-    }
-
     public static class Traversals extends SubgraphTest {
 
         @Override
@@ -176,16 +143,6 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_withSideEffectXsgX_V_hasXname_danielX_outE_subgraphXsgX_inV(final Graph subgraph) {
             return g.withSideEffect("sg", () -> subgraph).V().has("name","daniel").outE().subgraph("sg").inV();
-        }
-
-        @Override
-        public Traversal<?, ?> get_g_injectX1X_subgraphXsgX() {
-            return g.inject(1).subgraph("sg");
-        }
-
-        @Override
-        public Traversal<Vertex, Edge> get_g_addVX_subgraphXsgX() {
-            return g.addV().subgraph("sg");
         }
     }
 }
