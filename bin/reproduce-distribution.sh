@@ -58,8 +58,11 @@ usage() {
 Usage: $(basename "$0") <GIT_TAG> [DIST_URL_BASE]
 
   GIT_TAG        Release tag to reproduce (e.g. 3.7.6)
-  DIST_URL_BASE  Base URL for published artifacts
-                 (default: https://dist.apache.org/repos/dist/release/tinkerpop/<GIT_TAG>)
+  DIST_URL_BASE  Base URL for published artifacts (optional).
+                 When omitted the script auto-detects by checking:
+                   1. https://dist.apache.org/repos/dist/release/tinkerpop/<GIT_TAG>
+                   2. https://dist.apache.org/repos/dist/dev/tinkerpop/<GIT_TAG>
+                 This covers both promoted releases and artifacts staged for VOTE.
 
 This script rebuilds TinkerPop distribution artifacts from a git tag inside a
 pinned Docker container and compares them entry-by-entry against the published
@@ -300,14 +303,24 @@ if ! [[ "$GIT_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$ ]]; then
   die "Invalid GIT_TAG '${GIT_TAG}': must match pattern <major>.<minor>.<patch> with optional -rcN suffix (e.g. 3.7.6, 3.7.7-rc1)"
 fi
 
-DIST_URL_BASE="${2:-https://dist.apache.org/repos/dist/release/tinkerpop/${GIT_TAG}}"
+if [[ -n "${2:-}" ]]; then
+  DIST_URL_BASE="$2"
+  AUTO_RESOLVE_DIST=0
+else
+  DIST_URL_BASE=""
+  AUTO_RESOLVE_DIST=1
+fi
 
 echo "============================================================================="
 echo " Reproducible Build Validation for Apache TinkerPop ${GIT_TAG}"
 echo "============================================================================="
 echo ""
 echo "  Git tag:    ${GIT_TAG}"
-echo "  Dist URL:   ${DIST_URL_BASE}"
+if [[ $AUTO_RESOLVE_DIST -eq 1 ]]; then
+  echo "  Dist URL:   (auto-detect: release/ then dev/)"
+else
+  echo "  Dist URL:   ${DIST_URL_BASE}"
+fi
 echo ""
 
 # Preconditions
@@ -425,6 +438,23 @@ echo "  OK — all three artifacts found"
 # ---------------------------------------------------------------------------
 PUBLISHED_DIR="${WORK_DIR}/published"
 mkdir -p "$PUBLISHED_DIR"
+
+# Auto-detect the distribution area when the user did not provide an explicit URL
+if [[ $AUTO_RESOLVE_DIST -eq 1 ]]; then
+  RELEASE_BASE="https://dist.apache.org/repos/dist/release/tinkerpop/${GIT_TAG}"
+  DEV_BASE="https://dist.apache.org/repos/dist/dev/tinkerpop/${GIT_TAG}"
+
+  info "auto-detecting artifact location (probing with ${CONSOLE_PUBLISHED_NAME}) ..."
+  if curl -fsIL "${RELEASE_BASE}/${CONSOLE_PUBLISHED_NAME}" >/dev/null 2>&1; then
+    DIST_URL_BASE="$RELEASE_BASE"
+    info "found published artifacts in release/"
+  elif curl -fsIL "${DEV_BASE}/${CONSOLE_PUBLISHED_NAME}" >/dev/null 2>&1; then
+    DIST_URL_BASE="$DEV_BASE"
+    info "artifacts not in release/, using dev/ (staged for VOTE)"
+  else
+    die "Published artifacts for ${GIT_TAG} not found in release/ or dev/ on dist.apache.org. Pass an explicit DIST_URL_BASE as the 2nd argument."
+  fi
+fi
 
 info "downloading published artifacts from ${DIST_URL_BASE} ..."
 
