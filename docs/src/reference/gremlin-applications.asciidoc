@@ -519,6 +519,17 @@ Each entry supports:
 
 Graphs with explicit `traversalSources` entries are excluded from auto-creation.
 
+NOTE: A client does not write a query directly against these names — for example, `gReadOnly.V()` will not
+work, because a `gremlin-lang` traversal must begin with `g`.  Instead, a client chooses which named
+`TraversalSource` to run against through the request-level `g` alias and still writes the traversal as
+`g.V()...`.  The drivers expose this alias as the traversal source argument supplied when creating a remote
+connection (see <<connecting-via-drivers>>): supplying `gReadOnly` in place of `g` routes the request to the
+read-only source declared above, while the query itself remains unchanged.
+
+TIP: A server configuration that declares only `graphs` (with or without explicit `traversalSources`) is
+valid on its own.  The remaining server settings — such as host, port, thread pools, and serializers — fall
+back to sensible defaults when they are omitted.
+
 [[server-lifecycle-hooks]]
 ==== LifeCycleHooks
 
