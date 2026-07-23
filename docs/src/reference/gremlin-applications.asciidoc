@@ -654,8 +654,19 @@ and details in the <<gremlin-drivers-variants,Gremlin Drivers and Variants>> Sec
 [[connecting-via-console]]
 === Connecting via Console
 
-With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as
-follows:
+Gremlin Console can be used to send remote traversals to a running Gremlin Server, so a compatible server must be
+started first. The examples in this section query the "modern" toy graph (i.e. vertices such as "marko", "vadas" and
+"lop"), which is served by the `conf/gremlin-server-modern.yaml` configuration that is packaged with the Gremlin Server
+distribution. Start Gremlin Server with that configuration as described in <<starting-gremlin-server,Starting Gremlin
+Server>>:
+
+[source,text]
+bin/gremlin-server.sh conf/gremlin-server-modern.yaml
+
+NOTE: Starting Gremlin Server with a different configuration (such as the default) serves a different or empty graph, in
+which case the traversals shown below will not return the results demonstrated here.
+
+With the server running, start Gremlin Console as follows:
 
 [source,text]
 ----
