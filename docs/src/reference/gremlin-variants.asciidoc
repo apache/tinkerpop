@@ -2533,10 +2533,15 @@ GraphBinary `DateTime` values are not supported.
 signed range are unsuffixed (Int), integers beyond that up to `Number.MAX_SAFE_INTEGER` use the `L` suffix (Long),
 non-integer numbers and integers beyond the safe range use the `D` suffix (Double), and `BigInt` values use the `N`
 suffix (BigInteger).
-* Gremlin `Character` and `Duration` values are not supported.
+* Gremlin `Character` and `Duration` values are not supported. If the server returns one of these types, the client
+throws a deserialization error for the unknown type code rather than failing silently or coercing the value. These
+types also cannot currently be produced from the client, as GremlinLang provides no literal syntax for them, so this
+failure can only be observed with a server that emits them directly.
 * The `subgraph()`-step returns a detached `Graph` data container exposing
 `vertices: Map<any, Vertex>` and `edges: Map<any, Edge>`. The result is not a live `Graph` instance: mutating the
-collections has no effect on the source graph, and it cannot be passed to `traversal().with(...)`. To re-query
+collections has no effect on the source graph. Passing it to `traversal().with_(...)` does not raise an error
+immediately, but yields a non-functional traversal source that fails only when a traversal is executed against it
+(surfacing as an opaque `this.connection.submit is not a function`). To re-query
 subgraph elements against the original graph, extract their `id` and use `g.V(id)` / `g.E(id)` on the original
 `GraphTraversalSource`.
 
