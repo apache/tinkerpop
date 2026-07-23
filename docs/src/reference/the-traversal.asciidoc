@@ -1685,7 +1685,11 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[dateDiff-step]]
 === DateDiff Step
 
-The `dateDiff()`-step (*map*) returns the difference between two Dates in epoch time in milliseconds. 
+The `dateDiff()`-step (*map*) returns the difference between two Dates in epoch time in milliseconds. The result is
+computed as the incoming traverser date minus the argument date. A positive result means the incoming date is later
+than the argument date, while a negative result means the incoming date is earlier. In the example below, the incoming
+date (`2023-08-02`) is one day earlier than the argument date (`2023-08-03`), so the result is `-86400000`
+(one day in milliseconds).
 If the incoming traverser is not a Date or OffsetDateTime, then an `IllegalArgumentException` will be thrown.
 
 [gremlin-groovy,modern]
