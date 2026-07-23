@@ -372,12 +372,16 @@ echo "  OK"
 BUILD_LOG="${WORK_DIR}/mvn-build.log"
 info "building from source inside Docker (this may take a while) ..."
 
+# -Papache-release is retained because it activates the source-release assembly that produces the
+# src zip we compare.  GPG signing is skipped (-Dgpg.skip=true) because signatures are detached
+# .asc files that are not part of the compared artifacts and would otherwise require the release
+# manager's private signing key, which a validator must not need.
 docker run --rm \
   -v "${SOURCE_DIR}:/build:rw" \
   -v "${WORK_DIR}/m2-repo:/root/.m2/repository:rw" \
   -w /build \
   "$DOCKER_TAG" \
-  mvn clean install -Papache-release -DskipTests -DskipImageBuild \
+  mvn clean install -Papache-release -DskipTests -DskipImageBuild -Dgpg.skip=true \
   > "$BUILD_LOG" 2>&1 || {
   echo "  FAILED (see ${BUILD_LOG})"
   echo ""
