@@ -158,7 +158,7 @@ limitations under the License.
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
-            <version>9.30.1</version>
+            <version>9.37.4</version>
         </dependency>
         <dependency>
             <groupId>commons-logging</groupId>
