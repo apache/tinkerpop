@@ -1529,6 +1529,7 @@ const gremlins = {
     g_VX1X_valuesXageX_inject: [function({g, xx1}) { return g.V(xx1).values("age").inject() }], 
     g_injectXnull_1_3_nullX_asXaX_selectXaX: [function({g}) { return g.inject(null,1,3,null).as("a").select("a") }], 
     g_injectX1_3lX_injectX100_300X: [function({g}) { return g.inject(1,3).inject(100,300) }], 
+    g_injectXbigintBoundaryValuesX: [function({g, xx1, xx3, xx2}) { return g.inject(xx1,xx2,xx3) }], 
     g_io_readXkryoX: [function({g}) { return g.io("data/tinkerpop-modern.kryo").read() }, function({g}) { return g.V() }, function({g}) { return g.E() }], 
     g_io_read_withXreader_gryoX: [function({g}) { return g.io("data/tinkerpop-modern.kryo").with_("~tinkerpop.io.reader","gryo").read() }, function({g}) { return g.V() }, function({g}) { return g.E() }], 
     g_io_readXgraphsonX: [function({g}) { return g.io("data/tinkerpop-modern.json").read() }, function({g}) { return g.V() }, function({g}) { return g.E() }], 

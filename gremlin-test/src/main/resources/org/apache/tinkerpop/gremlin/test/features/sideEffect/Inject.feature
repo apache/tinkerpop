@@ -218,3 +218,20 @@ Feature: Step - inject()
       | d[300].i |
       | d[1].i |
       | d[3].i |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXbigintBoundaryValuesX
+    Given the empty graph
+    And using the parameter xx1 defined as "d[0].n"
+    And using the parameter xx2 defined as "d[-129].n"
+    And using the parameter xx3 defined as "d[-32769].n"
+    And the traversal of
+      """
+      g.inject(xx1, xx2, xx3)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0].n |
+      | d[-129].n |
+      | d[-32769].n |
