@@ -27,6 +27,11 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from prior 3.7.x releases.
 
+* Added native-async WebSocket driver for Python (`gremlin_python.driver`): low-level transport (`AsyncAiohttpWSTransport`), protocol (`AsyncGremlinServerWSProtocol`), result streaming (`AsyncResultSet`), connection (`AsyncConnection`), and client (`AsyncClient`) — full asyncio usage without thread-pool wrappers.
+* Added `AsyncDriverRemoteConnection` for the Python GLV async driver: a high-level connection object equivalent to `DriverRemoteConnection` that exposes `submit()`, `submit_async()`, and `submit_stream()` as coroutines, supports server-side sessions, and automatically rolls back any open transaction on `close()`.
+* Added `AsyncGraphTraversalSource`, `AsyncGraphTraversal`, and `async_traversal()` factory to the Python GLV: enables the full Gremlin DSL in async mode (`await g.V().has_label("person").values("name").to_list()`); terminal steps `to_list()`, `next()`, `to_set()`, `has_next()`, and `iterate()` are all awaitable.
+* Added `AsyncTransaction` to the Python GLV: `asyncio.Lock`-protected transaction helper returned by `await g.tx()` with `begin()`, `commit()`, `rollback()`, and async context-manager support.
+* Added keepalive pings (`ping_interval`), automatic retry on connection reset (`InvalidatedConnectionError`), and per-client default request options (including `query_timeout`) to the Python GLV async driver for production reliability.
 * Enabled building and running with Java 21 and Java 25 (experimental; `spark-gremlin` excluded, as Spark 3.3.x only runs on Java 8 through 17).
 * Bumped to Groovy 4.0.32 which adds support for parsing Java 25 bytecode.
 * Bumped Hadoop to 3.4.3 (and Kerby to 2.0.3) to enable `hadoop-gremlin` to build and run on Java 25.
