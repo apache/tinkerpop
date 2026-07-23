@@ -706,7 +706,7 @@ class PeerPressure(object):
 
     propertyName = "~tinkerpop.peerPressure.propertyName"
 
-    property_name = "~tinkerpop.pageRank.propertyName"
+    property_name = "~tinkerpop.peerPressure.propertyName"
 
     times = "~tinkerpop.peerPressure.times"
 

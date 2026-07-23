@@ -110,6 +110,15 @@ example `g.V().hasId(1, 2, 4)`).
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3273[TINKERPOP-3273]
 
+==== Deprecated ProductiveByStrategy
+
+`ProductiveByStrategy` is deprecated as of 3.7.7 and is not replaced. The strategy was introduced in 3.5.0 as a
+temporary way to mimic the `null` processing behavior of versions prior to 3.5.0, where a `by()` modulator would
+always produce a result. That compatibility need has passed, so the strategy is no longer recommended and will be
+removed in 4.0.0. This deprecation applies across all Gremlin Language Variants.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3042[TINKERPOP-3042]
+
 == TinkerPop 3.7.6
 
 *Release Date: April 1, 2026*

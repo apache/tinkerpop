@@ -445,3 +445,34 @@ func TestStrategy(t *testing.T) {
 			"booleanKey:true"))
 	})
 }
+
+func Test_StrategyConfig_partitionNilReadPartitions(t *testing.T) {
+	t.Run("Test PartitionStrategy with nil ReadPartitions does not panic", func(t *testing.T) {
+		config := PartitionStrategyConfig{
+			PartitionKey:   "partition",
+			WritePartition: "write",
+			// ReadPartitions intentionally left unset (nil interface).
+		}
+		var strategy TraversalStrategy
+		assert.NotPanics(t, func() {
+			strategy = PartitionStrategy(config)
+		})
+		assert.NotNil(t, strategy)
+		configMap := strategy.(*traversalStrategy).configuration
+		_, ok := configMap["readPartitions"]
+		assert.False(t, ok)
+	})
+
+	t.Run("Test PartitionStrategy with non-empty ReadPartitions sets readPartitions", func(t *testing.T) {
+		config := PartitionStrategyConfig{
+			PartitionKey:   "partition",
+			WritePartition: "write",
+			ReadPartitions: NewSimpleSet("read"),
+		}
+		strategy := PartitionStrategy(config)
+		assert.NotNil(t, strategy)
+		configMap := strategy.(*traversalStrategy).configuration
+		_, ok := configMap["readPartitions"]
+		assert.True(t, ok)
+	})
+}

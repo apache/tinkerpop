@@ -88,7 +88,7 @@ func PartitionStrategy(config PartitionStrategyConfig) TraversalStrategy {
 	if config.WritePartition != "" {
 		configMap["writePartition"] = config.WritePartition
 	}
-	if len(config.ReadPartitions.ToSlice()) != 0 {
+	if config.ReadPartitions != nil && len(config.ReadPartitions.ToSlice()) != 0 {
 		configMap["readPartitions"] = config.ReadPartitions
 	}
 	return &traversalStrategy{name: "PartitionStrategy", configuration: configMap}
@@ -427,6 +427,9 @@ func PathRetractionStrategy() TraversalStrategy {
 // the initial Traversal argument or null. In this way, the By() is always "productive". This strategy
 // is an "optimization" but it is perhaps more of a "decoration", but it should follow
 // ByModulatorOptimizationStrategy which features optimizations relevant to this one.
+//
+// Deprecated: As of release 3.7.7, not replaced. This strategy was added as a temporary way to mimic
+// pre-3.5.0 null processing behavior.
 func ProductiveByStrategy(config ...ProductiveByStrategyConfig) TraversalStrategy {
 	configMap := make(map[string]interface{})
 	if len(config) > 0 {
@@ -438,6 +441,8 @@ func ProductiveByStrategy(config ...ProductiveByStrategyConfig) TraversalStrateg
 
 // ProductiveByStrategyConfig provides configuration options for ProductiveByStrategy.
 // Zeroed (unset) values are used.
+//
+// Deprecated: As of release 3.7.7, not replaced.
 type ProductiveByStrategyConfig struct {
 	ProductiveKeys []string
 }
