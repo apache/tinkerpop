@@ -110,6 +110,40 @@ class TestGraph(object):
         # a vertex with no properties yields an empty dict
         assert Vertex(2).property_map() == {}
 
+    def test_edge_property_map(self):
+        e = Edge(20, Vertex(10), "knows", Vertex(11))
+        # Edge holds Property objects, each exposing .key
+        weight = Property("weight", 0.5, e)
+        since = Property("since", 2006, e)
+        e.properties = [weight, since]
+        pm = e.property_map()
+        assert set(pm.keys()) == {"weight", "since"}
+        # single-valued keys map to 1-element lists
+        assert pm["weight"] == [weight]
+        assert len(pm["weight"]) == 1
+        assert pm["since"] == [since]
+        assert len(pm["since"]) == 1
+        #
+        # an edge with no properties yields an empty dict
+        assert Edge(21, Vertex(10), "knows", Vertex(11)).property_map() == {}
+
+    def test_vertex_property_property_map(self):
+        vp = VertexProperty(long(30), "name", "marko", Vertex(10))
+        # VertexProperty holds meta-properties as Property objects exposing .key
+        since = Property("since", 2006, vp)
+        skill = Property("skill", 4, vp)
+        vp.properties = [since, skill]
+        pm = vp.property_map()
+        assert set(pm.keys()) == {"since", "skill"}
+        # single-valued keys map to 1-element lists
+        assert pm["since"] == [since]
+        assert len(pm["since"]) == 1
+        assert pm["skill"] == [skill]
+        assert len(pm["skill"]) == 1
+        #
+        # a vertex property with no meta-properties yields an empty dict
+        assert VertexProperty(long(31), "name", "marko", Vertex(10)).property_map() == {}
+
     def test_path(self):
         path = Path([set(["a", "b"]), set(["c", "b"]), set([])], [1, Vertex(1), "hello"])
         assert "path[1, v[1], hello]" == str(path)

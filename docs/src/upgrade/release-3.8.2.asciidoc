@@ -49,12 +49,13 @@ those releases require Java 17 as a minimum and Scala 2.13, which would drop Jav
 `spark-gremlin` therefore continues to target Spark 3.3.x and is built and tested with Java 11 and Java 17 only; it is
 excluded from the Java 21 and Java 25 builds.
 
-==== Vertex propertyMap() Helper
+==== propertyMap() Element Helper
 
-The Gremlin Language Variants now offer a helper on the `Vertex` type that views a vertex's properties as a map keyed
-by property key, complementing the flat list returned by `properties`. `propertyMap()` (`gremlin-javascript`),
-`PropertyMap()` (`gremlin-dotnet`), and `property_map()` (`gremlin-python`) each return a map of property key to the
-list of that key's `VertexProperty` objects. The default flat-list representation of `properties` is unchanged.
+The Gremlin Language Variants now offer a helper on all element types (`Vertex`, `Edge`, and `VertexProperty`) that
+views an element's properties as a map keyed by property key, complementing the flat list returned by `properties`.
+`propertyMap()` (`gremlin-javascript`), `PropertyMap()` (`gremlin-dotnet` and `gremlin-go`), and `property_map()`
+(`gremlin-python`) each return a map of property key to the list of that key's property objects. The default flat-list
+representation of `properties` is unchanged.
 
 [source,javascript]
 ----
@@ -62,6 +63,16 @@ list of that key's `VertexProperty` objects. The default flat-list representatio
 v.properties        // [ VertexProperty{key:'name',...}, VertexProperty{key:'age',...} ]
 // grouped map view
 v.propertyMap()     // { name: [ VertexProperty{...} ], age: [ VertexProperty{...} ] }
+----
+
+The JVM structure API now also exposes `Element.propertyMap()` (inherited by `Vertex`, `Edge`, and `VertexProperty`)
+as a default method in `gremlin-core`, complementing the GLV helpers.
+
+[source,java]
+----
+// gremlin-core structure API (Vertex, Edge, VertexProperty)
+Map<String, List<Property<Object>>> propertyMap = vertex.propertyMap();
+// { name=[vp[name->marko]], age=[vp[age->29]] }
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3187[TINKERPOP-3187]

@@ -385,3 +385,34 @@ func TestGraphBinaryV1(t *testing.T) {
 		})
 	})
 }
+
+func TestVertexPropertyReaderSetsKey(t *testing.T) {
+	serializer := &graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
+
+	source := &VertexProperty{
+		Element: Element{Id: int32(1), Label: "name"},
+		Value:   "marko",
+	}
+
+	var buffer bytes.Buffer
+	buf, err := vertexPropertyWriter(source, &buffer, serializer)
+	assert.Nil(t, err)
+
+	pos := 0
+	res, err := vertexPropertyReader(&buf, &pos)
+	assert.Nil(t, err)
+
+	vp, ok := res.(*VertexProperty)
+	assert.True(t, ok)
+	assert.Equal(t, "name", vp.Label)
+	assert.Equal(t, "name", vp.Key)
+
+	// Confirm PropertyMap grouping is keyed correctly rather than collapsing under the empty key.
+	v := &Vertex{Element{Id: int32(1), Label: "person", Properties: []interface{}{vp}}}
+	propertyMap := v.PropertyMap()
+	assert.Equal(t, 1, len(propertyMap))
+	assert.Equal(t, 1, len(propertyMap["name"]))
+	assert.Equal(t, vp, propertyMap["name"][0])
+	_, emptyKeyExists := propertyMap[""]
+	assert.False(t, emptyKeyExists)
+}

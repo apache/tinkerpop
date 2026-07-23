@@ -61,17 +61,11 @@ class Element {
   equals(other) {
     return other instanceof Element && this.id === other.id;
   }
-}
-
-class Vertex extends Element {
-  constructor(id, label, properties = []) {
-    super(id, label, properties);
-  }
 
   /**
-   * Groups this vertex's properties by key.
-   * @returns {Object<string, VertexProperty[]>} a map of property key to the array of
-   *   VertexProperty objects for that key (empty object when there are no properties).
+   * Groups this element's properties by key.
+   * @returns {Object<string, Object[]>} a map of property key to the array of
+   *   property objects for that key (empty object when there are no properties).
    */
   propertyMap() {
     const map = Object.create(null);
@@ -79,6 +73,12 @@ class Vertex extends Element {
       (map[p.key] = map[p.key] || []).push(p);
     }
     return map;
+  }
+}
+
+class Vertex extends Element {
+  constructor(id, label, properties = []) {
+    super(id, label, properties);
   }
 
   toString() {

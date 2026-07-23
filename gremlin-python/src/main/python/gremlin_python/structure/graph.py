@@ -42,22 +42,22 @@ class Element(object):
     def __hash__(self):
         return hash(self.id)
 
-
-class Vertex(Element):
-    def __init__(self, id, label="vertex", properties=None):
-        Element.__init__(self, id, label, properties)
-
     def property_map(self):
-        """Groups the vertex's properties by key.
+        """Groups this element's properties by key.
 
-        Returns a dict of property key -> list of VertexProperty (an empty dict
-        when the vertex has no properties). ``self.properties`` is a flat list
-        where each item is a VertexProperty exposing ``.key``.
+        Returns a dict of property key -> list of property objects (an empty
+        dict when this element has no properties). ``self.properties`` is a
+        flat list where each item exposes ``.key``.
         """
         result = {}
         for p in self.properties:
             result.setdefault(p.key, []).append(p)
         return result
+
+
+class Vertex(Element):
+    def __init__(self, id, label="vertex", properties=None):
+        Element.__init__(self, id, label, properties)
 
     def __repr__(self):
         return "v[" + str(self.id) + "]"

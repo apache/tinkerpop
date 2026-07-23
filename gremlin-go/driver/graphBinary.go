@@ -1278,6 +1278,7 @@ func vertexPropertyReader(data *[]byte, i *int) (interface{}, error) {
 		return nil, err
 	}
 	vp.Label = label.(string)
+	vp.Key = label.(string)
 	vp.Value, err = readFullyQualifiedNullable(data, i, true)
 	if err != nil {
 		return nil, err
