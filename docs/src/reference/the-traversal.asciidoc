@@ -2181,6 +2181,7 @@ g.V().values('age').fold(0) {a,b -> a + b} <4>
 g.V().values('age').fold(0, sum) <5>
 g.V().values('age').sum() <6>
 g.inject(["a":1],["b":2]).fold([], addAll) <7>
+g.inject(["a":1],["b":2]).fold([:], addAll) <8>
 ----
 
 <1> A parameterless `fold()` will aggregate all the objects into a list and then emit the list.
@@ -2189,7 +2190,8 @@ g.inject(["a":1],["b":2]).fold([], addAll) <7>
 <4> What is the total age of the people in the graph?
 <5> The same as before, but using a built-in bi-function.
 <6> The same as before, but using the <<sum-step,`sum()`-step>>.
-<7> A mechanism for merging `Map` instances. If a key occurs in more than a single `Map`, the later occurrence will replace the earlier.
+<7> With a list seed (`[]`), `addAll` collects the incoming `Map` traversers into a list, yielding `[[a:1],[b:2]]`. The two maps are gathered as separate elements, so they are not merged and no key replacement occurs.
+<8> With a map seed (`[:]`), `addAll` instead merges the incoming maps into a single `Map` (via `putAll`), yielding `[a:1,b:2]`. If a key occurs in more than a single `Map`, the later occurrence replaces the earlier. The behavior of `addAll` therefore depends on the seed type: a list seed collects the elements into a list, while a map seed merges the maps.
 
 *Additional References*
 
