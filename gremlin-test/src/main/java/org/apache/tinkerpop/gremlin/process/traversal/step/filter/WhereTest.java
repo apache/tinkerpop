@@ -588,13 +588,13 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Integer> get_g_V_valuesXageX_whereXgtX5XX() {
             // gt(5) yields a P whose value is an Integer rather than a String scope key; the cast mimics the
             // erased P<String> that reaches where(P) via raw types, bytecode, or deserialization
-            final P<String> nonStringKeyPredicate = (P<String>) (P) gt(5);
+            final P<String> nonStringKeyPredicate = (P) gt(5);
             return g.V().<Integer>values("age").where(nonStringKeyPredicate);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasLabelXpersonX_whereX__valuesXageX_whereXgtX5XXX() {
-            final P<String> nonStringKeyPredicate = (P<String>) (P) gt(5);
+            final P<String> nonStringKeyPredicate = (P) gt(5);
             return g.V().hasLabel("person").where(__.values("age").where(nonStringKeyPredicate));
         }
     }
