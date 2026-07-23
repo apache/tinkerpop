@@ -34,6 +34,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Add Node 26 support for `gremlin-javascript` and `gremlint`.
 * Enabled reproducible builds by setting `project.build.outputTimestamp`, allowing release distributions to be rebuilt bit-for-bit from a tagged commit.
 * Added `bin/reproduce-distribution.sh` to independently validate published release artifacts against a clean rebuild from source in a pinned Docker toolchain.
+* Excluded maintainer-local `.beads/` state from the source-release distribution so it is no longer packaged into release artifacts.
 
 [[release-3-7-6]]
 === TinkerPop 3.7.6 (Release Date: April 1, 2026)

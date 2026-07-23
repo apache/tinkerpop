@@ -66,6 +66,10 @@
                 <exclude>%regex[(?!((?!${project.build.directory}/)[^/]+/)*src/)(.*/)?cobertura\.ser]</exclude>
                 <exclude>**/.DS_Store</exclude>
 
+                <!-- beads (bd) maintainer-local issue-tracker state (includes a credential key and runtime files); must never ship in a source release -->
+                <exclude>.beads/**</exclude>
+                <exclude>**/.beads/**</exclude>
+
                 <!-- release-plugin temp files -->
                 <exclude>%regex[(?!((?!${project.build.directory}/)[^/]+/)*src/)(.*/)?pom\.xml\.releaseBackup]</exclude>
                 <exclude>%regex[(?!((?!${project.build.directory}/)[^/]+/)*src/)(.*/)?release\.properties]</exclude>
