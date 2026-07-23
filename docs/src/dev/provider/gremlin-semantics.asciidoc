@@ -1476,7 +1476,9 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[reference]
 [[dateDiff-step]]
 === dateDiff()
 
-*Description:* Returns the difference between two Dates in epoch time.
+*Description:* Returns the difference between two Dates in epoch time (milliseconds), computed as the incoming
+traverser `DATETIME` minus the argument `DATETIME`. A positive result means the incoming date is later than the
+argument date, while a negative result means the incoming date is earlier.
 
 *Syntax:* `dateDiff(value: DATETIME)` | `dateDiff(dateTraversal: Traversal<any, DATETIME>)`
 
@@ -1488,9 +1490,9 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[reference]
 
 *Arguments:*
 
-* `value` - Date for subtraction.
-* `dateTraversal` - The `Traversal` value must resolve to a `DATETIME`. The first result returned from the traversal will be
-subtracted with the incoming traverser.
+* `value` - The `DATETIME` to subtract from the incoming traverser (result = incoming `DATETIME` - `value`).
+* `dateTraversal` - The `Traversal` value must resolve to a `DATETIME`. The first result returned from the traversal
+is subtracted from the incoming traverser (result = incoming `DATETIME` - traversal result).
 
 *Modulation:*
 
