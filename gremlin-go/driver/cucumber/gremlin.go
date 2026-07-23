@@ -503,7 +503,6 @@ var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[
     "g_V_hasIdXeqXnullXX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().HasId(gremlingo.P.Eq(nil))}}, 
     "g_V_hasIdX2_nullX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().HasId(p["vid2"], nil)}}, 
     "g_V_hasIdXmarkovar_vadasvarX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().HasId(p["vid1"], p["vid2"])}}, 
-    "g_V_hasIdXmarkovar_vadasvar_petervarX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().HasId(p["vid1"], p["vid2"])}}, 
     "g_V_hasIdX2AsString_nullX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().HasId(p["vid2"], nil)}}, 
     "g_V_hasIdX1AsString_2AsString_nullX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().HasId(p["vid1"], p["vid2"], nil)}}, 
     "g_V_hasIdXnull_2X": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().HasId(nil, p["vid2"])}}, 

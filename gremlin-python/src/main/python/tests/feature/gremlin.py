@@ -508,7 +508,6 @@ world.gremlins = {
     'g_V_hasIdXeqXnullXX': [(lambda g:g.V().has_id(P.eq(None)))], 
     'g_V_hasIdX2_nullX': [(lambda g, vid2=None:g.V().has_id(vid2, None))], 
     'g_V_hasIdXmarkovar_vadasvarX': [(lambda g, vid2=None,vid1=None:g.V().has_id(vid1, vid2))], 
-    'g_V_hasIdXmarkovar_vadasvar_petervarX': [(lambda g, vid2=None,vid1=None:g.V().has_id(vid1, vid2))], 
     'g_V_hasIdX2AsString_nullX': [(lambda g, vid2=None:g.V().has_id(vid2, None))], 
     'g_V_hasIdX1AsString_2AsString_nullX': [(lambda g, vid2=None,vid1=None:g.V().has_id(vid1, vid2, None))], 
     'g_V_hasIdXnull_2X': [(lambda g, vid2=None:g.V().has_id(None, vid2))], 

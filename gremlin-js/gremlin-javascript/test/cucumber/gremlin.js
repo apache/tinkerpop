@@ -534,7 +534,6 @@ const gremlins = {
     g_V_hasIdXeqXnullXX: [function({g}) { return g.V().hasId(P.eq(null)) }], 
     g_V_hasIdX2_nullX: [function({g, vid2}) { return g.V().hasId(vid2, null) }], 
     g_V_hasIdXmarkovar_vadasvarX: [function({g, vid2, vid1}) { return g.V().hasId(vid1, vid2) }], 
-    g_V_hasIdXmarkovar_vadasvar_petervarX: [function({g, vid2, vid1}) { return g.V().hasId(vid1, vid2) }], 
     g_V_hasIdX2AsString_nullX: [function({g, vid2}) { return g.V().hasId(vid2, null) }], 
     g_V_hasIdX1AsString_2AsString_nullX: [function({g, vid2, vid1}) { return g.V().hasId(vid1, vid2, null) }], 
     g_V_hasIdXnull_2X: [function({g, vid2}) { return g.V().hasId(null, vid2) }], 
