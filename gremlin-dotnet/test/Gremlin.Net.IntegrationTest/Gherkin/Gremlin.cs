@@ -2036,11 +2036,17 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_VX1X_valuesXageX_injectXnull_nullX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["xx1"]).Values<object>("age").Inject(null, null)}}, 
                {"g_VX1X_valuesXageX_injectXnullX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["xx1"]).Values<object>("age").Inject(null)}}, 
                {"g_VX1X_valuesXageX_inject", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["xx1"]).Values<object>("age").Inject()}}, 
+<<<<<<< HEAD
                {"g_injectXnull_1_3_nullX_asXaX_selectXaX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(null, 1, 3, null).As("a").Select<object>("a")}}, 
                {"g_injectX1_3X_injectX100_300X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(1, 3).Inject(100, 300)}}, 
                {"g_injectX1_3_100_300X_list", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(new List<object> { 1, 3, 100, 300 })}}, 
                {"g_injectX1_3_100_300X_set", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(new HashSet<object> { 1, 3, 100, 300 })}}, 
                {"g_injectX1_1X_set", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(new HashSet<object> { 1, 1 })}}, 
+=======
+               {"g_injectXnull_1_3_nullX_asXaX_selectXaX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(null,1,3,null).As("a").Select<object>("a")}}, 
+               {"g_injectX1_3lX_injectX100_300X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(1,3).Inject(100,300)}}, 
+               {"g_injectXbigintBoundaryValuesX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"],p["xx2"],p["xx3"])}}, 
+>>>>>>> 3.7-dev
                {"g_io_readXkryoX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Io<object>("data/tinkerpop-modern.kryo").Read(), (g,p) =>g.V(), (g,p) =>g.E()}}, 
                {"g_io_read_withXreader_gryoX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Io<object>("data/tinkerpop-modern.kryo").With(IO.Reader, IO.Gryo).Read(), (g,p) =>g.V(), (g,p) =>g.E()}}, 
                {"g_io_readXgraphsonX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Io<object>("data/tinkerpop-modern.json").Read(), (g,p) =>g.V(), (g,p) =>g.E()}}, 

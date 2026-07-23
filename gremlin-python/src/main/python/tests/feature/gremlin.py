@@ -2014,6 +2014,7 @@ world.gremlins = {
     'g_injectX1_3_100_300X_list': [(lambda g:g.inject([1, 3, 100, 300]))], 
     'g_injectX1_3_100_300X_set': [(lambda g:g.inject({1, 3, 100, 300}))], 
     'g_injectX1_1X_set': [(lambda g:g.inject({1, 1}))], 
+    'g_injectXbigintBoundaryValuesX': [(lambda g:g.inject(bigint(0), bigint(-129), bigint(-32769)))], 
     'g_io_readXkryoX': [(lambda g:g.io('data/tinkerpop-modern.kryo').read()), (lambda g:g.V()), (lambda g:g.E())], 
     'g_io_read_withXreader_gryoX': [(lambda g:g.io('data/tinkerpop-modern.kryo').with_(IO.reader, IO.gryo).read()), (lambda g:g.V()), (lambda g:g.E())], 
     'g_io_readXgraphsonX': [(lambda g:g.io('data/tinkerpop-modern.json').read()), (lambda g:g.V()), (lambda g:g.E())], 

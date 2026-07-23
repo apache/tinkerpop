@@ -2042,6 +2042,7 @@ const gremlins = {
     g_injectX1_3_100_300X_list: [function({g}) { return g.inject([1, 3, 100, 300]) }], 
     g_injectX1_3_100_300X_set: [function({g}) { return g.inject(new Set([1, 3, 100, 300])) }], 
     g_injectX1_1X_set: [function({g}) { return g.inject(new Set([1, 1])) }], 
+    g_injectXbigintBoundaryValuesX: [function({g}) { return g.inject(0, -129, -32769) }], 
     g_io_readXkryoX: [function({g}) { return g.io("data/tinkerpop-modern.kryo").read() }, function({g}) { return g.V() }, function({g}) { return g.E() }], 
     g_io_read_withXreader_gryoX: [function({g}) { return g.io("data/tinkerpop-modern.kryo").with_(IO.reader, IO.gryo).read() }, function({g}) { return g.V() }, function({g}) { return g.E() }], 
     g_io_readXgraphsonX: [function({g}) { return g.io("data/tinkerpop-modern.json").read() }, function({g}) { return g.V() }, function({g}) { return g.E() }], 

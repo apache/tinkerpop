@@ -320,7 +320,7 @@ func getSignedBytesFromBigInt(n *big.Int) []byte {
 		}
 		return b
 	}
-	return []byte{}
+	return []byte{0}
 }
 
 // Format: {length}{value_0}...{value_n}
