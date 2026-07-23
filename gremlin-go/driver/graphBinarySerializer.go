@@ -221,7 +221,8 @@ func getSignedBytesFromBigInt(n *big.Int) []byte {
 		}
 		return b
 	}
-	return []byte{}
+	// zero is encoded as a single 0x00 byte so the length prefix is 1 rather than 0
+	return []byte{0}
 }
 
 // Format: {length}{value_0}...{value_n}
