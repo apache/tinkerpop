@@ -950,6 +950,8 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 
 The `asDate()`-step (*map*) converts string or numeric input to Date.
 
+NOTE: Starting in version 3.8.0, in Java this step returns a `java.time.OffsetDateTime`.
+
 For string input only ISO-8601 format is supported. For numbers, the value is considered as the number of the
 milliseconds since "the epoch" (January 1, 1970, 00:00:00 GMT). Date input is passed without changes.
 
