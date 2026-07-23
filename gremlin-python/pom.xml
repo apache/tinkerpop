@@ -82,6 +82,47 @@ limitations under the License.
                     </replacements>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.gmavenplus</groupId>
+                <artifactId>gmavenplus-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.groovy</groupId>
+                        <artifactId>groovy-all</artifactId>
+                        <version>${groovy.version}</version>
+                        <type>pom</type>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>update-version</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <scripts>
+                                <script>
+                                    def mavenVersion = "${project.version}"
+                                    // Translate Maven version to PEP 440:
+                                    //   "x.y.z-SNAPSHOT" -> "x.y.z.dev1"
+                                    //   "x.y.z"          -> "x.y.z"
+                                    def pythonVersion = mavenVersion.replace("-SNAPSHOT", ".dev1")
+                                    def platformAgnosticBaseDirPath = project.basedir.getAbsolutePath().replace("\\", "/")
+                                    def file = new File(platformAgnosticBaseDirPath + "/src/main/python/gremlin_python/__init__.py")
+                                    def contents = file.getText("UTF-8")
+                                    def versionPattern = /__version__ = '.*'/
+                                    if (!(contents =~ versionPattern)) {
+                                        throw new RuntimeException("Could not find __version__ assignment matching " + versionPattern.toString() + " in " + file.getAbsolutePath() + " - the file's format may have changed.")
+                                    }
+                                    file.write(contents.replaceFirst(versionPattern, "__version__ = '" + pythonVersion + "'"))
+                                </script>
+                            </scripts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

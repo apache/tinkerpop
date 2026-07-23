@@ -101,7 +101,7 @@ limitations under the License.
                         </configuration>
                     </execution>
                     <execution>
-                        <id>update-version</id>
+                        <id>compute-js-version</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>execute</goal>
@@ -109,11 +109,10 @@ limitations under the License.
                         <configuration>
                             <scripts>
                                 <script>
-                                    def mavenVersion = "${project.version}"
-                                    def versionForJs = mavenVersion.replace("-SNAPSHOT", "-alpha1")
-                                    def platformAgnosticBaseDirPath = project.basedir.getAbsolutePath().replace("\\", "/")
-                                    def file = new File(platformAgnosticBaseDirPath + "/src/main/javascript/gremlin-javascript/package.json")
-                                    file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\": \"" + versionForJs + "\","))
+                                    // npm doesn't understand Maven's "-SNAPSHOT" suffix, so translate it to a
+                                    // valid semver pre-release tag for use by the "npm version" execution below.
+                                    def versionForJs = "${project.version}".replace("-SNAPSHOT", "-alpha1")
+                                    project.properties.setProperty("versionForJs", versionForJs)
                                 </script>
                             </scripts>
                         </configuration>
@@ -169,6 +168,19 @@ limitations under the License.
                             <skip>${skipTests}</skip>
                             <arguments>run lint</arguments>
                             <failOnError>true</failOnError>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>npm version</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <!--
+                            Update TinkerPop version in package.json and package-lock.json
+                            -->
+                            <arguments>version ${versionForJs} --no-git-tag-version --allow-same-version --ignore-scripts</arguments>
                         </configuration>
                     </execution>
                     <execution>
