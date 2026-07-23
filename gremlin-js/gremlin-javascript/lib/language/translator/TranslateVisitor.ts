@@ -344,14 +344,6 @@ export default class TranslateVisitor {
     visitTraversalPredicate_regex(ctx: any): void { this.visitP(ctx, 'TextP', 'regex'); }
     visitTraversalPredicate_notRegex(ctx: any): void { this.visitP(ctx, 'TextP', 'notRegex'); }
 
-    visitBooleanArgument(ctx: any): void {
-        if (ctx.booleanLiteral() != null) {
-            this.visitBooleanLiteral(ctx.booleanLiteral());
-        } else {
-            this.visitVariable(ctx.variable());
-        }
-    }
-
     visitGenericArgument(ctx: any): void {
         if (ctx.genericLiteral() != null) {
             this.visitGenericLiteral(ctx.genericLiteral());

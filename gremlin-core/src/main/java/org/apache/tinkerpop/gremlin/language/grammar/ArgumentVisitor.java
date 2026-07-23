@@ -138,15 +138,6 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitBooleanArgument(final GremlinParser.BooleanArgumentContext ctx) {
-        if (ctx.booleanLiteral() != null) {
-            return antlr.genericVisitor.parseBoolean(ctx.booleanLiteral());
-        } else {
-            return visitVariable(ctx.variable());
-        }
-    }
-
-    @Override
     public Object visitIntegerArgument(final GremlinParser.IntegerArgumentContext ctx) {
         if (ctx.integerLiteral() != null) {
             return antlr.genericVisitor.parseIntegral(ctx.integerLiteral());
@@ -183,15 +174,6 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
                 .filter(Objects::nonNull)
                 .map(antlr.argumentVisitor::visitStringNullableArgument)
                 .toArray();
-    }
-
-    @Override
-    public Object visitDateArgument(final GremlinParser.DateArgumentContext ctx) {
-        if (ctx.dateLiteral() != null) {
-            return antlr.genericVisitor.parseDate(ctx.dateLiteral());
-        } else {
-            return visitVariable(ctx.variable());
-        }
     }
 
     @Override

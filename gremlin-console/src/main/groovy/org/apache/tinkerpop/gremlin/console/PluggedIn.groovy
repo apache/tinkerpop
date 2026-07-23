@@ -77,35 +77,4 @@ class PluggedIn {
     void deactivate() {
         this.activated = false
     }
-
-    public class GroovyGremlinShellEnvironment implements GremlinShellEnvironment {
-
-        @Override
-        def <T> T getVariable(final String variableName) {
-            return (T) shell.interp.context.getVariable(variableName)
-        }
-
-        @Override
-        def <T> void setVariable(final String variableName, final T variableValue) {
-            shell.interp.context.setVariable(variableName, variableValue)
-        }
-
-        @Override
-        void println(final String line) {
-            io.println(line)
-        }
-
-        @Override
-        void errPrintln(final String line) {
-            if (!Preferences.warnings) {
-                return;
-            }
-            io.err.println("[warn] " + line);
-        }
-
-        @Override
-        def <T> T execute(final String line) {
-            return (T) shell.execute(line)
-        }
-    }
 }

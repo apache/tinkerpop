@@ -389,16 +389,6 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
     }
 
     @Override
-    public Void visitBooleanArgument(final GremlinParser.BooleanArgumentContext ctx) {
-        if (ctx.booleanLiteral() != null)
-            visitBooleanLiteral(ctx.booleanLiteral());
-        else
-            visitVariable(ctx.variable());
-
-        return null;
-    }
-
-    @Override
     public Void visitGenericArgument(final GremlinParser.GenericArgumentContext ctx) {
         if (ctx.genericLiteral() != null)
             visitGenericLiteral(ctx.genericLiteral());

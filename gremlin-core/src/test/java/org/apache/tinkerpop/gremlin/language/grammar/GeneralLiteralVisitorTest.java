@@ -21,6 +21,9 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.apache.tinkerpop.gremlin.process.traversal.GType;
+import org.apache.tinkerpop.gremlin.process.traversal.Merge;
+import org.apache.tinkerpop.gremlin.process.traversal.Pick;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -54,6 +57,7 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
 import static org.hamcrest.number.OrderingComparison.lessThan;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -1113,6 +1117,67 @@ public class GeneralLiteralVisitorTest {
             final PrimitivePDT pdt = (PrimitivePDT) result;
             assertEquals("Empty", pdt.getName());
             assertEquals("", pdt.getValue());
+        }
+    }
+
+    /**
+     * Tests parsing and visiting of generic literal productions: generic literal expressions,
+     * terminated traversals, merge/pick tokens, traversal strategies and string varargs.
+     */
+    public static class GenericLiteralProductionTest {
+
+        @Test
+        public void shouldParseGenericLiteralExpr() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("1,2,3"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.GenericLiteralExprContext ctx = parser.genericLiteralExpr();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitGenericLiteralExpr(ctx);
+            assertArrayEquals(new Object[]{1, 2, 3}, (Object[]) result);
+        }
+
+        @Test
+        public void shouldParseTerminatedTraversal() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("g.inject(1).toList()"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.TerminatedTraversalContext ctx = parser.terminatedTraversal();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitTerminatedTraversal(ctx);
+            assertEquals(Arrays.asList(1), result);
+        }
+
+        @Test
+        public void shouldParseTraversalMerge() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("Merge.onCreate"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.TraversalMergeContext ctx = parser.traversalMerge();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitTraversalMerge(ctx);
+            assertEquals(Merge.onCreate, result);
+        }
+
+        @Test
+        public void shouldParseTraversalPick() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("Pick.any"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.TraversalPickContext ctx = parser.traversalPick();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitTraversalPick(ctx);
+            assertEquals(Pick.any, result);
+        }
+
+        @Test
+        public void shouldParseTraversalStrategy() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("ReadOnlyStrategy"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.TraversalStrategyContext ctx = parser.traversalStrategy();
+            final Object result = new GenericLiteralVisitor(new GremlinAntlrToJava()).visitTraversalStrategy(ctx);
+            assertEquals(ReadOnlyStrategy.instance(), result);
+        }
+
+        @Test
+        public void shouldParseStringNullableLiteralVarargs() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("'a','b'"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.StringNullableLiteralVarargsContext ctx = parser.stringNullableLiteralVarargs();
+            final String[] result = new GenericLiteralVisitor(new GremlinAntlrToJava()).parseStringVarargs(ctx);
+            assertArrayEquals(new String[]{"a", "b"}, result);
         }
     }
 }

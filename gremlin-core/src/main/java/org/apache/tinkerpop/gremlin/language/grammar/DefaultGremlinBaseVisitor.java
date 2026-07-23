@@ -1372,10 +1372,6 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitNullableGenericLiteralMap(final GremlinParser.NullableGenericLiteralMapContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override public T visitIntegerLiteral(final GremlinParser.IntegerLiteralContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -1520,10 +1516,6 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitBooleanArgument(final GremlinParser.BooleanArgumentContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override public T visitVariable(final GremlinParser.VariableContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -1541,10 +1533,6 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitStringNullableArgument(final GremlinParser.StringNullableArgumentContext ctx) { notImplemented(ctx); return null;}
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitDateArgument(final GremlinParser.DateArgumentContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
