@@ -101,7 +101,7 @@ limitations under the License.
                         </configuration>
                     </execution>
                     <execution>
-                        <id>update-version</id>
+                        <id>compute-js-version</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>execute</goal>
@@ -109,24 +109,10 @@ limitations under the License.
                         <configuration>
                             <scripts>
                                 <script>
-                                    def mavenVersion = "${project.version}"
-                                    def versionForJs = mavenVersion.replace("-SNAPSHOT", "-alpha1")
-                                    def platformAgnosticBaseDirPath = project.basedir.getAbsolutePath().replace("\\", "/")
-
-                                    // Update package.json
-                                    def file = new File(platformAgnosticBaseDirPath + "/src/main/javascript/gremlin-javascript/package.json")
-                                    file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\": \"" + versionForJs + "\","))
-
-                                    // Update package-lock.json
-                                    file = new File(platformAgnosticBaseDirPath + "/src/main/javascript/gremlin-javascript/package-lock.json")
-                                    def lockContent = file.getText("UTF-8")
-                                    lockContent = lockContent.replaceFirst(/"version": ".*",\n\s+"lockfileVersion"/, "\"version\": \"" + versionForJs + "\",\n  \"lockfileVersion\"")
-                                    lockContent = lockContent.replaceFirst(/("": \{\n\s+"name": "gremlin",\n\s+"version": )".*"/, "\$1\"" + versionForJs + "\"")
-                                    file.write(lockContent)
-
-                                    // Update utils.js
-                                    file = new File(platformAgnosticBaseDirPath + "/src/main/javascript/gremlin-javascript/lib/utils.js")
-                                    file.write(file.getText("UTF-8").replaceFirst(/gremlinVersion = '.*'/, "gremlinVersion = '" + versionForJs + "'"))
+                                    // npm doesn't understand Maven's "-SNAPSHOT" suffix, so translate it to a
+                                    // valid semver pre-release tag for use by the "npm version" execution below.
+                                    def versionForJs = "${project.version}".replace("-SNAPSHOT", "-alpha1")
+                                    project.properties.setProperty("versionForJs", versionForJs)
                                 </script>
                             </scripts>
                         </configuration>
@@ -185,6 +171,23 @@ limitations under the License.
                         </configuration>
                     </execution>
                     <execution>
+                        <id>npm version</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <!--
+                            npm owns the package.json/package-lock.json format, so let it perform this edit rather
+                            than hand-rolled regex replacement - it updates both files atomically and correctly.
+                            The "ignore-scripts" option prevents any pre/post-version lifecycle scripts (e.g.
+                            build, lint, or "git push") declared in package.json from firing during this
+                            Maven-driven version bump.
+                            -->
+                            <arguments>version ${versionForJs} --no-git-tag-version --allow-same-version --ignore-scripts</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>npm jsdoc</id>
                         <goals>
                             <goal>npm</goal>
@@ -230,6 +233,19 @@ limitations under the License.
                 <artifactId>maven-deploy-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <configuration>
+                    <file>src/main/javascript/gremlin-javascript/lib/utils.js</file>
+                    <replacements>
+                        <replacement>
+                            <token>gremlinVersion = '.*'</token>
+                            <value>gremlinVersion = '${project.version}'</value>
+                        </replacement>
+                    </replacements>
                 </configuration>
             </plugin>
         </plugins>

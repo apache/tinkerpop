@@ -47,7 +47,7 @@ limitations under the License.
             <plugin>
                 <!--
                 Use gmavenplus-plugin to:
-                    - Update version number
+                    - Compute the npm-compatible version string
                 -->
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
@@ -62,37 +62,18 @@ limitations under the License.
                 </dependencies>
                 <executions>
                     <execution>
-                        <id>update-version</id>
-                        <phase>generate-sources</phase>
+                        <id>compute-js-version</id>
+                        <phase>generate-resources</phase>
                         <goals>
                             <goal>execute</goal>
                         </goals>
                         <configuration>
-                            <properties>
-                                <property>
-                                    <name>projectBaseDir</name>
-                                    <value>${project.basedir}</value>
-                                </property>
-                                <property>
-                                    <name>mavenVersion</name>
-                                    <value>${project.version}</value>
-                                </property>
-                            </properties>
                             <scripts>
                                 <script>
-                                    def versionForJs = mavenVersion.replace("-SNAPSHOT", "-alpha1")
-                                    def platformAgnosticBaseDirPath = project.basedir.getAbsolutePath().replace("\\","/")
-
-                                    // Update package.json
-                                    def file = new File(platformAgnosticBaseDirPath + "/package.json")
-                                    file.write(file.getText("UTF-8").replaceFirst(/"version": "(.*)",/, "\"version\": \"" + versionForJs + "\","))
-
-                                    // Update package-lock.json
-                                    file = new File(platformAgnosticBaseDirPath + "/package-lock.json")
-                                    def lockContent = file.getText("UTF-8")
-                                    lockContent = lockContent.replaceFirst(/"version": ".*",\n\s+"lockfileVersion"/, "\"version\": \"" + versionForJs + "\",\n  \"lockfileVersion\"")
-                                    lockContent = lockContent.replaceFirst(/("": \{\n\s+"name": "gremlint",\n\s+"version": )".*"/, "\$1\"" + versionForJs + "\"")
-                                    file.write(lockContent)
+                                    // npm doesn't understand Maven's "-SNAPSHOT" suffix, so translate it to a
+                                    // valid semver pre-release tag for use by the "npm version" execution below.
+                                    def versionForJs = "${project.version}".replace("-SNAPSHOT", "-alpha1")
+                                    project.properties.setProperty("versionForJs", versionForJs)
                                 </script>
                             </scripts>
                         </configuration>
@@ -129,6 +110,23 @@ limitations under the License.
                         </goals>
                         <configuration>
                             <arguments>ci</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>npm version</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <!--
+                            npm owns the package.json/package-lock.json format, so let it perform this edit rather
+                            than hand-rolled regex replacement - it updates both files atomically and correctly.
+                            The "ignore-scripts" option prevents any pre/post-version lifecycle scripts (e.g.
+                            build, lint, or "git push") declared in package.json from firing during this
+                            Maven-driven version bump.
+                            -->
+                            <arguments>version ${versionForJs} --no-git-tag-version --allow-same-version --ignore-scripts</arguments>
                         </configuration>
                     </execution>
                     <execution>
