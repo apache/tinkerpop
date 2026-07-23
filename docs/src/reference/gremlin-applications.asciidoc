@@ -2042,7 +2042,7 @@ above with the use of the `maximumSize`.
 [[considering-transactions]]
 ==== Considering Transactions
 
-Every traversal executes within a transaction. TinkerPop distinguishes between two modes:
+Every traversal sent to Gremlin Server executes within a transaction. There are two transactional modes to distinguish from each other:
 
 * *Implicit transactions* are the default. Each traversal submitted through `g` is a self-contained unit of work. All
 graphs participate in implicit transactions. When the graph supports explicit transactions, implicit transactions are
