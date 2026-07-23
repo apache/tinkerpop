@@ -1690,14 +1690,15 @@ computed as the incoming traverser date minus the argument date. A positive resu
 than the argument date, while a negative result means the incoming date is earlier. In the example below, the incoming
 date (`2023-08-02`) is one day earlier than the argument date (`2023-08-03`), so the result is `-86400000`
 (one day in milliseconds).
-If the incoming traverser is not a Date or OffsetDateTime, then an `IllegalArgumentException` will be thrown.
+
+If the incoming traverser is not a `Date` or `OffsetDateTime`, then an `IllegalArgumentException` will be thrown.
 
 [gremlin-groovy,modern]
 ----
 g.inject("2023-08-02T00:00:00Z").asDate().dateDiff(constant("2023-08-03T00:00:00Z").asDate()) <1>
 ----
 
-<1> Find difference between two dates in milliseconds
+<1> Find the difference between two dates in milliseconds
 
 *Additional References*
 
@@ -4575,11 +4576,11 @@ g.V().has('name','HEY BO DIDDLEY').repeat(out('followedBy').skip(5)).times(2) <3
 <2> Starting from the song 'DRUMS' get the 2nd and 3rd songs that have preceded, looping twice.
 <3> Starting from the song 'HEY BO DIDDLEY' get the songs that have followed, skipping the first 5 and looping twice.
 
-IMPORTANT: There are three modulators for `repeat()`: `times()`, `until()`, and `emit()`. The most straightforward is 
-`times()`, which indicates the number of times to execute the loop. Conditional loops can be executed using `until()`. 
-If `until()` comes after `repeat()` it is do/while looping. If `until()` comes before `repeat()` it is while/do looping. 
-Emission of traversers from the loop are controlled with `emit()`. If `emit()` is placed after `repeat()`, it is evaluated 
-on the traversers leaving the repeat-traversal. If `emit()` is placed before `repeat()`, it is evaluated on the 
+IMPORTANT: There are three modulators for `repeat()`: `times()`, `until()`, and `emit()`. The most straightforward is
+`times()`, which indicates the number of times to execute the loop. Conditional loops can be executed using `until()`.
+If `until()` comes after `repeat()` it is do/while looping. If `until()` comes before `repeat()` it is while/do looping.
+Emission of traversers from the loop are controlled with `emit()`. If `emit()` is placed after `repeat()`, it is evaluated
+on the traversers leaving the repeat-traversal. If `emit()` is placed before `repeat()`, it is evaluated on the
 traversers prior to entering the repeat-traversal.
 
 The `repeat()`-step also supports an "emit predicate", where the predicate for an empty argument `emit()` is
