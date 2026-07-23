@@ -276,6 +276,10 @@ class PathRetractionStrategy extends TraversalStrategy {
   }
 }
 
+/**
+ * @deprecated As of release 3.7.7, not replaced. This strategy was added as a temporary way to mimic pre-3.5.0
+ * null processing behavior.
+ */
 class ProductiveByStrategy extends TraversalStrategy {
   /**
    * @param {Object} [options]
