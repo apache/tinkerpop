@@ -39,11 +39,59 @@ limitations under the License.
     <build>
         <plugins>
             <!--
+            Centralized version propagation for the JS workspace. This pom builds first in the
+            gremlin-js reactor, so the version bump completes before any child module builds.
+            gmavenplus computes the npm-compatible version (translating Maven's "-SNAPSHOT" to a
+            valid semver pre-release tag) and keeps gremlin-mcp's references to its sibling
+            workspace packages (gremlin, gremlint) in lockstep. The "npm version" execution in the
+            frontend-maven-plugin below then bumps every workspace member's version and the root
+            package-lock.json in a single pass.
+            -->
+            <plugin>
+                <groupId>org.codehaus.gmavenplus</groupId>
+                <artifactId>gmavenplus-plugin</artifactId>
+                <inherited>false</inherited>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.groovy</groupId>
+                        <artifactId>groovy-all</artifactId>
+                        <version>${groovy.version}</version>
+                        <type>pom</type>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>compute-js-version</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <scripts>
+                                <script>
+                                    // npm doesn't understand Maven's "-SNAPSHOT" suffix, so translate it to a
+                                    // valid semver pre-release tag for use by the "npm version" execution below.
+                                    def versionForJs = "${project.version}".replace("-SNAPSHOT", "-alpha1")
+                                    project.properties.setProperty("versionForJs", versionForJs)
+                                    // gremlin-mcp depends on its sibling workspace packages at an exact version.
+                                    // "npm version" won't rewrite those references, so keep them in lockstep here
+                                    // before it regenerates the lockfile (otherwise npm fails with ETARGET).
+                                    def mcpPackageJson = new File(project.basedir.getAbsolutePath().replace("\\", "/") + "/gremlin-mcp/package.json")
+                                    def content = mcpPackageJson.getText("UTF-8")
+                                    content = content.replaceFirst(/"gremlin": "[^"]+"/, "\"gremlin\": \"" + versionForJs + "\"")
+                                    content = content.replaceFirst(/"gremlint": "[^"]+"/, "\"gremlint\": \"" + versionForJs + "\"")
+                                    mcpPackageJson.write(content, "UTF-8")
+                                </script>
+                            </scripts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
             Install node/npm and run npm ci from the workspace root so that all JS workspace
             members (gremlin-javascript, gremlin-mcp, gremlint) share a single node_modules
             installation with workspace symlinks in place before any child module builds.
-            This pom runs first in the gremlin-js reactor, ensuring this completes before
-            any child module begins its own build lifecycle.
             -->
             <plugin>
                 <groupId>com.github.eirslett</groupId>
@@ -57,6 +105,21 @@ limitations under the License.
                         <goals>
                             <goal>install-node-and-npm</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>npm version</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <!--
+                            Update the TinkerPop version in every workspace member's package.json
+                            (gremlin-javascript, gremlint, gremlin-mcp) and the root package-lock.json
+                            in a single pass.
+                            -->
+                            <arguments>version ${versionForJs} --workspaces --no-git-tag-version --allow-same-version --ignore-scripts</arguments>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>npm workspace install</id>

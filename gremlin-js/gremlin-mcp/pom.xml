@@ -39,47 +39,6 @@ limitations under the License.
         <finalName>${project.artifactId}-${project.version}</finalName>
         <plugins>
             <plugin>
-                <!--
-                Use gmavenplus-plugin to:
-                    - Update the package version and gremlin dependency version
-                -->
-                <groupId>org.codehaus.gmavenplus</groupId>
-                <artifactId>gmavenplus-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.groovy</groupId>
-                        <artifactId>groovy-all</artifactId>
-                        <version>${groovy.version}</version>
-                        <type>pom</type>
-                        <scope>runtime</scope>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <id>update-version</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <scripts>
-                                <script>
-                                    def mavenVersion = "${project.version}"
-                                    def versionForJs = mavenVersion.replace("-SNAPSHOT", "-alpha1")
-                                    def platformAgnosticBaseDirPath = project.basedir.getAbsolutePath().replace("\\", "/")
-                                    def file = new File(platformAgnosticBaseDirPath + "/package.json")
-                                    def content = file.getText("UTF-8")
-                                    content = content.replaceFirst(/"version": "(.*)",/, "\"version\": \"" + versionForJs + "\",")
-                                    content = content.replaceFirst(/"gremlin": "[^"]+"/, "\"gremlin\": \"" + versionForJs + "\"")
-                                    content = content.replaceFirst(/"gremlint": "[^"]+"/, "\"gremlint\": \"" + versionForJs + "\"")
-                                    file.write(content)
-                                </script>
-                            </scripts>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
                 <executions>
