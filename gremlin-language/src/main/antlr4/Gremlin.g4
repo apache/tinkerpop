@@ -1626,8 +1626,8 @@ genericLiteralExpr
     ;
 
 genericLiteralRange
-    : integerLiteral DOT DOT integerLiteral
-    | stringLiteral DOT DOT stringLiteral
+    : integerLiteral RANGE integerLiteral
+    | stringLiteral RANGE stringLiteral
     ;
 
 genericLiteralCollection
@@ -1875,6 +1875,7 @@ FloatingPointLiteral
 fragment
 DecimalFloatingPointLiteral
     :   Digits ('.' Digits ExponentPart? | ExponentPart) FloatTypeSuffix?
+    |    '.' Digits ExponentPart? FloatTypeSuffix?
     |    Digits FloatTypeSuffix
     ;
 
@@ -2013,6 +2014,7 @@ LBRACK : '[';
 RBRACK : ']';
 SEMI : ';';
 COMMA : ',';
+RANGE : '..';
 DOT : '.';
 COLON : ':';
 
