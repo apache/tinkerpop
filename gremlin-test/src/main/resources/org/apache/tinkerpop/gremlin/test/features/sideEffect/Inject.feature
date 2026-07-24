@@ -235,3 +235,63 @@ Feature: Step - inject()
       | d[0].n |
       | d[-129].n |
       | d[-32769].n |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXpoint5X
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(.5)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.5].m |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXpoint5fX
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(.5f)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.5].f |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXpoint5dX
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(.5d)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.5].d |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1to5X
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(1..5)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[d[1].i,d[2].i,d[3].i,d[4].i,d[5].i] |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXaTocX
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject("a".."c")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[a,b,c] |
