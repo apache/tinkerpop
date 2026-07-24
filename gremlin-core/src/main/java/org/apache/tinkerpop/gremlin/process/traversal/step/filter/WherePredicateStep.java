@@ -112,8 +112,14 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     }
 
     public String getSelectKey(final P<Object> predicate) {
-        return (String) (predicate.getValue() instanceof Collection ? ((Collection) predicate.getValue()).iterator().next()
-                : predicate.getValue()); // hack for within("x"))
+        final Object selectKey = predicate.getValue() instanceof Collection
+                ? ((Collection) predicate.getValue()).iterator().next()
+                : predicate.getValue(); // hack for within("x")
+        if (!(selectKey instanceof String))
+            throw new IllegalArgumentException(String.format(
+                    "where(P) requires a String scope key but encountered %s; use is(P) to compare values",
+                    null == selectKey ? "null" : selectKey.getClass().getSimpleName()));
+        return (String) selectKey;
     }
 
     public void removeStartKey() {

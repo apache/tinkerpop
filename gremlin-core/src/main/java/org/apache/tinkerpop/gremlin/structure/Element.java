@@ -20,9 +20,13 @@ package org.apache.tinkerpop.gremlin.structure;
 
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -164,6 +168,25 @@ public abstract interface Element {
      * keys. If no keys are provide then return all the properties.
      */
     public <V> Iterator<? extends Property<V>> properties(final String... propertyKeys);
+
+
+    /**
+     * Groups this element's properties by key, preserving encounter order. A {@link Vertex} multi-property key
+     * maps to several {@link Property} objects; otherwise each key maps to a single-element list. Empty map when
+     * there are no matching properties.
+     *
+     * @param propertyKeys the keys to filter on; if none are provided then all properties are grouped
+     * @return a map of property key to the list of properties for that key
+     */
+    public default <V> Map<String, List<Property<V>>> propertyMap(final String... propertyKeys) {
+        final Map<String, List<Property<V>>> propertyMap = new LinkedHashMap<>();
+        final Iterator<? extends Property<V>> iterator = this.properties(propertyKeys);
+        while (iterator.hasNext()) {
+            final Property<V> property = iterator.next();
+            propertyMap.computeIfAbsent(property.key(), k -> new ArrayList<>()).add(property);
+        }
+        return propertyMap;
+    }
 
 
     /**

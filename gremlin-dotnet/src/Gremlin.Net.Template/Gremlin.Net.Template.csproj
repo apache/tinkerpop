@@ -21,6 +21,8 @@ limitations under the License.
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <NuspecFile>Gremlin.Net.Template.nuspec</NuspecFile>
   </PropertyGroup>
 
   <ItemGroup>

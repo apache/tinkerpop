@@ -1665,8 +1665,8 @@ genericMapNullableLiteral
     ;
 
 genericRangeLiteral
-    : integerLiteral DOT DOT integerLiteral
-    | stringLiteral DOT DOT stringLiteral
+    : integerLiteral RANGE integerLiteral
+    | stringLiteral RANGE stringLiteral
     ;
 
 genericSetLiteral
@@ -2567,8 +2567,9 @@ FloatingPointLiteral
 
 fragment
 DecimalFloatingPointLiteral
-    : Digits ('.' Digits ExponentPart? | ExponentPart) FloatTypeSuffix?
-    | Digits FloatTypeSuffix
+    :   Digits ('.' Digits ExponentPart? | ExponentPart) FloatTypeSuffix?
+    |    '.' Digits ExponentPart? FloatTypeSuffix?
+    |    Digits FloatTypeSuffix
     ;
 
 fragment
@@ -2700,6 +2701,7 @@ LBRACK : '[';
 RBRACK : ']';
 SEMI : ';';
 COMMA : ',';
+RANGE : '..';
 DOT : '.';
 COLON : ':';
 

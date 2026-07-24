@@ -452,7 +452,16 @@ public class GeneralLiteralVisitorTest {
                     {"1.0E+12d", "1.0E12", "java.lang.Double"},
                     {"-0.1E-12D", "-0.1E-12", "java.lang.Double"},
                     {"1E12d", "1E12", "java.lang.Double"},
-                    {"1D", "1", "java.lang.Double"}
+                    {"1D", "1", "java.lang.Double"},
+
+                    // float literals without a leading digit (e.g. .5)
+                    {".5", ".5", "java.lang.Double"},
+                    {".5m", ".5", "java.math.BigDecimal"},
+                    {".5f", ".5", "java.lang.Float"},
+                    {".5d", ".5", "java.lang.Double"},
+                    {"-.5f", "-.5", "java.lang.Float"},
+                    {".5E2", ".5E2", "java.lang.Double"},
+                    {".5E-2d", ".5E-2", "java.lang.Double"}
             });
         }
 

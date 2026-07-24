@@ -22,3 +22,57 @@ under the License.
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.8.2/CHANGELOG.asciidoc#release-3-8-2[changelog] for a
 complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+==== Experimental Support for JDK 21 and JDK 25
+
+TinkerPop can now be built and run with Java 21 and Java 25, in addition to the existing support for Java 11 and
+Java 17. This support is experimental: every module except `spark-gremlin` (see below) is built and tested with
+Java 21 and Java 25. Supporting Java 25 required an upgrade of Groovy to 4.0.32, which bundles a version of ASM that
+is able to parse Java 25 bytecode (class file version 69). The build's Java version enforcement was relaxed
+accordingly to permit Java 11 through Java 25.
+
+As is the case with Java 17, some libraries still rely on deep reflection (most notably the Kryo serialization library
+that is used with OLAP), so it may be necessary to `--add-opens` or `--add-exports` certain modules to run on Java 21
+or Java 25. The same set of options documented for JDK 17 applies to the newer JDKs and is used by TinkerPop's own
+automated tests.
+
+To support Java 25, Hadoop was upgraded from 3.3.3 to 3.4.3, which migrated off the removed Security Manager APIs (most
+notably `Subject.getSubject()`, which no longer functions on Java 25). As a result the `hadoop-gremlin` module now
+builds and runs on Java 21 and Java 25 as well.
+
+The `spark-gremlin` module is not supported on Java 21 or Java 25. Spark 3.3.x only runs on Java 8 through 17 — on
+Java 21 its off-heap memory support fails to initialize because JDK 21 removed the private `DirectByteBuffer(long, int)`
+constructor that it accesses reflectively. Java 21 support arrived in Spark 4.0 and Java 25 support in Spark 4.1, but
+those releases require Java 17 as a minimum and Scala 2.13, which would drop Java 11 support for that module.
+`spark-gremlin` therefore continues to target Spark 3.3.x and is built and tested with Java 11 and Java 17 only; it is
+excluded from the Java 21 and Java 25 builds.
+
+==== propertyMap() Element Helper
+
+The Gremlin Language Variants now offer a helper on all element types (`Vertex`, `Edge`, and `VertexProperty`) that
+views an element's properties as a map keyed by property key, complementing the flat list returned by `properties`.
+`propertyMap()` (`gremlin-javascript`), `PropertyMap()` (`gremlin-dotnet` and `gremlin-go`), and `property_map()`
+(`gremlin-python`) each return a map of property key to the list of that key's property objects. The default flat-list
+representation of `properties` is unchanged.
+
+[source,javascript]
+----
+// default flat list
+v.properties        // [ VertexProperty{key:'name',...}, VertexProperty{key:'age',...} ]
+// grouped map view
+v.propertyMap()     // { name: [ VertexProperty{...} ], age: [ VertexProperty{...} ] }
+----
+
+The JVM structure API now also exposes `Element.propertyMap()` (inherited by `Vertex`, `Edge`, and `VertexProperty`)
+as a default method in `gremlin-core`, complementing the GLV helpers.
+
+[source,java]
+----
+// gremlin-core structure API (Vertex, Edge, VertexProperty)
+Map<String, List<Property<Object>>> propertyMap = vertex.propertyMap();
+// { name=[vp[name->marko]], age=[vp[age->29]] }
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3187[TINKERPOP-3187]

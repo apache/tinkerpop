@@ -78,7 +78,15 @@ public final class SubgraphStep extends SideEffectBarrierStep<Edge> implements S
 
         subgraphSupportsMetaProperties = subgraph.features().vertex().supportsMetaProperties();
 
-        addEdgeToSubgraph(traverser.get());
+        // subgraph() produces an edge-induced subgraph and therefore requires Edge input. if the traverser value is
+        // not an Edge we throw a descriptive error.
+        final Object value = traverser.get();
+        if (!(value instanceof Edge))
+            throw new IllegalStateException(String.format(
+                    "subgraph() requires Edge input but encountered %s; use an edge step such as outE(), inE(), or bothE()",
+                    null == value ? "null" : value.getClass().getSimpleName()));
+
+        addEdgeToSubgraph((Edge) value);
     }
 
     @Override

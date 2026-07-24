@@ -76,6 +76,25 @@ namespace Gremlin.Net.Structure
             return Properties?.Cast<Property>().FirstOrDefault(p => p.Key == key);
         }
 
+        /// <summary>
+        /// Groups this edge's properties by key.
+        /// </summary>
+        /// <returns>A map of property key to the list of Property objects for that key (empty when none).</returns>
+        public Dictionary<string, List<Property>> PropertyMap()
+        {
+            var map = new Dictionary<string, List<Property>>();
+            foreach (var p in Properties.Cast<Property>())
+            {
+                if (!map.TryGetValue(p.Key, out var list))
+                {
+                    list = new List<Property>();
+                    map[p.Key] = list;
+                }
+                list.Add(p);
+            }
+            return map;
+        }
+
         /// <inheritdoc />
         public override string ToString()
         {

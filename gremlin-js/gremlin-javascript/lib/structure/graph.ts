@@ -57,6 +57,19 @@ class Element<TLabel extends string = string, TId = any> {
   equals(other: any): boolean {
     return other instanceof Element && this.id === other.id;
   }
+
+  /**
+   * Groups this element's properties by key.
+   * @returns a map of property key to the array of property objects for that
+   *   key (an empty object when there are no properties).
+   */
+  propertyMap(): Record<string, Property[]> {
+    const map: Record<string, Property[]> = Object.create(null);
+    for (const p of this.properties) {
+      (map[p.key] = map[p.key] || []).push(p);
+    }
+    return map;
+  }
 }
 
 export class Vertex<
