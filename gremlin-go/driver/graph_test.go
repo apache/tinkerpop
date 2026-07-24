@@ -198,7 +198,7 @@ func TestCustomStructs(t *testing.T) {
 
 func TestVertexPropertyMap(t *testing.T) {
 	t.Run("Test Vertex.PropertyMap() groups multi-valued properties by key", func(t *testing.T) {
-		v := &Vertex{Element{1, "person", []interface{}{
+		v := &Vertex{Element: Element{1, "person", []interface{}{
 			&VertexProperty{Element{10, "name", nil}, "name", "marko", Vertex{}},
 			&VertexProperty{Element{11, "name", nil}, "name", "marko-a-polo", Vertex{}},
 			&VertexProperty{Element{12, "age", nil}, "age", 29, Vertex{}},
@@ -213,7 +213,7 @@ func TestVertexPropertyMap(t *testing.T) {
 	})
 
 	t.Run("Test Vertex.PropertyMap() single-valued property returns a one-element slice", func(t *testing.T) {
-		v := &Vertex{Element{1, "person", []interface{}{
+		v := &Vertex{Element: Element{1, "person", []interface{}{
 			&VertexProperty{Element{10, "name", nil}, "name", "marko", Vertex{}},
 		}}}
 		propertyMap := v.PropertyMap()
@@ -223,14 +223,14 @@ func TestVertexPropertyMap(t *testing.T) {
 	})
 
 	t.Run("Test Vertex.PropertyMap() with nil Properties returns empty map", func(t *testing.T) {
-		v := &Vertex{Element{1, "person", nil}}
+		v := &Vertex{Element: Element{1, "person", nil}}
 		propertyMap := v.PropertyMap()
 		assert.NotNil(t, propertyMap)
 		assert.Equal(t, 0, len(propertyMap))
 	})
 
 	t.Run("Test Vertex.PropertyMap() with empty Properties slice returns empty map", func(t *testing.T) {
-		v := &Vertex{Element{1, "person", []interface{}{}}}
+		v := &Vertex{Element: Element{1, "person", []interface{}{}}}
 		propertyMap := v.PropertyMap()
 		assert.NotNil(t, propertyMap)
 		assert.Equal(t, 0, len(propertyMap))
@@ -239,11 +239,11 @@ func TestVertexPropertyMap(t *testing.T) {
 
 func TestEdgePropertyMap(t *testing.T) {
 	t.Run("Test Edge.PropertyMap() groups multi-valued properties by key", func(t *testing.T) {
-		e := &Edge{Element{1, "created", []interface{}{
+		e := &Edge{Element: Element{1, "created", []interface{}{
 			&Property{"weight", 0.4, Element{}},
 			&Property{"weight", 0.6, Element{}},
 			&Property{"since", 2010, Element{}},
-		}}, Vertex{}, Vertex{}}
+		}}, OutV: Vertex{}, InV: Vertex{}}
 		propertyMap := e.PropertyMap()
 		assert.Equal(t, 2, len(propertyMap))
 		assert.Equal(t, 2, len(propertyMap["weight"]))
@@ -254,9 +254,9 @@ func TestEdgePropertyMap(t *testing.T) {
 	})
 
 	t.Run("Test Edge.PropertyMap() single-valued property returns a one-element slice", func(t *testing.T) {
-		e := &Edge{Element{1, "created", []interface{}{
+		e := &Edge{Element: Element{1, "created", []interface{}{
 			&Property{"weight", 0.4, Element{}},
-		}}, Vertex{}, Vertex{}}
+		}}, OutV: Vertex{}, InV: Vertex{}}
 		propertyMap := e.PropertyMap()
 		assert.Equal(t, 1, len(propertyMap))
 		assert.Equal(t, 1, len(propertyMap["weight"]))
@@ -264,14 +264,14 @@ func TestEdgePropertyMap(t *testing.T) {
 	})
 
 	t.Run("Test Edge.PropertyMap() with nil Properties returns empty map", func(t *testing.T) {
-		e := &Edge{Element{1, "created", nil}, Vertex{}, Vertex{}}
+		e := &Edge{Element: Element{1, "created", nil}, OutV: Vertex{}, InV: Vertex{}}
 		propertyMap := e.PropertyMap()
 		assert.NotNil(t, propertyMap)
 		assert.Equal(t, 0, len(propertyMap))
 	})
 
 	t.Run("Test Edge.PropertyMap() with empty Properties slice returns empty map", func(t *testing.T) {
-		e := &Edge{Element{1, "created", []interface{}{}}, Vertex{}, Vertex{}}
+		e := &Edge{Element: Element{1, "created", []interface{}{}}, OutV: Vertex{}, InV: Vertex{}}
 		propertyMap := e.PropertyMap()
 		assert.NotNil(t, propertyMap)
 		assert.Equal(t, 0, len(propertyMap))
