@@ -71,45 +71,73 @@ public class GremlinTreeprocessor extends Treeprocessor {
     private int gremlinBlockCount;
     private final StatementExecutor executor;
     private final TabbedHtmlBuilder tabBuilder;
+    private final GremlinHighlighter highlighter;
+    private final HtmlTabRenderer htmlTabRenderer;
+    private final MarkdownTabRenderer markdownTabRenderer;
+    private final GremlinExecutionCache executionCache;
     private final ConsoleRestartHandler restartHandler;
     private ConsoleRestartHandler activeRestartHandler;
     private String currentGraph;
+    private String documentId;
     private List<String> currentExcludedPlugins;
 
     /**
      * Creates a GremlinTreeprocessor that processes blocks without executing them (dry-run mode).
+     * Uses the shared process-wide execution cache (production/SPI path).
      */
     public GremlinTreeprocessor() {
-        this((StatementExecutor) null, null);
+        this((StatementExecutor) null, null, GremlinExecutionCache.SHARED);
     }
 
     /**
-     * Creates a GremlinTreeprocessor that executes blocks against the provided console.
+     * Creates a GremlinTreeprocessor that executes blocks against the provided console. Uses the
+     * shared process-wide execution cache (production path) so live execution happens once across
+     * the per-backend render passes.
      *
      * @param console the GremlinConsole to execute statements against, or null for dry-run
      */
     public GremlinTreeprocessor(final GremlinConsole console) {
-        this(console == null ? null : statement -> console.execute(statement), null);
+        this(console == null ? null : statement -> console.execute(statement), null,
+                GremlinExecutionCache.SHARED);
     }
 
     /**
-     * Creates a GremlinTreeprocessor with a custom statement executor for testing.
+     * Creates a GremlinTreeprocessor with a custom statement executor for testing. Uses a private
+     * execution cache so cached tabs do not leak between tests.
      *
      * @param executor the executor to use, or null for dry-run
      */
     GremlinTreeprocessor(final StatementExecutor executor) {
-        this(executor, null);
+        this(executor, null, new GremlinExecutionCache());
     }
 
     /**
-     * Creates a GremlinTreeprocessor with a custom statement executor and restart handler.
+     * Creates a GremlinTreeprocessor with a custom statement executor and restart handler for
+     * testing. Uses a private execution cache so cached tabs do not leak between tests.
      *
      * @param executor       the executor to use, or null for dry-run
      * @param restartHandler the handler invoked when plugin exclusions change, or null to ignore
      */
     GremlinTreeprocessor(final StatementExecutor executor, final ConsoleRestartHandler restartHandler) {
+        this(executor, restartHandler, new GremlinExecutionCache());
+    }
+
+    /**
+     * Creates a GremlinTreeprocessor with an explicit execution cache. Tests use this to inject a
+     * private cache so cached tabs do not leak between tests.
+     *
+     * @param executor       the executor to use, or null for dry-run
+     * @param restartHandler the handler invoked when plugin exclusions change, or null to ignore
+     * @param executionCache the cache of executed neutral tab groups, keyed per block
+     */
+    GremlinTreeprocessor(final StatementExecutor executor, final ConsoleRestartHandler restartHandler,
+                         final GremlinExecutionCache executionCache) {
         this.executor = executor;
         this.tabBuilder = new TabbedHtmlBuilder();
+        this.highlighter = new GremlinHighlighter();
+        this.htmlTabRenderer = new HtmlTabRenderer(this.highlighter, this.tabBuilder);
+        this.markdownTabRenderer = new MarkdownTabRenderer();
+        this.executionCache = executionCache;
         this.restartHandler = restartHandler;
     }
 
@@ -117,12 +145,15 @@ public class GremlinTreeprocessor extends Treeprocessor {
     private GremlinConsole lazyConsole;
     private Path consoleHomePath;
     private boolean dryRun;
+    private boolean markdownMode;
     private boolean sugarLoaded;
 
     @Override
     public Document process(final Document document) {
         gremlinBlockCount = 0;
         currentGraph = null;
+        documentId = resolveDocumentId(document);
+        markdownMode = isMarkdownBackend(document);
         final Object dryRunAttr = document.getAttribute("gremlin-docs-dryrun");
         dryRun = dryRunAttr != null && !"false".equals(dryRunAttr.toString());
 
@@ -153,6 +184,21 @@ public class GremlinTreeprocessor extends Treeprocessor {
             }
         }
         return document;
+    }
+
+    /**
+     * Resolves a stable identity for the source document, used to namespace execution-cache keys so
+     * blocks from different books or files never collide. Prefers the {@code docfile} attribute (the
+     * absolute source path, identical across backend passes); falls back to the document title, then
+     * a constant, both of which still combine with the block ordinal and source hash in the key.
+     */
+    private static String resolveDocumentId(final Document document) {
+        final Object docfile = document.getAttribute("docfile");
+        if (docfile != null && !docfile.toString().isEmpty()) {
+            return docfile.toString();
+        }
+        final String title = document.getTitle();
+        return title != null && !title.isEmpty() ? title : "<no-docfile>";
     }
 
     /**
@@ -271,106 +317,43 @@ public class GremlinTreeprocessor extends Treeprocessor {
         final List<StructuralNode> blocks = parent.getBlocks();
         final Block gremlinBlock = (Block) blocks.get(startIndex);
 
-        final String consoleOutput = buildConsoleOutput(gremlinBlock, dryRun);
-        final List<TabbedHtmlBuilder.Tab> tabs = new ArrayList<>();
-        tabs.add(TabbedHtmlBuilder.consoleTabHighlighted("groovy",
-                highlightAsGroovy(parent, consoleOutput)));
-        // Add second tab with clean source code (no prompts/output)
-        tabs.add(TabbedHtmlBuilder.codeTabHighlighted("groovy",
-                highlightAsGroovy(parent, gremlinBlock.getSource())));
-
-        // Consume consecutive [source,<lang>] sibling blocks as manual tabs (FR-5)
+        // Walk consecutive [source,<lang>] sibling blocks first (FR-5). This is pure AST work with
+        // no execution: it fixes the block range to replace and captures each sibling's language
+        // and source, which are needed whether the console output comes fresh or from the cache.
         int lastIndex = startIndex;
+        final List<String[]> siblingSources = new ArrayList<>(); // [lang, source]
         for (int j = startIndex + 1; j < blocks.size(); j++) {
             final StructuralNode sibling = blocks.get(j);
             if (isManualTabBlock(sibling)) {
                 final Block sourceBlock = (Block) sibling;
-                final String lang = getSourceLanguage(sourceBlock);
-                tabs.add(TabbedHtmlBuilder.codeTabHighlighted(lang,
-                        highlightAsSource(parent, lang, sourceBlock.getSource())));
+                siblingSources.add(new String[]{getSourceLanguage(sourceBlock), sourceBlock.getSource()});
                 lastIndex = j;
             } else {
                 break;
             }
         }
 
-        final String html = tabBuilder.build(tabs);
-        replaceWithPassBlock(parent, startIndex, lastIndex, html);
+        // Execute once: on the first backend pass this runs Gremlin and caches the neutral tabs;
+        // on later backend passes the cache hit skips the console entirely, so live execution
+        // happens exactly once and both backends render from identical executed output.
+        final String cacheKey = GremlinExecutionCache.key(documentId, gremlinBlockCount, gremlinBlock.getSource());
+        final List<NeutralTab> tabs;
+        if (executionCache.contains(cacheKey)) {
+            tabs = executionCache.get(cacheKey);
+        } else {
+            final String consoleOutput = buildConsoleOutput(gremlinBlock, dryRun);
+            tabs = new ArrayList<>();
+            tabs.add(NeutralTab.console("groovy", consoleOutput));
+            // Second tab with clean source code (no prompts/output)
+            tabs.add(NeutralTab.source("groovy", gremlinBlock.getSource()));
+            for (final String[] sibling : siblingSources) {
+                tabs.add(NeutralTab.source(sibling[0], sibling[1]));
+            }
+            executionCache.put(cacheKey, tabs);
+        }
+
+        emitNeutralTabGroup(parent, startIndex, lastIndex, tabs);
         return startIndex;
-    }
-
-    /**
-     * Highlights source code using CodeRay via the JRuby runtime bundled with AsciidoctorJ.
-     */
-    private String highlightAsGroovy(final StructuralNode parent, final String source) {
-        return highlightAsSource(parent, "groovy", source);
-    }
-
-    private String highlightAsSource(final StructuralNode parent, final String lang, final String source) {
-        if (source == null || source.isEmpty()) return "";
-        // Strip callouts before highlighting, re-inject after
-        final String[] lines = source.split("\\r?\\n");
-        final String[] calloutMarkers = new String[lines.length];
-        final StringBuilder cleanSource = new StringBuilder();
-        for (int i = 0; i < lines.length; i++) {
-            final java.util.regex.Matcher m = java.util.regex.Pattern
-                    .compile("\\s*((<\\d+>\\s*)+)$").matcher(lines[i]);
-            if (m.find()) {
-                calloutMarkers[i] = m.group(1);
-                if (i > 0) cleanSource.append("\n");
-                cleanSource.append(lines[i], 0, m.start());
-            } else {
-                calloutMarkers[i] = null;
-                if (i > 0) cleanSource.append("\n");
-                cleanSource.append(lines[i]);
-            }
-        }
-
-        String highlighted = doHighlight(parent, lang, cleanSource.toString());
-
-        // Re-inject callouts as HTML conums
-        final String[] highlightedLines = highlighted.split("\\n", -1);
-        final StringBuilder result = new StringBuilder();
-        for (int i = 0; i < highlightedLines.length; i++) {
-            if (i > 0) result.append("\n");
-            result.append(highlightedLines[i]);
-            if (i < calloutMarkers.length && calloutMarkers[i] != null) {
-                final java.util.regex.Matcher nums = java.util.regex.Pattern
-                        .compile("<(\\d+)>").matcher(calloutMarkers[i]);
-                while (nums.find()) {
-                    result.append(" <span class=\"comment\">//</span> <b class=\"conum\">(")
-                          .append(nums.group(1)).append(")</b>");
-                }
-            }
-        }
-        return result.toString();
-    }
-
-    private org.jruby.runtime.builtin.IRubyObject coderayEncoder;
-    private org.jruby.Ruby rubyRuntime;
-
-    private String doHighlight(final StructuralNode parent, final String lang, final String source) {
-        try {
-            if (rubyRuntime == null) {
-                rubyRuntime = org.asciidoctor.jruby.internal.JRubyRuntimeContext.get(parent);
-                if (rubyRuntime == null) return escapeHtml(source);
-                coderayEncoder = rubyRuntime.evalScriptlet(
-                        "require 'coderay'; CodeRay::Duo[:groovy, :html, :css => :class]");
-            }
-            final org.jruby.RubyString rubySource = org.jruby.RubyString.newString(rubyRuntime, source);
-            final org.jruby.runtime.builtin.IRubyObject result = coderayEncoder.callMethod(
-                    rubyRuntime.getCurrentContext(), "highlight", rubySource);
-            return result != null ? result.asJavaString() : escapeHtml(source);
-        } catch (final Exception e) {
-            LOG.warning("CodeRay highlighting failed, falling back to plain: " + e.getMessage());
-            return escapeHtml(source);
-        }
-    }
-
-    private static String escapeHtml(final String text) {
-        if (text == null) return "";
-        return text.replace("&", "&amp;").replace("<", "&lt;")
-                .replace(">", "&gt;").replace("\"", "&quot;");
     }
 
     /**
@@ -379,7 +362,7 @@ public class GremlinTreeprocessor extends Treeprocessor {
      */
     private int processStandaloneTabGroup(final StructuralNode parent, final int startIndex) {
         final List<StructuralNode> blocks = parent.getBlocks();
-        final List<TabbedHtmlBuilder.Tab> tabs = new ArrayList<>();
+        final List<NeutralTab> tabs = new ArrayList<>();
 
         int lastIndex = startIndex;
         for (int j = startIndex; j < blocks.size(); j++) {
@@ -387,17 +370,42 @@ public class GremlinTreeprocessor extends Treeprocessor {
             if (isStandaloneTabBlock(block) || isManualTabBlock(block)) {
                 final Block sourceBlock = (Block) block;
                 final String lang = getSourceLanguage(sourceBlock);
-                tabs.add(TabbedHtmlBuilder.codeTabHighlighted(lang,
-                        highlightAsSource(parent, lang, sourceBlock.getSource())));
+                tabs.add(NeutralTab.source(lang, sourceBlock.getSource()));
                 lastIndex = j;
             } else {
                 break;
             }
         }
 
-        final String html = tabBuilder.build(tabs);
-        replaceWithPassBlock(parent, startIndex, lastIndex, html);
+        emitNeutralTabGroup(parent, startIndex, lastIndex, tabs);
         return startIndex;
+    }
+
+    /**
+     * Renders a neutral tab group and replaces the source blocks with the result. The neutral tabs
+     * are round-tripped through {@link NeutralTabCodec} (serialize then parse) before rendering, so
+     * the JSON payload is the single source of truth for the rendered output. This exercises the
+     * codec on every real block and is the seam where a future execution pass will persist the JSON
+     * into a neutral custom block for a separate render pass to consume.
+     */
+    private void emitNeutralTabGroup(final StructuralNode parent, final int startIndex,
+                                     final int endIndex, final List<NeutralTab> tabs) {
+        final String json = NeutralTabCodec.serialize(tabs);
+        final List<NeutralTab> resolvedTabs = NeutralTabCodec.parse(json);
+        final String rendered = markdownMode
+                ? markdownTabRenderer.render(resolvedTabs)
+                : htmlTabRenderer.render(parent, resolvedTabs);
+        replaceWithPassBlock(parent, startIndex, endIndex, rendered);
+    }
+
+    /**
+     * Whether the active backend is the TinkerPop Markdown backend. Read from the {@code backend}
+     * attribute, which is available at treeprocessor time (verified) and lets one execution feed
+     * both the HTML and Markdown render passes.
+     */
+    private static boolean isMarkdownBackend(final Document document) {
+        final Object backend = document.getAttribute("backend");
+        return backend != null && backend.toString().startsWith("tpmarkdown");
     }
 
     /**
@@ -441,16 +449,21 @@ public class GremlinTreeprocessor extends Treeprocessor {
     }
 
     /**
-     * Replaces blocks from startIndex to endIndex (inclusive) with a pass block containing raw HTML.
+     * Replaces blocks from startIndex to endIndex (inclusive) with a pass block containing the
+     * pre-rendered content (raw HTML for the HTML backend, raw Markdown for the Markdown backend).
+     * The block is created with a {@code :raw} content model so its body is emitted verbatim by the
+     * active converter without further AsciiDoc substitution.
      */
     private void replaceWithPassBlock(final StructuralNode parent, final int startIndex, final int endIndex,
-                                      final String html) {
+                                      final String content) {
         final List<StructuralNode> blocks = parent.getBlocks();
         for (int j = endIndex; j >= startIndex; j--) {
             blocks.remove(j);
         }
         final Map<String, Object> attrs = new HashMap<>();
-        final Block passBlock = createBlock(parent, "pass", html, attrs);
+        final Map<Object, Object> options = new HashMap<>();
+        options.put("content_model", ":raw");
+        final Block passBlock = createBlock(parent, "pass", content, attrs, options);
         blocks.add(startIndex, passBlock);
     }
 
