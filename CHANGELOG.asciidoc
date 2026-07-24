@@ -32,7 +32,7 @@ This release also includes changes from prior 3.7.x releases.
 * Bumped Hadoop to 3.4.3 (and Kerby to 2.0.3) to enable `hadoop-gremlin` to build and run on Java 25.
 * Add missing `Configuring` interface to `GraphStepPlaceholder` and `VertexStepPlaceholder`
 * Fixed bug in `group()` value traversal where keys were retained with stale barrier state instead of being filtered when steps following a `Barrier` in the second `by()` produced no output (e.g. `by(values("age").fold().unfold())` or `by(__.out().fold().count(local).is(P.gt(0)))` for vertices with no out-edges).
-* Corrected numerous inaccuracies in the reference documentation, including wrong default values (connection pool sizes, buffer sizes, ports, timeouts), stale serializer class names, removed options documented as available, and broken code examples across the JVM, Python, `.NET`, Go, and JavaScript drivers.
+* Fixed bug in `gremlin-javascript` GraphBinary and GraphSON deserialization where `OffsetDateTime` values outside the JavaScript `Date` range were silently returned as invalid `Date` objects instead of failing deserialization.
 * Added a `propertyMap()` helper to view an element's properties as a map keyed by property key, on the `Element` structure API in `gremlin-core` (inherited by `Vertex`, `Edge`, and `VertexProperty`) and on `Vertex`, `Edge`, and `VertexProperty` in `gremlin-javascript`, `gremlin-python`, `gremlin-dotnet`, and `gremlin-go`.
 * Fixed a bug in `gremlin-go` where a `VertexProperty` deserialized from GraphBinary did not have its `Key` field populated, causing `Vertex.PropertyMap()` to group properties under an empty key.
 

@@ -103,7 +103,15 @@ class OffsetDateTimeSerializer extends TypeSerializer {
   }
 
   deserialize(obj) {
-    return new Date(obj[valueKey]);
+    // An OffsetDateTime value can carry a date-time (e.g. extreme years) that falls outside the range
+    // representable by a JavaScript Date. In those cases new Date(...) yields an invalid Date without
+    // throwing. Reject such values so unsupported boundary date-times fail deserialization instead of
+    // silently producing an unusable Date instance. Mirrors the GraphBinary OffsetDateTime reader.
+    const value = new Date(obj[valueKey]);
+    if (Number.isNaN(value.getTime())) {
+      throw new Error('OffsetDateTime value is outside the range supported by JavaScript Date');
+    }
+    return value;
   }
 
   canBeUsedFor(value) {
