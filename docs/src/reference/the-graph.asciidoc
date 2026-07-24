@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[graph]]
+[llms-summary="The structure API: graphs, vertices, edges, properties, meta- and multi-properties, transactions, variables, and the features a graph implementation can support."]
 = The Graph
 
 image::gremlin-standing.png[width=125]

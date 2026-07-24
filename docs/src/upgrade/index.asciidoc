@@ -23,6 +23,7 @@ under the License.
 
 image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
+[llms-summary="Version-by-version upgrade notes for Apache TinkerPop, covering breaking changes, new features, and migration guidance for each release line from 3.0 onward."]
 = TinkerPop Upgrade Information
 
 This document helps users of Apache TinkerPop™ to understand the changes that come with each software release.  It

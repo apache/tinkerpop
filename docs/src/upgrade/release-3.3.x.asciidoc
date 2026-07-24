@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 
+[llms-summary="Upgrade notes for the TinkerPop 3.3.x release line: breaking changes, new features, and provider migration guidance across its releases."]
 = TinkerPop 3.3.0
 
 image::gremlin-mozart.png[width=225]
@@ -756,6 +757,7 @@ information, the provider could then assign the right `IoRegistry` to match that
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1767[TINKERPOP-1767]
 
 
+[llms-summary="Upgrade notes specific to the TinkerPop 3.3.0 release: its breaking changes, new features, and changelog."]
 == TinkerPop 3.3.0
 
 *Release Date: August 21, 2017*

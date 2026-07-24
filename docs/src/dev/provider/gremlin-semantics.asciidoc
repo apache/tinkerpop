@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[gremlin-semantics]]
+[llms-summary="The formal semantics of the Gremlin language: the type system, traverser model, and the precise expected behavior of each step, as a specification for providers."]
 = Gremlin Semantics
 
 image:tinkerpop-meeting-room.png[]
@@ -519,6 +520,7 @@ The following table maps the notions proposed above to the various `P` operators
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Equality.feature[Equality Tests],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Comparability.feature[Comparability Tests]
 
+[llms-summary="Per-step semantic definitions: the precise input/output behavior each Gremlin step must exhibit, used to verify provider implementations for correctness."]
 == Steps
 
 While TinkerPop has a full test suite for validating functionality of Gremlin, tests alone aren't always exhaustive or
@@ -734,6 +736,7 @@ link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/o
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/service/ServiceRegistry.java[ServiceRegistry],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#call-step[reference]
 
+[llms-summary="The formal semantics of the combine() step: its exact expected behavior when merging an incoming list with a supplied list argument."]
 [[combine-step]]
 === combine()
 
@@ -1584,6 +1587,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SplitLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[reference]
 
+[llms-summary="The formal semantics of the substring() step: its exact expected behavior extracting a portion of a string by index."]
 [[substring-step]]
 === substring()
 

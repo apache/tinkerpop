@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[meetings]]
+[llms-summary="Records and scheduling of TinkerPop community meetings, where project direction and contributions are discussed."]
 = Meetings
 
 == November 23, 2015

@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 
+[llms-summary="Upgrade notes for the TinkerPop 3.0.x release line: the initial 3.x releases, their features, and migration guidance."]
 = TinkerPop 3.0.0
 
 image::gremlin-hindu.png[width=225]

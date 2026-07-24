@@ -22,6 +22,7 @@ under the License.
 // @author Marc de Lignie
 
 [[connected-components]]
+[llms-summary="Recipe for finding weakly and strongly connected components in a graph with Gremlin, in both OLTP and OLAP form."]
 == Connected Components
 
 Gremlin can be used to find link:https://en.wikipedia.org/wiki/Connected_component_(graph_theory)[connected components]

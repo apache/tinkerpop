@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[traversal]]
+[llms-summary="The core of Gremlin: how traversals are constructed from steps, the traverser model, and the catalog of graph traversal steps used to query and mutate graphs."]
 = The Traversal
 
 image::gremlin-running.png[width=125]
@@ -389,6 +390,7 @@ Spawn steps, which actually yield a traversal, typically match the names of exis
 * `V()` - Reads vertices from the graph to start the traversal (<<graph-step, example>>).
 
 [[graph-traversal-steps]]
+[llms-summary="Reference catalog of the individual Gremlin steps (map, filter, sideEffect, branch, and more) with syntax and examples for each."]
 == Graph Traversal Steps
 
 Gremlin steps are chained together to produce the actual traversal and are triggered by way of <<start-steps,start steps>>
@@ -1152,6 +1154,7 @@ g.V().coin(1.0)
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#coin(double)++[`coin(double)`]
 
 [[combine-step]]
+[llms-summary="The combine() step (map) merges the elements of the incoming list traverser with a provided list argument into a single list."]
 === Combine Step
 
 The `combine()`-step (*map*) combines the elements of the incoming list traverser and the provided list argument into
@@ -1872,6 +1875,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#groupCount(java.lang.String)++[`groupCount(String)`]
 
 [[has-step]]
+[llms-summary="The has() step (filter) and its variants (hasLabel, hasId, hasKey, hasValue, hasNot) filter vertices, edges, and properties by label, key, and value."]
 === Has Step
 
 image::has-step.png[width=670]
@@ -2211,6 +2215,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/upgrade/#graphml-format[Upgrade Doc
 
 anchor:graphson-reader-writer[]
 [[graphson]]
+[llms-summary="How the io() step reads and writes graphs in the JSON-based GraphSON format, including its use for import and export."]
 ==== GraphSON
 
 image:gremlin-graphson.png[width=350,float=left] GraphSON is a link:http://json.org/[JSON]-based format extended
@@ -2473,6 +2478,7 @@ The `map()` step maps the traverser from the current object to the next step in 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#map(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`map(Traversal)`]
 
 [[match-step]]
+[llms-summary="The match() step (map) provides declarative, pattern-matching graph querying by combining traversal fragments bound to shared variables."]
 === Match Step
 
 The `match()`-step (*map*) provides a more link:http://en.wikipedia.org/wiki/Declarative_programming[declarative]
@@ -3244,6 +3250,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#iterate()++[`iterate()`]
 
 [[not-step]]
+[llms-summary="The not() step (filter) removes traversers for which the provided sub-traversal returns a result, negating a pattern."]
 === Not Step
 
 The `not()`-step (*filter*) removes objects from the traversal stream when the traversal provided as an argument
@@ -4047,6 +4054,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#rTrim(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`rTrim(Scope)`]
 
 [[sack-step]]
+[llms-summary="The sack() step (sideEffect or map) reads and writes a per-traverser local data structure (the sack), used to carry and accumulate values along a traversal."]
 === Sack Step
 
 image:gremlin-sacks-running.png[width=175,float=right] A traverser can contain a local data structure called a "sack".
@@ -4607,6 +4615,7 @@ List<Vertex> vertices = g.V(v).out().toList();
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#subgraph(java.lang.String)++[`subgraph(String)`]
 
 [[substring-step]]
+[llms-summary="The substring() step (map) extracts a portion of an incoming string by start (and optional end) index."]
 === Substring Step
 The `substring()`-step (*map*) returns a substring with a 0-based start index (inclusive) and optionally an end index (exclusive) specified.
 If the start index is negative then it will begin at the specified index counted from the end of the string, or 0 if exceeding the string length.
@@ -4756,6 +4765,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 `<<emit-step,emit()>>`, `<<repeat-step,repeat()>>`, `<<until-step,until()>>`
 
 [[to-step]]
+[llms-summary="The to() step-modulator supplies direction and destination arguments to steps like from(), addE(), and path-oriented steps."]
 === To Step
 
 The `to()`-step is not an actual step, but instead is a "step-modulator" similar to <<as-step,`as()`>> and
@@ -5519,6 +5529,7 @@ g.V().out().out().path().by('name').
 <2> The length-3 paths have their objects transformed by a lambda-less step and a traversal lambda. (*good*)
 
 [[traversalstrategy]]
+[llms-summary="How TraversalStrategy implementations analyze and rewrite traversals at compile time (decoration, optimization, finalization, verification) and how to author custom strategies."]
 == TraversalStrategy
 
 image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` analyzes a `Traversal` and, if the traversal
