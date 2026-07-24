@@ -1790,8 +1790,9 @@ link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#dedup-step++[`Seman
 === Difference Step
 
 The `difference()`-step (*map*) calculates the difference between the incoming list traverser and the provided list
-argument. More specifically, this provides the set operation A-B where A is the traverser and B is the argument. This
-step only expects list data (array or Iterable) and will throw an `IllegalArgumentException` if any other type is
+argument. More specifically, this provides the set operation A-B where A is the traverser and B is the argument. The
+result is returned as a `Set`, so element order is not preserved and duplicates are removed. This step only expects
+list data (array or Iterable) as input and will throw an `IllegalArgumentException` if any other type is
 encountered (including `null`).
 
 [gremlin-groovy,modern]
@@ -2528,7 +2529,8 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 === Intersect Step
 
 The `intersect()`-step (*map*) calculates the intersection between the incoming list traverser and the provided list
-argument. This step only expects list data (array or Iterable) and will throw an `IllegalArgumentException` if any other
+argument. The result is returned as a `Set`, so element order is not preserved and duplicates are removed. This step
+only expects list data (array or Iterable) as input and will throw an `IllegalArgumentException` if any other
 type is encountered (including `null`).
 
 [gremlin-groovy,modern]
