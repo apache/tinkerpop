@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -52,10 +53,12 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.or;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -126,6 +129,12 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_VX1X_asXaX_out_hasXageX_whereXgtXaXX_byXageX_name(final Object v1Id);
 
     public abstract Traversal<Vertex, String> get_g_VX3X_asXaX_in_out_asXbX_whereXa_eqXbXX_byXageX_name(final Object v3Id);
+
+    // where(P) with a non-String scope key (invalid usage - value comparisons require is(P))
+
+    public abstract Traversal<Vertex, Integer> get_g_V_valuesXageX_whereXgtX5XX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasLabelXpersonX_whereX__valuesXageX_whereXgtX5XXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -418,6 +427,28 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         assertThat(traversal.hasNext(), is(false));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_valuesXageX_whereXgtX5XX() {
+        try {
+            get_g_V_valuesXageX_whereXgtX5XX();
+            fail("where(P) with a non-String predicate value should throw an IllegalArgumentException at construction");
+        } catch (IllegalArgumentException iae) {
+            assertThat(iae.getMessage(), containsString("use is(P)"));
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasLabelXpersonX_whereX__valuesXageX_whereXgtX5XXX() {
+        try {
+            get_g_V_hasLabelXpersonX_whereX__valuesXageX_whereXgtX5XXX();
+            fail("where(P) with a non-String predicate value should throw an IllegalArgumentException at construction");
+        } catch (IllegalArgumentException iae) {
+            assertThat(iae.getMessage(), containsString("use is(P)"));
+        }
+    }
+
 
     public static class Traversals extends WhereTest {
 
@@ -551,6 +582,20 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_VX3X_asXaX_in_out_asXbX_whereXa_eqXbXX_byXageX_name(final Object v3Id) {
             return g.V(v3Id).as("a").in().out().as("b").where("a", eq("b")).by("age").values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_V_valuesXageX_whereXgtX5XX() {
+            // gt(5) yields a P whose value is an Integer rather than a String scope key; the cast mimics the
+            // erased P<String> that reaches where(P) via raw types, bytecode, or deserialization
+            final P<String> nonStringKeyPredicate = (P) gt(5);
+            return g.V().<Integer>values("age").where(nonStringKeyPredicate);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasLabelXpersonX_whereX__valuesXageX_whereXgtX5XXX() {
+            final P<String> nonStringKeyPredicate = (P) gt(5);
+            return g.V().hasLabel("person").where(__.values("age").where(nonStringKeyPredicate));
         }
     }
 }
