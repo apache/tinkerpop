@@ -4836,16 +4836,15 @@ The `tail()`-step can also be applied with `Scope.local`, in which case it opera
 
 [gremlin-groovy,modern]
 ----
-g.V().as('a').out().as('a').out().as('a').select('a').by(tail(local)).values('name') <1>
-g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold()).tail(local) <2>
-g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold()).tail(local, 2) <3>
-g.V().elementMap().tail(local) <4>
+g.V().values('name').order().fold()
+g.V().values('name').order().fold().tail(local) <1>
+g.V().values('name').order().fold().tail(local, 3) <2>
+g.V().elementMap().tail(local) <3>
 ----
 
-<1> Only the most recent name from the "a" step (`List<Vertex>` becomes `Vertex`).
-<2> Same result as statement 1 (`List<String>` becomes `String`).
-<3> `List<String>` for each path containing the last two names from the 'a' step.
-<4> `Map<String, Object>` for each vertex, but containing only the last property value.
+<1> The `List<String>` of names is reduced to just the last name (alphabetically).
+<2> The `List<String>` of names is reduced to the last three names.
+<3> A `Map<String,Object>` for each vertex, but containing only its last property value.
 
 *Additional References*
 
