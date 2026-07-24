@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+[llms-summary="Guidelines for TinkerPop committers: the Review-then-Commit (RTC) process, commit conventions, branch and merge practices, and committer responsibilities."]
 = For Committers
 
 image::business-gremlin.png[width=400]
@@ -652,6 +653,7 @@ that may be used as building blocks for your benchmarks; `AbstractBenchmarkBase`
 * `AbstractGraphMutateBenchmark` - extend when you are benchmarking graph mutation operations eg. `g.addV()`, `graph.addVertex()`
 
 [[rtc]]
+[llms-summary="The Review-then-Commit (RTC) process TinkerPop uses for changes: how contributions are proposed, reviewed, voted on, and merged."]
 == Review then Commit
 
 Code modifications must go through a link:http://www.apache.org/foundation/glossary.html#ReviewThenCommit[review-then-commit] (RTC)

@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 
+[llms-summary="Upgrade notes for the TinkerPop 3.2.x release line: breaking changes, new features, and provider migration guidance across its releases."]
 = TinkerPop 3.2.0
 
 image::nine-inch-gremlins.png[width=225]
@@ -905,6 +906,7 @@ Base64 encoded string however as the old approach will likely be removed in the 
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1600[TINKERPOP-1600]
 
+[llms-summary="Upgrade notes specific to the TinkerPop 3.2.3 release: its changes and changelog."]
 == TinkerPop 3.2.3
 
 *Release Date: October 17, 2016*
@@ -1457,6 +1459,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1293[TINKERPOP-1293]
 The method signatures of `get_g_VXlistXv1_v2_v3XX_name` and `get_g_VXlistX1_2_3XX_name` of `VertexTest` were changed
 to take arguments for the `Traversal` to be constructed by extending classes.
 
+[llms-summary="Upgrade notes specific to the TinkerPop 3.2.0 release: its breaking changes, new features, and changelog."]
 == TinkerPop 3.2.0
 
 *Release Date: Release Date: April 8, 2016*

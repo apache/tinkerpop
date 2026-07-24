@@ -25,6 +25,7 @@ image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
 
+[llms-summary="A collection of practical Gremlin traversal patterns and solutions to common graph problems, with runnable examples."]
 = Recipes
 
 image:gremlin-chef.png[width=120,float=left] All programming languages tend to have
@@ -37,6 +38,7 @@ Recipes assume general familiarity with Gremlin and the Apache TinkerPop™ stac
 link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started[Getting Started] tutorial and the
 link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/[The Gremlin Console] tutorial.
 
+[llms-summary="Recipes covering common traversal tasks — between-vertices patterns, centrality, collections, connected components, cycle detection, pagination, recommendation, shortest path, trees, and more."]
 = Traversal Recipes
 
 include::between-vertices.asciidoc[]
@@ -88,6 +90,7 @@ include::style-guide.asciidoc[]
 include::traversal-component-reuse.asciidoc[]
 
 [[contributing]]
+[llms-summary="How to contribute a new recipe to the TinkerPop documentation, including the expected structure and testing conventions."]
 = How to Contribute a Recipe
 
 Recipes are generated under the same system as all TinkerPop documentation and is stored directly in the source code

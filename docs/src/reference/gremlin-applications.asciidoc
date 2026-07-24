@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[gremlin-applications]]
+[llms-summary="The applications that ship with TinkerPop: the Gremlin Console for interactive use and Gremlin Server for exposing graphs to remote clients."]
 = Gremlin Applications
 
 Gremlin applications represent tools that are built on top of the core APIs to help expose common functionality to
@@ -447,6 +448,7 @@ v[6]
 ----
 
 [[gremlin-server]]
+[llms-summary="Gremlin Server exposes graphs to remote clients over WebSocket/HTTP: how to run it, its request lifecycle, serializers, and connecting from drivers."]
 == Gremlin Server
 
 image:gremlin-server.png[width=400,float=right] Gremlin Server provides a way to remotely execute Gremlin against one
@@ -960,6 +962,7 @@ quite possible that such a script will generate `OutOfMemoryError` exceptions on
 WebSocket configuration, which supports streaming, if that type of use case is required.
 
 [[server-configuring]]
+[llms-summary="Reference for Gremlin Server's YAML configuration options: graphs, serializers, channelizers, thread pools, SSL, and metrics."]
 === Configuring
 
 The `gremlin-server.sh` file serves multiple purposes.  It can be used to "install" dependencies to the Gremlin
@@ -1384,6 +1387,7 @@ Start the service with `systemctl start gremlin-server`
 
 
 [[security]]
+[llms-summary="Securing Gremlin Server: authentication (SASL/PLAIN, Kerberos), authorization, TLS/SSL, and sandboxing script execution."]
 === Security
 
 image:gremlin-server-secure.png[width=175,float=right] Gremlin Server provides for several features that aid in the
@@ -2133,6 +2137,7 @@ A final thought on the topic of `GroovyCompilerGremlinPlugin` implementation is 
 can fine tune the Groovy compilation process.  Read more about compilation customization in the
 link:http://docs.groovy-lang.org/latest/html/documentation/#compilation-customizers[Groovy Documentation].
 
+[llms-summary="Recommended practices for working with Gremlin Server, including connection handling, parameterized scripts, and result serialization."]
 === Best Practices
 
 The following sections define best practices for working with Gremlin Server.
@@ -2722,6 +2727,7 @@ $ docker run tinkerpop/gremlin-server:x.y.z conf/gremlin-server-secure.yaml
 ----
 
 [[gremlin-plugins]]
+[llms-summary="Extending the Gremlin Console and Server with plugins that add dependencies, DSLs, and bindings; covers the plugins that ship with TinkerPop."]
 == Gremlin Plugins
 
 image:gremlin-plugin.png[width=125]

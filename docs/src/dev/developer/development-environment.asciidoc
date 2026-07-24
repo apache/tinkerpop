@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[development-environment]]
+[llms-summary="Setting up a TinkerPop development environment: build prerequisites, Maven and Docker workflows, and how to build and test the code and documentation."]
 = Development Environment
 
 TinkerPop is a fairly large body of code spread across many modules and covering multiple programming languages. Despite

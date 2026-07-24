@@ -23,6 +23,7 @@ anchor:gremlin-variants[]
 // Scala 2.11/2.12 (and related) conflicts those plugins introduce.
 [gremlin-docs-plugins-exclude="neo4j-gremlin,spark-gremlin,hadoop-gremlin"]
 [[gremlin-drivers-variants]]
+[llms-summary="How Gremlin is embedded in host programming languages (Java, Groovy, Python, JavaScript, .NET, Go) and how language variants and drivers connect to a remote server."]
 = Gremlin Drivers and Variants
 
 image::gremlin-house-of-mirrors.png[width=1024]
@@ -641,6 +642,7 @@ time zone offset of UTC(+00:00):
 anchor:connecting-via-remotegraph[]
 anchor:connecting-via-java[]
 [[gremlin-java]]
+[llms-summary="Using Gremlin from Java: the reference implementation of the language, GraphTraversalSource construction, and connecting to a remote Gremlin Server."]
 == Gremlin-Java
 
 image:gremlin-java-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Java implements Gremlin within the
@@ -1488,6 +1490,7 @@ java -cp target/run-examples-shaded.jar examples.ModernTraversals
 ----
 
 [[gremlin-javascript]]
+[llms-summary="Using Gremlin from JavaScript/Node.js: installing the gremlin package, building traversals, and connecting to a remote Gremlin Server."]
 == Gremlin-JavaScript
 
 image:gremlin-js.png[width=130,float=right] Apache TinkerPop's Gremlin-JavaScript implements Gremlin within the
@@ -2453,6 +2456,7 @@ dotnet run --project ModernTraversals
 ----
 
 [[gremlin-python]]
+[llms-summary="Using Gremlin from Python: installing gremlinpython, building traversals, Pythonic syntax differences, and connecting to a remote Gremlin Server."]
 == Gremlin-Python
 
 image:gremlin-python-drawing.png[width=130,float=right] Apache TinkerPop's Gremlin-Python implements Gremlin within
