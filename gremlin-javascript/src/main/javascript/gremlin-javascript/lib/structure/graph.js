@@ -61,6 +61,19 @@ class Element {
   equals(other) {
     return other instanceof Element && this.id === other.id;
   }
+
+  /**
+   * Groups this element's properties by key.
+   * @returns {Object<string, Object[]>} a map of property key to the array of
+   *   property objects for that key (empty object when there are no properties).
+   */
+  propertyMap() {
+    const map = Object.create(null);
+    for (const p of this.properties) {
+      (map[p.key] = map[p.key] || []).push(p);
+    }
+    return map;
+  }
 }
 
 class Vertex extends Element {
