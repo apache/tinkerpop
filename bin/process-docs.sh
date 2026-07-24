@@ -34,6 +34,13 @@ set -e
 cd "$(dirname "$0")/.."
 TP_HOME="$(pwd)"
 
+# The docs build renders every book to both HTML and Markdown in a single Maven JVM (AsciidoctorJ
+# runs in-process), so the heap must hold the parsed AST + JRuby runtime for ~two dozen executions.
+# Raise the heap unless the caller already set one, to avoid OutOfMemoryError during rendering.
+if [[ "${MAVEN_OPTS:-}" != *-Xmx* ]]; then
+  export MAVEN_OPTS="${MAVEN_OPTS:-} -Xmx8g"
+fi
+
 # ---------------------------------------------------------------------------
 # Argument parsing
 # ---------------------------------------------------------------------------
@@ -76,6 +83,49 @@ trap 'cleanup; exit 130' INT
 trap 'cleanup; exit 143' TERM
 
 # ---------------------------------------------------------------------------
+# Port readiness probe
+# ---------------------------------------------------------------------------
+# Returns 0 if a TCP port on the given host is accepting connections. Prefer nc when it is on the
+# PATH, but fall back to bash's /dev/tcp so the build still works on hosts without netcat (some
+# minimal container images and sandboxes ship no nc). Both branches are silent.
+port_open() {
+  local host="$1" port="$2"
+  if command -v nc >/dev/null 2>&1; then
+    nc -z "${host}" "${port}" 2>/dev/null
+  else
+    (exec 3<>"/dev/tcp/${host}/${port}") 2>/dev/null && exec 3>&- 2>/dev/null
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Markdown split (agentdocsspec.com)
+# ---------------------------------------------------------------------------
+# After the Markdown mirror is rendered under target/docs/markdown/, split each rendered book into
+# agent-sized (<=50KB) pages and rewrite intra-book links. Runs MarkdownSplitter from the
+# tinkeradoc-extension classes (built by the asciidoc profile) with asciidoctorj on the classpath.
+split_markdown() {
+  local md_root="target/docs/markdown"
+  [ -d "${md_root}" ] || return 0
+  local ext_classes="docs/tinkeradoc-extension/target/classes"
+  if [ ! -d "${ext_classes}" ]; then
+    echo "WARNING: ${ext_classes} not found; skipping Markdown split."
+    return 0
+  fi
+  # asciidoctorj jars are only needed for the extension build, not for the splitter (pure Java),
+  # so the extension classes alone suffice on the classpath.
+  local books
+  books=$(find "${md_root}" -name index.md 2>/dev/null)
+  [ -z "${books}" ] && return 0
+  echo "Splitting Markdown books into agent-sized pages..."
+  # shellcheck disable=SC2086
+  java -cp "${ext_classes}" org.apache.tinkerpop.tinkeradoc.MarkdownSplitter ${books}
+
+  # Generate the llms.txt discovery index over the split pages (agentdocsspec.com).
+  echo "Generating llms.txt discovery index..."
+  java -cp "${ext_classes}" org.apache.tinkerpop.tinkeradoc.LlmsTxtGenerator "${md_root}"
+}
+
+# ---------------------------------------------------------------------------
 # Dry-run mode
 # ---------------------------------------------------------------------------
 if [ "${MODE}" == "dry" ]; then
@@ -87,7 +137,9 @@ if [ "${MODE}" == "dry" ]; then
   cp -r docs/{static,stylesheets} target/postprocess-asciidoc/
   cp -r docs/src/* target/postprocess-asciidoc/
   mvn process-resources -pl . -Dasciidoc -Dgremlin.docs.dryrun=true
-  exit $?
+  ec=$?
+  [ ${ec} -eq 0 ] && split_markdown
+  exit ${ec}
 fi
 
 # ---------------------------------------------------------------------------
@@ -226,7 +278,7 @@ mkdir -p target
 # server to fail binding while the readiness check still passes -- the console
 # then connects to the wrong service and WebSocket handshakes fail, dumping
 # large stacktraces into the rendered docs.
-if nc -z localhost 8182 2>/dev/null; then
+if port_open 127.0.0.1 8182; then
   echo "ERROR: Port 8182 is already in use by another process."
   echo "       Gremlin Server needs this port for the docs ':remote' examples."
   echo "       Identify the process with 'lsof -nP -iTCP:8182' and stop it,"
@@ -248,7 +300,7 @@ for i in $(seq 1 30); do
     echo "ERROR: Gremlin Server process exited during startup. See target/gremlin-server-docs.log"
     exit 1
   fi
-  if nc -z localhost 8182 2>/dev/null; then
+  if port_open 127.0.0.1 8182; then
     echo " ready."
     break
   fi
@@ -262,7 +314,7 @@ for i in $(seq 1 30); do
 done
 
 # 6. Start Gephi mock (port 8080)
-if ! nc -z localhost 8080 2>/dev/null; then
+if ! port_open 127.0.0.1 8080; then
   echo "Starting Gephi mock on port 8080..."
   bin/gephi-mock.py > /dev/null 2>&1 &
   GEPHI_MOCK_PID=$!
@@ -290,7 +342,8 @@ ec=$?
 set -e
 
 if [ ${ec} -eq 0 ]; then
-  echo "Documentation build complete. Output: target/docs/htmlsingle/"
+  split_markdown
+  echo "Documentation build complete. Output: target/docs/htmlsingle/ and target/docs/markdown/"
 else
   echo "ERROR: Documentation build failed."
 fi
