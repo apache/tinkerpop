@@ -53,6 +53,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported},
                 {"g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX", IgnoreReason.NullKeysInMapNotSupported},
                 {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX_byXnameX", IgnoreReason.NullKeysInMapNotSupported},
+                {"g_injectXpoint5fX", IgnoreReason.FloatLiteralTypeNotPreserved}
             };
 
         private static class Keywords

@@ -217,3 +217,53 @@ Feature: Step - inject()
     Then the result should be unordered
       | result |
       | s[d[1].i] |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXbigintBoundaryValuesX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(0n, -129n, -32769n)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0].n |
+      | d[-129].n |
+      | d[-32769].n |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXpoint5X
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(.5)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.5].d |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXpoint5fX
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(.5f)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.5].f |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXpoint5dX
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(.5d)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.5].d |

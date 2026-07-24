@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 
 namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
@@ -28,6 +29,7 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
     /// <summary>
     ///     Ensures that all by() modulators end up producing a result with null as the default.
     /// </summary>
+    [Obsolete("Deprecated as of 3.7.7. Not replaced. This strategy was added as a temporary way to mimic pre-3.5.0 null processing behavior.", false)]
     public class ProductiveByStrategy : AbstractTraversalStrategy
     {
         private const string JavaFqcn = OptimizationNamespace + nameof(ProductiveByStrategy);

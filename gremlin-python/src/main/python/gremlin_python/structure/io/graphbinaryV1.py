@@ -301,17 +301,13 @@ class BigIntIO(_GraphBinaryTypeIO):
 
     @classmethod
     def write_bigint(cls, obj, to_extend):
-        length = (obj.bit_length() + 7) // 8
-        if obj > 0:
-            b = obj.to_bytes(length, byteorder='big')
-            to_extend.extend(int32_pack(length + 1))
-            to_extend.extend(int8_pack(0))
-            to_extend.extend(b)
-        else:
-            # handle negative
-            b = obj.to_bytes(length, byteorder='big', signed=True)
-            to_extend.extend(int32_pack(length))
-            to_extend.extend(b)
+        # Compute the minimal signed two's-complement byte length, matching the
+        # Java reference serializer (BigInteger.toByteArray()).
+        bit_length = obj.bit_length() if obj >= 0 else (obj + 1).bit_length()
+        length = bit_length // 8 + 1
+        b = obj.to_bytes(length, byteorder='big', signed=True)
+        to_extend.extend(int32_pack(length))
+        to_extend.extend(b)
         return to_extend
 
     @classmethod

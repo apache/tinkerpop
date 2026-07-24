@@ -54,6 +54,35 @@ class TestGraphBinaryWriter(object):
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
 
+    def test_bigint_boundaries(self):
+        # Boundary values around signed byte-width transitions, including
+        # negative boundaries that previously raised OverflowError (TINKERPOP-3275).
+        # One representative per equivalence class of the length formula: zero,
+        # positive byte-width boundary (127/128), negative power-of-two (-128),
+        # negative just past a boundary (-129/-255, previously OverflowError), the
+        # obj+1==0 edge (-1), and arbitrary-precision values of both signs.
+        values = [0, 1, -1, 127, 128, -128, -129, -255,
+                  0x1000_0000_0000_0000_0000, -0x1000_0000_0000_0000_0000]
+        for v in values:
+            x = bigint(v)
+            output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+            assert x == output
+
+    def test_bigint_wire_bytes(self):
+        # Lock in exact minimal signed two's-complement bytes, matching the Java
+        # reference BigInteger.toByteArray() (guards against non-minimal encoding).
+        from gremlin_python.structure.io.graphbinaryV1 import BigIntIO
+        cases = {
+            0: b'\x00\x00\x00\x01\x00',
+            127: b'\x00\x00\x00\x01\x7f',
+            128: b'\x00\x00\x00\x02\x00\x80',
+            -128: b'\x00\x00\x00\x01\x80',
+            -129: b'\x00\x00\x00\x02\xff\x7f',
+            -256: b'\x00\x00\x00\x02\xff\x00',
+        }
+        for value, expected in cases.items():
+            assert bytes(BigIntIO.write_bigint(value, bytearray())) == expected
+
     def test_float(self):
         x = float(100.001)
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
@@ -81,6 +110,14 @@ class TestGraphBinaryWriter(object):
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x.scale == output.scale
         assert x.unscaled_value == output.unscaled_value
+
+    def test_bigdecimal_negative_boundaries(self):
+        # Negative unscaled values at byte-width boundaries previously raised
+        # OverflowError during serialization (TINKERPOP-3275).
+        for x in [BigDecimal(0, -129), BigDecimal(2, -255)]:
+            output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+            assert x.scale == output.scale
+            assert x.unscaled_value == output.unscaled_value
 
     def test_date(self):
         x = datetime(2016, 12, 14, 16, 14, 36, 295000)

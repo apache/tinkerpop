@@ -192,6 +192,34 @@ func TestGraphBinaryV1(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, new(big.Int).SetUint64(uint64(source)), res)
 		})
+		t.Run("write bigInt zero exact bytes", func(t *testing.T) {
+			var buffer bytes.Buffer
+			buf, err := bigIntWriter(*big.NewInt(0), &buffer, nil)
+			assert.Nil(t, err)
+			assert.Equal(t, []byte{0x00, 0x00, 0x00, 0x01, 0x00}, buf)
+		})
+		t.Run("read-write bigInt zero", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			source := big.NewInt(0)
+			buf, err := bigIntWriter(*source, &buffer, nil)
+			assert.Nil(t, err)
+			res, err := readBigInt(&buf, &pos)
+			assert.Nil(t, err)
+			assert.Equal(t, 0, source.Cmp(res.(*big.Int)))
+		})
+		t.Run("read-write bigDecimal zero unscaled", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			source := &BigDecimal{0, big.NewInt(0)}
+			buf, err := bigDecimalWriter(source, &buffer, nil)
+			assert.Nil(t, err)
+			res, err := readBigDecimal(&buf, &pos)
+			assert.Nil(t, err)
+			actual := res.(*BigDecimal)
+			assert.Equal(t, source.Scale, actual.Scale)
+			assert.Equal(t, 0, source.UnscaledValue.Cmp(actual.UnscaledValue))
+		})
 		t.Run("read-write list", func(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
@@ -356,4 +384,35 @@ func TestGraphBinaryV1(t *testing.T) {
 			assert.Equal(t, newError(err0703ReadMapNonStringKeyError, intType), err)
 		})
 	})
+}
+
+func TestVertexPropertyReaderSetsKey(t *testing.T) {
+	serializer := &graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
+
+	source := &VertexProperty{
+		Element: Element{Id: int32(1), Label: "name"},
+		Value:   "marko",
+	}
+
+	var buffer bytes.Buffer
+	buf, err := vertexPropertyWriter(source, &buffer, serializer)
+	assert.Nil(t, err)
+
+	pos := 0
+	res, err := vertexPropertyReader(&buf, &pos)
+	assert.Nil(t, err)
+
+	vp, ok := res.(*VertexProperty)
+	assert.True(t, ok)
+	assert.Equal(t, "name", vp.Label)
+	assert.Equal(t, "name", vp.Key)
+
+	// Confirm PropertyMap grouping is keyed correctly rather than collapsing under the empty key.
+	v := &Vertex{Element{Id: int32(1), Label: "person", Properties: []interface{}{vp}}}
+	propertyMap := v.PropertyMap()
+	assert.Equal(t, 1, len(propertyMap))
+	assert.Equal(t, 1, len(propertyMap["name"]))
+	assert.Equal(t, vp, propertyMap["name"][0])
+	_, emptyKeyExists := propertyMap[""]
+	assert.False(t, emptyKeyExists)
 }

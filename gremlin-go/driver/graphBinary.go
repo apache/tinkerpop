@@ -320,7 +320,7 @@ func getSignedBytesFromBigInt(n *big.Int) []byte {
 		}
 		return b
 	}
-	return []byte{}
+	return []byte{0}
 }
 
 // Format: {length}{value_0}...{value_n}
@@ -1278,6 +1278,7 @@ func vertexPropertyReader(data *[]byte, i *int) (interface{}, error) {
 		return nil, err
 	}
 	vp.Label = label.(string)
+	vp.Key = label.(string)
 	vp.Value, err = readFullyQualifiedNullable(data, i, true)
 	if err != nil {
 		return nil, err

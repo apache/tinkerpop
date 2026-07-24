@@ -56,6 +56,25 @@ namespace Gremlin.Net.Structure
             return Properties?.Cast<VertexProperty>().FirstOrDefault(p => p.Key == key);
         }
 
+        /// <summary>
+        /// Groups this vertex's properties by key.
+        /// </summary>
+        /// <returns>A map of property key to the list of VertexProperty objects for that key (empty when none).</returns>
+        public Dictionary<string, List<VertexProperty>> PropertyMap()
+        {
+            var map = new Dictionary<string, List<VertexProperty>>();
+            foreach (var p in Properties.Cast<VertexProperty>())
+            {
+                if (!map.TryGetValue(p.Key, out var list))
+                {
+                    list = new List<VertexProperty>();
+                    map[p.Key] = list;
+                }
+                list.Add(p);
+            }
+            return map;
+        }
+
         /// <inheritdoc />
         public override string ToString()
         {

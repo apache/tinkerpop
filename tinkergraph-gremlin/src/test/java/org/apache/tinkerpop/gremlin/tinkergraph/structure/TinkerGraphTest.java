@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -69,6 +70,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -86,7 +88,9 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
@@ -706,6 +710,36 @@ public class TinkerGraphTest {
         assertEquals(expectedMidTraversal, g.V().has("name", "marko").outE("knows").inV().hasId(Arrays.asList(2, 4)).toList());
     }
 
+    /**
+     * Validating that hasId() only unrolls a collection when it is supplied as the single argument, matching the
+     * behavior of g.V()/g.E(). When multiple arguments are supplied, a collection argument is treated as a literal
+     * id rather than being unrolled (TINKERPOP-3273).
+     */
+    @Test
+    public void shouldNotUnrollCollectionWhenMidTraversalHasIdHasMultipleArguments() {
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
+
+        final List<Vertex> expected = g.V().has("name", "marko").outE("knows").inV().hasId(2).toList();
+        assertEquals(expected, g.V().has("name", "marko").outE("knows").inV().hasId(2, Collections.singletonList(4)).toList());
+    }
+
+    /**
+     * Validating that a start-step hasId() with multiple arguments where one is a collection is consistent with
+     * g.V()/g.E(): the collection is not unrolled and the graph rejects it as a non-convertible id (TINKERPOP-3273).
+     */
+    @Test
+    public void shouldBeConsistentWithVWhenStartStepHasIdHasMultipleArguments() {
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
+
+        final IllegalArgumentException vException = assertThrows(IllegalArgumentException.class,
+                () -> g.V(1, Arrays.asList(2, 4)).toList());
+        assertThat(vException.getMessage(), containsString("Expected an id that is convertible to"));
+
+        final IllegalArgumentException hasIdException = assertThrows(IllegalArgumentException.class,
+                () -> g.V().hasId(1, Arrays.asList(2, 4)).toList());
+        assertThat(hasIdException.getMessage(), containsString("Expected an id that is convertible to"));
+    }
+
     @Test
     public void shouldOptionalUsingWithComputer() {
         // not all systems will have 3+ available processors (e.g. travis)
@@ -1032,6 +1066,81 @@ public class TinkerGraphTest {
         @Override
         public boolean requiresVersion(final Object version) {
             return false;
+        }
+    }
+
+    @Test
+    public void shouldGroupMultiPropertyValuesUnderSingleKeyForPropertyMap() throws Exception {
+        try (final TinkerGraph graph = TinkerGraph.open()) {
+            final Vertex vertex = graph.addVertex(T.label, "person");
+            vertex.property(VertexProperty.Cardinality.list, "name", "marko");
+            vertex.property(VertexProperty.Cardinality.list, "name", "marko a. rodriguez");
+            vertex.property(VertexProperty.Cardinality.list, "name", "okram");
+
+            final Map<String, List<Property<Object>>> propertyMap = vertex.propertyMap();
+
+            assertEquals(1, propertyMap.size());
+            assertTrue(propertyMap.containsKey("name"));
+            assertEquals(3, propertyMap.get("name").size());
+            final List<Object> values = new ArrayList<>();
+            for (final Property<Object> p : propertyMap.get("name"))
+                values.add(p.value());
+            assertTrue(values.containsAll(Arrays.asList("marko", "marko a. rodriguez", "okram")));
+        }
+    }
+
+    @Test
+    public void shouldGroupSingleValuedKeysIntoSingleElementListsForPropertyMap() throws Exception {
+        try (final TinkerGraph graph = TinkerGraph.open()) {
+            final Vertex vertex = graph.addVertex(T.label, "person", "name", "marko", "age", 29);
+
+            final Map<String, List<Property<Object>>> propertyMap = vertex.propertyMap();
+
+            assertEquals(2, propertyMap.size());
+            assertEquals(1, propertyMap.get("name").size());
+            assertEquals(1, propertyMap.get("age").size());
+            assertEquals("marko", propertyMap.get("name").get(0).value());
+            assertEquals(Integer.valueOf(29), propertyMap.get("age").get(0).value());
+        }
+    }
+
+    @Test
+    public void shouldReturnEmptyMapForPropertyMapWhenNoProperties() throws Exception {
+        try (final TinkerGraph graph = TinkerGraph.open()) {
+            final Vertex vertex = graph.addVertex(T.label, "person");
+            assertTrue(vertex.propertyMap().isEmpty());
+        }
+    }
+
+    @Test
+    public void shouldGroupEdgePropertiesByKeyForPropertyMap() throws Exception {
+        try (final TinkerGraph graph = TinkerGraph.open()) {
+            final Vertex marko = graph.addVertex(T.label, "person", "name", "marko");
+            final Vertex vadas = graph.addVertex(T.label, "person", "name", "vadas");
+            final Edge edge = marko.addEdge("knows", vadas, "weight", 0.5d, "since", 2010);
+
+            final Map<String, List<Property<Object>>> propertyMap = edge.propertyMap();
+
+            assertEquals(2, propertyMap.size());
+            assertEquals(1, propertyMap.get("weight").size());
+            assertEquals(1, propertyMap.get("since").size());
+            assertEquals(Double.valueOf(0.5d), propertyMap.get("weight").get(0).value());
+            assertEquals(Integer.valueOf(2010), propertyMap.get("since").get(0).value());
+        }
+    }
+
+    @Test
+    public void shouldFilterByExplicitPropertyKeysForPropertyMap() throws Exception {
+        try (final TinkerGraph graph = TinkerGraph.open()) {
+            final Vertex vertex = graph.addVertex(T.label, "person", "name", "marko", "age", 29, "city", "santa fe");
+
+            final Map<String, List<Property<Object>>> propertyMap = vertex.propertyMap("name", "age");
+
+            assertEquals(2, propertyMap.size());
+            assertTrue(propertyMap.containsKey("name"));
+            assertTrue(propertyMap.containsKey("age"));
+            assertFalse(propertyMap.containsKey("city"));
+            assertEquals("marko", propertyMap.get("name").get(0).value());
         }
     }
 }

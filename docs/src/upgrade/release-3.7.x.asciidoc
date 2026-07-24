@@ -76,6 +76,49 @@ Note that this change is for Java only and designed to better align embedded and
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3238[TINKERPOP-3238]
 
+==== hasId() Collection Unrolling
+
+`hasId()` now only unrolls a collection into individual identifiers when that collection is supplied as the *single*
+argument to the step. This aligns its behavior with `g.V()` and `g.E()`, where only a single `Collection` of ids is
+unrolled. Previously, `hasId()` would unroll a collection even when it was mixed with other arguments, which was
+inconsistent with `g.V()`/`g.E()`. The `hasId()` step has worked this way since 3.6.3 while attempting to reach
+feature parity with `V()` and `E()`. The unwrapping behavior for multiple arguments was at odds with the defined
+semantics for the step and unfortunately went unnoticed until now.
+
+[source,groovy]
+----
+// 3.7.6 - the collection is unrolled even alongside other ids
+gremlin> g.V().hasId(1, [2, 4])
+==>v[1]
+==>v[2]
+==>v[4]
+
+// 3.7.7 - a collection mixed with other arguments is treated as a literal id (not unrolled),
+//         consistent with g.V(1, [2, 4])
+gremlin> g.V().hasId(1, [2, 4])
+// no longer matches v[2] and v[4] by unrolling the list
+
+// unchanged: a single collection argument is still unrolled
+gremlin> g.V().hasId([1, 2])
+==>v[1]
+==>v[2]
+----
+
+Code that relied on `hasId()` unrolling a collection that was passed alongside other id arguments should be updated to
+either pass all ids as a single collection (for example `g.V().hasId([1, 2, 4])`) or as individual arguments (for
+example `g.V().hasId(1, 2, 4)`).
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3273[TINKERPOP-3273]
+
+==== Deprecated ProductiveByStrategy
+
+`ProductiveByStrategy` is deprecated as of 3.7.7 and is not replaced. The strategy was introduced in 3.5.0 as a
+temporary way to mimic the `null` processing behavior of versions prior to 3.5.0, where a `by()` modulator would
+always produce a result. That compatibility need has passed, so the strategy is no longer recommended and will be
+removed in 4.0.0. This deprecation applies across all Gremlin Language Variants.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3042[TINKERPOP-3042]
+
 == TinkerPop 3.7.6
 
 *Release Date: April 1, 2026*

@@ -33,6 +33,8 @@ This release also includes changes from prior 3.7.x releases.
 * Add missing `Configuring` interface to `GraphStepPlaceholder` and `VertexStepPlaceholder`
 * Fixed bug in `group()` value traversal where keys were retained with stale barrier state instead of being filtered when steps following a `Barrier` in the second `by()` produced no output (e.g. `by(values("age").fold().unfold())` or `by(__.out().fold().count(local).is(P.gt(0)))` for vertices with no out-edges).
 * Fixed bug in `gremlin-javascript` GraphBinary and GraphSON deserialization where `OffsetDateTime` values outside the JavaScript `Date` range were silently returned as invalid `Date` objects instead of failing deserialization.
+* Added a `propertyMap()` helper to view an element's properties as a map keyed by property key, on the `Element` structure API in `gremlin-core` (inherited by `Vertex`, `Edge`, and `VertexProperty`) and on `Vertex`, `Edge`, and `VertexProperty` in `gremlin-javascript`, `gremlin-python`, `gremlin-dotnet`, and `gremlin-go`.
+* Fixed a bug in `gremlin-go` where a `VertexProperty` deserialized from GraphBinary did not have its `Key` field populated, causing `Vertex.PropertyMap()` to group properties under an empty key.
 
 [[release-3-8-1]]
 === TinkerPop 3.8.1 (Release Date: April 1, 2026)
@@ -244,13 +246,24 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-7-7]]
 === TinkerPop 3.7.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Fixed `subgraph()` to throw a descriptive error identifying the required `Edge` input instead of an internal `ClassCastException` when the traversal produces a non-edge value.
+* Fixed `where(P)` to throw a descriptive error identifying the required String scope key (and suggesting `is(P)` for value comparisons) instead of an internal `ClassCastException` when given a non-String predicate value.
+* Fixed `PeerPressure.property_name` in `gremlin-python` incorrectly mapping to the `pageRank` property name token.
 * Added `NextN(n)` to `Traversal` in `gremlin-go` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs.
 * Added `next(n)` to `Traversal` in `gremlin-javascript` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs.
 * Added `WithComputer()` to `GraphTraversalSource` in `gremlin-go`, providing OLAP configuration parity with other language variants.
 * Added `FailResponseException` to `gremlin-driver` which is thrown `fail()` step is triggered on the server making it more consistent with embedded behavior.
+* Fixed `hasId()` to only unroll a collection when it is supplied as the single argument, aligning its behavior with `g.V()`/`g.E()`.
+* Allowed float literals without a leading digit (e.g. `.5`, `.5f`, `.5d`) in the Gremlin grammar to better match Groovy.
 * Fixed conjoin has incorrect null handling.
+* Removed the Mono dependency from the `gremlin-dotnet` build/release process, using `dotnet pack`/`dotnet nuget push` instead of `mono nuget.exe`.
 * Expanded `gremlin-python` CI matrix to test against Python 3.9, 3.10, 3.11, 3.12, and 3.13.
 * Add Node 26 support for `gremlin-javascript` and `gremlint`.
+* Fixed a panic in `gremlin-go` `PartitionStrategy` when `ReadPartitions` was left unset.
+* Fixed `gremlin-python` `ProductiveByStrategy` to pass through the `productiveKeys` argument, which was previously accepted but never serialized to the server.
+* Deprecated `ProductiveByStrategy` which was introduced as a temporary way to mimic pre-3.5.0 null processing behavior.
+* Fixed `gremlin-python` GraphBinary serialization of `BigInteger`/`BigDecimal` negative boundary values (e.g. `-129`) that raised `OverflowError`.
+* Fixed `gremlin-go` GraphBinary serialization of zero `BigInteger`/`BigDecimal` values, which were encoded with zero length and rejected by Java servers.
 
 [[release-3-7-6]]
 === TinkerPop 3.7.6 (Release Date: April 1, 2026)

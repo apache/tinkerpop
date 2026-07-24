@@ -618,7 +618,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     @Override
     public Object visitGenericRangeLiteral(final GremlinParser.GenericRangeLiteralContext ctx) {
         final int childIndexOfParameterStart = 0;
-        final int childIndexOfParameterEnd = 3;
+        final int childIndexOfParameterEnd = 2;
         final ParseTree startContext = ctx.getChild(childIndexOfParameterStart);
         final ParseTree endContext = ctx.getChild(childIndexOfParameterEnd);
 

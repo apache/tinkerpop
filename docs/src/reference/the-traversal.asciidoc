@@ -822,6 +822,8 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 
 The `asDate()`-step (*map*) converts string or numeric input to Date.
 
+NOTE: Starting in version 3.8.0, in Java this step returns a `java.time.OffsetDateTime`.
+
 For string input only ISO-8601 format is supported. For numbers, the value is considered as the number of the
 milliseconds since "the epoch" (January 1, 1970, 00:00:00 GMT). Date input is passed without changes.
 
@@ -948,7 +950,7 @@ robust steps like <<choose-step, choose()>> and <<union-step,union()>>.
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#branch(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`map(Traversal)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#branch(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`branch(Traversal)`]
 
 [[by-step]]
 === By Step
@@ -1516,20 +1518,26 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[dateDiff-step]]
 === DateDiff Step
 
-The `dateDiff()`-step (*map*) returns the difference between two Dates in epoch time in milliseconds. 
-If the incoming traverser is not a Date or OffsetDateTime, then an `IllegalArgumentException` will be thrown.
+The dateDiff()-step (*map*) returns the difference between two Dates in epoch time in milliseconds. The result is
+computed as the incoming traverser date minus the argument date. A positive result means the incoming date is later than
+the argument date, while a negative result means the incoming date is earlier. In the example below, the incoming date
+(2023-08-02) is one day earlier than the argument date (2023-08-03), so the result is -86400000 (one day in
+milliseconds). If the incoming traverser is not a `Date` or `OffsetDateTime`, then an IllegalArgumentException will be
+thrown.
 
 [gremlin-groovy,modern]
 ----
 g.inject("2023-08-02T00:00:00Z").asDate().dateDiff(constant("2023-08-03T00:00:00Z").asDate()) <1>
 ----
 
-<1> Find difference between two dates in milliseconds
+<1> Find the difference between two dates in milliseconds
+
+NOTE: The `dateDiff(Date)` method is deprecated as of 3.8.0 in favor of `dateDiff(OffsetDateTime)`.
 
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff(java.util.Date)++[`dateDiff(Date)`],
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff(java.util.Date)++[`dateDiff(OffsetDateTime)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff(java.time.OffsetDateTime)++[`dateDiff(OffsetDateTime)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`dateDiff(Traversal)`]
 
 [[dedup-step]]
@@ -1815,14 +1823,14 @@ gremlin> g.V().has('person','name','stephen').fold().
 ......2>            fail('stephen should exist')).
 ......3>   property('k',100)
 fail() Step Triggered
-===========================================================================================================================
+=================================================================================================================================================
 Message > stephen should exist
 Traverser> []
   Bulk   > 1
-Traversal> fail()
-Parent   > CoalesceStep [V().has("person","name","stephen").fold().coalesce(__.unfold(),__.fail()).property("k",(int) 100)]
+Traversal> fail("stephen should exist")
+Parent   > CoalesceStep [V().has("person","name","stephen").fold().coalesce(__.unfold(),__.fail("stephen should exist")).property("k",(int) 100)]
 Metadata > {}
-===========================================================================================================================
+=================================================================================================================================================
 ----
 
 The code example above exemplifies the latter use case where there is essentially an assertion that there is a vertex
@@ -1864,7 +1872,7 @@ information.
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#filter(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`map(Traversal)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#filter(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`filter(Traversal)`]
 
 [[flatmap-step]]
 === FlatMap Step
@@ -1887,7 +1895,7 @@ gremlin> g.withSack(1.0f).V(1).barrier().flatMap(sack(mult).by("age")).sack()
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#flatMap(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`map(Traversal)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#flatMap(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`flatMap(Traversal)`]
 
 [[format-step]]
 === Format Step
@@ -3557,17 +3565,6 @@ g.V().groupCount().by(inE().count()).order(local).by(keys, asc) <4>
 
 NOTE: The `values` and `keys` enums are from `Column` which is used to select "columns" from a `Map`, `Map.Entry`, or `Path`.
 
-If a property key does not exist, then it will be treated as `null` which will sort it first for `Order.asc` and last
-for `Order.desc`.
-
-[gremlin-groovy,modern]
-----
-g.V().order().by("age").elementMap()
-----
-
-NOTE: Prior to version 3.3.4, ordering was defined by `Order.incr` for ascending order and `Order.decr` for descending
-order. Those tokens were deprecated and eventually removed in 3.5.0.
-
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#order()++[`order()`],
@@ -4087,11 +4084,11 @@ g.V().has('name','HEY BO DIDDLEY').repeat(out('followedBy').skip(5)).times(2) <3
 <2> Starting from the song 'DRUMS' get the 2nd and 3rd songs that have preceded, looping twice.
 <3> Starting from the song 'HEY BO DIDDLEY' get the songs that have followed, skipping the first 5 and looping twice.
 
-IMPORTANT: There are three modulators for `repeat()`: `times()`, `until()`, and `emit()`. The most straightforward is 
-`times()`, which indicates the number of times to execute the loop. Conditional loops can be executed using `until()`. 
-If `until()` comes after `repeat()` it is do/while looping. If `until()` comes before `repeat()` it is while/do looping. 
-Emission of traversers from the loop are controlled with `emit()`. If `emit()` is placed after `repeat()`, it is evaluated 
-on the traversers leaving the repeat-traversal. If `emit()` is placed before `repeat()`, it is evaluated on the 
+IMPORTANT: There are three modulators for `repeat()`: `times()`, `until()`, and `emit()`. The most straightforward is
+`times()`, which indicates the number of times to execute the loop. Conditional loops can be executed using `until()`.
+If `until()` comes after `repeat()` it is do/while looping. If `until()` comes before `repeat()` it is while/do looping.
+Emission of traversers from the loop are controlled with `emit()`. If `emit()` is placed after `repeat()`, it is evaluated
+on the traversers leaving the repeat-traversal. If `emit()` is placed before `repeat()`, it is evaluated on the
 traversers prior to entering the repeat-traversal.
 
 The `repeat()`-step also supports an "emit predicate", where the predicate for an empty argument `emit()` is
@@ -4588,7 +4585,7 @@ see the <<general-steps, General Steps>> section for more information.
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#sideEffect(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`map(Traversal)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#sideEffect(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`sideEffect(Traversal)`]
 
 [[simplepath-step]]
 === SimplePath Step
