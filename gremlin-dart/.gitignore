@@ -1,0 +1,4 @@
+.dart_tool/
+build/
+.packages
+doc/api/
