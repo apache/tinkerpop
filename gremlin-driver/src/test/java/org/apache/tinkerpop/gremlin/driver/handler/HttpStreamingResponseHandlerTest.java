@@ -239,6 +239,64 @@ public class HttpStreamingResponseHandlerTest {
         channel.finishAndReleaseAll();
     }
 
+    @Test
+    public void shouldFallBackToReasonPhraseForNonGraphBinaryErrorWithEmptyBody() throws Exception {
+        final ResultSet rs = new ResultSet(executor, RequestMessage.build("g.V()").create(), null);
+        final AtomicReference<ResultSet> pending = new AtomicReference<>(rs);
+        final EmbeddedChannel channel = createChannel(pending);
+
+        // Error status with a non-GraphBinary content type routes through handleNonGraphBinaryError().
+        final HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
+        channel.writeInbound(response);
+
+        // Empty body, so no bytes are accumulated and the handler falls back to the status reason phrase.
+        channel.writeInbound(new DefaultLastHttpContent());
+
+        try {
+            rs.all().get();
+            fail("Expected exception");
+        } catch (ExecutionException e) {
+            assertTrue(e.getCause() instanceof ResponseException);
+            final ResponseException re = (ResponseException) e.getCause();
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR.reasonPhrase(), re.getMessage());
+        }
+
+        assertNull(pending.get());
+
+        channel.finishAndReleaseAll();
+    }
+
+    @Test
+    public void shouldFallBackToReasonPhraseForNonGraphBinaryErrorWithMalformedJson() throws Exception {
+        final ResultSet rs = new ResultSet(executor, RequestMessage.build("g.V()").create(), null);
+        final AtomicReference<ResultSet> pending = new AtomicReference<>(rs);
+        final EmbeddedChannel channel = createChannel(pending);
+
+        final HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
+        channel.writeInbound(response);
+
+        // Malformed JSON body, so parsing throws and the handler falls back to the status reason phrase.
+        final String malformed = "{not valid json";
+        channel.writeInbound(new DefaultLastHttpContent(Unpooled.copiedBuffer(malformed, CharsetUtil.UTF_8)));
+
+        try {
+            rs.all().get();
+            fail("Expected exception");
+        } catch (ExecutionException e) {
+            assertTrue(e.getCause() instanceof ResponseException);
+            final ResponseException re = (ResponseException) e.getCause();
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR.reasonPhrase(), re.getMessage());
+        }
+
+        assertNull(pending.get());
+
+        channel.finishAndReleaseAll();
+    }
+
     private byte[] toBytes(final io.netty.buffer.ByteBuf buf) {
         final byte[] bytes = new byte[buf.readableBytes()];
         buf.readBytes(bytes);
