@@ -3824,7 +3824,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[propertymap-step]]
 === PropertyMap Step
 
-The `propertiesMap()`-step yields a Map representation of the properties of an element.
+The `propertyMap()`-step yields a Map representation of the properties of an element.
 
 [gremlin-groovy,modern]
 ----
