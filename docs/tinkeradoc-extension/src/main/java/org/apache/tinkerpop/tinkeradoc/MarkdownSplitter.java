@@ -221,6 +221,18 @@ class MarkdownSplitter {
         // up to — but not including — the next summarized descendant, which breaks off to its own
         // page. There is no size-based splitting; page size is an author concern surfaced by the
         // build's size lint, with intentional exceptions flagged via allow-oversize.
+        // The document title (the single leading top-level section — the book's "= Title") is the
+        // landing page: it owns index.md so its own llms-summary describes the index and its content
+        // renders there, rather than breaking off to a page of its own. Fold it into the root so the
+        // root preamble + doctitle render together as index.md. Everything below still breaks on
+        // summaries as usual.
+        final Node docTitle = leadingDocTitle(root);
+        if (docTitle != null) {
+            root.lines.addAll(docTitle.lines);
+            root.children.remove(docTitle);
+            root.children.addAll(0, docTitle.children);
+        }
+
         final Map<String, String> anchorToFile = new LinkedHashMap<>();
         final List<PagePlan> plans = new ArrayList<>();
         final PagePlan index = new PagePlan(indexFileName, root);
@@ -236,6 +248,24 @@ class MarkdownSplitter {
             pages.add(new Page(plan.fileName, LLMS_POINTER + rewritten, isAllowOversize(plan.owner)));
         }
         return pages;
+    }
+
+    /**
+     * Returns the document-title node to fold into the index page, or {@code null} if there is none.
+     * The doctitle is the book's leading section: the root's first child, when that child is the sole
+     * shallowest-level top section (i.e. the other top-level siblings are its heading level or
+     * deeper). In practice this is the {@code = Title} that AsciidoctorJ renders as the first h1.
+     */
+    private static Node leadingDocTitle(final Node root) {
+        if (root.children.isEmpty()) return null;
+        final Node first = root.children.get(0);
+        // Only treat it as the doctitle when it carries content meant to lead the landing page: it
+        // has a summary (so it would otherwise wrongly break off) or the root has no preamble of its
+        // own. Guard against odd trees by requiring it be the shallowest top-level section.
+        for (final Node sib : root.children) {
+            if (sib != first && sib.level < first.level) return null;
+        }
+        return first;
     }
 
     /**

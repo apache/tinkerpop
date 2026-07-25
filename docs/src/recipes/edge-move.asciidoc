@@ -16,7 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
-[llms-summary="Recipe: A recipe for moving an edge in Gremlin."]
+[llms-summary="Recipe: moving an existing edge from one incident vertex to another by recreating it with new endpoints and dropping the original."]
 [[edge-move]]
 == Moving an Edge
 

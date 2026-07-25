@@ -16,7 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
-[llms-summary="Recipe: Consider the following traversal over the \"modern\" toy graph:"]
+[llms-summary="Recipe: bucketing elements into groups by if/then-style conditions using choose() within group()."]
 [[if-then-based-grouping]]
 == If-Then Based Grouping
 

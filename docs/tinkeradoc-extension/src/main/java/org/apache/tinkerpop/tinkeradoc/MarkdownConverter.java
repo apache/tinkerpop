@@ -167,9 +167,17 @@ public class MarkdownConverter extends StringConverter {
         // already appears as an H1 there (matching the HTML backend's single <h1 class="sect0">).
         // In an article, the title is not part of the content, so emit it as the leading H1.
         if (title != null && !title.isEmpty() && !isBook(doc)) {
+            // Article doctype: the title-bearing section is promoted to the document title, so its
+            // curated llms-summary / allow-oversize attributes are not visible via convertSection.
+            // They resolve on the Document (when set as document attributes) or on the leading
+            // section AsciidoctorJ promoted to the title; check both so the landing page carries the
+            // hidden markers that drive the llms.txt description and the size lint.
             final StringBuilder head = new StringBuilder();
             appendAnchor(head, doc.getId());
-            head.append("# ").append(title).append("\n\n").append(content);
+            head.append("# ").append(title).append("\n\n");
+            appendLlmsSummary(head, docLevelAttribute(doc, LLMS_SUMMARY_ATTR));
+            appendAllowOversizeMarker(head, docLevelAttribute(doc, LLMS_ALLOW_OVERSIZE_ATTR));
+            head.append(content);
             assembled = head.toString();
         } else {
             assembled = content;
@@ -179,6 +187,24 @@ public class MarkdownConverter extends StringConverter {
         // so the Markdown file would otherwise keep the literal x.y.z. The HTML backend still relies
         // on the postprocessor for the same substitution.
         return substituteVersion(doc, assembled);
+    }
+
+    /**
+     * Resolves a doc-level attribute for the article title path: prefers the Document's own
+     * attribute, falling back to the leading section that AsciidoctorJ promoted to the title (which
+     * is where a {@code [llms-summary]} on the article's {@code == Title} actually lands).
+     */
+    private static Object docLevelAttribute(final Document doc, final String name) {
+        final Object onDoc = doc.getAttribute(name);
+        if (onDoc != null) return onDoc;
+        for (final StructuralNode block : doc.getBlocks()) {
+            if (block instanceof Section) {
+                final Object onSection = block.getAttribute(name);
+                if (onSection != null) return onSection;
+                break; // only the first/leading section is the promoted title
+            }
+        }
+        return null;
     }
 
     /** Replaces {@code x.y.z} with the resolved TinkerPop version, if available. */

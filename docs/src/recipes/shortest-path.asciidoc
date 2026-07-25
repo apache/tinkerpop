@@ -16,7 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
-[llms-summary="Recipe: A recipe for shortest path in Gremlin."]
+[llms-summary="Recipe: finding the shortest path between vertices with Gremlin, using repeat()/until() and path-length comparison."]
 [[shortest-path]]
 == Shortest Path
 
