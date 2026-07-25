@@ -108,25 +108,21 @@ public class MarkdownConverterProbeTest {
     }
 
     @Test
-    public void llmsExplodeAttributeBecomesHiddenMarkerNotBodyText() {
-        // [llms-explode] on a catalog section emits a hidden <!-- llms-explode --> marker for the
-        // splitter, and must not appear as visible body text.
-        final String md = toMarkdown("= T\n\n[llms-explode=\"\"]\n== Steps\n\nCatalog intro.\n\n=== A Step\n\nBody.\n");
-        assertThat(md, containsString("<!-- llms-explode -->"));
-        assertThat(md, containsString("Catalog intro."));
-    }
-
-    @Test
-    public void noLlmsExplodeMarkerWhenAttributeAbsent() {
-        final String md = toMarkdown("= T\n\n== Steps\n\nCatalog intro.\n");
-        assertThat(md, not(containsString("llms-explode")));
-    }
-
-    @Test
-    public void llmsKeepAttributeBecomesHiddenMarkerNotBodyText() {
-        final String md = toMarkdown("= T\n\n[llms-keep=\"\"]\n== Version 2.0\n\nVersion body.\n");
-        assertThat(md, containsString("<!-- llms-keep -->"));
+    public void allowOversizeAttributeBecomesHiddenMarkerNotBodyText() {
+        // allow-oversize="true" on a section emits a hidden <!-- llms-allow-oversize --> marker for
+        // the splitter's size lint, and must not appear as visible body text.
+        final String md = toMarkdown("= T\n\n[llms-summary=\"GraphSON 2.0.\",allow-oversize=\"true\"]\n"
+                + "== Version 2.0\n\nVersion body.\n");
+        assertThat(md, containsString("<!-- llms-allow-oversize -->"));
         assertThat(md, containsString("Version body."));
+        assertThat(md, not(containsString("allow-oversize=")));
+    }
+
+    @Test
+    public void noAllowOversizeMarkerWhenAttributeAbsentOrFalse() {
+        assertThat(toMarkdown("= T\n\n== Version 2.0\n\nBody.\n"), not(containsString("allow-oversize")));
+        assertThat(toMarkdown("= T\n\n[allow-oversize=\"false\"]\n== V\n\nBody.\n"),
+                not(containsString("llms-allow-oversize")));
     }
 
     @Test

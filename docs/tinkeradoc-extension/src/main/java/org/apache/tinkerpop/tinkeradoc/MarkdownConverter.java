@@ -55,18 +55,12 @@ public class MarkdownConverter extends StringConverter {
     static final String LLMS_SUMMARY_ATTR = "llms-summary";
 
     /**
-     * Section attribute ({@code [llms-explode]}) marking a catalog section whose direct subsections
-     * should each become their own split page. Emitted as a hidden {@code <!-- llms-explode -->}
-     * marker for {@link MarkdownSplitter}; never rendered into the page body.
+     * Section attribute ({@code allow-oversize="true"}) marking a summarized page that may exceed the
+     * size budget without failing the build's size lint. Emitted as a hidden
+     * {@code <!-- llms-allow-oversize -->} marker for {@link MarkdownSplitter}; never rendered into
+     * the page body. Splitting itself is driven solely by {@code llms-summary}.
      */
-    static final String LLMS_EXPLODE_ATTR = "llms-explode";
-
-    /**
-     * Section attribute ({@code [llms-keep]}) marking a section whose whole subtree must stay on one
-     * split page even if it exceeds the size budget. Emitted as a hidden {@code <!-- llms-keep -->}
-     * marker for {@link MarkdownSplitter}; never rendered into the page body.
-     */
-    static final String LLMS_KEEP_ATTR = "llms-keep";
+    static final String LLMS_ALLOW_OVERSIZE_ATTR = "allow-oversize";
 
     public MarkdownConverter(final String backend, final Map<String, Object> opts) {
         super(backend, opts);
@@ -214,38 +208,22 @@ public class MarkdownConverter extends StringConverter {
         appendAnchor(sb, section.getId());
         sb.append(hashes).append(' ').append(section.getTitle()).append("\n\n");
         appendLlmsSummary(sb, section.getAttribute(LLMS_SUMMARY_ATTR));
-        appendExplodeMarker(sb, section.getAttribute(LLMS_EXPLODE_ATTR));
-        appendKeepMarker(sb, section.getAttribute(LLMS_KEEP_ATTR));
+        appendAllowOversizeMarker(sb, section.getAttribute(LLMS_ALLOW_OVERSIZE_ATTR));
         sb.append(section.getContent());
         return sb.toString();
     }
 
     /**
-     * Emits a hidden {@code <!-- llms-keep -->} marker when a section carries the {@code [llms-keep]}
-     * attribute, telling {@link MarkdownSplitter} to keep this section's whole subtree on a single
-     * page even if it exceeds the size budget (used e.g. to keep each GraphSON version intact).
-     * Invisible in rendered output.
+     * Emits a hidden {@code <!-- llms-allow-oversize -->} marker when a section carries
+     * {@code allow-oversize="true"}. It tells the {@link MarkdownSplitter} size lint that this page
+     * (a summarized section whose subtree exceeds the byte budget) is an intentional exception and
+     * must not be reported as a violation. Invisible in rendered output.
      */
-    private static void appendKeepMarker(final StringBuilder sb, final Object keep) {
-        if (keep == null) return;
-        final String v = keep.toString().trim();
-        if (v.equalsIgnoreCase("false")) return;
-        sb.append("<!-- llms-keep -->\n\n");
-    }
-
-    /**
-     * Emits a hidden {@code <!-- llms-explode -->} marker when a section carries the
-     * {@code [llms-explode]} attribute. The marker tells {@link MarkdownSplitter} to give each direct
-     * subsection of this section its own page (rather than size-packing them), which is what turns a
-     * flat catalog such as the traversal step reference into one page per step. Invisible in rendered
-     * output, like the summary comment.
-     */
-    private static void appendExplodeMarker(final StringBuilder sb, final Object explode) {
-        if (explode == null) return;
-        // Any non-empty/non-"false" value enables it; the bare [llms-explode] form yields "".
-        final String v = explode.toString().trim();
-        if (v.equalsIgnoreCase("false")) return;
-        sb.append("<!-- llms-explode -->\n\n");
+    private static void appendAllowOversizeMarker(final StringBuilder sb, final Object allow) {
+        if (allow == null) return;
+        final String v = allow.toString().trim();
+        if (v.isEmpty() || v.equalsIgnoreCase("false")) return;
+        sb.append("<!-- llms-allow-oversize -->\n\n");
     }
 
     /** Emits {@code <a id="..."></a>} on its own line when the node has a non-empty id. */

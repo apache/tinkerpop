@@ -49,25 +49,25 @@ import java.util.regex.Pattern;
  */
 class MarkdownSplitter {
 
-    /** Default per-page budget in bytes (~50 KB), per the agent-docs spec's page-size check. */
+    /**
+     * Per-page size budget in bytes (~50 KB), per the agent-docs spec's page-size check. Splitting is
+     * summary-driven, not size-driven; this budget is only used by the size lint to flag pages that
+     * exceed it and are not marked {@code allow-oversize}.
+     */
     static final int DEFAULT_BUDGET = 50_000;
-
-    /** Safety margin (bytes) held back from the packing budget to absorb estimate/render drift. */
-    private static final int PACK_SAFETY_MARGIN = 512;
 
     private static final Pattern ANCHOR = Pattern.compile("^<a id=\"([^\"]+)\"></a>$");
     private static final Pattern HEADING = Pattern.compile("^(#{1,6}) +(.*)$");
     // Intra-document links: [label](#anchor). Capture label and anchor separately.
     private static final Pattern INTRA_LINK = Pattern.compile("\\]\\(#([^)]+)\\)");
-    // Marker MarkdownConverter emits from [llms-explode]: split this section's children per-page.
-    private static final String EXPLODE_MARKER = "<!-- llms-explode -->";
-    // Marker MarkdownConverter emits from [llms-keep]: keep this section's whole subtree on one page.
-    private static final String KEEP_MARKER = "<!-- llms-keep -->";
+    // The sole page-break signal: the hidden marker MarkdownConverter emits from [llms-summary="..."].
+    private static final Pattern SUMMARY_MARKER = Pattern.compile("^<!-- llms-summary: .* -->$");
+    // Marker MarkdownConverter emits from allow-oversize="true": this page may exceed the budget.
+    private static final String ALLOW_OVERSIZE_MARKER = "<!-- llms-allow-oversize -->";
 
     private static final Logger LOG = Logger.getLogger(MarkdownSplitter.class.getName());
 
     private final int budget;
-    private final int packBudget;
 
     MarkdownSplitter() {
         this(DEFAULT_BUDGET);
@@ -75,12 +75,6 @@ class MarkdownSplitter {
 
     MarkdownSplitter(final int budget) {
         this.budget = budget;
-        // Reserve room in the packing budget for (a) the llms.txt pointer prepended to every page
-        // after packing, and (b) a small safety margin. The per-node byte estimate can drift a few
-        // bytes from the concatenated render (newline/preamble joins), and pages pack right up to
-        // the limit; the margin keeps the final UTF-8 page comfortably under the hard cap.
-        final int pointer = LLMS_POINTER.getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
-        this.packBudget = Math.max(1, budget - pointer - PACK_SAFETY_MARGIN);
     }
 
     /**
@@ -93,6 +87,18 @@ class MarkdownSplitter {
      * @return the file names written into the book's directory
      */
     List<String> splitFile(final Path bookFile) throws IOException {
+        return splitFile(bookFile, new ArrayList<>());
+    }
+
+    /**
+     * Splits {@code bookFile} in place and appends a human-readable message to {@code violations} for
+     * every written page that exceeds the byte budget and is not flagged {@code allow-oversize}.
+     * Splitting is summary-driven; the budget is enforced only as a lint (the caller decides whether
+     * violations fail the build).
+     *
+     * @return the file names written into the book's directory
+     */
+    List<String> splitFile(final Path bookFile, final List<String> violations) throws IOException {
         final String markdown = new String(Files.readAllBytes(bookFile), StandardCharsets.UTF_8);
         final Path dir = bookFile.getParent();
         final String indexName = bookFile.getFileName().toString();
@@ -104,9 +110,10 @@ class MarkdownSplitter {
             final byte[] bytes = page.getContent().getBytes(StandardCharsets.UTF_8);
             Files.write(out, bytes);
             written.add(page.getFileName());
-            if (bytes.length > budget) {
-                LOG.warning("Markdown page " + out + " is " + bytes.length
-                        + " bytes, over the " + budget + "-byte budget (indivisible single-heading section)");
+            if (bytes.length > budget && !page.isOversizeAllowed()) {
+                violations.add(out + " is " + bytes.length + " bytes, over the " + budget
+                        + "-byte budget; add an llms-summary to a subsection to split it, "
+                        + "or mark the section allow-oversize=\"true\" if it must stay whole");
             }
         }
         LOG.info("Split " + bookFile + " into " + written.size() + " pages: " + written);
@@ -114,42 +121,59 @@ class MarkdownSplitter {
     }
 
     /**
-     * CLI entry point: {@code MarkdownSplitter [--budget N] <book.md> [<book.md> ...]}. Each named
-     * rendered book file is split in place into agent-sized pages in its own directory.
+     * CLI entry point: {@code MarkdownSplitter [--budget N] [--strict] <book.md> [<book.md> ...]}.
+     * Each named rendered book file is split in place (summary-driven) into pages in its own
+     * directory. Pages over the byte budget that are not flagged {@code allow-oversize} are reported;
+     * with {@code --strict} the process exits non-zero when any such violation exists, so the docs
+     * build can gate on it.
      */
     public static void main(final String[] args) throws IOException {
         int budget = DEFAULT_BUDGET;
+        boolean strict = false;
         final List<String> files = new ArrayList<>();
         for (int i = 0; i < args.length; i++) {
             if ("--budget".equals(args[i]) && i + 1 < args.length) {
                 budget = Integer.parseInt(args[++i]);
+            } else if ("--strict".equals(args[i])) {
+                strict = true;
             } else {
                 files.add(args[i]);
             }
         }
         if (files.isEmpty()) {
-            System.err.println("usage: MarkdownSplitter [--budget N] <book.md> [<book.md> ...]");
+            System.err.println("usage: MarkdownSplitter [--budget N] [--strict] <book.md> [<book.md> ...]");
             System.exit(2);
         }
         final MarkdownSplitter splitter = new MarkdownSplitter(budget);
+        final List<String> violations = new ArrayList<>();
         for (final String f : files) {
             final Path p = Path.of(f);
             if (Files.isRegularFile(p)) {
-                splitter.splitFile(p);
+                splitter.splitFile(p, violations);
             } else {
                 System.err.println("skip (not a file): " + f);
             }
         }
+        if (!violations.isEmpty()) {
+            System.err.println("\nMarkdown page-size budget violations (" + violations.size() + "):");
+            for (final String v : violations) System.err.println("  - " + v);
+            if (strict) {
+                System.err.println("\nFailing due to --strict. Curate the offending sections and re-run.");
+                System.exit(1);
+            }
+        }
     }
 
-    /** A rendered page: its file name (without directory), and its Markdown body. */
+    /** A rendered page: its file name (without directory), its Markdown body, and its oversize flag. */
     static final class Page {
         final String fileName;
         final String content;
+        final boolean oversizeAllowed;
 
-        Page(final String fileName, final String content) {
+        Page(final String fileName, final String content, final boolean oversizeAllowed) {
             this.fileName = fileName;
             this.content = content;
+            this.oversizeAllowed = oversizeAllowed;
         }
 
         String getFileName() {
@@ -159,6 +183,10 @@ class MarkdownSplitter {
         String getContent() {
             return content;
         }
+
+        boolean isOversizeAllowed() {
+            return oversizeAllowed;
+        }
     }
 
     /** A parsed heading unit: its level, anchor id (may be null), and the raw block of lines. */
@@ -167,7 +195,6 @@ class MarkdownSplitter {
         final String anchor;
         final List<String> lines = new ArrayList<>();
         final List<Node> children = new ArrayList<>();
-        int byteSize; // size of this node's own lines plus descendants, computed lazily
 
         Node(final int level, final String anchor) {
             this.level = level;
@@ -187,30 +214,82 @@ class MarkdownSplitter {
      */
     List<Page> split(final String markdown, final String indexFileName) {
         final Node root = parse(markdown);
-        computeSizes(root);
 
-        // Decide which nodes start their own page. The root's own lines (preamble) always live on
-        // the index page. Each top-level child is placed on the index page if it fits; otherwise it
-        // (or its children, recursively) become separate pages.
+        // Summary-driven splitting: a section becomes its own page if and only if it carries an
+        // llms-summary (surfaced as the <!-- llms-summary: ... --> marker). The document root is
+        // always a page (the index). A page holds its owning node's content plus every descendant
+        // up to — but not including — the next summarized descendant, which breaks off to its own
+        // page. There is no size-based splitting; page size is an author concern surfaced by the
+        // build's size lint, with intentional exceptions flagged via allow-oversize.
         final Map<String, String> anchorToFile = new LinkedHashMap<>();
         final List<PagePlan> plans = new ArrayList<>();
-        final PagePlan index = new PagePlan(indexFileName);
+        final PagePlan index = new PagePlan(indexFileName, root);
         plans.add(index);
+        recordAnchorsUntilBreak(root, index.fileName, anchorToFile);
+        planBreaks(root, plans, anchorToFile);
 
-        // Record every anchor's home page as we assign, so links can be rewritten afterward.
-        assignRootAnchors(root, index, anchorToFile);
-        final PageCursor cursor = new PageCursor(index);
-        cursor.used = preambleSize(root);
-        planChildren(root, cursor, plans, anchorToFile);
-
-        // Render each planned page, rewrite cross-page links, and prepend the llms.txt pointer.
         final List<Page> pages = new ArrayList<>();
         for (final PagePlan plan : plans) {
-            final String body = plan.render();
-            final String rewritten = rewriteLinks(body, plan.fileName, anchorToFile);
-            pages.add(new Page(plan.fileName, LLMS_POINTER + rewritten));
+            final StringBuilder body = new StringBuilder();
+            renderPage(plan.owner, body, plan == index);
+            final String rewritten = rewriteLinks(body.toString(), plan.fileName, anchorToFile);
+            pages.add(new Page(plan.fileName, LLMS_POINTER + rewritten, isAllowOversize(plan.owner)));
         }
         return pages;
+    }
+
+    /**
+     * Walks the tree creating a page for every summarized descendant of {@code node} (the node's own
+     * page having already been created). Recurses through the whole tree so nested summarized
+     * sections each get a page.
+     */
+    private void planBreaks(final Node node, final List<PagePlan> plans,
+                            final Map<String, String> anchorToFile) {
+        for (final Node child : node.children) {
+            if (hasSummary(child)) {
+                final PagePlan page = new PagePlan(fileNameFor(child, plans), child);
+                plans.add(page);
+                recordAnchorsUntilBreak(child, page.fileName, anchorToFile);
+            }
+            planBreaks(child, plans, anchorToFile);
+        }
+    }
+
+    /**
+     * Records that {@code node} and all descendants that render on the same page (i.e. everything
+     * down to the next summarized section) resolve to {@code fileName}, so links can be rewritten.
+     */
+    private void recordAnchorsUntilBreak(final Node node, final String fileName,
+                                         final Map<String, String> anchorToFile) {
+        if (node.anchor != null) anchorToFile.put(node.anchor, fileName);
+        for (final String line : node.lines) {
+            final Matcher am = ANCHOR.matcher(line);
+            if (am.matches()) anchorToFile.put(am.group(1), fileName);
+        }
+        for (final Node child : node.children) {
+            if (hasSummary(child)) continue; // child owns its own page; recorded when its page is made
+            recordAnchorsUntilBreak(child, fileName, anchorToFile);
+        }
+    }
+
+    /**
+     * Renders one page: {@code owner}'s own lines, then each descendant up to the next summarized
+     * section. Summarized descendants are omitted here (they render on their own page).
+     */
+    private void renderPage(final Node owner, final StringBuilder sb, final boolean isIndex) {
+        for (final String l : owner.lines) sb.append(l).append('\n');
+        for (final Node child : owner.children) {
+            if (hasSummary(child)) continue;
+            renderSubtree(child, sb);
+        }
+    }
+
+    private void renderSubtree(final Node node, final StringBuilder sb) {
+        for (final String l : node.lines) sb.append(l).append('\n');
+        for (final Node child : node.children) {
+            if (hasSummary(child)) continue;
+            renderSubtree(child, sb);
+        }
     }
 
     /**
@@ -276,199 +355,33 @@ class MarkdownSplitter {
         return root;
     }
 
-    private int computeSizes(final Node node) {
-        int size = ownSize(node);
-        for (final Node c : node.children) size += computeSizes(c);
-        node.byteSize = size;
-        return size;
-    }
+    // ---- page planning (summary-driven) ------------------------------------
 
-    /**
-     * The size of a node's own lines (heading + leading content) in UTF-8 bytes, excluding children.
-     * Uses UTF-8 byte length (not {@code String.length()}, which counts UTF-16 chars) because pages
-     * are written and size-checked as UTF-8; docs contain multi-byte characters (™, →, é, …), so a
-     * char count would under-estimate and let a page slip over the byte budget.
-     */
-    private static int ownSize(final Node node) {
-        int size = 0;
-        for (final String l : node.lines) {
-            size += l.getBytes(java.nio.charset.StandardCharsets.UTF_8).length + 1;
-        }
-        return size;
-    }
-
-    /** The byte size of the document preamble (root's own lines) that always leads the index page. */
-    private static int preambleSize(final Node root) {
-        return ownSize(root);
-    }
-
-    // ---- page planning -----------------------------------------------------
-
+    /** A planned page: its file name and the node whose subtree (up to the next break) it renders. */
     private static final class PagePlan {
         final String fileName;
-        final List<Node> nodes = new ArrayList<>();
-        final List<String> preambleLines = new ArrayList<>();
+        final Node owner;
 
-        PagePlan(final String fileName) {
+        PagePlan(final String fileName, final Node owner) {
             this.fileName = fileName;
-        }
-
-        String render() {
-            final StringBuilder sb = new StringBuilder();
-            for (final String l : preambleLines) sb.append(l).append('\n');
-            for (final Node n : nodes) renderNode(n, sb);
-            return sb.toString();
-        }
-
-        private void renderNode(final Node n, final StringBuilder sb) {
-            for (final String l : n.lines) sb.append(l).append('\n');
-            for (final Node c : n.children) renderNode(c, sb);
+            this.owner = owner;
         }
     }
 
-    /** The root's own (pre-heading) lines and any anchors on them belong to the index page. */
-    private void assignRootAnchors(final Node root, final PagePlan index,
-                                   final Map<String, String> anchorToFile) {
-        index.preambleLines.addAll(root.lines);
-        // Anchors that appear in the preamble lines resolve to the index page.
-        for (final String line : root.lines) {
-            final Matcher am = ANCHOR.matcher(line);
-            if (am.matches()) anchorToFile.put(am.group(1), index.fileName);
-        }
-    }
-
-    /** Mutable pointer to the page currently being filled, plus its running byte size. */
-    private static final class PageCursor {
-        PagePlan page;
-        int used;
-
-        PageCursor(final PagePlan page) {
-            this.page = page;
-        }
-    }
-
-    /**
-     * Greedily packs each child of {@code parent} onto the current page, keeping pages as full as
-     * possible under the budget while never cutting mid-section:
-     * <ul>
-     *   <li>If the child's whole subtree fits in the current page's remaining room, place it there.</li>
-     *   <li>Else, if the whole subtree fits an empty page, start a fresh page for it.</li>
-     *   <li>Else (the subtree alone exceeds the budget), open a page led by the child's own heading
-     *       and descend a level, recursively planning its children.</li>
-     * </ul>
-     * The descend case is what turns an over-budget chapter into per-section pages.
-     */
-    private void planChildren(final Node parent, final PageCursor cursor,
-                              final List<PagePlan> plans, final Map<String, String> anchorToFile) {
-        for (final Node child : parent.children) {
-            if (isExplode(child)) {
-                // Catalog section (e.g. the traversal step reference): give the section's own
-                // heading/preamble its own page, then put EACH direct subsection on its own page so
-                // every entry (each step) is individually named and addressable in llms.txt.
-                final PagePlan page = newPage(child, plans);
-                page.nodes.add(headOnly(child, page, anchorToFile));
-                for (final Node grandchild : child.children) {
-                    final PagePlan gcPage = newPage(grandchild, plans);
-                    placeWhole(grandchild, gcPage, anchorToFile);
-                }
-                // Resume packing subsequent siblings on a fresh cursor (the catalog pages are done).
-                cursor.page = page;
-                cursor.used = packBudget; // force the next sibling onto its own page/flow
-                continue;
-            }
-            if (isKeep(child)) {
-                // Keep-whole section (e.g. a GraphSON version): emit the entire subtree as one page,
-                // never descending, even if it exceeds the budget. Use it as-is when it fits the
-                // current page's remaining room; otherwise give it its own page.
-                if (cursor.used + child.byteSize <= packBudget) {
-                    placeWhole(child, cursor.page, anchorToFile);
-                    cursor.used += child.byteSize;
-                } else {
-                    final PagePlan page = newPage(child, plans);
-                    placeWhole(child, page, anchorToFile);
-                    cursor.page = page;
-                    cursor.used = Math.max(child.byteSize, packBudget); // next sibling starts fresh
-                }
-                continue;
-            }
-            if (cursor.used + child.byteSize <= packBudget) {
-                placeWhole(child, cursor.page, anchorToFile);
-                cursor.used += child.byteSize;
-            } else if (child.byteSize <= packBudget) {
-                // Fits a page of its own: start a fresh page and move the cursor there.
-                final PagePlan page = newPage(child, plans);
-                placeWhole(child, page, anchorToFile);
-                cursor.page = page;
-                cursor.used = child.byteSize;
-            } else {
-                // Too big for any single page: lead a new page with the child's own heading, then
-                // descend into its children on that same page (they will overflow to more pages).
-                final PagePlan page = newPage(child, plans);
-                page.nodes.add(headOnly(child, page, anchorToFile));
-                final PageCursor childCursor = new PageCursor(page);
-                childCursor.used = ownSize(child);
-                planChildren(child, childCursor, plans, anchorToFile);
-                // Continue the outer loop on the last page the descent produced, so a small sibling
-                // after a big chapter can still share that page's leftover room.
-                cursor.page = childCursor.page;
-                cursor.used = childCursor.used;
-            }
-        }
-    }
-
-    private PagePlan newPage(final Node node, final List<PagePlan> plans) {
-        final PagePlan page = new PagePlan(fileNameFor(node, plans));
-        plans.add(page);
-        return page;
-    }
-
-    /**
-     * Whether a node is a catalog section marked for per-child explosion (its own lines contain the
-     * {@code <!-- llms-explode -->} marker emitted from the {@code [llms-explode]} attribute) and it
-     * actually has children to explode.
-     */
-    private static boolean isExplode(final Node node) {
-        if (node.children.isEmpty()) return false;
+    /** Whether a node carries an llms-summary (the sole page-break signal). */
+    private static boolean hasSummary(final Node node) {
         for (final String line : node.lines) {
-            if (line.trim().equals(EXPLODE_MARKER)) return true;
+            if (SUMMARY_MARKER.matcher(line.trim()).matches()) return true;
         }
         return false;
     }
 
-    /**
-     * Whether a node is marked keep-whole (its own lines contain the {@code <!-- llms-keep -->}
-     * marker emitted from the {@code [llms-keep]} attribute). Such a node's entire subtree is emitted
-     * as a single page and is never descended into, even when it exceeds the byte budget.
-     */
-    private static boolean isKeep(final Node node) {
+    /** Whether a node is flagged to permit exceeding the size budget without a lint failure. */
+    static boolean isAllowOversize(final Node node) {
         for (final String line : node.lines) {
-            if (line.trim().equals(KEEP_MARKER)) return true;
+            if (line.trim().equals(ALLOW_OVERSIZE_MARKER)) return true;
         }
         return false;
-    }
-
-    /** Places a node (and its whole subtree) onto a page, recording all its anchors' home. */
-    private void placeWhole(final Node node, final PagePlan page, final Map<String, String> anchorToFile) {
-        page.nodes.add(node);
-        recordAnchors(node, page.fileName, anchorToFile);
-    }
-
-    /**
-     * Returns a shallow copy of {@code node} holding only its own lines (heading + leading content),
-     * with its children dropped, so the node's heading leads its own page while its subsections are
-     * planned separately. Records the node's own anchor on the given page.
-     */
-    private Node headOnly(final Node node, final PagePlan page, final Map<String, String> anchorToFile) {
-        final Node head = new Node(node.level, node.anchor);
-        head.lines.addAll(node.lines);
-        if (node.anchor != null) anchorToFile.put(node.anchor, page.fileName);
-        return head;
-    }
-
-    private void recordAnchors(final Node node, final String fileName,
-                               final Map<String, String> anchorToFile) {
-        if (node.anchor != null) anchorToFile.put(node.anchor, fileName);
-        for (final Node c : node.children) recordAnchors(c, fileName, anchorToFile);
     }
 
     private String fileNameFor(final Node node, final List<PagePlan> plans) {

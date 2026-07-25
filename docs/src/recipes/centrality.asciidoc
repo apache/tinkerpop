@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+[llms-summary="Recipe: There are many measures of centrality which are meant to help identify the most important vertices in a graph."]
 [[centrality]]
 == Centrality
 

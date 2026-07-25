@@ -101,8 +101,10 @@ port_open() {
 # Markdown split (agentdocsspec.com)
 # ---------------------------------------------------------------------------
 # After the Markdown mirror is rendered under target/docs/markdown/, split each rendered book into
-# agent-sized (<=50KB) pages and rewrite intra-book links. Runs MarkdownSplitter from the
-# tinkeradoc-extension classes (built by the asciidoc profile) with asciidoctorj on the classpath.
+# pages driven by llms-summary markers and rewrite intra-book links. Runs MarkdownSplitter from the
+# tinkeradoc-extension classes (built by the asciidoc profile). The split is summary-driven: a
+# section is a page iff it has an llms-summary. --strict fails the build on any page that exceeds
+# the size budget and is not marked allow-oversize, so uncurated/oversized content is surfaced.
 split_markdown() {
   local md_root="target/docs/markdown"
   [ -d "${md_root}" ] || return 0
@@ -111,14 +113,13 @@ split_markdown() {
     echo "WARNING: ${ext_classes} not found; skipping Markdown split."
     return 0
   fi
-  # asciidoctorj jars are only needed for the extension build, not for the splitter (pure Java),
-  # so the extension classes alone suffice on the classpath.
+  # The splitter is pure Java, so the extension classes alone suffice on the classpath.
   local books
   books=$(find "${md_root}" -name index.md 2>/dev/null)
   [ -z "${books}" ] && return 0
-  echo "Splitting Markdown books into agent-sized pages..."
+  echo "Splitting Markdown books into agent-sized pages (summary-driven)..."
   # shellcheck disable=SC2086
-  java -cp "${ext_classes}" org.apache.tinkerpop.tinkeradoc.MarkdownSplitter ${books}
+  java -cp "${ext_classes}" org.apache.tinkerpop.tinkeradoc.MarkdownSplitter --strict ${books}
 
   # Generate the llms.txt discovery index over the split pages (agentdocsspec.com).
   echo "Generating llms.txt discovery index..."

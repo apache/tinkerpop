@@ -16,7 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
-[llms-summary="Guidelines for TinkerPop committers: the Review-then-Commit (RTC) process, commit conventions, branch and merge practices, and committer responsibilities."]
+[llms-summary="Guidelines for TinkerPop committers: the Review-then-Commit (RTC) process, commit conventions, branch and merge practices, and committer responsibilities.",allow-oversize="true"]
 = For Committers
 
 image::business-gremlin.png[width=400]

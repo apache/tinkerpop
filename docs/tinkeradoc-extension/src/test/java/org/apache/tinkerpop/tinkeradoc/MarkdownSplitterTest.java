@@ -30,15 +30,23 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
- * Tests for {@link MarkdownSplitter}: the size-driven, heading-aligned page splitter and its
- * cross-page link rewriting.
+ * Tests for {@link MarkdownSplitter}, which splits a rendered book into pages driven solely by
+ * {@code llms-summary} markers: a section becomes its own page iff it carries a summary. Unsummarized
+ * sections attach to their nearest summarized ancestor's page. There is no size-based splitting; the
+ * byte budget is only a lint, with intentional exceptions flagged {@code allow-oversize}.
  */
 public class MarkdownSplitterTest {
 
+    /** A heading with an anchor, no summary (does NOT start a page). */
     private static String heading(final String id, final int level, final String title) {
         final StringBuilder h = new StringBuilder();
         for (int i = 0; i < level; i++) h.append('#');
         return "<a id=\"" + id + "\"></a>\n" + h + " " + title + "\n";
+    }
+
+    /** A heading with an anchor and an llms-summary marker (starts its own page). */
+    private static String summarized(final String id, final int level, final String title, final String summary) {
+        return heading(id, level, title) + "<!-- llms-summary: " + summary + " -->\n";
     }
 
     private static String filler(final int bytes) {
@@ -51,203 +59,125 @@ public class MarkdownSplitterTest {
         return pages.stream().map(MarkdownSplitter.Page::getFileName).collect(Collectors.toList());
     }
 
+    private static MarkdownSplitter.Page page(final List<MarkdownSplitter.Page> pages, final String name) {
+        return pages.stream().filter(p -> p.getFileName().equals(name)).findFirst()
+                .orElseThrow(() -> new AssertionError("no page named " + name + " in " + fileNames(pages)));
+    }
+
+    // A "book" in rendered Markdown is a flat sequence of level-1 (#) sections: the doctitle first,
+    // then chapters as siblings (AsciiDoc renders a book's doctitle and its level-0 chapters all as
+    // <h1>). The document root (index.md) owns the preamble and the doctitle section's content up to
+    // the first summarized sibling.
+
     @Test
-    public void smallBookStaysSinglePage() {
-        final String md = heading("_io_reference", 1, "IO Reference") + "\nsome intro\n\n"
-                + heading("graphml", 1, "GraphML") + "\nshort content\n";
-        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter(50_000).split(md, "index.md");
+    public void bookWithNoSummariesIsASinglePage() {
+        final String md = "preamble\n\n" + heading("io", 1, "IO Reference") + "\nintro\n\n"
+                + heading("a", 1, "A") + "\ncontent a\n\n"
+                + heading("b", 1, "B") + "\ncontent b\n";
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter().split(md, "index.md");
         assertThat(pages.size(), is(1));
         assertThat(pages.get(0).getFileName(), is("index.md"));
-        assertThat(pages.get(0).getContent(), containsString("# GraphML"));
+        assertThat(pages.get(0).getContent(), containsString("# A"));
+        assertThat(pages.get(0).getContent(), containsString("content b"));
     }
 
     @Test
-    public void oversizedSectionBecomesOwnPage() {
-        final String md = heading("_io_reference", 1, "IO Reference") + "\nintro\n\n"
-                + heading("graphml", 1, "GraphML") + "\nshort\n\n"
-                + heading("graphson", 1, "GraphSON") + "\n" + filler(60_000);
-        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter(50_000).split(md, "index.md");
-        final List<String> names = fileNames(pages);
-        // The big GraphSON chapter must be split off into graphson.md; index keeps the small parts.
-        assertThat(names, hasItem("index.md"));
-        assertThat(names, hasItem("graphson.md"));
-        final MarkdownSplitter.Page index = pages.stream()
-                .filter(p -> p.getFileName().equals("index.md")).findFirst().orElseThrow(AssertionError::new);
-        assertThat(index.getContent(), containsString("# GraphML"));
-        assertThat(index.getContent(), not(containsString(filler(60_000).substring(0, 200))));
-    }
-
-    @Test
-    public void everyDivisiblePageUnderBudget() {
-        // A, B, C each have small children? No — here each is a single leaf heading. B alone is
-        // 60KB of direct content, which is indivisible: it must occupy one page even though that
-        // page exceeds the budget (there is no finer heading to split on). Every OTHER page must
-        // be under budget.
-        final String md = heading("book", 1, "Book") + "\nintro\n\n"
-                + heading("a", 1, "A") + "\n" + filler(40_000)
-                + heading("b", 1, "B") + "\n" + filler(60_000)
-                + heading("c", 1, "C") + "\n" + filler(20_000);
-        final int budget = 50_000;
-        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter(budget).split(md, "index.md");
-        for (final MarkdownSplitter.Page p : pages) {
-            final boolean indivisible = p.getFileName().equals("b.md");
-            if (!indivisible) {
-                assertThat(p.getFileName() + " over budget: " + p.getContent().length(),
-                        p.getContent().length() <= budget, is(true));
-            }
-        }
-        // The indivisible 60KB leaf is isolated on its own page (so it doesn't bloat neighbors).
+    public void eachSummarizedSectionBecomesItsOwnPage() {
+        final String md = "preamble\n\n" + heading("io", 1, "IO Reference") + "\nintro\n\n"
+                + summarized("a", 1, "A", "Section A.") + "\ncontent a\n\n"
+                + summarized("b", 1, "B", "Section B.") + "\ncontent b\n";
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter().split(md, "index.md");
+        assertThat(fileNames(pages), hasItem("index.md"));
+        assertThat(fileNames(pages), hasItem("a.md"));
         assertThat(fileNames(pages), hasItem("b.md"));
+        assertThat(page(pages, "a.md").getContent(), containsString("content a"));
+        assertThat(page(pages, "a.md").getContent(), not(containsString("content b")));
+        // The index holds the preamble + the (unsummarized) doctitle section, not the summarized ones.
+        assertThat(page(pages, "index.md").getContent(), containsString("intro"));
+        assertThat(page(pages, "index.md").getContent(), not(containsString("content a")));
     }
 
     @Test
-    public void renderedPageIncludingPointerStaysUnderBudget() {
-        // Every divisible page's FINAL content (which includes the prepended llms.txt pointer) must
-        // stay within the budget: the splitter reserves room for the pointer when packing.
-        final int budget = 50_000;
-        final StringBuilder md = new StringBuilder(heading("book", 1, "Book") + "\nintro\n\n");
-        // Many medium sections that would pack right up against the budget.
-        for (int i = 0; i < 8; i++) {
-            md.append(heading("sec-" + i, 1, "Section " + i)).append('\n').append(filler(12_000));
-        }
-        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter(budget).split(md.toString(), "index.md");
-        for (final MarkdownSplitter.Page p : pages) {
-            assertThat(p.getFileName() + " (incl pointer) = " + p.getContent().length(),
-                    p.getContent().length() <= budget, is(true));
-            assertThat(p.getContent(), containsString("[llms.txt](/llms.txt)"));
-        }
+    public void unsummarizedChildAttachesToSummarizedAncestorPage() {
+        // Chapter is summarized (own page); its child A1 is not (stays on chapter page); its child A2
+        // is summarized (breaks off).
+        final String md = "preamble\n\n" + heading("io", 1, "IO Reference") + "\nintro\n\n"
+                + summarized("chapter", 1, "Chapter", "A chapter.") + "\nlead\n\n"
+                + heading("a1", 2, "A1") + "\ncontent a1\n\n"
+                + summarized("a2", 2, "A2", "Subsection A2.") + "\ncontent a2\n";
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter().split(md, "index.md");
+        assertThat(fileNames(pages), hasItem("chapter.md"));
+        assertThat(fileNames(pages), hasItem("a2.md"));
+        assertThat(fileNames(pages), not(hasItem("a1.md")));
+        assertThat(page(pages, "chapter.md").getContent(), containsString("## A1"));
+        assertThat(page(pages, "chapter.md").getContent(), containsString("content a1"));
+        assertThat(page(pages, "chapter.md").getContent(), not(containsString("content a2")));
+        assertThat(page(pages, "a2.md").getContent(), containsString("content a2"));
     }
 
     @Test
-    public void indivisibleOversizedLeafIsIsolatedOnOwnPage() {
-        final String md = heading("book", 1, "Book") + "\nintro\n\n"
-                + heading("small", 1, "Small") + "\nshort\n\n"
-                + heading("huge", 1, "Huge") + "\n" + filler(70_000);
-        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter(50_000).split(md, "index.md");
-        final MarkdownSplitter.Page huge = pages.stream()
-                .filter(p -> p.getFileName().equals("huge.md")).findFirst().orElseThrow(AssertionError::new);
-        // The huge leaf page contains only the Huge section, not the small one.
-        assertThat(huge.getContent(), containsString("# Huge"));
-        assertThat(huge.getContent(), not(containsString("# Small")));
+    public void catalogWithPerChildSummariesYieldsOnePagePerChild() {
+        // A "catalog" is simply a summarized parent whose children are each summarized: no special
+        // marker needed — summaries alone drive the per-child split.
+        final String md = "preamble\n\n" + heading("io", 1, "IO Reference") + "\nintro\n\n"
+                + summarized("steps", 1, "Steps", "The catalog.") + "\ncatalog intro\n\n"
+                + summarized("fold-step", 2, "Fold Step", "fold() aggregates.") + "\nfold body\n\n"
+                + summarized("group-step", 2, "Group Step", "group() organizes.") + "\ngroup body\n";
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter().split(md, "index.md");
+        assertThat(fileNames(pages), hasItem("steps.md"));
+        assertThat(fileNames(pages), hasItem("fold-step.md"));
+        assertThat(fileNames(pages), hasItem("group-step.md"));
+        assertThat(page(pages, "fold-step.md").getContent(), containsString("fold body"));
+        assertThat(page(pages, "fold-step.md").getContent(), not(containsString("group body")));
+        assertThat(page(pages, "steps.md").getContent(), containsString("catalog intro"));
     }
 
     @Test
-    public void descendsToChildrenWhenChapterTooBig() {
-        // A chapter (90KB total) that exceeds the budget descends to its h2 children. Greedy packing
-        // keeps pages full: the chapter page leads with the chapter heading + as many whole child
-        // sections as fit; the remainder overflow to further pages. So we get chapter.md (heading +
-        // Section One) and a second page for Section Two — never a mid-section cut.
-        final String md = heading("book", 1, "Book") + "\nintro\n\n"
-                + heading("chapter", 1, "Chapter") + "\nlead-in\n\n"
-                + heading("sec-one", 2, "Section One") + "\n" + filler(45_000)
-                + heading("sec-two", 2, "Section Two") + "\n" + filler(45_000);
-        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter(50_000).split(md, "index.md");
-        final List<String> names = fileNames(pages);
-        assertThat(names, hasItem("chapter.md"));
-        // Section Two overflows to its own page (named from its anchor); each h2 stays whole.
-        assertThat(names, hasItem("sec-two.md"));
-        final MarkdownSplitter.Page chapter = pages.stream()
-                .filter(p -> p.getFileName().equals("chapter.md")).findFirst().orElseThrow(AssertionError::new);
-        assertThat(chapter.getContent(), containsString("# Chapter"));
-        assertThat(chapter.getContent(), containsString("## Section One"));
-        assertThat(chapter.getContent(), not(containsString("## Section Two")));
+    public void keepWholeIsJustAbsenceOfChildSummaries() {
+        // A summarized section whose (large) children are NOT summarized stays one whole page.
+        final String md = "preamble\n\n" + heading("io", 1, "IO Reference") + "\nintro\n\n"
+                + summarized("version-2", 1, "Version 2.0", "GraphSON 2.0.") + "\nversion intro\n\n"
+                + heading("edge", 2, "Edge") + "\n" + filler(30_000)
+                + heading("vertex", 2, "Vertex") + "\n" + filler(30_000);
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter().split(md, "index.md");
+        assertThat(fileNames(pages), hasItem("version-2.md"));
+        assertThat(fileNames(pages), not(hasItem("edge.md")));
+        final MarkdownSplitter.Page v2 = page(pages, "version-2.md");
+        assertThat(v2.getContent(), containsString("## Edge"));
+        assertThat(v2.getContent(), containsString("## Vertex"));
     }
 
     @Test
     public void rewritesCrossPageLinksAndKeepsSamePageBare() {
-        final String md = heading("book", 1, "Book") + "\nintro\n\n"
-                + heading("graphml", 1, "GraphML") + "\nSee [GraphSON](#graphson) and [self](#graphml).\n\n"
-                + heading("graphson", 1, "GraphSON") + "\n" + filler(60_000)
-                + "Back to [GraphML](#graphml).\n";
-        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter(50_000).split(md, "index.md");
-
-        final MarkdownSplitter.Page index = pages.stream()
-                .filter(p -> p.getFileName().equals("index.md")).findFirst().orElseThrow(AssertionError::new);
-        final MarkdownSplitter.Page graphson = pages.stream()
-                .filter(p -> p.getFileName().equals("graphson.md")).findFirst().orElseThrow(AssertionError::new);
-
-        // GraphML lives on index; its link to GraphSON (another page) is rewritten; self-link stays bare.
-        assertThat(index.getContent(), containsString("[GraphSON](graphson.md#graphson)"));
-        assertThat(index.getContent(), containsString("[self](#graphml)"));
-        // GraphSON page links back to GraphML on the index page.
-        assertThat(graphson.getContent(), containsString("[GraphML](index.md#graphml)"));
-    }
-
-    @Test
-    public void explodeMarkerGivesEachChildItsOwnPage() {
-        // A catalog section marked with <!-- llms-explode --> must split each direct child onto its
-        // own page (named from the child anchor), regardless of size — even though all children are
-        // tiny and would otherwise pack onto one page.
-        final String md = heading("book", 1, "Book") + "\nintro\n\n"
-                + heading("graph-traversal-steps", 1, "Graph Traversal Steps") + "\n<!-- llms-explode -->\n\ncatalog intro\n\n"
-                + heading("fold-step", 2, "Fold Step") + "\nThe fold() step.\n\n"
-                + heading("group-step", 2, "Group Step") + "\nThe group() step.\n\n"
-                + heading("count-step", 2, "Count Step") + "\nThe count() step.\n";
-        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter(50_000).split(md, "index.md");
-        final List<String> names = fileNames(pages);
-        // Each step is its own page, plus the catalog head page.
-        assertThat(names, hasItem("graph-traversal-steps.md"));
-        assertThat(names, hasItem("fold-step.md"));
-        assertThat(names, hasItem("group-step.md"));
-        assertThat(names, hasItem("count-step.md"));
-        // The fold page contains only fold, not the others.
-        final MarkdownSplitter.Page fold = pages.stream()
-                .filter(p -> p.getFileName().equals("fold-step.md")).findFirst().orElseThrow(AssertionError::new);
-        assertThat(fold.getContent(), containsString("The fold() step."));
-        assertThat(fold.getContent(), not(containsString("The group() step.")));
-        // The catalog head page keeps its intro but not the steps.
-        final MarkdownSplitter.Page cat = pages.stream()
-                .filter(p -> p.getFileName().equals("graph-traversal-steps.md")).findFirst().orElseThrow(AssertionError::new);
-        assertThat(cat.getContent(), containsString("catalog intro"));
-        assertThat(cat.getContent(), not(containsString("The fold() step.")));
-    }
-
-    @Test
-    public void keepMarkerHoldsWholeSubtreeOnOnePageEvenOverBudget() {
-        // A keep-whole section must stay a single page even when its subtree exceeds the budget,
-        // rather than being descended/fragmented into per-child pages.
-        final String md = heading("book", 1, "Book") + "\nintro\n\n"
-                + heading("version-2", 1, "Version 2.0") + "\n<!-- llms-keep -->\n\nintro\n\n"
-                + heading("edge", 2, "Edge") + "\n" + filler(30_000)
-                + heading("vertex", 2, "Vertex") + "\n" + filler(30_000);
-        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter(50_000).split(md, "index.md");
-        final List<String> names = fileNames(pages);
-        // The whole Version 2.0 subtree is one page; its children did NOT become separate pages.
-        assertThat(names, hasItem("version-2.md"));
-        assertThat(names, not(hasItem("edge.md")));
-        assertThat(names, not(hasItem("vertex.md")));
-        final MarkdownSplitter.Page v2 = pages.stream()
-                .filter(p -> p.getFileName().equals("version-2.md")).findFirst().orElseThrow(AssertionError::new);
-        // Contains both children on the one page, and is (intentionally) over the budget.
-        assertThat(v2.getContent(), containsString("## Edge"));
-        assertThat(v2.getContent(), containsString("## Vertex"));
-        assertThat(v2.getContent().length() > 50_000, is(true));
-    }
-
-    @Test
-    public void hashCommentsInsideCodeFenceAreNotTreatedAsHeadings() {
-        // A code fence containing shell/properties comment lines that begin with '#' must NOT be
-        // parsed as section headings (which would split the page mid-code-block and produce generic
-        // "section.md" file names). The whole fenced block stays with its owning section.
-        final String md = heading("book", 1, "Book") + "\nintro\n\n"
-                + heading("config", 1, "Config") + "\nHere is a config file:\n\n"
-                + "```properties\n# Spark Configuration\nspark.master=local[4]\n# another comment\n"
-                + "spark.executor.memory=1g\n```\n\nAfter the block.\n";
-        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter(50_000).split(md, "index.md");
-        final List<String> names = fileNames(pages);
-        // Only index.md — no page split off a code comment, no generic "section*.md".
-        assertThat(names.stream().noneMatch(n -> n.startsWith("section")), is(true));
-        final String body = pages.get(0).getContent();
-        // The fenced block and its comments remain intact and are not promoted to headings.
-        assertThat(body, containsString("# Spark Configuration"));
-        assertThat(body, containsString("```properties"));
-        assertThat(body, containsString("After the block."));
+        final String md = "preamble\n\n" + heading("io", 1, "IO Reference") + "\nintro\n\n"
+                + summarized("graphml", 1, "GraphML", "GraphML.")
+                + "\nSee [GraphSON](#graphson) and [self](#graphml).\n\n"
+                + summarized("graphson", 1, "GraphSON", "GraphSON.") + "\nBack to [GraphML](#graphml).\n";
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter().split(md, "index.md");
+        assertThat(page(pages, "graphml.md").getContent(), containsString("[GraphSON](graphson.md#graphson)"));
+        assertThat(page(pages, "graphml.md").getContent(), containsString("[self](#graphml)"));
+        assertThat(page(pages, "graphson.md").getContent(), containsString("[GraphML](graphml.md#graphml)"));
     }
 
     @Test
     public void unknownAnchorsLeftUnchanged() {
-        final String md = heading("book", 1, "Book") + "\nSee [external](#not-a-heading).\n";
-        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter(50_000).split(md, "index.md");
+        final String md = "preamble\n\n" + heading("io", 1, "IO Reference")
+                + "\nSee [external](#not-a-heading).\n";
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter().split(md, "index.md");
         assertThat(pages.get(0).getContent(), containsString("[external](#not-a-heading)"));
+    }
+
+    @Test
+    public void hashCommentsInsideCodeFenceAreNotTreatedAsHeadings() {
+        final String md = "preamble\n\n" + heading("io", 1, "IO Reference") + "\nintro\n\n"
+                + summarized("config", 1, "Config", "Config file.") + "\nHere is a config file:\n\n"
+                + "```properties\n# Spark Configuration\nspark.master=local[4]\n# another comment\n"
+                + "spark.executor.memory=1g\n```\n\nAfter the block.\n";
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter().split(md, "index.md");
+        assertThat(fileNames(pages).stream().noneMatch(n -> n.startsWith("section")), is(true));
+        final String body = page(pages, "config.md").getContent();
+        assertThat(body, containsString("# Spark Configuration"));
+        assertThat(body, containsString("```properties"));
+        assertThat(body, containsString("After the block."));
     }
 }

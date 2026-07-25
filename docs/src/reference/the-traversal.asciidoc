@@ -390,7 +390,7 @@ Spawn steps, which actually yield a traversal, typically match the names of exis
 * `V()` - Reads vertices from the graph to start the traversal (<<graph-step, example>>).
 
 [[graph-traversal-steps]]
-[llms-summary="Reference catalog of the individual Gremlin steps (map, filter, sideEffect, branch, and more) with syntax and examples for each.",llms-explode=""]
+[llms-summary="Reference catalog of the individual Gremlin steps (map, filter, sideEffect, branch, and more) with syntax and examples for each.""]
 == Graph Traversal Steps
 
 Gremlin steps are chained together to produce the actual traversal and are triggered by way of <<start-steps,start steps>>

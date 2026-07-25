@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[compilers]]
+[llms-summary="Gremlin compilers translate other query languages into Gremlin bytecode; covers SPARQL-Gremlin for querying graphs with SPARQL."]
 = Gremlin Compilers
 
 There are many languages built to query data. SQL is typically used to query relational data. There is SPARQL for RDF
