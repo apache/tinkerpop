@@ -2934,12 +2934,24 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[loops-step]]
 === Loops Step
 
-The `loops()`-step (*map*) extracts the number of times the `Traverser` has gone through the current loop.
+The `loops()`-step (*map*) returns the number of times the `Traverser` has completed the current
+`<<repeat-step,repeat()>>` loop. It returns `0` before the first iteration and counts *completed* loop iterations
+(i.e. it is 0-based), incrementing after each pass through the repeat-traversal.
 
 [gremlin-groovy,modern]
 ----
 g.V().emit(__.has("name", "marko").or().loops().is(2)).repeat(__.out()).values("name")
 ----
+
+In the example above, `emit()` is placed *before* `<<repeat-step,repeat()>>`, so its predicate is evaluated on the
+traversers prior to entering the repeat-traversal on every pass, including the zeroth one where `loops()` is still
+`0`. On that initial pass the predicate matches "marko" (via the `has()` check), which is why "marko" appears in the
+output before the loop has executed. The predicate also matches any traverser that has completed two loops
+(`loops().is(2)`), which emits "ripple" and "lop" — the vertices reached after two `out()` hops. The `or()` with no
+arguments is an infix disjunction that joins the preceding `has()` traversal with the following `loops().is(2)`
+traversal (see <<or-step,`or()`>>). Because the traversal declares neither `times()` nor `until()`, the `repeat()`
+terminates on its own once `out()` produces no further traversers (i.e. when a sink vertex with no outgoing edges is
+reached).
 
 *Additional References*
 
