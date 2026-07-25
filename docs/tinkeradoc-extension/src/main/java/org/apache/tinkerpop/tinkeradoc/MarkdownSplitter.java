@@ -59,6 +59,8 @@ class MarkdownSplitter {
     private static final Pattern HEADING = Pattern.compile("^(#{1,6}) +(.*)$");
     // Intra-document links: [label](#anchor). Capture label and anchor separately.
     private static final Pattern INTRA_LINK = Pattern.compile("\\]\\(#([^)]+)\\)");
+    // Marker MarkdownConverter emits from [llms-explode]: split this section's children per-page.
+    private static final String EXPLODE_MARKER = "<!-- llms-explode -->";
 
     private static final Logger LOG = Logger.getLogger(MarkdownSplitter.class.getName());
 
@@ -357,6 +359,21 @@ class MarkdownSplitter {
     private void planChildren(final Node parent, final PageCursor cursor,
                               final List<PagePlan> plans, final Map<String, String> anchorToFile) {
         for (final Node child : parent.children) {
+            if (isExplode(child)) {
+                // Catalog section (e.g. the traversal step reference): give the section's own
+                // heading/preamble its own page, then put EACH direct subsection on its own page so
+                // every entry (each step) is individually named and addressable in llms.txt.
+                final PagePlan page = newPage(child, plans);
+                page.nodes.add(headOnly(child, page, anchorToFile));
+                for (final Node grandchild : child.children) {
+                    final PagePlan gcPage = newPage(grandchild, plans);
+                    placeWhole(grandchild, gcPage, anchorToFile);
+                }
+                // Resume packing subsequent siblings on a fresh cursor (the catalog pages are done).
+                cursor.page = page;
+                cursor.used = packBudget; // force the next sibling onto its own page/flow
+                continue;
+            }
             if (cursor.used + child.byteSize <= packBudget) {
                 placeWhole(child, cursor.page, anchorToFile);
                 cursor.used += child.byteSize;
@@ -386,6 +403,19 @@ class MarkdownSplitter {
         final PagePlan page = new PagePlan(fileNameFor(node, plans));
         plans.add(page);
         return page;
+    }
+
+    /**
+     * Whether a node is a catalog section marked for per-child explosion (its own lines contain the
+     * {@code <!-- llms-explode -->} marker emitted from the {@code [llms-explode]} attribute) and it
+     * actually has children to explode.
+     */
+    private static boolean isExplode(final Node node) {
+        if (node.children.isEmpty()) return false;
+        for (final String line : node.lines) {
+            if (line.trim().equals(EXPLODE_MARKER)) return true;
+        }
+        return false;
     }
 
     /** Places a node (and its whole subtree) onto a page, recording all its anchors' home. */

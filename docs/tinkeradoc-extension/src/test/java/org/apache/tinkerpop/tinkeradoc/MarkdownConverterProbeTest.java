@@ -108,6 +108,21 @@ public class MarkdownConverterProbeTest {
     }
 
     @Test
+    public void llmsExplodeAttributeBecomesHiddenMarkerNotBodyText() {
+        // [llms-explode] on a catalog section emits a hidden <!-- llms-explode --> marker for the
+        // splitter, and must not appear as visible body text.
+        final String md = toMarkdown("= T\n\n[llms-explode=\"\"]\n== Steps\n\nCatalog intro.\n\n=== A Step\n\nBody.\n");
+        assertThat(md, containsString("<!-- llms-explode -->"));
+        assertThat(md, containsString("Catalog intro."));
+    }
+
+    @Test
+    public void noLlmsExplodeMarkerWhenAttributeAbsent() {
+        final String md = toMarkdown("= T\n\n== Steps\n\nCatalog intro.\n");
+        assertThat(md, not(containsString("llms-explode")));
+    }
+
+    @Test
     public void emitsExplicitAnchorFromSectionId() {
         // An explicit AsciiDoc id must surface as an HTML anchor immediately before the heading so
         // xrefs of the form [label](#the-id) resolve.

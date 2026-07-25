@@ -174,6 +174,35 @@ public class MarkdownSplitterTest {
     }
 
     @Test
+    public void explodeMarkerGivesEachChildItsOwnPage() {
+        // A catalog section marked with <!-- llms-explode --> must split each direct child onto its
+        // own page (named from the child anchor), regardless of size — even though all children are
+        // tiny and would otherwise pack onto one page.
+        final String md = heading("book", 1, "Book") + "\nintro\n\n"
+                + heading("graph-traversal-steps", 1, "Graph Traversal Steps") + "\n<!-- llms-explode -->\n\ncatalog intro\n\n"
+                + heading("fold-step", 2, "Fold Step") + "\nThe fold() step.\n\n"
+                + heading("group-step", 2, "Group Step") + "\nThe group() step.\n\n"
+                + heading("count-step", 2, "Count Step") + "\nThe count() step.\n";
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter(50_000).split(md, "index.md");
+        final List<String> names = fileNames(pages);
+        // Each step is its own page, plus the catalog head page.
+        assertThat(names, hasItem("graph-traversal-steps.md"));
+        assertThat(names, hasItem("fold-step.md"));
+        assertThat(names, hasItem("group-step.md"));
+        assertThat(names, hasItem("count-step.md"));
+        // The fold page contains only fold, not the others.
+        final MarkdownSplitter.Page fold = pages.stream()
+                .filter(p -> p.getFileName().equals("fold-step.md")).findFirst().orElseThrow(AssertionError::new);
+        assertThat(fold.getContent(), containsString("The fold() step."));
+        assertThat(fold.getContent(), not(containsString("The group() step.")));
+        // The catalog head page keeps its intro but not the steps.
+        final MarkdownSplitter.Page cat = pages.stream()
+                .filter(p -> p.getFileName().equals("graph-traversal-steps.md")).findFirst().orElseThrow(AssertionError::new);
+        assertThat(cat.getContent(), containsString("catalog intro"));
+        assertThat(cat.getContent(), not(containsString("The fold() step.")));
+    }
+
+    @Test
     public void hashCommentsInsideCodeFenceAreNotTreatedAsHeadings() {
         // A code fence containing shell/properties comment lines that begin with '#' must NOT be
         // parsed as section headings (which would split the page mid-code-block and produce generic

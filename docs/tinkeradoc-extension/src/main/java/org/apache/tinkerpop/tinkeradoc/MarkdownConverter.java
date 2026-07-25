@@ -54,6 +54,13 @@ public class MarkdownConverter extends StringConverter {
      */
     static final String LLMS_SUMMARY_ATTR = "llms-summary";
 
+    /**
+     * Section attribute ({@code [llms-explode]}) marking a catalog section whose direct subsections
+     * should each become their own split page. Emitted as a hidden {@code <!-- llms-explode -->}
+     * marker for {@link MarkdownSplitter}; never rendered into the page body.
+     */
+    static final String LLMS_EXPLODE_ATTR = "llms-explode";
+
     public MarkdownConverter(final String backend, final Map<String, Object> opts) {
         super(backend, opts);
     }
@@ -200,8 +207,24 @@ public class MarkdownConverter extends StringConverter {
         appendAnchor(sb, section.getId());
         sb.append(hashes).append(' ').append(section.getTitle()).append("\n\n");
         appendLlmsSummary(sb, section.getAttribute(LLMS_SUMMARY_ATTR));
+        appendExplodeMarker(sb, section.getAttribute(LLMS_EXPLODE_ATTR));
         sb.append(section.getContent());
         return sb.toString();
+    }
+
+    /**
+     * Emits a hidden {@code <!-- llms-explode -->} marker when a section carries the
+     * {@code [llms-explode]} attribute. The marker tells {@link MarkdownSplitter} to give each direct
+     * subsection of this section its own page (rather than size-packing them), which is what turns a
+     * flat catalog such as the traversal step reference into one page per step. Invisible in rendered
+     * output, like the summary comment.
+     */
+    private static void appendExplodeMarker(final StringBuilder sb, final Object explode) {
+        if (explode == null) return;
+        // Any non-empty/non-"false" value enables it; the bare [llms-explode] form yields "".
+        final String v = explode.toString().trim();
+        if (v.equalsIgnoreCase("false")) return;
+        sb.append("<!-- llms-explode -->\n\n");
     }
 
     /** Emits {@code <a id="..."></a>} on its own line when the node has a non-empty id. */
