@@ -5265,8 +5265,11 @@ user-supplied identifiers which can be any Java object. It is this last feature 
 TinkerPop-enabled graphs have complex identifier types and TinkerGraph's ability to consume those makes it a perfect
 host for an incoming subgraph. However care needs to be taken when using the elements of the TinkerGraph subgraph.
 The original graph's identifiers may be preserved, but the elements of the graph are now TinkerGraph objects like,
-`TinkerVertex` and `TinkerEdge`. As a result, they can not be used directly in Gremlin running against the original
-graph. For example, the following traversal would likely return an error:
+`TinkerVertex` and `TinkerEdge`. Whether these elements can be used directly in Gremlin running against the original
+graph depends on the original graph's implementation. When the original graph is also a TinkerGraph (as in the modern
+graph example shown here), the reference resolves successfully because TinkerGraph looks up vertices by their
+identifier, so the following traversal returns the expected result. When the original graph is a different
+implementation, it may not recognize a foreign `TinkerVertex` and could return an error:
 
 [source,text]
 ----
@@ -5275,8 +5278,9 @@ List<Vertex> vertices = g.V(v).out().toList(); <2>
 ----
 
 <1> Here "sg" is a reference to a TinkerGraph subgraph and "v" is a `TinkerVertex`.
-<2> The `g.V(v)` has the potential to fail as "g" is the original `Graph` instance and not a TinkerGraph - it could
-reject the `TinkerVertex` instance as it will not recognize it.
+<2> The outcome of `g.V(v)` depends on the implementation of "g", the original `Graph` instance. If "g" is a
+TinkerGraph, it resolves the reference by its identifier and the traversal succeeds. If "g" is a different
+implementation, it may reject the `TinkerVertex` instance as it will not recognize it.
 
 It is safer to wrap the `TinkerVertex` in a `ReferenceVertex` or simply reference the `id()` as follows:
 
