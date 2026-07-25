@@ -101,6 +101,7 @@ and it could be different (or change) from server to server. When building appli
 mime type is made explicit on requests to avoid breaking changes or unexpected results.
 
 [[graphson-1d0]]
+[llms-summary="GraphSON 1.0: the original format, with per-type sample encodings for graph structure and request/response messages.",llms-keep=""]
 == Version 1.0
 
 Version 1.0 of GraphSON was released with TinkerPop 3.0.0. It is referred to by the following mime types:
@@ -798,7 +799,7 @@ The following `ResponseMessage` is a typical example of the typical successful r
 ----
 
 [[graphson-2d0]]
-[llms-summary="GraphSON 2.0: the type-embedding format introduced in TinkerPop 3.2.2, with per-type sample encodings for graph structure and request/response messages."]
+[llms-summary="GraphSON 2.0: the type-embedding format introduced in TinkerPop 3.2.2, with per-type sample encodings for graph structure and request/response messages.",llms-keep=""]
 == Version 2.0
 
 Version 2.0 of GraphSON was first introduced on TinkerPop 3.2.2. It was designed to be less tied to
@@ -3515,7 +3516,7 @@ The following example is a `ZoneOffset` of three hours, six minutes, and nine se
 ----
 
 [[graphson-3d0]]
-[llms-summary="GraphSON 3.0: the current format (TinkerPop 3.3.0+, application/vnd.gremlin-v3.0+json), with per-type sample encodings for graph structure and request/response messages."]
+[llms-summary="GraphSON 3.0: the current format (TinkerPop 3.3.0+, application/vnd.gremlin-v3.0+json), with per-type sample encodings for graph structure and request/response messages.",llms-keep=""]
 == Version 3.0
 
 Version 3.0 of GraphSON was first introduced on TinkerPop 3.3.0 and is represented by the `application/vnd.gremlin-v3.0+json`

@@ -61,6 +61,13 @@ public class MarkdownConverter extends StringConverter {
      */
     static final String LLMS_EXPLODE_ATTR = "llms-explode";
 
+    /**
+     * Section attribute ({@code [llms-keep]}) marking a section whose whole subtree must stay on one
+     * split page even if it exceeds the size budget. Emitted as a hidden {@code <!-- llms-keep -->}
+     * marker for {@link MarkdownSplitter}; never rendered into the page body.
+     */
+    static final String LLMS_KEEP_ATTR = "llms-keep";
+
     public MarkdownConverter(final String backend, final Map<String, Object> opts) {
         super(backend, opts);
     }
@@ -208,8 +215,22 @@ public class MarkdownConverter extends StringConverter {
         sb.append(hashes).append(' ').append(section.getTitle()).append("\n\n");
         appendLlmsSummary(sb, section.getAttribute(LLMS_SUMMARY_ATTR));
         appendExplodeMarker(sb, section.getAttribute(LLMS_EXPLODE_ATTR));
+        appendKeepMarker(sb, section.getAttribute(LLMS_KEEP_ATTR));
         sb.append(section.getContent());
         return sb.toString();
+    }
+
+    /**
+     * Emits a hidden {@code <!-- llms-keep -->} marker when a section carries the {@code [llms-keep]}
+     * attribute, telling {@link MarkdownSplitter} to keep this section's whole subtree on a single
+     * page even if it exceeds the size budget (used e.g. to keep each GraphSON version intact).
+     * Invisible in rendered output.
+     */
+    private static void appendKeepMarker(final StringBuilder sb, final Object keep) {
+        if (keep == null) return;
+        final String v = keep.toString().trim();
+        if (v.equalsIgnoreCase("false")) return;
+        sb.append("<!-- llms-keep -->\n\n");
     }
 
     /**

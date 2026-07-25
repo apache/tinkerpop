@@ -203,6 +203,28 @@ public class MarkdownSplitterTest {
     }
 
     @Test
+    public void keepMarkerHoldsWholeSubtreeOnOnePageEvenOverBudget() {
+        // A keep-whole section must stay a single page even when its subtree exceeds the budget,
+        // rather than being descended/fragmented into per-child pages.
+        final String md = heading("book", 1, "Book") + "\nintro\n\n"
+                + heading("version-2", 1, "Version 2.0") + "\n<!-- llms-keep -->\n\nintro\n\n"
+                + heading("edge", 2, "Edge") + "\n" + filler(30_000)
+                + heading("vertex", 2, "Vertex") + "\n" + filler(30_000);
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter(50_000).split(md, "index.md");
+        final List<String> names = fileNames(pages);
+        // The whole Version 2.0 subtree is one page; its children did NOT become separate pages.
+        assertThat(names, hasItem("version-2.md"));
+        assertThat(names, not(hasItem("edge.md")));
+        assertThat(names, not(hasItem("vertex.md")));
+        final MarkdownSplitter.Page v2 = pages.stream()
+                .filter(p -> p.getFileName().equals("version-2.md")).findFirst().orElseThrow(AssertionError::new);
+        // Contains both children on the one page, and is (intentionally) over the budget.
+        assertThat(v2.getContent(), containsString("## Edge"));
+        assertThat(v2.getContent(), containsString("## Vertex"));
+        assertThat(v2.getContent().length() > 50_000, is(true));
+    }
+
+    @Test
     public void hashCommentsInsideCodeFenceAreNotTreatedAsHeadings() {
         // A code fence containing shell/properties comment lines that begin with '#' must NOT be
         // parsed as section headings (which would split the page mid-code-block and produce generic

@@ -123,6 +123,13 @@ public class MarkdownConverterProbeTest {
     }
 
     @Test
+    public void llmsKeepAttributeBecomesHiddenMarkerNotBodyText() {
+        final String md = toMarkdown("= T\n\n[llms-keep=\"\"]\n== Version 2.0\n\nVersion body.\n");
+        assertThat(md, containsString("<!-- llms-keep -->"));
+        assertThat(md, containsString("Version body."));
+    }
+
+    @Test
     public void emitsExplicitAnchorFromSectionId() {
         // An explicit AsciiDoc id must surface as an HTML anchor immediately before the heading so
         // xrefs of the form [label](#the-id) resolve.

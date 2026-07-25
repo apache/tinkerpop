@@ -61,6 +61,8 @@ class MarkdownSplitter {
     private static final Pattern INTRA_LINK = Pattern.compile("\\]\\(#([^)]+)\\)");
     // Marker MarkdownConverter emits from [llms-explode]: split this section's children per-page.
     private static final String EXPLODE_MARKER = "<!-- llms-explode -->";
+    // Marker MarkdownConverter emits from [llms-keep]: keep this section's whole subtree on one page.
+    private static final String KEEP_MARKER = "<!-- llms-keep -->";
 
     private static final Logger LOG = Logger.getLogger(MarkdownSplitter.class.getName());
 
@@ -374,6 +376,21 @@ class MarkdownSplitter {
                 cursor.used = packBudget; // force the next sibling onto its own page/flow
                 continue;
             }
+            if (isKeep(child)) {
+                // Keep-whole section (e.g. a GraphSON version): emit the entire subtree as one page,
+                // never descending, even if it exceeds the budget. Use it as-is when it fits the
+                // current page's remaining room; otherwise give it its own page.
+                if (cursor.used + child.byteSize <= packBudget) {
+                    placeWhole(child, cursor.page, anchorToFile);
+                    cursor.used += child.byteSize;
+                } else {
+                    final PagePlan page = newPage(child, plans);
+                    placeWhole(child, page, anchorToFile);
+                    cursor.page = page;
+                    cursor.used = Math.max(child.byteSize, packBudget); // next sibling starts fresh
+                }
+                continue;
+            }
             if (cursor.used + child.byteSize <= packBudget) {
                 placeWhole(child, cursor.page, anchorToFile);
                 cursor.used += child.byteSize;
@@ -414,6 +431,18 @@ class MarkdownSplitter {
         if (node.children.isEmpty()) return false;
         for (final String line : node.lines) {
             if (line.trim().equals(EXPLODE_MARKER)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Whether a node is marked keep-whole (its own lines contain the {@code <!-- llms-keep -->}
+     * marker emitted from the {@code [llms-keep]} attribute). Such a node's entire subtree is emitted
+     * as a single page and is never descended into, even when it exceeds the byte budget.
+     */
+    private static boolean isKeep(final Node node) {
+        for (final String line : node.lines) {
+            if (line.trim().equals(KEEP_MARKER)) return true;
         }
         return false;
     }
