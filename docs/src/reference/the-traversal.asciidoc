@@ -1823,8 +1823,8 @@ g.V().group().by('age').by('name') <1>
 g.V().group().by('name').by('age') <2>
 ----
 
-<1> The "age" property is not <<by-step,productive>> for all vertices and therefore those keys are filtered.
-<2> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered.
+<1> The "age" property is not <<by-step,productive>> for all vertices, so those vertices are excluded from the result map entirely (no key is produced for them). Compare with the following example, where a non-productive value-projection instead retains the key with an empty list.
+<2> The "age" property is not <<by-step,productive>> for all vertices; those vertices still appear as keys (since "name" is productive for all) but their value lists are empty because no age value exists to collect.
 
 
 *Additional References*
