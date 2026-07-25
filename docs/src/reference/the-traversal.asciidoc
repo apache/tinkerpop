@@ -5244,13 +5244,29 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 === Values Step
 
 The `values()`-step (*map*) extracts the values of properties from an `Element` in the traversal stream.
+When called with one or more property keys it returns the values of just those properties, and when
+called with no arguments it returns the values of every property on the element. A vertex property may
+itself be multi-valued and may carry meta-properties, and those two cases produce results that are easy
+to confuse. The examples below use the "TinkerPop Crew" toy graph, whose vertex `1` (marko) has a
+multi-valued `location` property, to illustrate the difference.
 
 [gremlin-groovy,theCrew]
 ----
-g.V(1).values()
-g.V(1).values('location')
-g.V(1).properties('location').values()
+g.V(1).values()                          <1>
+g.V(1).values('location')                <2>
+g.V(1).properties('location').values()   <3>
 ----
+
+<1> With no arguments, `values()` emits every property value on the vertex across all of its property
+keys. Vertex `1` therefore yields its single `name` value together with each of its `location` values.
+<2> Supplying a property key restricts the output to the values of that property. Because vertex `1` has
+a multi-valued `location`, four city-name `String` values are returned.
+<3> `properties('location')` first selects the `location` properties themselves, so the following
+`values()` extracts their meta-property values, the `startTime` and `endTime` years. These are `Integer`
+values and are distinct from the city-name `String` values produced by `values('location')` in the
+previous line.
+
+The order in which property values are returned is not guaranteed.
 
 *Additional References*
 
