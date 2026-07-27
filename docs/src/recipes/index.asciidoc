@@ -25,7 +25,7 @@ image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
 
-[llms-summary="A collection of practical Gremlin traversal patterns and solutions to common graph problems, with runnable examples."]
+[llms-summary="A collection of practical Gremlin traversal patterns and solutions to common graph problems, with runnable examples.",allow-oversize="true"]
 = Recipes
 
 image:gremlin-chef.png[width=120,float=left] All programming languages tend to have

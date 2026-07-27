@@ -5378,6 +5378,7 @@ location. Please see the <<io-step,documentation>> for `io()`-step for more comp
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#write()++[`write()`]
 
+[llms-summary="A note on predicates used in Gremlin traversals, including standard and text predicates."]
 [[a-note-on-predicates]]
 == A Note on Predicates
 
@@ -5459,6 +5460,7 @@ g.V().as('a').both().both().as('b').count()
 g.V().as('a').both().both().as('b').where('a',neq('b')).count()
 ----
 
+[llms-summary="A note on maps in Gremlin, including differences in behavior between embedded and remote contexts."]
 [[a-note-on-maps]]
 == A Note on Maps
 
@@ -5532,6 +5534,7 @@ g.V().hasLabel('person').both().group().by(constant(id))
 g.V().hasLabel('person').both().group().by('age').select(constant(32))
 ----
 
+[llms-summary="A note on barrier steps in Gremlin, including collecting, reducing, and supplying barriers."]
 [[a-note-on-barrier-steps]]
 == A Note on Barrier Steps
 
@@ -5558,6 +5561,7 @@ possible at the current, local vertex. What it can't compute without referencing
 into a barrier collection. When there are no more traversers at the local vertex, the barriered traversers are the
 messages that are propagated to remote vertices for further processing.
 
+[llms-summary="A note on scopes in Gremlin, including local and global scope usage."]
 [[a-note-on-scopes]]
 == A Note on Scopes
 
@@ -5615,6 +5619,7 @@ g.V().fold().local(unfold().count())
 g.V().fold().count(local)
 ----
 
+[llms-summary="A note on lambdas in Gremlin, including their usage, limitations, and alternatives."]
 [[a-note-on-lambdas]]
 == A Note On Lambdas
 
@@ -5659,7 +5664,7 @@ g.V().out().out().path().by('name').
 <2> The length-3 paths have their objects transformed by a lambda-less step and a traversal lambda. (*good*)
 
 [[traversalstrategy]]
-[llms-summary="How TraversalStrategy implementations analyze and rewrite traversals at compile time (decoration, optimization, finalization, verification) and how to author custom strategies."]
+[llms-summary="How TraversalStrategy implementations analyze and rewrite traversals at compile time (decoration, optimization, finalization, verification) and how to author custom strategies.",allow-oversize="true"]
 == TraversalStrategy
 
 image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` analyzes a `Traversal` and, if the traversal
