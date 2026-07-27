@@ -113,6 +113,16 @@ public class DotNetTranslatorTest {
     }
 
     @Test
+    public void shouldTranslateFloatingPointLiterals() {
+        // a float needs an explicit suffix so it is not read back as a double, while a double
+        // is the default type for a bare decimal literal in C# and needs no suffix
+        assertEquals("g.Inject(0.5f)",
+                translator.translate(g.inject(0.5f).asAdmin().getBytecode()).getScript());
+        assertEquals("g.Inject(0.5)",
+                translator.translate(g.inject(0.5d).asAdmin().getBytecode()).getScript());
+    }
+
+    @Test
     public void shouldTranslateGroup() {
         final String script = translator.translate(g.V().group("x").group().by("name").asAdmin().getBytecode()).getScript();
         assertEquals("g.V().Group(\"x\").Group<object,object>().By(\"name\")", script);

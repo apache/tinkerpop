@@ -1540,7 +1540,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_injectX1_3lX_injectX100_300X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(1,3).Inject(100,300)}}, 
                {"g_injectXbigintBoundaryValuesX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"],p["xx2"],p["xx3"])}}, 
                {"g_injectXpoint5X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(0.5)}}, 
-               {"g_injectXpoint5fX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(0.5)}}, 
+               {"g_injectXpoint5fX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(0.5f)}}, 
                {"g_injectXpoint5dX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(0.5)}}, 
                {"g_injectX1to5X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(new List<object> {1, 2, 3, 4, 5})}}, 
                {"g_injectXaTocX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(new List<object> {"a", "b", "c"})}}, 

@@ -60,12 +60,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         /// <summary>
         /// The GLV suite does not test against a graph that has null property values enabled.
         /// </summary>
-        NullPropertyValuesNotSupportedOnTestGraph,
-
-        /// <summary>
-        /// The translator does not preserve the numeric type of a float literal, so a value such as
-        /// <c>.5f</c> is emitted as a bare <c>0.5</c> and read back as a <c>double</c> rather than a <c>float</c>.
-        /// </summary>
-        FloatLiteralTypeNotPreserved
+        NullPropertyValuesNotSupportedOnTestGraph
     }
 }

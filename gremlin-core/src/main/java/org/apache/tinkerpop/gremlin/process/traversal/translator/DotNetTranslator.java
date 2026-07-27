@@ -197,6 +197,10 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                     return (o instanceof Float ? "Single" : "Double") + ".PositiveInfinity";
                 if (NumberHelper.isNegativeInfinity(o))
                     return (o instanceof Float ? "Single" : "Double") + ".NegativeInfinity";
+                // a bare decimal literal is a double in C#, so a float needs an explicit suffix to
+                // preserve its type through translation
+                if (o instanceof Float)
+                    return o + "f";
             }
             return o.toString();
         }
