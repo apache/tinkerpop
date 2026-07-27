@@ -52,8 +52,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {"g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX", IgnoreReason.SubgraphStepNotSupported},
                 {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported},
                 {"g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX", IgnoreReason.NullKeysInMapNotSupported},
-                {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX_byXnameX", IgnoreReason.NullKeysInMapNotSupported},
-                {"g_injectXpoint5fX", IgnoreReason.FloatLiteralTypeNotPreserved}
+                {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX_byXnameX", IgnoreReason.NullKeysInMapNotSupported}
             };
 
         private static class Keywords
