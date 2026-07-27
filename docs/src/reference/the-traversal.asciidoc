@@ -1311,8 +1311,23 @@ g.V().hasLabel('person').outE('created').count().map {it.get() * 10}.path() <2>
 <1> `count()`-step is a <<a-note-on-barrier-steps,reducing barrier step>> meaning that all of the previous traversers are folded into a new traverser.
 <2> The path of the traverser emanating from `count()` starts at `count()`.
 
-IMPORTANT: `count(local)` counts the current, local object (not the objects in the traversal stream). This works for
-`Collection`- and `Map`-type objects. For any other object, a count of 1 is returned.
+The `count(local)`-step counts the current, local object rather than the objects in the traversal stream. The
+value it returns depends on the type of that object: for a `Collection` it returns the number of elements, for a
+`Map` it returns the number of entries, and for a <<path-data-structure,`Path`>> it returns the number of objects
+in the path. For any other object, a count of `1` is returned.
+
+[gremlin-groovy,modern]
+----
+g.V().fold().count(local)               <1>
+g.V().group().by(label).count(local)    <2>
+g.V(1).out().path().count(local)        <3>
+g.V(1).count(local)                     <4>
+----
+
+<1> <<fold-step,`fold()`>> gathers all vertices into a single `Collection`, so `count(local)` returns the number of elements in that list.
+<2> <<group-step,`group()`>> produces a `Map` keyed by vertex label, so `count(local)` returns the number of entries in the map (one per distinct label).
+<3> <<path-step,`path()`>> emits a `Path` for each traverser, so `count(local)` returns the number of objects contained in each path.
+<4> A single vertex is neither a `Collection`, a `Map`, nor a `Path`, so `count(local)` returns `1`.
 
 *Additional References*
 
