@@ -74,6 +74,7 @@ image::gremlin-variant-architecture.png[width=650]
 The following sections describe each language variant and driver that is officially TinkerPop a part of the project,
 providing more detailed information about usage, configuration and known limitations.
 
+[llms-summary="Using Gremlin from Go: installing gremlin-go, building traversals, Go syntax differences, and connecting to a remote Gremlin Server."]
 [[gremlin-go]]
 == Gremlin-Go
 
@@ -602,6 +603,7 @@ go run basic_gremlin.go
 go run modern_traversals.go
 ----
 
+[llms-summary="Using Gremlin from Groovy: installing gremlinpython, building traversals, Pythonic syntax differences, and connecting to a remote Gremlin Server."]
 [[gremlin-groovy]]
 == Gremlin-Groovy
 
@@ -2023,6 +2025,7 @@ node basic-gremlin.js
 node modern-traversals.js
 ----
 
+[llms-summary="Using Gremlin from .NET: installing gremlinpython, building traversals, Pythonic syntax differences, and connecting to a remote Gremlin Server."]
 anchor:gremlin-DotNet[]
 [[gremlin-dotnet]]
 == Gremlin.Net
