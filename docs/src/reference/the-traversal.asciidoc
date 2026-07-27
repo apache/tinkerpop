@@ -3601,8 +3601,11 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 === Product Step
 
 The `product()`-step (*map*) calculates the cartesian product between the incoming list traverser and the provided list
-argument. This step only expects list data (array or Iterable) and will throw an `IllegalArgumentException` if any
-other type is encountered (including `null`).
+argument. The result is returned as a `List` in which each element is itself a two-element `List` pairing one item from
+the incoming list with one item from the argument list, so element order and duplicates are preserved. This step only
+expects list data (array or Iterable) as input and will throw an `IllegalArgumentException` if any other type is
+encountered (including `null`). A `Map` is not accepted and will also throw an `IllegalArgumentException`, as it is
+neither an array nor an `Iterable`.
 
 [gremlin-groovy,modern]
 ----
