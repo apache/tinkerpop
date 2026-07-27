@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +63,8 @@ class MarkdownSplitter {
     private static final Pattern INTRA_LINK = Pattern.compile("\\]\\(#([^)]+)\\)");
     // The sole page-break signal: the hidden marker MarkdownConverter emits from [llms-summary="..."].
     private static final Pattern SUMMARY_MARKER = Pattern.compile("^<!-- llms-summary: .* -->$");
+    // The same marker, capturing the summary text for rendering into parent table-of-contents entries.
+    private static final Pattern SUMMARY_TEXT = Pattern.compile("^<!-- llms-summary: (.*) -->$");
     // Marker MarkdownConverter emits from allow-oversize="true": this page may exceed the budget.
     private static final String ALLOW_OVERSIZE_MARKER = "<!-- llms-allow-oversize -->";
 
@@ -234,16 +237,18 @@ class MarkdownSplitter {
         }
 
         final Map<String, String> anchorToFile = new LinkedHashMap<>();
+        final Map<Node, String> nodeToFile = new IdentityHashMap<>();
         final List<PagePlan> plans = new ArrayList<>();
         final PagePlan index = new PagePlan(indexFileName, root);
         plans.add(index);
+        nodeToFile.put(root, index.fileName);
         recordAnchorsUntilBreak(root, index.fileName, anchorToFile);
-        planBreaks(root, plans, anchorToFile);
+        planBreaks(root, plans, anchorToFile, nodeToFile);
 
         final List<Page> pages = new ArrayList<>();
         for (final PagePlan plan : plans) {
             final StringBuilder body = new StringBuilder();
-            renderPage(plan.owner, body, plan == index);
+            renderPage(plan.owner, body, plan == index, nodeToFile);
             final String rewritten = rewriteLinks(body.toString(), plan.fileName, anchorToFile);
             pages.add(new Page(plan.fileName, LLMS_POINTER + rewritten, isAllowOversize(plan.owner)));
         }
@@ -274,14 +279,16 @@ class MarkdownSplitter {
      * sections each get a page.
      */
     private void planBreaks(final Node node, final List<PagePlan> plans,
-                            final Map<String, String> anchorToFile) {
+                            final Map<String, String> anchorToFile,
+                            final Map<Node, String> nodeToFile) {
         for (final Node child : node.children) {
             if (hasSummary(child)) {
                 final PagePlan page = new PagePlan(fileNameFor(child, plans), child);
                 plans.add(page);
+                nodeToFile.put(child, page.fileName);
                 recordAnchorsUntilBreak(child, page.fileName, anchorToFile);
             }
-            planBreaks(child, plans, anchorToFile);
+            planBreaks(child, plans, anchorToFile, nodeToFile);
         }
     }
 
@@ -304,22 +311,73 @@ class MarkdownSplitter {
 
     /**
      * Renders one page: {@code owner}'s own lines, then each descendant up to the next summarized
-     * section. Summarized descendants are omitted here (they render on their own page).
+     * section. A summarized descendant does not render its content here (that lives on its own page);
+     * in its place a table-of-contents reference to that page is emitted, so the parent stays a
+     * coherent, navigable outline rather than silently dropping the child's content.
      */
-    private void renderPage(final Node owner, final StringBuilder sb, final boolean isIndex) {
+    private void renderPage(final Node owner, final StringBuilder sb, final boolean isIndex,
+                            final Map<Node, String> nodeToFile) {
         for (final String l : owner.lines) sb.append(l).append('\n');
         for (final Node child : owner.children) {
-            if (hasSummary(child)) continue;
-            renderSubtree(child, sb);
+            if (hasSummary(child)) {
+                appendChildReference(child, sb, nodeToFile);
+                continue;
+            }
+            renderSubtree(child, sb, nodeToFile);
         }
     }
 
-    private void renderSubtree(final Node node, final StringBuilder sb) {
+    private void renderSubtree(final Node node, final StringBuilder sb,
+                               final Map<Node, String> nodeToFile) {
         for (final String l : node.lines) sb.append(l).append('\n');
         for (final Node child : node.children) {
-            if (hasSummary(child)) continue;
-            renderSubtree(child, sb);
+            if (hasSummary(child)) {
+                appendChildReference(child, sb, nodeToFile);
+                continue;
+            }
+            renderSubtree(child, sb, nodeToFile);
         }
+    }
+
+    /**
+     * Emits a table-of-contents reference to a child section that has broken off to its own page:
+     * the child's heading (kept at its original level), its llms-summary as prose, and a link to the
+     * page. This keeps the parent a coherent outline that points at every spun-off child, the same
+     * way {@code llms.txt} references pages.
+     */
+    private void appendChildReference(final Node child, final StringBuilder sb,
+                                      final Map<Node, String> nodeToFile) {
+        sb.append('\n');
+        final String heading = headingText(child);
+        if (heading != null) {
+            sb.append("#".repeat(Math.max(1, child.level))).append(' ').append(heading).append("\n\n");
+        }
+        final String summary = summaryText(child);
+        if (summary != null) {
+            sb.append(summary).append("\n\n");
+        }
+        final String file = nodeToFile.get(child);
+        if (file != null) {
+            sb.append("[Read more](").append(file).append(")\n\n");
+        }
+    }
+
+    /** The text of a node's heading line (the part after the {@code #}s), or {@code null} if none. */
+    private static String headingText(final Node node) {
+        for (final String line : node.lines) {
+            final Matcher hm = HEADING.matcher(line);
+            if (hm.matches()) return hm.group(2).trim();
+        }
+        return null;
+    }
+
+    /** The llms-summary text carried by a node, or {@code null} if it has none. */
+    private static String summaryText(final Node node) {
+        for (final String line : node.lines) {
+            final Matcher m = SUMMARY_TEXT.matcher(line.trim());
+            if (m.matches()) return m.group(1).trim();
+        }
+        return null;
     }
 
     /**

@@ -98,6 +98,50 @@ public class MarkdownSplitterTest {
     }
 
     @Test
+    public void parentPageReferencesEachSpunOffChild() {
+        // 2b: when a summarized child breaks off, the parent renders a table-of-contents entry in its
+        // place -- the child's heading (kept at its level), its summary as prose, and a link to the
+        // page -- so the parent stays a coherent outline instead of jumping over the missing content.
+        final String md = "preamble\n\n" + heading("io", 1, "IO Reference") + "\nintro\n\n"
+                + summarized("graphml", 2, "GraphML", "The GraphML format.") + "\ncontent graphml\n\n"
+                + heading("wrapup", 1, "Wrap Up") + "\nclosing words\n";
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter().split(md, "index.md");
+        final String index = page(pages, "index.md").getContent();
+        // Heading kept at the child's own level, summary rendered as prose, and a link to its page.
+        assertThat(index, containsString("## GraphML"));
+        assertThat(index, containsString("The GraphML format."));
+        assertThat(index, containsString("[Read more](graphml.md)"));
+        // ...but not the child's body, which lives on its own page.
+        assertThat(index, not(containsString("content graphml")));
+        // The reference sits in the child's original position: after the intro, before the wrap-up.
+        assertThat(index.indexOf("intro") < index.indexOf("## GraphML"), is(true));
+        assertThat(index.indexOf("## GraphML") < index.indexOf("Wrap Up"), is(true));
+    }
+
+    @Test
+    public void referenceCascadesThroughEveryLevel() {
+        // The table-of-contents reference applies at every depth: a chapter that is itself its own
+        // page must reference its own summarized subsections, so the whole book stays followable top
+        // to bottom (index -> chapter -> subsection), not just from the landing page.
+        final String md = "preamble\n\n" + heading("io", 1, "IO Reference") + "\nintro\n\n"
+                + summarized("traversal", 1, "The Traversal", "The step catalog.") + "\ncatalog intro\n\n"
+                + summarized("fold-step", 2, "Fold Step", "fold() aggregates.") + "\nfold body\n\n"
+                + summarized("group-step", 2, "Group Step", "group() organizes.") + "\ngroup body\n";
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter().split(md, "index.md");
+        // The landing page references the chapter...
+        assertThat(page(pages, "index.md").getContent(), containsString("[Read more](traversal.md)"));
+        // ...and the chapter page in turn references each of its own spun-off steps.
+        final String traversal = page(pages, "traversal.md").getContent();
+        assertThat(traversal, containsString("## Fold Step"));
+        assertThat(traversal, containsString("[Read more](fold-step.md)"));
+        assertThat(traversal, containsString("## Group Step"));
+        assertThat(traversal, containsString("[Read more](group-step.md)"));
+        // ...without pulling in the steps' bodies, which live on their own pages.
+        assertThat(traversal, not(containsString("fold body")));
+        assertThat(traversal, not(containsString("group body")));
+    }
+
+    @Test
     public void unsummarizedChildAttachesToSummarizedAncestorPage() {
         // Chapter is summarized (own page); its child A1 is not (stays on chapter page); its child A2
         // is summarized (breaks off).
