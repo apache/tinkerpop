@@ -13,5 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <!-- Agent-facing discovery directive (agentdocsspec.com llms-txt-directive-html). Plain,
-     server-rendered, not display:none, so it survives HTML-to-Markdown conversion. -->
-<p class="agent-docs-index">For AI agents: a documentation index is available at <a href="/llms.txt">/llms.txt</a>.</p>
+     server-rendered, not display:none, so it survives HTML-to-Markdown conversion. The x.y.z
+     placeholder is rewritten to the real version by GremlinPostprocessor, so the link points to
+     this version's index (docs/<version>/llms.txt) rather than the site-root/current one. -->
+<p class="agent-docs-index">This documentation is also published as Markdown; AI agents can find an index of it at <a href="https://tinkerpop.apache.org/docs/x.y.z/llms.txt">llms.txt</a>.</p>
