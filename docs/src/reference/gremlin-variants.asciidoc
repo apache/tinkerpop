@@ -603,7 +603,7 @@ go run basic_gremlin.go
 go run modern_traversals.go
 ----
 
-[llms-summary="Using Gremlin from Groovy: installing gremlinpython, building traversals, Pythonic syntax differences, and connecting to a remote Gremlin Server."]
+[llms-summary="Using Gremlin from Groovy: the JVM-based Gremlin-Groovy variant backed by Gremlin-Java, its role as the language of the Gremlin Console and Server, and its syntax differences."]
 [[gremlin-groovy]]
 == Gremlin-Groovy
 
@@ -2025,7 +2025,7 @@ node basic-gremlin.js
 node modern-traversals.js
 ----
 
-[llms-summary="Using Gremlin from .NET: installing gremlinpython, building traversals, Pythonic syntax differences, and connecting to a remote Gremlin Server."]
+[llms-summary="Using Gremlin from .NET: installing the Gremlin.Net package, its C# API with PascalCase step names, and connecting to a remote Gremlin Server."]
 anchor:gremlin-DotNet[]
 [[gremlin-dotnet]]
 == Gremlin.Net
