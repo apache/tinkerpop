@@ -3767,14 +3767,30 @@ g.V().hasLabel('person').
 [[properties-step]]
 === Properties Step
 
-The `properties()`-step (*map*) extracts properties from an `Element` in the traversal stream.
+The `properties()`-step (*map*) extracts properties from an `Element` in the traversal stream. Unlike
+`values()`, which emits the raw property values, `properties()` transforms the stream so that it contains
+`VertexProperty` elements rather than the original `Vertex` elements. A `VertexProperty` is itself an
+`Element`, which means it can carry its own properties — called meta-properties (see
+<<vertex-properties,vertex properties>>) — and can therefore be traversed further with steps like `has()`
+and `valueMap()`. The examples below use the <<the-crew-toy-graph,"TinkerPop Crew">> toy graph, whose
+vertex `1` (marko) has a multi-valued `location` property whose values carry `startTime` and `endTime`
+meta-properties.
 
 [gremlin-groovy,theCrew]
 ----
-g.V(1).properties()
-g.V(1).properties('location').valueMap()
-g.V(1).properties('location').has('endTime').valueMap()
+g.V(1).properties()                                      <1>
+g.V(1).properties('location').valueMap()                 <2>
+g.V(1).properties('location').has('endTime').valueMap()  <3>
 ----
+
+<1> With no arguments, `properties()` emits a `VertexProperty` for every property on vertex `1`.
+<2> Supplying the `location` key emits one `VertexProperty` per value, so the stream now holds four
+`VertexProperty` elements. Because those elements are the `location` vertex properties themselves,
+`valueMap()` returns the meta-properties (`startTime` and `endTime`) of each one — four rows — rather than
+the vertex's own properties.
+<3> Since the elements in the stream are `VertexProperty` objects, `has('endTime')` filters on their
+meta-properties: only the three `location` values that carry an `endTime` meta-property pass, so
+`valueMap()` reports three rows.
 
 *Additional References*
 
