@@ -254,10 +254,6 @@ model['traversal-vertex'] = new Vertex(1, 'person', [name, sanDiego, santaCruz, 
 model['multi-label-vertex'] = new Vertex(1, ['person', 'employee']);
 model['empty-label-vertex'] = new Vertex(1, 'vertex', [], []);
 
-// DateTime values (invalid dates for overflow cases)
-model['max-offsetdatetime'] = new Date(NaN);  // Year 999999999 overflows JS Date
-model['min-offsetdatetime'] = new Date(NaN);  // Year -999999999 overflows JS Date
-
 class CrewGraphFactory {
   static vertexProperty(id, label, value, metaProperties = []) {
     return new VertexProperty(

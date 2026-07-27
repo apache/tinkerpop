@@ -124,6 +124,22 @@ function runRead(name, comparator = assertEqual) {
   });
 }
 
+// deserialize-only: assert that reading the .gbin reference rejects with the expected error
+function runReadThrows(name, errorPattern) {
+  describe(name, () => {
+    const fileBytes = readGbinFile(name);
+
+    it('deserialize .gbin rejects', async () => {
+      try {
+        await anySerializer.deserialize(StreamReader.fromBuffer(fileBytes));
+        assert.fail('Expected an error to be thrown');
+      } catch (e) {
+        if (errorPattern) assert.match(e.message, errorPattern);
+      }
+    });
+  });
+}
+
 function assertEqual(actual, expected) {
   if (Number.isNaN(expected) && Number.isNaN(actual)) return;
   if (Object.is(expected, -0) && Object.is(actual, -0)) return;
@@ -250,13 +266,6 @@ function setCardinalityComparator(actual, expected) {
   assert.deepStrictEqual(actual.properties, expected.properties);
 }
 
-function invalidDateComparator(actual, expected) {
-  assert.isTrue(actual instanceof Date);
-  assert.isTrue(expected instanceof Date);
-  assert.isTrue(Number.isNaN(actual.getTime()));
-  assert.isTrue(Number.isNaN(expected.getTime()));
-}
-
 describe('GraphBinary v4 Model Tests', () => {
   // run mode
   run('pos-biginteger');
@@ -343,9 +352,9 @@ describe('GraphBinary v4 Model Tests', () => {
   // runRead mode
   // JS Number can't re-emit this as a Float.
   runRead('neg-zero-float', negZeroComparator);
-  // invalid Date models can't be serialized back.
-  runRead('max-offsetdatetime', invalidDateComparator);
-  runRead('min-offsetdatetime', invalidDateComparator);
+  // DateTime values outside the JS Date range are rejected rather than deserialized to invalid Dates.
+  runReadThrows('max-offsetdatetime', /outside the range supported by JavaScript Date/);
+  runReadThrows('min-offsetdatetime', /outside the range supported by JavaScript Date/);
   // properties aren't serialized in JS for this path fixture.
   runRead('prop-path');
   // this fixture has complex keys that JS can't write back byte-exactly.
