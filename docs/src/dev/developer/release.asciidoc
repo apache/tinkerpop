@@ -476,7 +476,7 @@ https://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/xx.yy.zz/
 
 Go artifacts are available via Go Package Manager:
 
-https://pkg.go.dev/github.com/apache/tinkerpop/gremlin-go/v3@xx.yy.zz
+https://pkg.go.dev/github.com/apache/tinkerpop/gremlin-go/v4@vxx.yy.zz
 
 Python artifacts are available in pypi:
 
