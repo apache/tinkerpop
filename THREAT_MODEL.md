@@ -399,11 +399,10 @@ Per-surface trust table:
   (`registrationRequired=false`) is not a safe boundary against untrusted bytes and is the user's
   responsibility.** A few registered types are also serialized with Kryo's `JavaSerializer`, which reads by way of
   `ObjectInputStream.readObject()` and is a gadget caveat even when locked. As of 3.7.7 the mappers the IO paths
-  build (`io()`, `GryoReader`, `GryoWriter`, `GryoIo`) drop those registrations
-  (`GryoMapper.Builder.javaSerializationAllowed(boolean)` selects the behavior), so a break there is `VALID`. A
-  directly built `GryoMapper` and `GryoPool` keep them, as do the `spark-gremlin` and Hadoop object pools that
-  additionally run unlocked; those remain the user's responsibility. The Hadoop Gryo input/output formats still
-  keep them while locked, which is a known gap rather than a disclaimed one.
+  build (`io()`, `GryoReader`, `GryoWriter`, `GryoIo`, and the Hadoop Gryo input/output formats) drop those
+  registrations (`GryoMapper.Builder.javaSerializationAllowed(boolean)` selects the behavior), so a break there is
+  `VALID`. A directly built `GryoMapper` and `GryoPool` keep them, as do the `spark-gremlin` and Hadoop object pools
+  that additionally run unlocked; those remain the user's responsibility.
   Gryo is not on the wire, so this is an IO/file-surface concern (`io()` step, persistence, OLAP).
  
 - **A `TraversalStrategy` is not an access-control boundary on its own.** A remote request can remove or

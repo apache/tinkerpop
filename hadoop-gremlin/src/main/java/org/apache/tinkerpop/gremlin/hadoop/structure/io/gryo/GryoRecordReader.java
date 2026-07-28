@@ -73,7 +73,7 @@ public final class GryoRecordReader extends RecordReader<NullWritable, VertexWri
         if (configuration.get(Constants.GREMLIN_HADOOP_GRAPH_FILTER, null) != null)
             this.graphFilter = VertexProgramHelper.deserialize(ConfUtil.makeApacheConfiguration(configuration), Constants.GREMLIN_HADOOP_GRAPH_FILTER);
         this.gryoReader = GryoReader.build().mapper(
-                GryoMapper.build().addRegistries(IoRegistryHelper.createRegistries(ConfUtil.makeApacheConfiguration(configuration))).create()).create();
+                GryoMapper.build().javaSerializationAllowed(false).addRegistries(IoRegistryHelper.createRegistries(ConfUtil.makeApacheConfiguration(configuration))).create()).create();
         long start = split.getStart();
         final Path file = split.getPath();
         if (null != new CompressionCodecFactory(configuration).getCodec(file)) {

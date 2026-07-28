@@ -40,7 +40,7 @@ untrusted source was therefore unsafe, as a crafted document could carry an arbi
 during decoding.
 
 The paths that consume graph documents, `io()`, `GryoReader`, `GryoWriter` and `GryoIo` (including `gryo` graph
-persistence), no longer install those registrations. A graph document only needs graph structure, so nothing is lost
+persistence) and the Hadoop Gryo input/output formats, no longer install those registrations. A graph document only needs graph structure, so nothing is lost
 in practice. A stream that does present one of the affected type ids now fails with an unregistered class id:
 
 [source,text]

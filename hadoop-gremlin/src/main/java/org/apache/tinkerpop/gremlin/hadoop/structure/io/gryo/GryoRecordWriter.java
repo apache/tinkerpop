@@ -47,7 +47,7 @@ public final class GryoRecordWriter extends RecordWriter<NullWritable, VertexWri
         this.outputStream = outputStream;
         this.hasEdges = configuration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_WRITER_HAS_EDGES, true);
         this.gryoWriter = GryoWriter.build().mapper(
-                GryoMapper.build().addRegistries(IoRegistryHelper.createRegistries(ConfUtil.makeApacheConfiguration(configuration))).create()).create();
+                GryoMapper.build().javaSerializationAllowed(false).addRegistries(IoRegistryHelper.createRegistries(ConfUtil.makeApacheConfiguration(configuration))).create()).create();
     }
 
     @Override
