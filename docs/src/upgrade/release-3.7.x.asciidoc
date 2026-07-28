@@ -73,6 +73,8 @@ full fidelity can be restored where the bytes are trusted:
 GryoIo.build().graph(graph).onMapper(m -> ((GryoMapper.Builder) m).javaSerializationAllowed(true)).create();
 ----
 
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3278[TINKERPOP-3278]
+
 ==== conjoin() Step Null Handling
 
 The `conjoin()` step previously returned `null` when elements in the incoming list are `null`. This behavior has

@@ -786,10 +786,6 @@ public class GryoMapperTest {
     }
 
     /**
-     * A deliberately inert {@code Serializable} used to detect whether native Java deserialization ran during a Gryo
-     * read. It touches nothing outside this class: no process execution, no filesystem, no reflection.
-     */
-    /**
      * A type that resolves to Kryo's {@code JavaSerializer} through the class-level {@code @DefaultSerializer}
      * annotation rather than an explicit registration, exercising the default-serializer branch of the filter.
      */
@@ -798,6 +794,10 @@ public class GryoMapperTest {
         private static final long serialVersionUID = 1L;
     }
 
+    /**
+     * A deliberately inert {@code Serializable} used to detect whether native Java deserialization ran during a Gryo
+     * read. It touches nothing outside this class: no process execution, no filesystem, no reflection.
+     */
     private static class DeserializationCanary implements Serializable {
         private static final long serialVersionUID = 1L;
 
