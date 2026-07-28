@@ -85,9 +85,7 @@ public final class GryoMapper implements Mapper<Kryo> {
 
     private GryoMapper(final Builder builder) {
         this.javaSerializationAllowed = builder.javaSerializationAllowed;
-        this.typeRegistrations = builder.typeRegistrations.stream().
-                filter(tr -> javaSerializationAllowed || !(tr.getShadedSerializer() instanceof JavaSerializer)).
-                collect(Collectors.toList());
+        this.typeRegistrations = builder.typeRegistrations;
         this.version = builder.version;
         validate();
 
@@ -103,15 +101,22 @@ public final class GryoMapper implements Mapper<Kryo> {
         kryo.setRegistrationRequired(registrationRequired);
         kryo.setReferences(referenceTracking);
         for (TypeRegistration tr : typeRegistrations) {
-            // a Function- or default-serializer-backed registration can only be inspected once a Kryo exists;
-            // the direct JavaSerializer form is already filtered out in the constructor
+            // drop any registration that resolves to a JavaSerializer; the Function- and default-serializer
+            // forms can only be inspected once a Kryo exists, which is why this is done here rather than up front
             if (!javaSerializationAllowed && resolvesToJavaSerializer(tr, kryo)) continue;
             tr.registerWith(kryo);
         }
         return kryo;
     }
 
+    /**
+     * Detects a registration whose serializer is, or resolves to, Kryo's {@code JavaSerializer}. A directly supplied
+     * serializer is known statically, while a {@code Function} or a class default serializer can only be resolved
+     * from a live {@link Kryo} instance, which is why this runs at {@link #createMapper()} time.
+     */
     private static boolean resolvesToJavaSerializer(final TypeRegistration<?> tr, final Kryo kryo) {
+        if (null != tr.getShadedSerializer())
+            return tr.getShadedSerializer() instanceof JavaSerializer;
         if (null != tr.getFunctionOfShadedKryo())
             return tr.getFunctionOfShadedKryo().apply(kryo) instanceof JavaSerializer;
         if (!tr.hasSerializer())
@@ -128,10 +133,9 @@ public final class GryoMapper implements Mapper<Kryo> {
     }
 
     /**
-     * Note that a registration whose serializer can only be resolved from a {@link Kryo} instance (a
-     * {@code Function} or a class default serializer) is listed here even when
-     * {@link Builder#javaSerializationAllowed(boolean)} is {@code false} and {@link #createMapper()} therefore
-     * skips installing it.
+     * Note that when {@link Builder#javaSerializationAllowed(boolean)} is {@code false}, registrations whose
+     * serializer is (or resolves to) a {@code JavaSerializer} are still listed here even though
+     * {@link #createMapper()} skips installing them.
      */
     public List<TypeRegistration<?>> getTypeRegistrations() {
         return typeRegistrations;
