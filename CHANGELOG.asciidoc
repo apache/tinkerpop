@@ -234,6 +234,7 @@ This release also includes changes from prior 3.7.x releases.
 * Fixed bug in `gremlin-javascript` GraphBinary deserialization where `DateTime` values outside the JavaScript `Date` range were silently returned as invalid `Date` objects instead of failing deserialization.
 * Added a `propertyMap()` helper to view an element's properties as a map keyed by property key, on the `Element` structure API in `gremlin-core` (inherited by `Vertex`, `Edge`, and `VertexProperty`) and on `Vertex`, `Edge`, and `VertexProperty` in `gremlin-javascript`, `gremlin-python`, `gremlin-dotnet`, and `gremlin-go`.
 * Fixed a bug in `gremlin-go` where a `VertexProperty` deserialized from GraphBinary did not have its `Key` field populated, causing `Vertex.PropertyMap()` to group properties under an empty key.
+* Removed `final` from `RepeatStep` to allow providers to extend it.
 
 [[release-3-8-1]]
 === TinkerPop 3.8.1 (Release Date: April 1, 2026)
