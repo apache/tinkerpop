@@ -339,7 +339,8 @@ Per-surface trust table:
  
 - **Deserializer integrity.** The wire deserializers (GraphSON, GraphBinary) and **the hardened Gryo mappers the
   IO paths build** (`registrationRequired=true` plus `javaSerializationAllowed=false`, i.e. `io()`, `GryoReader`,
-  `GryoWriter`, `GryoIo`) reading attacker bytes do not reach native Java deserialization
+  `GryoWriter`, `GryoIo`, and the Hadoop Gryo input/output formats) reading attacker bytes do not reach native Java
+  deserialization
   (`ObjectInputStream.readObject()`). Because `inject()` and value arguments let a request carry any
   supported type, a bug in a **registered** type's (de)serializer that crashes/OOMs the reader is also
   in-model, on **both** the server (request) and the GLV (response) side. The GraphML reader disables

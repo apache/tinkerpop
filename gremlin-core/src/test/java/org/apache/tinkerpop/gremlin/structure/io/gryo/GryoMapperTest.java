@@ -73,6 +73,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
@@ -541,6 +542,40 @@ public class GryoMapperTest {
     }
 
     /**
+     * A custom type whose serializer is supplied as a {@code Function} resolving to a {@code JavaSerializer} can only
+     * be recognized once a {@code Kryo} exists, so it is dropped at mapper-creation time rather than at build time.
+     */
+    @Test
+    public void shouldNotRegisterCustomFunctionTypesWithJavaSerializerWhenDisabled() {
+        final Kryo hardened = builder.get().addCustom(IoX.class, (Function<Kryo, Serializer>) k -> new JavaSerializer()).
+                javaSerializationAllowed(false).create().createMapper();
+
+        try {
+            hardened.getRegistration(IoX.class);
+            fail("a custom Function supplied JavaSerializer must not survive on a hardened mapper");
+        } catch (IllegalArgumentException expected) {
+            // Kryo refuses an unregistered class while registration is required
+        }
+    }
+
+    /**
+     * A type carrying {@code @DefaultSerializer(JavaSerializer.class)} and registered without an explicit serializer
+     * resolves to a {@code JavaSerializer} through Kryo's default, which is likewise dropped at mapper-creation time.
+     */
+    @Test
+    public void shouldNotRegisterDefaultSerializerJavaSerializerTypesWhenDisabled() {
+        final Kryo hardened = builder.get().addCustom(JavaSerializedByDefault.class).
+                javaSerializationAllowed(false).create().createMapper();
+
+        try {
+            hardened.getRegistration(JavaSerializedByDefault.class);
+            fail("a @DefaultSerializer(JavaSerializer) registration must not survive on a hardened mapper");
+        } catch (IllegalArgumentException expected) {
+            // as above
+        }
+    }
+
+    /**
      * The full fidelity mapper is unchanged and remains available for trusted, in-process round-trips. This test
      * documents which registrations that leaves on native Java serialization.
      */
@@ -754,6 +789,15 @@ public class GryoMapperTest {
      * A deliberately inert {@code Serializable} used to detect whether native Java deserialization ran during a Gryo
      * read. It touches nothing outside this class: no process execution, no filesystem, no reflection.
      */
+    /**
+     * A type that resolves to Kryo's {@code JavaSerializer} through the class-level {@code @DefaultSerializer}
+     * annotation rather than an explicit registration, exercising the default-serializer branch of the filter.
+     */
+    @org.apache.tinkerpop.shaded.kryo.DefaultSerializer(JavaSerializer.class)
+    public static class JavaSerializedByDefault implements Serializable {
+        private static final long serialVersionUID = 1L;
+    }
+
     private static class DeserializationCanary implements Serializable {
         private static final long serialVersionUID = 1L;
 
