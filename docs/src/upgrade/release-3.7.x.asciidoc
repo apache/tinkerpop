@@ -32,7 +32,7 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
-==== Gryo Reads No Longer Use Java Serialization
+==== Gryo IO Disables Java Serialization
 
 A small number of Gryo type registrations, mostly `TraversalStrategy` implementations, were registered with Kryo's
 `JavaSerializer`, which reads by way of `java.io.ObjectInputStream.readObject()`. Reading a Gryo document from an
