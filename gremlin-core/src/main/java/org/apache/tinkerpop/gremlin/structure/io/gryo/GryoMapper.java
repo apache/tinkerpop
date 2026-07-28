@@ -29,6 +29,7 @@ import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.util.DefaultStreamFactory;
 import org.apache.tinkerpop.shaded.kryo.util.MapReferenceResolver;
+import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
@@ -78,11 +79,15 @@ public final class GryoMapper implements Mapper<Kryo> {
     private final List<TypeRegistration<?>> typeRegistrations;
     private final boolean registrationRequired;
     private final boolean referenceTracking;
+    private final boolean javaSerializationAllowed;
     private final Supplier<ClassResolver> classResolver;
     private final GryoVersion version;
 
     private GryoMapper(final Builder builder) {
-        this.typeRegistrations = builder.typeRegistrations;
+        this.javaSerializationAllowed = builder.javaSerializationAllowed;
+        this.typeRegistrations = builder.typeRegistrations.stream().
+                filter(tr -> javaSerializationAllowed || !(tr.getShadedSerializer() instanceof JavaSerializer)).
+                collect(Collectors.toList());
         this.version = builder.version;
         validate();
 
@@ -155,6 +160,7 @@ public final class GryoMapper implements Mapper<Kryo> {
 
         private boolean registrationRequired = true;
         private boolean referenceTracking = true;
+        private boolean javaSerializationAllowed = true;
         private Supplier<ClassResolver> classResolver;
 
         private Builder() {
@@ -245,6 +251,26 @@ public final class GryoMapper implements Mapper<Kryo> {
          */
         public Builder registrationRequired(final boolean registrationRequired) {
             this.registrationRequired = registrationRequired;
+            return this;
+        }
+
+        /**
+         * When set to {@code false}, every registration whose serializer is Kryo's {@code JavaSerializer} is dropped,
+         * producing a mapper suited to reading bytes from an untrusted source. By default this value is {@code true}.
+         * <p/>
+         * That serializer reads by way of {@code java.io.ObjectInputStream.readObject()}, which reconstructs and runs
+         * an arbitrary {@code Serializable} object graph while decoding, before the graph layer can accept or reject
+         * anything. The affected types are mostly {@code TraversalStrategy} implementations that a graph document does
+         * not need; a stream that carries one now fails with an unregistered class id. This relies on the default
+         * {@link #registrationRequired(boolean)} of {@code true}. Callers that need the full fidelity for trusted,
+         * in-process work should leave this value at {@code true}.
+         *
+         * @param javaSerializationAllowed set to {@code false} to drop the {@code JavaSerializer} registrations or
+         *                                 {@code true} to keep them
+         * @see #registrationRequired(boolean)
+         */
+        public Builder javaSerializationAllowed(final boolean javaSerializationAllowed) {
+            this.javaSerializationAllowed = javaSerializationAllowed;
             return this;
         }
 

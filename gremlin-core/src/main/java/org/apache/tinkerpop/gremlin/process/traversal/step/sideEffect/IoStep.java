@@ -151,7 +151,8 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
                 detectRegistries().forEach(builder::addRegistry);
                 return GraphSONReader.build().mapper(builder.create()).create();
             } else if (objectOrClass.equals(IO.gryo)){
-                final GryoMapper.Builder builder = GryoMapper.build();
+                // io() reads bytes the caller may not control, so refuse native Java serialization; a graph document only needs graph structure
+                final GryoMapper.Builder builder = GryoMapper.build().javaSerializationAllowed(false);
                 detectRegistries().forEach(builder::addRegistry);
                 return GryoReader.build().mapper(builder.create()).create();
             } else if (objectOrClass.equals(IO.graphml))
@@ -185,7 +186,8 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
                 detectRegistries().forEach(builder::addRegistry);
                 return GraphSONWriter.build().mapper(builder.create()).create();
             } else if (objectOrClass.equals(IO.gryo)){
-                final GryoMapper.Builder builder = GryoMapper.build();
+                // kept symmetrical with the reader above so that io() cannot write a document it will not read
+                final GryoMapper.Builder builder = GryoMapper.build().javaSerializationAllowed(false);
                 detectRegistries().forEach(builder::addRegistry);
                 return GryoWriter.build().mapper(builder.create()).create();
             } else if (objectOrClass.equals(IO.graphml))
