@@ -3488,7 +3488,9 @@ g.V().out().out().values('name').path()
 g.V().both().path().by('age') <1>
 ----
 
-<1> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered.
+<1> The "age" property is not <<by-step,productive>> for all vertices; any path that contains an element without a
+productive "age" value is filtered out in its entirety (the entire traverser is removed, not just the missing value),
+which reduces the number of results from 12 to 4.
 
 If edges are required in the path, then be sure to traverse those edges explicitly.
 
