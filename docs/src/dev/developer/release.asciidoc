@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+[llms-summary="The step-by-step process for cutting an official Apache TinkerPop release, including building, staging, voting, and publishing artifacts and documentation."]
 = Release Process
 
 This document describes the steps required to release a version of TinkerPop.  The release is handled by a "release

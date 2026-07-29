@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[graphson]]
+[llms-summary="The JSON-based GraphSON serialization format: its purpose, the differences across versions 1.0/2.0/3.0, and how graphs and types are represented."]
 = GraphSON
 
 image:gremlin-graphson.png[width=350,float=left] GraphSON is a JSON-based format that is designed for human readable
@@ -100,6 +101,7 @@ and it could be different (or change) from server to server. When building appli
 mime type is made explicit on requests to avoid breaking changes or unexpected results.
 
 [[graphson-1d0]]
+[llms-summary="GraphSON 1.0: the original format, with per-type sample encodings for graph structure and request/response messages.",allow-oversize="true"]
 == Version 1.0
 
 Version 1.0 of GraphSON was released with TinkerPop 3.0.0. It is referred to by the following mime types:
@@ -797,6 +799,7 @@ The following `ResponseMessage` is a typical example of the typical successful r
 ----
 
 [[graphson-2d0]]
+[llms-summary="GraphSON 2.0: the type-embedding format introduced in TinkerPop 3.2.2, with per-type sample encodings for graph structure and request/response messages.",allow-oversize="true"]
 == Version 2.0
 
 Version 2.0 of GraphSON was first introduced on TinkerPop 3.2.2. It was designed to be less tied to
@@ -2989,6 +2992,7 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 ----
 
 
+[llms-summary="The GraphSON 2.0 encodings of Gremlin Server RequestMessage types (session eval, sessionless eval, authentication response, and their aliased forms)."]
 === RequestMessage
 
 ==== Authentication Response
@@ -3527,6 +3531,7 @@ The following example is a `ZoneOffset` of three hours, six minutes, and nine se
 ----
 
 [[graphson-3d0]]
+[llms-summary="GraphSON 3.0: the current format (TinkerPop 3.3.0+, application/vnd.gremlin-v3.0+json), with per-type sample encodings for graph structure and request/response messages.",allow-oversize="true"]
 == Version 3.0
 
 Version 3.0 of GraphSON was first introduced on TinkerPop 3.3.0 and is represented by the `application/vnd.gremlin-v3.0+json`
@@ -5688,6 +5693,7 @@ The following `ResponseMessage` is a typical example of the typical successful r
 ----
 
 
+[llms-summary="GraphSON 3.0 extended types: the additional data types (e.g. temporal and numeric types) enabled by registering the separate GraphSONXModuleV3d0 module."]
 === Extended
 
 Note that the "extended" types require the addition of the separate `GraphSONXModuleV3d0` module as follows:
