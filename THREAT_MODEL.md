@@ -247,7 +247,7 @@ Per-surface trust table:
 | Gremlin Server — bytecode/traversal request | serialized traversal bytecode | **yes**, within privileges | auth; traversal-step allow-list; resource limits |
 | Gremlin Server — session id (`SessionOpProcessor`) | client-supplied session string | **yes** | keyed by the string with no owning-user check, so any client presenting the id shares the session (see §11b) |
 | Request deserialization (GraphSON / GraphBinary) | serialized bytes | **yes** (pre-auth) | robustness of the wire serializers |
-| Graph IO — Gryo/GraphSON/GraphML files (`io()` step, persistence, OLAP) | on-disk / cluster bytes | only if the caller loads untrusted files | GraphSON, locked Gryo (`registrationRequired=true`), and GraphML with the default XML factory owe deserializer integrity. Unlocked Gryo and a caller-supplied unhardened `XMLInputFactory` (XXE) are the caller's responsibility |
+| Graph IO — Gryo/GraphSON/GraphML files (`io()` step, persistence, OLAP) | on-disk / cluster bytes | only if the caller loads untrusted files | GraphSON, the hardened Gryo mappers the IO paths build (`registrationRequired=true` plus `javaSerializationAllowed=false`), and GraphML with the default XML factory owe deserializer integrity. Unlocked Gryo, a Gryo mapper that keeps Java serialization, and a caller-supplied unhardened `XMLInputFactory` (XXE) are the caller's responsibility |
 | Gremlin string parser (`gremlin-language` ANTLR) | Gremlin string | **yes** | parser robustness, no crash/hang/OOM on malformed input and no grammar breakout / step injection (distinct from execution cost, §8/Q7) |
 | Any string the grammar accepts as an argument (e.g. a `regex` pattern) | Gremlin string / bytecode | **yes** | a grammatically valid string must not enable DoS (e.g. ReDoS via a pathological pattern), the Q7 super-linear-amplification carve-out (§8) |
 | GLV (client) — server response | serialized bytes from the server | yes if the server is malicious/compromised, or a MITM (TLS off / cert not validated) | response-deserialization robustness; TLS with cert validation |
@@ -337,14 +337,18 @@ Per-surface trust table:
   Groovy string by concatenation, which is the calling application's concern (§9). *Violation symptom:*
   grammar breakout / step injection from a value that should stay a literal. *Severity:* critical.
  
-- **Deserializer integrity.** The wire deserializers (GraphSON, GraphBinary) and **Gryo in its locked default
-  (`registrationRequired=true`)** reading attacker bytes do not lead to arbitrary object instantiation / code
-  execution beyond the registered type set. Because `inject()` and value arguments let a request carry any
+- **Deserializer integrity.** The wire deserializers (GraphSON, GraphBinary) and **the hardened Gryo mappers the
+  IO paths build** (`registrationRequired=true` plus `javaSerializationAllowed=false`, i.e. `io()`, `GryoReader`,
+  `GryoWriter`, `GryoIo`, and the Hadoop Gryo input/output formats) reading attacker bytes do not reach native Java
+  deserialization
+  (`ObjectInputStream.readObject()`). Because `inject()` and value arguments let a request carry any
   supported type, a bug in a **registered** type's (de)serializer that crashes/OOMs the reader is also
   in-model, on **both** the server (request) and the GLV (response) side. The GraphML reader disables
   external entities and DTDs by default (XXE-safe). *Violation symptom:* deserialization gadget / RCE / XXE,
   or a registered-type serializer crashing/OOMing either end. *Severity:* critical. Gryo is not on the wire,
-  and unlocked Gryo or a caller-supplied unhardened XML factory is out-of-model (user responsibility, §9).
+  and unlocked Gryo (as run by `spark-gremlin` and the Hadoop object pools), a directly built `GryoMapper` or
+  `GryoPool` that keeps Java serialization, or a caller-supplied unhardened XML factory is out-of-model
+  (user responsibility, §9).
  
 - **Resource bounds — split.** Malformed/pre-auth input that crashes/OOMs/hangs the server is **in-model**
   (above). Ordinary expensive traversals / large results are **operator capacity**, NOT in-model, unless a
@@ -394,7 +398,12 @@ Per-surface trust table:
   allow-list (`registrationRequired=true`), so it is not an arbitrary-instantiation sink, and a break within
   that locked config is a `VALID` bug like any deserializer. **Running Gryo unlocked
   (`registrationRequired=false`) is not a safe boundary against untrusted bytes and is the user's
-  responsibility.** (A few registered types use Java native serialization, a gadget caveat even when locked.)
+  responsibility.** A few registered types are also serialized with Kryo's `JavaSerializer`, which reads by way of
+  `ObjectInputStream.readObject()` and is a gadget caveat even when locked. The mappers the IO paths build
+  (`io()`, `GryoReader`, `GryoWriter`, `GryoIo`, and the Hadoop Gryo input/output formats) drop those registrations
+  (`GryoMapper.Builder.javaSerializationAllowed(boolean)` selects the behavior), so a break there is `VALID`. A
+  directly built `GryoMapper` and `GryoPool` keep them, as do the `spark-gremlin` and Hadoop object pools that
+  additionally run unlocked; those remain the user's responsibility.
   Gryo is not on the wire, so this is an IO/file-surface concern (`io()` step, persistence, OLAP).
  
 - **A `TraversalStrategy` is not an access-control boundary on its own.** A remote request can remove or

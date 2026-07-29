@@ -22,28 +22,36 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraver
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoX;
 import org.apache.tinkerpop.gremlin.structure.io.IoXIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.IoY;
 import org.apache.tinkerpop.gremlin.structure.io.IoYIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Registration;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
+import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
@@ -65,13 +73,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.fail;
@@ -94,6 +106,23 @@ public class GryoMapperTest {
 
     @Parameterized.Parameter(value = 1)
     public Supplier<GryoMapper.Builder> builder;
+
+    /**
+     * The Gryo type id of {@code OptionsStrategy}, registered with the shaded {@code JavaSerializer} in both
+     * {@link GryoVersion#V1_0} and {@link GryoVersion#V3_0}.
+     */
+    private static final int OPTIONS_STRATEGY_GRYO_ID = 187;
+
+    /**
+     * Kryo shifts written class ids to leave room for its {@code NULL} and {@code NAME} markers, as
+     * {@link AbstractGryoClassResolver#readClass(Input)} shows.
+     */
+    private static final int CLASS_ID_OFFSET = 2;
+
+    /**
+     * Kryo's reference marker for an object being seen for the first time.
+     */
+    private static final int KRYO_NOT_NULL = 1;
 
     @Test
     public void shouldMakeNewInstance() {
@@ -349,6 +378,307 @@ public class GryoMapperTest {
         assertEquals(te.toString(), serializeDeserialize(te, TraversalExplanation.class).toString());
     }
 
+    /**
+     * Gryo registers a handful of types with the shaded Kryo {@code JavaSerializer}, which deserializes by way of
+     * {@code java.io.ObjectInputStream.readObject()}. A stream that presents one of those type ids therefore
+     * reconstructs whatever {@code Serializable} object graph follows and runs its {@code readObject()} methods,
+     * which is an unsafe-deserialization sink on caller-supplied bytes. The canary used here carries no
+     * payload at all: the mere execution of its {@code readObject()} is the proof.
+     */
+    @Test
+    public void shouldNotInvokeJavaDeserializationOnGryoRead() throws Exception {
+        final Kryo kryo = builder.get().javaSerializationAllowed(false).create().createMapper();
+
+        // Kryo frames an object as varint(class id + 2) followed by a NOT_NULL reference marker. Confirm that
+        // framing against a known registration (HashMap is id 11 in both V1_0 and V3_0) rather than trusting a
+        // hard coded Kryo internal, so the crafted stream below cannot silently stop reaching the serializer.
+        final int hashMapId = kryo.getRegistration(HashMap.class).getId();
+        assertEquals(11, hashMapId);
+        final Output probe = new Output(64, -1);
+        kryo.writeClassAndObject(probe, new HashMap<String, Object>());
+        probe.flush();
+        final Input probeInput = new Input(probe.toBytes());
+        assertEquals(hashMapId + CLASS_ID_OFFSET, probeInput.readVarInt(true));
+        assertEquals(KRYO_NOT_NULL, probeInput.readVarInt(true));
+
+        final byte[] malicious = maliciousGryoBytes();
+
+        DeserializationCanary.FIRED = false;
+        try {
+            kryo.readClassAndObject(new Input(new ByteArrayInputStream(malicious)));
+        } catch (Exception ignored) {
+            // refusing the stream outright is the expected outcome. what matters is that nothing was deserialized on
+            // the way to that decision.
+        }
+
+        assertFalse("Reading Gryo " + name + " bytes must not invoke ObjectInputStream.readObject() on the stream, " +
+                        "since a crafted stream presenting a JavaSerializer-backed type id such as " +
+                        OPTIONS_STRATEGY_GRYO_ID + " (OptionsStrategy) could otherwise carry an arbitrary Java " +
+                        "object graph",
+                DeserializationCanary.FIRED);
+    }
+
+    /**
+     * Positive control for {@link #shouldNotInvokeJavaDeserializationOnGryoRead()}. Without hardening, the same bytes
+     * do reach {@code ObjectInputStream.readObject()}, which is what gives the assertion there any meaning: were the
+     * crafted framing ever to stop selecting the {@code JavaSerializer}, this test would fail and say so. It also
+     * documents that a directly built mapper stays full fidelity and must only be pointed at trusted bytes.
+     */
+    @Test
+    public void shouldInvokeJavaDeserializationOnDefaultMapperRead() throws Exception {
+        final Kryo kryo = builder.get().create().createMapper();
+        final byte[] malicious = maliciousGryoBytes();
+
+        DeserializationCanary.FIRED = false;
+        try {
+            kryo.readClassAndObject(new Input(new ByteArrayInputStream(malicious)));
+        } catch (Exception ignored) {
+            // the payload deserializes to the canary rather than to an OptionsStrategy, so a failure is possible
+            // here, but it would come after readObject() has already run
+        }
+
+        assertTrue("the crafted stream must reach ObjectInputStream.readObject() on a full fidelity mapper, " +
+                        "otherwise the hardened assertions prove nothing",
+                DeserializationCanary.FIRED);
+    }
+
+    /**
+     * The same crafted stream fed through the reader that {@code io()} and graph persistence use, whose default
+     * mapper is hardened.
+     */
+    @Test
+    public void shouldNotInvokeJavaDeserializationOnGryoReaderRead() throws Exception {
+        final GryoReader reader = GryoReader.build().create();
+
+        DeserializationCanary.FIRED = false;
+        try (final InputStream stream = new ByteArrayInputStream(maliciousGryoBytes())) {
+            reader.readObject(stream, Object.class);
+        } catch (Exception ignored) {
+            // as above, refusing the stream is the expected outcome
+        }
+
+        assertFalse("GryoReader must not invoke ObjectInputStream.readObject() on the bytes it reads",
+                DeserializationCanary.FIRED);
+    }
+
+    /**
+     * Hardening the mapper must not cost anything on the graph structure that a Gryo document actually carries.
+     */
+    @Test
+    public void shouldRoundTripGraphStructureWithJavaSerializationDisabled() throws Exception {
+        final Kryo kryo = builder.get().javaSerializationAllowed(false).create().createMapper();
+
+        final Map<String, Object> props = new HashMap<>();
+        final List<Map<String, Object>> propertyNames = new ArrayList<>(1);
+        final Map<String, Object> propertyName = new HashMap<>();
+        propertyName.put(GraphSONTokens.ID, "x");
+        propertyName.put(GraphSONTokens.KEY, "x");
+        propertyName.put(GraphSONTokens.VALUE, "no-way-this-will-ever-work");
+        propertyNames.add(propertyName);
+        props.put("x", propertyNames);
+
+        final Output out = new Output(1024, -1);
+        kryo.writeClassAndObject(out, new DetachedVertex(100, Vertex.DEFAULT_LABEL, props));
+        out.flush();
+
+        final DetachedVertex readX = (DetachedVertex) kryo.readClassAndObject(
+                new Input(new ByteArrayInputStream(out.toBytes())));
+        assertEquals("no-way-this-will-ever-work", readX.value("x"));
+    }
+
+    /**
+     * A Gryo stream that presents {@code OptionsStrategy}'s type id and then a raw Java-serialized payload. Crafting
+     * it needs no cooperation from the Gryo writer, which is why the sink was reachable from untrusted bytes.
+     */
+    private byte[] maliciousGryoBytes() throws Exception {
+        final ByteArrayOutputStream javaPayload = new ByteArrayOutputStream();
+        try (final ObjectOutputStream oos = new ObjectOutputStream(javaPayload)) {
+            oos.writeObject(new DeserializationCanary());
+        }
+
+        final Output malicious = new Output(javaPayload.size() + 64, -1);
+        malicious.writeVarInt(OPTIONS_STRATEGY_GRYO_ID + CLASS_ID_OFFSET, true);
+        malicious.writeVarInt(KRYO_NOT_NULL, true);
+        malicious.writeBytes(javaPayload.toByteArray());
+        malicious.flush();
+        return malicious.toBytes();
+    }
+
+    /**
+     * Companion to {@link #shouldNotInvokeJavaDeserializationOnGryoRead()} that covers the whole sink surface rather
+     * than one carrier type. The assertion is made against the {@code Kryo} instance that actually decodes bytes, so
+     * that it cannot pass merely by asking the same question of the same metadata the filter itself used.
+     */
+    @Test
+    public void shouldNotRegisterTypesWithJavaSerializerWhenDisabled() {
+        final Kryo hardened = builder.get().javaSerializationAllowed(false).create().createMapper();
+
+        for (final TypeRegistration<?> tr : javaSerializedRegistrations()) {
+            final Class<?> clazz = tr.getTargetClass();
+            try {
+                hardened.getRegistration(clazz);
+                fail(clazz.getSimpleName() + " must not be registered on a hardened mapper");
+            } catch (IllegalArgumentException expected) {
+                // Kryo refuses an unregistered class while registration is required
+            }
+        }
+    }
+
+    /**
+     * A custom type contributed with Kryo's {@code JavaSerializer} is filtered on the same terms as the defaults,
+     * since an {@link org.apache.tinkerpop.gremlin.structure.io.IoRegistry} is an untrusted-input path too.
+     */
+    @Test
+    public void shouldNotRegisterCustomTypesWithJavaSerializerWhenDisabled() {
+        final Kryo hardened = builder.get().addCustom(IoX.class, new JavaSerializer()).
+                javaSerializationAllowed(false).create().createMapper();
+
+        try {
+            hardened.getRegistration(IoX.class);
+            fail("a custom JavaSerializer registration must not survive on a hardened mapper");
+        } catch (IllegalArgumentException expected) {
+            // as above
+        }
+    }
+
+    /**
+     * A custom type whose serializer is supplied as a {@code Function} resolving to a {@code JavaSerializer} can only
+     * be recognized once a {@code Kryo} exists, so it is dropped at mapper-creation time rather than at build time.
+     */
+    @Test
+    public void shouldNotRegisterCustomFunctionTypesWithJavaSerializerWhenDisabled() {
+        final Kryo hardened = builder.get().addCustom(IoX.class, (Function<Kryo, Serializer>) k -> new JavaSerializer()).
+                javaSerializationAllowed(false).create().createMapper();
+
+        try {
+            hardened.getRegistration(IoX.class);
+            fail("a custom Function supplied JavaSerializer must not survive on a hardened mapper");
+        } catch (IllegalArgumentException expected) {
+            // Kryo refuses an unregistered class while registration is required
+        }
+    }
+
+    /**
+     * A type carrying {@code @DefaultSerializer(JavaSerializer.class)} and registered without an explicit serializer
+     * resolves to a {@code JavaSerializer} through Kryo's default, which is likewise dropped at mapper-creation time.
+     */
+    @Test
+    public void shouldNotRegisterDefaultSerializerJavaSerializerTypesWhenDisabled() {
+        final Kryo hardened = builder.get().addCustom(JavaSerializedByDefault.class).
+                javaSerializationAllowed(false).create().createMapper();
+
+        try {
+            hardened.getRegistration(JavaSerializedByDefault.class);
+            fail("a @DefaultSerializer(JavaSerializer) registration must not survive on a hardened mapper");
+        } catch (IllegalArgumentException expected) {
+            // as above
+        }
+    }
+
+    /**
+     * The full fidelity mapper is unchanged and remains available for trusted, in-process round-trips. This test
+     * documents which registrations that leaves on native Java serialization.
+     */
+    @Test
+    public void shouldRegisterTypesWithJavaSerializerByDefault() {
+        final List<String> found = new ArrayList<>();
+        for (final TypeRegistration<?> tr : javaSerializedRegistrations())
+            found.add(String.format("%s(%d)", tr.getTargetClass().getSimpleName(), tr.getId()));
+
+        final List<String> expected = name.equals("1_0") ?
+                Arrays.asList("TraversalExplanation(106)", "GroupBiOperator(117)", "OrderBiOperator(118)",
+                        "PartitionStrategy(140)", "SubgraphStrategy(141)", "SeedStrategy(192)",
+                        "VertexProgramStrategy(142)", "ProductiveByStrategy(195)", "OptionsStrategy(187)",
+                        "GValue(199)") :
+                Arrays.asList("PartitionStrategy(140)", "SubgraphStrategy(141)", "SeedStrategy(192)",
+                        "VertexProgramStrategy(142)", "ProductiveByStrategy(195)", "OptionsStrategy(187)",
+                        "TraversalExplanation(106)", "GValue(199)");
+        assertEquals(expected, found);
+    }
+
+    /**
+     * The inverse of {@link #shouldNotRegisterTypesWithJavaSerializerWhenDisabled()}. Setting the value explicitly
+     * keeps the affected types usable, which is what a trusted, in-process round-trip relies on.
+     */
+    @Test
+    public void shouldRoundTripStrategyWhenJavaSerializationAllowed() throws Exception {
+        final Kryo kryo = builder.get().javaSerializationAllowed(true).create().createMapper();
+
+        final Output out = new Output(1024, -1);
+        kryo.writeClassAndObject(out, OptionsStrategy.build().with("some-key", "some-value").create());
+        out.flush();
+
+        final OptionsStrategy read = (OptionsStrategy) kryo.readClassAndObject(
+                new Input(new ByteArrayInputStream(out.toBytes())));
+        assertEquals("some-value", read.getOptions().get("some-key"));
+    }
+
+    /**
+     * {@link GryoIo} hardens its mapper, and the {@code onMapper} consumer is the documented way to restore full
+     * fidelity where the bytes are trusted. This pins the form shown in the upgrade documentation, including the cast.
+     */
+    @Test
+    public void shouldRestoreJavaSerializationThroughGryoIoOnMapper() {
+        final Io.Builder<GryoIo> io = GryoIo.build(gryoVersion());
+        io.graph(EmptyGraph.instance());
+        io.onMapper(m -> ((GryoMapper.Builder) m).javaSerializationAllowed(true));
+
+        final Kryo restored = io.create().mapper().create().createMapper();
+        assertEquals(OPTIONS_STRATEGY_GRYO_ID, restored.getRegistration(OptionsStrategy.class).getId());
+    }
+
+    /**
+     * Without such a consumer, {@link GryoIo} is hardened like the reader and writer defaults.
+     */
+    @Test
+    public void shouldNotRegisterTypesWithJavaSerializerOnGryoIoDefault() {
+        final Io.Builder<GryoIo> io = GryoIo.build(gryoVersion());
+        io.graph(EmptyGraph.instance());
+
+        final Kryo hardened = io.create().mapper().create().createMapper();
+        try {
+            hardened.getRegistration(OptionsStrategy.class);
+            fail("GryoIo must not register OptionsStrategy by default");
+        } catch (IllegalArgumentException expected) {
+            // Kryo refuses an unregistered class while registration is required
+        }
+    }
+
+    /**
+     * The writer default is hardened too, so a document carrying one of the dropped types cannot be produced by the
+     * paths that could not read it back.
+     */
+    @Test
+    public void shouldNotWriteTypesWithJavaSerializerOnGryoWriterDefault() throws Exception {
+        final GryoWriter writer = GryoWriter.build().create();
+
+        try (final OutputStream stream = new ByteArrayOutputStream()) {
+            writer.writeObject(stream, OptionsStrategy.build().with("some-key", "some-value").create());
+            fail("the GryoWriter default must not write a JavaSerializer backed type");
+        } catch (IllegalArgumentException expected) {
+            // as above, Kryo refuses the unregistered class
+        }
+    }
+
+    private GryoVersion gryoVersion() {
+        return name.equals("1_0") ? GryoVersion.V1_0 : GryoVersion.V3_0;
+    }
+
+    /**
+     * The registrations that the full fidelity mapper of the version under test backs with Kryo's
+     * {@code JavaSerializer}, each of which is a carrier for the sink.
+     */
+    private List<TypeRegistration<?>> javaSerializedRegistrations() {
+        final List<TypeRegistration<?>> found = new ArrayList<>();
+        for (final TypeRegistration<?> tr : builder.get().create().getTypeRegistrations()) {
+            if (tr.getShadedSerializer() instanceof JavaSerializer) found.add(tr);
+        }
+
+        // if detection ever breaks, the tests that loop over this would pass without checking anything
+        assertThat(found.size(), greaterThan(0));
+        return found;
+    }
+
     @Test
     public void shouldHandleBytecode() throws Exception {
         final Bytecode bytecode = __().out().outV().outE().asAdmin().getBytecode();
@@ -456,4 +786,27 @@ public class GryoMapperTest {
         }
     }
 
+    /**
+     * A type that resolves to Kryo's {@code JavaSerializer} through the class-level {@code @DefaultSerializer}
+     * annotation rather than an explicit registration, exercising the default-serializer branch of the filter.
+     */
+    @org.apache.tinkerpop.shaded.kryo.DefaultSerializer(JavaSerializer.class)
+    public static class JavaSerializedByDefault implements Serializable {
+        private static final long serialVersionUID = 1L;
+    }
+
+    /**
+     * A deliberately inert {@code Serializable} used to detect whether native Java deserialization ran during a Gryo
+     * read. It touches nothing outside this class: no process execution, no filesystem, no reflection.
+     */
+    private static class DeserializationCanary implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        static volatile boolean FIRED = false;
+
+        private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+            in.defaultReadObject();
+            FIRED = true;
+        }
+    }
 }

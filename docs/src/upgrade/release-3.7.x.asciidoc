@@ -33,6 +33,49 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Gryo IO Disables Java Serialization
+
+A small number of Gryo type registrations, mostly `TraversalStrategy` implementations, were registered with Kryo's
+`JavaSerializer`, which reads by way of `java.io.ObjectInputStream.readObject()`. Reading a Gryo document from an
+untrusted source was therefore unsafe, as a crafted document could carry an arbitrary Java object graph that runs
+during decoding.
+
+The paths that consume graph documents, `io()`, `GryoReader`, `GryoWriter` and `GryoIo` (including `gryo` graph
+persistence) and the Hadoop Gryo input/output formats, no longer install those registrations. A graph document only needs graph structure, so nothing is lost
+in practice. A stream that does present one of the affected type ids now fails with an unregistered class id:
+
+[source,text]
+----
+org.apache.tinkerpop.shaded.kryo.KryoException: Encountered unregistered class ID: 187
+----
+
+The affected types are `PartitionStrategy`, `SubgraphStrategy`, `SeedStrategy`, `VertexProgramStrategy`,
+`ProductiveByStrategy`, `OptionsStrategy` and `TraversalExplanation` in both Gryo 1.0 and 3.0, plus
+`GroupStep.GroupBiOperator` and `OrderGlobalStep.OrderBiOperator` in Gryo 1.0.
+
+A mapper built directly is unchanged and keeps full fidelity for trusted, in-process work such as OLAP. The new
+`GryoMapper.Builder.javaSerializationAllowed(boolean)` selects the behavior:
+
+[source,java]
+----
+// full fidelity, unchanged, appropriate for trusted bytes only
+GryoMapper.build().create();
+
+// hardened, what io() and GryoReader/GryoWriter now use by default
+GryoMapper.build().javaSerializationAllowed(false).create();
+----
+
+Callers that supply their own mapper to `GryoReader` or `GryoWriter` are unaffected and should add
+`javaSerializationAllowed(false)` if they read bytes they do not control. `GryoIo` accepts an `onMapper` consumer, so
+full fidelity can be restored where the bytes are trusted:
+
+[source,java]
+----
+GryoIo.build().graph(graph).onMapper(m -> ((GryoMapper.Builder) m).javaSerializationAllowed(true)).create();
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3278[TINKERPOP-3278]
+
 ==== conjoin() Step Null Handling
 
 The `conjoin()` step previously returned `null` when elements in the incoming list are `null`. This behavior has
