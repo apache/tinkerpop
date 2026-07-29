@@ -19,8 +19,6 @@ under the License.
 
 package gremlingo
 
-import "fmt"
-
 // Marker is used in response
 type Marker interface {
 	GetValue() byte
@@ -40,7 +38,7 @@ func (m marker) GetValue() byte {
 
 func Of(value byte) (Marker, error) {
 	if value != 0 {
-		return nil, fmt.Errorf("marker value erorr")
+		return nil, newError(err0410UnexpectedMarkerValueError, value)
 	}
 	return EndOfStream(), nil
 }

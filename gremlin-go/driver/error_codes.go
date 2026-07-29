@@ -54,6 +54,7 @@ const (
 	err0406EnumReaderInvalidTypeError                errorCode = "E0406_GRAPH_BINARY_ENUMREADER_INVALID_TYPE_ERROR"
 	err0407GetSerializerToWriteUnknownTypeError      errorCode = "E0407_GRAPH_BINARY_GETSERIALIZERTOWRITE_UNKNOWN_TYPE_ERROR"
 	err0408GetSerializerToReadUnknownTypeError       errorCode = "E0408_GRAPH_BINARY_GETSERIALIZERTOREAD_UNKNOWN_TYPE_ERROR"
+	err0410UnexpectedMarkerValueError                errorCode = "E0410_GRAPH_BINARY_UNEXPECTED_MARKER_VALUE_ERROR"
 
 	// response handling errors
 	err0501ResponseResultSetNotCreatedError errorCode = "E0501_RESPONSE_NO_RESULTSET_ON_DATA_RECEIVE"

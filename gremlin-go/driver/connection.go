@@ -387,6 +387,15 @@ func (c *connection) getReader(resp *http.Response) (io.Reader, io.Closer, error
 	return resp.Body, nil, nil
 }
 
+// setDeserializationError reports a failure to decode the GraphBinary response stream. The
+// underlying error is wrapped so that callers can tell a malformed or truncated response apart
+// from a transport failure, regardless of which point in the stream the decode gave out at.
+func (c *connection) setDeserializationError(rs ResultSet, err error) {
+	deserErr := fmt.Errorf("failed to deserialize response: %w", err)
+	c.logHandler.logf(Error, failedToReceiveResponse, deserErr.Error())
+	rs.setError(deserErr)
+}
+
 func (c *connection) streamToResultSet(reader io.Reader, rs ResultSet) {
 	var d *GraphBinaryDeserializer
 	if c.connSettings.pdtRegistry != nil {
@@ -400,8 +409,7 @@ func (c *connection) streamToResultSet(reader io.Reader, rs ResultSet) {
 			c.logHandler.logf(Error, failedToReceiveResponse, emptyBodyErr.Error())
 			rs.setError(emptyBodyErr)
 		} else {
-			c.logHandler.logf(Error, failedToReceiveResponse, err.Error())
-			rs.setError(err)
+			c.setDeserializationError(rs, err)
 		}
 		return
 	}
@@ -410,8 +418,7 @@ func (c *connection) streamToResultSet(reader io.Reader, rs ResultSet) {
 		obj, err := d.ReadFullyQualified()
 		if err != nil {
 			if err != io.EOF {
-				c.logHandler.logf(Error, failedToReceiveResponse, err.Error())
-				rs.setError(err)
+				c.setDeserializationError(rs, err)
 			}
 			return
 		}
@@ -419,8 +426,7 @@ func (c *connection) streamToResultSet(reader io.Reader, rs ResultSet) {
 		if marker, ok := obj.(Marker); ok && marker == EndOfStream() {
 			code, msg, _, err := d.ReadStatus()
 			if err != nil {
-				c.logHandler.logf(Error, failedToReceiveResponse, err.Error())
-				rs.setError(err)
+				c.setDeserializationError(rs, err)
 				return
 			}
 			if code != 200 && code != 0 {
@@ -432,14 +438,12 @@ func (c *connection) streamToResultSet(reader io.Reader, rs ResultSet) {
 		if d.IsBulked() {
 			bulkObj, err := d.ReadFullyQualified()
 			if err != nil {
-				c.logHandler.logf(Error, failedToReceiveResponse, err.Error())
-				rs.setError(err)
+				c.setDeserializationError(rs, err)
 				return
 			}
 			bulk, ok := bulkObj.(int64)
 			if !ok {
-				c.logHandler.logf(Error, failedToReceiveResponse, "expected int64 bulk count")
-				rs.setError(fmt.Errorf("expected int64 bulk count, got %T", bulkObj))
+				c.setDeserializationError(rs, fmt.Errorf("expected int64 bulk count, got %T", bulkObj))
 				return
 			}
 			rs.Channel() <- &Result{&Traverser{Bulk: bulk, Value: obj}}
