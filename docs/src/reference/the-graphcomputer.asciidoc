@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[graphcomputer]]
+[llms-summary="OLAP graph processing with GraphComputer: running VertexPrograms (e.g. PageRank, PeerPressure) and MapReduce jobs for whole-graph analytics."]
 = The GraphComputer
 
 image:graphcomputer-puffers.png[width=350,float=right] TinkerPop provides two primary means of interacting with a

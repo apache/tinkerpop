@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+[llms-summary="The main TinkerPop reference guide: the structure API, the Gremlin traversal language and its step catalog, OLAP with GraphComputer, the Gremlin applications, language variants, and provided implementations."]
 = TinkerPop Documentation
 
 [[preface]]

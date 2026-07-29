@@ -39,6 +39,20 @@ The extension registers with AsciidoctorJ through the SPI (`GremlinDocsExtension
 and dismissing `Display stack trace?` prompts. `ConsoleRestartHandler` and `PluginDirectoryRestartHandler` restart
 that subprocess when a book needs a different plugin set.
 
+The project also houses two standalone command-line tools that produce the agent-friendly rendering of the docs (the
+[Agent Friendly Documentation Specification](https://agentdocsspec.com/), built on [llms.txt](https://llmstxt.org/)):
+
+- **`MarkdownSplitter`** splits each book's Markdown output into agent-sized pages. A section becomes its own page iff
+  it carries an `llms-summary` attribute; its `--strict` mode fails the build when a page exceeds the 50,000-character
+  budget and is not marked `allow-oversize="true"`.
+- **`LlmsTxtGenerator`** scans the split pages and writes the `llms.txt` discovery index over them, optionally with an
+  absolute-URL prefix for publishing.
+
+These run from the extension's compiled classes and are driven by `bin/process-docs.sh` (and `bin/publish-docs.sh` for
+publishing); they are not invoked directly. See the
+[Agent-Friendly Documentation](../src/dev/developer/development-environment.asciidoc) section of the developer docs for
+the authoring rules (`llms-summary`, the size budget, `allow-oversize`) and validation via `bin/validate-llms-txt.sh`.
+
 ## Block Syntax
 
 A `gremlin-groovy` block takes an optional graph name as its second positional attribute, which seeds `graph` and `g`

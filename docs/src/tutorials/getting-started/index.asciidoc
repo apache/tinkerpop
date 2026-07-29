@@ -24,6 +24,7 @@ image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
 
+[llms-summary="A beginner's tutorial introducing graphs, vertices, edges, and basic Gremlin traversals to get started with Apache TinkerPop."]
 == Getting Started
 
 link:https://tinkerpop.apache.org[Apache TinkerPop™] is an open source Graph Computing Framework. Within itself, TinkerPop

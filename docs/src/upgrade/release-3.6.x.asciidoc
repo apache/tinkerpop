@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 
+[llms-summary="Upgrade notes for the TinkerPop 3.6.x release line: breaking changes, new features, and provider migration guidance across its releases."]
 = TinkerPop 3.6.0
 
 image::gremlin-victorian.png[width=185]

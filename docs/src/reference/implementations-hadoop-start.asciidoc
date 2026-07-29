@@ -20,6 +20,7 @@ under the License.
 // driver-only examples: an empty exclude list resets the console to every plugin enabled.
 [gremlin-docs-plugins-exclude=""]
 [[hadoop-gremlin]]
+[llms-summary="Running Gremlin OLAP over Hadoop: HadoopGraph, graph input/output formats, and executing traversals with SparkGraphComputer."]
 == Hadoop-Gremlin
 
 [source,xml]

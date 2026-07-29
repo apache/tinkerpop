@@ -24,6 +24,7 @@ image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
 
 *x.y.z*
 
+[llms-summary="A tutorial breaking down the anatomy of a Gremlin traversal — its steps, modulators, tokens, and how they compose — to build a deeper understanding of the language."]
 == Gremlin's Anatomy
 
 image:gremlin-anatomy.png[width=160,float=left]The Gremlin language is typically described by the individual
