@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[gremlin-semantics]]
+[llms-summary="The formal semantics of the Gremlin language: the type system, traverser model, and the precise expected behavior of each step, as a specification for providers."]
 = Gremlin Semantics
 
 image:tinkerpop-meeting-room.png[]
@@ -519,6 +520,7 @@ The following table maps the notions proposed above to the various `P` operators
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Equality.feature[Equality Tests],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Comparability.feature[Comparability Tests]
 
+[llms-summary="Per-step semantic definitions: the precise input/output behavior each Gremlin step must exhibit, used to verify provider implementations for correctness."]
 == Steps
 
 While TinkerPop has a full test suite for validating functionality of Gremlin, tests alone aren't always exhaustive or
@@ -526,6 +528,7 @@ fully demonstrative of Gremlin step semantics. It is also hard to simply read th
 step is meant to behave. This section discusses the semantics for individual steps to help users and providers
 understand implementation expectations.
 
+[llms-summary="The formal semantics of the all() step: filters array data from the Traversal Stream if all of the array's items match the supplied predicate."]
 [[all-step]]
 === all()
 
@@ -559,6 +562,7 @@ will be filtered out of the Traversal Stream.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/AllStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[reference]
 
+[llms-summary="The formal semantics of the any() step: filters array data from the Traversal Stream if any of the array's items match the supplied predicate."]
 [[any-step]]
 === any()
 
@@ -592,6 +596,7 @@ filtered out of the Traversal Stream.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/AnyStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#any-step[reference]
 
+[llms-summary="The formal semantics of the asDate() step: parse the value of incoming traverser as date."]
 [[asDate-step]]
 === asDate()
 
@@ -618,6 +623,7 @@ Incoming date remains unchanged.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsDateStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[reference]
 
+[llms-summary="The formal semantics of the asString() step: returns the value of incoming traverser as strings, or if Scope.local is specified, returns each element inside incoming list traverser as string."]
 [[asString-step]]
 === asString()
 
@@ -649,6 +655,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asString-step[reference]
 
+[llms-summary="The formal semantics of the call() step: provides support for provider-specific service calls."]
 [[call-step]]
 === call()
 
@@ -734,6 +741,7 @@ link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/o
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/service/ServiceRegistry.java[ServiceRegistry],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#call-step[reference]
 
+[llms-summary="The formal semantics of the combine() step: its exact expected behavior when merging an incoming list with a supplied list argument."]
 [[combine-step]]
 === combine()
 
@@ -770,6 +778,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#combine-step[reference],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[merge() reference]
 
+[llms-summary="The formal semantics of the concat() step: concatenates the incoming String traverser with the input String arguments, and return the joined String."]
 [[concat-step]]
 === concat()
 
@@ -802,6 +811,7 @@ concatenated, the `null` value will be propagated and returned.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ConcatStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#concat-step[reference]
 
+[llms-summary="The formal semantics of the dateAdd() step: increase value of input Date."]
 [[dateAdd-step]]
 === dateAdd()
 
@@ -827,6 +837,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#concat-step[reference]
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DateAddStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[reference]
 
+[llms-summary="The formal semantics of the dateDiff() step: returns the difference between two Dates in epoch time."]
 [[dateDiff-step]]
 === dateDiff()
 
@@ -855,6 +866,7 @@ If argument resolves as `null` then incoming date will not be changed.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DateDiffStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateDiff-step[reference]
 
+[llms-summary="The formal semantics of the dedup() step: removes repeatedly seen results from the Traversal Stream."]
 [[dedup-step]]
 === dedup()
 
@@ -923,6 +935,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DedupLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dedup-step[reference]
 
+[llms-summary="The formal semantics of the difference() step: adds the difference of two lists to the Traversal Stream."]
 [[difference-step]]
 === difference()
 
@@ -958,6 +971,7 @@ applies to list types which means that non-iterable types (including null) will 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DifferenceStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#difference-step[reference]
 
+[llms-summary="The formal semantics of the disjunct() step: adds the disjunct set to the Traversal Stream."]
 [[disjunct-step]]
 === disjunct()
 
@@ -992,6 +1006,7 @@ types which means that non-iterable types (including null) will cause exceptions
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DisjunctStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#disjunct-step[reference]
 
+[llms-summary="The formal semantics of the element() step: traverse from Property to its Element."]
 [[element-step]]
 === element()
 
@@ -1013,6 +1028,7 @@ None
 
 None
 
+[llms-summary="The formal semantics of the format() step: a mid-traversal step which will handle result formatting to string values."]
 [[format-step]]
 === format()
 
@@ -1045,6 +1061,7 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/FormatStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#format-step[reference]
 
+[llms-summary="The formal semantics of the length() step: returns the length of the incoming string or list, if Scope.local is specified, returns the length of each string elements inside incoming list traverser."]
 [[length-step]]
 === length()
 
@@ -1075,6 +1092,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LengthLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#length-step[reference]
 
+[llms-summary="The formal semantics of the intersect() step: adds the intersection to the Traversal Stream."]
 [[intersect-step]]
 === intersect()
 
@@ -1110,6 +1128,7 @@ types which means that non-iterable types (including null) will cause exceptions
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/IntersectStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#intersect-step[reference]
 
+[llms-summary="The formal semantics of the conjoin() step: joins every element in a list together into a String."]
 [[conjoin-step]]
 === conjoin()
 
@@ -1145,6 +1164,7 @@ non-iterable types (including `null`) will cause exceptions to be thrown.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ConjoinStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#conjoin-step[reference]
 
+[llms-summary="The formal semantics of the lTrim() step: returns a string with leading whitespace removed."]
 [[lTrim-step]]
 === lTrim()
 
@@ -1174,6 +1194,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LTrimLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#lTrim-step[reference]
 
+[llms-summary="The formal semantics of the merge() step: adds the union of two sets (or two maps) to the Traversal Stream."]
 [[merge-step]]
 === merge()
 
@@ -1210,6 +1231,7 @@ to be thrown.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[reference]
 
+[llms-summary="The formal semantics of the mergeE() step: provides upsert-like functionality for edges."]
 [[merge-e-step]]
 === mergeE()
 
@@ -1290,6 +1312,7 @@ be set to `Merge.inV`. Other combinations are not allowed and will result in exc
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeEdgeStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergee-step[reference]
 
+[llms-summary="The formal semantics of the mergeV() step: provides upsert-like functionality for vertices."]
 [[merge-v-step]]
 === mergeV()
 
@@ -1356,6 +1379,7 @@ resolve to a `Map`.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeVertexStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]
 
+[llms-summary="The formal semantics of the product() step: adds the cartesian product to the Traversal Stream."]
 [[product-step]]
 === product()
 
@@ -1390,6 +1414,7 @@ applies to list types which means that non-iterable types (including null) will 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ProductStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
 
+[llms-summary="The formal semantics of the repeat() step: iteratively applies a traversal (the \"loop body\") to each incoming traverser until a stopping condition is met."]
 [[repeat-step]]
 === repeat()
 
@@ -1463,6 +1488,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#repeat-step[reference],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/branch/Repeat.feature[tests]
 
+[llms-summary="The formal semantics of the replace() step: returns a string with the specified characters in the original string replaced with the new characters."]
 [[replace-step]]
 === replace()
 
@@ -1496,6 +1522,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ReplaceLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[reference]
 
+[llms-summary="The formal semantics of the reverse() step: returns the reverse of the incoming traverser."]
 [[reverse-step]]
 === reverse()
 
@@ -1524,6 +1551,7 @@ order are returned. All other types (including null) are not processed and are r
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ReverseStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#reverse-step[reference]
 
+[llms-summary="The formal semantics of the rTrim() step: returns a string with trailing whitespace removed."]
 [[rTrim-step]]
 === rTrim()
 
@@ -1553,6 +1581,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/RTrimLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[reference]
 
+[llms-summary="The formal semantics of the split() step: returns a list of strings created by splitting the incoming string traverser around the matches of the given separator."]
 [[split-step]]
 === split()
 
@@ -1584,6 +1613,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SplitLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[reference]
 
+[llms-summary="The formal semantics of the substring() step: its exact expected behavior extracting a portion of a string by index."]
 [[substring-step]]
 === substring()
 
@@ -1617,6 +1647,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SubstringLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#substring-step[reference]
 
+[llms-summary="The formal semantics of the toLower() step: returns the lowercase representation of incoming string traverser, or if Scope.local is specified, returns the lowercase representation of each string element inside the incoming list traverser."]
 [[toLower-step]]
 === toLower()
 
@@ -1647,6 +1678,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToLowerLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toLower-step[reference]
 
+[llms-summary="The formal semantics of the toUpper() step: returns the uppercase representation of incoming string traverser, or if Scope.local is specified, returns the uppercase representation of each string element inside the incoming list traverser."]
 [[toUpper-step]]
 === toUpper()
 
@@ -1677,6 +1709,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToUpperLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toUpper-step[reference]
 
+[llms-summary="The formal semantics of the trim() step: returns a string with leading and trailing whitespace removed."]
 [[trim-step]]
 === trim()
 

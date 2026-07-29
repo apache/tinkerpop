@@ -20,6 +20,7 @@ under the License.
 // flat classpath, so exclude neo4j-gremlin to restart the console without Neo4j's jars.
 [gremlin-docs-plugins-exclude="neo4j-gremlin"]
 [[hadoop-gremlin]]
+[llms-summary="Running Gremlin OLAP over Hadoop: HadoopGraph, graph input/output formats, and executing traversals with SparkGraphComputer."]
 == Hadoop-Gremlin
 
 [source,xml]

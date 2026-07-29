@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[tree]]
+[llms-summary="Recipe for working with tree-shaped data in Gremlin: building, traversing, and extracting hierarchical structures from a graph."]
 == Tree
 
 image:gremlin-tree.png[width=280]

@@ -972,6 +972,10 @@ limitations under the License.
 
                 <!-- the output directory for the asciidoctor plugin - finalized documents can be found here -->
                 <htmlsingle.output.dir>${project.basedir}/target/docs/htmlsingle</htmlsingle.output.dir>
+
+                <!-- the output directory for the agent-friendly Markdown mirror (agentdocsspec.com),
+                     rendered by the tpmarkdown backend from the same executed neutral tree -->
+                <markdown.output.dir>${project.basedir}/target/docs/markdown</markdown.output.dir>
                 <asciidoctor.style.dir>${asciidoc.input.dir}/stylesheets</asciidoctor.style.dir>
 
                 <!-- GremlinTreeprocessor attributes - set via CLI in bin/process-docs.sh -->
@@ -1251,6 +1255,34 @@ limitations under the License.
                                     </attributes>
                                 </configuration>
                             </execution>
+                            <!-- Agent-friendly Markdown mirror of the io-book (agentdocsspec.com pilot).
+                                 Renders through the custom tpmarkdown backend from the SAME executed
+                                 neutral tree as the html5 execution above, so live Gremlin runs once
+                                 (see GremlinExecutionCache) and the executed output matches the HTML. -->
+                            <execution>
+                                <id>io-book-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/dev/io</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/dev/io</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
                             <execution>
                                 <id>provider-book</id>
                                 <phase>generate-resources</phase>
@@ -1424,6 +1456,249 @@ limitations under the License.
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <!-- Agent-friendly Markdown mirrors (agentdocsspec.com) for the remaining
+                                 books/tutorials; each renders via tpmarkdown from the same executed neutral tree
+                                 as its html5 counterpart above. -->
+                            <execution>
+                                <id>reference-book-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/reference</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/reference</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>upgrade-book-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/upgrade</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/upgrade</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>developer-book-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/dev/developer</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/dev/developer</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>future-book-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/dev/future</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/dev/future</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>provider-book-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/dev/provider</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/dev/provider</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>recipe-book-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/recipes</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/recipes</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>tutorial-getting-started-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/getting-started</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/tutorials/getting-started</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>article</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>tutorial-the-gremlin-console-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/the-gremlin-console</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/tutorials/the-gremlin-console</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>article</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>tutorial-gremlin-language-variants-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/gremlin-language-variants</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/tutorials/gremlin-language-variants</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>article</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>tutorial-gremlins-anatomy-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/gremlins-anatomy</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/tutorials/gremlins-anatomy</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>article</doctype>
+                                    <attributes>
+                                        <imagesdir>../../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
                                         <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
                                         <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
                                         <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>

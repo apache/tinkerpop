@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[traversal]]
+[llms-summary="The core of Gremlin: how traversals are constructed from steps, the traverser model, and the catalog of graph traversal steps used to query and mutate graphs."]
 = The Traversal
 
 image::gremlin-running.png[width=125]
@@ -389,6 +390,7 @@ Spawn steps, which actually yield a traversal, typically match the names of exis
 * `V()` - Reads vertices from the graph to start the traversal (<<graph-step, example>>).
 
 [[graph-traversal-steps]]
+[llms-summary="Reference catalog of the individual Gremlin steps (map, filter, sideEffect, branch, and more) with syntax and examples for each."]
 == Graph Traversal Steps
 
 Gremlin steps are chained together to produce the actual traversal and are triggered by way of <<start-steps,start steps>>
@@ -397,6 +399,7 @@ on the `GraphTraversalSource`.
 IMPORTANT: More details about the Gremlin language can be found in the Provider Documentation within the
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#gremlin-semantics[Gremlin Semantics Section].
 
+[llms-summary="The five general steps (map, flatMap, filter, sideEffect, branch) from which all other Gremlin steps are derived."]
 [[general-steps]]
 === General Steps
 
@@ -481,6 +484,7 @@ g.V().choose(has('name','marko'),
 <2> The same operation, but using the traversal representing of `branch()`.
 <3> The more specific boolean-based `choose()`-step is implemented as a `branch()`.
 
+[llms-summary="Terminal steps (e.g. next(), toList(), iterate(), hasNext()) that execute a traversal and return concrete results rather than another traversal."]
 [[terminal-steps]]
 === Terminal Steps
 
@@ -521,6 +525,7 @@ on the current `Traversal` that will be completed in the future.
 
 Finally, <<explain-step,`explain()`>>-step is also a terminal step and is described in its own section.
 
+[llms-summary="The addE()-step (map/sideEffect) adds an edge between vertices in the graph."]
 [[addedge-step]]
 === AddE Step
 
@@ -571,6 +576,7 @@ supports user provided ids.
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addE(java.lang.String)++[`addE(String)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addE(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`addE(Traversal)`]
 
+[llms-summary="The addV()-step is used to add vertices to the graph (map/sideEffect)."]
 [[addvertex-step]]
 === AddV Step
 
@@ -592,6 +598,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV(java.lang.String)++[`addV(String)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`addV(Traversal)`]
 
+[llms-summary="The aggregate()-step (sideEffect) is used to aggregate all the objects at a particular point of traversal into a Collection."]
 [[aggregate-step]]
 === [[store-step]]Aggregate Step
 
@@ -663,6 +670,7 @@ g.E().aggregate(local,'x').by('weight').cap('x')
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#aggregate(java.lang.String)++[`aggregate(String)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#aggregate(org.apache.tinkerpop.gremlin.process.traversal.Scope,java.lang.String)++[`aggregate(Scope,String)`]
 
+[llms-summary="It is possible to filter list traversers using all()-step (filter)."]
 [[all-step]]
 === All Step
 
@@ -687,6 +695,7 @@ g.V().values('age').fold().all(gt(25)) <1>
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#all(org.apache.tinkerpop.gremlin.process.traversal.P)++[`all(P)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/P.html++[`P`]
 
+[llms-summary="The and()-step ensures that all provided traversals yield a result (filter)."]
 [[and-step]]
 === And Step
 
@@ -719,6 +728,7 @@ g.V().where(outE('created').and().outE('knows')).values('name')
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#and(org.apache.tinkerpop.gremlin.process.traversal.Traversal...)++[`and(Traversal...)`]
 
+[llms-summary="It is possible to filter list traversers using any()-step (filter)."]
 [[any-step]]
 === Any Step
 
@@ -743,6 +753,7 @@ g.V().values('age').fold().any(gt(25)) <1>
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#any(org.apache.tinkerpop.gremlin.process.traversal.P)++[`any(P)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/P.html++[`P`]
 
+[llms-summary="The as()-step is not a real step, but a \"step modulator\" similar to by() and option()."]
 [[as-step]]
 === As Step
 
@@ -785,6 +796,7 @@ g.V().hasLabel('software').as('a','b','c').
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#as(java.lang.String,java.lang.String...)++[`as(String,String...)`]
 
+[llms-summary="The asString()-step (map) returns the value of incoming traverser as strings."]
 [[asString-step]]
 === AsString Step
 
@@ -806,6 +818,7 @@ g.V().hasLabel('person').values('age').fold().asString(local) <3>
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asString()++[`asString()`]
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asString(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`asString(Scope)`]
 
+[llms-summary="The asDate()-step (map) converts string or numeric input to Date."]
 [[asDate-step]]
 === AsDate Step
 
@@ -831,6 +844,7 @@ g.inject(datetime("2023-08-24T00:00:00Z")).asDate() <3>
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asDate()++[`asDate()`]
 
+[llms-summary="The barrier()-step (barrier) turns the lazy traversal pipeline into a bulk-synchronous pipeline."]
 [[barrier-step]]
 === Barrier Step
 
@@ -892,6 +906,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#barrier(java.util.function.Consumer)++[`barrier(Consumer)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#barrier(int)++[`barrier(int)`]
 
+[llms-summary="The branch() step splits the traverser to all the child traversals provided to it."]
 [[branch-step]]
 === Branch Step
 
@@ -903,6 +918,7 @@ robust steps like <<choose-step, choose()>> and <<union-step,union()>>.
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#branch(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`branch(Traversal)`]
 
+[llms-summary="The by()-step is not an actual step, but instead is a \"step-modulator\" similar to as() and option()."]
 [[by-step]]
 === By Step
 
@@ -972,6 +988,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Order.html++[`Order`],
 <<a-note-on-maps>>
 
+[llms-summary="The call() step allows for custom, provider-specific service calls either at the start of a traversal or mid-traversal."]
 [[call-step]]
 === Call Step
 
@@ -1033,6 +1050,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#call(java.lang.String,org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`call(String, Traversal)`]
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#call(java.lang.String,java.util.Map,org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`call(String, Map, Traversal)`]
 
+[llms-summary="The cap()-step (barrier) iterates the traversal up to itself and emits the sideEffect referenced by the provided key."]
 [[cap-step]]
 === Cap Step
 
@@ -1052,6 +1070,7 @@ g.V().groupCount('a').by(label).groupCount('b').by(outE().count()).cap('a','b') 
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#cap(java.lang.String,java.lang.String...)++[`cap(String,String...)`]
 
+[llms-summary="The choose()-step (branch) routes the current traverser to a particular traversal branch option."]
 [[choose-step]]
 === Choose Step
 
@@ -1117,6 +1136,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#choose(org.apache.tinkerpop.gremlin.process.traversal.Traversal,org.apache.tinkerpop.gremlin.process.traversal.Traversal,org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`choose(Traversal,Traversal,Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#choose(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`choose(Traversal)`]
 
+[llms-summary="The coalesce()-step evaluates the provided traversals in order and returns the first traversal that emits at least one element."]
 [[coalesce-step]]
 === Coalesce Step
 
@@ -1135,6 +1155,7 @@ g.V().hasLabel('person').coalesce(values('nickname'), values('name'))
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#coalesce(org.apache.tinkerpop.gremlin.process.traversal.Traversal...)++[`coalesce(Traversal...)`]
 
+[llms-summary="To randomly filter out a traverser, use the coin()-step (filter)."]
 [[coin-step]]
 === Coin Step
 
@@ -1152,6 +1173,7 @@ g.V().coin(1.0)
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#coin(double)++[`coin(double)`]
 
 [[combine-step]]
+[llms-summary="The combine() step (map) merges the elements of the incoming list traverser with a provided list argument into a single list."]
 === Combine Step
 
 The `combine()`-step (*map*) combines the elements of the incoming list traverser and the provided list argument into
@@ -1170,6 +1192,7 @@ g.V().values("name").fold().combine(__.constant("stephen").fold())
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#combine(java.lang.Object)++[`combine(Object)`]
 link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#combine-step++[`Semantics`]
 
+[llms-summary="The concat()-step (map) concatenates one or more String values together to the incoming String traverser."]
 [[concat-step]]
 === Concat Step
 
@@ -1217,6 +1240,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#concat(org.apache.tinkerpop.gremlin.process.traversal.Traversal,org.apache.tinkerpop.gremlin.process.traversal.Traversal...)++[`concat(Taversal, Traversal...)`]
 link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#concat-step++[`Semantics`]
 
+[llms-summary="The conjoin()-step (map) joins together the elements in the incoming list traverser together with the provided argument as a delimiter."]
 [[conjoin-step]]
 === Conjoin Step
 
@@ -1235,6 +1259,7 @@ g.V().values("name").fold().conjoin("+")
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#conjoin(java.lang.String)++[`conjoin(String)`]
 link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#conjoin-step++[`Semantics`]
 
+[llms-summary="The connectedComponent() step performs a computation to identify Connected Component instances in a graph."]
 [[connectedcomponent-step]]
 === ConnectedComponent Step
 
@@ -1270,6 +1295,7 @@ configuration keys from the `ConnectedComponent` class and is automatically impo
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#connectedComponent()++[`connectedComponent()`]
 
+[llms-summary="To specify a constant value for a traverser, use the constant()-step (map)."]
 [[constant-step]]
 === Constant Step
 
@@ -1293,6 +1319,7 @@ g.V().coalesce(
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#constant(E2)++[`constant(Object)`]
 
+[llms-summary="The count()-step (map) counts the total number of represented traversers in the streams (i.e. the bulk count)."]
 [[count-step]]
 === Count Step
 
@@ -1335,6 +1362,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#count(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`count(Scope)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+[llms-summary="The cyclicPath()-step (filter) retains only traversers whose path contains a cycle (a repeated element)."]
 [[cyclicpath-step]]
 === CyclicPath Step
 
@@ -1367,6 +1395,7 @@ g.V(1).as('a').out('created').as('b').
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#cyclicPath()++[`cyclicPath()`]
 
+[llms-summary="The dateAdd()-step (map) returns the value with the addition of the value number of units as specified by the DateToken."]
 [[dateAdd-step]]
 === DateAdd Step
 
@@ -1386,6 +1415,7 @@ g.inject(["2023-08-02T00:00:00Z", "2023-08-03T00:00:00Z"]).unfold().asDate().dat
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateAdd(org.apache.tinkerpop.gremlin.process.traversal.DT,int)++[`dateAdd(DT,int)`]
 
+[llms-summary="The dateDiff()-step (map) returns the difference between two Dates in epoch time."]
 [[dateDiff-step]]
 === DateDiff Step
 
@@ -1408,6 +1438,7 @@ g.inject("2023-08-02T00:00:00Z").asDate().dateDiff(constant("2023-08-03T00:00:00
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff(java.util.Date)++[`dateDiff(Date)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`dateDiff(Traversal)`]
 
+[llms-summary="With dedup()-step (filter), repeatedly seen objects are removed from the traversal stream."]
 [[dedup-step]]
 === Dedup Step
 
@@ -1488,6 +1519,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`],
 link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#dedup-step++[`Semantics`]
 
+[llms-summary="The difference()-step (map) calculates the difference between the incoming list traverser and the provided list argument."]
 [[difference-step]]
 === Difference Step
 
@@ -1507,6 +1539,7 @@ g.V().values("name").fold().difference(__.V().limit(2).values("name").fold())
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#difference(java.lang.Object)++[`difference(Object)`]
 link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#difference-step++[`Semantics`]
 
+[llms-summary="The disjunct()-step (map) calculates the disjunct set between the incoming list traverser and the provided list argument."]
 [[disjunct-step]]
 === Disjunct Step
 
@@ -1527,6 +1560,7 @@ g.V().values("name").fold().disjunct(__.V().limit(3).values("name").fold())
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#disjunct(java.lang.Object)++[`disjunct(Object)`]
 link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#disjunct-step++[`Semantics`]
 
+[llms-summary="The drop()-step (filter/sideEffect) is used to remove element and properties from the graph (i.e. remove)."]
 [[drop-step]]
 === Drop Step
 
@@ -1547,6 +1581,7 @@ g.V()
 
 * link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#drop()++[`drop()`]
 
+[llms-summary="The E()-step is meant to read edges from the graph and is usually used to start a GraphTraversal, but can also be used mid-traversal."]
 [[e-step]]
 === E Step
 
@@ -1567,6 +1602,7 @@ g.inject(1).coalesce(E().hasLabel("knows"), addE("knows").from(V().has("name","j
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#E(java.lang.Object...)++[`E(Object...)`]
 
+[llms-summary="The element() step is a no-argument step that traverses from a Property to the Element that owns it."]
 [[element-step]]
 === Element Step
 
@@ -1587,6 +1623,7 @@ g.V().properties().properties().element() <3>
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#element()++[`element()`]
 
+[llms-summary="The elementMap()-step yields a Map representation of the structure of an element."]
 [[elementmap-step]]
 === ElementMap Step
 
@@ -1618,6 +1655,7 @@ as the `id` is the only available data to the star graph.
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#elementMap(java.lang.String...)++[`elementMap(String...)`]
 
+[llms-summary="The emit-step is not an actual step, but is instead a step modulator for repeat() (find more documentation on the emit() there)."]
 [[emit-step]]
 === Emit Step
 
@@ -1630,6 +1668,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#emit(java.util.function.Predicate)++[`emit(Predicate)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#emit(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`emit(Traversal)`]
 
+[llms-summary="The explain()-step (terminal) will return a TraversalExplanation."]
 [[explain-step]]
 === Explain Step
 
@@ -1647,6 +1686,7 @@ g.V().hasLabel('person').outE().identity().inV().count().is(gt(5)).explain()
 
 For traversal profiling information, please see <<profile-step,`profile()`>>-step.
 
+[llms-summary="The fail()-step provides a way to force a traversal to immediately fail with an exception."]
 [[fail-step]]
 === Fail Step
 
@@ -1705,6 +1745,7 @@ continue to surface this condition as their standard remote exception type.
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#fail()++[`fail()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#fail(java.lang.String)++[`fail(String)`]
 
+[llms-summary="The filter() step maps the traverser from the current object to either true or false where the latter will not pass the traverser to the next step in the process."]
 [[filter-step]]
 === Filter Step
 
@@ -1716,6 +1757,7 @@ information.
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#filter(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`filter(Traversal)`]
 
+[llms-summary="The flatMap() step maps the traverser from the current object to an Iterator of objects for the next step in the process."]
 [[flatmap-step]]
 === FlatMap Step
 
@@ -1726,6 +1768,7 @@ process. Please see the <<general-steps, General Steps>> section for more inform
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#flatMap(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`flatMap(Traversal)`]
 
+[llms-summary="The format()-step (map) builds a string from a template with placeholders filled by traverser values and properties."]
 [[format-step]]
 === Format Step
 
@@ -1749,6 +1792,7 @@ g.V().project("name","count").by(values("name")).by(bothE().count()).format("%{n
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#format(java.lang.String)++[`format(String)`],
 
+[llms-summary="The fold()-step (map) aggregates all objects in the stream into a single list (or reduces them with a supplied seed and function)."]
 [[fold-step]]
 === Fold Step
 
@@ -1781,6 +1825,7 @@ g.inject(["a":1],["b":2]).fold([], addAll) <7>
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#fold()++[`fold()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#fold(E2,java.util.function.BiFunction)++[`fold(Object,BiFunction)`]
 
+[llms-summary="The from()-step is not an actual step, but instead is a \"step-modulator\" similar to as() and by()."]
 [[from-step]]
 === From Step
 
@@ -1807,6 +1852,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#from(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`from(Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#from(org.apache.tinkerpop.gremlin.structure.Vertex)++[`from(Vertex)`]
 
+[llms-summary="The group()-step (map/sideEffect) organizes objects into a Map by a key, optionally folding each group's values."]
 [[group-step]]
 === Group Step
 
@@ -1847,6 +1893,7 @@ g.V().group().by('name').by('age') <2>
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#group()++[`group()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#group(java.lang.String)++[`group(String)`]
 
+[llms-summary="When it is important to know how many times a particular object has been at a particular part of a traversal, groupCount()-step (map/sideEffect) is used."]
 [[groupcount-step]]
 === GroupCount Step
 
@@ -1887,6 +1934,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#groupCount(java.lang.String)++[`groupCount(String)`]
 
 [[has-step]]
+[llms-summary="The has() step (filter) and its variants (hasLabel, hasId, hasKey, hasValue, hasNot) filter vertices, edges, and properties by label, key, and value."]
 === Has Step
 
 image::has-step.png[width=670]
@@ -1970,6 +2018,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/T.html++[`T`],
 link:++https://tinkerpop.apache.org/docs/x.y.z/recipes/#has-traversal++[Recipes - Anti-pattern]
 
+[llms-summary="The id()-step (map) takes an Element and extracts its identifier from it."]
 [[id-step]]
 === Id Step
 
@@ -1987,6 +2036,7 @@ g.V(1).properties().id()
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#id()++[`id()`]
 
+[llms-summary="The identity()-step (map) is an identity function which maps the current object to itself."]
 [[identity-step]]
 === Identity Step
 
@@ -2002,6 +2052,7 @@ g.V().identity()
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#identity()++[`identity()`]
 
+[llms-summary="The index()-step (map) indexes each element in the current collection."]
 [[index-step]]
 === Index Step
 
@@ -2040,6 +2091,7 @@ g.V().hasLabel("person").values("name").fold().
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#index()++[`index()`]
 
+[llms-summary="The inject()-step inserts arbitrary objects into the traversal stream."]
 [[inject-step]]
 === Inject Step
 
@@ -2070,6 +2122,7 @@ inject(1,2).map {it.get() + 1}.map {g.V(it.get()).next()}.values('name')
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#inject(E...)++[`inject(Object)`]
 
+[llms-summary="The intersect()-step (map) calculates the intersection between the incoming list traverser and the provided list argument."]
 [[intersect-step]]
 === Intersect Step
 
@@ -2089,6 +2142,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#intersect-step++[`Semantics`]
 
 anchor:_gremlin_i_o[]
+[llms-summary="The task of importing and exporting the data of Graph instances is the job of the io()-step."]
 [[io-step]]
 === IO Step
 
@@ -2226,6 +2280,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/upgrade/#graphml-format[Upgrade Doc
 
 anchor:graphson-reader-writer[]
 [[graphson]]
+[llms-summary="How the io() step reads and writes graphs in the JSON-based GraphSON format, including its use for import and export."]
 ==== GraphSON
 
 image:gremlin-graphson.png[width=350,float=left] GraphSON is a link:http://json.org/[JSON]-based format extended
@@ -2275,6 +2330,7 @@ g.io("graph.kryo").write().iterate()
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversalSource.html#io(java.lang.String)++[`io(String)`]
 
+[llms-summary="It is possible to filter scalar values using is()-step (filter)."]
 [[is-step]]
 === Is Step
 
@@ -2306,6 +2362,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#is(org.apache.tinkerpop.gremlin.process.traversal.P)++[`is(P)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/P.html++[`P`]
 
+[llms-summary="The key()-step (map) takes a Property and extracts the key from it."]
 [[key-step]]
 === Key Step
 
@@ -2321,6 +2378,7 @@ g.V(1).properties().properties().key()
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#key()++[`key()`]
 
+[llms-summary="The label()-step (map) takes an Element and extracts its label from it."]
 [[label-step]]
 === Label Step
 
@@ -2337,6 +2395,7 @@ g.V(1).properties().label()
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#label()++[`label()`]
 
+[llms-summary="The length()-step (map) returns the length incoming string or list of string traverser."]
 [[length-step]]
 === Length Step
 
@@ -2357,6 +2416,7 @@ g.V().values('name').fold().length(local) <2>
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#length()++[`length()`]
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#length(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`length(Scope)`]
 
+[llms-summary="The limit()-step is analogous to range()-step save that the lower end range is set to 0."]
 [[limit-step]]
 === Limit Step
 
@@ -2386,6 +2446,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#limit(org.apache.tinkerpop.gremlin.process.traversal.Scope,long)++[`limit(Scope,long)`]
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+[llms-summary="The local()-step (branch) runs a child traversal locally on each single input object rather than the whole stream."]
 [[local-step]]
 === Local Step
 
@@ -2445,6 +2506,7 @@ the confines of the vertex's star graph. In other words, it can not traverse to 
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#local(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`local(Traversal)`]
 
+[llms-summary="The loops()-step (map) extracts the number of times the Traverser has gone through the current loop."]
 [[loops-step]]
 === Loops Step
 
@@ -2460,6 +2522,7 @@ g.V().emit(__.has("name", "marko").or().loops().is(2)).repeat(__.out()).values("
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#loops()++[`loops()`],
 link:++https://tinkerpop.apache.org/docs/x.y.z/recipes/#looping++[`Looping Recipes`]
 
+[llms-summary="The lTrim()-step (map) returns a string with leading whitespace removed."]
 [[lTrim-step]]
 === LTrim Step
 
@@ -2477,6 +2540,7 @@ g.inject(["   hello   ", " world ", null]).lTrim(local) <1>
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#lTrim()++[`lTrim()`]
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#lTrim(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`lTrim(Scope)`]
 
+[llms-summary="The map() step maps the traverser from the current object to the next step in the process."]
 [[map-step]]
 === Map Step
 
@@ -2488,6 +2552,7 @@ The `map()` step maps the traverser from the current object to the next step in 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#map(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`map(Traversal)`]
 
 [[match-step]]
+[llms-summary="The match() step (map) provides declarative, pattern-matching graph querying by combining traversal fragments bound to shared variables."]
 === Match Step
 
 The `match()`-step (*map*) provides a more link:http://en.wikipedia.org/wiki/Declarative_programming[declarative]
@@ -2713,6 +2778,7 @@ path of the traverser in `match()`. As such, `where()`-steps in `match()` are us
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#match(org.apache.tinkerpop.gremlin.process.traversal.Traversal...)++[`match(Traversal...)`]
 
+[llms-summary="The math()-step (math) enables scientific calculator functionality within Gremlin."]
 [[math-step]]
 === Math Step
 
@@ -2764,6 +2830,7 @@ functions are provided:
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#math(java.lang.String)++[`math(String)`]
 
+[llms-summary="The max()-step (map) operates on a stream of comparable objects and determines which is the last object according to its natural order in the stream."]
 [[max-step]]
 === Max Step
 
@@ -2800,6 +2867,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#max(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`max(Scope)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+[llms-summary="The mean()-step (map) operates on a stream of numbers and determines the average of those numbers."]
 [[mean-step]]
 === Mean Step
 
@@ -2838,6 +2906,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#mean(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`mean(Scope)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+[llms-summary="The merge()-step (map) combines collections like lists and maps."]
 [[merge-step]]
 === Merge Step
 
@@ -2859,6 +2928,7 @@ g.V().hasLabel('software').elementMap().merge([year:2009])
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#merge(java.lang.Object)++[`merge(Object)`]
 link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#merge-step++[`Semantics`]
 
+[llms-summary="The mergeE() step is used to add edges and their properties to a graph in a \"create if not exist\" fashion."]
 [[mergeedge-step]]
 === MergeEdge Step
 
@@ -2997,6 +3067,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Merge.html++[`Merge`],
 link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_mergee++[Semantics]
 
+[llms-summary="The mergeV() -step is used to add vertices and their properties to a graph in a \"create if not exist\" fashion."]
 [[mergevertex-step]]
 === MergeVertex Step
 
@@ -3205,6 +3276,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Merge.html++[`Merge`],
 link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_mergee++[Semantics]
 
+[llms-summary="The min()-step (map) operates on a stream of comparable objects and determines which is the first object according to its natural order in the stream."]
 [[min-step]]
 === Min Step
 
@@ -3241,6 +3313,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#min(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`min(Scope)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+[llms-summary="The none()-step (filter) filters all objects from a traversal stream."]
 [[none-step]]
 === None Step
 
@@ -3259,6 +3332,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#iterate()++[`iterate()`]
 
 [[not-step]]
+[llms-summary="The not() step (filter) removes traversers for which the provided sub-traversal returns a result, negating a pattern."]
 === Not Step
 
 The `not()`-step (*filter*) removes objects from the traversal stream when the traversal provided as an argument
@@ -3288,6 +3362,7 @@ g.V().hasLabel('person').
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#not(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`not(Traversal)`]
 
+[llms-summary="The option()-step is a modulator that supplies branch choices to choose(), branch(), and mergeV()/mergeE()."]
 [[option-step]]
 === Option Step
 
@@ -3298,6 +3373,7 @@ An option to a <<general-steps,`branch()`>> or <<choose-step,`choose()`>>.
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#option(M,org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`option(Object,Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#option(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`option(Traversal)`]
 
+[llms-summary="The optional()-step (branch/flatMap) returns the result of the specified traversal if it yields a result, else it returns the calling element (i.e. the identity)."]
 [[optional-step]]
 === Optional Step
 
@@ -3326,6 +3402,7 @@ g.V().hasLabel('person').optional(out('knows').optional(out('created'))).path() 
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#optional(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`optional(Traversal)`]
 
+[llms-summary="The or()-step ensures that at least one of the provided traversals yield a result (filter)."]
 [[or-step]]
 === Or Step
 
@@ -3359,6 +3436,7 @@ g.V().where(outE('created').or().outE('knows')).values('name')
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#or(org.apache.tinkerpop.gremlin.process.traversal.Traversal...)++[`or(Traversal...)`]
 
+[llms-summary="When the objects of the traversal stream need to be sorted, order()-step (map) can be leveraged."]
 [[order-step]]
 === Order Step
 
@@ -3430,6 +3508,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Order.html++[`Order`]
 
+[llms-summary="The pageRank()-step (map/sideEffect) calculates PageRank using PageRankVertexProgram."]
 [[pagerank-step]]
 === PageRank Step
 
@@ -3473,6 +3552,7 @@ g.V().hasLabel('person').
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#pageRank()++[`pageRank()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#pageRank(double)++[`pageRank(double)`]
 
+[llms-summary="The path()-step (map) returns the full history (path) of each traverser through the traversal."]
 [[path-step]]
 === Path Step
 
@@ -3573,6 +3653,7 @@ path.d == path.e
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#path()++[`path()`]
 
+[llms-summary="The peerPressure()-step (map/sideEffect) clusters vertices using PeerPressureVertexProgram."]
 [[peerpressure-step]]
 === PeerPressure Step
 
@@ -3599,6 +3680,7 @@ configuration keys from the `PeerPressure` class and is automatically imported t
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#peerPressure()++[`peerPressure()`]
 
+[llms-summary="The product()-step (map) calculates the cartesian product between the incoming list traverser and the provided list argument."]
 [[product-step]]
 === Product Step
 
@@ -3620,6 +3702,7 @@ g.V().values("name").fold().product(__.V().has("age").limit(1).values("age").fol
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#product(java.lang.Object)++[`product(Object)`]
 link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#product-step++[`Semantics`]
 
+[llms-summary="The profile()-step (sideEffect) exists to allow developers to profile their traversals to determine statistical information like step runtime, counts, etc."]
 [[profile-step]]
 === Profile Step
 
@@ -3655,6 +3738,7 @@ For traversal compilation information, please see <<explain-step,`explain()`>>-s
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#profile()++[`profile()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#profile(java.lang.String)++[`profile(String)`]
 
+[llms-summary="The project()-step (map) projects the current object into a Map&lt;String,Object&gt; keyed by provided labels."]
 [[project-step]]
 === Project Step
 
@@ -3689,6 +3773,7 @@ g.V().project('n','a').by('name').by('age') <1>
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#project(java.lang.String,java.lang.String...)++[`project(String,String...)`]
 
+[llms-summary="The program()-step (map/sideEffect) is the \"lambda\" step for GraphComputer jobs."]
 [[program-step]]
 === Program Step
 
@@ -3784,6 +3869,7 @@ g.V().hasLabel('person').
   elementMap('name', 'rank')
 ----
 
+[llms-summary="The properties()-step (map) extracts properties from an Element in the traversal stream."]
 [[properties-step]]
 === Properties Step
 
@@ -3817,6 +3903,7 @@ meta-properties: only the three `location` values that carry an `endTime` meta-p
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#properties(java.lang.String...)++[`properties(String...)`]
 
 anchor:addproperty-step[]
+[llms-summary="The property()-step is used to add properties to the elements of the graph (sideEffect)."]
 [[property-step]]
 === Property Step
 
@@ -3857,6 +3944,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality,java.lang.Object,java.lang.Object,java.lang.Object...)++[`property(Cardinality, Object, Object, Object...)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/VertexProperty.Cardinality.html++[`Cardinality`]
 
+[llms-summary="The propertyMap()-step yields a Map representation of the properties of an element."]
 [[propertymap-step]]
 === PropertyMap Step
 
@@ -3874,6 +3962,7 @@ g.E().propertyMap()
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#propertyMap(java.lang.String...)++[`propertyMap(String...)`]
 
+[llms-summary="As traversers propagate through the traversal, it is possible to only allow a certain number of them to pass through with range()-step (filter)."]
 [[range-step]]
 === Range Step
 
@@ -3914,6 +4003,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#range(org.apache.tinkerpop.gremlin.process.traversal.Scope,long,long)++[`range(Scope,long,long)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+[llms-summary="The read()-step is not really a \"step\" but a step modulator in that it modifies the functionality of the io()-step."]
 [[read-step]]
 === Read Step
 
@@ -3925,6 +4015,7 @@ location. Please see the <<io-step,documentation>> for `io()`-step for more comp
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#read()++[`read()`]
 
+[llms-summary="The repeat()-step (branch) is used for looping over a traversal given some break predicate."]
 [[repeat-step]]
 === Repeat Step
 
@@ -4025,6 +4116,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 <<emit-step, emit>>, <<times-step, times()>>, <<until-step,until()>>,
 link:++https://tinkerpop.apache.org/docs/x.y.z/recipes/#looping++[`Looping Recipes`]
 
+[llms-summary="The replace()-step (map) returns a string with the specified characters in the original string replaced with the new characters."]
 [[replace-step]]
 === Replace Step
 The `replace()`-step (*map*) returns a string with the specified characters in the original string replaced with the new
@@ -4048,6 +4140,7 @@ g.V().hasLabel("software").values("name").fold().replace(local, "p", "g") <4>
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#replace(java.lang.String,java.lang.String)++[`replace(String,String)`]
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#replace(org.apache.tinkerpop.gremlin.process.traversal.Scope,java.lang.String,java.lang.String)++[`replace(Scope,String,String)`]
 
+[llms-summary="The reverse()-step (map) returns the reverse of the incoming list traverser."]
 [[reverse-step]]
 === Reverse Step
 
@@ -4065,6 +4158,7 @@ g.V().values("name").order().fold().reverse() <2>
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#reverse()++[`reverse()`]
 
+[llms-summary="The rTrim()-step (map) returns a string with trailing whitespace removed."]
 [[rTrim-step]]
 === RTrim Step
 
@@ -4083,6 +4177,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#rTrim(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`rTrim(Scope)`]
 
 [[sack-step]]
+[llms-summary="The sack() step (sideEffect or map) reads and writes a per-traverser local data structure (the sack), used to carry and accumulate values along a traversal."]
 === Sack Step
 
 image:gremlin-sacks-running.png[width=175,float=right] A traverser can contain a local data structure called a "sack".
@@ -4169,6 +4264,7 @@ g.withBulk(false).withSack(1.0f).V(1).local(outE('knows').barrier(normSack).inV(
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#sack()++[`sack()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#sack(java.util.function.BiFunction)++[`sack(BiFunction)`]
 
+[llms-summary="The sample()-step is useful for sampling some number of traversers previous in the traversal."]
 [[sample-step]]
 === Sample Step
 
@@ -4230,6 +4326,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#sample(org.apache.tinkerpop.gremlin.process.traversal.Scope,int)++[`sample(Scope,int)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+[llms-summary="The select()-step (map) selects labeled steps, side-effects, columns, or map entries from the traverser."]
 [[select-step]]
 === Select Step
 
@@ -4370,6 +4467,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Pop.html++[`Pop`],
 <<a-note-on-maps>>
 
+[llms-summary="The shortestPath()-step provides an easy way to find shortest non-cyclic paths in a graph."]
 [[shortestpath-step]]
 === ShortestPath step
 
@@ -4434,6 +4532,7 @@ g.inject(g.withComputer().V().shortestPath().
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#shortestPath()++[`shortestPath()`]
 
+[llms-summary="The sideEffect() step performs some operation on the traverser and passes it to the next step in the process."]
 [[sideeffect-step]]
 === SideEffect Step
 
@@ -4444,6 +4543,7 @@ see the <<general-steps, General Steps>> section for more information.
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#sideEffect(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`sideEffect(Traversal)`]
 
+[llms-summary="When it is important that a traverser not repeat its path through the graph, simplePath()-step should be used (filter)."]
 [[simplepath-step]]
 === SimplePath Step
 
@@ -4500,6 +4600,7 @@ cross the vertices from the first path.
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#simplePath()++[`simplePath()`]
 
+[llms-summary="The skip()-step is analogous to range()-step save that the higher end range is set to -1."]
 [[skip-step]]
 === Skip Step
 
@@ -4534,6 +4635,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#skip(org.apache.tinkerpop.gremlin.process.traversal.Scope,long)++[`skip(Scope,long)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+[llms-summary="The split()-step (map) returns a list of strings created by splitting the incoming string traverser around the matches of the given separator."]
 [[split-step]]
 === Split Step
 The `split()`-step (*map*) returns a list of strings created by splitting the incoming string traverser around the
@@ -4557,6 +4659,7 @@ g.V().hasLabel("person").values("name").fold().split(local, "a") <4>
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#split(java.lang.String)++[`split(String)`]
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#split(org.apache.tinkerpop.gremlin.process.traversal.Scope,java.lang.String)++[`split(Scope, String)`]
 
+[llms-summary="The subgraph()-step (sideEffect) extracts a portion of the graph into a new edge-induced subgraph."]
 [[subgraph-step]]
 === Subgraph Step
 
@@ -4643,6 +4746,7 @@ List<Vertex> vertices = g.V(v).out().toList();
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#subgraph(java.lang.String)++[`subgraph(String)`]
 
 [[substring-step]]
+[llms-summary="The substring() step (map) extracts a portion of an incoming string by start (and optional end) index."]
 === Substring Step
 The `substring()`-step (*map*) returns a substring with a 0-based start index (inclusive) and optionally an end index (exclusive) specified.
 If the start index is negative then it will begin at the specified index counted from the end of the string, or 0 if exceeding the string length.
@@ -4670,6 +4774,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#substring(int,int)++[`substring(int,int)`]
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#substring(org.apache.tinkerpop.gremlin.process.traversal.Scope,int,int)++[`substring(Scope,int,int)`]
 
+[llms-summary="The sum()-step (map) operates on a stream of numbers and sums the numbers together to yield a result."]
 [[sum-step]]
 === Sum Step
 
@@ -4706,6 +4811,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#sum(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`sum(Scope)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+[llms-summary="The tail()-step is analogous to limit()-step, except that it emits the last n-objects instead of the first n-objects."]
 [[tail-step]]
 === Tail Step
 
@@ -4749,6 +4855,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tail(org.apache.tinkerpop.gremlin.process.traversal.Scope,long)++[`tail(Scope,long)`]
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+[llms-summary="The timeLimit()-step (filter) halts a traversal branch after a specified time has elapsed."]
 [[timelimit-step]]
 === TimeLimit Step
 
@@ -4780,6 +4887,7 @@ yield `false`.
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#timeLimit(long)++[`timeLimit(long)`]
 
+[llms-summary="The times-step is not an actual step, but is instead a step modulator for repeat() (find more documentation on the times() there)."]
 [[times-step]]
 === Times Step
 
@@ -4792,6 +4900,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 `<<emit-step,emit()>>`, `<<repeat-step,repeat()>>`, `<<until-step,until()>>`
 
 [[to-step]]
+[llms-summary="The to() step-modulator supplies direction and destination arguments to steps like from(), addE(), and path-oriented steps."]
 === To Step
 
 The `to()`-step is not an actual step, but instead is a "step-modulator" similar to <<as-step,`as()`>> and
@@ -4811,6 +4920,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toV(org.apache.tinkerpop.gremlin.structure.Direction)++[`toV(Direction)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/Direction.html++[`Direction`]
 
+[llms-summary="The toLower()-step (map) returns the lowercase representation of incoming string or list of string traverser."]
 [[toLower-step]]
 === ToLower Step
 
@@ -4830,6 +4940,7 @@ g.inject(["HELLO", "wORlD", null]).toLower(Scope.local) <1>
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toLower()++[`toLower()`]
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toLower(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`toLower(Scope)`]
 
+[llms-summary="The toUpper()-step (map) returns the uppercase representation of incoming string or list of string traverser."]
 [[toUpper-step]]
 === ToUpper Step
 
@@ -4851,6 +4962,7 @@ g.V().values("name").fold().toUpper(local) <2>
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toUpper()++[`toUpper()`]
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toUpper(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`toUpper(Scope)`]
 
+[llms-summary="The tree()-step (sideEffect) aggregates the paths emanating from elements into a tree structure."]
 [[tree-step]]
 === Tree Step
 
@@ -4913,6 +5025,7 @@ g.V().has('name','josh').out('created').values('name').tree('x').cap('x')
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tree()++[`tree()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tree(java.lang.String)++[`tree(String)`]
 
+[llms-summary="The trim()-step (map) returns a string with leading and trailing whitespace removed."]
 [[trim-step]]
 === Trim Step
 
@@ -4930,6 +5043,7 @@ g.inject(["   hello   ", " world ", null]).trim(Scope.local) <1>
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#trim()++[`trim()`]
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#trim(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`trim(Scope)`]
 
+[llms-summary="The unfold()-step (flatMap) unrolls an iterator, iterable, or map in the stream into a linear sequence of objects."]
 [[unfold-step]]
 === Unfold Step
 
@@ -4955,6 +5069,7 @@ inject(1,[2,3,[4,5,[6]]]).repeat(unfold()).until(count(local).is(1)).unfold()
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#unfold()++[`unfold()`]
 
+[llms-summary="The union()-step (branch) supports the merging of the results of an arbitrary number of traversals."]
 [[union-step]]
 === Union Step
 
@@ -4980,6 +5095,7 @@ g.union(V().has('person','name','vadas'),
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#union(org.apache.tinkerpop.gremlin.process.traversal.Traversal...)++[`union(Traversal...)`]
 
+[llms-summary="The until-step is not an actual step, but is instead a step modulator for repeat() (find more documentation on the until() there)."]
 [[until-step]]
 === Until Step
 
@@ -4992,6 +5108,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#until(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`until(Traversal)`]
 
 anchor:graph-step[]
+[llms-summary="The V()-step is meant to read vertices from the graph and is usually used to start a GraphTraversal, but can also be used mid-traversal."]
 [[v-step]]
 === V Step
 
@@ -5026,6 +5143,7 @@ g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#V(java.lang.Object...)++[`V(Object...)`]
 
+[llms-summary="The value()-step (map) takes a Property and extracts the value from it."]
 [[value-step]]
 === Value Step
 
@@ -5041,6 +5159,7 @@ g.V(1).properties().properties().value()
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#value()++[`value()`]
 
+[llms-summary="The valueMap()-step yields a Map representation of the properties of an element."]
 [[valuemap-step]]
 === ValueMap Step
 
@@ -5092,6 +5211,7 @@ g.V().hasLabel('person').properties('location').valueMap().with(WithOptions.toke
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#valueMap(java.lang.String...)++[`valueMap(String...)`]
 
+[llms-summary="The values()-step (map) extracts the values of properties from an Element in the traversal stream."]
 [[values-step]]
 === Values Step
 
@@ -5124,6 +5244,7 @@ The order in which property values are returned is not guaranteed.
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#values(java.lang.String...)++[`values(String...)`]
 
+[llms-summary="The vertex steps (out(), in(), both(), outE(), V(), etc.) move between vertices and edges and are fundamental to graph navigation."]
 [[vertex-steps]]
 === Vertex Steps
 
@@ -5193,6 +5314,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#outE(java.lang.String...)++[`outE(String...)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#outV()++[`outV()`]
 
+[llms-summary="The where()-step filters the current object based on either the object itself (Scope.local) or the path history of the object (Scope.global) (filter)."]
 [[where-step]]
 === Where Step
 
@@ -5262,6 +5384,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#where(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`where(Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/P.html++[`P`]
 
+[llms-summary="The with()-step is not an actual step, but is instead a \"step modulator\" which modifies the behavior of the step prior to it."]
 [[with-step]]
 === With Step
 
@@ -5279,6 +5402,7 @@ The term `with` is a reserved word in Javascript, and therefore must be referred
 The term `with` is a reserved word in Python, and therefore must be referred to in Gremlin with `with_()`.
 ====
 
+[llms-summary="The write()-step is not really a \"step\" but a step modulator in that it modifies the functionality of the io()-step."]
 [[write-step]]
 === Write Step
 
@@ -5290,6 +5414,7 @@ location. Please see the <<io-step,documentation>> for `io()`-step for more comp
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#write()++[`write()`]
 
+[llms-summary="A note on predicates used in Gremlin traversals, including standard and text predicates."]
 [[a-note-on-predicates]]
 == A Note on Predicates
 
@@ -5371,6 +5496,7 @@ g.V().as('a').both().both().as('b').count()
 g.V().as('a').both().both().as('b').where('a',neq('b')).count()
 ----
 
+[llms-summary="A note on maps in Gremlin, including differences in behavior between embedded and remote contexts."]
 [[a-note-on-maps]]
 == A Note on Maps
 
@@ -5444,6 +5570,7 @@ g.V().hasLabel('person').both().group().by(constant(id))
 g.V().hasLabel('person').both().group().by('age').select(constant(32))
 ----
 
+[llms-summary="A note on barrier steps in Gremlin, including collecting, reducing, and supplying barriers."]
 [[a-note-on-barrier-steps]]
 == A Note on Barrier Steps
 
@@ -5470,6 +5597,7 @@ possible at the current, local vertex. What it can't compute without referencing
 into a barrier collection. When there are no more traversers at the local vertex, the barriered traversers are the
 messages that are propagated to remote vertices for further processing.
 
+[llms-summary="A note on scopes in Gremlin, including local and global scope usage."]
 [[a-note-on-scopes]]
 == A Note on Scopes
 
@@ -5527,6 +5655,7 @@ g.V().fold().local(unfold().count())
 g.V().fold().count(local)
 ----
 
+[llms-summary="A note on lambdas in Gremlin, including their usage, limitations, and alternatives."]
 [[a-note-on-lambdas]]
 == A Note On Lambdas
 
@@ -5571,6 +5700,7 @@ g.V().out().out().path().by('name').
 <2> The length-3 paths have their objects transformed by a lambda-less step and a traversal lambda. (*good*)
 
 [[traversalstrategy]]
+[llms-summary="How TraversalStrategy implementations analyze and rewrite traversals at compile time (decoration, optimization, finalization, verification) and how to author custom strategies.",allow-oversize="true"]
 == TraversalStrategy
 
 image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` analyzes a `Traversal` and, if the traversal

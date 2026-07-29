@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+[llms-summary="Recipe: One common use case when working with Gremlin is to perform complex looping statements using the repeat() step."]
 [[looping]]
 == Looping
 One common use case when working with Gremlin is to perform complex looping statements using the `repeat()` step.  While many of the common patterns for looping within traversals are discussed in the documentation there are several more complex patterns that include additional steps which are also commonly used.  This section attempts to demonstrate how to use some of these more complex measurements.

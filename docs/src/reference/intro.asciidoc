@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 [[intro]]
+[llms-summary="Introduction to TinkerPop and Gremlin: graph computing concepts (structure vs. process), the ways to connect to Gremlin (embedded, Gremlin Server, remote providers), and how to stay implementation-agnostic."]
 = Introduction
 
 Welcome to the Reference Documentation for Apache TinkerPop™ - the backbone for all details on how to work with
