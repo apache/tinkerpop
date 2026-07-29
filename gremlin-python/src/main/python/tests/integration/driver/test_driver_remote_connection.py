@@ -17,6 +17,7 @@
 # under the License.
 #
 import os
+import time
 
 import pytest
 
@@ -51,6 +52,19 @@ class TestDriverRemoteConnection(object):
                                                                              'timeoutMillis': 1000,
                                                                              'bulkResults': True}
         assert 6 == t.to_list()[0]
+
+    def test_timeout_millis_aborts_query_server_side(self, remote_connection):
+        # A small per-request timeoutMillis is forwarded to the server, which aborts the
+        # long-running traversal fast; the <10s bound proves our timeout fired, not the 30s default.
+        g = traversal().with_(remote_connection)
+        t = g.with_("timeoutMillis", 500).inject(1).repeat(__.side_effect(__.constant(1))).times(100000000)
+        start = time.time()
+        with pytest.raises(GremlinServerError) as exc_info:
+            t.to_list()
+        elapsed = time.time() - start
+        assert exc_info.value.status_code == 500
+        assert 'timeout' in str(exc_info.value).lower()
+        assert elapsed < 10, f"expected the 500ms per-request timeout to fire, but took {elapsed:.1f}s (server default is 30s)"
 
     @pytest.mark.skip(reason="TINKERPOP-3126: g.V() with a variable/parameter argument fails to parse in gremlin-lang")
     def test_extract_request_options_with_params(self, remote_connection):
