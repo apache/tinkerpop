@@ -688,6 +688,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV(java.lang.String,java.lang.String...)++[`addV(String, String...)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#addV(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`addV(Traversal)`]
 
+[llms-summary="The addLabel()-step (sideEffect) adds one or more labels to an element on a graph configured with a multi-label LabelCardinality."]
 [[addlabel-step]]
 === AddLabel Step
 
@@ -1923,6 +1924,7 @@ g.V()
 
 * link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#drop()++[`drop()`]
 
+[llms-summary="The dropLabel()-step (sideEffect) removes one or more specific labels from an element, and dropLabels() removes all of them."]
 [[droplabel-step]]
 === DropLabel Step
 
@@ -2892,6 +2894,7 @@ chosen non-deterministically.
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#label()++[`label()`]
 
+[llms-summary="The labels()-step (flatMap) takes an Element and emits each of its labels as a separate traverser."]
 [[labels-step]]
 === Labels Step
 

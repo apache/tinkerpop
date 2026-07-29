@@ -17,6 +17,7 @@ specific language governing permissions and limitations
 under the License.
 ////
 
+[llms-summary="Upgrade notes for the TinkerPop 4.0.x release line: the breaking changes, new features, and provider and driver migration guidance introduced across its beta releases on the way to 4.0.0."]
 = TinkerPop 4.0.0
 
 image::gremlins-wildest-dreams.png[width=185]
@@ -38,6 +39,7 @@ complete list of all the modifications that are part of this release.
 
 ==== Graph Driver Providers
 
+[llms-summary="Upgrade notes for the TinkerPop 4.0.0-beta.3 release: user-facing changes including declarative pattern matching improvements and other 4.0 features."]
 == TinkerPop 4.0.0-beta.3
 
 *Release Date: July 20, 2026*
@@ -873,6 +875,7 @@ Optional<Tree<String>> found = tree.findSubtree("josh");    // Optional[{ripple=
 See: link:https://lists.apache.org/thread/o0nqh6kmrkdht531655p351ldjll045d[[DISCUSS] Make Tree no longer extend HashMap]
 
 
+[llms-summary="Provider-facing upgrade notes for TinkerPop 4.0.0-beta.3: changes graph system and graph driver providers must account for, including Provider Defined Types (PDT)."]
 === Upgrading for Providers
 
 ==== Graph System Providers
@@ -1017,6 +1020,7 @@ reference implementation, and the
 link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/dev/provider/#tinkerpop-providers-tinkergql[provider documentation]
 for wiring instructions.
 
+[llms-summary="Upgrade notes for the TinkerPop 4.0.0-beta.2 release: user-facing changes including more idiomatic Python property access and other 4.0 features, plus provider guidance."]
 == TinkerPop 4.0.0-beta.2
 
 *Release Date: April 1, 2026*
@@ -1459,6 +1463,7 @@ TinkerPop does retain a small cohort of Java-based "process" tests for embedded 
 additional features that are not well suited to the Gherkin style. Providers who wish to use these simply implement the
 `ProcessEmbeddedStandardSuite` and the `ProcessEmbeddedComputerSuite` as has normally been done in the past.
 
+[llms-summary="Upgrade notes for the TinkerPop 4.0.0-beta.1 release: the initial 4.0 preview of the new HTTP API for server and drivers, including server-side result bulking, plus provider guidance."]
 == TinkerPop 4.0.0-beta.1
 
 *Release Date: January 17, 2025*

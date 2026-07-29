@@ -516,6 +516,7 @@ and the corresponding reference documentation. When a step has no entries for `A
 the field is still present with `None` as its body. When adding a new step or revising an existing one, follow the
 pattern from a neighboring entry rather than introducing a new structure.
 
+[llms-summary="The formal semantics of the addE() step: adds an edge to the graph."]
 [[adde-step]]
 === addE()
 
@@ -559,6 +560,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddEdgeStartStep.java[source (start)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addedge-step[reference]
 
+[llms-summary="The formal semantics of the addV() step: adds a vertex to the graph."]
 [[addv-step]]
 === addV()
 
@@ -600,6 +602,8 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddVertexStartStep.java[source (start)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addvertex-step[reference]
 
+[llms-summary="The formal semantics of the addLabel() step: adds one or more labels to an element."]
+[[addlabel-step]]
 === addLabel()
 
 *Description:* Adds one or more labels to an element.
@@ -637,6 +641,8 @@ than one traversal is provided, each must resolve to a single `STRING` label.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/AddLabelStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addlabel-step[reference]
 
+[llms-summary="The formal semantics of the dropLabel() step: removes one or more specific labels from an element, or removes all labels."]
+[[droplabel-step]]
 === dropLabel()
 
 *Description:* Removes one or more specific labels from an element, or removes all labels.
@@ -710,6 +716,7 @@ will be filtered out of the Traversal Stream.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/AllStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[reference]
 
+[llms-summary="The formal semantics of the aggregate() step: collects all objects in the traversal into a collection."]
 [[aggregate-step]]
 === aggregate()
 
@@ -743,6 +750,7 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/AggregateStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#aggregate-step[reference]
 
+[llms-summary="The formal semantics of the and() step: ensures that all provided traversals yield a result."]
 [[and-step]]
 === and()
 
@@ -810,6 +818,7 @@ filtered out of the Traversal Stream.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/AnyStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#any-step[reference]
 
+[llms-summary="The formal semantics of the as() step: labels a step for later access by steps that make use of such labels."]
 [[as-step]]
 === as()
 
@@ -991,6 +1000,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asString-step[reference]
 
+[llms-summary="The formal semantics of the barrier() step: turns the lazy traversal pipeline into a bulk-synchronous pipeline."]
 [[barrier-step]]
 === barrier()
 
@@ -1026,6 +1036,7 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/NoOpBarrierStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#barrier-step[reference]
 
+[llms-summary="The formal semantics of the both() step: maps a vertex to its adjacent vertices given the edge labels."]
 [[both-step]]
 === both()
 
@@ -1059,6 +1070,7 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/VertexStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-steps[reference]
 
+[llms-summary="The formal semantics of the bothE() step: maps a vertex to its incident edges given the edge labels."]
 [[bothe-step]]
 === bothE()
 
@@ -1092,6 +1104,7 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/VertexStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-steps[reference]
 
+[llms-summary="The formal semantics of the bothV() step: maps an edge to its incident vertices."]
 [[bothv-step]]
 === bothV()
 
@@ -1125,6 +1138,7 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/EdgeVertexStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-steps[reference]
 
+[llms-summary="The formal semantics of the branch() step: splits the traverser to all the specified traversals."]
 [[branch-step]]
 === branch()
 
@@ -1160,6 +1174,7 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/branch/BranchStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#branch-step[reference]
 
+[llms-summary="The formal semantics of the cap() step: iterates the traversal up to itself and emits the sideEffect referenced by the provided key."]
 [[cap-step]]
 === cap()
 
@@ -1280,6 +1295,7 @@ link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/o
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/service/ServiceRegistry.java[ServiceRegistry],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#call-step[reference]
 
+[llms-summary="The formal semantics of the choose() step: a branch step that routes the traverser to different paths based on a choice criterion."]
 [[choose-step]]
 === choose()
 
@@ -1378,6 +1394,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#combine-step[reference],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[merge() reference]
 
+[llms-summary="The formal semantics of the coin() step: filters traversers from the Traversal Stream based on a biased coin toss."]
 [[coin-step]]
 === coin()
 
@@ -1706,6 +1723,7 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ElementStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#element-step[reference]
 
+[llms-summary="The formal semantics of the elementMap() step: converts elements to a `Map` representation containing the element's `id`, `label`, and properties."]
 [[elementmap-step]]
 === elementMap()
 
@@ -1742,6 +1760,7 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ElementMapStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#elementmap-step[reference]
 
+[llms-summary="The formal semantics of the E() step: reads edges from the graph by their identifiers."]
 [[e-step]]
 === E()
 
@@ -1781,6 +1800,7 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/GraphStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#graph-step[reference]
 
+[llms-summary="The formal semantics of the format() step: returns a string built by substituting variable references in a template with values from the incoming traverser."]
 [[format-step]]
 === format()
 
@@ -1819,6 +1839,7 @@ is filtered out of the traversal stream.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/FormatStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#format-step[reference]
 
+[llms-summary="The formal semantics of the group() step: groups objects in the traversal stream by a key and applies a reducing operation to the grouped values."]
 [[group-step]]
 === group()
 
@@ -1860,6 +1881,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/GroupSideEffectStep.java[source (sideEffect)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#group-step[reference]
 
+[llms-summary="The formal semantics of the groupCount() step: counts the number of times a particular object has been part of a traversal, returning a `MAP` where the object is the key and the value is the count."]
 [[groupcount-step]]
 === groupCount()
 
@@ -1899,6 +1921,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/GroupCountSideEffectStep.java[source (sideEffect)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#groupcount-step[reference]
 
+[llms-summary="The formal semantics of the has() step: filters traversers by property existence, property value, label, or identifier."]
 [[has-step]]
 === has()
 
@@ -1949,6 +1972,7 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/HasStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
 
+[llms-summary="The formal semantics of the hasId() step: filters elements by their identifier."]
 [[hasid-step]]
 === hasId()
 
@@ -1986,6 +2010,7 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/HasStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
 
+[llms-summary="The formal semantics of the hasKey() step: filters properties by their key."]
 [[haskey-step]]
 === hasKey()
 
@@ -2024,6 +2049,7 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/HasStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
 
+[llms-summary="The formal semantics of the hasLabel() step: filters elements by their label."]
 [[haslabel-step]]
 === hasLabel()
 
@@ -2067,6 +2093,7 @@ present, while chained `hasLabel("a").hasLabel("b")` is a conjunction.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/HasStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
 
+[llms-summary="The formal semantics of the hasValue() step: filters properties by their value."]
 [[hasvalue-step]]
 === hasValue()
 
@@ -2104,6 +2131,7 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/HasStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#has-step[reference]
 
+[llms-summary="The formal semantics of the label() step: maps an element to its label as a single string value."]
 [[label-step]]
 === label()
 
@@ -2126,6 +2154,7 @@ ordering). Use `labels()` to retrieve all labels reliably.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LabelStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#label-step[reference]
 
+[llms-summary="The formal semantics of the labels() step: maps an element to its labels, emitting one traverser per label."]
 [[labels-step]]
 === labels()
 
@@ -2184,6 +2213,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LengthLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#length-step[reference]
 
+[llms-summary="The formal semantics of the local() step: executes the provided traversal in an object-local manner."]
 [[local-step]]
 === local()
 
@@ -2254,6 +2284,7 @@ types which means that non-iterable types (including null) will cause exceptions
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/IntersectStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#intersect-step[reference]
 
+[llms-summary="The formal semantics of the is() step: filters scalar values by testing them against a predicate or value."]
 [[is-step]]
 === is()
 
@@ -2364,6 +2395,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LTrimLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#lTrim-step[reference]
 
+[llms-summary="The formal semantics of the match() step: executes a declarative pattern match query against the graph using a provider-supported query string."]
 [[match-step]]
 === match()
 
@@ -2602,6 +2634,7 @@ resolve to a `MAP`.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeVertexStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]
 
+[llms-summary="The formal semantics of the none() step: filters list data from the traversal stream if none of the list's items match the supplied predicate."]
 [[none-step]]
 === none()
 
@@ -2670,6 +2703,7 @@ applies to list types which means that non-iterable types (including null) will 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ProductStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
 
+[llms-summary="The formal semantics of the project() step: projects the current object in the stream into a `MAP` that is keyed by the provided labels."]
 [[project-step]]
 === project()
 
@@ -2707,6 +2741,7 @@ from the resulting `MAP`.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ProjectStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#project-step[reference]
 
+[llms-summary="The formal semantics of the property() step: adds or sets properties on elements."]
 [[property-step]]
 === property()
 
@@ -2979,6 +3014,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SplitLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[reference]
 
+[llms-summary="The formal semantics of the subgraph() step: extracts an edge-induced subgraph from the current graph based on the edges encountered during traversal."]
 [[subgraph-step]]
 === subgraph()
 
@@ -3127,6 +3163,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToUpperLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toUpper-step[reference]
 
+[llms-summary="The formal semantics of the tree() step: aggregates the paths of the traversal into a tree data structure."]
 [[tree-step]]
 === tree()
 
@@ -3205,6 +3242,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/TrimLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[reference]
 
+[llms-summary="The formal semantics of the V() step: reads vertices from the graph by their identifiers."]
 [[v-step]]
 === V()
 
@@ -3244,6 +3282,7 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/GraphStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#graph-step[reference]
 
+[llms-summary="The formal semantics of the valueMap() step: converts elements to a map representation of their properties."]
 [[valueMap-step]]
 === valueMap()
 
@@ -3305,6 +3344,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#valuemap-step[reference],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#propertymap-step[reference]
 
+[llms-summary="The formal semantics of the where() step: filters traversers based on a predicate, a traversal, or a comparison between labeled steps."]
 [[where-step]]
 === where()
 

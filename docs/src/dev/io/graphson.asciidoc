@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+[llms-summary="The JSON-based GraphSON serialization format: its purpose, how it has evolved across versions, and (from GraphSON 4) its role as the network serialization format for the TinkerPop HTTP API."]
 [[graphson]]
 = GraphSON
 
@@ -104,6 +105,7 @@ reflect a particular one. Servers will return the GraphSON version and variation
 and it could be different (or change) from server to server. When building applications, it is recommended that the
 mime type is made explicit on requests to avoid breaking changes or unexpected results.
 
+[llms-summary="GraphSON 4.0: the current format (TinkerPop 4.0.0+, application/vnd.gremlin-v4.0+json), a network serialization format for the TinkerPop HTTP API, with per-type sample encodings for graph structure and request/response messages.",allow-oversize="true"]
 [[graphson-4]]
 == Version 4.0
 
