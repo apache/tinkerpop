@@ -72,8 +72,10 @@ public final class GryoRecordReader extends RecordReader<NullWritable, VertexWri
         final Configuration configuration = context.getConfiguration();
         if (configuration.get(Constants.GREMLIN_HADOOP_GRAPH_FILTER, null) != null)
             this.graphFilter = VertexProgramHelper.deserialize(ConfUtil.makeApacheConfiguration(configuration), Constants.GREMLIN_HADOOP_GRAPH_FILTER);
+        // reads only graph Elements from untrusted split bytes, never the JavaSerializer backed types, so native
+        // Java serialization is disabled here (unlike the intra-job MapReduce shuffle path, left unlocked).
         this.gryoReader = GryoReader.build().mapper(
-                GryoMapper.build().addRegistries(IoRegistryHelper.createRegistries(ConfUtil.makeApacheConfiguration(configuration))).create()).create();
+                GryoMapper.build().javaSerializationAllowed(false).addRegistries(IoRegistryHelper.createRegistries(ConfUtil.makeApacheConfiguration(configuration))).create()).create();
         long start = split.getStart();
         final Path file = split.getPath();
         if (null != new CompressionCodecFactory(configuration).getCodec(file)) {

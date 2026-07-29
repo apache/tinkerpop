@@ -70,7 +70,9 @@ public final class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, 
      */
     @Override
     public GryoMapper.Builder mapper() {
-        final GryoMapper.Builder builder = GryoMapper.build().version(version);
+        // as with GryoReader/GryoWriter, graph documents may be untrusted, so native Java serialization is
+        // disabled. An onMapper consumer can restore it for trusted, in-process work.
+        final GryoMapper.Builder builder = GryoMapper.build().version(version).javaSerializationAllowed(false);
         onMapper.ifPresent(c -> c.accept(builder));
         return builder;
     }
