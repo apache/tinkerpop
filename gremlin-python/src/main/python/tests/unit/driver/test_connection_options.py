@@ -24,10 +24,12 @@ Connection request path, the DriverRemoteConnection surface, and the SigV4
 credentials-provider variant. They avoid any network I/O.
 """
 
+import asyncio
 import socket
 import warnings
 from unittest.mock import MagicMock, patch
 
+import aiohttp
 import pytest
 
 from gremlin_python.driver.aiohttp.transport import (
@@ -35,10 +37,12 @@ from gremlin_python.driver.aiohttp.transport import (
     _normalize_compression,
     _keep_alive_socket_options,
     _keep_alive_socket_factory,
+    _run_read,
     DEFAULT_CONNECT_TIMEOUT,
     DEFAULT_IDLE_TIMEOUT,
     DEFAULT_KEEP_ALIVE_TIME,
 )
+from gremlin_python.driver.exceptions import ReadTimeoutError
 
 
 # ---------------------------------------------------------------------------
@@ -310,3 +314,56 @@ class TestTransportWriteCompression:
         assert captured['post_kwargs'].get('proxy') == 'http://proxy:3128'
         t._client_session = None
         t.close()
+
+
+# ---------------------------------------------------------------------------
+# Read-timeout normalization
+# ---------------------------------------------------------------------------
+# _run_read must convert aiohttp's ServerTimeoutError into the driver-owned
+# ReadTimeoutError (which subclasses the builtin TimeoutError).
+
+class TestReadTimeoutNormalization:
+
+    def test_read_timeout_error_is_builtin_timeout_error_subclass(self):
+        assert issubclass(ReadTimeoutError, TimeoutError)
+
+    def test_server_timeout_normalized_to_read_timeout(self):
+        loop = asyncio.new_event_loop()
+
+        async def timing_out():
+            raise aiohttp.ServerTimeoutError("read timed out")
+
+        try:
+            with pytest.raises(ReadTimeoutError) as exc_info:
+                _run_read(loop, 5, timing_out())
+        finally:
+            loop.close()
+
+        # The read_timeout value is surfaced in the message ...
+        assert "5" in str(exc_info.value)
+        # ... and the original aiohttp error is preserved as the cause.
+        assert isinstance(exc_info.value.__cause__, aiohttp.ServerTimeoutError)
+
+    def test_read_timeout_can_be_caught_as_timeout_error(self):
+        loop = asyncio.new_event_loop()
+
+        async def timing_out():
+            raise aiohttp.ServerTimeoutError("read timed out")
+
+        try:
+            with pytest.raises(TimeoutError):
+                _run_read(loop, 10, timing_out())
+        finally:
+            loop.close()
+
+    def test_successful_read_returns_value_unchanged(self):
+        # The non-timeout path simply returns the coroutine's result.
+        loop = asyncio.new_event_loop()
+
+        async def succeeds():
+            return "response-body"
+
+        try:
+            assert _run_read(loop, 5, succeeds()) == "response-body"
+        finally:
+            loop.close()
