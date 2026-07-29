@@ -165,18 +165,14 @@ public class MarkdownConverter extends StringConverter {
         final String assembled;
         // In a book, the document title is realized as a level-0 section inside the content, so it
         // already appears as an H1 there (matching the HTML backend's single <h1 class="sect0">).
-        // In an article, the title is not part of the content, so emit it as the leading H1.
-        if (title != null && !title.isEmpty() && !isBook(doc)) {
-            // Article doctype: the title-bearing section is promoted to the document title, so its
-            // curated llms-summary / allow-oversize attributes are not visible via convertSection.
-            // They resolve on the Document (when set as document attributes) or on the leading
-            // section AsciidoctorJ promoted to the title; check both so the landing page carries the
-            // hidden markers that drive the llms.txt description and the size lint.
+        // In an article, the title is generally not part of the content, so emit it as the leading
+        // H1 — unless the content already renders it as its own leading section.
+        if (title != null && !title.isEmpty() && !isBook(doc) && !titleRendersAsLeadingSection(doc)) {
             final StringBuilder head = new StringBuilder();
             appendAnchor(head, doc.getId());
             head.append("# ").append(title).append("\n\n");
-            appendLlmsSummary(head, docLevelAttribute(doc, LLMS_SUMMARY_ATTR));
-            appendAllowOversizeMarker(head, docLevelAttribute(doc, LLMS_ALLOW_OVERSIZE_ATTR));
+            appendLlmsSummary(head, doc.getAttribute(LLMS_SUMMARY_ATTR));
+            appendAllowOversizeMarker(head, doc.getAttribute(LLMS_ALLOW_OVERSIZE_ATTR));
             head.append(content);
             assembled = head.toString();
         } else {
@@ -190,21 +186,27 @@ public class MarkdownConverter extends StringConverter {
     }
 
     /**
-     * Resolves a doc-level attribute for the article title path: prefers the Document's own
-     * attribute, falling back to the leading section that AsciidoctorJ promoted to the title (which
-     * is where a {@code [llms-summary]} on the article's {@code == Title} actually lands).
+     * Whether the document title is also rendered as the content's leading section. This is the
+     * shape every tutorial uses: a preamble (logo, version) followed by a single {@code == Title}
+     * that AsciidoctorJ reports as the doctitle while {@link #convertSection} still renders it as a
+     * section in its own right.
+     * <p>
+     * Emitting a document-level H1 for such a title duplicates the heading and, worse, repeats the
+     * section's {@code llms-summary} marker. {@link MarkdownSplitter} treats a summary marker as a
+     * page break, so the tutorial's opening content spun off into a second page that llms.txt then
+     * listed next to the tutorial's own index with an identical description. The HTML backend
+     * renders this shape as a single heading; mirror that and let the section carry the title, its
+     * anchor, and its summary, leaving the splitter to fold it into the landing page the same way it
+     * folds a book's {@code = Title}.
      */
-    private static Object docLevelAttribute(final Document doc, final String name) {
-        final Object onDoc = doc.getAttribute(name);
-        if (onDoc != null) return onDoc;
+    private static boolean titleRendersAsLeadingSection(final Document doc) {
         for (final StructuralNode block : doc.getBlocks()) {
+            // Only the leading section can be the one promoted to the document title.
             if (block instanceof Section) {
-                final Object onSection = block.getAttribute(name);
-                if (onSection != null) return onSection;
-                break; // only the first/leading section is the promoted title
+                return block.getTitle() != null && block.getTitle().equals(doc.getDoctitle());
             }
         }
-        return null;
+        return false;
     }
 
     /** Replaces {@code x.y.z} with the resolved TinkerPop version, if available. */

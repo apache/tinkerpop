@@ -107,6 +107,49 @@ public class MarkdownConverterProbeTest {
         assertThat(md, not(containsString("llms-summary")));
     }
 
+    /**
+     * The tutorial shape: a preamble followed by a single {@code == Title} that AsciidoctorJ reports
+     * as the doctitle while still rendering it as a section. The title must be emitted once — a
+     * duplicate document-level H1 also duplicates the llms-summary marker, which the splitter reads
+     * as a page break and which sent every tutorial's opening content off to a second page.
+     */
+    @Test
+    public void articleTitleRenderedAsLeadingSectionIsNotDuplicated() {
+        final String md = toMarkdown("![logo]\n\n*x.y.z*\n\n"
+                + "[llms-summary=\"A beginner's tutorial.\"]\n== Getting Started\n\nIntro prose.\n\n"
+                + "=== First Sub\n\nSub prose.\n");
+        assertThat(md, containsString("## Getting Started"));
+        assertThat(countOccurrences(md, "Getting Started"), is(1));
+        assertThat(countOccurrences(md, "<!-- llms-summary: A beginner's tutorial. -->"), is(1));
+        // The section keeps its anchor, so existing #_getting_started xrefs still resolve.
+        assertThat(md, containsString("<a id=\"_getting_started\"></a>"));
+    }
+
+    /** A genuine article doctitle is not part of the content, so it still leads the page as an H1. */
+    @Test
+    public void articleWithRealDoctitleStillEmitsLeadingHeading() {
+        final String md = toMarkdown("= Real Title\n\nPreamble.\n\n== First Section\n\nBody.\n");
+        assertThat(md, containsString("# Real Title"));
+        assertThat(countOccurrences(md, "Real Title"), is(1));
+        assertThat(md, containsString("## First Section"));
+    }
+
+    /**
+     * End-to-end guard on the defect: an article of the tutorial shape must split into exactly one
+     * page, so llms.txt lists the tutorial once rather than as an index plus a near-duplicate.
+     */
+    @Test
+    public void tutorialShapedArticleSplitsIntoASinglePage() {
+        final String md = toMarkdown("![logo]\n\n*x.y.z*\n\n"
+                + "[llms-summary=\"A beginner's tutorial.\"]\n== Getting Started\n\nIntro prose.\n\n"
+                + "== Later Section\n\nMore prose.\n");
+        final java.util.List<MarkdownSplitter.Page> pages = new MarkdownSplitter().split(md, "index.md");
+        assertThat(pages.size(), is(1));
+        assertThat(pages.get(0).getFileName(), is("index.md"));
+        assertThat(pages.get(0).getContent(), containsString("Intro prose."));
+        assertThat(pages.get(0).getContent(), containsString("More prose."));
+    }
+
     @Test
     public void allowOversizeAttributeBecomesHiddenMarkerNotBodyText() {
         // allow-oversize="true" on a section emits a hidden <!-- llms-allow-oversize --> marker for
