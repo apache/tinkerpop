@@ -16,6 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
+[llms-summary="Upgrade notes for the TinkerPop 3.8.0 release: breaking changes and new features for users, including standardized local/global scoping, simplified grammar, more consistent step behavior, new type-conversion and type-testing steps, and initial Model Context Protocol (MCP) support.",allow-oversize="true"]
 == TinkerPop 3.8.0
 
 *Release Date: November 12, 2025*
@@ -1555,6 +1556,7 @@ to continue to refine this `Channelizer` implementation, and it can be deprecate
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3168[TINKERPOP-3168]
 
+[llms-summary="Provider-facing upgrade notes for TinkerPop 3.8.0: changes graph system and graph driver providers must account for, including custom type registration in the GlobalTypeCache and type-comparison support."]
 === Upgrading for Providers
 
 ==== Graph System Providers
