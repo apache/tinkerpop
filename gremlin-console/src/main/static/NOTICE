@@ -54,7 +54,7 @@ HPPC borrowed code, ideas or both from:
    (Apache license)
 
 ------------------------------------------------------------------------
-Jackson-Databind, Jackson-Annotation and Jackson-Core 2.15.2 (Included through gremlin-shaded)
+Jackson-Databind, Jackson-Annotation and Jackson-Core 2.18.9 (Included through gremlin-shaded)
 ------------------------------------------------------------------------
 It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
 been in development since 2007.

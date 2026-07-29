@@ -119,6 +119,18 @@ removed in 4.0.0. This deprecation applies across all Gremlin Language Variants.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3042[TINKERPOP-3042]
 
+==== InetAddress GraphSON Deserialization No Longer Resolves Hostnames
+
+TinkerPop's Jackson dependency was upgraded to jackson-databind 2.18.9 to address a number of CVEs. As part of that
+upgrade, Jackson changed how it deserializes `java.net.InetAddress` values from GraphSON, it will no longer perform a
+DNS lookup to resolve a hostname string (e.g. `"localhost"`, `"example.com"`) into an `InetAddress`. Only literal IPv4
+or IPv6 address strings (e.g. `"127.0.0.1"`, `"::1"`) are now accepted, anything else fails deserialization with an
+error such as `Not a valid IP address string literal`.
+
+Applications that store or transmit `InetAddress` values via GraphSON (as a vertex/edge property, or as a bound
+Gremlin parameter) must use literal IP address strings going forward. Existing serialized data containing hostname
+strings will fail to deserialize after upgrading and will need to be migrated to literal IP addresses.
+
 == TinkerPop 3.7.6
 
 *Release Date: April 1, 2026*

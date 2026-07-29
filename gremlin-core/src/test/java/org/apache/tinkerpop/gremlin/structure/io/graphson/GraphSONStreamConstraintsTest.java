@@ -48,8 +48,8 @@ public class GraphSONStreamConstraintsTest extends AbstractGraphSONTest{
             serializeDeserializeAuto(mapper, serializedData);
         });
         assertTrue("Expected StreamConstraintsException for exceeding max number length, found: "+exception.getMessage(),
-                exception.getMessage().contains("org.apache.tinkerpop.shaded.jackson.core.exc.StreamConstraintsException: Number length")
-                && exception.getMessage().contains("exceeds the maximum length (2)"));
+                exception.getMessage().contains("org.apache.tinkerpop.shaded.jackson.core.exc.StreamConstraintsException: Number value length")
+                && exception.getMessage().contains("exceeds the maximum allowed (2, from `StreamReadConstraints.getMaxNumberLength()`)"));
     }
 
     @Test
@@ -66,8 +66,8 @@ public class GraphSONStreamConstraintsTest extends AbstractGraphSONTest{
             serializeDeserializeAuto(mapper, serializedData);
         });
         assertTrue("Expected StreamConstraintsException for exceeding max String length, found: "+exception.getMessage(),
-                exception.getMessage().contains("String length")
-                        && exception.getMessage().contains("exceeds the maximum length (20)"));
+                exception.getMessage().contains("String value length")
+                        && exception.getMessage().contains("exceeds the maximum allowed (20, from `StreamReadConstraints.getMaxStringLength()`)"));
     }
 
     @Test
@@ -87,7 +87,7 @@ public class GraphSONStreamConstraintsTest extends AbstractGraphSONTest{
             serializeDeserializeAuto(mapper, serializedData);
         });
         assertTrue("Expected StreamConstraintsException for exceeding max nesting depth,  found: "+exception.getMessage(),
-                exception.getMessage().contains("org.apache.tinkerpop.shaded.jackson.core.exc.StreamConstraintsException: Depth")
-                        && exception.getMessage().contains("exceeds the maximum allowed nesting depth (1)"));
+                exception.getMessage().contains("org.apache.tinkerpop.shaded.jackson.core.exc.StreamConstraintsException: Document nesting depth")
+                        && exception.getMessage().contains("exceeds the maximum allowed (1, from `StreamReadConstraints.getMaxNestingDepth()`)"));
     }
 }

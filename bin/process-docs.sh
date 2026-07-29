@@ -186,7 +186,7 @@ POM
   mvn -q -f "${NEO4J_POM}" dependency:copy-dependencies -DoutputDirectory="${NEO4J_PLUGIN_LIB}"
   # Drop ONLY the conflicting io.netty 4.x jar that Neo4j pulls in (netty-all-4.1.24): it
   # contains an older io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker13 that
-  # shadows the console driver's 4.1.125 class and breaks ':remote' server connections with a
+  # shadows the console driver's 4.1.136 class and breaks ':remote' server connections with a
   # NoSuchMethodError. Keep netty-3.9.x (org.jboss.netty package) -- it does NOT conflict and
   # is required by Neo4j 3.4's IO layer.
   rm -f "${NEO4J_PLUGIN_LIB}"/netty-all-4.*.jar
