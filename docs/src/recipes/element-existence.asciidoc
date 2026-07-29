@@ -16,7 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
-[llms-summary="Recipe: Checking for whether or not a graph element is present in the graph is simple:"]
+[llms-summary="Recipe: Checking whether a graph element (a vertex or edge) is already present in the graph."]
 [[element-existence]]
 == Element Existence
 

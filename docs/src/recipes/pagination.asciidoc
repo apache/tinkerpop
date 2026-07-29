@@ -16,7 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 ////
-[llms-summary="Recipe: In most database applications, it is oftentimes desirable to return discrete blocks of data for a query rather than all of the data that the total results would"]
+[llms-summary="Recipe: In most database applications, it is oftentimes desirable to return discrete blocks of data for a query rather than all of the data that the total results would contain."]
 [[pagination]]
 == Pagination
 

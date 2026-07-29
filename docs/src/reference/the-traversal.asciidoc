@@ -390,7 +390,7 @@ Spawn steps, which actually yield a traversal, typically match the names of exis
 * `V()` - Reads vertices from the graph to start the traversal (<<graph-step, example>>).
 
 [[graph-traversal-steps]]
-[llms-summary="Reference catalog of the individual Gremlin steps (map, filter, sideEffect, branch, and more) with syntax and examples for each.""]
+[llms-summary="Reference catalog of the individual Gremlin steps (map, filter, sideEffect, branch, and more) with syntax and examples for each."]
 == Graph Traversal Steps
 
 Gremlin steps are chained together to produce the actual traversal and are triggered by way of <<start-steps,start steps>>
@@ -1730,7 +1730,7 @@ continue to surface this condition as their standard remote exception type.
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#fail()++[`fail()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#fail(java.lang.String)++[`fail(String)`]
 
-[llms-summary="The filter() step maps the traverser from the current object to either true or false where the latter will not pass the traverser to the next step in the proces"]
+[llms-summary="The filter() step maps the traverser from the current object to either true or false where the latter will not pass the traverser to the next step in the process."]
 [[filter-step]]
 === Filter Step
 
@@ -3358,7 +3358,7 @@ An option to a <<general-steps,`branch()`>> or <<choose-step,`choose()`>>.
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#option(M,org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`option(Object,Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#option(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`option(Traversal)`]
 
-[llms-summary="The optional()-step (branch/flatMap) returns the result of the specified traversal if it yields a result else it returns the calling element, i.e. the identity("]
+[llms-summary="The optional()-step (branch/flatMap) returns the result of the specified traversal if it yields a result, else it returns the calling element (i.e. the identity)."]
 [[optional-step]]
 === Optional Step
 
@@ -3908,7 +3908,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality,java.lang.Object,java.lang.Object,java.lang.Object...)++[`property(Cardinality, Object, Object, Object...)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/VertexProperty.Cardinality.html++[`Cardinality`]
 
-[llms-summary="The propertiesMap()-step yields a Map representation of the properties of an element."]
+[llms-summary="The propertyMap()-step yields a Map representation of the properties of an element."]
 [[propertymap-step]]
 === PropertyMap Step
 
@@ -4989,7 +4989,7 @@ g.V().has('name','josh').out('created').values('name').tree('x').cap('x')
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tree()++[`tree()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#tree(java.lang.String)++[`tree(String)`]
 
-[llms-summary="The trim()-step (map) returns a string with leading and leading whitespace removed."]
+[llms-summary="The trim()-step (map) returns a string with leading and trailing whitespace removed."]
 [[trim-step]]
 === Trim Step
 

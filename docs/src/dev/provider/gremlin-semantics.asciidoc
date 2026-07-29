@@ -520,7 +520,7 @@ The following table maps the notions proposed above to the various `P` operators
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Equality.feature[Equality Tests],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/semantics/Comparability.feature[Comparability Tests]
 
-[llms-summary="Per-step semantic definitions: the precise input/output behavior each Gremlin step must exhibit, used to verify provider implementations for correctness.""]
+[llms-summary="Per-step semantic definitions: the precise input/output behavior each Gremlin step must exhibit, used to verify provider implementations for correctness."]
 == Steps
 
 While TinkerPop has a full test suite for validating functionality of Gremlin, tests alone aren't always exhaustive or
@@ -1522,7 +1522,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ReplaceLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#replace-step[reference]
 
-[llms-summary="The formal semantics of the reverse() step: returns the reverse of the incoming traverser"]
+[llms-summary="The formal semantics of the reverse() step: returns the reverse of the incoming traverser."]
 [[reverse-step]]
 === reverse()
 
@@ -1647,7 +1647,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SubstringLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#substring-step[reference]
 
-[llms-summary="The formal semantics of the toLower() step: returns the lowercase representation of incoming string traverser, or if Scope.local is specified, returns the lowercase representation of each string elemen"]
+[llms-summary="The formal semantics of the toLower() step: returns the lowercase representation of incoming string traverser, or if Scope.local is specified, returns the lowercase representation of each string element inside the incoming list traverser."]
 [[toLower-step]]
 === toLower()
 
@@ -1678,7 +1678,7 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToLowerLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toLower-step[reference]
 
-[llms-summary="The formal semantics of the toUpper() step: returns the uppercase representation of incoming string traverser, or if Scope.local is specified, returns the uppercase representation of each string elemen"]
+[llms-summary="The formal semantics of the toUpper() step: returns the uppercase representation of incoming string traverser, or if Scope.local is specified, returns the uppercase representation of each string element inside the incoming list traverser."]
 [[toUpper-step]]
 === toUpper()
 
