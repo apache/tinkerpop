@@ -71,13 +71,28 @@ class MarkdownSplitter {
     private static final Logger LOG = Logger.getLogger(MarkdownSplitter.class.getName());
 
     private final int budget;
+    private final String llmsPointer;
 
     MarkdownSplitter() {
         this(DEFAULT_BUDGET);
     }
 
     MarkdownSplitter(final int budget) {
+        this(budget, null);
+    }
+
+    /**
+     * @param version the TinkerPop version these pages are published under, used to build the
+     *                per-page index pointer. When {@code null} the pointer falls back to the
+     *                site-root {@code /llms.txt}, which is not version-correct.
+     */
+    MarkdownSplitter(final int budget, final String version) {
         this.budget = budget;
+        this.llmsPointer = llmsPointer(version);
+        if (version == null || version.isEmpty()) {
+            LOG.warning("No version supplied; pages will point at the site-root /llms.txt rather "
+                    + "than this version's index. Pass --version to make the pointer version-correct.");
+        }
     }
 
     /**
@@ -124,19 +139,23 @@ class MarkdownSplitter {
     }
 
     /**
-     * CLI entry point: {@code MarkdownSplitter [--budget N] [--strict] <book.md> [<book.md> ...]}.
+     * CLI entry point:
+     * {@code MarkdownSplitter [--budget N] [--strict] [--version x.y.z] <book.md> [<book.md> ...]}.
      * Each named rendered book file is split in place (summary-driven) into pages in its own
      * directory. Pages over the byte budget that are not flagged {@code allow-oversize} are reported;
      * with {@code --strict} the process exits non-zero when any such violation exists, so the docs
-     * build can gate on it.
+     * build can gate on it. {@code --version} sets the version the per-page index pointer resolves to.
      */
     public static void main(final String[] args) throws IOException {
         int budget = DEFAULT_BUDGET;
         boolean strict = false;
+        String version = null;
         final List<String> files = new ArrayList<>();
         for (int i = 0; i < args.length; i++) {
             if ("--budget".equals(args[i]) && i + 1 < args.length) {
                 budget = Integer.parseInt(args[++i]);
+            } else if ("--version".equals(args[i]) && i + 1 < args.length) {
+                version = args[++i];
             } else if ("--strict".equals(args[i])) {
                 strict = true;
             } else {
@@ -144,10 +163,11 @@ class MarkdownSplitter {
             }
         }
         if (files.isEmpty()) {
-            System.err.println("usage: MarkdownSplitter [--budget N] [--strict] <book.md> [<book.md> ...]");
+            System.err.println("usage: MarkdownSplitter [--budget N] [--strict] [--version x.y.z] "
+                    + "<book.md> [<book.md> ...]");
             System.exit(2);
         }
-        final MarkdownSplitter splitter = new MarkdownSplitter(budget);
+        final MarkdownSplitter splitter = new MarkdownSplitter(budget, version);
         final List<String> violations = new ArrayList<>();
         for (final String f : files) {
             final Path p = Path.of(f);
@@ -250,7 +270,7 @@ class MarkdownSplitter {
             final StringBuilder body = new StringBuilder();
             renderPage(plan.owner, body, plan == index, nodeToFile);
             final String rewritten = rewriteLinks(body.toString(), plan.fileName, anchorToFile);
-            pages.add(new Page(plan.fileName, LLMS_POINTER + rewritten, isAllowOversize(plan.owner)));
+            pages.add(new Page(plan.fileName, llmsPointer + rewritten, isAllowOversize(plan.owner)));
         }
         return pages;
     }
@@ -380,12 +400,27 @@ class MarkdownSplitter {
         return null;
     }
 
+    /** Canonical base for the versioned documentation tree. */
+    private static final String DOCS_BASE_URL = "https://tinkerpop.apache.org/docs";
+
     /**
      * The agent-facing directive prepended to every page (agentdocsspec.com {@code
-     * llms-txt-directive-md} check): a top-of-page blockquote pointing at the site-root index.
+     * llms-txt-directive-md} check): a top-of-page blockquote pointing at this version's index.
+     * <p>
+     * The URL is absolute and version-qualified so a page always points at the index describing that
+     * same version, mirroring the HTML backend's directive in {@code docs/src/docinfo-footer.html}.
+     * A site-root {@code /llms.txt} would instead resolve to whichever version published last.
+     * <p>
+     * The version cannot be substituted from the {@code x.y.z} placeholder the way the rest of the
+     * Markdown is: {@link MarkdownConverter} does that substitution while rendering, and the splitter
+     * runs afterwards as a separate pass over the already-rendered book.
      */
-    static final String LLMS_POINTER =
-            "> For the complete documentation index, see [llms.txt](/llms.txt)\n\n";
+    static String llmsPointer(final String version) {
+        final String url = version == null || version.isEmpty()
+                ? "/llms.txt"
+                : DOCS_BASE_URL + "/" + version + "/llms.txt";
+        return "> For the complete documentation index, see [llms.txt](" + url + ")\n\n";
+    }
 
     // ---- parsing -----------------------------------------------------------
 
