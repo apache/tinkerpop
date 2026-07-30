@@ -19,26 +19,26 @@
   "license": "Apache-2.0",
   "dependencies": {
     "buffer": "^6.0.3",
-    "eventemitter3": "^5.0.1",
-    "readable-stream": "^4.5.2",
+    "eventemitter3": "^5.0.4",
+    "readable-stream": "^4.7.0",
     "uuid": "^11.1.1",
-    "ws": "^8.16.0"
+    "ws": "^8.21.1"
   },
   "devDependencies": {
     "chai": "~4.5.0",
-    "chai-string": "~1.5.0",
+    "chai-string": "~1.6.0",
     "colors": "1.4.0",
     "cross-env": "^10.1.0",
     "@cucumber/cucumber": "~12.7.0",
     "@eslint/js": "^9.16.0",
     "eslint": "^9.36.0",
-    "eslint-config-prettier": "^10.0.1",
-    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
     "globals": "^15.14.0",
     "jsdoc": "^4.0.5",
     "js-yaml": "^3.14.2",
-    "mocha": "^11.7.5",
-    "prettier": "^3.0.0"
+    "mocha": "^11.7.6",
+    "prettier": "^3.9.6"
   },
   "repository": {
     "type": "git",

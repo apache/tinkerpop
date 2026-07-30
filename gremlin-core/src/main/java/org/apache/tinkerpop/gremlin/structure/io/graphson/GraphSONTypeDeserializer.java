@@ -189,14 +189,14 @@ public class GraphSONTypeDeserializer extends TypeDeserializerBase {
                         // detected the type pattern entirely but the Map contained other properties
                         // For now we error out because we assume that pattern is *only* reserved to
                         // typed values.
-                        throw deserializationContext.mappingException("Detected the type pattern in the JSON payload " +
+                        deserializationContext.reportInputMismatch(baseType, "Detected the type pattern in the JSON payload " +
                                 "but the map containing the types and values contains other fields. This is not " +
                                 "allowed by the deserializer.");
                     }
                 }
             }
         } catch (Exception e) {
-            throw deserializationContext.mappingException("Could not deserialize the JSON value as required. Nested exception: " + e.toString());
+            deserializationContext.reportInputMismatch(baseType, "Could not deserialize the JSON value as required. Nested exception: " + e.toString());
         }
 
         // Type pattern wasn't detected, however,

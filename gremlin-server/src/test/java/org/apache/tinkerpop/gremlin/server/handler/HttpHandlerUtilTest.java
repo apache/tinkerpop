@@ -69,7 +69,7 @@ public class HttpHandlerUtilTest {
         final HttpHeaders headers = new DefaultHttpHeaders();
         headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_GRAPHBINARY_V1);
 
-        final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "some uri",
+        final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "some-uri",
                 buffer, headers, new DefaultHttpHeaders());
 
         final Map<String, MessageSerializer<?>> serializers = new HashMap<>();
@@ -96,7 +96,7 @@ public class HttpHandlerUtilTest {
         final HttpHeaders headers = new DefaultHttpHeaders();
         headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_GRAPHBINARY_V1);
 
-        final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "some uri",
+        final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "some-uri",
                 buffer, headers, new DefaultHttpHeaders());
 
         final Map<String, MessageSerializer<?>> serializers = new HashMap<>();
@@ -119,7 +119,7 @@ public class HttpHandlerUtilTest {
         final HttpHeaders headers = new DefaultHttpHeaders();
         headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_JSON);
 
-        final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "some uri",
+        final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "some-uri",
                 buffer, headers, new DefaultHttpHeaders());
 
         final Map<String, MessageSerializer<?>> serializers = new HashMap<>();

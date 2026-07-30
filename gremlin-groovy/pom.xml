@@ -40,7 +40,7 @@ limitations under the License.
         <dependency>
             <groupId>org.apache.ivy</groupId>
             <artifactId>ivy</artifactId>
-            <version>2.5.3</version>
+            <version>2.6.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.groovy</groupId>
@@ -55,6 +55,11 @@ limitations under the License.
                 <exclusion>
                     <groupId>org.ow2.asm</groupId>
                     <artifactId>asm-util</artifactId>
+                </exclusion>
+                <!-- Use our own ivy version for security vulnerability fixes (see direct dependency above) -->
+                <exclusion>
+                    <groupId>org.apache.ivy</groupId>
+                    <artifactId>ivy</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

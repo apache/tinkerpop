@@ -175,7 +175,7 @@ limitations under the License.
                     <groupId>org.apache.curator</groupId>
                     <artifactId>curator-recipes</artifactId>
                 </exclusion>
-                <!-- Use our ivy 2.5.1 for security vulnerability -->
+                <!-- Use our ivy 2.6.0 for security vulnerability -->
                 <exclusion>
                     <groupId>org.apache.ivy</groupId>
                     <artifactId>ivy</artifactId>

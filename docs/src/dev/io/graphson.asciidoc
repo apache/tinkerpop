@@ -3388,7 +3388,7 @@ The following example is a `Duration` of five days.
 ----
 {
   "@type" : "gx:InetAddress",
-  "@value" : "localhost"
+  "@value" : "127.0.0.1"
 }
 ----
 
@@ -5774,7 +5774,7 @@ The following example is a `Duration` of five days.
 ----
 {
   "@type" : "gx:InetAddress",
-  "@value" : "localhost"
+  "@value" : "127.0.0.1"
 }
 ----
 
