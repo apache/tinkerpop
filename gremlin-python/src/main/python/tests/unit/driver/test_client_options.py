@@ -28,6 +28,8 @@ import pytest
 
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.connection import Connection
+from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
+from gremlin_python.driver.remote_connection import RemoteStrategy, RemoteTraversal
 from gremlin_python.driver.request import RequestMessage
 from gremlin_python.process.traversal import GremlinLang, GValue
 
@@ -355,3 +357,266 @@ class TestSigV4CredentialsProvider:
         MockSession.return_value.get_credentials.assert_called_once()
         args, _ = MockAuth.call_args
         assert args[0] is resolved
+
+
+# ===========================================================================
+# --- DriverRemoteConnection / RemoteStrategy ---
+
+
+# ---------------------------------------------------------------------------
+# Lightweight stubs
+# ---------------------------------------------------------------------------
+
+class _OptionsStrategy:
+    """Mimics an options strategy that exposes a ``configuration`` dict.
+
+    extract_request_options only pulls keys from configuration that are present
+    in gremlin_python.driver.request.Tokens.
+    """
+
+    def __init__(self, configuration):
+        self.configuration = configuration
+
+
+class _GremlinLangStub:
+    """Minimal stand-in for a GremlinLang object.
+
+    Exposes only the attributes/methods that DriverRemoteConnection touches:
+    get_gremlin, options_strategies, get_parameters_as_string.
+    """
+
+    def __init__(self, gremlin='g.V()', options_strategies=None,
+                 parameters_string='[:]'):
+        self._gremlin = gremlin
+        self.options_strategies = options_strategies or []
+        self._parameters_string = parameters_string
+
+    def get_gremlin(self):
+        return self._gremlin
+
+    def get_parameters_as_string(self):
+        return self._parameters_string
+
+
+class _TraversalStub:
+    """Lightweight traversal for exercising RemoteStrategy.apply/apply_async.
+
+    RemoteStrategy only reads .traversers and .gremlin_lang and writes
+    .remote_results and .traversers.
+    """
+
+    def __init__(self, traversers=None, gremlin_lang=None):
+        self.traversers = traversers
+        self.gremlin_lang = gremlin_lang or _GremlinLangStub()
+        self.remote_results = None
+
+
+def _make_drc():
+    """Build a DriverRemoteConnection with a fully mocked Client.
+
+    Follows the pattern in TestDriverRemoteConnectionOptions:
+    patch the Client symbol, then set _url/_traversal_source on the instance the
+    constructor reads back from the client.
+    """
+    with patch('gremlin_python.driver.driver_remote_connection.client.Client') as MockClient:
+        instance = MockClient.return_value
+        instance._url = 'http://localhost:8182/gremlin'
+        instance._traversal_source = 'g'
+        drc = DriverRemoteConnection('http://localhost:8182/gremlin', 'g')
+    # drc._client is the MockClient.return_value MagicMock; return both.
+    return drc, instance
+
+
+# ---------------------------------------------------------------------------
+# 1. extract_request_options -- PURE, no client involved
+# ---------------------------------------------------------------------------
+
+class TestExtractRequestOptions:
+
+    def test_bulk_results_defaults_to_true_when_omitted(self):
+        gl = _GremlinLangStub(options_strategies=[])
+        opts = DriverRemoteConnection.extract_request_options(gl)
+        assert opts['bulkResults'] is True
+
+    def test_bulk_results_from_configuration_is_preserved(self):
+        # When an options strategy already supplies bulkResults, the default
+        # must not clobber it.
+        gl = _GremlinLangStub(
+            options_strategies=[_OptionsStrategy({'bulkResults': False})])
+        opts = DriverRemoteConnection.extract_request_options(gl)
+        assert opts['bulkResults'] is False
+
+    def test_tokens_merged_from_each_strategy(self):
+        # Two strategies each contribute recognized Tokens; both are merged.
+        gl = _GremlinLangStub(options_strategies=[
+            _OptionsStrategy({'timeoutMillis': 1000, 'batchSize': 10}),
+            _OptionsStrategy({'userAgent': 'ua', 'materializeProperties': 'tokens'}),
+        ])
+        opts = DriverRemoteConnection.extract_request_options(gl)
+        assert opts['timeoutMillis'] == 1000
+        assert opts['batchSize'] == 10
+        assert opts['userAgent'] == 'ua'
+        assert opts['materializeProperties'] == 'tokens'
+
+    def test_non_token_configuration_keys_are_ignored(self):
+        # Keys that are not in request.Tokens must not be copied through.
+        gl = _GremlinLangStub(
+            options_strategies=[_OptionsStrategy({'notAToken': 'x', 'g': 'g'})])
+        opts = DriverRemoteConnection.extract_request_options(gl)
+        assert 'notAToken' not in opts
+        assert opts['g'] == 'g'
+
+    def test_parameters_omitted_when_empty_map(self):
+        gl = _GremlinLangStub(parameters_string='[:]')
+        opts = DriverRemoteConnection.extract_request_options(gl)
+        assert 'parameters' not in opts
+
+    def test_parameters_added_when_non_empty(self):
+        gl = _GremlinLangStub(parameters_string='[a:1]')
+        opts = DriverRemoteConnection.extract_request_options(gl)
+        assert opts['parameters'] == '[a:1]'
+
+
+# ---------------------------------------------------------------------------
+# 2. submit
+# ---------------------------------------------------------------------------
+
+class TestSubmit:
+
+    def test_submit_calls_client_and_wraps_result(self):
+        drc, client = _make_drc()
+        result_set = MagicMock(name='result_set')
+        client.submit.return_value = result_set
+        gl = _GremlinLangStub(gremlin='g.V().count()')
+
+        remote_traversal = drc.submit(gl)
+
+        # client.submit called with the gremlin string and the request options
+        # produced by extract_request_options (bulkResults default present).
+        client.submit.assert_called_once()
+        args, kwargs = client.submit.call_args
+        assert args[0] == 'g.V().count()'
+        assert kwargs['request_options'] == \
+            DriverRemoteConnection.extract_request_options(gl)
+        assert kwargs['request_options']['bulkResults'] is True
+
+        # A RemoteTraversal wrapping the client's result_set is returned.
+        assert isinstance(remote_traversal, RemoteTraversal)
+        assert remote_traversal.traversers is result_set
+
+
+# ---------------------------------------------------------------------------
+# 3. submit_async
+# ---------------------------------------------------------------------------
+
+class TestSubmitAsync:
+
+    def test_client_submit_async_called(self):
+        drc, client = _make_drc()
+        client_future = Future()
+        client.submit_async.return_value = client_future
+        gl = _GremlinLangStub(gremlin='g.V()')
+
+        drc.submit_async(gl)
+
+        client.submit_async.assert_called_once()
+        args, kwargs = client.submit_async.call_args
+        assert args[0] == 'g.V()'
+        assert kwargs['request_options'] == \
+            DriverRemoteConnection.extract_request_options(gl)
+
+    def test_success_callback_resolves_to_remote_traversal(self):
+        drc, client = _make_drc()
+        client_future = Future()
+        client.submit_async.return_value = client_future
+        gl = _GremlinLangStub()
+
+        returned_future = drc.submit_async(gl)
+        assert isinstance(returned_future, Future)
+        assert not returned_future.done()
+
+        # Completing the client's future should drive the done-callback and
+        # resolve the returned future to a RemoteTraversal wrapping the result.
+        result_set = MagicMock(name='result_set')
+        client_future.set_result(result_set)
+
+        remote_traversal = returned_future.result(timeout=1)
+        assert isinstance(remote_traversal, RemoteTraversal)
+        assert remote_traversal.traversers is result_set
+
+    def test_error_callback_propagates_exception(self):
+        drc, client = _make_drc()
+        client_future = Future()
+        client.submit_async.return_value = client_future
+        gl = _GremlinLangStub()
+
+        returned_future = drc.submit_async(gl)
+
+        boom = RuntimeError('submit failed')
+        client_future.set_exception(boom)
+
+        with pytest.raises(RuntimeError, match='submit failed'):
+            returned_future.result(timeout=1)
+
+
+# ---------------------------------------------------------------------------
+# 4. RemoteStrategy.apply / apply_async
+# ---------------------------------------------------------------------------
+
+class TestRemoteStrategyApply:
+
+    def test_apply_submits_and_sets_results_when_traversers_none(self):
+        remote_connection = MagicMock()
+        remote_traversal = RemoteTraversal(MagicMock(name='traversers'))
+        remote_connection.submit.return_value = remote_traversal
+
+        strategy = RemoteStrategy(remote_connection)
+        traversal = _TraversalStub(traversers=None)
+
+        strategy.apply(traversal)
+
+        remote_connection.submit.assert_called_once_with(traversal.gremlin_lang)
+        assert traversal.remote_results is remote_traversal
+        assert traversal.traversers is remote_traversal.traversers
+
+    def test_apply_is_idempotent_when_traversers_already_set(self):
+        remote_connection = MagicMock()
+        strategy = RemoteStrategy(remote_connection)
+        existing = MagicMock(name='existing_traversers')
+        traversal = _TraversalStub(traversers=existing)
+
+        strategy.apply(traversal)
+
+        remote_connection.submit.assert_not_called()
+        assert traversal.traversers is existing
+        assert traversal.remote_results is None
+
+
+class TestRemoteStrategyApplyAsync:
+
+    def test_apply_async_submits_and_sets_remote_results_when_none(self):
+        remote_connection = MagicMock()
+        async_result = MagicMock(name='future')
+        remote_connection.submit_async.return_value = async_result
+
+        strategy = RemoteStrategy(remote_connection)
+        traversal = _TraversalStub(traversers=None)
+
+        strategy.apply_async(traversal)
+
+        remote_connection.submit_async.assert_called_once_with(traversal.gremlin_lang)
+        assert traversal.remote_results is async_result
+        # apply_async does NOT populate traversers (only remote_results); this
+        # asserts the ACTUAL current behavior of remote_connection.py.
+        assert traversal.traversers is None
+
+    def test_apply_async_is_idempotent_when_traversers_already_set(self):
+        remote_connection = MagicMock()
+        strategy = RemoteStrategy(remote_connection)
+        existing = MagicMock(name='existing_traversers')
+        traversal = _TraversalStub(traversers=existing)
+
+        strategy.apply_async(traversal)
+
+        remote_connection.submit_async.assert_not_called()
+        assert traversal.remote_results is None
