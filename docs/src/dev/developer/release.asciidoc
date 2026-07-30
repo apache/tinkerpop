@@ -305,6 +305,9 @@ and link:https://hub.docker.com/r/tinkerpop/gremlin-server/[Server]
 .. Typically, this need only be done on the `master` branch as we only publish from there.
 .. Update `index.html`.
 .. Update `community.html`, specifically the version numbers for our official releases.
+.. Update `llms.txt`, specifically the version numbers in the "Documentation indices" entry for the
+released line and in the "Optional" API documentation links. The sentence naming the first releases
+to publish an index is historical and does not change.
 .. Update link:https://tinkerpop.apache.org/download.html[Downloads] page, when moving "Current Releases" to "Archived
 Releases" recall that the hyperlink must change to point to version in the link:https://archive.apache.org/dist/tinkerpop/[Apache Archives].
 .. Update `docs/gremlint/package.json` with the latest version of gremlint.

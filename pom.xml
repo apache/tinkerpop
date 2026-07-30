@@ -499,6 +499,7 @@ limitations under the License.
                         <exclude>docs/original/**</exclude>
                         <exclude>docs/site/home/css/**</exclude>
                         <exclude>docs/site/home/js/**</exclude>
+                        <exclude>docs/site/home/llms.txt</exclude>
                         <exclude>docs/site/home/robots.txt</exclude>
                         <exclude>docs/site/home/sitemap.xml</exclude>
                         <exclude>docs/gremlint/build/**</exclude>
