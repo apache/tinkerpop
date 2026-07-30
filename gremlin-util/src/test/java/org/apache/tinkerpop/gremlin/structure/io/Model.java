@@ -217,7 +217,7 @@ public class Model {
         addExtendedEntry("x".charAt(0), "Char", "");
         addExtendedEntry(Duration.ofDays(5), "Duration","The following example is a `Duration` of five days.");
         try {
-            addEntry("Extended", InetAddress.getByName("localhost"), "InetAddress", "");
+            addEntry("Extended", InetAddress.getByName("127.0.0.1"), "InetAddress", "");
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
