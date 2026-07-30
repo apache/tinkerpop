@@ -124,17 +124,6 @@ do
   fi
 done
 
-# Generate the site-root /llms.txt (agentdocsspec.com discovery index) with ABSOLUTE links into the
-# versioned docs tree, matching the per-page "> ... see [llms.txt](/llms.txt)" pointer. Absolute
-# URLs are required for the spec's link-resolution checks. This index lives at the site root; the
-# per-version llms.txt (also absolute now) is published alongside the pages via the loop above.
-if [ -d "../docs/markdown" ] && [ -d "${PUBLISH_EXT_CLASSES}" ]; then
-  echo "Generating site-root llms.txt..."
-  java -cp "${PUBLISH_EXT_CLASSES}" org.apache.tinkerpop.tinkeradoc.LlmsTxtGenerator \
-    --prefix "${SITE_DOCS_URL}/${VERSION}/" --out llms.txt ../docs/markdown
-  ${SVN_CMD} add --force llms.txt 2>/dev/null || true
-fi
-
 pushd "docs/${VERSION}/"; cat ../../../publish-docs.docs | awk '/^A/ {print $2}' | grep -v '.graffle$' | xargs --no-run-if-empty svn add --parents; popd
 pushd "javadocs/${VERSION}/"; cat ../../../publish-docs.javadocs | awk '/^A/ {print $2}' | xargs --no-run-if-empty svn add --parents; popd
 pushd "jsdocs/${VERSION}/"; cat ../../../publish-docs.jsdocs | awk '/^A/ {print $2}' | xargs --no-run-if-empty svn add --parents; popd

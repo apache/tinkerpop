@@ -97,6 +97,11 @@ port_open() {
   fi
 }
 
+# Resolve version from pom.xml. Needed by both the dry-run and full-build paths (the Markdown split
+# stamps it into each page's llms.txt pointer), so it is resolved before either runs.
+TP_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout 2>/dev/null || \
+  grep -A1 '<artifactId>tinkerpop</artifactId>' pom.xml | grep -o 'version>[^<]*' | grep -o '>.*' | cut -d '>' -f2 | head -n1)
+
 # ---------------------------------------------------------------------------
 # Markdown split (agentdocsspec.com)
 # ---------------------------------------------------------------------------
@@ -119,7 +124,8 @@ split_markdown() {
   [ -z "${books}" ] && return 0
   echo "Splitting Markdown books into agent-sized pages (summary-driven)..."
   # shellcheck disable=SC2086
-  java -cp "${ext_classes}" org.apache.tinkerpop.tinkeradoc.MarkdownSplitter --strict ${books}
+  java -cp "${ext_classes}" org.apache.tinkerpop.tinkeradoc.MarkdownSplitter \
+    --strict --version "${TP_VERSION}" ${books}
 
   # Generate the llms.txt discovery index over the split pages (agentdocsspec.com).
   echo "Generating llms.txt discovery index..."
@@ -146,10 +152,6 @@ fi
 # ---------------------------------------------------------------------------
 # Full build mode
 # ---------------------------------------------------------------------------
-
-# Resolve version from pom.xml
-TP_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout 2>/dev/null || \
-  grep -A1 '<artifactId>tinkerpop</artifactId>' pom.xml | grep -o 'version>[^<]*' | grep -o '>.*' | cut -d '>' -f2 | head -n1)
 
 # 1. Validate console distribution
 CONSOLE_DIR=$(ls -d gremlin-console/target/apache-tinkerpop-gremlin-console-*-standalone 2>/dev/null | head -n1)

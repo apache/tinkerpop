@@ -224,4 +224,26 @@ public class MarkdownSplitterTest {
         assertThat(body, containsString("```properties"));
         assertThat(body, containsString("After the block."));
     }
+
+    @Test
+    public void everyPagePointsAtItsOwnVersionsIndex() {
+        final String md = "preamble\n\n" + heading("io", 1, "IO Reference") + "\nintro\n\n"
+                + summarized("graphson", 1, "GraphSON", "The GraphSON format.") + "\nbody\n";
+        final List<MarkdownSplitter.Page> pages = new MarkdownSplitter(MarkdownSplitter.DEFAULT_BUDGET, "3.7.7")
+                .split(md, "index.md");
+        // Both the index page and the split-off page carry the directive, and it names 3.7.7 rather
+        // than resolving to whichever version published to the site root last.
+        for (final MarkdownSplitter.Page p : pages) {
+            assertThat(p.getContent(), containsString(
+                    "> For the complete documentation index, see "
+                            + "[llms.txt](https://tinkerpop.apache.org/docs/3.7.7/llms.txt)"));
+            assertThat(p.getContent(), not(containsString("[llms.txt](/llms.txt)")));
+        }
+    }
+
+    @Test
+    public void pointerFallsBackToSiteRootWithoutAVersion() {
+        assertThat(MarkdownSplitter.llmsPointer(null), containsString("[llms.txt](/llms.txt)"));
+        assertThat(MarkdownSplitter.llmsPointer(""), containsString("[llms.txt](/llms.txt)"));
+    }
 }
