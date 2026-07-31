@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -51,6 +52,8 @@ import java.util.UUID;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractGraphSONMessageSerializerV1 extends AbstractMessageSerializer<ObjectMapper> {
+    static final String TOKEN_ALLOWED_TYPE_ID_NAMES = "allowedTypeIdNames";
+
     private static final Logger logger = LoggerFactory.getLogger(AbstractGraphSONMessageSerializerV1.class);
 
     protected ObjectMapper mapper;
@@ -76,6 +79,7 @@ public abstract class AbstractGraphSONMessageSerializerV1 extends AbstractMessag
         final GraphSONMapper.Builder initialBuilder = initBuilder(null);
         addIoRegistries(config, initialBuilder);
         applyMaxTokenLimits(initialBuilder, config);
+        applyAllowedTypeIdNames(initialBuilder, config);
         mapper = configureBuilder(initialBuilder).create().createMapper();
     }
 
@@ -180,6 +184,13 @@ public abstract class AbstractGraphSONMessageSerializerV1 extends AbstractMessag
                 builder.maxNestingDepth((int)config.get("maxNestingDepth"));
             }
         }
+        return builder;
+    }
+
+    private GraphSONMapper.Builder applyAllowedTypeIdNames(final GraphSONMapper.Builder builder,
+                                                           final Map<String, Object> config) {
+        final List<String> allowedTypeIdNames = getListStringFromConfig(TOKEN_ALLOWED_TYPE_ID_NAMES, config);
+        builder.addAllowedTypeIdName(allowedTypeIdNames.toArray(new String[0]));
         return builder;
     }
 

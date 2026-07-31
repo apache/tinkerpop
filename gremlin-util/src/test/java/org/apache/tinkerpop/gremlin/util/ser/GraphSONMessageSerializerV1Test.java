@@ -22,6 +22,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -35,10 +36,12 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.apache.tinkerpop.shaded.jackson.databind.exc.InvalidTypeIdException;
 import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +51,7 @@ import java.util.UUID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -62,6 +66,58 @@ public class GraphSONMessageSerializerV1Test {
     private static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
     public MessageSerializer<ObjectMapper> serializer = new GraphSONMessageSerializerV1();
+
+    @Test
+    public void shouldRejectUnregisteredTypeIdNamesAtMessageBoundaries() throws Exception {
+        final GraphSONMessageSerializerV1 defaultSerializer = new GraphSONMessageSerializerV1();
+        final RequestMessage request = RequestMessage.build("eval").addArg("sample", new SamplePojo(123)).create();
+        final ByteBuf requestBuffer = defaultSerializer.serializeRequestAsBinary(request, allocator);
+        // The server decoder removes the MIME header before passing the JSON payload to deserializeRequest().
+        final int mimeLength = requestBuffer.readByte();
+        requestBuffer.skipBytes(mimeLength);
+
+        try {
+            defaultSerializer.deserializeRequest(requestBuffer);
+            fail("an unregistered request type id name should not resolve");
+        } catch (SerializationException expected) {
+            assertEquals(InvalidTypeIdException.class, expected.getCause().getClass());
+            assertTrue(expected.getCause().getMessage().contains(SamplePojo.class.getName()));
+        }
+
+        final ResponseMessage response = ResponseMessage.build(requestId).result(new SamplePojo(123)).create();
+        final ByteBuf responseBuffer = defaultSerializer.serializeResponseAsBinary(response, allocator);
+        try {
+            defaultSerializer.deserializeResponse(responseBuffer);
+            fail("an unregistered response type id name should not resolve");
+        } catch (SerializationException expected) {
+            assertEquals(InvalidTypeIdException.class, expected.getCause().getClass());
+            assertTrue(expected.getCause().getMessage().contains(SamplePojo.class.getName()));
+        }
+    }
+
+    @Test
+    public void shouldConfigureAllowedTypeIdNamesAtMessageBoundaries() throws Exception {
+        final GraphSONMessageSerializerV1 configuredSerializer = new GraphSONMessageSerializerV1();
+        final Map<String, Object> config = new HashMap<>();
+        config.put(AbstractGraphSONMessageSerializerV1.TOKEN_ALLOWED_TYPE_ID_NAMES,
+                Collections.singletonList(SamplePojo.class.getName()));
+        configuredSerializer.configure(config, null);
+
+        final RequestMessage request = RequestMessage.build("eval").addArg("sample", new SamplePojo(123)).create();
+        final ByteBuf requestBuffer = configuredSerializer.serializeRequestAsBinary(request, allocator);
+        // The server decoder removes the MIME header before passing the JSON payload to deserializeRequest().
+        final int mimeLength = requestBuffer.readByte();
+        requestBuffer.skipBytes(mimeLength);
+        final SamplePojo requestSample = configuredSerializer.deserializeRequest(requestBuffer).getArg("sample");
+
+        final ResponseMessage response = ResponseMessage.build(requestId).result(new SamplePojo(123)).create();
+        final ByteBuf responseBuffer = configuredSerializer.serializeResponseAsBinary(response, allocator);
+        final SamplePojo responseSample = (SamplePojo) configuredSerializer.deserializeResponse(responseBuffer)
+                .getResult().getData();
+
+        assertEquals(123, requestSample.value);
+        assertEquals(123, responseSample.value);
+    }
 
     @Test
     public void shouldSerializeIterable() throws Exception {
@@ -331,5 +387,16 @@ public class GraphSONMessageSerializerV1Test {
     private ResponseMessage convert(final Object toSerialize) throws SerializationException {
         final ByteBuf bb = serializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
         return serializer.deserializeResponse(bb);
+    }
+
+    public static class SamplePojo {
+        public int value;
+
+        public SamplePojo() {
+        }
+
+        public SamplePojo(final int value) {
+            this.value = value;
+        }
     }
 }

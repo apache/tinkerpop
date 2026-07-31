@@ -1176,6 +1176,7 @@ The drivers are designed to use that type information to properly produce result
 system and may not function correctly without it. Generally speaking, `GraphBinary` is always the best choice for the
 drivers.
 
+[[server-graphson]]
 ===== GraphSON
 
 The GraphSON serializer produces human-readable output in JSON format and is a good configuration choice for those
@@ -1211,13 +1212,29 @@ Configuring GraphSON in the Gremlin Server configuration looks like this:
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3 }
 ----
 
-Gremlin Server is configured by default with GraphSON 3.0 as shown above. It has the following configuration option:
+Gremlin Server is configured by default with GraphSON 3.0 as shown above. It has the following configuration options:
 
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
 |ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer. |_none_
+|allowedTypeIdNames |A list of fully qualified class names that `GraphSONMessageSerializerV1` is allowed to resolve from `@class` type ids, in addition to its defaults. |_none_
 |=========================================================
+
+The `allowedTypeIdNames` option only affects typed GraphSON 1.0 reads. The equivalent mapper configuration uses
+`GraphSONMapper.Builder.addAllowedTypeIdName(String...)`:
+
+[source,java]
+----
+GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.PARTIAL_TYPES)
+        .addAllowedTypeIdName("com.example.MyType", "com.example.MyOtherType").create();
+----
+
+Each configured name is matched exactly, so it does not allow subclasses or other classes in the same package. An
+array is checked by its component class name, so allowing `com.example.MyType` also allows arrays of that class.
+Parameterized type ids are rejected before class-name matching. Therefore, a type id such as
+`java.util.EnumMap<...>` cannot be enabled by adding either `java.util.EnumMap` or the parameterized type id to the
+configured names.
 
 It is worth noting that GraphSON 1.0 still has some appeal for some users as it can be configured to produce an untyped
 JSON format which is a bit easier to consume than its successors which embed data types into the output. This version
@@ -1228,7 +1245,10 @@ To configure Gremlin Server this way, the `GraphSONMessageSerializerV1` must be 
 
 [source,yaml]
 ----
-  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV1 }
+  - className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV1
+    config:
+      allowedTypeIdNames:
+        - com.example.MyType
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3 }
 ----
 
