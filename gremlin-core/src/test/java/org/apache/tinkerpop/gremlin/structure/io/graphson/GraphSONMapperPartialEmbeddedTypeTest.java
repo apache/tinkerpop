@@ -24,7 +24,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonMappingException;
+import com.example.gadget.GraphSONTestGadgets.SamplePojo;
+import com.example.gadget.GraphSONTestGadgets.StaticInitCanary;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.apache.tinkerpop.shaded.jackson.databind.exc.InvalidTypeIdException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -47,7 +50,9 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
@@ -246,6 +251,96 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
         final Map read = mapper.readValue(json, HashMap.class);
 
         assertEquals(100L, read.get("test"));
+    }
+
+    @Test
+    public void shouldRejectDisallowedClassWithEmbedTypeSettingV1() {
+        // a "@class" naming a type outside the allowed value packages must be refused by the type validator
+        assertDeniedByTypeValidator(v1Typed(),
+                "{\"@class\":\"java.util.HashMap\",\"evil\":{\"@class\":\"java.io.File\",\"path\":\"/tmp/x\"}}");
+    }
+
+    @Test
+    public void shouldRoundTripArraysWithEmbedTypeSettingV1() throws Exception {
+        // arrays are legitimate GraphSON 1.0 values and rely on default typing; they must still round-trip
+        final ObjectMapper mapper = v1Typed();
+        final Map<String, Object> m = new HashMap<>();
+        m.put("strings", new String[]{"a", "b"});
+        m.put("bytes", new byte[]{1, 2, 3});
+
+        final Map read = mapper.readValue(mapper.writeValueAsString(m), HashMap.class);
+        assertArrayEquals(new String[]{"a", "b"}, (String[]) read.get("strings"));
+        assertArrayEquals(new byte[]{1, 2, 3}, (byte[]) read.get("bytes"));
+    }
+
+    @Test
+    public void shouldRoundTripSqlAndUtilValueTypesWithEmbedTypeSettingV1() throws Exception {
+        // common JDK value types in the allowed packages must round-trip
+        final ObjectMapper mapper = v1Typed();
+        final Map<String, Object> m = new HashMap<>();
+        m.put("ts", new java.sql.Timestamp(0L));
+        m.put("uuid", new java.util.UUID(1L, 2L));
+        m.put("big", new java.math.BigInteger("9"));
+
+        final Map read = mapper.readValue(mapper.writeValueAsString(m), HashMap.class);
+        assertEquals(new java.sql.Timestamp(0L), read.get("ts"));
+        assertEquals(new java.util.UUID(1L, 2L), read.get("uuid"));
+        assertEquals(new java.math.BigInteger("9"), read.get("big"));
+    }
+
+    @Test
+    public void shouldRejectArrayOfDisallowedComponentWithEmbedTypeSettingV1() {
+        // allowing arrays must not reopen the sink: an array whose component type is disallowed is still refused
+        assertDeniedByTypeValidator(v1Typed(),
+                "{\"@class\":\"java.util.HashMap\",\"evil\":[\"[Ljava.io.File;\",[\"/tmp/x\"]]}");
+    }
+
+    @Test
+    public void shouldRejectParameterizedDisallowedTypeWithEmbedTypeSettingV1() {
+        // a disallowed class named as a parameterized value type or key type must also be refused
+        assertDeniedByTypeValidator(v1Typed(),
+                "{\"@class\":\"java.util.HashMap<java.lang.String,java.io.File>\",\"k\":\"/tmp/x\"}");
+        assertDeniedByTypeValidator(v1Typed(),
+                "{\"@class\":\"java.util.HashMap<java.io.File,java.lang.String>\",\"/tmp/x\":\"v\"}");
+    }
+
+    @Test
+    public void shouldAllowConfiguredTypeIdPrefixWithEmbedTypeSettingV1() throws Exception {
+        final String json = "{\"@class\":\"java.util.HashMap\",\"p\":{\"@class\":\"com.example.gadget.GraphSONTestGadgets$SamplePojo\",\"x\":42}}";
+
+        // denied by default (com.example is outside the safe set)
+        assertDeniedByTypeValidator(v1Typed(), json);
+
+        // allowed once the package is explicitly trusted
+        final ObjectMapper mapper = GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.PARTIAL_TYPES)
+                .addAllowedTypeIdPrefix("com.example.").create().createMapper();
+        final Map read = mapper.readValue(json, HashMap.class);
+        assertEquals(new SamplePojo(42), read.get("p"));
+    }
+
+    @Test
+    public void shouldNotLoadDisallowedClassWhenRefusingV1() {
+        // a refused @class must be denied by name before it is loaded, otherwise its static initializer runs
+        System.clearProperty(StaticInitCanary.FIRED_PROPERTY);
+        assertDeniedByTypeValidator(v1Typed(),
+                "{\"@class\":\"java.util.HashMap\",\"g\":{\"@class\":\"com.example.gadget.GraphSONTestGadgets$StaticInitCanary\",\"x\":1}}");
+        assertNull("a refused @class must not be class-loaded (its static initializer must not run)",
+                System.getProperty(StaticInitCanary.FIRED_PROPERTY));
+    }
+
+    private static ObjectMapper v1Typed() {
+        return GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper();
+    }
+
+    private static void assertDeniedByTypeValidator(final ObjectMapper mapper, final String json) {
+        try {
+            mapper.readValue(json, HashMap.class);
+            fail("deserialization of a disallowed @class must be refused");
+        } catch (InvalidTypeIdException expected) {
+            // the polymorphic type validator refused to resolve the type id
+        } catch (Exception other) {
+            throw new AssertionError("expected InvalidTypeIdException, got " + other, other);
+        }
     }
 
     @Test

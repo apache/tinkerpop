@@ -27,6 +27,9 @@ import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.StreamReadConstraints;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializationFeature;
+import org.apache.tinkerpop.shaded.jackson.databind.JavaType;
+import org.apache.tinkerpop.shaded.jackson.databind.cfg.MapperConfig;
+import org.apache.tinkerpop.shaded.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeResolverBuilder;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
@@ -63,6 +66,12 @@ import java.util.UUID;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONMapper implements Mapper<ObjectMapper> {
+
+    // GraphSON 1.0 embedded types reconstruct a value from the class named in a "@class" property via Jackson
+    // default typing; constrain it to safe packages so an untrusted payload cannot name an arbitrary class.
+    // Providers can extend this with Builder.addAllowedTypeIdPrefix(...) for trusted input.
+    private static final List<String> GRAPHSON_1_0_DEFAULT_TYPE_PREFIXES = Arrays.asList(
+            "java.lang.", "java.util.", "java.math.", "java.time.", "java.sql.", "org.apache.tinkerpop.");
     public static final int DEFAULT_MAX_NUMBER_LENGTH = 10000;
 
     private final List<SimpleModule> customModules;
@@ -71,6 +80,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
     private final GraphSONVersion version;
     private final TypeInfo typeInfo;
     private final StreamReadConstraints streamReadConstraints;
+    private final List<String> allowedTypeIdPrefixes;
 
     private GraphSONMapper(final Builder builder) {
         this.customModules = builder.customModules;
@@ -79,6 +89,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         this.version = builder.version;
         this.streamReadConstraints = builder.streamReadConstraintsBuilder.build();
         this.typeInfo = builder.typeInfo;
+        this.allowedTypeIdPrefixes = builder.allowedTypeIdPrefixes;
     }
 
     @Override
@@ -128,8 +139,15 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
             om.setDefaultTyping(typer);
         } else if (version == GraphSONVersion.V1_0 || version == GraphSONVersion.V2_0) {
             if (typeInfo == TypeInfo.PARTIAL_TYPES) {
-                final TypeResolverBuilder<?> typer = new StdTypeResolverBuilder()
-                        .init(JsonTypeInfo.Id.CLASS, null)
+                final List<String> allowedPrefixes = new ArrayList<>(GRAPHSON_1_0_DEFAULT_TYPE_PREFIXES);
+                allowedPrefixes.addAll(allowedTypeIdPrefixes);
+                final PolymorphicTypeValidator typeValidator = graphSON1dTypeValidator(allowedPrefixes);
+                final TypeResolverBuilder<?> typer = new StdTypeResolverBuilder() {
+                    @Override
+                    public PolymorphicTypeValidator subTypeValidator(final MapperConfig<?> config) {
+                        return typeValidator;
+                    }
+                }.init(JsonTypeInfo.Id.CLASS, null)
                         .inclusion(JsonTypeInfo.As.PROPERTY)
                         .typeProperty(GraphSONTokens.CLASS);
                 om.setDefaultTyping(typer);
@@ -150,6 +168,50 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         // keep streams open to accept multiple values (e.g. multiple vertices)
         om.getFactory().disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
         return om;
+    }
+
+    /**
+     * A {@link PolymorphicTypeValidator} for GraphSON 1.0 embedded types that decides purely from the type id name,
+     * so a disallowed class is refused before it is loaded (a name that only fails the check post-load would still
+     * have its static initializer run). A name is allowed when it, or an array's element type, starts with one of
+     * the trusted prefixes; primitive arrays are allowed.
+     */
+    private static PolymorphicTypeValidator graphSON1dTypeValidator(final List<String> allowedPrefixes) {
+        return new PolymorphicTypeValidator.Base() {
+            @Override
+            public Validity validateBaseType(final MapperConfig<?> config, final JavaType baseType) {
+                return Validity.INDETERMINATE;
+            }
+
+            @Override
+            public Validity validateSubClassName(final MapperConfig<?> config, final JavaType baseType,
+                                                 final String subClassName) {
+                return isAllowedTypeName(subClassName, allowedPrefixes) ? Validity.ALLOWED : Validity.DENIED;
+            }
+
+            @Override
+            public Validity validateSubType(final MapperConfig<?> config, final JavaType baseType,
+                                            final JavaType subType) {
+                return isAllowedTypeName(subType.getRawClass().getName(), allowedPrefixes)
+                        ? Validity.ALLOWED : Validity.DENIED;
+            }
+        };
+    }
+
+    private static boolean isAllowedTypeName(final String typeName, final List<String> allowedPrefixes) {
+        // unwrap array descriptors: "[Ljava.io.File;" -> "java.io.File", "[[B" -> primitive element
+        String name = typeName;
+        while (name.startsWith("["))
+            name = name.substring(1);
+        if (name.length() <= 1)
+            return true; // primitive array element (e.g. [B, [I) carries no class to instantiate
+        if (name.startsWith("L") && name.endsWith(";"))
+            name = name.substring(1, name.length() - 1);
+        for (final String prefix : allowedPrefixes) {
+            if (name.startsWith(prefix))
+                return true;
+        }
+        return false;
     }
 
     public GraphSONVersion getVersion() {
@@ -204,6 +266,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         private StreamReadConstraints.Builder streamReadConstraintsBuilder = StreamReadConstraints.builder()
                 .maxNumberLength(DEFAULT_MAX_NUMBER_LENGTH);
         private TypeInfo typeInfo = null;
+        private final List<String> allowedTypeIdPrefixes = new ArrayList<>();
 
         private Builder() {
         }
@@ -285,6 +348,18 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
          */
         public Builder typeInfo(final TypeInfo typeInfo) {
             this.typeInfo = typeInfo;
+            return this;
+        }
+
+        /**
+         * Adds a class-name prefix that GraphSON 1.0 embedded-type deserialization will accept in a {@code @class}
+         * property, in addition to the safe defaults ({@code java.lang.}, {@code java.util.}, {@code java.math.},
+         * {@code java.time.}, {@code org.apache.tinkerpop.} and array types). Use this to re-enable a provider or
+         * application type read from trusted input; a graph document from an untrusted source should not be granted
+         * additional prefixes. Has no effect on GraphSON 2.0 or 3.0, which resolve types through a fixed registry.
+         */
+        public Builder addAllowedTypeIdPrefix(final String... prefixes) {
+            this.allowedTypeIdPrefixes.addAll(Arrays.asList(prefixes));
             return this;
         }
 
