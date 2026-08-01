@@ -9,7 +9,7 @@
     "react-dom": "^19.2.7",
     "sharp-router": "^4.1.5",
     "styled-components": "^6.1.14",
-    "web-vitals": "^5.0.0"
+    "web-vitals": "^6.0.1"
   },
   "scripts": {
     "predeploy": "npm run build",
