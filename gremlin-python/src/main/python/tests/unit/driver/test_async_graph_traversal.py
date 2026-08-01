@@ -333,13 +333,13 @@ class TestIterate(unittest.IsolatedAsyncioTestCase):
         result = await g.add_v("person").property("name", "test").iterate()
         self.assertIsInstance(result, AsyncGraphTraversal)
 
-    async def test_iterate_adds_discard_step(self):
+    async def test_iterate_does_not_add_discard_step(self):
         rc = _make_rc(values=[])
         g = _make_g(rc)
         t = g.add_v("person")
         await t.iterate()
         step_names = [s[0] for s in t.bytecode.step_instructions]
-        self.assertIn("discard", step_names)
+        self.assertNotIn("discard", step_names)
 
     async def test_iterate_calls_submit(self):
         rc = _make_rc(values=[])
