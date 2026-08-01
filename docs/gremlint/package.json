@@ -42,7 +42,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "gh-pages": "^6.3.0",
-    "jsdom": "^29.1.1",
+    "jsdom": "^30.0.1",
     "prettier": "^3.4.2",
     "typescript": "~6.0.3",
     "vite": "^8.0.10",
