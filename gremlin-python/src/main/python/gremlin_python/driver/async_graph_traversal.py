@@ -178,8 +178,10 @@ class AsyncTraversal(Traversal):
 
         Use for write operations (``add_v``, ``add_e``, ``property``, …)
         where no return value is needed.
+
+        Results are drained on the client side for compatibility with servers
+        that predate the ``discard()`` step (e.g. Neptune, TinkerPop < 3.8.0).
         """
-        self.bytecode.add_step("discard")
         async for _ in self:
             pass
         return self
