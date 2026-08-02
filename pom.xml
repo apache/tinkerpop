@@ -568,6 +568,7 @@ limitations under the License.
                         <exclude>**/gremlinpython.egg-info/**</exclude>
                         <exclude>**/docfx/**</exclude>
                         <exclude>**/go.sum</exclude>
+                        <exclude>**/pubspec.lock</exclude>
                         <exclude>**/coverage.out</exclude>
                         <exclude>**/gremlinconsoletest.egg-info/**</exclude>
                         <!-- Agent skill markdown is guidance for AI agents, kept header-free to maximize signal;
