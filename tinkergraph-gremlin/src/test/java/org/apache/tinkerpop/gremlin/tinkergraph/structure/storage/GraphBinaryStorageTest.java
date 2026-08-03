@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
 
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph;
@@ -51,6 +52,56 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         graph.close();
         // close compacts, producing a snapshot and truncating the log
         assertTrue(new File(location, GraphBinaryStorage.SNAPSHOT_FILE).exists());
+    }
+
+    @Test
+    public void shouldPersistWithOsSyncMode() {
+        // 'os' is a weaker durability mode (no fsync); a graceful close/reopen must still round-trip the data. The
+        // OS-crash-loss window that distinguishes it from 'commit' cannot be exercised in a unit test.
+        final Configuration conf = config();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_SYNC, "os");
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1, "value", 42);
+        graph.tx().commit();
+        graph.close();
+
+        graph = TinkerStorageGraph.open(conf);
+        assertEquals(1, countOf(graph.vertices()));
+        assertEquals(Integer.valueOf(42), graph.vertices(1).next().value("value"));
+        graph.close();
+    }
+
+    @Test
+    public void shouldPersistWithDefaultCommitSyncMode() {
+        // with no sync mode configured the engine defaults to 'commit' (fsync per commit); data must round-trip.
+        TinkerStorageGraph graph = open();
+        graph.addVertex(T.id, 1, "value", 42);
+        graph.tx().commit();
+        graph.close();
+
+        graph = open();
+        assertEquals(Integer.valueOf(42), graph.vertices(1).next().value("value"));
+        graph.close();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldRejectUnknownSyncMode() {
+        final Configuration conf = config();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_SYNC, "bogus");
+        TinkerStorageGraph.open(conf);
+    }
+
+    @Test
+    public void shouldLeaveNoTempSnapshotAfterCompaction() {
+        final TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        graph.addVertex(T.id, 1, "value", 1);
+        graph.tx().commit();
+        graph.compact();
+        // the atomic rename must consume the temp file, leaving a durable snapshot and no leftover .tmp
+        assertTrue(new File(location, GraphBinaryStorage.SNAPSHOT_FILE).exists());
+        assertTrue(!new File(location, GraphBinaryStorage.SNAPSHOT_FILE + ".tmp").exists());
+        graph.close();
     }
 
     @Test
