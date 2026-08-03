@@ -179,10 +179,16 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
 
             // write-ahead: durably persist the changeset before applying the in-memory commit, so a failure here
             // aborts the commit (via the catch below) and leaves memory and disk consistent. Skipped while the graph
-            // is replaying its storage log on open.
+            // is replaying its storage log on open. Serialized by storageCommitLock because commits of disjoint
+            // elements otherwise reach the engine's single append log concurrently and interleave its records.
             if (graph.storage != null && !graph.loading) {
-                graph.storage.persist(txVersion, toVertexMutations(changedVertices), toEdgeMutations(changedEdges));
-                graph.storage.flush();
+                graph.storageCommitLock.lock();
+                try {
+                    graph.storage.persist(txVersion, toVertexMutations(changedVertices), toEdgeMutations(changedEdges));
+                    graph.storage.flush();
+                } finally {
+                    graph.storageCommitLock.unlock();
+                }
             }
 
             // commit all changes
