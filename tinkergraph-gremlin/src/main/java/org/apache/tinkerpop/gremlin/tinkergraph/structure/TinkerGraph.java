@@ -59,6 +59,14 @@ public interface TinkerGraph extends Graph {
      * the graph holds data only in memory. Not valid on {@link TinkerMemoryGraph}.
      */
     String GREMLIN_TINKERGRAPH_STORAGE = "gremlin.tinkergraph.storage";
+    /**
+     * The durability mode a {@link TinkerStorageGraph} storage engine applies on commit. Either {@code commit}
+     * (default) to {@code fsync} every commit so acknowledged commits survive an OS crash or power loss, or {@code os}
+     * to only flush to the operating system so commits survive a JVM process crash but may be lost on OS crash or
+     * power loss. Only meaningful when {@link #GREMLIN_TINKERGRAPH_STORAGE} is set. See
+     * {@code org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.SyncMode}.
+     */
+    String GREMLIN_TINKERGRAPH_STORAGE_SYNC = "gremlin.tinkergraph.storage.sync";
     String GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES = "gremlin.tinkergraph.allowNullPropertyValues";
     String GREMLIN_TINKERGRAPH_SERVICE = "gremlin.tinkergraph.service";
     String GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY = "gremlin.tinkergraph.vertexLabelCardinality";

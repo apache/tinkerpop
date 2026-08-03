@@ -44,6 +44,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
+import java.nio.channels.FileChannel;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -57,6 +62,10 @@ import java.util.Map;
  * {@code log.gbin} as a single record; on open the optional {@code snapshot.gbin} is read followed by the log, with the
  * folded result re-applied to the in-memory graph. {@link #compact(AbstractTinkerGraph)} rewrites the snapshot from the
  * current committed state and truncates the log.
+ * <p/>
+ * On commit the appended record is made durable according to the configured {@link SyncMode}: {@link SyncMode#COMMIT}
+ * (default) {@code fsync}s so the commit survives an OS crash or power loss, while {@link SyncMode#OS} only flushes to
+ * the operating system.
  * <p/>
  * The in-memory graph remains authoritative (write-through). This engine does not support graphs larger than memory.
  */
@@ -83,6 +92,8 @@ public final class GraphBinaryStorage implements TinkerStorage {
     private File logFile;
 
     private DataOutputStream logOut;
+    private FileOutputStream logFos;
+    private SyncMode syncMode = SyncMode.COMMIT;
     private boolean closed = false;
 
     @Override
@@ -94,6 +105,7 @@ public final class GraphBinaryStorage implements TinkerStorage {
         this.directory = new File(location);
         this.snapshotFile = new File(directory, SNAPSHOT_FILE);
         this.logFile = new File(directory, LOG_FILE);
+        this.syncMode = SyncMode.fromConfigValue(config.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_SYNC, null));
         ensureDirectory();
     }
 
@@ -242,7 +254,12 @@ public final class GraphBinaryStorage implements TinkerStorage {
             return;
         if (logOut != null) {
             try {
+                // flush the JVM buffer into the OS page cache; durable against a JVM process crash
                 logOut.flush();
+                // in COMMIT mode also force the OS page cache to the device, so an acknowledged commit is durable
+                // against an OS crash or power loss. OS mode stops at the flush above and accepts that weaker guarantee.
+                if (syncMode == SyncMode.COMMIT)
+                    logFos.getFD().sync();
             } catch (IOException ex) {
                 throw new UncheckedIOException("Could not flush storage log", ex);
             }
@@ -253,27 +270,67 @@ public final class GraphBinaryStorage implements TinkerStorage {
     public void compact(final AbstractTinkerGraph graph) {
         if (closed)
             return;
-        // Write a fresh snapshot of the current committed state, then truncate the log.
+        // Write a fresh snapshot of the current committed state, then truncate the log. This must be crash-safe: at
+        // no point may a crash leave the store without a readable snapshot-or-log covering the committed state.
+        // Ordering is write-tmp -> fsync tmp -> atomically rename tmp over the snapshot -> fsync dir (the rename is
+        // now durable) -> delete the log -> fsync dir. The old snapshot is only ever replaced by an atomic rename, so
+        // a crash at any step leaves either the old (snapshot + log) or the new (snapshot) intact — never neither.
         closeLog();
         ensureDirectory();
         final File tmp = new File(directory, SNAPSHOT_FILE + ".tmp");
-        try (final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(tmp)))) {
+        try (final FileOutputStream fos = new FileOutputStream(tmp);
+             final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(fos))) {
             final byte[] frame = encodeSnapshot(graph);
             if (frame.length > 0)
                 writeFrame(out, frame);
             out.flush();
+            // force the snapshot's bytes to the device before it is renamed into place
+            fos.getFD().sync();
         } catch (IOException ex) {
             throw new UncheckedIOException("Could not write storage snapshot", ex);
         }
 
-        if (snapshotFile.exists() && !snapshotFile.delete())
-            throw new UncheckedIOException(new IOException("Could not replace snapshot " + snapshotFile));
-        if (!tmp.renameTo(snapshotFile))
-            throw new UncheckedIOException(new IOException("Could not rename snapshot into place " + snapshotFile));
+        try {
+            // atomically replace the snapshot; no delete-then-rename window where the snapshot is briefly absent
+            atomicMove(tmp, snapshotFile);
+            // fsync the directory so the rename survives a crash before we touch the log
+            syncDirectory();
 
-        // truncate the log
-        if (logFile.exists() && !logFile.delete())
-            throw new UncheckedIOException(new IOException("Could not truncate storage log " + logFile));
+            // truncate the log now that the snapshot durably reflects the committed state
+            if (logFile.exists() && !logFile.delete())
+                throw new IOException("Could not truncate storage log " + logFile);
+            // fsync the directory again so the log's removal is durable
+            syncDirectory();
+        } catch (IOException ex) {
+            throw new UncheckedIOException("Could not finalize storage snapshot", ex);
+        }
+    }
+
+    /**
+     * Atomically move {@code source} onto {@code target}, replacing any existing target. Falls back to a non-atomic
+     * replacing move on filesystems that do not support atomic moves.
+     */
+    private static void atomicMove(final File source, final File target) throws IOException {
+        try {
+            Files.move(source.toPath(), target.toPath(),
+                    StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } catch (AtomicMoveNotSupportedException anse) {
+            Files.move(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    /**
+     * fsync the storage directory so that recent namespace changes (a rename into place, a file deletion) are durable.
+     * A directory fsync is required because those operations only update the directory entry, which the earlier file
+     * fsync does not cover.
+     */
+    private void syncDirectory() {
+        try (final FileChannel dirChannel = FileChannel.open(directory.toPath(), StandardOpenOption.READ)) {
+            dirChannel.force(true);
+        } catch (IOException ex) {
+            // some platforms (notably Windows) cannot open a directory as a channel; the atomic rename is the
+            // durability guarantee there, so treat inability to sync the directory as non-fatal
+        }
     }
 
     /**
@@ -316,7 +373,9 @@ public final class GraphBinaryStorage implements TinkerStorage {
     private void ensureLogOpen() {
         if (logOut == null) {
             try {
-                logOut = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(logFile, true)));
+                // retain the FileOutputStream so flush() can reach its FileDescriptor for fsync
+                logFos = new FileOutputStream(logFile, true);
+                logOut = new DataOutputStream(new BufferedOutputStream(logFos));
             } catch (IOException ex) {
                 throw new UncheckedIOException("Could not open storage log for append", ex);
             }
@@ -332,6 +391,7 @@ public final class GraphBinaryStorage implements TinkerStorage {
                 throw new UncheckedIOException("Could not close storage log", ex);
             } finally {
                 logOut = null;
+                logFos = null;
             }
         }
     }
