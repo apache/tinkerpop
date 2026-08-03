@@ -46,8 +46,13 @@ public enum SyncMode {
     // TODO: add an INTERVAL mode (group commit) — a peer value on this same key, encoded as "interval:<ms>", that
     // fsyncs at most once per <ms> window rather than once per commit, bounding the crash-loss window by time while
     // amortizing fsync cost across commits. It implies fsync (a batched COMMIT), so it slots in as a third
-    // mutually-exclusive mode without changing the meaning of COMMIT or OS. Deferred until concurrent commits are
-    // serialized, since group commit's payoff is amortizing one fsync across many concurrent committers.
+    // mutually-exclusive mode without changing the meaning of COMMIT or OS.
+    //
+    // This is coupled to the commit-write lock that serializes concurrent commits (see the persist/flush step in
+    // TinkerTransaction.doCommit): once that lock exists, COMMIT holds it across the fsync, so every commit serializes
+    // on disk-sync latency. INTERVAL is the fix — hold the lock only for the buffer append (fast) and fsync one batch
+    // for many transactions. So INTERVAL should be built on top of that lock, not before it: it is the performance
+    // pass that makes serialized commits cheap, which is why it is deferred until concurrent commits are serialized.
 
     /**
      * Resolve a configuration value to a {@link SyncMode}, matched case-insensitively, defaulting to {@link #COMMIT}
