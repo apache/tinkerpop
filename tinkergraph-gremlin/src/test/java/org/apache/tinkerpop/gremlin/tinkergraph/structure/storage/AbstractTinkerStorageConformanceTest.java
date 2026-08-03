@@ -32,7 +32,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -229,6 +236,52 @@ public abstract class AbstractTinkerStorageConformanceTest {
         final TinkerStorageGraph graph = open();
         assertTrue(graph.features().graph().supportsPersistence());
         graph.close();
+    }
+
+    @Test
+    public void shouldPersistConcurrentCommitsWithoutLossAcrossReopen() throws Exception {
+        // End-to-end companion to StorageCommitSerializationTest: many threads commit disjoint vertices at once and,
+        // on reopen, every record must survive. This exercises the real engine but cannot by itself *prove* the lock
+        // works — log corruption from interleaving is scheduling-dependent — so the deterministic guarantee is
+        // asserted separately by StorageCommitSerializationTest via a probe engine.
+        final int threads = 8;
+        final int commitsPerThread = 50;
+        final TinkerStorageGraph writeGraph = open();
+        try {
+            final ExecutorService pool = Executors.newFixedThreadPool(threads);
+            final CountDownLatch start = new CountDownLatch(1);
+            final List<Future<?>> futures = new ArrayList<>();
+            for (int t = 0; t < threads; t++) {
+                final int threadId = t;
+                futures.add(pool.submit(() -> {
+                    start.await(); // release all threads together to maximize contention on the commit path
+                    for (int i = 0; i < commitsPerThread; i++) {
+                        final int id = threadId * commitsPerThread + i;
+                        writeGraph.addVertex(T.id, id, "value", id);
+                        writeGraph.tx().commit();
+                    }
+                    return null;
+                }));
+            }
+            start.countDown();
+            for (final Future<?> f : futures)
+                f.get(60, TimeUnit.SECONDS);
+            pool.shutdown();
+            assertTrue(pool.awaitTermination(60, TimeUnit.SECONDS));
+        } finally {
+            writeGraph.close();
+        }
+
+        // reopen from disk: a corrupt (interleaved) log frame would throw or drop records here
+        final TinkerStorageGraph reopened = open();
+        try {
+            final int expected = threads * commitsPerThread;
+            assertEquals(expected, countOf(reopened.vertices()));
+            for (int id = 0; id < expected; id++)
+                assertEquals(Integer.valueOf(id), reopened.vertices(id).next().value("value"));
+        } finally {
+            reopened.close();
+        }
     }
 
     private static long countOf(final Iterator<?> it) {

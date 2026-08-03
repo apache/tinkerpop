@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Base class for {@link TinkerMemoryGraph} and {@link TinkerStorageGraph}.
@@ -83,6 +84,15 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
      * transactional implementations that support persistence.
      */
     protected TinkerStorage storage;
+
+    /**
+     * Serializes the durable write of a committing transaction. TinkerGraph transactions lock only their own changed
+     * elements, so two commits touching disjoint elements run their commit paths concurrently; without this lock they
+     * would both write to the storage engine's single append log at once and interleave (corrupt) its records. Held
+     * only around the engine's persist/flush, so commits of disjoint elements still proceed in parallel up to that
+     * point. Fair, so committers are served in arrival order and none is starved.
+     */
+    protected final ReentrantLock storageCommitLock = new ReentrantLock(true);
 
     /**
      * Guard set while a graph is replaying its storage log on open. While {@code true}, mutations must not be
@@ -308,9 +318,16 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
     @Override
     public void close() {
         if (storage != null) {
-            storage.flush();
-            storage.compact(this);
-            storage.close();
+            // serialize against concurrent commit writes: close flushes, compacts, and closes the log, which must not
+            // interleave with a transaction appending to it.
+            storageCommitLock.lock();
+            try {
+                storage.flush();
+                storage.compact(this);
+                storage.close();
+            } finally {
+                storageCommitLock.unlock();
+            }
         }
         serviceRegistry.close();
         GqlDeclarativeMatchStrategy.evict(this);
