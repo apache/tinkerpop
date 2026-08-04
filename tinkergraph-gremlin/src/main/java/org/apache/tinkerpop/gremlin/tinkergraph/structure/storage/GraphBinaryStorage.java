@@ -49,11 +49,9 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -68,6 +66,12 @@ import java.util.Map;
  * the operating system.
  * <p/>
  * The in-memory graph remains authoritative (write-through). This engine does not support graphs larger than memory.
+ * <p/>
+ * Known limitation (write amplification): a commit records each changed element in full — a single property change on
+ * a large element rewrites the whole element to the log. Elements are typically small and automatic compaction bounds
+ * the resulting log growth, so this is accepted rather than mitigated with per-property deltas, which would complicate
+ * the {@link TinkerStorageMutation} contract and the replay fold. The snapshot, by contrast, is streamed one element
+ * at a time so compaction never holds a second full copy of the graph in heap.
  */
 public final class GraphBinaryStorage implements TinkerStorage {
 
@@ -292,9 +296,7 @@ public final class GraphBinaryStorage implements TinkerStorage {
         final File tmp = new File(directory, SNAPSHOT_FILE + ".tmp");
         try (final FileOutputStream fos = new FileOutputStream(tmp);
              final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(fos))) {
-            final byte[] frame = encodeSnapshot(graph);
-            if (frame.length > 0)
-                writeFrame(out, frame);
+            writeSnapshot(graph, out);
             out.flush();
             // force the snapshot's bytes to the device before it is renamed into place
             fos.getFD().sync();
@@ -357,34 +359,33 @@ public final class GraphBinaryStorage implements TinkerStorage {
     }
 
     /**
-     * Serialize the entire current committed state of the graph as a single put-only record.
+     * Write the entire current committed state of the graph to {@code out} as a stream of single-element put records,
+     * one frame per vertex and per edge. Each frame is an ordinary put record (see {@link #encodeRecord}) with an
+     * entry count of one, so {@link #foldRecords} reconstructs the graph from these frames exactly as it would from a
+     * commit log. Writing one element at a time keeps peak memory bounded to a single element rather than materializing
+     * the whole graph as one byte array, so a snapshot never needs to hold a second full copy of the graph in heap.
      */
-    private byte[] encodeSnapshot(final AbstractTinkerGraph graph) throws IOException {
-        final List<Vertex> vertexList = new ArrayList<>();
+    private void writeSnapshot(final AbstractTinkerGraph graph, final DataOutputStream out) throws IOException {
         final Iterator<Vertex> vertexIterator = graph.vertices();
         while (vertexIterator.hasNext())
-            vertexList.add(vertexIterator.next());
-        final List<Edge> edgeList = new ArrayList<>();
+            writeElementFrame(out, OP_PUT_VERTEX, vertexIterator.next());
         final Iterator<Edge> edgeIterator = graph.edges();
         while (edgeIterator.hasNext())
-            edgeList.add(edgeIterator.next());
+            writeElementFrame(out, OP_PUT_EDGE, edgeIterator.next());
+    }
 
-        if (vertexList.isEmpty() && edgeList.isEmpty())
-            return new byte[0];
-
+    /**
+     * Encode a single element as a one-entry put record and write it as a framed record to {@code out}. Only one
+     * element's bytes are held in memory at a time.
+     */
+    private void writeElementFrame(final DataOutputStream out, final byte op, final Object element) throws IOException {
         final ByteBufferBuffer buffer = new ByteBufferBuffer();
         buffer.writeByte(FORMAT_VERSION);
-        buffer.writeLong(0L); // snapshot has no single tx version
-        buffer.writeInt(vertexList.size() + edgeList.size());
-        for (final Vertex v : vertexList) {
-            buffer.writeByte(OP_PUT_VERTEX);
-            writer.write(DetachedFactory.detach(v, true), buffer);
-        }
-        for (final Edge e : edgeList) {
-            buffer.writeByte(OP_PUT_EDGE);
-            writer.write(DetachedFactory.detach(e, true), buffer);
-        }
-        return buffer.toWrittenArray();
+        buffer.writeLong(0L); // snapshot records have no single tx version
+        buffer.writeInt(1);
+        buffer.writeByte(op);
+        writer.write(DetachedFactory.detach(element, true), buffer);
+        writeFrame(out, buffer.toWrittenArray());
     }
 
     @Override

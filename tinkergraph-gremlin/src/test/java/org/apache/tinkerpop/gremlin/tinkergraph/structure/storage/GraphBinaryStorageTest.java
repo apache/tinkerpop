@@ -20,10 +20,12 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph;
 import org.junit.Test;
 
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
@@ -103,6 +105,55 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         assertTrue(new File(location, GraphBinaryStorage.SNAPSHOT_FILE).exists());
         assertTrue(!new File(location, GraphBinaryStorage.SNAPSHOT_FILE + ".tmp").exists());
         graph.close();
+    }
+
+    @Test
+    public void shouldStreamSnapshotAsOneFramePerElement() throws Exception {
+        final TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        final Vertex a = graph.addVertex(T.id, 1, "name", "a");
+        final Vertex b = graph.addVertex(T.id, 2, "name", "b");
+        final Vertex c = graph.addVertex(T.id, 3, "name", "c");
+        a.addEdge("knows", b, T.id, 10);
+        b.addEdge("knows", c, T.id, 11);
+        graph.tx().commit();
+        graph.compact();
+
+        // the snapshot must be written as one framed record per element (3 vertices + 2 edges = 5), rather than a
+        // single whole-graph frame, so compaction never buffers the entire graph in one array
+        final File snapshotFile = new File(location, GraphBinaryStorage.SNAPSHOT_FILE);
+        assertEquals(5, countFrames(snapshotFile));
+        graph.close();
+
+        // and the streamed snapshot must reopen to exactly the same graph
+        final TinkerStorageGraph reopened = open();
+        assertEquals(3, countOf(reopened.vertices()));
+        assertEquals(2, countOf(reopened.edges()));
+        assertEquals("a", reopened.vertices(1).next().value("name"));
+        assertEquals("knows", reopened.edges(10).next().label());
+        reopened.close();
+    }
+
+    /**
+     * Count the length-prefixed frames in a storage file: each frame is a 4-byte big-endian length followed by that
+     * many payload bytes.
+     */
+    private static int countFrames(final File file) throws Exception {
+        int frames = 0;
+        try (final DataInputStream in = new DataInputStream(new java.io.BufferedInputStream(new java.io.FileInputStream(file)))) {
+            while (true) {
+                final int len;
+                try {
+                    len = in.readInt();
+                } catch (java.io.EOFException eof) {
+                    break;
+                }
+                final long skipped = in.skip(len);
+                if (skipped < len) break;
+                frames++;
+            }
+        }
+        return frames;
     }
 
     @Test
