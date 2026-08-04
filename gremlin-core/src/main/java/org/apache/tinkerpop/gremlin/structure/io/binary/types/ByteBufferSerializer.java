@@ -37,7 +37,7 @@ public class ByteBufferSerializer extends SimpleTypeSerializer<ByteBuffer> {
 
     @Override
     protected ByteBuffer readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
-        final ByteBuffer bb = ByteBuffer.allocate(buffer.readInt());
+        final ByteBuffer bb = ByteBuffer.allocate(readSizePrefix(buffer));
         buffer.readBytes(bb);
         bb.rewind();
         return bb;
