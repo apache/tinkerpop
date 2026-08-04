@@ -33,6 +33,7 @@ import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Runs the shared {@link AbstractTinkerStorageConformanceTest} suite against the {@link GraphBinaryStorage} engine and
@@ -135,12 +136,14 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     }
 
     /**
-     * Count the length-prefixed frames in a storage file: each frame is a 4-byte big-endian length followed by that
-     * many payload bytes.
+     * Count the framed records in a storage file: a fixed header ({@code HEADER_SIZE} bytes) followed by frames of a
+     * 4-byte big-endian payload length, a 4-byte CRC, then that many payload bytes.
      */
     private static int countFrames(final File file) throws Exception {
         int frames = 0;
         try (final DataInputStream in = new DataInputStream(new java.io.BufferedInputStream(new java.io.FileInputStream(file)))) {
+            final long headerSkipped = in.skip(GraphBinaryStorage.HEADER_SIZE);
+            if (headerSkipped < GraphBinaryStorage.HEADER_SIZE) return 0;
             while (true) {
                 final int len;
                 try {
@@ -148,6 +151,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
                 } catch (java.io.EOFException eof) {
                     break;
                 }
+                in.readInt(); // CRC
                 final long skipped = in.skip(len);
                 if (skipped < len) break;
                 frames++;
@@ -239,6 +243,68 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         assertEquals(Integer.valueOf(1), graph.vertices(1).next().value("value"));
         assertEquals(Integer.valueOf(2), graph.vertices(2).next().value("value"));
         graph.close();
+    }
+
+    @Test
+    public void shouldFailOnCorruptFrameWithBadCrc() throws Exception {
+        TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        graph.addVertex(T.id, 1, "value", 1);
+        graph.tx().commit();
+        graph.addVertex(T.id, 2, "value", 2);
+        graph.tx().commit();
+        graph.tx().close();
+
+        // preserve the raw log, then reconstruct it with a bit flipped inside the first frame's payload — a complete
+        // frame whose CRC no longer matches (distinct from a short trailing frame, which is tolerated as truncation)
+        final File logFile = new File(location, GraphBinaryStorage.LOG_FILE);
+        final byte[] log = Files.readAllBytes(logFile.toPath());
+        graph.close();
+        // header, then first frame's 4-byte length + 4-byte CRC, then payload — flip the first payload byte
+        final int firstPayloadByte = GraphBinaryStorage.HEADER_SIZE + 2 * Integer.BYTES;
+        log[firstPayloadByte] ^= 0x01;
+        Files.deleteIfExists(new File(location, GraphBinaryStorage.SNAPSHOT_FILE).toPath());
+        Files.write(logFile.toPath(), log);
+
+        try {
+            open();
+            fail("expected reopen to fail on a CRC mismatch");
+        } catch (Exception expected) {
+            assertTrue("cause should report corruption: " + rootMessage(expected),
+                    rootMessage(expected).contains("CRC mismatch"));
+        }
+    }
+
+    @Test
+    public void shouldFailOnForeignFileWithBadMagic() throws Exception {
+        TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+        graph.tx().close();
+        final File logFile = new File(location, GraphBinaryStorage.LOG_FILE);
+        final byte[] log = Files.readAllBytes(logFile.toPath());
+        graph.close();
+
+        // corrupt the magic so the file no longer identifies as a TinkerGraph storage file
+        log[0] ^= 0xFF;
+        Files.deleteIfExists(new File(location, GraphBinaryStorage.SNAPSHOT_FILE).toPath());
+        Files.write(logFile.toPath(), log);
+
+        try {
+            open();
+            fail("expected reopen to fail on bad magic");
+        } catch (Exception expected) {
+            assertTrue("cause should report a bad storage file: " + rootMessage(expected),
+                    rootMessage(expected).contains("not a TinkerGraph storage file"));
+        }
+    }
+
+    private static String rootMessage(final Throwable t) {
+        Throwable cur = t;
+        while (cur.getCause() != null && cur.getCause() != cur)
+            cur = cur.getCause();
+        return String.valueOf(cur.getMessage());
     }
 
     private static long countOf(final Iterator<?> it) {
