@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
 import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
@@ -112,14 +113,20 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         graph.tx().commit();
         graph.addVertex(T.id, 2, "value", 2);
         graph.tx().commit();
-        // do NOT close (avoid compaction) so the raw log is preserved
         graph.tx().close();
 
-        // simulate a crash mid-append by appending a partial (garbage) trailing frame to the log
+        // capture the raw log (two good frames) while the graph holds it, then close to release the directory lock.
+        // close() compacts, folding the log into a snapshot, so we reconstruct a "crashed" on-disk state below.
         final File logFile = new File(location, GraphBinaryStorage.LOG_FILE);
+        final byte[] goodLog = Files.readAllBytes(logFile.toPath());
+        graph.close();
+
+        // recreate the pre-crash layout: no snapshot, a log of the two good frames plus a torn trailing frame (a
+        // length prefix promising 100 bytes with only a couple following), as an interrupted append would leave.
+        Files.deleteIfExists(new File(location, GraphBinaryStorage.SNAPSHOT_FILE).toPath());
         try (final RandomAccessFile raf = new RandomAccessFile(logFile, "rw")) {
-            raf.seek(raf.length());
-            // a length prefix promising 100 bytes, but only a couple follow — a torn write
+            raf.setLength(0);
+            raf.write(goodLog);
             raf.writeInt(100);
             raf.write(new byte[]{ 0x01, 0x02 });
         }
