@@ -35,8 +35,10 @@ import org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphCountStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DirectoryLock;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -107,12 +109,25 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
                 serviceRegistry.registerService(instantiate(serviceClass)));
 
         if (storage != null) {
-            storage.open(this, configuration);
-            loading = true;
+            // take an exclusive lock on the storage directory before the engine touches any files, so a second graph
+            // on the same location fails fast rather than corrupting it. The directory must exist to hold the lock.
+            final File dir = new File(graphLocation);
+            if (!dir.isDirectory() && !dir.mkdirs())
+                throw new IllegalStateException(String.format("Could not create storage directory %s", dir));
+            directoryLock = DirectoryLock.acquire(dir);
             try {
-                storage.replay(this);
-            } finally {
-                loading = false;
+                storage.open(this, configuration);
+                loading = true;
+                try {
+                    storage.replay(this);
+                } finally {
+                    loading = false;
+                }
+            } catch (RuntimeException | Error ex) {
+                // don't leak the lock if the engine fails to open or replay
+                directoryLock.close();
+                directoryLock = null;
+                throw ex;
             }
         }
     }

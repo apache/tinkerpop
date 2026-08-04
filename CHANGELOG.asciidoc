@@ -28,7 +28,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed `gremlin-go` to report a malformed or truncated GraphBinary response as a deserialization error rather than a bare decoder message.
 * Made `TinkerGraph` an interface and renamed the in-memory implementation to `TinkerMemoryGraph`; `TinkerGraph.open()` and `gremlin.graph=...TinkerGraph` behave as before. *(breaking)*
 * Renamed `TinkerTransactionGraph` to `TinkerStorageGraph`. *(breaking)*
-* Added a pluggable storage layer to `TinkerStorageGraph` that durably persists each committed transaction to disk, selected with the `gremlin.tinkergraph.storage` config key and shipping a GraphBinary engine, with a `gremlin.tinkergraph.storage.sync` key to choose `commit` (fsync per commit) or `os` durability.
+* Added a pluggable storage layer to `TinkerStorageGraph` that durably persists each committed transaction to disk, selected with the `gremlin.tinkergraph.storage` config key and shipping a GraphBinary engine, with a `gremlin.tinkergraph.storage.sync` key to choose `commit` (fsync per commit) or `os` durability; a storage location is locked to a single writer, so opening one already in use fails fast.
 * Removed automatic persistence from `TinkerMemoryGraph`, which is now purely in-memory and ignores `gremlin.tinkergraph.graphLocation`/`graphFormat`. Use `TinkerStorageGraph` for durability or `g.io()` for interchange. *(breaking)*
 
 [[release-4-0-0-beta-3]]
