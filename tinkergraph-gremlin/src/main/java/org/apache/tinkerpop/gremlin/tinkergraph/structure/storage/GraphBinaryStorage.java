@@ -67,6 +67,15 @@ import java.util.zip.CRC32;
  * (default) {@code fsync}s so the commit survives an OS crash or power loss, while {@link SyncMode#OS} only flushes to
  * the operating system.
  * <p/>
+ * On-disk compatibility: the store's format version is recorded once in a {@code VERSION} marker file (magic +
+ * version), which is the single source of truth even when a store momentarily holds a snapshot and a log written at
+ * different times. Individual files carry only the magic for identity/corruption detection. Opening a store whose
+ * marker names an unsupported version fails loudly — records are never misread across a format change. The engine
+ * keeps this simple by not attempting in-place migration: the supported path across an incompatible format bump is to
+ * export via {@code g.io()} before upgrading. Additive changes should prefer new record opcodes; unknown opcodes are
+ * a hard error (a durable store must not silently drop records it cannot parse), so a genuinely incompatible change
+ * bumps the version.
+ * <p/>
  * The in-memory graph remains authoritative (write-through). This engine does not support graphs larger than memory.
  * <p/>
  * Known limitation (write amplification): a commit records each changed element in full — a single property change on
@@ -84,15 +93,24 @@ public final class GraphBinaryStorage implements TinkerStorage {
     static final byte[] MAGIC = { 'T', 'G', 'S', 'B' };
 
     /**
-     * On-disk format version, written once in each file's header after {@link #MAGIC}. A future format bump is
-     * detected here so old files can be rejected (or, later, migrated) rather than misread.
+     * On-disk format version of the store. Recorded once per store in the {@link #VERSION_FILE} marker rather than in
+     * every file, so a store has a single unambiguous version even when it momentarily holds a snapshot and a log
+     * written at different times. A future format bump is detected against this marker so an older store is rejected
+     * (never silently misread); the supported migration path is to export via {@code g.io()} before upgrading.
      */
     static final byte FORMAT_VERSION = 1;
 
     /**
-     * Bytes of the fixed file header: {@link #MAGIC} followed by the one-byte {@link #FORMAT_VERSION}.
+     * Store-level version marker file, holding {@link #MAGIC} followed by the one-byte {@link #FORMAT_VERSION}. It is
+     * the single source of truth for the store's format version.
      */
-    static final int HEADER_SIZE = MAGIC.length + 1;
+    static final String VERSION_FILE = "VERSION";
+
+    /**
+     * Bytes of the per-file header: just {@link #MAGIC}. The format version lives in the store-level
+     * {@link #VERSION_FILE}, not in each file.
+     */
+    static final int HEADER_SIZE = MAGIC.length;
 
     private static final byte OP_PUT_VERTEX = 1;
     private static final byte OP_DEL_VERTEX = 2;
@@ -108,6 +126,7 @@ public final class GraphBinaryStorage implements TinkerStorage {
     private File directory;
     private File snapshotFile;
     private File logFile;
+    private File versionFile;
 
     /**
      * Default automatic-compaction threshold: 64 MB of appended log since the last compaction.
@@ -130,12 +149,61 @@ public final class GraphBinaryStorage implements TinkerStorage {
         this.directory = new File(location);
         this.snapshotFile = new File(directory, SNAPSHOT_FILE);
         this.logFile = new File(directory, LOG_FILE);
+        this.versionFile = new File(directory, VERSION_FILE);
         this.syncMode = SyncMode.fromConfigValue(config.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_SYNC, null));
         this.compactThresholdBytes = config.getLong(
                 TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, DEFAULT_COMPACT_THRESHOLD_BYTES);
         // seed the counter with any pre-existing log so a graph reopened with a large log still compacts promptly
         this.logBytesSinceCompaction = logFile.exists() ? logFile.length() : 0;
         ensureDirectory();
+        establishStoreVersion();
+    }
+
+    /**
+     * Read and validate the store-level version marker, or create it for a new store. This is the single source of
+     * truth for the store's format version: a marker naming an unsupported version, or bad magic, fails the open
+     * loudly rather than risking a misread. The supported path across an incompatible format bump is to export the
+     * graph via {@code g.io()} before upgrading.
+     */
+    private void establishStoreVersion() {
+        // an existing store (has a snapshot or log) written before the marker existed is treated as version 1
+        final boolean storeHasData = snapshotFile.exists() || logFile.exists();
+        if (!versionFile.exists()) {
+            if (storeHasData && FORMAT_VERSION != 1)
+                throw new IllegalStateException(String.format(
+                        "Storage location %s has data but no version marker; cannot confirm it is format version %d",
+                        directory, FORMAT_VERSION));
+            writeStoreVersion();
+            return;
+        }
+        try (final DataInputStream in = new DataInputStream(new java.io.BufferedInputStream(new FileInputStream(versionFile)))) {
+            final byte[] magic = new byte[MAGIC.length];
+            readFully(in, magic);
+            if (!Arrays.equals(magic, MAGIC))
+                throw new IOException(String.format("%s is not a TinkerGraph storage version marker (bad magic)", versionFile));
+            final byte version = in.readByte();
+            if (version != FORMAT_VERSION)
+                throw new IOException(String.format(
+                        "Unsupported storage format version %d at %s (this build writes %d); export via g.io() before upgrading",
+                        version, directory, FORMAT_VERSION));
+        } catch (IOException ex) {
+            throw new UncheckedIOException(String.format("Could not read storage version marker %s", versionFile), ex);
+        }
+    }
+
+    /**
+     * Write the store-level version marker ({@link #MAGIC} + {@link #FORMAT_VERSION}) durably.
+     */
+    private void writeStoreVersion() {
+        try (final FileOutputStream fos = new FileOutputStream(versionFile);
+             final DataOutputStream out = new DataOutputStream(fos)) {
+            out.write(MAGIC);
+            out.writeByte(FORMAT_VERSION);
+            out.flush();
+            fos.getFD().sync();
+        } catch (IOException ex) {
+            throw new UncheckedIOException(String.format("Could not write storage version marker %s", versionFile), ex);
+        }
     }
 
     /**
@@ -195,8 +263,9 @@ public final class GraphBinaryStorage implements TinkerStorage {
     }
 
     /**
-     * Read and validate the fixed file header, returning the number of record bytes that follow it. An empty file
-     * (freshly created, no header yet) is treated as having no records.
+     * Read and validate the per-file header (magic only), returning the number of record bytes that follow it. An
+     * empty file (freshly created, no header yet) is treated as having no records. The store's format version is
+     * validated once against the {@link #VERSION_FILE} marker in {@link #open}, not here.
      */
     private long readAndVerifyHeader(final DataInputStream in, final File file, final long fileLength) throws IOException {
         if (fileLength == 0)
@@ -207,10 +276,6 @@ public final class GraphBinaryStorage implements TinkerStorage {
         readFully(in, magic);
         if (!Arrays.equals(magic, MAGIC))
             throw new IOException(String.format("%s is not a TinkerGraph storage file (bad magic)", file));
-        final byte version = in.readByte();
-        if (version != FORMAT_VERSION)
-            throw new IOException(String.format(
-                    "Unsupported storage format version %d in %s (expected %d)", version, file, FORMAT_VERSION));
         return fileLength - HEADER_SIZE;
     }
 
@@ -441,11 +506,11 @@ public final class GraphBinaryStorage implements TinkerStorage {
     }
 
     /**
-     * Write the fixed file header ({@link #MAGIC} + {@link #FORMAT_VERSION}) at the start of a storage file.
+     * Write the per-file header ({@link #MAGIC}) at the start of a storage file. The format version is recorded once
+     * per store in the {@link #VERSION_FILE} marker, not per file.
      */
     private static void writeHeader(final DataOutputStream out) throws IOException {
         out.write(MAGIC);
-        out.writeByte(FORMAT_VERSION);
     }
 
     private void closeLog() {
