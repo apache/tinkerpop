@@ -76,6 +76,22 @@ GryoIo.build().graph(graph).onMapper(m -> ((GryoMapper.Builder) m).javaSerializa
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3278[TINKERPOP-3278]
 
+==== GraphBinary Rejects Malformed Length Prefixes
+
+The GraphBinary value types that carry a length or element-count prefix (`String`, `ByteBuffer`, `BigInteger`,
+`InetAddress`, list, set, map, `Tree`, `BulkSet`, `Bytecode`, `P` and graph) now validate that prefix before using it
+to size an allocation or bound a read loop. A negative count, or one larger than the number of bytes actually
+remaining in the message, is rejected with an `IOException` rather than driving a large allocation. A message too
+short to contain a declared prefix, and a negative `BulkSet` repeat count, are likewise rejected with an
+`IOException`. Growable collections and maps are also no longer pre-sized to the full declared count, so an in-range
+but large count cannot reserve a large backing array up front. Well-formed messages are unaffected.
+
+This bounds memory amplification on the read path but does not make every malformed message yield a typed error: a
+message truncated in the middle of a value, rather than at a length prefix, can still surface as an unchecked
+exception from the underlying buffer, which is a general property of the reader.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3281[TINKERPOP-3281]
+
 ==== conjoin() Step Null Handling
 
 The `conjoin()` step previously returned `null` when elements in the incoming list are `null`. This behavior has

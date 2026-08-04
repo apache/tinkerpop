@@ -35,9 +35,9 @@ public class MapSerializer extends SimpleTypeSerializer<Map> {
 
     @Override
     protected Map readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
-        final int length = buffer.readInt();
+        final int length = readSizePrefix(buffer);
 
-        final Map<Object,Object> result = new LinkedHashMap<>(length);
+        final Map<Object,Object> result = new LinkedHashMap<>(cappedInitialCapacity(length));
         for (int i = 0; i < length; i++) {
             result.put(context.read(buffer), context.read(buffer));
         }

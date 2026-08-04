@@ -37,7 +37,7 @@ public class BigIntegerSerializer extends SimpleTypeSerializer<BigInteger> {
 
     @Override
     protected BigInteger readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
-        final byte[] bigIntBytes = new byte[buffer.readInt()];
+        final byte[] bigIntBytes = new byte[readSizePrefix(buffer)];
         buffer.readBytes(bigIntBytes);
         return new BigInteger(bigIntBytes);
     }
