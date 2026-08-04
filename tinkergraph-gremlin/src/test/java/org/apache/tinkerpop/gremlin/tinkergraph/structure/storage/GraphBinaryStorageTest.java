@@ -106,6 +106,57 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     }
 
     @Test
+    public void shouldAutoCompactWhenLogExceedsThreshold() {
+        // a small threshold makes automatic compaction fire mid-run, without any explicit compact()/close()
+        final Configuration conf = config();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, 2048L);
+        final String location = conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        try {
+            for (int i = 0; i < 200; i++) {
+                graph.addVertex(T.id, i, "value", i, "pad", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+                graph.tx().commit();
+            }
+            // auto-compaction should have folded the log into a snapshot and truncated it well below the total
+            // bytes written, so the live log stays bounded rather than growing with every commit
+            final File logFile = new File(location, GraphBinaryStorage.LOG_FILE);
+            final File snapshotFile = new File(location, GraphBinaryStorage.SNAPSHOT_FILE);
+            assertTrue("expected a snapshot from auto-compaction", snapshotFile.exists());
+            assertTrue("expected the live log to stay bounded, was " + logFile.length(),
+                    logFile.length() < 8192);
+        } finally {
+            graph.close();
+        }
+
+        // data must survive across reopen despite the mid-run compactions
+        graph = TinkerStorageGraph.open(conf);
+        try {
+            assertEquals(200, countOf(graph.vertices()));
+            assertEquals(Integer.valueOf(199), graph.vertices(199).next().value("value"));
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldNotAutoCompactWhenThresholdIsZero() {
+        final Configuration conf = config();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, 0L);
+        final String location = conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        try {
+            for (int i = 0; i < 50; i++) {
+                graph.addVertex(T.id, i, "pad", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+                graph.tx().commit();
+            }
+            // with auto-compaction disabled, no snapshot appears until close()/compact()
+            assertTrue(!new File(location, GraphBinaryStorage.SNAPSHOT_FILE).exists());
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
     public void shouldRecoverFromTruncatedTrailingFrame() throws Exception {
         TinkerStorageGraph graph = open();
         final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
