@@ -67,6 +67,14 @@ public interface TinkerGraph extends Graph {
      * {@code org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.SyncMode}.
      */
     String GREMLIN_TINKERGRAPH_STORAGE_SYNC = "gremlin.tinkergraph.storage.sync";
+    /**
+     * The size in bytes at which a {@link TinkerStorageGraph} storage engine automatically compacts its append log on
+     * commit, bounding the log growth (and restart replay cost) of a long-running graph that is never explicitly
+     * closed. Defaults to 67108864 (64 MB). Set to {@code 0} to disable automatic compaction and rely on
+     * {@code close()} or an explicit {@code compact()}. Only meaningful when {@link #GREMLIN_TINKERGRAPH_STORAGE} is
+     * set.
+     */
+    String GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD = "gremlin.tinkergraph.storage.compactThreshold";
     String GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES = "gremlin.tinkergraph.allowNullPropertyValues";
     String GREMLIN_TINKERGRAPH_SERVICE = "gremlin.tinkergraph.service";
     String GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY = "gremlin.tinkergraph.vertexLabelCardinality";

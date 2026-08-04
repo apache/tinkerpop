@@ -91,6 +91,18 @@ public interface TinkerStorage extends AutoCloseable {
     void compact(AbstractTinkerGraph graph);
 
     /**
+     * Compact if the engine's accumulated data has grown past its own threshold, otherwise do nothing. Called on the
+     * commit path after {@link #flush()} (while the graph's commit lock is held) so a long-running graph that is never
+     * explicitly closed does not grow its backing storage without bound. The default is a no-op, leaving compaction
+     * entirely under the control of {@link #compact(AbstractTinkerGraph)} and {@link #close()}.
+     *
+     * @param graph the graph whose current committed state would be snapshotted
+     */
+    default void maybeCompact(final AbstractTinkerGraph graph) {
+        // no-op by default; engines that accumulate an on-disk log override this to bound its growth
+    }
+
+    /**
      * {@inheritDoc}
      * <p/>
      * Flush and release resources. Does not delete persisted data.
