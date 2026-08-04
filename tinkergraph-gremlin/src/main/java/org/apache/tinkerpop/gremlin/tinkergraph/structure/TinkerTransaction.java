@@ -186,6 +186,9 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
                 try {
                     graph.storage.persist(txVersion, toVertexMutations(changedVertices), toEdgeMutations(changedEdges));
                     graph.storage.flush();
+                    // bound log growth for a long-running graph that is never explicitly closed; no-op unless the
+                    // engine's accumulated log has crossed its threshold
+                    graph.storage.maybeCompact(graph);
                 } finally {
                     graph.storageCommitLock.unlock();
                 }
