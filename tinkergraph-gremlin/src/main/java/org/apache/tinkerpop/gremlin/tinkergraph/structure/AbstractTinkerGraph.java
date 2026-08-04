@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 import org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DefaultStorage;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DirectoryLock;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage;
 
 import java.lang.reflect.InvocationTargetException;
@@ -84,6 +85,12 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
      * transactional implementations that support persistence.
      */
     protected TinkerStorage storage;
+
+    /**
+     * Exclusive lock on the storage directory, held for the graph's lifetime so no second graph — in this or another
+     * process — can open the same location and corrupt its files. {@code null} when the graph is purely in-memory.
+     */
+    protected DirectoryLock directoryLock;
 
     /**
      * Serializes the durable write of a committing transaction. TinkerGraph transactions lock only their own changed
@@ -327,6 +334,12 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
                 storage.close();
             } finally {
                 storageCommitLock.unlock();
+                // release the exclusive directory lock last, so the location is only reopenable once the engine has
+                // fully released its files
+                if (directoryLock != null) {
+                    directoryLock.close();
+                    directoryLock = null;
+                }
             }
         }
         serviceRegistry.close();
