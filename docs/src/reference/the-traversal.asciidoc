@@ -619,6 +619,12 @@ worked on the same project together. This concept can be represented as a traver
 
 image::addedge-step.png[width=450]
 
+The `from()` and `to()` modulators identify the outgoing and incoming vertices of the new edge. In canonical
+Gremlin each accepts one of two forms of argument: a step-label `String` that refers to a previously labeled
+vertex, or a child traversal that produces a vertex (or a vertex id). When `from()` or `to()` is omitted for an
+endpoint, the incoming traverser supplies that endpoint. Note that the examples below execute cumulatively against
+the same graph, so each `addE()` persists a new edge and the graph's edges accumulate from one line to the next.
+
 [gremlin-groovy,modern]
 ----
 g.V(1).as('a').out('created').in('created').where(neq('a')).
@@ -637,11 +643,11 @@ g.addE('knows').from(__.V(1)).to(__.constant(6)) <7>
 ----
 
 <1> Add a co-developer edge with a year-property between marko and his collaborators.
-<2> Add incoming createdBy edges from the josh-vertex to the lop- and ripple-vertices.
+<2> Add incoming createdBy edges to the josh-vertex from the lop- and ripple-vertices (i.e. lop and ripple each point to josh).
 <3> Add an inverse createdBy edge for all created edges.
 <4> The newly created edge is a traversable object.
-<5> Add an edge between marko and peter given the directed (detached) vertex references.
-<6> Add an edge between marko and peter given the directed (detached) vertex references.
+<5> Add a knows edge from marko to peter: the incoming traverser (the marko-vertex) serves as the implicit from-vertex, so only `to()` is supplied. Passing a `Vertex` object directly to `to()` (here `vPeter`) is a convenience exposed by the language variant -- e.g. Gremlin-Java, which resolves the `Vertex` down to its id -- rather than a canonical Gremlin argument form.
+<6> Add a knows edge from marko to peter: because the traversal starts from `g` (the graph) rather than a vertex, there is no incoming traverser to act as a default endpoint, so both `from()` and `to()` must be given explicitly. As on the previous line, supplying `Vertex` objects (`vMarko`, `vPeter`) directly is language-variant convenience syntax rather than canonical Gremlin.
 <7> Use child traversals producing either a vertex, or vertex id to add an edge between marko and peter.
 
 *Additional References*
