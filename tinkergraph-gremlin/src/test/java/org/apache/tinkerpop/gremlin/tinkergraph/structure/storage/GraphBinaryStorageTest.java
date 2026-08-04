@@ -37,7 +37,14 @@ import static org.junit.Assert.fail;
 
 /**
  * Runs the shared {@link AbstractTinkerStorageConformanceTest} suite against the {@link GraphBinaryStorage} engine and
- * adds engine-specific tests for the on-disk log layout.
+ * adds engine-specific tests for the on-disk log layout, sync modes, auto-compaction, snapshot streaming, and
+ * corruption detection.
+ * <p/>
+ * Not covered here (deliberately): true {@code fsync} durability against OS crash or power loss. The {@code commit}
+ * vs. {@code os} sync-mode tests verify configuration and a graceful round-trip, but a JVM unit test cannot prove that
+ * an acknowledged commit survives a kernel crash — that needs OS-level fault injection (e.g. a FUSE layer that drops
+ * un-synced writes, or {@code dm-flakey}), which is out of scope. Crash-*consistency* of the file layout (as opposed
+ * to device-level durability) is covered deterministically by {@link StorageCrashConsistencyTest}.
  */
 public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest {
 
@@ -135,6 +142,43 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         reopened.close();
     }
 
+    @Test
+    public void shouldStreamSnapshotFrameByFrameAtScale() {
+        // Bounded-memory proxy for the streaming snapshot path: rather than measure heap (flaky, JVM-dependent), assert
+        // the observable streaming property holds at scale — a large graph is written as exactly one frame per element,
+        // never one whole-graph frame — and round-trips intact. This is the property that keeps compaction from
+        // materializing a second full copy of the graph in memory; it is not a hard OOM assertion.
+        final int vertexCount = 500;
+        final int edgeCount = 499;
+        final TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        try {
+            for (int i = 0; i < vertexCount; i++)
+                graph.addVertex(T.id, i, "value", i);
+            for (int i = 0; i < edgeCount; i++)
+                graph.vertices(i).next().addEdge("next", graph.vertices(i + 1).next(), T.id, 1_000_000 + i);
+            graph.tx().commit();
+            graph.compact();
+
+            try {
+                assertEquals(vertexCount + edgeCount, countFrames(new File(location, GraphBinaryStorage.SNAPSHOT_FILE)));
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        } finally {
+            graph.close();
+        }
+
+        final TinkerStorageGraph reopened = open();
+        try {
+            assertEquals(vertexCount, countOf(reopened.vertices()));
+            assertEquals(edgeCount, countOf(reopened.edges()));
+            assertEquals(Integer.valueOf(499), reopened.vertices(499).next().value("value"));
+        } finally {
+            reopened.close();
+        }
+    }
+
     /**
      * Count the framed records in a storage file: a fixed header ({@code HEADER_SIZE} bytes) followed by frames of a
      * 4-byte big-endian payload length, a 4-byte CRC, then that many payload bytes.
@@ -142,8 +186,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     private static int countFrames(final File file) throws Exception {
         int frames = 0;
         try (final DataInputStream in = new DataInputStream(new java.io.BufferedInputStream(new java.io.FileInputStream(file)))) {
-            final long headerSkipped = in.skip(GraphBinaryStorage.HEADER_SIZE);
-            if (headerSkipped < GraphBinaryStorage.HEADER_SIZE) return 0;
+            if (!skipFully(in, GraphBinaryStorage.HEADER_SIZE)) return 0;
             while (true) {
                 final int len;
                 try {
@@ -152,12 +195,29 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
                     break;
                 }
                 in.readInt(); // CRC
-                final long skipped = in.skip(len);
-                if (skipped < len) break;
+                if (!skipFully(in, len)) break;
                 frames++;
             }
         }
         return frames;
+    }
+
+    /**
+     * Skip exactly {@code n} bytes, reading in a loop because a single {@link DataInputStream#skip} may skip fewer.
+     * Returns false if EOF is reached first.
+     */
+    private static boolean skipFully(final DataInputStream in, final long n) throws Exception {
+        long left = n;
+        while (left > 0) {
+            final long s = in.skip(left);
+            if (s <= 0) {
+                if (in.read() < 0) return false; // genuine EOF
+                left -= 1;
+            } else {
+                left -= s;
+            }
+        }
+        return true;
     }
 
     @Test
