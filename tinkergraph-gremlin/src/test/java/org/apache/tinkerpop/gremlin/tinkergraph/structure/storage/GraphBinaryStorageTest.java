@@ -360,6 +360,30 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         }
     }
 
+    @Test
+    public void shouldFailOnStoreWithUnsupportedVersionMarker() throws Exception {
+        TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+        graph.close();
+
+        // rewrite the store-level version marker to name a future, unsupported format version
+        final File versionFile = new File(location, GraphBinaryStorage.VERSION_FILE);
+        final byte[] marker = Files.readAllBytes(versionFile.toPath());
+        marker[marker.length - 1] = 99; // version byte follows the magic
+        Files.write(versionFile.toPath(), marker);
+
+        try {
+            open();
+            fail("expected reopen to fail on an unsupported store version");
+        } catch (Exception expected) {
+            assertTrue("cause should report the unsupported version and migration path: " + rootMessage(expected),
+                    rootMessage(expected).contains("Unsupported storage format version")
+                            && rootMessage(expected).contains("g.io()"));
+        }
+    }
+
     private static String rootMessage(final Throwable t) {
         Throwable cur = t;
         while (cur.getCause() != null && cur.getCause() != cur)
