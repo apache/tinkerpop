@@ -49,10 +49,12 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.zip.CRC32;
 
 /**
  * A durable {@link TinkerStorage} engine that persists a {@code TinkerStorageGraph} as an append-only commit log
@@ -76,9 +78,21 @@ import java.util.Map;
 public final class GraphBinaryStorage implements TinkerStorage {
 
     /**
-     * Version byte prefixing every record, allowing the on-disk format to evolve.
+     * Magic bytes ("TGSB" — TinkerGraph Storage Binary) at the start of every storage file, so a file can be
+     * identified as one written by this engine (and a foreign or corrupt file rejected) before any record is read.
+     */
+    static final byte[] MAGIC = { 'T', 'G', 'S', 'B' };
+
+    /**
+     * On-disk format version, written once in each file's header after {@link #MAGIC}. A future format bump is
+     * detected here so old files can be rejected (or, later, migrated) rather than misread.
      */
     static final byte FORMAT_VERSION = 1;
+
+    /**
+     * Bytes of the fixed file header: {@link #MAGIC} followed by the one-byte {@link #FORMAT_VERSION}.
+     */
+    static final int HEADER_SIZE = MAGIC.length + 1;
 
     private static final byte OP_PUT_VERTEX = 1;
     private static final byte OP_DEL_VERTEX = 2;
@@ -164,16 +178,15 @@ public final class GraphBinaryStorage implements TinkerStorage {
      * Read every record in a file, folding puts and deletes into the supplied maps.
      */
     private void foldRecords(final File file, final Map<Object, DetachedVertex> vertices, final Map<Object, DetachedEdge> edges) {
+        final long fileLength = file.length();
         try (final DataInputStream in = new DataInputStream(new java.io.BufferedInputStream(new FileInputStream(file)))) {
+            long remaining = readAndVerifyHeader(in, file, fileLength);
             while (true) {
-                final byte[] record;
-                try {
-                    record = readFrame(in);
-                } catch (EOFException eof) {
-                    break;
-                }
+                final byte[] record = readFrame(in, remaining);
                 if (record == null)
                     break;
+                // account for the header (length + crc) and payload just consumed
+                remaining -= 2L * Integer.BYTES + record.length;
                 applyRecord(record, vertices, edges);
             }
         } catch (IOException ex) {
@@ -181,11 +194,29 @@ public final class GraphBinaryStorage implements TinkerStorage {
         }
     }
 
-    private void applyRecord(final byte[] record, final Map<Object, DetachedVertex> vertices, final Map<Object, DetachedEdge> edges) throws IOException {
-        final ByteBufferBuffer buffer = new ByteBufferBuffer(record);
-        final byte version = buffer.readByte();
+    /**
+     * Read and validate the fixed file header, returning the number of record bytes that follow it. An empty file
+     * (freshly created, no header yet) is treated as having no records.
+     */
+    private long readAndVerifyHeader(final DataInputStream in, final File file, final long fileLength) throws IOException {
+        if (fileLength == 0)
+            return 0;
+        if (fileLength < HEADER_SIZE)
+            throw new IOException(String.format("Corrupt storage file %s: shorter than its %d-byte header", file, HEADER_SIZE));
+        final byte[] magic = new byte[MAGIC.length];
+        readFully(in, magic);
+        if (!Arrays.equals(magic, MAGIC))
+            throw new IOException(String.format("%s is not a TinkerGraph storage file (bad magic)", file));
+        final byte version = in.readByte();
         if (version != FORMAT_VERSION)
-            throw new IOException(String.format("Unsupported storage record version %d (expected %d)", version, FORMAT_VERSION));
+            throw new IOException(String.format(
+                    "Unsupported storage format version %d in %s (expected %d)", version, file, FORMAT_VERSION));
+        return fileLength - HEADER_SIZE;
+    }
+
+    private void applyRecord(final byte[] record, final Map<Object, DetachedVertex> vertices, final Map<Object, DetachedEdge> edges) throws IOException {
+        // the format version is validated once per file in readAndVerifyHeader, so records no longer repeat it
+        final ByteBufferBuffer buffer = new ByteBufferBuffer(record);
         buffer.readLong(); // txVersion, retained for diagnostics/future use
         final int entryCount = buffer.readInt();
         for (int i = 0; i < entryCount; i++) {
@@ -225,21 +256,21 @@ public final class GraphBinaryStorage implements TinkerStorage {
         try {
             final byte[] frame = encodeRecord(txVersion, changedVertices, changedEdges);
             writeFrame(logOut, frame);
-            logBytesSinceCompaction += Integer.BYTES + frame.length; // length prefix + payload
+            logBytesSinceCompaction += 2L * Integer.BYTES + frame.length; // length + crc prefixes + payload
         } catch (IOException ex) {
             throw new UncheckedIOException("Could not append transaction to storage log", ex);
         }
     }
 
     /**
-     * Serialize a commit record: version byte, txVersion, entry count, then each entry as an op byte followed by
-     * either the serialized element (put) or the serialized id (delete).
+     * Serialize a commit record: txVersion, entry count, then each entry as an op byte followed by either the
+     * serialized element (put) or the serialized id (delete). The format version lives in the file header, not the
+     * record.
      */
     private byte[] encodeRecord(final long txVersion,
                                 final Collection<TinkerStorageMutation<TinkerVertex>> changedVertices,
                                 final Collection<TinkerStorageMutation<TinkerEdge>> changedEdges) throws IOException {
         final ByteBufferBuffer buffer = new ByteBufferBuffer();
-        buffer.writeByte(FORMAT_VERSION);
         buffer.writeLong(txVersion);
         buffer.writeInt(changedVertices.size() + changedEdges.size());
         for (final TinkerStorageMutation<TinkerVertex> m : changedVertices) {
@@ -296,6 +327,7 @@ public final class GraphBinaryStorage implements TinkerStorage {
         final File tmp = new File(directory, SNAPSHOT_FILE + ".tmp");
         try (final FileOutputStream fos = new FileOutputStream(tmp);
              final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(fos))) {
+            writeHeader(out);
             writeSnapshot(graph, out);
             out.flush();
             // force the snapshot's bytes to the device before it is renamed into place
@@ -380,7 +412,6 @@ public final class GraphBinaryStorage implements TinkerStorage {
      */
     private void writeElementFrame(final DataOutputStream out, final byte op, final Object element) throws IOException {
         final ByteBufferBuffer buffer = new ByteBufferBuffer();
-        buffer.writeByte(FORMAT_VERSION);
         buffer.writeLong(0L); // snapshot records have no single tx version
         buffer.writeInt(1);
         buffer.writeByte(op);
@@ -397,13 +428,24 @@ public final class GraphBinaryStorage implements TinkerStorage {
     private void ensureLogOpen() {
         if (logOut == null) {
             try {
+                final boolean freshFile = !logFile.exists() || logFile.length() == 0;
                 // retain the FileOutputStream so flush() can reach its FileDescriptor for fsync
                 logFos = new FileOutputStream(logFile, true);
                 logOut = new DataOutputStream(new BufferedOutputStream(logFos));
+                if (freshFile)
+                    writeHeader(logOut);
             } catch (IOException ex) {
                 throw new UncheckedIOException("Could not open storage log for append", ex);
             }
         }
+    }
+
+    /**
+     * Write the fixed file header ({@link #MAGIC} + {@link #FORMAT_VERSION}) at the start of a storage file.
+     */
+    private static void writeHeader(final DataOutputStream out) throws IOException {
+        out.write(MAGIC);
+        out.writeByte(FORMAT_VERSION);
     }
 
     private void closeLog() {
@@ -421,33 +463,54 @@ public final class GraphBinaryStorage implements TinkerStorage {
     }
 
     /**
-     * Write a length-prefixed frame: a 4-byte big-endian length followed by the payload.
+     * Write a framed record: a 4-byte big-endian payload length, a 4-byte CRC32 of the payload, then the payload.
+     * The checksum lets a reader tell a bit-flip inside a complete frame (corruption) from a short final frame left
+     * by an interrupted append (truncation).
      */
     private static void writeFrame(final DataOutputStream out, final byte[] payload) throws IOException {
+        final CRC32 crc = new CRC32();
+        crc.update(payload);
         out.writeInt(payload.length);
+        out.writeInt((int) crc.getValue());
         out.write(payload);
     }
 
     /**
-     * Read a length-prefixed frame, or return {@code null} on a clean end of file. A truncated final frame (from a
-     * crash mid-append) is treated as end of file so earlier committed records still load.
+     * Read a framed record, or return {@code null} at end of the readable log. A frame that is only partially present
+     * — the file ends inside the header or payload — is treated as an interrupted trailing append (truncation) and
+     * ends reading so earlier committed records still load. A frame that is fully present but whose stored CRC does
+     * not match its payload is genuine corruption and is raised, rather than silently dropping it and everything
+     * after it.
+     *
+     * @param remaining bytes left in the file at the current position; used to distinguish a short trailing frame
+     *                  (truncation) from a complete frame, and to bound the payload allocation against a garbage length
      */
-    private static byte[] readFrame(final DataInputStream in) throws IOException {
-        final int length;
-        try {
-            length = in.readInt();
-        } catch (EOFException eof) {
-            return null;
-        }
+    private static byte[] readFrame(final DataInputStream in, final long remaining) throws IOException {
+        if (remaining == 0)
+            return null; // clean end of file, exactly on a frame boundary
+        if (remaining < 2L * Integer.BYTES)
+            return null; // not even a full header left — interrupted append
+
+        final int length = in.readInt();
+        final int storedCrc = in.readInt();
         if (length < 0)
-            throw new IOException("Corrupt storage frame length: " + length);
+            throw new IOException("Corrupt storage frame: negative payload length " + length);
+        if ((long) length > remaining - 2L * Integer.BYTES)
+            return null; // frame claims more bytes than remain — truncated trailing append
+
         final byte[] payload = new byte[length];
         try {
             readFully(in, payload);
         } catch (EOFException eof) {
-            // partial trailing frame from an interrupted append — stop here
-            return null;
+            return null; // partial trailing payload from an interrupted append
         }
+
+        final CRC32 crc = new CRC32();
+        crc.update(payload);
+        if ((int) crc.getValue() != storedCrc)
+            throw new IOException(String.format(
+                    "Corrupt storage frame: CRC mismatch (stored %08x, computed %08x) in a fully-present %d-byte record",
+                    storedCrc, (int) crc.getValue(), length));
         return payload;
     }
 
