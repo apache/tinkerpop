@@ -91,9 +91,16 @@ public final class GraphBinaryStorage implements TinkerStorage {
     private File snapshotFile;
     private File logFile;
 
+    /**
+     * Default automatic-compaction threshold: 64 MB of appended log since the last compaction.
+     */
+    static final long DEFAULT_COMPACT_THRESHOLD_BYTES = 64L * 1024 * 1024;
+
     private DataOutputStream logOut;
     private FileOutputStream logFos;
     private SyncMode syncMode = SyncMode.COMMIT;
+    private long compactThresholdBytes = DEFAULT_COMPACT_THRESHOLD_BYTES;
+    private long logBytesSinceCompaction = 0;
     private boolean closed = false;
 
     @Override
@@ -106,6 +113,10 @@ public final class GraphBinaryStorage implements TinkerStorage {
         this.snapshotFile = new File(directory, SNAPSHOT_FILE);
         this.logFile = new File(directory, LOG_FILE);
         this.syncMode = SyncMode.fromConfigValue(config.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_SYNC, null));
+        this.compactThresholdBytes = config.getLong(
+                TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, DEFAULT_COMPACT_THRESHOLD_BYTES);
+        // seed the counter with any pre-existing log so a graph reopened with a large log still compacts promptly
+        this.logBytesSinceCompaction = logFile.exists() ? logFile.length() : 0;
         ensureDirectory();
     }
 
@@ -210,6 +221,7 @@ public final class GraphBinaryStorage implements TinkerStorage {
         try {
             final byte[] frame = encodeRecord(txVersion, changedVertices, changedEdges);
             writeFrame(logOut, frame);
+            logBytesSinceCompaction += Integer.BYTES + frame.length; // length prefix + payload
         } catch (IOException ex) {
             throw new UncheckedIOException("Could not append transaction to storage log", ex);
         }
@@ -304,6 +316,17 @@ public final class GraphBinaryStorage implements TinkerStorage {
         } catch (IOException ex) {
             throw new UncheckedIOException("Could not finalize storage snapshot", ex);
         }
+
+        // the log is now empty; the accumulated state lives in the snapshot
+        logBytesSinceCompaction = 0;
+    }
+
+    @Override
+    public void maybeCompact(final AbstractTinkerGraph graph) {
+        if (closed || compactThresholdBytes <= 0)
+            return;
+        if (logBytesSinceCompaction >= compactThresholdBytes)
+            compact(graph);
     }
 
     /**
