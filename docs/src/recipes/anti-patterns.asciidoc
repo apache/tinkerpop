@@ -154,6 +154,32 @@ g.V().hasLabel("person").out("created").dedup()
 g.V().hasLabel("software").inE("created").count()
 ----
 
+These rewrites can be observed rather than taken on faith. The `explain()`-step reports how a traversal is compiled once
+all registered traversal strategies have been applied, which makes the optimizations visible. Running `explain()` on the
+two original (unoptimized) queries shows the relevant strategies firing:
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel("person").outE("created").inV().dedup().explain()
+g.V().hasLabel("software").inE("created").outV().count().explain()
+----
+
+Each row of the explanation is the state of the traversal after the strategy named in the first column has been applied.
+The second column is the strategy category: [D]ecoration, [O]ptimization, [P]rovider optimization,
+[F]inalization, or [V]erification. In the first explanation, the `IncidentToAdjacentStrategy` (an optimization)
+is the row that folds `outE("created").inV()` into a single `out("created")` step, matching the manual rewrite shown
+above. In the second explanation two strategies cooperate. The `IncidentToAdjacentStrategy` first collapses
+`inE("created").outV()` to `in("created")`, and then the `AdjacentToIncidentStrategy` rewrites that counted adjacency
+back onto the incident edges so that the vertex step becomes an edge step again, which is the `inE("created").count()`
+form. The `Final Traversal` line at the bottom of each explanation is the execution plan that actually runs.
+
+Further detail on these execution plans, including how to measure their runtime effect rather than only inspect them, is
+available in the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#explain-step[`explain()`] and
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#profile-step[`profile()`] steps, as well as the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#traversalstrategy[traversal strategies] section of the Reference
+Documentation, which catalogs the full set of optimizations (`IncidentToAdjacentStrategy` and
+`AdjacentToIncidentStrategy` among them).
+
 Another anti-pattern that is commonly seen is the chaining of `where()`-steps using predicates. Consider the following traversal:
 
 [gremlin-groovy,modern]
