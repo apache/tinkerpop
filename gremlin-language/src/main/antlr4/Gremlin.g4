@@ -1024,6 +1024,7 @@ traversalT
 traversalTShort
     : K_ID
     | K_LABEL
+    | K_LABELS
     | K_KEY
     | K_VALUE
     ;
@@ -1031,6 +1032,7 @@ traversalTShort
 traversalTLong
     : K_T DOT K_ID
     | K_T DOT K_LABEL
+    | K_T DOT K_LABELS
     | K_T DOT K_KEY
     | K_T DOT K_VALUE
     ;

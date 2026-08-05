@@ -244,10 +244,11 @@ Scope = Enum('Scope', ' global_ local')
 statics.add_static('global_', Scope.global_)
 statics.add_static('local', Scope.local)
 
-T = Enum('T', ' id id_ key label value')
+T = Enum('T', ' id id_ key label labels value')
 
 statics.add_static('id', T.id)
 statics.add_static('label', T.label)
+statics.add_static('labels', T.labels)
 statics.add_static('id_', T.id_)
 statics.add_static('key', T.key)
 statics.add_static('value', T.value)

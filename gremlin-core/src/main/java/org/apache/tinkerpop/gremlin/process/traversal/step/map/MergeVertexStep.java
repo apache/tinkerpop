@@ -46,7 +46,7 @@ import static java.util.stream.Collectors.toList;
  */
 public class MergeVertexStep<S> extends MergeElementStep<S, Vertex, Map<Object, Object>> {
 
-    private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label));
+    private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label, T.labels));
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
         MergeElementStep.validate(map, ignoreTokens, allowedTokens, "mergeV");
@@ -78,8 +78,11 @@ public class MergeVertexStep<S> extends MergeElementStep<S, Vertex, Map<Object, 
     protected Iterator<Vertex> flatMap(final Traverser.Admin<S> traverser) {
         final Graph graph = getGraph();
 
-        final Map mergeMap = materializeMap(traverser, mergeTraversal);
-        validateMapInput(mergeMap, false);
+        final Map rawMergeMap = materializeMap(traverser, mergeTraversal);
+        validateMapInput(rawMergeMap, false);
+        // T.labels is accepted as a synonym for T.label (multi-label support); normalize onto T.label so the
+        // downstream search/create/onMatch paths remain label-token agnostic.
+        final Map mergeMap = normalizeLabelsToken(rawMergeMap);
 
         Iterator<Vertex> vertices = searchVertices(mergeMap);
 
@@ -100,8 +103,10 @@ public class MergeVertexStep<S> extends MergeElementStep<S, Vertex, Map<Object, 
                 traverser.set((S) v);
 
                 // assume good input from GraphTraversal - folks might drop in a T here even though it is immutable
-                final Map<Object, Object> onMatchMap = materializeMap(traverser, onMatchTraversal);
-                validateMapInput(onMatchMap, true);
+                final Map<Object, Object> rawOnMatchMap = materializeMap(traverser, onMatchTraversal);
+                validateMapInput(rawOnMatchMap, true);
+                // normalize T.labels onto T.label (multi-label synonym) before applying
+                final Map<Object, Object> onMatchMap = normalizeLabelsToken(rawOnMatchMap);
 
                 // Handle T.label separately: append-only addLabel semantics for multi-label support
                 Object labelValue = onMatchMap.get(T.label);
@@ -184,11 +189,13 @@ public class MergeVertexStep<S> extends MergeElementStep<S, Vertex, Map<Object, 
         if (onCreateTraversal == null)
             return mergeMap;
 
-        final Map onCreateMap = materializeMap(traverser, onCreateTraversal);
+        Map onCreateMap = materializeMap(traverser, onCreateTraversal);
         // null result from onCreateTraversal - use main mergeMap argument
         if (onCreateMap == null || onCreateMap.size() == 0)
             return mergeMap;
         validateMapInput(onCreateMap, false);
+        // normalize T.labels onto T.label (multi-label synonym) to match the already-normalized mergeMap
+        onCreateMap = normalizeLabelsToken(onCreateMap);
 
         if (mergeMap == null || mergeMap.size() == 0)
             return onCreateMap;

@@ -387,20 +387,22 @@ var Scope = scopes{
 type t string
 
 type ts struct {
-	Id    t
-	Label t
-	Id_   t
-	Key   t
-	Value t
+	Id     t
+	Label  t
+	Labels t
+	Id_    t
+	Key    t
+	Value  t
 }
 
 // T is string symbols.
 var T = ts{
-	Id:    "id",
-	Label: "label",
-	Id_:   "id_",
-	Key:   "key",
-	Value: "value",
+	Id:     "id",
+	Label:  "label",
+	Labels: "labels",
+	Id_:    "id_",
+	Key:    "key",
+	Value:  "value",
 }
 
 type materializeProperties struct {

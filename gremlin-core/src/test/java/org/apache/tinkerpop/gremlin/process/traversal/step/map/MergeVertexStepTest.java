@@ -127,6 +127,36 @@ public class MergeVertexStepTest extends GValueStepTest {
         MergeVertexStep.validateMapInput(m, false);
     }
 
+    @Test
+    public void shouldValidateWithLabelsToken() {
+        final Map<Object,Object> m = CollectionUtil.asMap("k", "v",
+                T.labels, Set.of("person", "employee"),
+                T.id, 10000);
+        MergeVertexStep.validateMapInput(m, false);
+    }
+
+    @Test
+    public void shouldValidateLabelsTokenOnMatch() {
+        final Map<Object,Object> m = CollectionUtil.asMap(T.labels, Set.of("person"));
+        MergeVertexStep.validateMapInput(m, true);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowBothLabelAndLabels() {
+        final Map<Object,Object> m = CollectionUtil.asMap(
+                T.label, "person",
+                T.labels, Set.of("employee"));
+        MergeVertexStep.validateMapInput(m, false);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowBothLabelAndLabelsOnMatch() {
+        final Map<Object,Object> m = CollectionUtil.asMap(
+                T.label, "person",
+                T.labels, Set.of("employee"));
+        MergeVertexStep.validateMapInput(m, true);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailToValidateWithTokensBecauseOfValue() {
         final Map<Object,Object> m = CollectionUtil.asMap("k", "v",

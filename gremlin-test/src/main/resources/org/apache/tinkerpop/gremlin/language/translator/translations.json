@@ -26891,6 +26891,74 @@
         ]
     },
     {
+        "scenario": "g_V_hasXname_markoX_projectXlabelsX_byXT_labelsX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", \"marko\").project(\"labels\").by(T.labels)",
+                "language": "g.V().has(\"name\", \"marko\").project(\"labels\").by(T.labels)",
+                "canonical": "g.V().has(\"name\", \"marko\").project(\"labels\").by(T.labels)",
+                "anonymized": "g.V().has(string0, string1).project(string2).by(T.labels)",
+                "dotnet": "g.V().Has(\"name\", \"marko\").Project<object>(\"labels\").By(T.Labels)",
+                "go": "g.V().Has(\"name\", \"marko\").Project(\"labels\").By(gremlingo.T.Labels)",
+                "groovy": "g.V().has(\"name\", \"marko\").project(\"labels\").by(T.labels)",
+                "java": "g.V().has(\"name\", \"marko\").project(\"labels\").by(T.labels)",
+                "javascript": "g.V().has(\"name\", \"marko\").project(\"labels\").by(T.labels)",
+                "python": "g.V().has('name', 'marko').project('labels').by(T.labels)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXname_tuxX_projectXlabelsX_byXT_labelsX",
+        "traversals": [
+            {
+                "original": "g.V().has(\"name\", \"tux\").project(\"labels\").by(T.labels)",
+                "language": "g.V().has(\"name\", \"tux\").project(\"labels\").by(T.labels)",
+                "canonical": "g.V().has(\"name\", \"tux\").project(\"labels\").by(T.labels)",
+                "anonymized": "g.V().has(string0, string1).project(string2).by(T.labels)",
+                "dotnet": "g.V().Has(\"name\", \"tux\").Project<object>(\"labels\").By(T.Labels)",
+                "go": "g.V().Has(\"name\", \"tux\").Project(\"labels\").By(gremlingo.T.Labels)",
+                "groovy": "g.V().has(\"name\", \"tux\").project(\"labels\").by(T.labels)",
+                "java": "g.V().has(\"name\", \"tux\").project(\"labels\").by(T.labels)",
+                "javascript": "g.V().has(\"name\", \"tux\").project(\"labels\").by(T.labels)",
+                "python": "g.V().has('name', 'tux').project('labels').by(T.labels)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_V_hasXT_labels_personX_valuesXnameX",
+        "traversals": [
+            {
+                "original": "g.V().has(T.labels, \"person\").values(\"name\")",
+                "language": "g.V().has(T.labels, \"person\").values(\"name\")",
+                "canonical": "g.V().has(T.labels, \"person\").values(\"name\")",
+                "anonymized": "g.V().has(T.labels, string0).values(string1)",
+                "dotnet": "g.V().Has(T.Labels, \"person\").Values<object>(\"name\")",
+                "go": "g.V().Has(gremlingo.T.Labels, \"person\").Values(\"name\")",
+                "groovy": "g.V().has(T.labels, \"person\").values(\"name\")",
+                "java": "g.V().has(T.labels, \"person\").values(\"name\")",
+                "javascript": "g.V().has(T.labels, \"person\").values(\"name\")",
+                "python": "g.V().has(T.labels, 'person').values('name')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withXmultilabelX_V_hasXT_labels_withinXbird_reptileXX_valuesXnameX",
+        "traversals": [
+            {
+                "original": "g.with(\"multilabel\").V().has(T.labels, P.within(\"bird\", \"reptile\")).values(\"name\")",
+                "language": "g.with(\"multilabel\").V().has(T.labels, P.within(\"bird\", \"reptile\")).values(\"name\")",
+                "canonical": "g.with(\"multilabel\").V().has(T.labels, P.within(\"bird\", \"reptile\")).values(\"name\")",
+                "anonymized": "g.with(string0).V().has(T.labels, P.within(string1, string2)).values(string3)",
+                "dotnet": "g.With(\"multilabel\").V().Has(T.Labels, P.Within(\"bird\", \"reptile\")).Values<object>(\"name\")",
+                "go": "g.With(\"multilabel\").V().Has(gremlingo.T.Labels, gremlingo.P.Within(\"bird\", \"reptile\")).Values(\"name\")",
+                "groovy": "g.with(\"multilabel\").V().has(T.labels, P.within(\"bird\", \"reptile\")).values(\"name\")",
+                "java": "g.with(\"multilabel\").V().has(T.labels, P.within(\"bird\", \"reptile\")).values(\"name\")",
+                "javascript": "g.with_(\"multilabel\").V().has(T.labels, P.within(\"bird\", \"reptile\")).values(\"name\")",
+                "python": "g.with_('multilabel').V().has(T.labels, P.within('bird', 'reptile')).values('name')"
+            }
+        ]
+    },
+    {
         "scenario": "g_injectXfeature_test_nullX_length",
         "traversals": [
             {

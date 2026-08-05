@@ -55,7 +55,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEleme
  */
 public class MergeVertexStepPlaceholder<S> extends AbstractMergeElementStepPlaceholder<S, Vertex> {
 
-    private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label));
+    private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label, T.labels));
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
         MergeElementStep.validate(map, ignoreTokens, allowedTokens, "mergeV");

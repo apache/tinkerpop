@@ -142,10 +142,10 @@ gremlin> g.V().has('name','marko').dropLabel('employee').labels()
 ==>manager
 ----
 
-`mergeV()` now optionally accepts a list for `T.label` to match or create multi-label vertices. By default
-`elementMap()` and `valueMap()` still return a single label string, and a new traversal-source level
-`with("multilabel")` config alters the results to wrap labels in lists. The reference documentation covers each of these
-behaviors in detail.
+`mergeV()` and `addV()` accept the vertex label set via either `T.label` or the new `T.labels` token to match or
+create multi-label vertices. By default `elementMap()` and `valueMap()` return a single label string, while the
+traversal-source level `with("multilabel")` config returns the full label set. The reference documentation covers
+each of these behaviors in detail.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3261[TINKERPOP-3261],
 link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#tinkergraph-multi-label[Multi-Label],
@@ -156,6 +156,33 @@ link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#elementmap-step[e
 link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#valuemap-step[valueMap()],
 link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#mergevertex-step[mergeV()],
 link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#the-zoo-toy-graph[The Zoo]
+
+==== The `T.labels` Token
+
+The `T` enum gains a `labels` token as the token-level analogue of the `labels()` step and
+`Element.labels()`, completing the multi-label API. `T.labels` projects an element's full label set as a
+`Set<String>` and is accepted wherever the existing tokens are, including `by()`, `has()`, `mergeV()`,
+`addV()`, and as a map key. It complements `T.label`, which continues to produce the singular (now
+deprecated) label.
+
+[source,groovy]
+----
+gremlin> g.addV('person','employee').property('name','marko')
+==>v[0]
+gremlin> g.V().has('name','marko').project('labels').by(T.labels)
+==>[labels:[person,employee]]
+----
+
+Under `with("multilabel")`, `elementMap()` and `valueMap()` emit the label set under the `T.labels` key as a
+`Set<String>` rather than the `T.label` key. Code that reads the label set from the `T.label` key of a
+`multilabel` map must read it from `T.labels` instead. The default and `singlelabel` output is unchanged,
+emitting a single `String` under `T.label`. Because `T.labels` is a new token, traffic that carries it
+requires matched 4.x peers. An older peer that does not recognize the token raises an
+`IllegalArgumentException` on deserialization.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3274[TINKERPOP-3274],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#elementmap-step[elementMap()],
+link:https://tinkerpop.apache.org/docs/4.0.0-beta.3/reference/#valuemap-step[valueMap()]
 
 ==== More Dynamic Arguments
 

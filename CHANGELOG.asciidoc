@@ -65,6 +65,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed Tree class in Java to not extend from HashMap and offered a new tree-shaped API for navigation.
 * Added multi-label support for vertices with configurable `LabelCardinality` (`ONE`, `ONE_OR_MORE`, `ZERO_OR_MORE`).
 * Added `labels()` step to emit each vertex label as a separate traverser.
+* Added the `T.labels` token as the token-level analogue of `labels()` and `Element.labels()`, projecting and filtering on the full vertex label set, and accepted by `mergeV()`, `addV()`, and `graph.addVertex()` as a synonym for `T.label`.
 * Added `addLabel()` and `dropLabel()`/`dropLabels()` steps for vertex label mutation.
 * Added `LabelCardinalityValidator` utility for constraint enforcement separated from the `LabelCardinality` enum.
 * Added `with("multilabel")` source configuration for `elementMap()` and `valueMap()` to return labels as a set.

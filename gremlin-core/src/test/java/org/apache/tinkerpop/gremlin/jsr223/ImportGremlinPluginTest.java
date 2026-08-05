@@ -18,12 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -36,6 +30,11 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import org.junit.Test;
 
 /**
@@ -117,8 +116,8 @@ public class ImportGremlinPluginTest {
 
         final DefaultImportCustomizer customizer = (DefaultImportCustomizer) module.getCustomizers().get()[0];
         assertEquals(1, module.getCustomizers().get().length);
-        assertThat(customizer.getEnumImports(), hasItems(T.id, T.key, T.label, T.value));
-        assertEquals(4, customizer.getEnumImports().size());
+        assertThat(customizer.getEnumImports(), hasItems(T.id, T.key, T.label, T.labels, T.value));
+        assertEquals(5, customizer.getEnumImports().size());
     }
 
     @Test

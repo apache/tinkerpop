@@ -401,6 +401,8 @@ func toT(name, graphName string) interface{} {
 	// Return as is, since T values are just strings.
 	if name == "label" {
 		return gremlingo.T.Label
+	} else if name == "labels" {
+		return gremlingo.T.Labels
 	} else if name == "id" {
 		return gremlingo.T.Id
 	} else if name == "key" {

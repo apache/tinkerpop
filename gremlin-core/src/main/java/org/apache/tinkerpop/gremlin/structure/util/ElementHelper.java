@@ -238,48 +238,74 @@ public final class ElementHelper {
      * @throws NullPointerException if the value for the {@link T#label} key is {@code null}
      */
     public static Optional<String> getLabelValue(final Object... keyValues) {
-        for (int i = 0; i < keyValues.length; i = i + 2) {
-            if (keyValues[i].equals(T.label)) {
-                ElementHelper.validateLabel((String) keyValues[i + 1]);
-                return Optional.of((String) keyValues[i + 1]);
-            }
-        }
-        return Optional.empty();
+        final Object labelValue = resolveLabelTokenValue(keyValues);
+        if (labelValue == LABEL_TOKEN_ABSENT)
+            return Optional.empty();
+        // Cast directly so a non-String value yields ClassCastException, per this method's contract.
+        ElementHelper.validateLabel((String) labelValue);
+        return Optional.of((String) labelValue);
     }
 
     /**
      * Extracts the value of the {@link T#label} key from the list of arguments as a {@link Set} of labels.
      * Supports both single {@link String} values and {@link java.util.Collection} values for multi-label vertices.
+     * The multi-label synonym {@link T#labels} is also accepted; specifying both tokens is rejected.
      *
      * @param keyValues a list of key/value pairs
-     * @return the labels associated with {@link T#label}, or empty if not present
+     * @return the labels associated with {@link T#label}/{@link T#labels}, or empty if not present
      * @since 4.0.0
      */
     public static Optional<Set<String>> getLabelsValue(final Object... keyValues) {
-        for (int i = 0; i < keyValues.length; i = i + 2) {
-            if (keyValues[i].equals(T.label)) {
-                final Object labelValue = keyValues[i + 1];
-                if (labelValue instanceof String) {
-                    ElementHelper.validateLabel((String) labelValue);
-                    final Set<String> labels = new LinkedHashSet<>();
-                    labels.add((String) labelValue);
-                    return Optional.of(labels);
-                } else if (labelValue instanceof Collection) {
-                    final Set<String> labels = new LinkedHashSet<>();
-                    for (final Object l : (Collection<?>) labelValue) {
-                        if (!(l instanceof String)) {
-                            throw new IllegalArgumentException("T.label collection must contain only Strings");
-                        }
-                        ElementHelper.validateLabel((String) l);
-                        labels.add((String) l);
-                    }
-                    return Optional.of(labels);
-                } else {
-                    throw new IllegalArgumentException("T.label value must be String or Collection<String>");
+        final Object labelValue = resolveLabelTokenValue(keyValues);
+        if (labelValue == LABEL_TOKEN_ABSENT)
+            return Optional.empty();
+        if (labelValue instanceof String) {
+            ElementHelper.validateLabel((String) labelValue);
+            final Set<String> labels = new LinkedHashSet<>();
+            labels.add((String) labelValue);
+            return Optional.of(labels);
+        } else if (labelValue instanceof Collection) {
+            final Set<String> labels = new LinkedHashSet<>();
+            for (final Object l : (Collection<?>) labelValue) {
+                if (!(l instanceof String)) {
+                    throw new IllegalArgumentException("T.label/T.labels collection must contain only Strings");
                 }
+                ElementHelper.validateLabel((String) l);
+                labels.add((String) l);
+            }
+            return Optional.of(labels);
+        } else {
+            throw new IllegalArgumentException("T.label/T.labels value must be String or Collection<String>");
+        }
+    }
+
+    private static final Object LABEL_TOKEN_ABSENT = new Object();
+
+    /**
+     * Resolves the label value from a key/value array, accepting either {@link T#label} or its multi-label
+     * synonym {@link T#labels} (the first occurrence of a given token wins). Returns {@link #LABEL_TOKEN_ABSENT}
+     * when neither token is present.
+     *
+     * @throws IllegalArgumentException if both {@code T.label} and {@code T.labels} are supplied
+     */
+    private static Object resolveLabelTokenValue(final Object... keyValues) {
+        boolean sawLabel = false, sawLabels = false;
+        Object labelValue = LABEL_TOKEN_ABSENT;
+        for (int i = 0; i < keyValues.length; i = i + 2) {
+            final Object k = keyValues[i];
+            if (k.equals(T.label)) {
+                if (sawLabels)
+                    throw new IllegalArgumentException("Vertex label may be specified with either T.label or T.labels, but not both");
+                if (!sawLabel) labelValue = keyValues[i + 1];
+                sawLabel = true;
+            } else if (k.equals(T.labels)) {
+                if (sawLabel)
+                    throw new IllegalArgumentException("Vertex label may be specified with either T.label or T.labels, but not both");
+                if (!sawLabels) labelValue = keyValues[i + 1];
+                sawLabels = true;
             }
         }
-        return Optional.empty();
+        return labelValue;
     }
 
     /**
@@ -323,7 +349,7 @@ public final class ElementHelper {
                 element.graph().features().vertex().properties().supportsNullPropertyValues();
 
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
-            if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label))
+            if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label) && !propertyKeyValues[i].equals(T.labels))
                 if (!allowNullPropertyValues && null == propertyKeyValues[i + 1])
                     element.properties(((String) propertyKeyValues[i])).forEachRemaining(Property::remove);
                 else
@@ -348,7 +374,7 @@ public final class ElementHelper {
         final boolean allowNullPropertyValues = vertex.graph().features().vertex().supportsNullPropertyValues();
 
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
-            if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label))
+            if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label) && !propertyKeyValues[i].equals(T.labels))
                 if (!allowNullPropertyValues && null == propertyKeyValues[i + 1])
                     vertex.properties(((String) propertyKeyValues[i])).forEachRemaining(VertexProperty::remove);
                 else
@@ -374,7 +400,7 @@ public final class ElementHelper {
         final boolean allowNullPropertyValues = vertex.graph().features().vertex().supportsNullPropertyValues();
 
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
-            if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label))
+            if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label) && !propertyKeyValues[i].equals(T.labels))
                 if (!allowNullPropertyValues && null == propertyKeyValues[i + 1])
                     vertex.properties(((String) propertyKeyValues[i])).forEachRemaining(VertexProperty::remove);
                 else

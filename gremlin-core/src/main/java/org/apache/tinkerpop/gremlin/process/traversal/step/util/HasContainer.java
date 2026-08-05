@@ -55,7 +55,7 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
         if (this.key != null) {
             if (this.key.equals(T.id.getAccessor()))
                 return testingIdString ? testIdAsString(element) : testId(element);
-            if (this.key.equals(T.label.getAccessor()))
+            if (this.key.equals(T.label.getAccessor()) || this.key.equals(T.labels.getAccessor()))
                 return testLabel(element);
         }
 

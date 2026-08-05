@@ -68,7 +68,7 @@ public class ElementMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>> imple
             map.put(T.value, ((VertexProperty<?>) element).value());
         } else {
             if (isMultilabelEnabled()) {
-                map.put(T.label, element.labels());
+                map.put(T.labels, element.labels());
             } else {
                 final String label = element.label();
                 if (!label.isEmpty()) {
@@ -99,7 +99,7 @@ public class ElementMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>> imple
         // can't add label if doing GraphComputer stuff as there is no access to the label of the adjacent vertex
         if (!onGraphComputer) {
             if (isMultilabelEnabled()) {
-                m.put(T.label, v.labels());
+                m.put(T.labels, v.labels());
             } else {
                 final String label = v.label();
                 if (!label.isEmpty()) m.put(T.label, label);

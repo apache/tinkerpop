@@ -26,6 +26,9 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.Set;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -38,6 +41,23 @@ public class TokenTraversalTest {
         when(v.id()).thenReturn(100);
         t.addStart(new B_O_Traverser<>(v, 1).asAdmin());
         assertEquals(100, t.next().intValue());
+    }
+
+    @Test
+    public void shouldWorkOnVertexWithLabels() {
+        final TokenTraversal<Vertex, Set<String>> t = new TokenTraversal<>(T.labels);
+        final Vertex v = mock(Vertex.class);
+        when(v.labels()).thenReturn(Collections.singleton("person"));
+        t.addStart(new B_O_Traverser<>(v, 1).asAdmin());
+        assertEquals(Collections.singleton("person"), t.next());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowOnPropertyWithLabels() {
+        // T.labels is defined only on an Element; applying it to a Property is unsupported, like T.label/T.id
+        final TokenTraversal<Property<String>, Set<String>> t = new TokenTraversal<>(T.labels);
+        final Property<String> pr = mock(Property.class);
+        t.addStart(new B_O_Traverser<>(pr, 1).asAdmin());
     }
 
     @Test

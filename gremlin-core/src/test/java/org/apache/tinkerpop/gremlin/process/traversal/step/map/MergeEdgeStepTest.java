@@ -161,6 +161,19 @@ public class MergeEdgeStepTest extends GValueStepTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowLabelsTokenForMergeE() {
+        final Map<Object,Object> m = CollectionUtil.asMap(T.labels, Set.of("knows"));
+        MergeEdgeStep.validateMapInput(m, false);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowLabelsTokenForMergeEOnMatch() {
+        // edges are single-label; T.labels must be rejected on the onMatch (ignoreTokens) path too
+        final Map<Object,Object> m = CollectionUtil.asMap(T.labels, Set.of("knows"));
+        MergeEdgeStep.validateMapInput(m, true);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void shouldFailToValidateWithoutTokens() {
         final Map<Object,Object> m = CollectionUtil.asMap("k", "v",
                 Direction.IN, 101,

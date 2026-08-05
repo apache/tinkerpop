@@ -468,4 +468,19 @@ public class AddVertexStepTest extends GValueStepTest {
     private GraphTraversal.Admin<Object, Vertex> getMultiLabelGValueTraversal() {
         return __.addV(GValue.of("l1", "person"), GValue.of("l2", "employee")).asAdmin();
     }
+
+    @Test
+    public void shouldRouteLabelsTokenPropertyWithGValueToLabel() {
+        // property(T.labels, <GValue>) must route to the label (not be stored as a property) and
+        // resolve/pin the GValue exactly as the T.label path does, confirming GValue symmetry.
+        final GraphTraversal.Admin<Object, Vertex> traversal =
+                __.addV().property(T.labels, GValue.of("l1", Set.of("person", "employee"))).asAdmin();
+        final AddVertexStepPlaceholder<?> step = (AddVertexStepPlaceholder<?>) traversal.getSteps().get(0);
+        final Object resolved = step.getLabel();
+        assertTrue(resolved instanceof Set);
+        assertEquals(Set.of("person", "employee"), resolved);
+        assertFalse(step.getProperties().containsKey(T.labels));
+        assertFalse(step.getProperties().containsKey(T.label));
+        verifyVariables(traversal, Set.of("l1"), Set.of());
+    }
 }

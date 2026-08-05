@@ -128,7 +128,8 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements 
     }
 
     private void configureInternalParams(final Object... keyValues) {
-        if (keyValues[0] == T.label) {
+        // T.labels is accepted as a synonym for T.label on vertex creation (multi-label support)
+        if (keyValues[0] == T.label || keyValues[0] == T.labels) {
             setLabel(keyValues[1]);
             return;
         }

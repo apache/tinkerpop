@@ -46,7 +46,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -249,13 +248,23 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
     protected static void validate(final Map map, final boolean ignoreTokens, final Set allowedTokens, final String op) {
         if (null == map) return;
 
+        // T.labels is only a valid label token where the step allows it (mergeV, not mergeE); gate on allowedTokens
+        // so edge merges continue to reject it rather than silently treating it as a label.
+        final boolean labelsAllowed = allowedTokens.contains(T.labels);
+
+        // mergeV accepts T.labels as a synonym for T.label; specifying both in the same Map is ambiguous.
+        if (labelsAllowed && ((Map<?,?>) map).containsKey(T.label) && ((Map<?,?>) map).containsKey(T.labels)) {
+            throw new IllegalArgumentException(String.format(
+                    "%s() does not allow both T.label and T.labels in the same Map", op));
+        }
+
         ((Map<?,?>) map).entrySet().forEach(e -> {
             final Object k = e.getKey();
             final Object v = e.getValue();
 
             if (ignoreTokens) {
-                // Allow T.label in onMatch for multi-label replacement support
-                if (k == T.label) {
+                // Allow T.label / T.labels in onMatch for multi-label replacement support
+                if (k == T.label || (labelsAllowed && k == T.labels)) {
                     if (v instanceof String) {
                         ElementHelper.validateLabel((String) v);
                     } else if (v instanceof java.util.Collection) {
@@ -288,7 +297,7 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
                             "%s() and option(onCreate) args expect keys in Map to be either String or %s - check: %s",
                             op, allowedTokens, k));
                 }
-                if (k == T.label) {
+                if (k == T.label || (labelsAllowed && k == T.labels)) {
                     if (v instanceof String) {
                         ElementHelper.validateLabel((String) v);
                     } else if (v instanceof java.util.Collection) {
@@ -317,6 +326,29 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
                 }
             }
         });
+    }
+
+    /**
+     * mergeV accepts the multi-label {@link T#labels} token as a synonym for {@link T#label}, matching the
+     * {@code elementMap()}/{@code valueMap()} output produced under {@code with("multilabel")}. Because the
+     * existence search, vertex creation, and onMatch label-application paths already accept a
+     * {@code Collection<String>} under {@link T#label}, any {@code T.labels} entry is normalized onto
+     * {@link T#label} at the input boundary, leaving the rest of the step label-token agnostic. The supplied
+     * Map is never mutated; a normalized copy is returned only when a {@code T.labels} entry is present.
+     *
+     * @throws IllegalArgumentException if the Map contains both {@code T.label} and {@code T.labels}
+     * @since 4.0.0
+     */
+    protected static Map normalizeLabelsToken(final Map map) {
+        if (map == null || !map.containsKey(T.labels))
+            return map;
+        // Enforce the same "not both" rule as validate()/getLabelsValue so this holds regardless of caller ordering.
+        if (map.containsKey(T.label)) {
+            throw new IllegalArgumentException("Vertex label may be specified with either T.label or T.labels, but not both");
+        }
+        final Map normalized = new LinkedHashMap(map);
+        normalized.put(T.label, normalized.remove(T.labels));
+        return normalized;
     }
 
     /**

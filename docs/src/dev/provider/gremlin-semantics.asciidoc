@@ -1746,9 +1746,8 @@ property entries specified by propertyKeys. If the list is empty, then all prope
 *Considerations:*
 
 The label format in the map is controlled by source-level `with("multilabel")` and `with("singlelabel")` options, not
-by the number of labels the graph permits per element. When `"multilabel"` is present, the label value is a
-`SET<STRING>`. Likewise when
-`"singlelabel"` is present, it is a single `STRING`. The two options are mutually exclusive. Configuring both
+by the number of labels the graph permits per element. When `"multilabel"` is present, the element's full label set is emitted under a `labels` key as a
+`SET<STRING>`. When `"singlelabel"` is present, a single `label` key is emitted as a `STRING`. The two options are mutually exclusive. Configuring both
 `"multilabel"` and `"singlelabel"` on the same source is rejected with a `State Error`. Note that it is a
 provider choice whether an unconfigured `GraphTraversal` defaults to `multilabel` or `singlelabel` semantics. The
 reference implementation defaults to `singlelabel` semantics.
@@ -1938,8 +1937,8 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#groupcount-step[referenc
 *Arguments:*
 
 * `key` - The property key to check.
-* `accessor` - A `T` accessor: `T.id` (element identifier), `T.label` (element label), `T.key` (property key), or
-  `T.value` (property value).
+* `accessor` - A `T` accessor: `T.id` (element identifier), `T.label` (element label), `T.labels` (element
+  label set), `T.key` (property key), or `T.value` (property value).
 * `value` - The value to compare against using equality.
 * `predicate` - A `P` predicate for comparison. The predicate value may be a literal or a `Traversal`.
 * `traversal` - A child traversal whose first result is used as the comparison value (implicitly wrapped in `P.eq()`).
@@ -1955,6 +1954,8 @@ None
 
 * `has(key)` filters to elements that have the specified property (existence check).
 * `has(T.label, value)` is equivalent to `hasLabel(value)`. `has(T.id, value)` is equivalent to `hasId(value)`.
+* `has(T.labels, value)` is equivalent to `has(T.label, value)` and `hasLabel(value)`, matching when any of the
+  element's labels satisfies the comparison.
 * When the domain is a `Property` (e.g., from `properties()`), `T.key` and `T.value` accessors are used to filter
   by property key or property value respectively.
 * When the predicate value for `T.id` is a `STRING`, the element's `id().toString()` is used for comparison.
@@ -2587,9 +2588,11 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergee-step[reference]
 * `onCreate` - A `MAP` used to specify additional existence criteria and/or properties not already specified in `searchCreate`.
 * `onMatch` - A `MAP` used to update the `Vertex` that is found using the `searchCreate` criteria.
 
-The `searchCreate` and `onCreate` `MAP` instances must consist of any combination of `T.id`, `T.label`, or arbitrary
-`STRING` keys (which are assumed to be vertex properties). The `onMatch` `MAP` instance only allows for `STRING` keys
-as the `id` and `label` of a `Vertex` are immutable. `null` values for these valid keys are not allowed.
+The `searchCreate` and `onCreate` `MAP` instances must consist of any combination of `T.id`, `T.label` (or its
+multi-label synonym `T.labels`), or arbitrary `STRING` keys (which are assumed to be vertex properties). The
+`onMatch` `MAP` instance allows `STRING` property keys, and on a graph that permits multiple labels per vertex it
+also accepts `T.label` or `T.labels` to add labels to the matched vertex. The `id` of a `Vertex` is immutable.
+`null` values for these valid keys are not allowed.
 
 The `MAP` that is used as the argument for `searchCreate` may be assigned from the incoming `Traverser` for the no-arg
 `mergeV()`. If `mergeV(Map)` is used, then it will override the incoming `Traverser`. If `mergeV(Traversal)` is used,
@@ -2623,7 +2626,8 @@ resolve to a `MAP`.
 *Exceptions:*
 
 * `MAP` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
-* Use of `T.label` should always have a value that is a `STRING`.
+* Use of `T.label` or `T.labels` should have a value that is a `STRING`, or a `SET<STRING>` on a graph that permits
+  multiple labels per vertex. `T.label` and `T.labels` may not both appear in the same `MAP`.
 * If `T.id` and/or `T.label` are specified in `searchCreate`, they cannot be overridden in `onCreate`.
 
 *Considerations:*
@@ -3322,9 +3326,8 @@ keys, the resulting map entry contains a `LIST` of the values. An `Edge` and a `
 value per key and the value is returned directly.
 
 The label format in the map is controlled by source-level `with("multilabel")` and `with("singlelabel")` options, not
-by the number of labels the graph permits per element. When `"multilabel"` is present, the label value is a
-`SET<STRING>`. Likewise when
-`"singlelabel"` is present, it is a single `STRING`. The two options are mutually exclusive. Configuring both
+by the number of labels the graph permits per element. When `"multilabel"` is present, the element's full label set is emitted under a `labels` key as a
+`SET<STRING>`. When `"singlelabel"` is present, a single `label` key is emitted as a `STRING`. The two options are mutually exclusive. Configuring both
 `"multilabel"` and `"singlelabel"` on the same source is rejected with a `State Error`. Note that it is a
 provider choice whether an unconfigured `GraphTraversal` defaults to `multilabel` or `singlelabel` semantics. The
 reference implementation defaults to `singlelabel` semantics.

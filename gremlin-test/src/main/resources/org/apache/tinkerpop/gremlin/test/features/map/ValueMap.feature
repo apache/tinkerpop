@@ -93,12 +93,12 @@ Feature: Step - valueMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "v[marko].id", "t[label]": "s[person]", "name": ["marko"], "age": [29]}] |
-      | m[{"t[id]": "v[josh].id", "t[label]": "s[person]", "name": ["josh"], "age": [32]}] |
-      | m[{"t[id]": "v[peter].id", "t[label]": "s[person]", "name": ["peter"], "age": [35]}] |
-      | m[{"t[id]": "v[vadas].id", "t[label]": "s[person]", "name": ["vadas"], "age": [27]}] |
-      | m[{"t[id]": "v[lop].id", "t[label]": "s[software]", "name": ["lop"], "lang": ["java"]}] |
-      | m[{"t[id]": "v[ripple].id", "t[label]": "s[software]", "name": ["ripple"], "lang": ["java"]}] |
+      | m[{"t[id]": "v[marko].id", "t[labels]": "s[person]", "name": ["marko"], "age": [29]}] |
+      | m[{"t[id]": "v[josh].id", "t[labels]": "s[person]", "name": ["josh"], "age": [32]}] |
+      | m[{"t[id]": "v[peter].id", "t[labels]": "s[person]", "name": ["peter"], "age": [35]}] |
+      | m[{"t[id]": "v[vadas].id", "t[labels]": "s[person]", "name": ["vadas"], "age": [27]}] |
+      | m[{"t[id]": "v[lop].id", "t[labels]": "s[software]", "name": ["lop"], "lang": ["java"]}] |
+      | m[{"t[id]": "v[ripple].id", "t[labels]": "s[software]", "name": ["ripple"], "lang": ["java"]}] |
 
   Scenario: g_V_valueMapXname_ageX
     Given the modern graph
@@ -264,7 +264,7 @@ Feature: Step - valueMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "v[marko].id", "t[label]": "s[person]", "name": ["marko"], "age": [29]}] |
+      | m[{"t[id]": "v[marko].id", "t[labels]": "s[person]", "name": ["marko"], "age": [29]}] |
 
   @MultiLabel @SingleLabelDefault
   Scenario: g_V_valueMap_withXtokensX_single_label_default
@@ -294,7 +294,7 @@ Feature: Step - valueMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "v[tux].id", "t[label]": "s[animal,bird,aquatic,endangered]", "name": ["tux"], "species": ["african penguin"]}] |
+      | m[{"t[id]": "v[tux].id", "t[labels]": "s[animal,bird,aquatic,endangered]", "name": ["tux"], "species": ["african penguin"]}] |
 
   @MultiLabel @MultiLabelDefault
   Scenario: g_V_valueMap_withXtokensX_multi_label_default
@@ -310,7 +310,7 @@ Feature: Step - valueMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "v[marko].id", "t[label]": "s[person,employee]", "name": ["marko"]}] |
+      | m[{"t[id]": "v[marko].id", "t[labels]": "s[person,employee]", "name": ["marko"]}] |
 
   @MultiLabel @MultiLabelDefault
   Scenario: g_withXsinglelabelX_V_valueMap_withXtokensX_multi_label_default
@@ -356,7 +356,7 @@ Feature: Step - valueMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "v[nobody].id", "t[label]": "s[]", "name": ["nobody"]}] |
+      | m[{"t[id]": "v[nobody].id", "t[labels]": "s[]", "name": ["nobody"]}] |
 
   @MultiLabel @MultiLabelDefault
   Scenario: g_V_valueMapXtrueX_zero_label_vertex_multi_label_default
@@ -372,7 +372,7 @@ Feature: Step - valueMap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"t[id]": "v[nobody].id", "t[label]": "s[]", "name": ["nobody"]}] |
+      | m[{"t[id]": "v[nobody].id", "t[labels]": "s[]", "name": ["nobody"]}] |
 
   @MultiLabel @SingleLabelDefault
   Scenario: g_V_valueMapXtrueX_zero_label_vertex_single_label_default

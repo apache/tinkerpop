@@ -41,6 +41,8 @@ namespace Gremlin.Net.Process.Traversal
 
         public static T Label => new T("label");
 
+        public static T Labels => new T("labels");
+
         public static T Value => new T("value");
 
         private static readonly IDictionary<string, T> Properties = new Dictionary<string, T>
@@ -48,6 +50,7 @@ namespace Gremlin.Net.Process.Traversal
             { "id", Id },
             { "key", Key },
             { "label", Label },
+            { "labels", Labels },
             { "value", Value },
         };
 

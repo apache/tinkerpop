@@ -190,7 +190,7 @@ public class LabelMutationPropertyTest {
             // with multilabel config: should return Set<String>
             final GraphTraversalSource gml = g.with("multilabel");
             final Map<Object, Object> mapWithConfig = gml.V(v).valueMap(true).next();
-            final Object labelWithConfig = mapWithConfig.get(T.label);
+            final Object labelWithConfig = mapWithConfig.get(T.labels);
             assertThat("Iteration " + i + ": with multilabel config, label should be a Set",
                     labelWithConfig, instanceOf(Set.class));
             assertThat("Iteration " + i + ": with multilabel config, labels should match",
