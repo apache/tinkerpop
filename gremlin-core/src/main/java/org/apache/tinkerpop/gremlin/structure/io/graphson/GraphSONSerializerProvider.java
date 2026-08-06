@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializationConfig;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
+import org.apache.tinkerpop.shaded.jackson.databind.cfg.CacheProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.DefaultSerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.SerializerFactory;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.ToStringSerializer;
@@ -55,6 +56,11 @@ final class GraphSONSerializerProvider extends DefaultSerializerProvider {
         this.unknownTypeSerializer = unknownTypeSerializer;
     }
 
+    protected GraphSONSerializerProvider(final GraphSONSerializerProvider src, final CacheProvider cacheProvider) {
+        super(src, cacheProvider);
+        this.unknownTypeSerializer = src.unknownTypeSerializer;
+    }
+
     @Override
     public JsonSerializer<Object> getUnknownTypeSerializer(final Class<?> aClass) {
         return unknownTypeSerializer;
@@ -68,5 +74,10 @@ final class GraphSONSerializerProvider extends DefaultSerializerProvider {
         // when the object was first constructed through the public constructor
         // that has a GraphSONVersion.
         return new GraphSONSerializerProvider(this, config, jsf, unknownTypeSerializer);
+    }
+
+    @Override
+    public GraphSONSerializerProvider withCaches(final CacheProvider cacheProvider) {
+        return new GraphSONSerializerProvider(this, cacheProvider);
     }
 }

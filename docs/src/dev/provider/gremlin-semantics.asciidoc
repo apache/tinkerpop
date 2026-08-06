@@ -495,6 +495,7 @@ The following table maps the notions proposed above to the various `P` operators
 |P.inside |Comparability
 |P.outside|Comparability
 |P.between|Equality, Comparability
+|P.typeOf |Comparability
 |================
 
 ==== See Also
@@ -774,8 +775,10 @@ None
 
 *Considerations:*
 
-The `and()` step is a filter step that allows the traverser to pass if all of the provided traversals yield a result.
-It follows the ternary boolean logic described in the <<gremlin-semantics-concepts,Ternary Boolean Logics>> section.
+The `and()` step is a filter step that allows the traverser to pass only if every provided traversal yields at least
+one result. If any child traversal produces no result, the traverser is filtered out. Boolean value expressions
+evaluated within those traversals follow the <<gremlin-semantics-concepts,Comparability>> semantics, under which an
+incomputable comparison (for example against `NaN`, or across types) is defined to be `FALSE`.
 
 *Exceptions:*
 
@@ -1502,7 +1505,7 @@ the incoming date.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DateAddStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[reference]
 
-[llms-summary="The formal semantics of the dateDiff() step: returns the difference between two Dates in epoch time."]
+[llms-summary="The formal semantics of the dateDiff() step: returns the difference between two dates as a Long, in epoch milliseconds."]
 [[dateDiff-step]]
 === dateDiff()
 
@@ -1515,7 +1518,7 @@ argument date, while a negative result means the incoming date is earlier.
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`DATETIME` |`DATETIME`
+|N |Y |N |`DATETIME` |`LONG`
 |=========================================================
 
 *Arguments:*
@@ -1530,7 +1533,8 @@ None
 
 *Considerations:*
 
-If argument resolves as `null` then incoming date will not be changed.
+If the argument (or the `Traversal`) resolves to `null` it is treated as the epoch, so the result is the incoming
+date's own value in epoch milliseconds.
 
 *Exceptions:*
 
@@ -1647,6 +1651,41 @@ applies to list types which means that non-iterable types (including null) will 
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DifferenceStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#difference-step[reference]
+
+[llms-summary="The formal semantics of the discard() step: filters all traversers out of the traversal stream, discarding them."]
+[[discard-step]]
+=== discard()
+
+*Description:* Filters all traversers out of the traversal stream. Formerly named `none()` prior to 3.8.0.
+
+*Syntax:* `discard()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+None
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+The `discard()` step is a filter step that removes every traverser, always producing an empty result. It is commonly
+used to consume a traversal purely for its side effects (for example after an `aggregate()` or a mutation) without
+returning any objects.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/DiscardStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#discard-step[reference]
 
 [llms-summary="The formal semantics of the disjunct() step: adds the disjunct set to the Traversal Stream."]
 [[disjunct-step]]
@@ -2589,7 +2628,8 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergee-step[reference]
 
 The `searchCreate` and `onCreate` `MAP` instances must consist of any combination of `T.id`, `T.label`, or arbitrary
 `STRING` keys (which are assumed to be vertex properties). The `onMatch` `MAP` instance only allows for `STRING` keys
-as the `id` and `label` of a `Vertex` are immutable. `null` values for these valid keys are not allowed.
+as the `id` and `label` of a `Vertex` are immutable. `null` values are not allowed for the `T` token keys, while
+`null` values for `STRING` property keys are treated according to the semantics of the `addV()` step.
 
 The `MAP` that is used as the argument for `searchCreate` may be assigned from the incoming `Traverser` for the no-arg
 `mergeV()`. If `mergeV(Map)` is used, then it will override the incoming `Traverser`. If `mergeV(Traversal)` is used,
@@ -3055,7 +3095,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#subgraph-step[reference]
 
 *Description:* Returns a substring of the incoming string traverser with a 0-based start index (inclusive) and end index (exclusive).
 
-*Syntax:* `substring(startIndex: INT, endIndex: INT)` | `substring(scope: Scope, startIndex: INT, endIndex: INT)`
+*Syntax:* `substring(startIndex: INT)` | `substring(startIndex: INT, endIndex: INT)` | `substring(scope: Scope, startIndex: INT)` | `substring(scope: Scope, startIndex: INT, endIndex: INT)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -3067,7 +3107,9 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#subgraph-step[reference]
 
 * `startIndex` - The start index, 0 based. If the start index is negative then it will begin at the specified index counted
 from the end of the string, or 0 if it exceeds the string length.
-* `endIndex` - The end index, 0 based. Optional, if it is not specific then all remaining characters will be returned. End
+* `endIndex` - The end index, 0 based. Optional, if it is not specified then all remaining characters will be returned.
+If the end index is negative then it will end at the specified index counted from the end of the string, or 0 if it
+exceeds the string length. End
 index &leq; start index will return the empty string.
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.

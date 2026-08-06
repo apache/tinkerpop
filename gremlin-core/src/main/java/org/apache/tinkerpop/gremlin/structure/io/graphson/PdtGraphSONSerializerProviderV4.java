@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.structure.io.pdt.PDTRegistry;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializationConfig;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
+import org.apache.tinkerpop.shaded.jackson.databind.cfg.CacheProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.DefaultSerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.SerializerFactory;
 
@@ -53,6 +54,13 @@ final class PdtGraphSONSerializerProviderV4 extends DefaultSerializerProvider {
         this.primitivePdtAdapterSerializer = primitivePdtAdapterSerializer;
     }
 
+    private PdtGraphSONSerializerProviderV4(final PdtGraphSONSerializerProviderV4 src, final CacheProvider cacheProvider) {
+        super(src, cacheProvider);
+        this.pdtRegistry = src.pdtRegistry;
+        this.pdtAdapterSerializer = src.pdtAdapterSerializer;
+        this.primitivePdtAdapterSerializer = src.primitivePdtAdapterSerializer;
+    }
+
     @Override
     public JsonSerializer<Object> getUnknownTypeSerializer(final Class<?> aClass) {
         if (pdtRegistry != null && pdtRegistry.getCompositeAdapterByClass(aClass).isPresent()) {
@@ -68,5 +76,10 @@ final class PdtGraphSONSerializerProviderV4 extends DefaultSerializerProvider {
     public PdtGraphSONSerializerProviderV4 createInstance(final SerializationConfig config,
                                                           final SerializerFactory jsf) {
         return new PdtGraphSONSerializerProviderV4(this, config, jsf, pdtRegistry, pdtAdapterSerializer, primitivePdtAdapterSerializer);
+    }
+
+    @Override
+    public PdtGraphSONSerializerProviderV4 withCaches(final CacheProvider cacheProvider) {
+        return new PdtGraphSONSerializerProviderV4(this, cacheProvider);
     }
 }

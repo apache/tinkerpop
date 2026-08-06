@@ -186,7 +186,7 @@ limitations under the License.
         <spark.version>4.1.2</spark.version>
         <awssdk.version>2.29.3</awssdk.version>
         <!-- Version aligned with Netty's optional bcpkix dependency used for SelfSignedCertificate -->
-        <bouncycastle.version>1.69</bouncycastle.version>
+        <bouncycastle.version>1.70</bouncycastle.version>
         <ayza.version>10.0.0</ayza.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -748,7 +748,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>3.6.0</version>
+                    <version>3.6.2</version>
                     <configuration>
                         <createDependencyReducedPom>false</createDependencyReducedPom>
                     </configuration>
