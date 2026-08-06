@@ -6392,7 +6392,7 @@ script requests.
 |Float |`1.0F` |A floating-point number with an `F` suffix and a value within the bounds of `Float`.
 |Double |`1.0`, `1.0D` |A floating-point number with an optional `D` suffix.
 |BigDecimal |`1.0M` |A floating-point number with an `M` suffix.
-|DateTime |`DateTime("2018-03-22T00:35:44Z")`, `DateTime()` |An ISO-8601 date or date-time string. `DateTime()` evaluates to the current time.
+|DateTime |`DateTime("2018-03-22T00:35:44Z")`, `DateTime()` |An ISO-8601 date or date-time string. `DateTime()` evaluates to the current time. The all-lowercase form `datetime` is also accepted (for example `datetime("2018-03-22T00:35:44Z")`).
 |UUID |`UUID("f47af10b-58cc-4372-a567-0f02b2f3d479")`, `UUID()` |A UUID string in the textual form written as 8-4-4-4-12 hexadecimal digit groups. `UUID()` generates a random UUID.
 |Duration |`Duration(3600,0)`, `Duration(30,0,false)` |The first argument is non-negative seconds. The second is nanoseconds from `0` to `999999999`. The optional third argument is a boolean sign flag with `false` negating the duration.
 |Binary |`Binary("AQID")` |A Base64-encoded string.
