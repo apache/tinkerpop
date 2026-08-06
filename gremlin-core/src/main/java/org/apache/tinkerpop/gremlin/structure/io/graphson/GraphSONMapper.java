@@ -28,8 +28,12 @@ import org.apache.tinkerpop.shaded.jackson.core.StreamReadConstraints;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializationFeature;
 import org.apache.tinkerpop.shaded.jackson.databind.JavaType;
+import org.apache.tinkerpop.shaded.jackson.databind.DatabindContext;
+import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
 import org.apache.tinkerpop.shaded.jackson.databind.cfg.MapperConfig;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.PolymorphicTypeValidator;
+import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeIdResolver;
+import org.apache.tinkerpop.shaded.jackson.databind.jsontype.NamedType;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeResolverBuilder;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
@@ -38,12 +42,18 @@ import org.javatuples.Pair;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.UUID;
 
 /**
@@ -67,11 +77,21 @@ import java.util.UUID;
  */
 public class GraphSONMapper implements Mapper<ObjectMapper> {
 
-    // GraphSON 1.0 embedded types reconstruct a value from the class named in a "@class" property via Jackson
-    // default typing; constrain it to safe packages so an untrusted payload cannot name an arbitrary class.
-    // Providers can extend this with Builder.addAllowedTypeIdPrefix(...) for trusted input.
-    private static final List<String> GRAPHSON_1_0_DEFAULT_TYPE_PREFIXES = Arrays.asList(
-            "java.lang.", "java.util.", "java.math.", "java.time.", "java.sql.", "org.apache.tinkerpop.");
+    // Java base value types registered for GraphSON 2.0/3.0; shared by registerJavaBaseTypes and the V1 allow-list.
+    private static final List<Class> GRAPHSON_JAVA_BASE_TYPES = Arrays.asList(
+            UUID.class, Class.class, Calendar.class, Date.class, TimeZone.class, Timestamp.class);
+
+    // Network packages removed from the derived allow-list: their classes can act on their value during
+    // deserialization (e.g. java.net.URL performs DNS lookups).
+    private static final List<String> GRAPHSON_1_0_DENIED_TYPE_PREFIXES = Arrays.asList("java.net.", "java.nio.");
+    // exact class names refused even though their package prefix is allowed; a java.lang.Class *value* would
+    // otherwise load and initialize any class named in it (Jackson resolves it with initialize=true).
+    private static final List<String> GRAPHSON_1_0_DENIED_EXACT_TYPES = Arrays.asList("java.lang.Class");
+    private static final List<String> GRAPHSON_1_0_DEFAULT_TYPE_PREFIXES = graphSON1dDefaultTypePrefixes();
+    // safe value types V1 round-trips that GraphSON 2.0/3.0 do not register (so the derivation misses them);
+    // java.net.URI is string-backed and performs no DNS lookup, unlike java.net.URL.
+    private static final List<String> GRAPHSON_1_0_ALLOWED_EXACT_EXTRA = Arrays.asList("java.net.URI");
+    private static final Set<String> GRAPHSON_1_0_ALLOWED_EXACT_TYPES = graphSON1dAllowedExactTypes();
     public static final int DEFAULT_MAX_NUMBER_LENGTH = 10000;
 
     private final List<SimpleModule> customModules;
@@ -147,6 +167,15 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
                     public PolymorphicTypeValidator subTypeValidator(final MapperConfig<?> config) {
                         return typeValidator;
                     }
+
+                    @Override
+                    protected TypeIdResolver idResolver(final MapperConfig<?> config, final JavaType baseType,
+                                                        final PolymorphicTypeValidator subtypeValidator,
+                                                        final Collection<NamedType> subtypes,
+                                                        final boolean forSer, final boolean forDeser) {
+                        return new GraphSON1dScreeningIdResolver(
+                                super.idResolver(config, baseType, subtypeValidator, subtypes, forSer, forDeser));
+                    }
                 }.init(JsonTypeInfo.Id.CLASS, null)
                         .inclusion(JsonTypeInfo.As.PROPERTY)
                         .typeProperty(GraphSONTokens.CLASS);
@@ -171,10 +200,11 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
     }
 
     /**
-     * A {@link PolymorphicTypeValidator} for GraphSON 1.0 embedded types that decides purely from the type id name,
-     * so a disallowed class is refused before it is loaded (a name that only fails the check post-load would still
-     * have its static initializer run). A name is allowed when it, or an array's element type, starts with one of
-     * the trusted prefixes; primitive arrays are allowed.
+     * A {@link PolymorphicTypeValidator} for GraphSON 1.0 embedded types that decides a simple type id purely from
+     * its name, so a disallowed class is refused before it is loaded. A name is allowed when it, or an array's
+     * element type, starts with one of the trusted prefixes and is not an exact-denied class; primitive arrays are
+     * allowed. Parameterized type ids are handled separately by {@link GraphSON1dScreeningIdResolver}, since the
+     * validator is not shown a type id's arguments.
      */
     private static PolymorphicTypeValidator graphSON1dTypeValidator(final List<String> allowedPrefixes) {
         return new PolymorphicTypeValidator.Base() {
@@ -198,6 +228,119 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         };
     }
 
+    /**
+     * Wraps the class-name {@link TypeIdResolver} so a parameterized GraphSON 1.0 type id (one containing
+     * '{@code <}') is refused before Jackson resolves it. Jackson validates a simple id's name up front, but for a
+     * parameterized id it loads every type argument before validating and skips validation of enum arguments
+     * entirely; GraphSON 1.0 never emits a parameterized id, so any id containing '{@code <}' is rejected here.
+     */
+    private static final class GraphSON1dScreeningIdResolver implements TypeIdResolver {
+        private final TypeIdResolver delegate;
+        private JavaType baseType;
+
+        private GraphSON1dScreeningIdResolver(final TypeIdResolver delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void init(final JavaType baseType) {
+            this.baseType = baseType;
+            delegate.init(baseType);
+        }
+
+        @Override
+        public JavaType typeFromId(final DatabindContext context, final String id) throws IOException {
+            if (id.indexOf('<') >= 0) {
+                if (context instanceof DeserializationContext)
+                    throw ((DeserializationContext) context).invalidTypeIdException(baseType, id,
+                            "GraphSON 1.0 does not permit a parameterized type id");
+                throw new IOException("GraphSON 1.0 does not permit a parameterized type id: " + id);
+            }
+            return delegate.typeFromId(context, id);
+        }
+
+        @Override
+        public String idFromValue(final Object value) {
+            return delegate.idFromValue(value);
+        }
+
+        @Override
+        public String idFromValueAndType(final Object value, final Class<?> suggestedType) {
+            return delegate.idFromValueAndType(value, suggestedType);
+        }
+
+        @Override
+        public String idFromBaseType() {
+            return delegate.idFromBaseType();
+        }
+
+        @Override
+        public String getDescForKnownTypeIds() {
+            return delegate.getDescForKnownTypeIds();
+        }
+
+        @Override
+        public JsonTypeInfo.Id getMechanism() {
+            return delegate.getMechanism();
+        }
+    }
+
+    // the types GraphSON 2.0/3.0 register: shared java base types plus the core and extended 2.0 and 3.0 type
+    // definitions. TypeInfo does not affect the (static) type-definition map, so NO_TYPES is passed.
+    private static Set<Class> registeredV2V3Types() {
+        final Set<Class> registered = new LinkedHashSet<>(GRAPHSON_JAVA_BASE_TYPES);
+        registered.addAll(GraphSONVersion.V2_0.getBuilder().create(false, TypeInfo.NO_TYPES)
+                .getTypeDefinitions().keySet());
+        registered.addAll(GraphSONVersion.V3_0.getBuilder().create(false, TypeInfo.NO_TYPES)
+                .getTypeDefinitions().keySet());
+        registered.addAll(GraphSONXModuleV2.build().create(false, TypeInfo.NO_TYPES)
+                .getTypeDefinitions().keySet());
+        registered.addAll(GraphSONXModuleV3.build().create(false, TypeInfo.NO_TYPES)
+                .getTypeDefinitions().keySet());
+        return registered;
+    }
+
+    private static String graphSON1dPackagePrefix(final Class c) {
+        final String pkg = c.getPackage().getName();
+        return pkg.startsWith("org.apache.tinkerpop") ? "org.apache.tinkerpop." : pkg + ".";
+    }
+
+    /**
+     * Derives the GraphSON 1.0 embedded-type allow-list from the packages of the types GraphSON 2.0/3.0 register,
+     * with the denied network packages removed. TinkerPop's own types collapse to a single
+     * {@code org.apache.tinkerpop.} prefix because V1 names concrete subclasses in various subpackages.
+     */
+    private static List<String> graphSON1dDefaultTypePrefixes() {
+        final SortedSet<String> prefixes = new TreeSet<>();
+        for (final Class c : registeredV2V3Types()) {
+            if (c.getPackage() == null)
+                continue;
+            final String prefix = graphSON1dPackagePrefix(c);
+            if (GRAPHSON_1_0_DENIED_TYPE_PREFIXES.stream().noneMatch(prefix::startsWith))
+                prefixes.add(prefix);
+        }
+        return new ArrayList<>(prefixes);
+    }
+
+    /**
+     * Value types allowed by exact name even though their package is denied, so a usable value type is not lost to
+     * the coarser package denial while dangerous siblings (java.net.URL and the rest) stay refused. This is the
+     * classes GraphSON 2.0/3.0 register in a denied package (for example java.net.InetAddress) plus a few safe
+     * string-backed types they do not register ({@link #GRAPHSON_1_0_ALLOWED_EXACT_EXTRA}, e.g. java.net.URI).
+     * Some entries (java.nio.ByteBuffer) are written by V1 as a concrete subtype Jackson cannot reconstruct, so
+     * they remain effectively unsupported in V1 regardless.
+     */
+    private static Set<String> graphSON1dAllowedExactTypes() {
+        final SortedSet<String> exact = new TreeSet<>(GRAPHSON_1_0_ALLOWED_EXACT_EXTRA);
+        for (final Class c : registeredV2V3Types()) {
+            if (c.getPackage() == null)
+                continue;
+            if (GRAPHSON_1_0_DENIED_TYPE_PREFIXES.stream().anyMatch(graphSON1dPackagePrefix(c)::startsWith))
+                exact.add(c.getName());
+        }
+        return exact;
+    }
+
     private static boolean isAllowedTypeName(final String typeName, final List<String> allowedPrefixes) {
         // unwrap array descriptors: "[Ljava.io.File;" -> "java.io.File", "[[B" -> primitive element
         String name = typeName;
@@ -207,6 +350,10 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
             return true; // primitive array element (e.g. [B, [I) carries no class to instantiate
         if (name.startsWith("L") && name.endsWith(";"))
             name = name.substring(1, name.length() - 1);
+        if (GRAPHSON_1_0_DENIED_EXACT_TYPES.contains(name))
+            return false;
+        if (GRAPHSON_1_0_ALLOWED_EXACT_TYPES.contains(name))
+            return true;
         for (final String prefix : allowedPrefixes) {
             if (name.startsWith(prefix))
                 return true;
@@ -245,14 +392,8 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
     }
 
     private void registerJavaBaseTypes(final GraphSONTypeIdResolver graphSONTypeIdResolver) {
-        Arrays.asList(
-                UUID.class,
-                Class.class,
-                Calendar.class,
-                Date.class,
-                TimeZone.class,
-                Timestamp.class
-        ).forEach(e -> graphSONTypeIdResolver.addCustomType(String.format("%s:%s", GraphSONTokens.GREMLIN_TYPE_NAMESPACE, e.getSimpleName()), e));
+        GRAPHSON_JAVA_BASE_TYPES.forEach(e -> graphSONTypeIdResolver.addCustomType(
+                String.format("%s:%s", GraphSONTokens.GREMLIN_TYPE_NAMESPACE, e.getSimpleName()), e));
     }
 
     public static class Builder implements Mapper.Builder<Builder> {

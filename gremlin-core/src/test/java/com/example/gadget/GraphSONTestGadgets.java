@@ -64,4 +64,38 @@ public final class GraphSONTestGadgets {
             return Objects.hashCode(x);
         }
     }
+
+    /**
+     * Enum counterpart of {@link StaticInitCanary}, used to verify an enum named as a generic type argument is
+     * refused before it is loaded (Jackson otherwise skips validation of enum type arguments).
+     */
+    public enum StaticInitCanaryEnum {
+        A, B;
+        public static final String FIRED_PROPERTY = "tinkerpop.test.graphson.staticInitCanaryEnum";
+        static {
+            System.setProperty(FIRED_PROPERTY, "fired");
+        }
+    }
+
+    /**
+     * Canary used to verify a disallowed class named as a generic type argument is not loaded when refused.
+     */
+    public static class StaticInitCanaryArg {
+        public static final String FIRED_PROPERTY = "tinkerpop.test.graphson.staticInitCanaryArg";
+        static {
+            System.setProperty(FIRED_PROPERTY, "fired");
+        }
+        public int x;
+    }
+
+    /**
+     * Canary used to verify a java.lang.Class value cannot name and load an arbitrary class.
+     */
+    public static class StaticInitCanaryValue {
+        public static final String FIRED_PROPERTY = "tinkerpop.test.graphson.staticInitCanaryValue";
+        static {
+            System.setProperty(FIRED_PROPERTY, "fired");
+        }
+        public int x;
+    }
 }

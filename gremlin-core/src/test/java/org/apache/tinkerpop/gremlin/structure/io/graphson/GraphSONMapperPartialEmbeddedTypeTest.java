@@ -26,6 +26,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonMappingException;
 import com.example.gadget.GraphSONTestGadgets.SamplePojo;
 import com.example.gadget.GraphSONTestGadgets.StaticInitCanary;
+import com.example.gadget.GraphSONTestGadgets.StaticInitCanaryArg;
+import com.example.gadget.GraphSONTestGadgets.StaticInitCanaryEnum;
+import com.example.gadget.GraphSONTestGadgets.StaticInitCanaryValue;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.exc.InvalidTypeIdException;
 import org.junit.Test;
@@ -261,6 +264,15 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
     }
 
     @Test
+    public void shouldRejectNetworkPackageTypeWithEmbedTypeSettingV1() {
+        // java.net (and java.nio) are intentionally excluded even though GraphSON 2.0/3.0 register
+        // java.net.InetAddress / java.nio.ByteBuffer, because a class such as java.net.URL performs DNS lookups
+        // during deserialization; this pins that exclusion against the registry-derived allow-list
+        assertDeniedByTypeValidator(v1Typed(),
+                "{\"@class\":\"java.util.HashMap\",\"evil\":{\"@class\":\"java.net.URL\",\"u\":\"http://example.com\"}}");
+    }
+
+    @Test
     public void shouldRoundTripArraysWithEmbedTypeSettingV1() throws Exception {
         // arrays are legitimate GraphSON 1.0 values and rely on default typing; they must still round-trip
         final ObjectMapper mapper = v1Typed();
@@ -319,6 +331,39 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
     }
 
     @Test
+    public void shouldRejectEnumTypeParameterAndNotLoadItV1() {
+        // an enum named as a generic type argument must be refused before it is loaded; Jackson otherwise skips
+        // validation of enum type arguments entirely, which would be a full allow-list bypass
+        System.clearProperty(StaticInitCanaryEnum.FIRED_PROPERTY);
+        assertDeniedByTypeValidator(v1Typed(),
+                "{\"@class\":\"java.util.HashMap<com.example.gadget.GraphSONTestGadgets$StaticInitCanaryEnum,java.lang.String>\",\"A\":\"v\"}");
+        assertNull("an enum type argument must not be class-loaded when refused",
+                System.getProperty(StaticInitCanaryEnum.FIRED_PROPERTY));
+    }
+
+    @Test
+    public void shouldNotLoadDisallowedTypeParameterWhenRefusingV1() {
+        // a disallowed class named as a generic type argument must be refused before it is loaded (deny-before-load);
+        // a parameterized type id is refused up front rather than after its arguments are resolved
+        System.clearProperty(StaticInitCanaryArg.FIRED_PROPERTY);
+        assertDeniedByTypeValidator(v1Typed(),
+                "{\"@class\":\"java.util.HashMap<java.lang.String,com.example.gadget.GraphSONTestGadgets$StaticInitCanaryArg>\",\"k\":\"v\"}");
+        assertNull("a disallowed type argument must not be class-loaded when refused",
+                System.getProperty(StaticInitCanaryArg.FIRED_PROPERTY));
+    }
+
+    @Test
+    public void shouldRejectClassValueAndNotLoadItV1() {
+        // a java.lang.Class *value* must not be able to name and load an arbitrary class (java.lang.Class is
+        // exact-denied even though the java.lang package is otherwise allowed)
+        System.clearProperty(StaticInitCanaryValue.FIRED_PROPERTY);
+        assertDeniedByTypeValidator(v1Typed(),
+                "{\"@class\":\"java.util.HashMap\",\"c\":[\"java.lang.Class\",\"com.example.gadget.GraphSONTestGadgets$StaticInitCanaryValue\"]}");
+        assertNull("a java.lang.Class value must not load the class it names",
+                System.getProperty(StaticInitCanaryValue.FIRED_PROPERTY));
+    }
+
+    @Test
     public void shouldNotLoadDisallowedClassWhenRefusingV1() {
         // a refused @class must be denied by name before it is loaded, otherwise its static initializer runs
         System.clearProperty(StaticInitCanary.FIRED_PROPERTY);
@@ -326,6 +371,30 @@ public class GraphSONMapperPartialEmbeddedTypeTest extends AbstractGraphSONTest 
                 "{\"@class\":\"java.util.HashMap\",\"g\":{\"@class\":\"com.example.gadget.GraphSONTestGadgets$StaticInitCanary\",\"x\":1}}");
         assertNull("a refused @class must not be class-loaded (its static initializer must not run)",
                 System.getProperty(StaticInitCanary.FIRED_PROPERTY));
+    }
+
+    @Test
+    public void shouldRoundTripInetAddressWithEmbedTypeSettingV1() throws Exception {
+        // java.net.InetAddress is a value type GraphSON 2.0/3.0 support; it is allowed by exact name even though
+        // the java.net package is otherwise denied, so it must still round-trip without an opt-out
+        final ObjectMapper mapper = v1Typed();
+        final Map<String, Object> m = new HashMap<>();
+        m.put("a", java.net.InetAddress.getByAddress(new byte[]{127, 0, 0, 1}));
+
+        final Map read = mapper.readValue(mapper.writeValueAsString(m), HashMap.class);
+        assertEquals(java.net.InetAddress.getByAddress(new byte[]{127, 0, 0, 1}), read.get("a"));
+    }
+
+    @Test
+    public void shouldRoundTripUriWithEmbedTypeSettingV1() throws Exception {
+        // java.net.URI is string-backed and performs no DNS lookup; it is allowed by exact name even though the
+        // java.net package is otherwise denied, so it must still round-trip without an opt-out
+        final ObjectMapper mapper = v1Typed();
+        final Map<String, Object> m = new HashMap<>();
+        m.put("u", new java.net.URI("http://example.com/x"));
+
+        final Map read = mapper.readValue(mapper.writeValueAsString(m), HashMap.class);
+        assertEquals(new java.net.URI("http://example.com/x"), read.get("u"));
     }
 
     private static ObjectMapper v1Typed() {

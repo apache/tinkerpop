@@ -81,15 +81,19 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3278[TINKERPOP-3278]
 GraphSON 1.0 with embedded types (`TypeInfo.PARTIAL_TYPES`) reconstructs a value from the Java class named in a
 `@class` property using Jackson default typing. That mechanism previously resolved any class named in the document,
 which is an unsafe-deserialization vector when reading untrusted input. Default typing is now constrained by a
-`PolymorphicTypeValidator` that permits only the value packages GraphSON 1.0 legitimately round-trips (`java.lang`,
-`java.util`, `java.math`, `java.time`, `java.sql`, `org.apache.tinkerpop`) plus array types. Standard scalar, collection and
-array values are unaffected.
+`PolymorphicTypeValidator` that allows classes in the value packages GraphSON 1.0 legitimately round-trips
+(`java.lang`, `java.util`, `java.math`, `java.time`, `java.sql`, `org.apache.tinkerpop`, and their subpackages) plus
+array types, and by exact name a few safe value types in otherwise-excluded packages (`java.net.InetAddress`,
+`java.net.URI`). The rest of `java.net` and `java.nio` is excluded, and a parameterized type id or a
+`java.lang.Class` value is refused. Standard scalar, collection and array values are unaffected. Some value types
+are written by V1 as a concrete subtype Jackson cannot reconstruct (`java.nio.ByteBuffer`); this was never
+round-trippable in V1 and remains refused on read.
 
 A document whose `@class` names a type outside that set is now refused rather than instantiated:
 
 [source,text]
 ----
-Could not resolve subtype ...: Configured `PolymorphicTypeValidator` ... denied resolution
+Could not resolve type id ...: Configured `PolymorphicTypeValidator` ... denied resolution
 ----
 
 Applications that deliberately read a custom or provider value type through GraphSON 1.0 embedded types (for
