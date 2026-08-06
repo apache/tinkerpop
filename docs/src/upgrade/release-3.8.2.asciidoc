@@ -77,3 +77,60 @@ Map<String, List<Property<Object>>> propertyMap = vertex.propertyMap();
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3187[TINKERPOP-3187]
+
+==== TraversalStrategy Deserialization Allow-List
+
+Typed GraphSON 2.0, typed GraphSON 3.0 and GraphBinary now restrict `TraversalStrategy` deserialization to built-in
+TinkerPop strategies and strategies that have been explicitly allowed. This change prevents untrusted request or
+response data from naming arbitrary JVM classes in a serialized `g:TraversalStrategy`.
+
+Users who send or receive custom `TraversalStrategy` implementations over these formats must add those strategy classes
+to the serializer configuration. If a custom strategy is not registered, deserialization will fail with an error
+indicating that the `TraversalStrategy` class is not allowed.
+
+For embedded or programmatic serializer configuration, add the strategies to the relevant mapper or registry builder:
+
+[source,text]
+----
+GraphSONMapper graphSONMapper = GraphSONMapper.build().
+        addAllowedTraversalStrategy(MyStrategy.class).
+        create();
+
+TypeSerializerRegistry graphBinaryRegistry = TypeSerializerRegistry.build().
+        addAllowedTraversalStrategy(MyStrategy.class).
+        create();
+----
+
+Only register strategy classes that are intended to be loadable from remote data and are safe to construct from their
+serialized configuration.
+
+=== Upgrading for Providers
+
+==== Graph System Providers
+
+===== TraversalStrategy Deserialization Allow-List
+
+Gremlin Server based remote providers that define custom `TraversalStrategy` classes and expect them to cross the
+client/server boundary must register those classes with the serializers used by their clients and servers. Built-in
+TinkerPop strategies remain available by default, but custom strategies are no longer deserialized solely because
+their fully qualified class name appears in `g:TraversalStrategy` data.
+
+Providers that package Gremlin Server configuration should add their custom strategy classes to the serializer
+configuration with `allowedTraversalStrategies`.
+
+[source,text]
+----
+serializers:
+  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1,
+      config: { allowedTraversalStrategies: [com.example.MyStrategy] }}
+  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3,
+      config: { allowedTraversalStrategies: [com.example.MyStrategy] }}
+----
+
+Providers that construct serializers programmatically should call `GraphSONMapper.Builder.addAllowedTraversalStrategy()`
+for GraphSON and `TypeSerializerRegistry.Builder.addAllowedTraversalStrategy()` for GraphBinary before creating the
+mapper or registry.
+
+For GraphBinary, configured strategies are merged with a standard `TraversalStrategySerializer` registered by a custom
+`TypeSerializerRegistry.Builder`. A custom builder that registers a different serializer for `TraversalStrategy` cannot
+also use `allowedTraversalStrategies`, because TinkerPop cannot safely apply the allow-list to that serializer.

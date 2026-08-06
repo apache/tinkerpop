@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyResolver;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -616,15 +617,27 @@ final class TraversalSerializersV3 {
     final static class TraversalStrategyProxyJacksonDeserializer<T extends TraversalStrategy> extends AbstractObjectDeserializer<TraversalStrategyProxy> {
 
         private Class<T> clazz;
+        private final TraversalStrategyResolver traversalStrategyResolver;
 
         public TraversalStrategyProxyJacksonDeserializer() {
+            this(TraversalStrategyResolver.defaultResolver());
+        }
+
+        public TraversalStrategyProxyJacksonDeserializer(final TraversalStrategyResolver traversalStrategyResolver) {
             super(TraversalStrategyProxy.class);
             this.clazz = null;
+            this.traversalStrategyResolver = traversalStrategyResolver;
         }
 
         public TraversalStrategyProxyJacksonDeserializer(final Class<T> clazz) {
+            this(clazz, TraversalStrategyResolver.defaultResolver());
+        }
+
+        public TraversalStrategyProxyJacksonDeserializer(final Class<T> clazz,
+                                                        final TraversalStrategyResolver traversalStrategyResolver) {
             super(TraversalStrategyProxy.class);
             this.clazz = clazz;
+            this.traversalStrategyResolver = traversalStrategyResolver;
         }
 
         @Override
@@ -637,11 +650,10 @@ final class TraversalSerializersV3 {
             final Class clasz;
             final Map<String,Object> mapConf = (Map<String,Object>) data.get("conf");
             if (null == this.clazz || this.clazz == TraversalStrategyProxy.class) {
-                try {
-                    clasz = Class.forName(data.get("fqcn").toString());
-                } catch (Exception ex) {
-                    throw new IllegalArgumentException("Could not load class " + mapConf.get("fqcn").toString(), ex);
-                }
+                final Object fqcn = data.get("fqcn");
+                if (null == fqcn)
+                    throw new IllegalArgumentException("TraversalStrategy fqcn is required");
+                clasz = traversalStrategyResolver.resolve(fqcn.toString());
             } else {
                 clasz = this.clazz;
             }

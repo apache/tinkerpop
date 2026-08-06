@@ -20,16 +20,20 @@ package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
+import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.util.TestTraversalStrategies.DummyTraversalStrategy;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
-import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -40,9 +44,11 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.util.MockitoHamcrestMatcherAdapter.reflectionEquals;
-import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItemInArray;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class GraphBinaryMessageSerializerV1Test {
     private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
@@ -194,13 +200,47 @@ public class GraphBinaryMessageSerializerV1Test {
         assertEquals(1, counter);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void shouldThrowWhenConfigurationOfRegistryBuilderFails() {
         final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
         final Map<String, Object> config = new HashMap<>();
         config.put(GraphBinaryMessageSerializerV1.TOKEN_BUILDER, "org.apache.tinkerpop.gremlin.util.ser.binary.NonExistentClass");
 
-        serializer.configure(config, null);
+        try {
+            serializer.configure(config, null);
+            fail("Should have failed to configure a missing registry builder");
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(IllegalStateException.class));
+            assertEquals("java.lang.ClassNotFoundException: org.apache.tinkerpop.gremlin.util.ser.binary.NonExistentClass", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldDeserializeConfiguredTraversalStrategy() throws SerializationException {
+        final GraphBinaryMessageSerializerV1 serializer = new GraphBinaryMessageSerializerV1();
+        final Map<String, Object> config = new HashMap<>();
+        config.put(AbstractMessageSerializer.TOKEN_ALLOWED_TRAVERSAL_STRATEGIES,
+                Collections.singletonList(DummyTraversalStrategy.class.getName()));
+        serializer.configure(config, Collections.emptyMap());
+
+        final Bytecode bytecode = new Bytecode();
+        bytecode.addSource("withStrategies", DummyTraversalStrategy.instance());
+        bytecode.addStep("V");
+
+        final RequestMessage request = RequestMessage.build(Tokens.OPS_BYTECODE)
+                .processor("traversal")
+                .overrideRequestId(UUID.randomUUID())
+                .addArg(Tokens.ARGS_GREMLIN, bytecode)
+                .create();
+        final ByteBuf buffer = serializer.serializeRequestAsBinary(request, allocator);
+        final int mimeLength = buffer.readByte();
+        buffer.skipBytes(mimeLength);
+
+        final RequestMessage deserialized = serializer.deserializeRequest(buffer);
+        final Bytecode deserializedBytecode = (Bytecode) deserialized.getArgs().get(Tokens.ARGS_GREMLIN);
+        final TraversalStrategyProxy strategy = (TraversalStrategyProxy) deserializedBytecode.getSourceInstructions().get(0).getArguments()[0];
+
+        assertEquals(DummyTraversalStrategy.class, strategy.getStrategyClass());
     }
 
     @Test
@@ -276,4 +316,5 @@ public class GraphBinaryMessageSerializerV1Test {
             return super.create();
         }
     }
+
 }

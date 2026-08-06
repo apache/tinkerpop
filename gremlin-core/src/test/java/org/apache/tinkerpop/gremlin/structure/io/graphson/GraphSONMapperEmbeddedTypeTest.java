@@ -18,27 +18,25 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
-import org.apache.commons.configuration2.BaseConfiguration;
-import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.PBiPredicate;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TestTraversalStrategies.DummyConfiguredTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TestTraversalStrategies.DummyTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.apache.tinkerpop.gremlin.util.GremlinDisabledListDelimiterHandler;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.apache.tinkerpop.shaded.jackson.databind.exc.MismatchedInputException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -73,8 +71,10 @@ import static org.hamcrest.Matchers.either;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -89,9 +89,13 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
                 {"v1", GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()},
                 {"v2", GraphSONMapper.build().version(GraphSONVersion.V2_0)
                         .addCustomModule(GraphSONXModuleV2.build())
+                        .addAllowedTraversalStrategy(DummyTraversalStrategy.class)
+                        .addAllowedTraversalStrategy(DummyConfiguredTraversalStrategy.class)
                         .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()},
                 {"v3", GraphSONMapper.build().version(GraphSONVersion.V3_0)
                         .addCustomModule(GraphSONXModuleV3.build())
+                        .addAllowedTraversalStrategy(DummyTraversalStrategy.class)
+                        .addAllowedTraversalStrategy(DummyConfiguredTraversalStrategy.class)
                         .typeInfo(TypeInfo.PARTIAL_TYPES).create().createMapper()}
         });
     }
@@ -533,48 +537,24 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
     }
 
     @Test
+    public void shouldRejectUnregisteredTraversalStrategyProxy() throws Exception {
+        assumeThat(version,  either(startsWith("v2")).or(startsWith("v3")));
+
+        try {
+            mapper.readValue("{\"@type\":\"g:TraversalStrategy\",\"@value\":{\"conf\":{},\"fqcn\":\"java.lang.Runtime\"}}", TraversalStrategyProxy.class);
+            fail("Should have rejected an unregistered traversal strategy proxy");
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(MismatchedInputException.class));
+            assertThat(ex.getMessage(), containsString("TraversalStrategy class is not allowed: java.lang.Runtime"));
+        }
+    }
+
+    @Test
     public void shouldHandlePExt() throws Exception  {
         assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
         final P o = PExt.mix("bah");
         assertEquals(o, serializeDeserialize(mapper, o, P.class));
-    }
-
-    public static class DummyTraversalStrategy implements TraversalStrategy {
-
-        private static final DummyTraversalStrategy INSTANCE = new DummyTraversalStrategy();
-
-        @Override
-        public void apply(final Traversal.Admin traversal) {
-            // do nothing
-        }
-
-        @Override
-        public int compareTo(final Object o) {
-            return 0;
-        }
-
-        public static DummyTraversalStrategy instance() {
-            return INSTANCE;
-        }
-    }
-
-    public static class DummyConfiguredTraversalStrategy extends DummyTraversalStrategy {
-
-        private static final DummyConfiguredTraversalStrategy INSTANCE = new DummyConfiguredTraversalStrategy();
-
-        @Override
-        public Configuration getConfiguration() {
-            final BaseConfiguration conf = new BaseConfiguration();
-            conf.setListDelimiterHandler(GremlinDisabledListDelimiterHandler.instance());
-            conf.setProperty("x", 123);
-            conf.setProperty("y", "test");
-            return conf;
-        }
-
-        public static DummyConfiguredTraversalStrategy instance() {
-            return INSTANCE;
-        }
     }
 
     public static class PExt<V> extends P<V> {

@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyResolver;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
@@ -189,7 +190,6 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(ByteBuffer.class, new ByteBufferSerializer()),
             new RegistryEntry<>(Short.class, SingleTypeSerializer.ShortSerializer),
             new RegistryEntry<>(Boolean.class, SingleTypeSerializer.BooleanSerializer),
-            new RegistryEntry<>(TraversalStrategy.class, new TraversalStrategySerializer()),
             new RegistryEntry<>(BulkSet.class, new BulkSetSerializer()),
             new RegistryEntry<>(Tree.class, new TreeSerializer()),
             new RegistryEntry<>(Metrics.class, new MetricsSerializer()),
@@ -224,6 +224,7 @@ public class TypeSerializerRegistry {
     public static class Builder {
         private final List<RegistryEntry> list = new LinkedList<>();
         private Function<Class<?>, TypeSerializer<?>> fallbackResolver;
+        private final List<Class<? extends TraversalStrategy>> allowedTraversalStrategies = new LinkedList<>();
 
         /**
          * Adds a serializer for a built-in type.
@@ -282,6 +283,14 @@ public class TypeSerializerRegistry {
         }
 
         /**
+         * Allow a provider supplied {@link TraversalStrategy} to be deserialized from GraphBinary.
+         */
+        public Builder addAllowedTraversalStrategy(final Class<? extends TraversalStrategy> strategyClass) {
+            this.allowedTraversalStrategies.add(strategyClass);
+            return this;
+        }
+
+        /**
          * Add {@link CustomTypeSerializer} by way of an {@link IoRegistry}. The registry entries should be bound to
          * {@link GraphBinaryIo}.
          */
@@ -300,7 +309,33 @@ public class TypeSerializerRegistry {
          * Creates a new {@link TypeSerializerRegistry} instance based on the serializers added.
          */
         public TypeSerializerRegistry create() {
-            return new TypeSerializerRegistry(list, fallbackResolver);
+            final List<RegistryEntry> entries = new LinkedList<>(list);
+            boolean hasTraversalStrategySerializer = false;
+            for (int ix = 0; ix < entries.size(); ix++) {
+                final RegistryEntry entry = entries.get(ix);
+                if (entry.getType() != TraversalStrategy.class)
+                    continue;
+
+                hasTraversalStrategySerializer = true;
+                if (allowedTraversalStrategies.isEmpty())
+                    continue;
+
+                if (!(entry.getTypeSerializer() instanceof TraversalStrategySerializer))
+                    throw new IllegalStateException("The allowed traversal strategies cannot be applied to the " +
+                            "custom TraversalStrategy serializer");
+
+                final TraversalStrategySerializer serializer = (TraversalStrategySerializer) entry.getTypeSerializer();
+                entries.set(ix, new RegistryEntry<>(TraversalStrategy.class,
+                        serializer.withAllowedTraversalStrategies(allowedTraversalStrategies)));
+            }
+
+            if (!hasTraversalStrategySerializer) {
+                final TraversalStrategyResolver traversalStrategyResolver = TraversalStrategyResolver.build().
+                        addAllowedTraversalStrategies(allowedTraversalStrategies).create();
+                entries.add(new RegistryEntry<>(TraversalStrategy.class, new TraversalStrategySerializer(traversalStrategyResolver)));
+            }
+
+            return new TypeSerializerRegistry(entries, fallbackResolver);
         }
     }
 

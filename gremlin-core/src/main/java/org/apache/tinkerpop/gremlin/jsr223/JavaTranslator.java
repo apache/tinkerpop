@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTra
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyResolver;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -184,6 +185,9 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
 
     private Object invokeStrategyCreationMethod(final Object delegate, final Map<String, Object> map) {
         final Class<?> strategyClass = ((TraversalStrategyProxy) delegate).getStrategyClass();
+        if (!TraversalStrategyResolver.isGloballyAllowed(strategyClass))
+            throw new IllegalStateException(String.format("TraversalStrategy class is not allowed: %s", strategyClass.getName()));
+
         final Map<String, Method> methodCache = localMethodCache.computeIfAbsent(strategyClass, k -> {
             final Map<String, Method> cacheEntry = new HashMap<>();
             try {

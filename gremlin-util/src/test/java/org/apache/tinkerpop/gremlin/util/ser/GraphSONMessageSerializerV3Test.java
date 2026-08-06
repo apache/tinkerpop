@@ -21,15 +21,11 @@ package org.apache.tinkerpop.gremlin.util.ser;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.Tokens;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -37,14 +33,22 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONXModuleV3;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.TestTraversalStrategies.DummyTraversalStrategy;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonMappingException;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -403,6 +407,26 @@ public class GraphSONMessageSerializerV3Test {
         }
     }
 
+    @Test
+    public void shouldDeserializeConfiguredTraversalStrategy() throws SerializationException {
+        final GraphSONMessageSerializerV3 serializer = new GraphSONMessageSerializerV3();
+        final Map<String, Object> config = new HashMap<>();
+        config.put(AbstractMessageSerializer.TOKEN_ALLOWED_TRAVERSAL_STRATEGIES,
+                Collections.singletonList(DummyTraversalStrategy.class.getName()));
+        serializer.configure(config, Collections.emptyMap());
+
+        final String request = String.format("{\"requestId\":{\"@type\":\"g:UUID\",\"@value\":\"0397b9c0-ffab-470e-a6a8-644fc80c01d6\"},\"op\":\"bytecode\",\"processor\":\"traversal\",\"args\":{\"gremlin\":{\"@type\":\"g:Bytecode\",\"@value\":{\"source\":[[\"withStrategies\",{\"@type\":\"g:TraversalStrategy\",\"@value\":{\"fqcn\":\"%s\",\"conf\":{}}}]],\"step\":[[\"V\"]]}},\"aliases\":{\"g\":\"g\"}}}",
+                DummyTraversalStrategy.class.getName());
+        final ByteBuf buffer = allocator.buffer(request.length());
+        buffer.writeBytes(request.getBytes());
+
+        final RequestMessage deserialized = serializer.deserializeRequest(buffer);
+        final Bytecode deserializedBytecode = (Bytecode) deserialized.getArgs().get(Tokens.ARGS_GREMLIN);
+        final TraversalStrategyProxy strategy = (TraversalStrategyProxy) deserializedBytecode.getSourceInstructions().get(0).getArguments()[0];
+
+        assertEquals(DummyTraversalStrategy.class, strategy.getStrategyClass());
+    }
+
     private void assertCommon(final ResponseMessage response) {
         assertEquals(requestId, response.getRequestId());
         assertEquals(ResponseStatusCode.SUCCESS, response.getStatus().getCode());
@@ -416,4 +440,5 @@ public class GraphSONMessageSerializerV3Test {
     private ResponseMessage convert(final Object toSerialize) throws SerializationException {
         return convert(toSerialize, this.serializer);
     }
+
 }

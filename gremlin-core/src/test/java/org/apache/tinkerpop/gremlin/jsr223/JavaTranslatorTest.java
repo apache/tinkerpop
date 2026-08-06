@@ -22,11 +22,18 @@ package org.apache.tinkerpop.gremlin.jsr223;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TestTraversalStrategies.UnregisteredTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class JavaTranslatorTest {
     private GraphTraversalSource g = EmptyGraph.instance().traversal();
@@ -84,6 +91,30 @@ public class JavaTranslatorTest {
         bytecode.addStep("has", "weight", null);
         final Traversal.Admin<?, ?> translation = translator.translate(bytecode);
         assertEquals(g.E().has("weight", (String) null).asAdmin(), translation);
+    }
+
+    @Test
+    public void shouldTranslateRegisteredTraversalStrategyProxy() {
+        final Bytecode bytecode = new Bytecode();
+        bytecode.addSource(TraversalSource.Symbols.withStrategies, new TraversalStrategyProxy(ReadOnlyStrategy.instance()));
+        bytecode.addStep("V");
+        final Traversal.Admin<?, ?> translation = translator.translate(bytecode);
+        assertEquals(g.withStrategies(ReadOnlyStrategy.instance()).V().asAdmin(), translation);
+    }
+
+    @Test
+    public void shouldRejectUnregisteredTraversalStrategyProxy() {
+        final Bytecode bytecode = new Bytecode();
+        bytecode.addSource(TraversalSource.Symbols.withStrategies, new TraversalStrategyProxy(UnregisteredTraversalStrategy.instance()));
+        bytecode.addStep("V");
+
+        try {
+            translator.translate(bytecode);
+            fail("Should have rejected an unregistered traversal strategy proxy");
+        } catch (Exception ex) {
+            assertThat(ex, instanceOf(IllegalStateException.class));
+            assertEquals("TraversalStrategy class is not allowed: " + UnregisteredTraversalStrategy.class.getName(), ex.getMessage());
+        }
     }
 
 }

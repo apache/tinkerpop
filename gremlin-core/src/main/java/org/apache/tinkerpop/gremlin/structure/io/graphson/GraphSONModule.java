@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyResolver;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
@@ -137,7 +138,10 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
      */
     private static Optional<Class<?>> tryLoadSparqlStrategy() {
         try {
-            return Optional.of(Class.forName("org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStrategy"));
+            return Optional.of(Class.forName(
+                    "org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStrategy",
+                    false,
+                    GraphSONModule.class.getClassLoader()));
         } catch (Exception ignored) {
             return Optional.empty();
         }
@@ -244,6 +248,11 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
          * Constructs a new object.
          */
         protected GraphSONModuleV3(final boolean normalize, final TypeInfo typeInfo) {
+            this(normalize, typeInfo, TraversalStrategyResolver.defaultResolver());
+        }
+
+        protected GraphSONModuleV3(final boolean normalize, final TypeInfo typeInfo,
+                                   final TraversalStrategyResolver traversalStrategyResolver) {
             super("graphson-3.0");
 
             /////////////////////// SERIALIZERS ////////////////////////////
@@ -307,7 +316,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(Metrics.class, new GraphSONSerializersV3.MetricsJacksonDeserializer());
             addDeserializer(TraversalMetrics.class, new GraphSONSerializersV3.TraversalMetricsJacksonDeserializer());
             addDeserializer(Tree.class, new GraphSONSerializersV3.TreeJacksonDeserializer());
-            addDeserializer(TraversalStrategyProxy.class, new TraversalSerializersV3.TraversalStrategyProxyJacksonDeserializer<>());
+            addDeserializer(TraversalStrategyProxy.class, new TraversalSerializersV3.TraversalStrategyProxyJacksonDeserializer<>(traversalStrategyResolver));
 
             // java.util - use the standard jackson serializers for collections when types aren't embedded
             if (typeInfo != TypeInfo.NO_TYPES) {
@@ -380,9 +389,9 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     //
                     GraphFilterStrategy.class,
                     VertexProgramStrategy.class
-            ).forEach(strategy -> addDeserializer(strategy, new TraversalSerializersV3.TraversalStrategyProxyJacksonDeserializer(strategy)));
+            ).forEach(strategy -> addDeserializer(strategy, new TraversalSerializersV3.TraversalStrategyProxyJacksonDeserializer(strategy, traversalStrategyResolver)));
 
-            GraphSONModule.tryLoadSparqlStrategy().ifPresent(s -> addDeserializer(s, new TraversalSerializersV3.TraversalStrategyProxyJacksonDeserializer(s)));
+            GraphSONModule.tryLoadSparqlStrategy().ifPresent(s -> addDeserializer(s, new TraversalSerializersV3.TraversalStrategyProxyJacksonDeserializer(s, traversalStrategyResolver)));
         }
 
         public static Builder build() {
@@ -407,6 +416,12 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             @Override
             public GraphSONModule create(final boolean normalize, final TypeInfo typeInfo) {
                 return new GraphSONModuleV3(normalize, typeInfo);
+            }
+
+            @Override
+            public GraphSONModule create(final boolean normalize, final TypeInfo typeInfo,
+                                         final TraversalStrategyResolver traversalStrategyResolver) {
+                return new GraphSONModuleV3(normalize, typeInfo, traversalStrategyResolver);
             }
 
         }
@@ -508,6 +523,10 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
          * Constructs a new object.
          */
         protected GraphSONModuleV2(final boolean normalize) {
+            this(normalize, TraversalStrategyResolver.defaultResolver());
+        }
+
+        protected GraphSONModuleV2(final boolean normalize, final TraversalStrategyResolver traversalStrategyResolver) {
             super("graphson-2.0");
 
             /////////////////////// SERIALIZERS ////////////////////////////
@@ -565,7 +584,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(Metrics.class, new GraphSONSerializersV2.MetricsJacksonDeserializer());
             addDeserializer(TraversalMetrics.class, new GraphSONSerializersV2.TraversalMetricsJacksonDeserializer());
             addDeserializer(Tree.class, new GraphSONSerializersV2.TreeJacksonDeserializer());
-            addDeserializer(TraversalStrategyProxy.class, new TraversalSerializersV2.TraversalStrategyProxyJacksonDeserializer<>());
+            addDeserializer(TraversalStrategyProxy.class, new TraversalSerializersV2.TraversalStrategyProxyJacksonDeserializer<>(traversalStrategyResolver));
 
             // numbers
             addDeserializer(Integer.class, new GraphSONSerializersV2.IntegerJacksonDeserializer());
@@ -630,9 +649,9 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     //
                     GraphFilterStrategy.class,
                     VertexProgramStrategy.class
-            ).forEach(strategy -> addDeserializer(strategy, new TraversalSerializersV2.TraversalStrategyProxyJacksonDeserializer(strategy)));
+            ).forEach(strategy -> addDeserializer(strategy, new TraversalSerializersV2.TraversalStrategyProxyJacksonDeserializer(strategy, traversalStrategyResolver)));
 
-            GraphSONModule.tryLoadSparqlStrategy().ifPresent(s -> addDeserializer(s, new TraversalSerializersV2.TraversalStrategyProxyJacksonDeserializer(s)));
+            GraphSONModule.tryLoadSparqlStrategy().ifPresent(s -> addDeserializer(s, new TraversalSerializersV2.TraversalStrategyProxyJacksonDeserializer(s, traversalStrategyResolver)));
         }
 
         public static Builder build() {
@@ -657,6 +676,12 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             @Override
             public GraphSONModule create(final boolean normalize, final TypeInfo typeInfo) {
                 return new GraphSONModuleV2(normalize);
+            }
+
+            @Override
+            public GraphSONModule create(final boolean normalize, final TypeInfo typeInfo,
+                                         final TraversalStrategyResolver traversalStrategyResolver) {
+                return new GraphSONModuleV2(normalize, traversalStrategyResolver);
             }
 
         }
@@ -758,5 +783,10 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
          * @param typeInfo allows the module to react to the specified typeinfo given to the mapper
          */
         GraphSONModule create(final boolean normalize, final TypeInfo typeInfo);
+
+        default GraphSONModule create(final boolean normalize, final TypeInfo typeInfo,
+                                      final TraversalStrategyResolver traversalStrategyResolver) {
+            return create(normalize, typeInfo);
+        }
     }
 }

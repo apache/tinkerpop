@@ -126,6 +126,7 @@ public class GraphBinaryMessageSerializerV1 extends AbstractMessageSerializer<Gr
             }
         });
 
+        addAllowedTraversalStrategies(config, builder);
         addCustomClasses(config, builder);
 
         this.serializeToString = Boolean.parseBoolean(config.getOrDefault(TOKEN_SERIALIZE_RESULT_TO_STRING, "false").toString());

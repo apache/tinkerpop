@@ -74,6 +74,7 @@ public abstract class AbstractGraphSONMessageSerializerV2 extends AbstractMessag
     public void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
         final GraphSONMapper.Builder initialBuilder = initBuilder(null);
         addIoRegistries(config, initialBuilder);
+        addAllowedTraversalStrategies(config, initialBuilder);
         applyMaxTokenLimits(initialBuilder, config);
         mapper = configureBuilder(initialBuilder).create().createMapper();
     }

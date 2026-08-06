@@ -26,9 +26,11 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyResolver;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -37,13 +39,32 @@ import java.util.Map;
  */
 public class TraversalStrategySerializer extends SimpleTypeSerializer<TraversalStrategy> {
 
+    private final TraversalStrategyResolver traversalStrategyResolver;
+
     public TraversalStrategySerializer() {
+        this(TraversalStrategyResolver.defaultResolver());
+    }
+
+    public TraversalStrategySerializer(final TraversalStrategyResolver traversalStrategyResolver) {
         super(DataType.TRAVERSALSTRATEGY);
+        this.traversalStrategyResolver = traversalStrategyResolver;
+    }
+
+    /**
+     * Creates a serializer that preserves this serializer's allowed strategies and adds the supplied strategies.
+     */
+    public TraversalStrategySerializer withAllowedTraversalStrategies(
+            final Collection<Class<? extends TraversalStrategy>> strategyClasses) {
+        final TraversalStrategyResolver resolver = TraversalStrategyResolver.build().
+                addAllowedTraversalStrategies(traversalStrategyResolver.getAllowedStrategies()).
+                addAllowedTraversalStrategies(strategyClasses).create();
+        return new TraversalStrategySerializer(resolver);
     }
 
     @Override
     protected TraversalStrategy readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
-        final Class<TraversalStrategy> clazz = context.readValue(buffer, Class.class, false);
+        final String strategyClassName = context.readValue(buffer, String.class, false);
+        final Class<? extends TraversalStrategy> clazz = traversalStrategyResolver.resolve(strategyClassName);
         final Map config = context.readValue(buffer, Map.class, false);
 
         return new TraversalStrategyProxy(clazz, new MapConfiguration(config));
@@ -51,7 +72,10 @@ public class TraversalStrategySerializer extends SimpleTypeSerializer<TraversalS
 
     @Override
     protected void writeValue(final TraversalStrategy value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
-        context.writeValue(value.getClass(), buffer, false);
+        final Class<? extends TraversalStrategy> strategyClass = value instanceof TraversalStrategyProxy ?
+                ((TraversalStrategyProxy) value).getStrategyClass() :
+                value.getClass();
+        context.writeValue(strategyClass.getName(), buffer, false);
         context.writeValue(translateToBytecode(ConfigurationConverter.getMap(value.getConfiguration())), buffer, false);
     }
 

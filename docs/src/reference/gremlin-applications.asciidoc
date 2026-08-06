@@ -1216,7 +1216,14 @@ Gremlin Server is configured by default with GraphSON 3.0 as shown above. It has
 |=========================================================
 |Key |Description |Default
 |ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer. |_none_
+|allowedTraversalStrategies |A list of fully qualified `TraversalStrategy` class names that may be deserialized from typed GraphSON request or response data, in addition to TinkerPop's built-in strategies. |_none_
 |=========================================================
+
+Typed GraphSON accepts serialized `TraversalStrategy` values only for TinkerPop's built-in strategies and classes named
+in `allowedTraversalStrategies`. This setting applies to custom provider strategies that cross a remote serialization
+boundary in request or response data. A custom strategy that is not listed is rejected during deserialization. The same
+allow-list is available in programmatic configuration with
+`GraphSONMapper.Builder.addAllowedTraversalStrategy(Class<? extends TraversalStrategy>)`.
 
 It is worth noting that GraphSON 1.0 still has some appeal for some users as it can be configured to produce an untyped
 JSON format which is a bit easier to consume than its successors which embed data types into the output. This version
@@ -1271,7 +1278,18 @@ It has the MIME type of `application/vnd.graphbinary-v1.0` and the following con
 |custom |A list of classes with custom kryo `Serializer` implementations related to them in the form of `<class>;<serializer-class>`. |_none_
 |ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer. |_none_
 |builder |Name of the `TypeSerializerRegistry.Builder` instance to be used to construct the `TypeSerializerRegistry`. |_none_
+|allowedTraversalStrategies |A list of fully qualified `TraversalStrategy` class names that may be deserialized from GraphBinary request or response data, in addition to TinkerPop's built-in strategies. |_none_
 |=========================================================
+
+GraphBinary accepts serialized `TraversalStrategy` values only for TinkerPop's built-in strategies and classes named in
+`allowedTraversalStrategies`. This setting applies to custom provider strategies that cross a remote serialization
+boundary in request or response data. A custom strategy that is not listed is rejected during deserialization. The same
+allow-list is available in programmatic configuration with
+`TypeSerializerRegistry.Builder.addAllowedTraversalStrategy(Class<? extends TraversalStrategy>)`.
+
+When a custom `builder` pre-registers the standard `TraversalStrategySerializer`, entries from
+`allowedTraversalStrategies` are merged into that serializer's allow-list. If the custom builder registers a different
+serializer for `TraversalStrategy`, configuration fails because the allow-list cannot be safely applied.
 
 As described above, there are multiple ways in which to register serializers for GraphBinary-based serialization. Note
 that the `ioRegistries` setting is applied first, followed by the `custom` setting.
@@ -3179,4 +3197,3 @@ create large or frequently changing value sets, improving performance and stabil
 
 Consult the MCP client documentation for how environment variables are supplied and how tool calls are approved and
 presented to the user.
-

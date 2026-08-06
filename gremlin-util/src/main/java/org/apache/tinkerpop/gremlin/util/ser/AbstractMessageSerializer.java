@@ -18,11 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser;
 
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
+import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +39,7 @@ import java.util.Map;
  */
 public abstract class AbstractMessageSerializer<M> implements MessageSerializer<M> {
     public static final String TOKEN_IO_REGISTRIES = "ioRegistries";
+    public static final String TOKEN_ALLOWED_TRAVERSAL_STRATEGIES = "allowedTraversalStrategies";
 
     /**
      * Reads a list of fully qualified class names from the value of the {@link #TOKEN_IO_REGISTRIES} configuration
@@ -82,6 +87,38 @@ public abstract class AbstractMessageSerializer<M> implements MessageSerializer<
         }
 
         return instanceMethod;
+    }
+
+    /**
+     * Reads a list of fully qualified {@link TraversalStrategy} class names that are allowed to be deserialized from
+     * typed request or response data.
+     */
+    protected void addAllowedTraversalStrategies(final Map<String, Object> config, final GraphSONMapper.Builder builder) {
+        getTraversalStrategyClassesFromConfig(config).forEach(builder::addAllowedTraversalStrategy);
+    }
+
+    /**
+     * Reads a list of fully qualified {@link TraversalStrategy} class names that are allowed to be deserialized from
+     * typed request or response data.
+     */
+    protected void addAllowedTraversalStrategies(final Map<String, Object> config, final TypeSerializerRegistry.Builder builder) {
+        getTraversalStrategyClassesFromConfig(config).forEach(builder::addAllowedTraversalStrategy);
+    }
+
+    private List<Class<? extends TraversalStrategy>> getTraversalStrategyClassesFromConfig(final Map<String, Object> config) {
+        final List<Class<? extends TraversalStrategy>> traversalStrategyClasses = new ArrayList<>();
+        for (String className : getListStringFromConfig(TOKEN_ALLOWED_TRAVERSAL_STRATEGIES, config)) {
+            try {
+                final Class<?> strategyClass = Class.forName(className, false, this.getClass().getClassLoader());
+                if (!TraversalStrategy.class.isAssignableFrom(strategyClass))
+                    throw new IllegalStateException(String.format("%s is not a TraversalStrategy", className));
+                traversalStrategyClasses.add((Class<? extends TraversalStrategy>) strategyClass);
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
+        }
+
+        return traversalStrategyClasses;
     }
 
     /**

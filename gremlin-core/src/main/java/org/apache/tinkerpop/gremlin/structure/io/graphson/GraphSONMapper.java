@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyResolver;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
@@ -71,6 +73,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
     private final GraphSONVersion version;
     private final TypeInfo typeInfo;
     private final StreamReadConstraints streamReadConstraints;
+    private final TraversalStrategyResolver traversalStrategyResolver;
 
     private GraphSONMapper(final Builder builder) {
         this.customModules = builder.customModules;
@@ -79,6 +82,8 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         this.version = builder.version;
         this.streamReadConstraints = builder.streamReadConstraintsBuilder.build();
         this.typeInfo = builder.typeInfo;
+        this.traversalStrategyResolver = TraversalStrategyResolver.build().
+                addAllowedTraversalStrategies(builder.allowedTraversalStrategies).create();
     }
 
     @Override
@@ -86,7 +91,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         final ObjectMapper om = new ObjectMapper(JsonFactory.builder().streamReadConstraints(streamReadConstraints).build());
         om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
-        final GraphSONModule graphSONModule = version.getBuilder().create(normalize, typeInfo);
+        final GraphSONModule graphSONModule = version.getBuilder().create(normalize, typeInfo, traversalStrategyResolver);
         om.registerModule(graphSONModule);
         customModules.forEach(om::registerModule);
 
@@ -174,6 +179,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         builder.normalize = mapper.normalize;
         builder.typeInfo = mapper.typeInfo;
         builder.streamReadConstraintsBuilder = mapper.streamReadConstraints.rebuild();
+        builder.allowedTraversalStrategies = new ArrayList<>(mapper.traversalStrategyResolver.getAllowedStrategies());
 
         return builder;
     }
@@ -196,6 +202,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
     public static class Builder implements Mapper.Builder<Builder> {
         private List<SimpleModule> customModules = new ArrayList<>();
         private List<GraphSONModule.GraphSONModuleBuilder> customModuleBuilders = new ArrayList<>();
+        private List<Class<? extends TraversalStrategy>> allowedTraversalStrategies = new ArrayList<>();
         private boolean loadCustomModules = false;
         private boolean normalize = false;
         private List<IoRegistry> registries = new ArrayList<>();
@@ -249,6 +256,14 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
          */
         public Builder addCustomModule(final GraphSONModule.GraphSONModuleBuilder moduleBuilder) {
             this.customModuleBuilders.add(moduleBuilder);
+            return this;
+        }
+
+        /**
+         * Allow a provider supplied {@link TraversalStrategy} to be deserialized from GraphSON.
+         */
+        public Builder addAllowedTraversalStrategy(final Class<? extends TraversalStrategy> strategyClass) {
+            this.allowedTraversalStrategies.add(strategyClass);
             return this;
         }
 
