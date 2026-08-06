@@ -117,7 +117,17 @@ case "$event" in
 An alternative that was actually considered and rejected belongs in a decision bead with
 its rejected-alternative sibling. An approach you tried and abandoned counts. Anything else
 worth remembering goes in a comment on the root bead."
-        if [[ -n "$active" ]]; then
+
+        # Editing files while nothing is claimed means the in_progress window -- the only
+        # thing a later session can read to resume -- is never being written. Observable,
+        # so it is worth stating flatly rather than asking.
+        if [[ -z "$active" ]] && [[ -n "$(git status --porcelain 2>/dev/null | head -1)" ]]; then
+            text="$text
+
+You have uncommitted changes and NO bead is in_progress. Claim the bead you are working on
+now — 'bd update <id> --claim'. Without it, the next session cannot tell what was underway
+or where it stopped."
+        elif [[ -n "$active" ]]; then
             text="$text
 
 Still in progress:

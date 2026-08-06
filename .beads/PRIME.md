@@ -12,7 +12,9 @@ Full detail: the **tinker-dev** skill. This file is what must survive context co
 - **Prohibited** — do **not** track work in `TodoWrite`, `TaskCreate`, or a markdown plan
   file. They are session-scoped: nothing in one survives, so nothing in one is memory. Your
   harness may prompt you to use them. Decline.
-- **Workflow** — create the bead **before** writing code, and `--claim` it when you start.
+- **Lifecycle** — create the bead **before** writing code, `--claim` it **before you edit**,
+  close it at merge. A bead that never enters `in_progress` is one no later session can
+  resume. Status is not paperwork; it is the handoff.
 - **Plan mode** — fine, and the plan file your harness writes is not yours to avoid. But it
   lives outside the repo and outside the graph. Anything you weighed and rejected while
   planning belongs in a bead **before you start executing**, not after.
@@ -41,9 +43,23 @@ Re-ask after a compaction rather than guessing.
 
 ---
 
-## 2. While working — capture as you go
+## 2. While working — claim first, then capture as you go
 
-**Watch for these five things. They are observable events, not judgment calls:**
+**Before you touch code for a bead, claim it. Every time, no exceptions:**
+
+```bash
+bd update <id> --claim            # sets assignee to you, status to in_progress
+```
+
+It stays `in_progress` until the PR merges — see section 3. That window **is** the memory:
+a later session runs `bd list --status=in_progress` and learns what was underway, who had
+it, and where it stopped. A bead that jumps from `open` straight to `closed` records that
+the work happened but never that it was yours, never where you were when context ran out.
+
+If you are editing files and nothing is `in_progress`, you have already lost that. Stop and
+claim the bead you are actually working on.
+
+**Then watch for these five things. They are observable events, not judgment calls:**
 
 1. **The operator redirects you** — "no, do X instead", "we tried that", "that breaks
    providers". Highest signal. Capture every time.
