@@ -841,14 +841,14 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[reference]
 [[dateDiff-step]]
 === dateDiff()
 
-*Description:* Returns the difference between two Dates in epoch time.
+*Description:* Returns the difference between two Dates as a `Long`, in epoch seconds.
 
 *Syntax:* `dateDiff(Date value)` | `dateDiff(Traversal dateTraversal)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`Date` |`Date`
+|N |Y |N |`Date` |`Long`
 |=========================================================
 
 *Arguments:*
@@ -857,7 +857,8 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[reference]
 * `dateTraversal` - The `Traversal` value must resolve to a `Date`. The first result returned from the traversal will be
 subtracted with the incoming traverser.
 
-If argument resolves as `null` then incoming date will not be changed.
+If the argument (or the `Traversal`) resolves to `null` it is treated as `0` (the epoch), so the result is the incoming
+date's own value in epoch seconds.
 
 *Exceptions*
 
@@ -1051,7 +1052,7 @@ If value for some variable was not found, then the result is filtered out.
 
 *Exceptions*
 
-None
+* If the `formatString` is `null` then an `IllegalArgumentException` will be thrown.
 
 *Modulation:*
 
@@ -1334,7 +1335,8 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergee-step[reference]
 
 The `searchCreate` and `onCreate` `Map` instances must consist of any combination of `T.id`, `T.label`, or arbitrary
 `String` keys (which are assumed to be vertex properties). The `onMatch` `Map` instance only allows for `String` keys
-as the `id` and `label` of a `Vertex` are immutable. `null` values for these valid keys are not allowed.
+as the `id` and `label` of a `Vertex` are immutable. Values for these valid keys that are `null` will be treated
+according to the semantics of the `addV()` step.
 
 The `Map` that is used as the argument for `searchCreate` may be assigned from the incoming `Traverser` for the no-arg
 `mergeV()`. If `mergeV(Map)` is used, then it will override the incoming `Traverser`. If `mergeV(Traversal)` is used,
@@ -1619,7 +1621,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[reference]
 
 *Description:* Returns a substring of the incoming string traverser with a 0-based start index (inclusive) and end index (exclusive).
 
-*Syntax:* `substring(int startIndex, int endIndex)` | `substring(Scope scope, int startIndex, int endIndex)`
+*Syntax:* `substring(int startIndex)` | `substring(int startIndex, int endIndex)` | `substring(Scope scope, int startIndex)` | `substring(Scope scope, int startIndex, int endIndex)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -1631,7 +1633,9 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[reference]
 
 * `startIndex` - The start index, 0 based. If the start index is negative then it will begin at the specified index counted
 from the end of the string, or 0 if it exceeds the string length.
-* `endIndex` - The end index, 0 based. Optional, if it is not specific then all remaining characters will be returned. End
+* `endIndex` - The end index, 0 based. Optional, if it is not specified then all remaining characters will be returned.
+If the end index is negative then it will end at the specified index counted from the end of the string, or 0 if it
+exceeds the string length. End
 index &leq; start index will return the empty string.
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
