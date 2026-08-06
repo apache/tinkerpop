@@ -66,6 +66,10 @@ mapping they support through `Graph.Features` as well as which types they suppor
   ** TinkerPop by default supports int8 (Byte), int16 (Short), int32 (Integer), int64 (Long) and BigInteger in Java
 * Which float types are supported
   ** TinkerPop by default supports all as float, double, and BigDecimal in Java
+* Which additional value types are recognized
+  ** `Char` (a single character) and `Binary` (a raw byte sequence) are also recognized value types, as is the
+     extended temporal family (`OffsetDateTime`, exposed as `DateTime`, and `Duration`). The full type-token space
+     used by `P.typeOf()` and `asNumber()` is enumerated in the GType Enums section below.
 
 In addition to these, there are composite types as follows:
 
@@ -357,6 +361,12 @@ type casting (`asNumber()`) and comparison (`P.typeOf()`) operations.
 * **Temporal types**: `DATETIME`, `DURATION`
 * **Special types**: `NULL`, `NUMBER` (supertype for all numeric types)
 
+The `GType` enumeration is the type-token space used for `P.typeOf()` filtering and `asNumber()` casting; it is finer
+grained than the <<gremlin-semantics-orderability,Orderability>> type space. For the purposes of Comparability and
+Orderability, `DateTime` values occupy the `Date` type space (backed by `OffsetDateTime`), while `Char`, `Binary`, and
+`Duration` are not distinct type spaces of their own — they are ordered within the `Unknown` type space using their
+natural comparators. Equality and Equivalence for these types likewise follow their natural-comparator rules.
+
 ===== GlobalTypeCache
 
 Providers can register custom types outside the TinkerPop type space using the `GlobalTypeCache`, making them available
@@ -496,6 +506,7 @@ The following table maps the notions proposed above to the various `P` operators
 |P.inside |Comparability
 |P.outside|Comparability
 |P.between|Equality, Comparability
+|P.typeOf |Comparability
 |================
 
 ==== See Also
@@ -679,8 +690,10 @@ None
 
 *Considerations:*
 
-The `and()` step is a filter step that allows the traverser to pass if all of the provided traversals yield a result.
-It follows the ternary boolean logic described in the <<gremlin-semantics-concepts,Ternary Boolean Logics>> section.
+The `and()` step is a filter step that allows the traverser to pass only if every provided traversal yields at least
+one result. If any child traversal produces no result, the traverser is filtered out. Boolean value expressions
+evaluated within those traversals follow the <<gremlin-semantics-concepts,Comparability>> semantics, under which an
+incomputable comparison (for example against `NaN`, or across types) is defined to be `FALSE`.
 
 *Exceptions*
 
@@ -1351,32 +1364,34 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#concat-step[reference]
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DateAddStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[reference]
 
-[llms-summary="The formal semantics of the dateDiff() step: returns the difference between two Dates in epoch time."]
+[llms-summary="The formal semantics of the dateDiff() step: returns the difference between two dates as a Long, in epoch milliseconds."]
 [[dateDiff-step]]
 === dateDiff()
 
-*Description:* Returns the difference between two Dates as a `Long`, in epoch seconds.
+*Description:* Returns the difference between two dates as a `Long`, in epoch milliseconds.
 
-*Syntax:* `dateDiff(Date value)` | `dateDiff(Traversal dateTraversal)`
+*Syntax:* `dateDiff(OffsetDateTime value)` | `dateDiff(Date value)` | `dateDiff(Traversal dateTraversal)`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`Date` |`Long`
+|N |Y |N |`OffsetDateTime` |`Long`
 |=========================================================
 
 *Arguments:*
 
-* `value` - Date for subtraction.
-* `dateTraversal` - The `Traversal` value must resolve to a `Date`. The first result returned from the traversal will be
-subtracted with the incoming traverser.
+* `value` - The date to subtract from the incoming traverser. An `OffsetDateTime` is expected; a `java.util.Date` is
+also accepted but is deprecated as of 3.8.0.
+* `dateTraversal` - A `Traversal` that must resolve to an `OffsetDateTime` (or a deprecated `Date`). The first result
+returned from the traversal is subtracted from the incoming traverser.
 
-If the argument (or the `Traversal`) resolves to `null` it is treated as `0` (the epoch), so the result is the incoming
-date's own value in epoch seconds.
+If the argument (or the `Traversal`) resolves to `null` it is treated as the epoch, so the result is the incoming
+date's own value in epoch milliseconds.
 
 *Exceptions*
 
-* If the incoming traverser is a non-Date value then an `IllegalArgumentException` will be thrown.
+* If the incoming traverser (or resolved argument) is neither an `OffsetDateTime` nor a `Date` then an
+`IllegalArgumentException` will be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DateDiffStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateDiff-step[reference]
@@ -1485,6 +1500,41 @@ applies to list types which means that non-iterable types (including null) will 
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DifferenceStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#difference-step[reference]
+
+[llms-summary="The formal semantics of the discard() step: filters all traversers out of the traversal stream, discarding them."]
+[[discard-step]]
+=== discard()
+
+*Description:* Filters all traversers out of the traversal stream. Formerly named `none()` prior to 3.8.0.
+
+*Syntax:* `discard()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+None
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+The `discard()` step is a filter step that removes every traverser, always producing an empty result. It is commonly
+used to consume a traversal purely for its side effects (for example after an `aggregate()` or a mutation) without
+returning any objects.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/DiscardStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#discard-step[reference]
 
 [llms-summary="The formal semantics of the disjunct() step: adds the disjunct set to the Traversal Stream."]
 [[disjunct-step]]
