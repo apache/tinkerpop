@@ -286,8 +286,15 @@ public final class GryoMapper implements Mapper<Kryo> {
          * not need; a stream that carries one now fails with an unregistered class id. Registrations contributed
          * through an {@link IoRegistry} or {@code addCustom(...)} are covered on the same terms, including those
          * whose serializer is a {@code Function} or a class default that resolves to a {@code JavaSerializer}. This
-         * relies on the default {@link #registrationRequired(boolean)} of {@code true}. Callers that need the full
-         * fidelity for trusted, in-process work should leave this value at {@code true}.
+         * relies on the default {@link #registrationRequired(boolean)} of {@code true}, and {@link #create()} throws
+         * rather than build a mapper that combines the two. Callers that need the full fidelity for trusted,
+         * in-process work should leave this value at {@code true}.
+         * <p/>
+         * The hardened defaults reach {@code io()}, {@link GryoReader}, {@link GryoWriter} and {@link GryoIo}, but
+         * deliberately not {@link GryoPool} or the wire paths, which construct their own full fidelity mapper and
+         * hand it to every reader and writer they vend. Bytes read through those remain able to reach
+         * {@code java.io.ObjectInputStream.readObject()}. That is intended: they carry trusted, in-process traffic
+         * such as OLAP, which needs the {@code TraversalStrategy} types this filter drops.
          *
          * @param javaSerializationAllowed set to {@code false} to drop the {@code JavaSerializer} registrations or
          *                                 {@code true} to keep them
@@ -312,8 +319,21 @@ public final class GryoMapper implements Mapper<Kryo> {
 
         /**
          * Creates a {@code GryoMapper}.
+         *
+         * @throws IllegalStateException if {@link #javaSerializationAllowed(boolean)} is {@code false} while
+         *                               {@link #registrationRequired(boolean)} is also {@code false}, since that
+         *                               combination produces a mapper that only appears to be hardened
          */
         public GryoMapper create() {
+            // dropping the JavaSerializer registrations only holds while registration is required. without it, a
+            // stream naming the class rather than its id resolves that name and rebuilds the very serializer that
+            // createMapper() just dropped, so refuse the combination rather than hand back a mapper that looks
+            // hardened and is not
+            if (!javaSerializationAllowed && !registrationRequired)
+                throw new IllegalStateException(
+                        "javaSerializationAllowed(false) requires registrationRequired(true); " +
+                                "class-by-name resolution would reinstate the JavaSerializer");
+
             // consult the registry if provided and inject registry entries as custom classes.
             registries.forEach(registry -> {
                 final List<Pair<Class, Object>> serializers = registry.find(GryoIo.class);

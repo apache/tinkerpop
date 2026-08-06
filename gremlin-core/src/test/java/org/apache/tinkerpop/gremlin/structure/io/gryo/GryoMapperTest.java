@@ -81,8 +81,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
@@ -462,6 +464,31 @@ public class GryoMapperTest {
     }
 
     /**
+     * Positive control for {@link #shouldNotInvokeJavaDeserializationOnGryoReaderRead()}. That canary needs one more
+     * than the others do: {@link GryoReader#readObject(InputStream, Class)} does not call {@code readHeader}, and the
+     * crafted bytes carry no header, so nothing else in the read path would object to them. Point the same reader at
+     * a full fidelity mapper and the bytes must reach {@code ObjectInputStream.readObject()}, which is what shows the
+     * assertion over there is answering the hardening rather than some unrelated rejection.
+     */
+    @Test
+    public void shouldInvokeJavaDeserializationOnDefaultMapperGryoReaderRead() throws Exception {
+        final GryoReader reader = GryoReader.build().
+                mapper(builder.get().create()).   // full fidelity on purpose
+                create();
+
+        DeserializationCanary.FIRED = false;
+        try (final InputStream stream = new ByteArrayInputStream(maliciousGryoBytes())) {
+            reader.readObject(stream, Object.class);
+        } catch (Exception ignored) {
+            // as in the mapper level control, a failure is possible but only after readObject() has already run
+        }
+
+        assertTrue("the crafted stream must reach ObjectInputStream.readObject() through a full fidelity " +
+                        "GryoReader, otherwise shouldNotInvokeJavaDeserializationOnGryoReaderRead proves nothing",
+                DeserializationCanary.FIRED);
+    }
+
+    /**
      * Hardening the mapper must not cost anything on the graph structure that a Gryo document actually carries.
      */
     @Test
@@ -573,6 +600,63 @@ public class GryoMapperTest {
         } catch (IllegalArgumentException expected) {
             // as above
         }
+    }
+
+    /**
+     * Dropping the {@code JavaSerializer} registrations only holds while registration is required. Without it a
+     * stream may name the class instead of presenting its id, and Kryo resolves that name to a fresh registration
+     * carrying the very serializer that was dropped. The combination is refused rather than silently corrected, so
+     * that whoever wrote it hears about it instead of holding a mapper that only appears to be hardened.
+     */
+    @Test
+    public void shouldNotAllowJavaSerializationDisabledWithoutRegistrationRequired() {
+        try {
+            builder.get().javaSerializationAllowed(false).registrationRequired(false).create();
+            fail("javaSerializationAllowed(false) with registrationRequired(false) must not build a mapper");
+        } catch (IllegalStateException expected) {
+            assertThat(expected.getMessage(), containsString("requires registrationRequired(true)"));
+        }
+    }
+
+    /**
+     * The order in which the flags are set must not matter, since a builder is free to be configured either way.
+     */
+    @Test
+    public void shouldNotAllowRegistrationRequiredDisabledBeforeJavaSerialization() {
+        try {
+            builder.get().registrationRequired(false).javaSerializationAllowed(false).create();
+            fail("the illegal combination must be refused regardless of the order the flags were set in");
+        } catch (IllegalStateException expected) {
+            assertThat(expected.getMessage(), containsString("requires registrationRequired(true)"));
+        }
+    }
+
+    /**
+     * The combination is easiest to reach by accident through {@code GryoIo}, whose {@code onMapper} consumer runs
+     * after the hardening has been applied and so can undo it. That path must be refused on the same terms.
+     */
+    @Test
+    public void shouldNotAllowGryoIoOnMapperToDropRegistrationRequired() {
+        final Io.Builder<GryoIo> ioBuilder = GryoIo.build(name.equals("1_0") ? GryoVersion.V1_0 : GryoVersion.V3_0);
+        ioBuilder.graph(EmptyGraph.instance());
+        ioBuilder.onMapper(m -> ((GryoMapper.Builder) m).registrationRequired(false));
+
+        try {
+            ioBuilder.create().reader();
+            fail("an onMapper consumer must not be able to undo the io() hardening");
+        } catch (IllegalStateException expected) {
+            assertThat(expected.getMessage(), containsString("requires registrationRequired(true)"));
+        }
+    }
+
+    /**
+     * Neither flag on its own is a problem: the full fidelity mapper may drop the registration requirement, and the
+     * hardened mapper keeps it by default.
+     */
+    @Test
+    public void shouldAllowRegistrationRequiredDisabledOnFullFidelityMapper() {
+        assertNotNull(builder.get().registrationRequired(false).create());
+        assertNotNull(builder.get().javaSerializationAllowed(false).create());
     }
 
     /**

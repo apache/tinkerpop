@@ -53,6 +53,14 @@ public final class GryoWriter implements GraphWriter {
     }
 
     /**
+     * The {@code Kryo} this writer encodes with, exposed so that tests can assert which types a configured writer
+     * will and will not accept. Not part of the public API.
+     */
+    Kryo getKryo() {
+        return kryo;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
