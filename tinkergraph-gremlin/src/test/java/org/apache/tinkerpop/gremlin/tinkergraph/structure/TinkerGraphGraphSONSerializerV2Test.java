@@ -129,7 +129,7 @@ public class TinkerGraphGraphSONSerializerV2Test {
             writer.writeObject(out, sampleGraph1);
             final String json = out.toString();
 
-            final TinkerGraph read = reader.readObject(new ByteArrayInputStream(json.getBytes()), TinkerGraph.class);
+            final TinkerGraph read = reader.readObject(new ByteArrayInputStream(json.getBytes()), TinkerMemoryGraph.class);
             assertTrue(approximateGraphsCheck(sampleGraph1, read));
         }
     }

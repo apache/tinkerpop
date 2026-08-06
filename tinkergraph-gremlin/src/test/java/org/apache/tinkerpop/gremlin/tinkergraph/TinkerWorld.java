@@ -35,7 +35,8 @@ import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerTextSearchFactory
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerTransactionGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerMemoryGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerShuffleGraph;
 import org.junit.AssumptionViolatedException;
 
@@ -101,7 +102,7 @@ public abstract class TinkerWorld implements World {
         @Override
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
             if (null == graphData)
-                return registerTestServices(TinkerGraph.open(getNumberIdManagerConfiguration())).traversal();
+                return registerTestServices(TinkerMemoryGraph.open(getNumberIdManagerConfiguration())).traversal();
             else if (graphData == LoadGraphWith.GraphData.CLASSIC)
                 return classic.traversal();
             else if (graphData == LoadGraphWith.GraphData.CREW)
@@ -120,12 +121,12 @@ public abstract class TinkerWorld implements World {
 
         @Override
         public GraphTraversalSource getMultiLabelGraphTraversalSource() {
-            return registerTestServices(TinkerGraph.open(getMultiLabelConfiguration())).traversal();
+            return registerTestServices(TinkerMemoryGraph.open(getMultiLabelConfiguration())).traversal();
         }
 
         @Override
         public AbstractTinkerGraph open(final Configuration configuration) {
-            return TinkerGraph.open(configuration);
+            return TinkerMemoryGraph.open(configuration);
         }
     }
 
@@ -157,10 +158,10 @@ public abstract class TinkerWorld implements World {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * The {@link World} implementation for TinkerTransactionGraph that provides the {@link GraphTraversalSource}
+     * The {@link World} implementation for TinkerStorageGraph that provides the {@link GraphTraversalSource}
      * instances required by the Gherkin test suite.
      */
-    public static class TinkerTransactionGraphWorld extends TinkerWorld {
+    public static class TinkerStorageGraphWorld extends TinkerWorld {
         private static final AbstractTinkerGraph modern;
         private static final AbstractTinkerGraph classic;
         private static final AbstractTinkerGraph crew;
@@ -169,32 +170,32 @@ public abstract class TinkerWorld implements World {
         private static final AbstractTinkerGraph zoo;
 
         static {
-            modern = TinkerTransactionGraph.open(getNumberIdManagerConfiguration());
+            modern = TinkerStorageGraph.open(getNumberIdManagerConfiguration());
             TinkerFactory.generateModern(modern);
             modern.tx().commit();
             registerTestServices(modern);
 
-            classic = TinkerTransactionGraph.open(getNumberIdManagerConfiguration());
+            classic = TinkerStorageGraph.open(getNumberIdManagerConfiguration());
             TinkerFactory.generateClassic(classic);
             classic.tx().commit();
             registerTestServices(classic);
 
-            crew = TinkerTransactionGraph.open(getNumberIdManagerConfiguration());
+            crew = TinkerStorageGraph.open(getNumberIdManagerConfiguration());
             TinkerFactory.generateTheCrew(crew);
             crew.tx().commit();
             registerTestServices(crew);
 
-            sink = TinkerTransactionGraph.open(getNumberIdManagerConfiguration());
+            sink = TinkerStorageGraph.open(getNumberIdManagerConfiguration());
             TinkerFactory.generateKitchenSink(sink);
             sink.tx().commit();
             registerTestServices(sink);
 
-            grateful = TinkerTransactionGraph.open(getNumberIdManagerConfiguration());
+            grateful = TinkerStorageGraph.open(getNumberIdManagerConfiguration());
             TinkerFactory.generateGratefulDead(grateful);
             grateful.tx().commit();
             registerTestServices(grateful);
 
-            zoo = TinkerTransactionGraph.open(getMultiLabelConfiguration());
+            zoo = TinkerStorageGraph.open(getMultiLabelConfiguration());
             TinkerFactory.generateTheZoo(zoo);
             zoo.tx().commit();
             registerTestServices(zoo);
@@ -203,7 +204,7 @@ public abstract class TinkerWorld implements World {
         @Override
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
             if (null == graphData)
-                return registerTestServices(TinkerTransactionGraph.open(getNumberIdManagerConfiguration())).traversal();
+                return registerTestServices(TinkerStorageGraph.open(getNumberIdManagerConfiguration())).traversal();
             else if (graphData == LoadGraphWith.GraphData.CLASSIC)
                 return classic.traversal();
             else if (graphData == LoadGraphWith.GraphData.CREW)
@@ -222,12 +223,12 @@ public abstract class TinkerWorld implements World {
 
         @Override
         public GraphTraversalSource getMultiLabelGraphTraversalSource() {
-            return registerTestServices(TinkerTransactionGraph.open(getMultiLabelConfiguration())).traversal();
+            return registerTestServices(TinkerStorageGraph.open(getMultiLabelConfiguration())).traversal();
         }
 
         @Override
         public AbstractTinkerGraph open(final Configuration configuration) {
-            return TinkerTransactionGraph.open(configuration);
+            return TinkerStorageGraph.open(configuration);
         }
     }
 
@@ -238,12 +239,12 @@ public abstract class TinkerWorld implements World {
      * instances required by the Gherkin test suite.
      */
     public static class TinkerShuffleGraphWorld extends TinkerWorld {
-        private static final TinkerGraph modern;
-        private static final TinkerGraph classic;
-        private static final TinkerGraph crew;
-        private static final TinkerGraph sink;
-        private static final TinkerGraph grateful;
-        private static final TinkerGraph zoo;
+        private static final TinkerShuffleGraph modern;
+        private static final TinkerShuffleGraph classic;
+        private static final TinkerShuffleGraph crew;
+        private static final TinkerShuffleGraph sink;
+        private static final TinkerShuffleGraph grateful;
+        private static final TinkerShuffleGraph zoo;
 
         static {
             modern = TinkerShuffleGraph.open();
@@ -269,7 +270,7 @@ public abstract class TinkerWorld implements World {
         @Override
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
             if (null == graphData)
-                return registerTestServices(TinkerGraph.open(getNumberIdManagerConfiguration())).traversal();
+                return registerTestServices(TinkerMemoryGraph.open(getNumberIdManagerConfiguration())).traversal();
             else if (graphData == LoadGraphWith.GraphData.CLASSIC)
                 return classic.traversal();
             else if (graphData == LoadGraphWith.GraphData.CREW)
@@ -288,7 +289,7 @@ public abstract class TinkerWorld implements World {
 
         @Override
         public GraphTraversalSource getMultiLabelGraphTraversalSource() {
-            return registerTestServices(TinkerGraph.open(getMultiLabelConfiguration())).traversal();
+            return registerTestServices(TinkerMemoryGraph.open(getMultiLabelConfiguration())).traversal();
         }
 
         @Override
