@@ -44,8 +44,9 @@ import java.util.regex.Pattern;
 
 /**
  * Reference implementation for String format step, a mid-traversal step which will handle result formatting
- * to string values. If the incoming traverser is a non-String value then an {@code IllegalArgumentException}
- * will be thrown.
+ * to string values. The incoming traverser may be of any type; {@code Element} values have their properties
+ * resolved by name, other values are resolved positionally or via scope. If the supplied format string is
+ * {@code null} then an {@code IllegalArgumentException} will be thrown.
  *
  * @author Valentyn Kahamlyk
  */
