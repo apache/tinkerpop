@@ -52,13 +52,8 @@ CLAUDE.md
 .cursor/
 .codex/
 .github/skills/
-.beads/
 gremlin-python/src/main/python/build/
 node_modules/
 node/
 gremlin-js/node_modules/
 gremlin-js/node/
-.dolt/
-*.db
-state.json
-.beads-credential-key

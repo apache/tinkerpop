@@ -151,13 +151,22 @@ Otherwise, match the existing code in neighboring files — explicit imports (no
 
 ## Beads Caveats
 
-The general agent Do/Don't rules are in the root `AGENTS.md`. Two beads rules are easy to get
-wrong and worth repeating here (full workflow in `references/beads-workflow.md`):
+The general agent Do/Don't rules are in the root `AGENTS.md`. **Run `bd prime` at the start of
+a session and again after any context compaction** — it emits `.beads/PRIME.md`, the canonical
+workflow. If `bd` is not installed, skip it; nothing else in this skill depends on beads.
 
-- Don't run `bd dolt push` — pushing to DoltHub is a maintainer action performed after PRs
-  merge, not during active development.
+Four rules are easy to get wrong and worth repeating here:
+
+- Beads is the tracker for all work. Don't keep the plan in `TodoWrite`, `TaskCreate`, or a
+  markdown file — those are session-scoped, so nothing tracked there becomes memory. Create
+  the bead before writing code.
 - Don't close a beads issue when a PR is submitted — close it only after the PR merges to the
-  target branch.
+  target branch, then **pin** every bead in the subtree: root, decisions, records and tasks.
+  Pinning is what makes a bead permanent; everything destructive keys on `status=closed`.
+- Never run `bd flatten`, `bd compact`, or `bd admin compact`. They rewrite or discard history
+  irreversibly, and `admin compact` destroys `--design` text specifically.
+- Put rationale on the root or on a decision bead, not spread across task beads — scattered
+  that way, nobody finds it.
 
 ## Reference Guides
 
@@ -166,4 +175,4 @@ task-specific guidance, see:
 
 - [Development Environment Setup](references/dev-environment-setup.md) — fresh clone to working environment, prerequisites, GLV activation
 - [Gremlin MCP Server](references/gremlin-mcp.md) — translation, formatting, querying via MCP
-- [Beads Workflow](references/beads-workflow.md) — agent planning, persistent memory, TinkerPop-specific conventions and DoltHub push policy
+- Beads workflow — run `bd prime` (emits `.beads/PRIME.md`): root binding, decision capture, pin-at-merge, structure conventions

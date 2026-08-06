@@ -1,0 +1,159 @@
+# TinkerPop Beads Workflow
+
+Beads is TinkerPop's planning system **and its long-term memory**. It records not just what
+changed, but why — decisions made, alternatives rejected, and directions abandoned. Treat
+every bead as something a contributor will read in three years.
+
+Full detail: the **tinker-dev** skill. This file is what must survive context compaction.
+
+## Core rules
+
+- **Default** — beads is the tracker for **all** work: `bd create`, `bd ready`, `bd close`.
+- **Prohibited** — do **not** track work in `TodoWrite`, `TaskCreate`, or a markdown plan
+  file. They are session-scoped: nothing in one survives, so nothing in one is memory. Your
+  harness may prompt you to use them. Decline.
+- **Workflow** — create the bead **before** writing code, and `--claim` it when you start.
+- **Plan mode** — fine, and the plan file your harness writes is not yours to avoid. But it
+  lives outside the repo and outside the graph. Anything you weighed and rejected while
+  planning belongs in a bead **before you start executing**, not after.
+
+---
+
+## 1. Start here — bind to a root
+
+Every session works under one **root bead**. Find it before writing code.
+
+```bash
+bd list --status=all --json      # filter client-side: no parent, open/in_progress
+bd children <root>               # recursive — the whole subtree
+```
+
+- Show the operator open/`in_progress` beads with **no parent**, most recently updated
+  first, and ask which one. That is your root for this session.
+- **Read `bd children <root>` before resuming work.** It is the only thing that makes you
+  notice a bead the work has since outgrown.
+- **If no root is selected, you are starting something new — create the root before writing
+  code.** Work with no bead is the failure that makes every other rule pointless.
+- A small fix is a lone bead. It is its own root; don't hunt for a parent.
+
+`bd query "parent=none"` does not work. Filter on the `parent` field client-side.
+Re-ask after a compaction rather than guessing.
+
+---
+
+## 2. While working — capture as you go
+
+**Watch for these five things. They are observable events, not judgment calls:**
+
+1. **The operator redirects you** — "no, do X instead", "we tried that", "that breaks
+   providers". Highest signal. Capture every time.
+2. **What you built diverged from the JIRA / proposal / dev@ thread.**
+3. **An approach was tried and abandoned.**
+4. **You presented options** — a decision point exists by construction.
+5. **A discovery contradicted an assumption.**
+
+**Then pick the right instrument:**
+
+| Situation | Do |
+|---|---|
+| An alternative was **actually rejected** | Create a decision bead **and** its rejected-alternative sibling, now |
+| Anything else worth remembering | `bd comment <root> "..."` |
+
+```bash
+bd create --type=decision --parent=<root> --title="Chose X" --design="why, and what X rules out"
+bd create --type=decision --parent=<root> --title="Y" --labels="rejected-alternative" \
+          --design="why Y was rejected"
+bd dep add <decision> <alternative> -t related
+```
+
+If nothing was rejected, it is not a decision — it is the implementation, and the code
+documents that. Don't inflate.
+
+An approach you tried and abandoned **is** a rejected alternative — one you have evidence
+for. Record it; a dead end someone already walked is worth more than a hypothetical.
+
+Put rationale on the root or on a decision bead. Scattered across a dozen task beads,
+nobody finds it.
+
+**Record what actually happened.** If you cannot point to the moment, do not write the bead.
+When you sense a decision you were not party to, create a bead labelled `human` posing the
+question instead of inventing an answer — `bd human respond <id>` turns the reply into a
+comment.
+
+---
+
+## 3. At merge — close, then pin
+
+When the PR lands on its target branch:
+
+```bash
+bd close <id>                    # normal completion
+bd children <root>               # the whole subtree
+bd update <id1> <id2> ... -s pinned
+bd dolt pull && bd dolt push
+```
+
+**Pin every bead in the subtree** — root, decisions, records, tasks. No judgment about
+which ones matter: the work shipped, so all of it is the project's history. Show the
+operator the list first if they want a review gate.
+
+Pinning is what makes a bead permanent — every destructive operation keys on
+`status=closed`, and pinned beads are never eligible.
+
+Push freely as a checkpoint; pinning is what marks the durable record.
+
+---
+
+## 4. Never
+
+- **Never `bd flatten`, `bd compact`, or `bd admin compact`.** They rewrite or discard
+  history irreversibly. `admin compact` destroys `--design` text specifically. `bd gc` only
+  with `--skip-decay`.
+- **Never edit an existing bead's `--design` in place.** Add a comment, or create a new
+  decision bead with a `supersedes` edge. Field rewrites are invisible to history and lose
+  the reasoning that was there.
+- `bd prune` / `bd purge` / `bd gc` are release-time maintainer operations. Don't run them.
+- Don't use `bd edit` — it opens `$EDITOR` and blocks.
+
+---
+
+## 5. Structure
+
+```
+root (feature/epic/task)
+  ├─relates-to──▶ record [jira]      TINKERPOP-3456
+  ├─relates-to──▶ record [pr]        apache/tinkerpop#2891
+  ├─parent-child─▶ decision  "chose X"
+  │                  └─related─▶ decision "Y" [rejected-alternative]
+  └─parent-child─▶ task      "implement X"
+```
+
+- `--parent` builds the tree; labels inherit downward, so set module/release labels
+  (`gremlin-core`, `3.8`) once on the root.
+- **`record` beads** hold external artifacts — JIRA, PR, dev@ thread, proposal. Kind is a
+  **label** (`jira`, `pr`, `dev-list`, `proposal`); the URL or ticket goes in
+  `--external-ref`. Attach them to the **root**, not to every bead. Create them pinned.
+  Search first — duplicates are the main risk.
+- Records are the only link between beads and code. There is no bead ID in commit messages.
+- Only **one dependency type per pair** — `blocks` and `discovered-from` cannot coexist
+  between the same two beads.
+- Never construct a bead ID; use whatever `bd create` returns. Child IDs encode birth
+  position (`<root>.1.2`) but do not update on reparenting — traverse `parent` for truth,
+  treat the ID as a hint.
+
+---
+
+## Essential commands
+
+```bash
+bd children <root>               # the subtree, recursive
+bd show <id>                     # one bead with dependencies
+bd query "status=open AND type=decision"
+bd comment <id> "..."            # append rationale (never on a task bead)
+bd create --type=... --parent=<root> --design=... --labels=...
+bd dep add <a> <b> -t related|discovered-from|supersedes
+bd update <id> --claim | -s pinned | --external-ref=TINKERPOP-NNNN
+bd search <text>
+```
+
+Priority is `0-4` (0 = critical), never "high"/"medium"/"low".

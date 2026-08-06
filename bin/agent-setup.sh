@@ -60,14 +60,15 @@ skip() { echo -e "  ${YELLOW}○${NC} $1"; }
 bad()  { echo -e "  ${RED}✗${NC} $1"; }
 
 usage() {
-    echo "Usage: bin/agent-setup.sh <agent|--list|--all>"
+    echo "Usage: bin/agent-setup.sh <agent|--list|--all|--contributor [agent]>"
     echo ""
     echo "Agents: claude, copilot, cursor, codex, junie, kiro"
     echo ""
     echo "Options:"
-    echo "  --list    List supported agents and their skill discovery paths"
-    echo "  --all     Set up shims for all supported agents"
-    echo "  --help    Show this message"
+    echo "  --list           List supported agents and their skill discovery paths"
+    echo "  --all            Set up shims for all supported agents"
+    echo "  --contributor    Also install beads workflow hooks (committers; claude, kiro)"
+    echo "  --help           Show this message"
 }
 
 # Verify we're in the repo root
@@ -197,6 +198,85 @@ setup_agent() {
     esac
 }
 
+# --- Contributor hooks (opt-in) ---------------------------------------------
+#
+# Beads is a committer tool, so hook wiring is opt-in via --contributor. The
+# logic lives in bin/beads-agent-hook.sh; the JSON under bin/agent-hooks/ only
+# names events and invokes it. Installs are idempotent: our entries are found
+# by their beads-agent-hook.sh reference (claude) or tinkerpop-beads- name
+# prefix (kiro), removed, then rewritten.
+
+HOOK_AGENTS=("claude" "kiro")
+
+setup_claude_hooks() {
+    local settings=".claude/settings.local.json"
+    mkdir -p ".claude"
+    [[ -f "$settings" ]] || echo '{}' > "$settings"
+
+    if ! python3 - "$settings" "bin/agent-hooks/claude.json" <<'PY'
+import json, sys
+
+settings_path, hooks_path = sys.argv[1], sys.argv[2]
+with open(settings_path) as fh:
+    settings = json.load(fh)
+with open(hooks_path) as fh:
+    ours = {k: v for k, v in json.load(fh)["hooks"].items()}
+
+MARKER = "beads-agent-hook.sh"
+
+
+def is_ours(entry):
+    return any(MARKER in h.get("command", "") for h in entry.get("hooks", []))
+
+
+# Sweep every event, not just the ones we are about to write: an event we no
+# longer wire (PreCompact, once) must not be orphaned in the user's settings.
+existing = settings.setdefault("hooks", {})
+for event in list(existing):
+    kept = [e for e in existing[event] if not is_ours(e)]
+    if kept:
+        existing[event] = kept
+    else:
+        del existing[event]
+
+for event, entries in ours.items():
+    existing[event] = existing.get(event, []) + entries
+
+with open(settings_path, "w") as fh:
+    json.dump(settings, fh, indent=2)
+    fh.write("\n")
+PY
+    then
+        bad "claude: could not merge hooks into $settings"
+        return 1
+    fi
+    ok "claude: merged beads hooks into $settings (SessionStart, Stop, UserPromptSubmit)"
+}
+
+setup_kiro_hooks() {
+    mkdir -p ".kiro/hooks"
+    cp "bin/agent-hooks/kiro.json" ".kiro/hooks/tinkerpop-beads.json"
+    ok "kiro: wrote .kiro/hooks/tinkerpop-beads.json (SessionStart, Stop, UserPromptSubmit)"
+}
+
+setup_hooks() {
+    local agent="$1"
+
+    if ! command -v bd >/dev/null 2>&1; then
+        skip "$agent: 'bd' not found — hooks installed anyway, they stay silent without it"
+    fi
+
+    case "$agent" in
+        claude) setup_claude_hooks ;;
+        kiro)   setup_kiro_hooks ;;
+        *)
+            bad "No hook support for: $agent"
+            echo "  Hooks are available for: ${HOOK_AGENTS[*]}"
+            return 1
+            ;;
+    esac
+}
+
 list_agents() {
     echo "Supported agents and their skill discovery paths:"
     echo ""
@@ -234,6 +314,25 @@ case "$1" in
         echo ""
         echo "Done. Symlinked directories and generated files are gitignored."
         echo "Add them to .gitignore if they aren't already."
+        ;;
+    --contributor)
+        shift
+        if [[ $# -eq 0 ]]; then
+            echo "Setting up beads hooks for all supported agents..."
+            echo ""
+            for agent in "${HOOK_AGENTS[@]}"; do
+                setup_hooks "$agent"
+            done
+        else
+            echo "Setting up beads hooks for $1..."
+            echo ""
+            setup_hooks "$1"
+        fi
+        echo ""
+        echo "Hooks are advisory — they remind, they never block. Logic lives in"
+        echo "bin/beads-agent-hook.sh; run it directly to see what an agent is shown:"
+        echo ""
+        echo "  bin/beads-agent-hook.sh stop"
         ;;
     *)
         echo "Setting up $1..."
