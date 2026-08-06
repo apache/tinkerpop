@@ -112,7 +112,14 @@ Version 1.0 of GraphSON was released with TinkerPop 3.0.0. It is referred to by 
 When types are embedded, GraphSON uses the standard
 link:https://github.com/FasterXML/jackson-databind[Jackson] type embedding approach that writes the full Java class
 name into a "@class" field in the JSON. While this approach isn't especially language agnostic it does at least give
-some hint as to what the expected type is.
+some hint as to what the expected type is. On read, that class name is constrained to a validated allow-list so that
+an untrusted document cannot name an arbitrary class for construction. A class outside the allowed set is refused.
+The allow-list permits classes in the `java.lang`, `java.util`, `java.math`, `java.time`, `java.sql` and
+`org.apache.tinkerpop` packages (and their subpackages) plus array types, and by exact name a few safe value types
+in otherwise-excluded packages (`java.net.InetAddress`, `java.net.URI`); the rest of `java.net` and `java.nio` is
+excluded, and a parameterized type id or a `java.lang.Class` value is refused. A provider or application reading
+trusted input can add its own package with `GraphSONMapper.Builder.addAllowedTypeIdPrefix(String...)`, for example
+`addAllowedTypeIdPrefix("com.example.")`.
 
 This section focuses on non-embedded types and their formats as there was little usage of embedded types in generalized
 object serialization use cases. The format was simply too cumbersome to parse of non-Jackson enabled libraries and the
