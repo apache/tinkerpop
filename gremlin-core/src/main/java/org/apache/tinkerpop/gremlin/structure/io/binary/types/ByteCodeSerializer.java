@@ -36,12 +36,12 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
     protected Bytecode readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
         final Bytecode result = new Bytecode();
 
-        final int stepsLength = buffer.readInt();
+        final int stepsLength = readSizePrefix(buffer);
         for (int i = 0; i < stepsLength; i++) {
             result.addStep(context.readValue(buffer, String.class, false), getInstructionArguments(buffer, context));
         }
 
-        final int sourcesLength = buffer.readInt();
+        final int sourcesLength = readSizePrefix(buffer);
         for (int i = 0; i < sourcesLength; i++) {
             result.addSource(context.readValue(buffer, String.class, false), getInstructionArguments(buffer, context));
         }
@@ -50,7 +50,7 @@ public class ByteCodeSerializer extends SimpleTypeSerializer<Bytecode> {
     }
 
     private static Object[] getInstructionArguments(final Buffer buffer, final GraphBinaryReader context) throws IOException {
-        final int valuesLength = buffer.readInt();
+        final int valuesLength = readSizePrefix(buffer);
         final Object[] values = new Object[valuesLength];
         for (int j = 0; j < valuesLength; j++) {
             values[j] = context.read(buffer);

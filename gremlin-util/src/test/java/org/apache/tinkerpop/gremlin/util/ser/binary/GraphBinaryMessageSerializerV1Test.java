@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
@@ -41,8 +42,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.util.MockitoHamcrestMatcherAdapter.reflectionEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItemInArray;
+import static org.hamcrest.Matchers.instanceOf;
 
 public class GraphBinaryMessageSerializerV1Test {
     private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
@@ -127,6 +131,32 @@ public class GraphBinaryMessageSerializerV1Test {
         final ByteBuf buffer = serializer.serializeResponseAsBinary(response, allocator);
         final ResponseMessage deserialized = serializer.deserializeResponse(buffer);
         assertResponseEquals(response, deserialized);
+    }
+
+    @Test
+    public void shouldWrapMalformedLengthPrefixInSerializationExceptionAtMessageBoundary() {
+        // a response whose status-attributes map declares more entries than the message can possibly contain. The
+        // length-prefix validation raises the core structure.io.SerializationException, which the message serializer
+        // wraps in its own SerializationException. Callers of the message boundary see one serialization exception
+        // type regardless of which layer detected the problem.
+        final ByteBuf buffer = allocator.buffer();
+        try {
+            buffer.writeByte(GraphBinaryWriter.VERSION_BYTE);  // {version} with the most significant bit set
+            buffer.writeByte(1);                               // null {request_id}
+            buffer.writeInt(200);                              // {status_code} for SUCCESS
+            buffer.writeByte(1);                               // null {status_message}
+            buffer.writeInt(Integer.MAX_VALUE);                 // {status_attributes} length with no entries following
+
+            serializer.deserializeResponse(buffer);
+            fail("a response declaring an impossible status-attributes length must be refused");
+        } catch (SerializationException expected) {
+            assertThat(expected, instanceOf(org.apache.tinkerpop.gremlin.structure.io.SerializationException.class));
+            assertThat(expected.getCause(),
+                    instanceOf(org.apache.tinkerpop.gremlin.structure.io.SerializationException.class));
+            assertThat(expected.getCause().getMessage(), containsString("length prefix"));
+        } finally {
+            buffer.release();
+        }
     }
 
     @Test
