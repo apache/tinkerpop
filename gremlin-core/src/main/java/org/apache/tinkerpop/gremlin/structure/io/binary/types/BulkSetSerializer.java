@@ -43,6 +43,8 @@ public class BulkSetSerializer extends SimpleTypeSerializer<BulkSet> {
         for (int i = 0; i < length; i++) {
             final Object element = context.read(buffer);
             final long bulk = buffer.readLong();
+            // A large positive bulk needs no bound here because it is stored as a single long weight rather than
+            // expanded, so it drives no allocation on this read path.
             if (bulk < 0)
                 throw new IOException(String.format("Invalid GraphBinary BulkSet bulk: %d", bulk));
             result.add(element, bulk);
