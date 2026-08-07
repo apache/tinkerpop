@@ -43,7 +43,32 @@ Re-ask after a compaction rather than guessing.
 
 ---
 
-## 2. While working — claim first, then capture as you go
+## 2. Plan as a graph, not a list
+
+Tasks are not a checklist. Wire the order between them so the graph itself says what can run
+in parallel — that is the whole reason the plan lives in beads instead of prose.
+
+```bash
+bd dep add <task> <blocker>          # <task> waits for <blocker> — NOT "task blocks blocker"
+bd dep add --file - <<< '{"from":"tp-a","to":"tp-b"}'   # wire a whole plan at once
+bd ready                             # only `blocks` gates this; parent-child and related never do
+bd blocked                           # what is waiting, and on what
+bd dep cycles                        # a plan with a cycle cannot execute
+```
+
+- **Wire the order in the same pass as `bd create`.** Retrofitting it after work starts is
+  how you end up with a flat star and no parallelism.
+- **A task with no blocker asserts it can start immediately.** The absence of an edge is a
+  claim, not an oversight — decide it deliberately for every task.
+- **Link a decision to the work it caused** — `bd dep add <task> <decision> -t caused-by`.
+  Without it there is no path from a task back to the reasoning that shaped it.
+
+Before you start executing, run `bd ready`. If it returns every task you created, you built
+a list and called it a plan.
+
+---
+
+## 3. While working — claim first, then capture as you go
 
 **Before you touch code for a bead, claim it. Every time, no exceptions:**
 
@@ -51,7 +76,7 @@ Re-ask after a compaction rather than guessing.
 bd update <id> --claim            # sets assignee to you, status to in_progress
 ```
 
-It stays `in_progress` until the PR merges — see section 3. That window **is** the memory:
+It stays `in_progress` until the PR merges — see section 4. That window **is** the memory:
 a later session runs `bd list --status=in_progress` and learns what was underway, who had
 it, and where it stopped. A bead that jumps from `open` straight to `closed` records that
 the work happened but never that it was yours, never where you were when context ran out.
@@ -86,20 +111,14 @@ what it refers to: a choice about *the work* is a decision, while "the test fram
 instead of OptionsStrategy" is just describing code and stays a comment.
 
 ```bash
+# Only when something was actually ruled out. No fork = implementation; the code documents that.
 bd create --type=decision --parent=<root> --title="Chose X" --design="why, and what X rules out"
+# The sibling is the road not taken — an approach you tried and abandoned counts, and is stronger
+# evidence than a hypothetical, because someone already walked it.
 bd create --type=decision --parent=<root> --title="Y" --labels="rejected-alternative" \
           --design="why Y was rejected"
-bd dep add <decision> <alternative> -t related
+bd dep add <decision> <alternative> -t related    # never put either of these on a task bead
 ```
-
-If nothing was rejected, it is not a decision — it is the implementation, and the code
-documents that. Don't inflate.
-
-An approach you tried and abandoned **is** a rejected alternative — one you have evidence
-for. Record it; a dead end someone already walked is worth more than a hypothetical.
-
-Never put a decision on a task bead. The decision belongs in its own bead so the rejected
-sibling has something to hang off; a task records what to build, not what was ruled out.
 
 **Record what actually happened.** If you cannot point to the moment, do not write the bead.
 When you sense a decision you were not party to, create a bead labelled `human` posing the
@@ -108,7 +127,7 @@ comment.
 
 ---
 
-## 3. At merge — close, then pin
+## 4. At merge — close, then pin
 
 When the PR lands on its target branch:
 
@@ -130,7 +149,7 @@ Push freely as a checkpoint; pinning is what marks the durable record.
 
 ---
 
-## 4. Never
+## 5. Never
 
 - **Never `bd flatten`, `bd compact`, or `bd admin compact`.** They rewrite or discard
   history irreversibly. `admin compact` destroys `--design` text specifically. `bd gc` only
@@ -143,7 +162,7 @@ Push freely as a checkpoint; pinning is what marks the durable record.
 
 ---
 
-## 5. Structure
+## 6. Structure
 
 ```
 root (feature/epic/task)
@@ -151,8 +170,13 @@ root (feature/epic/task)
   ├─relates-to──▶ record [pr]        apache/tinkerpop#2891
   ├─parent-child─▶ decision  "chose X"
   │                  └─related─▶ decision "Y" [rejected-alternative]
-  └─parent-child─▶ task      "implement X"
+  ├─parent-child─▶ task A "implement X" ──caused-by──▶ decision "chose X"
+  ├─parent-child─▶ task B ──blocks──▶ task A     (B waits for A)
+  └─parent-child─▶ task C                        (no blocker: starts with A)
 ```
+
+`parent-child` gives membership, `blocks` gives order. A subtree with no `blocks` edges is
+a list, and `bd ready` cannot tell you anything useful about it.
 
 - `--parent` builds the tree; labels inherit downward, so set module/release labels
   (`gremlin-core`, `3.8`) once on the root.
@@ -173,11 +197,15 @@ root (feature/epic/task)
 
 ```bash
 bd children <root>               # the subtree, recursive
+bd ready                         # what can be started now (blocks-aware)
+bd blocked                       # what is waiting, and on what
 bd show <id>                     # one bead with dependencies
 bd query "status=open AND type=decision"
-bd comment <id> "..."            # append rationale (never on a task bead)
+bd comment <id> "..."            # a fact with no fork in it (never on a task bead)
 bd create --type=... --parent=<root> --design=... --labels=...
-bd dep add <a> <b> -t related|discovered-from|supersedes
+bd dep add <task> <blocker>      # default type is blocks: <task> waits for <blocker>
+bd dep add <a> <b> -t caused-by|related|discovered-from|supersedes
+bd dep cycles                    # a plan with a cycle cannot execute
 bd update <id> --claim | -s pinned | --external-ref=TINKERPOP-NNNN
 bd search <text>
 ```
