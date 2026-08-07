@@ -47,14 +47,11 @@ Re-ask after a compaction rather than guessing.
 
 **The plan lives in beads and nowhere else.** Do not track work in `TodoWrite`, `TaskCreate`,
 or a markdown plan file: they are session-scoped, so nothing in one survives, so nothing in
-one is memory. Your harness may prompt you to use them. Decline.
-
-Plan mode is fine, and the plan file your harness writes is not yours to avoid — but it lives
-outside the repo and outside the graph. Anything you weighed and rejected while planning
-belongs in a bead **before you start executing**, not after.
+one is memory. Your harness may prompt you to use them. Decline. Anything you weighed and 
+rejected while planning belongs in a bead **before you start executing**, not after.
 
 Tasks are not a checklist. Wire the order between them so the graph itself says what can run
-in parallel — that is the whole reason the plan lives in beads instead of prose.
+in parallel.
 
 ```bash
 bd dep add <task> <blocker>          # <task> waits for <blocker> — NOT "task blocks blocker"
@@ -64,8 +61,12 @@ bd blocked                           # what is waiting, and on what
 bd dep cycles                        # a plan with a cycle cannot execute
 ```
 
-- **Wire the order in the same pass as `bd create`.** Retrofitting it after work starts is
-  how you end up with a flat star and no parallelism.
+- **Wire the order in the same pass as `bd create`.** Nothing stops you rewiring later, and
+  a plan you have outgrown *should* be rewired — but until the edges exist `bd ready` has
+  nothing to tell you, so an unwired plan tends to stay unwired.
+- **Re-planning is normal; record it.** `bd dep remove` deletes an edge with no trace in the
+  graph, so a restructure erases the shape you started with. If you rewire because you found
+  a better path, that is a road not taken — write the decision bead (section 3).
 - **A task with no blocker asserts it can start immediately.** The absence of an edge is a
   claim, not an oversight — decide it deliberately for every task.
 - **A blocked task is released when its blocker closes**, so tasks must close as they finish
