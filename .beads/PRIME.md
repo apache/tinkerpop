@@ -5,14 +5,14 @@ changed, but why — decisions made, alternatives rejected, and directions aband
 every bead as something a contributor will read in three years. This file is what must 
 survive context compaction.
 
-## Core rules
+## Workflow
 
-An index, not the rules. Each line names a section; **the section is the rule, and the
-section holds the exceptions.** Do not act on a line here without reading it.
+An index. Each line names a section; **the section is the rule, and the section holds the
+exceptions.** Do not act on a line here without reading it.
 
 1. **Bind to a root bead before you write code** — section 1
-2. **Beads is the only tracker, and the plan is a dependency graph** — section 2
-3. **Claim before editing, close as work finishes, record every road not taken** — section 3
+2. **Plan the work with the operator as a dependency graph** — section 2
+3. **Claim before editing, close as work finishes** — section 3
 4. **At merge, close the root and pin the whole subtree** — section 4
 5. **Never rewrite or discard history** — section 5
 6. **Records, edge types and bead IDs follow fixed conventions** — section 6
@@ -20,96 +20,19 @@ section holds the exceptions.** Do not act on a line here without reading it.
 
 ---
 
-## 1. Start here — bind to a root
+## Core rules
 
-Every session works under one **root bead**. Find it before writing code.
+These hold throughout — while planning with the operator and while executing.
 
-```bash
-bd list --status=all --json      # filter client-side: no parent, open/in_progress
-bd children <root>               # recursive — the whole subtree
-```
+**Think in graph.** Work, decisions, external artifacts and the relations between them are
+nodes and edges. The plan lives in beads and nowhere else: not `TodoWrite`, not `TaskCreate`,
+not a markdown plan file. Those are session-scoped, so nothing in one is memory. Your harness
+may prompt you to use them. Decline.
 
-- Show the operator open/`in_progress` beads with **no parent**, most recently updated
-  first, and ask which one. That is your root for this session.
-- **Read `bd children <root>` before resuming work.** It is the only thing that makes you
-  notice a bead the work has since outgrown.
-- **If no root is selected, you are starting something new — create the root before writing
-  code.**
-- A small fix is a lone bead. It is its own root; don't hunt for a parent.
-- A human may decline binding to a bead, in which case ignore these rules.
+**A decision needs a bead to hang off**, so create the root when the conversation starts, not
+when the code does.
 
-`bd query "parent=none"` does not work. Filter on the `parent` field client-side.
-Re-ask after a compaction rather than guessing.
-
----
-
-## 2. Plan as a graph, not a list
-
-**The plan lives in beads and nowhere else.** Do not track work in `TodoWrite`, `TaskCreate`,
-or a markdown plan file: they are session-scoped, so nothing in one survives, so nothing in
-one is memory. Your harness may prompt you to use them. Decline. Anything you weighed and 
-rejected while planning belongs in a bead **before you start executing**, not after.
-
-Tasks are not a checklist. Wire the order between them so the graph itself says what can run
-in parallel.
-
-```bash
-bd dep add <task> <blocker>          # <task> waits for <blocker> — NOT "task blocks blocker"
-bd dep add --file - <<< '{"from":"tp-a","to":"tp-b"}'   # wire a whole plan at once
-bd ready --parent <root> --exclude-type=decision    # what can start now, in YOUR subtree
-bd blocked --parent <root>           # what is waiting, and on what
-bd dep cycles                        # a plan with a cycle cannot execute
-```
-
-**Always scope `bd ready` and `bd blocked` to your root.** Unscoped they span the whole
-database and hand you other people's work. Exclude decisions too: they are records rather
-than work, but they sit `open` until merge and otherwise fill the queue — under one root
-here, every "ready" bead was a decision and two were rejected alternatives.
-
-- **Wire the order in the same pass as `bd create`.**
-- **Re-planning is normal; record it.** `bd dep remove` deletes an edge with no trace in the
-  graph, so a restructure erases the shape you started with. If you rewire because you found
-  a better path, that is a road not taken — write the decision bead (section 3).
-- **A task with no blocker asserts it can start immediately.** The absence of an edge is a
-  claim, not an oversight — decide it deliberately for every task.
-- **A blocked task is released when its blocker closes**, so tasks must close as they finish.
-- **Link a decision to the work it caused** — `bd dep add <task> <decision> -t caused-by`.
-  Without it there is no path from a task back to the reasoning that shaped it.
-
-**Before executing, show the operator the plan and ask for approval.** Run the two scoped
-commands above and present what they return: what starts now and in parallel, and what waits
-on what. That pair *is* the plan — approving a set of titles is not approving a plan, because
-the titles say nothing about order.
-
-If everything comes back ready, there is no order. You built a list and called it a plan; say
-so rather than presenting it as one.
-
----
-
-## 3. While working — claim first, then capture as you go
-
-**Before you touch code for a bead, claim it. Every time, no exceptions:**
-
-```bash
-bd update <id> --claim            # sets assignee to you, status to in_progress
-```
-
-That window **is** the memory: a later session runs `bd list --status=in_progress` and learns
-what was underway, who had it, and where it stopped. A bead that jumps from `open` straight
-to `closed` records that the work happened but never that it was yours, never where you were
-when context ran out.
-
-If you are editing files and nothing is `in_progress`, you have already lost that. Stop and
-claim the bead you are actually working on.
-
-**Close a task the moment its work is done — do not wait for the merge.** Closing is what
-releases the tasks that were waiting on it, so a task left `in_progress` out of caution
-stalls everything downstream. The root is the exception: it represents the deliverable and
-closes at merge (section 4).
-
-Status is not paperwork. It is both the handoff and the gate.
-
-**Then watch for these five things. They are observable events, not judgment calls:**
+**Watch for these five things. They are observable events, not judgment calls:**
 
 1. **The operator redirects you** — "no, do X instead", "we tried that", "that breaks
    providers". Highest signal. Capture every time.
@@ -149,6 +72,92 @@ bd dep add <decision> <alternative> -t related    # never put either of these on
 When you sense a decision you were not party to, create a bead labelled `human` posing the
 question instead of inventing an answer — `bd human respond <id>` turns the reply into a
 comment.
+
+---
+
+## 1. Start here — bind to a root
+
+Every session works under one **root bead**. Find it before writing code.
+
+```bash
+bd list --status=all --json      # filter client-side: no parent, open/in_progress
+bd children <root>               # recursive — the whole subtree
+```
+
+- Show the operator open/`in_progress` beads with **no parent**, most recently updated
+  first, and ask which one. That is your root for this session.
+- **Read `bd children <root>` before resuming work.** It is the only thing that makes you
+  notice a bead the work has since outgrown.
+- **If no root is selected, you are starting something new — create the root before writing
+  code.**
+- A small fix is a lone bead. It is its own root; don't hunt for a parent.
+- A human may decline binding to a bead, in which case ignore these rules.
+
+`bd query "parent=none"` does not work. Filter on the `parent` field client-side.
+Re-ask after a compaction rather than guessing.
+
+---
+
+## 2. Plan as a graph, not a list
+
+The plan is built **with the operator**; what you weigh and reject while building it is
+captured as you go, not once you start executing.
+
+Tasks are not a checklist. Wire the order between them so the graph itself says what can run
+in parallel.
+
+```bash
+bd dep add <task> <blocker>          # <task> waits for <blocker> — NOT "task blocks blocker"
+bd dep add --file - <<< '{"from":"tp-a","to":"tp-b"}'   # wire a whole plan at once
+bd ready --parent <root> --exclude-type=decision    # what can start now, in YOUR subtree
+bd blocked --parent <root>           # what is waiting, and on what
+bd dep cycles                        # a plan with a cycle cannot execute
+```
+
+**Always scope `bd ready` and `bd blocked` to your root.** Unscoped they span the whole
+database and hand you other people's work. Exclude decisions too: they are records rather
+than work, but they sit `open` until merge and otherwise fill the queue — under one root
+here, every "ready" bead was a decision and two were rejected alternatives.
+
+- **Wire the order in the same pass as `bd create`.**
+- **Re-planning is normal; record it.** `bd dep remove` deletes an edge with no trace in the
+  graph, so a restructure erases the shape you started with. If you rewire because you found
+  a better path, that is a road not taken — write the decision bead.
+- **A task with no blocker asserts it can start immediately.** The absence of an edge is a
+  claim, not an oversight — decide it deliberately for every task.
+- **A blocked task is released when its blocker closes**, so tasks must close as they finish.
+- **Link a decision to the work it caused** — `bd dep add <task> <decision> -t caused-by`.
+  Without it there is no path from a task back to the reasoning that shaped it.
+
+**Before proceeding to the next step, obtain human approval.** - Show the human a summary of
+the beads graph for review.
+
+---
+
+## 3. While working — claim, then close
+
+Adjusting the plan mid-flight is normal — section 2 applies again when you do.
+
+**Before you touch code for a bead, claim it. Every time, no exceptions:**
+
+```bash
+bd update <id> --claim            # sets assignee to you, status to in_progress
+```
+
+That window **is** the memory: a later session runs `bd list --status=in_progress` and learns
+what was underway, who had it, and where it stopped. A bead that jumps from `open` straight
+to `closed` records that the work happened but never that it was yours, never where you were
+when context ran out.
+
+If you are editing files and nothing is `in_progress`, you have already lost that. Stop and
+claim the bead you are actually working on.
+
+**Close a task the moment its work is done — do not wait for the merge.** Closing is what
+releases the tasks that were waiting on it, so a task left `in_progress` out of caution
+stalls everything downstream. The root is the exception: it represents the deliverable and
+closes at merge (section 4).
+
+Status is not paperwork. It is both the handoff and the gate.
 
 ---
 
