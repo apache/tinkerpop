@@ -10,6 +10,7 @@ survive context compaction.
 An index. Each line names a section; **the section is the rule, and the section holds the
 exceptions.** Do not act on a line here without reading it.
 
+0. **Think in graph; capture every road not taken — throughout, not a step** — section 0
 1. **Bind to a root bead before you write code** — section 1
 2. **Plan the work with the operator as a dependency graph** — section 2
 3. **Claim before editing, close as work finishes** — section 3
@@ -20,7 +21,7 @@ exceptions.** Do not act on a line here without reading it.
 
 ---
 
-## Core rules
+## 0. Core rules
 
 These hold throughout — while planning with the operator and while executing.
 
@@ -101,7 +102,7 @@ Re-ask after a compaction rather than guessing.
 ## 2. Plan as a graph, not a list
 
 The plan is built **with the operator**; what you weigh and reject while building it is
-captured as you go, not once you start executing.
+captured as you go (section 0), not once you start executing.
 
 Tasks are not a checklist. Wire the order between them so the graph itself says what can run
 in parallel.
@@ -136,7 +137,8 @@ the beads graph for review.
 
 ## 3. While working — claim, then close
 
-Adjusting the plan mid-flight is normal — section 2 applies again when you do.
+Adjusting the plan mid-flight is normal — section 2 applies again when you do, and section 0
+applies the whole time.
 
 **Before you touch code for a bead, claim it. Every time, no exceptions:**
 
