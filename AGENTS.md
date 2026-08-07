@@ -13,6 +13,25 @@ reference material for each Gremlin Language Variant.
 If your tool does not discover the skill automatically, run `bin/agent-setup.sh --list` to
 see how to configure it, or `bin/agent-setup.sh <agent>` to set up the integration.
 
+## Planning and Memory: Beads
+
+TinkerPop maintainers use **beads (`bd`)** for planning and as the project's long-term
+memory — it records not just what changed, but why: decisions made, alternatives rejected,
+directions abandoned.
+
+**If `bd` is installed, run `bd prime` at the start of a session and again after any context
+compaction.** It emits `.beads/PRIME.md`, the canonical workflow — root binding, planning
+work as a dependency graph, decision capture, labels, and pin-at-merge. Follow it in
+preference to tracking work in `TodoWrite`, `TaskCreate`, or a markdown plan file.
+
+```bash
+command -v bd >/dev/null && bd prime
+```
+
+This applies to any TinkerPop session, whichever skill is active. If `bd` is not installed,
+skip it — nothing else in this repository depends on beads. Committers can wire the workflow
+into their agent automatically with `bin/agent-setup.sh --contributor`.
+
 ## Canonical Documentation
 
 These local documents are authoritative. If this file appears to contradict them, treat them as canonical.
