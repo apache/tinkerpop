@@ -7,18 +7,16 @@ survive context compaction.
 
 ## Core rules
 
-- **Default** — beads is the tracker for **all** work: `bd create`, `bd ready`, `bd close`.
-- **Prohibited** — do **not** track work in `TodoWrite`, `TaskCreate`, or a markdown plan
-  file. They are session-scoped: nothing in one survives, so nothing in one is memory. Your
-  harness may prompt you to use them. Decline.
-- **Lifecycle** — create the bead **before** writing code, `--claim` it **before you edit**,
-  `bd close` it **as soon as that task's work is done**, and pin the whole subtree at merge.
-  A bead that never enters `in_progress` is one no later session can resume, and one that
-  never closes leaves everything downstream of it blocked. Status is not paperwork; it is
-  both the handoff and the gate.
-- **Plan mode** — fine, and the plan file your harness writes is not yours to avoid. But it
-  lives outside the repo and outside the graph. Anything you weighed and rejected while
-  planning belongs in a bead **before you start executing**, not after.
+An index, not the rules. Each line names a section; **the section is the rule, and the
+section holds the exceptions.** Do not act on a line here without reading it.
+
+1. **Bind to a root bead before you write code** — section 1
+2. **Beads is the only tracker, and the plan is a dependency graph** — section 2
+3. **Claim before editing, close as work finishes, record every road not taken** — section 3
+4. **At merge, close the root and pin the whole subtree** — section 4
+5. **Never rewrite or discard history** — section 5
+6. **Records, edge types and bead IDs follow fixed conventions** — section 6
+7. **Never invent a label** — section 7
 
 ---
 
@@ -36,8 +34,9 @@ bd children <root>               # recursive — the whole subtree
 - **Read `bd children <root>` before resuming work.** It is the only thing that makes you
   notice a bead the work has since outgrown.
 - **If no root is selected, you are starting something new — create the root before writing
-  code.** Work with no bead is the failure that makes every other rule pointless.
+  code.**
 - A small fix is a lone bead. It is its own root; don't hunt for a parent.
+- A human may decline binding to a bead, in which case ignore these rules.
 
 `bd query "parent=none"` does not work. Filter on the `parent` field client-side.
 Re-ask after a compaction rather than guessing.
@@ -45,6 +44,14 @@ Re-ask after a compaction rather than guessing.
 ---
 
 ## 2. Plan as a graph, not a list
+
+**The plan lives in beads and nowhere else.** Do not track work in `TodoWrite`, `TaskCreate`,
+or a markdown plan file: they are session-scoped, so nothing in one survives, so nothing in
+one is memory. Your harness may prompt you to use them. Decline.
+
+Plan mode is fine, and the plan file your harness writes is not yours to avoid — but it lives
+outside the repo and outside the graph. Anything you weighed and rejected while planning
+belongs in a bead **before you start executing**, not after.
 
 Tasks are not a checklist. Wire the order between them so the graph itself says what can run
 in parallel — that is the whole reason the plan lives in beads instead of prose.
@@ -91,6 +98,8 @@ claim the bead you are actually working on.
 releases the tasks that were waiting on it, so a task left `in_progress` out of caution
 stalls everything downstream. The root is the exception: it represents the deliverable and
 closes at merge (section 4).
+
+Status is not paperwork. It is both the handoff and the gate.
 
 **Then watch for these five things. They are observable events, not judgment calls:**
 
@@ -206,10 +215,7 @@ a list, and `bd ready` cannot tell you anything useful about it.
 Labels are categorization **orthogonal to type and priority** — a bead carries as many as
 apply, giving cross-cutting views the tree cannot.
 
-> **Never invent a label.** What is listed below is the entire vocabulary. A label that
-> exists in the database but is not listed here is drift, not precedent — do not copy it.
-> If a bead genuinely needs something absent from these lists, that is the operator's
-> decision, not yours: raise it with a `human` bead and proceed without the label.
+**Never invent a label.** What is listed below is the entire vocabulary. 
 
 ```bash
 bd create --labels="gremlin-core,3.8"    # at creation
@@ -231,26 +237,23 @@ a root *after* its children exist do not backfill, so label the root first.
 
 ### Dimensions — descriptive; several may apply
 
-**Module** — the Maven module name, verbatim. If it is not a directory with a `pom.xml`, it
-is not a module label. Sub-trees use their parent's label.
+**Module** — a unit of code
 
 ```
-gql-gremlin  gremlin-annotations  gremlin-console  gremlin-core     gremlin-dotnet
+gql-gremlin  gremlin-annotations  gremlin-console  gremlin-core  gremlin-dotnet
 gremlin-driver  gremlin-go  gremlin-groovy  gremlin-js  gremlin-language
 gremlin-python  gremlin-server  gremlin-shaded  gremlin-test  gremlin-tools
 gremlin-util  hadoop-gremlin  spark-gremlin  tinkergraph-gremlin  docs
+gremlint  gremlator  gremlin-mcp
 ```
 
-**Release** — the release line, not the branch. Branches get renamed; the bead outlives them.
+**Release** — the official release version, not the branch - examples: `3.7.7`, `4.0.0-beta.2`
+
+**Concern** — a cross-cutting property or feature.
 
 ```
-3.7   3.8   4.0
-```
-
-**Concern** — a cross-cutting property that changes what someone must do about the change.
-
-```
-breaking-change  deprecation  security  serialization  protocol  performance  release  build
+breaking-change  deprecation  security  serialization  protocol  performance  
+release  build  
 ```
 
 ---
