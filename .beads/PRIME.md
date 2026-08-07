@@ -2,9 +2,8 @@
 
 Beads is TinkerPop's planning system **and its long-term memory**. It records not just what
 changed, but why — decisions made, alternatives rejected, and directions abandoned. Treat
-every bead as something a contributor will read in three years.
-
-Full detail: the **tinker-dev** skill. This file is what must survive context compaction.
+every bead as something a contributor will read in three years. This file is what must 
+survive context compaction.
 
 ## Core rules
 

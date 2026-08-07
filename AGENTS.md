@@ -28,9 +28,8 @@ preference to tracking work in `TodoWrite`, `TaskCreate`, or a markdown plan fil
 command -v bd >/dev/null && bd prime
 ```
 
-This applies to any TinkerPop session, whichever skill is active. If `bd` is not installed,
-skip it — nothing else in this repository depends on beads. Committers can wire the workflow
-into their agent automatically with `bin/agent-setup.sh --contributor`.
+If `bd` is not installed, skip it — nothing else in this repository depends on beads. Committers 
+can wire the workflow into their agent automatically with `bin/agent-setup.sh --contributor`.
 
 ## Canonical Documentation
 
