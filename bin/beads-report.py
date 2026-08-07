@@ -89,12 +89,28 @@ def load_export():
 
 
 def load_subtree(root):
-    """One root's subtree. `bd children` recurses, but the records it returns
-    carry no `design` field -- only comment_count. Rationale-at-risk detection
-    is correspondingly weaker in this scope."""
-    beads = {b["id"]: b for b in as_list(bd("children", root))}
+    """One root's subtree, gathered by descending one level at a time.
+
+    `bd children` recurses in its text output but NOT under `--json`, which
+    returns direct children only -- so a single call silently truncates the
+    subtree to depth 1. Verified against a four-level tree at bd 1.1.2.
+
+    The records returned carry no `design` field, only comment_count, so
+    rationale-at-risk detection is weaker in this scope than at release scope."""
+    beads = {}
     for record in as_list(bd("show", root)):
         beads.setdefault(record["id"], record)
+
+    frontier = [root]
+    seen = {root}
+    while frontier:
+        node = frontier.pop()
+        for child in as_list(bd("children", node)):
+            cid = child["id"]
+            beads.setdefault(cid, child)
+            if cid not in seen:
+                seen.add(cid)
+                frontier.append(cid)
     return beads
 
 
