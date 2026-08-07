@@ -56,26 +56,28 @@ in parallel.
 ```bash
 bd dep add <task> <blocker>          # <task> waits for <blocker> — NOT "task blocks blocker"
 bd dep add --file - <<< '{"from":"tp-a","to":"tp-b"}'   # wire a whole plan at once
-bd ready                             # only `blocks` gates this; parent-child and related never do
-bd blocked                           # what is waiting, and on what
+bd ready --parent <root> --exclude-type=decision    # what can start now, in YOUR subtree
+bd blocked --parent <root>           # what is waiting, and on what
 bd dep cycles                        # a plan with a cycle cannot execute
 ```
 
-- **Wire the order in the same pass as `bd create`.** Nothing stops you rewiring later, and
-  a plan you have outgrown *should* be rewired — but until the edges exist `bd ready` has
-  nothing to tell you, so an unwired plan tends to stay unwired.
+**Always scope `bd ready` and `bd blocked` to your root.** Unscoped they span the whole
+database and hand you other people's work. Exclude decisions too: they are records rather
+than work, but they sit `open` until merge and otherwise fill the queue — under one root
+here, every "ready" bead was a decision and two were rejected alternatives.
+
+- **Wire the order in the same pass as `bd create`.**
 - **Re-planning is normal; record it.** `bd dep remove` deletes an edge with no trace in the
   graph, so a restructure erases the shape you started with. If you rewire because you found
   a better path, that is a road not taken — write the decision bead (section 3).
 - **A task with no blocker asserts it can start immediately.** The absence of an edge is a
   claim, not an oversight — decide it deliberately for every task.
-- **A blocked task is released when its blocker closes**, so tasks must close as they finish
-  rather than at merge. Hold them all open until the PR lands and the graph never advances.
+- **A blocked task is released when its blocker closes**, so tasks must close as they finish.
 - **Link a decision to the work it caused** — `bd dep add <task> <decision> -t caused-by`.
   Without it there is no path from a task back to the reasoning that shaped it.
 
-Before you start executing, run `bd ready`. If it returns every task you created, you built
-a list and called it a plan.
+Before you start executing, run `bd ready --parent <root> --exclude-type=decision`. If it
+returns every task you created, you built a list and called it a plan.
 
 ---
 
@@ -263,8 +265,8 @@ release  build
 
 ```bash
 bd children <root>               # the subtree, recursive
-bd ready                         # what can be started now (blocks-aware)
-bd blocked                       # what is waiting, and on what
+bd ready --parent <root> --exclude-type=decision   # startable now; ALWAYS scope to your root
+bd blocked --parent <root>       # what is waiting, and on what
 bd show <id>                     # one bead with dependencies
 bd query "status=open AND type=decision"
 bd comment <id> "..."            # a fact with no fork in it (never on a task bead)
