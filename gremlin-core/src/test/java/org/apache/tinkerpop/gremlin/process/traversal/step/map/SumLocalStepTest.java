@@ -19,11 +19,14 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 
 import java.util.Arrays;
 import java.util.List;
+
+import org.junit.Test;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -35,5 +38,16 @@ public class SumLocalStepTest extends StepTest {
         return Arrays.asList(
                 __.identity()
         );
+    }
+
+    @Test(expected = ClassCastException.class)
+    public void shouldThrowOnNonNumericSingleScalar() {
+        __.inject("hello").sum(Scope.local).next();
+    }
+
+    @Test
+    public void shouldReturnIdentityOnNumericSingleScalar() {
+        final Number result = (Number) __.inject(42).sum(Scope.local).next();
+        org.junit.Assert.assertEquals(42, result);
     }
 }
