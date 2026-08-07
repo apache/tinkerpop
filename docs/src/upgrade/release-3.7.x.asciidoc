@@ -81,10 +81,17 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3278[TINKERPOP-3278]
 The GraphBinary value types that carry a length or element-count prefix (`String`, `ByteBuffer`, `BigInteger`,
 `InetAddress`, list, set, map, `Tree`, `BulkSet`, `Bytecode`, `P`, `TextP` and graph) now validate that prefix before
 using it to size an allocation or bound a read loop. A negative count, or one larger than the number of bytes actually
-remaining in the `Buffer` presented to the deserializer, is rejected with an `IOException` rather than driving a large
-allocation. A message too short to contain a declared prefix, and a negative `BulkSet` repeat count, are likewise
-rejected with an `IOException`. Growable collections and maps are also no longer pre-sized to the full declared count,
-so an in-range but large count cannot reserve a large backing array up front. Well-formed messages are unaffected.
+remaining in the `Buffer` presented to the deserializer, is rejected with a `SerializationException` rather than
+driving a large allocation. A message too short to contain a declared prefix, and a negative `BulkSet` repeat count,
+are likewise rejected with a `SerializationException`. Growable collections and maps are also no longer pre-sized to
+the full declared count, so an in-range but large count cannot reserve a large backing array up front. Well-formed
+messages are unaffected.
+
+The rejection is reported as `org.apache.tinkerpop.gremlin.structure.io.SerializationException`, a new `IOException`
+subtype in `gremlin-core`, so a caller that already handles `IOException` from the GraphBinary reader is unaffected
+while a caller that wants to distinguish a serialization failure now can. The existing
+`org.apache.tinkerpop.gremlin.util.ser.SerializationException` extends it, so a failure detected inside the reader and
+one raised at the message boundary can be caught as the same type. Nothing on the wire changes.
 
 Some values still use fixed-size arrays. `P` and `TextP` allocate an `Object[]` and a `Class[]` for their arguments,
 while `Bytecode` allocates an `Object[]` for instruction arguments. Unlike growable collections and maps, these

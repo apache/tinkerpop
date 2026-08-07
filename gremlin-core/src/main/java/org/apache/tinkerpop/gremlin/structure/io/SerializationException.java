@@ -16,25 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.util.ser;
+package org.apache.tinkerpop.gremlin.structure.io;
+
+import java.io.IOException;
 
 /**
- * Indicates that a Gremlin message or one of its values could not be serialized or deserialized. Extends
- * {@link org.apache.tinkerpop.gremlin.structure.io.SerializationException} so that a serialization failure raised
- * deeper in the IO stack and one raised at the message boundary can be caught as the same type.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * Indicates that a value could not be serialized or deserialized. As an {@link IOException} it can be handled by any
+ * caller that already treats serialization failures as I/O failures, while allowing a caller that cares about the
+ * distinction to identify a serialization problem specifically.
  */
-public class SerializationException extends org.apache.tinkerpop.gremlin.structure.io.SerializationException {
-    public SerializationException(final String msg) {
-        super(msg);
+public class SerializationException extends IOException {
+
+    public SerializationException(final String message) {
+        super(message);
     }
 
-    public SerializationException(final Throwable t) {
-        super(t);
+    public SerializationException(final Throwable cause) {
+        super(cause);
     }
 
-    public SerializationException(String message, Throwable cause) {
+    public SerializationException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

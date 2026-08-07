@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.util.ser.binary;
 
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.SerializationException;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -72,6 +74,7 @@ public class GraphBinaryLengthPrefixTest {
             reader.read(buffer);
             fail(String.format("read of %s with declared length %d must be refused", type, declaredLength));
         } catch (IOException expected) {
+            assertThat(expected, instanceOf(SerializationException.class));
             assertTrue(expected.getMessage(), expected.getMessage().contains("length prefix"));
         } finally {
             buffer.release();
@@ -147,6 +150,7 @@ public class GraphBinaryLengthPrefixTest {
             reader.read(buffer);
             fail("read of a BulkSet with a negative bulk must be refused");
         } catch (IOException expected) {
+            assertThat(expected, instanceOf(SerializationException.class));
             assertTrue(expected.getMessage(), expected.getMessage().contains("bulk"));
         } finally {
             buffer.release();
@@ -163,6 +167,7 @@ public class GraphBinaryLengthPrefixTest {
             reader.read(buffer);
             fail(String.format("read of %s with a truncated length prefix must be refused", type));
         } catch (IOException expected) {
+            assertThat(expected, instanceOf(SerializationException.class));
             assertTrue(expected.getMessage(), expected.getMessage().contains("length prefix"));
         } finally {
             buffer.release();
@@ -298,13 +303,15 @@ public class GraphBinaryLengthPrefixTest {
 
     /**
      * Looks for a length-prefix rejection naming {@code declaredCount} anywhere in the causal chain, since a nested
-     * read failure may be wrapped by the serializer that requested it.
+     * read failure may be wrapped by the serializer that requested it. The rejection must be a
+     * {@link SerializationException} so that the typed contract holds for a nested prefix as well as a top-level one.
      */
     private static boolean reportsLengthPrefix(final Throwable thrown, final int declaredCount) {
         final String declared = Integer.toString(declaredCount);
         for (Throwable current = thrown; current != null; current = current.getCause()) {
             final String message = current.getMessage();
-            if (message != null && message.contains("length prefix") && message.contains(declared))
+            if (current instanceof SerializationException && message != null && message.contains("length prefix")
+                    && message.contains(declared))
                 return true;
         }
         return false;

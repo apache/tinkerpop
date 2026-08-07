@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.SerializationException;
 
 import java.io.IOException;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class BulkSetSerializer extends SimpleTypeSerializer<BulkSet> {
             // A large positive bulk needs no bound here because it is stored as a single long weight rather than
             // expanded, so it drives no allocation on this read path.
             if (bulk < 0)
-                throw new IOException(String.format("Invalid GraphBinary BulkSet bulk: %d", bulk));
+                throw new SerializationException(String.format("Invalid GraphBinary BulkSet bulk: %d", bulk));
             result.add(element, bulk);
         }
 

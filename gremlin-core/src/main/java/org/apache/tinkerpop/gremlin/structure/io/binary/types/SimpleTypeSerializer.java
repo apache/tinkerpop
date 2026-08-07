@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.SerializationException;
 
 import java.io.IOException;
 
@@ -84,12 +85,12 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
      */
     protected static int readSizePrefix(final Buffer buffer) throws IOException {
         if (buffer.readableBytes() < Integer.BYTES)
-            throw new IOException(String.format(
+            throw new SerializationException(String.format(
                     "Incomplete GraphBinary length prefix: %d byte(s) available", buffer.readableBytes()));
         final int size = buffer.readInt();
         if (size < 0 || size > buffer.readableBytes())
-            throw new IOException(String.format("Invalid GraphBinary length prefix: %d (readable bytes: %d)",
-                    size, buffer.readableBytes()));
+            throw new SerializationException(String.format(
+                    "Invalid GraphBinary length prefix: %d (readable bytes: %d)", size, buffer.readableBytes()));
         return size;
     }
 
