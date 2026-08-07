@@ -76,8 +76,13 @@ here, every "ready" bead was a decision and two were rejected alternatives.
 - **Link a decision to the work it caused** — `bd dep add <task> <decision> -t caused-by`.
   Without it there is no path from a task back to the reasoning that shaped it.
 
-Before you start executing, run `bd ready --parent <root> --exclude-type=decision`. If it
-returns every task you created, you built a list and called it a plan.
+**Before executing, show the operator the plan and ask for approval.** Run the two scoped
+commands above and present what they return: what starts now and in parallel, and what waits
+on what. That pair *is* the plan — approving a set of titles is not approving a plan, because
+the titles say nothing about order.
+
+If everything comes back ready, there is no order. You built a list and called it a plan; say
+so rather than presenting it as one.
 
 ---
 
