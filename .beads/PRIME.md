@@ -12,8 +12,10 @@ survive context compaction.
   file. They are session-scoped: nothing in one survives, so nothing in one is memory. Your
   harness may prompt you to use them. Decline.
 - **Lifecycle** — create the bead **before** writing code, `--claim` it **before you edit**,
-  close it at merge. A bead that never enters `in_progress` is one no later session can
-  resume. Status is not paperwork; it is the handoff.
+  `bd close` it **as soon as that task's work is done**, and pin the whole subtree at merge.
+  A bead that never enters `in_progress` is one no later session can resume, and one that
+  never closes leaves everything downstream of it blocked. Status is not paperwork; it is
+  both the handoff and the gate.
 - **Plan mode** — fine, and the plan file your harness writes is not yours to avoid. But it
   lives outside the repo and outside the graph. Anything you weighed and rejected while
   planning belongs in a bead **before you start executing**, not after.
@@ -59,6 +61,8 @@ bd dep cycles                        # a plan with a cycle cannot execute
   how you end up with a flat star and no parallelism.
 - **A task with no blocker asserts it can start immediately.** The absence of an edge is a
   claim, not an oversight — decide it deliberately for every task.
+- **A blocked task is released when its blocker closes**, so tasks must close as they finish
+  rather than at merge. Hold them all open until the PR lands and the graph never advances.
 - **Link a decision to the work it caused** — `bd dep add <task> <decision> -t caused-by`.
   Without it there is no path from a task back to the reasoning that shaped it.
 
@@ -75,13 +79,18 @@ a list and called it a plan.
 bd update <id> --claim            # sets assignee to you, status to in_progress
 ```
 
-It stays `in_progress` until the PR merges — see section 4. That window **is** the memory:
-a later session runs `bd list --status=in_progress` and learns what was underway, who had
-it, and where it stopped. A bead that jumps from `open` straight to `closed` records that
-the work happened but never that it was yours, never where you were when context ran out.
+That window **is** the memory: a later session runs `bd list --status=in_progress` and learns
+what was underway, who had it, and where it stopped. A bead that jumps from `open` straight
+to `closed` records that the work happened but never that it was yours, never where you were
+when context ran out.
 
 If you are editing files and nothing is `in_progress`, you have already lost that. Stop and
 claim the bead you are actually working on.
+
+**Close a task the moment its work is done — do not wait for the merge.** Closing is what
+releases the tasks that were waiting on it, so a task left `in_progress` out of caution
+stalls everything downstream. The root is the exception: it represents the deliverable and
+closes at merge (section 4).
 
 **Then watch for these five things. They are observable events, not judgment calls:**
 
@@ -126,13 +135,14 @@ comment.
 
 ---
 
-## 4. At merge — close, then pin
+## 4. At merge — close the root, then pin
 
-When the PR lands on its target branch:
+Tasks closed as they finished (section 3). What is left at merge is the **root** — the
+deliverable — plus any decision beads, which are not work and never closed on their own.
 
 ```bash
-bd close <id>                    # normal completion
-bd children <root>               # the whole subtree
+bd children <root>               # the whole subtree; nothing should still be in_progress
+bd close <root> <decision-ids>   # whatever the work itself did not close
 bd update <id1> <id2> ... -s pinned
 bd dolt pull && bd dolt push
 ```
@@ -210,16 +220,11 @@ a root *after* its children exist do not backfill, so label the root first.
 |---|---|
 | Module | `gremlin-core`, `gremlin-server`, `gremlin-test`, `tinkergraph`, `gremlator`, and `gremlin-python` / `gremlin-javascript` / `gremlin-go` / `gremlin-dotnet` |
 | Concern | `io`, `traversal`, `docs`, `antlr`, `process`, `specification`, `glv`, `breaking-change`, `deprecation` |
-| Topic | a long-running effort spanning roots — `gql`, `gql-gremlin`, `match-step`, `tiny-gremlin` |
-| Release | `3.7`, `3.8` |
 | Semantic | `rejected-alternative`, `human`, and record kinds `jira` / `pr` / `dev-list` / `proposal` |
 
 **Never label a bead with something `--type` already says.** `feature`, `task`, `bug` are
 types; a `feature` label is on 18 beads today and carries no information the type field
 lacks. That is the drift `bd label list-all` is meant to catch.
-
-**Use the full module name.** `gremlin-javascript`, not `javascript`; `gremlin-python`, not
-`python`. Both forms exist in the database and the short ones are drift, not a convention.
 
 These are conventions, not enforced values — but a new label splits every query that used
 the old one, so introducing one is a decision. Treat it as such.
