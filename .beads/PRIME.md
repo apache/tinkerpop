@@ -178,8 +178,7 @@ root (feature/epic/task)
 `parent-child` gives membership, `blocks` gives order. A subtree with no `blocks` edges is
 a list, and `bd ready` cannot tell you anything useful about it.
 
-- `--parent` builds the tree; labels inherit downward, so set module/release labels
-  (`gremlin-core`, `3.8`) once on the root.
+- `--parent` builds the tree. Labels inherit downward — see section 7.
 - **`record` beads** hold external artifacts — JIRA, PR, dev@ thread, proposal. Kind is a
   **label** (`jira`, `pr`, `dev-list`, `proposal`); the URL or ticket goes in
   `--external-ref`. Attach them to the **root**, not to every bead. Create them pinned.
@@ -190,6 +189,41 @@ a list, and `bd ready` cannot tell you anything useful about it.
 - Never construct a bead ID; use whatever `bd create` returns. Child IDs encode birth
   position (`<root>.1.2`) but do not update on reparenting — traverse `parent` for truth,
   treat the ID as a hint.
+
+---
+
+## 7. Labels
+
+Labels are categorization **orthogonal to type and priority** — a bead carries as many as
+apply, giving cross-cutting views the tree cannot.
+
+```bash
+bd create --labels="gremlin-core,io"     # at creation
+bd label list-all                        # what already exists — ALWAYS check before inventing one
+bd label add|remove <id> <label>
+bd label list <id>
+```
+
+**Set module and release labels once on the root** — children inherit them. Labels added to
+a root *after* its children exist do not backfill, so label the root first.
+
+| Dimension | Values |
+|---|---|
+| Module | `gremlin-core`, `gremlin-server`, `gremlin-test`, `tinkergraph`, `gremlator`, and `gremlin-python` / `gremlin-javascript` / `gremlin-go` / `gremlin-dotnet` |
+| Concern | `io`, `traversal`, `docs`, `antlr`, `process`, `specification`, `glv`, `breaking-change`, `deprecation` |
+| Topic | a long-running effort spanning roots — `gql`, `gql-gremlin`, `match-step`, `tiny-gremlin` |
+| Release | `3.7`, `3.8` |
+| Semantic | `rejected-alternative`, `human`, and record kinds `jira` / `pr` / `dev-list` / `proposal` |
+
+**Never label a bead with something `--type` already says.** `feature`, `task`, `bug` are
+types; a `feature` label is on 18 beads today and carries no information the type field
+lacks. That is the drift `bd label list-all` is meant to catch.
+
+**Use the full module name.** `gremlin-javascript`, not `javascript`; `gremlin-python`, not
+`python`. Both forms exist in the database and the short ones are drift, not a convention.
+
+These are conventions, not enforced values — but a new label splits every query that used
+the old one, so introducing one is a decision. Treat it as such.
 
 ---
 
