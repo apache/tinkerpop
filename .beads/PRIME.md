@@ -206,28 +206,52 @@ a list, and `bd ready` cannot tell you anything useful about it.
 Labels are categorization **orthogonal to type and priority** — a bead carries as many as
 apply, giving cross-cutting views the tree cannot.
 
+> **Never invent a label.** What is listed below is the entire vocabulary. A label that
+> exists in the database but is not listed here is drift, not precedent — do not copy it.
+> If a bead genuinely needs something absent from these lists, that is the operator's
+> decision, not yours: raise it with a `human` bead and proceed without the label.
+
 ```bash
-bd create --labels="gremlin-core,io"     # at creation
-bd label list-all                        # what already exists — ALWAYS check before inventing one
+bd create --labels="gremlin-core,3.8"    # at creation
 bd label add|remove <id> <label>
 bd label list <id>
+bd label list-all                        # what is in use — includes drift; this file is the authority
 ```
 
 **Set module and release labels once on the root** — children inherit them. Labels added to
 a root *after* its children exist do not backfill, so label the root first.
 
-| Dimension | Values |
+### Structural labels — part of the data model, never optional
+
+| Label | Why it exists |
 |---|---|
-| Module | `gremlin-core`, `gremlin-server`, `gremlin-test`, `tinkergraph`, `gremlator`, and `gremlin-python` / `gremlin-javascript` / `gremlin-go` / `gremlin-dotnet` |
-| Concern | `io`, `traversal`, `docs`, `antlr`, `process`, `specification`, `glv`, `breaking-change`, `deprecation` |
-| Semantic | `rejected-alternative`, `human`, and record kinds `jira` / `pr` / `dev-list` / `proposal` |
+| `human` | bd's own contract: `bd human list/respond/dismiss` query this exact string |
+| `rejected-alternative` | the chosen decision and the road not taken are **both** `type=decision`; this label is the only thing telling them apart |
+| `jira` `pr` `dev-list` `proposal` | which kind of external artifact a `record` bead holds — exactly one per record |
 
-**Never label a bead with something `--type` already says.** `feature`, `task`, `bug` are
-types; a `feature` label is on 18 beads today and carries no information the type field
-lacks. That is the drift `bd label list-all` is meant to catch.
+### Dimensions — descriptive; several may apply
 
-These are conventions, not enforced values — but a new label splits every query that used
-the old one, so introducing one is a decision. Treat it as such.
+**Module** — the Maven module name, verbatim. If it is not a directory with a `pom.xml`, it
+is not a module label. Sub-trees use their parent's label.
+
+```
+gql-gremlin  gremlin-annotations  gremlin-console  gremlin-core     gremlin-dotnet
+gremlin-driver  gremlin-go  gremlin-groovy  gremlin-js  gremlin-language
+gremlin-python  gremlin-server  gremlin-shaded  gremlin-test  gremlin-tools
+gremlin-util  hadoop-gremlin  spark-gremlin  tinkergraph-gremlin  docs
+```
+
+**Release** — the release line, not the branch. Branches get renamed; the bead outlives them.
+
+```
+3.7   3.8   4.0
+```
+
+**Concern** — a cross-cutting property that changes what someone must do about the change.
+
+```
+breaking-change  deprecation  security  serialization  protocol  performance  release  build
+```
 
 ---
 
