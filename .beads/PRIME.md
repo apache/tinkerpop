@@ -68,12 +68,22 @@ claim the bead you are actually working on.
 4. **You presented options** — a decision point exists by construction.
 5. **A discovery contradicted an assumption.**
 
-**Then pick the right instrument:**
+**Then pick the instrument. The only test is whether a road was not taken:**
 
-| Situation | Do |
+| What happened | Do |
 |---|---|
-| An alternative was **actually rejected** | Create a decision bead **and** its rejected-alternative sibling, now |
-| Anything else worth remembering | `bd comment <root> "..."` |
+| A specific course was considered and **not taken** — a design, a scope item, a validation step, a target branch, a task you wrote and threw away | Decision bead **plus** its `rejected-alternative` sibling, now |
+| Something is simply true, with no fork in it — evidence, a measurement, a discovery, a constraint | `bd comment <root> "..."` |
+
+**The rejected thing does not have to be a design.** "The operator declined X" is a road not
+taken. So is "we were going to target master, we targeted 3.7-dev instead." If you can name
+what was *not* done, it is a decision — write both beads.
+
+**Self-check before writing any comment: name what was *not* done.** If you can name it — a
+course declined, a branch not targeted, an approach dropped — it is a decision bead, not a
+comment. Wording like "the operator declined" or "X rather than Y" is the tell, but check
+what it refers to: a choice about *the work* is a decision, while "the test frames HashMap
+instead of OptionsStrategy" is just describing code and stays a comment.
 
 ```bash
 bd create --type=decision --parent=<root> --title="Chose X" --design="why, and what X rules out"
@@ -88,8 +98,8 @@ documents that. Don't inflate.
 An approach you tried and abandoned **is** a rejected alternative — one you have evidence
 for. Record it; a dead end someone already walked is worth more than a hypothetical.
 
-Put rationale on the root or on a decision bead. Scattered across a dozen task beads,
-nobody finds it.
+Never put a decision on a task bead. The decision belongs in its own bead so the rejected
+sibling has something to hang off; a task records what to build, not what was ruled out.
 
 **Record what actually happened.** If you cannot point to the moment, do not write the bead.
 When you sense a decision you were not party to, create a bead labelled `human` posing the

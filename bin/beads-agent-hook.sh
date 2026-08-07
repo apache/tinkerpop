@@ -119,19 +119,27 @@ its rejected-alternative sibling. An approach you tried and abandoned counts. An
 worth remembering goes in a comment on the root bead."
 
         # Editing files while nothing is claimed means the in_progress window -- the only
-        # thing a later session can read to resume -- is never being written. Observable,
-        # so it is worth stating flatly rather than asking.
-        if [[ -z "$active" ]] && [[ -n "$(git status --porcelain 2>/dev/null | head -1)" ]]; then
-            text="$text
-
-You have uncommitted changes and NO bead is in_progress. Claim the bead you are working on
-now — 'bd update <id> --claim'. Without it, the next session cannot tell what was underway
-or where it stopped."
-        elif [[ -n "$active" ]]; then
+        # thing a later session can read to resume -- is never being written. These are two
+        # independent facts, so never let one suppress the other: parallel sessions share
+        # one actor, so a populated in_progress list is no evidence *your* work is claimed.
+        dirty=$(git status --porcelain 2>/dev/null | head -1)
+        if [[ -n "$active" ]]; then
             text="$text
 
 Still in progress:
 $active"
+            if [[ -n "$dirty" ]]; then
+                text="$text
+
+You have uncommitted changes. If what you are working on is not in that list, claim it —
+'bd update <id> --claim'. Beads claimed by another session or contributor are not yours."
+            fi
+        elif [[ -n "$dirty" ]]; then
+            text="$text
+
+You have uncommitted changes and NO bead is in_progress anywhere. Claim the bead you are
+working on now — 'bd update <id> --claim'. Without it, the next session cannot tell what
+was underway or where it stopped."
         fi
         ;;
 
