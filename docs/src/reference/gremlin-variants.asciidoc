@@ -864,9 +864,14 @@ compile group: 'org.apache.tinkerpop', name: 'gremlin-driver', version: 'x.y.z'
 [[gremlin-groovy-differences]]
 === Differences
 
-In Groovy, `as`, `in`, and `not` are reserved words. Gremlin-Groovy does not allow these steps to be called
-statically from the anonymous traversal `+__+` and therefore, must always be prefixed with `+__.+` For instance:
-`+g.V().as('a').in().as('b').where(__.not(__.as('a').out().as('b')))+`
+In Groovy, `as`, `in`, and `not` overlap with reserved words and predicate functions, so calling them as bare
+functions is not guaranteed to resolve to the anonymous traversal step you intend. For deterministic, portable
+results, be explicit: prefix an anonymous traversal step with `+__.+` and use `P.` when you actually want a
+predicate. For instance: `+g.V().as('a').in().as('b').where(__.not(__.as('a').out().as('b')))+`
+
+This is especially important for `not`: a bare `+not(...)+` resolves to `+P.not(P)+` (predicate negation), whereas
+`+__.not(traversal)+` is the filter step. Prefer `+__.not(...)+` for the step and `+P.not(...)+` for the predicate to
+avoid the ambiguity.
 
 Care needs to be taken when using the `any(P)` step as you may accidentally invoke Groovy's `any(Closure)` method. This
 typically happens when calling `any()` without arguments. You can tell if Groovy's `any` has been called if the return
@@ -883,6 +888,8 @@ time zone offset of UTC(+00:00):
 * `2018-03-22T00:35:44.741`
 * `2018-03-22T00:35:44.741Z`
 * `2018-03-22T00:35:44.741+1600`
+
+The `datetime()` function returns a `java.time.OffsetDateTime`.
 
 anchor:connecting-via-remotegraph[]
 anchor:connecting-via-java[]
