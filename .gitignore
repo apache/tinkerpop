@@ -50,5 +50,8 @@ gremlinconsoletest.egg-info
 CLAUDE.md
 **/.claude/
 .kiro/
-.beads/
+.agents/
+.cursor/
+.codex/
+.github/skills/
 gremlin-python/src/main/python/build/

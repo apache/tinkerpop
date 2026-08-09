@@ -1,0 +1,50 @@
+{
+  "_comment": [
+    "Claude Code hook wiring for TinkerPop's beads workflow. Merged into",
+    ".claude/settings.local.json by 'bin/agent-setup.sh --contributor claude'.",
+    "All logic lives in bin/beads-agent-hook.sh -- these entries only name an",
+    "event and invoke it. Entries are identified for re-install and removal by",
+    "the beads-agent-hook.sh reference in their command.",
+    "SessionStart matches 'compact' as well as startup/resume/clear, so the",
+    "workflow is restored after a context compaction, not just at session start.",
+    "There is deliberately no PreCompact entry: that event accepts only",
+    "decision/reason, so it has no way to inject context. A reminder issued there",
+    "cannot reach the model. SessionStart with source=compact does the real work."
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR}\"/bin/beads-agent-hook.sh session-start --format=claude",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR}\"/bin/beads-agent-hook.sh stop --format=claude",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR}\"/bin/beads-agent-hook.sh prompt-submit --format=claude",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

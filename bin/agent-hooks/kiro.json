@@ -1,0 +1,45 @@
+{
+  "version": "v1",
+  "_comment": [
+    "Kiro hook wiring for TinkerPop's beads workflow. Copied to",
+    ".kiro/hooks/tinkerpop-beads.json by 'bin/agent-setup.sh --contributor kiro'.",
+    "All logic lives in bin/beads-agent-hook.sh -- these entries only name an",
+    "event and invoke it. Names are prefixed tinkerpop-beads- for re-install.",
+    "Kiro has no PreCompact trigger, but neither harness can inject context at",
+    "compaction time, so nothing is lost relative to Claude. Whether Kiro re-fires",
+    "SessionStart after compacting is untested; if it does not, the workflow is not",
+    "restored and the agent should be told to run 'bd prime' by hand."
+  ],
+  "hooks": [
+    {
+      "name": "tinkerpop-beads-session-start",
+      "trigger": "SessionStart",
+      "action": {
+        "type": "agent",
+        "prompt": "Run `bin/beads-agent-hook.sh session-start` and follow the workflow it prints. It is TinkerPop's beads workflow: how to bind to a root bead, when to capture decisions, and what never to run. If the command is unavailable, continue without it."
+      },
+      "timeout": 30,
+      "enabled": true
+    },
+    {
+      "name": "tinkerpop-beads-stop",
+      "trigger": "Stop",
+      "action": {
+        "type": "agent",
+        "prompt": "Run `bin/beads-agent-hook.sh stop`. If it prints nothing, say nothing and stop. If it prints a check, act on it before finishing."
+      },
+      "timeout": 15,
+      "enabled": true
+    },
+    {
+      "name": "tinkerpop-beads-prompt-submit",
+      "trigger": "UserPromptSubmit",
+      "action": {
+        "type": "agent",
+        "prompt": "If the operator just redirected you -- rejected an approach, said an alternative was already tried, or told you to do something a different way -- create a decision bead and its rejected-alternative sibling now, while the reasoning is exact. Otherwise ignore this and carry on."
+      },
+      "timeout": 15,
+      "enabled": true
+    }
+  ]
+}
