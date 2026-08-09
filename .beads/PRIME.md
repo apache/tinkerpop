@@ -244,10 +244,11 @@ bd label list-all                        # what is in use — includes drift; th
 ```
 
 **Label the root, and only the root.** A bead's dimensions are its root's dimensions: to read
-them, navigate to the root. Do not label children — `bd create --parent` copies the root's
-labels onto a child at birth, but a label added later never reaches one, so per-child labels
-are wrong as often as they are right. The structural labels below are the exception; they
-describe the bead itself and belong wherever they apply.
+them, navigate to the root. Do not label children — `bd create --parent` copies the *parent's*
+labels onto a child at birth and never again. Siblings born either side of a relabel disagree,
+and at depth each level snapshots the level above, so the copies drift further the deeper they
+sit. The structural labels below are the exception; they describe the bead itself and belong
+wherever they apply.
 
 ### Structural labels — part of the data model, never optional
 
