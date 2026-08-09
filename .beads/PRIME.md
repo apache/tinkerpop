@@ -65,9 +65,16 @@ bd create --type=decision --parent=<root> --title="Chose X" --design="why, and w
 # The sibling is the road not taken — an approach you tried and abandoned counts, and is stronger
 # evidence than a hypothetical, because someone already walked it.
 bd create --type=decision --parent=<root> --title="Y" --labels="rejected-alternative" \
-          --design="why Y was rejected"
+          --design="what Y concretely was, why it lost, what settled it"
 bd dep add <decision> <alternative> -t related    # never put either of these on a task bead
 ```
+
+**A rejected alternative's `--design` names three things: what the option concretely was, why it
+lost, and what settled it.** The verdict is already in the label, so the reason is the whole
+value — give it as a mechanism ("it leaves the shared database with a vocabulary no single
+PRIME.md describes"), never a judgment ("rejected as worse"). A mechanism can be checked again
+later: when the problem it names no longer applies, the option is worth reconsidering. A
+judgment cannot, so the option stays dead by default. The chosen decision needs a reason too.
 
 **Record what actually happened.** If you cannot point to the moment, do not write the bead.
 When you sense a decision you were not party to, create a bead labelled `human` posing the
