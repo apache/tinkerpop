@@ -243,8 +243,11 @@ bd label list <id>
 bd label list-all                        # what is in use — includes drift; this file is the authority
 ```
 
-**Set module and release labels once on the root** — children inherit them. Labels added to
-a root *after* its children exist do not backfill, so label the root first.
+**Label the root, and only the root.** A bead's dimensions are its root's dimensions: to read
+them, navigate to the root. Do not label children — `bd create --parent` copies the root's
+labels onto a child at birth, but a label added later never reaches one, so per-child labels
+are wrong as often as they are right. The structural labels below are the exception; they
+describe the bead itself and belong wherever they apply.
 
 ### Structural labels — part of the data model, never optional
 
