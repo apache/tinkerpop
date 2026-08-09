@@ -491,6 +491,10 @@ limitations under the License.
                          <exclude>**/.kiro/**</exclude>
                          <exclude>**/.junie/**</exclude>
                          <exclude>**/.runtime/**</exclude>
+                         <exclude>**/.agents/**</exclude>
+                        <!-- Beads planning data: PRIME.md and config.yaml are tracked, and a
+                             committer's local Dolt database sits alongside them untracked -->
+                        <exclude>.beads/**</exclude>
                         <exclude>.repository/**</exclude>
                         <exclude>**/target/**</exclude>
                         <exclude>data/*.txt</exclude>

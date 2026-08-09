@@ -80,9 +80,9 @@ Examples:
   `mvn verify -pl gremlin-driver,gremlin-server -DskipIntegrationTests=false`
 - Broad or core changes, or when unsure → `mvn clean install -DskipIntegrationTests=false`
 
-See the `tinker-dev` skill (and its `references/build-*.md`) for the full changeset-to-command
-mapping and per-GLV details. If you cannot run the validation (for example, Docker is
-unavailable), say so explicitly and report the change as **not validated**.
+See the **Definition of Done** section of the `tinker-dev` skill for the full
+changeset-to-command mapping and per-GLV details. If you cannot run the validation (for example,
+Docker is unavailable), say so explicitly and report the change as **not validated**.
 
 ## Essential Rules
 
