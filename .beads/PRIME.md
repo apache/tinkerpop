@@ -256,13 +256,16 @@ a root *after* its children exist do not backfill, so label the root first.
 
 ### Dimensions — descriptive; several may apply
 
-**Module** — a unit of code
+**Module** — a unit of code. The list spans every maintained branch, so it includes modules
+this branch does not have. Beads outlive branches, and one vocabulary keeps the database
+readable from all of them.
 
 ```
-gql-gremlin  gremlin-annotations  gremlin-console  gremlin-core  gremlin-dotnet
-gremlin-driver  gremlin-go  gremlin-groovy  gremlin-js  gremlin-language
-gremlin-python  gremlin-server  gremlin-shaded  gremlin-test  gremlin-tools
-gremlin-util  hadoop-gremlin  spark-gremlin  tinkergraph-gremlin  docs
+gql-gremlin  gremlin-annotations  gremlin-archetype  gremlin-console  gremlin-core
+gremlin-dotnet  gremlin-driver  gremlin-go  gremlin-groovy  gremlin-javascript
+gremlin-js  gremlin-language  gremlin-python  gremlin-server  gremlin-shaded
+gremlin-test  gremlin-tools  gremlin-util  hadoop-gremlin  neo4j-gremlin
+spark-gremlin  sparql-gremlin  tinkergraph-gremlin  docs
 gremlint  gremlator  gremlin-mcp
 ```
 
