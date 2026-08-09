@@ -49,17 +49,15 @@ if command -v java &>/dev/null; then
         1.*) java_version=$(echo "$java_version" | cut -d. -f2) ;;
         *)   java_version=$(echo "$java_version" | cut -d. -f1) ;;
     esac
-    if [[ "$java_version" -eq 11 ]]; then
-        ok "Java $java_version (preferred for 3.7-dev)"
-    elif [[ "$java_version" -eq 8 ]]; then
-        ok "Java $java_version (supported; Java 11 is preferred and required for bin/process-docs.sh)"
-    elif [[ "$java_version" -gt 11 ]]; then
-        skip "Java $java_version found — 3.7-dev targets Java 8 and builds best on 11 (use sdkman.io to switch)"
+    if [[ "$java_version" -eq 11 || "$java_version" -eq 17 ]]; then
+        ok "Java $java_version (11 is the minimum, 17 is supported)"
+    elif [[ "$java_version" -eq 21 || "$java_version" -eq 25 ]]; then
+        skip "Java $java_version is experimental since 3.8.2 and excludes spark-gremlin — use 11 or 17 to validate everything"
     else
-        bad "Java $java_version found — version 8 or 11 required (use sdkman.io to install)"
+        bad "Java $java_version found — version 11 or 17 required (use sdkman.io to install)"
     fi
 else
-    bad "Java not found — install Java 8 or 11 (use sdkman.io)"
+    bad "Java not found — install Java 11 or 17 (use sdkman.io)"
 fi
 
 # --- Maven ---
@@ -96,7 +94,7 @@ echo "Optional (GLV development):"
 # --- Python ---
 if command -v python3 &>/dev/null; then
     py_version=$(python3 --version 2>&1 | grep -oE '[0-9]+\.[0-9]+')
-    ok "Python $py_version (3.9-3.13 supported for gremlin-python local dev)"
+    ok "Python $py_version (3.10-3.13 supported for gremlin-python local dev)"
 else
     skip "Python 3 not found — Docker handles test execution, but local dev needs it"
 fi
@@ -104,7 +102,7 @@ fi
 # --- Node.js ---
 if command -v node &>/dev/null; then
     node_version=$(node --version 2>/dev/null | sed 's/v//')
-    ok "Node.js $node_version (20+ recommended for gremlin-javascript local dev)"
+    ok "Node.js $node_version (20+ recommended for gremlin-javascript, gremlint and gremlin-mcp local dev)"
 else
     skip "Node.js not found — Maven downloads a local copy automatically"
 fi

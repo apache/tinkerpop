@@ -5,9 +5,9 @@ description: >
   testing, or contributing to TinkerPop's graph computing framework and its
   multi-language Gremlin ecosystem (Java, Python, JavaScript, .NET, Go).
   Covers coding conventions, build recipes, test evaluation, documentation,
-  and development environment setup.
+  development environment setup, and Gremlin MCP server usage.
 license: Apache-2.0
-compatibility: Requires Java 8 or 11 (build with 11, cross-compiled to 8), Maven 3.5.3+, Docker. Individual GLVs may need Python, Node.js, .NET SDK, or Go.
+compatibility: Requires Java 11 (17 supported; 21 and 25 experimental since 3.8.2), Maven 3.5.3+, Docker. Individual GLVs may need Python, Node.js, .NET SDK, or Go.
 metadata:
   version: 1.0.0
   project: Apache TinkerPop
@@ -58,6 +58,7 @@ always list every module you touched.
 | .NET GLV | `mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-source,:gremlin-dotnet-tests` |
 | Go GLV | `mvn verify -pl :gremlin-go` |
 | `gremlint` | `mvn verify -pl :gremlint` |
+| `gremlin-mcp` | `mvn verify -pl :gremlin-mcp` |
 | Other single JVM module (e.g. `tinkergraph-gremlin`, `gremlin-console`, `neo4j-gremlin`, `sparql-gremlin`, `gremlin-archetype`) | `mvn verify -pl <module> -DskipIntegrationTests=false` |
 
 **Shared modules** — depended on by others, so changing them means validating the consumers too.
@@ -101,8 +102,10 @@ Most module names map directly to their purpose (`gremlin-core`, `gremlin-server
 `gremlin-go`, etc.). Two things that aren't obvious:
 
 - **Every module is top-level**, including the JavaScript ones: `gremlin-javascript/` (the
-  `gremlin` npm driver) and `gremlint/` sit directly under the repository root. Later branches
-  group them under a `gremlin-js/` workspace, so a path from `master` will not resolve here.
+  `gremlin` npm driver), `gremlint/` and `gremlin-mcp/` sit directly under the repository root,
+  each holding its npm project under `src/main/javascript/`. `master` groups them into a
+  `gremlin-js/` workspace with the npm project at the module root, so a path from `master` will
+  not resolve here.
 - **Maven orchestrates the build for every module, including the non-JVM ones** (Python,
   JavaScript, .NET, Go) — which is why the validation in the Definition of Done runs through
   Maven rather than each language's native test runner.
@@ -133,9 +136,9 @@ The general Do/Don't rules and "when in doubt" guidance live in the root `AGENTS
 single source of truth, not repeated here. The conventions below are the TinkerPop-specific
 ones that are easy to miss:
 
-- **This is a maintenance branch.** `3.7-dev` takes non-breaking bug fixes and enhancements
-  only. Within the 3.7.x line a change must not alter existing behavior, introduce new APIs,
-  change serialization formats, or modify protocols — a client of one 3.7.x version must still
+- **This is a maintenance branch.** `3.8-dev` takes non-breaking bug fixes and enhancements
+  only. Within the 3.8.x line a change must not alter existing behavior, introduce new APIs,
+  change serialization formats, or modify protocols — a client of one 3.8.x version must still
   interact correctly with a server of another. Anything that fails that test belongs on a later
   branch. See `docs/src/dev/developer/for-committers.asciidoc`.
 - **License header**: every new file needs the ASF header. Canonical text: `bin/asf-license-header.txt`.
@@ -162,3 +165,4 @@ Build and validate commands live in the **Definition of Done** table above. For 
 task-specific guidance, see:
 
 - [Development Environment Setup](references/dev-environment-setup.md) — fresh clone to working environment, prerequisites, GLV activation
+- [Gremlin MCP Server](references/gremlin-mcp.md) — schema discovery, querying and formatting via MCP

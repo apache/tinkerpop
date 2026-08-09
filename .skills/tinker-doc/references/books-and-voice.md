@@ -10,9 +10,11 @@ The guidance below is what is specific to each book.
 
 ## Upgrade Documentation
 
-`docs/src/upgrade/` — one file per minor line (`release-3.7.x.asciidoc`, etc.),
-newest release section at the top, split into "Upgrading for Users" and, where
-relevant, provider-facing notes.
+`docs/src/upgrade/` — closed release lines get one file (`release-3.7.x.asciidoc`),
+while the line under development gets one file per release (`release-3.8.2.asciidoc`).
+Newest release section at the top, split into "Upgrading for Users" and, where
+relevant, provider-facing notes. Check what is already in the directory rather than
+assuming either shape.
 
 Upgrade documentation **announces** a release. It is the place where a feature is
 introduced to the world. This shapes everything about how it reads.

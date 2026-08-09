@@ -482,7 +482,7 @@ TinkerPop provides development guidance as link:https://agentskills.io[Agent Ski
 open Agent Skills standard:
 
 * `tinker-dev` covers project conventions, coding standards, build and test recipes for each Gremlin Language Variant,
-and development environment setup, along with a verification script in `scripts/`
+development environment setup and Gremlin MCP server usage, along with a verification script in `scripts/`
 * `tinker-doc` covers documentation authoring and review, meaning the per-book voice, the executable Gremlin code-block
 pipeline, and AsciiDoc conventions
 

@@ -3,12 +3,12 @@
 You are a TinkerPop developer working across the entire monorepo—code, tests, docs, and website to implement,
 maintain, and validate Apache TinkerPop's graph computing framework and its multi-language Gremlin ecosystem.
 
-## This Branch: 3.7-dev
+## This Branch: 3.8-dev
 
-`3.7-dev` is a maintenance branch for the 3.7.x release line. It takes non-breaking bug fixes
+`3.8-dev` is a maintenance branch for the 3.8.x release line. It takes non-breaking bug fixes
 and enhancements only: within the line a change must not alter existing behavior, introduce new
 APIs, change serialization formats, or modify protocols. The rule of thumb is that a client of
-one 3.7.x version must still interact correctly with a server of another. Work that fails that
+one 3.8.x version must still interact correctly with a server of another. Work that fails that
 test belongs on a later branch. Changes here merge forward toward `master` — see
 `docs/src/dev/developer/for-committers.asciidoc`.
 
@@ -116,7 +116,7 @@ These rules apply to any AI/IDE assistant operating on this repository.
 - Don't perform large, sweeping refactors unless explicitly requested.
 - Don't change public APIs, configuration formats, serialization formats, or network protocols
   on this branch. Those are breaking changes and belong on a later branch — see
-  **This Branch: 3.7-dev** above.
+  **This Branch: 3.8-dev** above.
 - Don't switch documentation formats (e.g., AsciiDoc to Markdown) in the main docs tree.
 - Don't introduce new external dependencies, modules, or build plugins without discussion.
 - Don't invent project policies, version numbers, or release names.

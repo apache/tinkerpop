@@ -7,10 +7,11 @@ The canonical reference is `docs/src/dev/developer/development-environment.ascii
 
 ### Minimum (Java-only build)
 
-- **Java 8 or 11** — OpenJDK recommended, with Java 11 preferred: the build cross-compiles to
-  Java 8 bytecode. Use [SDKMAN!](https://sdkman.io/) to manage versions. Java 17 also compiles,
-  but deep reflection needs the `--add-opens` JVM options already configured in the pom files.
-  Use Java 11 for documentation generation with `bin/process-docs.sh`.
+- **Java 11** — the minimum, and what the build targets. Java 17 also works. Since 3.8.2 there
+  is experimental support for Java 21 and 25 across every module except `spark-gremlin`, whose
+  Spark version only runs on Java 8 through 17. Deep reflection needs the `--add-opens` JVM
+  options already configured in the pom files. Use [SDKMAN!](https://sdkman.io/) to manage
+  versions.
 - **Maven 3.5.3+** — also manageable via SDKMAN.
 
 With just Java and Maven you can build JVM modules and get a clean `mvn clean install`, but
@@ -21,10 +22,13 @@ GLV builds and many integration tests will be skipped.
 - **Docker and Docker Compose** — required for all GLV test execution. Docker Desktop includes
   both. GLV tests run inside Docker containers, so local language runtimes are optional for
   test execution via Maven.
-- **Python 3.9–3.13** — optional for local development; Docker handles test execution.
+- **Python 3.10–3.13** — optional for local development; Docker handles test execution.
 - **Node.js 20+ / npm 10+** — optional; Maven downloads a local copy via `frontend-maven-plugin`
-  (`node.version` and `npm.version` in the root `pom.xml` pin the exact versions used by the
-  build). Consider [nvm](https://github.com/nvm-sh/nvm) for version management.
+  for `gremlin-javascript`, `gremlint` and `gremlin-mcp` (the `runtime.node.version` property in
+  the root `pom.xml` pins the exact version used by the build). The `docs/gremlint` web app is
+  the exception: it needs Node and npm installed locally, and `bin/generate-home.sh` and
+  `bin/publish-home.sh` build it. Consider [nvm](https://github.com/nvm-sh/nvm) for version
+  management.
 - **.NET SDK 6.0+** — optional; Docker handles test execution. `Gremlin.Net` targets
   `netstandard2.0` and `net6.0`.
 - **Go 1.25+** — optional; Docker handles test execution.
