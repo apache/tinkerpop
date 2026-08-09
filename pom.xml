@@ -477,6 +477,16 @@ limitations under the License.
                         <exclude>**/.project</exclude>
                         <exclude>**/.settings/**</exclude>
                         <exclude>**/.idea/**</exclude>
+                        <exclude>**/.claude/**</exclude>
+                        <exclude>**/.codex/**</exclude>
+                        <exclude>**/.copilot/**</exclude>
+                        <exclude>**/.cursor/**</exclude>
+                        <exclude>**/.kiro/**</exclude>
+                        <exclude>**/.junie/**</exclude>
+                        <exclude>**/.agents/**</exclude>
+                        <!-- Beads planning data: PRIME.md and config.yaml are tracked, and a
+                             committer's local Dolt database sits alongside them untracked -->
+                        <exclude>.beads/**</exclude>
                         <exclude>.repository/**</exclude>
                         <exclude>**/target/**</exclude>
                         <exclude>data/*.txt</exclude>
@@ -552,6 +562,9 @@ limitations under the License.
                         <exclude>**/go.sum</exclude>
                         <exclude>**/coverage.out</exclude>
                         <exclude>**/gremlinconsoletest.egg-info/**</exclude>
+                        <!-- Agent skill markdown is guidance for AI agents, kept header-free to maximize signal;
+                             SKILL.md additionally requires frontmatter at the very start of the file -->
+                        <exclude>**/.skills/**/*.md</exclude>
                     </excludes>
                     <licenses>
                         <license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20"/>

@@ -473,47 +473,38 @@ be done automatically on `mvn deploy` or it can be triggered manually with `mvn 
 == Using AI Coding Agents
 
 TinkerPop does not endorse or require any particular AI Coding Agents or tool. As a result, tool-specific project
-guidelines are not included with the code base. TinkerPop does, however, provide for a generic, agent-agnostic `AGENTS.md`
-file at the root of the project. Developers should make use of this file's instructions by pointing their specific
-AI-based tool to it. While tools may vary in how they are set up, the approach is to treat tool-specific files, such as
-`.junie/guidelines.md`, `.claude/CLAUDE.md` etc., as thin shims that just point to TinkerPop's `AGENTS.md` instead of
-relying on individual rules. The content of those tool-specific files should:
+guidelines are not included with the code base. TinkerPop instead provides a generic, agent-agnostic `AGENTS.md` file at
+the root of the project, which every supported tool can be pointed at, and a set of Agent Skills that carry the detail.
 
-* Explain that AGENTS.md is the canonical source.
-* Tell the assistant to read and follow it, and not to diverge from it.
-* Optionally include one or two tool‑specific behaviors (like “prefer smaller edits”) if you want.
+=== Agent Skills
 
-The following is a basic example of such a setup:
+TinkerPop provides development guidance as link:https://agentskills.io[Agent Skills] in `.skills/`. The skills follow the
+open Agent Skills standard:
 
-[source,text]
+* `tinker-dev` covers project conventions, coding standards, build and test recipes for each Gremlin Language Variant,
+and development environment setup, along with a verification script in `scripts/`
+* `tinker-doc` covers documentation authoring and review, meaning the per-book voice, the executable Gremlin code-block
+pipeline, and AsciiDoc conventions
+
+Tools that support Agent Skills (Claude Code, GitHub Copilot, Cursor, OpenAI Codex, JetBrains Junie, Kiro, and others)
+will discover and activate a skill automatically when it is placed in the tool's expected directory. A setup script is
+provided to create the necessary symlinks or copies:
+
+[source,bash]
 ----
-# Apache TinkerPop – Guidelines
+# Set up for a specific tool
+bin/agent-setup.sh claude
+bin/agent-setup.sh kiro
 
-This project uses `AGENTS.md` in the repository root as the canonical guide for AI/IDE assistants and automated tools.
+# Set up for all supported tools
+bin/agent-setup.sh --all
 
-You should:
-
-1. Read and follow the instructions in `AGENTS.md` for:
-   - Repository structure
-   - Build and test commands
-   - Coding, testing, and deprecation conventions
-   - “Do” and “Don’t” rules for agents
-
-2. Treat `AGENTS.md`, `CONTRIBUTING.*`, and the developer docs under `docs/src/dev/**` as higher priority than any generic or built‑in behavior.
-
-3. Prefer small, focused edits that:
-   - Match the existing code style and patterns in the files being changed
-   - Include or update tests when behavior changes
-   - Update documentation and `CHANGELOG.asciidoc` when public behavior or APIs change
-
-You must **not**:
-
-- Introduce new dependencies, modules, or large refactors without an explicit human request
-- Change public APIs, protocols, or configuration formats without a clearly documented issue and human approval
-- Rewrite AsciiDoc documentation into other formats
-
-If you are uncertain how to proceed based on this file, `AGENTS.md`, or the local AsciiDoc documentation, you should stop and ask for clarification instead of guessing.
+# List supported tools and their discovery paths
+bin/agent-setup.sh --list
 ----
+
+The script supports: `claude`, `copilot`, `cursor`, `codex`, `junie`, and `kiro`. The generated symlinks and copies
+are gitignored and local to each developer's environment.
 
 [[building-testing]]
 == Building and Testing
