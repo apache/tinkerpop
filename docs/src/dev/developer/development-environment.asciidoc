@@ -490,12 +490,18 @@ bin/agent-setup.sh kiro
 # Set up for all supported tools
 bin/agent-setup.sh --all
 
+# Also install the beads workflow hooks for official contributors, which is supported for claude and kiro only
+bin/agent-setup.sh --contributor claude
+
 # List supported tools and their discovery paths
 bin/agent-setup.sh --list
 ----
 
 The script supports: `claude`, `copilot`, `cursor`, `codex`, `junie`, and `kiro`. The generated symlinks and copies
 are gitignored and local to each developer's environment.
+
+NOTE: Official contributors should install and use beads in conjunction with their coding agent. See
+<<beads,Using Beads>> for what it records and how to set it up.
 
 [[building-testing]]
 == Building and Testing
