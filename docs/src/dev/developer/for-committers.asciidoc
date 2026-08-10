@@ -126,7 +126,15 @@ later will think to search.
 
 An existing root is the right answer when the work continues something already under way, and a
 new root is the right answer when it does not. A small fix is often its own root (i.e. a single
-bead) rather than a child of something larger. 
+bead) rather than a child of something larger.
+
+Most work is anchored by something outside the repository, such as a JIRA issue, a pull request,
+a proposal, or a thread on the dev mailing list. That reference belongs on the root as a record
+bead, and supplying it falls to the committer, because an agent has no way to know which ticket
+or thread a piece of work belongs to. The link carries weight because records are the only
+connection between a bead and the code, given that commit messages hold no bead identifiers.
+It is not mandatory. A small fix that never had a ticket needs no record, and
+`bin/beads-report.py` accordingly reports a root without one as a question rather than a defect.
 
 [[beads-decisions]]
 === What Beads Records
