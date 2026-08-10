@@ -135,6 +135,17 @@ during this period.
 ... All tickets not marked "Fixed", "Done", or "Implemented" for their Resolution should not have a Fix Version
 assigned (use common sense when reviewing these tickets before removing the Fix Version as it is possible the incorrect
 Resolution may have been assigned).
+.. Review the beads expected to land in this version, as described in <<beads,Using Beads>>, and ensure that:
+... Every bead belonging to work that has merged is `pinned`. Pinning is what makes a bead permanent, so a
+subgraph left closed but unpinned is work whose record was never completed.
+... The release label on each bead matches the version under release. The label value must be quoted and
+closed beads must be included, as in `bd query 'labels="xx.yy.zz"' --all`, because an unquoted version
+number fails to parse and closed beads are hidden by default.
+... Each root carries a record bead for its JIRA issue, pull request, proposal or dev mailing list thread.
+A small fix that never had one of these is a legitimate exception.
+... `bin/beads-report.py` reports nothing unexpected. Run it per root with `--root` to scope it to a single
+subgraph. Its structural findings, such as a dangling edge, are defects, while the remainder are questions
+rather than verdicts and a one-line fix will legitimately trip several of them.
 . When all documentation changes are in place, use `bin/publish-docs.sh` to deploy a final `SNAPSHOT` representation
 of the docs and thus validate that there are no issues with the documentation generation process. Request review
 of the published documentation on the dev mailing list.
@@ -343,6 +354,29 @@ the help of a PMC member for those steps.
 .. Update version numbers in `gremlin-examples/gremlin-dotnet/*/\*.csproj` to reference the new release version
 .. Update version numbers in `gremlin-examples/gremlin-go/go.mod` to reference the new release version
 .. Test that all root-level examples work correctly with the new published versions
+. Perform beads administration tasks, as described in <<beads,Using Beads>>:
+.. `bd dolt pull` to take in anything other committers have pushed.
+.. Confirm that every subgraph belonging to the release is `pinned`. The pre-flight check should already
+have established this, so anything still closed and unpinned at this point is work whose record was
+never finished.
+.. `bd gc --skip-decay --dry-run` to preview, then `bd gc --skip-decay --force` to reclaim storage. This
+discards only chunks that nothing in the database can still reach. Beads, their field content and the
+full Dolt commit history all survive, and `--skip-decay` is what holds back the single phase that would
+delete beads. Expect the first run to recover a large fraction of the database and later runs
+progressively less.
+.. Note that the output of the previous step announces a phase named "Compact", which reports how many
+commits are in history and squashes nothing. Squashing requires `bd compact` or `bd flatten` run
+deliberately, and neither belongs to routine administration. There is no flag that suppresses the
+reporting phase, as `--skip-dolt` suppresses only the reclamation that follows it.
+.. `bd dolt push` to publish the result.
++
+NOTE: `bd gc --skip-decay` is the only beads maintenance command that is run as routine administration.
+`bd prune` and `bd purge` delete beads, `bd flatten` and `bd compact` discard commit history, and a bare
+`bd gc` deletes every closed bead past its ninety day threshold. None of them recover storage that
+`bd gc --skip-decay` does not, because deleting a bead writes a further commit rather than removing the
+earlier ones. A bead left closed but unpinned is also far more likely to be a record nobody finished
+pinning than one that deserves deletion. Should beads ever warrant removal, that follows the same path
+as removing dead branches, which is a generated list posted for review on the dev mailing list.
 . Generate a list of dead branches that will be automatically deleted and post them as a DISCUSS thread for review, then once consensus is reached removed those branches.
 . Set up the IO tests for the current `SNAPSHOT` as discussed in the <<io,IO Documentation and Testing Section>>
 
