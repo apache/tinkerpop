@@ -6,8 +6,8 @@ every bead as something a contributor will read in three years.
 
 ## Workflow
 
-An index. Each line names a section; **the section is the rule, and the section holds the
-exceptions.** Do not act on a line here without reading it.
+An index. **The section is the rule and holds the exceptions** — do not act on a line here
+without reading it.
 
 0. **Think in graph; capture every road not taken — throughout, not a step** — section 0
 1. **Bind to a root bead before you write code** — section 1
@@ -21,8 +21,6 @@ exceptions.** Do not act on a line here without reading it.
 ---
 
 ## 0. Core rules
-
-These hold throughout — while planning with the operator and while executing.
 
 **Think in graph.** Work, decisions, external artifacts and the relations between them are
 nodes and edges. The plan lives in beads and nowhere else: not `TodoWrite`, not `TaskCreate`,
@@ -48,32 +46,27 @@ when the code does.
 | A specific course was considered and **not taken** — a design, a scope item, a validation step, a target branch, a task you wrote and threw away | Decision bead **plus** its `rejected-alternative` sibling, now |
 | Something is simply true, with no fork in it — evidence, a measurement, a discovery, a constraint | `bd comment <root> "..."` |
 
-**The rejected thing does not have to be a design.** "The operator declined X" is a road not
-taken. So is "we were going to target master, we targeted 3.7-dev instead." If you can name
-what was *not* done, it is a decision — write both beads.
-
-**Self-check before writing any comment: name what was *not* done.** If you can name it — a
-course declined, a branch not targeted, an approach dropped — it is a decision bead, not a
-comment. Wording like "the operator declined" or "X rather than Y" is the tell, but check
-what it refers to: a choice about *the work* is a decision, while "the test frames HashMap
-instead of OptionsStrategy" is just describing code and stays a comment.
+**The rejected thing does not have to be a design.** Before writing any comment, try to name
+what was *not* done — a course declined, a branch not targeted, an approach dropped. If you
+can, it is a decision, so write both beads. "The operator declined X" and "we were going to
+target master, we targeted 3.7-dev instead" both qualify. Check what the phrasing refers to,
+though: a choice about *the work* is a decision, while "the test frames HashMap instead of
+OptionsStrategy" describes code and stays a comment.
 
 ```bash
 # Only when something was actually ruled out. No fork = implementation; the code documents that.
 bd create --type=decision --parent=<root> --title="Chose X" --design="why, and what X rules out"
-# The sibling is the road not taken — an approach you tried and abandoned counts, and is stronger
-# evidence than a hypothetical, because someone already walked it.
+# An approach you tried and abandoned is the strongest sibling — someone already walked it.
 bd create --type=decision --parent=<root> --title="Y" --labels="rejected-alternative" \
           --design="what Y concretely was, why it lost, what settled it"
 bd dep add <decision> <alternative> -t related    # never put either of these on a task bead
 bd close <decision> <alternative>   # both: a decision is resolved the moment you write it
 ```
 
-**Close a decision as you create it.** It is a record of something already settled, not work
-waiting to happen, and a rejected alternative is a road already closed. Leaving it `open` puts
-it in `bd ready` — the queue then advertises reasoning as startable work — and stamps its
-`closed_at` with the merge date, which says the decision was made on a day it was not. It gets
-pinned with the rest of the subtree at merge (section 4).
+**Close a decision as you create it.** Left `open` it lands in `bd ready`, advertising
+reasoning as startable work, and its `closed_at` ends up stamped with the merge date — dating
+the decision to a day it was not made. It gets pinned with the rest of the subtree at merge
+(section 4).
 
 **A rejected alternative's `--design` names three things: what the option concretely was, why it
 lost, and what settled it.** The verdict is already in the label, so the reason is the whole
@@ -105,7 +98,7 @@ bd children <root>               # recursive — the whole subtree
 - **If no root is selected, you are starting something new — create the root before writing
   code.**
 - A small fix is a lone bead. It is its own root; don't hunt for a parent.
-- A human may decline binding to a bead, in which case ignore these rules.
+- The operator may decline binding to a bead, in which case ignore these rules.
 
 `bd query "parent=none"` does not work. Filter on the `parent` field client-side.
 Re-ask after a compaction rather than guessing.
@@ -141,8 +134,7 @@ database and hand you other people's work.
 - **Link a decision to the work it caused** — `bd dep add <task> <decision> -t caused-by`.
   Without it there is no path from a task back to the reasoning that shaped it.
 
-**Before proceeding to the next step, obtain human approval.** - Show the human a summary of
-the beads graph for review.
+**Show the operator a summary of the graph and get approval before executing it.**
 
 ---
 
@@ -158,9 +150,8 @@ bd update <id> --claim            # sets assignee to you, status to in_progress
 ```
 
 That window **is** the memory: a later session runs `bd list --status=in_progress` and learns
-what was underway, who had it, and where it stopped. A bead that jumps from `open` straight
-to `closed` records that the work happened but never that it was yours, never where you were
-when context ran out.
+what was underway, who had it, and where it stopped. A bead that jumps from `open` straight to
+`closed` loses all three.
 
 If you are editing files and nothing is `in_progress`, you have already lost that. Stop and
 claim the bead you are actually working on.
@@ -169,8 +160,6 @@ claim the bead you are actually working on.
 releases the tasks that were waiting on it, so a task left `in_progress` out of caution
 stalls everything downstream. The root is the exception: it represents the deliverable and
 closes at merge (section 4).
-
-Status is not paperwork. It is both the handoff and the gate.
 
 ---
 
@@ -191,9 +180,7 @@ which ones matter: the work shipped, so all of it is the project's history. Show
 operator the list first if they want a review gate.
 
 Pinning is what makes a bead permanent — every destructive operation keys on
-`status=closed`, and pinned beads are never eligible.
-
-Push freely as a checkpoint; pinning is what marks the durable record.
+`status=closed`, and pinned beads are never eligible. Push freely as a checkpoint.
 
 ---
 
@@ -226,7 +213,8 @@ root (feature/epic/task)
 `parent-child` gives membership, `blocks` gives order. A subtree with no `blocks` edges is
 a list, and `bd ready` cannot tell you anything useful about it.
 
-- `--parent` builds the tree. Labels inherit downward — see section 7.
+- `--parent` builds the tree, and copies the parent's labels onto the child once, at birth —
+  see section 7.
 - **`record` beads** hold external artifacts — JIRA, PR, dev@ thread, proposal. Kind is a
   **label** (`jira`, `pr`, `dev-list`, `proposal`); the URL or ticket goes in
   `--external-ref`. Attach them to the **root**, not to every bead. Create them pinned.
