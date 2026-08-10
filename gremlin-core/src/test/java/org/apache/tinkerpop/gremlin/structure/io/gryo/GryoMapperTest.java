@@ -199,6 +199,33 @@ public class GryoMapperTest {
         }
     }
 
+    /**
+     * Dropping the {@code JavaSerializer} registrations only holds while registration stays required. Without it a
+     * stream may name a class as a string instead of using a registered id, and Kryo resolves that class implicitly
+     * with its default serializer, which is a {@code JavaSerializer} for any type declaring one. The combination is
+     * therefore refused rather than producing a mapper that looks hardened and is not.
+     */
+    @Test
+    public void shouldRejectJavaSerializationDisabledWithoutRegistrationRequired() {
+        try {
+            builder.get().javaSerializationAllowed(false).registrationRequired(false).create();
+            fail("javaSerializationAllowed(false) with registrationRequired(false) must be refused");
+        } catch (IllegalStateException expected) {
+            assertEquals(GryoMapper.Builder.UNSAFE_COMBINATION_MESSAGE, expected.getMessage());
+        }
+    }
+
+    /**
+     * The guard above must not reject either flag on its own, since both remain legitimate: full fidelity without
+     * registration is how the OLAP pools run, and hardening with registration required is the IO default.
+     */
+    @Test
+    public void shouldAllowEitherRegistrationRequiredOrJavaSerializationSettingAlone() {
+        builder.get().registrationRequired(false).create();
+        builder.get().javaSerializationAllowed(false).create();
+        builder.get().javaSerializationAllowed(false).registrationRequired(true).create();
+    }
+
     @Test
     public void shouldSerializeWithoutRegistration() throws Exception {
         final GryoMapper mapper = builder.get().registrationRequired(false).create();
@@ -462,6 +489,31 @@ public class GryoMapperTest {
     }
 
     /**
+     * Positive control for {@link #shouldNotInvokeJavaDeserializationOnGryoReaderRead()}. Supplying a full fidelity
+     * mapper explicitly must let the same crafted stream reach {@code ObjectInputStream.readObject()} through
+     * {@link GryoReader}. Without this, that test could pass for the wrong reason. {@code readObject} is the one
+     * entry point that does not check the header, so were it ever to start doing so, the crafted bytes would be
+     * rejected on the first byte, the canary would never run, and the assertion there would hold while proving
+     * nothing.
+     */
+    @Test
+    public void shouldInvokeJavaDeserializationOnDefaultMapperGryoReaderRead() throws Exception {
+        final GryoReader reader = GryoReader.build().mapper(builder.get().create()).create();
+
+        DeserializationCanary.FIRED = false;
+        try (final InputStream stream = new ByteArrayInputStream(maliciousGryoBytes())) {
+            reader.readObject(stream, Object.class);
+        } catch (Exception ignored) {
+            // the payload deserializes to the canary rather than to an OptionsStrategy, so a failure is possible
+            // here, but it would come after readObject() has already run
+        }
+
+        assertTrue("the crafted stream must reach ObjectInputStream.readObject() through GryoReader, otherwise " +
+                        "shouldNotInvokeJavaDeserializationOnGryoReaderRead proves nothing",
+                DeserializationCanary.FIRED);
+    }
+
+    /**
      * Hardening the mapper must not cost anything on the graph structure that a Gryo document actually carries.
      */
     @Test
@@ -624,6 +676,25 @@ public class GryoMapperTest {
 
         final Kryo restored = io.create().mapper().create().createMapper();
         assertEquals(OPTIONS_STRATEGY_GRYO_ID, restored.getRegistration(OptionsStrategy.class).getId());
+    }
+
+    /**
+     * {@link GryoIo} applies its hardening before the {@code onMapper} consumer, so turning registration off there
+     * leaves the combination the mapper refuses. This is the likelier way to write it than the direct builder form,
+     * and it changes behaviour for anyone who did, so it is pinned separately.
+     */
+    @Test
+    public void shouldRejectRegistrationNotRequiredThroughGryoIoOnMapper() {
+        final Io.Builder<GryoIo> io = GryoIo.build(gryoVersion());
+        io.graph(EmptyGraph.instance());
+        io.onMapper(m -> ((GryoMapper.Builder) m).registrationRequired(false));
+
+        try {
+            io.create().mapper().create();
+            fail("registrationRequired(false) through onMapper must be refused, since GryoIo hardens the mapper");
+        } catch (IllegalStateException expected) {
+            assertEquals(GryoMapper.Builder.UNSAFE_COMBINATION_MESSAGE, expected.getMessage());
+        }
     }
 
     /**

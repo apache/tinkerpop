@@ -180,6 +180,17 @@ public final class GryoMapper implements Mapper<Kryo> {
          */
         private final AtomicInteger currentSerializationId = new AtomicInteger(65536);
 
+        /**
+         * The message {@link #create()} refuses the unsafe flag combination with. Package private so that a test can
+         * pin it without restating it.
+         */
+        static final String UNSAFE_COMBINATION_MESSAGE =
+                "javaSerializationAllowed(false) requires registrationRequired(true), as resolving a class named in "
+                + "the stream rather than registered by id reinstates a JavaSerializer for any type that declares "
+                + "one as its default. io(), GryoReader, GryoWriter and GryoIo set javaSerializationAllowed(false) "
+                + "for the caller, so pass javaSerializationAllowed(true) to opt back into full fidelity for "
+                + "trusted bytes";
+
         private boolean registrationRequired = true;
         private boolean referenceTracking = true;
         private boolean javaSerializationAllowed = true;
@@ -266,10 +277,12 @@ public final class GryoMapper implements Mapper<Kryo> {
          * When set to {@code true}, all classes serialized by the {@code Kryo} instances created from this
          * {@link GryoMapper} must have their classes known up front and registered appropriately through this
          * builder.  By default this value is {@code true}.  This approach is more efficient than setting the
-         * value to {@code false}.
+         * value to {@code false}. It must also stay {@code true} when
+         * {@link #javaSerializationAllowed(boolean)} is {@code false}, as {@link #create()} rejects that combination.
          *
          * @param registrationRequired set to {@code true} if the classes should be registered up front or
          *                             {@code false} otherwise
+         * @see #javaSerializationAllowed(boolean)
          */
         public Builder registrationRequired(final boolean registrationRequired) {
             this.registrationRequired = registrationRequired;
@@ -278,7 +291,12 @@ public final class GryoMapper implements Mapper<Kryo> {
 
         /**
          * When set to {@code false}, every registration whose serializer is Kryo's {@code JavaSerializer} is dropped,
-         * producing a mapper suited to reading bytes from an untrusted source. By default this value is {@code true}.
+         * closing the native Java deserialization sink those registrations carry. This builder defaults the value to
+         * {@code true}, while the paths that read graph documents set it to {@code false} for the caller, namely
+         * {@code io()}, {@link GryoReader}, {@link GryoWriter}, {@link GryoIo} and the Hadoop Gryo formats, so a
+         * builder obtained from one of those arrives hardened already. Dropping the registrations narrows what a Gryo
+         * document can do while decoding rather than making an untrusted document safe in general, as other
+         * registered types still resolve a class named in the stream.
          * <p/>
          * That serializer reads by way of {@code java.io.ObjectInputStream.readObject()}, which reconstructs and runs
          * an arbitrary {@code Serializable} object graph while decoding, before the graph layer can accept or reject
@@ -286,8 +304,13 @@ public final class GryoMapper implements Mapper<Kryo> {
          * not need; a stream that carries one now fails with an unregistered class id. Registrations contributed
          * through an {@link IoRegistry} or {@code addCustom(...)} are covered on the same terms, including those
          * whose serializer is a {@code Function} or a class default that resolves to a {@code JavaSerializer}. This
-         * relies on the default {@link #registrationRequired(boolean)} of {@code true}. Callers that need the full
-         * fidelity for trusted, in-process work should leave this value at {@code true}.
+         * requires {@link #registrationRequired(boolean)} to stay {@code true}, which {@link #create()} enforces.
+         * Without it a stream may name a class as a string rather than by registered id, and Kryo then resolves that
+         * class implicitly with its default serializer, which is a {@code JavaSerializer} for any type declaring one.
+         * Callers that need the full fidelity for trusted, in-process work should leave this value at {@code true}.
+         * <p/>
+         * A supplied mapper is used as given, so {@link GryoPool}, which builds its own and is what OLAP relies on,
+         * keeps these registrations and is deliberately out of scope.
          *
          * @param javaSerializationAllowed set to {@code false} to drop the {@code JavaSerializer} registrations or
          *                                 {@code true} to keep them
@@ -312,8 +335,15 @@ public final class GryoMapper implements Mapper<Kryo> {
 
         /**
          * Creates a {@code GryoMapper}.
+         *
+         * @throws IllegalStateException if {@link #javaSerializationAllowed(boolean)} is {@code false} while
+         *                               {@link #registrationRequired(boolean)} is {@code false}, a combination that
+         *                               would not hold the {@code JavaSerializer} registrations out
          */
         public GryoMapper create() {
+            if (!javaSerializationAllowed && !registrationRequired)
+                throw new IllegalStateException(UNSAFE_COMBINATION_MESSAGE);
+
             // consult the registry if provided and inject registry entries as custom classes.
             registries.forEach(registry -> {
                 final List<Pair<Class, Object>> serializers = registry.find(GryoIo.class);
