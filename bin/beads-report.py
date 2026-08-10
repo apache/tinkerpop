@@ -39,7 +39,7 @@ Checks divide into two kinds, and the distinction matters:
   OBJECTIVE   dangling edge targets; rationale on closed unpinned beads.
               Defects and facts. No judgment involved.
 
-  HEURISTIC   decision beads with no rejected-alternative neighbour; roots with
+  HEURISTIC   decisions with no rejected alternative recorded; roots with
               several tasks and no decisions. These cannot distinguish "no
               decisions were made" from "decisions were not captured", so they
               are questions for a human, never verdicts.
@@ -169,14 +169,17 @@ def main():
 
     # --- HEURISTIC ---------------------------------------------------------
 
+    # A rejected alternative's neighbour is the decision that beat it, which is not
+    # itself rejected -- so only the chosen side of a pair is worth checking here.
     lonely = [
         f"{b['id']:18} {b['title'][:50]}"
         for b in beads.values()
         if b.get("issue_type") == "decision"
-        and not any("rejected-alternative" in (beads[n].get("labels") or [])
+        and (b.get("metadata") or {}).get("rejected") is not True
+        and not any((beads[n].get("metadata") or {}).get("rejected") is True
                     for n in neighbours[b["id"]] if n in beads)
     ]
-    report("Decision beads with no rejected-alternative neighbour (suspect)", lonely)
+    report("Decisions with no rejected alternative recorded (suspect)", lonely)
 
     # `bd children --json` carries a `parent` field; `bd export` does not -- there
     # the hierarchy lives only in parent-child edges, which point child -> parent.

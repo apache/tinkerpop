@@ -52,10 +52,198 @@ listing provides a summary of what to do next:
 *** Wait for an email to arrive from "support_at_github.com", and click "Join @apache". Accept the invitation on github.com. Your new MFA status will not immediately be reflected on github, but you will get a confirmation email from noreply_at_github.com. Later, the status will read "MFA ENABLED"
 **** e.g. "[GitHub] @asf-gitbox has invited you to join the @apache organization"
 *** You can find yourself by searching in the link:https://github.com/orgs/apache/teams/apache-committers[Apache Committers listing]
+* Obtain access to DoltHub and the link:https://www.dolthub.com/repositories/tinkerpop/tinkerbeads[tinkerpop/tinkerbeads] repository. PMC members will help you get the correct permissions.
 * Read the link:https://www.apache.org/dev/new-committers-guide.html[Apache Committer Guide] and link:http://www.apache.org/dev/committers.html[Apache Committer FAQ]
 * Read through the other sections of this document - the Developer Documentation - for more details on project procedures and other administrative items.
 ** In particular, see <<rtc,Review then Commit>>
 * If you have trouble committing, email dev@tinkerpop.apache.org
+
+[[beads]]
+== Using Beads
+
+Git history and JIRA record what changed in the project. Neither records why, and the reasoning
+behind a change is often the part that is most needed when that change is revisited years later.
+TinkerPop uses link:https://beads.gascity.com/[beads], a command line tool named `bd`, to capture
+that reasoning while it is still exact. A bead can hold a decision that was taken, an alternative
+that was weighed and turned down, or a direction that was abandoned partway.
+
+Beads matters most for work done with an AI coding agent. Such an agent explores approaches,
+discards some of them, and is redirected by the contributor guiding it, but none of that survives
+the end of the session. Recording it as the work proceeds turns a transient conversation into a
+durable project artifact. Beads is only a tool for official contributors in some respects, as any
+beads created by third-parties will not have permissions to push to the remote repository holding
+them. 
+
+In case of third-party contribution, contributors can and should do code reviews with beads in 
+mind where the merge of that pull request is accompanied by beads that capture the decision making 
+around the change. Note that beads are not a replacement for standard ASF decision-making which 
+must grounded on the dev list. 
+
+[[beads-setup]]
+=== Setting Up Beads
+
+The `bd` tool, available from link:https://beads.gascity.com/[the beads project], must be installed
+before any of the commands below will work. Beads data lives in a Dolt database published at
+link:https://www.dolthub.com/repositories/tinkerpop/tinkerbeads[tinkerpop/tinkerbeads], and only
+`.beads/PRIME.md` and `.beads/config.yaml` are tracked in the repository. Running the following
+command from the repository root reads the remote recorded in `config.yaml` and clones that
+database into place:
+
+[source,text]
+----
+bd bootstrap
+----
+
+The same command repairs a damaged database and restores one after a move to a new machine. It
+never deletes existing beads, which makes it safe to run when the current state is unclear.
+
+An agent has to be told about the workflow before it can follow it. The `bin/agent-setup.sh`
+script installs the necessary hooks, which load the workflow at the start of every session and
+again after the agent's context is compacted:
+
+[source,text]
+----
+bin/agent-setup.sh --contributor claude
+----
+
+NOTE: Current beads support is for `claude` and `kiro` only. If you use another agent, beads 
+support will need to be added.
+
+Passing `--list` instead reports which agents are supported. The workflow itself is
+`.beads/PRIME.md`, which is tracked in Git and kept identical on every maintained branch. It
+describes how an agent binds to a root bead, plans work as a dependency graph, captures decisions
+as they occur, and pins the result once the work has merged.
+
+[[beads-root]]
+=== Choosing a Root Bead
+
+Every session works beneath a single root bead, which stands for the body of work in hand. An
+agent following the workflow asks which root to use before it writes any code, and answering that
+prompt is the most consequential moment in the exchange. Everything the session produces hangs
+from the answer, because tasks, decisions and records all attach to that root. A session bound to
+the wrong root scatters its reasoning into an unrelated body of work, where nobody looking for it
+later will think to search.
+
+An existing root is the right answer when the work continues something already under way, and a
+new root is the right answer when it does not. A small fix is often its own root (i.e. a single
+bead) rather than a child of something larger. 
+
+[[beads-decisions]]
+=== What Beads Records
+
+Most beads are ordinary tasks, but the ones that justify the setup are the decision beads. Each
+records a choice that had a real alternative, and the alternative is stored beside it as its own
+bead. The example below is the rejected half of one such pair, taken from the Gryo
+deserialization hardening work:
+
+[source,text]
+----
+○ tp-cxt · Public getMapper() on GryoReader and GryoWriter   [● P2 · OPEN]
+Owner: Stephen Mallette · Type: decision
+
+DESIGN
+
+  REJECTED. GryoReader and GryoWriter would retain the Mapper they are handed
+  and expose it via a public getMapper(), matching the existing
+  GryoPool.getMapper() precedent at GryoPool.java:64.
+
+  Why rejected: it is permanent public API, plus a new retained field on both
+  classes, added to satisfy one guard test. TinkerPop cannot withdraw it later
+  without a deprecation cycle, and it invites providers to reach into reader
+  internals. The package-private getKryo() gets the test the same access with
+  none of that surface.
+
+LABELS: gremlin-core, io
+
+METADATA
+  rejected: true
+----
+
+The `rejected: true` metadata is what separates the road not taken from the one that was
+followed, since both are stored as decisions. The value of the pair lies in the reason rather
+than in the verdict. An objection expressed as a concrete mechanism can be tested again later,
+and an alternative whose objection no longer holds is precisely the one worth reopening.
+
+[[beads-structure]]
+=== The Shape of a Plan
+
+Work is organised as a graph rather than as a checklist. One root bead stands for the
+deliverable, and everything belonging to that effort hangs beneath it:
+
+[source,text]
+----
+root (feature/epic/task)
+  ├─relates-to──▶ record             TINKERPOP-3456
+  ├─parent-child─▶ decision "chose X"          {rejected: false}
+  │                  └─related─▶ decision "Y"  {rejected: true}
+  ├─parent-child─▶ task A "implement X" ──caused-by──▶ decision "chose X"
+  ├─parent-child─▶ task B ──blocks──▶ task A     (B waits for A)
+  └─parent-child─▶ task C                        (no blocker: starts with A)
+----
+
+Four kinds of bead appear in that graph. A `task` is a unit of work. A `decision` is a choice
+and carries its reasoning. A `record` points at an external artifact such as a JIRA issue or a
+pull request, and is the only link between a bead and the code, because commit messages carry no
+bead identifiers. The root itself is usually a task or an epic.
+
+The edges carry as much meaning as the beads. A `parent-child` edge establishes membership in
+the effort, while a `blocks` edge establishes order, so a subtree without any `blocks` edges is
+merely a list. A `caused-by` edge is what connects a task back to the decision that shaped it,
+and without it there is no path from the work to the reasoning behind it.
+
+[[beads-lifecycle]]
+=== The Bead Lifecycle
+
+A bead is closed when its work is finished, in the same sense that a JIRA issue is resolved.
+Closing is not a formality. A task that blocks another releases it only by closing, so a finished
+task left open stalls whatever was waiting on it. Decision beads are closed as they are written,
+because a decision is settled at the moment it is made. The root is the exception and stays open
+until the work merges, since it stands for the deliverable rather than for any single step.
+
+The database can be pushed at any point with `bd dolt push`, and pushing often is encouraged for
+the same reason that pushing a topic branch often is encouraged. Nothing about a push is final.
+
+Pinning is the step that matters at merge. When a change merges to a release line, in the same
+motion that resolves its JIRA issue, the whole subgraph beneath the root is pinned:
+
+[source,text]
+----
+bd children <root>
+bd close <root>
+bd update <id1> <id2> ... -s pinned
+bd dolt pull && bd dolt push
+----
+
+Pinning is what makes a bead permanent. Destructive maintenance operations act on closed beads
+and skip pinned ones, so a subgraph left closed but unpinned remains eligible for routine
+cleanup. Pinning covers the entire subgraph rather than the beads that seem most interesting in
+hindsight. The work shipped, so all of it is project history.
+
+[[beads-curation]]
+=== Curating the Record
+
+The subgraph is worth reading end to end before it is pinned, because pinning is what makes it
+permanent. Beads written early may describe an approach that later changed, tasks may have been
+left open, and a decision may have been recorded without the reason that gives it value.
+
+A committer may delete, retag, retitle or otherwise correct any part of the subgraph, exactly as
+a JIRA issue is corrected before it is resolved. This is the project's record of its own
+reasoning, and being right matters more than preserving a first draft. The corresponding
+prohibition in `.beads/PRIME.md` binds the agent rather than the committer. An agent is told
+never to rewrite reasoning it finds, precisely so that judgment about what is correct stays with
+a person.
+
+[[beads-shared]]
+=== A Shared Database
+
+The Dolt database is shared by every committer using beads, so `bd dolt pull` brings in beads
+written by other contributors alongside any local work. Open and in-progress beads belonging to
+other people are therefore a normal sight, which is no different from browsing JIRA.
+
+The same courtesy applies. A bead that is already in progress belongs to whoever claimed it, and
+picking up that work unannounced invites duplicated effort or a conflict at merge. Anything
+ambiguous is worth raising on the dev mailing list, which remains where project decisions are
+made.
 
 == Communication
 
@@ -1059,80 +1247,3 @@ resources.  That file gets copied to the `target/test-classes` on build and sure
 are then configured to point at that area of the file system for those configuration files. The XML files
 can be edited to fine tune control of the log output, but generally speaking the current configuration is likely
 best for everyone's general purposes, so if changes are made please revert them prior to commit.
-
-[[beads]]
-== Using Beads
-
-link:https://github.com/steveyegge/beads[Beads] (`bd`) is an agent planning, execution, and
-long-term memory system that TinkerPop is trialing as part of its AI-assisted development
-workflow. *Use of beads is optional for committers at this time.* It is primarily intended for
-committers who work with AI coding agents such as link:https://www.anthropic.com/claude-code[Claude Code],
-link:https://kiro.dev/[Kiro], or link:https://junie.jetbrains.com/[Junie], and want a structured way to
-plan, track, and preserve the reasoning behind their work.
-
-=== Intent
-
-Traditional development workflows capture the final output — code, tests, documentation — but
-discard the thinking that produced it. Beads addresses this by structuring decisions as a
-persistent graph. Each bead represents a unit of work or an open design question, and the
-accumulated graph of beads becomes a traversable record of what was decided, why, and what
-alternatives were rejected. For AI agents, this means future sessions can access the path of
-decisions that led to the current state rather than re-deriving intent from the code alone.
-
-Beads are backed by a shared DoltHub database at
-link:https://www.dolthub.com/repositories/tinkerpop/tinkerbeads[tinkerpop/tinkerbeads], making
-the graph of decisions visible across contributors and sessions.
-
-=== Workflow
-
-Because beads usage is optional, the agent does not load beads context automatically. Once the
-`tinker-dev` skill is active, the committer opts in by telling the agent to use beads:
-
-----
-Use beads.
-----
-
-The agent will then read the beads workflow reference and use beads to structure the session:
-creating issues for planned work before writing any code, capturing design decisions and
-alternatives as the work evolves, and closing issues as commits are approved. Sessions where
-the committer does not give this instruction will proceed without beads involvement.
-
-From the committer's perspective this means:
-
-* *At session start* — invoke the `tinker-dev` skill, then say "Use beads" to opt in.
-  The agent will check for available work and propose a plan using beads.
-* *During work* — the agent creates and updates beads as it goes. The committer reviews and
-  guides this, the same way they review the code changes themselves.
-* *At commit time* — the agent will include the relevant bead ID(s) in the commit message.
-  The committer reviews and approves the commit message before it lands. The agent then closes
-  the associated bead(s).
-* *At merge time* — the operator pushes the accumulated bead state to DoltHub (see below).
-
-This workflow is deliberate: beads are closed locally as work commits, but the shared DoltHub
-database only reflects that state after a PR has merged. This keeps the canonical shared
-record aligned with accepted work rather than in-flight changes.
-
-=== Operator Responsibilities
-
-Operators (typically PMC members or active committers managing the shared database) are
-responsible for two actions that contributors do not perform:
-
-* *Pushing to DoltHub* — after a batch of PRs has merged, the operator runs
-  `bd dolt pull && bd dolt push` to publish the closed state of beads to the shared
-  `tinkerpop/tinkerbeads` database.
-
-* *JIRA linking* — when a JIRA ticket is associated with work tracked in beads, the operator
-  supplies the ticket identifier to the agent, which records it against the relevant bead.
-
-=== Setup
-
-Contributors wishing to use beads run the bootstrap script from the repository root:
-
-[source,bash]
-----
-bin/beads-bootstrap.sh
-----
-
-This requires `bd` and `dolt` to be installed and valid DoltHub credentials (`dolt login`).
-Full workflow guidance for AI agents is in `.claude/skills/tinker-dev/references/beads-workflow.md`.
-

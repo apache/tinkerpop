@@ -76,6 +76,11 @@ PRIME.md describes"), never a judgment ("rejected as worse"). A mechanism can be
 later: when the problem it names no longer applies, the option is worth reconsidering. A
 judgment cannot, so the option stays dead by default. The chosen decision needs a reason too.
 
+**Cite code as `file[sha]`** — `GryoPool.java[bece4a34c7]`, with enough path to be unambiguous
+(`pom.xml` is 36 different files). No line numbers, no symbol names: both drift, and the
+sentence around the citation already says what it points at. The sha has to be reachable from a
+published branch, because a local commit can be rebased away before it merges.
+
 **Record what actually happened.** If you cannot point to the moment, do not write the bead.
 When you sense a decision you were not party to, create a bead labelled `human` posing the
 question instead of inventing an answer — `bd human respond <id>` turns the reply into a
