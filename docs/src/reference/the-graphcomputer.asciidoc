@@ -590,7 +590,7 @@ Most OLAP jobs do not require the entire source graph to faithfully execute thei
 
 [source,java]
 ----
-graph.computer().
+graph.compute().
   vertices(hasLabel("person")).
   vertexProperties(__.properties("name")).
   edges(bothE("knows")).
