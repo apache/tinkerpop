@@ -103,6 +103,9 @@ bd children <root>               # recursive — the whole subtree
   notice a bead the work has since outgrown.
 - **If no root is selected, you are starting something new — create the root before writing
   code.**
+- **Ask for the external artifact whenever you create a root** — JIRA, PR, proposal, dev@
+  thread. Only the operator knows which one, and a record is the sole link from the work back
+  to the code (section 6). A small fix may genuinely have none, so take that answer and move on.
 - A small fix is a lone bead. It is its own root; don't hunt for a parent.
 - The operator may decline binding to a bead, in which case ignore these rules.
 
