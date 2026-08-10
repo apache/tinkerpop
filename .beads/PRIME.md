@@ -67,7 +67,14 @@ bd create --type=decision --parent=<root> --title="Chose X" --design="why, and w
 bd create --type=decision --parent=<root> --title="Y" --labels="rejected-alternative" \
           --design="what Y concretely was, why it lost, what settled it"
 bd dep add <decision> <alternative> -t related    # never put either of these on a task bead
+bd close <decision> <alternative>   # both: a decision is resolved the moment you write it
 ```
+
+**Close a decision as you create it.** It is a record of something already settled, not work
+waiting to happen, and a rejected alternative is a road already closed. Leaving it `open` puts
+it in `bd ready` — the queue then advertises reasoning as startable work — and stamps its
+`closed_at` with the merge date, which says the decision was made on a day it was not. It gets
+pinned with the rest of the subtree at merge (section 4).
 
 **A rejected alternative's `--design` names three things: what the option concretely was, why it
 lost, and what settled it.** The verdict is already in the label, so the reason is the whole
@@ -117,15 +124,13 @@ in parallel.
 ```bash
 bd dep add <task> <blocker>          # <task> waits for <blocker> — NOT "task blocks blocker"
 bd dep add --file - <<< '{"from":"tp-a","to":"tp-b"}'   # wire a whole plan at once
-bd ready --parent <root> --exclude-type=decision    # what can start now, in YOUR subtree
+bd ready --parent <root>             # what can start now, in YOUR subtree
 bd blocked --parent <root>           # what is waiting, and on what
 bd dep cycles                        # a plan with a cycle cannot execute
 ```
 
 **Always scope `bd ready` and `bd blocked` to your root.** Unscoped they span the whole
-database and hand you other people's work. Exclude decisions too: they are records rather
-than work, but they sit `open` until merge and otherwise fill the queue — under one root
-here, every "ready" bead was a decision and two were rejected alternatives.
+database and hand you other people's work.
 
 - **Wire the order in the same pass as `bd create`.**
 - **Re-planning is normal; record it.** `bd dep remove` deletes an edge with no trace in the
@@ -172,12 +177,12 @@ Status is not paperwork. It is both the handoff and the gate.
 
 ## 4. At merge — close the root, then pin
 
-Tasks closed as they finished (section 3). What is left at merge is the **root** — the
-deliverable — plus any decision beads, which are not work and never closed on their own.
+Tasks closed as they finished (section 3), decisions as they were written (section 0). The
+**root** is the only thing still open at merge — it is the deliverable.
 
 ```bash
 bd children <root>               # the whole subtree; nothing should still be in_progress
-bd close <root> <decision-ids>   # whatever the work itself did not close
+bd close <root>
 bd update <id1> <id2> ... -s pinned
 bd dolt pull && bd dolt push
 ```
@@ -297,10 +302,10 @@ release  build
 
 ```bash
 bd children <root>               # the subtree, recursive
-bd ready --parent <root> --exclude-type=decision   # startable now; ALWAYS scope to your root
+bd ready --parent <root>         # startable now; ALWAYS scope to your root
 bd blocked --parent <root>       # what is waiting, and on what
 bd show <id>                     # one bead with dependencies
-bd query "status=open AND type=decision"
+bd query "status=open AND type=decision"   # should be empty; an open decision was left unclosed
 bd comment <id> "..."            # a fact with no fork in it (never on a task bead)
 bd create --type=... --parent=<root> --design=... --labels=...
 bd dep add <task> <blocker>      # default type is blocks: <task> waits for <blocker>
