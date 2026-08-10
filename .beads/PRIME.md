@@ -2,13 +2,12 @@
 
 Beads is TinkerPop's planning system **and its long-term memory**. It records not just what
 changed, but why — decisions made, alternatives rejected, and directions abandoned. Treat
-every bead as something a contributor will read in three years. This file is what must 
-survive context compaction.
+every bead as something a contributor will read in three years.
 
 ## Workflow
 
-An index. Each line names a section; **the section is the rule, and the section holds the
-exceptions.** Do not act on a line here without reading it.
+An index. **The section is the rule and holds the exceptions** — do not act on a line here
+without reading it.
 
 0. **Think in graph; capture every road not taken — throughout, not a step** — section 0
 1. **Bind to a root bead before you write code** — section 1
@@ -22,8 +21,6 @@ exceptions.** Do not act on a line here without reading it.
 ---
 
 ## 0. Core rules
-
-These hold throughout — while planning with the operator and while executing.
 
 **Think in graph.** Work, decisions, external artifacts and the relations between them are
 nodes and edges. The plan lives in beads and nowhere else: not `TodoWrite`, not `TaskCreate`,
@@ -46,31 +43,34 @@ when the code does.
 
 | What happened | Do |
 |---|---|
-| A specific course was considered and **not taken** — a design, a scope item, a validation step, a target branch, a task you wrote and threw away | Decision bead **plus** its `rejected-alternative` sibling, now |
+| A specific course was considered and **not taken** — a design, a scope item, a validation step, a target branch, a task you wrote and threw away | Decision bead **plus** its rejected sibling, now |
 | Something is simply true, with no fork in it — evidence, a measurement, a discovery, a constraint | `bd comment <root> "..."` |
 
-**The rejected thing does not have to be a design.** "The operator declined X" is a road not
-taken. So is "we were going to target master, we targeted 3.7-dev instead." If you can name
-what was *not* done, it is a decision — write both beads.
-
-**Self-check before writing any comment: name what was *not* done.** If you can name it — a
-course declined, a branch not targeted, an approach dropped — it is a decision bead, not a
-comment. Wording like "the operator declined" or "X rather than Y" is the tell, but check
-what it refers to: a choice about *the work* is a decision, while "the test frames HashMap
-instead of OptionsStrategy" is just describing code and stays a comment.
+**The rejected thing does not have to be a design.** Before writing any comment, try to name
+what was *not* done — a course declined, a branch not targeted, an approach dropped. If you
+can, it is a decision, so write both beads. "The operator declined X" and "we were going to
+target master, we targeted 3.7-dev instead" both qualify. Check what the phrasing refers to,
+though: a choice about *the work* is a decision, while "the test frames HashMap instead of
+OptionsStrategy" describes code and stays a comment.
 
 ```bash
 # Only when something was actually ruled out. No fork = implementation; the code documents that.
-bd create --type=decision --parent=<root> --title="Chose X" --design="why, and what X rules out"
-# The sibling is the road not taken — an approach you tried and abandoned counts, and is stronger
-# evidence than a hypothetical, because someone already walked it.
-bd create --type=decision --parent=<root> --title="Y" --labels="rejected-alternative" \
+bd create --type=decision --parent=<root> --title="Chose X" --metadata '{"rejected":false}' \
+          --design="why, and what X rules out"
+# An approach you tried and abandoned is the strongest sibling — someone already walked it.
+bd create --type=decision --parent=<root> --title="Y" --metadata '{"rejected":true}' \
           --design="what Y concretely was, why it lost, what settled it"
 bd dep add <decision> <alternative> -t related    # never put either of these on a task bead
+bd close <decision> <alternative>   # both: a decision is resolved the moment you write it
 ```
 
+**Close a decision as you create it.** Left `open` it lands in `bd ready`, advertising
+reasoning as startable work, and its `closed_at` ends up stamped with the merge date — dating
+the decision to a day it was not made. It gets pinned with the rest of the subtree at merge
+(section 4).
+
 **A rejected alternative's `--design` names three things: what the option concretely was, why it
-lost, and what settled it.** The verdict is already in the label, so the reason is the whole
+lost, and what settled it.** The verdict is already in `rejected`, so the reason is the whole
 value — give it as a mechanism ("it leaves the shared database with a vocabulary no single
 PRIME.md describes"), never a judgment ("rejected as worse"). A mechanism can be checked again
 later: when the problem it names no longer applies, the option is worth reconsidering. A
@@ -99,7 +99,7 @@ bd children <root>               # recursive — the whole subtree
 - **If no root is selected, you are starting something new — create the root before writing
   code.**
 - A small fix is a lone bead. It is its own root; don't hunt for a parent.
-- A human may decline binding to a bead, in which case ignore these rules.
+- The operator may decline binding to a bead, in which case ignore these rules.
 
 `bd query "parent=none"` does not work. Filter on the `parent` field client-side.
 Re-ask after a compaction rather than guessing.
@@ -117,15 +117,13 @@ in parallel.
 ```bash
 bd dep add <task> <blocker>          # <task> waits for <blocker> — NOT "task blocks blocker"
 bd dep add --file - <<< '{"from":"tp-a","to":"tp-b"}'   # wire a whole plan at once
-bd ready --parent <root> --exclude-type=decision    # what can start now, in YOUR subtree
+bd ready --parent <root>             # what can start now, in YOUR subtree
 bd blocked --parent <root>           # what is waiting, and on what
 bd dep cycles                        # a plan with a cycle cannot execute
 ```
 
 **Always scope `bd ready` and `bd blocked` to your root.** Unscoped they span the whole
-database and hand you other people's work. Exclude decisions too: they are records rather
-than work, but they sit `open` until merge and otherwise fill the queue — under one root
-here, every "ready" bead was a decision and two were rejected alternatives.
+database and hand you other people's work.
 
 - **Wire the order in the same pass as `bd create`.**
 - **Re-planning is normal; record it.** `bd dep remove` deletes an edge with no trace in the
@@ -137,8 +135,7 @@ here, every "ready" bead was a decision and two were rejected alternatives.
 - **Link a decision to the work it caused** — `bd dep add <task> <decision> -t caused-by`.
   Without it there is no path from a task back to the reasoning that shaped it.
 
-**Before proceeding to the next step, obtain human approval.** - Show the human a summary of
-the beads graph for review.
+**Show the operator a summary of the graph and get approval before executing it.**
 
 ---
 
@@ -154,9 +151,8 @@ bd update <id> --claim            # sets assignee to you, status to in_progress
 ```
 
 That window **is** the memory: a later session runs `bd list --status=in_progress` and learns
-what was underway, who had it, and where it stopped. A bead that jumps from `open` straight
-to `closed` records that the work happened but never that it was yours, never where you were
-when context ran out.
+what was underway, who had it, and where it stopped. A bead that jumps from `open` straight to
+`closed` loses all three.
 
 If you are editing files and nothing is `in_progress`, you have already lost that. Stop and
 claim the bead you are actually working on.
@@ -166,18 +162,16 @@ releases the tasks that were waiting on it, so a task left `in_progress` out of 
 stalls everything downstream. The root is the exception: it represents the deliverable and
 closes at merge (section 4).
 
-Status is not paperwork. It is both the handoff and the gate.
-
 ---
 
 ## 4. At merge — close the root, then pin
 
-Tasks closed as they finished (section 3). What is left at merge is the **root** — the
-deliverable — plus any decision beads, which are not work and never closed on their own.
+Tasks closed as they finished (section 3), decisions as they were written (section 0). The
+**root** is the only thing still open at merge — it is the deliverable.
 
 ```bash
 bd children <root>               # the whole subtree; nothing should still be in_progress
-bd close <root> <decision-ids>   # whatever the work itself did not close
+bd close <root>
 bd update <id1> <id2> ... -s pinned
 bd dolt pull && bd dolt push
 ```
@@ -187,9 +181,7 @@ which ones matter: the work shipped, so all of it is the project's history. Show
 operator the list first if they want a review gate.
 
 Pinning is what makes a bead permanent — every destructive operation keys on
-`status=closed`, and pinned beads are never eligible.
-
-Push freely as a checkpoint; pinning is what marks the durable record.
+`status=closed`, and pinned beads are never eligible. Push freely as a checkpoint.
 
 ---
 
@@ -210,10 +202,10 @@ Push freely as a checkpoint; pinning is what marks the durable record.
 
 ```
 root (feature/epic/task)
-  ├─relates-to──▶ record [jira]      TINKERPOP-3456
-  ├─relates-to──▶ record [pr]        apache/tinkerpop#2891
-  ├─parent-child─▶ decision  "chose X"
-  │                  └─related─▶ decision "Y" [rejected-alternative]
+  ├─relates-to──▶ record             TINKERPOP-3456
+  ├─relates-to──▶ record             apache/tinkerpop#2891
+  ├─parent-child─▶ decision  "chose X"            {rejected: false}
+  │                  └─related─▶ decision "Y"     {rejected: true}
   ├─parent-child─▶ task A "implement X" ──caused-by──▶ decision "chose X"
   ├─parent-child─▶ task B ──blocks──▶ task A     (B waits for A)
   └─parent-child─▶ task C                        (no blocker: starts with A)
@@ -222,11 +214,11 @@ root (feature/epic/task)
 `parent-child` gives membership, `blocks` gives order. A subtree with no `blocks` edges is
 a list, and `bd ready` cannot tell you anything useful about it.
 
-- `--parent` builds the tree. Labels inherit downward — see section 7.
-- **`record` beads** hold external artifacts — JIRA, PR, dev@ thread, proposal. Kind is a
-  **label** (`jira`, `pr`, `dev-list`, `proposal`); the URL or ticket goes in
-  `--external-ref`. Attach them to the **root**, not to every bead. Create them pinned.
-  Search first — duplicates are the main risk.
+- `--parent` builds the tree, and copies the parent's labels onto the child once, at birth —
+  see section 7.
+- **`record` beads** hold external artifacts — JIRA, PR, dev@ thread, proposal. The ticket or
+  URL goes in `--external-ref`, which identifies the kind as well. Attach them to the
+  **root**, not to every bead. Create them pinned. Search first — duplicates are the risk.
 - Records are the only link between beads and code. There is no bead ID in commit messages.
 - Only **one dependency type per pair** — `blocks` and `discovered-from` cannot coexist
   between the same two beads.
@@ -238,8 +230,8 @@ a list, and `bd ready` cannot tell you anything useful about it.
 
 ## 7. Labels
 
-Labels are categorization **orthogonal to type and priority** — a bead carries as many as
-apply, giving cross-cutting views the tree cannot.
+Labels are categorization **orthogonal to type and priority**, giving cross-cutting views the
+tree cannot.
 
 **Never invent a label.** What is listed below is the entire vocabulary. 
 
@@ -250,24 +242,21 @@ bd label list <id>
 bd label list-all                        # what is in use — includes drift; this file is the authority
 ```
 
-**Set every dimension label on the root when you create it, before any child exists.**
+**Set every label on the root when you create it, before any child exists.**
 `bd create --parent` copies the *parent's* labels onto a child at birth and never again, so a
 root labelled up front propagates to the whole subtree for free — and a root labelled afterwards
 propagates to nothing. If a label must change later, `bd label add|remove` on the root does not
 backfill: apply the change to every existing descendant by hand. Skip that and siblings born
-either side of the change disagree, and each new level snapshots whichever version its parent
-happened to hold. Structural labels are the exception; they describe the bead itself and belong
-wherever they apply.
+either side of the change disagree.
 
-### Structural labels — part of the data model, never optional
+**A fact about the bead itself is metadata, not a label.** `--metadata '{"rejected":true}'`
+marks the road not taken — both siblings are `type=decision`, and nothing else tells them
+apart. Metadata never inherits, which is why it suits such facts. `bd query` compares it with
+`=` only and case-sensitively, and hides closed beads unless you pass `--all` — which every
+decision is, so the flag is mandatory when looking for one. `human` stays a label because bd's own
+`bd human list/respond/dismiss` queries that literal string — never rename it.
 
-| Label | Why it exists |
-|---|---|
-| `human` | bd's own contract: `bd human list/respond/dismiss` query this exact string |
-| `rejected-alternative` | the chosen decision and the road not taken are **both** `type=decision`; this label is the only thing telling them apart |
-| `jira` `pr` `dev-list` `proposal` | which kind of external artifact a `record` bead holds — exactly one per record |
-
-### Dimensions — descriptive; several may apply
+Every label is descriptive and several may apply.
 
 **Module** — a unit of code. The list spans every maintained branch, so it includes modules
 this branch does not have. Beads outlive branches, and one vocabulary keeps the database
@@ -297,10 +286,11 @@ release  build
 
 ```bash
 bd children <root>               # the subtree, recursive
-bd ready --parent <root> --exclude-type=decision   # startable now; ALWAYS scope to your root
+bd ready --parent <root>         # startable now; ALWAYS scope to your root
 bd blocked --parent <root>       # what is waiting, and on what
 bd show <id>                     # one bead with dependencies
-bd query "status=open AND type=decision"
+bd query "status=open AND type=decision"    # should be empty; an open decision was left unclosed
+bd query "metadata.rejected=true" --all     # roads not taken; --all or closed beads are hidden
 bd comment <id> "..."            # a fact with no fork in it (never on a task bead)
 bd create --type=... --parent=<root> --design=... --labels=...
 bd dep add <task> <blocker>      # default type is blocks: <task> waits for <blocker>
