@@ -57,6 +57,121 @@ listing provides a summary of what to do next:
 ** In particular, see <<rtc,Review then Commit>>
 * If you have trouble committing, email dev@tinkerpop.apache.org
 
+[[beads]]
+== Planning with Beads
+
+Git history and JIRA record what changed in the project. Neither records why, and the reasoning
+behind a change is often the part that is most needed when that change is revisited years later.
+TinkerPop uses beads, a command line tool named `bd`, to capture that reasoning while it is still
+exact. A bead can hold a decision that was taken, an alternative that was weighed and turned
+down, or a direction that was abandoned partway.
+
+Beads matters most for work done with an AI coding agent. Such an agent explores approaches,
+discards some of them, and is redirected by the contributor guiding it, but none of that survives
+the end of the session. Recording it as the work proceeds turns a transient conversation into a
+durable project artifact. Beads remains entirely optional. No part of the build or the test suite
+depends on it, and a contributor working without an agent has little reason to install it.
+
+[[beads-setup]]
+=== Setting Up Beads
+
+The `bd` tool, available from link:https://beads.gascity.com/[the beads project], must be installed
+before any of the commands below will work. The planning data is not held in Git. It lives in a
+Dolt database published at
+link:https://www.dolthub.com/repositories/tinkerpop/tinkerbeads[tinkerpop/tinkerbeads], and only
+`.beads/PRIME.md` and `.beads/config.yaml` are tracked in the repository. Running the following
+command from the repository root reads the remote recorded in `config.yaml` and clones that
+database into place:
+
+[source,text]
+----
+bd bootstrap
+----
+
+The same command repairs a damaged database and restores one after a move to a new machine. It
+never deletes existing beads, which makes it safe to run when the current state is unclear.
+
+An agent has to be told about the workflow before it can follow it. The `bin/agent-setup.sh`
+script installs the necessary hooks, which load the workflow at the start of every session and
+again after the agent's context is compacted:
+
+[source,text]
+----
+bin/agent-setup.sh --contributor claude
+----
+
+Passing `--list` instead reports which agents are supported. The workflow itself is
+`.beads/PRIME.md`, which is tracked in Git and kept identical on every maintained branch. It
+describes how an agent binds to a root bead, plans work as a dependency graph, captures decisions
+as they occur, and pins the result once the work has merged.
+
+[[beads-decisions]]
+=== What Beads Records
+
+Most beads are ordinary tasks, but the ones that justify the setup are the decision beads. Each
+records a choice that had a real alternative, and the alternative is stored beside it as its own
+bead. The example below is the rejected half of one such pair, taken from the Gryo
+deserialization hardening work:
+
+[source,text]
+----
+○ tp-cxt · Public getMapper() on GryoReader and GryoWriter   [● P2 · OPEN]
+Owner: Stephen Mallette · Type: decision
+
+DESIGN
+
+  REJECTED. GryoReader and GryoWriter would retain the Mapper they are handed
+  and expose it via a public getMapper(), matching the existing
+  GryoPool.getMapper() precedent at GryoPool.java:64.
+
+  Why rejected: it is permanent public API, plus a new retained field on both
+  classes, added to satisfy one guard test. TinkerPop cannot withdraw it later
+  without a deprecation cycle, and it invites providers to reach into reader
+  internals. The package-private getKryo() gets the test the same access with
+  none of that surface.
+
+LABELS: gremlin-core, io
+
+METADATA
+  rejected: true
+----
+
+The `rejected: true` metadata is what separates the road not taken from the one that was
+followed, since both are stored as decisions. The value of the pair lies in the reason rather
+than in the verdict. An objection expressed as a concrete mechanism can be tested again later,
+and an alternative whose objection no longer holds is precisely the one worth reopening.
+
+[[beads-structure]]
+=== The Shape of a Plan
+
+Work is organised as a graph rather than as a checklist. One root bead stands for the
+deliverable, and everything belonging to that effort hangs beneath it:
+
+[source,text]
+----
+root (feature/epic/task)
+  ├─relates-to──▶ record             TINKERPOP-3456
+  ├─parent-child─▶ decision "chose X"          {rejected: false}
+  │                  └─related─▶ decision "Y"  {rejected: true}
+  ├─parent-child─▶ task A "implement X" ──caused-by──▶ decision "chose X"
+  ├─parent-child─▶ task B ──blocks──▶ task A     (B waits for A)
+  └─parent-child─▶ task C                        (no blocker: starts with A)
+----
+
+Four kinds of bead appear in that graph. A `task` is a unit of work. A `decision` is a choice
+and carries its reasoning. A `record` points at an external artifact such as a JIRA issue or a
+pull request, and is the only link between a bead and the code, because commit messages carry no
+bead identifiers. The root itself is usually a task or an epic.
+
+The edges carry as much meaning as the beads. A `parent-child` edge establishes membership in
+the effort, while a `blocks` edge establishes order, so a subtree without any `blocks` edges is
+merely a list. A `caused-by` edge is what connects a task back to the decision that shaped it,
+and without it there is no path from the work to the reasoning behind it.
+
+Beads accumulate as the work proceeds and are pinned once it merges, which marks them as
+permanent and protects them from routine cleanup. The result is a record that outlives the branch
+it was written on.
+
 == Communication
 
 TinkerPop has a link:http://groups.google.com/group/gremlin-users[user mailing list] and a
