@@ -125,9 +125,8 @@ the wrong root scatters its reasoning into an unrelated body of work, where nobo
 later will think to search.
 
 An existing root is the right answer when the work continues something already under way, and a
-new root is the right answer when it does not. A small fix is its own root rather than a child of
-something larger. Declining to answer is the only response that does not work, because the agent
-is then left with nowhere to record what it learns.
+new root is the right answer when it does not. A small fix is often its own root (i.e. a single
+bead) rather than a child of something larger. 
 
 [[beads-decisions]]
 === What Beads Records
