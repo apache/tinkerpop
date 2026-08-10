@@ -485,6 +485,13 @@ open Agent Skills standard:
 development environment setup and Gremlin MCP server usage, along with a verification script in `scripts/`
 * `tinker-doc` covers documentation authoring and review, meaning the per-book voice, the executable Gremlin code-block
 pipeline, and AsciiDoc conventions
+* `tinker-review` covers review of a pull request by number, building a knowledge graph from the changed source and
+analyzing it against domain playbooks to produce an evidence report
+
+Unlike the other two, `tinker-review` depends on more than the repository. It requires Docker, Node.js 20 or newer, a
+remote that fetches from `apache/tinkerpop`, and a one-time `npm install --prefix .skills/tinker-review` to install its
+dependencies. A review runs against the branch the pull request targets rather than the branch that is checked out, so
+any checkout can review any pull request.
 
 Tools that support Agent Skills (Claude Code, GitHub Copilot, Cursor, OpenAI Codex, JetBrains Junie, Kiro, and others)
 will discover and activate a skill automatically when it is placed in the tool's expected directory. A setup script is
