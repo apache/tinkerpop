@@ -114,6 +114,21 @@ Passing `--list` instead reports which agents are supported. The workflow itself
 describes how an agent binds to a root bead, plans work as a dependency graph, captures decisions
 as they occur, and pins the result once the work has merged.
 
+[[beads-root]]
+=== Choosing a Root Bead
+
+Every session works beneath a single root bead, which stands for the body of work in hand. An
+agent following the workflow asks which root to use before it writes any code, and answering that
+prompt is the most consequential moment in the exchange. Everything the session produces hangs
+from the answer, because tasks, decisions and records all attach to that root. A session bound to
+the wrong root scatters its reasoning into an unrelated body of work, where nobody looking for it
+later will think to search.
+
+An existing root is the right answer when the work continues something already under way, and a
+new root is the right answer when it does not. A small fix is its own root rather than a child of
+something larger. Declining to answer is the only response that does not work, because the agent
+is then left with nowhere to record what it learns.
+
 [[beads-decisions]]
 === What Beads Records
 
@@ -177,9 +192,59 @@ the effort, while a `blocks` edge establishes order, so a subtree without any `b
 merely a list. A `caused-by` edge is what connects a task back to the decision that shaped it,
 and without it there is no path from the work to the reasoning behind it.
 
-Beads accumulate as the work proceeds and are pinned once it merges, which marks them as
-permanent and protects them from routine cleanup. The result is a record that outlives the branch
-it was written on.
+[[beads-lifecycle]]
+=== The Bead Lifecycle
+
+A bead is closed when its work is finished, in the same sense that a JIRA issue is resolved.
+Closing is not a formality. A task that blocks another releases it only by closing, so a finished
+task left open stalls whatever was waiting on it. Decision beads are closed as they are written,
+because a decision is settled at the moment it is made. The root is the exception and stays open
+until the work merges, since it stands for the deliverable rather than for any single step.
+
+The database can be pushed at any point with `bd dolt push`, and pushing often is encouraged for
+the same reason that pushing a topic branch often is encouraged. Nothing about a push is final.
+
+Pinning is the step that matters at merge. When a change merges to a release line, in the same
+motion that resolves its JIRA issue, the whole subgraph beneath the root is pinned:
+
+[source,text]
+----
+bd children <root>
+bd close <root>
+bd update <id1> <id2> ... -s pinned
+bd dolt pull && bd dolt push
+----
+
+Pinning is what makes a bead permanent. Destructive maintenance operations act on closed beads
+and skip pinned ones, so a subgraph left closed but unpinned remains eligible for routine
+cleanup. Pinning covers the entire subgraph rather than the beads that seem most interesting in
+hindsight. The work shipped, so all of it is project history.
+
+[[beads-curation]]
+=== Curating the Record
+
+The subgraph is worth reading end to end before it is pinned, because pinning is what makes it
+permanent. Beads written early may describe an approach that later changed, tasks may have been
+left open, and a decision may have been recorded without the reason that gives it value.
+
+A committer may delete, retag, retitle or otherwise correct any part of the subgraph, exactly as
+a JIRA issue is corrected before it is resolved. This is the project's record of its own
+reasoning, and being right matters more than preserving a first draft. The corresponding
+prohibition in `.beads/PRIME.md` binds the agent rather than the committer. An agent is told
+never to rewrite reasoning it finds, precisely so that judgment about what is correct stays with
+a person.
+
+[[beads-shared]]
+=== A Shared Database
+
+The Dolt database is shared by every committer using beads, so `bd dolt pull` brings in beads
+written by other contributors alongside any local work. Open and in-progress beads belonging to
+other people are therefore a normal sight, which is no different from browsing JIRA.
+
+The same courtesy applies. A bead that is already in progress belongs to whoever claimed it, and
+picking up that work unannounced invites duplicated effort or a conflict at merge. Anything
+ambiguous is worth raising on the dev mailing list, which remains where project decisions are
+made.
 
 == Communication
 
