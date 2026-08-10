@@ -43,7 +43,7 @@ when the code does.
 
 | What happened | Do |
 |---|---|
-| A specific course was considered and **not taken** — a design, a scope item, a validation step, a target branch, a task you wrote and threw away | Decision bead **plus** its `rejected-alternative` sibling, now |
+| A specific course was considered and **not taken** — a design, a scope item, a validation step, a target branch, a task you wrote and threw away | Decision bead **plus** its rejected sibling, now |
 | Something is simply true, with no fork in it — evidence, a measurement, a discovery, a constraint | `bd comment <root> "..."` |
 
 **The rejected thing does not have to be a design.** Before writing any comment, try to name
@@ -55,9 +55,10 @@ OptionsStrategy" describes code and stays a comment.
 
 ```bash
 # Only when something was actually ruled out. No fork = implementation; the code documents that.
-bd create --type=decision --parent=<root> --title="Chose X" --design="why, and what X rules out"
+bd create --type=decision --parent=<root> --title="Chose X" --metadata '{"rejected":false}' \
+          --design="why, and what X rules out"
 # An approach you tried and abandoned is the strongest sibling — someone already walked it.
-bd create --type=decision --parent=<root> --title="Y" --labels="rejected-alternative" \
+bd create --type=decision --parent=<root> --title="Y" --metadata '{"rejected":true}' \
           --design="what Y concretely was, why it lost, what settled it"
 bd dep add <decision> <alternative> -t related    # never put either of these on a task bead
 bd close <decision> <alternative>   # both: a decision is resolved the moment you write it
@@ -69,7 +70,7 @@ the decision to a day it was not made. It gets pinned with the rest of the subtr
 (section 4).
 
 **A rejected alternative's `--design` names three things: what the option concretely was, why it
-lost, and what settled it.** The verdict is already in the label, so the reason is the whole
+lost, and what settled it.** The verdict is already in `rejected`, so the reason is the whole
 value — give it as a mechanism ("it leaves the shared database with a vocabulary no single
 PRIME.md describes"), never a judgment ("rejected as worse"). A mechanism can be checked again
 later: when the problem it names no longer applies, the option is worth reconsidering. A
@@ -201,10 +202,10 @@ Pinning is what makes a bead permanent — every destructive operation keys on
 
 ```
 root (feature/epic/task)
-  ├─relates-to──▶ record [jira]      TINKERPOP-3456
-  ├─relates-to──▶ record [pr]        apache/tinkerpop#2891
-  ├─parent-child─▶ decision  "chose X"
-  │                  └─related─▶ decision "Y" [rejected-alternative]
+  ├─relates-to──▶ record             TINKERPOP-3456
+  ├─relates-to──▶ record             apache/tinkerpop#2891
+  ├─parent-child─▶ decision  "chose X"            {rejected: false}
+  │                  └─related─▶ decision "Y"     {rejected: true}
   ├─parent-child─▶ task A "implement X" ──caused-by──▶ decision "chose X"
   ├─parent-child─▶ task B ──blocks──▶ task A     (B waits for A)
   └─parent-child─▶ task C                        (no blocker: starts with A)
@@ -215,10 +216,9 @@ a list, and `bd ready` cannot tell you anything useful about it.
 
 - `--parent` builds the tree, and copies the parent's labels onto the child once, at birth —
   see section 7.
-- **`record` beads** hold external artifacts — JIRA, PR, dev@ thread, proposal. Kind is a
-  **label** (`jira`, `pr`, `dev-list`, `proposal`); the URL or ticket goes in
-  `--external-ref`. Attach them to the **root**, not to every bead. Create them pinned.
-  Search first — duplicates are the main risk.
+- **`record` beads** hold external artifacts — JIRA, PR, dev@ thread, proposal. The ticket or
+  URL goes in `--external-ref`, which identifies the kind as well. Attach them to the
+  **root**, not to every bead. Create them pinned. Search first — duplicates are the risk.
 - Records are the only link between beads and code. There is no bead ID in commit messages.
 - Only **one dependency type per pair** — `blocks` and `discovered-from` cannot coexist
   between the same two beads.
@@ -230,8 +230,8 @@ a list, and `bd ready` cannot tell you anything useful about it.
 
 ## 7. Labels
 
-Labels are categorization **orthogonal to type and priority** — a bead carries as many as
-apply, giving cross-cutting views the tree cannot.
+Labels are categorization **orthogonal to type and priority**, giving cross-cutting views the
+tree cannot.
 
 **Never invent a label.** What is listed below is the entire vocabulary. 
 
@@ -242,24 +242,21 @@ bd label list <id>
 bd label list-all                        # what is in use — includes drift; this file is the authority
 ```
 
-**Set every dimension label on the root when you create it, before any child exists.**
+**Set every label on the root when you create it, before any child exists.**
 `bd create --parent` copies the *parent's* labels onto a child at birth and never again, so a
 root labelled up front propagates to the whole subtree for free — and a root labelled afterwards
 propagates to nothing. If a label must change later, `bd label add|remove` on the root does not
 backfill: apply the change to every existing descendant by hand. Skip that and siblings born
-either side of the change disagree, and each new level snapshots whichever version its parent
-happened to hold. Structural labels are the exception; they describe the bead itself and belong
-wherever they apply.
+either side of the change disagree.
 
-### Structural labels — part of the data model, never optional
+**A fact about the bead itself is metadata, not a label.** `--metadata '{"rejected":true}'`
+marks the road not taken — both siblings are `type=decision`, and nothing else tells them
+apart. Metadata never inherits, which is why it suits such facts. `bd query` compares it with
+`=` only and case-sensitively, and hides closed beads unless you pass `--all` — which every
+decision is, so the flag is mandatory when looking for one. `human` stays a label because bd's own
+`bd human list/respond/dismiss` queries that literal string — never rename it.
 
-| Label | Why it exists |
-|---|---|
-| `human` | bd's own contract: `bd human list/respond/dismiss` query this exact string |
-| `rejected-alternative` | the chosen decision and the road not taken are **both** `type=decision`; this label is the only thing telling them apart |
-| `jira` `pr` `dev-list` `proposal` | which kind of external artifact a `record` bead holds — exactly one per record |
-
-### Dimensions — descriptive; several may apply
+Every label is descriptive and several may apply.
 
 **Module** — a unit of code. The list spans every maintained branch, so it includes modules
 this branch does not have. Beads outlive branches, and one vocabulary keeps the database
@@ -292,7 +289,8 @@ bd children <root>               # the subtree, recursive
 bd ready --parent <root>         # startable now; ALWAYS scope to your root
 bd blocked --parent <root>       # what is waiting, and on what
 bd show <id>                     # one bead with dependencies
-bd query "status=open AND type=decision"   # should be empty; an open decision was left unclosed
+bd query "status=open AND type=decision"    # should be empty; an open decision was left unclosed
+bd query "metadata.rejected=true" --all     # roads not taken; --all or closed beads are hidden
 bd comment <id> "..."            # a fact with no fork in it (never on a task bead)
 bd create --type=... --parent=<root> --design=... --labels=...
 bd dep add <task> <blocker>      # default type is blocks: <task> waits for <blocker>
