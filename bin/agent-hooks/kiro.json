@@ -36,7 +36,7 @@
       "trigger": "UserPromptSubmit",
       "action": {
         "type": "agent",
-        "prompt": "If the operator just redirected you -- rejected an approach, said an alternative was already tried, or told you to do something a different way -- create a decision bead and its rejected-alternative sibling now, while the reasoning is exact. Otherwise ignore this and carry on."
+        "prompt": "If the operator just redirected you -- rejected an approach, said an alternative was already tried, or told you to do something a different way -- create a decision bead and its rejected sibling now, while the reasoning is exact. Otherwise ignore this and carry on."
       },
       "timeout": 15,
       "enabled": true

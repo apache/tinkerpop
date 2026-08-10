@@ -114,9 +114,9 @@ case "$event" in
         active=$(bd list --status=in_progress 2>/dev/null | grep -v '^No issues found' | head -20)
         text="Beads check — did anything get decided this session?
 
-An alternative that was actually considered and rejected belongs in a decision bead with
-its rejected-alternative sibling. An approach you tried and abandoned counts. Anything else
-worth remembering goes in a comment on the root bead."
+An alternative that was actually considered and rejected belongs in its own decision bead,
+marked --metadata '{\"rejected\":true}'. An approach you tried and abandoned counts. Anything
+else worth remembering goes in a comment on the root bead."
 
         # Editing files while nothing is claimed means the in_progress window -- the only
         # thing a later session can read to resume -- is never being written. These are two
@@ -148,8 +148,8 @@ was underway or where it stopped."
         [[ -n "$prompt" ]] || exit 0
         if printf '%s' "$prompt" | tr '[:upper:]' '[:lower:]' | grep -Eq "$REDIRECT_RE"; then
             text="That prompt reads as a redirect. If an alternative was just rejected, create the
-decision bead and its rejected-alternative sibling now, while the reasoning is exact —
-operator redirects are the highest-signal capture trigger there is."
+decision bead and its rejected sibling now, while the reasoning is exact — operator
+redirects are the highest-signal capture trigger there is."
         fi
         ;;
 
