@@ -63,7 +63,7 @@ Playbooks carry the domain judgment for Phase 2. `general.md` always applies;
 select the domain playbooks in two passes:
 
 1. **Orient** — from the changed file paths, gather the candidates:
-   - `gremlin-dart/`, `gremlin-go/`, `gremlin-python/`, `gremlin-dotnet/`, `gremlin-js/` → `playbooks/glv.md`
+   - `gremlin-dart/`, `gremlin-go/`, `gremlin-python/`, `gremlin-dotnet/`, `gremlin-js/`, `gremlin-javascript/` → `playbooks/glv.md`
    - `gremlin-core/` with new step patterns → `playbooks/new-step.md`
    - `gremlin-driver/`, `gremlin-server/`, `gremlin-util/` → `playbooks/driver-server.md`
    - Small change set with linked issue → `playbooks/bug-fix.md`

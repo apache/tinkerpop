@@ -154,7 +154,7 @@ function classifyDomains(changedFiles) {
 
   if (paths.includes("gremlin-dart") || paths.includes("gremlin-swift") || paths.includes("gremlin-rust") ||
       paths.includes("gremlin-go/") || paths.includes("gremlin-python/") || paths.includes("gremlin-dotnet/") ||
-      paths.includes("gremlin-js/")) {
+      paths.includes("gremlin-js/") || paths.includes("gremlin-javascript/")) {
     domains.push("glv");
   }
   if (paths.includes("gremlin-driver/") || paths.includes("gremlin-server/") || paths.includes("gremlin-util/") ||
