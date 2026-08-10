@@ -52,32 +52,38 @@ listing provides a summary of what to do next:
 *** Wait for an email to arrive from "support_at_github.com", and click "Join @apache". Accept the invitation on github.com. Your new MFA status will not immediately be reflected on github, but you will get a confirmation email from noreply_at_github.com. Later, the status will read "MFA ENABLED"
 **** e.g. "[GitHub] @asf-gitbox has invited you to join the @apache organization"
 *** You can find yourself by searching in the link:https://github.com/orgs/apache/teams/apache-committers[Apache Committers listing]
+* Obtain access to DoltHub and the link:https://www.dolthub.com/repositories/tinkerpop/tinkerbeads[tinkerpop/tinkerbeads] repository. PMC members will help you get the correct permissions.
 * Read the link:https://www.apache.org/dev/new-committers-guide.html[Apache Committer Guide] and link:http://www.apache.org/dev/committers.html[Apache Committer FAQ]
 * Read through the other sections of this document - the Developer Documentation - for more details on project procedures and other administrative items.
 ** In particular, see <<rtc,Review then Commit>>
 * If you have trouble committing, email dev@tinkerpop.apache.org
 
 [[beads]]
-== Planning with Beads
+== Using Beads
 
 Git history and JIRA record what changed in the project. Neither records why, and the reasoning
 behind a change is often the part that is most needed when that change is revisited years later.
-TinkerPop uses beads, a command line tool named `bd`, to capture that reasoning while it is still
-exact. A bead can hold a decision that was taken, an alternative that was weighed and turned
-down, or a direction that was abandoned partway.
+TinkerPop uses link:https://beads.gascity.com/[beads], a command line tool named `bd`, to capture
+that reasoning while it is still exact. A bead can hold a decision that was taken, an alternative
+that was weighed and turned down, or a direction that was abandoned partway.
 
 Beads matters most for work done with an AI coding agent. Such an agent explores approaches,
 discards some of them, and is redirected by the contributor guiding it, but none of that survives
 the end of the session. Recording it as the work proceeds turns a transient conversation into a
-durable project artifact. Beads remains entirely optional. No part of the build or the test suite
-depends on it, and a contributor working without an agent has little reason to install it.
+durable project artifact. Beads is only a tool for official contributors in some respects, as any
+beads created by third-parties will not have permissions to push to the remote repository holding
+them. 
+
+In case of third-party contribution, contributors can and should do code reviews with beads in 
+mind where the merge of that pull request is accompanied by beads that capture the decision making 
+around the change. Note that beads are not a replacement for standard ASF decision-making which 
+must grounded on the dev list. 
 
 [[beads-setup]]
 === Setting Up Beads
 
 The `bd` tool, available from link:https://beads.gascity.com/[the beads project], must be installed
-before any of the commands below will work. The planning data is not held in Git. It lives in a
-Dolt database published at
+before any of the commands below will work. Beads data lives in a Dolt database published at
 link:https://www.dolthub.com/repositories/tinkerpop/tinkerbeads[tinkerpop/tinkerbeads], and only
 `.beads/PRIME.md` and `.beads/config.yaml` are tracked in the repository. Running the following
 command from the repository root reads the remote recorded in `config.yaml` and clones that
@@ -99,6 +105,9 @@ again after the agent's context is compacted:
 ----
 bin/agent-setup.sh --contributor claude
 ----
+
+NOTE: Current beads support is for `claude` and `kiro` only. If you use another agent, beads 
+support will need to be added.
 
 Passing `--list` instead reports which agents are supported. The workflow itself is
 `.beads/PRIME.md`, which is tracked in Git and kept identical on every maintained branch. It
