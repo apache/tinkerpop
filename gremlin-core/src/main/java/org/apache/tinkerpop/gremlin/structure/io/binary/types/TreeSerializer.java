@@ -33,7 +33,7 @@ public class TreeSerializer extends SimpleTypeSerializer<Tree> {
 
     @Override
     protected Tree readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
-        final int length = buffer.readInt();
+        final int length = readSizePrefix(buffer);
 
         final Tree result = new Tree();
         for (int i = 0; i < length; i++) {

@@ -33,6 +33,13 @@ import java.io.IOException;
 public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
     private final DataType dataType;
 
+    /**
+     * Upper bound on the capacity pre-allocated for a growable container from a wire count. The full count is still
+     * honored while reading; this only limits speculative pre-allocation so an in-frame but large count cannot force
+     * a large backing array up front. The container grows as elements are added.
+     */
+    private static final int MAX_PREALLOC_CAPACITY = 16384;
+
     public DataType getDataType() {
         return dataType;
     }
@@ -67,6 +74,33 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
      * @throws IOException
      */
     protected abstract T readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException;
+
+    /**
+     * Reads a length or element-count prefix and validates it before it is used to size an allocation. The same
+     * check serves both kinds of prefix: a byte length, where each counted unit is one wire byte, and an element
+     * count, where each counted element occupies at least one wire byte. A negative value, or one larger than the
+     * number of bytes actually remaining in the buffer, therefore cannot be legitimate, so it is rejected rather
+     * than allowed to drive a large allocation from a small message.
+     */
+    protected static int readSizePrefix(final Buffer buffer) throws IOException {
+        if (buffer.readableBytes() < Integer.BYTES)
+            throw new IOException(String.format(
+                    "Incomplete GraphBinary length prefix: %d byte(s) available", buffer.readableBytes()));
+        final int size = buffer.readInt();
+        if (size < 0 || size > buffer.readableBytes())
+            throw new IOException(String.format("Invalid GraphBinary length prefix: %d (readable bytes: %d)",
+                    size, buffer.readableBytes()));
+        return size;
+    }
+
+    /**
+     * Caps the initial capacity used to pre-size a growable container ({@code ArrayList}, {@code HashMap}) from a
+     * validated wire count. Safe to use only for containers that grow on demand, never for a fixed-size array or a
+     * byte buffer that must hold exactly {@code size} entries.
+     */
+    protected static int cappedInitialCapacity(final int size) {
+        return Math.min(size, MAX_PREALLOC_CAPACITY);
+    }
 
     @Override
     public void write(final T value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {

@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
+import java.io.IOException;
+
 import java.nio.charset.StandardCharsets;
 
 public class StringSerializer extends SimpleTypeSerializer<String> {
@@ -31,9 +33,9 @@ public class StringSerializer extends SimpleTypeSerializer<String> {
     }
 
     @Override
-    protected String readValue(final Buffer buffer, final GraphBinaryReader context) {
+    protected String readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
         // Use Netty 4.0 API (avoid ByteBuf#readCharSequence() method) to maximize compatibility
-        final byte[] bytes = new byte[buffer.readInt()];
+        final byte[] bytes = new byte[readSizePrefix(buffer)];
         buffer.readBytes(bytes);
         return new String(bytes, StandardCharsets.UTF_8);
     }

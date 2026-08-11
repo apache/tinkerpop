@@ -37,7 +37,7 @@ public class InetAddressSerializer<T extends InetAddress> extends SimpleTypeSeri
 
     @Override
     protected T readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
-        final int length = buffer.readInt();
+        final int length = readSizePrefix(buffer);
         final byte[] bytes = new byte[length];
         buffer.readBytes(bytes);
 
