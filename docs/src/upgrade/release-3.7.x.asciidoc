@@ -66,12 +66,24 @@ GryoMapper.build().javaSerializationAllowed(false).create();
 ----
 
 Callers that supply their own mapper to `GryoReader` or `GryoWriter` are unaffected and should add
-`javaSerializationAllowed(false)` if they read bytes they do not control. `GryoIo` accepts an `onMapper` consumer, so
+`javaSerializationAllowed(false)` if they read bytes they do not control. Dropping those registrations only holds
+while classes must be registered up front, so `create()` rejects `javaSerializationAllowed(false)` combined with
+`registrationRequired(false)` and throws `IllegalStateException`. `GryoIo` accepts an `onMapper` consumer, so
 full fidelity can be restored where the bytes are trusted:
 
 [source,java]
 ----
 GryoIo.build().graph(graph).onMapper(m -> ((GryoMapper.Builder) m).javaSerializationAllowed(true)).create();
+----
+
+Note that the builder handed to `onMapper` is already hardened, so turning registration off there completes the
+rejected combination even though `javaSerializationAllowed(false)` was never called directly. Such a consumer now
+needs to opt back into full fidelity explicitly:
+
+[source,java]
+----
+GryoIo.build().graph(graph).onMapper(m -> ((GryoMapper.Builder) m)
+        .registrationRequired(false).javaSerializationAllowed(true)).create();
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3278[TINKERPOP-3278]
