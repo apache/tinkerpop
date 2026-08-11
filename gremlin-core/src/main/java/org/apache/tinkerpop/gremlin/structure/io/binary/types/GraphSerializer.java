@@ -61,10 +61,10 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
 
         try {
             final Graph graph = (Graph) openMethod.invoke(null, conf);
-            final int vertexCount = context.readValue(buffer, Integer.class, false);
+            final int vertexCount = readSizePrefix(buffer);
             for (int ix = 0; ix < vertexCount; ix++) {
                 final Vertex v = graph.addVertex(T.id, context.read(buffer), T.label, context.readValue(buffer, String.class, false));
-                final int vertexPropertyCount = context.readValue(buffer, Integer.class, false);
+                final int vertexPropertyCount = readSizePrefix(buffer);
 
                 for (int iy = 0; iy < vertexPropertyCount; iy++) {
                     final Object id = context.read(buffer);
@@ -80,7 +80,7 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
                 }
             }
 
-            final int edgeCount = context.readValue(buffer, Integer.class, false);
+            final int edgeCount = readSizePrefix(buffer);
             for (int ix = 0; ix < edgeCount; ix++) {
                 final Object id = context.read(buffer);
                 final String label = context.readValue(buffer, String.class, false);

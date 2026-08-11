@@ -247,6 +247,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-7-7]]
 === TinkerPop 3.7.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Fixed GraphBinary deserialization to reject invalid length and count values with an `IOException`.
 * Disabled unsafe Java deserialization on the Gryo IO paths and added `GryoMapper.Builder.javaSerializationAllowed(boolean)` to control it.
 * Fixed `subgraph()` to throw a descriptive error identifying the required `Edge` input instead of an internal `ClassCastException` when the traversal produces a non-edge value.
 * Fixed `where(P)` to throw a descriptive error identifying the required String scope key (and suggesting `is(P)` for value comparisons) instead of an internal `ClassCastException` when given a non-String predicate value.

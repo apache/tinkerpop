@@ -34,9 +34,9 @@ class CollectionSerializer extends SimpleTypeSerializer<Collection> {
 
     @Override
     protected Collection readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
-        final int length = buffer.readInt();
+        final int length = readSizePrefix(buffer);
 
-        final ArrayList result = new ArrayList(length);
+        final ArrayList result = new ArrayList(cappedInitialCapacity(length));
         for (int i = 0; i < length; i++) {
             result.add(context.read(buffer));
         }
