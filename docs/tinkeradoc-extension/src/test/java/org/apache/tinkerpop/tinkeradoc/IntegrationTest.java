@@ -75,7 +75,7 @@ public class IntegrationTest {
 
     @Test
     public void shouldContainConsoleTabLabel() {
-        assertThat(html, containsString("console (groovy)"));
+        assertThat(html, containsString("console"));
     }
 
     @Test

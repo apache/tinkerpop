@@ -48,7 +48,7 @@ public class HtmlTabRendererTest {
     @Test
     public void consoleFactorySetsLabelLanguageAndKind() {
         final NeutralTab tab = NeutralTab.console("groovy", "gremlin> g.V()");
-        assertThat(tab.getLabel(), is("console (groovy)"));
+        assertThat(tab.getLabel(), is("console"));
         assertThat(tab.getLanguage(), is("groovy"));
         assertThat(tab.getKind(), is(NeutralTab.Kind.CONSOLE));
         assertThat(tab.getContent(), is("gremlin> g.V()"));
@@ -69,7 +69,7 @@ public class HtmlTabRendererTest {
                 NeutralTab.source("groovy", "g.V(1)"));
         final String html = renderer.render(null, tabs);
         assertThat(html, containsString("<section class=\"tabs tabs-2\">"));
-        assertThat(html, containsString("class=\"tab-label-1\">console (groovy)</label>"));
+        assertThat(html, containsString("class=\"tab-label-1\">console</label>"));
         assertThat(html, containsString("class=\"tab-label-2\">groovy</label>"));
     }
 

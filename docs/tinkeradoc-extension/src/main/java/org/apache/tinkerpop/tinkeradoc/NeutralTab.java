@@ -51,11 +51,11 @@ class NeutralTab {
     }
 
     /**
-     * Creates a console-transcript tab. Its label matches the existing HTML output, i.e.
-     * {@code console (<lang>)}.
+     * Creates a console-transcript tab. Its label is {@code console} (the transcript is always the
+     * Groovy Gremlin Console, so the language is not repeated in the label).
      */
     static NeutralTab console(final String language, final String content) {
-        return new NeutralTab("console (" + language + ")", language, Kind.CONSOLE, content);
+        return new NeutralTab("console", language, Kind.CONSOLE, content);
     }
 
     /**

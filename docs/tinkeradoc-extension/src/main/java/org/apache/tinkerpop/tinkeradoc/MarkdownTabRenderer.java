@@ -45,7 +45,22 @@ class MarkdownTabRenderer {
      * @return the Markdown for the tab group (no trailing newline)
      */
     String render(final List<NeutralTab> tabs) {
+        return render(tabs, null);
+    }
+
+    /**
+     * Renders the given neutral tabs as a sequence of labeled fenced code blocks with an optional
+     * graph-dataset label.
+     *
+     * @param tabs      the neutral tabs to render
+     * @param graphName the resolved graph dataset name (e.g. "modern"), or null to omit
+     * @return the Markdown for the tab group (no trailing newline)
+     */
+    String render(final List<NeutralTab> tabs, final String graphName) {
         final StringBuilder sb = new StringBuilder();
+        if (graphName != null && !graphName.isEmpty()) {
+            sb.append("*graph-dataset: ").append(graphName).append("*\n\n");
+        }
         for (int i = 0; i < tabs.size(); i++) {
             if (i > 0) sb.append("\n\n");
             final NeutralTab tab = tabs.get(i);
