@@ -283,4 +283,31 @@ public class TabbedHtmlBuilderTest {
         assertThat(html2, containsString("id=\"tab-2-1\""));
         assertThat(html3, containsString("id=\"tab-3-1\""));
     }
+
+    @Test
+    public void shouldIncludeGraphBadgeWhenGraphNameProvided() {
+        final List<TabbedHtmlBuilder.Tab> tabs = Collections.singletonList(
+                TabbedHtmlBuilder.codeTab("groovy", "g.V()"));
+        final String html = builder.build(tabs, "modern");
+        assertThat(html, containsString("class=\"graph-dataset-note\""));
+        assertThat(html, containsString("This example runs against the"));
+        assertThat(html, containsString("/reference/#tinkerpop-modern\">modern</a> graph."));
+    }
+
+    @Test
+    public void shouldOmitGraphBadgeWhenGraphNameIsNull() {
+        final List<TabbedHtmlBuilder.Tab> tabs = Collections.singletonList(
+                TabbedHtmlBuilder.codeTab("groovy", "g.V()"));
+        final String html = builder.build(tabs, null);
+        assertThat(html, not(containsString("graph-dataset-note")));
+    }
+
+    @Test
+    public void shouldEscapeHtmlInGraphBadge() {
+        final List<TabbedHtmlBuilder.Tab> tabs = Collections.singletonList(
+                TabbedHtmlBuilder.codeTab("groovy", "g.V()"));
+        final String html = builder.build(tabs, "<script>alert(1)</script>");
+        assertThat(html, containsString("&lt;script&gt;alert(1)&lt;/script&gt;"));
+        assertThat(html, not(containsString("<script>")));
+    }
 }

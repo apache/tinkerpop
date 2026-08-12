@@ -45,11 +45,12 @@ class HtmlTabRenderer {
     /**
      * Highlights and renders the given neutral tabs into a complete tab-group HTML string.
      *
-     * @param parent the AST node used to locate the JRuby runtime for highlighting
-     * @param tabs   the neutral tabs to render
+     * @param parent    the AST node used to locate the JRuby runtime for highlighting
+     * @param tabs      the neutral tabs to render
+     * @param graphName the resolved graph dataset name (e.g. "modern"), or null if not applicable
      * @return the tab-group HTML
      */
-    String render(final StructuralNode parent, final List<NeutralTab> tabs) {
+    String render(final StructuralNode parent, final List<NeutralTab> tabs, final String graphName) {
         final List<TabbedHtmlBuilder.Tab> htmlTabs = new ArrayList<>(tabs.size());
         for (final NeutralTab tab : tabs) {
             // The existing pipeline highlighted every tab (console and source) as groovy-flavored
@@ -62,6 +63,13 @@ class HtmlTabRenderer {
                 htmlTabs.add(TabbedHtmlBuilder.codeTabHighlighted(tab.getLanguage(), highlighted));
             }
         }
-        return tabBuilder.build(htmlTabs);
+        return tabBuilder.build(htmlTabs, graphName);
+    }
+
+    /**
+     * Highlights and renders the given neutral tabs into a complete tab-group HTML string (no graph label).
+     */
+    String render(final StructuralNode parent, final List<NeutralTab> tabs) {
+        return render(parent, tabs, null);
     }
 }

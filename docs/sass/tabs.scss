@@ -65,13 +65,15 @@ $maxTabs: 7;
     background: $inactive;
     color: $black;
     font-size: 15px;
-    line-height: $tabHeight;
+    line-height: 1.15;
     height: $tabHeight + 10;
     position: relative;
     top: 0;
     padding: 0 20px;
     float: left;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     letter-spacing: 1px;
     text-transform: uppercase;
     font-weight: bold;
@@ -112,6 +114,14 @@ $maxTabs: 7;
       width: 100% / $n;
     }
   }
+}
+
+// "console (groovy)" is the only multi-word label; at higher tab counts it now wraps to two lines
+// that fit inside the tab box (the label is flex-centered vertically). Trim horizontal padding for
+// the tightest counts so single long words (e.g. "javascript") don't overflow the narrow tab.
+.tabs-6 label,
+.tabs-7 label {
+  padding: 0 8px;
 }
 
 .tabs label:first-of-type {
@@ -174,5 +184,24 @@ $maxTabs: 7;
     width: 100%;
     height: auto;
     padding-top: 30px;
+  }
+}
+
+// Graph-dataset caption for Gremlin examples: an italic line just below the content box naming the
+// toy graph the example runs against, with a link to its reference section. Cleared so it drops
+// below the floated .tabcontent instead of overlapping it. The negative top margin offsets the
+// .tabcontent `top: -10px` shift above, keeping the caption snug against the content box.
+.tabs .graph-dataset-note {
+  clear: both;
+  margin-top: -8px;
+  padding: 2px 2px 0;
+  font-size: 13px;
+  font-style: italic;
+  color: #555;
+  text-align: right;
+
+  a {
+    color: $active;
+    text-decoration: underline;
   }
 }

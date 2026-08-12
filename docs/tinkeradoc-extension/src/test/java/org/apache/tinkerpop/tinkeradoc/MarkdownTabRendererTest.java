@@ -110,4 +110,18 @@ public class MarkdownTabRendererTest {
                 NeutralTab.source("groovy", "a() <1>\nb()\nc() <2>")));
         assertThat(md, containsString("a() // (1)\nb()\nc() // (2)"));
     }
+
+    @Test
+    public void shouldIncludeGraphLabelWhenProvided() {
+        final String md = renderer.render(Collections.singletonList(
+                NeutralTab.source("groovy", "g.V()")), "modern");
+        assertThat(md, containsString("*graph-dataset: modern*"));
+    }
+
+    @Test
+    public void shouldOmitGraphLabelWhenNull() {
+        final String md = renderer.render(Collections.singletonList(
+                NeutralTab.source("groovy", "g.V()")), null);
+        assertThat(md, not(containsString("graph-dataset")));
+    }
 }
