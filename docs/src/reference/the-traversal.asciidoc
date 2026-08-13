@@ -5615,13 +5615,33 @@ The `to()`-step is not an actual step, but instead is a "step-modulator" similar
 <<by-step,`by()`>>. If a step is able to accept traversals or strings then `to()` is the
 means by which they are added. The general pattern is `step().to()`. See <<from-step,`from()`>>-step.
 
+When used to modulate <<addedge-step,`addE()`>>, `to()` identifies the incoming (head) vertex of the new edge
+and accepts one of three argument forms:
+
+* `to(String)` -- a step-label previously set by <<as-step,`as()`>>, referring to a vertex encountered earlier
+in the traversal.
+* `to(Traversal)` -- a child traversal that resolves to a vertex (or a vertex id).
+* `to(Vertex)` -- an explicit `Vertex` object. This is a convenience exposed by the language variant (e.g.
+Gremlin-Java), which resolves the `Vertex` down to its id, rather than a canonical Gremlin argument form.
+
 The list of steps that support `to()`-modulation are: <<simplepath-step,`simplePath()`>>, <<cyclicpath-step,`cyclicPath()`>>,
  <<path-step,`path()`>>, and <<addedge-step,`addE()`>>.
 
+[gremlin-groovy,modern]
+----
+g.V().has('name','marko').as('a').out('knows').addE('friend').to('a') <1>
+g.V().has('name','peter').addE('created').to(V().has('name','lop')) <2>
+----
+
+<1> `to(String)` uses the `as()`-labeled step `'a'` (the marko-vertex) as the incoming vertex, while each
+incoming traverser (marko's `knows`-neighbors) supplies the outgoing vertex.
+<2> `to(Traversal)` supplies a child traversal that resolves to a vertex -- here the lop-vertex -- as the
+incoming vertex, while the incoming traverser (the peter-vertex) supplies the outgoing vertex.
+
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#to(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`to(Direction,String...)`],
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#to(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`to(String)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#to(org.apache.tinkerpop.gremlin.structure.Direction,java.lang.String...)++[`to(Direction,String...)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#to(java.lang.String)++[`to(String)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#to(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`to(Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#to(org.apache.tinkerpop.gremlin.structure.Vertex)++[`to(Vertex)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#toE(org.apache.tinkerpop.gremlin.structure.Direction,java.lang.String...)++[`toE(Direction,String)`],
