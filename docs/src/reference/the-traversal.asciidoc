@@ -5599,12 +5599,22 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[times-step]]
 === Times Step
 
-The `times`-step is not an actual step, but is instead a step modulator for `<<repeat-step,repeat()>>` (find more
-documentation on the `times()` there).
+The `times`-step is not an actual step, but is instead a step modulator for `<<repeat-step,repeat()>>`. It sets
+the number of times the `repeat()` body is executed: `times(N)` loops the body exactly `N` times. It has no
+effect on its own and must accompany a `repeat()`.
+
+[gremlin-groovy,modern]
+----
+g.V(1).repeat(out()).times(2)
+----
+
+Whether `times()` is placed before or after `repeat()` determines the loop semantics (while-do versus do-while),
+as with `<<until-step,until()>>`. See the <<repeat-step,`repeat()`>>-step section for those positioning details
+and the general loop semantics.
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#times(int)++[`until(Predicate)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#times(int)++[`times(int)`],
 `<<emit-step,emit()>>`, `<<repeat-step,repeat()>>`, `<<until-step,until()>>`
 
 [[to-step]]
