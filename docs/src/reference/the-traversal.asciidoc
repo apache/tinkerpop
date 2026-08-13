@@ -2179,9 +2179,22 @@ The `filter()` step maps the traverser from the current object to either `true` 
 pass the traverser to the next step in the process. Please see the <<general-steps, General Steps>> section for more
 information.
 
+`filter()` accepts a child traversal and uses a simple pass-through contract to decide the outcome for each incoming
+traverser: if the child traversal emits one or more results, it evaluates to `true` and the traverser is passed to the
+next step; if the child traversal emits nothing, it evaluates to `false` and the traverser is dropped.
+
+[gremlin-groovy,modern]
+----
+g.V().filter(out('knows').has('name','josh')).values('name') <1>
+----
+
+<1> Find the vertices who "know" josh. The child traversal `out('knows').has('name','josh')` emits a result only for
+marko (the one vertex with a `knows` edge to josh), so only that traverser evaluates to `true` and passes through
+`filter()`; every other vertex produces an empty child result, evaluates to `false`, and is dropped.
+
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#filter(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`map(Traversal)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#filter(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`filter(Traversal)`]
 
 [llms-summary="The flatMap() step maps the traverser from the current object to an Iterator of objects for the next step in the process."]
 [[flatmap-step]]
