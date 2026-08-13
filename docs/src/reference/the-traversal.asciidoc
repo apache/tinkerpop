@@ -3064,12 +3064,50 @@ g.inject(["   hello   ", " world ", null]).lTrim(local) <1>
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#lTrim()++[`lTrim()`]
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#lTrim(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`lTrim(Scope)`]
 
-[llms-summary="The map() step maps the traverser from the current object to the next step in the process."]
+[llms-summary="The map() step maps each incoming traverser to exactly one output object, taking the first result of its child traversal; traversers whose child traversal produces no result are dropped."]
 [[map-step]]
 === Map Step
 
-The `map()` step maps the traverser from the current object to the next step in the process. Please see the
-<<general-steps, General Steps>> section for more information.
+The `map()` step maps the traverser from the current object to a new object produced by the provided child
+traversal (or function). See the <<general-steps, General Steps>> section for the lambda-based form and the
+foundational details it shares with the other general steps.
+
+[gremlin-groovy,modern]
+----
+g.V().map(values('name'))            <1>
+g.V().map(out('created').count())    <2>
+----
+
+<1> Map each vertex to the value of its `name` property.
+<2> Map each vertex to the number of things it created.
+
+NOTE: These examples are kept intentionally simple to illustrate how `map()` works, and are not necessarily
+idiomatic. The first (`map(values('name'))`) is contrived: wrapping a single-step child traversal in `map()`
+adds nothing, so in real code you would just write `g.V().values('name')` for the same result. The second
+(`map(out('created').count())`) is a legitimate use of `map()`, because it computes a per-traverser value —
+a count derived from each vertex's own child traversal — that you cannot obtain without the child traversal.
+Reach for `map()` when you need to derive one new object per traverser from a multi-step child traversal.
+
+`map()` is a one-to-one mapping: it emits *exactly one* object per incoming traverser by taking only the
+*first* result produced by its child traversal. If the child traversal produces more than one result, the
+additional results are ignored. If the child traversal produces *no* result, the incoming traverser is
+silently *dropped* and does not pass to the next step. The examples below contrast this with
+<<flatmap-step,`flatMap()`>>, which streams *all* of the child traversal's results downstream:
+
+[gremlin-groovy,modern]
+----
+g.V(1).map(out())                    <1>
+g.V(1).flatMap(out())                <2>
+g.V().map(out('created'))            <3>
+----
+
+<1> `map()` emits only the *first* adjacent vertex of vertex `1`.
+<2> `flatMap()` emits *all* adjacent vertices of vertex `1`.
+<3> Vertices that created nothing produce no child result and are therefore dropped, so only the vertices that created something appear in the output.
+
+NOTE: The difference between `map()` and `<<flatmap-step,flatMap()>>` is one of cardinality. `map()` emits at
+most one object per incoming traverser (the first result of the child traversal), while `flatMap()` emits
+*every* result of the child traversal. Choose `flatMap()` when a single input should expand into many outputs.
 
 *Additional References*
 
