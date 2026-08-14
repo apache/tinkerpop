@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.util;
 
 import org.apache.tinkerpop.gremlin.server.GraphManager;
+import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -43,7 +44,8 @@ public class DefaultGraphManagerTest {
 
     @Test
     public void shouldReturnGraphs() {
-        final Settings settings = Settings.read(DefaultGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
+        var filePath = "classpath:" + GremlinServer.class.getPackageName().replace(".", "/") + "/gremlin-server-integration.yaml";
+        final Settings settings = Settings.read(filePath);
         final GraphManager graphManager = new DefaultGraphManager(settings);
         final Set<String> graphNames = graphManager.getGraphNames();
 
@@ -63,7 +65,8 @@ public class DefaultGraphManagerTest {
 
     @Test
     public void shouldGetAsBindings() {
-        final Settings settings = Settings.read(DefaultGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
+        var filePath = "classpath:" + GremlinServer.class.getPackageName().replace(".", "/") + "/gremlin-server-integration.yaml";
+        final Settings settings = Settings.read(filePath);
         final GraphManager graphManager = new DefaultGraphManager(settings);
         final Bindings bindings = graphManager.getAsBindings();
 
@@ -82,7 +85,8 @@ public class DefaultGraphManagerTest {
 
     @Test
     public void shouldGetGraph() {
-        final Settings settings = Settings.read(DefaultGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
+        var filePath = "classpath:" + GremlinServer.class.getPackageName().replace(".", "/") + "/gremlin-server-integration.yaml";
+        final Settings settings = Settings.read(filePath);
         final GraphManager graphManager = new DefaultGraphManager(settings);
         final Graph graph = graphManager.getGraph("graph");
 
@@ -92,7 +96,8 @@ public class DefaultGraphManagerTest {
 
     @Test
     public void shouldGetDynamicallyAddedGraph() {
-        final Settings settings = Settings.read(DefaultGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
+        var filePath = "classpath:" + GremlinServer.class.getPackageName().replace(".", "/") + "/gremlin-server-integration.yaml";
+        final Settings settings = Settings.read(filePath);
         final GraphManager graphManager = new DefaultGraphManager(settings);
         final Graph graph = graphManager.getGraph("graph"); //fake out a graph instance
         graphManager.putGraph("newGraph", graph);
@@ -114,7 +119,8 @@ public class DefaultGraphManagerTest {
 
     @Test
     public void shouldNotGetRemovedGraph() throws Exception {
-        final Settings settings = Settings.read(DefaultGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
+        var filePath = "classpath:" + GremlinServer.class.getPackageName().replace(".", "/") + "/gremlin-server-integration.yaml";
+        final Settings settings = Settings.read(filePath);
         final GraphManager graphManager = new DefaultGraphManager(settings);
         final Graph graph = graphManager.getGraph("graph"); //fake out a graph instance
         graphManager.putGraph("newGraph", graph);
@@ -133,7 +139,8 @@ public class DefaultGraphManagerTest {
 
     @Test
     public void openGraphShouldReturnExistingGraph() {
-        final Settings settings = Settings.read(DefaultGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
+        var filePath = "classpath:" + GremlinServer.class.getPackageName().replace(".", "/") + "/gremlin-server-integration.yaml";
+        final Settings settings = Settings.read(filePath);
         final GraphManager graphManager = new DefaultGraphManager(settings);
 
         final Graph graph = graphManager.openGraph("graph", null);
@@ -143,7 +150,8 @@ public class DefaultGraphManagerTest {
 
     @Test
     public void openGraphShouldReturnNewGraphUsingThunk() {
-        final Settings settings = Settings.read(DefaultGraphManagerTest.class.getResourceAsStream("../gremlin-server-integration.yaml"));
+        var filePath = "classpath:" + GremlinServer.class.getPackageName().replace(".", "/") + "/gremlin-server-integration.yaml";
+        final Settings settings = Settings.read(filePath);
         final GraphManager graphManager = new DefaultGraphManager(settings);
 
         final Graph graph = graphManager.getGraph("graph"); //fake out graph instance
