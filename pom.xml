@@ -159,7 +159,7 @@ limitations under the License.
         <commons.text.version>1.15.0</commons.text.version>
         <cucumber.version>7.21.1</cucumber.version>
         <exp4j.version>0.4.8</exp4j.version>
-        <groovy.version>4.0.32</groovy.version>
+        <groovy.version>5.0.8</groovy.version>
         <!--
           don't really use guava directly, but there are a lot of jar conflicts around it,
           so centralizing that dependency version here
