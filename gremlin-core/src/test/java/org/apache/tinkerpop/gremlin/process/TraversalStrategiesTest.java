@@ -28,6 +28,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -49,6 +53,9 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.getRegisteredStrategyClass;
+import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.registerStrategy;
+import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.unregisterStrategy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -134,6 +141,86 @@ public class TraversalStrategiesTest {
         assertFalse(strategies.getStrategy(StrategyC.class).isPresent());
         assertFalse(strategies.getStrategy(StrategyD.class).isPresent());
         assertTrue(strategies.getStrategy(StrategyE.class).isPresent());
+    }
+
+    @Test
+    public void shouldRegisterBuiltInStrategiesByName() {
+        assertEquals(OptionsStrategy.class, getRegisteredStrategyClass(OptionsStrategy.class.getSimpleName()).get());
+        assertEquals(MatchAlgorithmStrategy.class,
+                getRegisteredStrategyClass(MatchAlgorithmStrategy.class.getSimpleName()).get());
+        assertEquals(ReadOnlyStrategy.class, getRegisteredStrategyClass(ReadOnlyStrategy.class.getSimpleName()).get());
+        assertEquals(CountStrategy.class, getRegisteredStrategyClass(CountStrategy.class.getSimpleName()).get());
+    }
+
+    @Test
+    public void shouldRegisterGraphAndGraphComputerStrategiesByName() {
+        assertEquals(StrategyA.class, getRegisteredStrategyClass(StrategyA.class.getSimpleName()).get());
+        assertEquals(StrategyB.class, getRegisteredStrategyClass(StrategyB.class.getSimpleName()).get());
+        assertEquals(StrategyC.class, getRegisteredStrategyClass(StrategyC.class.getSimpleName()).get());
+    }
+
+    @Test
+    public void shouldRegisterAndUnregisterStrategyByNameWithoutChangingDefaults() {
+        unregisterStrategy(StrategyD.class);
+        assertFalse(getRegisteredStrategyClass(StrategyD.class.getSimpleName()).isPresent());
+
+        try {
+            registerStrategy(StrategyD.class);
+            assertEquals(StrategyD.class, getRegisteredStrategyClass(StrategyD.class.getSimpleName()).get());
+
+            // registerStrategy() only adds the class to GLOBAL_REGISTRY and must not alter graph defaults
+            assertFalse(TraversalStrategies.GlobalCache.getStrategies(Graph.class).
+                    getStrategy(StrategyD.class).isPresent());
+        } finally {
+            unregisterStrategy(StrategyD.class);
+        }
+
+        assertFalse(getRegisteredStrategyClass(StrategyD.class.getSimpleName()).isPresent());
+    }
+
+    @Test
+    public void shouldOverwriteStrategyRegisteredWithSameSimpleName() {
+        final String strategyName = FirstStrategyNamespace.DuplicateStrategy.class.getSimpleName();
+        unregisterStrategy(FirstStrategyNamespace.DuplicateStrategy.class);
+
+        try {
+            registerStrategy(FirstStrategyNamespace.DuplicateStrategy.class);
+            assertEquals(FirstStrategyNamespace.DuplicateStrategy.class,
+                    getRegisteredStrategyClass(strategyName).get());
+
+            registerStrategy(SecondStrategyNamespace.DuplicateStrategy.class);
+            assertEquals(SecondStrategyNamespace.DuplicateStrategy.class,
+                    getRegisteredStrategyClass(strategyName).get());
+        } finally {
+            unregisterStrategy(SecondStrategyNamespace.DuplicateStrategy.class);
+        }
+
+        assertFalse(getRegisteredStrategyClass(strategyName).isPresent());
+    }
+
+    @Test
+    public void shouldNotResolveInvalidStrategyNames() {
+        assertFalse(getRegisteredStrategyClass("UnknownStrategy").isPresent());
+        assertFalse(getRegisteredStrategyClass(ReadOnlyStrategy.class.getName()).isPresent());
+        assertFalse(getRegisteredStrategyClass("readonlystrategy").isPresent());
+        assertFalse(getRegisteredStrategyClass("").isPresent());
+        assertFalse(getRegisteredStrategyClass(null).isPresent());
+    }
+
+    @Test
+    public void shouldIgnoreUnregisterOfAbsentStrategy() {
+        unregisterStrategy(StrategyD.class);
+        unregisterStrategy(AbsentStrategy.class);
+
+        try {
+            registerStrategy(StrategyD.class);
+            unregisterStrategy(AbsentStrategy.class);
+
+            assertEquals(StrategyD.class, getRegisteredStrategyClass(StrategyD.class.getSimpleName()).get());
+            assertFalse(getRegisteredStrategyClass(AbsentStrategy.class.getSimpleName()).isPresent());
+        } finally {
+            unregisterStrategy(StrategyD.class);
+        }
     }
 
     public static class TestGraphComputer implements GraphComputer {
@@ -420,6 +507,23 @@ public class TraversalStrategiesTest {
 
     }
 
+    private static class FirstStrategyNamespace {
+
+        private static class DuplicateStrategy extends DummyStrategy {
+
+        }
+    }
+
+    private static class SecondStrategyNamespace {
+
+        private static class DuplicateStrategy extends DummyStrategy {
+
+        }
+    }
+
+    private static class AbsentStrategy extends DummyStrategy {
+
+    }
 
     private static class DummyStrategy<S extends TraversalStrategy> extends AbstractTraversalStrategy<S> {
 
