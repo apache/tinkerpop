@@ -47,7 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
-import java.util.Collections;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -116,9 +116,13 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
     }
 
     protected Traverser.Admin<S> write(final File file) {
+        // the writer is resolved before the stream is opened, since opening it creates or truncates the file. a writer
+        // that cannot be constructed would otherwise leave the destination destroyed on the way to the error
+        final GraphWriter writer = constructWriter();
+
         try (final OutputStream stream = new FileOutputStream(file)) {
             final Graph graph = (Graph) this.traversal.getGraph().get();
-            constructWriter().writeGraph(stream, graph);
+            writer.writeGraph(stream, graph);
 
             return EmptyTraverser.instance();
         } catch (IOException ioe) {
@@ -127,9 +131,11 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
     }
 
     protected Traverser.Admin<S> read(final File file) {
+        final GraphReader reader = constructReader();
+
         try (final InputStream stream = new FileInputStream(file)) {
             final Graph graph = (Graph) this.traversal.getGraph().get();
-            constructReader().readGraph(stream, graph);
+            reader.readGraph(stream, graph);
 
             return EmptyTraverser.instance();
         } catch (IOException ioe) {
@@ -158,14 +164,8 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
             } else if (objectOrClass.equals(IO.graphml))
                 return GraphMLReader.build().create();
             else {
-                try {
-                    final Class<?> graphReaderClazz = Class.forName((String) objectOrClass);
-                    final Method build = graphReaderClazz.getMethod("build");
-                    final GraphReader.ReaderBuilder builder = (GraphReader.ReaderBuilder) build.invoke(null);
-                    return builder.create();
-                } catch (Exception ex) {
-                    throw new IllegalStateException(String.format("Could not construct the specified GraphReader of %s", objectOrClass), ex);
-                }
+                return invokeIoFactory((String) objectOrClass, GraphReader.class,
+                        "build", GraphReader.ReaderBuilder.class).create();
             }
         } else {
             throw new IllegalStateException("GraphReader could not be determined");
@@ -193,14 +193,8 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
             } else if (objectOrClass.equals(IO.graphml))
                 return GraphMLWriter.build().create();
             else {
-                try {
-                    final Class<?> graphWriterClazz = Class.forName((String) objectOrClass);
-                    final Method build = graphWriterClazz.getMethod("build");
-                    final GraphWriter.WriterBuilder builder = (GraphWriter.WriterBuilder) build.invoke(null);
-                    return builder.create();
-                } catch (Exception ex) {
-                    throw new IllegalStateException(String.format("Could not construct the specified GraphWriter of %s", objectOrClass), ex);
-                }
+                return invokeIoFactory((String) objectOrClass, GraphWriter.class,
+                        "build", GraphWriter.WriterBuilder.class).create();
             }
         } else {
             throw new IllegalStateException("GraphWriter could not be determined");
@@ -221,17 +215,51 @@ public class IoStep<S> extends AbstractStep<S,S> implements ReadWriting {
     protected List<IoRegistry> detectRegistries() {
         final List<Object> k = parameters.get(IO.registry, null);
         return k.stream().map(cn -> {
-            try {
-                if (cn instanceof IoRegistry)
-                    return (IoRegistry) cn;
-                else {
-                    final Class<?> clazz = Class.forName(cn.toString());
-                    return (IoRegistry) clazz.getMethod("instance").invoke(null);
-                }
-            } catch (Exception ex) {
-                throw new IllegalStateException(ex);
-            }
+            if (cn instanceof IoRegistry)
+                return (IoRegistry) cn;
+            else
+                return invokeIoFactory(cn.toString(), IoRegistry.class, "instance", IoRegistry.class);
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * Resolves a class name supplied to {@link IO#reader}, {@link IO#writer} or {@link IO#registry} to the object its
+     * static factory method returns. The name comes from user input in the traversal, so the class is loaded without
+     * being initialized and the return types are validated before the factory is invoked.
+     */
+    private static <R> R invokeIoFactory(final String className, final Class<?> ioType,
+                                         final String factoryMethodName, final Class<R> returnType) {
+        // one message for every rejection, so that a traversal cannot use the error to tell which classes the server
+        // has on its classpath
+        final String cannotConstruct = String.format("Could not construct the specified %s of %s",
+                ioType.getSimpleName(), className);
+
+        final Class<?> clazz;
+        try {
+            // initialize is false to avoid running initialization blocks prior to class verification.
+            clazz = Class.forName(className, false, IoStep.class.getClassLoader());
+        } catch (ClassNotFoundException | LinkageError ex) {
+            throw new IllegalStateException(cannotConstruct, ex);
+        }
+
+        if (!ioType.isAssignableFrom(clazz))
+            throw new IllegalStateException(cannotConstruct);
+
+        final Method factory;
+        try {
+            factory = clazz.getMethod(factoryMethodName);
+        } catch (NoSuchMethodException ex) {
+            throw new IllegalStateException(cannotConstruct, ex);
+        }
+
+        if (!Modifier.isStatic(factory.getModifiers()) || !returnType.isAssignableFrom(factory.getReturnType()))
+            throw new IllegalStateException(cannotConstruct);
+
+        try {
+            return returnType.cast(factory.invoke(null));
+        } catch (Exception | ExceptionInInitializerError ex) {
+            throw new IllegalStateException(cannotConstruct, ex);
+        }
     }
 
     @Override
