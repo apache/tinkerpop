@@ -8,6 +8,10 @@ updates:
     labels:
       - ".NET"
       - "dependencies"
+    groups:
+      dotnet-security:
+        applies-to: security-updates
+        patterns: ["*"]
     ignore:
       - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
         dependency-name: "*"
@@ -19,6 +23,10 @@ updates:
     labels:
       - "python"
       - "dependencies"
+    groups:
+      python-security:
+        applies-to: security-updates
+        patterns: ["*"]
     ignore:
       - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
         dependency-name: "*"
@@ -30,6 +38,15 @@ updates:
     labels:
       - "javascript"
       - "dependencies"
+    groups:
+      js-security-runtime:
+        applies-to: security-updates
+        dependency-type: production
+        patterns: ["*"]
+      js-security-dev:
+        applies-to: security-updates
+        dependency-type: development
+        patterns: ["*"]
     ignore:
       - update-types: ["version-update:semver-patch", "version-update:semver-minor"]
         dependency-name: "*"
@@ -41,6 +58,15 @@ updates:
     labels:
       - "site"
       - "dependencies"
+    groups:
+      site-security-runtime:
+        applies-to: security-updates
+        dependency-type: production
+        patterns: ["*"]
+      site-security-dev:
+        applies-to: security-updates
+        dependency-type: development
+        patterns: ["*"]
     ignore:
       - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
         dependency-name: "*"
@@ -52,6 +78,15 @@ updates:
     labels:
       - "site"
       - "dependencies"
+    groups:
+      site-security-runtime:
+        applies-to: security-updates
+        dependency-type: production
+        patterns: ["*"]
+      site-security-dev:
+        applies-to: security-updates
+        dependency-type: development
+        patterns: ["*"]
     ignore:
       - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
         dependency-name: "*"
@@ -63,6 +98,10 @@ updates:
     labels:
       - "go"
       - "dependencies"
+    groups:
+      go-security:
+        applies-to: security-updates
+        patterns: ["*"]
     ignore:
       - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
         dependency-name: "*"
@@ -74,6 +113,10 @@ updates:
     labels:
       - "java"
       - "dependencies"
+    groups:
+      java-security:
+        applies-to: security-updates
+        patterns: ["*"]
     ignore:
       - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
         dependency-name: "*"

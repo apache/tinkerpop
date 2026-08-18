@@ -14,7 +14,7 @@
   "dependencies": {
     "colorjs.io": "^0.5.0",
     "cytoscape": "^3.28.1",
-    "gremlin": "file:../../src/main/javascript/gremlin-javascript"
+    "gremlin": "portal:../.."
   },
   "devDependencies": {
     "vite": "^5.1.4"
