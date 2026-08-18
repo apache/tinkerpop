@@ -5820,12 +5820,23 @@ g.union(V().has('person','name','vadas'),
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#union(org.apache.tinkerpop.gremlin.process.traversal.Traversal...)++[`union(Traversal...)`]
 
-[llms-summary="The until-step is not an actual step, but is instead a step modulator for repeat() (find more documentation on the until() there)."]
+[llms-summary="The until-step is not an actual step, but is instead a step modulator for repeat() that specifies the break condition controlling how long the repeat() body loops. The until(Predicate) overload tests the traverser directly, while until(Traversal) tests whether its child traversal produces a result."]
 [[until-step]]
 === Until Step
 
-The `until`-step is not an actual step, but is instead a step modulator for `<<repeat-step,repeat()>>` (find more
-documentation on the `until()` there).
+The `until`-step is not an actual step, but is instead a step modulator for `<<repeat-step,repeat()>>`. It specifies
+the break condition that controls how long the `repeat()` body loops. It has no effect on its own and must accompany
+a `repeat()`. The `until(Predicate)` overload tests the traverser directly, while `until(Traversal)` tests whether its
+child traversal produces a result.
+
+[gremlin-groovy,modern]
+----
+g.V(1).repeat(out()).until(has('name','ripple'))
+----
+
+Whether `until()` is placed before or after `repeat()` determines the loop semantics (while-do versus do-while),
+as with `<<times-step,times()>>`. See the <<repeat-step,`repeat()`>>-step section for those positioning details
+and the general loop semantics.
 
 *Additional References*
 
