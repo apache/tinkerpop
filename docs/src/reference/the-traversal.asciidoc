@@ -2219,11 +2219,11 @@ name of one.
 ----
 g.io(someInputFile).
     with(IO.reader, IO.gryo).
-    with(IO.registry, TinkerIoRegistryV3d0.instance())
+    with(IO.registry, TinkerIoRegistryV3.instance())
   read().iterate()
 g.io(someOutputFile).
     with(IO.writer,IO.graphson).
-    with(IO.registry, "org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0")
+    with(IO.registry, "org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3")
   write().iterate()
 ----
 
@@ -2321,7 +2321,7 @@ other.  Failure to do so, may result in errors.
 [source,java]
 ----
 // expects a file extension of .kryo to interpret that
-// a GraphSON reader/writer should be used
+// a Gryo reader/writer should be used
 g.io("graph.kryo").read().iterate()
 g.io("graph.kryo").write().iterate()
 ----
