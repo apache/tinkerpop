@@ -215,6 +215,16 @@ TraversalStrategies.GlobalCache.denyStrategy(MyStrategy.class);
 
 See: link:https://tinkerpop.apache.org/docs/3.7.7/reference/#traversalstrategy[TraversalStrategy Reference]
 
+===== GraphBinary Strategy Deserialization
+
+Before 3.7.7, GraphBinary deserialization loaded a custom `TraversalStrategy` from the application class path based on
+its serialized class name. Starting with 3.7.7, GraphBinary only deserializes strategy classes registered with
+`TraversalStrategies.GlobalCache` and rejects denied strategies.
+
+Providers that send custom strategies over GraphBinary must register every strategy before requests are deserialized
+using `registerStrategies()` or `registerStrategy()`, as described above. The presence of a strategy on the application
+class path is no longer sufficient.
+
 == TinkerPop 3.7.6
 
 *Release Date: April 1, 2026*

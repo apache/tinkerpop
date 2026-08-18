@@ -55,6 +55,7 @@ import java.util.stream.Stream;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.denyStrategy;
 import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.getRegisteredStrategyClass;
+import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.getRegisteredStrategyClassByFullName;
 import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.registerStrategy;
 import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.unregisterStrategy;
 import static org.junit.Assert.assertEquals;
@@ -235,6 +236,7 @@ public class TraversalStrategiesTest {
 
         registerStrategy(DeniedStrategy.class);
         assertFalse(getRegisteredStrategyClass(DeniedStrategy.class.getSimpleName()).isPresent());
+        assertFalse(getRegisteredStrategyClassByFullName(DeniedStrategy.class.getName()).isPresent());
     }
 
     @Test
@@ -372,6 +374,58 @@ public class TraversalStrategiesTest {
     }
 
     public static class DeniedTestGraphComputer extends TestGraphComputer {
+    }
+
+    @Test
+    public void shouldResolveRegisteredStrategyByFullName() {
+        assertEquals(OptionsStrategy.class,
+                getRegisteredStrategyClassByFullName(OptionsStrategy.class.getName()).get());
+        assertEquals(MatchAlgorithmStrategy.class,
+                getRegisteredStrategyClassByFullName(MatchAlgorithmStrategy.class.getName()).get());
+        assertEquals(ReadOnlyStrategy.class,
+                getRegisteredStrategyClassByFullName(ReadOnlyStrategy.class.getName()).get());
+    }
+
+    @Test
+    public void shouldResolveNestedRegisteredStrategyByFullName() {
+        // StrategyA is nested, so it is registered under the segment of its name that follows the '$'
+        assertEquals(StrategyA.class,
+                getRegisteredStrategyClassByFullName(StrategyA.class.getName()).get());
+    }
+
+    @Test
+    public void shouldNotResolveUnregisteredStrategyByFullName() {
+        unregisterStrategy(AbsentStrategy.class);
+        assertFalse(getRegisteredStrategyClassByFullName(AbsentStrategy.class.getName()).isPresent());
+    }
+
+    @Test
+    public void shouldNotResolveStrategySharingASimpleNameWithARegisteredOne() {
+        // borrowing the simple name of a registered strategy must not admit some other class of that name
+        assertFalse(getRegisteredStrategyClassByFullName("com.example.ReadOnlyStrategy").isPresent());
+    }
+
+    @Test
+    public void shouldNotResolveSimpleNameByFullName() {
+        assertFalse(getRegisteredStrategyClassByFullName(ReadOnlyStrategy.class.getSimpleName()).isPresent());
+    }
+
+    @Test
+    public void shouldNotResolveNullByFullName() {
+        assertFalse(getRegisteredStrategyClassByFullName(null).isPresent());
+    }
+
+    @Test
+    public void shouldResolveStrategyByFullNameAfterItIsRegistered() {
+        unregisterStrategy(AbsentStrategy.class);
+
+        try {
+            registerStrategy(AbsentStrategy.class);
+            assertEquals(AbsentStrategy.class,
+                    getRegisteredStrategyClassByFullName(AbsentStrategy.class.getName()).get());
+        } finally {
+            unregisterStrategy(AbsentStrategy.class);
+        }
     }
 
     /**

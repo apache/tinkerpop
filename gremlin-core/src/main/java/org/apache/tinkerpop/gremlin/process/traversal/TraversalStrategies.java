@@ -374,6 +374,26 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
             return Optional.empty();
         }
 
+        /**
+         * Looks up a strategy by the fully qualified class name that a serialized traversal carries, without loading
+         * the named class. Serializers use this when they resolve a strategy name that arrived as bytes, so that the
+         * only strategies they can construct are those registered in advance by trusted code, by way of
+         * {@link #registerStrategies(Class, TraversalStrategies)} or {@link #registerStrategy(Class)}.
+         * <p/>
+         * A name only resolves when it is the {@link Class#getName()} of the class registered under its simple name,
+         * so an unregistered class that shares a simple name with a registered one does not resolve.
+         */
+        public static Optional<? extends Class<? extends TraversalStrategy>> getRegisteredStrategyClassByFullName(
+                final String className) {
+            if (null == className) return Optional.empty();
+
+            // a nested class is registered under the simple name, which is the segment after the last '$'
+            final int start = Math.max(className.lastIndexOf('.'), className.lastIndexOf('$')) + 1;
+            final Class<? extends TraversalStrategy> clazz = GLOBAL_REGISTRY.get(className.substring(start));
+
+            return null != clazz && className.equals(clazz.getName()) ? Optional.of(clazz) : Optional.empty();
+        }
+
         public static TraversalStrategies getStrategies(final Class graphOrGraphComputerClass) {
             try {
                 // be sure to load the class so that its static{} traversal strategy registration component is loaded.

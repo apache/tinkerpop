@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
@@ -43,7 +44,10 @@ public class TraversalStrategySerializer extends SimpleTypeSerializer<TraversalS
 
     @Override
     protected TraversalStrategy readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
-        final Class<TraversalStrategy> clazz = context.readValue(buffer, Class.class, false);
+        final String className = context.readValue(buffer, String.class, false);
+        final Class<? extends TraversalStrategy> clazz =
+                TraversalStrategies.GlobalCache.getRegisteredStrategyClassByFullName(className).
+                        orElseThrow(() -> new IOException("TraversalStrategy not recognized - " + className));
         final Map config = context.readValue(buffer, Map.class, false);
 
         return new TraversalStrategyProxy(clazz, new MapConfiguration(config));
