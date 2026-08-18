@@ -79,7 +79,7 @@
     "prettier": "^3.0.0",
     "ts-node": "^10.9.2",
     "typedoc": "^0.28.18",
-    "typescript": "~6.0.3"
+    "typescript": "~7.0.2"
   },
   "repository": {
     "type": "git",
