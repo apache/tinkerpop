@@ -22,6 +22,7 @@ import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph;
 import org.junit.Before;
@@ -167,6 +168,48 @@ public class StorageCrashConsistencyTest {
         Files.write(snapshotFile.toPath(), snapshotV12);
         Files.write(logFile.toPath(), logV2);
         assertReopensTo(1, 2);
+    }
+
+    @Test
+    public void shouldRecoverCrashWindowWithADeadKeyForcingDictionaryDivergence() throws Exception {
+        // Guards the preserve-dictionary-numbering decision. A key ("alpha") is deleted from the live graph after it
+        // is in the dictionary, then a new key ("gamma") is added. Preserving numbering keeps alpha's id forever, so
+        // the surviving log's gamma ref still matches the new snapshot's dictionary. Renumbering on compaction would
+        // instead drop the now-dead alpha and shift gamma to a lower id, so the log's higher-numbered gamma ref would
+        // no longer resolve. A single-key (or no-delete) state cannot tell the two apart.
+        final TinkerStorageGraph g = open();
+        g.addVertex(T.id, 1, "alpha", 1);
+        g.tx().commit();
+        g.addVertex(T.id, 2, "beta", 2);
+        g.tx().commit();
+        g.compact(); // snapshot holds alpha and beta in the dictionary at stable ids
+
+        g.vertices(1).next().remove(); // alpha becomes a dead key: retained only under preserve-numbering
+        g.tx().commit();
+        // re-write the surviving vertex: its record now carries a bare reference to the pre-existing key "beta"
+        // (not re-appended) plus a new key "gamma". If compaction renumbered, "beta"'s id would shift and this bare
+        // reference would resolve to the wrong key on replay.
+        g.vertices(2).next().property("gamma", "g");
+        g.tx().commit();
+        final byte[] logNotYetDeleted = Files.readAllBytes(logFile.toPath());
+        g.compact(); // new full-dictionary snapshot (preserved numbering), then log truncated
+        final byte[] newSnapshot = Files.readAllBytes(snapshotFile.toPath());
+        g.close();
+
+        // reconstruct the crash window: new snapshot in place, old log not yet deleted
+        Files.write(snapshotFile.toPath(), newSnapshot);
+        Files.write(logFile.toPath(), logNotYetDeleted);
+
+        final TinkerStorageGraph reopened = open();
+        try {
+            assertEquals(1, countOf(reopened.vertices())); // only the surviving vertex 2
+            assertEquals(0, countOf(reopened.vertices(1))); // alpha's vertex was deleted
+            final Vertex v = reopened.vertices(2).next();
+            assertEquals(Integer.valueOf(2), v.value("beta"));
+            assertEquals("g", v.value("gamma"));
+        } finally {
+            reopened.close();
+        }
     }
 
     private static long countOf(final Iterator<?> it) {
