@@ -32,15 +32,26 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -281,6 +292,201 @@ public abstract class AbstractTinkerStorageConformanceTest {
                 assertEquals(Integer.valueOf(id), reopened.vertices(id).next().value("value"));
         } finally {
             reopened.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripDiverseValueTypes() {
+        final Map<String, Object> values = new LinkedHashMap<>();
+        values.put("int", 42);
+        values.put("long", 42L);
+        values.put("float", 1.5f);
+        values.put("double", 2.5d);
+        values.put("bool", true);
+        values.put("byte", (byte) 7);
+        values.put("short", (short) 9);
+        values.put("char", 'x');
+        values.put("string", "hello");
+        values.put("uuid", new UUID(12L, 34L));
+        values.put("bigint", new BigInteger("123456789012345678901234567890"));
+        values.put("bigdec", new BigDecimal("3.14159265358979"));
+        values.put("datetime", OffsetDateTime.parse("2020-01-02T03:04:05Z"));
+        values.put("duration", Duration.ofSeconds(90));
+
+        TinkerStorageGraph graph = open();
+        try {
+            final Vertex v = graph.addVertex(T.id, 1);
+            values.forEach(v::property);
+            graph.tx().commit();
+        } finally {
+            graph.close();
+        }
+        graph = open();
+        try {
+            final Vertex v = graph.vertices(1).next();
+            values.forEach((k, expected) -> assertEquals(k, expected, v.value(k)));
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripCollectionValuedProperties() {
+        final List<Object> list = Arrays.asList(1, "two", 3.0d);
+        final Map<String, Object> map = new LinkedHashMap<>();
+        map.put("a", 1);
+        map.put("b", "two");
+        final Set<Object> set = new LinkedHashSet<>(Arrays.asList("x", "y", "z"));
+
+        TinkerStorageGraph graph = open();
+        try {
+            final Vertex v = graph.addVertex(T.id, 1);
+            v.property("list", list);
+            v.property("map", map);
+            v.property("set", set);
+            graph.tx().commit();
+        } finally {
+            graph.close();
+        }
+        graph = open();
+        try {
+            final Vertex v = graph.vertices(1).next();
+            assertEquals(list, v.value("list"));
+            assertEquals(map, v.value("map"));
+            assertEquals(set, v.value("set"));
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripNullPropertyValue() {
+        final Configuration conf = config();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, true);
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        try {
+            final Vertex v = graph.addVertex(T.id, 1);
+            v.property("maybe", null);
+            graph.tx().commit();
+        } finally {
+            graph.close();
+        }
+        graph = TinkerStorageGraph.open(conf);
+        try {
+            final VertexProperty<Object> vp = graph.vertices(1).next().<Object>properties("maybe").next();
+            assertTrue(vp.isPresent());
+            assertNull(vp.value());
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripHeterogeneousSameKeyTypes() {
+        TinkerStorageGraph graph = open();
+        try {
+            graph.addVertex(T.id, 1, "k", 42);   // Integer
+            graph.addVertex(T.id, 2, "k", 42L);  // Long
+            graph.tx().commit();
+        } finally {
+            graph.close();
+        }
+        graph = open();
+        try {
+            assertEquals(Integer.valueOf(42), graph.vertices(1).next().value("k"));
+            assertEquals(Long.valueOf(42L), graph.vertices(2).next().value("k"));
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripUuidElementIds() {
+        roundTripElementIds(new UUID(0L, 1L), new UUID(0L, 2L), new UUID(0L, 10L));
+    }
+
+    @Test
+    public void shouldRoundTripStringElementIds() {
+        roundTripElementIds("v-1", "v-2", "e-10");
+    }
+
+    // uses the default ANY id manager so any id type is accepted verbatim; the point is that the storage codec
+    // round-trips non-Long element ids through its scalar id encoding
+    private void roundTripElementIds(final Object outId, final Object inId, final Object edgeId) {
+        TinkerStorageGraph graph = open();
+        try {
+            final Vertex a = graph.addVertex(T.id, outId, "name", "a");
+            final Vertex b = graph.addVertex(T.id, inId, "name", "b");
+            a.addEdge("knows", b, T.id, edgeId, "weight", 0.5d);
+            graph.tx().commit();
+        } finally {
+            graph.close();
+        }
+        graph = open();
+        try {
+            assertEquals("a", graph.vertices(outId).next().value("name"));
+            assertEquals(outId, graph.vertices(outId).next().id());
+            final Edge e = graph.edges(edgeId).next();
+            assertEquals("knows", e.label());
+            assertEquals(outId, e.outVertex().id());
+            assertEquals(inId, e.inVertex().id());
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripLargeSchemaAcrossVarintBoundary() {
+        // >127 distinct keys and >127 values under one key push dictionary refs and counts past the single-byte
+        // LEB128 range, exercising the multi-byte varint path that small graphs never reach
+        final int n = 200;
+        // list cardinality so the >127 values under "multi" survive reopen (reconstruction takes cardinality from
+        // graph config, not the stored record)
+        final Configuration conf = config();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, "list");
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        try {
+            final Vertex v = graph.addVertex(T.id, 1);
+            for (int i = 0; i < n; i++)
+                v.property("key" + i, i);
+            for (int i = 0; i < n; i++)
+                v.property(VertexProperty.Cardinality.list, "multi", i);
+            graph.tx().commit();
+            graph.compact(); // also exercises a dictionary header with >127 entries
+        } finally {
+            graph.close();
+        }
+        graph = TinkerStorageGraph.open(conf);
+        try {
+            final Vertex v = graph.vertices(1).next();
+            for (int i = 0; i < n; i++)
+                assertEquals("key" + i, Integer.valueOf(i), v.value("key" + i));
+            assertEquals(n, countOf(v.properties("multi")));
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripUnicodeKeysAndValues() {
+        TinkerStorageGraph graph = open();
+        try {
+            final Vertex v = graph.addVertex(T.id, 1);
+            v.property("naïve", "café");
+            v.property("日本語", "テスト");
+            v.property("emoji", "party🎉");
+            graph.tx().commit();
+        } finally {
+            graph.close();
+        }
+        graph = open();
+        try {
+            final Vertex v = graph.vertices(1).next();
+            assertEquals("café", v.value("naïve"));
+            assertEquals("テスト", v.value("日本語"));
+            assertEquals("party🎉", v.value("emoji"));
+        } finally {
+            graph.close();
         }
     }
 
