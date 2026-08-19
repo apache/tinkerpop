@@ -391,7 +391,10 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private Object readScalar(final ByteBufferBuffer buf) throws IOException {
-        final DataType dataType = DataType.get(Byte.toUnsignedInt(buf.readByte()));
+        final int code = Byte.toUnsignedInt(buf.readByte());
+        final DataType dataType = DataType.get(code);
+        if (dataType == null)
+            throw new IOException(String.format("Corrupt storage: unknown value type code 0x%02X", code));
         if (dataType == DataType.UNSPECIFIED_NULL)
             return null;
         final TypeSerializer serializer = registry.getSerializer(dataType);
