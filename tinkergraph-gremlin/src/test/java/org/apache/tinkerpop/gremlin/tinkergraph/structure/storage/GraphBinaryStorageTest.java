@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph;
 import org.junit.Test;
@@ -381,6 +382,124 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
             assertTrue("cause should report the unsupported version and migration path: " + rootMessage(expected),
                     rootMessage(expected).contains("Unsupported storage format version")
                             && rootMessage(expected).contains("g.io()"));
+        }
+    }
+
+    @Test
+    public void shouldRegenerateVertexPropertyIdsByDefault() {
+        // default: vertex-property ids are not persisted; the property still round-trips (value + meta), the id is
+        // simply reassigned on load
+        TinkerStorageGraph graph = open();
+        try {
+            final VertexProperty<Object> vp = graph.addVertex(T.id, 1).property(VertexProperty.Cardinality.list, "name", "marko");
+            vp.property("since", 2010);
+            graph.tx().commit();
+        } finally {
+            graph.close();
+        }
+        graph = open();
+        try {
+            final VertexProperty<Object> vp = graph.vertices(1).next().<Object>properties("name").next();
+            assertEquals("marko", vp.value());
+            assertEquals(Integer.valueOf(2010), vp.<Integer>property("since").value());
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldPreserveVertexPropertyIdsWhenConfigured() {
+        final Configuration conf = config();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_PRESERVE_VP_IDS, true);
+        final Object vpId;
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        try {
+            final VertexProperty<Object> vp = graph.addVertex(T.id, 1).property(VertexProperty.Cardinality.list, "name", "marko");
+            vpId = vp.id();
+            graph.tx().commit();
+        } finally {
+            graph.close();
+        }
+        graph = TinkerStorageGraph.open(conf);
+        try {
+            final VertexProperty<Object> vp = graph.vertices(1).next().<Object>properties("name").next();
+            assertEquals("marko", vp.value());
+            assertEquals("vertex-property id should be preserved across reopen", vpId, vp.id());
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldReplayDictionaryGrowthAcrossLogCommits() throws Exception {
+        // each commit introduces a new property key, so the dictionary grows via OP_DICT_APPEND across successive log
+        // frames. Reopening from a log with no snapshot must rebuild the dictionary incrementally and resolve all refs.
+        final Configuration conf = config();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, 0L); // keep the log, no auto-compaction
+        final String location = conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        for (int i = 0; i < 10; i++) {
+            graph.addVertex(T.id, i, "key" + i, i);
+            graph.tx().commit();
+        }
+        graph.tx().close();
+        final byte[] log = Files.readAllBytes(new File(location, GraphBinaryStorage.LOG_FILE).toPath());
+        graph.close();
+
+        // restore a log-only store (no snapshot) and reopen
+        Files.deleteIfExists(new File(location, GraphBinaryStorage.SNAPSHOT_FILE).toPath());
+        Files.write(new File(location, GraphBinaryStorage.LOG_FILE).toPath(), log);
+        graph = TinkerStorageGraph.open(conf);
+        try {
+            assertEquals(10, countOf(graph.vertices()));
+            for (int i = 0; i < 10; i++)
+                assertEquals(Integer.valueOf(i), graph.vertices(i).next().value("key" + i));
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldRewriteDictionaryOnCompactionAndReopen() {
+        TinkerStorageGraph graph = open();
+        try {
+            for (int i = 0; i < 10; i++)
+                graph.addVertex(T.id, i, "key" + i, i);
+            graph.tx().commit();
+            graph.compact(); // writes a fresh full-dictionary snapshot header, then element frames
+        } finally {
+            graph.close();
+        }
+        graph = open();
+        try {
+            assertEquals(10, countOf(graph.vertices()));
+            for (int i = 0; i < 10; i++)
+                assertEquals(Integer.valueOf(i), graph.vertices(i).next().value("key" + i));
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldStoreFewBytesPerElement() {
+        // regression guard: the dictionary-encoded format must stay well under the ~168 bytes/element the old
+        // whole-object format cost for a comparable graph (3 vertex props, 2 edge props, E=V).
+        final int vertexCount = 200;
+        final TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        try {
+            for (int i = 0; i < vertexCount; i++)
+                graph.addVertex(T.id, i, "name", "v" + i, "age", i % 100, "score", i * 1.5d);
+            for (int i = 0; i < vertexCount; i++)
+                graph.vertices(i).next().addEdge("knows", graph.vertices((i + 1) % vertexCount).next(),
+                        T.id, 1_000_000 + i, "weight", i * 0.5d, "count", i % 7);
+            graph.tx().commit();
+            graph.compact();
+            final long bytes = new File(location, GraphBinaryStorage.SNAPSHOT_FILE).length();
+            final double perElement = (double) bytes / (2 * vertexCount);
+            assertTrue("expected well under 168 bytes/element (whole-object baseline), got " + perElement, perElement < 100.0);
+        } finally {
+            graph.close();
         }
     }
 

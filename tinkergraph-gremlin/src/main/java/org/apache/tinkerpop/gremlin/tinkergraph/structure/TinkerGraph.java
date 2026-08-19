@@ -75,6 +75,14 @@ public interface TinkerGraph extends Graph {
      * set.
      */
     String GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD = "gremlin.tinkergraph.storage.compactThreshold";
+    /**
+     * Whether a {@link TinkerStorageGraph} storage engine persists auto-generated vertex-property ids so they are
+     * stable across a close and reopen. Defaults to {@code false}: vertex-property ids are regenerated on load, which
+     * keeps the store smaller. Element and edge ids are always preserved regardless of this setting. Each record is
+     * self-describing, so a store written with this enabled reopens correctly even if the setting later differs. Only
+     * meaningful when {@link #GREMLIN_TINKERGRAPH_STORAGE} is set.
+     */
+    String GREMLIN_TINKERGRAPH_STORAGE_PRESERVE_VP_IDS = "gremlin.tinkergraph.storage.preserveVertexPropertyIds";
     String GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES = "gremlin.tinkergraph.allowNullPropertyValues";
     String GREMLIN_TINKERGRAPH_SERVICE = "gremlin.tinkergraph.service";
     String GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY = "gremlin.tinkergraph.vertexLabelCardinality";

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
 
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -33,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
 import java.io.DataOutputStream;
@@ -83,6 +85,17 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
      */
     private final Map<String, Integer> keyToId = new HashMap<>();
     private final List<String> idToKey = new ArrayList<>();
+
+    /**
+     * When true, persist auto-generated vertex-property ids so they are stable across reopen. Written per vertex
+     * record so a store reopens correctly regardless of the reader's setting.
+     */
+    private boolean preserveVertexPropertyIds = false;
+
+    @Override
+    protected void configureCodec(final Configuration config) {
+        this.preserveVertexPropertyIds = config.getBoolean(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_PRESERVE_VP_IDS, false);
+    }
 
     @Override
     protected void beginReplay() {
@@ -213,6 +226,9 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         for (final String label : labels)
             writeVarInt(buf, keyToId.get(label));
 
+        // self-describing flag: whether each value below carries a persisted vertex-property id
+        buf.writeByte(preserveVertexPropertyIds ? 1 : 0);
+
         // group vertex properties by key so multi-properties (list/set) round-trip
         final Map<String, List<VertexProperty<Object>>> groups = new LinkedHashMap<>();
         final Iterator<VertexProperty<Object>> vps = v.properties();
@@ -227,6 +243,8 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
             writeVarInt(buf, values.size());
             for (final VertexProperty<Object> vp : values) {
                 writeScalar(buf, vp.value());
+                if (preserveVertexPropertyIds)
+                    writeScalar(buf, vp.id());
                 final List<Property<Object>> metas = new ArrayList<>();
                 vp.properties().forEachRemaining(metas::add);
                 writeVarInt(buf, metas.size());
@@ -315,6 +333,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
                 labels.add(idToKey.get(readVarInt(buf)));
             b.setLabels(labels);
         }
+        final boolean hasVpIds = buf.readByte() != 0;
         final int keyGroupCount = readVarInt(buf);
         for (int g = 0; g < keyGroupCount; g++) {
             final String key = idToKey.get(readVarInt(buf));
@@ -322,6 +341,8 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
             for (int j = 0; j < valueCount; j++) {
                 final Object value = readScalar(buf);
                 final DetachedVertexProperty.Builder vpb = DetachedVertexProperty.build().setLabel(key).setValue(value);
+                if (hasVpIds)
+                    vpb.setId(readScalar(buf));
                 final int metaCount = readVarInt(buf);
                 for (int m = 0; m < metaCount; m++) {
                     final String metaKey = idToKey.get(readVarInt(buf));
