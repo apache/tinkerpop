@@ -123,10 +123,17 @@ public class StorageCrashConsistencyTest {
 
     @Test
     public void shouldRecoverDurableCommitWithNoSnapshot() throws Exception {
-        // WAL guarantee: a commit whose frame was durably written to the log, with no compaction having run, must
-        // recover on reopen even though no snapshot exists.
-        captureBuildingBlocks();
-        Files.write(logFile.toPath(), logV2);
+        // WAL guarantee: a commit durably written to the log with no compaction (no snapshot) recovers on reopen. On
+        // a fresh store the dictionary starts empty, so the commit frame is self-contained (it carries its own
+        // dictionary appends), which is exactly the real "log only, never compacted" case.
+        final TinkerStorageGraph g = open();
+        g.addVertex(T.id, 2, "value", 2);
+        g.tx().commit();
+        g.tx().close();
+        final byte[] selfContainedLog = Files.readAllBytes(logFile.toPath());
+        g.close(); // compaction on close would fold the log away; the raw log was captured above
+        resetFiles();
+        Files.write(logFile.toPath(), selfContainedLog);
         assertReopensTo(2);
     }
 

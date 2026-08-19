@@ -127,10 +127,10 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         graph.tx().commit();
         graph.compact();
 
-        // the snapshot must be written as one framed record per element (3 vertices + 2 edges = 5), rather than a
-        // single whole-graph frame, so compaction never buffers the entire graph in one array
+        // the snapshot must be streamed: a dictionary header frame plus one framed record per element (3 vertices +
+        // 2 edges = 5), rather than a single whole-graph frame, so compaction never buffers the entire graph at once
         final File snapshotFile = new File(location, GraphBinaryStorage.SNAPSHOT_FILE);
-        assertEquals(5, countFrames(snapshotFile));
+        assertEquals(1 + 5, countFrames(snapshotFile));
         graph.close();
 
         // and the streamed snapshot must reopen to exactly the same graph
@@ -145,9 +145,9 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     @Test
     public void shouldStreamSnapshotFrameByFrameAtScale() {
         // Bounded-memory proxy for the streaming snapshot path: rather than measure heap (flaky, JVM-dependent), assert
-        // the observable streaming property holds at scale — a large graph is written as exactly one frame per element,
-        // never one whole-graph frame — and round-trips intact. This is the property that keeps compaction from
-        // materializing a second full copy of the graph in memory; it is not a hard OOM assertion.
+        // the observable streaming property holds at scale — a large graph is written as a dictionary header frame plus
+        // one frame per element, never one whole-graph frame — and round-trips intact. This is the property that keeps
+        // compaction from materializing a second full copy of the graph in memory; it is not a hard OOM assertion.
         final int vertexCount = 500;
         final int edgeCount = 499;
         final TinkerStorageGraph graph = open();
@@ -161,7 +161,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
             graph.compact();
 
             try {
-                assertEquals(vertexCount + edgeCount, countFrames(new File(location, GraphBinaryStorage.SNAPSHOT_FILE)));
+                assertEquals(1 + vertexCount + edgeCount, countFrames(new File(location, GraphBinaryStorage.SNAPSHOT_FILE)));
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
