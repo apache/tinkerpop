@@ -490,6 +490,118 @@ public abstract class AbstractTinkerStorageConformanceTest {
         }
     }
 
+    @Test
+    public void shouldSurviveRepeatedCompactionCycles() {
+        TinkerStorageGraph graph = open();
+        try {
+            graph.addVertex(T.id, 1, "a", 1);
+            graph.tx().commit();
+            graph.compact();
+            graph.addVertex(T.id, 2, "b", 2);
+            graph.tx().commit();
+            graph.compact();
+            graph.addVertex(T.id, 3, "c", 3);
+            graph.tx().commit();
+            graph.compact();
+        } finally {
+            graph.close();
+        }
+        graph = open();
+        try {
+            assertEquals(3, countOf(graph.vertices()));
+            assertEquals(Integer.valueOf(1), graph.vertices(1).next().value("a"));
+            assertEquals(Integer.valueOf(2), graph.vertices(2).next().value("b"));
+            assertEquals(Integer.valueOf(3), graph.vertices(3).next().value("c"));
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldSurviveMultipleOpenCloseSessions() {
+        TinkerStorageGraph graph = open();
+        try {
+            graph.addVertex(T.id, 1, "n", "one");
+            graph.tx().commit();
+        } finally {
+            graph.close();
+        }
+        graph = open();
+        try {
+            graph.addVertex(T.id, 2, "n", "two");
+            graph.tx().commit();
+        } finally {
+            graph.close();
+        }
+        graph = open();
+        try {
+            graph.addVertex(T.id, 3, "n", "three");
+            graph.tx().commit();
+            graph.compact();
+        } finally {
+            graph.close();
+        }
+        graph = open();
+        try {
+            assertEquals(3, countOf(graph.vertices()));
+            assertEquals("one", graph.vertices(1).next().value("n"));
+            assertEquals("two", graph.vertices(2).next().value("n"));
+            assertEquals("three", graph.vertices(3).next().value("n"));
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripConcurrentCommitsWithDistinctKeys() throws Exception {
+        // concurrent commits that each introduce a distinct property key stress dictionary growth under the
+        // commit-write lock; on reopen every distinct key must resolve
+        final int threads = 8;
+        final int perThread = 25;
+        final TinkerStorageGraph writeGraph = open();
+        try {
+            final ExecutorService pool = Executors.newFixedThreadPool(threads);
+            final CountDownLatch start = new CountDownLatch(1);
+            final List<Future<?>> futures = new ArrayList<>();
+            for (int t = 0; t < threads; t++) {
+                final int threadId = t;
+                futures.add(pool.submit(() -> {
+                    start.await();
+                    for (int i = 0; i < perThread; i++) {
+                        final int id = threadId * perThread + i;
+                        writeGraph.addVertex(T.id, id, "k_" + threadId + "_" + i, id);
+                        writeGraph.tx().commit();
+                    }
+                    return null;
+                }));
+            }
+            start.countDown();
+            for (final Future<?> f : futures)
+                f.get(60, TimeUnit.SECONDS);
+            pool.shutdown();
+            assertTrue(pool.awaitTermination(60, TimeUnit.SECONDS));
+        } finally {
+            writeGraph.close();
+        }
+        final TinkerStorageGraph reopened = open();
+        try {
+            final int expected = threads * perThread;
+            assertEquals(expected, countOf(reopened.vertices()));
+            for (int t = 0; t < threads; t++) {
+                for (int i = 0; i < perThread; i++) {
+                    final int id = threadId(t, i, perThread);
+                    assertEquals(Integer.valueOf(id), reopened.vertices(id).next().value("k_" + t + "_" + i));
+                }
+            }
+        } finally {
+            reopened.close();
+        }
+    }
+
+    private static int threadId(final int t, final int i, final int perThread) {
+        return t * perThread + i;
+    }
+
     private static long countOf(final Iterator<?> it) {
         long count = 0;
         while (it.hasNext()) {
