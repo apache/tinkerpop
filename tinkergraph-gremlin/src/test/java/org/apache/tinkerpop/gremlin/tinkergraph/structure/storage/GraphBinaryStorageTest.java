@@ -22,15 +22,20 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph;
 import org.junit.Test;
 
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -500,6 +505,70 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
             assertTrue("expected well under 168 bytes/element (whole-object baseline), got " + perElement, perElement < 100.0);
         } finally {
             graph.close();
+        }
+    }
+
+    // --- decode-error paths -----------------------------------------------------------------------------------------
+    // A frame that clears CRC framing can still be internally malformed (a bug in an older writer, or a targeted flip
+    // that happens to keep the checksum valid). The codec must reject each such frame with a clear IOException rather
+    // than a silent wrong answer or an opaque runtime crash. These drive decodeFrame directly with hand-built frames;
+    // values below 128 are single-byte varints, so the frames are written as literal bytes.
+
+    private static final byte OP_DEL_VERTEX = 2;
+    private static final byte OP_DICT_APPEND = 5;
+
+    /** Decode one frame payload against a fresh codec, returning nothing — the maps are throwaway. */
+    private static void decode(final GraphBinaryStorage codec, final byte[] frame) throws IOException {
+        final Map<Object, DetachedVertex> vertices = new HashMap<>();
+        final Map<Object, DetachedEdge> edges = new HashMap<>();
+        codec.decodeFrame(frame, vertices, edges);
+    }
+
+    @Test
+    public void shouldRejectFrameWithUnknownOpCode() {
+        // entryCount=1, op=99 (no such op)
+        try {
+            decode(new GraphBinaryStorage(), new byte[]{ 1, 99 });
+            fail("expected an IOException for an unknown op code");
+        } catch (final IOException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("Unknown storage op code"));
+        }
+    }
+
+    @Test
+    public void shouldRejectDictionaryAppendGap() {
+        // entryCount=1, OP_DICT_APPEND, id=5 into an empty dictionary (expected next id is 0) -> gap
+        try {
+            decode(new GraphBinaryStorage(), new byte[]{ 1, OP_DICT_APPEND, 5, 1, (byte) 'x' });
+            fail("expected an IOException for a dictionary append gap");
+        } catch (final IOException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("dictionary append gap"));
+        }
+    }
+
+    @Test
+    public void shouldRejectDictionaryRedefinition() {
+        // append id 0 = "a", then re-append id 0 = "b" on the same codec -> redefinition (a mismatch, not an
+        // idempotent re-append of the same string)
+        final GraphBinaryStorage codec = new GraphBinaryStorage();
+        try {
+            decode(codec, new byte[]{ 1, OP_DICT_APPEND, 0, 1, (byte) 'a' });
+            decode(codec, new byte[]{ 1, OP_DICT_APPEND, 0, 1, (byte) 'b' });
+            fail("expected an IOException for a redefined dictionary id");
+        } catch (final IOException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("redefined"));
+        }
+    }
+
+    @Test
+    public void shouldRejectUnknownValueTypeCode() {
+        // OP_DEL_VERTEX reads a scalar id; feed it a value type code (0xFF) no serializer claims. Without a guard this
+        // is an opaque NullPointerException; the codec must surface it as corruption instead.
+        try {
+            decode(new GraphBinaryStorage(), new byte[]{ 1, OP_DEL_VERTEX, (byte) 0xFF });
+            fail("expected an IOException for an unknown value type code");
+        } catch (final IOException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("unknown value type code"));
         }
     }
 
