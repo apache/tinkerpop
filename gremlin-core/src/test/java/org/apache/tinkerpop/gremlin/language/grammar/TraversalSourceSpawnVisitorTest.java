@@ -20,7 +20,9 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,6 +89,66 @@ public class TraversalSourceSpawnVisitorTest {
         assertEquals(
                 ((DefaultGraphTraversal) g.match("MATCH (p:person {age: $age})-[:knows]->(f:person)", asMap("age", 29))).asAdmin().getGremlinLang(),
                 ((DefaultGraphTraversal) eval("g.match(\"MATCH (p:person {age: $age})-[:knows]->(f:person)\",[\"age\":29])")).asAdmin().getGremlinLang());
+    }
+
+    @Test
+    public void shouldParseTraversalSourceSpawnMethod_addE() {
+        compare(g.addE("knows"), eval("g.addE('knows')"));
+    }
+
+    @Test
+    public void shouldParseTraversalSourceSpawnMethod_io() {
+        compare(g.io("data.xml"), eval("g.io('data.xml')"));
+    }
+
+    @Test
+    public void shouldParseTraversalSourceSpawnMethod_mergeV_Map() {
+        compare(g.mergeV(new HashMap<>()), eval("g.mergeV([:])"));
+    }
+
+    @Test
+    public void shouldParseTraversalSourceSpawnMethod_mergeV_Traversal() {
+        compare(g.mergeV(__.constant(new HashMap<>())), eval("g.mergeV(__.constant([:]))"));
+    }
+
+    @Test
+    public void shouldParseTraversalSourceSpawnMethod_mergeE_Map() {
+        compare(g.mergeE(new HashMap<>()), eval("g.mergeE([:])"));
+    }
+
+    @Test
+    public void shouldParseTraversalSourceSpawnMethod_mergeE_Traversal() {
+        compare(g.mergeE(__.constant(new HashMap<>())), eval("g.mergeE(__.constant([:]))"));
+    }
+
+    @Test
+    public void shouldParseTraversalSourceSpawnMethod_call_empty() {
+        compare(g.call(), eval("g.call()"));
+    }
+
+    @Test
+    public void shouldParseTraversalSourceSpawnMethod_call_string() {
+        compare(g.call("svc"), eval("g.call('svc')"));
+    }
+
+    @Test
+    public void shouldParseTraversalSourceSpawnMethod_call_string_map() {
+        compare(g.call("svc", new HashMap<>()), eval("g.call('svc', [:])"));
+    }
+
+    @Test
+    public void shouldParseTraversalSourceSpawnMethod_call_string_traversal() {
+        compare(g.call("svc", __.identity()), eval("g.call('svc', __.identity())"));
+    }
+
+    @Test
+    public void shouldParseTraversalSourceSpawnMethod_call_string_map_traversal() {
+        compare(g.call("svc", new HashMap<>(), __.identity()), eval("g.call('svc', [:], __.identity())"));
+    }
+
+    @Test
+    public void shouldParseTraversalSourceSpawnMethod_union() {
+        compare(g.union((Traversal) __.V(), (Traversal) __.E()), eval("g.union(__.V(), __.E())"));
     }
 
     private Object eval(final String query) {
