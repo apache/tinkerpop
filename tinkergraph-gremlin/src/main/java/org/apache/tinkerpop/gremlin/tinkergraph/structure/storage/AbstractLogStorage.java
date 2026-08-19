@@ -155,8 +155,16 @@ public abstract class AbstractLogStorage implements TinkerStorage {
                 TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, DEFAULT_COMPACT_THRESHOLD_BYTES);
         // seed the counter with any pre-existing log so a graph reopened with a large log still compacts promptly
         this.logBytesSinceCompaction = logFile.exists() ? logFile.length() : 0;
+        configureCodec(config);
         ensureDirectory();
         establishStoreVersion();
+    }
+
+    /**
+     * Read any codec-specific configuration. Called once during {@link #open}. Default is a no-op.
+     */
+    protected void configureCodec(final Configuration config) {
+        // no-op by default
     }
 
     @Override
