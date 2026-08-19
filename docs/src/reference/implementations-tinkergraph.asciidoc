@@ -186,6 +186,10 @@ may be lost on an operating system crash or power loss. Only meaningful when `gr
 automatically compacts its append log, bounding the log growth and restart time of a long-running graph that is never
 explicitly closed. Defaults to `67108864` (64 MB). A value of `0` disables automatic compaction, leaving it to
 `close()` or an explicit `compact()`. Only meaningful when `gremlin.tinkergraph.storage` is set.
+|gremlin.tinkergraph.storage.preserveVertexPropertyIds |Whether a `TinkerStorageGraph` storage engine persists
+auto-generated vertex-property ids so they are stable across a close and reopen. Defaults to `false`, which
+regenerates those ids on load and keeps the store smaller. Element and edge ids are always preserved regardless. Only
+meaningful when `gremlin.tinkergraph.storage` is set.
 |=========================================================
 
 NOTE: To use <<tinkergraph-gremlin-tx, transactions>> and <<tinkergraph-gremlin-persistence, persistence>>, configure
@@ -455,6 +459,10 @@ committed state. Compaction runs when the graph is closed and can be requested e
 `TinkerStorageGraph.compact()`. So that a long-running graph which is never explicitly closed does not accumulate an
 unbounded log, compaction also runs automatically once the log grows past `gremlin.tinkergraph.storage.compactThreshold`
 bytes. Setting that threshold to `0` disables automatic compaction.
+
+Element and edge ids are always preserved across a reopen. Auto-generated vertex-property ids are not, by default,
+so a vertex property may receive a different id after a reopen. Setting `gremlin.tinkergraph.storage.preserveVertexPropertyIds`
+to `true` persists those ids as well, at the cost of a larger store.
 
 A storage location may be opened by only one graph at a time. `TinkerStorageGraph` takes an exclusive lock on the
 storage directory when it opens, so a second attempt to open the same location, whether from the same JVM or another
