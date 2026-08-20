@@ -143,6 +143,9 @@ closed beads must be included, as in `bd query 'labels="xx.yy.zz"' --all`, becau
 number fails to parse and closed beads are hidden by default.
 ... Each root carries a record bead for its JIRA issue, pull request, proposal or dev mailing list thread.
 A small fix that never had one of these is a legitimate exception.
+... Each merged root carries a commit record, written by `bin/beads-commits.py` as described in
+<<beads-commits,Linking Commits to Beads>>. A root pinned before that convention existed is a legitimate
+exception, and `bin/beads-report.py` reports a root without one as a question rather than a defect.
 ... `bin/beads-report.py` reports nothing unexpected. Run it per root with `--root` to scope it to a single
 subgraph. Its structural findings, such as a dangling edge, are defects, while the remainder are questions
 rather than verdicts and a one-line fix will legitimately trip several of them.
