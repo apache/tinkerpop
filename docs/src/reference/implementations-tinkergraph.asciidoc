@@ -471,6 +471,24 @@ the storage format version it was written with. Opening a store written in a for
 with a clear error rather than misreading the data. There is no in-place format migration. To move a graph across an
 incompatible storage format, export it with the `io()` step before upgrading and read it back afterward.
 
+Gremlin Server persists a graph the same way. A graph in the server's `graphs` configuration is pointed at a
+properties file that sets the storage keys, and the server opens that graph at startup, commits to it as clients
+request, and closes it on shutdown. A graph configured without a storage engine remains transactional but in-memory,
+so its data is lost when the server stops.
+
+[source,properties]
+----
+gremlin.graph=org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph
+gremlin.tinkergraph.storage=graphbinary
+gremlin.tinkergraph.graphLocation=/data/mygraph
+----
+
+[source,yaml]
+----
+graphs: {
+  graph: conf/tinkerstoragegraph-persistent.properties }
+----
+
 Persistence is distinct from interchange. `TinkerMemoryGraph` is purely in-memory and does not persist. To move data in
 or out of any TinkerGraph in an interchange format such as GraphML, GraphSON, or Gryo, use the `io()` step directly:
 
