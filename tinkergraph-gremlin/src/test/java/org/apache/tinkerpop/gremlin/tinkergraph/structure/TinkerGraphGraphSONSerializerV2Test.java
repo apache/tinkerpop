@@ -338,6 +338,42 @@ public class TinkerGraphGraphSONSerializerV2Test {
         }
     }
 
+    @Test(timeout = 5000)
+    public void shouldFailFastOnScalarVerticesField() throws IOException {
+        final String malformed = "{\"@type\":\"tinker:graph\",\"@value\":{\"vertices\":0}}";
+        final GraphReader reader = getReader(defaultMapperV2);
+        try {
+            reader.readObject(new ByteArrayInputStream(malformed.getBytes()), TinkerGraph.class);
+            fail("Expected IOException for malformed tinker:graph input");
+        } catch (IOException expected) {
+            // JsonParseException — the START_ARRAY check threw as intended
+        }
+    }
+
+    @Test(timeout = 5000)
+    public void shouldFailFastOnScalarEdgesField() throws IOException {
+        final String malformed = "{\"@type\":\"tinker:graph\",\"@value\":{\"vertices\":[],\"edges\":0}}";
+        final GraphReader reader = getReader(defaultMapperV2);
+        try {
+            reader.readObject(new ByteArrayInputStream(malformed.getBytes()), TinkerGraph.class);
+            fail("Expected IOException for malformed tinker:graph input");
+        } catch (IOException expected) {
+            // JsonParseException — the START_ARRAY check threw as intended
+        }
+    }
+
+    @Test(timeout = 5000)
+    public void shouldFailFastOnTruncatedInput() throws IOException {
+        final String malformed = "{\"@type\":\"tinker:graph\",\"@value\":{\"vertices\":[";
+        final GraphReader reader = getReader(defaultMapperV2);
+        try {
+            reader.readObject(new ByteArrayInputStream(malformed.getBytes()), TinkerGraph.class);
+            fail("Expected IOException for truncated tinker:graph input");
+        } catch (IOException expected) {
+            // JsonParseException — nextTokenOrThrow detected end-of-input
+        }
+    }
+
     @Test
     public void deserializersTestsProperty() {
         final TinkerGraph tg = TinkerGraph.open();
