@@ -1415,14 +1415,16 @@ public class TinkerStorageGraphTest {
 
         try {
             gtx.tx().commit();
-            //fail("should throw TransactionException");
+            fail("should throw TransactionException");
         } catch (TransactionException e) {
 
         }
 
-        // should be only 1 vertex with updated property
+        // tx2 committed first and wins; tx1 conflicted and rolled back, so its meta1 was never persisted
         assertEquals(1L, (long) gtx.V().count().next());
-        assertEquals("tx2", gtx.V(v1.id()).properties("test").values("meta1", "meta2").next());
+        assertEquals(1L, (long) gtx.V(v1.id()).properties("test").properties().count().next());
+        assertEquals("tx2", gtx.V(v1.id()).properties("test").values("meta2").next());
+        assertFalse(gtx.V(v1.id()).properties("test").values("meta1").hasNext());
     }
 
     @Test
