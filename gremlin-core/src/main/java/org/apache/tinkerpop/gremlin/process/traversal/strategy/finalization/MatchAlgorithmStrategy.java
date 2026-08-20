@@ -55,8 +55,15 @@ public final class MatchAlgorithmStrategy extends AbstractTraversalStrategy<Trav
     }
 
     public static MatchAlgorithmStrategy create(final Configuration configuration) {
+        final String matchAlgorithm = configuration.getString(MATCH_ALGORITHM);
         try {
-            return new MatchAlgorithmStrategy((Class) Class.forName(configuration.getString(MATCH_ALGORITHM)));
+            // Provider algorithms are supported, so validate the extension type before allowing class initialization.
+            final Class<?> matchAlgorithmClass = Class.forName(matchAlgorithm, false,
+                    MatchAlgorithmStrategy.class.getClassLoader());
+            if (!MatchStep.MatchAlgorithm.class.isAssignableFrom(matchAlgorithmClass))
+                throw new IllegalArgumentException("The provided match algorithm is invalid: " + matchAlgorithm);
+
+            return new MatchAlgorithmStrategy(matchAlgorithmClass.asSubclass(MatchStep.MatchAlgorithm.class));
         } catch (final ClassNotFoundException e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
