@@ -545,6 +545,12 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         private TinkerGraphGraphFeatures() {
         }
 
+        /**
+         * A persistent {@link TinkerStorageGraph} is a single-writer store: {@code DirectoryLock} permits only one
+         * graph instance to open a given storage directory at a time. This feature denotes multiple connections /
+         * instances sharing the same data — not the intra-instance, multi-thread transaction access that the
+         * thread-local {@link TinkerTransaction} already provides — so it is {@code false}.
+         */
         @Override
         public boolean supportsConcurrentAccess() {
             return false;
