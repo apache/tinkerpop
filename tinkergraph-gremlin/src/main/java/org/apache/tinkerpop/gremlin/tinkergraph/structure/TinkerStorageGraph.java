@@ -49,9 +49,17 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * The transactional implementation of the {@link TinkerGraph} interface, in-memory with optional persistence on
- * calls to {@link #close()}. It is planned that this implementation will optionally support simple storage to disk
- * built on its transaction functionality.
+ * The transactional implementation of the {@link TinkerGraph} interface. It provides {@code read committed}
+ * transaction isolation with optimistic locking and, when a storage engine is configured, durable persistence to
+ * disk. With no storage engine configured it is an in-memory transactional graph that retains nothing across
+ * restarts.
+ * <p/>
+ * Persistence is pluggable through the {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage}
+ * SPI and enabled with the {@code gremlin.tinkergraph.storage} and {@code gremlin.tinkergraph.graphLocation}
+ * configuration keys. Each committed transaction is written through to the storage engine before the in-memory commit
+ * is applied, and reopening the same location replays the persisted commits to rebuild the graph. A storage location
+ * is single-writer: it is guarded by an exclusive {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DirectoryLock}
+ * so a second open of the same directory fails rather than corrupting the data.
  *
  * @author Valentyn Kahamlyk
  */
