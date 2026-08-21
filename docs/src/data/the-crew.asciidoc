@@ -1,0 +1,122 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+[[the-crew]]
+[llms-summary="The crew graph: a TinkerPop 3.x showcase for meta-properties, multi-properties and graph variables. Includes its GQL Graph Types schema and runnable Gremlin examples that exercise those features."]
+== The Crew Graph
+
+The crew graph models a group of contributors and the software they work on. `marko`, `stephen`,
+`matthias`, and `daniel` are people, while `gremlin` and `tinkergraph` are software. People
+`develops` and `uses` software, the `develops` edge records the year work began and the `uses` edge
+records a skill level, and one piece of software `traverses` another.
+
+The graph was created to provide examples and test coverage for the structural features introduced
+in TinkerPop 3.x, and it is the reference example for three of them. First, a person's `location` is
+a multi-property: each person has held several locations over time, so the single `location` key
+holds a list of values. Second, each `location` value carries meta-properties, `startTime` and an
+optional `endTime`, that record the span during which the person lived there. A location with no
+`endTime` is the person's current one. Third, the graph itself carries graph variables that hold
+metadata about the graph. These features make the crew graph the right choice for demonstrating
+multi-properties, meta-properties, and graph variables. It is created with
+`TinkerFactory.createTheCrew()` and ships as `data/tinkerpop-crew.*`.
+
+.The Crew Graph
+image::the-crew-graph.png[width=685]
+
+=== Schema
+
+[source,gql]
+----
+-- node types
+(:person => { name :: STRING NOT NULL, location :: LIST<STRING> }),
+(:software => { name :: STRING NOT NULL }),
+
+-- edge types
+(:person)-[:develops { since :: INT }]->(:software),
+(:person)-[:uses { skill :: INT }]->(:software),
+(:software)-[:traverses]->(:software)
+----
+
+GQL Graph Types describes the shape of vertices and edges but does not model every TinkerPop
+structural feature. The `location` multi-property is captured above as a `LIST<STRING>`, but the
+`startTime` and `endTime` meta-properties attached to each individual `location` value have no
+representation in the schema language, because meta-properties are properties on a property rather
+than on the vertex. The graph variables `creator`, `lastModified`, and `comment` are likewise
+metadata about the graph as a whole and fall outside the node and edge type definitions. Both are
+demonstrated in the examples below.
+
+=== Examples
+
+Because `location` is a multi-property whose values carry meta-properties, the current location of
+each person is the `location` value that has no `endTime`.
+
+[gremlin-groovy,theCrew]
+----
+g.V().as('a').
+      properties('location').as('b').
+      hasNot('endTime').as('c'). <1>
+      select('a','b','c').by('name').by(value).by('startTime') <2>
+----
+
+<1> Keep only the `location` value that has no `endTime` meta-property, which is the current one.
+<2> Report each person's `name`, current location `value`, and the `startTime` meta-property that
+records when they moved there.
+
+The full residence history of a person is obtained by ordering all of their `location` values by
+`startTime`. A location that is still current has no `endTime`, so `coalesce()` supplies a stand-in
+value in that case.
+
+[gremlin-groovy,theCrew]
+----
+g.V().has('person','name','daniel').
+      properties('location'). <1>
+      order().by('startTime',asc).
+      project('city','from','to').
+        by(value).
+        by('startTime').
+        by(coalesce(values('endTime'), constant('present'))) <2>
+----
+
+<1> Stream all of `daniel`'s `location` values rather than stepping to the vertex, so the
+meta-properties on each value remain reachable.
+<2> For each location, project the city name, the `startTime`, and the `endTime` (or `present` when
+the location is current).
+
+The `uses` edge carries a `skill` property, which makes it possible to rank the users of a piece of
+software by proficiency.
+
+[gremlin-groovy,theCrew]
+----
+g.V().has('name','gremlin').inE('uses').
+      order().by('skill',asc).as('a'). <1>
+      outV().as('b').
+      select('a','b').by('skill').by('name') <2>
+----
+
+<1> Order the incoming `uses` edges of `gremlin` by their `skill` value.
+<2> Pair each `skill` level with the `name` of the person who holds it.
+
+Graph variables are read from the `Graph` instance itself rather than through a traversal.
+
+[gremlin-groovy,theCrew]
+----
+graph.variables().asMap() <1>
+----
+
+<1> The crew graph records its `creator`, the year it was `lastModified`, and a `comment`
+describing its purpose.
