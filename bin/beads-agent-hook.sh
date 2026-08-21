@@ -149,7 +149,9 @@ was underway or where it stopped."
         if printf '%s' "$prompt" | tr '[:upper:]' '[:lower:]' | grep -Eq "$REDIRECT_RE"; then
             text="That prompt reads as a redirect. If an alternative was just rejected, create the
 decision bead and its rejected sibling now, while the reasoning is exact — operator
-redirects are the highest-signal capture trigger there is."
+redirects are the highest-signal capture trigger there is. If the reason was not stated
+outright, ask for it rather than inferring one. An inferred reason is indistinguishable
+from a recorded one later, which makes guessing worse than asking."
         fi
         ;;
 
