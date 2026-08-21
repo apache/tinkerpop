@@ -2713,11 +2713,11 @@ name of one.
 ----
 g.io(someInputFile).
     with(IO.reader, IO.gryo).
-    with(IO.registry, TinkerIoRegistryV3d0.instance())
+    with(IO.registry, TinkerIoRegistryV3.instance())
   read().iterate()
 g.io(someOutputFile).
     with(IO.writer,IO.graphson).
-    with(IO.registry, "org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3d0")
+    with(IO.registry, "org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3")
   write().iterate()
 ----
 
@@ -2815,7 +2815,7 @@ other.  Failure to do so, may result in errors.
 [source,java]
 ----
 // expects a file extension of .kryo to interpret that
-// a GraphSON reader/writer should be used
+// a Gryo reader/writer should be used
 g.io("graph.kryo").read().iterate()
 g.io("graph.kryo").write().iterate()
 ----
@@ -4512,6 +4512,14 @@ WARNING: Developing a `VertexProgram` is for expert users. Moreover, developing 
 a traversal requires yet more expertise. This information is recommended to advanced users with a deep understanding of the
 mechanics of Gremlin OLAP (<<graphcomputer,`GraphComputer`>>).
 
+The excerpts below highlight the key `VertexProgram` methods — `loadState()`, `storeState()`, `setup()`,
+`execute()`, and `terminate()` — involved in propagating traversal and traverser information. They are
+illustrative fragments rather than a complete, compilable class: the enclosing class declaration, field and
+import definitions, and the remaining `VertexProgram` interface methods are omitted for brevity. For a
+complete, runnable implementation to model against, see the `TestProgram` vertex program in `ProgramTest`
+(`gremlin-test/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ProgramTest.java`).
+
+.Key `VertexProgram` method excerpts (not a complete class)
 [source,java]
 ----
 private TraverserSet<Object> haltedTraversers;
@@ -4561,6 +4569,7 @@ public void execute(Vertex vertex, Messenger messenger, Memory memory) {
     memory.add(TraversalVertexProgram.HALTED_TRAVERSERS,
                new TraverserSet<>(this.traversal().get().getTraverserGenerator().generate("an example", this.programStep, 1l)));
   }
+}
 
 public boolean terminate(Memory memory) {
   // the master-traversal will have halted traversers
