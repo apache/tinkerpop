@@ -1218,6 +1218,21 @@ Gremlin Server is configured by default with GraphSON 3.0 as shown above. It has
 |ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer. |_none_
 |=========================================================
 
+The GraphSON 2.0 and 3.0 reference implementations only deserialize a `TraversalStrategy` when its class is registered
+with `TraversalStrategies.GlobalCache`. TinkerPop's built-in strategies are registered by default. Providers must
+register every custom strategy before GraphSON input is read, either as part of a graph or graph computer strategy set
+with `registerStrategies()`, or individually with `registerStrategy()`:
+
+[source,java]
+----
+TraversalStrategies.GlobalCache.registerStrategies(MyGraph.class, traversalStrategies);
+// or
+TraversalStrategies.GlobalCache.registerStrategy(MyStrategy.class);
+----
+
+The presence of a strategy on the application class path is not sufficient. Registration permits serialized data to
+construct the strategy from its configuration, so all strategies should be registered.
+
 It is worth noting that GraphSON 1.0 still has some appeal for some users as it can be configured to produce an untyped
 JSON format which is a bit easier to consume than its successors which embed data types into the output. This version
 of GraphSON tends to be the one that users like to utilize when <<connecting-via-http,connecting via HTTP>> and is still
@@ -3196,4 +3211,3 @@ create large or frequently changing value sets, improving performance and stabil
 
 Consult the MCP client documentation for how environment variables are supplied and how tool calls are approved and
 presented to the user.
-

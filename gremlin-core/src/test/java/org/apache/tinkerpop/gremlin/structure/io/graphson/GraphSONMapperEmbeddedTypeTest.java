@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Compare;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.PBiPredicate;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
@@ -512,24 +513,34 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
     public void shouldHandleTraversalStrategyProxy() throws Exception {
         assumeThat(version,  either(startsWith("v2")).or(startsWith("v3")));
 
-        final TraversalStrategyProxy o = new TraversalStrategyProxy(DummyTraversalStrategy.instance());
-        final TraversalStrategyProxy strategyProxy = serializeDeserialize(mapper, o, TraversalStrategyProxy.class);
-        assertThat(strategyProxy, instanceOf(TraversalStrategyProxy.class));
-        assertEquals(DummyTraversalStrategy.class, strategyProxy.getStrategyClass());
-        DummyTraversalStrategy.instance().getConfiguration().getKeys().forEachRemaining(
-                k -> assertEquals(DummyTraversalStrategy.instance().getConfiguration().getProperty(k), strategyProxy.getConfiguration().getProperty(k)));
+        TraversalStrategies.GlobalCache.registerStrategy(DummyTraversalStrategy.class);
+        try {
+            final TraversalStrategyProxy o = new TraversalStrategyProxy(DummyTraversalStrategy.instance());
+            final TraversalStrategyProxy strategyProxy = serializeDeserialize(mapper, o, TraversalStrategyProxy.class);
+            assertThat(strategyProxy, instanceOf(TraversalStrategyProxy.class));
+            assertEquals(DummyTraversalStrategy.class, strategyProxy.getStrategyClass());
+            DummyTraversalStrategy.instance().getConfiguration().getKeys().forEachRemaining(
+                    k -> assertEquals(DummyTraversalStrategy.instance().getConfiguration().getProperty(k), strategyProxy.getConfiguration().getProperty(k)));
+        } finally {
+            TraversalStrategies.GlobalCache.unregisterStrategy(DummyTraversalStrategy.class);
+        }
     }
 
     @Test
     public void shouldHandleTraversalStrategyProxyWithConfig() throws Exception {
         assumeThat(version,  either(startsWith("v2")).or(startsWith("v3")));
 
-        final TraversalStrategyProxy o = new TraversalStrategyProxy(DummyConfiguredTraversalStrategy.instance());
-        final TraversalStrategyProxy strategyProxy = serializeDeserialize(mapper, o, TraversalStrategyProxy.class);
-        assertThat(strategyProxy, instanceOf(TraversalStrategyProxy.class));
-        assertEquals(DummyConfiguredTraversalStrategy.class, strategyProxy.getStrategyClass());
-        DummyConfiguredTraversalStrategy.instance().getConfiguration().getKeys().forEachRemaining(
-                k -> assertEquals(DummyConfiguredTraversalStrategy.instance().getConfiguration().getProperty(k), strategyProxy.getConfiguration().getProperty(k)));
+        TraversalStrategies.GlobalCache.registerStrategy(DummyConfiguredTraversalStrategy.class);
+        try {
+            final TraversalStrategyProxy o = new TraversalStrategyProxy(DummyConfiguredTraversalStrategy.instance());
+            final TraversalStrategyProxy strategyProxy = serializeDeserialize(mapper, o, TraversalStrategyProxy.class);
+            assertThat(strategyProxy, instanceOf(TraversalStrategyProxy.class));
+            assertEquals(DummyConfiguredTraversalStrategy.class, strategyProxy.getStrategyClass());
+            DummyConfiguredTraversalStrategy.instance().getConfiguration().getKeys().forEachRemaining(
+                    k -> assertEquals(DummyConfiguredTraversalStrategy.instance().getConfiguration().getProperty(k), strategyProxy.getConfiguration().getProperty(k)));
+        } finally {
+            TraversalStrategies.GlobalCache.unregisterStrategy(DummyConfiguredTraversalStrategy.class);
+        }
     }
 
     @Test

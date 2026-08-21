@@ -21,7 +21,11 @@ package org.apache.tinkerpop.gremlin.util.ser;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.Tokens;
@@ -55,7 +59,9 @@ import java.util.UUID;
 import static org.apache.tinkerpop.gremlin.util.MockitoHamcrestMatcherAdapter.reflectionEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItemInArray;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -69,6 +75,7 @@ import static org.junit.Assert.fail;
 @SuppressWarnings("unchecked")
 public class GraphSONMessageSerializerV3Test {
 
+    private static boolean unregisteredStrategyInitialized;
     private final UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
     private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
     private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
@@ -343,6 +350,24 @@ public class GraphSONMessageSerializerV3Test {
     }
 
     @Test
+    public void shouldRejectUnregisteredTraversalStrategyInResponse() throws Exception {
+        final String fqcn = UnregisteredStrategy.class.getName();
+        final TraversalStrategyProxy<UnregisteredStrategy> strategy =
+                new TraversalStrategyProxy<>(UnregisteredStrategy.class, new BaseConfiguration());
+        final String response = serializer.serializeResponseAsString(
+                ResponseMessage.build(UUID.randomUUID()).result(strategy).create(), allocator);
+
+        try {
+            serializer.deserializeResponse(response);
+            fail("An unregistered strategy in a server response must not deserialize");
+        } catch (SerializationException ex) {
+            assertThat(ex.getMessage(), containsString("TraversalStrategy not recognized - " + fqcn));
+        }
+
+        assertFalse("The rejected strategy was initialized", unregisteredStrategyInitialized);
+    }
+
+    @Test
     public void shouldDeserializeNotPredicate() throws Exception {
         final String requestMessageWithP = "{\"requestId\":{\"@type\":\"g:UUID\",\"@value\":\"0397b9c0-ffab-470e-a6a8-644fc80c01d6\"},\"op\":\"bytecode\",\"processor\":\"traversal\",\"args\":{\"gremlin\":{\"@type\":\"g:Bytecode\",\"@value\":{\"step\":[[\"V\"],[\"hasLabel\",\"person\"],[\"has\",\"age\",{\"@type\":\"g:P\",\"@value\":{\"predicate\":\"not\",\"value\":{\"@type\":\"g:P\",\"@value\":{\"predicate\":\"lte\",\"value\":{\"@type\":\"g:Int32\",\"@value\":10}}}}}]]}},\"aliases\":{\"g\":\"gmodern\"}}}";
         final ByteBuf bb = allocator.buffer(requestMessageWithP.length());
@@ -415,5 +440,19 @@ public class GraphSONMessageSerializerV3Test {
 
     private ResponseMessage convert(final Object toSerialize) throws SerializationException {
         return convert(toSerialize, this.serializer);
+    }
+
+    private static final class UnregisteredStrategy
+            extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
+            implements TraversalStrategy.DecorationStrategy {
+
+        static {
+            unregisteredStrategyInitialized = true;
+        }
+
+        @Override
+        public void apply(final Traversal.Admin<?, ?> traversal) {
+            // do nothing
+        }
     }
 }

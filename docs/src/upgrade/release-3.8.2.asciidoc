@@ -77,3 +77,24 @@ Map<String, List<Property<Object>>> propertyMap = vertex.propertyMap();
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3187[TINKERPOP-3187]
+
+=== Upgrading for Providers
+
+==== Graph System Providers
+
+===== GraphSON Strategy Registry
+
+Before 3.8.2, GraphSON 2.0 and 3.0 deserialization loaded a custom `TraversalStrategy` from the application class path
+based on its serialized class name. Starting with 3.8.2, GraphSON only deserializes strategies registered with
+`TraversalStrategies.GlobalCache`.
+
+Providers that send custom strategies over GraphSON must register every strategy before input is deserialized. Either
+`registerStrategies()` or `registerStrategy()` can be used:
+
+[source,java]
+----
+TraversalStrategies.GlobalCache.registerStrategies(MyGraph.class, traversalStrategies);
+// or
+TraversalStrategies.GlobalCache.registerStrategy(MyStrategy.class);
+----
+

@@ -21,12 +21,17 @@ package org.apache.tinkerpop.gremlin.util.ser;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -70,7 +75,9 @@ import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -85,6 +92,7 @@ import static org.junit.Assert.fail;
 public class GraphSONMessageSerializerV2Test {
 
     public static final GraphSONMessageSerializerV2 SERIALIZER = new GraphSONMessageSerializerV2();
+    private static boolean unregisteredStrategyInitialized;
     private static final RequestMessage msg = RequestMessage.build("op")
             .overrideRequestId(UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595")).create();
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -423,6 +431,24 @@ public class GraphSONMessageSerializerV2Test {
         assertEquals(ResponseStatusCode.SUCCESS.getValue(), deserialized.getStatus().getCode().getValue());
         assertEquals("worked", deserialized.getStatus().getMessage());
     }
+
+    @Test
+    public void shouldRejectUnregisteredTraversalStrategyInResponse() throws Exception {
+        final String fqcn = UnregisteredStrategy.class.getName();
+        final TraversalStrategyProxy<UnregisteredStrategy> strategy =
+                new TraversalStrategyProxy<>(UnregisteredStrategy.class, new BaseConfiguration());
+        final String response = SERIALIZER.serializeResponseAsString(
+                ResponseMessage.build(UUID.randomUUID()).result(strategy).create(), allocator);
+
+        try {
+            SERIALIZER.deserializeResponse(response);
+            fail("An unregistered strategy in a server response must not deserialize");
+        } catch (SerializationException ex) {
+            assertThat(ex.getMessage(), containsString("TraversalStrategy not recognized - " + fqcn));
+        }
+
+        assertFalse("The rejected strategy was initialized", unregisteredStrategyInitialized);
+    }
     
     @Test
     public void shouldSerializeToTreeJson() throws Exception {
@@ -586,6 +612,20 @@ public class GraphSONMessageSerializerV2Test {
 
         public String toString() {
             return this.val;
+        }
+    }
+
+    private static final class UnregisteredStrategy
+            extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
+            implements TraversalStrategy.DecorationStrategy {
+
+        static {
+            unregisteredStrategyInitialized = true;
+        }
+
+        @Override
+        public void apply(final Traversal.Admin<?, ?> traversal) {
+            // do nothing
         }
     }
 
