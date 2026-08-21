@@ -122,6 +122,9 @@ For your first graph, use the "Modern" graph, which looks like this:
 
 image:tinkerpop-modern.png[width=500]
 
+TIP: The full schema of the modern graph and further example traversals are described in the
+link:https://tinkerpop.apache.org/docs/x.y.z/data/#modern[Modern Graph] section of the TinkerPop Sample Data reference.
+
 It can be instantiated in the console this way:
 
 [gremlin-groovy]
