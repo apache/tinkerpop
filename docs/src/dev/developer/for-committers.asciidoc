@@ -133,6 +133,8 @@ a proposal, or a thread on the dev mailing list. That reference belongs on the r
 bead, and supplying it falls to the committer, because an agent has no way to know which ticket
 or thread a piece of work belongs to. The link carries weight because records are the only
 connection between a bead and the code, given that commit messages hold no bead identifiers.
+The commits themselves become a record as well, though not until the work merges, as described
+in <<beads-commits,Linking Commits to Beads>>.
 It is not mandatory. A small fix that never had a ticket needs no record, and
 `bin/beads-report.py` accordingly reports a root without one as a question rather than a defect.
 
@@ -190,9 +192,9 @@ root (feature/epic/task)
 ----
 
 Four kinds of bead appear in that graph. A `task` is a unit of work. A `decision` is a choice
-and carries its reasoning. A `record` points at an external artifact such as a JIRA issue or a
-pull request, and is the only link between a bead and the code, because commit messages carry no
-bead identifiers. The root itself is usually a task or an epic.
+and carries its reasoning. A `record` points at an external artifact such as a JIRA issue, a
+pull request, or the commits that a landing merged as, and is the only link between a bead and
+the code, because commit messages carry no bead identifiers. The root itself is usually a task or an epic.
 
 The edges carry as much meaning as the beads. A `parent-child` edge establishes membership in
 the effort, while a `blocks` edge establishes order, so a subtree without any `blocks` edges is
@@ -217,6 +219,7 @@ motion that resolves its JIRA issue, the whole subgraph beneath the root is pinn
 [source,text]
 ----
 bd children <root>
+bin/beads-commits.py --root <root> --branch 3.7-dev --pr <n>
 bd close <root>
 bd update <id1> <id2> ... -s pinned
 bd dolt pull && bd dolt push
@@ -226,6 +229,74 @@ Pinning is what makes a bead permanent. Destructive maintenance operations act o
 and skip pinned ones, so a subgraph left closed but unpinned remains eligible for routine
 cleanup. Pinning covers the entire subgraph rather than the beads that seem most interesting in
 hindsight. The work shipped, so all of it is project history.
+
+[[beads-commits]]
+=== Linking Commits to Beads
+
+Git history and the bead graph describe the same work from two directions. A commit message
+carries no bead identifier, so a line of `git log` offers no route into the reasoning behind it,
+and a bead names no commit until one is recorded against it.
+
+Recording one is only safe after the work has merged, because a commit hash is not stable while
+work is in flight. A squash or a rebase replaces whatever a topic branch held, so a hash taken
+during development often points at nothing by the time the change lands. TinkerPop merges
+forward with ordinary merge commits, so a commit published on `3.7-dev` keeps its hash on
+`3.8-dev` and on `master`, and a hash recorded after the merge stays correct permanently. That is
+also the moment the subgraph is pinned, which is why the two steps belong together.
+
+`bin/beads-commits.py` performs the linking. It creates one record bead for the landing, titled
+with GitHub's `owner/repo@hash` form so that it announces its own kind in the way that
+`apache/tinkerpop#3578` and `TINKERPOP-3278` announce theirs. Every commit in the landing is
+written to that bead's notes.
+
+Linking happens when a committer says the work has merged, in the same way that a JIRA issue is
+resolved once its change is in. An agent does not detect that moment and should not attempt to,
+since the hashes are not final until the merge has happened. Asked to pin, it proposes the
+commits that appear to belong to the root and waits for confirmation.
+
+[source,text]
+----
+bin/beads-commits.py --root tp-abc --branch 3.7-dev --suggest
+----
+
+The root's own record beads are what identify those commits, which is the practical sense in
+which records are the link between a bead and the code. A JIRA record supplies a ticket
+identifier that TinkerPop commit subjects carry, and a pull request record supplies a number that
+GitHub resolves to the commit a squash merge produced. Commits that landed on the branch since
+the root was created are listed alongside, marking those belonging to the current committer,
+because a follow-up fix or a documentation pass often quotes no ticket and would otherwise go
+unnoticed. That second list is a prompt to check rather than an answer, and a root carrying no
+record at all has nothing else to offer. Nothing is written in this mode.
+
+Once the committer has confirmed the list, the same command records it.
+
+[source,text]
+----
+bin/beads-commits.py --root tp-abc --branch 3.7-dev --pr 3610
+bin/beads-commits.py --root tp-abc --branch 3.7-dev --commits 374b0c76d0 e1ca7ea3e4
+bin/beads-commits.py --root tp-abc --branch 3.7-dev --range 74fe2a64d0..374b0c76d0
+----
+
+Every hash is checked against `origin/<branch>` before anything is written. A hash that has not
+landed there is refused rather than recorded, because it is precisely the hash that a later
+squash would invalidate. Running the command a second time finds the existing record and creates
+nothing.
+
+The notes field is what makes the link work in reverse. It is the only free-text field that the
+query language searches, so a hash held in a comment or in design text can be read but never
+found.
+
+[source,text]
+----
+bd query 'notes="e1ca7ea3e4"' --all --json
+----
+
+The reply carries the record bead and its `parent`, which is the root that the work hung from, so
+a single command turns a line of `git log` into the reasoning behind it. Hashes are stored at full
+length and matched as substrings, so an abbreviated hash copied from `git log --oneline` finds the
+bead as readily as a complete one. Quoting matters. Most hashes begin with a digit, and an
+unquoted value that begins with a digit is read as a number and fails to parse, in the same way
+that an unquoted version label does.
 
 [[beads-curation]]
 === Curating the Record

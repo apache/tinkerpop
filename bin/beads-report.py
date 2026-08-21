@@ -40,9 +40,10 @@ Checks divide into two kinds, and the distinction matters:
               Defects and facts. No judgment involved.
 
   HEURISTIC   decisions with no rejected alternative recorded; roots with
-              several tasks and no decisions. These cannot distinguish "no
-              decisions were made" from "decisions were not captured", so they
-              are questions for a human, never verdicts.
+              several tasks and no decisions; pinned roots with no commit
+              record. These cannot distinguish "no decisions were made" from
+              "decisions were not captured", so they are questions for a
+              human, never verdicts.
 
 Neither kind can judge whether design text is real reasoning or fluent filler.
 Structure is checkable; substance is not.
@@ -51,8 +52,13 @@ Structure is checkable; substance is not.
 import argparse
 import collections
 import json
+import re
 import subprocess
 import sys
+
+
+# A commit record is titled and referenced owner/repo@<sha> -- PRIME.md section 6.
+COMMIT_REF = re.compile(r"@[0-9a-f]{7,40}$")
 
 
 def bd(*args):
@@ -208,6 +214,14 @@ def main():
             flags.append("no record")
         if kinds.get("task", 0) >= 3 and not kinds.get("decision"):
             flags.append(f"{kinds['task']} tasks, 0 decisions")
+        # Only a pinned root has merged, so only a pinned root can be missing the
+        # commit record that `bin/beads-commits.py` writes at merge. A root pinned
+        # before the convention existed trips this legitimately.
+        if beads[root].get("status") == "pinned" and not any(
+                x.get("issue_type") == "record"
+                and COMMIT_REF.search(x.get("external_ref") or x.get("title") or "")
+                for x in kids + linked):
+            flags.append("no commits")
         if flags:
             thin.append(f"{root:18} {', '.join(flags):26} {beads[root]['title'][:34]}")
     report("Roots that look thin (a question, not a verdict)", thin)

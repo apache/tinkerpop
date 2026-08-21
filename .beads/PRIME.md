@@ -179,10 +179,22 @@ Tasks closed as they finished (section 3), decisions as they were written (secti
 
 ```bash
 bd children <root>               # the whole subtree; nothing should still be in_progress
+bin/beads-commits.py --root <root> --branch 3.7-dev --suggest   # propose; operator confirms
+bin/beads-commits.py --root <root> --branch 3.7-dev --commits <sha>...
 bd close <root>
 bd update <id1> <id2> ... -s pinned
 bd dolt pull && bd dolt push
 ```
+
+**The operator says when the work has merged**, the way they say a JIRA issue is ready to
+resolve. Never infer it. Before the merge the shas are not final, because squash and rebase
+rewrite a branch until it lands; after it, TinkerPop's forward merges carry the published sha
+unchanged into 3.8-dev and master, so what is recorded then stays correct.
+
+**Then suggest, confirm, record.** `--suggest` finds the commits from the root's own JIRA and PR
+records, lists what else landed in the same window, and writes nothing. Show what it returns, take the operator's corrections, and only then
+run the recording form. It refuses any sha not reachable from `origin/<branch>`, so a refusal
+means the work has not actually landed — say so and leave the root open.
 
 **Pin every bead in the subtree** — root, decisions, records, tasks. No judgment about
 which ones matter: the work shipped, so all of it is the project's history. Show the
@@ -212,6 +224,7 @@ Pinning is what makes a bead permanent — every destructive operation keys on
 root (feature/epic/task)
   ├─relates-to──▶ record             TINKERPOP-3456
   ├─relates-to──▶ record             apache/tinkerpop#2891
+  ├─relates-to──▶ record             apache/tinkerpop@374b0c76d0   (written at merge)
   ├─parent-child─▶ decision  "chose X"            {rejected: false}
   │                  └─related─▶ decision "Y"     {rejected: true}
   ├─parent-child─▶ task A "implement X" ──caused-by──▶ decision "chose X"
@@ -224,10 +237,15 @@ a list, and `bd ready` cannot tell you anything useful about it.
 
 - `--parent` builds the tree, and copies the parent's labels onto the child once, at birth —
   see section 7.
-- **`record` beads** hold external artifacts — JIRA, PR, dev@ thread, proposal. The ticket or
-  URL goes in `--external-ref`, which identifies the kind as well. Attach them to the
-  **root**, not to every bead. Create them pinned. Search first — duplicates are the risk.
-- Records are the only link between beads and code. There is no bead ID in commit messages.
+- **`record` beads** hold external artifacts — JIRA, PR, dev@ thread, proposal, and the
+  commits a landing merged as. The ticket, URL or `owner/repo@sha` goes in `--external-ref`,
+  which identifies the kind as well. Attach them to the **root**, not to every bead. Create
+  them pinned. Search first — duplicates are the risk.
+- Records are the only link between beads and code; commit messages carry no bead ID. The
+  commit record written at merge (section 4) is what makes that link work in reverse —
+  `bd query 'notes="<sha>"' --all` returns the record and its `parent`, for any commit in the
+  landing. Quote the sha: an unquoted one starting with a digit is lexed as a number and the
+  query fails to parse.
 - Only **one dependency type per pair** — `blocks` and `discovered-from` cannot coexist
   between the same two beads.
 - Never construct a bead ID; use whatever `bd create` returns. Child IDs encode birth
@@ -306,6 +324,7 @@ bd dep add <a> <b> -t caused-by|related|discovered-from|supersedes
 bd dep cycles                    # a plan with a cycle cannot execute
 bd update <id> --claim | -s pinned | --external-ref=TINKERPOP-NNNN
 bd search <text>
+bd query 'notes="<sha>"' --all   # which root did this commit come from; quote the sha
 ```
 
 Priority is `0-4` (0 = critical), never "high"/"medium"/"low".
