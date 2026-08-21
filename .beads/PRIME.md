@@ -76,6 +76,14 @@ PRIME.md describes"), never a judgment ("rejected as worse"). A mechanism can be
 later: when the problem it names no longer applies, the option is worth reconsidering. A
 judgment cannot, so the option stays dead by default. The chosen decision needs a reason too.
 
+**If you cannot say why the operator rejected it, ask before writing the bead.** An inferred
+reason is indistinguishable from a recorded one, so a guess does not read as a guess three years
+later — it reads as fact and gets trusted. "The operator preferred the other one" is the verdict
+again, not a reason. Ask what the chosen option buys and what the rejected one would have cost,
+and write that answer. Ask while the conversation is live: section 5 forbids editing a design in
+place, so a reason invented now is permanent. Doubt is the trigger — if you are reconstructing
+rather than recalling, you are guessing.
+
 **Cite code as `file[sha]`** — `GryoPool.java[bece4a34c7]`, with enough path to be unambiguous
 (`pom.xml` is 36 different files). No line numbers, no symbol names: both drift, and the
 sentence around the citation already says what it points at. The sha has to be reachable from a
