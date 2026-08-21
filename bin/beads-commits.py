@@ -74,6 +74,7 @@ import json
 import re
 import subprocess
 import sys
+from datetime import datetime
 
 
 def git(*args):
@@ -175,8 +176,25 @@ def suggest(root, branch):
     # The window is shown even when records identified something. A ticket id only
     # finds the commits that quote it, and a follow-up fix or a docs pass usually
     # does not, so returning here would hide exactly the commits most easily lost.
-    since = (bead.get("started_at") or bead.get("created_at") or "")[:10]
-    window = git("log", "--format=%H", f"--since={since}", "-25", ref).splitlines() if since else []
+    # Filter on committer date, in Python, because `git log --since` compares the
+    # AUTHOR date. A merged pull request carries the contributor's authoring date,
+    # often weeks before it landed, so --since would drop the commits this window
+    # exists to catch.
+    stamp = bead.get("started_at") or bead.get("created_at") or ""
+    since = stamp[:10]
+    window = []
+    if stamp:
+        # A day of slack. PRIME.md has the root created before the code, but a root
+        # is sometimes opened once work is already under way, and the operator
+        # confirms this list. Showing a commit that does not belong costs a glance;
+        # hiding one that does costs the link entirely.
+        cutoff = datetime.fromisoformat(stamp.replace("Z", "+00:00")).timestamp() - 86400
+        for entry in git("log", "--format=%H %ct", "-200", ref).splitlines():
+            sha, _, committed = entry.partition(" ")
+            if int(committed) >= cutoff:
+                window.append(sha)
+            if len(window) >= 25:
+                break
     mine = (git("config", "user.email") or "").lower()
 
     def line(sha):
