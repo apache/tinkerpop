@@ -232,7 +232,7 @@ Knobs that change which security properties hold (Gremlin Server, `gremlin-serve
   `gremlin-server-secure.yaml`. The docs are explicit that TinkerPop offers no complete out-of-the-box
   protection against nefarious scripts. *(documented — `gremlin-applications.asciidoc` "Protecting Script
   Execution", the two sample configs)*
-- **Enabled serializers** — wire set is GraphSON 3.0 + GraphBinary. Gryo is IO-format-only, not on the wire,
+- **Enabled serializers** — the default wire set is GraphSON 3.0 + GraphBinary. The typed GraphSON 1.0 serializer (`vnd.gremlin-v1.0+json`) is also shippable and constrains its `@class` default typing to an allow-list (§8). Gryo is IO-format-only, not on the wire,
   and defaults to a locked registration allow-list (`registrationRequired=true`). Disabling that lock removes
   the untrusted-input protection (§9). *(documented — sample configs, `gremlin-applications.asciidoc`
   "Serialization")*
@@ -341,7 +341,8 @@ Per-surface trust table:
   IO paths build** (`registrationRequired=true` plus `javaSerializationAllowed=false`, i.e. `io()`, `GryoReader`,
   `GryoWriter`, `GryoIo`, and the Hadoop Gryo input/output formats) reading attacker bytes do not reach native Java
   deserialization
-  (`ObjectInputStream.readObject()`). Because `inject()` and value arguments let a request carry any
+  (`ObjectInputStream.readObject()`), and do not instantiate an arbitrary class named in the document: GraphSON 1.0
+  embedded types constrain Jackson default typing to a validated type allow-list. Because `inject()` and value arguments let a request carry any
   supported type, a bug in a **registered** type's (de)serializer that crashes/OOMs the reader is also
   in-model, on **both** the server (request) and the GLV (response) side. The GraphML reader disables
   external entities and DTDs by default (XXE-safe). *Violation symptom:* deserialization gadget / RCE / XXE,
