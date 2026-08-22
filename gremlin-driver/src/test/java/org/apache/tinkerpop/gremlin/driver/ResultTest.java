@@ -29,6 +29,9 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -149,5 +152,34 @@ public class ResultTest {
 
         assertEquals(p, result.getPath());
         assertEquals(p, result.get(Path.class));
+    }
+
+
+    @Test
+    public void shouldBeNullWhenWrappingNull() {
+        final Result result = new Result(null);
+
+        assertTrue(result.isNull());
+    }
+
+    @Test
+    public void shouldNotBeNullWhenWrappingNonNull() {
+        final Result result = new Result("not null");
+
+        assertFalse(result.isNull());
+    }
+
+    @Test
+    public void shouldToStringForNonNull() {
+        final Result result = new Result("string");
+
+        assertEquals("result{object=string class=java.lang.String}", result.toString());
+    }
+
+    @Test
+    public void shouldToStringForNull() {
+        final Result result = new Result(null);
+
+        assertEquals("result{object=null class=null}", result.toString());
     }
 }

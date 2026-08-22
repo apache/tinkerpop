@@ -46,4 +46,12 @@ public class HostTest {
         assertEquals("http://localhost:8183/argh", webSocketUri.toString());
     }
 
+
+    @Test
+    public void shouldConstructHostWithHttpsSchemeWhenSslEnabled() {
+        final InetSocketAddress addy = new InetSocketAddress("localhost", 8182);
+        final Host host = new Host(addy, Cluster.build().enableSsl(true).create());
+        final URI webSocketUri = host.getHostUri();
+        assertEquals("https://localhost:8182/gremlin", webSocketUri.toString());
+    }
 }
