@@ -23,8 +23,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -34,5 +39,27 @@ public class MinLocalStepTest extends StepTest {
     @Override
     protected List<Traversal> getTraversals() {
         return Collections.singletonList(__.min(Scope.local));
+    }
+
+    @Test
+    public void shouldReturnIdentityOnNumericSingleScalar() {
+        assertEquals(7, __.inject(7).min(Scope.local).next());
+    }
+
+    @Test
+    public void shouldReturnIdentityOnStringSingleScalar() {
+        // String is Comparable, so min(local) on a single String is valid (identity)
+        assertEquals("hello", __.inject("hello").min(Scope.local).next());
+    }
+
+    @Test
+    public void shouldFindMinOfStringList() {
+        // min(local) on Comparable types (Strings) should work via compareTo
+        assertEquals("apple", __.inject(Arrays.asList("cherry", "apple", "banana")).min(Scope.local).next());
+    }
+
+    @Test
+    public void shouldFindMinOfNumericList() {
+        assertEquals(1, __.inject(Arrays.asList(3, 1, 2)).min(Scope.local).next());
     }
 }
