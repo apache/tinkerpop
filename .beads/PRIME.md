@@ -189,7 +189,7 @@ Tasks closed as they finished (section 3), decisions as they were written (secti
 bd children <root>               # the whole subtree; nothing should still be in_progress
 bin/beads-commits.py --root <root> --branch 3.7-dev --suggest   # propose; operator confirms
 bin/beads-commits.py --root <root> --branch 3.7-dev --commits <sha>...
-bd close <root>
+bd close <root>                  # an epic root needs --force; see below
 bd update <id1> <id2> ... -s pinned
 bd dolt pull && bd dolt push
 ```
@@ -203,6 +203,12 @@ unchanged into 3.8-dev and master, so what is recorded then stays correct.
 records, lists what else landed in the same window, and writes nothing. Show what it returns, take the operator's corrections, and only then
 run the recording form. It refuses any sha not reachable from `origin/<branch>`, so a refusal
 means the work has not actually landed — say so and leave the root open.
+
+**An `epic` root needs `bd close <root> --force`.** The commit record just written is a
+child and is pinned, and the gate counts only `closed` children as done, so the record is
+what blocks the close. Do not reorder the two steps to dodge it: the record write is what
+refuses a sha unreachable from `origin/<branch>`, and closing first would resolve the root
+before that check runs. `task` and `feature` roots do not gate.
 
 **Pin every bead in the subtree** — root, decisions, records, tasks. No judgment about
 which ones matter: the work shipped, so all of it is the project's history. Show the
