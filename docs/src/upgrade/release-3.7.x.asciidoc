@@ -187,6 +187,34 @@ Applications that store or transmit `InetAddress` values via GraphSON (as a vert
 Gremlin parameter) must use literal IP address strings going forward. Existing serialized data containing hostname
 strings will fail to deserialize after upgrading and will need to be migrated to literal IP addresses.
 
+=== Upgrading for Providers
+
+==== Graph System Providers
+
+===== Traversal Strategy Registry
+
+TinkerPop 3.7.7 backports the global `TraversalStrategy` registry in `TraversalStrategies.GlobalCache` from the 3.8.x
+line. `registerStrategies()` now publishes cached strategy classes by name, while the new `registerStrategy()` and
+`unregisterStrategy()` methods allow individual strategy classes to be added to or removed from the registry.
+
+[source,java]
+----
+TraversalStrategies.GlobalCache.registerStrategies(MyGraph.class, traversalStrategies);
+TraversalStrategies.GlobalCache.registerStrategy(MyStrategy.class);
+TraversalStrategies.GlobalCache.unregisterStrategy(MyStrategy.class);
+----
+
+The new `denyStrategy()` method permanently removes a strategy from the registry and prevents later registration from
+restoring it. It does not alter cached graph or graph computer defaults. This deployment-wide registry operation is
+intended only for graph system providers and operators. Reversible removal should use `unregisterStrategy()`.
+
+[source,java]
+----
+TraversalStrategies.GlobalCache.denyStrategy(MyStrategy.class);
+----
+
+See: link:https://tinkerpop.apache.org/docs/3.7.7/reference/#traversalstrategy[TraversalStrategy Reference]
+
 == TinkerPop 3.7.6
 
 *Release Date: April 1, 2026*

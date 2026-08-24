@@ -5728,6 +5728,35 @@ executing a gremlin traversal. Users and providers can add `TraversalStrategy` d
 following sections detail how traversal strategies are applied and defined and describe a collection of traversal
 strategies that are generally useful to end-users.
 
+[[traversalstrategy-registration]]
+=== Registration
+
+`TraversalStrategies.GlobalCache` maintains the global name registry for `TraversalStrategy` classes. Graph system
+providers can register the strategies cached for a graph or graph computer with `registerStrategies()`. A strategy
+that should be available by name without being added to a cached default strategy set can instead be registered with
+`registerStrategy()`.
+
+[source,java]
+----
+TraversalStrategies.GlobalCache.registerStrategies(MyGraph.class, traversalStrategies);
+TraversalStrategies.GlobalCache.registerStrategy(MyStrategy.class);
+----
+
+Calling `denyStrategy()` unregisters a strategy and permanently prevents subsequent calls to `registerStrategy()` or
+`registerStrategies()` from adding it to the registry again. Registry additions for a denied strategy are ignored.
+Denial takes precedence regardless of the order in which graph providers register strategies from static initializers.
+It does not remove instances from cached graph or graph computer strategy sets, or prevent explicit use of the strategy.
+
+WARNING: `denyStrategy()` is intended only for graph system providers and deployment operators that must permanently
+exclude a strategy from the global name registry. The denial cannot be reversed for the lifetime of
+`TraversalStrategies.GlobalCache`. `unregisterStrategy()` should be used when a strategy only needs to be removed from
+the name registry and may be registered again later.
+
+[source,java]
+----
+TraversalStrategies.GlobalCache.denyStrategy(MyStrategy.class);
+----
+
 === Application
 
 One can explicitly add or remove `TraversalStrategy` strategies on the `GraphTraversalSource` with the `withStrategies()`
@@ -6499,4 +6528,3 @@ String noSugarTranslationWithParameters = noSugarTranslatorWithParameters.transl
 System.out.println(noSugarTranslationWithParameters);
 // OUTPUT: g.V().range_(0,10).has(_args_0,_args_1,_args_2).limit(2).values(_args_1)
 ----
-

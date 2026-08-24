@@ -263,6 +263,11 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
             put(VertexProgramRestrictionStrategy.class.getSimpleName(), VertexProgramRestrictionStrategy.class);
         }};
 
+        /**
+         * Fully qualified names of strategies that cannot be added to {@link #GLOBAL_REGISTRY}.
+         */
+        private static final Set<String> DENIED_STRATEGIES = new HashSet<>();
+
         static {
             final TraversalStrategies graphStrategies = new DefaultTraversalStrategies();
             graphStrategies.addStrategies(
@@ -301,6 +306,10 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
          * Register a set of strategies for a particular graph or graph computer class. This is typically done by the
          * graph or graph computer class itself when it is loaded. Strategy names should be globally unique and are
          * added to the {@link #GLOBAL_REGISTRY} such that duplicates will overwrite the previous registration.
+         * <p/>
+         * <strong>Warning:</strong> A strategy denied with {@link #denyStrategy(Class)} is not added to the registry.
+         * Denial overrides registration, but does not prevent the strategy from being included in the graph or graph
+         * computer's cached strategy set.
          */
         public static void registerStrategies(final Class graphOrGraphComputerClass, final TraversalStrategies traversalStrategies) {
             if (Graph.class.isAssignableFrom(graphOrGraphComputerClass))
@@ -311,25 +320,48 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
                 throw new IllegalArgumentException("The TraversalStrategies.GlobalCache only supports Graph and GraphComputer strategy caching: " + graphOrGraphComputerClass.getCanonicalName());
 
             // add the strategies in the traversalStrategy to the global registry
-            traversalStrategies.toList().forEach(strategy -> GLOBAL_REGISTRY.put(strategy.getClass().getSimpleName(), strategy.getClass()));
+            traversalStrategies.toList().forEach(strategy -> registerStrategy(strategy.getClass()));
         }
 
         /**
          * Registers a strategy by its simple name, but does not cache an instance of it. Choose this method if you
          * don't want the strategy to be included as part of the default strategy set, but do want it available to
          * be looked up by name.
+         * <p/>
+         * <strong>Warning:</strong> A strategy denied with {@link #denyStrategy(Class)} is not added to the registry.
+         * Denial overrides this registration.
          */
         public static void registerStrategy(final Class<? extends TraversalStrategy> clazz) {
-            GLOBAL_REGISTRY.put(clazz.getSimpleName(), clazz);
+            if (!DENIED_STRATEGIES.contains(clazz.getName()))
+                GLOBAL_REGISTRY.put(clazz.getSimpleName(), clazz);
         }
 
         /**
          * Unregisters a strategy by its simple name. If the strategy is not in the registry then it cannot be
          * referenced by name, which means that it cannot be removed from execution using
          * {{@link GraphTraversalSource#withoutStrategies(Class[])}}.
+         * <p/>
+         * This operation can be reversed by a later registration. Use {@link #denyStrategy(Class)} only when a strategy
+         * must remain excluded from the registry for the lifetime of this cache.
          */
         public static void unregisterStrategy(final Class<? extends TraversalStrategy> clazz) {
             GLOBAL_REGISTRY.remove(clazz.getSimpleName());
+        }
+
+        /**
+         * Unregisters and permanently denies a strategy from being added to the registry. Subsequent calls to
+         * {@link #registerStrategy(Class)} and {@link #registerStrategies(Class, TraversalStrategies)} do not add the
+         * denied strategy to the registry. Denial does not remove the strategy from graph or graph computer strategy
+         * sets held in this cache, or otherwise prevent it from being used explicitly.
+         * <p/>
+         * <strong>Warning:</strong> This operation is intended only for graph system providers and deployment
+         * operators that must prohibit a strategy from the global registry. The denial cannot be reversed for the
+         * lifetime of this cache. Use {@link #unregisterStrategy(Class)} when the strategy should only be removed from
+         * the registry and may be registered again later.
+         */
+        public static void denyStrategy(final Class<? extends TraversalStrategy> clazz) {
+            unregisterStrategy(clazz);
+            DENIED_STRATEGIES.add(clazz.getName());
         }
 
         /**

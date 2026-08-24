@@ -53,6 +53,7 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.denyStrategy;
 import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.getRegisteredStrategyClass;
 import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.registerStrategy;
 import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.unregisterStrategy;
@@ -223,6 +224,54 @@ public class TraversalStrategiesTest {
         }
     }
 
+    @Test
+    public void shouldIgnoreRegistrationOfDeniedStrategy() {
+        registerStrategy(DeniedStrategy.class);
+        assertEquals(DeniedStrategy.class,
+                getRegisteredStrategyClass(DeniedStrategy.class.getSimpleName()).get());
+
+        denyStrategy(DeniedStrategy.class);
+        assertFalse(getRegisteredStrategyClass(DeniedStrategy.class.getSimpleName()).isPresent());
+
+        registerStrategy(DeniedStrategy.class);
+        assertFalse(getRegisteredStrategyClass(DeniedStrategy.class.getSimpleName()).isPresent());
+    }
+
+    @Test
+    public void shouldNotRemoveDeniedStrategyFromCurrentOrFutureGraphCaches() {
+        final TraversalStrategies graphStrategies = TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().
+                addStrategies(new DeniedGraphStrategy());
+        final TraversalStrategies graphComputerStrategies =
+                TraversalStrategies.GlobalCache.getStrategies(GraphComputer.class).clone().
+                        addStrategies(new DeniedGraphStrategy());
+
+        TraversalStrategies.GlobalCache.registerStrategies(DeniedTestGraph.class, graphStrategies);
+        TraversalStrategies.GlobalCache.registerStrategies(DeniedTestGraphComputer.class, graphComputerStrategies);
+        assertTrue(TraversalStrategies.GlobalCache.getStrategies(DeniedTestGraph.class).
+                getStrategy(DeniedGraphStrategy.class).isPresent());
+        assertTrue(TraversalStrategies.GlobalCache.getStrategies(DeniedTestGraphComputer.class).
+                getStrategy(DeniedGraphStrategy.class).isPresent());
+
+        denyStrategy(DeniedGraphStrategy.class);
+
+        assertFalse(getRegisteredStrategyClass(DeniedGraphStrategy.class.getSimpleName()).isPresent());
+        assertTrue(TraversalStrategies.GlobalCache.getStrategies(DeniedTestGraph.class).
+                getStrategy(DeniedGraphStrategy.class).isPresent());
+        assertTrue(TraversalStrategies.GlobalCache.getStrategies(DeniedTestGraphComputer.class).
+                getStrategy(DeniedGraphStrategy.class).isPresent());
+
+        TraversalStrategies.GlobalCache.registerStrategies(DeniedTestGraph.class,
+                graphStrategies.clone().addStrategies(new DeniedGraphStrategy()));
+        TraversalStrategies.GlobalCache.registerStrategies(DeniedTestGraphComputer.class,
+                graphComputerStrategies.clone().addStrategies(new DeniedGraphStrategy()));
+
+        assertFalse(getRegisteredStrategyClass(DeniedGraphStrategy.class.getSimpleName()).isPresent());
+        assertTrue(TraversalStrategies.GlobalCache.getStrategies(DeniedTestGraph.class).
+                getStrategy(DeniedGraphStrategy.class).isPresent());
+        assertTrue(TraversalStrategies.GlobalCache.getStrategies(DeniedTestGraphComputer.class).
+                getStrategy(DeniedGraphStrategy.class).isPresent());
+    }
+
     public static class TestGraphComputer implements GraphComputer {
 
         @Override
@@ -317,6 +366,12 @@ public class TraversalStrategiesTest {
         public Configuration configuration() {
             return new BaseConfiguration();
         }
+    }
+
+    public static class DeniedTestGraph extends TestGraph {
+    }
+
+    public static class DeniedTestGraphComputer extends TestGraphComputer {
     }
 
     /**
@@ -522,6 +577,14 @@ public class TraversalStrategiesTest {
     }
 
     private static class AbsentStrategy extends DummyStrategy {
+
+    }
+
+    private static class DeniedStrategy extends DummyStrategy {
+
+    }
+
+    private static class DeniedGraphStrategy extends DummyStrategy {
 
     }
 
