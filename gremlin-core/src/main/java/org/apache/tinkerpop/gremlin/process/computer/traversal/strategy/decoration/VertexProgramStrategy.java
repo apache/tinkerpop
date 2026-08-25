@@ -215,9 +215,16 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
         try {
             final VertexProgramStrategy.Builder builder = VertexProgramStrategy.build();
             for (final String key : (List<String>) IteratorUtils.asList(configuration.getKeys())) {
-                if (key.equals(GRAPH_COMPUTER))
-                    builder.graphComputer((Class) Class.forName(configuration.getString(key)));
-                else if (key.equals(WORKERS))
+                if (key.equals(GRAPH_COMPUTER)) {
+                    final String graphComputer = configuration.getString(key);
+                    // Provider graph computers are supported, so validate the extension type before class initialization.
+                    final Class<?> graphComputerClass = Class.forName(graphComputer, false,
+                            VertexProgramStrategy.class.getClassLoader());
+                    if (!GraphComputer.class.isAssignableFrom(graphComputerClass))
+                        throw new IllegalArgumentException("The provided graph computer is invalid: " + graphComputer);
+
+                    builder.graphComputer(graphComputerClass.asSubclass(GraphComputer.class));
+                } else if (key.equals(WORKERS))
                     builder.workers(configuration.getInt(key));
                 else if (key.equals(PERSIST))
                     builder.persist(GraphComputer.Persist.valueOf(configuration.getString(key)));
