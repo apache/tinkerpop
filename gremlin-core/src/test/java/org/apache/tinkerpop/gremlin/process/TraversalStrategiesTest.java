@@ -28,6 +28,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -49,6 +53,11 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.denyStrategy;
+import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.getRegisteredStrategyClass;
+import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.getRegisteredStrategyClassByFullName;
+import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.registerStrategy;
+import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies.GlobalCache.unregisterStrategy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -134,6 +143,135 @@ public class TraversalStrategiesTest {
         assertFalse(strategies.getStrategy(StrategyC.class).isPresent());
         assertFalse(strategies.getStrategy(StrategyD.class).isPresent());
         assertTrue(strategies.getStrategy(StrategyE.class).isPresent());
+    }
+
+    @Test
+    public void shouldRegisterBuiltInStrategiesByName() {
+        assertEquals(OptionsStrategy.class, getRegisteredStrategyClass(OptionsStrategy.class.getSimpleName()).get());
+        assertEquals(MatchAlgorithmStrategy.class,
+                getRegisteredStrategyClass(MatchAlgorithmStrategy.class.getSimpleName()).get());
+        assertEquals(ReadOnlyStrategy.class, getRegisteredStrategyClass(ReadOnlyStrategy.class.getSimpleName()).get());
+        assertEquals(CountStrategy.class, getRegisteredStrategyClass(CountStrategy.class.getSimpleName()).get());
+    }
+
+    @Test
+    public void shouldRegisterGraphAndGraphComputerStrategiesByName() {
+        assertEquals(StrategyA.class, getRegisteredStrategyClass(StrategyA.class.getSimpleName()).get());
+        assertEquals(StrategyB.class, getRegisteredStrategyClass(StrategyB.class.getSimpleName()).get());
+        assertEquals(StrategyC.class, getRegisteredStrategyClass(StrategyC.class.getSimpleName()).get());
+    }
+
+    @Test
+    public void shouldRegisterAndUnregisterStrategyByNameWithoutChangingDefaults() {
+        unregisterStrategy(StrategyD.class);
+        assertFalse(getRegisteredStrategyClass(StrategyD.class.getSimpleName()).isPresent());
+
+        try {
+            registerStrategy(StrategyD.class);
+            assertEquals(StrategyD.class, getRegisteredStrategyClass(StrategyD.class.getSimpleName()).get());
+
+            // registerStrategy() only adds the class to GLOBAL_REGISTRY and must not alter graph defaults
+            assertFalse(TraversalStrategies.GlobalCache.getStrategies(Graph.class).
+                    getStrategy(StrategyD.class).isPresent());
+        } finally {
+            unregisterStrategy(StrategyD.class);
+        }
+
+        assertFalse(getRegisteredStrategyClass(StrategyD.class.getSimpleName()).isPresent());
+    }
+
+    @Test
+    public void shouldOverwriteStrategyRegisteredWithSameSimpleName() {
+        final String strategyName = FirstStrategyNamespace.DuplicateStrategy.class.getSimpleName();
+        unregisterStrategy(FirstStrategyNamespace.DuplicateStrategy.class);
+
+        try {
+            registerStrategy(FirstStrategyNamespace.DuplicateStrategy.class);
+            assertEquals(FirstStrategyNamespace.DuplicateStrategy.class,
+                    getRegisteredStrategyClass(strategyName).get());
+
+            registerStrategy(SecondStrategyNamespace.DuplicateStrategy.class);
+            assertEquals(SecondStrategyNamespace.DuplicateStrategy.class,
+                    getRegisteredStrategyClass(strategyName).get());
+        } finally {
+            unregisterStrategy(SecondStrategyNamespace.DuplicateStrategy.class);
+        }
+
+        assertFalse(getRegisteredStrategyClass(strategyName).isPresent());
+    }
+
+    @Test
+    public void shouldNotResolveInvalidStrategyNames() {
+        assertFalse(getRegisteredStrategyClass("UnknownStrategy").isPresent());
+        assertFalse(getRegisteredStrategyClass(ReadOnlyStrategy.class.getName()).isPresent());
+        assertFalse(getRegisteredStrategyClass("readonlystrategy").isPresent());
+        assertFalse(getRegisteredStrategyClass("").isPresent());
+        assertFalse(getRegisteredStrategyClass(null).isPresent());
+    }
+
+    @Test
+    public void shouldIgnoreUnregisterOfAbsentStrategy() {
+        unregisterStrategy(StrategyD.class);
+        unregisterStrategy(AbsentStrategy.class);
+
+        try {
+            registerStrategy(StrategyD.class);
+            unregisterStrategy(AbsentStrategy.class);
+
+            assertEquals(StrategyD.class, getRegisteredStrategyClass(StrategyD.class.getSimpleName()).get());
+            assertFalse(getRegisteredStrategyClass(AbsentStrategy.class.getSimpleName()).isPresent());
+        } finally {
+            unregisterStrategy(StrategyD.class);
+        }
+    }
+
+    @Test
+    public void shouldIgnoreRegistrationOfDeniedStrategy() {
+        registerStrategy(DeniedStrategy.class);
+        assertEquals(DeniedStrategy.class,
+                getRegisteredStrategyClass(DeniedStrategy.class.getSimpleName()).get());
+
+        denyStrategy(DeniedStrategy.class);
+        assertFalse(getRegisteredStrategyClass(DeniedStrategy.class.getSimpleName()).isPresent());
+
+        registerStrategy(DeniedStrategy.class);
+        assertFalse(getRegisteredStrategyClass(DeniedStrategy.class.getSimpleName()).isPresent());
+        assertFalse(getRegisteredStrategyClassByFullName(DeniedStrategy.class.getName()).isPresent());
+    }
+
+    @Test
+    public void shouldNotRemoveDeniedStrategyFromCurrentOrFutureGraphCaches() {
+        final TraversalStrategies graphStrategies = TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().
+                addStrategies(new DeniedGraphStrategy());
+        final TraversalStrategies graphComputerStrategies =
+                TraversalStrategies.GlobalCache.getStrategies(GraphComputer.class).clone().
+                        addStrategies(new DeniedGraphStrategy());
+
+        TraversalStrategies.GlobalCache.registerStrategies(DeniedTestGraph.class, graphStrategies);
+        TraversalStrategies.GlobalCache.registerStrategies(DeniedTestGraphComputer.class, graphComputerStrategies);
+        assertTrue(TraversalStrategies.GlobalCache.getStrategies(DeniedTestGraph.class).
+                getStrategy(DeniedGraphStrategy.class).isPresent());
+        assertTrue(TraversalStrategies.GlobalCache.getStrategies(DeniedTestGraphComputer.class).
+                getStrategy(DeniedGraphStrategy.class).isPresent());
+
+        denyStrategy(DeniedGraphStrategy.class);
+
+        assertFalse(getRegisteredStrategyClass(DeniedGraphStrategy.class.getSimpleName()).isPresent());
+        assertTrue(TraversalStrategies.GlobalCache.getStrategies(DeniedTestGraph.class).
+                getStrategy(DeniedGraphStrategy.class).isPresent());
+        assertTrue(TraversalStrategies.GlobalCache.getStrategies(DeniedTestGraphComputer.class).
+                getStrategy(DeniedGraphStrategy.class).isPresent());
+
+        TraversalStrategies.GlobalCache.registerStrategies(DeniedTestGraph.class,
+                graphStrategies.clone().addStrategies(new DeniedGraphStrategy()));
+        TraversalStrategies.GlobalCache.registerStrategies(DeniedTestGraphComputer.class,
+                graphComputerStrategies.clone().addStrategies(new DeniedGraphStrategy()));
+
+        assertFalse(getRegisteredStrategyClass(DeniedGraphStrategy.class.getSimpleName()).isPresent());
+        assertTrue(TraversalStrategies.GlobalCache.getStrategies(DeniedTestGraph.class).
+                getStrategy(DeniedGraphStrategy.class).isPresent());
+        assertTrue(TraversalStrategies.GlobalCache.getStrategies(DeniedTestGraphComputer.class).
+                getStrategy(DeniedGraphStrategy.class).isPresent());
     }
 
     public static class TestGraphComputer implements GraphComputer {
@@ -229,6 +367,64 @@ public class TraversalStrategiesTest {
         @Override
         public Configuration configuration() {
             return new BaseConfiguration();
+        }
+    }
+
+    public static class DeniedTestGraph extends TestGraph {
+    }
+
+    public static class DeniedTestGraphComputer extends TestGraphComputer {
+    }
+
+    @Test
+    public void shouldResolveRegisteredStrategyByFullName() {
+        assertEquals(OptionsStrategy.class,
+                getRegisteredStrategyClassByFullName(OptionsStrategy.class.getName()).get());
+        assertEquals(MatchAlgorithmStrategy.class,
+                getRegisteredStrategyClassByFullName(MatchAlgorithmStrategy.class.getName()).get());
+        assertEquals(ReadOnlyStrategy.class,
+                getRegisteredStrategyClassByFullName(ReadOnlyStrategy.class.getName()).get());
+    }
+
+    @Test
+    public void shouldResolveNestedRegisteredStrategyByFullName() {
+        // StrategyA is nested, so it is registered under the segment of its name that follows the '$'
+        assertEquals(StrategyA.class,
+                getRegisteredStrategyClassByFullName(StrategyA.class.getName()).get());
+    }
+
+    @Test
+    public void shouldNotResolveUnregisteredStrategyByFullName() {
+        unregisterStrategy(AbsentStrategy.class);
+        assertFalse(getRegisteredStrategyClassByFullName(AbsentStrategy.class.getName()).isPresent());
+    }
+
+    @Test
+    public void shouldNotResolveStrategySharingASimpleNameWithARegisteredOne() {
+        // borrowing the simple name of a registered strategy must not admit some other class of that name
+        assertFalse(getRegisteredStrategyClassByFullName("com.example.ReadOnlyStrategy").isPresent());
+    }
+
+    @Test
+    public void shouldNotResolveSimpleNameByFullName() {
+        assertFalse(getRegisteredStrategyClassByFullName(ReadOnlyStrategy.class.getSimpleName()).isPresent());
+    }
+
+    @Test
+    public void shouldNotResolveNullByFullName() {
+        assertFalse(getRegisteredStrategyClassByFullName(null).isPresent());
+    }
+
+    @Test
+    public void shouldResolveStrategyByFullNameAfterItIsRegistered() {
+        unregisterStrategy(AbsentStrategy.class);
+
+        try {
+            registerStrategy(AbsentStrategy.class);
+            assertEquals(AbsentStrategy.class,
+                    getRegisteredStrategyClassByFullName(AbsentStrategy.class.getName()).get());
+        } finally {
+            unregisterStrategy(AbsentStrategy.class);
         }
     }
 
@@ -420,6 +616,31 @@ public class TraversalStrategiesTest {
 
     }
 
+    private static class FirstStrategyNamespace {
+
+        private static class DuplicateStrategy extends DummyStrategy {
+
+        }
+    }
+
+    private static class SecondStrategyNamespace {
+
+        private static class DuplicateStrategy extends DummyStrategy {
+
+        }
+    }
+
+    private static class AbsentStrategy extends DummyStrategy {
+
+    }
+
+    private static class DeniedStrategy extends DummyStrategy {
+
+    }
+
+    private static class DeniedGraphStrategy extends DummyStrategy {
+
+    }
 
     private static class DummyStrategy<S extends TraversalStrategy> extends AbstractTraversalStrategy<S> {
 
