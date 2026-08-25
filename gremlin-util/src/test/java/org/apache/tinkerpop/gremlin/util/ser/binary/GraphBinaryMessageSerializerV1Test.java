@@ -21,7 +21,9 @@ package org.apache.tinkerpop.gremlin.util.ser.binary;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
@@ -43,6 +45,8 @@ import static org.apache.tinkerpop.gremlin.util.MockitoHamcrestMatcherAdapter.re
 import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItemInArray;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.Assert.fail;
 
 public class GraphBinaryMessageSerializerV1Test {
     private final ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
@@ -127,6 +131,22 @@ public class GraphBinaryMessageSerializerV1Test {
         final ByteBuf buffer = serializer.serializeResponseAsBinary(response, allocator);
         final ResponseMessage deserialized = serializer.deserializeResponse(buffer);
         assertResponseEquals(response, deserialized);
+    }
+
+    @Test
+    public void shouldRejectUnregisteredTraversalStrategyInResponse() throws SerializationException {
+        final ResponseMessage response = ResponseMessage.build(UUID.randomUUID())
+                .result(new UnregisteredStrategy())
+                .create();
+        final ByteBuf buffer = serializer.serializeResponseAsBinary(response, allocator);
+
+        try {
+            serializer.deserializeResponse(buffer);
+            fail("An unregistered strategy in a server response must not deserialize");
+        } catch (SerializationException ex) {
+            assertThat(ex.getMessage(), containsString(
+                    "TraversalStrategy not recognized - " + UnregisteredStrategy.class.getName()));
+        }
     }
 
     @Test
@@ -274,6 +294,16 @@ public class GraphBinaryMessageSerializerV1Test {
         public TypeSerializerRegistry create() {
             createCounter.incrementAndGet();
             return super.create();
+        }
+    }
+
+    private static final class UnregisteredStrategy
+            extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
+            implements TraversalStrategy.DecorationStrategy {
+
+        @Override
+        public void apply(final Traversal.Admin<?, ?> traversal) {
+            // do nothing
         }
     }
 }
