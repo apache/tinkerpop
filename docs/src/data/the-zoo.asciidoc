@@ -1,0 +1,134 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+[[the-zoo]]
+[llms-summary="The zoo graph: a TinkerPop 4.x showcase for multi-label vertices and diverse property types. Includes its GQL Graph Types schema and runnable Gremlin examples that filter and combine the descriptive labels animals carry."]
+== The Zoo Graph
+
+The zoo graph models a small zoo: its animals, the habitats they live in, and the people who care
+for them. Ten animals such as `tux` the african penguin, `atlas` the green sea turtle, and `titan`
+the african elephant live in two habitats, `lagoon` and `canopy`, and `dr_gremlin` is the
+veterinarian who looks after several of them. Animals are linked to their habitat by a `livesIn`
+edge and to the people who tend them by a `careFor` edge, and further edges record which animals are
+`friendsWith` one another, which `eats` which, and which `avoids` which.
+
+The graph was created for TinkerPop 4.x to demonstrate multi-label vertices and a wide range of
+property types. Every animal carries the base `animal` label together with any number of
+descriptive labels drawn from three axes: taxonomy such as `mammal`, `reptile`, or `bird`, behavior
+such as `aquatic`, `nocturnal`, or `flying`, and conservation status such as `endangered`. A single
+animal may therefore be an `animal`, a `mammal`, `aquatic`, and `endangered` all at once. This makes
+the zoo the reference example for querying vertices by the labels they hold rather than by a single
+fixed label. With 13 vertices and 20 edges it is small enough to read whole, yet its properties span
+strings, integers, doubles, booleans, and lists. It is created with `TinkerFactory.createTheZoo()`
+and, because the dataset is still subject to change, ships only as `data/tinkerpop-zoo.json` in
+GraphSON 4.0 rather than in the full complement of formats offered for the other graphs. It requires
+a graph whose `LabelCardinality` is `ONE_OR_MORE` or `ZERO_OR_MORE`.
+
+.The Zoo Graph
+image::the-zoo-graph.png[width=685]
+
+=== Schema
+
+[source,gql]
+----
+-- node types
+(:animal => { name :: STRING NOT NULL, species :: STRING, weight :: DOUBLE, age :: INT, captiveBorn :: BOOLEAN, venomous :: BOOLEAN, diet :: LIST<STRING> }),
+(:habitat => { name :: STRING NOT NULL, biome :: STRING, capacity :: INT, openAir :: BOOLEAN }),
+(:person => { name :: STRING NOT NULL, since :: INT, specialties :: LIST<STRING> }),
+
+-- edge types
+(:animal)-[:livesIn { since :: INT }]->(:habitat),
+(:person)-[:careFor { specialty :: STRING }]->(:animal),
+(:animal)-[:friendsWith { since :: INT }]->(:animal),
+(:animal)-[:eats]->(:animal),
+(:animal)-[:avoids]->(:animal)
+----
+
+The three node types above are the base labels that anchor each vertex and carry its properties.
+GQL Graph Types states one label per node type, so it captures those base labels but not the
+additional descriptive labels that multi-label support layers on top. Those descriptive labels, such
+as `mammal`, `aquatic`, and `endangered`, carry no properties of their own and are not tied to a
+single entity kind. The `aquatic` label, for instance, applies both to the animals that swim and to
+the `lagoon` habitat. The `venomous` property is present only on animals for which it is meaningful,
+and `diet` and `specialties` are lists that hold several values per key.
+
+=== Examples
+
+Because each animal holds several labels, `labels()` reports the full set a vertex carries rather
+than a single value.
+
+[gremlin-groovy,theZoo]
+----
+g.V().hasLabel('animal').
+      project('name','labels'). <1>
+        by('name').
+        by(labels().fold())
+----
+
+<1> For each animal, report its `name` alongside the complete set of labels it carries. Every animal
+has the `animal` label plus a mix of taxonomy, behavior, and conservation labels.
+
+A descriptive label is not confined to one kind of vertex, so filtering by it selects every vertex
+that carries it regardless of its base label.
+
+[gremlin-groovy,theZoo]
+----
+g.V().hasLabel('aquatic').values('name') <1>
+----
+
+<1> The `aquatic` label is held by the swimming animals and also by the `lagoon` habitat, so the
+result mixes animals and a habitat.
+
+Chaining `hasLabel()` keeps only the vertices that carry all of the named labels, which selects
+animals by a combination of traits.
+
+[gremlin-groovy,theZoo]
+----
+g.V().hasLabel('mammal').hasLabel('endangered').values('name') <1>
+----
+
+<1> The animals that are both `mammal` and `endangered`. A vertex passes only when it holds every
+label in the chain.
+
+The `livesIn` edge connects each animal to its habitat, so counting the incoming edges of a habitat
+gives the number of animals it houses.
+
+[gremlin-groovy,theZoo]
+----
+g.V().hasLabel('habitat').
+      project('habitat','residents'). <1>
+        by('name').
+        by(__.in('livesIn').count())
+----
+
+<1> For each habitat, report its `name` and the number of animals that `livesIn` it.
+
+The `eats` edges form a food chain, and following them repeatedly walks from a predator down through
+everything it ultimately preys upon.
+
+[gremlin-groovy,theZoo]
+----
+g.V().has('name','tinker').
+      repeat(out('eats')). <1>
+      emit().
+      values('name') <2>
+----
+
+<1> Starting at the bengal tiger `tinker`, follow `eats` edges repeatedly.
+<2> `emit()` reports each animal reached along the chain, revealing what `tinker` preys upon and what
+its prey preys upon in turn.
