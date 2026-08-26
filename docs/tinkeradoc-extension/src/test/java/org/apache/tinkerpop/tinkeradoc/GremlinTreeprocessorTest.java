@@ -283,6 +283,20 @@ public class GremlinTreeprocessorTest {
     }
 
     @Test
+    public void shouldHandleAirRoutesGraph() {
+        final RecordingExecutor executor = new RecordingExecutor("==>result");
+        final GremlinTreeprocessor processor = new GremlinTreeprocessor(executor);
+
+        try (final Asciidoctor asciidoctor = Asciidoctor.Factory.create()) {
+            asciidoctor.unregisterAllExtensions();
+            asciidoctor.javaExtensionRegistry().treeprocessor(processor);
+            final String input = "= Test\n\n[gremlin-groovy,airroutes]\n----\ng.V()\n----\n";
+            asciidoctor.convert(input, Options.builder().build());
+            assertThat(executor.statements.contains("graph = TinkerFactory.createAirRoutes()"), is(true));
+        }
+    }
+
+    @Test
     public void shouldHandleSinkGraph() {
         final RecordingExecutor executor = new RecordingExecutor("==>result");
         final GremlinTreeprocessor processor = new GremlinTreeprocessor(executor);
