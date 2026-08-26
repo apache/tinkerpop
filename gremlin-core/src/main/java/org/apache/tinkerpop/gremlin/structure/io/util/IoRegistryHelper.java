@@ -23,6 +23,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,7 +47,19 @@ public final class IoRegistryHelper {
                 registries.add((IoRegistry) object);
             else if (object instanceof String || object instanceof Class) {
                 try {
-                    final Class<?> clazz = object instanceof String ? Class.forName((String) object) : (Class) object;
+                    // a String naming the class is loaded without being initialized, since this value can originate
+                    // from a traversal (io() writes its with() options into the graph configuration on the OLAP path)
+                    // and the name must be proven to be an IoRegistry before anything the class declares runs. a Class
+                    // was resolved by whoever supplied it, so there is nothing left to defer there
+                    final Class<?> clazz = object instanceof String
+                            ? Class.forName((String) object, false, IoRegistryHelper.class.getClassLoader())
+                            : (Class) object;
+
+                    // checked ahead of the instance() lookup and the constructor below, so that neither a static
+                    // method nor a constructor on some other class is invoked for its side effects
+                    if (!IoRegistry.class.isAssignableFrom(clazz))
+                        throw new IllegalStateException("The provided registry object can not be resolved to an instance: " + object);
+
                     Method instanceMethod = null;
                     try {
                         instanceMethod = clazz.getDeclaredMethod("instance"); // try for getInstance() ??
@@ -60,10 +73,13 @@ public final class IoRegistryHelper {
                             // no instance() or getInstance() methods
                         }
                     }
-                    if (null != instanceMethod && IoRegistry.class.isAssignableFrom(instanceMethod.getReturnType()))
+                    if (null != instanceMethod && Modifier.isStatic(instanceMethod.getModifiers())
+                            && IoRegistry.class.isAssignableFrom(instanceMethod.getReturnType()))
                         registries.add((IoRegistry) instanceMethod.invoke(null));
                     else
                         registries.add((IoRegistry) clazz.newInstance()); // no instance() or getInstance() methods, try instantiate class
+                } catch (final IllegalStateException ise) {
+                    throw ise;
                 } catch (final Exception e) {
                     throw new IllegalStateException(e.getMessage(), e);
                 }

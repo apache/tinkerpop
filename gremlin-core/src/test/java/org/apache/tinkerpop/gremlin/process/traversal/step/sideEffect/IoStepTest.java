@@ -18,26 +18,34 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
+import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
+import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -135,6 +143,147 @@ public class IoStepTest {
     }
 
     /**
+     * {@code io()} takes a class name for its reader, writer and registry, and the traversal that supplies it may have
+     * arrived as a remote request, so a name that is not the type the parameter asks for has to be refused before the
+     * class it names is initialized. The canary classes below record any of their code running in {@link IoCanary},
+     * which is a separate class so that reading the flag does not initialize the canary being watched.
+     */
+    @Test
+    public void shouldNotInitializeANamedReaderThatIsNotAGraphReader() {
+        IoCanary.FIRED = false;
+
+        final IoStep<?> step = new IoStep<>(__.start().asAdmin(), "graph.kryo");
+        // a class literal does not initialize the class it names, so naming the canary this way does not fire it
+        step.configure(IO.reader, NotAnIoType.class.getName());
+
+        try {
+            step.constructReader();
+            fail("a class that is not a GraphReader must not be accepted as one");
+        } catch (IllegalStateException expected) {
+            // the name is refused, and the assertion below is what makes the refusal meaningful
+        }
+
+        assertFalse("a class named by IO.reader must not be initialized before it is known to be a GraphReader",
+                IoCanary.FIRED);
+    }
+
+    @Test
+    public void shouldNotInitializeANamedWriterThatIsNotAGraphWriter() {
+        IoCanary.FIRED = false;
+
+        final IoStep<?> step = new IoStep<>(__.start().asAdmin(), "graph.kryo");
+        step.configure(IO.writer, NotAnIoType.class.getName());
+
+        try {
+            step.constructWriter();
+            fail("a class that is not a GraphWriter must not be accepted as one");
+        } catch (IllegalStateException expected) {
+            // as above
+        }
+
+        assertFalse("a class named by IO.writer must not be initialized before it is known to be a GraphWriter",
+                IoCanary.FIRED);
+    }
+
+    @Test
+    public void shouldNotInitializeANamedRegistryThatIsNotAnIoRegistry() {
+        IoCanary.FIRED = false;
+
+        final IoStep<?> step = new IoStep<>(__.start().asAdmin(), "graph.kryo");
+        step.configure(IO.registry, NotAnIoType.class.getName());
+
+        try {
+            step.detectRegistries();
+            fail("a class that is not an IoRegistry must not be accepted as one");
+        } catch (IllegalStateException expected) {
+            // as above
+        }
+
+        assertFalse("a class named by IO.registry must not be initialized before it is known to be an IoRegistry",
+                IoCanary.FIRED);
+    }
+
+    /**
+     * The named class is an {@link IoRegistry} here, so it passes the type check and the factory method is what has to
+     * be rejected. {@code instance()} is called with a {@code null} receiver, so a non-static one was never going to
+     * work, but checking the signature rather than discovering it through the call is what keeps the class from being
+     * initialized on the way to the error.
+     */
+    @Test
+    public void shouldNotInitializeANamedRegistryWhoseInstanceMethodIsNotStatic() {
+        IoCanary.FIRED = false;
+
+        final IoStep<?> step = new IoStep<>(__.start().asAdmin(), "graph.kryo");
+        step.configure(IO.registry, NonStaticInstanceRegistry.class.getName());
+
+        try {
+            step.detectRegistries();
+            fail("a non-static instance() must not be accepted as the factory for an IoRegistry");
+        } catch (IllegalStateException expected) {
+            // as above
+        }
+
+        assertFalse("a class whose instance() is not static must not be initialized on the way to that error",
+                IoCanary.FIRED);
+    }
+
+    /**
+     * The documented form of these parameters, which GLVs have no alternative to since they cannot send an instance
+     * over the wire. The hardening above narrows what a name may resolve to and must not withdraw the feature.
+     */
+    @Test
+    public void shouldConstructAGraphReaderNamedByClassName() {
+        final IoStep<?> step = new IoStep<>(__.start().asAdmin(), "graph.kryo");
+        step.configure(IO.reader, GryoReader.class.getName());
+
+        assertThat(step.constructReader(), instanceOf(GryoReader.class));
+    }
+
+    @Test
+    public void shouldConstructAGraphWriterNamedByClassName() {
+        final IoStep<?> step = new IoStep<>(__.start().asAdmin(), "graph.kryo");
+        step.configure(IO.writer, GryoWriter.class.getName());
+
+        assertThat(step.constructWriter(), instanceOf(GryoWriter.class));
+    }
+
+    @Test
+    public void shouldConstructAnIoRegistryNamedByClassName() {
+        final IoStep<?> step = new IoStep<>(__.start().asAdmin(), "graph.kryo");
+        step.configure(IO.registry, StaticInstanceRegistry.class.getName());
+
+        final List<IoRegistry> registries = step.detectRegistries();
+        assertEquals(1, registries.size());
+        assertThat(registries.get(0), instanceOf(StaticInstanceRegistry.class));
+    }
+
+    /**
+     * Opening the output stream creates or truncates the destination, so it must not be opened until the writer is in
+     * hand. Otherwise naming a writer that cannot be constructed destroys the contents of whatever file the traversal
+     * pointed at, and the traversal chooses that path.
+     */
+    @Test
+    public void shouldNotTruncateTheTargetFileWhenTheWriterCannotBeConstructed() throws Exception {
+        final File target = File.createTempFile("io-step-target", ".kryo");
+        target.deleteOnExit();
+        final byte[] contents = "do not truncate me".getBytes();
+        Files.write(target.toPath(), contents);
+
+        final IoStep<?> step = new IoStep<>(__.start().asAdmin(), target.getAbsolutePath());
+        step.configure(IO.writer, NotAnIoType.class.getName());
+
+        try {
+            step.write(target);
+            fail("a writer that cannot be constructed must fail the write");
+        } catch (IllegalStateException expected) {
+            // the writer is resolved first, so the failure arrives before the file is opened
+        }
+
+        assertArrayEquals("a writer that cannot be constructed must leave the target file untouched",
+                contents, Files.readAllBytes(target.toPath()));
+    }
+
+    /**
      * A Gryo stream that presents {@code OptionsStrategy}'s type id and then a raw Java-serialized payload. Crafting
      * it needs no cooperation from the Gryo writer, which is why the sink was reachable from untrusted bytes.
      */
@@ -164,6 +313,59 @@ public class IoStepTest {
         private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
             in.defaultReadObject();
             FIRED = true;
+        }
+    }
+
+    /**
+     * Holds the flag the canary classes below set. It is deliberately not a field on those classes, since reading a
+     * static field initializes the class that declares it, which is the very thing the tests assert did not happen.
+     */
+    public static class IoCanary {
+        static volatile boolean FIRED = false;
+    }
+
+    /**
+     * Not a {@link GraphReader}, a {@link GraphWriter} or an {@link IoRegistry}, and it reports every route by which
+     * {@code io()} might run its code: its static initializer, and the two factory method names the step looks for.
+     * The bodies are inert, since firing the flag is all that has to be observable.
+     */
+    public static class NotAnIoType {
+        static {
+            IoCanary.FIRED = true;
+        }
+
+        public static Object build() {
+            IoCanary.FIRED = true;
+            return null;
+        }
+
+        public static Object instance() {
+            IoCanary.FIRED = true;
+            return null;
+        }
+    }
+
+    /**
+     * An {@link IoRegistry}, so it clears the type check, whose {@code instance()} is not static.
+     */
+    public static class NonStaticInstanceRegistry extends AbstractIoRegistry {
+        static {
+            IoCanary.FIRED = true;
+        }
+
+        public IoRegistry instance() {
+            return this;
+        }
+    }
+
+    /**
+     * A well-formed registry, used to hold the documented class-name form open.
+     */
+    public static class StaticInstanceRegistry extends AbstractIoRegistry {
+        private static final StaticInstanceRegistry INSTANCE = new StaticInstanceRegistry();
+
+        public static StaticInstanceRegistry instance() {
+            return INSTANCE;
         }
     }
 }
