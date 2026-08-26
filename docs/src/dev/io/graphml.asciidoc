@@ -30,7 +30,8 @@ support.
 In TinkerPop, GraphML is also not extended for purpose of serializing just any type (i.e. serialize just a `Vertex` to
 XML). It is only supported for a `Graph` instance.
 
-The following example is a representation of the Modern toy graph in GraphML:
+The following example is a representation of the
+link:https://tinkerpop.apache.org/docs/x.y.z/data/#modern[Modern toy graph] in GraphML:
 
 [source,xml]
 ----

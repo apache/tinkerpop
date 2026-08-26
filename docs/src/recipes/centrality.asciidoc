@@ -106,7 +106,7 @@ g.V().as("v").                                                                  
 
 WARNING: Since the betweeness centrality algorithm requires the shortest path between any pair of vertices in the graph,
 its practical applications are very limited. It's recommended to use this algorithm only on small subgraphs (graphs like
-the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#grateful-dead[Grateful Dead graph] with only 808 vertices
+the link:https://tinkerpop.apache.org/docs/x.y.z/data/#grateful-dead[Grateful Dead graph] with only 808 vertices
 and 8049 edges already require a massive amount of compute resources to determine the shortest paths between all vertex
 pairs).
 
@@ -144,7 +144,7 @@ g.withSack(1f).V().as("v").                                                     
 
 WARNING: Since the closeness centrality algorithm requires the shortest path between any pair of vertices in the graph,
 its practical applications are very limited. It's recommended to use this algorithm only on small subgraphs (graphs like
-the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#grateful-dead[Grateful Dead graph] with only 808 vertices
+the link:https://tinkerpop.apache.org/docs/x.y.z/data/#grateful-dead[Grateful Dead graph] with only 808 vertices
 and 8049 edges already require a massive amount of compute resources to determine the shortest paths between all vertex
 pairs).
 
