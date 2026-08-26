@@ -105,15 +105,18 @@ Now that you have an empty TinkerGraph instance, you could load a sample of your
 traversals.  Of course, you might also try one of the "toy" graphs (i.e. graphs with sample data) that TinkerPop
 packages with the console through the `TinkerFactory`.  `TinkerFactory` has a number of static methods that can be
 called to create these standard `TinkerGraph` instances.  They are "standard" in the sense that they are typically used
-for all TinkerPop examples and test cases.
+for all TinkerPop examples and test cases.  The full schema, origin, and example traversals for each graph are
+documented in the link:https://tinkerpop.apache.org/docs/x.y.z/data/[TinkerPop Sample Data] reference.
 
 * `createClassic()` - The original TinkerPop 2.x toy graph (link:https://tinkerpop.apache.org/docs/x.y.z/images/tinkerpop-classic.png[diagram]).
 * `createModern()` - The TinkerPop 3.x representation of the "classic" graph, where the main difference is that vertex
 labels are defined and the "weight" edge property is a `double` rather than a `float`
-(link:https://tinkerpop.apache.org/docs/x.y.z/images/tinkerpop-modern.png[diagram]).
+(link:https://tinkerpop.apache.org/docs/x.y.z/images/tinkerpop-modern.png[diagram],
+link:https://tinkerpop.apache.org/docs/x.y.z/data/#modern[reference]).
 * `createTheCrew()` - A graph that demonstrates usage of the new structural features of TinkerPop 3.x such as
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-properties[vertex meta-properties and multi-properties]
-(link:https://tinkerpop.apache.org/docs/x.y.z/images/the-crew-graph.png[diagram]).
+(link:https://tinkerpop.apache.org/docs/x.y.z/images/the-crew-graph.png[diagram],
+link:https://tinkerpop.apache.org/docs/x.y.z/data/#the-crew[reference]).
 
 [gremlin-groovy]
 ----
@@ -126,7 +129,8 @@ the output of the Gremlin Console itself, these toy graphs are small (only a few
 to have a small graph when learning Gremlin, so that you can easily see if you are getting the results you expect. Even
 though these graphs are "small", they are robust enough in structure to try out many different kinds of traversals.
 However, if you find that a larger graph might be helpful, there is another option: The Grateful Dead
-(link:https://tinkerpop.apache.org/docs/x.y.z/images/grateful-dead-schema.png[schema]).
+(link:https://tinkerpop.apache.org/docs/x.y.z/images/grateful-dead-schema.png[schema],
+link:https://tinkerpop.apache.org/docs/x.y.z/data/#grateful-dead[reference]).
 
 [gremlin-groovy]
 ----

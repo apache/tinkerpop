@@ -2783,7 +2783,8 @@ image::grateful-dead-schema.png[width=475]
 
 `MatchStep` brings functionality similar to link:http://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin. Like SPARQL,
 MatchStep conjoins a set of patterns applied to a graph.  For example, the following traversal finds exactly those
-songs which Jerry Garcia has both sung and written (using the Grateful Dead graph distributed in the `data/` directory):
+songs which Jerry Garcia has both sung and written (using the
+link:https://tinkerpop.apache.org/docs/x.y.z/data/#grateful-dead[Grateful Dead graph] distributed in the `data/` directory):
 
 [gremlin-groovy]
 ----
