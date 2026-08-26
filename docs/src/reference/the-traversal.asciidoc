@@ -1051,7 +1051,8 @@ g.V().sideEffect{println "first: ${it}"}.barrier().sideEffect{println "second: $
 The theory behind a "bulking optimization" is simple. If there are one million traversers at vertex 1, then there is
 no need to calculate one million `both()`-computations. Instead, represent those one million traversers as a single
 traverser with a `Traverser.bulk()` equal to one million and execute `both()` once. A bulking optimization example is
-made more salient on a larger graph. Therefore, the example below leverages the <<grateful-dead,Grateful Dead graph>>.
+made more salient on a larger graph. Therefore, the example below leverages the
+link:https://tinkerpop.apache.org/docs/x.y.z/data/#grateful-dead[Grateful Dead graph].
 
 [gremlin-groovy]
 ----

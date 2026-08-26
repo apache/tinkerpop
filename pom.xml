@@ -1396,6 +1396,37 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>data-book</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/data</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}/data</outputDirectory>
+                                    <backend>html5</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <toc>true</toc>
+                                        <toclevels>2</toclevels>
+                                        <toc-position>left</toc-position>
+                                        <stylesdir>${asciidoctor.style.dir}</stylesdir>
+                                        <stylesheet>tinkerpop.css</stylesheet>
+                                        <source-highlighter>coderay</source-highlighter>
+                                        <basedir>${project.basedir}</basedir>
+                                        <docinfo>shared</docinfo>
+                                        <docinfodir>${project.basedir}/docs/src</docinfodir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>tutorial-getting-started</id>
                                 <phase>generate-resources</phase>
                                 <goals>
@@ -1646,6 +1677,30 @@ limitations under the License.
                                     <sourceDirectory>${asciidoc.input.dir}/recipes</sourceDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
                                     <outputDirectory>${markdown.output.dir}/recipes</outputDirectory>
+                                    <backend>tpmarkdown</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>../images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <outfilesuffix>.md</outfilesuffix>
+                                        <basedir>${project.basedir}</basedir>
+                                        <gremlin-docs-console-home>${gremlin.docs.console.home}</gremlin-docs-console-home>
+                                        <gremlin-docs-hadoop-libs>${gremlin.docs.hadoop.libs}</gremlin-docs-hadoop-libs>
+                                        <gremlin-docs-dryrun>${gremlin.docs.dryrun}</gremlin-docs-dryrun>
+                                        <tinkerpop-version>${project.version}</tinkerpop-version>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>data-book-markdown</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}/data</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${markdown.output.dir}/data</outputDirectory>
                                     <backend>tpmarkdown</backend>
                                     <doctype>book</doctype>
                                     <attributes>

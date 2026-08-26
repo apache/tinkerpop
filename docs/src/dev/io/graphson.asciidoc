@@ -69,7 +69,8 @@ writer.writeObject(os, graph);
 Generalized object serialization will be discussed later in this section, so for now the focus will be on the "graph"
 format. Unlike GraphML, GraphSON does not use an edge list format. It uses an adjacency list. In the adjacency list,
 each vertex is essentially a line in the file and the vertex line contains a list of all the edges associated with
-that vertex. The GraphSON 4.0 representation looks like this for the Modern toy graph:
+that vertex. The GraphSON 4.0 representation looks like this for the
+link:https://tinkerpop.apache.org/docs/x.y.z/data/#modern[Modern toy graph]:
 
 [source,json]
 ----

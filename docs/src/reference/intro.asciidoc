@@ -109,8 +109,9 @@ TIP: Get to know this graph structure as it is used extensively throughout the d
 well. It is referred to as "TinkerPop Modern" as it is a modern variation of the original demo graph distributed with
 TinkerPop0 back in 2009 (i.e. the good ol' days -- it was the best of times and it was the worst of times).
 
-TIP: All of the toy graphs available in TinkerPop are described in
-link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#toy-graphs[The Gremlin Console] tutorial.
+TIP: The link:https://tinkerpop.apache.org/docs/x.y.z/data/#modern[modern graph] and all of the other sample graphs
+that TinkerPop provides are described in full, with their schemas and example traversals, in the
+link:https://tinkerpop.apache.org/docs/x.y.z/data/[TinkerPop Sample Data] reference.
 
 Similar to computing in general, graph computing makes a distinction between *structure* (graph) and *process*
 (traversal). The structure of the graph is the data model defined by a vertex/edge/property
