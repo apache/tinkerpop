@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.NotP;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
@@ -499,11 +500,9 @@ final class TraversalSerializersV3 {
             final Class clasz;
             final Map<String,Object> mapConf = (Map<String,Object>) data.get("conf");
             if (null == this.clazz || this.clazz == TraversalStrategyProxy.class) {
-                try {
-                    clasz = Class.forName(data.get("fqcn").toString());
-                } catch (Exception ex) {
-                    throw new IllegalArgumentException("Could not load class " + mapConf.get("fqcn").toString(), ex);
-                }
+                final String className = data.get("fqcn").toString();
+                clasz = TraversalStrategies.GlobalCache.getRegisteredStrategyClassByFullName(className).
+                        orElseThrow(() -> new IllegalArgumentException("TraversalStrategy not recognized - " + className));
             } else {
                 clasz = this.clazz;
             }
