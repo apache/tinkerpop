@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
+import org.apache.tinkerpop.shaded.jackson.core.JsonParseException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonToken;
@@ -192,16 +193,20 @@ public final class TinkerIoRegistryV2 extends AbstractIoRegistry {
             conf.setProperty("gremlin.tinkergraph.defaultVertexPropertyCardinality", "list");
             final TinkerMemoryGraph graph = TinkerMemoryGraph.open(conf);
 
-            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            while (nextTokenOrThrow(jsonParser) != JsonToken.END_OBJECT) {
                 if (jsonParser.getCurrentName().equals("vertices")) {
-                    while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                    if (nextTokenOrThrow(jsonParser) != JsonToken.START_ARRAY)
+                        throw new JsonParseException(jsonParser, "Expected an array value for the \"vertices\" field");
+                    while (nextTokenOrThrow(jsonParser) != JsonToken.END_ARRAY) {
                         if (jsonParser.currentToken() == JsonToken.START_OBJECT) {
                             final DetachedVertex v = (DetachedVertex) deserializationContext.readValue(jsonParser, Vertex.class);
                             v.attach(Attachable.Method.getOrCreate(graph));
                         }
                     }
                 } else if (jsonParser.getCurrentName().equals("edges")) {
-                    while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+                    if (nextTokenOrThrow(jsonParser) != JsonToken.START_ARRAY)
+                        throw new JsonParseException(jsonParser, "Expected an array value for the \"edges\" field");
+                    while (nextTokenOrThrow(jsonParser) != JsonToken.END_ARRAY) {
                         if (jsonParser.currentToken() == JsonToken.START_OBJECT) {
                             final DetachedEdge e = (DetachedEdge) deserializationContext.readValue(jsonParser, Edge.class);
                             e.attach(Attachable.Method.getOrCreate(graph));
@@ -211,6 +216,22 @@ public final class TinkerIoRegistryV2 extends AbstractIoRegistry {
             }
 
             return graph;
+        }
+
+        /**
+         * Advances the parser one token, treating end-of-input as a parse error.  Once the
+         * underlying input is exhausted, {@code JsonParser.nextToken()} returns {@code null} on
+         * every subsequent call rather than throwing.  A loop whose only exit condition compares
+         * the result against a structural close token (e.g. {@code END_ARRAY}) would therefore
+         * never terminate on truncated or malformed input.  This wrapper converts the {@code null}
+         * return into a {@code JsonParseException} so that callers can use a simple while-loop
+         * idiom without risk of non-termination.
+         */
+        private static JsonToken nextTokenOrThrow(final JsonParser jsonParser) throws IOException {
+            final JsonToken token = jsonParser.nextToken();
+            if (null == token)
+                throw new JsonParseException(jsonParser, "Unexpected end-of-input while reading a TinkerGraph");
+            return token;
         }
 
         @Override
