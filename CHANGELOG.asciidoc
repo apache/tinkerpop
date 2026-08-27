@@ -252,6 +252,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Disabled unsafe Java deserialization on the Gryo IO paths and added `GryoMapper.Builder.javaSerializationAllowed(boolean)` to control it.
 * Added verification to `io()` ensuring a class named by `IO.reader`, `IO.writer` or `IO.registry` implements the expected interface before loading and initializing it.
 * Fixed `io().write()` to resolve its `GraphWriter` before opening the output file, so that a writer which cannot be constructed no longer truncates the target.
+* Fixed `TinkerGraph` GraphSON deserialization to fail fast with `JsonParseException` on malformed `tinker:graph` input.
 * Fixed `subgraph()` to throw a descriptive error identifying the required `Edge` input instead of an internal `ClassCastException` when the traversal produces a non-edge value.
 * Fixed `where(P)` to throw a descriptive error identifying the required String scope key (and suggesting `is(P)` for value comparisons) instead of an internal `ClassCastException` when given a non-String predicate value.
 * Fixed `PeerPressure.property_name` in `gremlin-python` incorrectly mapping to the `pageRank` property name token.
