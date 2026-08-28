@@ -2301,6 +2301,8 @@ g.io("graph.json").write().iterate();
 
 NOTE: Additional documentation for GraphSON can be found in the link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[IO Reference].
 
+NOTE: A `Class` stored as a property value can only be read back if it is registered, see <<class-registry,Class Registry>>.
+
 anchor:gryo-reader-writer[]
 [[gryo]]
 ==== Gryo
@@ -2325,6 +2327,8 @@ other.  Failure to do so, may result in errors.
 g.io("graph.kryo").read().iterate()
 g.io("graph.kryo").write().iterate()
 ----
+
+NOTE: A `Class` stored as a property value can only be read back if it is registered, see <<class-registry,Class Registry>>.
 
 *Additional References*
 
@@ -6309,7 +6313,6 @@ The TraversalSource does not allow the use of a GraphComputer
 Type ':help' or ':h' for help.
 Display stack trace? [yN]
 ----
-
 
 [[dsl]]
 == Domain Specific Languages

@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
@@ -44,7 +45,6 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -98,7 +98,7 @@ public class Model {
 
         // IMPORTANT - the "title" or name of the Entry needs to be unique
 
-        addCoreEntry(File.class, "Class", "");
+        addCoreEntry(SubgraphStrategy.class, "Class", "");
         addCoreEntry(new Date(1481750076295L), "Date");
         addCoreEntry(100.00d, "Double");
         addCoreEntry(100.00f, "Float", "");

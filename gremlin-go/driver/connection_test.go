@@ -874,7 +874,7 @@ func TestConnection(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
-		prop := &GremlinType{"java.lang.Object"}
+		prop := &GremlinType{"org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy"}
 		i := g.AddV("type_test").Property("data", prop).Iterate()
 		err := <-i
 		assert.Nil(t, err)

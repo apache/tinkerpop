@@ -76,7 +76,7 @@ public class TraversalStrategiesTest {
         TraversalStrategies.GlobalCache.registerStrategies(TestGraphComputer.class,
                 TraversalStrategies.GlobalCache.getStrategies(GraphComputer.class).clone().addStrategies(new StrategyC()));
     }
-    
+
     @Test
     public void shouldAllowUserManipulationOfGlobalCache() {
         ///////////

@@ -203,7 +203,7 @@ public abstract class AbstractRoundTripTest {
                 new Object[] {"Bytecode", bytecode, null},
                 new Object[] {"Binding", new Bytecode.Binding<>("x", 123), null},
                 new Object[] {"Traverser", new DefaultRemoteTraverser<>("marko", 100), null},
-                new Object[] {"Class", Bytecode.class, null},
+                new Object[] {"Class", SubgraphStrategy.class, null},
                 new Object[] {"ByteBuffer", ByteBuffer.wrap(new byte[]{ 1, 2, 3 }), null},
                 new Object[] {"InetAddressV4", InetAddress.getByName("127.0.0.1"), null},
                 new Object[] {"InetAddressV6", InetAddress.getByName("::1"), null},

@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
@@ -757,7 +758,7 @@ public class GryoMapperTest {
 
     @Test
     public void shouldHandleClass() throws Exception {
-        final Class<?> clazz = java.io.File.class;
+        final Class<?> clazz = SubgraphStrategy.class;
         assertEquals(clazz, serializeDeserialize(clazz, Class.class));
     }
 

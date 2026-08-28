@@ -225,6 +225,22 @@ Providers that send custom strategies over GraphBinary must register every strat
 using `registerStrategies()` or `registerStrategy()`, as described above. The presence of a strategy on the application
 class path is no longer sufficient.
 
+===== Class Values Must Be Registered
+
+For deserialization, a `Class` value must now name a registered class, in GraphBinary, GraphSON and Gryo alike. An unregistered name is
+refused on read and the class is never loaded. Strategies registered with `TraversalStrategies.GlobalCache.registerStrategy` already
+resolve, so only an application or provider that serializes its own classes needs to act.
+
+[source,java]
+----
+ClassRegistry.register(MyClass.class);
+ClassRegistry.unregister(MyClass.class);
+----
+
+Registration is only required for in Java for deserialization, which typically only impacts the server. Without
+registration, read attempts fail with a `Class not recognized` message naming the class, raised as an
+`IOException` for GraphBinary, a `MismatchedInputException` for GraphSON and a `RuntimeException` for Gryo.
+
 == TinkerPop 3.7.6
 
 *Release Date: April 1, 2026*
