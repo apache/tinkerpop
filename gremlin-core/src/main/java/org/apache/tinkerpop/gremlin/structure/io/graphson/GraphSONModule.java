@@ -316,6 +316,9 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                 addDeserializer(Set.class, new JavaUtilSerializersV3.SetJacksonDeserializer());
             }
 
+            // java.lang - a Class value names a registered strategy rather than anything a class loader can reach
+            addDeserializer(Class.class, new ClassJacksonDeserializer());
+
             // numbers
             addDeserializer(Integer.class, new GraphSONSerializersV3.IntegerJackonsDeserializer());
             addDeserializer(Double.class, new GraphSONSerializersV3.DoubleJacksonDeserializer());
@@ -566,6 +569,9 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(TraversalMetrics.class, new GraphSONSerializersV2.TraversalMetricsJacksonDeserializer());
             addDeserializer(Tree.class, new GraphSONSerializersV2.TreeJacksonDeserializer());
             addDeserializer(TraversalStrategyProxy.class, new TraversalSerializersV2.TraversalStrategyProxyJacksonDeserializer<>());
+
+            // java.lang - a Class value names a registered strategy rather than anything a class loader can reach
+            addDeserializer(Class.class, new ClassJacksonDeserializer());
 
             // numbers
             addDeserializer(Integer.class, new GraphSONSerializersV2.IntegerJacksonDeserializer());

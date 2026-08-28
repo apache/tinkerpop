@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.ClassRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
@@ -64,6 +65,27 @@ public class TraversalStrategySerializerTest {
             fail("A strategy that is not registered must not deserialize");
         } catch (IOException ex) {
             assertThat(ex.getMessage(), containsString("TraversalStrategy not recognized - " + fqcn));
+        }
+    }
+
+    /**
+     * The other half of the one-way containment between the two registries, seen at the wire. A name
+     * {@link ClassRegistry} holds decodes as a {@code Class} value, as
+     * {@code ClassSerializerTest.shouldReadClassRegisteredThroughClassRegistry} shows, and must still be refused here,
+     * because this position reflectively constructs what it resolves and only {@code GlobalCache} admits a class to it.
+     */
+    @Test
+    public void shouldRejectStrategyNamedByAClassRegistryEntry() throws Exception {
+        final String fqcn = ProviderType.class.getName();
+        ClassRegistry.register(ProviderType.class);
+
+        try {
+            readStrategy(reader(), fqcn);
+            fail("A class that is only nameable must not deserialize at the strategy selector");
+        } catch (IOException ex) {
+            assertThat(ex.getMessage(), containsString("TraversalStrategy not recognized - " + fqcn));
+        } finally {
+            ClassRegistry.unregister(ProviderType.class);
         }
     }
 
@@ -176,6 +198,13 @@ public class TraversalStrategySerializerTest {
         public void apply(final Traversal.Admin<?, ?> traversal) {
             // do nothing
         }
+    }
+
+    /**
+     * Stands in for a class a provider registers with {@link ClassRegistry}, which refuses a {@link TraversalStrategy},
+     * so a name that registry holds is never one the strategy selector may construct.
+     */
+    private static final class ProviderType {
     }
 
     /**

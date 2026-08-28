@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
+import org.apache.tinkerpop.gremlin.structure.io.ClassRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
@@ -26,18 +27,15 @@ import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import java.io.IOException;
 
 public class ClassSerializer extends SimpleTypeSerializer<Class> {
+
     public ClassSerializer() {
         super(DataType.CLASS);
     }
-
     @Override
     protected Class readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
         final String name = context.readValue(buffer, String.class, false);
-        try {
-            return Class.forName(name);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+        return ClassRegistry.lookup(name).
+                orElseThrow(() -> new IOException("Class not recognized - " + name));
     }
 
     @Override

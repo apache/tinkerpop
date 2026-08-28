@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -34,6 +35,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -111,5 +116,22 @@ public class GraphBinaryCompatibilityTest extends AbstractTypedCompatibilityTest
     @Override
     public void shouldReadWriteAuthenticationChallenge() throws Exception {
         super.shouldReadWriteAuthenticationChallenge();
+    }
+
+    /**
+     * The {@code class-unregistered} fixture is the {@code class} fixture, when a {@code Class} value naming any
+     * class on the class path decoded. It names {@code java.io.File}, which is not a registered
+     * {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy}, so it no longer decodes.
+     * It is kept to record exactly which values stopped being readable.
+     */
+    @Test
+    public void shouldNotReadClassThatIsNotRegistered() throws Exception {
+        final byte[] bytes = readFromResource("class-unregistered");
+        try {
+            read(bytes, Class.class);
+            fail("A Class value naming a class that is not a registered strategy must not deserialize");
+        } catch (IOException ex) {
+            assertThat(ex.getMessage(), containsString("Class not recognized - java.io.File"));
+        }
     }
 }

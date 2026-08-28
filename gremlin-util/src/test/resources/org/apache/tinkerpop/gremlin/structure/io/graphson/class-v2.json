@@ -1,4 +1,4 @@
 {
   "@type" : "g:Class",
-  "@value" : "java.io.File"
+  "@value" : "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy"
 }

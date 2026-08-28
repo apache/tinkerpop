@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.structure.io.ClassRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.InputShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.KryoShim;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.kryoshim.OutputShim;
@@ -96,11 +97,8 @@ final class UtilSerializers {
         @Override
         public <I extends InputShim> Class read(final KryoShim<I, ?> kryo, final I input, final Class<Class> clazz) {
             final String name = input.readString();
-            try {
-                return Class.forName(name);
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
+            return ClassRegistry.lookup(name).
+                    orElseThrow(() -> new RuntimeException("Class not recognized - " + name));
         }
     }
 
@@ -118,11 +116,9 @@ final class UtilSerializers {
             final int size = input.readInt();
             final Class[] clazzes = new Class[size];
             for (int i = 0; i < size; i++) {
-                try {
-                    clazzes[i] = Class.forName(input.readString());
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
+                final String name = input.readString();
+                clazzes[i] = ClassRegistry.lookup(name).
+                        orElseThrow(() -> new RuntimeException("Class not recognized - " + name));
             }
             return clazzes;
         }

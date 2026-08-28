@@ -1308,6 +1308,27 @@ construct the strategy from its configuration, so all strategies should be regis
 As described above, there are multiple ways in which to register serializers for GraphBinary-based serialization. Note
 that the `ioRegistries` setting is applied first, followed by the `custom` setting.
 
+[[class-registry]]
+===== Class Registry
+
+A `Class` value in GraphBinary, GraphSON or Gryo is resolved through `ClassRegistry` rather than through a class
+loader, so it can only name a class registered in advance. A name the registry does not hold is refused and the named
+class is never loaded.
+
+[source,java]
+----
+ClassRegistry.register(MyClass.class);
+ClassRegistry.unregister(MyClass.class);
+----
+
+Registration is required in Java on the deserialization path only. `ClassRegistry` matches the fully qualified class
+name exactly, so registering a superclass or an interface does not admit its subclasses or implementors. Each concrete
+class that is deserialized needs its own registration.
+
+A `TraversalStrategy` is not registered here. Strategies belong to `TraversalStrategies.GlobalCache.GLOBAL_REGISTRY`,
+which `ClassRegistry.lookup` also reads, so a registered strategy is nameable already and passing one to
+`ClassRegistry.register` or `unregister` throws `IllegalArgumentException`.
+
 [[metrics]]
 ==== Metrics
 
