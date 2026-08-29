@@ -41,20 +41,14 @@ import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.nodes.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.UUID;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 import javax.net.ssl.TrustManager;
 
@@ -64,6 +58,8 @@ import javax.net.ssl.TrustManager;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Settings {
+    private static final String CLASSPATH_PREFIX = "classpath:";
+    private static final String INCLUDES_KEY = "includes";
 
     private static final Logger logger = LoggerFactory.getLogger(Settings.class);
 
@@ -192,7 +188,7 @@ public class Settings {
     /**
      * If set to {@code true} the Gremlin Server will close the session when a GraphOp (commit or rollback) is
      * successfully completed on that session.
-     *
+     * <p>
      * NOTE: Defaults to false in 3.7.x/3.8.x to prevent breaking change.
      */
     public boolean closeSessionPostGraphOp = false;
@@ -340,13 +336,270 @@ public class Settings {
 
     /**
      * Read configuration from a file into a new {@link Settings} object.
+     * <p>
+     * This method supports recursive includes of other YAML files over the "includes" property that contains
+     * a list of strings that can be:
+     * <ol>
+     *     <li>Relative paths to other YAML files</li>
+     *     <li>Absolute paths to other YAML files</li>
+     *     <li>Classpath resources</li>
+     * </ol>
+     * <p>
+     * If properties names of the included files or root file (file that contains "includes" property) are the same,
+     * they are overwritten forming a single property set. In any other cases just appended to the root file.
+     * "includes" can be nested and included files can also contain "includes" property.
+     * Included files can override properties of other included files, the root file in turn overriding properties of included files.
+     * <p>
+     * This is quite permissive strategy that works because we then map resulting YAML to <code>Settings</code> object
+     * preventing any configuration inconsistencies.
+     * <p>
+     * Abstract example:
+     * <code>base.yaml</code>
+     * <pre>
+     *   server:
+     *     connector: { port: 8080, protocol: 'http' }
+     *     logging: { level: 'INFO' }
+     * </pre>
+     * <code>root.yaml</code>
+     * <pre>
+     *   includes: ['base.yaml']
+     *   server:
+     *     connector: { port: 9090 } # Overwrite the port only
+     *     logging: { file: '/var/log/app.log' } # Add the file, keep level
+     * </pre>
+     * <p>
+     * Resulting configuration:
+     * <pre>
+     *   server:
+     *     connector: { port: 9090, protocol: 'http' }
+     *     logging: { level: 'INFO', file: '/var/log/app.log' }
+     * </pre>
      *
      * @param file the location of a Gremlin Server YAML configuration file
      * @return a new {@link Optional} object wrapping the created {@link Settings}
      */
-    public static Settings read(final String file) throws Exception {
-        final InputStream input = new FileInputStream(new File(file));
-        return read(input);
+    public static Settings read(final String file) {
+        final NodeMapper constructor = createDefaultYamlConstructor();
+        final Yaml yaml = new Yaml();
+
+        HashSet<String> loadStack = new HashSet<>();
+
+        // Normalize the initial path
+        String normalizedPath = normalizeInitialPath(file);
+        Node finalNode = loadNodeRecursive(yaml, normalizedPath, loadStack);
+        if (finalNode == null) {
+            return new Settings();
+        }
+
+        finalNode.setTag(new Tag(Settings.class));
+        return (Settings) constructor.map(finalNode);
+    }
+
+
+    private static Node loadNodeRecursive(Yaml yaml, String currentPath, HashSet<String> loadStack) {
+        try {
+            if (loadStack.contains(currentPath)) {
+                throw new IllegalStateException("Circular dependency detected: " + currentPath);
+            }
+
+            loadStack.add(currentPath);
+            try (InputStream inputStream = getInputStream(currentPath)) {
+                Node rootNode = yaml.compose(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+                if (!(rootNode instanceof MappingNode)) {
+                    return rootNode;
+                }
+                MappingNode rootMappingNode = (MappingNode) rootNode;
+                //Extract and remove "includes"
+                List<String> includes = extractAndRemoveIncludes(rootMappingNode);
+                //Base Accumulator
+                MappingNode accumulatedNode = new MappingNode(Tag.MAP, new ArrayList<>(), rootMappingNode.getFlowStyle());
+                //Process Includes
+                if (!includes.isEmpty()) {
+                    for (String includeRaw : includes) {
+                        //Resolve the include path relative to the current file (or absolute)
+                        String resolvedIncludePath = resolvePath(currentPath, includeRaw);
+                        Node includedNode = loadNodeRecursive(yaml, resolvedIncludePath, loadStack);
+
+                        if (includedNode instanceof MappingNode) {
+                            mergeMappingNodes(accumulatedNode, (MappingNode) includedNode);
+                        } else {
+                            // Non-map include replaces everything
+                            return includedNode;
+                        }
+                    }
+                }
+
+                //Merge Current Content Over Accumulator
+                mergeMappingNodes(accumulatedNode, rootMappingNode);
+                return accumulatedNode;
+
+            } finally {
+                loadStack.remove(currentPath);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error loading YAML from: " + currentPath, e);
+        }
+    }
+
+    /**
+     * Determines how to open the stream based on the "classpath:" prefix.
+     */
+    private static InputStream getInputStream(String path) throws IOException {
+        if (path.startsWith(CLASSPATH_PREFIX)) {
+            String resourcePath = path.substring(CLASSPATH_PREFIX.length());
+            // Ensure resource path doesn't start with slash for ClassLoader
+            if (resourcePath.startsWith("/")) {
+                resourcePath = resourcePath.substring(1);
+            }
+
+            InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath);
+            if (is == null) {
+                // Fallback to class's classloader
+                is = Settings.class.getClassLoader().getResourceAsStream(resourcePath);
+            }
+            if (is == null) {
+                throw new FileNotFoundException("Classpath resource not found: " + resourcePath);
+            }
+            return is;
+        } else {
+            Path fsPath = Paths.get(path);
+            if (!Files.exists(fsPath)) {
+                throw new FileNotFoundException("File not found: " + path);
+            }
+            return new FileInputStream(fsPath.toFile());
+        }
+    }
+
+    /**
+     * Handles relative path resolution for both FileSystem and Classpath contexts.
+     */
+    private static String resolvePath(String contextPath, String includePath) {
+        // If include is absolute (File system absolute or explicit classpath), return it.
+        if (includePath.startsWith(CLASSPATH_PREFIX) || Paths.get(includePath).isAbsolute()) {
+            return normalizeInitialPath(includePath);
+        }
+
+        if (contextPath.startsWith(CLASSPATH_PREFIX)) {
+            // --- Context is Classpath ---
+            String contextResource = contextPath.substring(CLASSPATH_PREFIX.length());
+
+            // Treat the resource string as a Path to utilize 'getParent' and 'resolve' logic easily
+            // We use Paths.get() purely for string manipulation here.
+            Path contextAsPath = Paths.get(contextResource);
+            Path parent = contextAsPath.getParent();
+
+            Path resolved;
+            if (parent == null) {
+                // e.g. "contextPath" was "classpath:app.yaml", parent is null. Include is relative to root.
+                resolved = Paths.get(includePath);
+            } else {
+                resolved = parent.resolve(includePath);
+            }
+
+            // Normalize to remove ".." segments
+            Path normalized = resolved.normalize();
+
+            // Convert back to forward slashes for Classpath consistency (Windows fix)
+            String resourceString = normalized.toString().replace(File.separatorChar, '/');
+
+            return CLASSPATH_PREFIX + resourceString;
+
+        } else {
+            // --- Context is File System ---
+            Path contextFile = Paths.get(contextPath);
+            Path parent = contextFile.getParent();
+
+            if (parent == null) {
+                // e.g. "contextPath" was just "app.yaml"
+                return Paths.get(includePath).toAbsolutePath().normalize().toString();
+            }
+
+            return parent.resolve(includePath).toAbsolutePath().normalize().toString();
+        }
+    }
+
+    private static String normalizeInitialPath(String path) {
+        if (path.startsWith(CLASSPATH_PREFIX)) {
+            // For classpath, we just ensure consistent slashes
+            return path.replace('\\', '/');
+        } else {
+            // For files, we want the absolute path for cycle detection uniqueness
+            return Paths.get(path).toAbsolutePath().normalize().toString();
+        }
+    }
+
+    private static List<String> extractAndRemoveIncludes(MappingNode node) {
+        List<String> includes = new ArrayList<>();
+        List<NodeTuple> tuples = node.getValue();
+        Iterator<NodeTuple> iterator = tuples.iterator();
+
+        while (iterator.hasNext()) {
+            NodeTuple tuple = iterator.next();
+            Node keyNode = tuple.getKeyNode();
+
+            if (keyNode instanceof ScalarNode && INCLUDES_KEY.equals(((ScalarNode) keyNode).getValue())) {
+                Node valueNode = tuple.getValueNode();
+
+                if (valueNode instanceof SequenceNode) {
+                    SequenceNode seq = (SequenceNode) valueNode;
+
+                    for (Node item : seq.getValue()) {
+                        if (item instanceof ScalarNode) {
+                            includes.add(((ScalarNode) item).getValue());
+                        }
+                    }
+                } else {
+                    throw new IllegalArgumentException("'includes' must be a list of strings");
+                }
+
+                iterator.remove();
+                break;
+            }
+        }
+
+        return includes;
+    }
+
+    private static void mergeMappingNodes(MappingNode baseNode, MappingNode overrideNode) {
+        List<NodeTuple> baseTuples = baseNode.getValue();
+        List<NodeTuple> overrideTuples = overrideNode.getValue();
+
+        for (NodeTuple overrideTuple : overrideTuples) {
+            Node keyNode = overrideTuple.getKeyNode();
+            Node valueNode = overrideTuple.getValueNode();
+
+            //key is not a property name we append it
+            if (!(keyNode instanceof ScalarNode)) {
+                baseTuples.add(overrideTuple);
+                continue;
+            }
+
+            String keyName = ((ScalarNode) keyNode).getValue();
+            NodeTuple existingTuple = findTupleByKey(baseTuples, keyName);
+
+            if (existingTuple != null) {
+                Node existingValue = existingTuple.getValueNode();
+                if (existingValue instanceof MappingNode && valueNode instanceof MappingNode) {
+                    mergeMappingNodes((MappingNode) existingValue, (MappingNode) valueNode);
+                } else {
+                    int index = baseTuples.indexOf(existingTuple);
+                    baseTuples.set(index, overrideTuple);
+                }
+            } else {
+                baseTuples.add(overrideTuple);
+            }
+        }
+    }
+
+    private static NodeTuple findTupleByKey(List<NodeTuple> tuples, String keyName) {
+        for (NodeTuple tuple : tuples) {
+            Node keyNode = tuple.getKeyNode();
+            if (keyNode instanceof ScalarNode && keyName.equals(((ScalarNode) keyNode).getValue())) {
+                return tuple;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -355,9 +608,9 @@ public class Settings {
      *
      * @return a {@link Constructor} to parse a Gremlin Server YAML
      */
-    protected static Constructor createDefaultYamlConstructor() {
+    protected static NodeMapper createDefaultYamlConstructor() {
         final LoaderOptions options = new LoaderOptions();
-        final Constructor constructor = new Constructor(Settings.class, options);
+        final NodeMapper constructor = new NodeMapper(Settings.class, options);
         final TypeDescription settingsDescription = new TypeDescription(Settings.class);
         settingsDescription.addPropertyParameters("graphs", String.class, String.class);
         settingsDescription.addPropertyParameters("scriptEngines", String.class, ScriptEngineSettings.class);
@@ -411,7 +664,10 @@ public class Settings {
      *
      * @param stream an input stream containing a Gremlin Server YAML configuration
      * @return a new {@link Optional} object wrapping the created {@link Settings}
+     * @deprecated as does not handle inclusion of another YAML files.
+     * Please use {@link Settings#read(String)} instead.
      */
+    @Deprecated
     public static Settings read(final InputStream stream) {
         Objects.requireNonNull(stream);
 
@@ -470,7 +726,7 @@ public class Settings {
          * A set of configurations for {@link GremlinPlugin} instances to apply to this {@link GremlinScriptEngine}.
          * Plugins will be applied in the order they are listed.
          */
-        public Map<String,Map<String,Object>> plugins = new LinkedHashMap<>();
+        public Map<String, Map<String, Object>> plugins = new LinkedHashMap<>();
     }
 
     /**
@@ -478,7 +734,8 @@ public class Settings {
      */
     public static class SerializerSettings {
 
-        public SerializerSettings() {}
+        public SerializerSettings() {
+        }
 
         SerializerSettings(final String className, final Map<String, Object> config) {
             this.className = className;
@@ -582,15 +839,15 @@ public class Settings {
 
         /**
          * A list of SSL protocols to enable. @see <a href=
-         *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSE_Protocols">JSSE
-         *      Protocols</a>
+         * "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSE_Protocols">JSSE
+         * Protocols</a>
          */
         public List<String> sslEnabledProtocols = new ArrayList<>();
 
         /**
          * A list of cipher suites to enable. @see <a href=
-         *      "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SupportedCipherSuites">Cipher
-         *      Suites</a>
+         * "https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SupportedCipherSuites">Cipher
+         * Suites</a>
          */
         public List<String> sslCipherSuites = new ArrayList<>();
 
@@ -725,5 +982,33 @@ public class Settings {
 
     public static abstract class BaseMetrics {
         public boolean enabled = false;
+    }
+
+    private static final class NodeMapper extends Constructor {
+        public NodeMapper(LoaderOptions loadingConfig) {
+            super(loadingConfig);
+        }
+
+        public NodeMapper(Class<?> theRoot, LoaderOptions loadingConfig) {
+            super(theRoot, loadingConfig);
+        }
+
+        public NodeMapper(TypeDescription theRoot, LoaderOptions loadingConfig) {
+            super(theRoot, loadingConfig);
+        }
+
+        public NodeMapper(TypeDescription theRoot, Collection<TypeDescription> moreTDs, LoaderOptions loadingConfig) {
+            super(theRoot, moreTDs, loadingConfig);
+        }
+
+        public NodeMapper(String theRoot, LoaderOptions loadingConfig) throws ClassNotFoundException {
+            super(theRoot, loadingConfig);
+        }
+
+        public Object map(Node node) {
+            // constructDocument is preferred over constructObject as it handles
+            // recursive references and cleanup of internal collections
+            return super.constructDocument(node);
+        }
     }
 }

@@ -35,10 +35,10 @@ public abstract class AbstractFeatureTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        final InputStream stream = GremlinServer.class.getResourceAsStream("gremlin-server-integration.yaml");
-        final Settings settings = Settings.read(stream);
-        ServerTestHelper.rewritePathsInGremlinServerSettings(settings);
+        var filePath = "classpath:" + GremlinServer.class.getPackageName().replace(".", "/") + "/gremlin-server-integration.yaml";
+        final Settings settings = Settings.read(filePath);
 
+        ServerTestHelper.rewritePathsInGremlinServerSettings(settings);
         server = new GremlinServer(settings);
         server.start().get(100, TimeUnit.SECONDS);
     }

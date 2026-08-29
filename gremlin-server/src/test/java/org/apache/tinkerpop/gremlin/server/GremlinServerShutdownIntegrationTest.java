@@ -51,8 +51,8 @@ public class GremlinServerShutdownIntegrationTest {
     }
 
     public Settings getBaseSettings() {
-        final InputStream stream = getSettingsInputStream();
-        return Settings.read(stream);
+        var filePath = "classpath:" + GremlinServer.class.getPackageName().replace(".", "/") + "/gremlin-server-integration.yaml";
+        return Settings.read(filePath);
     }
 
     public CompletableFuture<ServerGremlinExecutor> startServer(final Settings settings) throws Exception {
