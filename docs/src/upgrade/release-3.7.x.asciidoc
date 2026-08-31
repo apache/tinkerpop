@@ -88,6 +88,45 @@ GryoIo.build().graph(graph).onMapper(m -> ((GryoMapper.Builder) m)
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3278[TINKERPOP-3278]
 
+==== GraphSON 1.0 Type Allow-List
+
+Typed GraphSON 1.0 now resolves a Java class named by an `@class` property only when that exact name is allowed.
+This change is breaking on read for provider and application types outside the default set. Some values that GraphSON
+1.0 can write, including `ByteBuffer` and `EnumMap`, also no longer round-trip. The written format is unchanged.
+
+The failure looks like this:
+
+[source,text]
+----
+Could not resolve type id ...: Configured `PolymorphicTypeValidator` ... denied resolution
+----
+
+Further simple class names can be added on the mapper:
+
+[source,java]
+----
+GraphSONMapper.build().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.PARTIAL_TYPES)
+        .addAllowedTypeIdName("com.example.MyType", "com.example.MyOtherType").create();
+----
+
+Expected application types can be added to the message serializer configuration:
+
+[source,yaml]
+----
+serializers:
+  - className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV1
+    config:
+      allowedTypeIdNames:
+        - com.example.MyType
+----
+
+Allowlisting cannot restore a parameterized type id such as `java.util.EnumMap<...>` because GraphSON 1.0 rejects
+all parameterized type ids unconditionally. Affected applications can convert values to non-parameterized
+representations such as `HashMap`, or move to GraphSON 2.0, GraphSON 3.0 or GraphBinary.
+
+See: link:https://tinkerpop.apache.org/docs/3.7.7/reference/#server-graphson[GraphSON Server Configuration],
+link:https://tinkerpop.apache.org/docs/3.7.7/dev/io/#graphson-1d0[GraphSON 1.0 IO Documentation]
+
 ==== OLAP Restrictions
 
 The OLAP `io()` step on `HadoopGraph` (`g.withComputer().io(path)...`) historically transferred every

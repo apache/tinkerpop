@@ -140,7 +140,15 @@ Version 1.0 of GraphSON was released with TinkerPop 3.0.0. It is referred to by 
 When types are embedded, GraphSON uses the standard
 link:https://github.com/FasterXML/jackson-databind[Jackson] type embedding approach that writes the full Java class
 name into a "@class" field in the JSON. While this approach isn't especially language agnostic it does at least give
-some hint as to what the expected type is.
+some hint as to what the expected type is. On read, that class name resolves only when it is in a set of exact class
+names, derived from the types that GraphSON 2.0 and 3.0 register plus the concrete runtime classes that GraphSON 1.0
+writes and the registry does not declare. Names are matched by equality, and an array is decided by its component
+name. A parameterized type id is always refused. The `java.lang.Class` type is refused by default but can be
+explicitly allowed. A provider or application can add its own class names with
+`GraphSONMapper.Builder.addAllowedTypeIdName(String...)`, for example `addAllowedTypeIdName("com.example.MyType")`.
+For a very narrow set of types, typed GraphSON 1.0 writing and reading are asymmetric. The writer may emit a concrete
+or parameterized Java type id that the reader refuses. Examples include `ByteBuffer` and `EnumMap`, which can be
+written but cannot be read back.
 
 This section focuses on non-embedded types and their formats as there was little usage of embedded types in generalized
 object serialization use cases. The format was simply too cumbersome to parse of non-Jackson enabled libraries and the

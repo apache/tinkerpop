@@ -578,8 +578,10 @@ public class IoTest {
 
             final SimpleModule module = new SimpleModule();
             module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializerV1());
+            // CustomId is not among the default GraphSON 1.0 type id names, so it is added below and again on the
+            // reader
             final GraphWriter writer = graph.io(graphson).writer().mapper(
-                    graph.io(graphson).mapper().version(GraphSONVersion.V1_0).addCustomModule(module).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create();
+                    graph.io(graphson).mapper().version(GraphSONVersion.V1_0).addCustomModule(module).typeInfo(TypeInfo.PARTIAL_TYPES).addAllowedTypeIdName(CustomId.class.getName()).create()).create();
 
             try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                 writer.writeGraph(baos, graph);
@@ -598,7 +600,7 @@ public class IoTest {
 
                 try (final InputStream is = new ByteArrayInputStream(baos.toByteArray())) {
                     final GraphReader reader = graph.io(graphson).reader()
-                            .mapper(graph.io(graphson).mapper().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.PARTIAL_TYPES).addCustomModule(module).create()).create();
+                            .mapper(graph.io(graphson).mapper().version(GraphSONVersion.V1_0).typeInfo(TypeInfo.PARTIAL_TYPES).addCustomModule(module).addAllowedTypeIdName(CustomId.class.getName()).create()).create();
                     reader.readGraph(is, g2);
                 }
 

@@ -64,9 +64,10 @@ public class IoCustomTest extends AbstractGremlinTest {
         final SimpleModule modulev3 = new CustomId.CustomIdTinkerPopJacksonModuleV3();
 
         return Arrays.asList(new Object[][]{
+                // CustomId is not among the default GraphSON 1.0 type id names, so it is added
                 {"graphson-v1-embedded", true,
-                        (Function<Graph, GraphReader>) g -> g.io(GraphSONIo.build(GraphSONVersion.V1_0)).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V1_0)).mapper().addCustomModule(moduleV1).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create(),
-                        (Function<Graph, GraphWriter>) g -> g.io(GraphSONIo.build(GraphSONVersion.V1_0)).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V1_0)).mapper().addCustomModule(moduleV1).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create()},
+                        (Function<Graph, GraphReader>) g -> g.io(GraphSONIo.build(GraphSONVersion.V1_0)).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V1_0)).mapper().addCustomModule(moduleV1).typeInfo(TypeInfo.PARTIAL_TYPES).addAllowedTypeIdName(CustomId.class.getName()).create()).create(),
+                        (Function<Graph, GraphWriter>) g -> g.io(GraphSONIo.build(GraphSONVersion.V1_0)).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V1_0)).mapper().addCustomModule(moduleV1).typeInfo(TypeInfo.PARTIAL_TYPES).addAllowedTypeIdName(CustomId.class.getName()).create()).create()},
                 {"graphson-v2-embedded", true,
                         (Function<Graph, GraphReader>) g -> g.io(GraphSONIo.build(GraphSONVersion.V2_0)).reader().mapper(g.io(GraphSONIo.build(GraphSONVersion.V2_0)).mapper().addCustomModule(moduleV2).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create(),
                         (Function<Graph, GraphWriter>) g -> g.io(GraphSONIo.build(GraphSONVersion.V2_0)).writer().mapper(g.io(GraphSONIo.build(GraphSONVersion.V2_0)).mapper().addCustomModule(moduleV2).typeInfo(TypeInfo.PARTIAL_TYPES).create()).create()},

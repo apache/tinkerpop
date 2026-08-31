@@ -88,9 +88,13 @@ public abstract class AbstractMessageSerializer<M> implements MessageSerializer<
      * Gets a {@link List} of strings from the configuration object.
      */
     protected List<String> getListStringFromConfig(final String token, final Map<String, Object> config) {
+        final Object value = config.getOrDefault(token, Collections.emptyList());
+        if (value instanceof String)
+            return Collections.singletonList((String) value);
+
         final List<String> classNameList;
         try {
-            classNameList = (List<String>) config.getOrDefault(token, Collections.emptyList());
+            classNameList = (List<String>) value;
         } catch (Exception ex) {
             throw new IllegalStateException(String.format("Invalid configuration value of [%s] for [%s] setting on %s serialization configuration",
                     config.getOrDefault(token, ""), token, this.getClass().getName()), ex);
