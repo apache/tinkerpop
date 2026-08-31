@@ -172,7 +172,12 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
         context.writeValue(length, buffer, false);
 
         for (Object o : argsAsList) {
-            context.write(o, buffer);
+            // typeOf's argument travels as the class's simple name, so the read resolves it against
+            // CompareType.GlobalTypeCache.
+            if ("typeOf".equals(predicateName) && o instanceof Class)
+                context.write(((Class<?>) o).getSimpleName(), buffer);
+            else
+                context.write(o, buffer);
         }
     }
 

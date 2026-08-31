@@ -165,6 +165,10 @@ final class TraversalSerializersV2 {
                         jsonGenerator.writeObject(object);
                     }
                     jsonGenerator.writeEndArray();
+                } else if ("typeOf".equals(p.getPredicateName()) && p.getValue() instanceof Class) {
+                    // as in binary/types/PSerializer, typeOf's Class argument travels as the simple name so the read
+                    // resolves it against CompareType.GlobalTypeCache.
+                    jsonGenerator.writeObjectField(GraphSONTokens.VALUE, ((Class<?>) p.getValue()).getSimpleName());
                 } else
                     jsonGenerator.writeObjectField(GraphSONTokens.VALUE, p.getValue());
             }

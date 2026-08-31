@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -92,6 +93,7 @@ import java.util.function.Consumer;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.apache.tinkerpop.gremlin.util.MockitoHamcrestMatcherAdapter.reflectionEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
@@ -158,6 +160,13 @@ public abstract class AbstractRoundTripTest {
         List<MutableMetrics> nestedMetrics = Arrays.asList(metrics1, metrics2);
         final DefaultTraversalMetrics traversalMetrics = new DefaultTraversalMetrics(666, nestedMetrics);
         final DefaultTraversalMetrics emptyTraversalMetrics = new DefaultTraversalMetrics(444, Collections.emptyList());
+
+        // the three P.typeOf rows assert by evaluating the decoded predicate, since the Class form arrives as String
+        final Consumer<P> typeOfBoolean = p -> {
+            assertThat(p.test(Boolean.FALSE), is(true));
+            assertThat(p.test(Boolean.TRUE), is(true));
+            assertThat(p.test("false"), is(false));
+        };
 
         return Arrays.asList(
                 new Object[] {"String", "ABC", null},
@@ -232,6 +241,9 @@ public abstract class AbstractRoundTripTest {
                 new Object[] {"Pnot", P.not(P.lte(1)), null},
                 new Object[] {"Pwithout", P.without(1,2,3,4,null), null},
                 new Object[] {"Pinside", P.inside(0.0d, 0.6d), null},
+                new Object[] {"PtypeOfGType", P.typeOf(GType.BOOLEAN), typeOfBoolean},
+                new Object[] {"PtypeOfString", P.typeOf("Boolean"), typeOfBoolean},
+                new Object[] {"PtypeOfClass", P.typeOf(Boolean.class), typeOfBoolean},
                 new Object[] {"TextPstartingWith", TextP.startingWith("mark"), null},
                 new Object[] {"TextPregex", TextP.regex("^meh"), null},
                 new Object[] {"TextPnotRegex", TextP.notRegex("^meh"), null},
