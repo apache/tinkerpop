@@ -88,6 +88,35 @@ GryoIo.build().graph(graph).onMapper(m -> ((GryoMapper.Builder) m)
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3278[TINKERPOP-3278]
 
+==== OLAP Restrictions
+
+The OLAP `io()` step on `HadoopGraph` (`g.withComputer().io(path)...`) historically transferred every
+`with(key, value)` option into the graph configuration and accepted any class name as the reader or writer. As of
+3.7.7 a remotely submitted traversal may name only the built-in `gryo` and `graphson` formats, and its
+`io().with(key, value)` and `GraphComputer.configure(key, value)` options are no longer transferred automatically.
+Naming another reader or writer class, selecting `ScriptInputFormat` or `ScriptOutputFormat`, or setting a key that
+has not been approved now fails with an error rather than loading the class or applying the key.
+
+To keep using a custom format, a script format, or additional `with()` or `configure()` keys from a remote traversal,
+they must be listed in the graph configuration. Setting `gremlin.io.trusted=true` instead restores the previous
+behavior in full for an in-process deployment:
+
+[source,properties]
+----
+# approve specific reader/writer, interceptor, or script format classes
+gremlin.io.approvedClasses=org.example.MyInputFormat,org.example.MyOutputFormat
+# approve specific io().with() and GraphComputer.configure() keys
+gremlin.io.approvedGraphConfigKeys=some.graph.option
+gremlin.io.approvedComputerConfigKeys=spark.executor.memory
+# or restore the previous behavior in full
+gremlin.io.trusted=true
+----
+
+Deployments that use only the built-in formats and configure OLAP through the graph properties file, rather than
+through `with()` on a remote traversal, are unaffected.
+
+See: link:https://tinkerpop.apache.org/docs/3.7.7/reference/#remote-olap-configuration[Remote OLAP Configuration]
+
 ==== conjoin() Step Null Handling
 
 The `conjoin()` step previously returned `null` when elements in the incoming list are `null`. This behavior has
@@ -240,6 +269,23 @@ ClassRegistry.unregister(MyClass.class);
 Registration is only required for in Java for deserialization, which typically only impacts the server. Without
 registration, read attempts fail with a `Class not recognized` message naming the class, raised as an
 `IOException` for GraphBinary, a `MismatchedInputException` for GraphSON and a `RuntimeException` for Gryo.
+
+===== Hadoop/Spark OLAP IO Class Loading
+
+As of 3.7.7, a remotely submitted OLAP traversal loads a reader, writer, or Spark vertex-program interceptor class only
+after that class has been approved in the graph configuration. Providers that ship custom Hadoop input or output
+formats, or a custom interceptor, must make those classes approvable by declaring them in the graph configuration or by
+listing them in `gremlin.io.approvedClasses`. The Spark vertex-program interceptor
+(`gremlin.hadoop.vertexProgramInterceptor`) is validated against the approved classes at its load site, regardless of
+how its value entered the configuration.
+
+The typed fluent setters on `SparkGraphComputer` (`master(...)`, `serializer(...)`, `sparkKryoRegistrator(...)`,
+`persistContext(...)`) are reachable only from embedded Java code and never from a remote traversal, so they continue
+to work unchanged. Only a `configure(key, value)` call with a key that has not been approved is affected. Embedded code
+that needs arbitrary `configure()` keys can set `gremlin.io.trusted=true`, or set the configuration in the graph
+properties file.
+
+See: link:https://tinkerpop.apache.org/docs/3.7.7/reference/#remote-olap-configuration[Remote OLAP Configuration]
 
 == TinkerPop 3.7.6
 
