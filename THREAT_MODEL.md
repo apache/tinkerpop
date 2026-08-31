@@ -106,9 +106,9 @@ under the License.
   graph data directory.** They have the operator's authority by definition.
 - **Operator-configured code-execution/side-effect surfaces:** the Script I/O Format (`ScriptInputFormat`/
   `ScriptOutputFormat` run operator-supplied Groovy from HDFS) and `EventStrategy` `MutationListener`
-  callbacks. The code comes from operator/provider config, not a remote request (though a remote mutating
-  traversal can *trigger* an already-registered listener). Trusted-input. *(documented — Script I/O Format;
-  `EventStrategy`)*
+  callbacks. Out of scope where the operator configured the surface, though a remote mutating traversal can
+  *trigger* an already-registered listener. Trusted-input. **Remote selection of a script format is
+  in-model and denied** (§8). *(documented — Script I/O Format; `EventStrategy`)*
 - **Any test-only module, any example-only module, and build/distribution tooling** as a production trust
   surface (e.g. `gremlin-test`, `gremlin-examples`, `gremlin-tools`).
 - **Confidentiality of data in transit when the operator has not enabled TLS** (see §10). TLS is **off by
@@ -134,7 +134,8 @@ Data flow for a remote request. The `‖` marks the trust boundary, and everythi
 
 - Untrusted input crosses left-to-right at the boundary (request bytes). The response path crosses
   right-to-left back to the GLV (server-response bytes are untrusted from the client's standpoint, §8).
-- The **embedded** environment has no boundary, since the caller runs `gremlin-core` in-process (§2).
+- The **embedded** environment has no *network* boundary, since the caller runs `gremlin-core` in-process
+  (§2). Decoding a graph or object file is still a boundary.
 - The **`io()` / file surface** feeds the graph/storage box from disk, untrusted only if the caller loads
   untrusted files (§6).
 
@@ -236,6 +237,14 @@ Knobs that change which security properties hold (Gremlin Server, `gremlin-serve
   and defaults to a locked registration allow-list (`registrationRequired=true`). Disabling that lock removes
   the untrusted-input protection (§9). *(documented — sample configs, `gremlin-applications.asciidoc`
   "Serialization")*
+- **Class names admitted from untrusted bytes** — a class named in request or file bytes resolves only
+  against what has been declared, and an operator can widen or narrow the declared set. Typed GraphSON 1.0
+  reads admit further names through `allowedTypeIdNames`. `TraversalStrategies.GlobalCache.denyStrategy()`
+  permanently removes a strategy from the global name registry. OLAP reads its trust flag and allow-lists
+  from graph configuration (`gremlin.io.trusted`, `gremlin.io.approvedClasses`,
+  `gremlin.io.approvedComputerConfigKeys`, `gremlin.io.approvedGraphConfigKeys`), where
+  `gremlin.io.trusted` disables the restriction for the deployment. Widening any of these is the operator's
+  decision and gives up the §8 deserializer-integrity property for whatever it admits (§9).
 
 ## §6 Assumptions about inputs
 
@@ -339,8 +348,9 @@ Per-surface trust table:
  
 - **Deserializer integrity.** The wire deserializers (GraphSON, GraphBinary) and **the hardened Gryo mappers the
   IO paths build** (`registrationRequired=true` plus `javaSerializationAllowed=false`, i.e. `io()`, `GryoReader`,
-  `GryoWriter`, `GryoIo`, and the Hadoop Gryo input/output formats) reading attacker bytes do not reach native Java
-  deserialization
+  `GryoWriter`, `GryoIo`, and the Hadoop Gryo input/output formats) reading attacker bytes do not let those bytes
+  cause code execution by selecting an undeclared class from the classpath for initialization, construction, or
+  reflective invocation, and do not reach native Java deserialization
   (`ObjectInputStream.readObject()`). Because `inject()` and value arguments let a request carry any
   supported type, a bug in a **registered** type's (de)serializer that crashes/OOMs the reader is also
   in-model, on **both** the server (request) and the GLV (response) side. The GraphML reader disables
