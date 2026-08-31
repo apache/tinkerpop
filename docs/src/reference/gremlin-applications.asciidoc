@@ -1058,6 +1058,7 @@ The drivers are designed to use that type information to properly produce result
 system and may not function correctly without it. Generally speaking, `GraphBinary` is always the best choice for the
 drivers.
 
+[[server-graphson]]
 ===== GraphSON
 
 The GraphSON serializer produces human-readable output in JSON format and is a good configuration choice for those

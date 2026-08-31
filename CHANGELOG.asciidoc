@@ -455,6 +455,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added verification to `io()` ensuring a class named by `IO.reader`, `IO.writer` or `IO.registry` implements the expected interface before loading and initializing it.
 * Fixed `io().write()` to resolve its `GraphWriter` before opening the output file, so that a writer which cannot be constructed no longer truncates the target.
 * Fixed `TinkerGraph` GraphSON deserialization to fail fast with `JsonParseException` on malformed `tinker:graph` input.
+* Changed GraphSON 1.0 typed deserialization to resolve a `@class` type id only when the name is in a set of exact class names.
 * Restricted Hadoop/Spark OLAP `io()` from a remotely submitted traversal to operator-approved reader/writer classes and `with()` keys, adding the `gremlin.io.trusted`, `gremlin.io.approvedClasses` and `gremlin.io.approvedGraphConfigKeys` options.
 * Restricted OLAP `GraphComputer.configure()` from a remotely submitted traversal to built-in and operator-approved keys, adding the `gremlin.io.approvedComputerConfigKeys` option.
 * Fixed `subgraph()` to throw a descriptive error identifying the required `Edge` input instead of an internal `ClassCastException` when the traversal produces a non-edge value.
