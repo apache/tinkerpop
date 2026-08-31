@@ -25,6 +25,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
@@ -181,6 +183,17 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
 
     private Object invokeStrategyCreationMethod(final Object delegate, final Map<String, Object> map) {
         final Class<?> strategyClass = ((TraversalStrategyProxy) delegate).getStrategyClass();
+        if (null == strategyClass || !TraversalStrategy.class.isAssignableFrom(strategyClass))
+            throw new IllegalStateException("Class is not a TraversalStrategy - " +
+                    (null == strategyClass ? "null" : strategyClass.getName()));
+
+        final Class<? extends TraversalStrategy> registeredStrategy =
+                TraversalStrategies.GlobalCache.getRegisteredStrategyClassByFullName(strategyClass.getName()).
+                        orElseThrow(() -> new IllegalStateException(
+                                "TraversalStrategy not recognized - " + strategyClass.getName()));
+        if (registeredStrategy != strategyClass)
+            throw new IllegalStateException("TraversalStrategy not recognized - " + strategyClass.getName());
+
         final Map<String, Method> methodCache = localMethodCache.computeIfAbsent(strategyClass, k -> {
             final Map<String, Method> cacheEntry = new HashMap<>();
             try {
