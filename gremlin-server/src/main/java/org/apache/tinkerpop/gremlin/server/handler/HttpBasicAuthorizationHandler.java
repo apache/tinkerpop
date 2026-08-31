@@ -49,7 +49,6 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
     private static final Logger logger = LoggerFactory.getLogger(HttpBasicAuthorizationHandler.class);
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
 
-    private AuthenticatedUser user;
     private final Authorizer authorizer;
 
     public HttpBasicAuthorizationHandler(Authorizer authorizer) {
@@ -69,12 +68,11 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
                 return;
             }
 
+            final AuthenticatedUser channelUser = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
+            // channelUser is null when using the AllowAllAuthenticator
+            final AuthenticatedUser user = null == channelUser ?
+                    AuthenticatedUser.ANONYMOUS_USER : channelUser;
             try {
-                user = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
-                if (null == user) {    // This is expected when using the AllowAllAuthenticator
-                    user = AuthenticatedUser.ANONYMOUS_USER;
-                }
-
                 authorizer.authorize(user, requestMessage);
                 ctx.fireChannelRead(request);
             } catch (AuthorizationException ex) {  // Expected: users can alternate between allowed and disallowed requests
