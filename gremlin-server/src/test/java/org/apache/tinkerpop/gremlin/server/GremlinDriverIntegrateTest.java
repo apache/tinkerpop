@@ -969,7 +969,21 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldWorkWithGraphSONV1Serialization() throws Exception {
+    public void shouldWorkWithGraphSONV1TypedSerialization() throws Exception {
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1).create();
+        final Client client = cluster.connect();
+
+        try {
+            final List<Result> results = client.submit("g.inject(2)").all().join();
+            assertEquals(1, results.size());
+            assertEquals(2, results.get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldWorkWithGraphSONV1UntypedSerialization() throws Exception {
         final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V1_UNTYPED).create();
         final Client client = cluster.connect();
 
