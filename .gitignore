@@ -1,5 +1,8 @@
 *.log
 target/
+# Spark local-cluster OLAP ITs leave an untracked "file:"-scheme output dir under the module
+file:/
+**/file:/
 *.iml
 **/.idea/
 *.iws

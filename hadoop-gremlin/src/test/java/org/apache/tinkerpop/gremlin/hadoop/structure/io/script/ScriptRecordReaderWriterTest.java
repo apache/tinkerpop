@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.features.TestFiles;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.RecordReaderWriterTest;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.util.OlapClassLoadingPolicy;
 
 import java.io.File;
 
@@ -37,6 +38,8 @@ public class ScriptRecordReaderWriterTest extends RecordReaderWriterTest {
     @Override
     protected Configuration configure(final File outputDirectory) {
         final Configuration configuration = super.configure(outputDirectory);
+        // ScriptInputFormat requires trusted IO; this is a trusted local test that legitimately runs the script
+        configuration.set(OlapClassLoadingPolicy.TRUSTED, "true");
         configuration.set(ScriptRecordReader.SCRIPT_FILE, TestFiles.PATHS.get("script-input-grateful-dead.groovy"));
         configuration.set(ScriptRecordWriter.SCRIPT_FILE, TestFiles.PATHS.get("script-output-grateful-dead.groovy"));
         return configuration;
