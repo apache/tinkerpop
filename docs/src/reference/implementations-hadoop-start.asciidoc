@@ -128,6 +128,10 @@ engines (<<sparkgraphcomputer,`SparkGraphComputer`>> refer to their respective d
 |gremlin.hadoop.graphWriter |The class that the graph output file(s) are written with (e.g. an `OutputFormat`).
 |gremlin.hadoop.jarsInDistributedCache |Whether to upload the Hadoop-Gremlin jars to a distributed cache (necessary if jars are not on the machines' classpaths).
 |gremlin.hadoop.defaultGraphComputer |The default `GraphComputer` to use when `graph.compute()` is called. This is optional.
+|gremlin.io.trusted |Enables the full OLAP IO behavior, permitting any reader/writer class, `GraphComputer.configure()` key, and the `ScriptInputFormat`/`ScriptOutputFormat` formats. Suits an in-process deployment that does not accept remote traversals. Defaults to `false`. This is optional.
+|gremlin.io.approvedClasses |A comma-separated allow-list of fully-qualified class names a remotely submitted traversal may load (e.g. a custom reader/writer, the Spark vertex-program interceptor, or `ScriptInputFormat`/`ScriptOutputFormat` to permit script IO). Ignored when `gremlin.io.trusted` is `true`. This is optional.
+|gremlin.io.approvedComputerConfigKeys |A comma-separated allow-list of OLAP computer-configuration keys a remotely submitted traversal may set via `GraphComputer.configure()`. Ignored when `gremlin.io.trusted` is `true`. This is optional.
+|gremlin.io.approvedGraphConfigKeys |A comma-separated allow-list of graph/IO configuration keys a remotely submitted traversal may set via `io().with(key, value)`. Separate from `gremlin.io.approvedComputerConfigKeys` (the two govern different surfaces). Ignored when `gremlin.io.trusted` is `true`. This is optional.
 |=========================================================
 
 Along with the properties above, the numerous link:http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml[Hadoop specific properties]
@@ -137,6 +141,33 @@ IMPORTANT: As the size of the graphs being processed becomes large, it is import
 underlying OLAP engine (e.g. Spark, etc.) works and understand the numerous parameterizations offered by
 these systems. Such knowledge can help alleviate out of memory exceptions, slow load times, slow processing times,
 garbage collection issues, etc.
+
+[[remote-olap-configuration]]
+==== Remote OLAP Configuration
+
+When an OLAP traversal is submitted remotely, the `io()` step and `GraphComputer.configure(key, value)` let that
+traversal introduce classes and configuration keys into the graph configuration. By default a remotely submitted
+traversal may use the built-in `gryo` and `graphson` formats together with the configuration keys Hadoop-Gremlin needs
+for normal execution. Any other reader or writer class, the `ScriptInputFormat` and `ScriptOutputFormat` formats, and
+any additional `io().with(key, value)` or `GraphComputer.configure(key, value)` key are applied only when they have
+been approved in the graph configuration. A class or key that has not been approved is rejected rather than loaded or
+applied.
+
+Approvals are declared through the properties listed above. `gremlin.io.approvedClasses` names the fully-qualified
+classes a remote traversal may load, such as a custom `InputFormat` or `OutputFormat`, a Spark vertex-program
+interceptor, or the script formats. `gremlin.io.approvedGraphConfigKeys` names the `io().with(key, value)` keys a
+remote traversal may set, and `gremlin.io.approvedComputerConfigKeys` names the `GraphComputer.configure(key, value)`
+keys it may set. The two key lists are kept separate because `io().with()` and `configure()` govern different
+configuration surfaces, so approving a key on one does not approve it on the other. Setting `gremlin.io.trusted` to
+`true` enables all of this configuration at once and suits an in-process deployment that does not accept remote
+traversals.
+
+These lists are meant for genuine tuning keys. The keys Hadoop-Gremlin sets for itself from the traversal or the graph
+properties file (`gremlin.hadoop.graphReader`, `gremlin.hadoop.graphWriter`, `gremlin.hadoop.graphFilter`,
+`gremlin.hadoop.defaultGraphComputer`, `gremlin.vertexProgram`, and `gremlin.mapReduce`) are managed by the framework
+and do not need to be added to them. The typed fluent setters on `SparkGraphComputer` such as `master(...)`,
+`serializer(...)`, `sparkKryoRegistrator(...)`, and `persistContext(...)` are called from embedded code and are
+unaffected by these lists.
 
 === OLTP Hadoop-Gremlin
 

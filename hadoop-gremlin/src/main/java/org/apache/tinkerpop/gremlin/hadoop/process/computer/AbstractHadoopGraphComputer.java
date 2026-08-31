@@ -26,6 +26,7 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.util.OlapConfigKeyPolicy;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
@@ -45,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -71,9 +73,38 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
 
     protected GraphFilter graphFilter = new GraphFilter();
 
+    /**
+     * Configuration key holding a comma-separated allow-list of OLAP computer-configuration keys an operator permits
+     * to be set from an untrusted traversal via {@link #configure(String, Object)}. Canonical definition lives on
+     * {@link OlapConfigKeyPolicy}; re-exported here for callers/tests that reference it on the computer.
+     */
+    public static final String APPROVED_COMPUTER_CONFIG_KEYS = OlapConfigKeyPolicy.APPROVED_COMPUTER_CONFIG_KEYS;
+
     public AbstractHadoopGraphComputer(final HadoopGraph hadoopGraph) {
         this.hadoopGraph = hadoopGraph;
         this.logger = LoggerFactory.getLogger(this.getClass());
+    }
+
+    /**
+     * The framework configuration keys a concrete computer's own strategies set via {@link #configure(String, Object)}
+     * during normal execution; always permitted so ordinary OLAP is not broken. Empty by default; a computer overrides
+     * this to contribute its keys, keeping that knowledge in the computer's own module rather than this base class.
+     */
+    protected Set<String> builtinApprovedConfigKeys() {
+        return Collections.emptySet();
+    }
+
+    /**
+     * Guards a computer configuration key supplied via {@link #configure(String, Object)} against untrusted OLAP
+     * input, delegating to {@link OlapConfigKeyPolicy} with this computer's built-in framework keys
+     * ({@link #builtinApprovedConfigKeys()}) and the {@link OlapConfigKeyPolicy#APPROVED_COMPUTER_CONFIG_KEYS} operator
+     * allow-list. Trust-boundary keys are never settable (self-elevation); trusted deployments permit all keys; untrusted
+     * deployments permit only built-in or operator-approved keys, so a remotely injected key (for example
+     * {@code spark.executor.extraJavaOptions} or {@code fs.*.impl}) is rejected before it can reach a reflective sink.
+     */
+    protected void checkConfigurationKeyPermitted(final String key) {
+        OlapConfigKeyPolicy.checkConfigKeyPermitted(this.hadoopGraph.configuration(), key,
+                builtinApprovedConfigKeys(), OlapConfigKeyPolicy.APPROVED_COMPUTER_CONFIG_KEYS);
     }
 
     @Override
