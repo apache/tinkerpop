@@ -6747,6 +6747,9 @@ TraversalStrategies.GlobalCache.registerStrategies(MyGraph.class, traversalStrat
 TraversalStrategies.GlobalCache.registerStrategy(MyStrategy.class);
 ----
 
+Serializers use this registry when resolving a `TraversalStrategyProxy`. TinkerPop's built-in strategies are registered
+by default, but custom strategies must also be registered before they are used.
+
 Calling `denyStrategy()` unregisters a strategy and permanently prevents subsequent calls to `registerStrategy()` or
 `registerStrategies()` from adding it to the registry again. Registry additions for a denied strategy are ignored.
 Denial takes precedence regardless of the order in which graph providers register strategies from static initializers.
