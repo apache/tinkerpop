@@ -53,7 +53,7 @@
     "antlr4ng": "3.0.16",
     "buffer": "^6.0.3",
     "eventemitter3": "^5.0.1",
-    "undici": "6.28.0"
+    "undici": "8.10.0"
   },
   "optionalDependencies": {
     "@aws-sdk/credential-providers": "^3.967.0",
