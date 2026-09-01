@@ -107,19 +107,26 @@ public class HttpHandlerUtil {
 
             final ByteBuf buffer = request.content();
 
-            // additional validation for header
-            final int first = buffer.readByte();
-            // payload can be plain json or can start with additional header with content type.
-            // if first character is not "{" (0x7b) then need to verify is correct serializer selected.
+            if (!buffer.isReadable())
+                throw new IllegalArgumentException("Request body is empty.");
+
+            // Driver payloads may start with [unsigned MIME length][MIME bytes], followed by the serialized request.
+            // Plain GraphSON starts directly with '{', so peek without advancing until the payload form is known.
+            final int first = buffer.getUnsignedByte(buffer.readerIndex());
             if (first != 0x7b) {
+                // Include the length byte itself when verifying that the complete MIME header is available.
+                if (buffer.readableBytes() < first + 1)
+                    throw new IllegalArgumentException("Request body is shorter than the mime type header.");
+
+                // Remove the MIME header so the serializer receives only the RequestMessage payload.
+                buffer.skipBytes(1);
                 final byte[] bytes = new byte[first];
                 buffer.readBytes(bytes);
                 final String mimeType = new String(bytes, StandardCharsets.UTF_8);
 
                 if (Arrays.stream(serializer.mimeTypesSupported()).noneMatch(t -> t.equals(mimeType)))
                     throw new IllegalArgumentException("Mime type mismatch. Value in content-type header is not equal payload header.");
-            } else
-                buffer.resetReaderIndex();
+            }
 
             return serializer.deserializeRequest(buffer);
         }
