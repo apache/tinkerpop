@@ -53,6 +53,9 @@ public class WsGremlinBinaryRequestDecoder extends MessageToMessageDecoder<Binar
 
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final BinaryWebSocketFrame frame, final List<Object> objects) throws Exception {
+        // recorded before anything reads from the frame as readableBytes() is relative to the reader index
+        channelHandlerContext.channel().attr(StateKey.REQUEST_SIZE).set(frame.content().readableBytes());
+
         final ByteBuf messageBytes = frame.content();
         final byte len = messageBytes.readByte();
         if (len <= 0) {

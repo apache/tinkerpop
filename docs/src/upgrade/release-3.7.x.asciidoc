@@ -274,6 +274,44 @@ registered by default. An unregistered custom strategy produces an error such as
 
 See: link:https://tinkerpop.apache.org/docs/3.7.7/reference/#traversalstrategy-registration[TraversalStrategy Registration]
 
+==== Pre-Authentication Request Limits
+
+Gremlin Server now bounds what a channel can make it retain while that channel's SASL authentication is pending, and
+terminates a channel whose authentication does not complete. Only deployments that configure an `Authenticator` are
+affected, as the handler is not in the pipeline for the default `AllowAllAuthenticator`.
+
+A channel may defer at most 64 requests, and at most 2 MiB of total request bytes covering both the request that began
+authentication and the deferred ones. A request beyond either cap is answered with `UNAUTHORIZED` (status code `401`)
+rather than deferred, and can be resent once the channel is authenticated.
+
+A request larger than 2 MiB that arrives first on a channel still receives the `AUTHENTICATE` challenge, but it is not
+held, so it is answered the same way. Note that `maxContentLength` defaults to 10 MiB, so a request the server
+otherwise accepts can be affected. Because drivers open pooled connections on demand, the first request on a new
+connection is an ordinary user request, so this can appear intermittently for workloads that send bulk data inside a
+query, such as a large `inject()` or a `within()` over many ids.
+
+`MAX_REQUEST_DEFERRABLE_DURATION` was raised from 5 seconds to 30 seconds, and a channel that has not completed
+authentication within that duration is now closed. Previously the handler never closed such a channel, and
+`idleConnectionTimeout` defaults to `0`, so nothing reaped it. A request that a failed authentication attempt already
+answered is no longer replayed when a later attempt on the same channel succeeds.
+
+All three limits are configurable, as `authentication.maxDeferredRequests`, `authentication.maxPreAuthRetainedBytes`
+and `authentication.preAuthTimeout`, the last in milliseconds. Each must be greater than zero and Gremlin Server fails
+to start otherwise. The defaults are the values described above, so a configuration that sets none of them behaves as
+described.
+
+Each of the errors below is a resource limit rather than a credential failure, so an operator seeing the `UNAUTHORIZED`
+status code they share need not investigate credentials. The messages show the default limits.
+
+[cols="1,3,3", options="header"]
+|=========================================================
+|Status Code |Message |Remedy
+|`401` |`Too many requests were deferred pending authentication (64 maximum).` |Resend once authenticated, or raise `authentication.maxDeferredRequests`.
+|`401` |`Too many bytes were retained pending authentication (2097152 bytes maximum).` |Resend once authenticated, or raise `authentication.maxPreAuthRetainedBytes`.
+|`401` |`Request is too large to hold pending authentication (2097152 bytes maximum).` |Resend once authenticated, or raise `authentication.maxPreAuthRetainedBytes`.
+|`401` |`Authentication did not finish in the allowed duration (30000 ms).` |Complete the SASL handshake sooner, or raise `authentication.preAuthTimeout`.
+|=========================================================
+
 === Upgrading for Providers
 
 ==== Graph System Providers
