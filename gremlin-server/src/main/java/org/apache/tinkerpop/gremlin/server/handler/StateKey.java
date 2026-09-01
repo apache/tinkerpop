@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.op.session.Session;
 import io.netty.util.AttributeKey;
+import io.netty.util.concurrent.ScheduledFuture;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -72,4 +73,19 @@ public final class StateKey {
      * The key for the current {@link AuthenticatedUser}.
      */
     public static final AttributeKey<AuthenticatedUser> AUTHENTICATED_USER = AttributeKey.valueOf("authenticatedUser");
+
+    /**
+     * The key for the size in bytes of the frame the current request was decoded from. Not public by design.
+     */
+    static final AttributeKey<Integer> REQUEST_SIZE = AttributeKey.valueOf("requestSize");
+
+    /**
+     * The key for the running total of the sizes of the requests retained pending authentication. Not public by design.
+     */
+    static final AttributeKey<Long> DEFERRED_REQUEST_BYTES = AttributeKey.valueOf("deferredRequestBytes");
+
+    /**
+     * The key for the task that closes the channel if authentication does not complete in time. Not public by design.
+     */
+    static final AttributeKey<ScheduledFuture<?>> PREAUTH_DEADLINE = AttributeKey.valueOf("preAuthDeadline");
 }

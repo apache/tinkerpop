@@ -50,6 +50,9 @@ public class WsGremlinTextRequestDecoder extends MessageToMessageDecoder<TextWeb
 
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final TextWebSocketFrame frame, final List<Object> objects) throws Exception {
+        // recorded before anything reads from the frame as readableBytes() is relative to the reader index
+        channelHandlerContext.channel().attr(StateKey.REQUEST_SIZE).set(frame.content().readableBytes());
+
         try {
             // the default serializer must be a MessageTextSerializer instance to be compatible with this decoder
             final MessageTextSerializer<?> serializer = (MessageTextSerializer<?>) select("application/json", ServerSerializers.DEFAULT_TEXT_SERIALIZER);

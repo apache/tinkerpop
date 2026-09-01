@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
 import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
+import org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.Session;
 import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
@@ -492,6 +493,22 @@ public class Settings {
      */
     public static class AuthenticationSettings {
         /**
+         * Default for {@link #maxDeferredRequests}.
+         */
+        public static final int DEFAULT_MAX_DEFERRED_REQUESTS = 64;
+
+        /**
+         * Default for {@link #maxPreAuthRetainedBytes}.
+         */
+        public static final long DEFAULT_MAX_PRE_AUTH_RETAINED_BYTES = 2L * 1024 * 1024;
+
+        /**
+         * Default for {@link #preAuthTimeout}.
+         */
+        public static final long DEFAULT_PRE_AUTH_TIMEOUT =
+                SaslAuthenticationHandler.MAX_REQUEST_DEFERRABLE_DURATION.toMillis();
+
+        /**
          * The fully qualified class name of the {@link Authenticator} implementation. This class name will be
          * used to load the implementation from the classpath. Defaults to {@link AllowAllAuthenticator} when
          * not specified.
@@ -510,6 +527,26 @@ public class Settings {
          * {@link Authenticator} implementation for specifics on what configurations are expected.
          */
         public Map<String, Object> config = null;
+
+        /**
+         * Number of requests a channel may defer while its SASL authentication is pending. Must be greater than zero.
+         * Only applies to {@link SaslAuthenticationHandler} and its subclasses.
+         */
+        public int maxDeferredRequests = DEFAULT_MAX_DEFERRED_REQUESTS;
+
+        /**
+         * Total wire bytes a channel may have retained while its SASL authentication is pending, covering the request
+         * that started it as well as the deferred ones. Deserialized, their heap footprint is a multiple of this. Must
+         * be greater than zero. Only applies to {@link SaslAuthenticationHandler} and its subclasses.
+         */
+        public long maxPreAuthRetainedBytes = DEFAULT_MAX_PRE_AUTH_RETAINED_BYTES;
+
+        /**
+         * Time in milliseconds a channel may stay unauthenticated, covering the whole handshake and not just the
+         * deferral window, after which it is closed. Must be greater than zero. Only applies to
+         * {@link SaslAuthenticationHandler} and its subclasses.
+         */
+        public long preAuthTimeout = DEFAULT_PRE_AUTH_TIMEOUT;
     }
 
     /**

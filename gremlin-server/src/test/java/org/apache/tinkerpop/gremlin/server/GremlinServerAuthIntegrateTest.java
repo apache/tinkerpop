@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
-import org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
@@ -59,6 +58,11 @@ import static org.junit.Assert.fail;
 public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
     /**
+     * Pre-authentication deadline for the one test that waits it out, kept short to keep that test short.
+     */
+    private static final Duration SHORT_PRE_AUTH_TIMEOUT = Duration.ofSeconds(2);
+
+    /**
      * Configure specific Gremlin Server settings for specific tests.
      */
     @Override
@@ -82,6 +86,9 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
                 sslConfig.keyStore = JKS_SERVER_KEY;
                 sslConfig.keyStorePassword = KEY_PASS;
                 settings.ssl = sslConfig;
+                break;
+            case "shouldFailAuthenticateWithUnAuthenticatedRequestAfterMaxDeferrableDuration":
+                authSettings.preAuthTimeout = SHORT_PRE_AUTH_TIMEOUT.toMillis();
                 break;
         }
 
@@ -177,38 +184,27 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
     @Test
     public void shouldFailAuthenticateWithUnAuthenticatedRequestAfterMaxDeferrableDuration() throws Exception {
         try (WebSocketClient client = TestClientFactory.createWebSocketClient()) {
-            // First request will initiate the authentication handshake
+            // First request will initiate the authentication handshake and be held
             // Subsequent requests will be deferred
-            CompletableFuture<List<ResponseMessage>> futureOfRequestWithinAuthDuration1  = client.submitAsync("");
-            CompletableFuture<List<ResponseMessage>> futureOfRequestWithinAuthDuration2  = client.submitAsync("");
-            CompletableFuture<List<ResponseMessage>> futureOfRequestWithinAuthDuration3  = client.submitAsync("");
+            final CompletableFuture<List<ResponseMessage>> firstRequest = client.submitAsync("");
+            final CompletableFuture<List<ResponseMessage>> secondRequest = client.submitAsync("");
+            final CompletableFuture<List<ResponseMessage>> thirdRequest = client.submitAsync("");
 
-            // After the maximum allowed deferred request duration,
-            // any non-authenticated request will invalidate all requests with 429 error
-            CompletableFuture<List<ResponseMessage>> futureOfRequestSubmittedTooLate = CompletableFuture.runAsync(() -> {
-                try {
-                    Thread.sleep(SaslAuthenticationHandler.MAX_REQUEST_DEFERRABLE_DURATION.plus(Duration.ofSeconds(1)).toMillis());
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }).thenCompose((__) -> {
-                try {
-                    return client.submitAsync("");
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            // authentication is never completed, so the server answers everything it held and closes the channel.
+            // waits are bounded because nothing more arrives on a closed channel
+            final long timeoutMillis = SHORT_PRE_AUTH_TIMEOUT.plus(Duration.ofSeconds(30)).toMillis();
+            final List<ResponseMessage> first = firstRequest.get(timeoutMillis, TimeUnit.MILLISECONDS);
+            final List<ResponseMessage> second = secondRequest.get(timeoutMillis, TimeUnit.MILLISECONDS);
+            final List<ResponseMessage> third = thirdRequest.get(timeoutMillis, TimeUnit.MILLISECONDS);
 
-            assertEquals(2, futureOfRequestWithinAuthDuration1.get().size());
-            assertEquals(1, futureOfRequestWithinAuthDuration2.get().size());
-            assertEquals(1, futureOfRequestWithinAuthDuration3.get().size());
-            assertEquals(1, futureOfRequestSubmittedTooLate.get().size());
+            assertEquals(2, first.size());
+            assertEquals(1, second.size());
+            assertEquals(1, third.size());
 
-            assertEquals(ResponseStatusCode.AUTHENTICATE, futureOfRequestWithinAuthDuration1.get().get(0).getStatus().getCode());
-            assertEquals(ResponseStatusCode.UNAUTHORIZED, futureOfRequestWithinAuthDuration1.get().get(1).getStatus().getCode());
-            assertEquals(ResponseStatusCode.UNAUTHORIZED, futureOfRequestWithinAuthDuration2.get().get(0).getStatus().getCode());
-            assertEquals(ResponseStatusCode.UNAUTHORIZED, futureOfRequestWithinAuthDuration3.get().get(0).getStatus().getCode());
-            assertEquals(ResponseStatusCode.UNAUTHORIZED, futureOfRequestSubmittedTooLate.get().get(0).getStatus().getCode());
+            assertEquals(ResponseStatusCode.AUTHENTICATE, first.get(0).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, first.get(1).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, second.get(0).getStatus().getCode());
+            assertEquals(ResponseStatusCode.UNAUTHORIZED, third.get(0).getStatus().getCode());
         }
     }
 

@@ -61,6 +61,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed request isolation in HTTP and WebSocket authorization handlers.
 * Fixed `gremlin-python` GraphBinary serialization of `BigInteger`/`BigDecimal` negative boundary values (e.g. `-129`) that raised `OverflowError`.
 * Fixed `gremlin-go` GraphBinary serialization of zero `BigInteger`/`BigDecimal` values, which were encoded with zero length and rejected by Java servers.
+* Capped by count and by total size the requests `SaslAuthenticationHandler` retains on a channel while its SASL authentication is pending, and closed the channel when that authentication does not complete within 30 seconds, all three tunable with the new `authentication.maxDeferredRequests`, `authentication.maxPreAuthRetainedBytes` and `authentication.preAuthTimeout` settings.
 
 [[release-3-7-6]]
 === TinkerPop 3.7.6 (Release Date: April 1, 2026)

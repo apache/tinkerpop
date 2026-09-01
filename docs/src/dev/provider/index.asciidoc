@@ -1332,15 +1332,17 @@ Other SASL mechanisms supported for selected clients are listed in the
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#security[security section of the Gremlin Server reference documentation].
 
 When authentication is enabled, an incoming request is intercepted before it is evaluated by the `ScriptEngine`.  The
-request is saved on the server and a `AUTHENTICATE` challenge response (status code `407`) is returned to the client.
+request is saved on the server, unless it is too large to be held pending authentication, and a `AUTHENTICATE`
+challenge response (status code `407`) is returned to the client.
 
 The client will detect the `AUTHENTICATE` and respond with an `authentication` for the `op` and an `arg` named `sasl`.
 In case of the "PLAIN" SASL mechanism the `arg` contains the password.  The password should be either, an encoded
 sequence of UTF-8 bytes, delimited by 0 (US-ASCII NUL), where the form is : `<NUL>username<NUL>password`, or a Base64
 encoded string of the former (which in this instance would be `AHVzZXJuYW1lAHBhc3N3b3Jk`).  Should Gremlin Server be
 able to authenticate with the provided credentials, the server will return the results of the original request as it
-normally does without authentication.  If it cannot authenticate given the challenge response from the client, it will
-return `UNAUTHORIZED` (status code `401`).
+normally does without authentication.  A request that was not held, either because it was too large or because an
+earlier failed authentication attempt already answered it, is not replayed and must be resent.  If it cannot
+authenticate given the challenge response from the client, it will return `UNAUTHORIZED` (status code `401`).
 
 NOTE: Gremlin Server does not support the "authorization identity" as described in link:https://tools.ietf.org/html/rfc4616[RFC4616].
 
