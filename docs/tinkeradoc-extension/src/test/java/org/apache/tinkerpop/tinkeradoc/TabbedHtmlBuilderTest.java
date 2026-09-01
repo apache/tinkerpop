@@ -101,7 +101,7 @@ public class TabbedHtmlBuilderTest {
                 TabbedHtmlBuilder.consoleTab("groovy", "output"),
                 TabbedHtmlBuilder.codeTab("java", "code"));
         final String html = builder.build(tabs);
-        assertThat(html, containsString("<label for=\"tab-1-1\" class=\"tab-label-1\">console (groovy)</label>"));
+        assertThat(html, containsString("<label for=\"tab-1-1\" class=\"tab-label-1\">console</label>"));
         assertThat(html, containsString("<label for=\"tab-1-2\" class=\"tab-label-2\">java</label>"));
     }
 
@@ -176,7 +176,7 @@ public class TabbedHtmlBuilderTest {
     @Test
     public void shouldCreateConsoleTabWithCorrectLabel() {
         final TabbedHtmlBuilder.Tab tab = TabbedHtmlBuilder.consoleTab("groovy", "gremlin> g.V()");
-        assertThat(tab.getLabel(), is("console (groovy)"));
+        assertThat(tab.getLabel(), is("console"));
         assertThat(tab.getLanguage(), is("groovy"));
         assertThat(tab.getContent(), is("gremlin> g.V()"));
     }
@@ -258,7 +258,7 @@ public class TabbedHtmlBuilderTest {
         assertThat(html, containsString("id=\"tab-1-4\" class=\"tab-selector-4\""));
 
         // Verify all 4 labels
-        assertThat(html, containsString("class=\"tab-label-1\">console (groovy)</label>"));
+        assertThat(html, containsString("class=\"tab-label-1\">console</label>"));
         assertThat(html, containsString("class=\"tab-label-2\">java</label>"));
         assertThat(html, containsString("class=\"tab-label-3\">python</label>"));
         assertThat(html, containsString("class=\"tab-label-4\">csharp</label>"));
@@ -282,5 +282,32 @@ public class TabbedHtmlBuilderTest {
         assertThat(html1, containsString("id=\"tab-1-1\""));
         assertThat(html2, containsString("id=\"tab-2-1\""));
         assertThat(html3, containsString("id=\"tab-3-1\""));
+    }
+
+    @Test
+    public void shouldIncludeGraphBadgeWhenGraphNameProvided() {
+        final List<TabbedHtmlBuilder.Tab> tabs = Collections.singletonList(
+                TabbedHtmlBuilder.codeTab("groovy", "g.V()"));
+        final String html = builder.build(tabs, "modern");
+        assertThat(html, containsString("class=\"graph-dataset-note\""));
+        assertThat(html, containsString("This example runs against the"));
+        assertThat(html, containsString("/data/#modern\">modern</a> graph."));
+    }
+
+    @Test
+    public void shouldOmitGraphBadgeWhenGraphNameIsNull() {
+        final List<TabbedHtmlBuilder.Tab> tabs = Collections.singletonList(
+                TabbedHtmlBuilder.codeTab("groovy", "g.V()"));
+        final String html = builder.build(tabs, null);
+        assertThat(html, not(containsString("graph-dataset-note")));
+    }
+
+    @Test
+    public void shouldEscapeHtmlInGraphBadge() {
+        final List<TabbedHtmlBuilder.Tab> tabs = Collections.singletonList(
+                TabbedHtmlBuilder.codeTab("groovy", "g.V()"));
+        final String html = builder.build(tabs, "<script>alert(1)</script>");
+        assertThat(html, containsString("&lt;script&gt;alert(1)&lt;/script&gt;"));
+        assertThat(html, not(containsString("<script>")));
     }
 }

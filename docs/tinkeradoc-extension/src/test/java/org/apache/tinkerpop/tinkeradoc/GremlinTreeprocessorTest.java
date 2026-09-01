@@ -88,6 +88,68 @@ public class GremlinTreeprocessorTest {
     }
 
     @Test
+    public void shouldRenderGraphBadgeForNamedGraph() {
+        final RecordingExecutor executor = new RecordingExecutor("==>v[1]");
+        final GremlinTreeprocessor processor = new GremlinTreeprocessor(executor);
+        try (final Asciidoctor asciidoctor = Asciidoctor.Factory.create()) {
+            asciidoctor.unregisterAllExtensions();
+            asciidoctor.javaExtensionRegistry().treeprocessor(processor);
+            final String input = "= Test\n\n[gremlin-groovy,modern]\n----\ng.V(1)\n----\n";
+            final String result = asciidoctor.convert(input, Options.builder().build());
+            assertThat(result, containsString("class=\"graph-dataset-note\""));
+            assertThat(result, containsString("/data/#modern\">modern</a> graph."));
+        }
+    }
+
+    @Test
+    public void shouldCarryForwardGraphLabelForExisting() {
+        final RecordingExecutor executor = new RecordingExecutor("==>result");
+        final GremlinTreeprocessor processor = new GremlinTreeprocessor(executor);
+        try (final Asciidoctor asciidoctor = Asciidoctor.Factory.create()) {
+            asciidoctor.unregisterAllExtensions();
+            asciidoctor.javaExtensionRegistry().treeprocessor(processor);
+            final String input = "= Test\n\n" +
+                    "[gremlin-groovy,modern]\n----\ng.V(1)\n----\n\n" +
+                    "[gremlin-groovy,existing]\n----\ng.E()\n----\n";
+            final String result = asciidoctor.convert(input, Options.builder().build());
+            // Both blocks show the "modern" note; the existing block carries it forward.
+            final int badgeCount = result.split("/data/#modern\">modern</a>", -1).length - 1;
+            assertThat(badgeCount, is(2));
+        }
+    }
+
+    @Test
+    public void shouldLabelExistingConsistentlyAcrossCachedSecondPass() {
+        // Regression: the "existing" label must be resolved from the AST walk, not from
+        // execution-set state. A second backend pass reuses the shared execution cache and skips
+        // graph initialization, so a label derived from execution state would go missing on that
+        // pass. Both passes must produce the same "modern" label for the existing block.
+        final RecordingExecutor executor = new RecordingExecutor("==>result");
+        final GremlinExecutionCache cache = new GremlinExecutionCache();
+        final String input = "= Test\n\n" +
+                "[gremlin-groovy,modern]\n----\ng.V(1)\n----\n\n" +
+                "[gremlin-groovy,existing]\n----\ng.E()\n----\n";
+        try (final Asciidoctor asciidoctor = Asciidoctor.Factory.create()) {
+            asciidoctor.javaConverterRegistry().register(MarkdownConverter.class);
+
+            asciidoctor.unregisterAllExtensions();
+            asciidoctor.javaExtensionRegistry().treeprocessor(new GremlinTreeprocessor(executor, null, cache));
+            final String html = asciidoctor.convert(input, Options.builder().backend("html5").build());
+
+            asciidoctor.unregisterAllExtensions();
+            asciidoctor.javaExtensionRegistry().treeprocessor(new GremlinTreeprocessor(executor, null, cache));
+            final String markdown = asciidoctor.convert(input, Options.builder().backend("tpmarkdown").build());
+
+            // HTML pass: two "modern" notes (named + existing carried forward).
+            final int htmlBadges = html.split("/data/#modern\">modern</a>", -1).length - 1;
+            assertThat(htmlBadges, is(2));
+            // Markdown pass (cache reused, no execution): two "modern" dataset labels.
+            final int mdLabels = markdown.split("\\*graph-dataset: modern\\*", -1).length - 1;
+            assertThat(mdLabels, is(2));
+        }
+    }
+
+    @Test
     public void shouldReuseGraphStateForExisting() {
         final RecordingExecutor executor = new RecordingExecutor("==>result");
         final GremlinTreeprocessor processor = new GremlinTreeprocessor(executor);
@@ -384,7 +446,7 @@ public class GremlinTreeprocessorTest {
             final String input = "= Test\n\n[gremlin-groovy,modern]\n----\ng.V(1)\n----\n";
             final String result = asciidoctor.convert(input, Options.builder().build());
             assertThat(result, containsString("section class=\"tabs tabs-2\""));
-            assertThat(result, containsString("console (groovy)"));
+            assertThat(result, containsString("console"));
             assertThat(result, containsString("tab-group-1"));
         }
     }
@@ -403,7 +465,7 @@ public class GremlinTreeprocessorTest {
                     "[source,python]\n----\ng.V(1)\n----\n";
             final String result = asciidoctor.convert(input, Options.builder().build());
             assertThat(result, containsString("tabs tabs-4"));
-            assertThat(result, containsString("console (groovy)"));
+            assertThat(result, containsString("console"));
             assertThat(result, containsString("tab-label-3\">java"));
             assertThat(result, containsString("tab-label-4\">python"));
         }

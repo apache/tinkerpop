@@ -55,21 +55,6 @@ public class GremlinTreeprocessor extends Treeprocessor {
     static final Set<String> SUPPORTED_LANGUAGES = Collections.unmodifiableSet(
             new HashSet<>(Arrays.asList("groovy", "java", "csharp", "javascript", "python", "go")));
 
-    static final Map<String, String> GRAPH_INIT;
-
-    static {
-        final Map<String, String> m = new HashMap<>();
-        m.put("modern", "graph = TinkerFactory.createModern()");
-        m.put("classic", "graph = TinkerFactory.createClassic()");
-        m.put("crew", "graph = TinkerFactory.createTheCrew()");
-        m.put("theCrew", "graph = TinkerFactory.createTheCrew()");
-        m.put("grateful", "graph = TinkerFactory.createGratefulDead()");
-        m.put("airroutes", "graph = TinkerFactory.createAirRoutes()");
-        m.put("sink", "graph = TinkerFactory.createKitchenSink()");
-        m.put("theZoo", "graph = TinkerFactory.createTheZoo()");
-        GRAPH_INIT = Collections.unmodifiableMap(m);
-    }
-
     private int gremlinBlockCount;
     private final StatementExecutor executor;
     private final TabbedHtmlBuilder tabBuilder;
@@ -80,6 +65,11 @@ public class GremlinTreeprocessor extends Treeprocessor {
     private final ConsoleRestartHandler restartHandler;
     private ConsoleRestartHandler activeRestartHandler;
     private String currentGraph;
+    // Tracks the most recently declared graph dataset from the AST walk (independent of execution),
+    // used only to resolve the label for "existing" blocks. Unlike currentGraph, this is maintained
+    // on every backend pass — including passes that reuse the execution cache and skip graph init —
+    // so the rendered dataset label is identical across the HTML and Markdown backends.
+    private String labelGraphLineage;
     private String documentId;
     private List<String> currentExcludedPlugins;
 
@@ -154,6 +144,7 @@ public class GremlinTreeprocessor extends Treeprocessor {
     public Document process(final Document document) {
         gremlinBlockCount = 0;
         currentGraph = null;
+        labelGraphLineage = null;
         documentId = resolveDocumentId(document);
         markdownMode = isMarkdownBackend(document);
         final Object dryRunAttr = document.getAttribute("gremlin-docs-dryrun");
@@ -319,6 +310,20 @@ public class GremlinTreeprocessor extends Treeprocessor {
         final List<StructuralNode> blocks = parent.getBlocks();
         final Block gremlinBlock = (Block) blocks.get(startIndex);
 
+        // Resolve the graph dataset name for the label from the AST walk (not execution state), so
+        // it is identical across backend passes even when a later pass reuses the execution cache and
+        // skips graph initialization. An "existing" block carries forward the last declared dataset;
+        // any other block (including a bare block with no dataset) sets the lineage, mirroring how
+        // initGraphIfNeeded() re-initializes the graph for every non-"existing" block.
+        final String rawGraphName = extractGraphName(gremlinBlock);
+        final String resolvedGraphName;
+        if (EXISTING.equals(rawGraphName)) {
+            resolvedGraphName = labelGraphLineage;
+        } else {
+            resolvedGraphName = rawGraphName;
+            labelGraphLineage = rawGraphName;
+        }
+
         // Walk consecutive [source,<lang>] sibling blocks first (FR-5). This is pure AST work with
         // no execution: it fixes the block range to replace and captures each sibling's language
         // and source, which are needed whether the console output comes fresh or from the cache.
@@ -354,7 +359,7 @@ public class GremlinTreeprocessor extends Treeprocessor {
             executionCache.put(cacheKey, tabs);
         }
 
-        emitNeutralTabGroup(parent, startIndex, lastIndex, tabs);
+        emitNeutralTabGroup(parent, startIndex, lastIndex, tabs, resolvedGraphName);
         return startIndex;
     }
 
@@ -379,7 +384,7 @@ public class GremlinTreeprocessor extends Treeprocessor {
             }
         }
 
-        emitNeutralTabGroup(parent, startIndex, lastIndex, tabs);
+        emitNeutralTabGroup(parent, startIndex, lastIndex, tabs, null);
         return startIndex;
     }
 
@@ -391,12 +396,12 @@ public class GremlinTreeprocessor extends Treeprocessor {
      * into a neutral custom block for a separate render pass to consume.
      */
     private void emitNeutralTabGroup(final StructuralNode parent, final int startIndex,
-                                     final int endIndex, final List<NeutralTab> tabs) {
+                                     final int endIndex, final List<NeutralTab> tabs, final String graphName) {
         final String json = NeutralTabCodec.serialize(tabs);
         final List<NeutralTab> resolvedTabs = NeutralTabCodec.parse(json);
         final String rendered = markdownMode
-                ? markdownTabRenderer.render(resolvedTabs)
-                : htmlTabRenderer.render(parent, resolvedTabs);
+                ? markdownTabRenderer.render(resolvedTabs, graphName)
+                : htmlTabRenderer.render(parent, resolvedTabs, graphName);
         replaceWithPassBlock(parent, startIndex, endIndex, rendered);
     }
 
@@ -684,12 +689,7 @@ public class GremlinTreeprocessor extends Treeprocessor {
         executeSafely("try { if (binding.hasVariable('graph') && graph != null) graph.close() } catch (e) {}");
         executeSafely("def f = new File('/tmp/tinkergraph.kryo'); if (f.exists()) f.deleteDir()");
 
-        final String initStatement;
-        if (graphName == null) {
-            initStatement = "graph = TinkerGraph.open()";
-        } else {
-            initStatement = GRAPH_INIT.getOrDefault(graphName, "graph = TinkerGraph.open()");
-        }
+        final String initStatement = GraphCatalog.initStatement(graphName);
 
         executeSafely(initStatement);
         executeSafely("g = graph.traversal()");

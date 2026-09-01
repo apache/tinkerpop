@@ -46,6 +46,28 @@ public class TabbedHtmlBuilder {
     private int groupCounter = 0;
 
     /**
+     * Builds the italic caption line naming the toy graph an example runs against, linking the graph
+     * name to its section in the Sample Data book when one exists. Unknown tokens render as plain
+     * (unlinked) text. The display name and anchor come from the shared {@link GraphCatalog}. The link
+     * uses the {@code x.y.z} version placeholder, which {@code GremlinPostprocessor} replaces with the
+     * real version in the final HTML (the same mechanism used by every other cross-reference in the docs).
+     *
+     * @param token the resolved graph token (e.g. "modern", "theCrew")
+     * @return the caption HTML (a {@code <div class="graph-dataset-note">} element)
+     */
+    static String graphNoteHtml(final String token) {
+        final GraphCatalog.Entry entry = GraphCatalog.entry(token);
+        final String display = (entry != null) ? entry.displayName : token;
+        final String anchor = (entry != null) ? entry.docAnchor : null;
+        final String name = (anchor != null)
+                ? "<a href=\"https://tinkerpop.apache.org/docs/x.y.z/data/#" + anchor + "\">"
+                        + escapeHtml(display) + "</a>"
+                : escapeHtml(display);
+        return "<div class=\"graph-dataset-note\"><em>This example runs against the "
+                + name + " graph.</em></div>";
+    }
+
+    /**
      * A single tab entry with a label, language, and source code content.
      */
     static class Tab {
@@ -103,6 +125,17 @@ public class TabbedHtmlBuilder {
      * @return the complete HTML string for the tab group
      */
     String build(final List<Tab> tabs) {
+        return build(tabs, null);
+    }
+
+    /**
+     * Builds tabbed HTML for a list of tabs with an optional graph-dataset caption.
+     *
+     * @param tabs      the tabs to render
+     * @param graphName the resolved graph dataset name (e.g. "modern"), or null to omit the caption
+     * @return the complete HTML string for the tab group
+     */
+    String build(final List<Tab> tabs, final String graphName) {
         if (tabs == null || tabs.isEmpty()) {
             return "";
         }
@@ -144,9 +177,17 @@ public class TabbedHtmlBuilder {
             html.append("    </div>\n");
         }
 
-        html.append("  </div>\n");
-        html.append("</section>");
+        // Graph-dataset caption: an italic line naming the toy graph the example runs against,
+        // rendered inside the gray .tabcontent box at the bottom-right. Emitted after the floated
+        // tab panels and cleared below them, so it sits within the gray frame rather than beneath
+        // it. It links to the graph's Sample Data book section.
+        if (graphName != null && !graphName.isEmpty()) {
+            html.append("    ").append(graphNoteHtml(graphName)).append("\n");
+        }
 
+        html.append("  </div>\n");
+
+        html.append("</section>");
         return html.toString();
     }
 
@@ -158,14 +199,14 @@ public class TabbedHtmlBuilder {
      * @return a Tab instance for the console output
      */
     static Tab consoleTab(final String lang, final String consoleOutput) {
-        return new Tab("console (" + lang + ")", lang, consoleOutput);
+        return new Tab("console", lang, consoleOutput);
     }
 
     /**
      * Creates a console tab with pre-highlighted HTML content.
      */
     static Tab consoleTabHighlighted(final String lang, final String highlightedHtml) {
-        return new Tab("console (" + lang + ")", lang, highlightedHtml, true);
+        return new Tab("console", lang, highlightedHtml, true);
     }
 
     /**
