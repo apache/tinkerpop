@@ -48,6 +48,7 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class HttpHandlerUtilTest {
@@ -81,6 +82,26 @@ public class HttpHandlerUtilTest {
         } catch (IllegalArgumentException ex) {
             assertEquals("Mime type mismatch. Value in content-type header is not equal payload header.", ex.getMessage());
         }
+    }
+
+    @Test
+    public void shouldRejectEmptySerializedRequest() {
+        assertInvalidSerializedRequest(new byte[0], "Request body is empty.");
+    }
+
+    @Test
+    public void shouldTreatSerializedRequestHeaderLengthAsUnsigned() {
+        final byte[] payload = new byte[129];
+        payload[0] = (byte) 0x80;
+
+        assertInvalidSerializedRequest(payload,
+                "Mime type mismatch. Value in content-type header is not equal payload header.");
+    }
+
+    @Test
+    public void shouldRejectTruncatedSerializedRequestHeader() {
+        assertInvalidSerializedRequest(new byte[] { 5, 'a', 'b' },
+                "Request body is shorter than the mime type header.");
     }
 
     @Test
@@ -160,6 +181,29 @@ public class HttpHandlerUtilTest {
             assertEquals(gremlin, deserialized.getArgs().get(Tokens.ARGS_GREMLIN));
             assertEquals(requestId, deserialized.getRequestId());
             assertEquals("gremlin-groovy", deserialized.getArg(Tokens.ARGS_LANGUAGE));
+        }
+    }
+
+    private void assertInvalidSerializedRequest(final byte[] payload, final String expectedMessage) {
+        final ByteBuf buffer = allocator.buffer(payload.length);
+        buffer.writeBytes(payload);
+
+        final HttpHeaders headers = new DefaultHttpHeaders();
+        headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_GRAPHBINARY_V1);
+        final FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/",
+                buffer, headers, new DefaultHttpHeaders());
+
+        final Map<String, MessageSerializer<?>> serializers = new HashMap<>();
+        serializers.put(SerTokens.MIME_GRAPHBINARY_V1, graphBinarySerializer);
+
+        try {
+            HttpHandlerUtil.getRequestMessageFromHttpRequest(httpRequest, serializers);
+            fail("IllegalArgumentException expected");
+        } catch (Exception ex) {
+            assertTrue(ex instanceof IllegalArgumentException);
+            assertEquals(expectedMessage, ex.getMessage());
+        } finally {
+            httpRequest.release();
         }
     }
 }

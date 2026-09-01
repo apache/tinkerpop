@@ -28,6 +28,11 @@ import java.util.Map;
 
 /**
  * Provides the interface for authorizing a user per request.
+ * <p>
+ * Gremlin Server creates one {@code Authorizer} instance and may call its {@code authorize()} methods concurrently
+ * for requests on different channels. Implementations are expected to be thread-safe and must not retain
+ * request-specific state in shared mutable fields. The {@link #setup(Map)} method is called once and completes before
+ * request processing begins.
  *
  * @author Marc de Lignie
  */
