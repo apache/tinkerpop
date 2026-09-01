@@ -44,7 +44,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Allowed float literals without a leading digit (e.g. `.5`, `.5f`, `.5d`) in the Gremlin grammar to better match Groovy.
 * Fixed conjoin has incorrect null handling.
 * Strengthened nested class configuration for `HaltedTraverserStrategy`, `MatchAlgorithmStrategy`, and `VertexProgramStrategy`.
-* Bump Netty to 4.1.136.
+* Bump Netty to 4.1.137.
 * Bumped `jackson-databind` to 2.18.9. `InetAddress` values in GraphSON must now be literal IP addresses as hostnames are no longer resolved during deserialization. *(breaking)*
 * Removed the Mono dependency from the `gremlin-dotnet` build/release process, using `dotnet pack`/`dotnet nuget push` instead of `mono nuget.exe`.
 * Expanded `gremlin-python` CI matrix to test against Python 3.9, 3.10, 3.11, 3.12, and 3.13.
