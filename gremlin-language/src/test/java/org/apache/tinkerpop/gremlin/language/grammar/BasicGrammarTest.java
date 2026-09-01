@@ -28,4 +28,14 @@ public class BasicGrammarTest extends AbstractGrammarTest {
     public void shouldParseV() {
         parse("g.V()", ParserRule.QUERY_LIST);
     }
+
+    @Test
+    public void shouldParseInjectWithVariable() {
+        parse("g.inject(x)", ParserRule.QUERY_LIST);
+    }
+
+    @Test
+    public void shouldParseInjectStepWithVariable() {
+        parse("g.V().inject(x)", ParserRule.QUERY_LIST);
+    }
 }

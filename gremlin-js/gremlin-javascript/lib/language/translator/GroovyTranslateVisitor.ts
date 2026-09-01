@@ -290,29 +290,23 @@ export default class GroovyTranslateVisitor extends TranslateVisitor {
     private handleInject(ctx: any): void {
         if (ctx.getChildCount() > 3) {
             const child2 = ctx.getChild(2);
-            if (child2?.constructor?.name === 'GenericLiteralVarargsContext') {
-                const varArgs = child2;
-                if (varArgs.getChildCount() === 1) {
-                    const child0 = varArgs.getChild(0);
-                    if (child0?.constructor?.name === 'GenericLiteralExprContext') {
-                        const injectArgs = child0;
-                        if (injectArgs.getChildCount() > 2 && injectArgs.getChild(2).getText() === 'null') {
-                            this.sb.push(ctx.getChild(0).getText());
-                            this.sb.push('(');
-                            for (let i = 0; i < injectArgs.getChildCount(); i += 2) {
-                                if (i === 2) {
-                                    this.sb.push('(Object) null');
-                                } else {
-                                    this.visit(injectArgs.getChild(i));
-                                }
-                                if (i < injectArgs.getChildCount() - 1) {
-                                    this.sb.push(', ');
-                                }
-                            }
-                            this.sb.push(')');
-                            return;
+            if (child2?.constructor?.name === 'GenericArgumentVarargsContext') {
+                const injectArgs = child2;
+                if (injectArgs.getChildCount() > 2 && injectArgs.getChild(2).getText() === 'null') {
+                    this.sb.push(ctx.getChild(0).getText());
+                    this.sb.push('(');
+                    for (let i = 0; i < injectArgs.getChildCount(); i += 2) {
+                        if (i === 2) {
+                            this.sb.push('(Object) null');
+                        } else {
+                            this.visit(injectArgs.getChild(i));
+                        }
+                        if (i < injectArgs.getChildCount() - 1) {
+                            this.sb.push(', ');
                         }
                     }
+                    this.sb.push(')');
+                    return;
                 }
             }
         }

@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Allowed `inject()` to accept bound variables, aligning it with the other variadic steps (`V()`, `E()`, `within()`, `without()`, etc.) which already accept a `genericArgument`; previously `inject()` was the only such step restricted to literals.
 * Fixed `gremlin-go` to report a malformed or truncated GraphBinary response as a deserialization error rather than a bare decoder message.
 * Made `TinkerGraph` an interface and renamed the in-memory implementation to `TinkerMemoryGraph`; `TinkerGraph.open()` and `gremlin.graph=...TinkerGraph` behave as before. *(breaking)*
 * Renamed `TinkerTransactionGraph` to `TinkerStorageGraph`. *(breaking)*

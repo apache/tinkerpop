@@ -67,6 +67,11 @@ public class GremlinQueryParserTest {
         t = (GraphTraversal<?, ?>) GremlinQueryParser.parse("g.V(x, y, 300).has('name',gt(z))", gremlinAntlrToJava);
         assertEquals(g.V(100, 200, 300).has("name", P.gt(50)).asAdmin().getGremlinLang(),
                 t.asAdmin().getGremlinLang());
+
+        // inject() accepts bound variables like the other varargs steps (V, within, etc.)
+        t = (GraphTraversal<?, ?>) GremlinQueryParser.parse("g.inject(x, y, 300)", gremlinAntlrToJava);
+        assertEquals(g.inject(100, 200, 300).asAdmin().getGremlinLang(),
+                t.asAdmin().getGremlinLang());
     }
 
     @Test(expected = GremlinParserException.class)
