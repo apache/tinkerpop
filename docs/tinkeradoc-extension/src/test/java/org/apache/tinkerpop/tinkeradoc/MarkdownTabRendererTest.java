@@ -46,7 +46,7 @@ public class MarkdownTabRendererTest {
     public void consoleTabRendersAsTextFence() {
         final String md = renderer.render(Collections.singletonList(
                 NeutralTab.console("groovy", "gremlin> g.V()\n==>v[1]")));
-        assertThat(md, containsString("**console (groovy)**"));
+        assertThat(md, containsString("**console**"));
         assertThat(md, containsString("```text\ngremlin> g.V()\n==>v[1]\n```"));
     }
 
@@ -65,7 +65,7 @@ public class MarkdownTabRendererTest {
                 NeutralTab.source("groovy", "g.V(1)"),
                 NeutralTab.source("python", "g.V(1)"));
         final String md = renderer.render(tabs);
-        final int console = md.indexOf("**console (groovy)**");
+        final int console = md.indexOf("**console**");
         final int groovy = md.indexOf("**groovy**");
         final int python = md.indexOf("**python**");
         assertThat(console >= 0 && groovy > console && python > groovy, is(true));
@@ -109,5 +109,19 @@ public class MarkdownTabRendererTest {
         final String md = renderer.render(Collections.singletonList(
                 NeutralTab.source("groovy", "a() <1>\nb()\nc() <2>")));
         assertThat(md, containsString("a() // (1)\nb()\nc() // (2)"));
+    }
+
+    @Test
+    public void shouldIncludeGraphLabelWhenProvided() {
+        final String md = renderer.render(Collections.singletonList(
+                NeutralTab.source("groovy", "g.V()")), "modern");
+        assertThat(md, containsString("*graph-dataset: modern*"));
+    }
+
+    @Test
+    public void shouldOmitGraphLabelWhenNull() {
+        final String md = renderer.render(Collections.singletonList(
+                NeutralTab.source("groovy", "g.V()")), null);
+        assertThat(md, not(containsString("graph-dataset")));
     }
 }

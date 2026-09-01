@@ -91,7 +91,7 @@ public class DualBackendIntegrationTest {
         // preserved verbatim (no highlighting).
         assertThat(markdown, containsString("## Basics"));
         assertThat(markdown, containsString("Some intro text."));
-        assertThat(markdown, containsString("**console (groovy)**"));
+        assertThat(markdown, containsString("**console**"));
         assertThat(markdown, containsString("```text"));
         assertThat(markdown, containsString("gremlin> g.V(1)"));
         assertThat(markdown, containsString("==>v[1]"));
