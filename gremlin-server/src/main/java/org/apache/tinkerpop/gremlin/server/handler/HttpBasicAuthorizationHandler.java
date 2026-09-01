@@ -48,7 +48,6 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
     private static final Logger logger = LoggerFactory.getLogger(HttpBasicAuthorizationHandler.class);
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);
 
-    private AuthenticatedUser user;
     private final Authorizer authorizer;
 
     public HttpBasicAuthorizationHandler(Authorizer authorizer) {
@@ -59,13 +58,12 @@ public class HttpBasicAuthorizationHandler extends ChannelInboundHandlerAdapter 
     public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
         if (msg instanceof RequestMessage) {
             final RequestMessage requestMessage = (RequestMessage) msg;
+            final AuthenticatedUser channelUser = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
+            // channelUser is null when using the AllowAllAuthenticator
+            final AuthenticatedUser user = null == channelUser ?
+                    AuthenticatedUser.ANONYMOUS_USER : channelUser;
 
             try {
-                user = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
-                if (null == user) {    // This is expected when using the AllowAllAuthenticator
-                    user = AuthenticatedUser.ANONYMOUS_USER;
-                }
-
                 final String gremlin = requestMessage.getGremlin();
                 final Map<String, String> aliases = new HashMap<>();
                 aliases.put(Tokens.ARGS_G, requestMessage.getField(Tokens.ARGS_G));

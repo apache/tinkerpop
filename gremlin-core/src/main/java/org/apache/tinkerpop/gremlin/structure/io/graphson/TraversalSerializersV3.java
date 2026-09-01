@@ -122,6 +122,9 @@ final class TraversalSerializersV3 {
                 jsonGenerator.writeEndArray();
             } else if (p instanceof NotP) {
                 jsonGenerator.writeObjectField(GraphSONTokens.VALUE, p.negate());
+            } else if ("typeOf".equals(p.getPredicateName()) && p.getValue() instanceof Class) {
+                // Resolve the decoded value through CompareType.GlobalTypeCache.
+                jsonGenerator.writeObjectField(GraphSONTokens.VALUE, ((Class<?>) p.getValue()).getSimpleName());
             } else
                 jsonGenerator.writeObjectField(GraphSONTokens.VALUE, p.getValue());
 

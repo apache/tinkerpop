@@ -232,10 +232,13 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from prior 3.7.x releases.
 
+* Enabled building and running with Java 21 and Java 25 (experimental; `spark-gremlin` excluded, as Spark 3.3.x only runs on Java 8 through 17).
+* Bumped to Groovy 4.0.32 which adds support for parsing Java 25 bytecode.
+* Bumped Hadoop to 3.4.3 (and Kerby to 2.0.3) to enable `hadoop-gremlin` to build and run on Java 25.
 * Add missing `Configuring` interface to `GraphStepPlaceholder` and `VertexStepPlaceholder`
 * Fixed bug in `group()` value traversal where keys were retained with stale barrier state instead of being filtered when steps following a `Barrier` in the second `by()` produced no output (e.g. `by(values("age").fold().unfold())` or `by(__.out().fold().count(local).is(P.gt(0)))` for vertices with no out-edges).
 * Corrected numerous inaccuracies in the reference documentation, including wrong default values (connection pool sizes, buffer sizes, ports, timeouts), stale serializer class names, removed options documented as available, and broken code examples across the JVM, Python, `.NET`, Go, and JavaScript drivers.
-* Fixed bug in `gremlin-javascript` GraphBinary deserialization where `DateTime` values outside the JavaScript `Date` range were silently returned as invalid `Date` objects instead of failing deserialization.
+* Fixed bug in `gremlin-javascript` GraphBinary and GraphSON deserialization where `OffsetDateTime` values outside the JavaScript `Date` range were silently returned as invalid `Date` objects instead of failing deserialization.
 * Added a `propertyMap()` helper to view an element's properties as a map keyed by property key, on the `Element` structure API in `gremlin-core` (inherited by `Vertex`, `Edge`, and `VertexProperty`) and on `Vertex`, `Edge`, and `VertexProperty` in `gremlin-javascript`, `gremlin-python`, `gremlin-dotnet`, and `gremlin-go`.
 * Fixed a bug in `gremlin-go` where a `VertexProperty` deserialized from GraphBinary did not have its `Key` field populated, causing `Vertex.PropertyMap()` to group properties under an empty key.
 * Removed `final` from `RepeatStep` to allow providers to extend it.
@@ -451,6 +454,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-7-7]]
 === TinkerPop 3.7.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Fixed GraphBinary deserialization to reject invalid length and count values with an `IOException`.
 * Disabled unsafe Java deserialization on the Gryo IO paths and added `GryoMapper.Builder.javaSerializationAllowed(boolean)` to control it.
 * Added verification to `io()` ensuring a class named by `IO.reader`, `IO.writer` or `IO.registry` implements the expected interface before loading and initializing it.
 * Fixed `io().write()` to resolve its `GraphWriter` before opening the output file, so that a writer which cannot be constructed no longer truncates the target.
@@ -458,13 +462,14 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed GraphSON 1.0 typed deserialization to resolve a `@class` type id only when the name is in a set of exact class names.
 * Restricted Hadoop/Spark OLAP `io()` from a remotely submitted traversal to operator-approved reader/writer classes and `with()` keys, adding the `gremlin.io.trusted`, `gremlin.io.approvedClasses` and `gremlin.io.approvedGraphConfigKeys` options.
 * Restricted OLAP `GraphComputer.configure()` from a remotely submitted traversal to built-in and operator-approved keys, adding the `gremlin.io.approvedComputerConfigKeys` option.
+* Fixed OLAP `io()` to configure each request against its own copy of the graph configuration, so a request's reader/writer, file location, and `with()` options no longer persist on or leak across the shared graph.
 * Fixed `subgraph()` to throw a descriptive error identifying the required `Edge` input instead of an internal `ClassCastException` when the traversal produces a non-edge value.
 * Fixed `where(P)` to throw a descriptive error identifying the required String scope key (and suggesting `is(P)` for value comparisons) instead of an internal `ClassCastException` when given a non-String predicate value.
 * Fixed `PeerPressure.property_name` in `gremlin-python` incorrectly mapping to the `pageRank` property name token.
 * Added `NextN(n)` to `Traversal` in `gremlin-go` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs.
 * Added `next(n)` to `Traversal` in `gremlin-javascript` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs.
 * Added `WithComputer()` to `GraphTraversalSource` in `gremlin-go`, providing OLAP configuration parity with other language variants.
-* Added `FailResponseException` to `gremlin-driver` which is thrown when a `fail()` step is triggered on the server, making remote behavior more consistent with embedded.
+* Added `FailResponseException` to `gremlin-driver` which is thrown `fail()` step is triggered on the server making it more consistent with embedded behavior.
 * Fixed `hasId()` to only unroll a collection when it is supplied as the single argument, aligning its behavior with `g.V()`/`g.E()`.
 * Allowed float literals without a leading digit (e.g. `.5`, `.5f`, `.5d`) in the Gremlin grammar to better match Groovy.
 * Fixed conjoin has incorrect null handling.
@@ -474,12 +479,16 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed the Mono dependency from the `gremlin-dotnet` build/release process, using `dotnet pack`/`dotnet nuget push` instead of `mono nuget.exe`.
 * Expanded `gremlin-python` CI matrix to test against Python 3.9, 3.10, 3.11, 3.12, and 3.13.
 * Add Node 26 support for `gremlin-javascript` and `gremlint`.
+* Corrected numerous inaccuracies in the reference documentation, including wrong default values (connection pool sizes, buffer sizes, ports, timeouts), stale serializer class names, removed options documented as available, and broken code examples across the JVM, Python, `.NET`, Go, and JavaScript drivers.
+* Fixed Gremlin Server HTTP requests to release their buffers when request processing fails unexpectedly.
 * Fixed a panic in `gremlin-go` `PartitionStrategy` when `ReadPartitions` was left unset.
 * Fixed `gremlin-python` `ProductiveByStrategy` to pass through the `productiveKeys` argument, which was previously accepted but never serialized to the server.
 * Deprecated `ProductiveByStrategy` which was introduced as a temporary way to mimic pre-3.5.0 null processing behavior.
 * Backported `TraversalStrategy` registration mechanism in `TraversalStrategies` from the 3.8.x line.
 * Restricted `JavaTranslator` reconstruction of `TraversalStrategy` proxies to registered strategies that have not been denied with `denyStrategy()`.
 * Restricted GraphBinary `TraversalStrategy` deserialization to registered strategies that have not been denied with `denyStrategy()`.
+* Restricted GraphBinary, GraphSON and Gryo `Class` deserialization to classes registered with `ClassRegistry.register()`, `registerStrategy()` or `registerStrategies()`.
+* Fixed request isolation in HTTP and WebSocket authorization handlers.
 * Fixed `gremlin-python` GraphBinary serialization of `BigInteger`/`BigDecimal` negative boundary values (e.g. `-129`) that raised `OverflowError`.
 * Fixed `gremlin-go` GraphBinary serialization of zero `BigInteger`/`BigDecimal` values, which were encoded with zero length and rejected by Java servers.
 

@@ -63,14 +63,14 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
         try {
             if (this.first && this.getPreviousStep() instanceof EmptyStep) {
                 this.first = false;
-                final Graph graph = this.getTraversal().getGraph().get();
+                final Graph graph = this.resolveComputeGraph(this.getTraversal().getGraph().get());
                 future = this.getComputer().apply(graph).program(this.generateProgram(graph, EmptyMemory.instance())).submit();
                 final ComputerResult result = future.get();
                 this.processMemorySideEffects(result.memory());
                 return this.getTraversal().getTraverserGenerator().generate(result, this, 1l);
             } else {
                 final Traverser.Admin<ComputerResult> traverser = this.starts.next();
-                final Graph graph = traverser.get().graph();
+                final Graph graph = this.resolveComputeGraph(traverser.get().graph());
                 final Memory memory = traverser.get().memory();
                 future = this.getComputer().apply(graph).program(this.generateProgram(graph, memory)).submit();
                 final ComputerResult result = future.get();
@@ -104,6 +104,16 @@ public abstract class VertexProgramStep extends AbstractStep<ComputerResult, Com
     @Override
     public void setComputer(final Computer computer) {
         this.computer = computer;
+    }
+
+    /**
+     * Resolves the {@link Graph} that this step's computer is applied to and its vertex program generated against for a
+     * single execution. The default returns the graph unchanged; a subclass may override it to run against a
+     * request-local graph (for example, one wrapping a copy of the configuration). The returned instance is used for
+     * both {@link #getComputer()}'s {@code apply(graph)} and {@link VertexComputing#generateProgram(Graph, Memory)}.
+     */
+    protected Graph resolveComputeGraph(final Graph graph) {
+        return graph;
     }
 
     protected boolean previousTraversalVertexProgram() {
