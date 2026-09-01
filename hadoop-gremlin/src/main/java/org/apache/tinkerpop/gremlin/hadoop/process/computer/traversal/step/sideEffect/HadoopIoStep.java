@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
@@ -104,6 +105,31 @@ public class HadoopIoStep extends VertexProgramStep implements ReadWriting {
             throw new IllegalStateException("Invalid ReadWriting.Mode configured in IoStep: " + mode.name());
 
         return CloneVertexProgram.build().create(graph);
+    }
+
+    /**
+     * Runs this OLAP {@code io()} operation against a request-local copy of the graph, so the reader/writer,
+     * input/output location, and {@code with(k,v)} options written while configuring the request are applied to that
+     * copy rather than to the shared {@link HadoopGraph} configuration. The base {@code processNextStart} resolves the
+     * graph through this seam once and uses it for both the computer binding and {@link #generateProgram(Graph, Memory)}.
+     */
+    @Override
+    protected Graph resolveComputeGraph(final Graph graph) {
+        return isolateGraphConfiguration(graph);
+    }
+
+    /**
+     * Returns a {@link HadoopGraph} whose configuration is an independent copy of {@code graph}'s, so configuring a
+     * request against it cannot mutate the shared graph. Fails closed: a non-{@link HadoopGraph} is rejected rather than
+     * returned unchanged (which would hand back the shared graph and defeat the isolation). Package-private for direct
+     * unit testing.
+     */
+    static Graph isolateGraphConfiguration(final Graph graph) {
+        if (!(graph instanceof HadoopGraph))
+            throw new IllegalStateException(
+                    "OLAP io() requires a HadoopGraph to isolate its request configuration but received: " +
+                    (null == graph ? "null" : graph.getClass().getName()));
+        return HadoopGraph.open(graph.configuration());
     }
 
     @Override

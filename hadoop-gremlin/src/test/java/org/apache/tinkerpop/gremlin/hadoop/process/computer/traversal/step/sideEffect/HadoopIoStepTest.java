@@ -29,9 +29,21 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.util.OlapClassLoadingPolicy;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.util.OlapConfigKeyPolicy;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CyclicBarrier;
+import java.util.function.BiConsumer;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -230,5 +242,166 @@ public class HadoopIoStepTest {
         step.generateProgram(graph, null); // approved via the operator's approvedClasses list
         assertEquals("org.provider.CustomOutputFormat",
                 graph.configuration().getString(Constants.GREMLIN_HADOOP_GRAPH_WRITER));
+    }
+
+    // Request isolation: io() must configure a per-request copy of the graph, never the shared, long-lived HadoopGraph
+    // configuration reused across requests. The following cover the isolation seam directly.
+
+    @Test
+    public void shouldIsolateGraphConfigurationIntoADistinctInstance() {
+        final HadoopGraph shared = HadoopGraph.open(new BaseConfiguration());
+        final Graph local = HadoopIoStep.isolateGraphConfiguration(shared);
+        assertNotSame("io() must run against a request-local graph, not the shared one", shared, local);
+        assertNotSame("the request-local graph must have its own configuration instance",
+                shared.configuration(), local.configuration());
+        // mutating either configuration must not affect the other (isolation in both directions)
+        local.configuration().setProperty("only.on.local", "v");
+        assertFalse(shared.configuration().containsKey("only.on.local"));
+        shared.configuration().setProperty("only.on.shared", "v");
+        assertFalse(local.configuration().containsKey("only.on.shared"));
+    }
+
+    @Test
+    public void shouldCarryPristineKeysIntoIsolatedConfiguration() {
+        final Configuration config = new BaseConfiguration();
+        config.setProperty(OlapClassLoadingPolicy.TRUSTED, true);
+        config.setProperty(Constants.GREMLIN_HADOOP_GRAPH_READER, "org.provider.CustomInputFormat");
+        final HadoopGraph shared = HadoopGraph.open(config);
+        final Graph local = HadoopIoStep.isolateGraphConfiguration(shared);
+        // the copy carries every operator key forward, so trust and approved-format seeding stay intact
+        assertEquals(true, local.configuration().getBoolean(OlapClassLoadingPolicy.TRUSTED));
+        assertEquals("org.provider.CustomInputFormat",
+                local.configuration().getString(Constants.GREMLIN_HADOOP_GRAPH_READER));
+    }
+
+    @Test
+    public void shouldReturnAFreshInstanceForEachIsolationCall() {
+        // each call yields a brand-new request-local graph/config (no caching or reuse); a structural guard, not
+        // concurrency coverage -- see shouldIsolateConcurrentRequestsFromEachOther.
+        final HadoopGraph shared = HadoopGraph.open(new BaseConfiguration());
+        final Graph a = HadoopIoStep.isolateGraphConfiguration(shared);
+        final Graph b = HadoopIoStep.isolateGraphConfiguration(shared);
+        assertNotSame(a, b);
+        assertNotSame(a.configuration(), b.configuration());
+    }
+
+    @Test
+    public void shouldIsolateConcurrentRequestsFromEachOther() throws Exception {
+        // Two io() requests configuring against the SAME shared graph on two threads at once must each see only their
+        // own reader/input location, and must leave the shared graph unmutated. Isolation is structural (each request
+        // configures its own copy), so this is deterministic under any interleaving; the barrier forces the two
+        // requests to configure concurrently, exercising concurrent reads of the shared configuration.
+        final HadoopGraph shared = HadoopGraph.open(new BaseConfiguration());
+        final CyclicBarrier barrier = new CyclicBarrier(2);
+        final Map<String, String> readerByThread = new ConcurrentHashMap<>();
+        final Map<String, String> locationByThread = new ConcurrentHashMap<>();
+        final List<Throwable> errors = Collections.synchronizedList(new ArrayList<>());
+
+        final BiConsumer<String, String> configureRequest = (name, file) -> {
+            try {
+                final HadoopIoStep step = new HadoopIoStep(__.start().asAdmin(), file);
+                step.setMode(ReadWriting.Mode.READING);
+                barrier.await(); // release both threads together so they configure concurrently
+                final Graph local = step.resolveComputeGraph(shared);
+                step.generateProgram(local, null);
+                readerByThread.put(name, local.configuration().getString(Constants.GREMLIN_HADOOP_GRAPH_READER));
+                locationByThread.put(name, local.configuration().getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION));
+            } catch (final Throwable t) {
+                errors.add(t);
+            }
+        };
+
+        final Thread a = new Thread(() -> configureRequest.accept("A", "a.kryo"));
+        final Thread b = new Thread(() -> configureRequest.accept("B", "b.json"));
+        a.start();
+        b.start();
+        a.join();
+        b.join();
+
+        assertTrue("no request should error: " + errors, errors.isEmpty());
+        // each request observed only its own reader + input location (Gryo/a.kryo for A, GraphSON/b.json for B)
+        assertEquals(GryoInputFormatName(), readerByThread.get("A"));
+        assertEquals("a.kryo", locationByThread.get("A"));
+        assertEquals(GraphSONInputFormat.class.getName(), readerByThread.get("B"));
+        assertEquals("b.json", locationByThread.get("B"));
+        // and neither concurrent request mutated the shared, long-lived graph configuration
+        assertFalse(shared.configuration().containsKey(Constants.GREMLIN_HADOOP_GRAPH_READER));
+        assertFalse(shared.configuration().containsKey(Constants.GREMLIN_HADOOP_INPUT_LOCATION));
+    }
+
+    @Test
+    public void shouldNotMutateSharedConfigurationWhenConfiguringAnIsolatedCopy() {
+        // the fix: generateProgram writes onto the request-local copy resolveComputeGraph hands it, leaving the shared
+        // graph configuration untouched, so a later request inherits none of this request's reader/input location.
+        final HadoopGraph shared = HadoopGraph.open(new BaseConfiguration());
+        final HadoopIoStep step = new HadoopIoStep(__.start().asAdmin(), "graph.kryo");
+        step.setMode(ReadWriting.Mode.READING);
+
+        final Graph local = step.resolveComputeGraph(shared);
+        step.generateProgram(local, null);
+
+        // the request-local copy carries the request's settings ...
+        assertEquals(GryoInputFormatName(), local.configuration().getString(Constants.GREMLIN_HADOOP_GRAPH_READER));
+        assertEquals("graph.kryo", local.configuration().getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION));
+        // ... while the shared, long-lived configuration is left unmutated
+        assertFalse(shared.configuration().containsKey(Constants.GREMLIN_HADOOP_GRAPH_READER));
+        assertFalse(shared.configuration().containsKey(Constants.GREMLIN_HADOOP_INPUT_LOCATION));
+    }
+
+    @Test
+    public void shouldApplyApprovedWithKeyToTheRequestLocalCopyOnly() {
+        // an operator-approved with() key is applied to the request-local copy and must not leak onto the shared graph
+        final Configuration config = new BaseConfiguration();
+        config.setProperty(OlapConfigKeyPolicy.APPROVED_GRAPH_CONFIG_KEYS, "my.graph.option");
+        final HadoopGraph shared = HadoopGraph.open(config);
+        final HadoopIoStep step = new HadoopIoStep(__.start().asAdmin(), "graph.kryo");
+        step.setMode(ReadWriting.Mode.READING);
+        step.configure("my.graph.option", "v");
+
+        final Graph local = step.resolveComputeGraph(shared);
+        step.generateProgram(local, null);
+
+        // the value landed on the request-local copy ...
+        assertEquals("v", local.configuration().getString("my.graph.option"));
+        // ... but the shared graph never received it
+        assertFalse(shared.configuration().containsKey("my.graph.option"));
+    }
+
+    @Test
+    public void shouldLeaveSharedConfigurationCleanWhenARequestFailsPartway() {
+        // configureForRead writes the reader/input location to the graph before addParametersToConfiguration rejects an
+        // unapproved with() key, so the request fails partway with those already written -- onto the request-local copy.
+        final HadoopGraph shared = HadoopGraph.open(new BaseConfiguration());
+        final HadoopIoStep step = new HadoopIoStep(__.start().asAdmin(), "graph.kryo");
+        step.setMode(ReadWriting.Mode.READING);
+        step.configure("unapproved.key", "v");
+        final Graph local = step.resolveComputeGraph(shared);
+        try {
+            step.generateProgram(local, null);
+            fail("an unapproved with() key must fail the request");
+        } catch (final IllegalArgumentException expected) {
+            // expected: the request failed after the reader/input location were already written to the local copy
+        }
+        assertEquals("the partial write must have landed on the request-local copy", GryoInputFormatName(),
+                local.configuration().getString(Constants.GREMLIN_HADOOP_GRAPH_READER));
+        // ... and none of the failed request's partial mutations reached the shared graph
+        assertFalse(shared.configuration().containsKey(Constants.GREMLIN_HADOOP_GRAPH_READER));
+        assertFalse(shared.configuration().containsKey(Constants.GREMLIN_HADOOP_INPUT_LOCATION));
+    }
+
+    @Test
+    public void shouldFailClosedWhenIsolatingANonHadoopGraph() {
+        // a security-isolation primitive must fail closed: a non-HadoopGraph must be rejected, never returned unchanged
+        // (which would silently hand back the shared, long-lived graph and reinstate the cross-request leak).
+        try {
+            HadoopIoStep.isolateGraphConfiguration(EmptyGraph.instance());
+            fail("request isolation must reject a non-HadoopGraph rather than silently returning the shared graph");
+        } catch (final IllegalStateException ise) {
+            assertTrue(ise.getMessage(), ise.getMessage().contains("HadoopGraph"));
+        }
+    }
+
+    private static String GryoInputFormatName() {
+        return org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat.class.getName();
     }
 }
