@@ -23,9 +23,9 @@ under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-67.png[width=185]
 
 [[release-3-8-2]]
-=== TinkerPop 3.8.2 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.8.2 (Release Date: September 1, 2026)
 
-This release also includes changes from prior 3.7.x releases.
+This release also includes changes from <<release-3-7-7, 3.7.7>>.
 
 * Enabled building and running with Java 21 and Java 25 (experimental; `spark-gremlin` excluded, as Spark 3.3.x only runs on Java 8 through 17).
 * Bumped to Groovy 4.0.32 which adds support for parsing Java 25 bytecode.
@@ -36,7 +36,32 @@ This release also includes changes from prior 3.7.x releases.
 * Added a `propertyMap()` helper to view an element's properties as a map keyed by property key, on the `Element` structure API in `gremlin-core` (inherited by `Vertex`, `Edge`, and `VertexProperty`) and on `Vertex`, `Edge`, and `VertexProperty` in `gremlin-javascript`, `gremlin-python`, `gremlin-dotnet`, and `gremlin-go`.
 * Fixed a bug in `gremlin-go` where a `VertexProperty` deserialized from GraphBinary did not have its `Key` field populated, causing `Vertex.PropertyMap()` to group properties under an empty key.
 * Removed `final` from `RepeatStep` to allow providers to extend it.
-* Restricted GraphSON 2.0 and 3.0 `TraversalStrategy` deserialization to registered strategies.
+* Restricted GraphSON 2.0 and 3.0 `TraversalStrategy` deserialization to registered strategies. *(breaking)*
+
+==== Bugs
+
+* TINKERPOP-3185 Ensure consistency of option key constants for with()
+* TINKERPOP-3225 conjoin has incorrect null handling *(breaking)*
+* TINKERPOP-3270 `where(P)` throws `ClassCastException` for non-String predicate values instead of a descriptive validation error
+* TINKERPOP-3271 subgraph() throws ClassCastException instead of a descriptive error for non-Edge input
+* TINKERPOP-3273 V and hasId consistency with collection unrolling
+* TINKERPOP-3275 gremlin-python graphbinary BigInt serializer incorrect for negative boundary values
+* TINKERPOP-3276 gremlin-javascript offsetdatetime silently creates incorrect values
+* TINKERPOP-3277 gremlin-go can't serialize zero in bigdecimal/biginteger
+* TINKERPOP-3278 Gryo IO unsafe Java deserialization
+* TINKERPOP-3279 GraphSON 1.0 embedded types unsafe deserialization *(breaking)*
+* TINKERPOP-3281 GraphBinary deserializer unbounded pre-allocation from length prefixes
+
+==== Improvements
+
+* TINKERPOP-2085 Remove dependency on Mono
+* TINKERPOP-3042 Deprecate ProductiveByStrategy
+* TINKERPOP-3151 Allow floats with no leading digits
+* TINKERPOP-3179 Support withComputer() for go
+* TINKERPOP-3238 fail() improvements for remote applications
+* TINKERPOP-3242 Pull Configuring interface into VertexStepContract and GraphStepContract
+* TINKERPOP-3243 Add next(n) batch iteration to gremlin-javascript
+* TINKERPOP-3244 Add next(n) batch iteration to gremlin-go for GLV parity
 
 [[release-3-8-1]]
 === TinkerPop 3.8.1 (Release Date: April 1, 2026)

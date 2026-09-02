@@ -24,7 +24,7 @@ import java.io.IOException;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class Gremlin {
-    private final static String gremlinVersion = "3.8.2-SNAPSHOT"; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
+    private final static String gremlinVersion = "3.8.2"; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
     private Gremlin() {
     }

@@ -231,5 +231,5 @@ Other Licenses
 
 The Apache TinkerPop project bundles the following components under the Eclipse Public License 1.0:
 
-     logback-core (ch.qos.logback:logback-core:1.2.3 - https://logback.qos.ch) - for details, see licenses/logback
-     logback-classic (ch.qos.logback:logback-classic:1.2.3 - https://logback.qos.ch) - for details, see licenses/logback
+     logback-core (ch.qos.logback:logback-core:1.2.13 - https://logback.qos.ch) - for details, see licenses/logback
+     logback-classic (ch.qos.logback:logback-classic:1.2.13 - https://logback.qos.ch) - for details, see licenses/logback
