@@ -79,7 +79,7 @@ public class NeutralTabCodecTest {
     @Test
     public void shouldRoundTripContentWithNewlinesTabsAndControlChars() {
         assertRoundTrip(Collections.singletonList(
-                NeutralTab.console("groovy", "line1\n\tindented\r\nline3end")));
+                NeutralTab.console("groovy", "line1\n\tindented\r\nline3\u0001end")));
     }
 
     @Test
