@@ -28,13 +28,21 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ConnectionPoolTest {
@@ -95,5 +103,68 @@ public class ConnectionPoolTest {
 
         assertNotNull(conn00);
         assertEquals(2, connectionsCreated.get());
+    }
+
+    private static Cluster mockCluster() {
+        final Cluster cluster = mock(Cluster.class);
+        when(cluster.connectionPoolSettings()).thenReturn(new Settings.ConnectionPoolSettings());
+        when(cluster.connectionScheduler()).thenReturn(new ScheduledThreadPoolExecutor(2,
+                new BasicThreadFactory.Builder().namingPattern("gremlin-driver-conn-scheduler-%d").build()));
+        return cluster;
+    }
+
+    private static Connection mockConnection() {
+        final Connection conn = mock(Connection.class);
+        when(conn.isBorrowed()).thenReturn(new AtomicBoolean(false));
+        when(conn.closeAsync()).thenReturn(CompletableFuture.completedFuture(null));
+        return conn;
+    }
+
+    private static ConnectionPool poolWith(final Connection conn) {
+        final ConnectionFactory factory = mock(ConnectionFactory.class);
+        when(factory.create(any(ConnectionPool.class))).thenReturn(conn);
+        return new ConnectionPool(mock(Host.class), new Client.ClusteredClient(mockCluster()), Optional.of(2), factory);
+    }
+
+    @Test
+    public void shouldThrowWhenReturningConnectionToClosedPool() throws Exception {
+        final Connection conn = mockConnection();
+        final ConnectionPool pool = poolWith(conn);
+        final Connection borrowed = pool.borrowConnection(100, TimeUnit.MILLISECONDS);
+
+        pool.closeAsync();
+
+        final ConnectionException ex = assertThrows(ConnectionException.class,
+                () -> pool.returnConnection(borrowed));
+        assertTrue(ex.getMessage().contains("Pool is shutdown"));
+    }
+
+    @Test
+    public void shouldReturnSameFutureAndCloseConnectionsOnRepeatedCloseAsync() throws Exception {
+        final Connection conn = mockConnection();
+        final ConnectionPool pool = poolWith(conn);
+        pool.borrowConnection(100, TimeUnit.MILLISECONDS); // ensure a connection exists in the pool
+
+        final CompletableFuture<Void> f1 = pool.closeAsync();
+        final CompletableFuture<Void> f2 = pool.closeAsync();
+
+        assertSame("closeAsync must be idempotent and return the same future", f1, f2);
+        assertTrue(pool.isClosed());
+        verify(conn, atLeastOnce()).closeAsync();
+    }
+
+    @Test
+    public void shouldDestroyConnectionRemovingItFromBinAndClosingIt() throws Exception {
+        final ConnectionPool pool = poolWith(mockConnection());
+
+        final Connection victim = mockConnection();
+        when(victim.isClosing()).thenReturn(false);
+        when(victim.isDead()).thenReturn(false);
+
+        pool.destroyConnection(victim);
+
+        // a non-borrowed, non-closing connection is closed for good and removed from the cleanup bin
+        verify(victim).closeAsync();
+        assertEquals(0, pool.numConnectionsWaitingToCleanup());
     }
 }
