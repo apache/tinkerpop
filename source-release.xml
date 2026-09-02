@@ -48,6 +48,15 @@
                      of these files will be present. So, it's safer to exclude them.
                 -->
 
+                <!-- AI coding agent directories -->
+                <exclude>**/.beads/**</exclude>
+                <exclude>**/.claude/**</exclude>
+                <exclude>**/.codex/**</exclude>
+                <exclude>**/.copilot/**</exclude>
+                <exclude>**/.cursor/**</exclude>
+                <exclude>**/.kiro/**</exclude>
+                <exclude>**/.junie/**</exclude>
+
                 <!-- IDEs -->
                 <exclude>%regex[(?!((?!${project.build.directory}/)[^/]+/)*src/)(.*/)?maven-eclipse\.xml]</exclude>
                 <exclude>%regex[(?!((?!${project.build.directory}/)[^/]+/)*src/)(.*/)?\.project]</exclude>
