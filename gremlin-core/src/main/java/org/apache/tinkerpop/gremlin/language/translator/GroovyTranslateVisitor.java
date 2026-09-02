@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.language.translator;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
-import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser.GenericLiteralVarargsContext;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 /**
@@ -267,29 +266,26 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     * inject() ends up being ambiguous with groovy's jdk extension of inject(Object initialValue, Closure closure)
     */
     private Void handleInject(final ParserRuleContext ctx) {
-        if (ctx.getChildCount() > 3 && ctx.getChild(2) instanceof GremlinParser.GenericLiteralVarargsContext) {
-            final GremlinParser.GenericLiteralVarargsContext varArgs = (GremlinParser.GenericLiteralVarargsContext) ctx.getChild(2);
-            if (varArgs.getChildCount() == 1 && varArgs.getChild(0) instanceof GremlinParser.GenericLiteralExprContext) {
-                GremlinParser.GenericLiteralExprContext injectArgs = (GremlinParser.GenericLiteralExprContext) varArgs.getChild(0);
-                if (injectArgs.getChildCount() > 2 && "null".equals(injectArgs.getChild(2).getText())) {
-                    sb.append(ctx.getChild(0).getText());
-                    sb.append("(");
-                    for (int i = 0; i < injectArgs.getChildCount(); i += 2) {
-                        if (i == 2) {
-                            sb.append("(Object) null");
-                        } else {
-                            visit(injectArgs.getChild(i));
-                        }
+        // ctx is always K_INJECT LPAREN genericArgumentVarargs RPAREN, so child(2) is the varargs node.
+        final GremlinParser.GenericArgumentVarargsContext injectArgs =
+                (GremlinParser.GenericArgumentVarargsContext) ctx.getChild(2);
+        if (injectArgs.getChildCount() > 2 && "null".equals(injectArgs.getChild(2).getText())) {
+            sb.append(ctx.getChild(0).getText());
+            sb.append("(");
+            for (int i = 0; i < injectArgs.getChildCount(); i += 2) {
+                if (i == 2) {
+                    sb.append("(Object) null");
+                } else {
+                    visit(injectArgs.getChild(i));
+                }
 
-                        if (i < injectArgs.getChildCount() - 1) {
-                            sb.append(", ");
-                        }
-                    }
-
-                    sb.append(")");
-                    return null;
+                if (i < injectArgs.getChildCount() - 1) {
+                    sb.append(", ");
                 }
             }
+
+            sb.append(")");
+            return null;
         }
 
         return visitChildren(ctx);

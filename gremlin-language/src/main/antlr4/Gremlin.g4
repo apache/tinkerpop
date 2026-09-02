@@ -133,7 +133,7 @@ traversalSourceSpawnMethod_V
     ;
 
 traversalSourceSpawnMethod_inject
-    : K_INJECT LPAREN genericLiteralVarargs RPAREN
+    : K_INJECT LPAREN genericArgumentVarargs RPAREN
     ;
 
 traversalSourceSpawnMethod_io
@@ -626,7 +626,7 @@ traversalMethod_index
     ;
 
 traversalMethod_inject
-    : K_INJECT LPAREN genericLiteralVarargs RPAREN
+    : K_INJECT LPAREN genericArgumentVarargs RPAREN
     ;
 
 traversalMethod_is
