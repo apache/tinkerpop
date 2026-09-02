@@ -216,6 +216,24 @@ public class IteratorUtilsTest {
     }
 
     @Test
+    public void shouldWrapNumberAsSingletonIterator() {
+        final Iterator itty = IteratorUtils.asIterator(42);
+        assertTrue(itty.hasNext());
+        assertEquals(42, itty.next());
+        assertFalse(itty.hasNext());
+    }
+
+    @Test
+    public void shouldWrapNonIterableObjectAsSingletonIterator() {
+        // A non-numeric, non-collection object is also wrapped as a singleton
+        final Object obj = new Object();
+        final Iterator itty = IteratorUtils.asIterator(obj);
+        assertTrue(itty.hasNext());
+        assertThat(itty.next(), is(obj));
+        assertFalse(itty.hasNext());
+    }
+
+    @Test
     public void shouldConvertIterableToList() {
         final List<String> iterable = new ArrayList<>();
         iterable.add("test1");
