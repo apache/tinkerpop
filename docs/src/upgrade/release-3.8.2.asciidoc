@@ -19,7 +19,7 @@ under the License.
 [llms-summary="Upgrade notes for the TinkerPop 3.8.2 release: experimental JDK 21 and JDK 25 support and other changes."]
 == TinkerPop 3.8.2
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: September 1, 2026*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.8.2/CHANGELOG.asciidoc#release-3-8-2[changelog] for a
 complete list of all the modifications that are part of this release.
