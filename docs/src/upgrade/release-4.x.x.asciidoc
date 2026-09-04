@@ -71,12 +71,19 @@ which affects providers that extended them.
 
 See: link:https://lists.apache.org/thread/2zt62kvfssh6xz5vnf2lk1g7cstq9vod[DISCUSS thread]
 
-==== TinkerStorageGraph Pluggable Disk Storage
+==== TinkerGraph Disk Storage
 
-`TinkerStorageGraph` gained the optional disk storage anticipated by its rename. A storage engine is selected with the
-new `gremlin.tinkergraph.storage` configuration key, and `gremlin.tinkergraph.storage.directory` names the directory
-that holds the durable data. When a storage engine is configured, each committed transaction is durably written to
-disk and the graph is rebuilt from that data when it is opened again, so a graph survives a restart of the JVM.
+TinkerGraph has always been a pure in-memory graph with some limited capability to write to disk via the `io()` step
+or through that same function on close. This approach kept TinkerGraph simple, but limited its functionality for certain
+use cases. For TinkerPop 4, TinkerGraph offers a basic file-based persistence option tied to its transaction capability.
+This new feature not only gives TinkerGraph another operational dimension for production use cases, but also makes its
+transactional capabilities have more purpose.
+
+The feature is offered via `TinkerStorageGraph` which gained the optional disk storage hinted by its rename. A storage
+engine is selected with the new `gremlin.tinkergraph.storage` configuration key, and
+`gremlin.tinkergraph.storage.directory` names the directory that holds the durable data. When a storage engine is
+configured, each committed transaction is durably written to disk and the graph is rebuilt from that data when it is
+opened again, so a graph survives a restart of the JVM.
 
 The reference engine, `graphbinary`, records committed transactions as an append-only log serialized with GraphBinary
 and folds that log into a compact snapshot on close. The storage layer is pluggable: the value of the storage key may
@@ -98,8 +105,7 @@ graph.close()
 // reopening the same location restores the committed data
 graph = TinkerStorageGraph.open(conf)
 g = traversal().with(graph)
-g.V().count().next()
-==>1
+c = g.V().count().next()
 ----
 
 The in-memory `TinkerMemoryGraph` no longer persists to disk. Earlier versions of TinkerGraph would automatically read
