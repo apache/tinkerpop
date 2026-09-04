@@ -142,10 +142,10 @@ public abstract class AbstractLogStorage implements TinkerStorage {
 
     @Override
     public void open(final AbstractTinkerGraph graph, final Configuration config) {
-        final String location = config.getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
+        final String location = config.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, null);
         if (null == location)
             throw new IllegalStateException(String.format("%s must be set to use a durable storage engine",
-                    TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION));
+                    TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY));
         this.directory = new File(location);
         this.snapshotFile = new File(directory, SNAPSHOT_FILE);
         this.logFile = new File(directory, LOG_FILE);

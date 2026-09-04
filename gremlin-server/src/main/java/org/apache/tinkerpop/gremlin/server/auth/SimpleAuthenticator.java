@@ -95,14 +95,21 @@ public class SimpleAuthenticator implements Authenticator {
     }
 
     /**
-     * Reads the credential store into the supplied in-memory {@link TinkerGraph} from the {@code graphLocation}
-     * declared in its configuration, if any. TinkerGraph no longer loads from disk automatically on open, so the
-     * credential file must be read explicitly here. A {@code TinkerStorageGraph} configured with a durable storage
-     * engine manages its own data and is skipped (it has no {@code graphFormat}).
+     * Reads the credential store into the supplied in-memory {@link TinkerGraph} from the
+     * {@code gremlin.tinkergraph.graphLocation} and {@code gremlin.tinkergraph.graphFormat} entries of its
+     * configuration, if present. Earlier versions of TinkerGraph read those keys themselves on open, so the
+     * credential store loaded as a side effect of {@code GraphFactory.open}; that automatic behaviour was removed
+     * and this method preserves it for the credential store alone.
+     * <p/>
+     * No TinkerGraph reads either key any more, which is why they are named here as literals rather than through
+     * constants. Despite the {@code gremlin.tinkergraph} prefix they are in effect settings of this authenticator,
+     * and belong in its own {@code config} block beside {@code credentialsDb} rather than in the graph's properties
+     * file. They are left in place here only to keep existing credential configurations working. A graph with a
+     * storage engine manages its own data and is skipped.
      */
     private static void loadCredentialStore(final TinkerGraph graph) {
         final Configuration conf = graph.configuration();
-        final String location = conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
+        final String location = conf.getString("gremlin.tinkergraph.graphLocation", null);
         // a storage engine manages its own persistence and is not an interchange-format load
         final String storage = conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, null);
         if (null == location || storage != null)
