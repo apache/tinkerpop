@@ -64,7 +64,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         final TinkerStorageGraph graph = open();
         graph.addVertex(T.id, 1);
         graph.tx().commit();
-        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
         assertTrue(new File(location, GraphBinaryStorage.LOG_FILE).exists());
         graph.close();
         // close compacts, producing a snapshot and truncating the log
@@ -111,7 +111,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     @Test
     public void shouldLeaveNoTempSnapshotAfterCompaction() {
         final TinkerStorageGraph graph = open();
-        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
         graph.addVertex(T.id, 1, "value", 1);
         graph.tx().commit();
         graph.compact();
@@ -124,7 +124,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     @Test
     public void shouldStreamSnapshotAsOneFramePerElement() throws Exception {
         final TinkerStorageGraph graph = open();
-        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
         final Vertex a = graph.addVertex(T.id, 1, "name", "a");
         final Vertex b = graph.addVertex(T.id, 2, "name", "b");
         final Vertex c = graph.addVertex(T.id, 3, "name", "c");
@@ -157,7 +157,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         final int vertexCount = 500;
         final int edgeCount = 499;
         final TinkerStorageGraph graph = open();
-        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
         try {
             for (int i = 0; i < vertexCount; i++)
                 graph.addVertex(T.id, i, "value", i);
@@ -231,7 +231,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         // a small threshold makes automatic compaction fire mid-run, without any explicit compact()/close()
         final Configuration conf = config();
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, 2048L);
-        final String location = conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        final String location = conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
         TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
         try {
             for (int i = 0; i < 200; i++) {
@@ -263,7 +263,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     public void shouldNotAutoCompactWhenThresholdIsZero() {
         final Configuration conf = config();
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, 0L);
-        final String location = conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        final String location = conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
         final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
         try {
             for (int i = 0; i < 50; i++) {
@@ -280,7 +280,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     @Test
     public void shouldRecoverFromTruncatedTrailingFrame() throws Exception {
         TinkerStorageGraph graph = open();
-        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
         graph.addVertex(T.id, 1, "value", 1);
         graph.tx().commit();
         graph.addVertex(T.id, 2, "value", 2);
@@ -314,7 +314,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     @Test
     public void shouldFailOnCorruptFrameWithBadCrc() throws Exception {
         TinkerStorageGraph graph = open();
-        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
         graph.addVertex(T.id, 1, "value", 1);
         graph.tx().commit();
         graph.addVertex(T.id, 2, "value", 2);
@@ -344,7 +344,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     @Test
     public void shouldFailOnForeignFileWithBadMagic() throws Exception {
         TinkerStorageGraph graph = open();
-        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
         graph.addVertex(T.id, 1);
         graph.tx().commit();
         graph.tx().close();
@@ -369,7 +369,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     @Test
     public void shouldFailOnStoreWithUnsupportedVersionMarker() throws Exception {
         TinkerStorageGraph graph = open();
-        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
         graph.addVertex(T.id, 1);
         graph.tx().commit();
         graph.close();
@@ -441,7 +441,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         // frames. Reopening from a log with no snapshot must rebuild the dictionary incrementally and resolve all refs.
         final Configuration conf = config();
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, 0L); // keep the log, no auto-compaction
-        final String location = conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        final String location = conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
         TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
         for (int i = 0; i < 10; i++) {
             graph.addVertex(T.id, i, "key" + i, i);
@@ -491,7 +491,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         // whole-object format cost for a comparable graph (3 vertex props, 2 edge props, E=V).
         final int vertexCount = 200;
         final TinkerStorageGraph graph = open();
-        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION);
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
         try {
             for (int i = 0; i < vertexCount; i++)
                 graph.addVertex(T.id, i, "name", "v" + i, "age", i % 100, "score", i * 1.5d);

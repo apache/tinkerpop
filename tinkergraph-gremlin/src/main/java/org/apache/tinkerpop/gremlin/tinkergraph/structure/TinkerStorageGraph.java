@@ -55,7 +55,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * restarts.
  * <p/>
  * Persistence is pluggable through the {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage}
- * SPI and enabled with the {@code gremlin.tinkergraph.storage} and {@code gremlin.tinkergraph.graphLocation}
+ * SPI and enabled with the {@code gremlin.tinkergraph.storage} and {@code gremlin.tinkergraph.storage.directory}
  * configuration keys. Each committed transaction is written through to the storage engine before the in-memory commit
  * is applied, and reopening the same location replays the persisted commits to rebuild the graph. A storage location
  * is single-writer: it is guarded by an exclusive {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DirectoryLock}
@@ -105,12 +105,12 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         defaultVertexLabel = Vertex.DEFAULT_LABEL;
         defaultEdgeLabel = Edge.DEFAULT_LABEL;
 
-        graphLocation = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
+        storageDirectory = configuration.getString(GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, null);
         storage = selectStorage(configuration, GREMLIN_TINKERGRAPH_STORAGE);
 
-        if (storage != null && null == graphLocation)
+        if (storage != null && null == storageDirectory)
             throw new IllegalStateException(String.format("The %s must be specified when %s is set",
-                    GREMLIN_TINKERGRAPH_GRAPH_LOCATION, GREMLIN_TINKERGRAPH_STORAGE));
+                    GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, GREMLIN_TINKERGRAPH_STORAGE));
 
         serviceRegistry = new TinkerServiceRegistry(this);
         configuration.getList(String.class, GREMLIN_TINKERGRAPH_SERVICE, Collections.emptyList()).forEach(serviceClass ->
@@ -119,7 +119,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         if (storage != null) {
             // take an exclusive lock on the storage directory before the engine touches any files, so a second graph
             // on the same location fails fast rather than corrupting it. The directory must exist to hold the lock.
-            final File dir = new File(graphLocation);
+            final File dir = new File(storageDirectory);
             if (!dir.isDirectory() && !dir.mkdirs())
                 throw new IllegalStateException(String.format("Could not create storage directory %s", dir));
             directoryLock = DirectoryLock.acquire(dir);
