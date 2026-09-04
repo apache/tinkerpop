@@ -50,7 +50,7 @@ public interface TinkerStorage extends AutoCloseable {
      * during graph construction before {@link #replay(AbstractTinkerGraph)}.
      *
      * @param graph  the graph that owns this engine
-     * @param config the graph configuration, including {@code gremlin.tinkergraph.graphLocation}
+     * @param config the graph configuration, including {@code gremlin.tinkergraph.storage.directory}
      */
     void open(AbstractTinkerGraph graph, Configuration config);
 

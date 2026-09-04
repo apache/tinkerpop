@@ -78,7 +78,12 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
     protected TinkerServiceRegistry serviceRegistry;
 
     protected Configuration configuration;
-    protected String graphLocation;
+
+    /**
+     * The filesystem directory backing the storage engine, from {@code gremlin.tinkergraph.storage.directory}, or
+     * {@code null} when the graph holds data only in memory.
+     */
+    protected String storageDirectory;
 
     /**
      * The pluggable durable storage engine, or {@code null} when the graph holds data only in memory. Only set by
