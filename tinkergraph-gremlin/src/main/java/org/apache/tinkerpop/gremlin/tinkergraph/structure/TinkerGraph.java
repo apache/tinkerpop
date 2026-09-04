@@ -46,19 +46,19 @@ public interface TinkerGraph extends Graph {
     String GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER = "gremlin.tinkergraph.vertexPropertyIdManager";
     String GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY = "gremlin.tinkergraph.defaultVertexPropertyCardinality";
     /**
-     * The filesystem directory that a {@link TinkerStorageGraph} uses for its durable storage engine. Ignored by
-     * {@link TinkerMemoryGraph}, which is purely in-memory. Only meaningful when {@link #GREMLIN_TINKERGRAPH_STORAGE}
-     * is also set.
-     */
-    String GREMLIN_TINKERGRAPH_GRAPH_LOCATION = "gremlin.tinkergraph.graphLocation";
-    /**
      * Selects the pluggable storage engine used by {@link TinkerStorageGraph} to durably persist transactions to the
-     * {@link #GREMLIN_TINKERGRAPH_GRAPH_LOCATION} directory. The value is either a
+     * {@link #GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY} directory. The value is either a
      * {@code TinkerStorageGraph.DefaultStorage} enum name (e.g. {@code graphbinary}) or the fully-qualified class name
      * of a {@code org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage} implementation. When unset,
      * the graph holds data only in memory. Not valid on {@link TinkerMemoryGraph}.
      */
     String GREMLIN_TINKERGRAPH_STORAGE = "gremlin.tinkergraph.storage";
+    /**
+     * The filesystem directory that a {@link TinkerStorageGraph} storage engine uses for its durable data. Ignored by
+     * {@link TinkerMemoryGraph}, which is purely in-memory. Only meaningful when {@link #GREMLIN_TINKERGRAPH_STORAGE}
+     * is also set.
+     */
+    String GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY = "gremlin.tinkergraph.storage.directory";
     /**
      * The durability mode a {@link TinkerStorageGraph} storage engine applies on commit. Either {@code commit}
      * (default) to {@code fsync} every commit so acknowledged commits survive an OS crash or power loss, or {@code os}

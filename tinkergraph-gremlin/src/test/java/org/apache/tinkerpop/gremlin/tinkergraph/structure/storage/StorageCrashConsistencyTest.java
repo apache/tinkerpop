@@ -66,7 +66,7 @@ public class StorageCrashConsistencyTest {
         final Configuration conf = new BaseConfiguration();
         conf.setProperty(Graph.GRAPH, TinkerStorageGraph.class.getName());
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, location);
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, location);
         // disable auto-compaction so tests control exactly when compaction happens
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, 0L);
         return conf;
