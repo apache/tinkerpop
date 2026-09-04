@@ -58,7 +58,7 @@ public class DirectoryLockTest {
         final Configuration conf = new BaseConfiguration();
         conf.setProperty(Graph.GRAPH, TinkerStorageGraph.class.getName());
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, location);
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, location);
         return conf;
     }
 

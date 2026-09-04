@@ -176,8 +176,8 @@ TinkerGraph has several settings that can be provided on creation via `Configura
 to disk. The value is either a built-in engine name (`graphbinary`) or a fully qualified class name of a
 `TinkerStorage` implementation. When not specified (default), the graph holds data only in memory. This setting is
 only valid on `TinkerStorageGraph` and is ignored by the in-memory `TinkerMemoryGraph`.
-|gremlin.tinkergraph.graphLocation |The directory in which `TinkerStorageGraph` stores its durable data. Required when
-`gremlin.tinkergraph.storage` is set and ignored otherwise.
+|gremlin.tinkergraph.storage.directory |The directory in which `TinkerStorageGraph` stores its durable data. Required
+when `gremlin.tinkergraph.storage` is set and ignored otherwise.
 |gremlin.tinkergraph.storage.sync |The durability applied to each committed transaction by a `TinkerStorageGraph`
 storage engine. `commit` (default) forces each commit to disk so an acknowledged commit survives an operating system
 crash or power loss. `os` only flushes to the operating system, so a commit survives a crash of the JVM process but
@@ -419,7 +419,7 @@ When a storage engine is configured, the changeset of each committed transaction
 rebuilt from that data when it is opened again. The in-memory `TinkerMemoryGraph` does not retain data across restarts.
 
 A storage engine is selected with the `gremlin.tinkergraph.storage` configuration key, and
-`gremlin.tinkergraph.graphLocation` names the directory that holds the durable data. The value of the storage key is
+`gremlin.tinkergraph.storage.directory` names the directory that holds the durable data. The value of the storage key is
 either a built-in engine name or the fully qualified class name of a `TinkerStorage` implementation, following the same
 enum-name-or-class-name convention as the `IdManager` settings. The built-in `graphbinary` engine records committed
 transactions as an append-only log serialized with GraphBinary and folds that log into a compact snapshot when the
@@ -430,7 +430,7 @@ graph is closed.
 conf = new BaseConfiguration()
 conf.setProperty("gremlin.graph", "org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph")
 conf.setProperty("gremlin.tinkergraph.storage", "graphbinary")
-conf.setProperty("gremlin.tinkergraph.graphLocation", "/data/mygraph")
+conf.setProperty("gremlin.tinkergraph.storage.directory", "/data/mygraph")
 
 graph = TinkerStorageGraph.open(conf)
 g = traversal().with(graph)
@@ -480,7 +480,7 @@ so its data is lost when the server stops.
 ----
 gremlin.graph=org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph
 gremlin.tinkergraph.storage=graphbinary
-gremlin.tinkergraph.graphLocation=/data/mygraph
+gremlin.tinkergraph.storage.directory=/data/mygraph
 ----
 
 [source,yaml]
