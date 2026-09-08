@@ -45,7 +45,9 @@ have a lightweight transactional form that can be instantiated offering simple `
 `read committed` transaction isolation, with optional durable persistence to disk. As of 4.0.0, `TinkerGraph` is an
 interface with two implementations: `TinkerMemoryGraph`, the in-memory, non-transactional implementation that
 `TinkerGraph.open()` constructs, and `TinkerStorageGraph`, the transactional implementation formerly named
-`TinkerTransactionGraph`. TinkerGraph is deployed with TinkerPop and serves as the reference
+`TinkerTransactionGraph`. Transactions and durability are separate concerns. `TinkerStorageGraph` writes nothing to
+disk unless a storage engine is configured, and without one it is a purely in-memory graph that retains its
+transaction support. TinkerGraph is deployed with TinkerPop and serves as the reference
 implementation for other providers to study in order to understand the semantics of the various methods of the
 TinkerPop API. Its status as a reference implementation does not however imply that it is not suitable for production.
 TinkerGraph has many practical use cases in production applications and their development. Some examples of TinkerGraph
@@ -207,9 +209,10 @@ type as well as generate new identifiers with that specified type.
 TIP: Setting the `IdManager` to `ANY` also allows `String` type ID values to be used.                                              
 
 Durable persistence is provided by `TinkerStorageGraph` through its pluggable storage layer and is described in the
-<<tinkergraph-gremlin-persistence, persistence section>>. The in-memory `TinkerMemoryGraph` holds no data across JVM
-restarts. Moving data in and out of any TinkerGraph in an interchange format is handled on demand by the `io()` step
-rather than by graph configuration, as shown below.
+<<tinkergraph-gremlin-persistence, persistence section>>. It is enabled by configuration rather than by the choice of
+implementation. Neither `TinkerMemoryGraph` nor a `TinkerStorageGraph` without a configured storage engine holds data
+across JVM restarts. Moving data in and out of any TinkerGraph in an interchange format is handled on demand by the
+`io()` step rather than by graph configuration, as shown below.
 
 It is important to consider the data being imported to TinkerGraph with respect to `defaultVertexPropertyCardinality`
 setting.  For example, if a `.gryo` file is known to contain multi-property data, be sure to set the default
@@ -264,6 +267,11 @@ The default configuration of TinkerGraph remains non-transactional.
 
 NOTE: This feature was first made available in TinkerPop 3.7.0 as `TinkerTransactionGraph`. The class was renamed to
 `TinkerStorageGraph` in 4.0.0.
+
+`TinkerStorageGraph` requires no storage configuration to provide transactions. With no storage engine set it creates
+no files and writes nothing to disk, which suits testing and any other case that calls for transaction semantics
+without durable state. Configuring a storage engine adds durability to that same graph and is described in the
+<<tinkergraph-gremlin-persistence, persistence section>>.
 
 ==== Transaction Semantics
 
