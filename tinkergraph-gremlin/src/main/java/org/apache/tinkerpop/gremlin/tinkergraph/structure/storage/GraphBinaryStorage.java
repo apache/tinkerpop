@@ -326,17 +326,17 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         final DetachedVertex.Builder b = DetachedVertex.build().setId(id);
         final int labelCount = readVarInt(buf);
         if (labelCount == 1) {
-            b.setLabel(idToKey.get(readVarInt(buf)));
+            b.setLabel(resolveKey(buf));
         } else if (labelCount > 1) {
             final Set<String> labels = new LinkedHashSet<>();
             for (int i = 0; i < labelCount; i++)
-                labels.add(idToKey.get(readVarInt(buf)));
+                labels.add(resolveKey(buf));
             b.setLabels(labels);
         }
         final boolean hasVpIds = buf.readByte() != 0;
         final int keyGroupCount = readVarInt(buf);
         for (int g = 0; g < keyGroupCount; g++) {
-            final String key = idToKey.get(readVarInt(buf));
+            final String key = resolveKey(buf);
             final int valueCount = readVarInt(buf);
             for (int j = 0; j < valueCount; j++) {
                 final Object value = readScalar(buf);
@@ -345,7 +345,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
                     vpb.setId(readScalar(buf));
                 final int metaCount = readVarInt(buf);
                 for (int m = 0; m < metaCount; m++) {
-                    final String metaKey = idToKey.get(readVarInt(buf));
+                    final String metaKey = resolveKey(buf);
                     final Object metaValue = readScalar(buf);
                     vpb.addProperty(new DetachedProperty<>(metaKey, metaValue));
                 }
@@ -357,7 +357,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
 
     private DetachedEdge readEdgeRecord(final ByteBufferBuffer buf) throws IOException {
         final Object id = readScalar(buf);
-        final String label = idToKey.get(readVarInt(buf));
+        final String label = resolveKey(buf);
         final Object outVId = readScalar(buf);
         final Object inVId = readScalar(buf);
         final DetachedEdge.Builder b = DetachedEdge.build().setId(id).setLabel(label)
@@ -365,7 +365,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
                 .setInV(DetachedVertex.build().setId(inVId).create());
         final int propCount = readVarInt(buf);
         for (int i = 0; i < propCount; i++) {
-            final String key = idToKey.get(readVarInt(buf));
+            final String key = resolveKey(buf);
             final Object value = readScalar(buf);
             b.addProperty(new DetachedProperty<>(key, value));
         }
@@ -407,8 +407,30 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         buf.writeBytes(bytes);
     }
 
-    private static String readString(final ByteBufferBuffer buf) {
-        final byte[] bytes = new byte[readVarInt(buf)];
+    /**
+     * Resolve the next dictionary ref in {@code buf} to its string. A ref that names an entry the dictionary does not
+     * hold is corruption, and is reported as such rather than raised as an {@code IndexOutOfBoundsException} from the
+     * backing list.
+     */
+    private String resolveKey(final ByteBufferBuffer buf) throws IOException {
+        final int id = readVarInt(buf);
+        if (id >= idToKey.size())
+            throw new IOException(String.format(
+                    "Corrupt storage frame: dictionary ref %d with only %d entries defined", id, idToKey.size()));
+        return idToKey.get(id);
+    }
+
+    private static String readString(final ByteBufferBuffer buf) throws IOException {
+        final int length = readVarInt(buf);
+        // check the declared length against what the frame actually holds before allocating. The frame itself is
+        // already bounded against the file by AbstractLogStorage.readFrame, but a length inside the frame is not,
+        // so an unchecked allocation here would let a small corrupt record demand gigabytes and raise
+        // OutOfMemoryError instead of the IOException a corrupt frame is contracted to produce.
+        if (length > buf.readableBytes())
+            throw new IOException(String.format(
+                    "Corrupt storage frame: string of %d bytes declared with only %d readable in the record",
+                    length, buf.readableBytes()));
+        final byte[] bytes = new byte[length];
         buf.readBytes(bytes);
         return new String(bytes, StandardCharsets.UTF_8);
     }
@@ -426,15 +448,22 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         buf.writeByte(v & 0x7F);
     }
 
-    private static int readVarInt(final ByteBufferBuffer buf) {
+    private static int readVarInt(final ByteBufferBuffer buf) throws IOException {
         int result = 0;
         int shift = 0;
         byte b;
         do {
+            // Java masks a shift count to five bits, so without this bound an over-long encoding wraps around and
+            // yields an arbitrary (possibly negative) value rather than failing. Every count, length and dictionary
+            // ref in the format is non-negative, so anything that does not fit in five groups is corruption.
+            if (shift >= Integer.SIZE)
+                throw new IOException("Corrupt storage frame: over-long varint encoding");
             b = buf.readByte();
             result |= (b & 0x7F) << shift;
             shift += 7;
         } while ((b & 0x80) != 0);
+        if (result < 0)
+            throw new IOException("Corrupt storage frame: negative varint value " + result);
         return result;
     }
 }
