@@ -32,10 +32,12 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.zip.CRC32;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -339,6 +341,93 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
             assertTrue("cause should report corruption: " + rootMessage(expected),
                     rootMessage(expected).contains("CRC mismatch"));
         }
+    }
+
+    @Test
+    public void shouldFailOnStringLongerThanItsFrame() throws Exception {
+        // a dictionary-append entry declaring a ~2GB string in a record holding no such bytes. The declared length
+        // must be checked before the array is allocated, otherwise this is an OutOfMemoryError rather than a
+        // reportable corrupt frame.
+        final byte[] payload = new byte[] {
+                0x01,                                     // entry count = 1
+                0x05,                                     // OP_DICT_APPEND
+                0x00,                                     // dictionary id = 0
+                (byte) 0xF0, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, 0x07  // varint length = 0x7FFFFFF0
+        };
+
+        try {
+            openWithSyntheticFrame(payload);
+            fail("expected reopen to fail on a string longer than its frame");
+        } catch (Exception expected) {
+            assertTrue("cause should report corruption: " + rootMessage(expected),
+                    rootMessage(expected).contains("string of"));
+        }
+    }
+
+    @Test
+    public void shouldFailOnOverLongVarInt() throws Exception {
+        // a varint whose continuation bits run past the width of an int. Java masks a shift count to five bits, so
+        // without a bound this wraps and yields an arbitrary, possibly negative, value instead of failing.
+        final byte[] payload = new byte[] {
+                (byte) 0x80, (byte) 0x80, (byte) 0x80, (byte) 0x80,
+                (byte) 0x80, (byte) 0x80, (byte) 0x80, 0x00
+        };
+
+        try {
+            openWithSyntheticFrame(payload);
+            fail("expected reopen to fail on an over-long varint");
+        } catch (Exception expected) {
+            assertTrue("cause should report corruption: " + rootMessage(expected),
+                    rootMessage(expected).contains("over-long varint"));
+        }
+    }
+
+    @Test
+    public void shouldFailOnDictionaryRefWithNoSuchEntry() throws Exception {
+        // a vertex record whose label names dictionary entry 5 when the dictionary is empty. The ref must be
+        // validated rather than dereferenced straight into the backing list.
+        final byte[] payload = new byte[] {
+                0x01,                                     // entry count = 1
+                0x01,                                     // OP_PUT_VERTEX
+                0x01, 0x00, 0x00, 0x00, 0x2A,             // id: GraphBinary INT tag then 42
+                0x01,                                     // label count = 1
+                0x05                                      // dictionary ref = 5, nothing defined
+        };
+
+        try {
+            openWithSyntheticFrame(payload);
+            fail("expected reopen to fail on an undefined dictionary ref");
+        } catch (Exception expected) {
+            assertTrue("cause should report corruption: " + rootMessage(expected),
+                    rootMessage(expected).contains("dictionary ref"));
+        }
+    }
+
+    /**
+     * Replace the store's log with a single well-formed frame (correct length prefix and CRC) carrying {@code
+     * payload}, then reopen. The framing must be valid so that replay reaches the codec rather than stopping at the
+     * frame checks, which are covered separately.
+     */
+    private void openWithSyntheticFrame(final byte[] payload) throws Exception {
+        TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+        graph.tx().close();
+        graph.close();
+
+        final CRC32 crc = new CRC32();
+        crc.update(payload);
+        final ByteBuffer frame = ByteBuffer.allocate(GraphBinaryStorage.HEADER_SIZE + 2 * Integer.BYTES + payload.length);
+        frame.put(GraphBinaryStorage.MAGIC);
+        frame.putInt(payload.length);
+        frame.putInt((int) crc.getValue());
+        frame.put(payload);
+
+        Files.deleteIfExists(new File(location, GraphBinaryStorage.SNAPSHOT_FILE).toPath());
+        Files.write(new File(location, GraphBinaryStorage.LOG_FILE).toPath(), frame.array());
+
+        open().close();
     }
 
     @Test
