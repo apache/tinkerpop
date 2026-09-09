@@ -109,7 +109,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
     protected byte[] encodeCommit(final long txVersion,
                                   final Collection<TinkerStorageMutation<TinkerVertex>> changedVertices,
                                   final Collection<TinkerStorageMutation<TinkerEdge>> changedEdges) throws IOException {
-        final ByteBufferBuffer buf = new ByteBufferBuffer();
+        final TinkerByteBuffer buf = new TinkerByteBuffer();
         // register the strings introduced by this commit (deletes carry only an id, no strings)
         final List<String> appends = new ArrayList<>();
         for (final TinkerStorageMutation<TinkerVertex> m : changedVertices)
@@ -159,7 +159,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         while (edges.hasNext())
             registerEdgeStrings(edges.next(), ignored);
 
-        final ByteBufferBuffer dictBuf = new ByteBufferBuffer();
+        final TinkerByteBuffer dictBuf = new TinkerByteBuffer();
         writeVarInt(dictBuf, idToKey.size());
         for (int id = 0; id < idToKey.size(); id++) {
             dictBuf.writeByte(OP_DICT_APPEND);
@@ -182,7 +182,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
      * is never buffered whole.
      */
     private void writeElementFrame(final DataOutputStream out, final byte op, final Object element) throws IOException {
-        final ByteBufferBuffer buf = new ByteBufferBuffer();
+        final TinkerByteBuffer buf = new TinkerByteBuffer();
         writeVarInt(buf, 1);
         buf.writeByte(op);
         if (op == OP_PUT_VERTEX) writeVertexRecord(buf, (Vertex) element);
@@ -219,7 +219,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         }
     }
 
-    private void writeVertexRecord(final ByteBufferBuffer buf, final Vertex v) throws IOException {
+    private void writeVertexRecord(final TinkerByteBuffer buf, final Vertex v) throws IOException {
         writeScalar(buf, v.id());
         final Set<String> labels = v.labels();
         writeVarInt(buf, labels.size());
@@ -256,7 +256,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         }
     }
 
-    private void writeEdgeRecord(final ByteBufferBuffer buf, final Edge e) throws IOException {
+    private void writeEdgeRecord(final TinkerByteBuffer buf, final Edge e) throws IOException {
         writeScalar(buf, e.id());
         writeVarInt(buf, keyToId.get(e.label()));
         writeScalar(buf, e.outVertex().id());
@@ -276,7 +276,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
     protected void decodeFrame(final byte[] record,
                                final Map<Object, DetachedVertex> vertices,
                                final Map<Object, DetachedEdge> edges) throws IOException {
-        final ByteBufferBuffer buf = new ByteBufferBuffer(record);
+        final TinkerByteBuffer buf = new TinkerByteBuffer(record);
         final int entryCount = readVarInt(buf);
         for (int i = 0; i < entryCount; i++) {
             final byte op = buf.readByte();
@@ -321,7 +321,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         }
     }
 
-    private DetachedVertex readVertexRecord(final ByteBufferBuffer buf) throws IOException {
+    private DetachedVertex readVertexRecord(final TinkerByteBuffer buf) throws IOException {
         final Object id = readScalar(buf);
         final DetachedVertex.Builder b = DetachedVertex.build().setId(id);
         final int labelCount = readVarInt(buf);
@@ -355,7 +355,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         return b.create();
     }
 
-    private DetachedEdge readEdgeRecord(final ByteBufferBuffer buf) throws IOException {
+    private DetachedEdge readEdgeRecord(final TinkerByteBuffer buf) throws IOException {
         final Object id = readScalar(buf);
         final String label = resolveKey(buf);
         final Object outVId = readScalar(buf);
@@ -379,7 +379,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
      * is a single {@link DataType#UNSPECIFIED_NULL} tag.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void writeScalar(final ByteBufferBuffer buf, final Object value) throws IOException {
+    private void writeScalar(final TinkerByteBuffer buf, final Object value) throws IOException {
         if (value == null) {
             buf.writeByte(DataType.UNSPECIFIED_NULL.getCodeByte());
             return;
@@ -390,7 +390,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private Object readScalar(final ByteBufferBuffer buf) throws IOException {
+    private Object readScalar(final TinkerByteBuffer buf) throws IOException {
         final int code = Byte.toUnsignedInt(buf.readByte());
         final DataType dataType = DataType.get(code);
         if (dataType == null)
@@ -401,7 +401,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         return serializer.readValue(buf, reader, false);
     }
 
-    private static void writeString(final ByteBufferBuffer buf, final String s) {
+    private static void writeString(final TinkerByteBuffer buf, final String s) {
         final byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
         writeVarInt(buf, bytes.length);
         buf.writeBytes(bytes);
@@ -412,7 +412,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
      * hold is corruption, and is reported as such rather than raised as an {@code IndexOutOfBoundsException} from the
      * backing list.
      */
-    private String resolveKey(final ByteBufferBuffer buf) throws IOException {
+    private String resolveKey(final TinkerByteBuffer buf) throws IOException {
         final int id = readVarInt(buf);
         if (id >= idToKey.size())
             throw new IOException(String.format(
@@ -420,7 +420,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         return idToKey.get(id);
     }
 
-    private static String readString(final ByteBufferBuffer buf) throws IOException {
+    private static String readString(final TinkerByteBuffer buf) throws IOException {
         final int length = readVarInt(buf);
         // check the declared length against what the frame actually holds before allocating. The frame itself is
         // already bounded against the file by AbstractLogStorage.readFrame, but a length inside the frame is not,
@@ -439,7 +439,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
      * Unsigned LEB128 varint. Counts and dictionary refs are small and non-negative, so they cost one byte in the
      * common case.
      */
-    private static void writeVarInt(final ByteBufferBuffer buf, final int value) {
+    private static void writeVarInt(final TinkerByteBuffer buf, final int value) {
         int v = value;
         while ((v & ~0x7F) != 0) {
             buf.writeByte((v & 0x7F) | 0x80);
@@ -448,7 +448,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         buf.writeByte(v & 0x7F);
     }
 
-    private static int readVarInt(final ByteBufferBuffer buf) throws IOException {
+    private static int readVarInt(final TinkerByteBuffer buf) throws IOException {
         int result = 0;
         int shift = 0;
         byte b;

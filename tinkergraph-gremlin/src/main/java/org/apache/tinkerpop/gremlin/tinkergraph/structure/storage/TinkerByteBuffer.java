@@ -32,7 +32,7 @@ import java.util.Arrays;
  * as needed on write. This class is not thread-safe; a buffer is used by a single thread for a single
  * serialize/deserialize.
  */
-public final class ByteBufferBuffer implements Buffer {
+public final class TinkerByteBuffer implements Buffer {
 
     private static final int DEFAULT_CAPACITY = 256;
 
@@ -42,18 +42,18 @@ public final class ByteBufferBuffer implements Buffer {
     private int markedWriterIndex = 0;
     private int referenceCount = 1;
 
-    public ByteBufferBuffer() {
+    public TinkerByteBuffer() {
         this(DEFAULT_CAPACITY);
     }
 
-    public ByteBufferBuffer(final int initialCapacity) {
+    public TinkerByteBuffer(final int initialCapacity) {
         this.array = new byte[Math.max(initialCapacity, 1)];
     }
 
     /**
      * Wraps an existing array for reading. The writer index is positioned at the end of the supplied data.
      */
-    public ByteBufferBuffer(final byte[] data) {
+    public TinkerByteBuffer(final byte[] data) {
         this.array = data;
         this.writerIndex = data.length;
     }
