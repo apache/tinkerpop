@@ -181,22 +181,32 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
             // aborts the commit (via the catch below) and leaves memory and disk consistent. Skipped while the graph
             // is replaying its storage log on open. Serialized by storageCommitLock because commits of disjoint
             // elements otherwise reach the engine's single append log concurrently and interleave its records.
-            if (graph.storage != null && !graph.loading) {
-                graph.storageCommitLock.lock();
-                try {
+            //
+            // The in-memory apply is held inside that same lock. Compaction builds its snapshot by reading the graph
+            // and then discards the log, which is only sound while the graph reflects everything the log holds. That
+            // is false for exactly as long as a changeset sits persisted but not yet applied, so a compaction landing
+            // in that window snapshots without the transaction and then deletes the record that held it, losing an
+            // acknowledged commit. Publishing under the lock closes the window, and also makes the order in which
+            // transactions become visible match the order they were recorded in.
+            final boolean durable = graph.storage != null && !graph.loading;
+            if (durable) graph.storageCommitLock.lock();
+            try {
+                if (durable) {
                     graph.storage.persist(txVersion, toVertexMutations(changedVertices), toEdgeMutations(changedEdges));
                     graph.storage.flush();
-                    // bound log growth for a long-running graph that is never explicitly closed; no-op unless the
-                    // engine's accumulated log has crossed its threshold
-                    graph.storage.maybeCompact(graph);
-                } finally {
-                    graph.storageCommitLock.unlock();
                 }
-            }
 
-            // commit all changes
-            changedVertices.forEach(v -> v.commit(txVersion));
-            changedEdges.forEach(e -> e.commit(txVersion));
+                // commit all changes
+                changedVertices.forEach(v -> v.commit(txVersion));
+                changedEdges.forEach(e -> e.commit(txVersion));
+
+                // bound log growth for a long-running graph that is never explicitly closed; no-op unless the
+                // engine's accumulated log has crossed its threshold. Runs after the apply so the snapshot it may
+                // write includes this transaction rather than omitting it and then truncating the log that held it.
+                if (durable) graph.storage.maybeCompact(graph);
+            } finally {
+                if (durable) graph.storageCommitLock.unlock();
+            }
         } catch (TransactionException ex) {
             // rollback on error
             changedVertices.forEach(v -> v.rollback());
