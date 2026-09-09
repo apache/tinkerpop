@@ -18,7 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
 
+import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -33,7 +36,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -311,6 +316,106 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         assertEquals(Integer.valueOf(1), graph.vertices(1).next().value("value"));
         assertEquals(Integer.valueOf(2), graph.vertices(2).next().value("value"));
         graph.close();
+    }
+
+    @Test
+    public void shouldRestoreIndexDefinitionsOnReopen() throws Exception {
+        TinkerStorageGraph graph = open();
+        graph.createIndex("name", Vertex.class);
+        graph.createIndex("weight", Edge.class);
+        final Vertex marko = graph.addVertex(T.id, 1, "name", "marko");
+        final Vertex josh = graph.addVertex(T.id, 2, "name", "josh");
+        marko.addEdge("knows", josh, T.id, 10, "weight", 0.5d);
+        graph.tx().commit();
+        graph.close();
+
+        graph = open();
+        try {
+            // the definitions come back, and the index covers data written before the restart rather than only
+            // writes that follow it
+            assertEquals(Collections.singleton("name"), graph.getIndexedKeys(Vertex.class));
+            assertEquals(Collections.singleton("weight"), graph.getIndexedKeys(Edge.class));
+            assertEquals(1L, (long) graph.traversal().V().has("name", "josh").count().next());
+            assertEquals(1L, (long) graph.traversal().E().has("weight", 0.5d).count().next());
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldNotRestoreADroppedIndex() throws Exception {
+        TinkerStorageGraph graph = open();
+        graph.createIndex("name", Vertex.class);
+        graph.addVertex(T.id, 1, "name", "marko");
+        graph.tx().commit();
+        graph.dropIndex("name", Vertex.class);
+        graph.close();
+
+        graph = open();
+        try {
+            assertTrue("a dropped index must not come back", graph.getIndexedKeys(Vertex.class).isEmpty());
+            // data is unaffected by the index being gone; the lookup just falls back to a scan
+            assertEquals(1L, (long) graph.traversal().V().has("name", "marko").count().next());
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldOpenWithoutIndexesWhenDefinitionsAreUnreadable() throws Exception {
+        TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        graph.createIndex("name", Vertex.class);
+        graph.addVertex(T.id, 1, "name", "marko");
+        graph.tx().commit();
+        graph.close();
+
+        // a corrupt sidecar must degrade to the behaviour before definitions were recorded at all, never block a
+        // store whose data is perfectly readable
+        Files.write(new File(location, IndexDefinitions.INDEX_FILE).toPath(),
+                "this is not an index definition".getBytes(StandardCharsets.UTF_8));
+
+        graph = open();
+        try {
+            assertTrue(graph.getIndexedKeys(Vertex.class).isEmpty());
+            assertEquals(1L, (long) graph.traversal().V().has("name", "marko").count().next());
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripIndexKeysNeedingEscapes() throws Exception {
+        final String awkward = "a\tb\nc\\d";
+        TinkerStorageGraph graph = open();
+        graph.createIndex(awkward, Vertex.class);
+        graph.addVertex(T.id, 1, awkward, "value");
+        graph.tx().commit();
+        graph.close();
+
+        graph = open();
+        try {
+            assertEquals(Collections.singleton(awkward), graph.getIndexedKeys(Vertex.class));
+            assertEquals(1L, (long) graph.traversal().V().has(awkward, "value").count().next());
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
+    public void shouldNotRecordIndexesWithoutAStorageEngine() {
+        // a TinkerStorageGraph with no engine is transactional but in-memory, so it must touch no disk at all
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(Graph.GRAPH, TinkerStorageGraph.class.getName());
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        try {
+            graph.createIndex("name", Vertex.class);
+            graph.addVertex(T.id, 1, "name", "marko");
+            graph.tx().commit();
+            assertEquals(Collections.singleton("name"), graph.getIndexedKeys(Vertex.class));
+        } finally {
+            graph.close();
+        }
     }
 
     @Test

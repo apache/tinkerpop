@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optim
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DirectoryLock;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.IndexDefinitions;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.File;
@@ -84,6 +85,12 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
 
     private final TinkerTransaction transaction = new TinkerTransaction(this);
 
+    /**
+     * Set while indexes recorded for the store are being recreated on open, so applying them does not rewrite the
+     * file they were just read from.
+     */
+    private boolean restoringIndexes = false;
+
     private final Map<Object, TinkerElementContainer<TinkerVertex>> vertices = new ConcurrentHashMap<>();
     private final Map<Object, TinkerElementContainer<TinkerEdge>> edges = new ConcurrentHashMap<>();
 
@@ -131,6 +138,9 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
                 } finally {
                     loading = false;
                 }
+                // recreate the recorded indexes now that replay has rebuilt the elements they cover, so
+                // createKeyIndex backfills over the restored data rather than only over writes that follow
+                restoreIndexes(dir);
             } catch (RuntimeException | Error ex) {
                 // don't leak the lock if the engine fails to open or replay
                 directoryLock.close();
@@ -609,6 +619,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
+        recordIndexes();
     }
 
     /**
@@ -627,5 +638,36 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
+        recordIndexes();
+    }
+
+    /**
+     * Recreate the indexes recorded for this store. Runs after replay so that {@code createKeyIndex} backfills over
+     * the elements it has just rebuilt. The definitions are already on disk, so recording is suppressed while they
+     * are applied.
+     */
+    private void restoreIndexes(final File directory) {
+        final IndexDefinitions definitions = IndexDefinitions.read(directory);
+        if (definitions.isEmpty())
+            return;
+        restoringIndexes = true;
+        try {
+            definitions.vertexKeys().forEach(key -> createIndex(key, Vertex.class));
+            definitions.edgeKeys().forEach(key -> createIndex(key, Edge.class));
+        } finally {
+            restoringIndexes = false;
+        }
+    }
+
+    /**
+     * Record the current set of indexed keys beside the engine's files, so a reopen restores them. Index definitions
+     * are not part of the transactional log; see {@link IndexDefinitions} for why that is sound. A graph with no
+     * storage engine keeps everything in memory and writes nothing.
+     */
+    private void recordIndexes() {
+        if (null == storage || restoringIndexes)
+            return;
+        new IndexDefinitions(getIndexedKeys(Vertex.class), getIndexedKeys(Edge.class))
+                .write(new File(storageDirectory));
     }
 }
