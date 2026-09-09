@@ -5318,19 +5318,23 @@ g.V(1).both().both()
 g.V(1).both().both().simplePath()
 g.V(1).both().both().simplePath().path()
 g.V(1).both().both().simplePath().by('age') <1>
-g.V().out().as('a').out().as('b').out().as('c').
+g.V().as('a').out().as('b').out().as('c').
   simplePath().by(label).
-  path()
-g.V().out().as('a').out().as('b').out().as('c').
+  path().by('name') <2>
+g.V().as('a').out().as('b').out().as('c').
   simplePath().
     by(label).
     from('b').
     to('c').
   path().
-    by('name')
+    by('name') <3>
 ----
 
 <1> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered.
+<2> Comparing labels across the whole path filters every result: each two-hop out-path begins with two `person`
+vertices (e.g. `marko` then `josh`), so no path is simple when analyzed by label.
+<3> Restricting the `simplePath()` check to the `b`..`c` segment with `from()`/`to()` compares only those two
+labels (`person` and `software`), so the paths are retained.
 
 By using the `from()` and `to()` modulators traversers can ensure that only certain sections of the path are acyclic.
 
