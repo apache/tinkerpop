@@ -2159,7 +2159,14 @@ None
 
 *Considerations:*
 
-* Equivalent to `has(T.value, ...)`.
+* `hasValue(value)` is equivalent to `has(T.value, value)`.
+* When multiple values are supplied, `hasValue(value, otherValues...)` is equivalent to
+  `has(T.value, within(value, otherValues...))`: the property matches if its value equals *any* of the
+  supplied values (any-of / OR semantics).
+* Value matching uses Gremlin equality, so it follows the rules described in
+  <<gremlin-semantics-equality-comparability, Equality and Comparability>>, including cross-type numeric
+  coercion (for example, the integer `1` matches the long `1L`, per <<Numeric Type Promotion>>).
+* A `null` argument matches nothing (produces an empty result) and does not raise an error.
 * Operates on `Property` or `VertexProperty` traversers (typically reached via `properties()`).
 * Child traversals must be read-only; mutating steps are rejected with an `Argument Error`.
 
