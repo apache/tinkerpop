@@ -468,6 +468,12 @@ committed state. Compaction runs when the graph is closed and can be requested e
 unbounded log, compaction also runs automatically once the log grows past `gremlin.tinkergraph.storage.compactThreshold`
 bytes. Setting that threshold to `0` disables automatic compaction.
 
+The property keys a graph indexes are recorded alongside its data and the indexes are rebuilt when the graph is
+opened again, so an index created with `createIndex()` survives a restart and covers the data that was already
+stored. An index dropped with `dropIndex()` stays dropped. Index definitions are held outside the transaction log
+because an index only affects how fast a lookup runs and never its result, so a definition lost to a crash costs a
+rebuild rather than any data. If the record of them cannot be read the graph still opens, with no indexes.
+
 Element and edge ids are always preserved across a reopen. Auto-generated vertex-property ids are not, by default,
 so a vertex property may receive a different id after a reopen. Setting `gremlin.tinkergraph.storage.preserveVertexPropertyIds`
 to `true` persists those ids as well, at the cost of a larger store.
