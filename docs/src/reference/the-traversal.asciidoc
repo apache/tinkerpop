@@ -2578,7 +2578,7 @@ g.V().hasLabel("person").values("name").fold().
 
 <1> Indexing non-collection items results in multiple indexed single-item collections.
 <2> Index all software names in their alphabetical order.
-<3> Same as statement 1, but with an explicitely specified list indexer.
+<3> Same as statement 2, but with an explicitly specified list indexer.
 <4> Index all person names in their alphabetical order and store the result in an ordered map.
 
 *Additional References*
