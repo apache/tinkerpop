@@ -2319,10 +2319,40 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 
 The `from()`-step is not an actual step, but instead is a "step-modulator" similar to <<as-step,`as()`>> and
 <<by-step,`by()`>>. If a step is able to accept traversals or strings then `from()` is the
-means by which they are added. The general pattern is `step().from()`. See <<to-step,`to()`>>-step.
+means by which they are added. The general pattern is `step().from()`.
+
+Depending on the step being modulated, `from()` designates a "source" element -- the out-vertex of a new
+edge for <<addedge-step,`addE()`>>, or the lower bound of the sub-path selected by <<path-step,`path()`>>,
+<<simplepath-step,`simplePath()`>>, and <<cyclicpath-step,`cyclicPath()`>>. It accepts three forms of argument:
+
+* `from(String)` -- a step-label previously assigned with <<as-step,`as()`>>; the element labeled by that
+`as()` becomes the source.
+* `from(Traversal)` -- a child traversal whose result is used as the source element.
+* `from(Vertex)` -- an explicit `Vertex` object, a convenience offered by the language variants (which
+resolve the `Vertex` down to its id) rather than a canonical Gremlin argument form.
+
+`from()` is the symmetric counterpart of <<to-step,`to()`>>: on `addE()` the two modulators designate the
+edge's source (out) and target (in) vertices, while on `path()`, `simplePath()`, and `cyclicPath()` they
+bound the range of the path by naming its start and end elements.
 
 The list of steps that support `from()`-modulation are: <<simplepath-step,`simplePath()`>>, <<cyclicpath-step,`cyclicPath()`>>,
  <<path-step,`path()`>>, and <<addedge-step,`addE()`>>.
+
+[gremlin-groovy,modern]
+----
+g.V().has('name','marko').as('a').
+      out('created').
+      addE('createdBy').from('a') <1>
+g.V().has('name','vadas').as('a').
+      in('knows').as('b').
+      out('knows').where(neq('a')).
+      path().from('a').to('b').by('name') <2>
+----
+
+<1> `from('a')` names the marko-vertex (labeled by `as('a')`) as the new edge's source, while the incoming
+traverser (lop, the created software) supplies the target -- producing a `createdBy` edge from marko to lop.
+<2> The full path runs from vadas to marko to josh; `from('a')` and `to('b')` bound it to the sub-path
+between the vadas- and marko-vertices.
 
 [NOTE, caption=Javascript]
 ====
