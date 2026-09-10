@@ -3945,6 +3945,24 @@ that makes traversals a bit more concise.
 ['lop', 'lop', 'lop', 'vadas', 'josh', 'josh', 'josh', 'marko', 'marko', 'marko', 'peter', 'ripple']
 ----
 
+Although this sugar borrows Python syntax, it maps onto Gremlin steps and follows Gremlin semantics rather than
+Python semantics, so a few behaviors differ from what the syntax might suggest. The slice and index forms are
+translated into the <<range-step,range()>>-step. That step treats its high bound as exclusive, so `[1:3]` returns the
+elements at positions one and two. Because the translation targets `range()`, the step component of a Python slice is
+ignored, and `[0:4:2]` behaves the same as `[0:4]` rather than selecting every second element. Negative indices and
+bounds are also not interpreted as offsets from the end of the result the way they are in Python. A negative index
+such as `[-1]` yields no elements, and a slice with a negative bound such as `[-2:]` does not count back from the end.
+
+The property-access form is shorthand for the <<values-step,values()>>-step and works only for property keys that are
+valid Python identifiers. A key that contains a space or any other character that is not permitted in an identifier
+cannot be reached this way, in which case `values('the key')` should be used instead. Accessing a key that does not
+exist, or one that is not identifier-safe, returns no elements rather than raising an error.
+
+The order of the results reflects the graph's natural traversal order and is not sorted or otherwise guaranteed to be
+deterministic. When a particular ordering matters, an <<order-step,order()>>-step should be applied explicitly. This is
+especially relevant before the slice and index forms, since their selection depends on the position of elements in the
+result.
+
 [[gremlin-python-differences]]
 === Differences
 
