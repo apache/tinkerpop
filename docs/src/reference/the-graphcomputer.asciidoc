@@ -523,7 +523,32 @@ any graph `InputFormat` to any graph `OutputFormat`. TinkerPop provides the foll
 ** `GryoInputFormat`
 ** `ScriptInputFormat`).
 
-An <<clonevertexprogramusingspark,example>> is provided in the SparkGraphComputer section.
+The `CloneVertexProgram` itself resides in `gremlin-core`
+(`org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgram`), while the `InputFormat` and
+`OutputFormat` implementations listed above are provided by `hadoop-gremlin` under the
+`org.apache.tinkerpop.gremlin.hadoop.structure.io` package. A clone is configured on a `HadoopGraph` by
+declaring the reader and writer formats together with their input and output locations, after which the
+program is submitted through a `GraphComputer`. The following illustrates a copy of a graph read with
+`GryoInputFormat` and written as GraphSON with `GraphSONOutputFormat`:
+
+[source,groovy]
+----
+graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')                     <1>
+graph.configuration().setProperty('gremlin.hadoop.graphReader',
+    'org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat')        <2>
+graph.configuration().setProperty('gremlin.hadoop.graphWriter',
+    'org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONOutputFormat')
+graph.compute(SparkGraphComputer).
+    program(CloneVertexProgram.build().create()).submit().get()                     <3>
+----
+
+<1> Open a `HadoopGraph` from a configuration that defines the `gremlin.hadoop.inputLocation` and
+`gremlin.hadoop.outputLocation` properties.
+<2> The `gremlin.hadoop.graphReader` and `gremlin.hadoop.graphWriter` properties name the `InputFormat` and
+`OutputFormat` classes to copy between.
+<3> Any `GraphComputer` implementation may execute the program. `SparkGraphComputer` is used here.
+
+An <<clonevertexprogramusingspark,example>> that runs end to end is provided in the SparkGraphComputer section.
 
 Graph Providers should consider writing their own `OutputFormat` and `InputFormat` which would allow bulk loading and
 export capabilities through this `VertexProgram`. This topic is discussed further in the
