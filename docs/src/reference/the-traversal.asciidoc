@@ -4171,7 +4171,51 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[option-step]]
 === Option Step
 
-An option to a <<general-steps,`branch()`>> or <<choose-step,`choose()`>>.
+The `option()`-step is a step modulator that registers one of the branches available to a parent step such as
+<<branch-step,`branch()`>>, <<choose-step,`choose()`>>, <<mergevertex-step,`mergeV()`>> or
+<<mergeedge-step,`mergeE()`>>. It cannot be used on its own. Its meaning is defined by the step it modulates. This
+section describes its use with `branch()` and `choose()`. For the `mergeV()`/`mergeE()` form that pairs `Merge`
+tokens with a `Map`, see those steps.
+
+There are two overloads when modulating `branch()` and `choose()`:
+
+* `option(token, traversal)` registers a *keyed* branch. The `token` is matched against the value produced by the
+parent step (for example the key emitted by `choose(values('age'))`), and can be a literal value, a `Map`, a
+predicate (a `P` such as `P.gt(30)`), or one of the special `Pick` tokens described below. When the token matches,
+the associated `traversal` is executed.
+* `option(traversal)` registers a *default* branch with no token. It is taken by every traverser unconditionally
+(internally keyed to `Pick.any`), in addition to any keyed branch that also matches.
+
+[[option-pick-tokens]]
+The `org.apache.tinkerpop.gremlin.process.traversal.Pick` enum provides three special tokens for `option()`:
+
+* `Pick.none` - the branch to take when no other keyed `option()` matches (the fallback branch).
+* `Pick.unproductive` - the branch to take when the parent step's choice traversal produces no result for the
+incoming traverser.
+* `Pick.any` - the token used implicitly by the single-argument `option(traversal)` overload. Its branch is taken
+by every traverser.
+
+NOTE: When used in the Gremlin Console, `Pick.none`, `Pick.unproductive` and `Pick.any` may be referenced by their
+unqualified names (`none`, `unproductive`, `any`) because the `Pick` enum values are statically imported.
+
+The following example uses `choose()` to key branches by a person's `age`, with a `Pick.none` fallback for
+traversers whose age matches none of the registered options:
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person').
+      choose(values('age')).
+        option(29, constant('twenty-nine')).
+        option(32, constant('thirty-two')).
+        option(Pick.none, values('name')) <1>
+----
+
+<1> Persons aged 29 or 32 route to their respective `constant()` branches. Every other person (vadas at 27 and
+peter at 35) matches no keyed `option()` and therefore falls through to the `Pick.none` branch, which returns the
+vertex name.
+
+The `option()`-step is used to register branches on the <<branch-step,`branch()`>>, <<choose-step,`choose()`>>,
+<<mergevertex-step,`mergeV()`>>, and <<mergeedge-step,`mergeE()`>> steps.
 
 *Additional References*
 
