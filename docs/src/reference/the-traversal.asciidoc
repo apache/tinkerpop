@@ -2132,12 +2132,43 @@ setting, so a graph configured for `ZERO_OR_MORE` labels will still return a sin
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#elementMap(java.lang.String...)++[`elementMap(String...)`]
 
-[llms-summary="The emit-step is not an actual step, but is instead a step modulator for repeat() (find more documentation on the emit() there)."]
+[llms-summary="The emit()-step is a step modulator for repeat() that controls which traversers within the loop are copied out to the following step, with its position relative to repeat() determining whether the starting traverser is emitted."]
 [[emit-step]]
 === Emit Step
 
-The `emit`-step is not an actual step, but is instead a step modulator for `<<repeat-step,repeat()>>` (find more
-documentation on the `emit()` there).
+The `emit`-step is not an actual step, but is instead a step modulator for `<<repeat-step,repeat()>>` that
+determines which traversers within the loop are emitted -- that is, copied out of the loop and passed on to the
+step that follows `repeat()`. Without `emit()`, only the traversers that finish looping are passed on; with
+`emit()`, matching traversers are emitted on each pass through the loop while also continuing to loop.
+
+A bare `emit()` emits every traverser it evaluates (its predicate defaults to `true`), whereas `emit(Predicate)`
+and `emit(Traversal)` emit only those traversers that satisfy the supplied condition.
+
+The position of `emit()` relative to `repeat()` determines when a traverser is evaluated for emission:
+
+* `emit()` placed *before* `repeat()` is evaluated *before* the loop body executes, so the starting traverser
+is included in the emission (pre-iteration emission).
+* `emit()` placed *after* `repeat()` is evaluated *after* the loop body executes, so the starting traverser is
+excluded from the emission (post-iteration emission).
+
+[gremlin-groovy,modern]
+----
+g.V(1).repeat(out()).emit().values('name') <1>
+g.V(1).emit().repeat(out()).values('name') <2>
+----
+
+<1> The `emit()` comes *after* `repeat()`, so emission happens after each pass of the loop and the starting
+vertex ("marko") is not emitted.
+<2> The `emit()` comes *before* `repeat()`, so the starting vertex ("marko") is emitted prior to the loop body
+executing and therefore appears in the results.
+
+Supplying a predicate or traversal to `emit()` restricts emission to the traversers that match. The following
+example emits only those vertices reached within the loop whose "name" is "lop":
+
+[gremlin-groovy,modern]
+----
+g.V(1).repeat(out()).emit(has('name','lop')).values('name')
+----
 
 *Additional References*
 
