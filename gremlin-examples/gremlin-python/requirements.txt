@@ -15,4 +15,4 @@
 # specific language governing permissions and limitations
 # under the License.
 
-gremlinpython==3.7.4
+gremlinpython==3.7.7

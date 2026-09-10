@@ -21,28 +21,28 @@ limitations under the License.
 
     <groupId>org.apache.tinkerpop</groupId>
     <artifactId>run-examples</artifactId>
-    <version>3.7.4</version>
+    <version>3.7.7</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <gremlin.version>3.7.4</gremlin.version>
+        <gremlin.version>3.7.7</gremlin.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-core</artifactId>
-            <version>3.7.4</version>
+            <version>3.7.7</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-driver</artifactId>
-            <version>3.7.4</version>
+            <version>3.7.7</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>tinkergraph-gremlin</artifactId>
-            <version>3.7.4</version>
+            <version>3.7.7</version>
         </dependency>
     </dependencies>
 
