@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.8.2</version>
+        <version>3.8.3-SNAPSHOT</version>
     </parent>
     <artifactId>gremlint</artifactId>
     <name>Apache TinkerPop :: Gremlint</name>
@@ -121,6 +121,22 @@ limitations under the License.
                             Update TinkerPop version in package.json and package-lock.json
                             -->
                             <arguments>version ${versionForJs} --no-git-tag-version --allow-same-version --ignore-scripts</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!--
+                        Run the linter (tslint) as part of the standard build. Without this, lint only ran via
+                        npm's "prepublishOnly" hook at "npm publish" time, so lint violations were not caught
+                        until release/publication rather than during a normal mvn test/verify cycle.
+                        -->
+                        <id>npm lint</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipTests}</skip>
+                            <arguments>run lint</arguments>
                         </configuration>
                     </execution>
                     <execution>
