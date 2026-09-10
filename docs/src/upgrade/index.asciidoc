@@ -39,6 +39,8 @@ image::gremlin-67.png[width=185]
 
 *Grix Greven*
 
+include::release-3.8.3.asciidoc[]
+
 include::release-3.8.2.asciidoc[]
 
 include::release-3.8.1.asciidoc[]
