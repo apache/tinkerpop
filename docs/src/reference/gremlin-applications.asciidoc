@@ -354,7 +354,7 @@ $ bin/gremlin.sh -i init.groovy
          \,,,/
          (o o)
 -----oOOo-(4)-oOOo-----
-plugin activated: tinkerpop.server
+plugin activated: tinkerpop.remote
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
 gremlin> g.V()
