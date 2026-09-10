@@ -82,9 +82,9 @@ $ bin/gremlin.sh
          \,,,/
          (o o)
 -----oOOo-(4)-oOOo-----
-plugin loaded: tinkerpop.server
-plugin loaded: tinkerpop.utilities
-plugin loaded: tinkerpop.tinkergraph
+plugin activated: tinkerpop.remote
+plugin activated: tinkerpop.utilities
+plugin activated: tinkerpop.tinkergraph
 gremlin>
 ----
 
@@ -226,7 +226,7 @@ The following Gremlin Console session demonstrates the basics of these features:
 [source,groovy]
 ----
 gremlin> :plugin list  <1>
-==>tinkerpop.server[active]
+==>tinkerpop.remote[active]
 ==>tinkerpop.utilities[active]
 ==>tinkerpop.sugar
 ==>tinkerpop.tinkergraph[active]
@@ -235,7 +235,7 @@ gremlin> :plugin use tinkerpop.sugar  <2>
 gremlin> :install org.apache.tinkerpop hadoop-gremlin x.y.z  <3>
 ==>loaded: [org.apache.tinkerpop, hadoop-gremlin, x.y.z]
 gremlin> :plugin list <4>
-==>tinkerpop.server[active]
+==>tinkerpop.remote[active]
 ==>tinkerpop.utilities[active]
 ==>tinkerpop.sugar[active]
 ==>tinkerpop.tinkergraph[active]
@@ -243,7 +243,7 @@ gremlin> :plugin list <4>
 gremlin> :plugin use tinkerpop.hadoop <5>
 ==>tinkerpop.hadoop activated
 gremlin> :plugin list <6>
-==>tinkerpop.server[active]
+==>tinkerpop.remote[active]
 ==>tinkerpop.sugar[active]
 ==>tinkerpop.utilities[active]
 ==>tinkerpop.hadoop[active]
@@ -354,7 +354,7 @@ $ bin/gremlin.sh -i init.groovy
          \,,,/
          (o o)
 -----oOOo-(4)-oOOo-----
-plugin activated: tinkerpop.server
+plugin activated: tinkerpop.remote
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
 gremlin> g.V()
@@ -386,7 +386,7 @@ INFO: Created user preferences directory.
          \,,,/
          (o o)
 -----oOOo-(4)-oOOo-----
-plugin activated: tinkerpop.server
+plugin activated: tinkerpop.remote
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
 gremlin>
