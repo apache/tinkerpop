@@ -55,7 +55,10 @@ of the form `Assisted-by: <agent>:<model>` to the commit message, where `<agent>
 only when something other than the primary agent contributed. For example, 
 `Assisted-by: Claude Code:claude-opus-4-7`, `Assisted-by: Cursor:gpt-5`, or 
 `Assisted-by: Claude Code:claude-opus-4-7 [tinkerpop-mcp]`. This aligns with the ASF's recommendation on AI 
-provenance tracking.
+provenance tracking. `Assisted-by:` is the *only* AI-provenance trailer this project uses — do not add any
+other trailer (for example `Claude-Session`, `Co-Authored-By`, `Generated-by`, or any self-improvised
+variant). If you think a change needs provenance beyond `Assisted-by:`, stop and ask rather than inventing
+a trailer.
 * *The contributor remains responsible for what they submit.* Review generated output for licensing, correctness, and 
 style before committing.
 
