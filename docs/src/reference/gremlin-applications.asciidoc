@@ -1995,6 +1995,11 @@ to the TinkerPop dev list which outlines the full history of this issue and rela
 [[gremlin-server-cache]]
 ==== Cache Management
 
+NOTE: The cache controls described in this section apply to the `gremlin-groovy` `ScriptEngine`, which is not enabled
+by default. If the server configuration does not already list `gremlin-groovy` under `scriptEngines`, then these
+settings have no effect and Groovy script requests are rejected with a `400 Bad Request` response. See the
+<<server-scriptengines-behavior,scriptEngines Behavior>> Section for how to enable it.
+
 If Gremlin Server processes a large number of unique scripts, the global function cache will grow beyond the memory
 available to Gremlin Server and an `OutOfMemoryError` will loom.  Script parameterization goes a long way to solving
 this problem and running out of memory should not be an issue for those cases.  If it is a problem or if there is no
