@@ -2946,6 +2946,9 @@ g.V(1).properties().key()
 g.V(1).properties().properties().key()
 ----
 
+NOTE: Because `key()` operates on a `Property`, it must be preceded by a `Property`-emitting step such as
+<<properties-step,`properties()`>>. Applying `key()` directly to a `Vertex` or `Edge` raises an error.
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#key()++[`key()`]
