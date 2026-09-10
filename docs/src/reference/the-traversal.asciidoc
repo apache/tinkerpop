@@ -1249,6 +1249,14 @@ g.call().with('verbose').with('service', 'xyz-service') <3>
 <2> Produce a Map of detailed service information by name
 <3> Produce the detailed service information for the 'xyz-service'
 
+NOTE: The result of `call()` is entirely dependent on the graph provider in use, since each provider decides which
+services (if any) it exposes. The default TinkerGraph used by the Gremlin Console registers no callable services out
+of the box, so the directory-service examples above return an empty result rather than an error. TinkerGraph does ship
+two example services - `tinker.search` and `tinker.degree.centrality` - which can be registered with the
+`gremlin.tinkergraph.service` configuration option to see `call()` produce real output; consult your graph provider's
+documentation for the services it exposes. The `xyz-service` used in the examples below is a fictional placeholder and
+is not callable on any graph.
+
 The first argument to `call()` is always the name of the service call. Additionally, service calls can accept both
 static and dynamically produced parameters. Static parameters can be passed as a `Map` to the `call()` as the second
 argument. Individual static parameters can also be added using the `.with()` modulator. Dynamic parameters can be
