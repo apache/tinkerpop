@@ -478,11 +478,21 @@ of this documentation, so be sure to consult their documentation for more inform
 [[basic-gremlin]]
 == Basic Gremlin
 
-image:language-variants.png[width=300,float=right] The `GraphTraversalSource` is basically the connection to a graph
-instance. That graph instance might be <<connecting-embedded,embedded>>, hosted in
-<<connecting-gremlin-server,Gremlin Server>> or hosted in a <<connecting-rgp,RGP>>, but the `GraphTraversalSource` is
-agnostic to that. Assuming "g" is the `GraphTraversalSource`, getting data into the graph regardless of programming
-language or mode of operation is just some basic Gremlin:
+image:language-variants.png[width=300,float=right] The `GraphTraversalSource`, referred to as "g" throughout this
+documentation, is basically the connection to a graph instance. That graph instance might be
+<<connecting-embedded,embedded>>, hosted in <<connecting-gremlin-server,Gremlin Server>> or hosted in a
+<<connecting-rgp,RGP>>, but the `GraphTraversalSource` is agnostic to that. The examples that follow are
+self-contained and use an <<connecting-embedded,embedded>> `TinkerGraph`, for which a `GraphTraversalSource` can be
+created directly in the Gremlin Console:
+
+[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+g = traversal().withEmbedded(graph)
+----
+
+With "g" established, getting data into the graph regardless of programming language or mode of operation is just some
+basic Gremlin:
 
 [gremlin-groovy]
 ----
@@ -528,7 +538,8 @@ IMPORTANT: Writing Gremlin is just one way to load data into the graph. Some gra
 could be more efficient and make the task easier and faster. It is worth looking into those tools especially if there
 is a large one-time load to do.
 
-Retrieving this data is also a just writing a Gremlin statement:
+Retrieving this data is also just writing a Gremlin statement. The queries below run against the same graph that the
+additions above populated, so the "marko" and "stephen" vertices and the "knows" edge between them are already present:
 
 [gremlin-groovy,existing]
 ----
