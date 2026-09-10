@@ -1917,6 +1917,15 @@ g.V().choose(T.label).
         option(none, discard())
 ----
 
+In the example above, `none` refers to `Pick.none`, a built-in constant that matches traversers satisfying no other
+`option()` and therefore acts as the default branch. The Gremlin Console resolves the bare `none` token to this
+constant automatically, while other environments use the qualified `Pick.none` form. The `"bleep"` label is
+intentionally fictional and matches no vertex in the "modern" graph, whose vertices carry only the "person" and
+"software" labels. The "software" vertices therefore match neither `"person"` nor `"bleep"`, fall through to
+`option(none, discard())`, and are silently removed, while "marko", the only vertex with outgoing "knows" edges, emits
+"vadas" and "josh". The <<choose-step>> and <<branch-step>> sections describe the full semantics of `option()` and the
+`Pick` tokens.
+
 It is also useful for traversals that are executed remotely where returning results is not useful and the traversal is
 only meant to generate side-effects. Choosing not to return results saves in serialization and network costs as the
 objects are filtered on the remote end and not returned to the client side. Typically, this step does not need to be
