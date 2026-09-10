@@ -1099,13 +1099,44 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[branch-step]]
 === Branch Step
 
-The `branch()` step splits the traverser to all the child traversals provided to it. Please see the
-<<general-steps, General Steps>> section for more information, but also consider that `branch()` is the basis for more
-robust steps like <<choose-step, choose()>> and <<union-step,union()>>.
+The `branch()`-step (*branch*) splits the traverser to the child traversals provided to it. It takes a discriminator
+traversal (or function) whose result is used as a token to decide which branches receive the traverser. Each branch is
+declared with an `option()` modulator that associates a key with a child traversal, and the special `none` token
+declares a default branch for traversers whose discriminator value does not match any of the declared option keys.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person').
+      branch(values('name')).
+        option('marko', values('age')).
+        option(none, values('name')) <1>
+----
+
+<1> The discriminator emits each person's name. The "marko" vertex is routed to the `option('marko', ...)` branch and
+emits his age, while every other vertex falls through to the `none` branch and emits its name.
+
+Unlike <<choose-step,`choose()`>>, which routes a traverser to a single branch, `branch()` sends the traverser to
+*every* `option()` whose key matches the discriminator value. When the same key is declared more than once, the
+traverser is multiplexed to all matching branches:
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person').
+      branch(values('name')).
+        option('marko', values('age')).
+        option('marko', values('name')).
+        option(none, constant('other')) <1>
+----
+
+<1> The "marko" vertex matches both `option('marko', ...)` branches, so it emits both his age and his name, while every
+other person falls through to the `none` branch.
+
+`branch()` is the basis for more robust steps like <<choose-step, choose()>> and <<union-step,union()>>. Please see the
+<<general-steps, General Steps>> section for more information.
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#branch(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`map(Traversal)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#branch(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`branch(Traversal)`]
 
 [llms-summary="The by()-step is not an actual step, but instead is a \"step-modulator\" similar to as() and option()."]
 [[by-step]]
@@ -5295,12 +5326,27 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[sideeffect-step]]
 === SideEffect Step
 
-The `sideEffect()` step performs some operation on the traverser and passes it to the next step in the process. Please
-see the <<general-steps, General Steps>> section for more information.
+The `sideEffect()`-step (*sideEffect*) performs some operation on the traverser and passes it, unchanged, to the next
+step in the process. The child traversal (or function) is executed for its effect only. Its result is discarded and
+the *original* traverser flows downstream.
+
+[gremlin-groovy,modern]
+----
+g.V(1).sideEffect(values('name')) <1>
+g.V(1).map(values('name')) <2>
+----
+
+<1> Although the child traversal produces the "name", `sideEffect()` emits the original vertex.
+<2> By contrast, <<map-step,`map()`>> replaces the traverser with the child traversal's result and emits the "name".
+
+This pass-through contract is what distinguishes `sideEffect()` from <<map-step,`map()`>>: `map()` transforms the
+traverser into whatever its child traversal produces, whereas `sideEffect()` leaves the traverser intact and is used
+purely for the work performed along the way (for example, populating a side-effect via <<aggregate-step,`aggregate()`>>).
+Please see the <<general-steps, General Steps>> section for more information.
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#sideEffect(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`map(Traversal)`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#sideEffect(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`sideEffect(Traversal)`]
 
 [llms-summary="When it is important that a traverser not repeat its path through the graph, simplePath()-step should be used (filter)."]
 [[simplepath-step]]
