@@ -6393,6 +6393,35 @@ The term `with` is a reserved word in Javascript, and therefore must be referred
 The term `with` is a reserved word in Python, and therefore must be referred to in Gremlin with `with_()`.
 ====
 
+The `with()`-step is called with either a single configuration key or a key/value pair, following the
+conventions `with(key)` and `with(key, value)`. The keys understood by a step are exposed as constants on the
+`WithOptions` class. For example, `WithOptions.tokens` controls which graph tokens (such as `id` and `label`)
+are emitted by `valueMap()`, while `WithOptions.indexer` combined with `WithOptions.list` or `WithOptions.map`
+selects the output format of `index()`.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person').valueMap() <1>
+g.V().hasLabel('person').valueMap().with(WithOptions.tokens) <2>
+g.V().hasLabel('person').valueMap().with(WithOptions.tokens, WithOptions.labels) <3>
+----
+
+<1> Without `with()`, the `valueMap()` step returns only the properties of each vertex.
+<2> Passing `WithOptions.tokens` as a single key includes all tokens (`id` and `label`) alongside the properties.
+<3> Passing a key/value pair narrows the included tokens. Here only the `label` token is added.
+
+NOTE: While `with()` most commonly modulates a preceding step, it may also appear as a start step. In that position it
+supplies configuration to the traversal as a whole rather than to any single step.
+
+NOTE: Graph providers may define their own `with()` options in addition to those exposed on `WithOptions`. Consult the
+documentation of the specific graph system for any provider-specific keys and their behavior.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/step/util/WithOptions.html++[`WithOptions`]
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/step/Configuring.html++[`Configuring`]
+
 [llms-summary="The write()-step is not really a \"step\" but a step modulator in that it modifies the functionality of the io()-step."]
 [[write-step]]
 === Write Step
