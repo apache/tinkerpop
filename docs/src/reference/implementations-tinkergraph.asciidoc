@@ -478,6 +478,14 @@ Element and edge ids are always preserved across a reopen. Auto-generated vertex
 so a vertex property may receive a different id after a reopen. Setting `gremlin.tinkergraph.storage.preserveVertexPropertyIds`
 to `true` persists those ids as well, at the cost of a larger store.
 
+Rebuilding the graph on reopen is subject to `gremlin.tinkergraph.defaultVertexPropertyCardinality`, exactly as
+importing data through the `io()` step is (see <<tinkergraph-configuration>>). TinkerGraph has a single
+graph-wide cardinality rather than a per-key or per-property one. A graph that holds `list` or `set` multi-properties
+must therefore set this default to `list` or `set`. Left at the default `single`, only the last value of each property
+survives the reopen. A single stored value cannot be assumed to be a `list` or `set` of one, and the cardinality a
+property was written with is not recorded, so the graph-wide default is the only cardinality applied on reopen. This is
+the same rule that already governs interchange formats.
+
 A storage location may be opened by only one graph at a time. `TinkerStorageGraph` takes an exclusive lock on the
 storage directory when it opens, so a second attempt to open the same location, whether from the same JVM or another
 process, fails rather than corrupting the data. The lock is released when the graph is closed. A store also records
