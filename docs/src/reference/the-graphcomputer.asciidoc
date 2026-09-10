@@ -374,7 +374,10 @@ g = traversal().with(result.graph())
 g.V().elementMap()
 ----
 
-Note that `GraphTraversal` provides a <<pagerank-step,`pageRank()`>>-step.
+Note that `GraphTraversal` provides a <<pagerank-step,`pageRank()`>>-step. The `PageRank` class supplies the
+configuration tokens (`PageRank.propertyName`, `PageRank.times`) used to parameterize the `pageRank()`-step, and
+these correspond respectively to the property name and `maxIterations` settings of the `PageRankVertexProgram`
+described above.
 
 [gremlin-groovy,modern]
 ----
@@ -387,6 +390,11 @@ g.V().pageRank().
     by('pageRank').
   elementMap()
 ----
+
+`PageRank.times` sets the number of PageRank iterations to run, equivalent to the `maxIterations` setting of
+`PageRankVertexProgram` (which defaults to `20`). The `with(PageRank.times, 5)` above therefore runs only five
+iterations, yielding an approximate result that has not necessarily converged, rather than the twenty iterations
+used by default.
 
 [[peerpressurevertexprogram]]
 === PeerPressureVertexProgram
