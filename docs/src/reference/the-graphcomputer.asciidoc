@@ -418,7 +418,36 @@ g.V().peerPressure().
 === ConnectedComponentVertexProgram
 
 The `ConnectedComponentVertexProgram` identifies link:https://en.wikipedia.org/wiki/Connected_component_(graph_theory)[Connected Component]
-instances in a graph. See <<connectedcomponent-step,`connectedComponent()`>>-step for more information.
+instances in a graph. Each vertex is assigned a component identifier, which is the lexicographically smallest string form of a
+vertex id among all vertices that are reachable from it. Vertices that share the same identifier belong to the same connected
+component. By default the identifier is stored on each vertex under the `gremlin.connectedComponentVertexProgram.component` property,
+which is also exposed as the `ConnectedComponentVertexProgram.COMPONENT` constant.
+
+[gremlin-groovy,modern]
+----
+ccvp = ConnectedComponentVertexProgram.build().create() <1>
+result = graph.compute().program(ccvp).submit().get() <2>
+g = traversal().with(result.graph()) <3>
+g.V().valueMap('name', ConnectedComponentVertexProgram.COMPONENT) <4>
+g.V().groupCount().by(ConnectedComponentVertexProgram.COMPONENT) <5>
+----
+
+<1> Create a `ConnectedComponentVertexProgram` with its default configuration.
+<2> Execute the `ConnectedComponentVertexProgram`.
+<3> Create a traversal source over the resulting graph, which now carries the component assignments.
+<4> Read the component identifier assigned to each vertex. Every vertex in the "modern" graph is reachable from every other, so they all share a single component.
+<5> Count the vertices in each component, confirming that the "modern" graph forms one connected component.
+
+The `ConnectedComponentVertexProgram.Builder` provides the following configuration methods:
+
+[width="100%",cols="3,15,5",options="header"]
+|=========================================================
+| Method | Description | Default
+| `property(String)` | Sets the vertex property that stores the component identifier. | `gremlin.connectedComponentVertexProgram.component`
+| `edges(Traversal)` | Sets a traversal that emits the edges to traverse when determining connectivity. | `__.bothE()`
+|=========================================================
+
+Note that `GraphTraversal` provides a <<connectedcomponent-step,`connectedComponent()`>>-step.
 
 [[shortestpathvertexprogram]]
 === ShortestPathVertexProgram
