@@ -151,11 +151,13 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         // the new snapshot in place with the old log not yet truncated, and that log's refs use the current
         // numbering. Register any not-yet-seen live strings (this only extends the dictionary, never renumbers), then
         // emit the whole dictionary as a self-contained header frame so a snapshot-only replay resolves every ref.
+        // committed*() rather than vertices()/edges(): the snapshot must reflect only committed state, never the
+        // calling thread's uncommitted transaction-local mutations, which the transaction-aware iterators would expose.
         final List<String> ignored = new ArrayList<>();
-        Iterator<Vertex> vertices = graph.vertices();
+        Iterator<Vertex> vertices = graph.committedVertices();
         while (vertices.hasNext())
             registerVertexStrings(vertices.next(), ignored);
-        Iterator<Edge> edges = graph.edges();
+        Iterator<Edge> edges = graph.committedEdges();
         while (edges.hasNext())
             registerEdgeStrings(edges.next(), ignored);
 
@@ -169,10 +171,10 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         writeFrame(out, dictBuf.toWrittenArray());
 
         // one element per frame; all keys are already in the dictionary header, so no per-frame appends
-        vertices = graph.vertices();
+        vertices = graph.committedVertices();
         while (vertices.hasNext())
             writeElementFrame(out, OP_PUT_VERTEX, vertices.next());
-        edges = graph.edges();
+        edges = graph.committedEdges();
         while (edges.hasNext())
             writeElementFrame(out, OP_PUT_EDGE, edges.next());
     }

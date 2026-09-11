@@ -610,4 +610,37 @@ public abstract class AbstractTinkerStorageConformanceTest {
         }
         return count;
     }
+
+    @Test
+    public void shouldNotPersistUncommittedDataOnClose() {
+        // close() compacts, and compaction must snapshot only committed state. Uncommitted mutations left on the
+        // closing thread must not reach disk, matching how a crash drops them.
+        TinkerStorageGraph graph = open();
+        graph.addVertex(T.id, 1, "name", "marko");
+        graph.addVertex(T.id, 2, "name", "vadas");
+        // deliberately no commit
+        graph.close();
+
+        graph = open();
+        assertEquals("uncommitted vertices must not survive a graceful close", 0, countOf(graph.vertices()));
+        graph.close();
+    }
+
+    @Test
+    public void shouldPersistOnlyCommittedPortionOnClose() {
+        // a committed vertex plus later uncommitted work: only the committed portion is durable across a graceful close.
+        TinkerStorageGraph graph = open();
+        graph.addVertex(T.id, 1, "name", "marko");
+        graph.tx().commit();
+        graph.addVertex(T.id, 2, "name", "vadas"); // uncommitted
+        graph.vertices(1).next().property("age", 29); // uncommitted modification to a committed vertex
+        graph.close();
+
+        graph = open();
+        assertEquals("only the committed vertex is durable", 1, countOf(graph.vertices()));
+        final Vertex marko = graph.vertices(1).next();
+        assertEquals("marko", marko.value("name"));
+        assertFalse("the uncommitted property must not survive", marko.properties("age").hasNext());
+        graph.close();
+    }
 }
