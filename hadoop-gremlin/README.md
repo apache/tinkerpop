@@ -20,13 +20,11 @@
 Prerequisites
 =============
 
-Follow the [installation procedure](https://dev.to/awwsmm/installing-and-running-hadoop-and-spark-on-windows-33kc) to set up:
+Install the following prerequisites:
 
 * Hadoop 2.7.2 installed [from Apache Hadoop download archive](http://archive.apache.org/dist/hadoop/common/hadoop-2.7.2/hadoop-2.7.2.tar.gz)
 * Spark 2.4.3 installed [from Apache Spark project](https://spark.apache.org/downloads.html)
-* For Windows platforms needed is also specific integration:
-    * [download from](https://github.com/steveloughran/winutils)
-    * [more details](https://cwiki.apache.org/confluence/display/HADOOP2/WindowsProblems)
+
 
 Set up HADOOP_GREMLIN_LIBS OS environment variable as of [TinkerPop Documentation](http://tinkerpop.apache.org/docs/current/reference/#hadoop-gremlin).
 
