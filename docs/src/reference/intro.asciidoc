@@ -374,6 +374,11 @@ connect, essentially providing a remote GTM. Gremlin Server supports multiple me
 * link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_http_api[HTTP] for string-based scripts (both
 gremlin-lang and gremlin-groovy)
 
+NOTE: The examples below connect to a Gremlin Server listening on `localhost` at port 8182, so a server must be
+running at that address before a connection can succeed. The <<starting-gremlin-server,Starting Gremlin Server>>
+section describes how to launch one with `bin/gremlin-server.sh conf/gremlin-server-modern.yaml`, which hosts the
+"modern" toy graph on that port.
+
 Connecting looks somewhat similar to the <<connecting-embedded, embedded>> approach in that there is a need to create a
 `GraphTraversalSource`. In the embedded approach, the means for that object's creation is derived from a `Graph` object
 which spawns it. In this case, however, the `Graph` instance exists only on the server which means that there is no
@@ -387,6 +392,7 @@ connect to:
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 
 // gremlin-core module
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
 GraphTraversalSource g = traversal().with(
@@ -405,9 +411,10 @@ def g = traversal().with(
 ----
 [source,python]
 ----
-from gremlin_python.process.anonymous_traversal_source import traversal
+from gremlin_python.process.anonymous_traversal import traversal
+from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 
-g = traversal().with(
+g = traversal().with_(
           DriverRemoteConnection('http://localhost:8182/gremlin'))
 ----
 
