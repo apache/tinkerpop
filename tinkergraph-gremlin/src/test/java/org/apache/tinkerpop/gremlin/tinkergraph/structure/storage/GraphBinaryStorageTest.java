@@ -680,6 +680,44 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     }
 
     @Test
+    public void shouldNotGrowDictionaryAcrossReopenCycles() throws Exception {
+        // With committed data and its key vocabulary held constant, repeated reopen+compact cycles must not grow the
+        // store. The dictionary numbering is rebuilt on replay, so a write session after a reopen resumes it rather
+        // than re-appending every live key as a duplicate. Before that fix the snapshot grew by the vocabulary size
+        // on every cycle.
+        final Configuration conf = config();
+        final String location = conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        final File snapshot = new File(location, GraphBinaryStorage.SNAPSHOT_FILE);
+
+        // seed a single vertex whose keys (person/name/age) are the entire vocabulary, then fold to a snapshot
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1, T.label, "person", "name", "marko", "age", 29);
+        graph.tx().commit();
+        graph.compact();
+        graph.close();
+        final long seededSize = snapshot.length();
+
+        // reopen and re-compact repeatedly without changing the data; the snapshot must stay byte-for-byte the same size
+        for (int cycle = 0; cycle < 6; cycle++) {
+            graph = TinkerStorageGraph.open(conf);
+            graph.compact();
+            final long size = snapshot.length();
+            graph.close();
+            assertEquals("snapshot grew on reopen+compact cycle " + cycle + " with unchanged data (dictionary bloat)",
+                    seededSize, size);
+        }
+
+        // and the data is still intact
+        graph = TinkerStorageGraph.open(conf);
+        try {
+            assertEquals(1, countOf(graph.vertices()));
+            assertEquals("marko", graph.vertices(1).next().value("name"));
+        } finally {
+            graph.close();
+        }
+    }
+
+    @Test
     public void shouldStoreFewBytesPerElement() {
         // regression guard: the dictionary-encoded format must stay well under the ~168 bytes/element the old
         // whole-object format cost for a comparable graph (3 vertex props, 2 edge props, E=V).
