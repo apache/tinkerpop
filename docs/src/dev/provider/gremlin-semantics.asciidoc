@@ -1178,7 +1178,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-steps[reference]
 [[branch-step]]
 === branch()
 
-*Description:* Splits the traverser to all the specified traversals.
+*Description:* Routes the traverser to the child traversals declared by its `option()` modulators, selected by a discriminator value.
 
 *Syntax:* `branch(branchTraversal: Traversal)`
 
@@ -1190,18 +1190,26 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-steps[reference]
 
 *Arguments:*
 
-* `branchTraversal` - The traversal to branch the traverser to.
-* `function` - The function to branch the traverser to.
+* `branchTraversal` - The discriminator traversal whose result is used as the token that selects which options receive the traverser.
 
 *Modulation:*
 
-* `option()` - Specifies the branch options for the traverser.
+* `option(pickToken, traversalOption)` - Declares a branch traversal keyed by `pickToken`. The `pickToken` is matched
+against the discriminator value produced by `branchTraversal` and may be a literal value, a predicate `P`, or a `Pick`
+enum value. The `Pick.none` token declares a default branch taken when the discriminator matches no other option, and
+the `Pick.any` token declares a branch that always receives the traverser. `Pick.unproductive` declares the branch
+taken when the discriminator is unproductive.
 
 *Considerations:*
 
-The `branch()` step is a general step that splits the traverser to all the child traversals provided to it. It's the
-basis for more robust steps like `choose()` and `union()`. The branch step is typically used with the `option()` step
-to specify the branch options.
+The `branch()` step is a general step that routes each traverser to child traversals based on a discriminator value. It
+is the basis for more robust steps like `choose()` and `union()`. The discriminator value produced by `branchTraversal`
+is matched against the `pickToken` of each `option()`, and unlike `choose()`, the traverser is emitted through *every*
+`option()` whose token matches. A value matched by more than one option is multiplexed to all of them. A branch
+declared with `Pick.any` always receives the traverser in addition to any options matched by value. When the
+discriminator value matches no option, the traverser is routed to the `Pick.none` branch if one is declared, and is
+otherwise filtered from the stream. A `branch()` with no `option()` modulator declares no branches and therefore emits
+nothing.
 
 *Exceptions:*
 
