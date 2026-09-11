@@ -7262,8 +7262,8 @@ to merge those multiple graphs (i.e. join partitions).
 [[readonlystrategy]]
 === ReadOnlyStrategy
 
-`ReadOnlyStrategy` is largely self-explanatory.  A `Traversal` that has this strategy applied will throw an
-`IllegalStateException` if the `Traversal` has any mutating steps within it.
+`ReadOnlyStrategy` is largely self-explanatory.  A `Traversal` that has this strategy applied will throw a
+`VerificationException` (a subclass of `IllegalStateException`) if the `Traversal` has any mutating steps within it.
 
 [source,java,tab]
 ----
@@ -7283,12 +7283,12 @@ g.WithStrategies(new ReadOnlyStrategy()).addV("person").Iterate();
 ----
 [source,javascript]
 ----
-// results in Error
+// results in ResponseError
 g.withStrategies(new ReadOnlyStrategy()).addV("person").iterate();
 ----
 [source,python]
 ----
-// results in Error
+// results in GremlinServerError
 g.withStrategies(ReadOnlyStrategy).addV("person").iterate()
 ----
 
