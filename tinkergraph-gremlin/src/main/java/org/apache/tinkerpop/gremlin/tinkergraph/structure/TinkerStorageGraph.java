@@ -370,6 +370,20 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
 
     Map<Object, TinkerElementContainer<TinkerVertex>> getVertices () { return vertices; }
 
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Reads the committed value of each container ({@link TinkerElementContainer#getUnmodified()}), so a compaction
+     * snapshot reflects only committed state regardless of the calling thread's open transaction. A container whose
+     * committed value is {@code null} (added but not yet committed, or committed and then deleted) is skipped.
+     */
+    @Override
+    public Iterator<Vertex> committedVertices() {
+        return IteratorUtils.map(
+                IteratorUtils.filter(vertices.values().iterator(), c -> c.getUnmodified() != null),
+                c -> (Vertex) c.getUnmodified());
+    }
+
     @Override
     public int getEdgesCount() {
         return (int) edges.entrySet().stream().filter(v -> v.getValue().get() != null).count();
@@ -397,6 +411,19 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     Map<Object, TinkerElementContainer<TinkerEdge>> getEdges () { return edges; }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * The edge counterpart of {@link #committedVertices()}: reads only committed container state and skips containers
+     * whose committed value is {@code null}.
+     */
+    @Override
+    public Iterator<Edge> committedEdges() {
+        return IteratorUtils.map(
+                IteratorUtils.filter(edges.values().iterator(), c -> c.getUnmodified() != null),
+                c -> (Edge) c.getUnmodified());
+    }
 
     @Override
     public TinkerServiceRegistry getServiceRegistry() {
