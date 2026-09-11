@@ -2749,9 +2749,13 @@ must occur at traversal construction for static values (i.e. a `MAP`) and at run
 
 *Modulation:*
 
-* `option(Merge, Map)` - Sets the `onCreate` or `onMatch` arguments directly.
+* `option(Merge, MAP)` - Sets the `onCreate` or `onMatch` arguments directly.
 * `option(Merge, Traversal)` - Sets the `onCreate` or `onMatch` arguments dynamically where the `Traversal` must
 resolve to a `MAP`.
+
+The only `Merge` tokens accepted by `option()` are `onCreate` and `onMatch`. The `onCreate` argument is applied when
+`searchCreate` finds no match and a new `Vertex` is created, while the `onMatch` argument is applied when `searchCreate`
+matches an existing `Vertex`.
 
 *Exceptions:*
 
@@ -2761,7 +2765,12 @@ resolve to a `MAP`.
 
 *Considerations:*
 
-* `mergeV()` (i.e. the zero-arg overload) can only be used mid-traversal. It is not a start step.
+* The `Start Step` designation in the summary table applies to the `mergeV(searchCreate: MAP)` and
+`mergeV(searchCreate: Traversal)` overloads. The zero-arg `mergeV()` overload can only be used mid-traversal, as it
+draws its `searchCreate` argument from the incoming `Traverser`.
+* An empty `MAP` is the reproducible way to request the match-all and create-with-defaults behavior for `searchCreate`.
+Supplying `null` is treated as equivalent to an empty `MAP`, so the empty `MAP` form is preferred where the overloaded
+signatures make a bare `null` ambiguous.
 * As is common to Gremlin, it is expected that `Traversal` arguments may utilize `sideEffect()` steps.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeVertexStep.java[source],
