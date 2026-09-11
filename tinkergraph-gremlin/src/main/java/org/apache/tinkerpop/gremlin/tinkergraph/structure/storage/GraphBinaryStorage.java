@@ -297,6 +297,9 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
                     } else {
                         throw new IOException(String.format("Corrupt storage: dictionary append gap (got %d, expected <= %d)", id, idToKey.size()));
                     }
+                    // rebuild the write-side mapping too, first appearance wins, so a write session after this replay
+                    // resumes the existing numbering instead of re-appending every live key as a duplicate on each reopen
+                    keyToId.putIfAbsent(s, id);
                     break;
                 }
                 case OP_PUT_VERTEX: {
