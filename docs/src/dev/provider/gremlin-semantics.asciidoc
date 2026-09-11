@@ -2322,7 +2322,18 @@ None
 
 The `local()` step enforces object-local execution. As a branching step with local children, it implements strict lazy
 evaluation by passing a single traverser at a time to the local traversal (bulk of exactly one, if bulking is supported)
-and resetting the traversal to clean state between executions.
+and resetting the traversal to clean state between executions. Each incoming object is therefore processed independently,
+as illustrated by counting the outgoing edges of every vertex in isolation.
+
+[gremlin-groovy,modern]
+----
+g.V().local(outE().count())
+----
+
+The clean state that is reset between executions is the local computational state of the local traversal, such as its
+per-object barriers, ordering, and path history. It does not extend to global side effects. A side-effect step such as
+`aggregate()` or `store()` writes to a side-effect that is shared across the whole traversal, so its contents are not
+reset for each incoming object and instead accumulate across every traverser that passes through `local()`.
 
 *Exceptions:*
 
