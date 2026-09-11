@@ -19,6 +19,8 @@
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
+import pytest
+
 from gremlin_python.statics import long
 from gremlin_python.structure.graph import Edge
 from gremlin_python.structure.graph import Graph
@@ -26,6 +28,10 @@ from gremlin_python.structure.graph import Property
 from gremlin_python.structure.graph import Vertex
 from gremlin_python.structure.graph import VertexProperty
 from gremlin_python.structure.graph import Path
+from gremlin_python.structure.graph import Tree
+from gremlin_python.structure.graph import CompositePDT
+from gremlin_python.structure.graph import PrimitivePDT
+from gremlin_python.structure.graph import PDTRegistry
 
 
 class TestGraph(object):
@@ -248,3 +254,83 @@ class TestGraph(object):
         # supports the pattern: vertex[key] if key in vertex else None
         assert v["name"] if "name" in v else None == "marko"
         assert v["missing"] if "missing" in v else None is None
+
+
+class TestEdgeLabels(object):
+    def test_edge_labels_property_is_frozenset(self):
+        e = Edge(1, Vertex(2), "knows", Vertex(3), labels=["knows", "likes"])
+        assert e.labels == frozenset({"knows", "likes"})
+        assert isinstance(e.labels, frozenset)
+        # label (singular) is derived from the first of the provided labels
+        assert e.label in {"knows", "likes"}
+
+
+class TestCompositePDT(object):
+    def test_equal_composites_hash_equal(self):
+        a = CompositePDT("point", {"x": 1, "y": 2})
+        b = CompositePDT("point", {"x": 1, "y": 2})
+        assert a == b
+        assert hash(a) == hash(b)
+
+    def test_hash_with_unhashable_field_falls_back_to_name(self):
+        # frozenset(items) raises TypeError when a field value is unhashable
+        # (e.g. a list); __hash__ then falls back to hash(name) without raising.
+        pdt = CompositePDT("thing", {"vals": [1, 2, 3]})
+        assert hash(pdt) == hash("thing")
+
+    def test_repr_format(self):
+        pdt = CompositePDT("point", {"x": 1})
+        assert repr(pdt) == "pdt[point]{'x': 1}"
+
+
+class TestPDTRegistryRegisterPrimitive(object):
+    def test_register_with_target_class_populates_by_class_map(self):
+        class MyType(object):
+            pass
+
+        reg = PDTRegistry()
+        reg.register_primitive("myType", from_value=lambda s: MyType(),
+                                to_value=str, target_class=MyType)
+        adapter = reg.get_primitive_adapter_by_class(MyType)
+        assert adapter is not None
+        assert adapter["type_name"] == "myType"
+        assert adapter["to_value"] is str
+
+    def test_register_without_target_class_leaves_by_class_map_empty(self):
+        class MyType(object):
+            pass
+
+        reg = PDTRegistry()
+        reg.register_primitive("myType", from_value=lambda s: MyType())
+        assert reg.get_primitive_adapter_by_class(MyType) is None
+
+
+class TestPDTRegistryHydratePrimitive(object):
+    def test_non_primitive_input_returned_unchanged(self):
+        reg = PDTRegistry()
+        composite = CompositePDT("point", {"x": 1})
+        assert reg.hydrate_primitive(composite) is composite
+
+
+class TestTree(object):
+    def test_init_rejects_non_tree_child(self):
+        with pytest.raises(TypeError):
+            Tree([("k", "not-a-tree")])
+
+    def test_eq_against_non_tree(self):
+        t = Tree([("a", Tree())])
+        # __eq__ returns NotImplemented for non-Tree; Python resolves to False
+        assert (t == "not-a-tree") is False
+        assert (t != "not-a-tree") is True
+
+    def test_eq_same_size_different_root_key(self):
+        t1 = Tree([("a", Tree())])
+        t2 = Tree([("b", Tree())])
+        # equal number of root entries but differing keys -> not equal
+        assert len(t1.root_nodes()) == len(t2.root_nodes())
+        assert t1 != t2
+
+    def test_repr_format(self):
+        assert repr(Tree()) == "{}"
+        assert repr(Tree([("a", Tree())])) == "{a={}}"
+        assert repr(Tree([("a", Tree([("b", Tree())]))])) == "{a={b={}}}"

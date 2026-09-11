@@ -27,10 +27,13 @@ header, so Python's SignedHeaders is ``host;x-amz-date`` (the body hash is still
 signature via the canonical request's mandatory payload-hash line). This is the SDK's natural
 behavior and is intentionally left as-is.
 """
+from unittest.mock import patch
+
 from botocore.credentials import Credentials
 
 from gremlin_python.driver.auth import sigv4
 from gremlin_python.driver.http_request import HttpRequest
+from gremlin_python.driver.request import RequestMessage
 
 ACCESS_KEY = "foo"
 SECRET_KEY = "bar"
@@ -80,3 +83,32 @@ class TestSigV4SignedHeaders:
         assert _signed_headers(request) == "host;x-amz-date;x-amz-security-token"
         lower = {k.lower(): v for k, v in request.headers.items()}
         assert lower["x-amz-security-token"] == "MOCK_TOKEN"
+
+
+def _make_basic_request():
+    msg = RequestMessage(fields={"g": "g"}, gremlin="g.V()")
+    return HttpRequest(method="POST", url="http://localhost:8182/gremlin",
+                       headers={}, body=msg)
+
+
+class TestSigV4Auth:
+
+    def test_writes_signed_headers_onto_request(self):
+        # Asserts the interceptor copies the signer's headers onto the request;
+        # credential resolution is covered by TestSigV4CredentialsProvider.
+        def provider():
+            return object()
+
+        def fake_add_auth(aws_request):
+            aws_request.headers['Authorization'] = 'AWS4-HMAC-SHA256 Credential=AKID/...'
+            aws_request.headers['X-Amz-Date'] = '20260715T000000Z'
+
+        with patch('botocore.auth.SigV4Auth') as MockAuth:
+            MockAuth.return_value.add_auth.side_effect = fake_add_auth
+            interceptor = sigv4('us-east-1', 'neptune-db', credentials=provider)
+            request = _make_basic_request()
+            interceptor(request)
+
+        # Both signer-produced headers were written back onto the request.
+        assert request.headers['Authorization'].startswith('AWS4-HMAC-SHA256')
+        assert request.headers['X-Amz-Date'] == '20260715T000000Z'

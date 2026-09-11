@@ -1309,6 +1309,28 @@ class TestConnectionWriteRequest:
         written = conn._transport.write.call_args[0][0]
         assert written['headers']['x-custom'] == "value"
 
+    def test_transaction_id_promoted_to_header(self):
+        """A transactionId field is promoted to the X-Transaction-Id HTTP header."""
+        conn = self._make_connection()
+        conn._write_request(RequestMessage(fields={"transactionId": "abc-123"}, gremlin="g.V()"))
+        written = conn._transport.write.call_args[0][0]
+        assert written['headers']['X-Transaction-Id'] == "abc-123"
+
+    def test_transaction_id_remains_in_serialized_body(self):
+        """The transactionId is transmitted both as a header and in the serialized body."""
+        conn = self._make_connection()
+        conn._write_request(RequestMessage(fields={"transactionId": "abc-123"}, gremlin="g.V()"))
+        written = conn._transport.write.call_args[0][0]
+        assert written['headers']['X-Transaction-Id'] == "abc-123"
+        assert json.loads(written['payload'])['transactionId'] == "abc-123"
+
+    def test_no_transaction_id_header_when_absent(self):
+        """A request without a transactionId field must not set the X-Transaction-Id header."""
+        conn = self._make_connection()
+        conn._write_request(RequestMessage(fields={}, gremlin="g.V()"))
+        written = conn._transport.write.call_args[0][0]
+        assert 'X-Transaction-Id' not in written['headers']
+
 
 class TestConnectionInterceptorValidation:
     """Tests for interceptor validation in Connection.__init__."""
