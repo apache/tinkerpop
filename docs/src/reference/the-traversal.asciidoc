@@ -7266,6 +7266,13 @@ gA.V()
 gB.V()
 ----
 
+Elements written through a partitioned traversal source are automatically tagged with that source's `writePartition`,
+which is why the vertex added through "gA" carries a `_partition` value of "a" and the vertex added through "gB"
+carries a value of "b". When reading, a traversal source returns only those elements whose `partitionKey` value is
+contained in its `readPartitions` set. Elements that do not carry the `partitionKey` property, such as the six
+pre-existing vertices of the modern graph, are treated as belonging to no readable partition and are therefore hidden
+from a source that restricts its read partitions.
+
 The following examples demonstrate the above `PartitionStrategy` definition for "strategyA" in other programming
 languages:
 
@@ -7291,7 +7298,8 @@ strategyA = PartitionStrategy(partitionKey="_partition", writePartition="a", rea
 ----
 
 Partitions may also extend to `VertexProperty` elements if the `Graph` can support meta-properties and if the
-`includeMetaProperties` value is set to `true` when the `PartitionStrategy` is built.  The `partitionKey` will be
+`includeMetaProperties` value is set to `true` when the `PartitionStrategy` is built. This behavior is disabled by
+default, as `includeMetaProperties` defaults to `false`.  The `partitionKey` will be
 stored in the meta-properties of the `VertexProperty` and blind the traversal to those properties.  Please note that
 the `VertexProperty` will only be hidden by way of the `Traversal` itself.  For example, calling `Vertex.property(k)`
 bypasses the context of the `PartitionStrategy` and will thus allow all properties to be accessed.
