@@ -2816,8 +2816,9 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
 
 *Modulation:*
 
-* `by()` - Determines how to transform the current object for each key in the resulting map. The number of `by()`
-modulations should match the number of keys provided.
+* `by()` - Determines how to transform the current object for each key in the resulting map. The `by()` modulations
+are matched to the keys in the order both are provided. A mismatch between the number of `by()` modulations and the
+number of keys does not raise an error and is resolved as described in the considerations below.
 
 *Considerations:*
 
@@ -2825,6 +2826,12 @@ The `project()` step is similar to `select()` but instead of retrieving historic
 current state of the traverser. Each key in the resulting map corresponds to a `by()` modulation in the order they are
 provided. If a `by()` modulation doesn't produce a value for a particular key (not productive), that key will be omitted
 from the resulting `MAP`.
+
+The number of `by()` modulations need not equal the number of keys, and any mismatch is resolved without raising an
+error. When fewer `by()` modulations than keys are provided, the modulations are reused cyclically across the keys in
+round-robin order, so a single `by()` is applied to every key. When more `by()` modulations than keys are provided, the
+surplus modulations are never consumed and are silently ignored. When no `by()` modulation is provided, every key maps
+to the current object unchanged.
 
 *Exceptions:*
 
