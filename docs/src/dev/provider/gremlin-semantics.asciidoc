@@ -992,7 +992,35 @@ None
 
 *Considerations:*
 
-Each value is converted to its canonical String representation.
+Under the `global` scope the incoming value is rendered to its canonical String representation. That representation is
+defined per type as follows:
+
+[width="100%",options="header"]
+|=========================================================
+|Type |Rendering |Example
+|`INT`, `LONG` |The decimal value with no type suffix. |`123`, `5`
+|`FLOAT`, `DOUBLE`, `BIGDECIMAL` |The decimal value with no type suffix. The three types render identically and are
+indistinguishable once converted. |`1.5`
+|`BOOLEAN` |The literal `true` or `false`. |`true`
+|`DATETIME` |An ISO-8601 timestamp with trailing zero-valued components elided. |`2023-08-02T00:00Z`
+|`Vertex` |The vertex identifier wrapped as `v[<id>]`. |`v[1]`
+|=========================================================
+
+A `LIST` under the `global` scope is rendered as a whole, producing a single `STRING` in which the elements appear
+bracketed and comma-separated:
+
+[source,text]
+----
+[1, 2, 3] -> "[1, 2, 3]"
+----
+
+Under `Scope.local` the incoming value is a `LIST` and each element is rendered individually. The list structure is
+preserved, yielding a `LIST` of `STRING` rather than a single `STRING`:
+
+[source,text]
+----
+[1, 2, 3] -> ["1", "2", "3"]
+----
 
 *Exceptions:*
 
