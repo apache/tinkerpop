@@ -894,14 +894,14 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asBool-step[reference]
 [[asDate-step]]
 === asDate()
 
-*Description:* Parse the value of incoming traverser as date. Supported ISO-8601 strings and Unix time numbers.
+*Description:* Parse the value of the incoming traverser as a `DATETIME`. ISO-8601 strings and numeric Unix-time values are supported.
 
 *Syntax:* `asDate()`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`any` |`any`
+|N |Y |N |`STRING`/`NUMBER`/`DATETIME` |`DATETIME`
 |=========================================================
 
 *Arguments:*
@@ -914,7 +914,7 @@ None
 
 *Considerations:*
 
-Incoming date remains unchanged.
+A `DATETIME` input passes through unchanged. A `STRING` input is parsed as an ISO-8601 datetime, and a numeric input is interpreted as the count of milliseconds since the Unix epoch.
 
 *Exceptions:*
 
