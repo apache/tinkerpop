@@ -947,13 +947,9 @@ None
 
 *Considerations:*
 
-*Modulation:*
-
-None
-
-*Considerations:*
-
 If no type token is provided, the incoming number remains unchanged. A `DATE` input is converted to milliseconds since epoch. A `null` input passes through as `null`.
+
+When no type token is provided and the incoming traverser is a `STRING`, the string is parsed according to its numeric value. A string that represents an integer value is parsed to the smallest of `INT`, `LONG`, or `BIGINT` that can represent it. A string containing a decimal point or an exponent is parsed to `FLOAT` when the value is representable as such, and otherwise to a wider floating-point type (`DOUBLE`, then `BIGDECIMAL`).
 
 *Exceptions:*
 
