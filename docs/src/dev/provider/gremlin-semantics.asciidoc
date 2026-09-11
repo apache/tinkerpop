@@ -1762,8 +1762,21 @@ None
 
 *Considerations:*
 
-A set is returned after the disjunct operation is applied so there won't be duplicates. This step only applies to list
-types which means that non-iterable types (including null) will cause exceptions to be thrown.
+The disjunct operation is the symmetric difference of two lists. The result contains the members that appear in the
+incoming traverser or in the provided argument but not in both. The operation is symmetric, so exchanging the incoming
+traverser and the argument does not change the result. The result is a `SET`, so it contains no duplicates, and its
+iteration order is unspecified. In particular the result does not preserve the order of either input list, so a
+traversal that depends on a particular member order orders the result explicitly.
+
+Membership of the result is decided by comparing members by value and by type. Numerically equal values of different
+numeric types, such as an `INT` and a `LONG` of the same magnitude, are treated as distinct members. A `NULL` is a
+legal member of either list and is compared in the same way, so a `NULL` is excluded from the result only when it
+appears in both inputs.
+
+This step only applies to lists. An error is raised when the incoming traverser or the argument is itself `NULL` or is
+not iterable, while a `NULL` that appears as an element of an otherwise iterable list is permitted and behaves as
+described above. When the argument is supplied as a `Traversal`, that traversal produces the comparison list as a
+single result rather than as a stream of separate results.
 
 *Exceptions:*
 
