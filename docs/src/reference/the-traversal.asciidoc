@@ -7456,11 +7456,11 @@ g.WithStrategies(new SubgraphStrategy(vertexProperties: HasNot("endTime")));
 ----
 [source,javascript]
 ----
-g.withStrategies(new SubgraphStrategy(vertexProperties: hasNot("endTime")));
+g.withStrategies(new SubgraphStrategy({vertexProperties: hasNot("endTime")}));
 ----
 [source,python]
 ----
-g.withStrategies(new SubgraphStrategy(vertexProperties=hasNot("endTime")))
+g.with_strategies(SubgraphStrategy(vertex_properties=hasNot("endTime")))
 ----
 
 IMPORTANT: This strategy is implemented such that the vertices attached to an `Edge` must both satisfy the vertex
