@@ -2739,13 +2739,21 @@ None
 
 *Considerations:*
 
-A list of lists is returned after the product operation is applied with the inner list being a result pair. This step only
-applies to list types which means that non-iterable types (including null) will cause exceptions to be thrown.
+A list of lists is returned after the product operation is applied with the inner list being a result pair. Given an incoming
+list and an argument list, the result contains one pair for every combination of an element of the incoming list with an
+element of the argument list, so its size is the product of the two list sizes. The pairs are produced by taking each element
+of the incoming list in turn and pairing it with every element of the argument list in order. This is a true cartesian product,
+so no de-duplication is performed and repeated elements in either list yield repeated pairs. When either list is empty the step
+produces a single empty list rather than no result or an error, as there are no pairs to form.
+
+This step only applies to list types. A non-iterable incoming traverser or resolved argument, including `null` supplied in place
+of a list, causes an error to be raised. That restriction is on the incoming traverser and the argument as whole values. A `null`
+that appears as a member of an otherwise valid list is a legal element and is paired like any other value.
 
 *Exceptions:*
 
-* If the incoming traverser isn't a list then an `Argument Error` is raised.
-* If the argument doesn't resolve to a list then an `Argument Error` is raised.
+* If the incoming traverser isn't a list, including when it is `null`, then an `Argument Error` is raised.
+* If the argument doesn't resolve to a list, including when it is `null`, then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ProductStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
