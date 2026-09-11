@@ -545,7 +545,8 @@ pattern from a neighboring entry rather than introducing a new structure.
 
 The `addE()` step can be used as both a start step and a mid-traversal step. When used as a start step, both `from()`
 and `to()` must be specified. When used as a mid-traversal step, the current traverser becomes the source vertex and
-only `to()` needs to be specified.
+only `to()` needs to be specified. An edge label is not mandatory. Unlike `addV()`, the `addE()` step does not treat a
+missing or `null` edge label as an error. In either case the default edge label for the graph is used.
 
 The gremlin-lang grammar only permits `Traversal` and `STRING` (alias for `__.select(String)`) arguments in `from()` and
 `to()`. The `Traversal` must either produce a `Vertex` which is attachable to the graph, or it must produce the id of an
@@ -555,7 +556,8 @@ existing `Vertex` in the graph. `GraphTraversal` implementations in GLVs may opt
 
 *Exceptions:*
 
-* If the edge label is null, an `Argument Error` is raised.
+* If a `from()` or `to()` value does not resolve to a `Vertex`, or to the id of a `Vertex` present in the graph, a
+`State Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddEdgeStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddEdgeStartStep.java[source (start)],
