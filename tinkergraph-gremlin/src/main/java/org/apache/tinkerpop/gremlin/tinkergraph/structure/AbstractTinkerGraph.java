@@ -560,6 +560,24 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
 
     ///////////// Storage engine ///////////////
     /**
+     * The committed vertices of the graph, for a storage engine to snapshot during compaction. Unlike {@link #vertices()},
+     * this view excludes any uncommitted transaction-local state, so compaction never persists changes that a caller has
+     * not committed. The base implementation, which has no transactional isolation, is equivalent to {@link #vertices()};
+     * a transactional subclass overrides it to read only committed element state.
+     */
+    public Iterator<Vertex> committedVertices() {
+        return vertices();
+    }
+
+    /**
+     * The committed edges of the graph, for a storage engine to snapshot during compaction. The edge counterpart of
+     * {@link #committedVertices()}.
+     */
+    public Iterator<Edge> committedEdges() {
+        return edges();
+    }
+
+    /**
      * Construct a {@link TinkerStorage} engine from the TinkerGraph {@code Configuration}, or return {@code null} when
      * no storage engine is configured. The configuration value is either a {@link DefaultStorage} enum name (matched
      * case-insensitively, e.g. {@code graphbinary}) or the fully-qualified class name of a {@link TinkerStorage}
