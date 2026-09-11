@@ -1496,11 +1496,14 @@ None
 *Considerations:*
 
 The step computes a duration from `dateToken` and `value` at step construction time and adds that duration to
-the incoming date.
+the incoming date. `DT` is a closed enumeration whose only members are `second`, `minute`, `hour`, and `day`, and
+`dateToken` must name one of them. The `value` is bounded by the `INT` type, so the duration is derived without
+numeric overflow even for large magnitudes.
 
 *Exceptions:*
 
 * If the incoming traverser is a non-`DATETIME` value then an `Argument Error` is raised.
+* If `dateToken` is not one of the supported `DT` members (`second`, `minute`, `hour`, `day`) then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DateAddStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[reference]
