@@ -748,7 +748,10 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[reference]
 *Considerations:*
 
 The `aggregate()` step is a side-effect step that collects objects but passes the traverser to the next step unchanged.
-The aggregated objects can be accessed later using the `cap()` step.
+It is an eager barrier. All incoming objects are collected into the side-effect before any traverser is passed to the
+next step, so a downstream `limit()` or other short-circuiting step does not reduce the aggregated collection.
+The aggregated objects can be accessed later using the `cap()` step, and can also be referenced by steps such as
+`select()`, `where()`, and `math()` through the side-effect key.
 
 *Exceptions:*
 
