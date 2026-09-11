@@ -6724,18 +6724,41 @@ g.V().has('name','marko').out('knows').fold().count(global) <4>
 <3> A list of Marko's friends is created and a `local`-count yields the number of objects in that list.
 <4> `count(global)` is the same as `count()` as the default behavior for most scoped steps is `global`.
 
-The steps that support scoping are:
+The steps that accept a `Scope` fall into two groups. The reducing and collection steps interpret
+`Scope.local` over the objects of the collection at the current step and `Scope.global` over the entire
+stream of objects up to that step:
 
 * <<count-step,`count()`>>: count the local collection or global stream.
-* <<dedup-step, `dedup()`>>: dedup the local collection of global stream.
+* <<dedup-step, `dedup()`>>: dedup the local collection or global stream.
 * <<max-step, `max()`>>: get the max value in the local collection or global stream.
 * <<mean-step, `mean()`>>: get the mean value in the local collection or global stream.
 * <<min-step, `min()`>>: get the min value in the local collection or global stream.
+* <<sum-step, `sum()`>>: sum the numbers in the local collection or global stream.
 * <<order-step,`order()`>>: order the objects in the local collection or global stream.
 * <<range-step, `range()`>>: clip the local collection or global stream.
 * <<limit-step, `limit()`>>: clip the local collection or global stream.
+* <<skip-step, `skip()`>>: skip objects in the local collection or global stream.
 * <<sample-step, `sample()`>>: sample objects from the local collection or global stream.
 * <<tail-step, `tail()`>>: get the tail of the objects in the local collection or global stream.
+
+The string steps form the second group. For these, `Scope.local` applies the transformation to each string
+element within an incoming list and returns a list, while `Scope.global` operates on the single incoming
+object as one string:
+
+* <<asString-step, `asString()`>>: render each object as its string representation.
+* <<length-step, `length()`>>: get the length of each string.
+* <<lTrim-step, `lTrim()`>>: remove leading whitespace from each string.
+* <<rTrim-step, `rTrim()`>>: remove trailing whitespace from each string.
+* <<trim-step, `trim()`>>: remove leading and trailing whitespace from each string.
+* <<toLower-step, `toLower()`>>: convert each string to lowercase.
+* <<toUpper-step, `toUpper()`>>: convert each string to uppercase.
+* <<replace-step, `replace()`>>: replace a substring within each string.
+* <<split-step, `split()`>>: split each string into a list.
+* <<substring-step, `substring()`>>: extract a portion of each string.
+
+Together these two groups are the complete set of steps that accept a `Scope`. As scoping is applied per
+step, each step's own section is the authoritative description of how that step interprets `Scope.local` and
+`Scope.global`.
 
 A few more examples of the use of `Scope` are provided below:
 
