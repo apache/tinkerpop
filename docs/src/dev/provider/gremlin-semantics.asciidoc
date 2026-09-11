@@ -1640,9 +1640,22 @@ None
 
 *Considerations:*
 
-Set difference (`A-B`) is an ordered operation. The incoming traverser is treated as `A` and the provided argument is
-treated as `B`. A set is returned after the difference operation is applied so there won't be duplicates. This step only
-applies to list types which means that non-iterable types (including null) will cause exceptions to be thrown.
+Set difference (`A-B`) is a directional operation. The incoming traverser is treated as `A` and the provided argument
+as `B`, so `A-B` and `B-A` generally yield different results. This directionality is the only sense in which the
+operation is ordered. The result is a `SET`, so it contains no duplicates, and its iteration order is unspecified. In
+particular the result does not preserve the order of the incoming list, so a traversal that depends on a particular
+member order orders the result explicitly.
+
+Membership of the result is decided by comparing each member of `A` against the members of `B` by value and by type.
+Numerically equal values of different numeric types, such as an `INT` and a `LONG` of the same magnitude, are treated
+as distinct members, so a value from `A` is removed only when `B` contains a member of the same type and value. A
+`NULL` is a legal member of either list and is compared in the same way, so a `NULL` in `A` is removed only when `B`
+also contains a `NULL`.
+
+This step only applies to lists. An error is raised when the incoming traverser or the argument is itself `NULL` or is
+not iterable, while a `NULL` that appears as an element of an otherwise iterable list is permitted and behaves as
+described above. When the argument is supplied as a `Traversal`, that traversal produces the comparison list as a
+single result rather than as a stream of separate results.
 
 *Exceptions:*
 
