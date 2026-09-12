@@ -21,9 +21,12 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.util.AbstractThreadLocalTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorageMutation;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -174,9 +177,36 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
             final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
             if (edgeIndex != null) edgeIndex.commit(changedEdges);
 
-            // commit all changes
-            changedVertices.forEach(v -> v.commit(txVersion));
-            changedEdges.forEach(e -> e.commit(txVersion));
+            // write-ahead: durably persist the changeset before applying the in-memory commit, so a failure here
+            // aborts the commit (via the catch below) and leaves memory and disk consistent. Skipped while the graph
+            // is replaying its storage log on open. Serialized by storageCommitLock because commits of disjoint
+            // elements otherwise reach the engine's single append log concurrently and interleave its records.
+            //
+            // The in-memory apply is held inside that same lock. Compaction builds its snapshot by reading the graph
+            // and then discards the log, which is only sound while the graph reflects everything the log holds. That
+            // is false for exactly as long as a changeset sits persisted but not yet applied, so a compaction landing
+            // in that window snapshots without the transaction and then deletes the record that held it, losing an
+            // acknowledged commit. Publishing under the lock closes the window, and also makes the order in which
+            // transactions become visible match the order they were recorded in.
+            final boolean durable = graph.storage != null && !graph.loading;
+            if (durable) graph.storageCommitLock.lock();
+            try {
+                if (durable) {
+                    graph.storage.persist(txVersion, toVertexMutations(changedVertices), toEdgeMutations(changedEdges));
+                    graph.storage.flush();
+                }
+
+                // commit all changes
+                changedVertices.forEach(v -> v.commit(txVersion));
+                changedEdges.forEach(e -> e.commit(txVersion));
+
+                // bound log growth for a long-running graph that is never explicitly closed; no-op unless the
+                // engine's accumulated log has crossed its threshold. Runs after the apply so the snapshot it may
+                // write includes this transaction rather than omitting it and then truncating the log that held it.
+                if (durable) graph.storage.maybeCompact(graph);
+            } finally {
+                if (durable) graph.storageCommitLock.unlock();
+            }
         } catch (TransactionException ex) {
             // rollback on error
             changedVertices.forEach(v -> v.rollback());
@@ -207,6 +237,34 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
 
             txNumber.set(NOT_STARTED);
         }
+    }
+
+    /**
+     * Convert the changed vertex containers into the storage-facing {@link TinkerStorageMutation} view. Called during
+     * commit, before {@code commit()} is applied to the containers, so the modified value is still available via
+     * {@link TinkerElementContainer#getModified()}.
+     */
+    private static List<TinkerStorageMutation<TinkerVertex>> toVertexMutations(final Set<TinkerElementContainer<TinkerVertex>> changed) {
+        final List<TinkerStorageMutation<TinkerVertex>> mutations = new ArrayList<>(changed.size());
+        for (final TinkerElementContainer<TinkerVertex> c : changed) {
+            mutations.add(c.isDeleted()
+                    ? new TinkerStorageMutation<>(c.getElementId(), null)
+                    : new TinkerStorageMutation<>(c.getElementId(), c.getModified()));
+        }
+        return mutations;
+    }
+
+    /**
+     * Convert the changed edge containers into the storage-facing {@link TinkerStorageMutation} view.
+     */
+    private static List<TinkerStorageMutation<TinkerEdge>> toEdgeMutations(final Set<TinkerElementContainer<TinkerEdge>> changed) {
+        final List<TinkerStorageMutation<TinkerEdge>> mutations = new ArrayList<>(changed.size());
+        for (final TinkerElementContainer<TinkerEdge> c : changed) {
+            mutations.add(c.isDeleted()
+                    ? new TinkerStorageMutation<>(c.getElementId(), null)
+                    : new TinkerStorageMutation<>(c.getElementId(), c.getModified()));
+        }
+        return mutations;
     }
 
     /**
