@@ -1062,7 +1062,7 @@ GraphTraversalSource g = traversal().with(conf);
 List<Vertex> vertices = g.with(Tokens.TIMEOUT_MILLIS, 500L).V().out("knows").toList()
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`,
 `materializeProperties` and `timeoutMillis`. Use of `Tokens` to reference these options is preferred.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
