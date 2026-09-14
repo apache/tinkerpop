@@ -2096,9 +2096,38 @@ transaction remains open until the client explicitly commits, explicitly rolls b
 ==== Request Retry
 
 The server has the ability to instruct the client that an error condition is transient and that the client should
-simply retry the request later. In the event a client detects a `ResponseStatusCode` of `SERVER_ERROR_TEMPORARY`,
-which is error code `596`, the client may choose to retry that request. Note that drivers do not have the ability to
-automatically retry and that it is up to the application to provide such logic.
+simply retry the request later. A transient failure arises when a server-side provider raises an exception that
+implements `TemporaryException`, such as a database locking error that may resolve on its own for the same request at
+a later time. The server reports this condition as an HTTP `500` response whose body carries an `exception` field set
+to `ServerEvaluationException`:
+
+[source,json]
+----
+{
+  "message" : "...",
+  "exception" : "ServerEvaluationException"
+}
+----
+
+In the Java driver the failure surfaces as a `ResponseException`, whose `getRemoteException()` returns the name of
+the server-side exception. Inspecting that value determines whether the condition is one that may be retried:
+
+[source,java]
+----
+try {
+    client.submit("g.V().count()").all().get();
+} catch (ExecutionException ex) {
+    final Throwable cause = ex.getCause();
+    if (cause instanceof ResponseException &&
+            "ServerEvaluationException".equals(((ResponseException) cause).getRemoteException())) {
+        // the condition is transient and the request may be retried
+    }
+}
+----
+
+A client that speaks the HTTP protocol directly reads the same `exception` field from the response body to detect the
+condition. Drivers do not retry automatically, so the retry logic, including any backoff and limit on the number of
+attempts, is the responsibility of the application.
 
 [[gremlin-server-docker-image]]
 === Docker Image
