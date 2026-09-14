@@ -228,36 +228,32 @@ The following Gremlin Console session demonstrates the basics of these features:
 gremlin> :plugin list  <1>
 ==>tinkerpop.remote[active]
 ==>tinkerpop.utilities[active]
+==>tinkerpop.sugar[active]
+==>tinkerpop.credentials[active]
+==>tinkerpop.tinkergraph[active]
+gremlin> :plugin unuse tinkerpop.sugar  <2>
+==>tinkerpop.sugar deactivated - restart your console for this to take effect
+gremlin> :plugin list <3>
+==>tinkerpop.remote[active]
+==>tinkerpop.utilities[active]
 ==>tinkerpop.sugar
+==>tinkerpop.credentials[active]
 ==>tinkerpop.tinkergraph[active]
-gremlin> :plugin use tinkerpop.sugar  <2>
+gremlin> :plugin use tinkerpop.sugar  <4>
 ==>tinkerpop.sugar activated
-gremlin> :install org.apache.tinkerpop hadoop-gremlin x.y.z  <3>
-==>loaded: [org.apache.tinkerpop, hadoop-gremlin, x.y.z]
-gremlin> :plugin list <4>
-==>tinkerpop.remote[active]
-==>tinkerpop.utilities[active]
-==>tinkerpop.sugar[active]
-==>tinkerpop.tinkergraph[active]
-==>tinkerpop.hadoop
-gremlin> :plugin use tinkerpop.hadoop <5>
-==>tinkerpop.hadoop activated
-gremlin> :plugin list <6>
-==>tinkerpop.remote[active]
-==>tinkerpop.sugar[active]
-==>tinkerpop.utilities[active]
-==>tinkerpop.hadoop[active]
-==>tinkerpop.tinkergraph[active]
+gremlin> :install org.apache.tinkerpop hadoop-gremlin x.y.z  <5>
+==>Loaded: [org.apache.tinkerpop, hadoop-gremlin, x.y.z] - restart the console to use [tinkerpop.hadoop]
 ----
 
 <1> Show a list of "available" plugins.  The list of "available" plugins is determined by the classes available on
-the Console classpath.  Plugins need to be "active" for their features to be available.
-<2> To make a plugin "active" execute the `:plugin use` command and specify the name of the plugin to enable.
-<3> Sometimes there are external dependencies that would be useful within the Console.  To bring those in, execute
-`:install` and specify the Maven coordinates for the dependency.
-<4> Note that there is a "tinkerpop.hadoop" plugin available, but it is not yet "active".
-<5> Again, to use the "tinkerpop.hadoop" plugin, it must be made "active" with `:plugin use`.
-<6> Now when the plugin list is displayed, the "tinkerpop.hadoop" plugin is displayed as "active".
+the Console classpath.  A plugin marked `[active]` has its features exposed to the Console.  The plugins bundled with
+the standard Console distribution are all "active" by default.
+<2> A plugin's features can be withdrawn by deactivating it with the `:plugin unuse` command.
+<3> Once deactivated, the plugin is no longer marked as "active" in the plugin list.
+<4> A deactivated plugin is enabled again with the `:plugin use` command, which takes the name of the plugin to activate.
+<5> External dependencies that would be useful within the Console are brought in with the `:install` command, which
+takes the Maven coordinates of the dependency.  Any Gremlin plugins that the dependency provides then become available.
+Some plugins, such as `hadoop-gremlin`, require the Console to be restarted before they can be used.
 
 WARNING: Plugins must be compatible with the version of the Gremlin Console (or Gremlin Server) being used.  Attempts
 to use incompatible versions cannot be guaranteed to work.  Moreover, be prepared for dependency conflicts in
