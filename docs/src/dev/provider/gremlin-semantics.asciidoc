@@ -126,6 +126,10 @@ categories rather than to Java exception class names, since the categories are l
 category onto its language's idiomatic error type, and remote responses surface the server message text (which
 providers may localize while preserving the category).
 
+The `Example message` column gives a general, illustrative message that is representative of each category. It is not
+the exact, verbatim text a caller will encounter at runtime, as the precise wording can differ across versions and
+providers.
+
 [width="100%",cols="2,6,3,4",options="header"]
 |=========================================================
 |Category |Description |Java reference exception |Example message
