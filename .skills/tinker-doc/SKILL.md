@@ -79,6 +79,19 @@ them; write to the standard, not to the weakest nearby example.
 4. **Avoid hype and marketing language.** Describe what something does and why it
    matters in plain, positive terms. Let the capability speak for itself.
 
+### The `llms-summary` attribute
+
+Every top-level section carries an `[llms-summary="..."]` attribute above its
+title. Its value is the one-line description that appears in the `llms.txt`
+discovery index, and it is what an AI agent reads to decide whether to open the
+page. Write it for that reader: one or two sentences, no more, self-contained
+and concrete about what the section covers so its scope is clear without opening
+it. Match the book's character — a recipe summary names the problem it solves, a
+reference summary names the feature it describes — and keep it factual, like the
+prose around it. The mechanics (how a summary makes a section its own Markdown
+page, the per-page size budget, `allow-oversize`) live in the Developer docs
+under Agent-Friendly Documentation, not here.
+
 ## Examples must be real and runnable
 
 TinkerPop documentation is unusual: most Gremlin examples are **executed at build
