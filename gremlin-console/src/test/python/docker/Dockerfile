@@ -16,11 +16,17 @@
 # under the License.
 
 # Image used for running integration tests for gremlin-console.
-FROM python:3.9.20-bullseye
+FROM eclipse-temurin:11-jre AS jre
+
+FROM python:3.9.20-bookworm
 
 LABEL maintainer="dev@tinkerpop.apache.org"
 
-RUN apt-get update && apt-get install -y --no-install-recommends openjdk-11-jre && apt-get install dos2unix
+COPY --from=jre /opt/java/openjdk /opt/java/openjdk
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
+RUN apt-get update && apt-get install -y --no-install-recommends dos2unix && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /console_app
 CMD dos2unix ./gremlin-console/bin/gremlin.sh && python3 setup.py build && python3 setup.py test; \
