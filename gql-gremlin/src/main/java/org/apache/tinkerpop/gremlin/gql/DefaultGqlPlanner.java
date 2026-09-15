@@ -211,6 +211,9 @@ public final class DefaultGqlPlanner implements GqlPlanner {
      *
      * <p>Back edges (both endpoints already visited) are still emitted as steps so the
      * executor can verify the join constraint against the already-bound variable.
+     *
+     * <p>Quantified edges are forward-only: a quantified edge classified as a back edge
+     * (closing a pattern cycle) raises an {@link IllegalArgumentException}.
      */
     private List<ExtensionStep> buildSteps(final QueryGraph queryGraph,
                                            final QueryVertex seed,
@@ -256,42 +259,52 @@ public final class DefaultGqlPlanner implements GqlPlanner {
                     anchor = current;
                     targetNode = current;
                     stepDir = edge.getDirection();
-                } else if (isSource) {
-                    final QueryVertex other = edge.getTarget();
-                    if (!visitOrder.containsKey(other)) {
-                        // Forward edge: current → other
-                        anchor = current;
-                        targetNode = other;
-                        stepDir = edge.getDirection();
-                    } else {
-                        // Back edge: pick the earlier-visited node as anchor
-                        if (currentOrder <= visitOrder.get(other)) {
-                            anchor = current;
-                            targetNode = other;
-                            stepDir = edge.getDirection();
-                        } else {
-                            anchor = other;
-                            targetNode = current;
-                            stepDir = flip(edge.getDirection());
-                        }
+                } else {
+                    final QueryVertex other = isSource ? edge.getTarget() : edge.getSource();
+                    final boolean isBackEdge = visitOrder.containsKey(other);
+
+                    // Back-edge guard: quantified edges are forward-only. A quantified edge that
+                    // closes a pattern cycle (both endpoints already visited) is not yet supported.
+                    if (isBackEdge && edge.isQuantified()) {
+                        throw new IllegalArgumentException(
+                                "quantified edges closing a pattern cycle are not yet supported");
                     }
-                } else { // isTarget
-                    final QueryVertex other = edge.getSource();
-                    if (!visitOrder.containsKey(other)) {
-                        // Forward edge (reversed): current ← other → emit as current traverses back
-                        anchor = current;
-                        targetNode = other;
-                        stepDir = flip(edge.getDirection());
-                    } else {
-                        // Back edge: pick the earlier-visited node as anchor
-                        if (visitOrder.get(other) <= currentOrder) {
-                            anchor = other;
-                            targetNode = current;
+
+                    if (isSource) {
+                        if (!isBackEdge) {
+                            // Forward edge: current → other
+                            anchor = current;
+                            targetNode = other;
                             stepDir = edge.getDirection();
                         } else {
+                            // Back edge: pick the earlier-visited node as anchor
+                            if (currentOrder <= visitOrder.get(other)) {
+                                anchor = current;
+                                targetNode = other;
+                                stepDir = edge.getDirection();
+                            } else {
+                                anchor = other;
+                                targetNode = current;
+                                stepDir = flip(edge.getDirection());
+                            }
+                        }
+                    } else { // isTarget
+                        if (!isBackEdge) {
+                            // Forward edge (reversed): current ← other → emit as current traverses back
                             anchor = current;
                             targetNode = other;
                             stepDir = flip(edge.getDirection());
+                        } else {
+                            // Back edge: pick the earlier-visited node as anchor
+                            if (visitOrder.get(other) <= currentOrder) {
+                                anchor = other;
+                                targetNode = current;
+                                stepDir = edge.getDirection();
+                            } else {
+                                anchor = current;
+                                targetNode = other;
+                                stepDir = flip(edge.getDirection());
+                            }
                         }
                     }
                 }
@@ -305,7 +318,10 @@ public final class DefaultGqlPlanner implements GqlPlanner {
                         targetNode.getLabel(),
                         effectiveVars.get(targetNode),
                         targetNode.getPredicates(),
-                        estimateStepCost(edge, targetNode)));
+                        estimateStepCost(edge, targetNode),
+                        edge.getMinHops(),
+                        edge.getMaxHops(),
+                        edge.isEdgeVariableGroup()));
 
                 if (!visitOrder.containsKey(targetNode)) {
                     visitOrder.put(targetNode, visitCounter++);

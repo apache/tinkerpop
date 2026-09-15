@@ -361,4 +361,143 @@ public class QueryGraphTest {
         assertTrue("message should include character position",
                 msg.contains("character position at"));
     }
+
+    /**
+     * Asserts a semantic (model-build) error whose wrapped message contains {@code expectedFragment}.
+     * These are thrown as {@link IllegalArgumentException} during parse-tree walking and are wrapped
+     * with the standard "Failed to parse GQL MATCH expression" prefix. Unlike pure syntax
+     * errors, they carry no ANTLR "character position" text.
+     */
+    private static void assertSemanticError(final String gql, final String expectedFragment) {
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> QueryGraph.parse(gql));
+        final String msg = ex.getMessage();
+        assertTrue("message '" + msg + "' should contain: " + expectedFragment,
+                msg.contains(expectedFragment));
+    }
+
+    // -------------------------------------------------------------------------
+    // Variable-length quantifier parsing (TINKERPOP-3256)
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testQuantifiedRangeOutEdge() {
+        final QueryGraph g = QueryGraph.parse("MATCH (a)-[r:KNOWS]->{1,3}(b)");
+        assertEquals(1, g.getEdges().size());
+        final QueryEdge e = g.getEdges().get(0);
+        assertEquals(1, e.getMinHops());
+        assertEquals(3, e.getMaxHops());
+        assertTrue(e.isQuantified());
+        assertTrue(e.isEdgeVariableGroup());
+        assertEquals(Direction.OUT, e.getDirection());
+        assertEquals("a", e.getSource().getVariable());
+        assertEquals("b", e.getTarget().getVariable());
+        assertEquals("KNOWS", e.getLabel());
+        assertEquals("r", e.getVariable());
+    }
+
+    @Test
+    public void testQuantifiedExact() {
+        final QueryGraph g = QueryGraph.parse("MATCH (a)-[:KNOWS]->{2}(b)");
+        final QueryEdge e = g.getEdges().get(0);
+        assertEquals(2, e.getMinHops());
+        assertEquals(2, e.getMaxHops());
+        assertTrue(e.isQuantified());
+    }
+
+    @Test
+    public void testQuantifiedPlus() {
+        final QueryGraph g = QueryGraph.parse("MATCH (a)-[:KNOWS]->+(b)");
+        final QueryEdge e = g.getEdges().get(0);
+        assertEquals(1, e.getMinHops());
+        assertEquals(QueryEdge.UNBOUNDED, e.getMaxHops());
+        assertTrue(e.isQuantified());
+    }
+
+    @Test
+    public void testQuantifiedAtLeast() {
+        final QueryGraph g = QueryGraph.parse("MATCH (a)-[:KNOWS]->{2,}(b)");
+        final QueryEdge e = g.getEdges().get(0);
+        assertEquals(2, e.getMinHops());
+        assertEquals(QueryEdge.UNBOUNDED, e.getMaxHops());
+        assertTrue(e.isQuantified());
+    }
+
+    @Test
+    public void testQuantifiedReverseDirection() {
+        final QueryGraph g = QueryGraph.parse("MATCH (a)<-[r:KNOWS]-{1,3}(b)");
+        final QueryEdge e = g.getEdges().get(0);
+        assertEquals(Direction.IN, e.getDirection());
+        assertEquals(1, e.getMinHops());
+        assertEquals(3, e.getMaxHops());
+        assertTrue(e.isEdgeVariableGroup());
+    }
+
+    @Test
+    public void testQuantifiedUndirected() {
+        final QueryGraph g = QueryGraph.parse("MATCH (a)-[r:KNOWS]-{2}(b)");
+        final QueryEdge e = g.getEdges().get(0);
+        assertEquals(Direction.BOTH, e.getDirection());
+        assertEquals(2, e.getMinHops());
+        assertEquals(2, e.getMaxHops());
+        assertTrue(e.isEdgeVariableGroup());
+    }
+
+    @Test
+    public void testQuantifiedAnonymousEdgeIsNotGroupVariable() {
+        // Quantified but no variable name -> not a group variable.
+        final QueryGraph g = QueryGraph.parse("MATCH (a)-[:KNOWS]->{1,3}(b)");
+        final QueryEdge e = g.getEdges().get(0);
+        assertTrue(e.isQuantified());
+        assertTrue("anonymous quantified edge must not be a group variable", !e.isEdgeVariableGroup());
+    }
+
+    @Test
+    public void testNonQuantifiedEdgeDefaults() {
+        // Regression guard: a plain edge is exactly one hop and not a group variable.
+        final QueryGraph g = QueryGraph.parse("MATCH (a)-[:KNOWS]->(b)");
+        final QueryEdge e = g.getEdges().get(0);
+        assertEquals(1, e.getMinHops());
+        assertEquals(1, e.getMaxHops());
+        assertTrue("plain edge must not be quantified", !e.isQuantified());
+        assertTrue("plain edge must not be a group variable", !e.isEdgeVariableGroup());
+    }
+
+    // -------------------------------------------------------------------------
+    // Quantifier semantic validation (never-valid forms)
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testQuantifierMaxLessThanMinThrows() {
+        assertSemanticError("MATCH (a)-[:KNOWS]->{3,1}(b)", "less than lower bound");
+    }
+
+    @Test
+    public void testQuantifierSignedBoundThrows() {
+        assertSemanticError("MATCH (a)-[:KNOWS]->{-1,3}(b)", "bare non-negative integers");
+    }
+
+    @Test
+    public void testQuantifierTypeSuffixBoundThrows() {
+        assertSemanticError("MATCH (a)-[:KNOWS]->{3i}(b)", "bare non-negative integers");
+    }
+
+    // -------------------------------------------------------------------------
+    // Quantifier zero-lower-bound deferral (valid GQL, not yet supported)
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testQuantifierZeroLowerBoundRangeThrows() {
+        assertSemanticError("MATCH (a)-[:KNOWS]->{0,3}(b)", "not yet supported");
+    }
+
+    @Test
+    public void testQuantifierUpperOnlyThrows() {
+        assertSemanticError("MATCH (a)-[:KNOWS]->{,3}(b)", "not yet supported");
+    }
+
+    @Test
+    public void testQuantifierStarThrows() {
+        assertSemanticError("MATCH (a)-[:KNOWS]->*(b)", "not yet supported");
+    }
 }

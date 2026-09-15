@@ -23,12 +23,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.DeclarativeMatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -65,7 +67,7 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
     private GqlExecutor executor;
     private GqlMatchPlan plan;
     // Lazy row source: one iterator per spawn execution or per incoming mid-traversal traverser.
-    private Iterator<Element[]> rowIterator = null;
+    private Iterator<GqlRow> rowIterator = null;
     // For mid-traversal: the upstream traverser whose rows rowIterator is currently serving.
     private Traverser.Admin<S> currentStart = null;
     private boolean done = false;
@@ -184,7 +186,7 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private Traverser.Admin<Map<String, Object>> rowToSpawnTraverser(final Element[] row, final GqlMatchPlan plan) {
+    private Traverser.Admin<Map<String, Object>> rowToSpawnTraverser(final GqlRow row, final GqlMatchPlan plan) {
         final Traverser.Admin<Map<String, Object>> traverser =
                 this.getTraversal().getTraverserGenerator().generate(Collections.emptyMap(), (Step) this, 1L);
         bindRow(row, plan, (Traverser.Admin) traverser);
@@ -192,7 +194,7 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private Traverser.Admin<Map<String, Object>> rowToSplitTraverser(final Element[] row, final GqlMatchPlan plan,
+    private Traverser.Admin<Map<String, Object>> rowToSplitTraverser(final GqlRow row, final GqlMatchPlan plan,
                                                                       final Traverser.Admin<S> start) {
         final Traverser.Admin<Map<String, Object>> split =
                 (Traverser.Admin<Map<String, Object>>) start.split(Collections.emptyMap(), (Step) this);
@@ -201,17 +203,32 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void bindRow(final Element[] row, final GqlMatchPlan plan,
+    private void bindRow(final GqlRow row, final GqlMatchPlan plan,
                          final Traverser.Admin traverser) {
+        // Surface both binding channels the executor produces:
+        //   - row.scalars[i]    : a single graph Element for a scalar variable, or null.
+        //   - row.groups.get(i) : the ordered List<Edge> for a group edge variable.
+        // A given variable index is EITHER a scalar or a group for one match, never both. Every
+        // bound named variable is written to two channels that select() can read, using the SAME
+        // value instance so they always agree: the emitted binding Map (the traverser's final
+        // current object) and the traverser path label of that name. A group edge variable
+        // resolves to the whole List<Edge> from row.groups in both channels; a scalar variable
+        // resolves to a single Element from row.scalars.
+        final Element[] scalars = row.scalars;
+        final Map<Integer, List<Edge>> groups = row.groups;
         final String[] variables = plan.getVariables();
         final Map<String, Object> bindings = new LinkedHashMap<>();
         for (int i = 0; i < variables.length; i++) {
             final String var = variables[i];
-            if (!var.startsWith(GqlMatchPlan.ANON_VAR_PREFIX) && row[i] != null) {
-                traverser.set(row[i]);
-                traverser.addLabels(Collections.singleton(var));
-                bindings.put(var, row[i]);
-            }
+            if (var.startsWith(GqlMatchPlan.ANON_VAR_PREFIX))
+                continue;
+            // Group list takes precedence for its index; otherwise fall back to the scalar slot.
+            final Object value = groups.containsKey(i) ? groups.get(i) : scalars[i];
+            if (value == null)
+                continue;
+            traverser.set(value);
+            traverser.addLabels(Collections.singleton(var));
+            bindings.put(var, value);
         }
         traverser.set(bindings);
     }

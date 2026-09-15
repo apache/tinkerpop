@@ -69,20 +69,36 @@ public class DefaultGqlExecutorTest {
     // -------------------------------------------------------------------------
 
     /**
-     * Drains the lazy result iterator into a list of named-variable maps, mirroring the
-     * old List<Map> API so that existing assertions can be reused without change.
-     * Entries whose variable name starts with {@code $anon} are excluded (anonymous nodes).
+     * A materialised result row. It <em>is</em> a {@code Map<String,Element>} of the row's scalar
+     * bindings (variable name → graph element), so all existing scalar assertions
+     * ({@code row.get("a")}, {@code row.containsKey(...)}) work unchanged. In addition it carries
+     * the quantified group edge bindings (variable name → ordered {@code List<Edge>}) surfaced
+     * from {@link GqlRow#groups} via the plan's variable indices.
      */
-    private List<Map<String, Element>> materialize(final Iterator<Element[]> iter,
+    private static final class Row extends LinkedHashMap<String, Element> {
+        final Map<String, List<Edge>> groups = new LinkedHashMap<>();
+    }
+
+    /**
+     * Drains the lazy result iterator into a list of {@link Row} maps, mirroring the
+     * old List<Map> API so that existing assertions can be reused without change.
+     * Scalar entries whose variable name starts with {@code $anon} are excluded (anonymous
+     * nodes); group edge lists are keyed back to their variable name via the plan index.
+     */
+    private List<Map<String, Element>> materialize(final Iterator<GqlRow> iter,
                                                     final GqlMatchPlan plan) {
         final String[] variables = plan.getVariables();
         final List<Map<String, Element>> rows = new ArrayList<>();
         while (iter.hasNext()) {
-            final Element[] row = iter.next();
-            final Map<String, Element> map = new LinkedHashMap<>();
+            final GqlRow gqlRow = iter.next();
+            final Element[] scalars = gqlRow.scalars;
+            final Row map = new Row();
             for (int i = 0; i < variables.length; i++) {
-                if (!variables[i].startsWith("$anon") && row[i] != null)
-                    map.put(variables[i], row[i]);
+                if (!variables[i].startsWith("$anon") && scalars[i] != null)
+                    map.put(variables[i], scalars[i]);
+            }
+            for (final Map.Entry<Integer, List<Edge>> e : gqlRow.groups.entrySet()) {
+                map.groups.put(variables[e.getKey()], e.getValue());
             }
             rows.add(map);
         }
@@ -982,11 +998,11 @@ public class DefaultGqlExecutorTest {
 
         final GqlMatchPlan plan = planner.plan(
                 "MATCH (a:Person)-[e:KNOWS {weight: 0.5}]->(b:Person)");
-        final List<Element[]> results = new ArrayList<>();
+        final List<GqlRow> results = new ArrayList<>();
         executor.execute(plan).forEachRemaining(results::add);
 
         assertEquals("Only the edge with weight=0.5 should match", 1, results.size());
-        final Element[] row = results.get(0);
+        final Element[] row = results.get(0).scalars;
         final int eIdx = plan.getIndex("e");
         assertEquals(lowWeight, row[eIdx]);
     }
@@ -1001,7 +1017,7 @@ public class DefaultGqlExecutorTest {
 
         final GqlMatchPlan plan = planner.plan(
                 "MATCH (a:Person)-[e:KNOWS {weight: 0.1}]->(b:Person)");
-        final List<Element[]> results = new ArrayList<>();
+        final List<GqlRow> results = new ArrayList<>();
         executor.execute(plan).forEachRemaining(results::add);
 
         assertTrue("Filter matching no edge should return no results", results.isEmpty());
@@ -1020,12 +1036,12 @@ public class DefaultGqlExecutorTest {
 
         final GqlMatchPlan plan = planner.plan(
                 "MATCH (a:Person)-[e:KNOWS {weight: $w}]->(b:Person)");
-        final List<Element[]> results = new ArrayList<>();
+        final List<GqlRow> results = new ArrayList<>();
         executor.execute(plan, Collections.singletonMap("w", 2.0)).forEachRemaining(results::add);
 
         assertEquals(1, results.size());
         final int eIdx = plan.getIndex("e");
-        assertEquals(heavy, results.get(0)[eIdx]);
+        assertEquals(heavy, results.get(0).scalars[eIdx]);
     }
 
     @Test
@@ -1039,7 +1055,7 @@ public class DefaultGqlExecutorTest {
 
         final GqlMatchPlan plan = planner.plan(
                 "MATCH (a:Person)-[:KNOWS]->(b:Person)");
-        final List<Element[]> results = new ArrayList<>();
+        final List<GqlRow> results = new ArrayList<>();
         executor.execute(plan).forEachRemaining(results::add);
 
         assertEquals("Without an edge filter both edges match", 2, results.size());
@@ -1060,12 +1076,12 @@ public class DefaultGqlExecutorTest {
         x.addEdge("LOOP", y); // non-loop — must not match MATCH (a)-[r:LOOP]->(a)
 
         final GqlMatchPlan plan = planner.plan("MATCH (a:Node)-[r:LOOP]->(a:Node)");
-        final List<Element[]> results = new ArrayList<>();
+        final List<GqlRow> results = new ArrayList<>();
         executor.execute(plan).forEachRemaining(results::add);
 
         assertEquals("Only the self-loop satisfies the equality constraint on 'a'", 1, results.size());
         final int rIdx = plan.getIndex("r");
-        assertEquals(selfLoop, results.get(0)[rIdx]);
+        assertEquals(selfLoop, results.get(0).scalars[rIdx]);
     }
 
     @Test
@@ -1080,7 +1096,7 @@ public class DefaultGqlExecutorTest {
         b.addEdge("E", c);
 
         final GqlMatchPlan plan = planner.plan("MATCH (a:N)-[r:E]->(b:N), (b)-[r:E]->(c:N)");
-        final List<Element[]> results = new ArrayList<>();
+        final List<GqlRow> results = new ArrayList<>();
         executor.execute(plan).forEachRemaining(results::add);
 
         assertTrue("No single edge can connect a→b and b→c simultaneously", results.isEmpty());
@@ -1107,16 +1123,16 @@ public class DefaultGqlExecutorTest {
         graph.addVertex("Person");
         graph.addVertex("Person");
         final GqlMatchPlan plan = planner.plan("MATCH (n:Person)");
-        final Iterator<Element[]> iter = executor.execute(plan);
+        final Iterator<GqlRow> iter = executor.execute(plan);
 
-        final Element[] first = iter.next();
+        final Element[] first = iter.next().scalars;
         final Element first0 = first[0];
         // Corrupt the first row's array
         first[0] = null;
 
         // Second row must be unaffected
         assertTrue(iter.hasNext());
-        final Element[] second = iter.next();
+        final Element[] second = iter.next().scalars;
         assertNotNull(second[0]);
         assertNotSame(first, second);
     }
@@ -1133,7 +1149,7 @@ public class DefaultGqlExecutorTest {
         v.property(VertexProperty.Cardinality.list, "lang", "groovy");
 
         final GqlMatchPlan plan = planner.plan("MATCH (s:Software {lang: 'groovy'})");
-        final List<Element[]> results = new ArrayList<>();
+        final List<GqlRow> results = new ArrayList<>();
         executor.execute(plan).forEachRemaining(results::add);
 
         assertEquals("vertex with 'groovy' among its lang values must match", 1, results.size());
@@ -1147,7 +1163,7 @@ public class DefaultGqlExecutorTest {
         v.property(VertexProperty.Cardinality.list, "lang", "groovy");
 
         final GqlMatchPlan plan = planner.plan("MATCH (s:Software {lang: 'python'})");
-        final List<Element[]> results = new ArrayList<>();
+        final List<GqlRow> results = new ArrayList<>();
         executor.execute(plan).forEachRemaining(results::add);
 
         assertTrue("vertex without 'python' in its lang values must not match", results.isEmpty());
@@ -1169,7 +1185,7 @@ public class DefaultGqlExecutorTest {
             v.property(VertexProperty.Cardinality.list, "tag", null);
 
             final GqlMatchPlan plan = nullPlanner.plan("MATCH (n:Item {tag: null})");
-            final List<Element[]> results = new ArrayList<>();
+            final List<GqlRow> results = new ArrayList<>();
             nullExecutor.execute(plan).forEachRemaining(results::add);
 
             assertEquals("vertex with null among its tag values must match {tag: null}", 1, results.size());
@@ -1186,9 +1202,335 @@ public class DefaultGqlExecutorTest {
         v.property(VertexProperty.Cardinality.list, "lang", "groovy");
 
         final GqlMatchPlan plan = planner.plan("MATCH (s:Software {lang: $lang})");
-        final List<Element[]> results = new ArrayList<>();
+        final List<GqlRow> results = new ArrayList<>();
         executor.execute(plan, Collections.singletonMap("lang", "groovy")).forEachRemaining(results::add);
 
         assertEquals("param predicate must match against any value in a list-cardinality property", 1, results.size());
+    }
+
+    // -------------------------------------------------------------------------
+    // Quantified (variable-length) relationship patterns
+    //
+    // Semantics under test:
+    //   * per-walk TRAIL edge-uniqueness (an edge is used at most once per walk),
+    //   * NO vertex gating (vertices may repeat via distinct edges),
+    //   * emit-at-each-depth in [minHops, maxHops],
+    //   * the edge variable is a group variable bound as an ordered List<Edge>.
+    // -------------------------------------------------------------------------
+
+    /** Extracts the ordered edge list bound to a quantified group edge variable in a result row. */
+    private List<Edge> edgeList(final Map<String, Element> row, final String var) {
+        assertTrue("group edge variable must be surfaced via the row's group side map",
+                row instanceof Row);
+        final List<Edge> edges = ((Row) row).groups.get(var);
+        assertNotNull("expected a bound group edge variable '" + var + "'", edges);
+        return edges;
+    }
+
+    /** Groups result rows by the target vertex bound to {@code var}. */
+    private Map<Element, List<Map<String, Element>>> byTarget(final List<Map<String, Element>> rows,
+                                                              final String var) {
+        final Map<Element, List<Map<String, Element>>> grouped = new LinkedHashMap<>();
+        for (final Map<String, Element> row : rows)
+            grouped.computeIfAbsent(row.get(var), k -> new ArrayList<>()).add(row);
+        return grouped;
+    }
+
+    @Test
+    public void testQuantifiedEmitsAtEachDepthWithEdgeLists() {
+        // a-KNOWS->b-KNOWS->c-KNOWS->d ; {1,3} from a emits b,c,d with the exact edge list per depth.
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        final Vertex d = graph.addVertex("Person");
+        final Edge e1 = a.addEdge("KNOWS", b);
+        final Edge e2 = b.addEdge("KNOWS", c);
+        final Edge e3 = c.addEdge("KNOWS", d);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->{1,3}(x:Person)");
+
+        assertEquals(3, results.size());
+        final Map<Element, List<Map<String, Element>>> byX = byTarget(results, "x");
+        assertEquals(java.util.Arrays.asList(e1), edgeList(byX.get(b).get(0), "r"));
+        assertEquals(java.util.Arrays.asList(e1, e2), edgeList(byX.get(c).get(0), "r"));
+        assertEquals(java.util.Arrays.asList(e1, e2, e3), edgeList(byX.get(d).get(0), "r"));
+    }
+
+    @Test
+    public void testQuantifiedLowerBoundGreaterThanOne() {
+        // {2,3} from a emits only c and d (not b).
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        final Vertex d = graph.addVertex("Person");
+        a.addEdge("KNOWS", b);
+        b.addEdge("KNOWS", c);
+        c.addEdge("KNOWS", d);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->{2,3}(x:Person)");
+
+        final Map<Element, List<Map<String, Element>>> byX = byTarget(results, "x");
+        assertEquals(2, results.size());
+        assertFalse(byX.containsKey(b));
+        assertTrue(byX.containsKey(c));
+        assertTrue(byX.containsKey(d));
+    }
+
+    @Test
+    public void testQuantifiedExactBound() {
+        // {2} exactly: only depth-2 target c.
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        final Vertex d = graph.addVertex("Person");
+        final Edge e1 = a.addEdge("KNOWS", b);
+        final Edge e2 = b.addEdge("KNOWS", c);
+        c.addEdge("KNOWS", d);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->{2}(x:Person)");
+
+        assertEquals(1, results.size());
+        assertEquals(c, results.get(0).get("x"));
+        assertEquals(java.util.Arrays.asList(e1, e2), edgeList(results.get(0), "r"));
+    }
+
+    @Test
+    public void testQuantifiedUnboundedOverChain() {
+        // {2,} over a 3-edge chain emits c and d only.
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        final Vertex d = graph.addVertex("Person");
+        a.addEdge("KNOWS", b);
+        b.addEdge("KNOWS", c);
+        c.addEdge("KNOWS", d);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->{2,}(x:Person)");
+
+        final Map<Element, List<Map<String, Element>>> byX = byTarget(results, "x");
+        assertEquals(2, results.size());
+        assertTrue(byX.containsKey(c));
+        assertTrue(byX.containsKey(d));
+    }
+
+    @Test
+    public void testQuantifiedPlusOverChain() {
+        // + (one or more) over a 3-edge chain emits b, c, d.
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        final Vertex d = graph.addVertex("Person");
+        a.addEdge("KNOWS", b);
+        b.addEdge("KNOWS", c);
+        c.addEdge("KNOWS", d);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->+(x:Person)");
+
+        assertEquals(3, results.size());
+        final Map<Element, List<Map<String, Element>>> byX = byTarget(results, "x");
+        assertTrue(byX.containsKey(b));
+        assertTrue(byX.containsKey(c));
+        assertTrue(byX.containsKey(d));
+    }
+
+    @Test
+    public void testQuantifiedUnboundedTerminatesOnCycle() {
+        // Cycle a->b->c->a. TRAIL edge-uniqueness makes an unbounded walk terminate.
+        // From a with + the distinct trails are: a->b (b), a->b->c (c), a->b->c->a (a).
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        a.addEdge("KNOWS", b);
+        b.addEdge("KNOWS", c);
+        c.addEdge("KNOWS", a);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->+(x:Person)");
+
+        // Exactly three trails from a; the deepest one returns to a (vertex repeats, edges do not).
+        assertEquals(3, results.size());
+        final List<Element> targets = results.stream().map(r -> r.get("x")).collect(Collectors.toList());
+        assertTrue(targets.contains(a));
+        assertTrue(targets.contains(b));
+        assertTrue(targets.contains(c));
+        // The length-3 trail ends back at a and uses all 3 distinct edges.
+        final Map<Element, List<Map<String, Element>>> byX = byTarget(results, "x");
+        assertEquals(3, edgeList(byX.get(a).get(0), "r").size());
+    }
+
+    @Test
+    public void testQuantifiedReverseDirection() {
+        // <-[r:KNOWS]-{1,2} from d walks against KNOWS edges: d<-c<-b (a-b-c-d chain).
+        final Vertex a = graph.addVertex("Person");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        final Vertex d = graph.addVertex("Person");
+        d.property("n", "d");
+        a.addEdge("KNOWS", b);
+        b.addEdge("KNOWS", c);
+        c.addEdge("KNOWS", d);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (d:Person {n: 'd'})<-[r:KNOWS]-{1,2}(x:Person)");
+
+        final Map<Element, List<Map<String, Element>>> byX = byTarget(results, "x");
+        assertEquals(2, results.size());
+        assertTrue(byX.containsKey(c)); // depth 1
+        assertTrue(byX.containsKey(b)); // depth 2
+        assertFalse(byX.containsKey(a));
+    }
+
+    @Test
+    public void testQuantifiedUndirectedSingleEdgeDoesNotOscillate() {
+        // Undirected -[r:KNOWS]-{1,2} over a single edge a-b must NOT oscillate:
+        // the one edge is consumed once, so from a only b is reachable (depth 1), never back to a.
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        a.addEdge("KNOWS", b);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]-{1,2}(x:Person)");
+
+        assertEquals(1, results.size());
+        assertEquals(b, results.get(0).get("x"));
+        assertEquals(1, edgeList(results.get(0), "r").size());
+    }
+
+    @Test
+    public void testQuantifiedUndirectedParallelEdgesUseBothTrails() {
+        // Two parallel KNOWS edges a=>b. Undirected {1,2} from a:
+        //   depth1: a-b via e1, a-b via e2  (two rows, target b)
+        //   depth2: a-b-a via {e1,e2} and via {e2,e1} (two rows, target a); vertex a repeats
+        //           through a distinct second edge, which TRAIL permits.
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        a.addEdge("KNOWS", b);
+        a.addEdge("KNOWS", b);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]-{1,2}(x:Person)");
+
+        final Map<Element, List<Map<String, Element>>> byX = byTarget(results, "x");
+        assertEquals(2, byX.get(b).size()); // two depth-1 trails, one per parallel edge
+        assertEquals(2, byX.get(a).size()); // two depth-2 trails back to a using both edges
+        assertEquals(4, results.size());
+        // Every depth-2 trail uses two distinct edges.
+        for (final Map<String, Element> row : byX.get(a)) {
+            final List<Edge> edges = edgeList(row, "r");
+            assertEquals(2, edges.size());
+            assertNotEquals(edges.get(0), edges.get(1));
+        }
+    }
+
+    @Test
+    public void testQuantifiedSelfLoop() {
+        // Self-loop a-KNOWS->a. {1,2} handles the self-loop as a valid length-1 trail without
+        // infinite looping: the single self-edge is consumed once.
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Edge self = a.addEdge("KNOWS", a);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->{1,2}(x:Person)");
+
+        assertEquals(1, results.size());
+        assertEquals(a, results.get(0).get("x"));
+        assertEquals(java.util.Arrays.asList(self), edgeList(results.get(0), "r"));
+    }
+
+    @Test
+    public void testExactlyOneHopQuantifierBindsGroupEdgeList() {
+        // A {1,1} quantified edge variable is still a group variable: it surfaces r as a
+        // one-element List<Edge> through the group channel, honoring the length-independent
+        // group-list contract (see GqlMatchStepTest
+        // testExactlyOneHopQuantifierSurfacesSingletonEdgeListInBothChannels).
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        final Edge e1 = a.addEdge("KNOWS", b);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->{1,1}(x:Person)");
+
+        assertEquals(1, results.size());
+        assertEquals(b, results.get(0).get("x"));
+        assertEquals(java.util.List.of(e1), edgeList(results.get(0), "r"));
+    }
+
+    @Test
+    public void testQuantifiedNoMatchWhenTargetLabelUnsatisfied() {
+        // No path reaches a Company via KNOWS, so 0 rows.
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        a.addEdge("KNOWS", b);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->{1,3}(x:Company)");
+
+        assertTrue(results.isEmpty());
+    }
+
+    @Test
+    public void testQuantifiedNoMatchWhenMinBoundExceedsAvailablePath() {
+        // Only a 1-edge path exists; {2,3} yields nothing.
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        a.addEdge("KNOWS", b);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->{2,3}(x:Person)");
+
+        assertTrue(results.isEmpty());
+    }
+
+    @Test
+    public void testQuantifiedTargetPropertyPredicateFiltersEmits() {
+        // a-KNOWS->b-KNOWS->c ; only c has flag=true, so {1,2} with target filter emits just c.
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        c.property("flag", true);
+        final Edge e1 = a.addEdge("KNOWS", b);
+        final Edge e2 = b.addEdge("KNOWS", c);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->{1,2}(x:Person {flag: true})");
+
+        assertEquals(1, results.size());
+        assertEquals(c, results.get(0).get("x"));
+        assertEquals(java.util.Arrays.asList(e1, e2), edgeList(results.get(0), "r"));
+    }
+
+    @Test
+    public void testQuantifiedEdgeLabelConstrainsWalk() {
+        // a-KNOWS->b, b-LIKES->c. {1,2} over KNOWS may only reach b (the LIKES edge is excluded).
+        final Vertex a = graph.addVertex("Person");
+        a.property("n", "a");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        a.addEdge("KNOWS", b);
+        b.addEdge("LIKES", c);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {n: 'a'})-[r:KNOWS]->{1,2}(x:Person)");
+
+        assertEquals(1, results.size());
+        assertEquals(b, results.get(0).get("x"));
     }
 }
