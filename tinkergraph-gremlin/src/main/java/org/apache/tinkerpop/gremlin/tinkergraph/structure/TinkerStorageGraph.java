@@ -35,8 +35,11 @@ import org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphCountStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DirectoryLock;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.IndexDefinitions;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -47,9 +50,17 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * The transactional implementation of the {@link TinkerGraph} interface, in-memory with optional persistence on
- * calls to {@link #close()}. It is planned that this implementation will optionally support simple storage to disk
- * built on its transaction functionality.
+ * The transactional implementation of the {@link TinkerGraph} interface. It provides {@code read committed}
+ * transaction isolation with optimistic locking and, when a storage engine is configured, durable persistence to
+ * disk. With no storage engine configured it is an in-memory transactional graph that retains nothing across
+ * restarts.
+ * <p/>
+ * Persistence is pluggable through the {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage}
+ * SPI and enabled with the {@code gremlin.tinkergraph.storage} and {@code gremlin.tinkergraph.storage.directory}
+ * configuration keys. Each committed transaction is written through to the storage engine before the in-memory commit
+ * is applied, and reopening the same location replays the persisted commits to rebuild the graph. A storage location
+ * is single-writer: it is guarded by an exclusive {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DirectoryLock}
+ * so a second open of the same directory fails rather than corrupting the data.
  *
  * @author Valentyn Kahamlyk
  */
@@ -74,6 +85,12 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
 
     private final TinkerTransaction transaction = new TinkerTransaction(this);
 
+    /**
+     * Set while indexes recorded for the store are being recreated on open, so applying them does not rewrite the
+     * file they were just read from.
+     */
+    private boolean restoringIndexes = false;
+
     private final Map<Object, TinkerElementContainer<TinkerVertex>> vertices = new ConcurrentHashMap<>();
     private final Map<Object, TinkerElementContainer<TinkerEdge>> edges = new ConcurrentHashMap<>();
 
@@ -95,18 +112,42 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         defaultVertexLabel = Vertex.DEFAULT_LABEL;
         defaultEdgeLabel = Edge.DEFAULT_LABEL;
 
-        graphLocation = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
-        graphFormat = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_FORMAT, null);
+        storageDirectory = configuration.getString(GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, null);
+        storage = selectStorage(configuration, GREMLIN_TINKERGRAPH_STORAGE);
 
-        if ((graphLocation != null && null == graphFormat) || (null == graphLocation && graphFormat != null))
-            throw new IllegalStateException(String.format("The %s and %s must both be specified if either is present",
-                    GREMLIN_TINKERGRAPH_GRAPH_LOCATION, GREMLIN_TINKERGRAPH_GRAPH_FORMAT));
-
-        if (graphLocation != null) loadGraph();
+        if (storage != null && null == storageDirectory)
+            throw new IllegalStateException(String.format("The %s must be specified when %s is set",
+                    GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, GREMLIN_TINKERGRAPH_STORAGE));
 
         serviceRegistry = new TinkerServiceRegistry(this);
         configuration.getList(String.class, GREMLIN_TINKERGRAPH_SERVICE, Collections.emptyList()).forEach(serviceClass ->
                 serviceRegistry.registerService(instantiate(serviceClass)));
+
+        if (storage != null) {
+            // take an exclusive lock on the storage directory before the engine touches any files, so a second graph
+            // on the same location fails fast rather than corrupting it. The directory must exist to hold the lock.
+            final File dir = new File(storageDirectory);
+            if (!dir.isDirectory() && !dir.mkdirs())
+                throw new IllegalStateException(String.format("Could not create storage directory %s", dir));
+            directoryLock = DirectoryLock.acquire(dir);
+            try {
+                storage.open(this, configuration);
+                loading = true;
+                try {
+                    storage.replay(this);
+                } finally {
+                    loading = false;
+                }
+                // recreate the recorded indexes now that replay has rebuilt the elements they cover, so
+                // createKeyIndex backfills over the restored data rather than only over writes that follow
+                restoreIndexes(dir);
+            } catch (RuntimeException | Error ex) {
+                // don't leak the lock if the engine fails to open or replay
+                directoryLock.close();
+                directoryLock = null;
+                throw ex;
+            }
+        }
     }
 
     /**
@@ -289,6 +330,24 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         this.edges.clear();
     }
 
+    /**
+     * Fold the durable storage log into a compact snapshot of the current committed state, reclaiming space. Has no
+     * effect when no storage engine is configured.
+     */
+    public void compact() {
+        if (storage != null) {
+            // hold the same lock as the commit write path: compaction closes the log, rewrites the snapshot, and
+            // truncates the log, which must not interleave with a concurrent transaction appending to that log.
+            storageCommitLock.lock();
+            try {
+                storage.flush();
+                storage.compact(this);
+            } finally {
+                storageCommitLock.unlock();
+            }
+        }
+    }
+
     @Override
     public Transaction tx() {
         return transaction;
@@ -310,6 +369,20 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     Map<Object, TinkerElementContainer<TinkerVertex>> getVertices () { return vertices; }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Reads the committed value of each container ({@link TinkerElementContainer#getUnmodified()}), so a compaction
+     * snapshot reflects only committed state regardless of the calling thread's open transaction. A container whose
+     * committed value is {@code null} (added but not yet committed, or committed and then deleted) is skipped.
+     */
+    @Override
+    public Iterator<Vertex> committedVertices() {
+        return IteratorUtils.map(
+                IteratorUtils.filter(vertices.values().iterator(), c -> c.getUnmodified() != null),
+                c -> (Vertex) c.getUnmodified());
+    }
 
     @Override
     public int getEdgesCount() {
@@ -338,6 +411,19 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     Map<Object, TinkerElementContainer<TinkerEdge>> getEdges () { return edges; }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * The edge counterpart of {@link #committedVertices()}: reads only committed container state and skips containers
+     * whose committed value is {@code null}.
+     */
+    @Override
+    public Iterator<Edge> committedEdges() {
+        return IteratorUtils.map(
+                IteratorUtils.filter(edges.values().iterator(), c -> c.getUnmodified() != null),
+                c -> (Edge) c.getUnmodified());
+    }
 
     @Override
     public TinkerServiceRegistry getServiceRegistry() {
@@ -504,6 +590,12 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         private TinkerGraphGraphFeatures() {
         }
 
+        /**
+         * A persistent {@link TinkerStorageGraph} is a single-writer store: {@code DirectoryLock} permits only one
+         * graph instance to open a given storage directory at a time. This feature denotes multiple connections /
+         * instances sharing the same data — not the intra-instance, multi-thread transaction access that the
+         * thread-local {@link TinkerTransaction} already provides — so it is {@code false}.
+         */
         @Override
         public boolean supportsConcurrentAccess() {
             return false;
@@ -517,6 +609,11 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         @Override
         public boolean supportsTransactions() {
             return true;
+        }
+
+        @Override
+        public boolean supportsPersistence() {
+            return storage != null;
         }
 
         @Override
@@ -549,6 +646,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
+        recordIndexes();
     }
 
     /**
@@ -567,5 +665,36 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
+        recordIndexes();
+    }
+
+    /**
+     * Recreate the indexes recorded for this store. Runs after replay so that {@code createKeyIndex} backfills over
+     * the elements it has just rebuilt. The definitions are already on disk, so recording is suppressed while they
+     * are applied.
+     */
+    private void restoreIndexes(final File directory) {
+        final IndexDefinitions definitions = IndexDefinitions.read(directory);
+        if (definitions.isEmpty())
+            return;
+        restoringIndexes = true;
+        try {
+            definitions.vertexKeys().forEach(key -> createIndex(key, Vertex.class));
+            definitions.edgeKeys().forEach(key -> createIndex(key, Edge.class));
+        } finally {
+            restoringIndexes = false;
+        }
+    }
+
+    /**
+     * Record the current set of indexed keys beside the engine's files, so a reopen restores them. Index definitions
+     * are not part of the transactional log; see {@link IndexDefinitions} for why that is sound. A graph with no
+     * storage engine keeps everything in memory and writes nothing.
+     */
+    private void recordIndexes() {
+        if (null == storage || restoringIndexes)
+            return;
+        new IndexDefinitions(getIndexedKeys(Vertex.class), getIndexedKeys(Edge.class))
+                .write(new File(storageDirectory));
     }
 }

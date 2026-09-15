@@ -45,8 +45,44 @@ public interface TinkerGraph extends Graph {
     String GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER = "gremlin.tinkergraph.edgeIdManager";
     String GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER = "gremlin.tinkergraph.vertexPropertyIdManager";
     String GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY = "gremlin.tinkergraph.defaultVertexPropertyCardinality";
-    String GREMLIN_TINKERGRAPH_GRAPH_LOCATION = "gremlin.tinkergraph.graphLocation";
-    String GREMLIN_TINKERGRAPH_GRAPH_FORMAT = "gremlin.tinkergraph.graphFormat";
+    /**
+     * Selects the pluggable storage engine used by {@link TinkerStorageGraph} to durably persist transactions to the
+     * {@link #GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY} directory. The value is either a
+     * {@code TinkerStorageGraph.DefaultStorage} enum name (e.g. {@code graphbinary}) or the fully-qualified class name
+     * of a {@code org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage} implementation. When unset,
+     * the graph holds data only in memory. Not valid on {@link TinkerMemoryGraph}.
+     */
+    String GREMLIN_TINKERGRAPH_STORAGE = "gremlin.tinkergraph.storage";
+    /**
+     * The filesystem directory that a {@link TinkerStorageGraph} storage engine uses for its durable data. Ignored by
+     * {@link TinkerMemoryGraph}, which is purely in-memory. Only meaningful when {@link #GREMLIN_TINKERGRAPH_STORAGE}
+     * is also set.
+     */
+    String GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY = "gremlin.tinkergraph.storage.directory";
+    /**
+     * The durability mode a {@link TinkerStorageGraph} storage engine applies on commit. Either {@code commit}
+     * (default) to {@code fsync} every commit so acknowledged commits survive an OS crash or power loss, or {@code os}
+     * to only flush to the operating system so commits survive a JVM process crash but may be lost on OS crash or
+     * power loss. Only meaningful when {@link #GREMLIN_TINKERGRAPH_STORAGE} is set. See
+     * {@code org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.SyncMode}.
+     */
+    String GREMLIN_TINKERGRAPH_STORAGE_SYNC = "gremlin.tinkergraph.storage.sync";
+    /**
+     * The size in bytes at which a {@link TinkerStorageGraph} storage engine automatically compacts its append log on
+     * commit, bounding the log growth (and restart replay cost) of a long-running graph that is never explicitly
+     * closed. Defaults to 67108864 (64 MB). Set to {@code 0} to disable automatic compaction and rely on
+     * {@code close()} or an explicit {@code compact()}. Only meaningful when {@link #GREMLIN_TINKERGRAPH_STORAGE} is
+     * set.
+     */
+    String GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD = "gremlin.tinkergraph.storage.compactThreshold";
+    /**
+     * Whether a {@link TinkerStorageGraph} storage engine persists auto-generated vertex-property ids so they are
+     * stable across a close and reopen. Defaults to {@code false}: vertex-property ids are regenerated on load, which
+     * keeps the store smaller. Element and edge ids are always preserved regardless of this setting. Each record is
+     * self-describing, so a store written with this enabled reopens correctly even if the setting later differs. Only
+     * meaningful when {@link #GREMLIN_TINKERGRAPH_STORAGE} is set.
+     */
+    String GREMLIN_TINKERGRAPH_STORAGE_PRESERVE_VP_IDS = "gremlin.tinkergraph.storage.preserveVertexPropertyIds";
     String GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES = "gremlin.tinkergraph.allowNullPropertyValues";
     String GREMLIN_TINKERGRAPH_SERVICE = "gremlin.tinkergraph.service";
     String GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY = "gremlin.tinkergraph.vertexLabelCardinality";
