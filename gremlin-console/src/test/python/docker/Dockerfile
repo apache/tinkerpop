@@ -16,7 +16,7 @@
 # under the License.
 
 # Image used for running integration tests for gremlin-console.
-FROM python:3.10-bullseye
+FROM python:3.10-bookworm
 
 LABEL maintainer="dev@tinkerpop.apache.org"
 
