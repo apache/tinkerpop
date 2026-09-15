@@ -3232,7 +3232,7 @@ provider-specific. See <<tinkergql>> below for the complete TinkerGQL syntax ref
 TinkerGQL is the name for the `MATCH` dialect shipped in TinkerPop's optional `gql-gremlin` module.
 It is a deliberate, minimal subset of link:https://www.iso.org/standard/76120.html[ISO GQL] `MATCH` syntax:
 just enough to express graph pattern matching queries, with the more complex ISO GQL features, like  `WHERE`,
-`RETURN`, variable-length paths, and aggregation functions, intentionally excluded. This keeps the grammar
+`RETURN`, and aggregation functions, intentionally excluded. This keeps the grammar
 tight, the implementation portable, and the semantics unambiguous.
 
 Any graph system provider may adopt TinkerGQL by depending on the `gql-gremlin` module. TinkerGraph
@@ -3450,6 +3450,83 @@ performs an index-backed seed lookup rather than a full scan. Whether `Graph.Ind
 structure depends on the graph system; see <<tinkerpop-providers-tinkergql,the provider documentation>> and
 your specific graph system's documentation for details.
 
+[[tinkergql-variable-length]]
+===== Variable-Length Path Patterns
+
+A relationship pattern can be quantified so that it matches a variable-length walk of repeated edges of the same
+shape rather than a single hop. The quantifier is written immediately after the closing arrow of the
+relationship, in the abbreviated form `(a)-[r:LABEL]->{q}(b)`. Four quantifier forms are supported, each with a
+lower bound of at least one:
+
+[width="100%",cols="2,4",options="header"]
+|=========================================================
+|Quantifier |Meaning
+|`{m,n}` |Between `m` and `n` repetitions, inclusive
+|`{m}`   |Exactly `m` repetitions
+|`{m,}`  |At least `m` repetitions, unbounded above
+|`+`     |One or more repetitions, equivalent to `{1,}`
+|=========================================================
+
+Quantification is available on all three edge directions. The examples below use the modern toy graph, where the
+`knows` relationship forms only single-hop paths, so a bounded quantifier there resolves to the same immediate
+neighbours as an unquantified edge:
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (a:person)-[:knows]->{1,2}(b:person)").
+  select("a", "b").by("name")
+----
+
+The reverse form `<-[r:LABEL]-{q}` walks incoming edges, and the undirected form `-[r:LABEL]-{q}` walks edges in
+either direction:
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (b:person)<-[:knows]-{1}(a:person)").
+  select("a", "b").by("name")
+----
+
+*Semantics*
+
+A quantified relationship expands from its already-bound endpoint outward, one hop at a time, up to the maximum
+repetition count. Three properties define the result set. First, expansion follows *trail* semantics: within a
+single walk no edge is traversed more than once, which guarantees termination even in the presence of cycles.
+Vertices, by contrast, may repeat when reached through distinct edges. Second, expansion *emits at each depth*
+within the quantifier range. A walk that reaches a valid target at every depth from the lower bound to the upper
+bound produces one result row per depth, not only at the final depth. Third, the edge variable `r` binds as an
+ordered `List<Edge>`, a *group variable* holding every edge traversed on that walk, in walk order. A result
+row's list has one element for a depth-one match, two for a depth-two match, and so on.
+
+The following illustrates these semantics over a linear chain `a-[route]->b-[route]->c-[route]->d`, which the
+modern graph does not contain. A `{1,3}` quantifier anchored at `a` emits `b` at depth one, `c` at depth two, and
+`d` at depth three, with `r` accumulating the traversed edges at each depth:
+
+[source,text]
+----
+MATCH (a:airport {code: 'AAA'})-[r:route]->{1,3}(x:airport)
+
+// three result rows, one per depth:
+//   x = BBB, r = [AAA->BBB]
+//   x = CCC, r = [AAA->BBB, BBB->CCC]
+//   x = DDD, r = [AAA->BBB, BBB->CCC, CCC->DDD]
+----
+
+A lower bound greater than one suppresses the shallower depths. Over the same chain, `{2,}` emits only `c` and `d`,
+while `+` (equivalent to `{1,}`) emits `b`, `c`, and `d`.
+
+*Limitations*
+
+Quantified relationships in the current release carry three restrictions:
+
+. *Forward expansion only.* A quantified edge expands outward from one bound endpoint to reach the other. A
+quantified edge whose endpoints are both already bound elsewhere in the pattern, one that closes a
+pattern cycle, is not yet supported and raises an error at plan time. Only unquantified edges may close a cycle.
+. *No zero-length forms.* Every quantifier must have a lower bound of at least one. The zero-length forms `*`,
+`{0,n}`, and `{,n}` are not yet supported and are rejected when the query is parsed or planned.
+. *Per-walk edge uniqueness only.* The trail (no-repeated-edge) guarantee applies within a single quantified
+walk. Edge uniqueness across an entire multi-pattern match is not enforced, so an edge traversed inside a
+quantified walk may also appear in another part of the same match.
+
 ===== Unsupported Features
 
 TinkerGQL is a minimal subset of ISO GQL. The following ISO GQL `MATCH` features are not yet implemented:
@@ -3460,7 +3537,7 @@ TinkerGQL is a minimal subset of ISO GQL. The following ISO GQL `MATCH` features
 |`WHERE` clause |Post-match filtering is not supported inside the `MATCH` string. Use Gremlin's `where()` step after `match()` instead.
 |`RETURN` clause |Projection inside the `MATCH` string is not supported. Use `select()` after `match()` to project named variables.
 |Inequality / range predicates |Only equality tests (`{key: value}`) are supported. Expressions like `n.age > 30` are not part of the grammar.
-|Variable-length paths |Quantified path patterns such as `(a)-[:KNOWS*1..3]->(b)` are not supported.
+|Zero-length and cyclic quantified paths |Quantified path patterns with a lower bound of at least one (`{m,n}`, `{m}`, `{m,}`, `+`) are supported (see <<tinkergql-variable-length>>). Zero-length forms (`*`, `{0,n}`, `{,n}`) and a quantified edge that closes a pattern cycle are not yet supported.
 |Multiple labels per element |`(n:Person:Employee)` — more than one label per node pattern — is not supported.
 |`OPTIONAL MATCH` |Optional pattern matching (outer joins) is not supported.
 |Aggregation functions |`COUNT`, `SUM`, `AVG`, and similar functions are not part of the grammar.

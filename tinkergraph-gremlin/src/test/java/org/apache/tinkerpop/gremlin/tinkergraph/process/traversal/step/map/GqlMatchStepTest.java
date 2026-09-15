@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.DeclarativeMatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -480,6 +481,262 @@ public class GqlMatchStepTest {
 
         assertEquals(1, results.size());
         assertNotEquals(results.get(0).get("a"), results.get(0).get("b"));
+    }
+
+    // -------------------------------------------------------------------------
+    // Quantified (variable-length) relationship patterns
+    //
+    // A quantified group edge variable r must surface as a List<Edge> through BOTH channels
+    // select() can read, and the two channels must agree:
+    //   (1) the emitted binding Map (match()'s current object), and
+    //   (2) the traverser path label of the same name.
+    // No Pop-based single-edge behaviour: r is the whole ordered edge list. Scalar endpoints
+    // (s, d) remain single vertices.
+    // -------------------------------------------------------------------------
+
+    /**
+     * Builds an inline person chain s -[knows]-> m -[knows]-> ... over {@code n} vertices,
+     * returning the edges in walk order. Element 0 is the first hop out of {@code s}.
+     */
+    /**
+     * Builds an inline person chain head -[knows]-> m1 -[knows]-> ... over {@code hops} edges,
+     * returning the edges in walk order (element 0 is the first hop out of the head). The head
+     * vertex carries {@code name='head'} so a query can anchor the source and isolate the
+     * emit-at-each-depth rows of a single walk (an unanchored {@code (s:person)} source would
+     * additionally start walks from every interior vertex).
+     */
+    private List<Edge> buildKnowsChain(final int hops) {
+        Vertex prev = graph.addVertex("person");
+        prev.property("name", "head");
+        final java.util.List<Edge> edges = new java.util.ArrayList<>();
+        for (int i = 0; i < hops; i++) {
+            final Vertex next = graph.addVertex("person");
+            edges.add(prev.addEdge("knows", next));
+            prev = next;
+        }
+        return edges;
+    }
+
+    private static final String CHAIN_QUERY =
+            "MATCH (s:person {name: 'head'})-[r:knows]->{1,3}(d:person)";
+
+    @SuppressWarnings("unchecked")
+    private static List<Edge> asEdgeList(final Object value) {
+        assertTrue("quantified group edge variable must surface as a List, got: " +
+                        (value == null ? "null" : value.getClass().getName()),
+                value instanceof List);
+        return (List<Edge>) value;
+    }
+
+    @Test
+    public void testQuantifiedGroupEdgeVariableSurfacesAsEdgeListInMapChannel() {
+        // head -[knows]-> m1 -[knows]-> m2 -[knows]-> m3 ; {1,3} from head emits at each depth.
+        final List<Edge> chain = buildKnowsChain(3); // e0, e1, e2
+
+        final List<Object> rValues = g.<Integer>inject(1)
+                .match(CHAIN_QUERY)
+                .<Object>select("r")
+                .toList();
+
+        // emit-at-each-depth: three rows (depths 1, 2, 3).
+        assertEquals(3, rValues.size());
+
+        final java.util.Set<List<Edge>> edgeLists = rValues.stream()
+                .map(GqlMatchStepTest::asEdgeList)
+                .collect(Collectors.toSet());
+
+        assertTrue("depth-1 edge list [e0]",
+                edgeLists.contains(Collections.singletonList(chain.get(0))));
+        assertTrue("depth-2 edge list [e0, e1]",
+                edgeLists.contains(java.util.Arrays.asList(chain.get(0), chain.get(1))));
+        assertTrue("depth-3 edge list [e0, e1, e2]",
+                edgeLists.contains(java.util.Arrays.asList(chain.get(0), chain.get(1), chain.get(2))));
+    }
+
+    @Test
+    public void testQuantifiedGroupEdgeVariableAgreesAcrossMapAndPathLabelChannels() {
+        // Map channel: select("r") reads the map's "r" value.
+        // Path-label channel: constant("x") replaces the current object, forcing select("r")
+        // to resolve "r" from path history. Both must yield the SAME List<Edge> per match.
+        buildKnowsChain(3);
+
+        final List<Object> viaMap = g.<Integer>inject(1)
+                .match(CHAIN_QUERY)
+                .<Object>select("r")
+                .toList();
+
+        final List<Object> viaPathLabel = g.<Integer>inject(1)
+                .match(CHAIN_QUERY)
+                .constant("x")
+                .<Object>select("r")
+                .toList();
+
+        assertEquals(3, viaMap.size());
+        assertEquals(3, viaPathLabel.size());
+
+        // The two channels must agree row-for-row (matches are produced in the same order).
+        final List<List<Edge>> mapLists = viaMap.stream()
+                .map(GqlMatchStepTest::asEdgeList).collect(Collectors.toList());
+        final List<List<Edge>> pathLists = viaPathLabel.stream()
+                .map(GqlMatchStepTest::asEdgeList).collect(Collectors.toList());
+
+        assertEquals("map and path-label channels must agree on the edge lists",
+                mapLists, pathLists);
+    }
+
+    @Test
+    public void testQuantifiedScalarEndpointsRemainSingleVertices() {
+        buildKnowsChain(3);
+
+        final List<Object> sValues = g.<Integer>inject(1)
+                .match(CHAIN_QUERY)
+                .<Object>select("s")
+                .toList();
+        final List<Object> dValues = g.<Integer>inject(1)
+                .match(CHAIN_QUERY)
+                .<Object>select("d")
+                .toList();
+
+        assertEquals(3, sValues.size());
+        assertEquals(3, dValues.size());
+        // Endpoints are single vertices, never lists.
+        sValues.forEach(v -> assertTrue("s must be a single Vertex, not a list", v instanceof Vertex));
+        dValues.forEach(v -> assertTrue("d must be a single Vertex, not a list", v instanceof Vertex));
+    }
+
+    @Test
+    public void testNonQuantifiedEdgeVariableRemainsScalar() {
+        // A fully non-quantified query binds r to a single Edge, not a list.
+        final Vertex a = graph.addVertex("person");
+        final Vertex b = graph.addVertex("person");
+        final Edge e = a.addEdge("knows", b);
+
+        final List<Object> rValues = g.<Integer>inject(1)
+                .match("MATCH (s:person)-[r:knows]->(d:person)")
+                .<Object>select("r")
+                .toList();
+
+        assertEquals(1, rValues.size());
+        assertEquals(e, rValues.get(0));
+        assertFalse("non-quantified edge variable must not be a list", rValues.get(0) instanceof List);
+    }
+
+    @Test
+    public void testQuantifiedMultiSelectReturnsScalarEndpointsAndListEdgeVariable() {
+        final List<Edge> chain = buildKnowsChain(3);
+
+        @SuppressWarnings("unchecked")
+        final List<Map<String, Object>> results =
+                (List<Map<String, Object>>) (List<?>) g.<Integer>inject(1)
+                        .match(CHAIN_QUERY)
+                        .select("s", "r", "d")
+                        .toList();
+
+        assertEquals(3, results.size());
+        for (final Map<String, Object> row : results) {
+            assertTrue("s is a single Vertex", row.get("s") instanceof Vertex);
+            assertTrue("d is a single Vertex", row.get("d") instanceof Vertex);
+            final List<Edge> edges = asEdgeList(row.get("r"));
+            assertFalse("r edge list must not be empty", edges.isEmpty());
+            // The walk starts at s and ends at d; consistency: first edge leaves s, last reaches d.
+            assertEquals("first edge must originate from s", row.get("s"), edges.get(0).outVertex());
+            assertEquals("last edge must arrive at d",
+                    row.get("d"), edges.get(edges.size() - 1).inVertex());
+        }
+
+        // Exactly one row reaches the deepest target with the full 3-edge list.
+        final long fullDepthRows = results.stream()
+                .filter(r -> asEdgeList(r.get("r")).size() == chain.size())
+                .count();
+        assertEquals(1, fullDepthRows);
+    }
+
+    // -------------------------------------------------------------------------
+    // Length-1 (depth-1) group list consistency
+    //
+    // A quantified group edge variable r must be a List<Edge> for EVERY matched length,
+    // including a single-hop (depth-1) match, never a bare Edge. This holds whether the
+    // depth-1 row comes from a range quantifier that matched one hop ({1,3} on a one-hop graph)
+    // or from a degenerate exact quantifier ({1,1}). Both result channels (the emitted binding
+    // Map and the traverser path label) must agree and both must yield the one-element List.
+    // -------------------------------------------------------------------------
+
+    private static final String EXACT1_QUERY =
+            "MATCH (s:person {name: 'head'})-[r:knows]->{1,1}(d:person)";
+
+    @Test
+    public void testExactlyOneHopQuantifierSurfacesSingletonEdgeListInBothChannels() {
+        // {1,1}: the executor runs this as a plain single hop, but the edge variable still
+        // carries a quantifier and is therefore a group variable, so it must be a List, not an Edge.
+        final List<Edge> chain = buildKnowsChain(1); // single edge e0
+
+        final List<Object> viaMap = g.<Integer>inject(1)
+                .match(EXACT1_QUERY)
+                .<Object>select("r")
+                .toList();
+        final List<Object> viaPathLabel = g.<Integer>inject(1)
+                .match(EXACT1_QUERY)
+                .constant("x")
+                .<Object>select("r")
+                .toList();
+
+        assertEquals(1, viaMap.size());
+        assertEquals(1, viaPathLabel.size());
+
+        final List<Edge> mapList = asEdgeList(viaMap.get(0));
+        final List<Edge> pathList = asEdgeList(viaPathLabel.get(0));
+
+        assertEquals("map channel: singleton edge list", Collections.singletonList(chain.get(0)), mapList);
+        assertEquals("path channel: singleton edge list", Collections.singletonList(chain.get(0)), pathList);
+        assertEquals("map and path-label channels must agree", mapList, pathList);
+    }
+
+    @Test
+    public void testRangeQuantifierMatchingSingleHopSurfacesSingletonEdgeListInBothChannels() {
+        // {1,3} against a graph offering only one hop => exactly one depth-1 row. The group
+        // variable must be a one-element List<Edge>, consistent with the {1,1} case and with
+        // the depth-1 row of a longer chain.
+        final List<Edge> chain = buildKnowsChain(1);
+
+        final List<Object> viaMap = g.<Integer>inject(1)
+                .match(CHAIN_QUERY)
+                .<Object>select("r")
+                .toList();
+        final List<Object> viaPathLabel = g.<Integer>inject(1)
+                .match(CHAIN_QUERY)
+                .constant("x")
+                .<Object>select("r")
+                .toList();
+
+        assertEquals(1, viaMap.size());
+        assertEquals(1, viaPathLabel.size());
+
+        final List<Edge> mapList = asEdgeList(viaMap.get(0));
+        final List<Edge> pathList = asEdgeList(viaPathLabel.get(0));
+
+        assertEquals(Collections.singletonList(chain.get(0)), mapList);
+        assertEquals(Collections.singletonList(chain.get(0)), pathList);
+        assertEquals(mapList, pathList);
+    }
+
+    @Test
+    public void testDepth1RowOfLongerChainIsSingletonEdgeListInPathChannel() {
+        // The depth-1 emission of a {1,3} walk over a 3-hop chain must also be a one-element
+        // List in the path channel (regression guard for the length-dependent-type bug).
+        final List<Edge> chain = buildKnowsChain(3);
+
+        final List<Object> viaPathLabel = g.<Integer>inject(1)
+                .match(CHAIN_QUERY)
+                .constant("x")
+                .<Object>select("r")
+                .toList();
+
+        assertEquals(3, viaPathLabel.size());
+        final java.util.Set<List<Edge>> pathLists = viaPathLabel.stream()
+                .map(GqlMatchStepTest::asEdgeList)
+                .collect(Collectors.toSet());
+        assertTrue("depth-1 singleton edge list [e0] in path channel",
+                pathLists.contains(Collections.singletonList(chain.get(0))));
     }
 
     // -------------------------------------------------------------------------

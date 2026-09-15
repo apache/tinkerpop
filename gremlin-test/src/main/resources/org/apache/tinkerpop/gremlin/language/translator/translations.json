@@ -28183,6 +28183,197 @@
         ]
     },
     {
+        "scenario": "g_match_personXknows_1_2X_person_selectXa_bX_byXnameX",
+        "traversals": [
+            {
+                "original": "g.match(\"MATCH (a:person)-[:knows]->{1,2}(b:person)\").select(\"a\",\"b\").by(\"name\")",
+                "language": "g.match(\"MATCH (a:person)-[:knows]->{1,2}(b:person)\").select(\"a\", \"b\").by(\"name\")",
+                "canonical": "g.match(\"MATCH (a:person)-[:knows]->{1,2}(b:person)\").select(\"a\", \"b\").by(\"name\")",
+                "anonymized": "g.match(string0).select(string1, string2).by(string3)",
+                "dotnet": "g.Match(\"MATCH (a:person)-[:knows]->{1,2}(b:person)\").Select<object>(\"a\", \"b\").By(\"name\")",
+                "go": "g.Match(\"MATCH (a:person)-[:knows]->{1,2}(b:person)\").Select(\"a\", \"b\").By(\"name\")",
+                "groovy": "g.match(\"MATCH (a:person)-[:knows]->{1,2}(b:person)\").select(\"a\", \"b\").by(\"name\")",
+                "java": "g.match(\"MATCH (a:person)-[:knows]->{1,2}(b:person)\").select(\"a\", \"b\").by(\"name\")",
+                "javascript": "g.match(\"MATCH (a:person)-[:knows]->{1,2}(b:person)\").select(\"a\", \"b\").by(\"name\")",
+                "python": "g.match('MATCH (a:person)-[:knows]->{1,2}(b:person)').select('a', 'b').by('name')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_match_chainXroute_1_2X_selectXbX_byXcodeX",
+        "traversals": [
+            {
+                "original": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "language": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "canonical": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "anonymized": "g.addV(string0).property(string1, string2).as(string3).addV(string0).property(string1, string4).as(string5).addV(string0).property(string1, string6).as(string7).addV(string0).property(string1, string8).as(string9).addE(string10).from(string3).to(string5).addE(string10).from(string5).to(string7).addE(string10).from(string7).to(string9)",
+                "dotnet": "g.AddV((string) \"airport\").Property(\"code\", \"AAA\").As(\"a\").AddV((string) \"airport\").Property(\"code\", \"BBB\").As(\"b\").AddV((string) \"airport\").Property(\"code\", \"CCC\").As(\"c\").AddV((string) \"airport\").Property(\"code\", \"DDD\").As(\"d\").AddE((string) \"route\").From(\"a\").To(\"b\").AddE((string) \"route\").From(\"b\").To(\"c\").AddE((string) \"route\").From(\"c\").To(\"d\")",
+                "go": "g.AddV(\"airport\").Property(\"code\", \"AAA\").As(\"a\").AddV(\"airport\").Property(\"code\", \"BBB\").As(\"b\").AddV(\"airport\").Property(\"code\", \"CCC\").As(\"c\").AddV(\"airport\").Property(\"code\", \"DDD\").As(\"d\").AddE(\"route\").From(\"a\").To(\"b\").AddE(\"route\").From(\"b\").To(\"c\").AddE(\"route\").From(\"c\").To(\"d\")",
+                "groovy": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "java": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "javascript": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from_(\"a\").to(\"b\").addE(\"route\").from_(\"b\").to(\"c\").addE(\"route\").from_(\"c\").to(\"d\")",
+                "python": "g.add_v('airport').property('code', 'AAA').as_('a').add_v('airport').property('code', 'BBB').as_('b').add_v('airport').property('code', 'CCC').as_('c').add_v('airport').property('code', 'DDD').as_('d').add_e('route').from_('a').to('b').add_e('route').from_('b').to('c').add_e('route').from_('c').to('d')"
+            },
+            {
+                "original": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{1,2}(b:airport)\").select(\"b\").by(\"code\")",
+                "language": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{1,2}(b:airport)\").select(\"b\").by(\"code\")",
+                "canonical": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{1,2}(b:airport)\").select(\"b\").by(\"code\")",
+                "anonymized": "g.match(string0).select(string1).by(string2)",
+                "dotnet": "g.Match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{1,2}(b:airport)\").Select<object>(\"b\").By(\"code\")",
+                "go": "g.Match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{1,2}(b:airport)\").Select(\"b\").By(\"code\")",
+                "groovy": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{1,2}(b:airport)\").select(\"b\").by(\"code\")",
+                "java": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{1,2}(b:airport)\").select(\"b\").by(\"code\")",
+                "javascript": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{1,2}(b:airport)\").select(\"b\").by(\"code\")",
+                "python": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{1,2}(b:airport)\").select('b').by('code')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_match_chainXroute_2_X_selectXbX_byXcodeX",
+        "traversals": [
+            {
+                "original": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "language": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "canonical": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "anonymized": "g.addV(string0).property(string1, string2).as(string3).addV(string0).property(string1, string4).as(string5).addV(string0).property(string1, string6).as(string7).addV(string0).property(string1, string8).as(string9).addE(string10).from(string3).to(string5).addE(string10).from(string5).to(string7).addE(string10).from(string7).to(string9)",
+                "dotnet": "g.AddV((string) \"airport\").Property(\"code\", \"AAA\").As(\"a\").AddV((string) \"airport\").Property(\"code\", \"BBB\").As(\"b\").AddV((string) \"airport\").Property(\"code\", \"CCC\").As(\"c\").AddV((string) \"airport\").Property(\"code\", \"DDD\").As(\"d\").AddE((string) \"route\").From(\"a\").To(\"b\").AddE((string) \"route\").From(\"b\").To(\"c\").AddE((string) \"route\").From(\"c\").To(\"d\")",
+                "go": "g.AddV(\"airport\").Property(\"code\", \"AAA\").As(\"a\").AddV(\"airport\").Property(\"code\", \"BBB\").As(\"b\").AddV(\"airport\").Property(\"code\", \"CCC\").As(\"c\").AddV(\"airport\").Property(\"code\", \"DDD\").As(\"d\").AddE(\"route\").From(\"a\").To(\"b\").AddE(\"route\").From(\"b\").To(\"c\").AddE(\"route\").From(\"c\").To(\"d\")",
+                "groovy": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "java": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "javascript": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from_(\"a\").to(\"b\").addE(\"route\").from_(\"b\").to(\"c\").addE(\"route\").from_(\"c\").to(\"d\")",
+                "python": "g.add_v('airport').property('code', 'AAA').as_('a').add_v('airport').property('code', 'BBB').as_('b').add_v('airport').property('code', 'CCC').as_('c').add_v('airport').property('code', 'DDD').as_('d').add_e('route').from_('a').to('b').add_e('route').from_('b').to('c').add_e('route').from_('c').to('d')"
+            },
+            {
+                "original": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{2,}(b:airport)\").select(\"b\").by(\"code\")",
+                "language": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{2,}(b:airport)\").select(\"b\").by(\"code\")",
+                "canonical": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{2,}(b:airport)\").select(\"b\").by(\"code\")",
+                "anonymized": "g.match(string0).select(string1).by(string2)",
+                "dotnet": "g.Match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{2,}(b:airport)\").Select<object>(\"b\").By(\"code\")",
+                "go": "g.Match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{2,}(b:airport)\").Select(\"b\").By(\"code\")",
+                "groovy": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{2,}(b:airport)\").select(\"b\").by(\"code\")",
+                "java": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{2,}(b:airport)\").select(\"b\").by(\"code\")",
+                "javascript": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{2,}(b:airport)\").select(\"b\").by(\"code\")",
+                "python": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->{2,}(b:airport)\").select('b').by('code')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_match_chainXroute_plusX_selectXbX_byXcodeX",
+        "traversals": [
+            {
+                "original": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "language": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "canonical": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "anonymized": "g.addV(string0).property(string1, string2).as(string3).addV(string0).property(string1, string4).as(string5).addV(string0).property(string1, string6).as(string7).addV(string0).property(string1, string8).as(string9).addE(string10).from(string3).to(string5).addE(string10).from(string5).to(string7).addE(string10).from(string7).to(string9)",
+                "dotnet": "g.AddV((string) \"airport\").Property(\"code\", \"AAA\").As(\"a\").AddV((string) \"airport\").Property(\"code\", \"BBB\").As(\"b\").AddV((string) \"airport\").Property(\"code\", \"CCC\").As(\"c\").AddV((string) \"airport\").Property(\"code\", \"DDD\").As(\"d\").AddE((string) \"route\").From(\"a\").To(\"b\").AddE((string) \"route\").From(\"b\").To(\"c\").AddE((string) \"route\").From(\"c\").To(\"d\")",
+                "go": "g.AddV(\"airport\").Property(\"code\", \"AAA\").As(\"a\").AddV(\"airport\").Property(\"code\", \"BBB\").As(\"b\").AddV(\"airport\").Property(\"code\", \"CCC\").As(\"c\").AddV(\"airport\").Property(\"code\", \"DDD\").As(\"d\").AddE(\"route\").From(\"a\").To(\"b\").AddE(\"route\").From(\"b\").To(\"c\").AddE(\"route\").From(\"c\").To(\"d\")",
+                "groovy": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "java": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "javascript": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from_(\"a\").to(\"b\").addE(\"route\").from_(\"b\").to(\"c\").addE(\"route\").from_(\"c\").to(\"d\")",
+                "python": "g.add_v('airport').property('code', 'AAA').as_('a').add_v('airport').property('code', 'BBB').as_('b').add_v('airport').property('code', 'CCC').as_('c').add_v('airport').property('code', 'DDD').as_('d').add_e('route').from_('a').to('b').add_e('route').from_('b').to('c').add_e('route').from_('c').to('d')"
+            },
+            {
+                "original": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->+(b:airport)\").select(\"b\").by(\"code\")",
+                "language": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->+(b:airport)\").select(\"b\").by(\"code\")",
+                "canonical": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->+(b:airport)\").select(\"b\").by(\"code\")",
+                "anonymized": "g.match(string0).select(string1).by(string2)",
+                "dotnet": "g.Match(\"MATCH (a:airport {code: 'AAA'})-[:route]->+(b:airport)\").Select<object>(\"b\").By(\"code\")",
+                "go": "g.Match(\"MATCH (a:airport {code: 'AAA'})-[:route]->+(b:airport)\").Select(\"b\").By(\"code\")",
+                "groovy": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->+(b:airport)\").select(\"b\").by(\"code\")",
+                "java": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->+(b:airport)\").select(\"b\").by(\"code\")",
+                "javascript": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->+(b:airport)\").select(\"b\").by(\"code\")",
+                "python": "g.match(\"MATCH (a:airport {code: 'AAA'})-[:route]->+(b:airport)\").select('b').by('code')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_match_chainXreverseRoute_1_2X_selectXbX_byXcodeX",
+        "traversals": [
+            {
+                "original": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "language": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "canonical": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "anonymized": "g.addV(string0).property(string1, string2).as(string3).addV(string0).property(string1, string4).as(string5).addV(string0).property(string1, string6).as(string7).addV(string0).property(string1, string8).as(string9).addE(string10).from(string3).to(string5).addE(string10).from(string5).to(string7).addE(string10).from(string7).to(string9)",
+                "dotnet": "g.AddV((string) \"airport\").Property(\"code\", \"AAA\").As(\"a\").AddV((string) \"airport\").Property(\"code\", \"BBB\").As(\"b\").AddV((string) \"airport\").Property(\"code\", \"CCC\").As(\"c\").AddV((string) \"airport\").Property(\"code\", \"DDD\").As(\"d\").AddE((string) \"route\").From(\"a\").To(\"b\").AddE((string) \"route\").From(\"b\").To(\"c\").AddE((string) \"route\").From(\"c\").To(\"d\")",
+                "go": "g.AddV(\"airport\").Property(\"code\", \"AAA\").As(\"a\").AddV(\"airport\").Property(\"code\", \"BBB\").As(\"b\").AddV(\"airport\").Property(\"code\", \"CCC\").As(\"c\").AddV(\"airport\").Property(\"code\", \"DDD\").As(\"d\").AddE(\"route\").From(\"a\").To(\"b\").AddE(\"route\").From(\"b\").To(\"c\").AddE(\"route\").From(\"c\").To(\"d\")",
+                "groovy": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "java": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "javascript": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from_(\"a\").to(\"b\").addE(\"route\").from_(\"b\").to(\"c\").addE(\"route\").from_(\"c\").to(\"d\")",
+                "python": "g.add_v('airport').property('code', 'AAA').as_('a').add_v('airport').property('code', 'BBB').as_('b').add_v('airport').property('code', 'CCC').as_('c').add_v('airport').property('code', 'DDD').as_('d').add_e('route').from_('a').to('b').add_e('route').from_('b').to('c').add_e('route').from_('c').to('d')"
+            },
+            {
+                "original": "g.match(\"MATCH (a:airport {code: 'CCC'})<-[:route]-{1,2}(b:airport)\").select(\"b\").by(\"code\")",
+                "language": "g.match(\"MATCH (a:airport {code: 'CCC'})<-[:route]-{1,2}(b:airport)\").select(\"b\").by(\"code\")",
+                "canonical": "g.match(\"MATCH (a:airport {code: 'CCC'})<-[:route]-{1,2}(b:airport)\").select(\"b\").by(\"code\")",
+                "anonymized": "g.match(string0).select(string1).by(string2)",
+                "dotnet": "g.Match(\"MATCH (a:airport {code: 'CCC'})<-[:route]-{1,2}(b:airport)\").Select<object>(\"b\").By(\"code\")",
+                "go": "g.Match(\"MATCH (a:airport {code: 'CCC'})<-[:route]-{1,2}(b:airport)\").Select(\"b\").By(\"code\")",
+                "groovy": "g.match(\"MATCH (a:airport {code: 'CCC'})<-[:route]-{1,2}(b:airport)\").select(\"b\").by(\"code\")",
+                "java": "g.match(\"MATCH (a:airport {code: 'CCC'})<-[:route]-{1,2}(b:airport)\").select(\"b\").by(\"code\")",
+                "javascript": "g.match(\"MATCH (a:airport {code: 'CCC'})<-[:route]-{1,2}(b:airport)\").select(\"b\").by(\"code\")",
+                "python": "g.match(\"MATCH (a:airport {code: 'CCC'})<-[:route]-{1,2}(b:airport)\").select('b').by('code')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_match_chainXundirectedRoute_1X_selectXbX_byXcodeX",
+        "traversals": [
+            {
+                "original": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "language": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "canonical": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "anonymized": "g.addV(string0).property(string1, string2).as(string3).addV(string0).property(string1, string4).as(string5).addV(string0).property(string1, string6).as(string7).addV(string0).property(string1, string8).as(string9).addE(string10).from(string3).to(string5).addE(string10).from(string5).to(string7).addE(string10).from(string7).to(string9)",
+                "dotnet": "g.AddV((string) \"airport\").Property(\"code\", \"AAA\").As(\"a\").AddV((string) \"airport\").Property(\"code\", \"BBB\").As(\"b\").AddV((string) \"airport\").Property(\"code\", \"CCC\").As(\"c\").AddV((string) \"airport\").Property(\"code\", \"DDD\").As(\"d\").AddE((string) \"route\").From(\"a\").To(\"b\").AddE((string) \"route\").From(\"b\").To(\"c\").AddE((string) \"route\").From(\"c\").To(\"d\")",
+                "go": "g.AddV(\"airport\").Property(\"code\", \"AAA\").As(\"a\").AddV(\"airport\").Property(\"code\", \"BBB\").As(\"b\").AddV(\"airport\").Property(\"code\", \"CCC\").As(\"c\").AddV(\"airport\").Property(\"code\", \"DDD\").As(\"d\").AddE(\"route\").From(\"a\").To(\"b\").AddE(\"route\").From(\"b\").To(\"c\").AddE(\"route\").From(\"c\").To(\"d\")",
+                "groovy": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "java": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "javascript": "g.addV(\"airport\").property(\"code\", \"AAA\").as(\"a\").addV(\"airport\").property(\"code\", \"BBB\").as(\"b\").addV(\"airport\").property(\"code\", \"CCC\").as(\"c\").addV(\"airport\").property(\"code\", \"DDD\").as(\"d\").addE(\"route\").from_(\"a\").to(\"b\").addE(\"route\").from_(\"b\").to(\"c\").addE(\"route\").from_(\"c\").to(\"d\")",
+                "python": "g.add_v('airport').property('code', 'AAA').as_('a').add_v('airport').property('code', 'BBB').as_('b').add_v('airport').property('code', 'CCC').as_('c').add_v('airport').property('code', 'DDD').as_('d').add_e('route').from_('a').to('b').add_e('route').from_('b').to('c').add_e('route').from_('c').to('d')"
+            },
+            {
+                "original": "g.match(\"MATCH (a:airport {code: 'BBB'})-[:route]-{1}(b:airport)\").select(\"b\").by(\"code\")",
+                "language": "g.match(\"MATCH (a:airport {code: 'BBB'})-[:route]-{1}(b:airport)\").select(\"b\").by(\"code\")",
+                "canonical": "g.match(\"MATCH (a:airport {code: 'BBB'})-[:route]-{1}(b:airport)\").select(\"b\").by(\"code\")",
+                "anonymized": "g.match(string0).select(string1).by(string2)",
+                "dotnet": "g.Match(\"MATCH (a:airport {code: 'BBB'})-[:route]-{1}(b:airport)\").Select<object>(\"b\").By(\"code\")",
+                "go": "g.Match(\"MATCH (a:airport {code: 'BBB'})-[:route]-{1}(b:airport)\").Select(\"b\").By(\"code\")",
+                "groovy": "g.match(\"MATCH (a:airport {code: 'BBB'})-[:route]-{1}(b:airport)\").select(\"b\").by(\"code\")",
+                "java": "g.match(\"MATCH (a:airport {code: 'BBB'})-[:route]-{1}(b:airport)\").select(\"b\").by(\"code\")",
+                "javascript": "g.match(\"MATCH (a:airport {code: 'BBB'})-[:route]-{1}(b:airport)\").select(\"b\").by(\"code\")",
+                "python": "g.match(\"MATCH (a:airport {code: 'BBB'})-[:route]-{1}(b:airport)\").select('b').by('code')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_match_chainXroute_2X_selectXrX",
+        "traversals": [
+            {
+                "original": "g.addV(\"airport\").property(\"name\", \"AAA\").as(\"a\").addV(\"airport\").property(\"name\", \"BBB\").as(\"b\").addV(\"airport\").property(\"name\", \"CCC\").as(\"c\").addV(\"airport\").property(\"name\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "language": "g.addV(\"airport\").property(\"name\", \"AAA\").as(\"a\").addV(\"airport\").property(\"name\", \"BBB\").as(\"b\").addV(\"airport\").property(\"name\", \"CCC\").as(\"c\").addV(\"airport\").property(\"name\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "canonical": "g.addV(\"airport\").property(\"name\", \"AAA\").as(\"a\").addV(\"airport\").property(\"name\", \"BBB\").as(\"b\").addV(\"airport\").property(\"name\", \"CCC\").as(\"c\").addV(\"airport\").property(\"name\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "anonymized": "g.addV(string0).property(string1, string2).as(string3).addV(string0).property(string1, string4).as(string5).addV(string0).property(string1, string6).as(string7).addV(string0).property(string1, string8).as(string9).addE(string10).from(string3).to(string5).addE(string10).from(string5).to(string7).addE(string10).from(string7).to(string9)",
+                "dotnet": "g.AddV((string) \"airport\").Property(\"name\", \"AAA\").As(\"a\").AddV((string) \"airport\").Property(\"name\", \"BBB\").As(\"b\").AddV((string) \"airport\").Property(\"name\", \"CCC\").As(\"c\").AddV((string) \"airport\").Property(\"name\", \"DDD\").As(\"d\").AddE((string) \"route\").From(\"a\").To(\"b\").AddE((string) \"route\").From(\"b\").To(\"c\").AddE((string) \"route\").From(\"c\").To(\"d\")",
+                "go": "g.AddV(\"airport\").Property(\"name\", \"AAA\").As(\"a\").AddV(\"airport\").Property(\"name\", \"BBB\").As(\"b\").AddV(\"airport\").Property(\"name\", \"CCC\").As(\"c\").AddV(\"airport\").Property(\"name\", \"DDD\").As(\"d\").AddE(\"route\").From(\"a\").To(\"b\").AddE(\"route\").From(\"b\").To(\"c\").AddE(\"route\").From(\"c\").To(\"d\")",
+                "groovy": "g.addV(\"airport\").property(\"name\", \"AAA\").as(\"a\").addV(\"airport\").property(\"name\", \"BBB\").as(\"b\").addV(\"airport\").property(\"name\", \"CCC\").as(\"c\").addV(\"airport\").property(\"name\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "java": "g.addV(\"airport\").property(\"name\", \"AAA\").as(\"a\").addV(\"airport\").property(\"name\", \"BBB\").as(\"b\").addV(\"airport\").property(\"name\", \"CCC\").as(\"c\").addV(\"airport\").property(\"name\", \"DDD\").as(\"d\").addE(\"route\").from(\"a\").to(\"b\").addE(\"route\").from(\"b\").to(\"c\").addE(\"route\").from(\"c\").to(\"d\")",
+                "javascript": "g.addV(\"airport\").property(\"name\", \"AAA\").as(\"a\").addV(\"airport\").property(\"name\", \"BBB\").as(\"b\").addV(\"airport\").property(\"name\", \"CCC\").as(\"c\").addV(\"airport\").property(\"name\", \"DDD\").as(\"d\").addE(\"route\").from_(\"a\").to(\"b\").addE(\"route\").from_(\"b\").to(\"c\").addE(\"route\").from_(\"c\").to(\"d\")",
+                "python": "g.add_v('airport').property('name', 'AAA').as_('a').add_v('airport').property('name', 'BBB').as_('b').add_v('airport').property('name', 'CCC').as_('c').add_v('airport').property('name', 'DDD').as_('d').add_e('route').from_('a').to('b').add_e('route').from_('b').to('c').add_e('route').from_('c').to('d')"
+            },
+            {
+                "original": "g.match(\"MATCH (a:airport {name: 'AAA'})-[r:route]->{2}(b:airport)\").select(\"r\")",
+                "language": "g.match(\"MATCH (a:airport {name: 'AAA'})-[r:route]->{2}(b:airport)\").select(\"r\")",
+                "canonical": "g.match(\"MATCH (a:airport {name: 'AAA'})-[r:route]->{2}(b:airport)\").select(\"r\")",
+                "anonymized": "g.match(string0).select(string1)",
+                "dotnet": "g.Match(\"MATCH (a:airport {name: 'AAA'})-[r:route]->{2}(b:airport)\").Select<object>(\"r\")",
+                "go": "g.Match(\"MATCH (a:airport {name: 'AAA'})-[r:route]->{2}(b:airport)\").Select(\"r\")",
+                "groovy": "g.match(\"MATCH (a:airport {name: 'AAA'})-[r:route]->{2}(b:airport)\").select(\"r\")",
+                "java": "g.match(\"MATCH (a:airport {name: 'AAA'})-[r:route]->{2}(b:airport)\").select(\"r\")",
+                "javascript": "g.match(\"MATCH (a:airport {name: 'AAA'})-[r:route]->{2}(b:airport)\").select(\"r\")",
+                "python": "g.match(\"MATCH (a:airport {name: 'AAA'})-[r:route]->{2}(b:airport)\").select('r')"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_outE_mathX0_minus_itX_byXweightX",
         "traversals": [
             {

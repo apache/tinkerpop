@@ -58,6 +58,13 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public final class ExtensionStep {
 
+    /**
+     * Sentinel {@link #getMaxHops()} value denoting an open-ended upper bound, used for the
+     * {@code {m,}} and {@code +} quantifier forms. Mirrors {@link QueryEdge#UNBOUNDED} so plan
+     * and model layers agree on the open-ended sentinel.
+     */
+    public static final int UNBOUNDED = QueryEdge.UNBOUNDED;
+
     private final String anchorVariable;
     private final String edgeLabel;
     private final Direction direction;
@@ -67,6 +74,9 @@ public final class ExtensionStep {
     private final String targetVariable;
     private final List<PropertyPredicate> targetPredicates;
     private final long estimatedCost;
+    private final int minHops;
+    private final int maxHops;
+    private final boolean edgeVariableIsGroup;
 
     private final AtomicLong attempts = new AtomicLong(0);
     private final AtomicLong hits     = new AtomicLong(0);
@@ -76,7 +86,9 @@ public final class ExtensionStep {
                          final List<PropertyPredicate> edgePredicates,
                          final String targetLabel, final String targetVariable,
                          final List<PropertyPredicate> targetPredicates,
-                         final long estimatedCost) {
+                         final long estimatedCost,
+                         final int minHops, final int maxHops,
+                         final boolean edgeVariableIsGroup) {
         if (anchorVariable == null) throw new IllegalArgumentException("anchorVariable must not be null");
         this.anchorVariable = anchorVariable;
         this.edgeLabel = edgeLabel;
@@ -91,6 +103,19 @@ public final class ExtensionStep {
                 ? Collections.emptyList()
                 : Collections.unmodifiableList(new ArrayList<>(targetPredicates));
         this.estimatedCost = estimatedCost;
+        this.minHops = minHops;
+        this.maxHops = maxHops;
+        this.edgeVariableIsGroup = edgeVariableIsGroup;
+    }
+
+    public ExtensionStep(final String anchorVariable, final String edgeLabel,
+                         final Direction direction, final String edgeVariable,
+                         final List<PropertyPredicate> edgePredicates,
+                         final String targetLabel, final String targetVariable,
+                         final List<PropertyPredicate> targetPredicates,
+                         final long estimatedCost) {
+        this(anchorVariable, edgeLabel, direction, edgeVariable, edgePredicates,
+             targetLabel, targetVariable, targetPredicates, estimatedCost, 1, 1, false);
     }
 
     public ExtensionStep(final String anchorVariable, final String edgeLabel,
@@ -99,7 +124,7 @@ public final class ExtensionStep {
                          final List<PropertyPredicate> targetPredicates,
                          final long estimatedCost) {
         this(anchorVariable, edgeLabel, direction, edgeVariable, Collections.emptyList(),
-             targetLabel, targetVariable, targetPredicates, estimatedCost);
+             targetLabel, targetVariable, targetPredicates, estimatedCost, 1, 1, false);
     }
 
     public ExtensionStep(final String anchorVariable, final String edgeLabel,
@@ -107,14 +132,14 @@ public final class ExtensionStep {
                          final String targetLabel, final String targetVariable,
                          final List<PropertyPredicate> targetPredicates) {
         this(anchorVariable, edgeLabel, direction, edgeVariable, Collections.emptyList(),
-             targetLabel, targetVariable, targetPredicates, Long.MAX_VALUE);
+             targetLabel, targetVariable, targetPredicates, Long.MAX_VALUE, 1, 1, false);
     }
 
     public ExtensionStep(final String anchorVariable, final String edgeLabel,
                          final Direction direction, final String edgeVariable,
                          final String targetLabel, final String targetVariable) {
         this(anchorVariable, edgeLabel, direction, edgeVariable, Collections.emptyList(),
-             targetLabel, targetVariable, Collections.emptyList(), Long.MAX_VALUE);
+             targetLabel, targetVariable, Collections.emptyList(), Long.MAX_VALUE, 1, 1, false);
     }
 
     /** The variable name of the already-bound vertex used as the starting point for this step. */
@@ -171,6 +196,40 @@ public final class ExtensionStep {
         return estimatedCost;
     }
 
+    /**
+     * Returns the minimum number of hops this step traverses. For a plain, non-quantified
+     * single-hop step this is {@code 1}.
+     */
+    public int getMinHops() {
+        return minHops;
+    }
+
+    /**
+     * Returns the maximum number of hops this step traverses, or {@link #UNBOUNDED} for the
+     * open-ended quantifier forms ({@code {m,}} and {@code +}). For a plain, non-quantified
+     * single-hop step this is {@code 1}.
+     */
+    public int getMaxHops() {
+        return maxHops;
+    }
+
+    /**
+     * Returns {@code true} if this step carries a variable-length quantifier (e.g. {@code {1,3}},
+     * {@code +}, {@code {2,}}), as opposed to a plain single hop. Derived from the hop bounds:
+     * a step is quantified unless {@code minHops == 1 && maxHops == 1}.
+     */
+    public boolean isQuantified() {
+        return !(minHops == 1 && maxHops == 1);
+    }
+
+    /**
+     * Returns {@code true} if this step's edge variable is a group variable, modelled as a
+     * per-variable flag. For non-quantified steps this is {@code false}.
+     */
+    public boolean isEdgeVariableGroup() {
+        return edgeVariableIsGroup;
+    }
+
     // -------------------------------------------------------------------------
     // Adaptive runtime counters
     // -------------------------------------------------------------------------
@@ -202,6 +261,10 @@ public final class ExtensionStep {
                ", dir=" + direction +
                ", target=" + (targetVariable != null ? targetVariable : "_") +
                (targetLabel != null ? ":" + targetLabel : "") +
+               (isQuantified()
+                       ? ", hops={" + minHops + "," + (maxHops == UNBOUNDED ? "" : maxHops) + "}" +
+                         (edgeVariableIsGroup ? ", group" : "")
+                       : "") +
                (targetPredicates.isEmpty() ? "" : ", filters=" + targetPredicates) + "}";
     }
 }

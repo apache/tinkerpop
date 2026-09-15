@@ -448,4 +448,154 @@ public class DefaultGqlPlannerTest {
                 "MATCH (a:Person)-[:KNOWS]->(b:Person), (b)-[:WORKS_AT]->(c:Company)");
         assertNotNull(plan);
     }
+
+    // -------------------------------------------------------------------------
+    // Variable-length quantifiers
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testQuantifiedRangeForwardEdgeCompilesToStep() {
+        // Seed at (c:Company) (fewer), so the step traverses IN from Company back to Person.
+        graph.addVertex("Person");
+        graph.addVertex("Person");
+        graph.addVertex("Company");
+
+        final GqlMatchPlan plan = planner.compile(
+                QueryGraph.parse("MATCH (a:Person)-[r:KNOWS]->{1,3}(c:Company)"));
+
+        assertEquals(1, plan.getSteps().size());
+        final ExtensionStep step = plan.getSteps().get(0);
+        assertEquals("KNOWS", step.getEdgeLabel());
+        assertEquals("c", step.getAnchorVariable());
+        assertEquals("a", step.getTargetVariable());
+        // Company is the source-side target of an OUT edge, so traversing from Company is IN.
+        assertEquals(Direction.IN, step.getDirection());
+        assertEquals(1, step.getMinHops());
+        assertEquals(3, step.getMaxHops());
+        assertTrue(step.isQuantified());
+        assertTrue("named quantified edge is a group variable", step.isEdgeVariableGroup());
+    }
+
+    @Test
+    public void testQuantifiedExactForwardEdge() {
+        // {2} => min==max==2. Equal cardinality, first node (a) is seed => OUT forward step.
+        graph.addVertex("Person");
+        graph.addVertex("Person");
+
+        final GqlMatchPlan plan = planner.compile(
+                QueryGraph.parse("MATCH (a:Person)-[:KNOWS]->{2}(b:Person)"));
+
+        assertEquals(1, plan.getSteps().size());
+        final ExtensionStep step = plan.getSteps().get(0);
+        assertEquals("a", step.getAnchorVariable());
+        assertEquals("b", step.getTargetVariable());
+        assertEquals(Direction.OUT, step.getDirection());
+        assertEquals(2, step.getMinHops());
+        assertEquals(2, step.getMaxHops());
+        assertTrue(step.isQuantified());
+        // Anonymous edge variable => not a group variable.
+        assertFalse("anonymous quantified edge must not be a group variable", step.isEdgeVariableGroup());
+    }
+
+    @Test
+    public void testQuantifiedPlusForwardEdgeIsUnbounded() {
+        // '+' => min==1, max==UNBOUNDED.
+        graph.addVertex("Person");
+        graph.addVertex("Person");
+
+        final GqlMatchPlan plan = planner.compile(
+                QueryGraph.parse("MATCH (a:Person)-[r:KNOWS]->+(b:Person)"));
+
+        final ExtensionStep step = plan.getSteps().get(0);
+        assertEquals(1, step.getMinHops());
+        assertEquals(ExtensionStep.UNBOUNDED, step.getMaxHops());
+        assertTrue(step.isQuantified());
+        assertTrue(step.isEdgeVariableGroup());
+    }
+
+    @Test
+    public void testQuantifiedAtLeastForwardEdgeIsUnbounded() {
+        // {2,} => min==2, max==UNBOUNDED.
+        graph.addVertex("Person");
+        graph.addVertex("Person");
+
+        final GqlMatchPlan plan = planner.compile(
+                QueryGraph.parse("MATCH (a:Person)-[:KNOWS]->{2,}(b:Person)"));
+
+        final ExtensionStep step = plan.getSteps().get(0);
+        assertEquals(2, step.getMinHops());
+        assertEquals(ExtensionStep.UNBOUNDED, step.getMaxHops());
+        assertTrue(step.isQuantified());
+    }
+
+    @Test
+    public void testQuantifiedReverseDirectionEdge() {
+        // <-[..]-{1,3} => IN direction on the QueryEdge. Equal cardinality => seed = a.
+        graph.addVertex("Person");
+        graph.addVertex("Person");
+
+        final GqlMatchPlan plan = planner.compile(
+                QueryGraph.parse("MATCH (a:Person)<-[r:KNOWS]-{1,3}(b:Person)"));
+
+        final ExtensionStep step = plan.getSteps().get(0);
+        assertEquals("a", step.getAnchorVariable());
+        assertEquals("b", step.getTargetVariable());
+        // a is the source of an IN edge; traversing forward from a stays IN.
+        assertEquals(Direction.IN, step.getDirection());
+        assertEquals(1, step.getMinHops());
+        assertEquals(3, step.getMaxHops());
+        assertTrue(step.isEdgeVariableGroup());
+    }
+
+    @Test
+    public void testQuantifiedUndirectedEdge() {
+        // -[..]-{2} => BOTH direction.
+        graph.addVertex("Person");
+        graph.addVertex("Person");
+
+        final GqlMatchPlan plan = planner.compile(
+                QueryGraph.parse("MATCH (a:Person)-[r:KNOWS]-{2}(b:Person)"));
+
+        final ExtensionStep step = plan.getSteps().get(0);
+        assertEquals(Direction.BOTH, step.getDirection());
+        assertEquals(2, step.getMinHops());
+        assertEquals(2, step.getMaxHops());
+        assertTrue(step.isEdgeVariableGroup());
+    }
+
+    @Test
+    public void testNonQuantifiedEdgeDefaultsRegressionGuard() {
+        // A plain edge must compile to a single-hop, non-group step.
+        graph.addVertex("Person");
+        graph.addVertex("Person");
+
+        final GqlMatchPlan plan = planner.compile(
+                QueryGraph.parse("MATCH (a:Person)-[r:KNOWS]->(b:Person)"));
+
+        final ExtensionStep step = plan.getSteps().get(0);
+        assertEquals(1, step.getMinHops());
+        assertEquals(1, step.getMaxHops());
+        assertFalse("plain edge must not be quantified", step.isQuantified());
+        assertFalse("plain edge must not be a group variable", step.isEdgeVariableGroup());
+    }
+
+    @Test
+    public void testQuantifiedBackEdgeClosingCycleThrows() {
+        // Triangle a-b-c. With equal cardinality the seed is a. BFS from a processes both
+        // edges touching a (AB forward -> visits b, CA forward -> visits c). The remaining
+        // edge BC is then discovered with both endpoints already visited, so it is classified
+        // as a BACK edge. Quantifying BC forces the forward-only guard to fire.
+        graph.addVertex("A");
+        graph.addVertex("B");
+        graph.addVertex("C");
+
+        try {
+            planner.compile(QueryGraph.parse(
+                    "MATCH (a:A)-[:AB]->(b:B)-[:BC]->{1,3}(c:C)-[:CA]->(a:A)"));
+            fail("expected IllegalArgumentException for quantified back edge closing a cycle");
+        } catch (final IllegalArgumentException ex) {
+            assertTrue("message should explain the forward-only limitation: " + ex.getMessage(),
+                    ex.getMessage().contains("quantified edges closing a pattern cycle are not yet supported"));
+        }
+    }
 }
