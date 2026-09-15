@@ -26,8 +26,6 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.gql.GQLLexer;
-import org.apache.tinkerpop.gremlin.gql.GQLParser;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -162,7 +160,14 @@ public final class QueryGraph {
                 final Direction dir = extractDirection(edgeCtx);
                 final List<PropertyPredicate> edgePredicates = extractEdgePredicates(edgeCtx);
 
-                edges.add(new QueryEdge(edgeVar, edgeLabel, dir, current, next, edgePredicates));
+                final GQLParser.QuantifierContext quantifierCtx = getQuantifier(edgeCtx);
+                final int[] bounds = extractQuantifier(quantifierCtx);
+                // The edge variable becomes a group variable exactly when the edge is quantified
+                // and carries a (non-null) variable name.
+                final boolean edgeVariableIsGroup = quantifierCtx != null && edgeVar != null;
+
+                edges.add(new QueryEdge(edgeVar, edgeLabel, dir, current, next, edgePredicates,
+                        bounds[0], bounds[1], edgeVariableIsGroup));
                 current = next;
             }
         }
@@ -378,6 +383,107 @@ public final class QueryGraph {
         if (ctx.directedEdge() != null) return ctx.directedEdge().elementPatternFiller();
         if (ctx.undirectedEdge() != null) return ctx.undirectedEdge().elementPatternFiller();
         return null;
+    }
+
+    /**
+     * Reaches the trailing quantifier off whichever edge subtype is present, mirroring
+     * {@link #getEdgeFiller}'s dispatch. Returns {@code null} when the edge has no quantifier.
+     */
+    private static GQLParser.QuantifierContext getQuantifier(final GQLParser.EdgePatternContext ctx) {
+        if (ctx.reverseDirectedEdge() != null) return ctx.reverseDirectedEdge().quantifier();
+        if (ctx.directedEdge() != null) return ctx.directedEdge().quantifier();
+        if (ctx.undirectedEdge() != null) return ctx.undirectedEdge().quantifier();
+        return null;
+    }
+
+    /**
+     * Interprets a parsed {@code quantifier} context into its {@code [minHops, maxHops]} bounds,
+     * validating the semantic rules that the grammar deliberately does not enforce.
+     *
+     * <p>Grammar forms: {@code {m,n}}->[m,n]; {@code {m}}->[m,m]; {@code {m,}}->[m,UNBOUNDED];
+     * {@code {,n}}->[0,n]; {@code *}->[0,UNBOUNDED]; {@code +}->[1,UNBOUNDED]. An absent quantifier
+     * ({@code null} context) is a plain single-hop edge -> [1,1].
+     *
+     * <p>Rejected here:
+     * <ul>
+     *   <li>{@code max < min}, which is never valid.</li>
+     *   <li>A bound whose token text is not a bare non-negative decimal, such as a leading sign or
+     *       a numeric type suffix (both admitted by the INTEGER_LITERAL backing), which is never
+     *       valid.</li>
+     *   <li>A zero lower bound ({@code {0,..}}, {@code {,n}}, {@code *}), which is valid GQL but not
+     *       yet supported and rejected with a distinct "not yet supported" message.</li>
+     * </ul>
+     */
+    private static int[] extractQuantifier(final GQLParser.QuantifierContext ctx) {
+        if (ctx == null) return new int[]{1, 1};
+
+        final int min;
+        final int max;
+        if (ctx.STAR() != null) {
+            min = 0;
+            max = QueryEdge.UNBOUNDED;
+        } else if (ctx.PLUS() != null) {
+            min = 1;
+            max = QueryEdge.UNBOUNDED;
+        } else {
+            final List<GQLParser.UnsignedIntegerContext> bounds = ctx.unsignedInteger();
+            final boolean hasComma = ctx.COMMA() != null;
+            if (bounds.size() == 2) {
+                // {m,n}
+                min = parseBound(bounds.get(0));
+                max = parseBound(bounds.get(1));
+            } else if (!hasComma) {
+                // {m}
+                min = parseBound(bounds.get(0));
+                max = min;
+            } else {
+                // Either {m,} or {,n}; distinguish by whether the bound precedes the comma.
+                final GQLParser.UnsignedIntegerContext bound = bounds.get(0);
+                final boolean boundBeforeComma =
+                        bound.getStop().getTokenIndex() < ctx.COMMA().getSymbol().getTokenIndex();
+                if (boundBeforeComma) {
+                    // {m,}
+                    min = parseBound(bound);
+                    max = QueryEdge.UNBOUNDED;
+                } else {
+                    // {,n}
+                    min = 0;
+                    max = parseBound(bound);
+                }
+            }
+        }
+
+        // (a) never valid: max < min.
+        if (max < min)
+            throw new IllegalArgumentException(
+                    "invalid quantifier bounds: upper bound (" + renderBound(max)
+                    + ") is less than lower bound (" + min + ")");
+
+        // (c) deferred: zero lower bound (min == 0), i.e. *, {0,n}, {,n}. Valid GQL, not yet supported.
+        if (min == 0)
+            throw new IllegalArgumentException(
+                    "zero-length paths (min bound 0, including * and {0,n}/{,n}) are not yet supported");
+
+        return new int[]{min, max};
+    }
+
+    /**
+     * Parses a single quantifier bound, rejecting anything that is not a bare non-negative decimal.
+     * The bound is backed by INTEGER_LITERAL, which also admits a leading sign and a numeric type
+     * suffix (e.g. {@code -1}, {@code 3i}); those are never valid as a quantifier bound and are
+     * rejected on the raw token text before {@link Integer#parseInt}.
+     */
+    private static int parseBound(final GQLParser.UnsignedIntegerContext ctx) {
+        final String text = ctx.getText();
+        if (!text.matches("[0-9]+"))
+            throw new IllegalArgumentException(
+                    "invalid quantifier bound '" + text
+                    + "': bounds must be bare non-negative integers (no sign or type suffix)");
+        return Integer.parseInt(text);
+    }
+
+    private static String renderBound(final int bound) {
+        return bound == QueryEdge.UNBOUNDED ? "unbounded" : Integer.toString(bound);
     }
 
     @Override
