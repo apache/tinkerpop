@@ -31,6 +31,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -227,5 +228,19 @@ public class ConnectionOptionsTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldRejectUrlWhenContactPointsAlreadyAdded() {
         Cluster.build().addContactPoints("host1", "host2").url("http://localhost:8182/gremlin");
+    }
+
+    @Test
+    public void shouldRejectUnparseableUrl() {
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Cluster.build().url("http://not a valid uri"));
+        assertEquals("Invalid url: http://not a valid uri", ex.getMessage());
+    }
+
+    @Test
+    public void shouldRejectUrlWithoutHost() {
+        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Cluster.build().url("http:///gremlin"));
+        assertEquals("Invalid url, no host could be parsed from: http:///gremlin", ex.getMessage());
     }
 }
