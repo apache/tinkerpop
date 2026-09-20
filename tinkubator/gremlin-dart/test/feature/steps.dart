@@ -271,15 +271,20 @@ class FeatureSteps {
   }
 
   GraphTraversal? _takeGeneratedTraversal() {
-    if (world.params.isNotEmpty || world.sideEffects.isNotEmpty) return null;
     final traversals = generatedTraversals[world.scenarioName];
-    if (traversals != null &&
-        world.generatedTraversalIndex < traversals.length) {
-      return traversals[world.generatedTraversalIndex++](
-        _sourceWithSideEffects(),
-      );
+    if (traversals == null ||
+        world.generatedTraversalIndex >= traversals.length) {
+      return null;
     }
-    return null;
+    final traversal = Function.apply(
+      traversals[world.generatedTraversalIndex++],
+      [_sourceWithSideEffects()],
+      {
+        for (final entry in world.params.entries)
+          Symbol(entry.key): entry.value,
+      },
+    );
+    return traversal as GraphTraversal;
   }
 
   Future<void> _executeGraphInitializer(String traversalString) async {

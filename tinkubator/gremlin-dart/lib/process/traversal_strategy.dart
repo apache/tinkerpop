@@ -91,15 +91,13 @@ class PartitionStrategy extends TraversalStrategy {
     String? writePartition,
     List<String>? readPartitions,
     bool? includeMetaProperties,
-  }) : super(
-            strategyName: 'PartitionStrategy',
-            configuration: {
-              if (partitionKey != null) 'partitionKey': partitionKey,
-              if (writePartition != null) 'writePartition': writePartition,
-              if (readPartitions != null) 'readPartitions': readPartitions,
-              if (includeMetaProperties != null)
-                'includeMetaProperties': includeMetaProperties,
-            });
+  }) : super(strategyName: 'PartitionStrategy', configuration: {
+          if (partitionKey != null) 'partitionKey': partitionKey,
+          if (writePartition != null) 'writePartition': writePartition,
+          if (readPartitions != null) 'readPartitions': readPartitions,
+          if (includeMetaProperties != null)
+            'includeMetaProperties': includeMetaProperties,
+        });
 }
 
 class SubgraphStrategy extends TraversalStrategy {
@@ -108,23 +106,20 @@ class SubgraphStrategy extends TraversalStrategy {
     dynamic edges,
     dynamic vertexProperties,
     bool? checkAdjacentVertices,
-  }) : super(
-            strategyName: 'SubgraphStrategy',
-            configuration: {
-              if (vertices != null) 'vertices': vertices,
-              if (edges != null) 'edges': edges,
-              if (vertexProperties != null)
-                'vertexProperties': vertexProperties,
-              if (checkAdjacentVertices != null)
-                'checkAdjacentVertices': checkAdjacentVertices,
-            });
+  }) : super(strategyName: 'SubgraphStrategy', configuration: {
+          if (vertices != null) 'vertices': vertices,
+          if (edges != null) 'edges': edges,
+          if (vertexProperties != null) 'vertexProperties': vertexProperties,
+          if (checkAdjacentVertices != null)
+            'checkAdjacentVertices': checkAdjacentVertices,
+        });
 }
 
 class SeedStrategy extends TraversalStrategy {
-  SeedStrategy({required int seed})
+  SeedStrategy({required dynamic seed})
       : super(
             strategyName: 'SeedStrategy',
-            configuration: {'seed': seed});
+            configuration: {'seed': seed is GInt ? seed.value : seed});
 }
 
 class ReadOnlyStrategy extends TraversalStrategy {
@@ -132,6 +127,154 @@ class ReadOnlyStrategy extends TraversalStrategy {
 }
 
 class VertexProgramStrategy extends TraversalStrategy {
-  VertexProgramStrategy(Map<String, dynamic> options)
+  VertexProgramStrategy([Map<String, dynamic>? options])
       : super(strategyName: 'VertexProgramStrategy', configuration: options);
+}
+
+// Strategies without configuration.
+class AdjacentToIncidentStrategy extends TraversalStrategy {
+  AdjacentToIncidentStrategy()
+      : super(strategyName: 'AdjacentToIncidentStrategy');
+}
+
+class ByModulatorOptimizationStrategy extends TraversalStrategy {
+  ByModulatorOptimizationStrategy()
+      : super(strategyName: 'ByModulatorOptimizationStrategy');
+}
+
+class ComputerFinalizationStrategy extends TraversalStrategy {
+  ComputerFinalizationStrategy()
+      : super(strategyName: 'ComputerFinalizationStrategy');
+}
+
+class ComputerVerificationStrategy extends TraversalStrategy {
+  ComputerVerificationStrategy()
+      : super(strategyName: 'ComputerVerificationStrategy');
+}
+
+class ConnectiveStrategy extends TraversalStrategy {
+  ConnectiveStrategy() : super(strategyName: 'ConnectiveStrategy');
+}
+
+class CountStrategy extends TraversalStrategy {
+  CountStrategy() : super(strategyName: 'CountStrategy');
+}
+
+class EarlyLimitStrategy extends TraversalStrategy {
+  EarlyLimitStrategy() : super(strategyName: 'EarlyLimitStrategy');
+}
+
+class ElementIdStrategy extends TraversalStrategy {
+  ElementIdStrategy() : super(strategyName: 'ElementIdStrategy');
+}
+
+class FilterRankingStrategy extends TraversalStrategy {
+  FilterRankingStrategy() : super(strategyName: 'FilterRankingStrategy');
+}
+
+class GraphFilterStrategy extends TraversalStrategy {
+  GraphFilterStrategy() : super(strategyName: 'GraphFilterStrategy');
+}
+
+class IdentityRemovalStrategy extends TraversalStrategy {
+  IdentityRemovalStrategy() : super(strategyName: 'IdentityRemovalStrategy');
+}
+
+class IncidentToAdjacentStrategy extends TraversalStrategy {
+  IncidentToAdjacentStrategy()
+      : super(strategyName: 'IncidentToAdjacentStrategy');
+}
+
+class InlineFilterStrategy extends TraversalStrategy {
+  InlineFilterStrategy() : super(strategyName: 'InlineFilterStrategy');
+}
+
+class LambdaRestrictionStrategy extends TraversalStrategy {
+  LambdaRestrictionStrategy()
+      : super(strategyName: 'LambdaRestrictionStrategy');
+}
+
+class LazyBarrierStrategy extends TraversalStrategy {
+  LazyBarrierStrategy() : super(strategyName: 'LazyBarrierStrategy');
+}
+
+class MatchPredicateStrategy extends TraversalStrategy {
+  MatchPredicateStrategy() : super(strategyName: 'MatchPredicateStrategy');
+}
+
+class MessagePassingReductionStrategy extends TraversalStrategy {
+  MessagePassingReductionStrategy()
+      : super(strategyName: 'MessagePassingReductionStrategy');
+}
+
+class OrderLimitStrategy extends TraversalStrategy {
+  OrderLimitStrategy() : super(strategyName: 'OrderLimitStrategy');
+}
+
+class PathProcessorStrategy extends TraversalStrategy {
+  PathProcessorStrategy() : super(strategyName: 'PathProcessorStrategy');
+}
+
+class PathRetractionStrategy extends TraversalStrategy {
+  PathRetractionStrategy() : super(strategyName: 'PathRetractionStrategy');
+}
+
+class ProductiveByStrategy extends TraversalStrategy {
+  ProductiveByStrategy() : super(strategyName: 'ProductiveByStrategy');
+}
+
+class ProfileStrategy extends TraversalStrategy {
+  ProfileStrategy() : super(strategyName: 'ProfileStrategy');
+}
+
+class ReferenceElementStrategy extends TraversalStrategy {
+  ReferenceElementStrategy() : super(strategyName: 'ReferenceElementStrategy');
+}
+
+class RepeatUnrollStrategy extends TraversalStrategy {
+  RepeatUnrollStrategy() : super(strategyName: 'RepeatUnrollStrategy');
+}
+
+class StandardVerificationStrategy extends TraversalStrategy {
+  StandardVerificationStrategy()
+      : super(strategyName: 'StandardVerificationStrategy');
+}
+
+class VertexProgramRestrictionStrategy extends TraversalStrategy {
+  VertexProgramRestrictionStrategy()
+      : super(strategyName: 'VertexProgramRestrictionStrategy');
+}
+
+// Strategies with configuration.
+class ReservedKeysVerificationStrategy extends TraversalStrategy {
+  ReservedKeysVerificationStrategy(
+      {bool? throwException, bool? logWarning, dynamic keys})
+      : super(strategyName: 'ReservedKeysVerificationStrategy', configuration: {
+          if (throwException != null) 'throwException': throwException,
+          if (logWarning != null) 'logWarning': logWarning,
+          if (keys != null) 'keys': keys,
+        });
+}
+
+class EdgeLabelVerificationStrategy extends TraversalStrategy {
+  EdgeLabelVerificationStrategy({bool? throwException, bool? logWarning})
+      : super(strategyName: 'EdgeLabelVerificationStrategy', configuration: {
+          if (throwException != null) 'throwException': throwException,
+          if (logWarning != null) 'logWarning': logWarning,
+        });
+}
+
+class MatchAlgorithmStrategy extends TraversalStrategy {
+  MatchAlgorithmStrategy({String? matchAlgorithm})
+      : super(strategyName: 'MatchAlgorithmStrategy', configuration: {
+          if (matchAlgorithm != null) 'matchAlgorithm': matchAlgorithm,
+        });
+}
+
+class HaltedTraverserStrategy extends TraversalStrategy {
+  HaltedTraverserStrategy({String? haltedTraverserFactory})
+      : super(strategyName: 'HaltedTraverserStrategy', configuration: {
+          if (haltedTraverserFactory != null)
+            'haltedTraverserFactory': haltedTraverserFactory,
+        });
 }

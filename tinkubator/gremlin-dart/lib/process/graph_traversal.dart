@@ -55,9 +55,13 @@ class GraphTraversalSource {
 
   // ---- Source modifiers ----------------------------------------------------
 
-  GraphTraversalSource withStrategies(List<TraversalStrategy> strategies) {
+  GraphTraversalSource withStrategies(dynamic first,
+      [dynamic second = _unspecified,
+      dynamic third = _unspecified,
+      dynamic fourth = _unspecified]) {
     final gl = GremlinLang(gremlinLang)
-      ..addSource('withStrategies', strategies);
+      ..addSource(
+          'withStrategies', _strategyArgs([first, second, third, fourth]));
     return _spawn(gl);
   }
 
@@ -65,9 +69,13 @@ class GraphTraversalSource {
   ///
   /// Strategy names should match the simple class name used by the server
   /// (e.g. `'ConnectiveStrategy'`, `'ReadOnlyStrategy'`).
-  GraphTraversalSource withoutStrategies(List<String> strategyNames) {
+  GraphTraversalSource withoutStrategies(dynamic first,
+      [dynamic second = _unspecified,
+      dynamic third = _unspecified,
+      dynamic fourth = _unspecified]) {
     final gl = GremlinLang(gremlinLang)
-      ..addSource('withoutStrategies', strategyNames);
+      ..addSource(
+          'withoutStrategies', _strategyArgs([first, second, third, fourth]));
     return _spawn(gl);
   }
 
@@ -115,16 +123,24 @@ class GraphTraversalSource {
   GraphTraversal V(
           [dynamic first = _unspecified,
           dynamic second = _unspecified,
-          dynamic third = _unspecified]) =>
+          dynamic third = _unspecified,
+          dynamic fourth = _unspecified,
+          dynamic fifth = _unspecified,
+          dynamic sixth = _unspecified]) =>
       _spawnTraversal(GremlinLang(gremlinLang)
-        ..addStep('V', _normalizeVarArgs([first, second, third])));
+        ..addStep('V',
+            _normalizeVarArgs([first, second, third, fourth, fifth, sixth])));
 
   GraphTraversal E(
           [dynamic first = _unspecified,
           dynamic second = _unspecified,
-          dynamic third = _unspecified]) =>
+          dynamic third = _unspecified,
+          dynamic fourth = _unspecified,
+          dynamic fifth = _unspecified,
+          dynamic sixth = _unspecified]) =>
       _spawnTraversal(GremlinLang(gremlinLang)
-        ..addStep('E', _normalizeVarArgs([first, second, third])));
+        ..addStep('E',
+            _normalizeVarArgs([first, second, third, fourth, fifth, sixth])));
 
   GraphTraversal addV([dynamic label]) =>
       _spawnTraversal(GremlinLang(gremlinLang)
@@ -216,13 +232,17 @@ class GraphTraversalSource {
       _spawnTraversal(
           GremlinLang(gremlinLang)..addStep('call', [procedure, ...?args]));
 
-  GraphTraversal call([dynamic procedure, dynamic traversal]) =>
+  GraphTraversal call([dynamic procedure, dynamic second, dynamic third]) =>
       _spawnTraversal(GremlinLang(gremlinLang)
         ..addStep(
             'call',
             procedure == null
                 ? null
-                : [procedure, if (traversal != null) traversal]));
+                : [
+                    procedure,
+                    if (second != null) second,
+                    if (third != null) third
+                  ]));
 
   GraphTraversal union(
           [dynamic first, dynamic second, dynamic third, dynamic fourth]) =>
@@ -245,13 +265,26 @@ class GraphTraversalSource {
   String toString() => 'graphtraversalsource[$graph]';
 }
 
+/// Strategy arguments may be given as varargs or as a single list.
+List<dynamic> _strategyArgs(List<dynamic> args) {
+  if (args.first is List) return List<dynamic>.from(args.first as List);
+  return [
+    for (final arg in args)
+      if (!identical(arg, _unspecified)) arg
+  ];
+}
+
 List<dynamic>? _normalizeVarArgs(List<dynamic> args) {
   final values = List<dynamic>.from(args);
   while (values.isNotEmpty && identical(values.last, _unspecified)) {
     values.removeLast();
   }
   if (values.isEmpty) return null;
-  return values.length == 1 && values.first is List
+  // A lone list is spread into varargs, except an empty one: spreading it
+  // would drop the argument entirely and emit invalid gremlin such as hasId().
+  return values.length == 1 &&
+          values.first is List &&
+          (values.first as List).isNotEmpty
       ? values.first as List<dynamic>
       : values;
 }
@@ -316,14 +349,22 @@ class GraphTraversal extends Traversal {
   GraphTraversal V(
           [dynamic first = _unspecified,
           dynamic second = _unspecified,
-          dynamic third = _unspecified]) =>
-      _step('V', _normalizeVarArgs([first, second, third]));
+          dynamic third = _unspecified,
+          dynamic fourth = _unspecified,
+          dynamic fifth = _unspecified,
+          dynamic sixth = _unspecified]) =>
+      _step(
+          'V', _normalizeVarArgs([first, second, third, fourth, fifth, sixth]));
 
   GraphTraversal E(
           [dynamic first = _unspecified,
           dynamic second = _unspecified,
-          dynamic third = _unspecified]) =>
-      _step('E', _normalizeVarArgs([first, second, third]));
+          dynamic third = _unspecified,
+          dynamic fourth = _unspecified,
+          dynamic fifth = _unspecified,
+          dynamic sixth = _unspecified]) =>
+      _step(
+          'E', _normalizeVarArgs([first, second, third, fourth, fifth, sixth]));
 
   GraphTraversal inject([
     dynamic a = _unspecified,
@@ -392,7 +433,14 @@ class GraphTraversal extends Traversal {
             ad
           ]));
 
-  GraphTraversal to(dynamic toVertex) => _step('to', [toVertex]);
+  GraphTraversal to(dynamic toVertexOrDirection,
+          [dynamic first = _unspecified,
+          dynamic second = _unspecified,
+          dynamic third = _unspecified]) =>
+      _step(
+          'to',
+          _normalizeLiteralVarArgs(
+              [toVertexOrDirection, first, second, third]));
 
   GraphTraversal from_(dynamic fromVertex) => _step('from', [fromVertex]);
 
@@ -618,8 +666,17 @@ class GraphTraversal extends Traversal {
   GraphTraversal sideEffect(dynamic traversalOrLambda) =>
       _step('sideEffect', [traversalOrLambda]);
 
-  GraphTraversal call([dynamic procedure, dynamic traversal]) => _step('call',
-      procedure == null ? null : [procedure, if (traversal != null) traversal]);
+  GraphTraversal call(
+          [dynamic procedure, dynamic second, dynamic third]) =>
+      _step(
+          'call',
+          procedure == null
+              ? null
+              : [
+                  procedure,
+                  if (second != null) second,
+                  if (third != null) third
+                ]);
 
   GraphTraversal store(String key) => _step('store', [key]);
 
