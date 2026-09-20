@@ -102,25 +102,34 @@ class GremlinAntlrToDart {
     switch (call.name) {
       case 'with':
         final args = _parseArgs(call.argsText);
-        return args.length == 1 ? source.with_(args[0] as String) : source.with_(args[0] as String, args[1]);
+        return args.length == 1
+            ? source.with_(args[0] as String)
+            : source.with_(args[0] as String, args[1]);
       case 'withBulk':
-        return source.withBulk(_parseArgs(call.argsText));
+        return Function.apply(source.withBulk, _parseArgs(call.argsText))
+            as GraphTraversalSource;
       case 'withPath':
-        return source.withPath(_parseArgs(call.argsText));
+        return Function.apply(source.withPath, _parseArgs(call.argsText))
+            as GraphTraversalSource;
       case 'withSack':
-        return source.withSack(_parseArgs(call.argsText));
+        return Function.apply(source.withSack, _parseArgs(call.argsText))
+            as GraphTraversalSource;
       case 'withSideEffect':
-        return source.withSideEffect(_parseArgs(call.argsText));
+        return Function.apply(source.withSideEffect, _parseArgs(call.argsText))
+            as GraphTraversalSource;
       case 'withStrategies':
         return source.withStrategies(
           _splitArgs(call.argsText).map(_parseStrategy).toList(),
         );
       case 'withoutStrategies':
         return source.withoutStrategies(
-          _splitArgs(call.argsText).map((name) => name.replaceFirst(RegExp(r'^new'), '').trim()).toList(),
+          _splitArgs(call.argsText)
+              .map((name) => name.replaceFirst(RegExp(r'^new'), '').trim())
+              .toList(),
         );
       default:
-        throw UnsupportedError('Unsupported traversal source method: ${call.name}');
+        throw UnsupportedError(
+            'Unsupported traversal source method: ${call.name}');
     }
   }
 
@@ -128,19 +137,19 @@ class GremlinAntlrToDart {
     final args = _parseArgs(call.argsText);
     switch (call.name) {
       case 'V':
-        return source.V(args);
+        return Function.apply(source.V, args) as GraphTraversal;
       case 'E':
-        return source.E(args);
+        return Function.apply(source.E, args) as GraphTraversal;
       case 'addV':
         return source.addV(args.isEmpty ? null : args.first);
       case 'addE':
         return source.addE(args.first);
       case 'mergeV':
-        return source.mergeV(args.isEmpty ? null : args.first);
+        return args.isEmpty ? source.mergeV() : source.mergeV(args.first);
       case 'mergeE':
-        return source.mergeE(args.isEmpty ? null : args.first);
+        return args.isEmpty ? source.mergeE() : source.mergeE(args.first);
       case 'inject':
-        return source.inject(args);
+        return Function.apply(source.inject, args) as GraphTraversal;
       case 'io':
         return source.io(args.first as String);
       case 'call':
@@ -159,7 +168,8 @@ class GremlinAntlrToDart {
           args,
         );
       default:
-        throw UnsupportedError('Unsupported traversal spawn method: ${call.name}');
+        throw UnsupportedError(
+            'Unsupported traversal spawn method: ${call.name}');
     }
   }
 
@@ -184,7 +194,8 @@ class GremlinAntlrToDart {
     return GraphTraversal(
       traversal.graph,
       traversal.traversalStrategies,
-      GremlinLang(traversal.gremlinLang)..addStep(name, args.isEmpty ? null : args),
+      GremlinLang(traversal.gremlinLang)
+        ..addStep(name, args.isEmpty ? null : args),
     );
   }
 
@@ -239,7 +250,8 @@ class GremlinAntlrToDart {
     if (open == -1 || !segment.endsWith(')')) {
       return _Call(segment, '');
     }
-    return _Call(segment.substring(0, open), segment.substring(open + 1, segment.length - 1));
+    return _Call(segment.substring(0, open),
+        segment.substring(open + 1, segment.length - 1));
   }
 
   List<String> _splitArgs(String argsText) {
@@ -306,6 +318,8 @@ class GremlinAntlrToDart {
 
     if (variables.containsKey(text)) return variables[text];
 
+    if (text == '[:]') return <dynamic, dynamic>{};
+
     if (text.startsWith('datetime(') ||
         text.startsWith('UUID(') ||
         text.startsWith('Duration(') ||
@@ -322,7 +336,7 @@ class GremlinAntlrToDart {
         final result = <dynamic, dynamic>{};
         for (final part in _splitArgs(inner)) {
           final idx = _indexOfTopLevel(part, ':');
-          result[_parseValue(part.substring(0, idx))] =
+          result[_parseMapKey(part.substring(0, idx))] =
               _parseValue(part.substring(idx + 1));
         }
         return result;
@@ -347,9 +361,25 @@ class GremlinAntlrToDart {
     if (number != null) return number;
 
     if (text == '[]') return <dynamic>[];
-    if (text == '[:]') return <dynamic, dynamic>{};
 
     return GremlinRawLiteral(text);
+  }
+
+  dynamic _parseMapKey(String text) {
+    var key = text.trim();
+    if (key.startsWith('(') && key.endsWith(')')) {
+      key = key.substring(1, key.length - 1).trim();
+    }
+    if (_isQuoted(key)) return _unquote(key);
+
+    final enumValue = _parseEnum(key);
+    if (enumValue != null) return enumValue;
+
+    // In Gremlin map literals, an unquoted identifier is a string key. This
+    // preserves merge criteria such as [name: 'marko'] while retaining token
+    // keys (for example, T.id) through the enum path above.
+    if (RegExp(r'^[A-Za-z_][A-Za-z0-9_]*$').hasMatch(key)) return key;
+    return _parseValue(key);
   }
 
   bool _looksLikeMap(String text) => _indexOfTopLevel(text, ':') != -1;
@@ -420,7 +450,9 @@ class GremlinAntlrToDart {
           .hasMatch(text);
 
   dynamic _parsePredicate(String text) {
-    if (text.contains('.and(') || text.contains('.or(') || text.startsWith('not(')) {
+    if (text.contains('.and(') ||
+        text.contains('.or(') ||
+        text.startsWith('not(')) {
       return GremlinRawLiteral(text);
     }
 
@@ -485,7 +517,8 @@ class GremlinAntlrToDart {
     for (final part in _splitArgs(call.argsText)) {
       final idx = _indexOfTopLevel(part, ':');
       if (idx == -1) continue;
-      config[part.substring(0, idx).trim()] = _parseValue(part.substring(idx + 1).trim());
+      config[part.substring(0, idx).trim()] =
+          _parseValue(part.substring(idx + 1).trim());
     }
 
     switch (call.name) {
@@ -520,22 +553,25 @@ class GremlinAntlrToDart {
     final dot = text.indexOf('.');
     if (dot == -1) {
       return switch (text) {
-      'asc' => EnumValue('Order', 'asc'),
-      'desc' => EnumValue('Order', 'desc'),
-      'shuffle' => EnumValue('Order', 'shuffle'),
-      'sum' => EnumValue('Operator', 'sum'),
-      'sumLong' => EnumValue('Operator', 'sumLong'),
-      'minus' => EnumValue('Operator', 'minus'),
-      'mult' => EnumValue('Operator', 'mult'),
-      'div' => EnumValue('Operator', 'div'),
-      'min' => EnumValue('Operator', 'min'),
-      'max' => EnumValue('Operator', 'max'),
-      'assign' => EnumValue('Operator', 'assign'),
-      'and' => EnumValue('Operator', 'and'),
-      'or' => EnumValue('Operator', 'or'),
-      'addAll' => EnumValue('Operator', 'addAll'),
-      _ => null,
-    };
+        'IN' => EnumValue('Direction', 'IN'),
+        'OUT' => EnumValue('Direction', 'OUT'),
+        'BOTH' => EnumValue('Direction', 'BOTH'),
+        'asc' => EnumValue('Order', 'asc'),
+        'desc' => EnumValue('Order', 'desc'),
+        'shuffle' => EnumValue('Order', 'shuffle'),
+        'sum' => EnumValue('Operator', 'sum'),
+        'sumLong' => EnumValue('Operator', 'sumLong'),
+        'minus' => EnumValue('Operator', 'minus'),
+        'mult' => EnumValue('Operator', 'mult'),
+        'div' => EnumValue('Operator', 'div'),
+        'min' => EnumValue('Operator', 'min'),
+        'max' => EnumValue('Operator', 'max'),
+        'assign' => EnumValue('Operator', 'assign'),
+        'and' => EnumValue('Operator', 'and'),
+        'or' => EnumValue('Operator', 'or'),
+        'addAll' => EnumValue('Operator', 'addAll'),
+        _ => null,
+      };
     }
 
     final type = text.substring(0, dot);
@@ -560,15 +596,23 @@ class GremlinAntlrToDart {
   dynamic _parseNumber(String text) {
     if (!RegExp(r'^[-+]?\d').hasMatch(text)) return null;
     final lower = text.toLowerCase();
-    if (lower.endsWith('b')) return GByte(int.parse(text.substring(0, text.length - 1)));
-    if (lower.endsWith('s')) return GShort(int.parse(text.substring(0, text.length - 1)));
-    if (lower.endsWith('i')) return GInt(int.parse(text.substring(0, text.length - 1)));
-    if (lower.endsWith('l')) return GLong(int.parse(text.substring(0, text.length - 1)));
-    if (lower.endsWith('n')) return BigInt.parse(text.substring(0, text.length - 1));
-    if (lower.endsWith('f')) return GFloat(double.parse(text.substring(0, text.length - 1)));
-    if (lower.endsWith('d')) return GDouble(double.parse(text.substring(0, text.length - 1)));
+    if (lower.endsWith('b'))
+      return GByte(int.parse(text.substring(0, text.length - 1)));
+    if (lower.endsWith('s'))
+      return GShort(int.parse(text.substring(0, text.length - 1)));
+    if (lower.endsWith('i'))
+      return GInt(int.parse(text.substring(0, text.length - 1)));
+    if (lower.endsWith('l'))
+      return GLong(int.parse(text.substring(0, text.length - 1)));
+    if (lower.endsWith('n'))
+      return BigInt.parse(text.substring(0, text.length - 1));
+    if (lower.endsWith('f'))
+      return GFloat(double.parse(text.substring(0, text.length - 1)));
+    if (lower.endsWith('d'))
+      return GDouble(double.parse(text.substring(0, text.length - 1)));
     if (lower.endsWith('m')) return GremlinRawLiteral(text);
-    if (text.contains('.') || text.contains('E') || text.contains('e')) return double.parse(text);
+    if (text.contains('.') || text.contains('E') || text.contains('e'))
+      return double.parse(text);
     return int.parse(text);
   }
 

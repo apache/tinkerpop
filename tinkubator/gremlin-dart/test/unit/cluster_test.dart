@@ -78,6 +78,25 @@ void main() {
       expect(cluster.hosts.length, 3);
       cluster.close();
     });
+
+    test('result iteration batch size defaults to 64 and can be overridden',
+        () {
+      final defaultCluster = Cluster.build().create();
+      expect(defaultCluster.resultIterationBatchSize, 64);
+      defaultCluster.close();
+
+      final configuredCluster =
+          Cluster.build().resultIterationBatchSize(8).create();
+      expect(configuredCluster.resultIterationBatchSize, 8);
+      configuredCluster.close();
+    });
+
+    test('rejects a non-positive result iteration batch size', () {
+      expect(
+        () => Cluster.build().resultIterationBatchSize(0),
+        throwsArgumentError,
+      );
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -205,17 +224,13 @@ void main() {
     });
 
     test('isOpen is true when at least one host is available', () {
-      final cluster = Cluster.build()
-          .addContactPoints(['h1', 'h2'])
-          .create();
+      final cluster = Cluster.build().addContactPoints(['h1', 'h2']).create();
       expect(cluster.connect().isOpen, isTrue);
       cluster.close();
     });
 
     test('isOpen is false when all hosts are unavailable', () {
-      final cluster = Cluster.build()
-          .addContactPoints(['h1', 'h2'])
-          .create();
+      final cluster = Cluster.build().addContactPoints(['h1', 'h2']).create();
       for (final h in cluster.hosts) {
         h.isAvailable = false;
       }
@@ -235,9 +250,7 @@ void main() {
       final conn = cluster.connect();
       // _stream should throw immediately since no hosts are available
       await expectLater(
-        conn
-            .submit(_simpleLang('g.inject(1)'))
-            .then((t) => t.toList()),
+        conn.submit(_simpleLang('g.inject(1)')).then((t) => t.toList()),
         throwsA(isA<NoHostAvailableException>()),
       );
       await cluster.close();
@@ -276,9 +289,7 @@ void main() {
     });
 
     test('tx() throws NoHostAvailableException when no hosts available', () {
-      final cluster = Cluster.build()
-          .addContactPoint('h1')
-          .create();
+      final cluster = Cluster.build().addContactPoint('h1').create();
       for (final h in cluster.hosts) {
         h.isAvailable = false;
       }
@@ -354,5 +365,4 @@ Uint8List _emptyGraphBinaryResponse() => Uint8List.fromList([
     ]);
 
 /// Builds a minimal [GremlinLang] that serialises to [gremlin].
-GremlinLang _simpleLang(String gremlin) =>
-    GremlinLang()..addStep(gremlin);
+GremlinLang _simpleLang(String gremlin) => GremlinLang()..addStep(gremlin);

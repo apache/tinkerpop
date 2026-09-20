@@ -28,6 +28,7 @@ class CucumberWorld {
   bool resultIsNext = false;
   String? errorMessage;
   bool ignore = false;
+  int generatedTraversalIndex = 0;
   Map<String, DataGraph> graphDataMap;
   Set<String> tags = <String>{};
 
@@ -47,6 +48,7 @@ class CucumberWorld {
     resultIsNext = false;
     errorMessage = null;
     ignore = false;
+    generatedTraversalIndex = 0;
     g = null;
   }
 }

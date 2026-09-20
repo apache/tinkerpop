@@ -23,7 +23,17 @@ limitations under the License.
     <version>4.0.0-SNAPSHOT</version>
     <name>Apache TinkerPop :: Gremlin Dart</name>
     <properties>
-        <tinkerpop.version>4.0.0-beta.2</tinkerpop.version>
+        <!--
+          Use 4.0.0-SNAPSHOT so generate.groovy uses the local TinkerPop build
+          while DartTranslateVisitor remains inside this Tinkubator project.
+          Build gremlin-core first: mvn install -pl gremlin-core,gremlin-test,gremlin-language -am
+          from the TinkerPop root, then run: mvn generate-sources -f tinkubator/gremlin-dart/pom.xml
+        -->
+        <tinkerpop.version>4.0.0-SNAPSHOT</tinkerpop.version>
+        <groovy.version>4.0.25</groovy.version>
+        <logback.version>1.3.15</logback.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
     </properties>
@@ -32,15 +42,85 @@ limitations under the License.
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-core</artifactId>
             <version>${tinkerpop.version}</version>
-            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>gremlin-language</artifactId>
+            <version>${tinkerpop.version}</version>
         </dependency>
     </dependencies>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.14.0</version>
+                <configuration>
+                    <release>11</release>
+                </configuration>
+            </plugin>
+            <!-- Generate test/feature/gremlin.dart from .feature files via DartTranslateVisitor -->
+            <plugin>
+                <groupId>org.codehaus.gmavenplus</groupId>
+                <artifactId>gmavenplus-plugin</artifactId>
+                <version>4.1.1</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.tinkerpop</groupId>
+                        <artifactId>gremlin-core</artifactId>
+                        <version>${tinkerpop.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.tinkerpop</groupId>
+                        <artifactId>gremlin-test</artifactId>
+                        <version>${tinkerpop.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.tinkerpop</groupId>
+                        <artifactId>gremlin-language</artifactId>
+                        <version>${tinkerpop.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.groovy</groupId>
+                        <artifactId>groovy-all</artifactId>
+                        <version>${groovy.version}</version>
+                        <type>pom</type>
+                        <scope>runtime</scope>
+                    </dependency>
+                    <dependency>
+                        <groupId>ch.qos.logback</groupId>
+                        <artifactId>logback-classic</artifactId>
+                        <version>${logback.version}</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>generate-dart-traversals</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <includeClasspath>PROJECT_AND_PLUGIN</includeClasspath>
+                            <properties>
+                                <property>
+                                    <name>projectBaseDir</name>
+                                    <value>${project.basedir}/../..</value>
+                                </property>
+                            </properties>
+                            <scripts>
+                                <script>${project.basedir}/build/generate.groovy</script>
+                            </scripts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- No Java source — skip JVM build artifacts -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.11.2</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
@@ -48,6 +128,7 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.1</version>
                 <configuration>
                     <skipSource>true</skipSource>
                 </configuration>
@@ -55,6 +136,7 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
+                <version>3.1.4</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
@@ -62,6 +144,7 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.0.0</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>

@@ -111,7 +111,8 @@ class RoundRobin implements LoadBalancingStrategy {
   @override
   HostEntry? select({Set<HostEntry>? exclude}) {
     final available = _hosts
-        .where((h) => h.isAvailable && (exclude == null || !exclude.contains(h)))
+        .where(
+            (h) => h.isAvailable && (exclude == null || !exclude.contains(h)))
         .toList();
     if (available.isEmpty) return null;
     final i = _index % available.length;
@@ -153,16 +154,19 @@ class Cluster {
   final LoadBalancingStrategy _lb;
   final ConnectionOptions _baseOptions;
   final Duration _reconnectInterval;
+  final int _resultIterationBatchSize;
 
   Cluster._({
     required List<HostEntry> hosts,
     required LoadBalancingStrategy lb,
     required ConnectionOptions baseOptions,
     required Duration reconnectInterval,
+    required int resultIterationBatchSize,
   })  : _hosts = hosts,
         _lb = lb,
         _baseOptions = baseOptions,
-        _reconnectInterval = reconnectInterval {
+        _reconnectInterval = reconnectInterval,
+        _resultIterationBatchSize = resultIterationBatchSize {
     _lb.initialize(hosts);
   }
 
@@ -175,6 +179,9 @@ class Cluster {
   /// Returns a [ClusterRemoteConnection] that load-balances across all hosts.
   ClusterRemoteConnection connect([String? traversalSource]) =>
       ClusterRemoteConnection(this, traversalSource);
+
+  /// The default number of results requested from the server per response page.
+  int get resultIterationBatchSize => _resultIterationBatchSize;
 
   // ---- internal submission helpers ----------------------------------------
 
@@ -252,8 +259,7 @@ class Cluster {
   }
 
   @override
-  String toString() =>
-      'Cluster(${_hosts.map((h) => h.url).join(', ')})';
+  String toString() => 'Cluster(${_hosts.map((h) => h.url).join(', ')})';
 }
 
 // ---------------------------------------------------------------------------
@@ -284,7 +290,11 @@ class ClusterRemoteConnection extends RemoteConnection
 
   @override
   Future<RemoteTraversal> submit(GremlinLang gremlinLang) {
-    final request = _buildRequest(gremlinLang, _source);
+    final request = _buildRequest(
+      gremlinLang,
+      _source,
+      defaultBatchSize: _cluster._resultIterationBatchSize,
+    );
     return Future.value(RemoteTraversal(_cluster._stream(request)));
   }
 
@@ -304,12 +314,12 @@ class ClusterRemoteConnection extends RemoteConnection
   /// Cluster-level commit/rollback are not supported — they have no meaning
   /// outside of an explicit transaction.  Use [tx()] to obtain a [Transaction].
   @override
-  Future<void> commit() =>
-      throw UnsupportedError('Use tx() to get a Transaction for commit/rollback.');
+  Future<void> commit() => throw UnsupportedError(
+      'Use tx() to get a Transaction for commit/rollback.');
 
   @override
-  Future<void> rollback() =>
-      throw UnsupportedError('Use tx() to get a Transaction for commit/rollback.');
+  Future<void> rollback() => throw UnsupportedError(
+      'Use tx() to get a Transaction for commit/rollback.');
 
   // The cluster manages its own connection lifecycle.
   @override
@@ -326,6 +336,7 @@ class ClusterBuilder {
   String _path = '/gremlin';
   bool _enableSsl = false;
   Duration _reconnectInterval = const Duration(seconds: 1);
+  int _resultIterationBatchSize = 64;
   LoadBalancingStrategy _lb = RoundRobin();
   ConnectionOptions _options = const ConnectionOptions();
 
@@ -358,6 +369,17 @@ class ClusterBuilder {
 
   ClusterBuilder reconnectInterval(Duration interval) {
     _reconnectInterval = interval;
+    return this;
+  }
+
+  /// Overrides the server's result page size for requests made through this
+  /// cluster. Must be greater than zero.
+  ClusterBuilder resultIterationBatchSize(int size) {
+    if (size < 1) {
+      throw ArgumentError.value(
+          size, 'size', 'resultIterationBatchSize must be greater than zero');
+    }
+    _resultIterationBatchSize = size;
     return this;
   }
 
@@ -396,13 +418,15 @@ class ClusterBuilder {
   Cluster create() {
     final points = _contactPoints.isEmpty ? ['localhost'] : _contactPoints;
     final scheme = _enableSsl ? 'https' : 'http';
-    final hosts =
-        points.map((addr) => HostEntry('$scheme://$addr:$_port$_path')).toList();
+    final hosts = points
+        .map((addr) => HostEntry('$scheme://$addr:$_port$_path'))
+        .toList();
     return Cluster._(
       hosts: hosts,
       lb: _lb,
       baseOptions: _options,
       reconnectInterval: _reconnectInterval,
+      resultIterationBatchSize: _resultIterationBatchSize,
     );
   }
 }
@@ -413,10 +437,15 @@ class ClusterBuilder {
 
 /// Translates a [GremlinLang] traversal into a [RequestMessage], honouring
 /// any OptionsStrategy hints embedded in the traversal (evaluationTimeout,
-/// bulkResults, materializeProperties).
-RequestMessage _buildRequest(GremlinLang gremlinLang, String traversalSource) {
+/// bulkResults, batchSize, materializeProperties).
+RequestMessage _buildRequest(
+  GremlinLang gremlinLang,
+  String traversalSource, {
+  int? defaultBatchSize,
+}) {
   final strategies = gremlinLang.getOptionsStrategies();
   int? evalTimeout;
+  int? batchSize = defaultBatchSize;
   bool bulkResults = true;
   String? materializeProperties;
 
@@ -425,6 +454,8 @@ RequestMessage _buildRequest(GremlinLang gremlinLang, String traversalSource) {
       switch (entry.key) {
         case 'evaluationTimeout':
           evalTimeout = entry.value as int?;
+        case 'batchSize':
+          batchSize = entry.value as int?;
         case 'bulkResults':
           bulkResults = (entry.value as bool?) ?? true;
         case 'materializeProperties':
@@ -438,6 +469,7 @@ RequestMessage _buildRequest(GremlinLang gremlinLang, String traversalSource) {
       .addBulkResults(bulkResults);
 
   if (evalTimeout != null) builder.addTimeoutMillis(evalTimeout);
+  if (batchSize != null) builder.addBatchSize(batchSize);
   if (materializeProperties != null) {
     builder.addMaterializeProperties(materializeProperties);
   }

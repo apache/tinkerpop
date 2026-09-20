@@ -61,19 +61,53 @@ class GraphSetup {
     await submit('g.V().drop()', 'ggraph');
   }
 
+  /// Restores the named fixture graphs loaded by the test-server lifecycle
+  /// hook. Feature scenarios mutate them, so a second suite invocation must
+  /// not inherit data from the first one.
+  Future<void> resetAllDataGraphs() async {
+    for (final entry in _fixtureLoaders.entries) {
+      final traversalSource = graphTraversalSources[entry.key]!;
+      final graph = 'g.getGraph()';
+      await _submit(
+        '$graph.clear(); ${entry.value}($graph)',
+        traversalSource,
+        null,
+        null,
+        'gremlin-groovy',
+      );
+    }
+    await cleanEmptyGraph();
+  }
+
   Future<List<dynamic>> submit(
     String traversal,
     String traversalSource, [
     Map<String, dynamic>? params,
     Map<String, dynamic>? sideEffects,
+  ]) =>
+      _submit(
+        traversal,
+        traversalSource,
+        params,
+        sideEffects,
+      );
+
+  Future<List<dynamic>> _submit(
+    String traversal,
+    String traversalSource, [
+    Map<String, dynamic>? params,
+    Map<String, dynamic>? sideEffects,
+    String language = 'gremlin-lang',
   ]) async {
     // Strip .iterate() — it is a client-side terminal; the server iterates for us.
-    var resolved = traversal.replaceAll(RegExp(r'\.iterate\(\)\s*$'), '').trim();
+    var resolved =
+        traversal.replaceAll(RegExp(r'\.iterate\(\)\s*$'), '').trim();
 
     // Inject side effects as withSideEffect() calls after the leading "g"
     if (sideEffects != null && sideEffects.isNotEmpty) {
       final seStr = sideEffects.entries
-          .map((e) => '.withSideEffect("${e.key}", ${GremlinLang.valueToGremlinLiteral(e.value)})')
+          .map((e) =>
+              '.withSideEffect("${e.key}", ${GremlinLang.valueToGremlinLiteral(e.value)})')
           .join();
       if (resolved.startsWith('g.') || resolved == 'g') {
         resolved = 'g$seStr${resolved.substring(1)}';
@@ -85,6 +119,7 @@ class GraphSetup {
     );
     try {
       final builder = RequestMessage.build(resolved)
+          .addLanguage(language)
           .addG(traversalSource)
           .addBulkResults(true);
       if (params != null && params.isNotEmpty) {
@@ -160,3 +195,11 @@ class GraphSetup {
     return '${key['n']}-$propertyKey->$value';
   }
 }
+
+const _fixtureLoaders = <String, String>{
+  'modern': 'TinkerFactory.generateModern',
+  'classic': 'TinkerFactory.generateClassic',
+  'crew': 'TinkerFactory.generateTheCrew',
+  'grateful': 'TinkerFactory.generateGratefulDead',
+  'sink': 'TinkerFactory.generateKitchenSink',
+};

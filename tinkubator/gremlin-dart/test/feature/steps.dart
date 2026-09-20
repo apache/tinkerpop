@@ -30,9 +30,8 @@ import 'value_parser.dart';
 const skipTags = <String>{
   'GraphComputerOnly',
   'AllowNullPropertyValues',
-  'StepTree',
+  'StepRead',
   'StepWrite',
-  'StepSubgraph',
   'DataChar',
   'WithReservedKeysVerificationStrategy',
   // These scenarios use gremlin-lang literal forms (Binary("..."),
@@ -97,7 +96,7 @@ class FeatureSteps {
     }
 
     if (text == 'the graph initializer of') {
-      await _submit(step.docString ?? '');
+      await _executeGraphInitializer(step.docString ?? '');
       // Refresh vertex/edge lookups for empty graph so v[name].id params resolve correctly
       if (world.graphName == 'empty') {
         await graphSetup.refreshEmptyGraph(world.graphDataMap['empty']!);
@@ -148,6 +147,23 @@ class FeatureSteps {
 
     if (text == 'the result should be of') {
       _assertSubset(step.table);
+      return;
+    }
+
+    if (text == 'the result should be a tree with a structure of') {
+      _assertNoError();
+      expect(world.result, hasLength(1));
+      final tree = world.result.single;
+      expect(tree, isA<Tree>());
+      _assertTree(tree as Tree, step.docString ?? '');
+      return;
+    }
+
+    if (text == 'the result should be a subgraph with the following') {
+      _assertNoError();
+      expect(world.result, hasLength(1));
+      expect(world.result.single, isA<Graph>());
+      _assertSubgraph(world.result.single as Graph, step.table);
       return;
     }
 
@@ -254,20 +270,38 @@ class FeatureSteps {
     return source;
   }
 
-  GraphTraversal _buildPendingTraversal() {
-    final generatedTraversal = generatedTraversals[world.scenarioName];
-    if (generatedTraversal != null) {
-      final traversal = generatedTraversal(_sourceWithSideEffects());
-      if (traversal is GraphTraversal) return traversal;
+  GraphTraversal? _takeGeneratedTraversal() {
+    if (world.params.isNotEmpty || world.sideEffects.isNotEmpty) return null;
+    final traversals = generatedTraversals[world.scenarioName];
+    if (traversals != null &&
+        world.generatedTraversalIndex < traversals.length) {
+      return traversals[world.generatedTraversalIndex++](
+        _sourceWithSideEffects(),
+      );
     }
+    return null;
+  }
 
+  Future<void> _executeGraphInitializer(String traversalString) async {
+    final traversal = _takeGeneratedTraversal();
+    if (traversal != null) {
+      await traversal.toList();
+      return;
+    }
+    await _submit(traversalString);
+  }
+
+  GraphTraversal _buildPendingTraversal() {
+    final generatedTraversal = _takeGeneratedTraversal();
+    if (generatedTraversal != null) return generatedTraversal;
     final parsed = GremlinAntlrToDart.parse(
       _sourceWithSideEffects(),
       (world.pendingTraversal ?? '').trim(),
       variables: world.params,
     );
     if (parsed is! GraphTraversal) {
-      throw StateError('Expected a GraphTraversal but parsed ${parsed.runtimeType}');
+      throw StateError(
+          'Expected a GraphTraversal but parsed ${parsed.runtimeType}');
     }
     return parsed;
   }
@@ -275,7 +309,8 @@ class FeatureSteps {
   Future<List<dynamic>> _executePendingTraversalToList() =>
       _buildPendingTraversal().toList();
 
-  Future<dynamic> _executePendingTraversalNext() => _buildPendingTraversal().next();
+  Future<dynamic> _executePendingTraversalNext() =>
+      _buildPendingTraversal().next();
 
   void _assertNoError() {
     if (world.errorMessage != null) {
@@ -316,6 +351,97 @@ class FeatureSteps {
       expect(expected.any((value) => _deepEquals(actual, value)), isTrue,
           reason: 'unexpected result $actual');
     }
+  }
+
+  void _assertTree(Tree tree, String expected) {
+    final lines =
+        expected.split('\n').where((line) => line.trim().isNotEmpty).toList();
+    final expectedTree = _ExpectedTree();
+    final stack = <_ExpectedTree>[expectedTree];
+
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      final marker = line.indexOf('|--');
+      if (marker < 0) {
+        throw FormatException('Invalid tree expectation line: $line');
+      }
+      // The feature reader trims only the first line of a doc string. The
+      // remaining lines retain its six-space Gherkin indentation.
+      final depth = marker <= 6 ? 0 : (marker - 6) ~/ 3;
+      final label = line.substring(marker + 3).trim();
+      while (stack.length > depth + 1) {
+        stack.removeLast();
+      }
+      final child = _ExpectedTree();
+      stack.last.children[label] = child;
+      stack.add(child);
+    }
+
+    void compare(Tree actual, _ExpectedTree expectedNode) {
+      final actualChildren = <String, Tree>{
+        for (final entry in actual.entries) _treeLabel(entry.key): entry.value,
+      };
+      expect(actualChildren.keys.toSet(), expectedNode.children.keys.toSet());
+      for (final entry in expectedNode.children.entries) {
+        compare(actualChildren[entry.key]!, entry.value);
+      }
+    }
+
+    compare(tree, expectedTree);
+  }
+
+  void _assertSubgraph(Graph graph, List<Map<String, String>> table) {
+    final edgeRows = table
+        .map((row) => row['edges'])
+        .whereType<String>()
+        .map(ValueParser(world).parse)
+        .cast<Edge>()
+        .toList();
+    final vertexRows = table
+        .map((row) => row['vertices'])
+        .whereType<String>()
+        .map(ValueParser(world).parse)
+        .cast<Vertex>()
+        .toList();
+
+    if (edgeRows.isNotEmpty ||
+        table.firstOrNull?.containsKey('edges') == true) {
+      _assertElementsUnordered(graph.edges, edgeRows);
+    }
+    if (vertexRows.isNotEmpty ||
+        table.firstOrNull?.containsKey('vertices') == true) {
+      _assertElementsUnordered(graph.vertices, vertexRows);
+    }
+  }
+
+  void _assertElementsUnordered(List<Element> actual, List<Element> expected) {
+    expect(actual, hasLength(expected.length), reason: 'actual: $actual');
+    final remaining = List<Element>.from(actual);
+    for (final element in expected) {
+      final index = remaining.indexWhere((actual) => actual == element);
+      expect(index, isNonNegative, reason: 'expected $element in $remaining');
+      remaining.removeAt(index);
+    }
+  }
+
+  String _treeLabel(dynamic value) {
+    final graph = world.graphDataMap[world.graphName];
+    if (value is Vertex && graph != null) {
+      final name = graph.vertices.entries
+          .where((entry) => entry.value.id == value.id)
+          .map((entry) => entry.key)
+          .firstOrNull;
+      return name == null ? value.toString() : 'v[$name]';
+    }
+    if (value is Edge && graph != null) {
+      final name = graph.edges.entries
+          .where((entry) => entry.value.id == value.id)
+          .map((entry) => entry.key)
+          .firstOrNull;
+      return name == null ? value.toString() : 'e[$name]';
+    }
+    if (value is int) return 'd[$value].i';
+    return value.toString();
   }
 
   Future<void> _assertGraphCount(int count, String traversalString) async {
@@ -390,4 +516,8 @@ class FeatureSteps {
     }
     return value;
   }
+}
+
+class _ExpectedTree {
+  final Map<String, _ExpectedTree> children = <String, _ExpectedTree>{};
 }

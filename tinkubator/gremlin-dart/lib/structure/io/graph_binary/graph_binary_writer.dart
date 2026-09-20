@@ -55,6 +55,9 @@ class GraphBinaryWriter {
     if (message.bulkResults != null) {
       fields['bulkResults'] = message.bulkResults;
     }
+    if (message.batchSize != null) {
+      fields['batchSize'] = message.batchSize;
+    }
     fields.addAll(message.fields);
 
     final writer = _GraphBinaryValueWriter();
@@ -121,6 +124,10 @@ class _GraphBinaryValueWriter {
       writeList(value);
     } else if (value is Set) {
       writeSet(value);
+    } else if (value is Tree) {
+      writeTree(value);
+    } else if (value is Graph) {
+      writeGraph(value);
     } else if (value is Map) {
       writeMap(value);
     } else if (value is VertexProperty) {
@@ -165,7 +172,8 @@ class _GraphBinaryValueWriter {
 
   void writeShort(int value, {bool fullyQualified = true}) {
     if (value < -32768 || value > 32767) {
-      throw ArgumentError.value(value, 'value', 'GShort must be in range -32768..32767');
+      throw ArgumentError.value(
+          value, 'value', 'GShort must be in range -32768..32767');
     }
     _writeHeader(DataType.short, fullyQualified);
     final data = ByteData(2)..setInt16(0, value, Endian.big);
@@ -179,7 +187,8 @@ class _GraphBinaryValueWriter {
 
   void writeByte(int value, {bool fullyQualified = true}) {
     if (value < -128 || value > 127) {
-      throw ArgumentError.value(value, 'value', 'GByte must be in range -128..127');
+      throw ArgumentError.value(
+          value, 'value', 'GByte must be in range -128..127');
     }
     _writeHeader(DataType.byte_, fullyQualified);
     addByte(value);
@@ -356,11 +365,62 @@ class _GraphBinaryValueWriter {
     writeList(value.objects);
   }
 
+  void writeTree(Tree value, {bool fullyQualified = true}) {
+    _writeHeader(DataType.tree, fullyQualified);
+    _writeTreeValue(value);
+  }
+
+  void _writeTreeValue(Tree value) {
+    _writeInt32Bare(value.length);
+    for (final entry in value.entries) {
+      writeAny(entry.key);
+      _writeTreeValue(entry.value);
+    }
+  }
+
+  void writeGraph(Graph value, {bool fullyQualified = true}) {
+    _writeHeader(DataType.graph, fullyQualified);
+    _writeInt32Bare(value.vertices.length);
+    for (final vertex in value.vertices) {
+      _writeGraphVertex(vertex);
+    }
+    _writeInt32Bare(value.edges.length);
+    for (final edge in value.edges) {
+      _writeGraphEdge(edge);
+    }
+  }
+
+  void _writeGraphVertex(Vertex value) {
+    writeAny(value.id);
+    writeList([value.label], fullyQualified: false);
+    final properties = value.properties.whereType<VertexProperty>().toList();
+    _writeInt32Bare(properties.length);
+    for (final property in properties) {
+      writeAny(property.id);
+      writeList([property.label], fullyQualified: false);
+      writeAny(property.value);
+      writeAny(null);
+      writeList(property.properties, fullyQualified: false);
+    }
+  }
+
+  void _writeGraphEdge(Edge value) {
+    writeAny(value.id);
+    writeList([value.label], fullyQualified: false);
+    writeAny(value.inV.id);
+    writeAny(null);
+    writeAny(value.outV.id);
+    writeAny(null);
+    writeAny(null);
+    writeList(value.properties, fullyQualified: false);
+  }
+
   void writeEnum(EnumValue value, {bool fullyQualified = true}) {
     final type = switch (value.typeName) {
       'Direction' => DataType.direction,
       'Merge' => DataType.merge,
       'T' => DataType.t,
+      'GType' => DataType.gType,
       _ =>
         throw ArgumentError('Unsupported GraphBinary enum: ${value.typeName}'),
     };

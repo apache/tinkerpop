@@ -96,11 +96,13 @@ class DriverRemoteConnection extends RemoteConnection
       'evaluationTimeout',
       'materializeProperties',
       'bulkResults',
+      'batchSize',
     };
 
     int? evalTimeout;
     bool? bulkResults;
     String? materializeProperties;
+    int? batchSize;
 
     for (final s in strategies) {
       for (final entry in s.configuration.entries) {
@@ -112,6 +114,8 @@ class DriverRemoteConnection extends RemoteConnection
             bulkResults = entry.value as bool?;
           case 'materializeProperties':
             materializeProperties = entry.value as String?;
+          case 'batchSize':
+            batchSize = entry.value as int?;
         }
       }
     }
@@ -122,6 +126,7 @@ class DriverRemoteConnection extends RemoteConnection
       evaluationTimeout: evalTimeout,
       bulkResults: bulkResults,
       materializeProperties: materializeProperties,
+      batchSize: batchSize,
       transactionId: transactionId,
     );
 
