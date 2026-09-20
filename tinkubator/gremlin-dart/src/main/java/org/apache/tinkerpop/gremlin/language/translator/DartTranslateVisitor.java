@@ -19,11 +19,14 @@
 package org.apache.tinkerpop.gremlin.language.translator;
 
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.time.OffsetDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Translates Gremlin traversals to Dart source.
@@ -243,6 +246,35 @@ public class DartTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitTraversalStrategy(final GremlinParser.TraversalStrategyContext ctx) {
+        // "new SubgraphStrategy(vertices: ...)" and the bare "ReadOnlyStrategy" both become Dart constructor calls.
+        if (ctx.getChildCount() == 1) {
+            sb.append(ctx.getText()).append("()");
+            return null;
+        }
+
+        sb.append(ctx.getChild(0).getText().equals("new") ? ctx.getChild(1).getText() : ctx.getChild(0).getText()).append("(");
+        final List<ParseTree> configs = ctx.children.stream().
+                filter(c -> c instanceof GremlinParser.ConfigurationContext).collect(Collectors.toList());
+        for (int ix = 0; ix < configs.size(); ix++) {
+            visit(configs.get(ix));
+            if (ix < configs.size() - 1) appendArgumentSeparator();
+        }
+        sb.append(")");
+        return null;
+    }
+
+    @Override
+    public Void visitConfiguration(final GremlinParser.ConfigurationContext ctx) {
+        // key:value becomes the Dart named argument key: value
+        String key = ctx.getChild(0).getText();
+        if (key.length() > 1 && (key.startsWith("\"") || key.startsWith("'"))) key = key.substring(1, key.length() - 1);
+        sb.append(key).append(": ");
+        visit(ctx.getChild(2));
+        return null;
+    }
+
+    @Override
     public Void visitNullLiteral(final GremlinParser.NullLiteralContext ctx) {
         sb.append("null");
         return null;
@@ -250,6 +282,7 @@ public class DartTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     protected void handleStringLiteralText(final String text) {
-        sb.append("'").append(text.replace("'", "\\'")).append("'");
+        // '$' starts interpolation in a Dart string literal, so it must be escaped as well as the quote
+        sb.append("'").append(text.replace("'", "\\'").replace("$", "\\$")).append("'");
     }
 }

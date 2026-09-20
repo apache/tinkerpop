@@ -66,22 +66,34 @@ class Anon {
   static GraphTraversal V(
           [dynamic first = _anonUnspecified,
           dynamic second = _anonUnspecified,
-          dynamic third = _anonUnspecified]) =>
+          dynamic third = _anonUnspecified,
+          dynamic fourth = _anonUnspecified,
+          dynamic fifth = _anonUnspecified,
+          dynamic sixth = _anonUnspecified]) =>
       GraphTraversal(
           null,
           null,
           GremlinLang()
-            ..addStep('V', _normalizeAnonVarArgs([first, second, third])));
+            ..addStep(
+                'V',
+                _normalizeAnonVarArgs(
+                    [first, second, third, fourth, fifth, sixth])));
 
   static GraphTraversal E(
           [dynamic first = _anonUnspecified,
           dynamic second = _anonUnspecified,
-          dynamic third = _anonUnspecified]) =>
+          dynamic third = _anonUnspecified,
+          dynamic fourth = _anonUnspecified,
+          dynamic fifth = _anonUnspecified,
+          dynamic sixth = _anonUnspecified]) =>
       GraphTraversal(
           null,
           null,
           GremlinLang()
-            ..addStep('E', _normalizeAnonVarArgs([first, second, third])));
+            ..addStep(
+                'E',
+                _normalizeAnonVarArgs(
+                    [first, second, third, fourth, fifth, sixth])));
 
   static GraphTraversal inject([
     dynamic a = _anonUnspecified,
@@ -336,7 +348,8 @@ class Anon {
   static GraphTraversal coalesce(dynamic first,
           [dynamic second, dynamic third, dynamic fourth]) =>
       _a().coalesce(first, second, third, fourth);
-  static GraphTraversal repeat(dynamic traversal) => _a().repeat(traversal);
+  static GraphTraversal repeat(dynamic traversalOrName, [dynamic traversal]) =>
+      _a().repeat(traversalOrName, traversal);
   static GraphTraversal emit([dynamic traversalOrPredicate]) =>
       _a().emit(traversalOrPredicate);
   static GraphTraversal until(dynamic traversalOrPredicate) =>
@@ -371,6 +384,10 @@ class Anon {
       _a().sack(operatorOrTraversal);
   static GraphTraversal sideEffect(dynamic traversalOrLambda) =>
       _a().sideEffect(traversalOrLambda);
+  static GraphTraversal mergeV([dynamic args = _anonUnspecified]) =>
+      _a().mergeV(args);
+  static GraphTraversal mergeE([dynamic args = _anonUnspecified]) =>
+      _a().mergeE(args);
 
   // Math & misc
   static GraphTraversal math_(String expression) => _a().math_(expression);
@@ -397,8 +414,9 @@ class Anon {
   static GraphTraversal call_(String procedure, [List<dynamic>? args]) =>
       GraphTraversal(
           null, null, GremlinLang()..addStep('call', [procedure, ...?args]));
-  static GraphTraversal call([dynamic procedure, dynamic traversal]) =>
-      _a().call(procedure, traversal);
+  static GraphTraversal call(
+          [dynamic procedure, dynamic second, dynamic third]) =>
+      _a().call(procedure, second, third);
 
   // Discard / fail
   static GraphTraversal discard() => _a().discard();

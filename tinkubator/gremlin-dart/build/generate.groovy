@@ -43,30 +43,34 @@ dartGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine("import 'dart:convert';")
     writer.writeLine("import 'package:gremlin_dart/process/anonymous_traversal.dart';")
     writer.writeLine("import 'package:gremlin_dart/process/graph_traversal.dart';")
-    writer.writeLine("import 'package:gremlin_dart/process/traversal.dart';\n")
+    writer.writeLine("import 'package:gremlin_dart/process/traversal.dart';")
+    writer.writeLine("import 'package:gremlin_dart/process/traversal_strategy.dart';\n")
     writer.writeLine("import 'package:uuid/uuid_value.dart';\n")
 
-    writer.writeLine('\nfinal Map<String, List<GraphTraversal Function(GraphTraversalSource)>> generatedTraversals = <String, List<GraphTraversal Function(GraphTraversalSource)>>{')
+    // Each entry is a function of (GraphTraversalSource g, {named parameters}). Parameters are the variables
+    // a scenario declares with "using the parameter"; the feature runner supplies them by name.
+    writer.writeLine('\nfinal Map<String, List<Function>> generatedTraversals = <String, List<Function>>{')
     gremlins.each { String scenarioName, List<String> scripts ->
         try {
+            final Set<String> parameters = new LinkedHashSet<String>()
             final List<String> translatedScripts = scripts.collect { String script ->
                 final def translation = GremlinTranslator.translate(script, new DartTranslateVisitor())
-                if (!translation.getParameters().isEmpty()) {
-                    throw new IllegalArgumentException('Parameterized traversal')
-                }
                 final String translated = translation.getTranslated()
-                if (translated.contains("new ") ||
-                        translated.contains("Strategy('") ||
-                        translated.contains(".withStrategies(") ||
-                        translated.contains(".withoutStrategies(")) {
+                // Arbitrary-key OptionsStrategy(myVar: ...) cannot be a Dart named-argument call, so leave it
+                // to the runtime parser in the feature runner.
+                if (translated.contains("OptionsStrategy(")) {
                     throw new IllegalArgumentException('Unsupported Dart translation')
                 }
+                parameters.addAll(translation.getParameters())
                 return translated
             }
 
-            writer.writeLine("  '${scenarioName}': <GraphTraversal Function(GraphTraversalSource)>[")
+            // Every function in a scenario declares the same named parameters so the runner can pass them all.
+            final String signature = parameters.isEmpty() ? '' :
+                    ', {' + parameters.collect { "dynamic ${it}" }.join(', ') + '}'
+            writer.writeLine("  '${scenarioName}': <Function>[")
             translatedScripts.each { String translated ->
-                writer.writeLine('    (GraphTraversalSource g) => ' + translated + ',')
+                writer.writeLine("    (GraphTraversalSource g${signature}) => " + translated + ',')
             }
             writer.writeLine('  ],')
         } catch (ignored) {

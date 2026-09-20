@@ -228,6 +228,46 @@ void main() {
       expect(gremlin, 'g.inject([null,1])');
     });
 
+    test('an empty list argument is kept, not spread into no arguments', () {
+      expect(_g().V().hasId([]).gremlinLang.getGremlin(), 'g.V().hasId([])');
+      // a non-empty lone list is still spread into varargs
+      expect(
+          _g().V().hasId([1, 2]).gremlinLang.getGremlin(), 'g.V().hasId(1,2)');
+    });
+
+    test('newly widened steps accept their full generated arity', () {
+      expect(_g().V(1, 2, 3, 4).gremlinLang.getGremlin(), 'g.V(1,2,3,4)');
+      expect(_g().V().to(direction.OUT, 'knows').gremlinLang.getGremlin(),
+          "g.V().to(Direction.OUT,'knows')");
+      expect(Anon.repeat('a', Anon.out()).gremlinLang.getGremlin('__'),
+          "__.repeat('a',__.out())");
+    });
+
+    test('withStrategies and withoutStrategies accept varargs or a list', () {
+      expect(_g().withStrategies(ReadOnlyStrategy()).gremlinLang.getGremlin(),
+          'g.withStrategies(ReadOnlyStrategy)');
+      expect(
+          _g()
+              .withStrategies(SubgraphStrategy(
+                  vertices: Anon.has('name'), checkAdjacentVertices: false))
+              .gremlinLang
+              .getGremlin(),
+          "g.withStrategies(new SubgraphStrategy(vertices:__.has('name'),checkAdjacentVertices:false))");
+      // the list form used by the runtime parser still works
+      expect(_g().withStrategies([ReadOnlyStrategy()]).gremlinLang.getGremlin(),
+          'g.withStrategies(ReadOnlyStrategy)');
+      // a strategy class may be passed directly, as generated code does
+      expect(
+          _g().withoutStrategies(RepeatUnrollStrategy).gremlinLang.getGremlin(),
+          'g.withoutStrategies(RepeatUnrollStrategy)');
+    });
+
+    test('generated code escapes dollar signs in string literals', () {
+      final generated = File('test/feature/gremlin.dart').readAsStringSync();
+      // an unescaped \$ would be Dart string interpolation
+      expect(generated, contains(r'MatchStep\$CountMatchAlgorithm'));
+    });
+
     test('merge source steps distinguish an omitted argument from null', () {
       expect(_g().mergeV().gremlinLang.getGremlin(), 'g.mergeV()');
       expect(_g().mergeV(null).gremlinLang.getGremlin(), 'g.mergeV(null)');
