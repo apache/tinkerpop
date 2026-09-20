@@ -16,6 +16,7 @@
 // under the License.
 
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:gremlin_dart/gremlin_dart.dart';
 import 'package:uuid/uuid_value.dart';
@@ -45,7 +46,9 @@ class ValueParser {
         case 'l':
           return GLong(int.parse(n));
         case 'f':
-          return GFloat(double.parse(n));
+          // A float literal is single precision, so round the way a Java
+          // float would; the server returns float32 values.
+          return GFloat((Float32List(1)..[0] = double.parse(n))[0]);
         case 'd':
           return GDouble(double.parse(n));
         case 'b':

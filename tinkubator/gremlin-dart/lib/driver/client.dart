@@ -20,19 +20,23 @@ import 'request_message.dart';
 import 'result_set.dart';
 
 class RequestOptions {
+  final String? traversalSource;
   final Map<String, dynamic>? bindings;
   final String? language;
   final int? evaluationTimeout;
   final bool? bulkResults;
   final String? materializeProperties;
+  final int? batchSize;
   final String? transactionId;
 
   const RequestOptions({
+    this.traversalSource,
     this.bindings,
     this.language,
     this.evaluationTimeout,
     this.bulkResults,
     this.materializeProperties,
+    this.batchSize,
     this.transactionId,
   });
 }
@@ -54,8 +58,8 @@ class Client {
     Map<String, dynamic>? bindings,
     RequestOptions? requestOptions,
   }) {
-    return _connection.submit(
-        _buildRequest(message, bindings: bindings, requestOptions: requestOptions));
+    return _connection.submit(_buildRequest(message,
+        bindings: bindings, requestOptions: requestOptions));
   }
 
   Stream<dynamic> stream(
@@ -63,8 +67,8 @@ class Client {
     Map<String, dynamic>? bindings,
     RequestOptions? requestOptions,
   }) {
-    return _connection.stream(
-        _buildRequest(message, bindings: bindings, requestOptions: requestOptions));
+    return _connection.stream(_buildRequest(message,
+        bindings: bindings, requestOptions: requestOptions));
   }
 
   RequestMessage _buildRequest(
@@ -73,7 +77,7 @@ class Client {
     RequestOptions? requestOptions,
   }) {
     final builder = RequestMessage.build(message)
-        .addG(options.traversalSource);
+        .addG(requestOptions?.traversalSource ?? options.traversalSource);
 
     if (requestOptions?.language != null) {
       builder.addLanguage(requestOptions!.language!);
@@ -92,6 +96,9 @@ class Client {
     }
     if (requestOptions?.bulkResults != null) {
       builder.addBulkResults(requestOptions!.bulkResults!);
+    }
+    if (requestOptions?.batchSize != null) {
+      builder.addBatchSize(requestOptions!.batchSize!);
     }
     if (requestOptions?.transactionId != null) {
       builder.addTransactionId(requestOptions!.transactionId!);

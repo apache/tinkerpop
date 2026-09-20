@@ -18,8 +18,8 @@
  */
 
 import org.apache.tinkerpop.gremlin.language.corpus.FeatureReader
+import org.apache.tinkerpop.gremlin.language.translator.DartTranslateVisitor
 import org.apache.tinkerpop.gremlin.language.translator.GremlinTranslator
-import org.apache.tinkerpop.gremlin.language.translator.Translator
 
 import java.nio.file.Paths
 
@@ -38,27 +38,41 @@ dartGremlinFile.withWriter('UTF-8') { Writer writer ->
             '// Unless required by applicable law or agreed to in writing, software distributed under the License is distributed\n' +
             '// on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the License\n' +
             '// for the specific language governing permissions and limitations under the License.\n' +
+            '// ignore_for_file: non_constant_identifier_names\n' +
             '// AUTO-GENERATED - do not edit. Run build/generate.groovy to regenerate.\n')
+    writer.writeLine("import 'dart:convert';")
     writer.writeLine("import 'package:gremlin_dart/process/anonymous_traversal.dart';")
     writer.writeLine("import 'package:gremlin_dart/process/graph_traversal.dart';")
     writer.writeLine("import 'package:gremlin_dart/process/traversal.dart';\n")
+    writer.writeLine("import 'package:uuid/uuid_value.dart';\n")
 
-    final List<String> generatedScenarioNames = []
+    writer.writeLine('\nfinal Map<String, List<GraphTraversal Function(GraphTraversalSource)>> generatedTraversals = <String, List<GraphTraversal Function(GraphTraversalSource)>>{')
     gremlins.each { String scenarioName, List<String> scripts ->
         try {
-            final def translation = GremlinTranslator.translate(scripts.last(), Translator.DART)
-            if (translation.getParameters().isEmpty()) {
-                writer.writeLine("GraphTraversal ${scenarioName}(GraphTraversalSource g) => ${translation.getTranslated()};")
-                generatedScenarioNames.add(scenarioName)
+            final List<String> translatedScripts = scripts.collect { String script ->
+                final def translation = GremlinTranslator.translate(script, new DartTranslateVisitor())
+                if (!translation.getParameters().isEmpty()) {
+                    throw new IllegalArgumentException('Parameterized traversal')
+                }
+                final String translated = translation.getTranslated()
+                if (translated.contains("new ") ||
+                        translated.contains("Strategy('") ||
+                        translated.contains(".withStrategies(") ||
+                        translated.contains(".withoutStrategies(")) {
+                    throw new IllegalArgumentException('Unsupported Dart translation')
+                }
+                return translated
             }
+
+            writer.writeLine("  '${scenarioName}': <GraphTraversal Function(GraphTraversalSource)>[")
+            translatedScripts.each { String translated ->
+                writer.writeLine('    (GraphTraversalSource g) => ' + translated + ',')
+            }
+            writer.writeLine('  ],')
         } catch (ignored) {
             // Scenarios that Dart cannot translate are handled by the ANTLR fallback in steps.dart.
         }
     }
 
-    writer.writeLine('\nfinal Map<String, Function> generatedTraversals = <String, Function>{')
-    generatedScenarioNames.each { String scenarioName ->
-        writer.writeLine("  '${scenarioName}': ${scenarioName},")
-    }
     writer.writeLine('};')
 }

@@ -14,6 +14,7 @@ import 'dart:typed_data';
 import 'package:gremlin_dart/driver/request_message.dart';
 import 'package:gremlin_dart/process/traversal.dart';
 import 'package:gremlin_dart/structure/graph.dart';
+import 'package:gremlin_dart/driver/response_error.dart';
 import 'package:gremlin_dart/structure/io/graph_binary/data_type.dart';
 import 'package:gremlin_dart/structure/io/graph_binary/graph_binary_reader.dart';
 import 'package:gremlin_dart/structure/io/graph_binary/graph_binary_writer.dart';
@@ -27,6 +28,7 @@ void main() {
           .addG('g')
           .addTransactionId('tx-123')
           .addTimeoutMillis(1234)
+          .addBatchSize(64)
           .addBulkResults(false)
           .addField('materializeProperties', 'tokens')
           .create();
@@ -45,27 +47,39 @@ void main() {
       expect(fields['g'], 'g');
       expect(fields['transactionId'], 'tx-123');
       expect(fields['evaluationTimeout'], 1234);
+      expect(fields['batchSize'], 64);
       expect(fields['bulkResults'], false);
       expect(fields['materializeProperties'], 'tokens');
     });
 
-    test('writer encodes typed GraphBinary bindings', () {
-      final uuid = UuidValue.fromString('00112233-4455-6677-8899-aabbccddeeff');
-      final when = DateTime.utc(2024, 6, 1, 12, 34, 56, 789, 123);
+    test('writer encodes bindings as a Gremlin map literal string', () {
       final message = RequestMessage.build('g.inject(x)')
-          .addBinding('uuidValue', uuid)
-          .addBinding('durationValue', const Duration(milliseconds: -500))
-          .addBinding('bigIntValue', BigInt.parse('-9223372036854775809'))
-          .addBinding('decimalValue', GDecimal(2, BigInt.from(12345)))
-          .addBinding('when', when)
-          .addBinding('bytes', Uint8List.fromList([1, 2, 3]))
+          .addBinding('x', 1)
+          .addBinding('name', 'marko')
           .create();
 
       final bytes = GraphBinaryWriter().writeRequest(message);
       final reader = _TestReader(bytes);
       reader.readUint8();
       final fields = reader.readBareMap();
-      final bindings = fields['bindings'] as Map;
+
+      expect(fields['bindings'], "['x':1,'name':'marko']");
+    });
+
+    test('writer encodes typed GraphBinary map values', () {
+      final uuid = UuidValue.fromString('00112233-4455-6677-8899-aabbccddeeff');
+      final when = DateTime.utc(2024, 6, 1, 12, 34, 56, 789, 123);
+      final bytes = GraphBinaryWriter().encodeValue({
+        'uuidValue': uuid,
+        'durationValue': const Duration(milliseconds: -500),
+        'bigIntValue': BigInt.parse('-9223372036854775809'),
+        'decimalValue': GDecimal(2, BigInt.from(12345)),
+        'when': when,
+        'bytes': Uint8List.fromList([1, 2, 3]),
+      });
+
+      final reader = _TestReader(bytes);
+      final bindings = reader.readAny() as Map;
 
       expect(bindings['uuidValue'], uuid);
       expect(bindings['durationValue'], const Duration(milliseconds: -500));
@@ -101,6 +115,17 @@ void main() {
       expect(data[5], isNull);
       expect(data[6], ['a', 1]);
       expect(data[7], {'name': 'lop', 'age': 5});
+    });
+
+    test('reader decodes ordered map value flag', () async {
+      final response = _response([
+        _map({_string('name'): _string('marko')}, ordered: true),
+      ]);
+
+      final decoded = await GraphBinaryReader().readResponse(response);
+      final data = decoded['result']['data'] as List;
+
+      expect(data.single, {'name': 'marko'});
     });
 
     test('reader decodes vertex values from a response', () async {
@@ -140,6 +165,24 @@ void main() {
       expect(data[5], timestamp);
     });
 
+    test('streamed response surfaces an error status sent after HTTP 200',
+        () async {
+      // Errors raised while a traversal is iterated arrive in the trailing
+      // status of an otherwise successful response; they must not be dropped.
+      final response = _response([_string('marko')],
+          statusCode: 500,
+          statusMessage: 'Not a legal range: [2, 1]',
+          exception: 'ServerErrorException');
+
+      await expectLater(
+        GraphBinaryReader().readResponseStream(Stream.value(response)).toList(),
+        throwsA(isA<ResponseError>()
+            .having((e) => e.statusCode, 'statusCode', 500)
+            .having((e) => e.serverMessage, 'serverMessage',
+                'Not a legal range: [2, 1]')),
+      );
+    });
+
     test('reader decodes bulked responses into traversers', () async {
       final response = _response([
         _string('marko'),
@@ -158,6 +201,59 @@ void main() {
       expect((decoded[0] as Traverser).bulk, 2);
       expect((decoded[1] as Traverser).object, 29);
       expect((decoded[1] as Traverser).bulk, 3);
+    });
+
+    test('writer and reader round-trip recursive Tree values', () {
+      final tree = Tree({
+        'marko': Tree({
+          'josh': Tree({
+            'lop': Tree(),
+          }),
+        }),
+      });
+
+      final bytes = GraphBinaryWriter().encodeValue(tree);
+      expect(bytes[0], DataType.tree.code);
+
+      final decoded = GraphBinaryReader().decodeValue(bytes) as Tree;
+      expect(decoded['marko'], isA<Tree>());
+      expect(decoded['marko']!['josh']!['lop'], isA<Tree>());
+      expect(decoded['marko']!['josh']!['lop'], isEmpty);
+    });
+
+    test('writer and reader round-trip Graph values', () {
+      final marko = Vertex(1, 'person', [
+        VertexProperty(11, 'name', 'marko'),
+      ]);
+      final vadas = Vertex(2, 'person');
+      final graph = Graph([
+        marko,
+        vadas
+      ], [
+        Edge(7, marko, 'knows', vadas, [const Property('weight', 0.5)]),
+      ]);
+
+      final bytes = GraphBinaryWriter().encodeValue(graph);
+      expect(bytes[0], DataType.graph.code);
+
+      final decoded = GraphBinaryReader().decodeValue(bytes) as Graph;
+      expect(decoded.vertices, hasLength(2));
+      expect(decoded.vertices.first.properties.single, isA<VertexProperty>());
+      expect(decoded.edges, hasLength(1));
+      expect(decoded.edges.single.outV, decoded.vertices[0]);
+      expect(decoded.edges.single.inV, decoded.vertices[1]);
+      expect(decoded.edges.single.properties, [const Property('weight', 0.5)]);
+    });
+
+    test('writer and reader round-trip GType enum values', () {
+      final bytes =
+          GraphBinaryWriter().encodeValue(const EnumValue('GType', 'VERTEX'));
+      expect(bytes.sublist(0, 2), [DataType.gType.code, 0x00]);
+
+      expect(
+        GraphBinaryReader().decodeValue(bytes),
+        const EnumValue('GType', 'VERTEX'),
+      );
     });
 
     test('reader decodes a full response envelope', () async {
@@ -206,8 +302,7 @@ void main() {
     test('decodeValue throws FormatException for unknown type code', () {
       // 0x70 is not a registered DataType
       final bytes = Uint8List.fromList([0x70, 0x00]);
-      expect(
-          () => reader.decodeValue(bytes), throwsA(isA<FormatException>()));
+      expect(() => reader.decodeValue(bytes), throwsA(isA<FormatException>()));
     });
   });
 
@@ -217,18 +312,17 @@ void main() {
   group('GraphBinary char error handling', () {
     final reader = GraphBinaryReader();
 
-    test('decodeValue throws FormatException for code point above U+10FFFF', () {
+    test('decodeValue throws FormatException for code point above U+10FFFF',
+        () {
       // type=char (0x80), flag=0x00, code_point=0x00200000 (> U+10FFFF)
       final bytes = Uint8List.fromList([0x80, 0x00, 0x00, 0x20, 0x00, 0x00]);
-      expect(
-          () => reader.decodeValue(bytes), throwsA(isA<FormatException>()));
+      expect(() => reader.decodeValue(bytes), throwsA(isA<FormatException>()));
     });
 
     test('decodeValue throws FormatException for negative code point', () {
       // type=char (0x80), flag=0x00, code_point=0xFFFFFFFF (signed int32 -1)
       final bytes = Uint8List.fromList([0x80, 0x00, 0xFF, 0xFF, 0xFF, 0xFF]);
-      expect(
-          () => reader.decodeValue(bytes), throwsA(isA<FormatException>()));
+      expect(() => reader.decodeValue(bytes), throwsA(isA<FormatException>()));
     });
   });
 }
@@ -353,8 +447,8 @@ Uint8List _list(List<Uint8List> values, {bool fullyQualified = true}) {
   return b.done();
 }
 
-Uint8List _map(Map<Uint8List, Uint8List> values) {
-  final b = _Bytes()..header(DataType.map);
+Uint8List _map(Map<Uint8List, Uint8List> values, {bool ordered = false}) {
+  final b = _Bytes()..header(DataType.map, flag: ordered ? 0x02 : 0x00);
   b.i32(values.length);
   for (final entry in values.entries) {
     b.bytes(entry.key);
@@ -404,9 +498,9 @@ Uint8List _bigIntBytes(BigInt value) {
 class _Bytes {
   final BytesBuilder _builder = BytesBuilder(copy: false);
 
-  void header(DataType type) {
+  void header(DataType type, {int flag = 0x00}) {
     u8(type.code);
-    u8(0x00);
+    u8(flag);
   }
 
   void u8(int value) => _builder.addByte(value & 0xff);

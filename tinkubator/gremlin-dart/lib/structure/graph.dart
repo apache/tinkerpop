@@ -15,15 +15,55 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import 'dart:collection';
+
 class Graph {
+  final List<Vertex> vertices;
+  final List<Edge> edges;
+
+  Graph([Iterable<Vertex>? vertices, Iterable<Edge>? edges])
+      : vertices = List<Vertex>.from(vertices ?? const <Vertex>[]),
+        edges = List<Edge>.from(edges ?? const <Edge>[]);
+
   @override
-  String toString() => 'graph[]';
+  String toString() => 'graph[vertices: $vertices, edges: $edges]';
+}
+
+/// A recursive, insertion-ordered tree returned by the Gremlin `tree()` step.
+///
+/// Tree implements [Map] operations while retaining its distinct GraphBinary
+/// type during serialization.
+class Tree extends MapBase<dynamic, Tree> {
+  final Map<dynamic, Tree> _children;
+
+  Tree([Map<dynamic, Tree>? children])
+      : _children = LinkedHashMap<dynamic, Tree>.from(children ?? const {});
+
+  @override
+  Tree? operator [](Object? key) => _children[key];
+
+  @override
+  void operator []=(dynamic key, Tree value) {
+    _children[key] = value;
+  }
+
+  @override
+  void clear() => _children.clear();
+
+  @override
+  Iterable<dynamic> get keys => _children.keys;
+
+  @override
+  Tree? remove(Object? key) => _children.remove(key);
+
+  @override
+  String toString() => 'tree$_children';
 }
 
 abstract class Element {
   final dynamic id;
   final String label;
-  final List<Property> properties;
+  final List<dynamic> properties;
 
   const Element(this.id, this.label, [this.properties = const []]);
 
@@ -46,8 +86,7 @@ class Edge extends Element {
   final Vertex outV;
   final Vertex inV;
 
-  const Edge(super.id, this.outV, super.label, this.inV,
-      [super.properties]);
+  const Edge(super.id, this.outV, super.label, this.inV, [super.properties]);
 
   @override
   String toString() => 'e[$id][${outV.id}-$label->${inV.id}]';
@@ -57,8 +96,7 @@ class VertexProperty extends Element {
   final dynamic value;
   String get key => label;
 
-  const VertexProperty(super.id, super.label, this.value,
-      [super.properties]);
+  const VertexProperty(super.id, super.label, this.value, [super.properties]);
 
   @override
   String toString() => 'vp[$label->$value]';

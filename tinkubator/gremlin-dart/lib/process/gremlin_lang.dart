@@ -18,6 +18,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:uuid/uuid_value.dart';
+
 import '../structure/graph.dart';
 import 'traversal.dart';
 import 'traversal_strategy.dart';
@@ -99,6 +101,10 @@ class GremlinLang {
       return 'datetime("${arg.toUtc().toIso8601String()}")';
     }
 
+    if (arg is UuidValue) {
+      return 'UUID("${arg.toString()}")';
+    }
+
     if (arg is String) {
       final escaped = arg
           .replaceAll(r'\', r'\\')
@@ -114,6 +120,10 @@ class GremlinLang {
     if (arg is P || arg is TextP) return _predicateAsString(arg);
 
     if (arg is EnumValue) return arg.toString();
+
+    if (arg is CardinalityValue) {
+      return '${arg.cardinality}(${_argAsString(arg.value)})';
+    }
 
     if (arg is TraversalStrategy && arg is! OptionsStrategy) {
       final name = arg.strategyName;
@@ -205,7 +215,8 @@ class GremlinLang {
     // not string literals.  Every other TinkerPop driver (Go, JS, Python)
     // renders them this way; the server parser requires bare identifiers.
     if (name == 'withoutStrategies' && args != null) {
-      final names = args.map((s) => s.toString()).where((s) => s.isNotEmpty).join(',');
+      final names =
+          args.map((s) => s.toString()).where((s) => s.isNotEmpty).join(',');
       if (names.isNotEmpty) {
         _gremlin += '.withoutStrategies($names)';
       }

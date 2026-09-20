@@ -15,15 +15,18 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import '../process/gremlin_lang.dart';
+
 class RequestMessage {
   final String gremlin;
   final String language;
   final int? timeoutMs;
-  final Map<String, dynamic>? bindings;
+  final String? bindings;
   final String? g;
   final String? transactionId;
   final String? materializeProperties;
   final bool? bulkResults;
+  final int? batchSize;
   final Map<String, dynamic> fields;
 
   static const _matTokens = 'tokens';
@@ -38,6 +41,7 @@ class RequestMessage {
     this.transactionId,
     this.materializeProperties,
     this.bulkResults,
+    this.batchSize,
     this.fields = const {},
   });
 
@@ -54,6 +58,7 @@ class RequestMessage {
     }
     if (timeoutMs != null) m['timeoutMs'] = timeoutMs;
     if (bulkResults != null) m['bulkResults'] = bulkResults;
+    if (batchSize != null) m['batchSize'] = batchSize;
     m.addAll(fields);
     return m;
   }
@@ -68,6 +73,7 @@ class RequestMessageBuilder {
   String? _transactionId;
   String? _materializeProperties;
   bool? _bulkResults;
+  int? _batchSize;
   final Map<String, dynamic> _fields = {};
 
   RequestMessageBuilder._(this._gremlin);
@@ -101,10 +107,8 @@ class RequestMessageBuilder {
   }
 
   RequestMessageBuilder addMaterializeProperties(String value) {
-    if (value != RequestMessage._matTokens &&
-        value != RequestMessage._matAll) {
-      throw ArgumentError(
-          'materializeProperties must be "tokens" or "all"');
+    if (value != RequestMessage._matTokens && value != RequestMessage._matAll) {
+      throw ArgumentError('materializeProperties must be "tokens" or "all"');
     }
     _materializeProperties = value;
     return this;
@@ -121,14 +125,20 @@ class RequestMessageBuilder {
     return this;
   }
 
+  RequestMessageBuilder addBatchSize(int batchSize) {
+    _batchSize = batchSize;
+    return this;
+  }
+
   RequestMessageBuilder addField(String key, dynamic value) {
     _fields[key] = value;
     return this;
   }
 
   RequestMessage create() {
-    final Map<String, dynamic>? bindings =
-        _bindings.isNotEmpty ? Map.unmodifiable(_bindings) : null;
+    final String? bindings = _bindings.isNotEmpty
+        ? GremlinLang.valueToGremlinLiteral(Map.unmodifiable(_bindings))
+        : null;
     return RequestMessage._(
       gremlin: _gremlin,
       language: _language,
@@ -138,6 +148,7 @@ class RequestMessageBuilder {
       transactionId: _transactionId,
       materializeProperties: _materializeProperties,
       bulkResults: _bulkResults,
+      batchSize: _batchSize,
       fields: Map.unmodifiable(_fields),
     );
   }

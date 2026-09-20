@@ -42,7 +42,9 @@ void main() {
 
     test('serialises list', () {
       final gl = GremlinLang();
-      gl.addStep('hasLabel', [['person', 'software']]);
+      gl.addStep('hasLabel', [
+        ['person', 'software']
+      ]);
       expect(gl.getGremlin(), contains("['person','software']"));
     });
 
@@ -60,31 +62,37 @@ void main() {
 
     test('serialises P.within', () {
       final gl = GremlinLang();
-      gl.addStep('has', ['age', P.within([1, 2, 3])]);
+      gl.addStep('has', [
+        'age',
+        P.within([1, 2, 3])
+      ]);
       expect(gl.getGremlin(), contains("within([1,2,3])"));
     });
-
   });
 
   group('P predicates', () {
     test('eq', () => expect(P.eq(1).toString(), "eq(1)"));
     test('neq', () => expect(P.neq(1).toString(), "neq(1)"));
     test('gt', () => expect(P.gt(5).toString(), "gt(5)"));
-    test('between', () => expect(P.between(1, 10).toString(), "between(1, 10)"));
-    test('within list', () => expect(P.within([1, 2]).toString(), contains('within')));
+    test(
+        'between', () => expect(P.between(1, 10).toString(), "between(1, 10)"));
+    test('within list',
+        () => expect(P.within([1, 2]).toString(), contains('within')));
   });
 
   group('TextP predicates', () {
-    test('containing', () => expect(TextP.containing('foo').toString(), "containing('foo')"));
-    test('startingWith', () => expect(TextP.startingWith('bar').toString(), "startingWith('bar')"));
+    test('containing',
+        () => expect(TextP.containing('foo').toString(), "containing('foo')"));
+    test(
+        'startingWith',
+        () => expect(
+            TextP.startingWith('bar').toString(), "startingWith('bar')"));
   });
 
   group('RequestMessage', () {
     test('build creates message with gremlin field', () {
-      final msg = RequestMessage.build('g.V()')
-          .addG('g')
-          .addBulkResults(true)
-          .create();
+      final msg =
+          RequestMessage.build('g.V()').addG('g').addBulkResults(true).create();
       expect(msg.gremlin, 'g.V()');
       expect(msg.g, 'g');
       expect(msg.bulkResults, true);
@@ -95,13 +103,14 @@ void main() {
       final msg = RequestMessage.build('g.V()')
           .addG('g')
           .addTimeoutMillis(3000)
+          .addBatchSize(64)
           .create();
       final json = msg.toJson();
       expect(json['gremlin'], 'g.V()');
       expect(json['g'], 'g');
       expect(json['timeoutMs'], 3000);
+      expect(json['batchSize'], 64);
     });
-
   });
 
   group('GraphTraversal DSL', () {

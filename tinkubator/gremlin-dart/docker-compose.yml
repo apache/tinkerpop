@@ -21,7 +21,7 @@ services:
     container_name: gremlin-server-test-dart
     image: tinkerpop/gremlin-server-test:${GREMLIN_SERVER}
     build:
-      context: ../
+      context: ../../
       dockerfile: docker/gremlin-test-server/Dockerfile
       args:
         - GREMLIN_SERVER=${GREMLIN_SERVER}
@@ -46,8 +46,8 @@ services:
     image: dart:stable
     volumes:
       - .:/dart_app
-      - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/gremlin-test
-      - ../docker/gremlin-test-server:/dart_app/gremlin-test-server
+      - ../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/gremlin-test
+      - ../../docker/gremlin-test-server:/dart_app/gremlin-test-server
     environment:
       - GREMLIN_SERVER_URL=http://gremlin-server-test-dart:45940/gremlin
     working_dir: /dart_app

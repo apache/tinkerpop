@@ -20,6 +20,7 @@ import 'dart:typed_data';
 
 import 'package:uuid/uuid_value.dart';
 
+import '../../../driver/response_error.dart';
 import '../../../process/traversal.dart';
 import '../../../structure/graph.dart';
 import 'data_type.dart';
@@ -33,7 +34,8 @@ class GraphBinaryReader {
 
   /// Decodes a single fully-qualified value previously encoded by
   /// [GraphBinaryWriter.encodeValue].
-  dynamic decodeValue(Uint8List bytes) => _GraphBinaryValueReader(bytes).readAny();
+  dynamic decodeValue(Uint8List bytes) =>
+      _GraphBinaryValueReader(bytes).readAny();
 
   Future<Map<String, dynamic>> readResponse(Uint8List bytes) async {
     if (bytes.isEmpty) {
@@ -76,6 +78,7 @@ class GraphBinaryReader {
       chunks.addAll(chunk);
     }
     final response = await readResponse(Uint8List.fromList(chunks));
+    ResponseError.throwIfFailed(response['status'] as Map<String, dynamic>?);
     final result = response['result'] as Map<String, dynamic>;
     final data = result['data'] as List;
     if (result['bulked'] == true) {
@@ -185,8 +188,10 @@ class _GraphBinaryValueReader {
     if (valueFlag == 0x01) return null;
     if (valueFlag != 0x00) {
       if (valueFlag == _bulkFlag &&
-          (type == DataType.list || type == DataType.set_)) {
-        // valid — bulk encoding is only defined for list and set
+          (type == DataType.list ||
+              type == DataType.set_ ||
+              type == DataType.map)) {
+        // valid - 0x02 marks bulked lists/sets and ordered maps
       } else {
         throw FormatException(
             'Unexpected value flag 0x${valueFlag.toRadixString(16)} '
@@ -237,8 +242,12 @@ class _GraphBinaryValueReader {
         return _readVertexProperty();
       case DataType.property:
         return _readProperty();
+      case DataType.graph:
+        return _readGraph();
       case DataType.path:
         return _readPath();
+      case DataType.tree:
+        return _readTree();
       case DataType.bulkSet:
         return _readBulkSet();
       case DataType.dateTime:
@@ -352,7 +361,7 @@ class _GraphBinaryValueReader {
   Vertex _readVertex() {
     final id = readAny();
     final label = _firstLabel(_readList(false));
-    final properties = _asProperties(readAny());
+    final properties = _asElementProperties(readAny());
     return Vertex(id, label, properties);
   }
 
@@ -375,6 +384,64 @@ class _GraphBinaryValueReader {
     final value = readAny();
     readAny();
     final properties = _asProperties(readAny());
+    return VertexProperty(id, label, value, properties);
+  }
+
+  Graph _readGraph() {
+    final vertexCount = readInt32();
+    if (vertexCount < 0) {
+      throw FormatException('Negative graph vertex count: $vertexCount');
+    }
+
+    final vertices = <Vertex>[];
+    final verticesById = <dynamic, Vertex>{};
+    for (var i = 0; i < vertexCount; i++) {
+      final id = readAny();
+      final label = _firstLabel(_readList(false));
+      final propertyCount = readInt32();
+      if (propertyCount < 0) {
+        throw FormatException(
+            'Negative graph vertex property count: $propertyCount');
+      }
+      final properties = <VertexProperty>[];
+      for (var j = 0; j < propertyCount; j++) {
+        properties.add(_readGraphVertexProperty());
+      }
+      final vertex = Vertex(id, label, properties);
+      vertices.add(vertex);
+      verticesById[id] = vertex;
+    }
+
+    final edgeCount = readInt32();
+    if (edgeCount < 0) {
+      throw FormatException('Negative graph edge count: $edgeCount');
+    }
+    final edges = <Edge>[];
+    for (var i = 0; i < edgeCount; i++) {
+      final id = readAny();
+      final label = _firstLabel(_readList(false));
+      final inVId = readAny();
+      readAny();
+      final outVId = readAny();
+      readAny();
+      readAny();
+      final properties = _asProperties(_readList(false));
+      final inV = verticesById[inVId];
+      final outV = verticesById[outVId];
+      if (inV == null || outV == null) {
+        throw FormatException('Graph edge $id references an unknown vertex');
+      }
+      edges.add(Edge(id, outV, label, inV, properties));
+    }
+    return Graph(vertices, edges);
+  }
+
+  VertexProperty _readGraphVertexProperty() {
+    final id = readAny();
+    final label = _firstLabel(_readList(false));
+    final value = readAny();
+    readAny();
+    final properties = _asProperties(_readList(false));
     return VertexProperty(id, label, value, properties);
   }
 
@@ -402,6 +469,16 @@ class _GraphBinaryValueReader {
     }
     final objects = objectsValue is List ? objectsValue : <dynamic>[];
     return Path(labels, objects);
+  }
+
+  Tree _readTree() {
+    final length = readInt32();
+    if (length < 0) throw FormatException('Negative tree length: $length');
+    final tree = Tree();
+    for (var i = 0; i < length; i++) {
+      tree[readAny()] = _readTree();
+    }
+    return tree;
   }
 
   DateTime _readDateTime() {
@@ -489,6 +566,14 @@ class _GraphBinaryValueReader {
           .toList();
     }
     return const [];
+  }
+
+  List<dynamic> _asElementProperties(dynamic value) {
+    if (value == null) return const [];
+    if (value is List) {
+      return value.whereType<Element>().toList();
+    }
+    return _asProperties(value);
   }
 
   void _require(int count) {

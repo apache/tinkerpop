@@ -76,11 +76,6 @@ public enum Translator {
      */
     PYTHON("Python", PythonTranslateVisitor::new),
 
-    /**
-     * Translates to gremlin-dart.
-     */
-    DART("Dart", DartTranslateVisitor::new),
-
     ;
 
     private final String name;

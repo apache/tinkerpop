@@ -313,17 +313,8 @@ class Connection {
 
     final deserialized = await _reader.readResponse(response.bodyBytes);
 
-    if (deserialized['status'] != null) {
-      final code = deserialized['status']['code'] as int?;
-      if (code != null && code != 0 && code != 200 && code != 204 && code != 206) {
-        throw ResponseError(
-          'Server error (code $code)',
-          statusCode: code,
-          serverMessage: deserialized['status']['message'] as String?,
-          exception: deserialized['status']['exception'] as String?,
-        );
-      }
-    }
+    ResponseError.throwIfFailed(
+        deserialized['status'] as Map<String, dynamic>?);
 
     final result = deserialized['result'];
     final bulked = result['bulked'] as bool? ?? false;

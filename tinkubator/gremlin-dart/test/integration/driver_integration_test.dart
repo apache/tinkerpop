@@ -20,19 +20,18 @@ import 'dart:io';
 import 'package:test/test.dart';
 
 import 'package:gremlin_dart/driver/connection.dart';
+import 'package:gremlin_dart/driver/client.dart';
 import 'package:gremlin_dart/driver/cluster.dart';
 import 'package:gremlin_dart/driver/driver_remote_connection.dart';
 import 'package:gremlin_dart/driver/request_message.dart';
 import 'package:gremlin_dart/driver/response_error.dart';
 import 'package:gremlin_dart/process/anonymous_traversal.dart';
-import 'package:gremlin_dart/process/traversal.dart';
 
 // Tests in this file require a live Gremlin Server.
 // Set GREMLIN_SERVER_URL (e.g. http://localhost:45940/gremlin) to enable.
 // When unset the entire suite is skipped — safe to run in unit-test-only CI.
 
-String? get _serverUrl =>
-    Platform.environment['GREMLIN_SERVER_URL'];
+String? get _serverUrl => Platform.environment['GREMLIN_SERVER_URL'];
 
 void main() {
   final url = _serverUrl;
@@ -50,7 +49,8 @@ void main() {
     late Connection conn;
 
     setUp(() {
-      conn = Connection(url, const ConnectionOptions(traversalSource: 'gmodern'));
+      conn =
+          Connection(url, const ConnectionOptions(traversalSource: 'gmodern'));
     });
 
     tearDown(() => conn.close());
@@ -111,6 +111,37 @@ void main() {
       expect(age, isA<int>());
       expect(age, 29);
     });
+
+    test('Client submits a batchSize request option', () async {
+      final client = Client(
+        url,
+        const ConnectionOptions(traversalSource: 'gmodern'),
+      );
+      addTearDown(client.close);
+
+      final result = await client.submit(
+        'g.V().values("name")',
+        requestOptions: const RequestOptions(
+          batchSize: 1,
+          bulkResults: false,
+        ),
+      );
+      expect(result.items, hasLength(6));
+    });
+
+    test('Client overrides its traversal source per request', () async {
+      final client = Client(url);
+      addTearDown(client.close);
+
+      final result = await client.submit(
+        'g.V().count()',
+        requestOptions: const RequestOptions(
+          traversalSource: 'gmodern',
+          bulkResults: false,
+        ),
+      );
+      expect(result.items, [6]);
+    });
   });
 
   // ---------------------------------------------------------------------------
@@ -131,15 +162,15 @@ void main() {
     test('g.V().count() returns 6 on modern graph', () async {
       final g = traversal().withRemote(remote);
       final count = await g.V().count().next();
-      expect(count, isA<GLong>());
-      expect((count as GLong).value, 6);
+      expect(count, 6);
     });
 
     test('g.V().values("name") returns all vertex names', () async {
       final g = traversal().withRemote(remote);
       final names = await g.V().values(['name']).toList();
       expect(names.length, 6);
-      expect(names, containsAll(['marko', 'vadas', 'josh', 'peter', 'lop', 'ripple']));
+      expect(names,
+          containsAll(['marko', 'vadas', 'josh', 'peter', 'lop', 'ripple']));
     });
 
     test('g.V().has("name","marko").values("age") returns 29', () async {
@@ -151,13 +182,16 @@ void main() {
 
     test('g.V().hasLabel("person") returns 4 people', () async {
       final g = traversal().withRemote(remote);
-      final people = await g.V().hasLabel('person', []).toList();
+      final people = await g.V().hasLabel('person').toList();
       expect(people.length, 4);
     });
 
     test('g.V().out("knows").values("name") returns knows edges', () async {
       final g = traversal().withRemote(remote);
-      final names = await g.V().has('name', 'marko').out(['knows']).values(['name']).toList();
+      final names = await g
+          .V()
+          .has('name', 'marko')
+          .out(['knows']).values(['name']).toList();
       expect(names.length, 2);
       expect(names, containsAll(['vadas', 'josh']));
     });
@@ -165,7 +199,7 @@ void main() {
     test('g.E().count() returns 6 edges on modern graph', () async {
       final g = traversal().withRemote(remote);
       final count = await g.E().count().next();
-      expect((count as GLong).value, 6);
+      expect(count, 6);
     });
 
     test('chained steps: select, project, by', () async {
@@ -174,7 +208,7 @@ void main() {
           .V()
           .hasLabel('person')
           .has('name', 'marko')
-          .project('name', ['age'])
+          .project('name', 'age')
           .by('name')
           .by('age')
           .toList();
@@ -184,9 +218,9 @@ void main() {
       expect(row['age'], 29);
     });
 
-    test('g.inject() with list returns elements', () async {
+    test('g.inject() with varargs returns elements', () async {
       final g = traversal().withRemote(remote);
-      final results = await g.inject([1, 2, 3]).toList();
+      final results = await g.inject(1, 2, 3).toList();
       expect(results.length, 3);
     });
 
@@ -211,7 +245,7 @@ void main() {
         final conn = cluster.connect('gmodern');
         final g = traversal().withRemote(conn);
         final count = await g.V().count().next();
-        expect((count as GLong).value, 6);
+        expect(count, 6);
       } finally {
         await cluster.close();
       }
@@ -228,8 +262,25 @@ void main() {
         final g = traversal().withRemote(conn);
         for (var i = 0; i < 5; i++) {
           final count = await g.V().count().next();
-          expect((count as GLong).value, 6);
+          expect(count, 6);
         }
+      } finally {
+        await cluster.close();
+      }
+    });
+
+    test('cluster default batch size is applied to traversal requests',
+        () async {
+      final cluster = Cluster.build()
+          .addContactPoint(Uri.parse(url).host)
+          .port(Uri.parse(url).port)
+          .path(Uri.parse(url).path)
+          .resultIterationBatchSize(2)
+          .create();
+      try {
+        final g = traversal().withRemote(cluster.connect('gmodern'));
+        final names = await g.V().values('name').toList();
+        expect(names, hasLength(6));
       } finally {
         await cluster.close();
       }
@@ -243,24 +294,24 @@ void main() {
     test('writes in a tx are visible after commit', () async {
       final remote = DriverRemoteConnection(
         url,
-        const ConnectionOptions(traversalSource: 'ggraph'),
+        const ConnectionOptions(traversalSource: 'gtx'),
       );
       try {
         final g = traversal().withRemote(remote);
-
-        // clean slate
-        await g.V().drop().iterate();
+        final name = 'alice-${DateTime.now().microsecondsSinceEpoch}';
+        final startCount =
+            await g.V().has('name', name).count().next<int>() ?? 0;
 
         final tx = remote.tx();
-        final gtx = traversal().withRemote(await tx.begin());
-        await gtx.addV('person').property('name', 'alice').iterate();
+        final gtx = await tx.begin();
+        await gtx.addV('person').property('name', name).iterate();
         await tx.commit();
 
-        final count = await g.V().hasLabel('person').count().next();
-        expect((count as GLong).value, 1);
+        final count = await g.V().has('name', name).count().next();
+        expect(count, startCount + 1);
 
         // cleanup
-        await g.V().drop().iterate();
+        await g.V().has('name', name).drop().iterate();
       } finally {
         await remote.close();
       }
@@ -269,19 +320,21 @@ void main() {
     test('rollback discards writes', () async {
       final remote = DriverRemoteConnection(
         url,
-        const ConnectionOptions(traversalSource: 'ggraph'),
+        const ConnectionOptions(traversalSource: 'gtx'),
       );
       try {
         final g = traversal().withRemote(remote);
-        await g.V().drop().iterate();
+        final name = 'bob-${DateTime.now().microsecondsSinceEpoch}';
+        final startCount =
+            await g.V().has('name', name).count().next<int>() ?? 0;
 
         final tx = remote.tx();
-        final gtx = traversal().withRemote(await tx.begin());
-        await gtx.addV('person').property('name', 'bob').iterate();
+        final gtx = await tx.begin();
+        await gtx.addV('person').property('name', name).iterate();
         await tx.rollback();
 
-        final count = await g.V().hasLabel('person').count().next();
-        expect((count as GLong).value, 0);
+        final count = await g.V().has('name', name).count().next();
+        expect(count, startCount);
       } finally {
         await remote.close();
       }

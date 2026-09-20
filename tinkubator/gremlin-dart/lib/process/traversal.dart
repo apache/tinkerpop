@@ -19,6 +19,8 @@ import '../structure/graph.dart';
 import 'gremlin_lang.dart';
 import 'traversal_strategy.dart';
 
+const Object _predicateUnspecified = Object();
+
 class Traversal {
   final Graph? graph;
   final TraversalStrategies? traversalStrategies;
@@ -97,11 +99,27 @@ class P {
 
   const P(this.operator, this.value, this.other);
 
-  P and_(P arg) => P('and', this, arg);
-  P or_(P arg) => P('or', this, arg);
+  P and_(dynamic arg) => P('and', this, arg);
+  P or_(dynamic arg) => P('or', this, arg);
 
-  static P within(List<dynamic> args) => P('within', args, null);
-  static P without(List<dynamic> args) => P('without', args, null);
+  static P within([
+    dynamic a = _predicateUnspecified,
+    dynamic b = _predicateUnspecified,
+    dynamic c = _predicateUnspecified,
+    dynamic d = _predicateUnspecified,
+    dynamic e = _predicateUnspecified,
+    dynamic f = _predicateUnspecified,
+  ]) =>
+      P('within', _normalizePredicateArgs([a, b, c, d, e, f]), null);
+  static P without([
+    dynamic a = _predicateUnspecified,
+    dynamic b = _predicateUnspecified,
+    dynamic c = _predicateUnspecified,
+    dynamic d = _predicateUnspecified,
+    dynamic e = _predicateUnspecified,
+    dynamic f = _predicateUnspecified,
+  ]) =>
+      P('without', _normalizePredicateArgs([a, b, c, d, e, f]), null);
   static P between(dynamic a, dynamic b) => P('between', a, b);
   static P eq(dynamic a) => P('eq', a, null);
   static P neq(dynamic a) => P('neq', a, null);
@@ -113,6 +131,7 @@ class P {
   static P outside(dynamic a, dynamic b) => P('outside', a, b);
   static P not_(dynamic a) => P('not', a, null);
   static P test(dynamic a) => P('test', a, null);
+  static P typeOf(dynamic a) => P('typeOf', a, null);
 
   @override
   String toString() {
@@ -131,8 +150,8 @@ class TextP {
 
   const TextP(this.operator, this.value, [this.other]);
 
-  P and_(P arg) => P('and', this, arg);
-  P or_(P arg) => P('or', this, arg);
+  P and_(dynamic arg) => P('and', this, arg);
+  P or_(dynamic arg) => P('or', this, arg);
 
   static TextP containing(String a) => TextP('containing', a);
   static TextP notContaining(String a) => TextP('notContaining', a);
@@ -150,6 +169,17 @@ class TextP {
   }
 }
 
+List<dynamic> _normalizePredicateArgs(List<dynamic> args) {
+  final values = List<dynamic>.from(args);
+  while (values.isNotEmpty && identical(values.last, _predicateUnspecified)) {
+    values.removeLast();
+  }
+  if (values.length == 1 && values.first is List) {
+    return values.first as List<dynamic>;
+  }
+  return values;
+}
+
 // ---------------------------------------------------------------------------
 // EnumValue
 // ---------------------------------------------------------------------------
@@ -160,8 +190,27 @@ class EnumValue {
 
   const EnumValue(this.typeName, this.elementName);
 
+  dynamic call(dynamic value) =>
+      typeName == 'Cardinality' ? CardinalityValue(this, value) : {this: value};
+
   @override
   String toString() => '$typeName.$elementName';
+
+  @override
+  bool operator ==(Object other) =>
+      other is EnumValue &&
+      typeName == other.typeName &&
+      elementName == other.elementName;
+
+  @override
+  int get hashCode => Object.hash(typeName, elementName);
+}
+
+class CardinalityValue {
+  final EnumValue cardinality;
+  final dynamic value;
+
+  const CardinalityValue(this.cardinality, this.value);
 }
 
 // ---------------------------------------------------------------------------
@@ -219,7 +268,9 @@ class GDecimal {
 
   static double _pow10(int n) {
     double r = 1.0;
-    for (var i = 0; i < n; i++) { r *= 10.0; }
+    for (var i = 0; i < n; i++) {
+      r *= 10.0;
+    }
     return r;
   }
 
@@ -255,9 +306,42 @@ final column = (
   values: _e('Column', 'values'),
 );
 final direction = (
+  BOTH: _e('Direction', 'BOTH'),
+  IN: _e('Direction', 'IN'),
+  OUT: _e('Direction', 'OUT'),
   both: _e('Direction', 'BOTH'),
   in_: _e('Direction', 'IN'),
   out: _e('Direction', 'OUT'),
+);
+final gtype = (
+  BOOLEAN: _e('GType', 'BOOLEAN'),
+  BIGDECIMAL: _e('GType', 'BIGDECIMAL'),
+  BIGINT: _e('GType', 'BIGINT'),
+  BINARY: _e('GType', 'BINARY'),
+  BYTE: _e('GType', 'BYTE'),
+  CHAR: _e('GType', 'CHAR'),
+  DATETIME: _e('GType', 'DATETIME'),
+  DOUBLE: _e('GType', 'DOUBLE'),
+  DURATION: _e('GType', 'DURATION'),
+  FLOAT: _e('GType', 'FLOAT'),
+  GRAPH: _e('GType', 'GRAPH'),
+  INTEGER: _e('GType', 'INTEGER'),
+  INT: _e('GType', 'INT'),
+  LIST: _e('GType', 'LIST'),
+  LONG: _e('GType', 'LONG'),
+  MAP: _e('GType', 'MAP'),
+  NULL: _e('GType', 'NULL'),
+  PATH: _e('GType', 'PATH'),
+  PROPERTY: _e('GType', 'PROPERTY'),
+  SET: _e('GType', 'SET'),
+  SHORT: _e('GType', 'SHORT'),
+  STRING: _e('GType', 'STRING'),
+  TREE: _e('GType', 'TREE'),
+  UUID: _e('GType', 'UUID'),
+  VPROPERTY: _e('GType', 'VPROPERTY'),
+  VERTEX: _e('GType', 'VERTEX'),
+  VERTEXPROPERTY: _e('GType', 'VERTEXPROPERTY'),
+  EDGE: _e('GType', 'EDGE'),
 );
 final dt = (
   second: _e('DT', 'second'),
@@ -302,12 +386,15 @@ final scope = (
 final t = (
   id: _e('T', 'id'),
   key: _e('T', 'key'),
+  key_: _e('T', 'key'),
   label: _e('T', 'label'),
   value: _e('T', 'value'),
+  value_: _e('T', 'value'),
 );
 final pick = (
   any: _e('Pick', 'any'),
   none: _e('Pick', 'none'),
+  unproductive: _e('Pick', 'unproductive'),
 );
 
 const withOptions = (
@@ -321,4 +408,14 @@ const withOptions = (
   indexer: '~tinkerpop.index.indexer',
   list: 0,
   map: 1,
+  map_: 1,
+);
+const WithOptions = withOptions;
+
+const IO = (
+  reader: '~tinkerpop.io.reader',
+  writer: '~tinkerpop.io.writer',
+  gryo: 'gryo',
+  graphson: 'graphson',
+  graphml: 'graphml',
 );

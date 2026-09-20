@@ -16,7 +16,10 @@
 // under the License.
 
 import 'package:test/test.dart';
+import 'package:uuid/uuid_value.dart';
+import 'dart:io';
 
+import '../../lib/language/grammar/gremlin_antlr_to_dart.dart';
 import '../../lib/process/anonymous_traversal.dart';
 import '../../lib/process/graph_traversal.dart';
 import '../../lib/process/traversal.dart';
@@ -41,7 +44,8 @@ void main() {
       expect(gremlin, isNot(contains("'ConnectiveStrategy'")));
     });
 
-    test('multiple strategy names are unquoted identifiers separated by commas', () {
+    test('multiple strategy names are unquoted identifiers separated by commas',
+        () {
       final gs =
           _g().withoutStrategies(['ReadOnlyStrategy', 'OptionsStrategy']);
       final gremlin = gs.gremlinLang.getGremlin();
@@ -57,8 +61,8 @@ void main() {
       final gs2 = base.withoutStrategies(['ReadOnlyStrategy']);
       expect(gs1.gremlinLang.getGremlin(),
           isNot(equals(gs2.gremlinLang.getGremlin())));
-      expect(base.gremlinLang.getGremlin(),
-          isNot(contains('withoutStrategies')));
+      expect(
+          base.gremlinLang.getGremlin(), isNot(contains('withoutStrategies')));
     });
 
     test('can be chained with traversal steps', () {
@@ -67,19 +71,225 @@ void main() {
     });
 
     test('can be combined with withStrategies', () {
-      final gs = _g()
-          .withStrategies([ReadOnlyStrategy()])
-          .withoutStrategies(['EarlyLimitStrategy']);
+      final gs = _g().withStrategies([ReadOnlyStrategy()]).withoutStrategies(
+          ['EarlyLimitStrategy']);
       final gremlin = gs.gremlinLang.getGremlin();
       expect(gremlin, contains('withStrategies'));
-      expect(gremlin,
-          contains('withoutStrategies(EarlyLimitStrategy)'));
+      expect(gremlin, contains('withoutStrategies(EarlyLimitStrategy)'));
     });
 
     test('empty list produces no withoutStrategies step', () {
       final gs = _g().withoutStrategies([]);
       final gremlin = gs.gremlinLang.getGremlin();
       expect(gremlin, isNot(contains('withoutStrategies')));
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Code-generation regressions
+  // ---------------------------------------------------------------------------
+  group('Generated traversal regressions', () {
+    test('generator preserves every script in scenario order', () {
+      final generator = File('build/generate.groovy').readAsStringSync();
+      expect(generator, isNot(contains('scripts.last()')));
+      expect(generator, contains('scripts.collect'));
+      expect(generator, contains('translatedScripts.each'));
+
+      final generated = File('test/feature/gremlin.dart').readAsStringSync();
+      final scenario = RegExp(
+        r"'g_V_valuesXmapX_isXtypeOfXGType_MAPXX_countXlocalX':[\s\S]*?\n  \],",
+      ).firstMatch(generated);
+      expect(scenario, isNotNull);
+      expect(scenario!.group(0), contains("g.addV('data').property('map'"));
+      expect(scenario.group(0), contains("g.V().values('map')"));
+    });
+
+    test('generated null inject scenario preserves explicit null arguments',
+        () {
+      final generated = File('test/feature/gremlin.dart').readAsStringSync();
+      expect(generated, contains('g_injectXnull_1_3_nullX'));
+      expect(generated, contains('g.inject(null, GInt(1), GInt(3), null)'));
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Vararg/null preservation regressions
+  // ---------------------------------------------------------------------------
+  group('Traversal vararg regressions', () {
+    test('ANTLR fallback parses empty map literal as empty map', () {
+      final traversal =
+          GremlinAntlrToDart.parse(_g(), 'g.mergeV([:])') as GraphTraversal;
+      expect(traversal.gremlinLang.getGremlin(), 'g.mergeV([:])');
+      expect(traversal.gremlinLang.getGremlin(), isNot(contains('null:null')));
+    });
+
+    test('withSack two-argument form is not serialized as a nested list', () {
+      final gremlin =
+          _g().withSack(GInt(1), operator_.sum).V().gremlinLang.getGremlin();
+      expect(gremlin, 'g.withSack(1,Operator.sum).V()');
+      expect(gremlin, isNot(contains('[1,Operator.sum]')));
+    });
+
+    test('source inject preserves explicit nulls between values', () {
+      final gremlin = _g().inject(null, GInt(1), null).gremlinLang.getGremlin();
+      expect(gremlin, 'g.inject(null,1,null)');
+    });
+
+    test('has preserves an explicit null value argument', () {
+      expect(_g().V().has('name', null).gremlinLang.getGremlin(),
+          "g.V().has('name',null)");
+      expect(Anon.has('name').gremlinLang.getGremlin('__'), "__.has('name')");
+      expect(Anon.has('name', null).gremlinLang.getGremlin('__'),
+          "__.has('name',null)");
+    });
+
+    test('with preserves an explicit null value argument', () {
+      expect(_g().V().with_('option').gremlinLang.getGremlin(),
+          "g.V().with('option')");
+      expect(_g().V().with_('option', null).gremlinLang.getGremlin(),
+          "g.V().with('option',null)");
+
+      final source = _g().with_('option', null);
+      final options = source.gremlinLang.getOptionsStrategies();
+      expect(options.single.configuration['option'], isNull);
+    });
+
+    test('collection steps preserve an explicit null second argument', () {
+      expect(_g().V().combine(scope.local, null).gremlinLang.getGremlin(),
+          'g.V().combine(Scope.local,null)');
+      expect(_g().V().difference(scope.local, null).gremlinLang.getGremlin(),
+          'g.V().difference(Scope.local,null)');
+      expect(_g().V().intersect(scope.local, null).gremlinLang.getGremlin(),
+          'g.V().intersect(Scope.local,null)');
+      expect(_g().V().merge_(scope.local, null).gremlinLang.getGremlin(),
+          'g.V().merge(Scope.local,null)');
+      expect(_g().V().product(scope.local, null).gremlinLang.getGremlin(),
+          'g.V().product(Scope.local,null)');
+      expect(
+        Anon.intersect(scope.local, null).gremlinLang.getGremlin('__'),
+        '__.intersect(Scope.local,null)',
+      );
+    });
+
+    test('collection steps preserve a single list argument', () {
+      expect(
+        _g().V().combine(['a', 'b']).gremlinLang.getGremlin(),
+        "g.V().combine(['a','b'])",
+      );
+      expect(
+        _g().V().difference(['a', 'b']).gremlinLang.getGremlin(),
+        "g.V().difference(['a','b'])",
+      );
+    });
+
+    test('map steps preserve explicit null varargs', () {
+      expect(
+        _g().V().elementMap('name', 'age', null).gremlinLang.getGremlin(),
+        "g.V().elementMap('name','age',null)",
+      );
+      expect(
+        _g().V().valueMap('name', 'age', null).gremlinLang.getGremlin(),
+        "g.V().valueMap('name','age',null)",
+      );
+      expect(
+        Anon.elementMap().gremlinLang.getGremlin('__'),
+        '__.elementMap()',
+      );
+      expect(
+        Anon.valueMap(null).gremlinLang.getGremlin('__'),
+        '__.valueMap(null)',
+      );
+    });
+
+    test('anonymous inject preserves explicit nulls between values', () {
+      final gremlin =
+          Anon.inject(null, GInt(1), null).gremlinLang.getGremlin('__');
+      expect(gremlin, '__.inject(null,1,null)');
+    });
+
+    test('anonymous source and mutation steps serialize correctly', () {
+      expect(Anon.E().gremlinLang.getGremlin('__'), '__.E()');
+      expect(Anon.out().gremlinLang.getGremlin('__'), '__.out()');
+      expect(Anon.properties().gremlinLang.getGremlin('__'), '__.properties()');
+      expect(
+        Anon.sideEffect(Anon.identity()).gremlinLang.getGremlin('__'),
+        '__.sideEffect(__.identity())',
+      );
+      expect(
+        Anon.property(cardinality.single, 'age', GInt(22))
+            .gremlinLang
+            .getGremlin('__'),
+        "__.property(Cardinality.single,'age',22)",
+      );
+    });
+
+    test('single list argument remains a single list argument', () {
+      final gremlin = _g().inject([null, GInt(1)]).gremlinLang.getGremlin();
+      expect(gremlin, 'g.inject([null,1])');
+    });
+
+    test('merge source steps distinguish an omitted argument from null', () {
+      expect(_g().mergeV().gremlinLang.getGremlin(), 'g.mergeV()');
+      expect(_g().mergeV(null).gremlinLang.getGremlin(), 'g.mergeV(null)');
+      expect(_g().mergeE().gremlinLang.getGremlin(), 'g.mergeE()');
+      expect(_g().mergeE(null).gremlinLang.getGremlin(), 'g.mergeE(null)');
+    });
+
+    test('merge traversal steps preserve an explicit null argument', () {
+      expect(
+          _g().V().mergeV(null).gremlinLang.getGremlin(), 'g.V().mergeV(null)');
+      expect(
+          _g().V().mergeE(null).gremlinLang.getGremlin(), 'g.V().mergeE(null)');
+    });
+
+    test('ANTLR fallback preserves null on merge source steps', () {
+      final mergeV =
+          GremlinAntlrToDart.parse(_g(), 'g.mergeV(null)') as GraphTraversal;
+      final mergeE =
+          GremlinAntlrToDart.parse(_g(), 'g.mergeE(null)') as GraphTraversal;
+      expect(mergeV.gremlinLang.getGremlin(), 'g.mergeV(null)');
+      expect(mergeE.gremlinLang.getGremlin(), 'g.mergeE(null)');
+    });
+
+    test('UUID values serialize as Gremlin UUID literals', () {
+      final uuid = UuidValue.fromString('f47af10b-58cc-4372-a567-0f02b2f3d479');
+      expect(
+        _g().inject(uuid).gremlinLang.getGremlin(),
+        'g.inject(UUID("f47af10b-58cc-4372-a567-0f02b2f3d479"))',
+      );
+    });
+
+    test('ANTLR fallback preserves nested merge cardinality values', () {
+      final traversal = GremlinAntlrToDart.parse(
+        _g(),
+        'g.mergeV([name: "marko"]).option(Merge.onMatch, [age: Cardinality.list(33)])',
+      ) as GraphTraversal;
+      expect(
+        traversal.gremlinLang.getGremlin(),
+        "g.mergeV(['name':'marko']).option(Merge.onMatch,['age':Cardinality.list(33)])",
+      );
+    });
+
+    test('ANTLR fallback normalizes parenthesized merge direction keys', () {
+      final traversal = GremlinAntlrToDart.parse(
+        _g(),
+        'g.mergeE([T.label:"self",(OUT):Merge.outV,(IN):Merge.inV])',
+      ) as GraphTraversal;
+      expect(
+        traversal.gremlinLang.getGremlin(),
+        "g.mergeE([(T.label):'self',(Direction.OUT):Merge.outV,(Direction.IN):Merge.inV])",
+      );
+    });
+
+    test('cardinality values serialize as Gremlin cardinality literals', () {
+      expect(
+        _g()
+            .mergeV({'name': 'alice'})
+            .option(merge.onCreate, {'age': cardinality.single(GInt(81))})
+            .gremlinLang
+            .getGremlin(),
+        "g.mergeV(['name':'alice']).option(Merge.onCreate,['age':Cardinality.single(81)])",
+      );
     });
   });
 

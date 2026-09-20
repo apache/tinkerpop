@@ -42,7 +42,9 @@ void main() {
   setUpAll(() async {
     try {
       await GraphSetup(serverUrl).submit('g.inject(1)', 'ggraph');
-      graphDataMap = await GraphSetup(serverUrl).loadAllDataGraphs();
+      final graphSetup = GraphSetup(serverUrl);
+      await graphSetup.resetAllDataGraphs();
+      graphDataMap = await graphSetup.loadAllDataGraphs();
     } catch (error) {
       setupError = error;
       print('Skipping gremlin-dart feature tests: Gremlin Server at '

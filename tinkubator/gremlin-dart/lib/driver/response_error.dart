@@ -21,6 +21,22 @@ class ResponseError implements Exception {
     this.exception,
   });
 
+  /// Throws a [ResponseError] when the in-body response [status] carries a
+  /// failure code. The server reports errors raised while a traversal is being
+  /// iterated here, after it has already sent HTTP 200.
+  static void throwIfFailed(Map<String, dynamic>? status) {
+    final code = status?['code'] as int?;
+    if (code == null || code == 0 || code == 200 || code == 204 || code == 206) {
+      return;
+    }
+    throw ResponseError(
+      'Server error (code $code)',
+      statusCode: code,
+      serverMessage: status!['message'] as String?,
+      exception: status['exception'] as String?,
+    );
+  }
+
   @override
   String toString() {
     final parts = [message];
