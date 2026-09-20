@@ -25,6 +25,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-7-8]]
 === TinkerPop 3.7.8 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Fixed `gremlin-python` GraphBinary serialization of `int` values outside the Java `int` range, which raised a `struct.error` rather than writing a `Long`.
+
 [[release-3-7-7]]
 === TinkerPop 3.7.7 (Release Date: September 1, 2026)
 
