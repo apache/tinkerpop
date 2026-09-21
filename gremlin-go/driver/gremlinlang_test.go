@@ -718,6 +718,20 @@ func Test_GremlinLang(t *testing.T) {
 			equals: `g.inject(Binary("AA=="))`,
 		},
 		{
+			name: "g_Inject_Char",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject(Rune('a'))
+			},
+			equals: `g.inject("a"c)`,
+		},
+		{
+			name: "g_Inject_Char_EscapedQuote",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject(Rune('"'))
+			},
+			equals: `g.inject("\""c)`,
+		},
+		{
 			name: "GTS Match with query string spawn step",
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.Match("MATCH (p:person)-[e:knows]->(friend:person)")
