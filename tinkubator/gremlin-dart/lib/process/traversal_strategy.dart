@@ -48,6 +48,58 @@ abstract class TraversalStrategy {
   Future<void> apply(Traversal traversal) async {}
 }
 
+/// Resolves a strategy instance, class literal, or explicit name to the
+/// server-side strategy name without relying on [Type.toString()].
+String strategyNameOf(dynamic strategy) {
+  if (strategy is String) return strategy;
+  if (strategy is TraversalStrategy) return strategy.strategyName;
+
+  const names = <Type, String>{
+    RemoteStrategy: 'RemoteStrategy',
+    OptionsStrategy: 'OptionsStrategy',
+    PartitionStrategy: 'PartitionStrategy',
+    SubgraphStrategy: 'SubgraphStrategy',
+    SeedStrategy: 'SeedStrategy',
+    ReadOnlyStrategy: 'ReadOnlyStrategy',
+    VertexProgramStrategy: 'VertexProgramStrategy',
+    AdjacentToIncidentStrategy: 'AdjacentToIncidentStrategy',
+    ByModulatorOptimizationStrategy: 'ByModulatorOptimizationStrategy',
+    ComputerFinalizationStrategy: 'ComputerFinalizationStrategy',
+    ComputerVerificationStrategy: 'ComputerVerificationStrategy',
+    ConnectiveStrategy: 'ConnectiveStrategy',
+    CountStrategy: 'CountStrategy',
+    EarlyLimitStrategy: 'EarlyLimitStrategy',
+    ElementIdStrategy: 'ElementIdStrategy',
+    FilterRankingStrategy: 'FilterRankingStrategy',
+    GraphFilterStrategy: 'GraphFilterStrategy',
+    IdentityRemovalStrategy: 'IdentityRemovalStrategy',
+    IncidentToAdjacentStrategy: 'IncidentToAdjacentStrategy',
+    InlineFilterStrategy: 'InlineFilterStrategy',
+    LambdaRestrictionStrategy: 'LambdaRestrictionStrategy',
+    LazyBarrierStrategy: 'LazyBarrierStrategy',
+    MatchPredicateStrategy: 'MatchPredicateStrategy',
+    MessagePassingReductionStrategy: 'MessagePassingReductionStrategy',
+    OrderLimitStrategy: 'OrderLimitStrategy',
+    PathProcessorStrategy: 'PathProcessorStrategy',
+    PathRetractionStrategy: 'PathRetractionStrategy',
+    ProductiveByStrategy: 'ProductiveByStrategy',
+    ProfileStrategy: 'ProfileStrategy',
+    ReferenceElementStrategy: 'ReferenceElementStrategy',
+    RepeatUnrollStrategy: 'RepeatUnrollStrategy',
+    StandardVerificationStrategy: 'StandardVerificationStrategy',
+    VertexProgramRestrictionStrategy: 'VertexProgramRestrictionStrategy',
+    ReservedKeysVerificationStrategy: 'ReservedKeysVerificationStrategy',
+    EdgeLabelVerificationStrategy: 'EdgeLabelVerificationStrategy',
+    MatchAlgorithmStrategy: 'MatchAlgorithmStrategy',
+    HaltedTraverserStrategy: 'HaltedTraverserStrategy',
+  };
+  final name = names[strategy];
+  if (name == null) {
+    throw ArgumentError.value(strategy, 'strategy', 'Unsupported strategy');
+  }
+  return name;
+}
+
 // ---------------------------------------------------------------------------
 // RemoteStrategy — wires a RemoteConnection to a traversal
 // ---------------------------------------------------------------------------

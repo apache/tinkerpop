@@ -50,6 +50,7 @@ dartGremlinFile.withWriter('UTF-8') { Writer writer ->
     // Each entry is a function of (GraphTraversalSource g, {named parameters}). Parameters are the variables
     // a scenario declares with "using the parameter"; the feature runner supplies them by name.
     writer.writeLine('\nfinal Map<String, List<Function>> generatedTraversals = <String, List<Function>>{')
+    final Map<String, Set<String>> generatedParameters = new LinkedHashMap<String, Set<String>>()
     gremlins.each { String scenarioName, List<String> scripts ->
         try {
             final Set<String> parameters = new LinkedHashSet<String>()
@@ -73,10 +74,21 @@ dartGremlinFile.withWriter('UTF-8') { Writer writer ->
                 writer.writeLine("    (GraphTraversalSource g${signature}) => " + translated + ',')
             }
             writer.writeLine('  ],')
+            generatedParameters.put(scenarioName, parameters)
         } catch (ignored) {
             // Scenarios that Dart cannot translate are handled by the ANTLR fallback in steps.dart.
         }
     }
 
     writer.writeLine('};')
+    writer.writeLine('\nfinal Map<String, Set<String>> generatedTraversalParameters = <String, Set<String>>{')
+    generatedParameters.each { String scenarioName, Set<String> parameters ->
+        final String names = parameters.collect { "'${it}'" }.join(', ')
+        writer.writeLine("  '${scenarioName}': <String>{${names}},")
+    }
+    writer.writeLine('};')
+
+    // Untranslatable scenarios are skipped silently above, so report the split to make a coverage drop visible.
+    println "gremlin-dart: generated ${generatedParameters.size()} of ${gremlins.size()} scenarios; " +
+            "${gremlins.size() - generatedParameters.size()} use the runtime parser"
 }

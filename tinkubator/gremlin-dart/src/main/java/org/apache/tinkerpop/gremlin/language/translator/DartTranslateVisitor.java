@@ -269,9 +269,36 @@ public class DartTranslateVisitor extends AbstractTranslateVisitor {
         // key:value becomes the Dart named argument key: value
         String key = ctx.getChild(0).getText();
         if (key.length() > 1 && (key.startsWith("\"") || key.startsWith("'"))) key = key.substring(1, key.length() - 1);
+        if (!key.matches("[A-Za-z_$][A-Za-z0-9_$]*") || isDartKeyword(key)) {
+            throw new IllegalArgumentException("Strategy configuration key is not a Dart named argument: " + key);
+        }
         sb.append(key).append(": ");
         visit(ctx.getChild(2));
         return null;
+    }
+
+    private boolean isDartKeyword(final String value) {
+        return value.equals("abstract") || value.equals("as") || value.equals("assert") ||
+                value.equals("async") || value.equals("await") || value.equals("break") ||
+                value.equals("case") || value.equals("catch") || value.equals("class") ||
+                value.equals("const") || value.equals("continue") || value.equals("covariant") ||
+                value.equals("default") || value.equals("deferred") || value.equals("do") ||
+                value.equals("dynamic") || value.equals("else") || value.equals("enum") ||
+                value.equals("export") || value.equals("extends") || value.equals("extension") ||
+                value.equals("external") || value.equals("factory") || value.equals("false") ||
+                value.equals("final") || value.equals("finally") || value.equals("for") ||
+                value.equals("Function") || value.equals("get") || value.equals("hide") ||
+                value.equals("if") || value.equals("implements") || value.equals("import") ||
+                value.equals("in") || value.equals("interface") || value.equals("is") ||
+                value.equals("late") || value.equals("library") || value.equals("mixin") ||
+                value.equals("new") || value.equals("null") || value.equals("on") ||
+                value.equals("operator") || value.equals("part") || value.equals("required") ||
+                value.equals("rethrow") || value.equals("return") || value.equals("set") ||
+                value.equals("show") || value.equals("static") || value.equals("super") ||
+                value.equals("switch") || value.equals("sync") || value.equals("this") ||
+                value.equals("throw") || value.equals("true") || value.equals("try") ||
+                value.equals("typedef") || value.equals("var") || value.equals("void") ||
+                value.equals("while") || value.equals("with") || value.equals("yield");
     }
 
     @Override

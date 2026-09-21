@@ -223,8 +223,11 @@ class FeatureSteps {
   }
 
   Future<void> _iterateToList() async {
+    // Build outside the try: a failure to construct the traversal is a harness
+    // bug and must not be recorded as the error the scenario expects.
+    final traversal = _buildPendingTraversal();
     try {
-      world.result = await _executePendingTraversalToList();
+      world.result = await traversal.toList();
       world.resultIsNext = false;
       world.errorMessage = null;
     } catch (error) {
@@ -235,8 +238,9 @@ class FeatureSteps {
   }
 
   Future<void> _iterateNext() async {
+    final traversal = _buildPendingTraversal();
     try {
-      final value = await _executePendingTraversalNext();
+      final value = await traversal.next();
       if (value == null) {
         world.result = <dynamic>[];
       } else if (value is Iterable && value is! String && value is! Map) {
@@ -276,15 +280,22 @@ class FeatureSteps {
         world.generatedTraversalIndex >= traversals.length) {
       return null;
     }
+    final parameters =
+        generatedTraversalParameters[world.scenarioName] ?? const <String>{};
     final traversal = Function.apply(
-      traversals[world.generatedTraversalIndex++],
+      traversals[world.generatedTraversalIndex],
       [_sourceWithSideEffects()],
       {
         for (final entry in world.params.entries)
-          Symbol(entry.key): entry.value,
+          if (parameters.contains(entry.key)) Symbol(entry.key): entry.value,
       },
     );
-    return traversal as GraphTraversal;
+    if (traversal is! GraphTraversal) {
+      throw StateError(
+          'Generated traversal returned ${traversal.runtimeType} instead of GraphTraversal');
+    }
+    world.generatedTraversalIndex++;
+    return traversal;
   }
 
   Future<void> _executeGraphInitializer(String traversalString) async {
@@ -310,12 +321,6 @@ class FeatureSteps {
     }
     return parsed;
   }
-
-  Future<List<dynamic>> _executePendingTraversalToList() =>
-      _buildPendingTraversal().toList();
-
-  Future<dynamic> _executePendingTraversalNext() =>
-      _buildPendingTraversal().next();
 
   void _assertNoError() {
     if (world.errorMessage != null) {

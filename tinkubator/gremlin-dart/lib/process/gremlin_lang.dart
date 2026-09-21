@@ -216,7 +216,7 @@ class GremlinLang {
     // renders them this way; the server parser requires bare identifiers.
     if (name == 'withoutStrategies' && args != null) {
       final names =
-          args.map((s) => s.toString()).where((s) => s.isNotEmpty).join(',');
+          args.map(strategyNameOf).where((n) => n.isNotEmpty).join(',');
       if (names.isNotEmpty) {
         _gremlin += '.withoutStrategies($names)';
       }
