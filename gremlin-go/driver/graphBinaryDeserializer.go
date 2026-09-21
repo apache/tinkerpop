@@ -28,6 +28,7 @@ import (
 	"math/big"
 	"reflect"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 )
@@ -217,6 +218,8 @@ func (d *GraphBinaryDeserializer) readValue(dt dataType, flag byte) (interface{}
 		return b != 0, err
 	case byteType:
 		return d.readByte()
+	case charType:
+		return d.readChar()
 	case shortType:
 		if d.err != nil {
 			return nil, d.err
@@ -300,6 +303,39 @@ func (d *GraphBinaryDeserializer) readString() (string, error) {
 		return "", err
 	}
 	return string(buf), nil
+}
+
+// readChar reads a Character value, encoded as one to four UTF-8 bytes with no length prefix.
+// The number of bytes making up the encoded rune is determined by the leading bits of the first byte.
+func (d *GraphBinaryDeserializer) readChar() (Rune, error) {
+	firstByte, err := d.readByte()
+	if err != nil {
+		return 0, err
+	}
+	byteLength := 1
+	if firstByte&0x80 > 0 {
+		switch {
+		case firstByte&0xf0 == 0xf0:
+			byteLength = 4
+		case firstByte&0xe0 == 0xe0:
+			byteLength = 3
+		case firstByte&0xc0 == 0xc0:
+			byteLength = 2
+		}
+	}
+
+	buf := make([]byte, byteLength)
+	buf[0] = firstByte
+	if byteLength > 1 {
+		rest, err := d.readBytes(byteLength - 1)
+		if err != nil {
+			return 0, err
+		}
+		copy(buf[1:], rest)
+	}
+
+	r, _ := utf8.DecodeRune(buf)
+	return Rune(r), nil
 }
 
 func (d *GraphBinaryDeserializer) readList(bulked bool) (interface{}, error) {

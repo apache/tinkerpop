@@ -179,6 +179,7 @@ func initSerializers() {
 		longType:       longWriter,
 		intType:        intWriter,
 		shortType:      shortWriter,
+		charType:       charWriter,
 		byteType: func(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
 			return binary.Write(w, binary.BigEndian, value.(uint8))
 		},
