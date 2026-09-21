@@ -260,6 +260,40 @@ void main() {
       expect(
           _g().withoutStrategies(RepeatUnrollStrategy).gremlinLang.getGremlin(),
           'g.withoutStrategies(RepeatUnrollStrategy)');
+      expect(
+        _g().withoutStrategies(SeedStrategy).gremlinLang.getGremlin(),
+        'g.withoutStrategies(SeedStrategy)',
+      );
+      expect(
+        () => _g().withoutStrategies(DateTime).gremlinLang.getGremlin(),
+        throwsArgumentError,
+      );
+    });
+
+    test(
+        'withoutStrategies ignores empty names rather than emitting a trailing comma',
+        () {
+      expect(_g().withoutStrategies('A', '').gremlinLang.getGremlin(),
+          'g.withoutStrategies(A)');
+      expect(_g().withoutStrategies('').gremlinLang.getGremlin(), 'g');
+    });
+
+    test('strategyNameOf is stable and rejects unknown types', () {
+      expect(strategyNameOf(ReadOnlyStrategy), 'ReadOnlyStrategy');
+      expect(strategyNameOf(ReadOnlyStrategy()), 'ReadOnlyStrategy');
+      expect(strategyNameOf('Custom'), 'Custom');
+      expect(() => strategyNameOf(DateTime), throwsArgumentError);
+    });
+
+    test('most feature scenarios are generated rather than parsed at runtime',
+        () {
+      // generate.groovy skips untranslatable scenarios silently, so a
+      // translator regression would otherwise only show up as lost coverage.
+      final generated = File('test/feature/gremlin.dart').readAsStringSync();
+      final count = RegExp(r"^  '[^']+': <Function>\[", multiLine: true)
+          .allMatches(generated)
+          .length;
+      expect(count, greaterThanOrEqualTo(2100));
     });
 
     test('generated code escapes dollar signs in string literals', () {
