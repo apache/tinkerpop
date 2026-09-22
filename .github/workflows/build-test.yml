@@ -270,6 +270,67 @@ jobs:
           EXCLUDE="-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-python,$EXCLUDE_FOR_GLV"
           mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
           mvn verify -pl :gremlin-js,:gremlin-javascript,:gremlint,:gremlin-mcp -Dhost.uid=$(id -u) -Dhost.gid=$(id -g) -Dnode.test.version=${{ matrix.node-version }}
+  javascript-browser:
+    name: javascript-glv browser smoke test
+    timeout-minutes: 15
+    needs: cache-gremlin-server-docker-image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Get Cached Server Base Image
+        uses: actions/cache@v6
+        id: gremlin-server-test-docker-image
+        with:
+          path: |
+            ./gremlin-server/*
+            ~/.m2/repository/org/apache/tinkerpop/*
+          key: ${{ github.sha }}
+      - name: Load Docker Image
+        working-directory: ./gremlin-server
+        run: docker load --input gremlin-server.tar
+      - name: Build gremlin-server test jar
+        run: |
+          EXCLUDE="-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-python,$EXCLUDE_FOR_GLV"
+          mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
+      - name: Start Gremlin Server
+        working-directory: ./gremlin-js/gremlin-javascript
+        run: |
+          export GREMLIN_SERVER="$(mvn -q -pl gremlin-js/gremlin-javascript help:evaluate -Dexpression=project.version -DforceStdout)"
+          export ABS_PROJECT_HOME="$GITHUB_WORKSPACE"
+          docker compose up --build --wait gremlin-server-test-js
+      - name: Install dependencies
+        working-directory: ./gremlin-js/gremlin-javascript
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      # Tier 1 (no server): builds the browser bundle from the package's real public entry points
+      # (resolved through the "browser" field, as a consumer's bundler would) and runs it in
+      # headless Chromium. Catches a Node-only import leaking into a shared code path - such an
+      # import fails the bundle step itself, before any test runs.
+      - name: Browser smoke test (bundle load)
+        working-directory: ./gremlin-js/gremlin-javascript
+        run: npm run browser-test
+      # Tier 2: same bundle, pointed at the Gremlin Server started above, to prove the browser
+      # transport (a plain `fetch`, no undici) actually round-trips over HTTP from a real browser
+      # engine. See test/browser/live-roundtrip.spec.ts for why this project disables the page's
+      # same-origin checks (the test server sends no CORS headers - a deployment concern, not
+      # something this driver can supply on its own).
+      - name: Browser smoke test (live round-trip)
+        working-directory: ./gremlin-js/gremlin-javascript
+        run: npm run browser-test-live
+      - name: Stop Gremlin Server
+        if: always()
+        working-directory: ./gremlin-js/gremlin-javascript
+        run: docker compose down
   python:
     name: python-${{ matrix.python-version }}
     timeout-minutes: 20
