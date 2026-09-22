@@ -257,8 +257,14 @@ export default class GoTranslateVisitor extends TranslateVisitor {
         this.sb.push(')');
     }
 
-    visitCharacterLiteral(_ctx: any): void {
-        throw new TranslatorException('Character literals are not supported in Go');
+    visitCharacterLiteral(ctx: any): void {
+        const text: string = ctx.getText();
+        const withoutSuffix = text.substring(0, text.length - 1);
+        const inner = TranslateVisitor.removeFirstAndLastCharacters(withoutSuffix).replace(/\\"/g, '"');
+        this.sb.push(GO_PACKAGE_NAME);
+        this.sb.push("Char('");
+        this.sb.push(inner);
+        this.sb.push("')");
     }
 
     visitDurationLiteral(ctx: any): void {
