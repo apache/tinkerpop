@@ -163,6 +163,61 @@ export class Byte {
   toJSON() { return this.value; }
 }
 
+/**
+ * Recursive deep-equality check, in the spirit of Node's `util.isDeepStrictEqual` but implemented
+ * without importing `node:util` so it also works in the browser. Handles the value shapes that
+ * flow through this GLV: primitives (via `Object.is`, so `NaN`/`-0` compare correctly), Date,
+ * RegExp, typed arrays/Buffer, Map, Set, Array, and plain objects/class instances (own-enumerable
+ * keys, same prototype). Not a general-purpose substitute for `assert.deepStrictEqual`.
+ */
+export function deepEqual(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true;
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
+  if (Object.getPrototypeOf(a) !== Object.getPrototypeOf(b)) return false;
+
+  if (a instanceof Date) return a.getTime() === (b as Date).getTime();
+  if (a instanceof RegExp) return a.toString() === (b as RegExp).toString();
+
+  if (ArrayBuffer.isView(a) && ArrayBuffer.isView(b)) {
+    const viewA = a as unknown as Uint8Array;
+    const viewB = b as unknown as Uint8Array;
+    if (viewA.length !== viewB.length) return false;
+    for (let i = 0; i < viewA.length; i++) {
+      if (viewA[i] !== viewB[i]) return false;
+    }
+    return true;
+  }
+
+  if (a instanceof Map) {
+    const mapB = b as Map<unknown, unknown>;
+    if (a.size !== mapB.size) return false;
+    for (const [key, value] of a) {
+      if (!mapB.has(key) || !deepEqual(value, mapB.get(key))) return false;
+    }
+    return true;
+  }
+
+  if (a instanceof Set) {
+    const setB = b as Set<unknown>;
+    if (a.size !== setB.size) return false;
+    for (const value of a) {
+      if (![...setB].some((other) => deepEqual(value, other))) return false;
+    }
+    return true;
+  }
+
+  if (Array.isArray(a)) {
+    const arrayB = b as unknown[];
+    if (a.length !== arrayB.length) return false;
+    return a.every((value, index) => deepEqual(value, arrayB[index]));
+  }
+
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  if (keysA.length !== keysB.length) return false;
+  return keysA.every((key) => Object.hasOwn(b, key) && deepEqual((a as any)[key], (b as any)[key]));
+}
+
 export function toInt(value: number) { return new Int(value); }
 export function toFloat(value: number) { return new Float(value); }
 export function toDouble(value: number) { return new Double(value); }
@@ -207,7 +262,14 @@ export class ImmutableMap<K, V> extends Map<K, V> implements ReadonlyMap<K, V> {
 }
 
 async function generateNodeUserAgent() {
-  const os = await import('node:os');
+  // The specifier is built in a separate statement (not inlined) so bundlers (esbuild/webpack/Vite)
+  // see a non-literal expression and leave this as a runtime dynamic import instead of trying to
+  // statically resolve/bundle the Node built-in "node:os" for a browser target - esbuild constant-
+  // folds an inline `import('node:' + 'os')` back into a literal and fails the same as `import('node:os')`.
+  // This branch is never reached in the browser: getUserAgent() below returns via the `navigator`
+  // check before calling this function.
+  const osModuleSpecifier = 'node:' + 'os';
+  const os = await import(osModuleSpecifier);
 
   const applicationName = (process?.env.npm_package_name ?? 'NotAvailable').replace('_', ' ');
   let runtimeVersion;
