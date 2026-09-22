@@ -362,7 +362,11 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitCharacterLiteral(final GremlinParser.CharacterLiteralContext ctx) {
-        throw new TranslatorException("Character literals are not supported in Go");
+        final String text = ctx.getText();
+        final String withoutSuffix = text.substring(0, text.length() - 1);
+        final String inner = removeFirstAndLastCharacters(withoutSuffix).replace("\\\"", "\"");
+        sb.append(GO_PACKAGE_NAME).append("Char('").append(inner).append("')");
+        return null;
     }
 
     @Override

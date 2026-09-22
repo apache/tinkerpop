@@ -70,8 +70,8 @@ func TestGraphBinaryV4(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, listType, res)
 		})
-		t.Run("getType should return charType for Rune", func(t *testing.T) {
-			res, err := serializer.getType(Rune('a'))
+		t.Run("getType should return charType for Char", func(t *testing.T) {
+			res, err := serializer.getType(Char('a'))
 			assert.Nil(t, err)
 			assert.Equal(t, charType, res)
 		})
@@ -298,7 +298,7 @@ func TestGraphBinaryV4(t *testing.T) {
 			assert.Equal(t, source, res)
 		})
 		t.Run("read-write char", func(t *testing.T) {
-			for _, source := range []Rune{'a', '"', '\'', 'é', '€', '😀'} {
+			for _, source := range []Char{'a', '"', '\'', 'é', '€', '😀'} {
 				var buffer bytes.Buffer
 				err := charWriter(source, &buffer, nil)
 				assert.Nil(t, err)

@@ -720,14 +720,14 @@ func Test_GremlinLang(t *testing.T) {
 		{
 			name: "g_Inject_Char",
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
-				return g.Inject(Rune('a'))
+				return g.Inject(Char('a'))
 			},
 			equals: `g.inject("a"c)`,
 		},
 		{
 			name: "g_Inject_Char_EscapedQuote",
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
-				return g.Inject(Rune('"'))
+				return g.Inject(Char('"'))
 			},
 			equals: `g.inject("\""c)`,
 		},

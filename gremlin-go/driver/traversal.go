@@ -906,5 +906,5 @@ type ByteBuffer struct {
 	Data []byte
 }
 
-// Rune represents the GraphBinary/Gremlin Character type.
-type Rune rune
+// Char represents the GraphBinary/Gremlin Character type.
+type Char rune

@@ -307,7 +307,7 @@ func (d *GraphBinaryDeserializer) readString() (string, error) {
 
 // readChar reads a Character value, encoded as one to four UTF-8 bytes with no length prefix.
 // The number of bytes making up the encoded rune is determined by the leading bits of the first byte.
-func (d *GraphBinaryDeserializer) readChar() (Rune, error) {
+func (d *GraphBinaryDeserializer) readChar() (Char, error) {
 	firstByte, err := d.readByte()
 	if err != nil {
 		return 0, err
@@ -335,7 +335,7 @@ func (d *GraphBinaryDeserializer) readChar() (Rune, error) {
 	}
 
 	r, _ := utf8.DecodeRune(buf)
-	return Rune(r), nil
+	return Char(r), nil
 }
 
 func (d *GraphBinaryDeserializer) readList(bulked bool) (interface{}, error) {
