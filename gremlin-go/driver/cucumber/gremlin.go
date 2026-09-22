@@ -1218,6 +1218,8 @@ var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[
     "g_injectXlistXnull_10_5_nullXX_sumXlocalX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(p["xx1"]).Sum(gremlingo.Scope.Local)}}, 
     "g_VX1X_valuesXageX_sumXlocalX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V(p["vid1"]).Values("age").Sum(gremlingo.Scope.Local)}}, 
     "g_V_localXunionXvaluesXageX_outE_valuesXweightXX_foldX_sumXlocalX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Local(gremlingo.T__.Union(gremlingo.T__.Values("age"), gremlingo.T__.OutE().Values("weight")).Fold()).Sum(gremlingo.Scope.Local)}}, 
+    "g_injectXlistXa_bXX_sumXlocalX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(p["xx1"]).Sum(gremlingo.Scope.Local)}}, 
+    "g_injectXhelloX_sumXlocalX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(p["xx1"]).Sum(gremlingo.Scope.Local)}}, 
     "g_injectXfeature_test_nullX_toLower": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject("FEATURE", "tESt", nil).ToLower()}}, 
     "g_injectXfeature_test_nullX_toLowerXlocalX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(p["xx1"]).ToLower(gremlingo.Scope.Local)}}, 
     "g_injectXListXa_bXX_toLower": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(p["xx1"]).ToLower()}}, 

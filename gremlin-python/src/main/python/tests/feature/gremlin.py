@@ -1220,6 +1220,8 @@ world.gremlins = {
     'g_injectXlistXnull_10_5_nullXX_sumXlocalX': [(lambda g, xx1=None:g.inject(xx1).sum_(Scope.local))], 
     'g_VX1X_valuesXageX_sumXlocalX': [(lambda g, vid1=None:g.V(vid1).age.sum_(Scope.local))], 
     'g_V_localXunionXvaluesXageX_outE_valuesXweightXX_foldX_sumXlocalX': [(lambda g:g.V().local(__.union(__.age,__.out_e().weight).fold()).sum_(Scope.local))], 
+    'g_injectXlistXa_bXX_sumXlocalX': [(lambda g, xx1=None:g.inject(xx1).sum_(Scope.local))], 
+    'g_injectXhelloX_sumXlocalX': [(lambda g, xx1=None:g.inject(xx1).sum_(Scope.local))], 
     'g_injectXfeature_test_nullX_toLower': [(lambda g:g.inject('FEATURE','tESt',None).to_lower())], 
     'g_injectXfeature_test_nullX_toLowerXlocalX': [(lambda g, xx1=None:g.inject(xx1).to_lower(Scope.local))], 
     'g_injectXListXa_bXX_toLower': [(lambda g, xx1=None:g.inject(xx1).to_lower())], 

@@ -217,3 +217,27 @@ Feature: Step - sum()
       | d[27].i |
       | d[33.4].d |
       | d[35.2].d |
+
+  # Verifies that sum(local) on a list with non-numeric values throws ClassCastException
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXlistXa_bXX_sumXlocalX
+    Given the modern graph
+    And using the parameter xx1 defined as "l[a,b]"
+    And the traversal of
+      """
+      g.inject(xx1).sum(local)
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
+  # Verifies that sum(local) on a single non-numeric scalar raises an error (not identity)
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXhelloX_sumXlocalX
+    Given the modern graph
+    And using the parameter xx1 defined as "hello"
+    And the traversal of
+      """
+      g.inject(xx1).sum(local)
+      """
+    When iterated to list
+    Then the traversal will raise an error

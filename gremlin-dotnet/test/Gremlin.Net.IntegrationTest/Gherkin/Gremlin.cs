@@ -1247,6 +1247,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_injectXlistXnull_10_5_nullXX_sumXlocalX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).Sum<object>(Scope.Local)}}, 
                {"g_VX1X_valuesXageX_sumXlocalX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).Values<object>("age").Sum<object>(Scope.Local)}}, 
                {"g_V_localXunionXvaluesXageX_outE_valuesXweightXX_foldX_sumXlocalX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Local<object>(__.Union<object>(__.Values<object>("age"),__.OutE().Values<object>("weight")).Fold()).Sum<object>(Scope.Local)}}, 
+               {"g_injectXlistXa_bXX_sumXlocalX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).Sum<object>(Scope.Local)}}, 
+               {"g_injectXhelloX_sumXlocalX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).Sum<object>(Scope.Local)}}, 
                {"g_injectXfeature_test_nullX_toLower", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>("FEATURE","tESt",null).ToLower()}}, 
                {"g_injectXfeature_test_nullX_toLowerXlocalX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).ToLower<object>(Scope.Local)}}, 
                {"g_injectXListXa_bXX_toLower", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).ToLower()}}, 

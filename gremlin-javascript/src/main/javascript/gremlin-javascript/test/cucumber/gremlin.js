@@ -1238,6 +1238,8 @@ const gremlins = {
     g_injectXlistXnull_10_5_nullXX_sumXlocalX: [function({g, xx1}) { return g.inject(xx1).sum(Scope.local) }], 
     g_VX1X_valuesXageX_sumXlocalX: [function({g, vid1}) { return g.V(vid1).values("age").sum(Scope.local) }], 
     g_V_localXunionXvaluesXageX_outE_valuesXweightXX_foldX_sumXlocalX: [function({g}) { return g.V().local(__.union(__.values("age"),__.outE().values("weight")).fold()).sum(Scope.local) }], 
+    g_injectXlistXa_bXX_sumXlocalX: [function({g, xx1}) { return g.inject(xx1).sum(Scope.local) }], 
+    g_injectXhelloX_sumXlocalX: [function({g, xx1}) { return g.inject(xx1).sum(Scope.local) }], 
     g_injectXfeature_test_nullX_toLower: [function({g}) { return g.inject("FEATURE","tESt",null).toLower() }], 
     g_injectXfeature_test_nullX_toLowerXlocalX: [function({g, xx1}) { return g.inject(xx1).toLower(Scope.local) }], 
     g_injectXListXa_bXX_toLower: [function({g, xx1}) { return g.inject(xx1).toLower() }], 

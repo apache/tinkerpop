@@ -528,6 +528,38 @@ fully demonstrative of Gremlin step semantics. It is also hard to simply read th
 step is meant to behave. This section discusses the semantics for individual steps to help users and providers
 understand implementation expectations.
 
+[[gremlin-semantics-local-scope-boxing]]
+=== Local scope and single values
+
+Many steps accept a `Scope` argument. When `Scope.local` is specified, the step operates on the
+*contents* of the current traverser rather than on the traversal stream as a whole. The reference
+implementation coerces the traverser's value into an iterable sequence using the following dispatch:
+
+* A `LIST`, `SET`, or other `Iterable` is iterated directly.
+* An array (including primitive arrays) is iterated element by element.
+* A `MAP` is iterated over its entry set.
+* Any other non-null value (including a single number) is wrapped into a **single-element sequence**.
+
+This means that a `Scope.local` reducing step (e.g. `sum(local)`, `min(local)`, `max(local)`,
+`mean(local)`) applied to a scalar numeric value will produce that same value back (identity), because
+the scalar is wrapped into a one-element sequence before the reduction is applied. For example:
+
+----
+g.inject([1,2,3]).sum(local) ==> 6      // reduces the list
+g.inject(1,2,3).sum(local)   ==> 1,2,3  // each scalar is wrapped into [n], sum([n]) = n
+----
+
+If elements within the collection (or the scalar itself) are not compatible with the reducing operation,
+a type error will be raised at runtime (e.g. attempting `sum(local)` on a non-numeric value). This
+applies regardless of whether the input is a multi-element collection or a single scalar that was
+wrapped into a one-element sequence.
+
+Providers implementing `Scope.local` steps are expected to replicate this wrapping behavior to maintain
+compatibility with the reference implementation. Individual step entries in this document will reference
+this section rather than restating the rule.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/util/iterator/IteratorUtils.java[source (reference implementation)]
+
 [llms-summary="The formal semantics of the all() step: filters array data from the Traversal Stream if all of the array's items match the supplied predicate."]
 [[all-step]]
 === all()
