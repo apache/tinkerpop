@@ -15,19 +15,8 @@
  *  KIND, either express or implied.  See the License for the
  *  specific language governing permissions and limitations
  *  under the License.
- *
- * Tier 2 smoke test: needs a running Gremlin Server (the same one the Node integration tests use;
- * see test/helper.js and docker-compose.yml, port 45940). Bring one up with
- * `docker compose up -d gremlin-server-test-js` before running `npm run browser-test-live`.
- *
- * This proves the *transport* actually round-trips from inside a real browser engine: a plain
- * `fetch()`, no undici, issued from the bundle built by build-bundle.mjs. It does not prove
- * gremlin-javascript is safe to point directly at a production Gremlin Server from a browser: this
- * test server does not send CORS headers, so the run disables the browser's same-origin checks for
- * this project only (see playwright.config.ts's "chromium-live" project). A real browser deployment
- * needs the server (or a proxy in front of it) to send appropriate CORS headers, or needs a
- * same-origin proxy in front of Gremlin Server - that is a deployment concern, not something this
- * driver can supply on its own.
+ * Tier 2: live round-trip with a real Gremlin Server (docker-compose.yml, port 45940).
+ * Requires `docker compose up gremlin-server-test-js` before running `npm run browser-test-live`.
  */
 import { test, expect } from '@playwright/test';
 
@@ -42,7 +31,6 @@ test('a traversal built in the browser round-trips over HTTP to a real Gremlin S
     await connection.open();
     const g = gremlin.process.AnonymousTraversalSource.traversal().with_(connection);
     try {
-      // Data-independent: works against any server, regardless of what graph (if any) it has loaded.
       return await g.inject(1, 2, 3).count().toList();
     } finally {
       await connection.close();

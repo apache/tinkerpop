@@ -17,15 +17,6 @@
  *  under the License.
  */
 
-/**
- * Tier 1 smoke test: no Gremlin Server needed. Loads the real browser bundle (built by
- * build-bundle.mjs from the package's actual public entry points, resolved through the "browser"
- * field, exactly as a consumer's bundler would) into headless Chromium and exercises it entirely
- * client-side. This is what catches a Node-only import (e.g. `node:util`, `node:os`, or a
- * transitive `crypto` from an AWS SDK package) leaking into a shared code path: such an import
- * fails at *bundle time*, before this test ever runs, so a red build-bundle step is itself part of
- * what this suite verifies.
- */
 import { test, expect } from '@playwright/test';
 
 test('the bundle loads and exposes the public API', async ({ page }) => {
@@ -48,7 +39,6 @@ test('a traversal source can be built and a traversal serializes to GremlinLang'
 
   const gremlinLang = await page.evaluate(() => {
     const { gremlin } = (window as any).__gremlinBrowserSmoke;
-    // A bogus URL is fine: building a traversal never opens a connection.
     const connection = new gremlin.driver.DriverRemoteConnection('http://localhost:1/gremlin');
     const g = gremlin.process.AnonymousTraversalSource.traversal().with_(connection);
     return g.V().has('name', 'marko').toString();
@@ -63,10 +53,7 @@ test('DriverRemoteConnection uses the browser dispatcher, not the Node/undici on
   const message = await page.evaluate(() => {
     const { gremlin } = (window as any).__gremlinBrowserSmoke;
     try {
-      // maxConnections is a Node-only, undici-backed option; the browser dispatcher rejects it
-      // instead of silently ignoring it (see lib/driver/dispatcher.browser.ts). Seeing that
-      // specific error - rather than an "Agent is not defined"/undici crash - confirms the
-      // package.json "browser" field swap actually took effect in this bundle.
+      // maxConnections is Node-only; browser dispatcher should reject it.
       new gremlin.driver.DriverRemoteConnection('http://localhost:1/gremlin', { maxConnections: 5 });
       return 'no error thrown';
     } catch (err) {
