@@ -34,11 +34,8 @@ const skipTags = <String>{
   'StepWrite',
   'DataChar',
   'WithReservedKeysVerificationStrategy',
-  // These scenarios use gremlin-lang literal forms (Binary("..."),
-  // Duration(...), 'c') that the beta.2 server parser rejects over the HTTP
-  // string-submission path.  The driver can handle these types via GraphBinary
-  // bindings, but the feature tests submit raw gremlin strings so they stay
-  // skipped until the server parser is fixed.
+  // These scenarios use gremlin-lang literal forms that the beta.2 server
+  // parser rejects after the driver submits the generated traversal.
   'SupportsDuration',
   'SupportsBinary',
   'SupportsChar',
@@ -53,13 +50,15 @@ class FeatureSteps {
 
   FeatureSteps(this.world) : graphSetup = GraphSetup(world.serverUrl);
 
-  Future<void> run(FeatureScenario scenario) async {
+  Future<void> run(FeatureScenario scenario, String scenarioKey) async {
     world.resetScenario(scenario.tags);
     world.scenarioName = scenario.name;
+    world.scenarioKey = scenarioKey;
     world.ignore = scenario.tags.any(skipTags.contains);
     for (final step in scenario.steps) {
       await runStep(step);
     }
+    if (!world.ignore) _assertGeneratedTraversalsConsumed();
   }
 
   Future<void> runStep(FeatureStep step) async {
@@ -91,7 +90,6 @@ class FeatureSteps {
     }
 
     if (text == 'the traversal of') {
-      world.pendingTraversal = step.docString;
       return;
     }
 
@@ -192,7 +190,6 @@ class FeatureSteps {
     if (graphCountMatch != null) {
       await _assertGraphCount(
         int.parse(graphCountMatch.group(1)!),
-        graphCountMatch.group(2)!.replaceAll(r'\"', '"'),
       );
       return;
     }
@@ -257,15 +254,6 @@ class FeatureSteps {
     }
   }
 
-  Future<List<dynamic>> _submit(String traversalString) {
-    return graphSetup.submit(
-      traversalString.trim(),
-      graphTraversalSources[world.graphName]!,
-      world.params,
-      world.sideEffects,
-    );
-  }
-
   GraphTraversalSource _sourceWithSideEffects() {
     var source = world.g!;
     for (final entry in world.sideEffects.entries) {
@@ -275,13 +263,13 @@ class FeatureSteps {
   }
 
   GraphTraversal? _takeGeneratedTraversal() {
-    final traversals = generatedTraversals[world.scenarioName];
+    final traversals = generatedTraversals[world.scenarioKey];
     if (traversals == null ||
         world.generatedTraversalIndex >= traversals.length) {
       return null;
     }
     final parameters =
-        generatedTraversalParameters[world.scenarioName] ?? const <String>{};
+        generatedTraversalParameters[world.scenarioKey] ?? const <String>{};
     final traversal = Function.apply(
       traversals[world.generatedTraversalIndex],
       [_sourceWithSideEffects()],
@@ -298,28 +286,36 @@ class FeatureSteps {
     return traversal;
   }
 
-  Future<void> _executeGraphInitializer(String traversalString) async {
-    final traversal = _takeGeneratedTraversal();
-    if (traversal != null) {
-      await traversal.toList();
-      return;
-    }
-    await _submit(traversalString);
+  Future<void> _executeGraphInitializer(String _) async {
+    final traversal = _takeRequiredGeneratedTraversal('graph initializer');
+    await traversal.toList();
   }
 
   GraphTraversal _buildPendingTraversal() {
-    final generatedTraversal = _takeGeneratedTraversal();
-    if (generatedTraversal != null) return generatedTraversal;
-    final parsed = GremlinAntlrToDart.parse(
-      _sourceWithSideEffects(),
-      (world.pendingTraversal ?? '').trim(),
-      variables: world.params,
-    );
-    if (parsed is! GraphTraversal) {
+    return _takeRequiredGeneratedTraversal('traversal under test');
+  }
+
+  GraphTraversal _takeRequiredGeneratedTraversal(String context) {
+    final traversal = _takeGeneratedTraversal();
+    if (traversal != null) return traversal;
+    throw StateError(
+        'No generated traversal for scenario ${world.scenarioName} '
+        '(script ${world.generatedTraversalIndex}) while executing $context; '
+        're-run build/generate.groovy');
+  }
+
+  void _assertGeneratedTraversalsConsumed() {
+    final traversals = generatedTraversals[world.scenarioKey];
+    if (traversals == null) {
       throw StateError(
-          'Expected a GraphTraversal but parsed ${parsed.runtimeType}');
+          'No generated traversals for scenario ${world.scenarioName}; '
+          're-run build/generate.groovy');
     }
-    return parsed;
+    if (world.generatedTraversalIndex != traversals.length) {
+      throw StateError('Scenario ${world.scenarioName} consumed '
+          '${world.generatedTraversalIndex} of ${traversals.length} '
+          'generated traversals');
+    }
   }
 
   void _assertNoError() {
@@ -454,10 +450,11 @@ class FeatureSteps {
     return value.toString();
   }
 
-  Future<void> _assertGraphCount(int count, String traversalString) async {
+  Future<void> _assertGraphCount(int count) async {
     _assertNoError();
-    final result = await _submit('$traversalString.count()');
-    expect(result.single, count);
+    final traversal = _takeRequiredGeneratedTraversal('graph-count assertion');
+    final result = await traversal.toList();
+    expect(result.length, count);
   }
 
   bool _deepEquals(dynamic actual, dynamic expected) {

@@ -166,9 +166,11 @@ public class DartTranslateVisitor extends AbstractTranslateVisitor {
     @Override
     public Void visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) {
         if (ctx.stringLiteral() == null) {
-            throw new TranslatorException("Dart translation requires explicit UUID string literals");
+            // UUID() with no argument is a random UUID, as in the other translators
+            sb.append("UuidValue.fromString(Uuid().v4())");
+            return null;
         }
-        sb.append("UuidValue(");
+        sb.append("UuidValue.fromString(");
         visitStringLiteral(ctx.stringLiteral());
         sb.append(")");
         return null;
@@ -248,6 +250,23 @@ public class DartTranslateVisitor extends AbstractTranslateVisitor {
     @Override
     public Void visitTraversalStrategy(final GremlinParser.TraversalStrategyContext ctx) {
         // "new SubgraphStrategy(vertices: ...)" and the bare "ReadOnlyStrategy" both become Dart constructor calls.
+        final String strategyName = ctx.getChild(0).getText().equals("new") ? ctx.getChild(1).getText() : ctx.getChild(0).getText();
+        if (strategyName.equals("OptionsStrategy")) {
+            // OptionsStrategy accepts arbitrary keys, so it is built from a map rather than named arguments
+            sb.append("OptionsStrategy({");
+            final List<ParseTree> options = ctx.children.stream().
+                    filter(c -> c instanceof GremlinParser.ConfigurationContext).collect(Collectors.toList());
+            for (int ix = 0; ix < options.size(); ix++) {
+                String key = options.get(ix).getChild(0).getText();
+                if (key.length() > 1 && (key.startsWith("\"") || key.startsWith("'"))) key = key.substring(1, key.length() - 1);
+                sb.append("'").append(key.replace("\\", "\\\\").replace("'", "\\'").replace("$", "\\$")).append("': ");
+                visit(options.get(ix).getChild(2));
+                if (ix < options.size() - 1) appendArgumentSeparator();
+            }
+            sb.append("})");
+            return null;
+        }
+
         if (ctx.getChildCount() == 1) {
             sb.append(ctx.getText()).append("()");
             return null;

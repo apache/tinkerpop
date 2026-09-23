@@ -19,10 +19,6 @@ include: package:lints/recommended.yaml
 
 analyzer:
   exclude:
-    - lib/language/grammar/GremlinLexer.dart
-    - lib/language/grammar/GremlinParser.dart
-    - lib/language/grammar/GremlinBaseVisitor.dart
-    - lib/language/grammar/GremlinVisitor.dart
     - tool/**
     - example/**
 

@@ -30,7 +30,7 @@ and explore new ideas at a faster pace with a lower barrier for acceptance.
 |:-------------|:---------------------------------------------------------------------------------|:-----:|
 | Project A    | This is a project that does something interesting for agentic memory.            |   1   |
 | Project B    | This is a Gremlin Language Variant for RPG IV.                                   |   2   |
-| gremlin-dart | Dart/Flutter language variant for TinkerPop 4.x. HTTP + GraphBinary transport.  |   1   |
+| gremlin-dart | Dart/Flutter language variant for TinkerPop 4.x. HTTP + GraphBinary transport; native Dart DSL only, without Gremlin-string parsing. |   1   |
 
 ## Project Stages
 

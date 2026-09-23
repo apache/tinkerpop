@@ -22,7 +22,7 @@ class CucumberWorld {
   GraphTraversalSource? g;
   String graphName = '';
   String scenarioName = '';
-  String? pendingTraversal;
+  String scenarioKey = '';
   Map<String, dynamic> params = <String, dynamic>{};
   List<dynamic> result = <dynamic>[];
   bool resultIsNext = false;
@@ -41,7 +41,7 @@ class CucumberWorld {
     tags = scenarioTags;
     graphName = '';
     scenarioName = '';
-    pendingTraversal = null;
+    scenarioKey = '';
     params = <String, dynamic>{};
     sideEffects = <String, dynamic>{};
     result = <dynamic>[];
