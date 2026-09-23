@@ -17,16 +17,7 @@
  *  under the License.
  */
 
-/**
- * Bundles test/browser/entry.js (which imports the package's real public entry points) into a
- * single browser-ready file with esbuild, `platform: 'browser'`. This is the step that actually
- * exercises the package.json "browser" field: it fails loudly if any code reachable from those
- * entry points statically pulls in a Node built-in or a Node-only package with no browser shim
- * (that is the regression this smoke test exists to catch - see TINKERPOP browser support work).
- *
- * Run standalone with `node test/browser/build-bundle.mjs`, or via the `browser-test`/
- * `browser-test-live` npm scripts, which call this first.
- */
+// Bundles entry.js for browsers using esbuild. Fails if any Node built-ins leak into the bundle.
 import esbuild from 'esbuild';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';

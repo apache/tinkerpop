@@ -17,12 +17,7 @@
  *  under the License.
  */
 
-/**
- * Zero-dependency static file server for test/browser/.generated/ (the bundle + fixture.html
- * written by build-bundle.mjs). Started by Playwright's `webServer` config so the fixture is
- * loaded from a real http:// origin instead of file://, which is what a bundled browser
- * consumer's page actually looks like.
- */
+// Static server for .generated/ bundle and fixture (Playwright webServer)
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
