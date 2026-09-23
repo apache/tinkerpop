@@ -17,18 +17,6 @@
  *  under the License.
  */
 
-/**
- * Browser counterpart of {@link ./auth.ts}. `basic` is identical - it only needs base64 encoding.
- * `sigv4` is not: the Node version pulls in `@smithy/signature-v4`, `@smithy/hash-node` (which
- * needs `node:crypto`) and, for the default credentials chain, `@aws-sdk/credential-providers`.
- * Those drag in Node built-ins with no browser shim, so bundlers picking this file up via the
- * `"browser"` field never see that import graph at all.
- *
- * Beyond the bundling concern, SigV4 from the browser is a genuine anti-pattern: it needs
- * long-lived AWS credentials, which must never be shipped to client-side code. `sigv4` here throws
- * immediately with that guidance rather than silently failing on first request.
- */
-
 import { Buffer } from 'buffer';
 import type { HttpRequest, RequestInterceptor } from './http-request.js';
 

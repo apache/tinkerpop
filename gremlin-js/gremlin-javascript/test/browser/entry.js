@@ -17,11 +17,6 @@
  *  under the License.
  */
 
-/**
- * Bundle entry point for the browser smoke tests. Imports the package the same way a consumer
- * would (its public entry points, resolved through the "browser" field), then exposes the result
- * on `window` so the Playwright specs can drive it via `page.evaluate`.
- */
 import * as gremlin from '../../build/esm/index.js';
 import * as gremlinLanguage from '../../build/esm/language/index.js';
 

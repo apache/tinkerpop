@@ -163,13 +163,6 @@ export class Byte {
   toJSON() { return this.value; }
 }
 
-/**
- * Recursive deep-equality check, in the spirit of Node's `util.isDeepStrictEqual` but implemented
- * without importing `node:util` so it also works in the browser. Handles the value shapes that
- * flow through this GLV: primitives (via `Object.is`, so `NaN`/`-0` compare correctly), Date,
- * RegExp, typed arrays/Buffer, Map, Set, Array, and plain objects/class instances (own-enumerable
- * keys, same prototype). Not a general-purpose substitute for `assert.deepStrictEqual`.
- */
 export function deepEqual(a: unknown, b: unknown): boolean {
   if (Object.is(a, b)) return true;
   if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
@@ -262,12 +255,7 @@ export class ImmutableMap<K, V> extends Map<K, V> implements ReadonlyMap<K, V> {
 }
 
 async function generateNodeUserAgent() {
-  // The specifier is built in a separate statement (not inlined) so bundlers (esbuild/webpack/Vite)
-  // see a non-literal expression and leave this as a runtime dynamic import instead of trying to
-  // statically resolve/bundle the Node built-in "node:os" for a browser target - esbuild constant-
-  // folds an inline `import('node:' + 'os')` back into a literal and fails the same as `import('node:os')`.
-  // This branch is never reached in the browser: getUserAgent() below returns via the `navigator`
-  // check before calling this function.
+  // Non-literal specifier so bundlers treat this as a runtime import instead of failing on node:os.
   const osModuleSpecifier = 'node:' + 'os';
   const os = await import(osModuleSpecifier);
 
