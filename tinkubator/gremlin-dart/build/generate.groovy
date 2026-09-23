@@ -21,13 +21,30 @@ import org.apache.tinkerpop.gremlin.language.corpus.FeatureReader
 import org.apache.tinkerpop.gremlin.language.translator.DartTranslateVisitor
 import org.apache.tinkerpop.gremlin.language.translator.GremlinTranslator
 
+import java.nio.file.Files
 import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 
 final File dartGremlinFile = new File("${projectBaseDir}/tinkubator/gremlin-dart/test/feature/gremlin.dart")
-final Map<String, List<String>> gremlins = FeatureReader.parseGrouped(Paths.get(
-        "${projectBaseDir}", "gremlin-test", "src", "main", "resources", "org", "apache", "tinkerpop", "gremlin", "test", "features").toString())
+final def featureRoot = Paths.get("${projectBaseDir}", "gremlin-test", "src", "main", "resources", "org", "apache", "tinkerpop", "gremlin", "test", "features")
+final Map<String, List<String>> gremlins = new LinkedHashMap<String, List<String>>()
+Files.find(featureRoot, Integer.MAX_VALUE, { path, attributes ->
+    attributes.isRegularFile() && path.toString().endsWith('.feature')
+}).withCloseable { paths ->
+    paths.sorted().forEach { featureFile ->
+        final String relativePath = featureRoot.relativize(featureFile).toString().replace(File.separator, '/')
+        FeatureReader.parseGrouped(featureFile.toString()).each { String scenarioName, List<String> scripts ->
+            final String scenarioKey = "${relativePath}::${scenarioName}"
+            if (gremlins.put(scenarioKey, scripts) != null) {
+                throw new IllegalStateException("Duplicate scenario key: ${scenarioKey}")
+            }
+        }
+    }
+}
+final def temporaryDartGremlinFile = Files.createTempFile(dartGremlinFile.parentFile.toPath(), 'gremlin-', '.dart')
 
-dartGremlinFile.withWriter('UTF-8') { Writer writer ->
+try {
+temporaryDartGremlinFile.toFile().withWriter('UTF-8') { Writer writer ->
     writer.writeLine('// Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements.\n' +
             '// See the NOTICE file distributed with this work for additional information regarding copyright ownership.\n' +
             '// The ASF licenses this file to You under the Apache License, Version 2.0 (the "License"); you may not use\n' +
@@ -45,23 +62,18 @@ dartGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine("import 'package:gremlin_dart/process/graph_traversal.dart';")
     writer.writeLine("import 'package:gremlin_dart/process/traversal.dart';")
     writer.writeLine("import 'package:gremlin_dart/process/traversal_strategy.dart';\n")
-    writer.writeLine("import 'package:uuid/uuid_value.dart';\n")
+    writer.writeLine("import 'package:uuid/uuid.dart';\n")
 
     // Each entry is a function of (GraphTraversalSource g, {named parameters}). Parameters are the variables
     // a scenario declares with "using the parameter"; the feature runner supplies them by name.
     writer.writeLine('\nfinal Map<String, List<Function>> generatedTraversals = <String, List<Function>>{')
     final Map<String, Set<String>> generatedParameters = new LinkedHashMap<String, Set<String>>()
-    gremlins.each { String scenarioName, List<String> scripts ->
+    gremlins.each { String scenarioKey, List<String> scripts ->
         try {
             final Set<String> parameters = new LinkedHashSet<String>()
             final List<String> translatedScripts = scripts.collect { String script ->
                 final def translation = GremlinTranslator.translate(script, new DartTranslateVisitor())
                 final String translated = translation.getTranslated()
-                // Arbitrary-key OptionsStrategy(myVar: ...) cannot be a Dart named-argument call, so leave it
-                // to the runtime parser in the feature runner.
-                if (translated.contains("OptionsStrategy(")) {
-                    throw new IllegalArgumentException('Unsupported Dart translation')
-                }
                 parameters.addAll(translation.getParameters())
                 return translated
             }
@@ -69,26 +81,28 @@ dartGremlinFile.withWriter('UTF-8') { Writer writer ->
             // Every function in a scenario declares the same named parameters so the runner can pass them all.
             final String signature = parameters.isEmpty() ? '' :
                     ', {' + parameters.collect { "dynamic ${it}" }.join(', ') + '}'
-            writer.writeLine("  '${scenarioName}': <Function>[")
+            writer.writeLine("  '${scenarioKey}': <Function>[")
             translatedScripts.each { String translated ->
                 writer.writeLine("    (GraphTraversalSource g${signature}) => " + translated + ',')
             }
             writer.writeLine('  ],')
-            generatedParameters.put(scenarioName, parameters)
-        } catch (ignored) {
-            // Scenarios that Dart cannot translate are handled by the ANTLR fallback in steps.dart.
+            generatedParameters.put(scenarioKey, parameters)
+        } catch (Exception error) {
+            throw new IllegalStateException("Cannot translate feature scenario: ${scenarioKey}", error)
         }
     }
 
     writer.writeLine('};')
     writer.writeLine('\nfinal Map<String, Set<String>> generatedTraversalParameters = <String, Set<String>>{')
-    generatedParameters.each { String scenarioName, Set<String> parameters ->
+    generatedParameters.each { String scenarioKey, Set<String> parameters ->
         final String names = parameters.collect { "'${it}'" }.join(', ')
-        writer.writeLine("  '${scenarioName}': <String>{${names}},")
+        writer.writeLine("  '${scenarioKey}': <String>{${names}},")
     }
     writer.writeLine('};')
 
-    // Untranslatable scenarios are skipped silently above, so report the split to make a coverage drop visible.
-    println "gremlin-dart: generated ${generatedParameters.size()} of ${gremlins.size()} scenarios; " +
-            "${gremlins.size() - generatedParameters.size()} use the runtime parser"
+    println "gremlin-dart: generated ${generatedParameters.size()} grouped scenarios"
+}
+    Files.move(temporaryDartGremlinFile, dartGremlinFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+} finally {
+    Files.deleteIfExists(temporaryDartGremlinFile)
 }

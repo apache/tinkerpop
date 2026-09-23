@@ -28,12 +28,16 @@ const defaultFeatureDir =
     '../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features';
 const defaultServerUrl = 'http://localhost:45940/gremlin';
 
+// Scenarios mutate the server's shared graphs, so never run two suites against
+// the same server at the same time: they corrupt each other's data and produce
+// spurious failures (counts that are 0 instead of 1).
 void main() {
   final featureDir =
       Platform.environment['CUCUMBER_FEATURE_FOLDER'] ?? defaultFeatureDir;
+  final featureDirectory = _featureDirectory(featureDir);
   final serverUrl =
       Platform.environment['GREMLIN_SERVER_URL'] ?? defaultServerUrl;
-  final featureFiles = _discoverFeatureFiles(featureDir);
+  final featureFiles = _discoverFeatureFiles(featureDirectory);
   final runner = FeatureRunner();
 
   late Map<String, DataGraph> graphDataMap;
@@ -46,6 +50,9 @@ void main() {
       await graphSetup.resetAllDataGraphs();
       graphDataMap = await graphSetup.loadAllDataGraphs();
     } catch (error) {
+      // An explicitly configured server that fails setup is a real failure, not
+      // something to skip: a skipped suite reports success with zero tests run.
+      if (Platform.environment.containsKey('GREMLIN_SERVER_URL')) rethrow;
       setupError = error;
       print('Skipping gremlin-dart feature tests: Gremlin Server at '
           '$serverUrl is unreachable or not ready ($error)');
@@ -62,7 +69,10 @@ void main() {
             return;
           }
           final world = CucumberWorld(serverUrl, graphDataMap);
-          await FeatureSteps(world).run(scenario);
+          await FeatureSteps(world).run(
+            scenario,
+            _scenarioKey(file, featureDirectory, scenario.name),
+          );
         });
       }
     }
@@ -79,16 +89,25 @@ void main() {
   });
 }
 
-List<File> _discoverFeatureFiles(String featureDir) {
-  final dir = _featureDirectory(featureDir);
-  if (!dir.existsSync()) return <File>[];
-  final files = dir
+List<File> _discoverFeatureFiles(Directory featureDirectory) {
+  if (!featureDirectory.existsSync()) return <File>[];
+  final files = featureDirectory
       .listSync(recursive: true)
       .whereType<File>()
       .where((file) => file.path.endsWith('.feature'))
       .toList();
   files.sort((a, b) => a.path.compareTo(b.path));
   return files;
+}
+
+String _scenarioKey(File featureFile, Directory featureDirectory, String name) {
+  final root = featureDirectory.absolute.path;
+  final path = featureFile.absolute.path;
+  if (!path.startsWith('$root${Platform.pathSeparator}')) {
+    throw StateError('Feature $path is outside $root');
+  }
+  final relative = path.substring(root.length + 1).replaceAll('\\', '/');
+  return '$relative::$name';
 }
 
 Directory _featureDirectory(String featureDir) {

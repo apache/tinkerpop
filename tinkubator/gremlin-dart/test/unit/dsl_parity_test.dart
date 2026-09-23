@@ -19,7 +19,6 @@ import 'package:test/test.dart';
 import 'package:uuid/uuid_value.dart';
 import 'dart:io';
 
-import '../../lib/language/grammar/gremlin_antlr_to_dart.dart';
 import '../../lib/process/anonymous_traversal.dart';
 import '../../lib/process/graph_traversal.dart';
 import '../../lib/process/traversal.dart';
@@ -97,7 +96,7 @@ void main() {
 
       final generated = File('test/feature/gremlin.dart').readAsStringSync();
       final scenario = RegExp(
-        r"'g_V_valuesXmapX_isXtypeOfXGType_MAPXX_countXlocalX':[\s\S]*?\n  \],",
+        r"'data/Map\.feature::g_V_valuesXmapX_isXtypeOfXGType_MAPXX_countXlocalX':[\s\S]*?\n  \],",
       ).firstMatch(generated);
       expect(scenario, isNotNull);
       expect(scenario!.group(0), contains("g.addV('data').property('map'"));
@@ -116,11 +115,10 @@ void main() {
   // Vararg/null preservation regressions
   // ---------------------------------------------------------------------------
   group('Traversal vararg regressions', () {
-    test('ANTLR fallback parses empty map literal as empty map', () {
-      final traversal =
-          GremlinAntlrToDart.parse(_g(), 'g.mergeV([:])') as GraphTraversal;
-      expect(traversal.gremlinLang.getGremlin(), 'g.mergeV([:])');
-      expect(traversal.gremlinLang.getGremlin(), isNot(contains('null:null')));
+    test('an empty map argument serializes as an empty map', () {
+      final gremlin = _g().mergeV(<String, dynamic>{}).gremlinLang.getGremlin();
+      expect(gremlin, 'g.mergeV([:])');
+      expect(gremlin, isNot(contains('null:null')));
     });
 
     test('withSack two-argument form is not serialized as a nested list', () {
@@ -253,7 +251,7 @@ void main() {
               .gremlinLang
               .getGremlin(),
           "g.withStrategies(new SubgraphStrategy(vertices:__.has('name'),checkAdjacentVertices:false))");
-      // the list form used by the runtime parser still works
+      // The list form remains supported alongside varargs.
       expect(_g().withStrategies([ReadOnlyStrategy()]).gremlinLang.getGremlin(),
           'g.withStrategies(ReadOnlyStrategy)');
       // a strategy class may be passed directly, as generated code does
@@ -285,10 +283,7 @@ void main() {
       expect(() => strategyNameOf(DateTime), throwsArgumentError);
     });
 
-    test('most feature scenarios are generated rather than parsed at runtime',
-        () {
-      // generate.groovy skips untranslatable scenarios silently, so a
-      // translator regression would otherwise only show up as lost coverage.
+    test('generated feature traversal catalog does not regress', () {
       final generated = File('test/feature/gremlin.dart').readAsStringSync();
       final count = RegExp(r"^  '[^']+': <Function>\[", multiLine: true)
           .allMatches(generated)
@@ -316,15 +311,6 @@ void main() {
           _g().V().mergeE(null).gremlinLang.getGremlin(), 'g.V().mergeE(null)');
     });
 
-    test('ANTLR fallback preserves null on merge source steps', () {
-      final mergeV =
-          GremlinAntlrToDart.parse(_g(), 'g.mergeV(null)') as GraphTraversal;
-      final mergeE =
-          GremlinAntlrToDart.parse(_g(), 'g.mergeE(null)') as GraphTraversal;
-      expect(mergeV.gremlinLang.getGremlin(), 'g.mergeV(null)');
-      expect(mergeE.gremlinLang.getGremlin(), 'g.mergeE(null)');
-    });
-
     test('UUID values serialize as Gremlin UUID literals', () {
       final uuid = UuidValue.fromString('f47af10b-58cc-4372-a567-0f02b2f3d479');
       expect(
@@ -333,24 +319,27 @@ void main() {
       );
     });
 
-    test('ANTLR fallback preserves nested merge cardinality values', () {
-      final traversal = GremlinAntlrToDart.parse(
-        _g(),
-        'g.mergeV([name: "marko"]).option(Merge.onMatch, [age: Cardinality.list(33)])',
-      ) as GraphTraversal;
+    test('nested merge cardinality values are preserved', () {
       expect(
-        traversal.gremlinLang.getGremlin(),
+        _g()
+            .mergeV({'name': 'marko'})
+            .option(merge.onMatch, {'age': cardinality.list(GInt(33))})
+            .gremlinLang
+            .getGremlin(),
         "g.mergeV(['name':'marko']).option(Merge.onMatch,['age':Cardinality.list(33)])",
       );
     });
 
-    test('ANTLR fallback normalizes parenthesized merge direction keys', () {
-      final traversal = GremlinAntlrToDart.parse(
-        _g(),
-        'g.mergeE([T.label:"self",(OUT):Merge.outV,(IN):Merge.inV])',
-      ) as GraphTraversal;
+    test('enum keys in merge maps serialize as parenthesized keys', () {
       expect(
-        traversal.gremlinLang.getGremlin(),
+        _g()
+            .mergeE({
+              t.label: 'self',
+              direction.OUT: merge.outV,
+              direction.IN: merge.inV
+            })
+            .gremlinLang
+            .getGremlin(),
         "g.mergeE([(T.label):'self',(Direction.OUT):Merge.outV,(Direction.IN):Merge.inV])",
       );
     });

@@ -133,7 +133,7 @@ abstract class TransactionCapableRemoteConnectionBase
 // ---------------------------------------------------------------------------
 
 class OptionsStrategy extends TraversalStrategy {
-  OptionsStrategy(Map<String, dynamic> options)
+  OptionsStrategy([Map<String, dynamic>? options])
       : super(strategyName: 'OptionsStrategy', configuration: options);
 }
 
