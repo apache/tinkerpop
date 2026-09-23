@@ -30,7 +30,13 @@ const contentTypes = { '.html': 'text/html', '.js': 'text/javascript' };
 
 const server = http.createServer((req, res) => {
   const urlPath = req.url === '/' ? '/fixture.html' : req.url;
-  const filePath = path.join(generatedDir, urlPath);
+  const filePath = path.resolve(generatedDir, '.' + urlPath);
+
+  if (!filePath.startsWith(generatedDir)) {
+    res.writeHead(403);
+    res.end('Forbidden');
+    return;
+  }
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
