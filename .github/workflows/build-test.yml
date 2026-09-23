@@ -302,10 +302,10 @@ jobs:
           EXCLUDE="-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-python,$EXCLUDE_FOR_GLV"
           mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
       - name: Start Gremlin Server
-        working-directory: ./gremlin-js/gremlin-javascript
         run: |
-          export GREMLIN_SERVER="$(mvn -q -pl gremlin-js/gremlin-javascript help:evaluate -Dexpression=project.version -DforceStdout)"
+          export GREMLIN_SERVER="$(mvn -q -pl :gremlin-javascript help:evaluate -Dexpression=project.version -DforceStdout)"
           export ABS_PROJECT_HOME="$GITHUB_WORKSPACE"
+          cd gremlin-js/gremlin-javascript
           docker compose up --build --wait gremlin-server-test-js
       - name: Install dependencies
         working-directory: ./gremlin-js/gremlin-javascript
