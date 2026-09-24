@@ -6368,6 +6368,24 @@ some query caching capabilities. Note that the reference implementation of the g
 not have such a query caching mechanism, and thus will not see any performance improvements through parameterization. Users
 should consult the documentation of their specific graph system details of potential performance benefits via parameterization.
 
+A `GValue` pairs a parameter name with a value and is constructed with one of the static factory methods on the
+`GValue` class. `GValue.of(name, value)` detects the type automatically, while typed variants such as
+`GValue.ofString(name, value)` and `GValue.ofLong(name, value)` make the type explicit. When a traversal is constructed
+in Java, a `GValue` is supplied in place of a literal argument for any of the parameterizable steps listed below.
+
+[source,java]
+----
+g.V(GValue.of("vid", 1));                                            <1>
+g.V().has(GValue.ofString("lbl", "person"), "name", "marko");        <2>
+g.V().hasLabel(GValue.ofString("lbl", "person"));                    <3>
+g.V().hasLabel("person").limit(GValue.ofLong("count", 2L));          <4>
+----
+
+<1> The identifier supplied to `V()` is parameterizable.
+<2> The `has(label, key, value)` form parameterizes the element label. The property key and the comparison value are not parameterizable.
+<3> The element label supplied to `hasLabel()` is parameterizable.
+<4> The count supplied to `limit()` is parameterizable.
+
 NOTE: There are unique considerations regarding parameters when using `gremlin-groovy` scripts. Groovy allows for parameterization
 at arbitrary points in the query in addition to the subset of parameterizable steps documented here. Groovy is also bound by
 a comparatively slow script compilation, which makes parameterization essential for performant execution of `gremlin-groovy` scripts.
@@ -6382,7 +6400,7 @@ a comparatively slow script compilation, which makes parameterization essential 
 |<<vertex-steps,bothE()>> | String... edgeLabels
 |<<call-step,call()>> | Map params
 |<<from-step,from()>> | Vertex fromVertex
-|<<has-step,has()>> | String label
+|<<has-step,has()>> | String label (the element label in the `has(label, key, value)` form)
 |<<has-step,hasId()>> | Object id, Object... ids
 |<<has-step,hasLabel()>> | String label, String... labels
 |<<has-step,hasValue()>> | Object value, Object... values
@@ -6401,7 +6419,14 @@ a comparatively slow script compilation, which makes parameterization essential 
 |<<tail-step,tail()>> | Long limit
 |<<to-step,to()>> | String... edgeLabels, Vertex toVertex
 |<<vertex-steps,toE()>> | String... edgeLabels
+|<<graph-step,V()>> | Object... ids
 |===
+
+Only the argument identified for each step is parameterizable. A parameter supplied to an argument that is not
+identified above is not rejected. It is instead treated as a literal value, which can silently produce incorrect
+results. For example, supplying a parameter as the comparison value of `has(key, value)` compares the property against
+the parameter object itself rather than the value it wraps, so the filter matches nothing and the traversal returns an
+empty result rather than raising an error.
 
 *Additional References*
 
