@@ -3567,13 +3567,19 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#propertymap-step[referen
 * `where(P)` can combine scope-label and traversal values in a `ConnectiveP`
   (e.g., `P.neq('a').and(P.gt(traversal))`).
 * `where(Traversal)` is an existence filter: traversers pass if the child traversal produces at least one result.
-* Child traversals inside predicates must be read-only; mutating steps are rejected with an `Argument Error`.
+* A child traversal supplied as a predicate value in `where(P)` or `where(startKey, P)` must be read-only. Mutating
+  steps in such a traversal are rejected with an `Argument Error`.
+* This read-only restriction applies only to predicate-value traversals. The existence form `where(Traversal)` does
+  not guard its child traversal, so a mutating step such as `where(__.addV(...))` or `where(out().property(...))`
+  executes against the graph and mutates it rather than raising an error.
 * In OLAP, the anonymous traversal of `where()` processes the current object "locally" within the vertex's
 star graph. It cannot traverse to adjacent vertices' properties or edges.
 
 *Exceptions:*
 
-* An `Argument Error` is raised if a child traversal contains mutating steps.
+* An `Argument Error` is raised if a predicate-value child traversal in `where(P)` or `where(startKey, P)` contains
+  mutating steps. The existence form `where(Traversal)` is not subject to this check and raises no error for a
+  mutating child traversal.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/WherePredicateStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/WhereTraversalStep.java[source (traversal)],
