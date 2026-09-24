@@ -682,6 +682,15 @@ Because Go does not support method overloading, the batched form of `next(n)` av
 distinct method `NextN(n)` on `Traversal`. `Next()` returns a single `*Result`, while `NextN(n)` returns up to `n`
 results as `[]*Result`.
 
+Go rune literals are interpreted as `Integer` values rather than `Character` literals by default.
+To use the Gremlin `Character` type, wrap the rune in `gremlingo.Char()`. For example:
+
+[source,go]
+----
+g.Inject('a')                       // interpreted as integer 97 (the Unicode code point)
+g.Inject(gremlingo.Char('a'))       // properly translated to a Gremlin character literal
+----
+
 [[gremlin-go-aliases]]
 === Aliases
 To make the code more readable and close to the Gremlin query language), you can use aliases. These aliases can be named with capital letters to be consistent with non-aliased steps but will result in exported variables which could be problematic if not being used in a top-level program (i.e. not a redistributable package).
