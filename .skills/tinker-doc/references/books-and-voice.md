@@ -348,6 +348,13 @@ exactly. Match the structure already used for the format being edited rather tha
 reorganizing it, and keep examples illustrative (`[source,text]` or
 `[source,json]`) rather than executable.
 
+An IO document is a specification, not a place to learn Gremlin or how to use
+TinkerPop. Its examples illustrate the shape of the serialized data itself with
+`[source,text]` or `[source,json]` snippets that are never executed, and it does
+not show how to invoke a reader, writer, or the `io()`-step in code, as that
+belongs in the reference or tutorial books. That a reader cannot produce or
+consume data from an IO section alone is by design, not a documentation gap.
+
 ---
 
 ## Future Documentation
