@@ -1244,11 +1244,19 @@ None
 *Considerations:*
 
 The `cap()` step is a barrier step that iterates the traversal up to itself and emits the sideEffect referenced by the
-provided key. If multiple keys are provided, then a `MAP<STRING, any>` of sideEffects is emitted.
+provided key. When a single key is provided, the raw sideEffect value referenced by that key is emitted. When multiple
+keys are provided, a `MAP<STRING, any>` of sideEffects is emitted, keyed by side-effect name.
+
+Handling of keys that were never registered or populated is asymmetric with respect to the number of keys provided.
+When a single key is provided and that key does not exist among the traversal's side-effects, an `Argument Error` is
+raised. When multiple keys are provided, keys that do not exist are silently dropped regardless of their position in
+the argument list, so the emitted `MAP<STRING, any>` contains only the keys that resolve and may be partial or, if no
+keys resolve, empty.
 
 *Exceptions:*
 
-None
+* If a single side-effect key is provided and that key was never registered or populated, an `Argument Error` is
+raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/SideEffectCapStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#cap-step[reference]
