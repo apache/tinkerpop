@@ -19,11 +19,12 @@
 
 import { P, TextP, EnumValue } from './traversal.js';
 import { OptionsStrategy, TraversalStrategy } from './traversal-strategy.js';
-import { Long, Int, Float, Double, Short, Byte, INT32_MIN, INT32_MAX, deepEqual } from '../utils.js';
+import { Long, Int, Float, Double, Short, Byte, INT32_MIN, INT32_MAX } from '../utils.js';
 import { Vertex, CompositePDT, PrimitivePDT } from '../structure/graph.js';
 import { PDTRegistry } from '../structure/PDTRegistry.js';
 import { GValue } from './gvalue.js';
 import { Buffer } from 'buffer';
+import deepEqual from 'deep-eql';
 
 const PARAM_NAME_PATTERN = /^[\p{L}_$][\p{L}\p{Nd}_$]*$/u;
 
