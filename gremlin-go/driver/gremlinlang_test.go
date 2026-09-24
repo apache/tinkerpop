@@ -732,6 +732,34 @@ func Test_GremlinLang(t *testing.T) {
 			equals: `g.inject("\""c)`,
 		},
 		{
+			name: "g_Inject_Char_Backslash",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject(Char('\\'))
+			},
+			equals: `g.inject("\\"c)`,
+		},
+		{
+			name: "g_Inject_Char_SingleQuote",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject(Char('\''))
+			},
+			equals: `g.inject("'"c)`,
+		},
+		{
+			name: "g_Inject_Char_Newline",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject(Char('\n'))
+			},
+			equals: `g.inject("\n"c)`,
+		},
+		{
+			name: "g_Inject_Rune_AsInt",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject('a')
+			},
+			equals: `g.inject(97)`,
+		},
+		{
 			name: "GTS Match with query string spawn step",
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.Match("MATCH (p:person)-[e:knows]->(friend:person)")

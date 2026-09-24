@@ -260,7 +260,16 @@ export default class GoTranslateVisitor extends TranslateVisitor {
     visitCharacterLiteral(ctx: any): void {
         const text: string = ctx.getText();
         const withoutSuffix = text.substring(0, text.length - 1);
-        const inner = TranslateVisitor.removeFirstAndLastCharacters(withoutSuffix).replace(/\\"/g, '"');
+        const quoteChar = withoutSuffix[0];
+        // Extract the content between quotes
+        let inner = withoutSuffix.substring(1, withoutSuffix.length - 1);
+        // Unescape the appropriate quote character for the Gremlin source
+        if (quoteChar === '"') {
+            inner = inner.replace(/\\"/g, '"');
+        } else if (quoteChar === "'") {
+            inner = inner.replace(/\\'/g, "'");
+        }
+        inner = inner.replace(/'/g, "\\'");
         this.sb.push(GO_PACKAGE_NAME);
         this.sb.push("Char('");
         this.sb.push(inner);
