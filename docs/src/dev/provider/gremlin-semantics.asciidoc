@@ -785,9 +785,22 @@ None
 *Considerations:*
 
 The `and()` step is a filter step that allows the traverser to pass only if every provided traversal yields at least
-one result. If any child traversal produces no result, the traverser is filtered out. Boolean value expressions
-evaluated within those traversals follow the <<gremlin-semantics-concepts,Comparability>> semantics, under which an
-incomputable comparison (for example against `NaN`, or across types) is defined to be `FALSE`.
+one result. If any child traversal produces no result, the traverser is filtered out.
+
+The step tests only for the existence of output from each child traversal, never for the content of that output. Any
+object a child emits satisfies its branch, including a `BOOLEAN` `false` or a `NULL`. A branch filters the traverser
+only when it produces no result.
+
+Boolean value expressions evaluated within a child traversal follow the <<gremlin-semantics-concepts,Comparability>>
+semantics, under which an incomputable comparison, such as one against `NaN` or across types, is defined to be `FALSE`.
+Such a comparison therefore produces no result and filters the traverser rather than raising an error.
+
+The `and()` step is also a connective step. Alongside the argument form, it supports an infix form written with no
+arguments, in which the traversal immediately preceding the step and the traversal immediately following it are grouped
+into its two child branches when traversal strategies are applied. That grouping extends through the steps that follow
+the infix `and()`, so a projection or terminal step written after it is absorbed into the second branch rather than
+applied to the surviving traverser. To keep such a step applied to the output of the filter, the connective can be
+enclosed within a `where()` step, or the `and()` can be positioned ahead of the projection or terminal step.
 
 *Exceptions:*
 
