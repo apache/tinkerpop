@@ -700,34 +700,6 @@ gremlin> g.V().local(groupCount("x")).select("x")
 Several enhancements and clarifications have been made to the `choose()` step in TinkerPop 3.8.0 to improve its behavior
 and make it more consistent:
 
-*First Matched Option Only*
-
-The `choose()` step now only executes the first matching option traversal. In previous versions, if multiple options
-could match, all matching options would be executed. This change provides more predictable behavior and better aligns
-with common switch/case semantics in programming languages.
-
-[source,text]
-----
-// In 3.7.x and earlier, if multiple options matched, all would be executed
-gremlin> g.V().hasLabel("person").
-......1>   choose(__.values("age")).
-......2>     option(P.between(26, 30), __.constant("young")).
-......3>     option(P.between(20, 30), __.constant("also young"))
-==>young
-==>also young
-==>young
-==>also young
-
-
-// In 3.8.x, only the first matching option is executed
-gremlin> g.V().hasLabel("person").
-......1>   choose(__.values("age")).
-......2>     option(P.between(26, 30), __.constant("young")).
-......3>     option(P.between(20, 30), __.constant("never reached for ages 26-30"))
-==>young
-==>young
-----
-
 *Automatic Pass-through for Unproductive and Unmatched Predicates*
 
 The `choose()` step now passes through traversers when the choice traversal is unproductive or the determined choice
@@ -756,6 +728,36 @@ gremlin> g.V().choose(T.label).
 
 This change makes the switch semantics for `choose()` consistent with those of the if-then-else semantics for
 `choose()`.
+
+*First Matched Option Only*
+
+The `choose()` step now only executes the first matching option traversal. In previous versions, if multiple options
+could match, all matching options would be executed. This change provides more predictable behavior and better aligns
+with common switch/case semantics in programming languages.
+
+[source,text]
+----
+// In 3.7.x and earlier, if multiple options matched, all would be executed
+gremlin> g.V().hasLabel("person").
+......1>   choose(__.values("age")).
+......2>     option(P.between(26, 30), __.constant("young")).
+......3>     option(P.between(20, 30), __.constant("also young"))
+==>young
+==>also young
+==>young
+==>also young
+
+
+// In 3.8.x, only the first matching option is executed
+gremlin> g.V().hasLabel("person").
+......1>   choose(__.values("age")).
+......2>     option(P.between(26, 30), __.constant("young")).
+......3>     option(P.between(20, 30), __.constant("never reached for ages 26-30"))
+==>young
+==>young
+==>v[4]
+==>v[6]
+----
 
 *Pick.unproductive for Unproductive Predicates*
 
