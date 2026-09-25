@@ -231,29 +231,35 @@ g.addV().property("name", "A").as("a").
   addE("rel").from("a").to("d").
   addE("rel").from("a").to("e").
   addE("rel").from("c").to("f").
-  addE("occured_at").from("d").to("g").
-  addE("occured_at").from("e").to("h").iterate()
+  addE("occurred_at").from("d").to("g").
+  addE("occurred_at").from("e").to("h").iterate()
 // D and E have a valid datetime
 g.V().has("name", "A").out("rel").
-  union(where(out("occured_at").has("date", gte(20160817))),
-        __.not(outE("occured_at")).coalesce(out().hasLabel("dimon"), identity())).
+  union(where(out("occurred_at").has("date", gte(20160817))),
+        __.not(outE("occurred_at")).coalesce(out().hasLabel("dimon"), identity())).
   elementMap()
 // only E has a valid date
 g.V().has("name", "A").out("rel").
-  union(where(out("occured_at").has("date", lte(20160817))),
-        __.not(outE("occured_at")).coalesce(out().hasLabel("dimon"), identity())).
+  union(where(out("occurred_at").has("date", lte(20160817))),
+        __.not(outE("occurred_at")).coalesce(out().hasLabel("dimon"), identity())).
   elementMap()
 // only D has a valid date
 g.V().has("name", "A").out("rel").
-  union(where(out("occured_at").has("date", gt(20160817))),
-        __.not(outE("occured_at")).coalesce(out().hasLabel("dimon"), identity())).
+  union(where(out("occurred_at").has("date", gt(20160817))),
+        __.not(outE("occurred_at")).coalesce(out().hasLabel("dimon"), identity())).
   elementMap()
 // neither D nor E have a valid date
 g.V().has("name", "A").out("rel").
-  union(where(out("occured_at").has("date", lt(20160817))),
-        __.not(outE("occured_at")).coalesce(out().hasLabel("dimon"), identity())).
+  union(where(out("occurred_at").has("date", lt(20160817))),
+        __.not(outE("occurred_at")).coalesce(out().hasLabel("dimon"), identity())).
   elementMap()
 ----
+
+The second traversal supplied to `union()` handles those neighbors that have no `occurred_at` edge. For each such
+neighbor, `coalesce()` first attempts to traverse to an adjacent vertex labelled "dimon" and returns that child vertex
+when one is present. This is why neighbor "C", which has no datetime but does have a "dimon" child, is represented in
+the results by that child "F" rather than by "C" itself. When a neighbor has no "dimon" child, `coalesce()` falls back
+to `identity()` and returns the neighbor unchanged, as is the case for "B".
 
 [[appendix-i]]
 _Use element labels in a `select`._
