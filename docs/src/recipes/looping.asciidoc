@@ -111,7 +111,9 @@ g.V('A').
 
 A third common use of `repeat()` loops is to loop through a series of steps a certain number of times or
 until there are no additional edges to traverse.  The examples below demonstrate how this loop termination can
-be accomplished.
+be accomplished.  They continue to run against the tree graph constructed at the start of the <<looping>>
+section, whose `hasParent` edges form the hierarchy `A->B->C->E->F` with `D->C` and `G->F`.  The result counts
+below follow directly from that shape, so keeping the topology in mind makes them predictable.
 
 The first method, is an extension of our "Conditional Looping with Max Depth" pattern above where the condition
 in the `until()` checking for a vertex with a degree of zero.
@@ -140,3 +142,8 @@ edges two times, and then traverse `out()` edges up to five times.
 ----
 g.V('A').repeat(both()).times(2).repeat(optional(out())).times(5)
 ----
+
+The `both().times(2)` loop reaches vertices `A` and `C`, since a two-hop walk over the undirected `hasParent`
+edges from `A` returns to `A` and also arrives at `C`.  Each of those vertices then follows its `out()` edges
+toward the root, and both paths terminate at vertex `F`.  The traversal therefore returns `v[F]` once for each
+of the two vertices the first loop produced.
