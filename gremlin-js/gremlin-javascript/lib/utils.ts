@@ -207,7 +207,9 @@ export class ImmutableMap<K, V> extends Map<K, V> implements ReadonlyMap<K, V> {
 }
 
 async function generateNodeUserAgent() {
-  const os = await import('node:os');
+  // Non-literal specifier so bundlers treat this as a runtime import instead of failing on node:os.
+  const osModuleSpecifier = 'node:' + 'os';
+  const os = await import(osModuleSpecifier);
 
   const applicationName = (process?.env.npm_package_name ?? 'NotAvailable').replace('_', ' ');
   let runtimeVersion;

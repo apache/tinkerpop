@@ -22,7 +22,9 @@
   "types": "./build/esm/index.d.ts",
   "browser": {
     "./build/esm/driver/dispatcher.js": "./build/esm/driver/dispatcher.browser.js",
-    "./build/cjs/driver/dispatcher.cjs": "./build/cjs/driver/dispatcher.browser.cjs"
+    "./build/cjs/driver/dispatcher.cjs": "./build/cjs/driver/dispatcher.browser.cjs",
+    "./build/esm/driver/auth.js": "./build/esm/driver/auth.browser.js",
+    "./build/cjs/driver/auth.cjs": "./build/cjs/driver/auth.browser.cjs"
   },
   "exports": {
     ".": {
@@ -52,6 +54,7 @@
   "dependencies": {
     "antlr4ng": "3.0.16",
     "buffer": "^6.0.3",
+    "deep-equal": "^2.2.3",
     "eventemitter3": "^5.0.1",
     "undici": "6.28.0"
   },
@@ -64,13 +67,17 @@
     "@cucumber/cucumber": "~13.0.0",
     "@eslint/js": "^10.0.1",
     "@knighted/duel": "^4.1.1",
+    "@playwright/test": "^1.63.0",
     "@tsconfig/node18": "^18.2.2",
+    "@types/deep-eql": "^4.0.2",
+    "@types/deep-equal": "^1.0.4",
     "antlr-ng": "^1.0.10",
     "chai": "^6.2.2",
     "chai-string": "^2.0.0",
     "colors": "1.4.0",
     "cross-env": "^10.1.0",
     "deep-eql": "^5.0.2",
+    "esbuild": "^0.28.2",
     "eslint": "^10.3.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.0.0",
@@ -106,6 +113,11 @@
     "features-docker": "npm run features-graphbinary-docker && npm run features-graphbinary-params-docker",
     "features-graphbinary-docker": "cross-env NODE_OPTIONS='--loader ts-node/esm' TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.graphbinary-v4.0' cucumber-js --tags \"not @DataBigDecimal and not @DataBigInt and not @DataUUID and not @DataLong and not @StepWrite\" --import test/cucumber /gremlin-test/",
     "features-graphbinary-params-docker": "cross-env NODE_OPTIONS='--loader ts-node/esm' TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.graphbinary-v4.0' PARAMETERIZE=true cucumber-js --tags \"not @DataBigDecimal and not @DataBigInt and not @DataUUID and not @DataLong and not @StepWrite\" --import test/cucumber /gremlin-test/",
+    "playwright-install": "playwright install chromium",
+    "prebrowser-test": "npm run build",
+    "browser-test": "node test/browser/build-bundle.mjs && playwright test --config test/browser/playwright.config.ts --project chromium",
+    "prebrowser-test-live": "npm run build",
+    "browser-test-live": "node test/browser/build-bundle.mjs && playwright test --config test/browser/playwright.config.ts --project chromium-live",
     "lint": "eslint --ext .js .",
     "doc": "typedoc --out doc --readme README.md --entryPointStrategy expand --entryPoints 'lib/**/*.ts' --tsconfig tsconfig.json --exclude 'lib/language/grammar/**'"
   },
