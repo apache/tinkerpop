@@ -166,9 +166,17 @@ The output is thus an edge label distribution for the outgoing edges of the "mar
 
 Terminal steps are different from the `GraphTraversal` steps in that terminal steps do not return a `GraphTraversal`
 instance, but instead return the result of the `GraphTraversal`. In the case of the example, `next()` is the terminal
-step and it returns the `Map` constructed in the `groupCount()`-step. Other examples of terminal steps include:
-`hasNext()`, `toList()`, and `iterate()`. Without terminal steps, you don't have a result. You only have a
-`GraphTraversal`.
+step and it returns the `Map` constructed in the `groupCount()`-step. Other terminal steps return different results:
+`hasNext()` returns a `boolean` reporting whether at least one result remains, `toList()` drains the traversal and
+returns all of its results as a `List`, and `iterate()` executes the traversal for its side-effects and returns the
+drained `GraphTraversal` itself rather than any results. Without a terminal step, the expression evaluates to a
+`GraphTraversal` that describes the computation but has not yet been executed against the graph.
+
+This distinction is easy to overlook when working in the Gremlin Console. When a bare `GraphTraversal` is entered at
+the console prompt, the console automatically iterates it and displays the results, so the running example without its
+trailing `next()` still appears to produce output. That automatic iteration is a convenience of the console's
+interactive prompt rather than a property of the `GraphTraversal` itself. Outside of the console, the `GraphTraversal`
+returned by the expression must be iterated explicitly, which is precisely what a terminal step does.
 
 NOTE: You can read more about traversal iteration in the
 link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/the-gremlin-console/#result-iteration[Gremlin Console Tutorial].
