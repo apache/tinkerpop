@@ -3133,7 +3133,7 @@ would become the following in C#:
 ----
 g.V().Has("Person","name","marko").
   Out("knows").
-  ElementMap().ToList();
+  ElementMap<object>().ToList();
 ----
 
 In addition to the uppercase change, also note the conversion of the single quotes to double quotes as is expected for
@@ -3166,10 +3166,6 @@ g.V().GroupCount<object>().By("age")
 
 where "age" is not a valid key for all vertices in a way that will remove the need for a `null` to be returned.
 
-Finally, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java,
-therefore cardinality functions that take a value like `list()`, `set()`, and `single()` are referenced from a
-`CardinalityValue` class rather than `Cardinality` itself.
-
 [source,csharp]
 ----
 g.V().Has("age").GroupCount<object>().By("age")
@@ -3178,6 +3174,15 @@ g.V().HasLabel("person").GroupCount<object>().By("age")
 
 Either of the above two options accomplishes the desired goal as both prevent `groupCount()` from having to process
 the possibility of `null`.
+
+Finally, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java,
+therefore cardinality functions that take a value like `CardinalityValue.List(value)`, `CardinalityValue.Set(value)`,
+and `CardinalityValue.Single(value)` are referenced from a `CardinalityValue` class rather than `Cardinality` itself.
+
+[source,csharp]
+----
+g.AddV("person").Property("nicknames", CardinalityValue.List("okram"));
+----
 
 anchor:gremlin-net-limitations[]
 [[gremlin-dotnet-limitations]]
