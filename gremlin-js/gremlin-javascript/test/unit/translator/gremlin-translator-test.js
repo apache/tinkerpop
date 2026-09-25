@@ -285,6 +285,14 @@ describe('GoTranslateVisitor', function () {
       ['g.inject(Duration(9000,0))', 'g.Inject(time.Duration(9000000000000))'],
       // Binary literal
       ['g.inject(Binary("AQID"))', 'g.Inject(gremlingo.ByteBuffer{Data: []byte{1,2,3}})'],
+      // Character literals
+      ['g.inject("a"c)', "g.Inject(gremlingo.Char('a'))"],
+      ['g.inject("\\""c)', "g.Inject(gremlingo.Char('\"'))"],
+      ['g.inject("\\\\"c)', "g.Inject(gremlingo.Char('\\\\'))"],
+      ["g.inject(\"'\"c)", "g.Inject(gremlingo.Char('\\''))"],
+      ["g.inject('\\''c)", "g.Inject(gremlingo.Char('\\''))"],
+      ['g.inject("\\7"c)', "g.Inject(gremlingo.Char('\\7'))"],
+      ['g.inject("\\07"c)', "g.Inject(gremlingo.Char('\\07'))"],
       // null → nil
       ['g.V().has("name", null)', 'g.V().Has("name", nil)'],
       // terminal steps — PascalCase
@@ -326,13 +334,6 @@ describe('GoTranslateVisitor', function () {
     it('throws TranslatorException for range literal', function () {
       assert.throws(
         () => GremlinTranslator.translate('g.inject(1..5)', 'g', 'GO'),
-        TranslatorException,
-      );
-    });
-
-    it('throws TranslatorException for character literal', function () {
-      assert.throws(
-        () => GremlinTranslator.translate('g.inject("a"c)', 'g', 'GO'),
         TranslatorException,
       );
     });

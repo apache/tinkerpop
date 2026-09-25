@@ -905,3 +905,6 @@ func ParseBigInt(strValue string) *big.Int {
 type ByteBuffer struct {
 	Data []byte
 }
+
+// Char represents the GraphBinary/Gremlin Character type.
+type Char rune

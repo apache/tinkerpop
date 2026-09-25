@@ -310,6 +310,8 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		return fmt.Sprintf("Binary(\"%s\")", base64.StdEncoding.EncodeToString(v.Data)), nil
 	case []byte:
 		return fmt.Sprintf("Binary(\"%s\")", base64.StdEncoding.EncodeToString(v)), nil
+	case Char:
+		return fmt.Sprintf("\"%s\"c", escapeString(string(rune(v)))), nil
 	default:
 		// Registry-based dehydration: a registered adapter intentionally takes precedence
 		// over any reflection/struct-based fallback, allowing explicit adapters to override

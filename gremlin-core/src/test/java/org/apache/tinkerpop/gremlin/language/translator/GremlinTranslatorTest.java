@@ -1437,7 +1437,7 @@ public class GremlinTranslatorTest {
                             null,
                             "g.inject(character0)",
                             "g.Inject<object>('a')",
-                            "Character literals are not supported in Go",
+                            "g.Inject(gremlingo.Char('a'))",
                             "g.inject('a' as char)",
                             "g.inject('a')",
                             "Character literals are not supported in JavaScript",

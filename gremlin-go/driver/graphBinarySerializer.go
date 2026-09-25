@@ -63,6 +63,7 @@ const (
 	booleanType        dataType = 0x27
 	treeType           dataType = 0x2b
 	mergeType          dataType = 0x2e
+	charType           dataType = 0x80
 	durationType       dataType = 0x81
 	compositePDTType   dataType = 0xf0
 	primitivePDTType   dataType = 0xf1
@@ -161,6 +162,12 @@ func mapWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSe
 		}
 	}
 	return nil
+}
+
+// Format: one to four bytes representing a single UTF-8 encoded char, with no length prefix.
+func charWriter(value interface{}, w io.Writer, _ *graphBinaryTypeSerializer) error {
+	_, err := w.Write([]byte(string(rune(value.(Char)))))
+	return err
 }
 
 func stringWriter(value interface{}, w io.Writer, _ *graphBinaryTypeSerializer) error {
@@ -645,6 +652,8 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return shortType, nil
 	case uint8:
 		return byteType, nil
+	case Char:
+		return charType, nil
 	case bool:
 		return booleanType, nil
 	case uuid.UUID:
