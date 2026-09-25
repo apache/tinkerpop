@@ -2049,8 +2049,13 @@ key.
 
 The `groupCount()` step can be used as both a map step and a side-effect step. As a map step, it returns a
 `MAP<any, LONG>` with the counted objects as keys and their counts as values. As a side-effect step, it stores the
-counts in a side-effect and passes the traverser to the next step unchanged. Note that both the map and side-effect
-forms of this step are barriers that must fully iterate the traversal before returning any results.
+counts in a side-effect and passes the traverser to the next step unchanged. In the side-effect form, the aggregated
+counts can be accessed later using the `cap()` step with the same side-effect key. Note that both the map and
+side-effect forms of this step are barriers that must fully iterate the traversal before returning any results.
+
+When a `by()` modulator is supplied and its transform is non-productive for a given object, that object contributes
+nothing to the result. It is neither counted under a `null` key nor treated as an error, and is instead omitted from
+the counts.
 
 *Exceptions:*
 
