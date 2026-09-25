@@ -77,10 +77,11 @@ var client = new GremlinClient(new GremlinServer("localhost", 8182), loggerFacto
         }
         
         [Fact(Skip="No Server under localhost")]
-        public void SerializationGraphBinaryTest()
+        public async Task SerializationGraphBinaryTest()
         {
 // tag::serializationBinary[]
-var client = new GremlinClient(new GremlinServer("localhost", 8182), new GraphBinary4MessageSerializer());
+using var client = new GremlinClient(new GremlinServer("localhost", 8182), new GraphBinary4MessageSerializer());
+var count = await client.SubmitWithSingleResultAsync<long>("g.V().count()");
 // end::serializationBinary[]
         }
         

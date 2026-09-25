@@ -2913,7 +2913,21 @@ include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference
 
 The Gremlin.Net driver uses GraphBinary 4.0 for responses by default. A custom response serializer can be provided
 when creating the `GremlinClient`. Requests are always serialized as JSON (`application/json`) and that behavior is
-not configurable, however it can be modified with a `RequestInterceptor`:
+not configurable, however it can be modified with a `RequestInterceptor`.
+
+The driver is distributed as the `Gremlin.Net` package on NuGet and is installed as shown in <<gremlin-dotnet,Gremlin.Net>>.
+The `GremlinClient` and `GremlinServer` types belong to the `Gremlin.Net.Driver` namespace and the
+`GraphBinary4MessageSerializer` belongs to the `Gremlin.Net.Structure.IO.GraphBinary4` namespace, so the following
+`using` directives are required for the example below to compile:
+
+[source,csharp]
+----
+using Gremlin.Net.Driver;
+using Gremlin.Net.Structure.IO.GraphBinary4;
+----
+
+The response serializer is passed to the `GremlinClient` constructor. After the client is created, a traversal can be
+submitted and its result retrieved:
 
 [source,csharp]
 ----
