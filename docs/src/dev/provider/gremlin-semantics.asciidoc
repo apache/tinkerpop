@@ -1702,7 +1702,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#difference-step[referenc
 [[discard-step]]
 === discard()
 
-*Description:* Filters all traversers out of the traversal stream. Formerly named `none()` prior to 3.8.0.
+*Description:* Filters all traversers out of the traversal stream.
 
 *Syntax:* `discard()`
 
@@ -1725,6 +1725,11 @@ None
 The `discard()` step is a filter step that removes every traverser, always producing an empty result. It is commonly
 used to consume a traversal purely for its side effects (for example after an `aggregate()` or a mutation) without
 returning any objects.
+
+This step was named `none()` prior to 3.8.0. The name `none()` has since been reassigned to an unrelated list filter
+step that tests each item of a list against a supplied predicate and therefore requires a predicate argument. A bare
+`none()` no longer discards traversers and raises an error, so `discard()` is the step to use for that behavior. See the
+<<none-step,`none()`>> step for its current semantics.
 
 *Exceptions*
 
