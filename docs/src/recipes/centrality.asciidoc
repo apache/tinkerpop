@@ -142,7 +142,7 @@ g.withSack(1f).V().as("v").                                                     
 <4> Determine whether a path between those two vertices was already found.
 <5> If this is the first path between the two vertices, store the triple in an internal collection named "triples".
 <6> Keep only those paths between a pair of vertices that have the same length as the first path that was found between them.
-<7> For each vertex divide 1 by the product of the lengths of all shortest paths that start with this particular vertex.
+<7> For each vertex, sum the reciprocals of the lengths of all shortest paths that start with this particular vertex, where the length of a path is the number of vertices it contains as produced by `count(local)`.
 
 WARNING: Since the closeness centrality algorithm requires the shortest path between any pair of vertices in the graph,
 its practical applications are very limited. It's recommended to use this algorithm only on small subgraphs (graphs like
