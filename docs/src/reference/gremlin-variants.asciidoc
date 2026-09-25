@@ -3196,21 +3196,44 @@ anchor:gremlin-net-limitations[]
 [[gremlin-dotnet-limitations]]
 === Limitations
 
+Several Gremlin types have a wider domain or finer precision than their closest C# counterparts. When the server
+returns a value that falls outside the C# range, the outcome depends on the type. In most cases Gremlin.Net raises
+an exception as it deserializes the response, so the error surfaces on the client at the point the result is read.
+In a few cases the value is instead altered without any error. A character outside the Basic Multilingual Plane is
+reconstructed incorrectly, and a fractional second finer than the C# tick is silently truncated.
+
 * The `subgraph()`-step returns a detached `Graph` data container exposing
 `Vertices: IDictionary<object, Vertex>` and `Edges: IDictionary<object, Edge>`. The result is not a live `Graph`
 instance: mutating the collections has no effect on the source graph, and it cannot be passed to
 `traversal().with(...)`. To re-query subgraph elements against the original graph, extract their `Id` and use
 `g.V(id)` / `g.E(id)` on the original `GraphTraversalSource`.
-* `DateTimeOffset` cannot represent the extreme values of Gremlin's `OffsetDateTime` maximum and minimum,
-so offset date-time values at those boundaries will fail to deserialize.
-* Gremlin's `Duration` type has a much larger range than C#'s `TimeSpan`, so extreme duration values (such as
-`Duration.FOREVER`) that exceed `TimeSpan.MaxValue` or `TimeSpan.MinValue` will fail to deserialize.
+* C#'s `DateTimeOffset` accepts offsets only in the range `-14:00` to `+14:00` and years from 1 to 9999, while
+Gremlin's `OffsetDateTime` permits offsets up to `+18:00`/`-18:00` and a much wider year range. When the offset
+or year of the returned value lies outside the C# range, the `DateTimeOffset` constructor rejects it and
+Gremlin.Net raises an `ArgumentOutOfRangeException` while reading the result. The offset bound is the more common
+trigger, since a value such as `datetime('2018-03-22T00:35:44.741+18:00')` is a valid `OffsetDateTime` that
+cannot be represented as a `DateTimeOffset`. A second offset restriction concerns granularity rather than
+magnitude. `DateTimeOffset` records its UTC offset in whole minutes, whereas Java and GraphBinary express the
+offset in seconds, so an offset that carries a sub-minute component cannot be represented and Gremlin.Net raises
+an `ArgumentException` while reading the result. Precision is likewise a separate consideration from range.
+Gremlin represents time with nanosecond precision, while `DateTimeOffset` measures time in 100-nanosecond ticks,
+so a fractional second finer than one tick is silently truncated on deserialization without any error, and a
+value such as `00.123456789` is read back as `00.1234567`.
+* Gremlin's `Duration` type has a much larger range than C#'s `TimeSpan`, so a duration whose magnitude exceeds
+`TimeSpan.MaxValue` or `TimeSpan.MinValue` cannot be constructed and Gremlin.Net raises an `OverflowException`
+while reading the result. This affects only extreme values such as `Duration.FOREVER`. Durations within the
+`TimeSpan` range are unaffected. As with `DateTimeOffset`, precision is a separate consideration from range.
+Gremlin represents a duration with nanosecond precision, while `TimeSpan` measures time in 100-nanosecond ticks,
+so a fractional-second component finer than one tick is silently truncated on deserialization without any error.
 * Gremlin's `BigDecimal` supports up to 33 digits of precision while C#'s `decimal` type is limited to 28-29
-significant digits, so high-precision values may lose accuracy or fail to deserialize.
-* C# `char` values do not support values outside the Basic Multilingual Plane, which are mainly 4-byte UTF-8
-characters. Those GraphBinary `Char` values are not supported.
-* C# `Dictionary` does not allow `null` keys, so `Map` results with `null` keys (e.g. from `group()` or
-`groupCount()` on a missing property) will fail during deserialization.
+significant digits. When the returned value exceeds the `decimal` range, the conversion overflows and
+Gremlin.Net raises an `OverflowException` while reading the result.
+* C#'s `char` holds a single UTF-16 code unit and cannot represent a code point outside the Basic Multilingual
+Plane, which GraphBinary encodes as a four-byte `Char`. Such a value is decoded into a surrogate pair, of which
+only the leading surrogate is returned, so the character is silently corrupted rather than raising an error.
+Characters within the Basic Multilingual Plane are unaffected.
+* C#'s `Dictionary` does not allow `null` keys, so a `Map` result that contains a `null` key cannot be populated
+and Gremlin.Net raises an `IOException` while reading the result.
 
 anchor:gremlin-dotnet-template[]
 anchor:dotnet-application-examples[]
