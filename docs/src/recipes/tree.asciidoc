@@ -180,9 +180,18 @@ NOTE: This model is discussed further in this Neo4j link:https://neo4j.com/blog/
 Also, there can be other versions of this model that utilize different edge/vertex labeling and property naming
 strategies. The schema depicted here is designed for simplicity.
 
-The Gremlin script below creates the graph depicted in the graph above:
+The examples in this section run against an in-memory TinkerGraph. The following creates an empty graph and the
+traversal source `g` used throughout the section:
 
 [gremlin-groovy]
+----
+graph = TinkerGraph.open()
+g = traversal().with(graph)
+----
+
+The Gremlin script below creates the graph depicted in the graph above:
+
+[gremlin-groovy,existing]
 ----
 g.addV('year').property('name', '2016').as('y2016').
   addV('month').property('name', 'may').as('m05').
@@ -228,4 +237,4 @@ g.V().has('name','2016').out('may').out('day31').as('start').
 <1> Find all the events in 2016.
 <2> Find all the events in May of 2016.
 <3> Find all the events on May 31, 2016.
-<4> Find all the events between May 31, 2016 and June 1, 2016.
+<4> Find all the events from May 31, 2016 through June 1, 2016, with both boundary days inclusive.
