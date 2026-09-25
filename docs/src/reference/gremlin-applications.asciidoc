@@ -437,7 +437,7 @@ on Windows):
 [source,text]
 ----
 $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
-[INFO] GremlinServer
+[INFO] o.a.t.g.s.GremlinServer - x.y.z
          \,,,/
          (o o)
 -----oOOo-(4)-oOOo-----
@@ -450,7 +450,7 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 [INFO] o.a.t.g.s.u.ServerGremlinExecutor - Initialized gremlin-lang GremlinScriptEngine and registered metrics
 [INFO] o.a.t.g.s.u.ServerGremlinExecutor - A GraphTraversalSource is now auto-bound to [g] for graph [graph]
 [INFO] o.a.t.g.s.u.ServerGremlinExecutor - Instantiated LifeCycleHook: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader
-[INFO] o.a.t.g.s.h.TransactionManager - TransactionManager initialized with timeout=600000ms, maxTransactions=1000
+[INFO] o.a.t.g.s.t.TransactionManager - TransactionManager initialized with idleTransactionTimeoutMillis=60000, maxTransactionLifetimeMillis=600000, maxTransactions=1000
 [INFO] o.a.t.g.s.GremlinServer - Executing start up LifeCycleHook
 [INFO] o.a.t.g.s.u.TinkerFactoryDataLoader - TinkerFactoryDataLoader loaded [modern] dataset into graph [graph]
 [INFO] o.a.t.g.s.AbstractChannelizer - Configured application/vnd.gremlin-v4.0+json with org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4
@@ -475,6 +475,11 @@ The log messages that printed above show a number of things, but most importantl
 `graph` that is exposed in Gremlin Server.  This graph is an in-memory TinkerGraph and was empty at the start of the
 server.  A `TinkerFactoryDataLoader` lifecycle hook loaded the "modern" dataset into it during startup, and a
 `TraversalSource` named `g` was auto-created from the `graph` entry.
+
+The final startup line reports the server's thread pool configuration.  The worker and boss thread pools default to a
+single thread each, while the gremlin pool size shown is not a fixed value.  When `gremlinPool` is not set in the
+configuration, Gremlin Server sizes this pool to the number of processors available to the JVM, so the value reported
+varies from one machine to another unless `gremlinPool` is assigned an explicit value in the YAML configuration.
 
 [[server-auto-traversal-sources]]
 ==== Auto-Created TraversalSources
