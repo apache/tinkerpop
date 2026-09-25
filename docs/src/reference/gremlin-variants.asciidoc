@@ -722,9 +722,17 @@ To make the code more readable and close to the Gremlin query language), you can
 	var order = gremlingo.Order
 ----
 
-Finally, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java,
-therefore cardinality functions that take a value like `list()`, `set()`, and `single()` are referenced from a
-`CardinalityValue` class rather than `Cardinality` itself.
+Finally, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java.
+Cardinality functions that take a value are therefore referenced from `CardinalityValue` rather than from
+`Cardinality` itself, and they follow the same Pascal-case convention as the step names described above:
+`CardinalityValue.List(v)`, `CardinalityValue.Set(v)`, and `CardinalityValue.Single(v)`. Qualified with the
+package name, these forms are `gremlingo.CardinalityValue.List(v)` and its `Set` and `Single` counterparts, and
+each is supplied as a property value:
+
+[source,go]
+----
+	g.V().Has("name", "foo").Property(map[interface{}]interface{}{"name": gremlingo.CardinalityValue.Set("bar"), "age": 43})
+----
 
 [[gremlin-go-limitations]]
 === Limitations
