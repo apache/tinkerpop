@@ -57,9 +57,10 @@ g.V('A').
 
 In the above case the traversal processes the `out().simplePath()` step once to move from vertex A to 
 vertex B, a second time to move from vertex B to vertex C, and then exits the traversal because it 
-satisfies the `hasId('C')` condition since it's reached vertex C.  If we however change that exit condition 
-to be vertex G, we will see that this traversal now will continue to process thorough vertex X and will 
-exit based on reaching the maximum number of loops (3).
+satisfies the `hasId('C')` condition since it's reached vertex C.  If that exit condition is instead changed 
+to vertex G, the traversal continues through vertex C on to vertex E, following the path A->B->C->E.  Because 
+vertex G is unreachable from vertex A by way of `out()` edges, the traversal exits upon reaching the maximum 
+number of loops (3) and returns `v[E]`.
 
 [gremlin-groovy,existing]
 ----
