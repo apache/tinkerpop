@@ -109,13 +109,13 @@ class DriverRemoteConnection extends RemoteConnection
         if (!allowed.contains(entry.key)) continue;
         switch (entry.key) {
           case 'evaluationTimeout':
-            evalTimeout = entry.value as int?;
+            evalTimeout = asPlainInt(entry.value) as int?;
           case 'bulkResults':
             bulkResults = entry.value as bool?;
           case 'materializeProperties':
             materializeProperties = entry.value as String?;
           case 'batchSize':
-            batchSize = entry.value as int?;
+            batchSize = asPlainInt(entry.value) as int?;
         }
       }
     }

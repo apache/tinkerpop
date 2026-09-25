@@ -580,10 +580,10 @@ final Map<String, List<Function>> generatedTraversals = <String, List<Function>>
     (GraphTraversalSource g) => g.inject(GChar('a'.runes.single)),
   ],
   'data/Char.feature::g_injectXescaped_quoteX': <Function>[
-    (GraphTraversalSource g) => g.inject(GChar('\"'.runes.single)),
+    (GraphTraversalSource g) => g.inject(GChar('"'.runes.single)),
   ],
   'data/Char.feature::g_injectXunicodeX': <Function>[
-    (GraphTraversalSource g) => g.inject(GChar('\u00E9'.runes.single)),
+    (GraphTraversalSource g) => g.inject(GChar('é'.runes.single)),
   ],
   'data/Char.feature::g_valuesXinitialX_isXtypeOfXGType_CHARXX': <Function>[
     (GraphTraversalSource g) => g.addV('data').property('initial', GChar('a'.runes.single)),
@@ -1358,7 +1358,7 @@ final Map<String, List<Function>> generatedTraversals = <String, List<Function>>
   ],
   'filter/Has.feature::g_V_hasXname_regexXTinkerUnicodeXX': <Function>[
     (GraphTraversalSource g) => g.addV('software').property('name', 'Apache TinkerPop©'),
-    (GraphTraversalSource g) => g.V().has('name', TextP.regex('Tinker.*\u00A9')).values('name'),
+    (GraphTraversalSource g) => g.V().has('name', TextP.regex('Tinker.*©')).values('name'),
   ],
   'filter/Has.feature::g_V_hasXp_neqXvXX': <Function>[
     (GraphTraversalSource g) => g.V().has('p', P.neq('v')),

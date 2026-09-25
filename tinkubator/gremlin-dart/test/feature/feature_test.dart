@@ -63,17 +63,24 @@ void main() {
     for (final file in featureFiles) {
       final feature = runner.parseFile(file);
       for (final scenario in feature.scenarios) {
-        test('${_relativePath(file.path)}: ${scenario.name}', () async {
-          if (setupError != null) {
-            markTestSkipped('Gremlin Server at $serverUrl is unreachable.');
-            return;
-          }
-          final world = CucumberWorld(serverUrl, graphDataMap);
-          await FeatureSteps(world).run(
-            scenario,
-            _scenarioKey(file, featureDirectory, scenario.name),
-          );
-        });
+        final tag = scenario.tags.firstWhere(skipTags.contains, orElse: () => '');
+        test(
+          '${_relativePath(file.path)}: ${scenario.name}',
+          () async {
+            if (setupError != null) {
+              markTestSkipped('Gremlin Server at $serverUrl is unreachable.');
+              return;
+            }
+            final world = CucumberWorld(serverUrl, graphDataMap);
+            await FeatureSteps(world).run(
+              scenario,
+              _scenarioKey(file, featureDirectory, scenario.name),
+            );
+          },
+          // Reported by the test runner as skipped, not passed, so a green
+          // suite cannot hide an untested scenario.
+          skip: tag.isEmpty ? false : 'tagged @$tag, not supported by this driver',
+        );
       }
     }
 

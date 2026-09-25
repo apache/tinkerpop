@@ -16,6 +16,7 @@
 // under the License.
 
 import 'dart:io';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -24,6 +25,8 @@ import 'package:test/test.dart';
 import '../../lib/driver/auth.dart';
 import '../../lib/driver/connection.dart';
 import '../../lib/driver/cluster.dart';
+import '../../lib/driver/request_message.dart';
+import '../../lib/driver/response_error.dart';
 
 void main() {
   // -------------------------------------------------------------------------
@@ -137,8 +140,8 @@ void main() {
         DioExceptionType.receiveTimeout,
         DioExceptionType.sendTimeout,
       ]) {
-        final err = DioException(
-            requestOptions: RequestOptions(path: '/'), type: type);
+        final err =
+            DioException(requestOptions: RequestOptions(path: '/'), type: type);
         expect(interceptor.shouldRetry(err), isTrue,
             reason: '$type should be retried');
       }
@@ -211,13 +214,15 @@ void main() {
     });
 
     test('ConnectionOptions carries ssl field', () {
-      const opts = ConnectionOptions(ssl: SslOptions(skipCertificateVerification: true));
+      const opts =
+          ConnectionOptions(ssl: SslOptions(skipCertificateVerification: true));
       expect(opts.ssl?.skipCertificateVerification, isTrue);
     });
 
     test('copyWith propagates ssl field', () {
       const base = ConnectionOptions();
-      final copy = base.copyWith(ssl: const SslOptions(skipCertificateVerification: true));
+      final copy = base.copyWith(
+          ssl: const SslOptions(skipCertificateVerification: true));
       expect(copy.ssl?.skipCertificateVerification, isTrue);
       expect(copy.traversalSource, 'g');
     });
@@ -236,9 +241,8 @@ void main() {
     });
 
     test('retry() sets options.retryOptions on cluster', () {
-      final cluster = Cluster.build()
-          .retry(const RetryOptions(maxAttempts: 5))
-          .create();
+      final cluster =
+          Cluster.build().retry(const RetryOptions(maxAttempts: 5)).create();
       expect(cluster.hosts, isNotEmpty);
       cluster.close();
     });
@@ -247,7 +251,8 @@ void main() {
       final cluster = Cluster.build()
           .addContactPoint('myhost')
           .ssl(const SslOptions(skipCertificateVerification: true))
-          .retry(const RetryOptions(maxAttempts: 2, delay: Duration(seconds: 1)))
+          .retry(
+              const RetryOptions(maxAttempts: 2, delay: Duration(seconds: 1)))
           .enableSsl(true)
           .create();
       expect(cluster.toString(), contains('https://myhost'));
@@ -277,6 +282,62 @@ void main() {
 
   // -------------------------------------------------------------------------
   // Exponential backoff
+  // -------------------------------------------------------------------------
+  // Connection-level 503 retry (end-to-end: validateStatus accepts 503, so it
+  // never becomes a DioException; the retry must happen in Connection itself)
+  // -------------------------------------------------------------------------
+  group('Connection retries on 503', () {
+    test('a 503 followed by success is retried transparently', () async {
+      final adapter = _StatusThenOkAdapter(failStatus: 503, failCount: 2);
+      final connection = Connection(
+        'http://x/',
+        ConnectionOptions(
+          httpClientAdapter: adapter,
+          retryOptions:
+              const RetryOptions(maxAttempts: 3, delay: Duration.zero),
+        ),
+      );
+
+      final result = await connection.submit(
+        RequestMessage.build('g.V()').addG('g').create(),
+      );
+
+      expect(result.items, isEmpty);
+      expect(adapter.calls, 3);
+    });
+
+    test('503 exhausts retries and surfaces as a ResponseError', () async {
+      final adapter = _StatusThenOkAdapter(failStatus: 503, failCount: 10);
+      final connection = Connection(
+        'http://x/',
+        ConnectionOptions(
+          httpClientAdapter: adapter,
+          retryOptions:
+              const RetryOptions(maxAttempts: 2, delay: Duration.zero),
+        ),
+      );
+
+      await expectLater(
+        connection.submit(RequestMessage.build('g.V()').addG('g').create()),
+        throwsA(isA<ResponseError>()
+            .having((e) => e.statusCode, 'statusCode', 503)),
+      );
+      expect(adapter.calls, 2);
+    });
+
+    test('without retryOptions, a 503 is not retried', () async {
+      final adapter = _StatusThenOkAdapter(failStatus: 503, failCount: 10);
+      final connection = Connection(
+          'http://x/', ConnectionOptions(httpClientAdapter: adapter));
+
+      await expectLater(
+        connection.submit(RequestMessage.build('g.V()').addG('g').create()),
+        throwsA(isA<ResponseError>()),
+      );
+      expect(adapter.calls, 1);
+    });
+  });
+
   // -------------------------------------------------------------------------
   group('RetryInterceptor exponential backoff', () {
     ({Dio dio, _FakeAdapter adapter}) _build(int failCount, RetryOptions opts) {
@@ -308,6 +369,70 @@ void main() {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/// Fake [HttpClientAdapter] that returns HTTP [failStatus] (with an empty
+/// GraphBinary error body) for the first [failCount] calls, then a real
+/// GraphBinary v4 empty-list success response.
+class _StatusThenOkAdapter implements HttpClientAdapter {
+  final int failStatus;
+  final int failCount;
+  int _calls = 0;
+
+  _StatusThenOkAdapter({required this.failStatus, required this.failCount});
+
+  int get calls => _calls;
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<dynamic>? cancelFuture,
+  ) async {
+    _calls++;
+    if (_calls <= failCount) {
+      return ResponseBody.fromBytes(
+        _statusResponse(failStatus, 'Service Unavailable'),
+        failStatus,
+        headers: {
+          'content-type': ['application/vnd.graphbinary-v4.0']
+        },
+      );
+    }
+    return ResponseBody.fromBytes(
+      _statusResponse(200, null),
+      200,
+      headers: {
+        'content-type': ['application/vnd.graphbinary-v4.0']
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+/// A minimal GraphBinary v4 response envelope: no result data, just a status.
+Uint8List _statusResponse(int code, String? message) {
+  final b = BytesBuilder(copy: false);
+  b.addByte(0x84); // version
+  b.addByte(0x00); // flags: not bulked
+  b.addByte(0xFD); // marker: type byte
+  b.addByte(0x00); // marker: value flag
+  b.addByte(0x00); // marker: content byte (readAny requires exactly 0x00)
+  final codeBytes = ByteData(4)..setInt32(0, code, Endian.big);
+  b.add(codeBytes.buffer.asUint8List());
+  if (message == null) {
+    b.addByte(0x01); // null message
+  } else {
+    b.addByte(0x00);
+    final m = utf8.encode(message);
+    final lenBytes = ByteData(4)..setInt32(0, m.length, Endian.big);
+    b.add(lenBytes.buffer.asUint8List());
+    b.add(m);
+  }
+  b.addByte(0x01); // null exception
+  return b.takeBytes();
+}
 
 /// Fake [HttpClientAdapter] that throws [DioExceptionType.connectionError]
 /// for the first [failCount] calls, then returns an empty 200 response.

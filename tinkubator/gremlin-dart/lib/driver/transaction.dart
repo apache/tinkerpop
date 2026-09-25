@@ -43,7 +43,10 @@ class Transaction {
   Future<void> _pending = Future.value();
   TransactionCloseBehavior _closeBehavior = TransactionCloseBehavior.commit;
 
-  Transaction(this._transactionConnection);
+  final void Function()? _onClosed;
+
+  Transaction(this._transactionConnection, {void Function()? onClosed})
+      : _onClosed = onClosed;
 
   bool get isOpen => _state == _TransactionState.open;
 
@@ -67,6 +70,7 @@ class Transaction {
         _state = _TransactionState.closed;
         _transactionId = null;
         await _transactionConnection.close();
+        _onClosed?.call();
         rethrow;
       }
 
@@ -152,9 +156,8 @@ class Transaction {
   Future<RemoteTraversal> submit(GremlinLang gremlinLang) async {
     return _enqueue(() async {
       final transactionId = _requireTransactionId();
-      final rs =
-          await _transactionConnection.submitInTransactionBuffered(
-              gremlinLang, transactionId);
+      final rs = await _transactionConnection.submitInTransactionBuffered(
+          gremlinLang, transactionId);
       return RemoteTraversal(Stream<dynamic>.fromIterable(rs.items));
     });
   }
@@ -193,6 +196,7 @@ class Transaction {
     _state = _TransactionState.closed;
     _transactionId = null;
     await _transactionConnection.close();
+    _onClosed?.call();
   }
 
   Future<T> _enqueue<T>(Future<T> Function() action) {

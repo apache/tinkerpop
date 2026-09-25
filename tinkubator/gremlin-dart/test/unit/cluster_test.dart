@@ -16,13 +16,16 @@
 // under the License.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
 import 'package:test/test.dart';
 
 import '../../lib/driver/cluster.dart';
 import '../../lib/driver/connection.dart';
+import '../../lib/driver/request_message.dart';
 import '../../lib/driver/transaction.dart';
 import '../../lib/process/gremlin_lang.dart';
 
@@ -347,6 +350,116 @@ void main() {
       expect(copy.connectTimeout, const Duration(seconds: 5));
     });
   });
+
+  // -------------------------------------------------------------------------
+  // Connection cancellation
+  // -------------------------------------------------------------------------
+  group('Connection cancellation', () {
+    test('cancelling a CancelToken aborts an in-flight request', () async {
+      // Never responds, so the request only ends via cancellation or a timeout.
+      final server = await HttpServer.bind('127.0.0.1', 0);
+      final serverSawRequest = Completer<void>();
+      unawaited(server.forEach((req) {
+        serverSawRequest.complete();
+        // Deliberately never respond.
+      }).catchError((_) {}));
+
+      final connection = Connection('http://127.0.0.1:${server.port}/');
+      final cancelToken = CancelToken();
+
+      final future = connection.submit(
+        RequestMessage.build('g.V()').addG('g').create(),
+        cancelToken: cancelToken,
+      );
+
+      await serverSawRequest.future;
+      cancelToken.cancel('test cancellation');
+
+      await expectLater(
+        future,
+        throwsA(isA<DioException>()
+            .having((e) => e.type, 'type', DioExceptionType.cancel)),
+      ).timeout(const Duration(seconds: 5));
+
+      await connection.close();
+      await server.close(force: true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Cluster.close() rolls back open transactions
+  // -------------------------------------------------------------------------
+  group('Cluster.close() and open transactions', () {
+    test('rolls back a transaction left open, closing its connection',
+        () async {
+      final requests = <String>[];
+      final server = await HttpServer.bind('127.0.0.1', 0);
+      unawaited(server.forEach((req) async {
+        final bytes = await req
+            .expand((chunk) => chunk)
+            .toList()
+            .then(Uint8List.fromList);
+        requests.add(latin1.decode(bytes, allowInvalid: true));
+        final body = _validGraphBinaryResponse();
+        req.response
+          ..statusCode = 200
+          ..headers.set('Content-Type', 'application/vnd.graphbinary-v4.0')
+          ..headers.set('X-Transaction-Id', 'fake-tx-id')
+          ..headers.contentLength = body.length
+          ..add(body);
+        await req.response.close();
+      }).catchError((_) {}));
+
+      final cluster = Cluster.build()
+          .addContactPoint('127.0.0.1')
+          .port(server.port)
+          .path('/')
+          .create();
+      final transaction = cluster.connect().tx();
+      await transaction.begin();
+      expect(transaction.isOpen, isTrue);
+
+      await cluster.close();
+
+      expect(transaction.isOpen, isFalse);
+      expect(requests.any((r) => r.contains('tx().rollback()')), isTrue,
+          reason: 'expected a rollback request, got: $requests');
+      expect(requests.any((r) => r.contains('tx().commit()')), isFalse,
+          reason: 'an abandoned transaction must not be silently committed');
+
+      await server.close(force: true);
+    });
+
+    test('does not touch a transaction the caller already closed', () async {
+      final server = await HttpServer.bind('127.0.0.1', 0);
+      unawaited(server.forEach((req) async {
+        await req.drain<void>();
+        final body = _validGraphBinaryResponse();
+        req.response
+          ..statusCode = 200
+          ..headers.set('Content-Type', 'application/vnd.graphbinary-v4.0')
+          ..headers.set('X-Transaction-Id', 'fake-tx-id')
+          ..headers.contentLength = body.length
+          ..add(body);
+        await req.response.close();
+      }).catchError((_) {}));
+
+      final cluster = Cluster.build()
+          .addContactPoint('127.0.0.1')
+          .port(server.port)
+          .path('/')
+          .create();
+      final transaction = cluster.connect().tx();
+      await transaction.begin();
+      await transaction.rollback();
+      expect(transaction.isOpen, isFalse);
+
+      // Must not throw trying to close an already-closed transaction again.
+      await cluster.close();
+
+      await server.close(force: true);
+    });
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -366,3 +479,19 @@ Uint8List _emptyGraphBinaryResponse() => Uint8List.fromList([
 
 /// Builds a minimal [GremlinLang] that serialises to [gremlin].
 GremlinLang _simpleLang(String gremlin) => GremlinLang()..addStep(gremlin);
+
+/// A correctly-formed GraphBinary v4 response encoding an empty result list
+/// with a 200 status (unlike [_emptyGraphBinaryResponse], which several
+/// existing tests never actually decode).
+Uint8List _validGraphBinaryResponse() {
+  final b = BytesBuilder(copy: false);
+  b.addByte(0x84); // version
+  b.addByte(0x00); // flags: not bulked
+  b.addByte(0xFD); // marker: type byte
+  b.addByte(0x00); // marker: value flag
+  b.addByte(0x00); // marker: content byte
+  b.add(const [0, 0, 0, 200]); // status code 200, big-endian int32
+  b.addByte(0x01); // null message
+  b.addByte(0x01); // null exception
+  return b.takeBytes();
+}

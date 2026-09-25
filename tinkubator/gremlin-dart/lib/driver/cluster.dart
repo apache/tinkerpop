@@ -155,6 +155,10 @@ class Cluster {
   final ConnectionOptions _baseOptions;
   final Duration _reconnectInterval;
   final int _resultIterationBatchSize;
+  // Transactions created via ClusterRemoteConnection.tx() use their own
+  // DriverRemoteConnection, outside the host pool; tracked here so close()
+  // can roll them back instead of leaving them (and their connections) open.
+  final Set<Transaction> _openTransactions = <Transaction>{};
 
   Cluster._({
     required List<HostEntry> hosts,
@@ -253,6 +257,17 @@ class Cluster {
   List<HostEntry> get hosts => List.unmodifiable(_hosts);
 
   Future<void> close() async {
+    for (final tx in _openTransactions.toList()) {
+      try {
+        if (tx.isOpen) {
+          await tx.onClose(TransactionCloseBehavior.rollback).close();
+        }
+      } catch (_) {
+        // Best-effort cleanup: one transaction failing to roll back must not
+        // stop the others, or the host pool, from being closed.
+      }
+    }
+    _openTransactions.clear();
     for (final host in _hosts) {
       host.dispose();
     }
@@ -303,12 +318,18 @@ class ClusterRemoteConnection extends RemoteConnection
   Transaction tx([String? traversalSource]) {
     final host = _cluster._lb.select();
     if (host == null) throw NoHostAvailableException();
-    return Transaction(DriverRemoteConnection(
-      host.url,
-      _cluster._baseOptions.copyWith(
-        traversalSource: traversalSource ?? _source,
+    late final Transaction transaction;
+    transaction = Transaction(
+      DriverRemoteConnection(
+        host.url,
+        _cluster._baseOptions.copyWith(
+          traversalSource: traversalSource ?? _source,
+        ),
       ),
-    ));
+      onClosed: () => _cluster._openTransactions.remove(transaction),
+    );
+    _cluster._openTransactions.add(transaction);
+    return transaction;
   }
 
   /// Cluster-level commit/rollback are not supported — they have no meaning
@@ -453,9 +474,9 @@ RequestMessage _buildRequest(
     for (final entry in s.configuration.entries) {
       switch (entry.key) {
         case 'evaluationTimeout':
-          evalTimeout = entry.value as int?;
+          evalTimeout = asPlainInt(entry.value) as int?;
         case 'batchSize':
-          batchSize = entry.value as int?;
+          batchSize = asPlainInt(entry.value) as int?;
         case 'bulkResults':
           bulkResults = (entry.value as bool?) ?? true;
         case 'materializeProperties':

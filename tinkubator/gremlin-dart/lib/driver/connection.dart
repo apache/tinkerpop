@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io' as io;
 import 'dart:typed_data';
@@ -250,20 +251,22 @@ class Connection {
 
   Future<void> open() async {}
 
-  Future<ResultSet<dynamic>> submit(RequestMessage request) async {
+  Future<ResultSet<dynamic>> submit(RequestMessage request,
+      {CancelToken? cancelToken}) async {
     final body = _writer.writeRequest(request);
-    final response = await _makeHttpRequest(request, body);
+    final response = await _makeHttpRequest(request, body, cancelToken);
     return _handleResponse(response);
   }
 
-  Stream<dynamic> stream(RequestMessage request) async* {
+  Stream<dynamic> stream(RequestMessage request,
+      {CancelToken? cancelToken}) async* {
     final body = _writer.writeRequest(request);
-    final response = await _makeHttpRequest(request, body);
+    final response = await _makeHttpRequest(request, body, cancelToken);
     yield* _streamResponse(response);
   }
 
   Future<_RawResponse> _makeHttpRequest(
-      RequestMessage request, Uint8List body) async {
+      RequestMessage request, Uint8List body, CancelToken? cancelToken) async {
     final reqHeaders = <String, String>{
       'Content-Type': _writer.mimeType,
       'Accept': _reader.mimeType,
@@ -280,23 +283,41 @@ class Connection {
       reqHeaders[transactionIdHeader] = request.transactionId!;
     }
 
-    final response = await _dio.post<Uint8List>(
-      url,
-      data: body,
-      options: Options(
-        headers: reqHeaders,
-        responseType: ResponseType.bytes,
-        // sendTimeout per-request if needed in future
-      ),
-    );
+    // validateStatus always accepts, so a non-2xx response never becomes a
+    // DioException and RetryInterceptor's onError never sees it. 503 is the
+    // one status this class retries, so that specific case is handled here,
+    // sharing the same RetryOptions the caller configured.
+    var attempt = 0;
+    while (true) {
+      final response = await _dio.post<Uint8List>(
+        url,
+        data: body,
+        cancelToken: cancelToken,
+        options: Options(
+          headers: reqHeaders,
+          responseType: ResponseType.bytes,
+          // sendTimeout per-request if needed in future
+        ),
+      );
 
-    final statusCode = response.statusCode ?? 0;
-    final contentType = response.headers['content-type']?.firstOrNull;
-    final transactionId =
-        response.headers.value(_transactionIdHeaderLower);
-    final bytes = response.data ?? Uint8List(0);
+      final statusCode = response.statusCode ?? 0;
+      final retry = options.retryOptions;
+      if (statusCode == 503 &&
+          retry != null &&
+          attempt < retry.maxAttempts - 1) {
+        final wait = retry.useExponentialBackoff
+            ? retry.delay * (1 << attempt.clamp(0, 30))
+            : retry.delay;
+        await Future<void>.delayed(wait);
+        attempt++;
+        continue;
+      }
 
-    return _RawResponse(statusCode, contentType, transactionId, bytes);
+      final contentType = response.headers['content-type']?.firstOrNull;
+      final transactionId = response.headers.value(_transactionIdHeaderLower);
+      final bytes = response.data ?? Uint8List(0);
+      return _RawResponse(statusCode, contentType, transactionId, bytes);
+    }
   }
 
   Future<ResultSet<dynamic>> _handleResponse(_RawResponse response) async {
@@ -399,8 +420,8 @@ class _TrailerTolerantAdapter implements HttpClientAdapter {
     required Duration connectTimeout,
     required int maxConnectionsPerHost,
     SslOptions? ssl,
-  }) : _client = _buildClient(idleTimeout, connectTimeout,
-            maxConnectionsPerHost, ssl);
+  }) : _client = _buildClient(
+            idleTimeout, connectTimeout, maxConnectionsPerHost, ssl);
 
   static io.HttpClient _buildClient(
     Duration idleTimeout,
@@ -443,8 +464,7 @@ class _TrailerTolerantAdapter implements HttpClientAdapter {
       }
     }
 
-    final client =
-        ctx != null ? io.HttpClient(context: ctx) : io.HttpClient();
+    final client = ctx != null ? io.HttpClient(context: ctx) : io.HttpClient();
 
     client
       ..idleTimeout = idleTimeout
@@ -469,36 +489,55 @@ class _TrailerTolerantAdapter implements HttpClientAdapter {
       if (value != null) ioReq.headers.set(name, value.toString());
     });
 
-    if (requestStream != null) {
-      await requestStream.forEach(ioReq.add);
-    }
-    final ioResp = await ioReq.close();
+    // dio hands adapters a CancelToken's future so an in-flight request can
+    // actually be aborted; without wiring it up, cancel() has no effect on the
+    // underlying socket and the request/response runs to completion anyway.
+    var done = false;
+    unawaited(cancelFuture?.then((error) {
+      if (done) return;
+      ioReq.abort(
+        DioException(
+          requestOptions: options,
+          type: DioExceptionType.cancel,
+          error: error,
+        ),
+      );
+    }));
 
-    final bodyBytes = BytesBuilder(copy: false);
-    bool trailerException = false;
     try {
-      await for (final chunk in ioResp) {
-        bodyBytes.add(chunk);
+      if (requestStream != null) {
+        await requestStream.forEach(ioReq.add);
       }
-    } on io.HttpException catch (_) {
-      if (bodyBytes.isEmpty) rethrow;
-      trailerException = true;
-    } on StateError catch (_) {
-      if (bodyBytes.isEmpty) rethrow;
-      trailerException = true;
+      final ioResp = await ioReq.close();
+
+      final bodyBytes = BytesBuilder(copy: false);
+      bool trailerException = false;
+      try {
+        await for (final chunk in ioResp) {
+          bodyBytes.add(chunk);
+        }
+      } on io.HttpException catch (_) {
+        if (bodyBytes.isEmpty) rethrow;
+        trailerException = true;
+      } on StateError catch (_) {
+        if (bodyBytes.isEmpty) rethrow;
+        trailerException = true;
+      }
+
+      final raw = bodyBytes.takeBytes();
+      final decoded = trailerException ? _decodeChunked(raw) : raw;
+
+      final headersMap = <String, List<String>>{};
+      ioResp.headers.forEach((name, values) => headersMap[name] = values);
+
+      return ResponseBody.fromBytes(
+        decoded,
+        ioResp.statusCode,
+        headers: headersMap,
+      );
+    } finally {
+      done = true;
     }
-
-    final raw = bodyBytes.takeBytes();
-    final decoded = trailerException ? _decodeChunked(raw) : raw;
-
-    final headersMap = <String, List<String>>{};
-    ioResp.headers.forEach((name, values) => headersMap[name] = values);
-
-    return ResponseBody.fromBytes(
-      decoded,
-      ioResp.statusCode,
-      headers: headersMap,
-    );
   }
 
   @override
