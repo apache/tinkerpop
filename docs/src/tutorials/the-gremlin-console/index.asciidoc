@@ -249,7 +249,17 @@ outcome.  You write your test, compile your application, and execute your test o
 key, which only has one vertex associated to it instead of two.
 
 [[result-iteration]]
-As you have the Gremlin Console open you decide to debug the problem there.  You copy your Gremlin code from
+As you have the Gremlin Console open you decide to debug the problem there. The examples that follow run against
+the "modern" toy graph, so if `g` is not already available from the <<toy-graphs,toy graphs>> shown earlier,
+create the graph and spawn a `g` from it first:
+
+[gremlin-groovy]
+----
+graph = TinkerFactory.createModern()
+g = traversal().with(graph)
+----
+
+You copy your Gremlin code from
 the IDE and execute it in the console and confirm the failure:
 
 [gremlin-groovy,modern]
@@ -302,10 +312,11 @@ stored in the list associated with that group.  By specifying `inV()` you are sa
 link:https://tinkerpop.apache.org/docs/x.y.z/tutorials/getting-started/#_the_next_fifteen_minutes[in-vertices] of the
 edges for a group.
 
-WARNING: While convenient, statically imported methods can be confusing for new users, especially those who are
-translating their code between the console (which is Groovy-based) and a Java IDE. Take care with the use of the
-`in()` method in this context, as the word `in` is reserved in Groovy. For the console, you must explicitly use
-this method as `__.in()`.
+NOTE: While convenient, statically imported methods can be confusing for new users, especially when translating
+code between the console (which is Groovy-based) and a Java IDE. The `in()` step deserves particular care, because
+`in` overlaps with a reserved word in Groovy and a bare `in()` is not guaranteed to resolve to the intended
+anonymous traversal step. The console will often resolve it, but the explicit `+__.in()+` form is recommended for
+deterministic results and for parity with the equivalent Java code.
 
 Structurally, this `Traversal` is sound, however it makes an assumption about how `inV()` will be utilized as an inner
 `Traversal`.  It is always important to remember that the console does not auto-iterate every `Traversal` in your
