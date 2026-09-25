@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.tinkergraph;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.GraphTest;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -39,7 +38,6 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -73,10 +71,6 @@ public class TinkerMemoryGraphProvider extends AbstractGraphProvider {
             put(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, idMaker);
             if (requiresListCardinalityAsDefault(loadGraphWith, test, testMethodName))
                 put(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
-            if (requiresPersistence(test, testMethodName)) {
-                put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
-                put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION,TestHelper.makeTestDataFile(test, "temp", testMethodName + ".kryo"));
-            }
         }};
     }
 
@@ -84,25 +78,11 @@ public class TinkerMemoryGraphProvider extends AbstractGraphProvider {
     public void clear(final Graph graph, final Configuration configuration) throws Exception {
         if (graph != null)
             graph.close();
-
-        // in the even the graph is persisted we need to clean up
-        final String graphLocation = null != configuration ? configuration.getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null) : null;
-        if (graphLocation != null) {
-            final File f = new File(graphLocation);
-            f.delete();
-        }
     }
 
     @Override
     public Set<Class> getImplementations() {
         return IMPLEMENTATION;
-    }
-
-    /**
-     * Determines if a test requires TinkerGraph persistence to be configured with graph location and format.
-     */
-    protected static boolean requiresPersistence(final Class<?> test, final String testMethodName) {
-        return test == GraphTest.class && testMethodName.equals("shouldPersistDataOnClose");
     }
 
     /**
