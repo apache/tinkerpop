@@ -54,7 +54,7 @@
   "dependencies": {
     "antlr4ng": "3.0.16",
     "buffer": "^6.0.3",
-    "deep-eql": "^5.0.2",
+    "deep-equal": "^2.2.3",
     "eventemitter3": "^5.0.1",
     "undici": "6.28.0"
   },
@@ -70,11 +70,13 @@
     "@playwright/test": "^1.63.0",
     "@tsconfig/node18": "^18.2.2",
     "@types/deep-eql": "^4.0.2",
+    "@types/deep-equal": "^1.0.4",
     "antlr-ng": "^1.0.10",
     "chai": "^6.2.2",
     "chai-string": "^2.0.0",
     "colors": "1.4.0",
     "cross-env": "^10.1.0",
+    "deep-eql": "^5.0.2",
     "esbuild": "^0.28.2",
     "eslint": "^10.3.0",
     "eslint-config-prettier": "^10.0.1",
