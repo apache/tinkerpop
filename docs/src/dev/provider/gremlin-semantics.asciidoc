@@ -1915,8 +1915,9 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#elementmap-step[referenc
 
 *Arguments:*
 
-* `edgeIds` - Zero or more edge identifiers. If none are provided, all edges are returned. Arrays and list-valued
-  arguments are flattened (unrolled) into individual IDs.
+* `edgeIds` - Zero or more edge identifiers. If none are provided, all edges are returned. When a single `LIST`
+  or `SET` is supplied as the sole argument, it is unrolled one level so that each of its elements is treated as
+  an individual identifier.
 * `idTraversal` - A child traversal which supplies edge identifiers. The child traversal must be read-only
   (no mutating steps).
 
@@ -1928,13 +1929,22 @@ None
 
 * When used as a start step with a traversal argument, a synthetic traverser seeds the child traversal.
 * When used mid-traversal with a traversal argument, the current traverser seeds the child traversal.
+* When used mid-traversal with literal identifiers, the content of the incoming traverser is ignored for
+  identifier resolution. A fresh global lookup by those identifiers is performed once for each incoming
+  traverser, so the same identifiers are resolved again for every traverser that arrives.
+* Unrolling of a single collection argument is one level deep. A collection nested inside that argument is not
+  unrolled further and is passed through as a single identifier value, which a provider will typically reject as
+  invalid.
 * If no edges match the provided identifiers, the step produces no results.
 * Graph providers may optimize `E()` with subsequent `has()` filters by folding `HasContainer` predicates into the
   step for index-backed lookups.
 
 *Exceptions:*
 
-None
+* An `Argument Error` is raised when an argument cannot be interpreted as a valid edge identifier by the graph,
+  such as a value of an unsupported type or a collection that remains nested after one level of unrolling.
+* An `Argument Error` is raised when a traversal argument contains a mutating step, because the child traversal
+  that supplies identifiers must be read-only.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/GraphStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#graph-step[reference]
