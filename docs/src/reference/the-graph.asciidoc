@@ -310,3 +310,25 @@ reduce implementations, and plugins.
 
 The only truly protected namespace is the _hidden namespace_ provided to graph systems. From there, it's up to
 engineers to respect the namespacing conventions presented.
+
+The boundary between the flat and hidden namespaces is enforced at write time. A property keyed in the flat
+namespace can be written by an end user and read back through the standard traversal API:
+
+[gremlin-groovy,modern]
+----
+g.V(1).property('location','santa fe')
+g.V(1).values('location')
+----
+
+A write to a "~"-prefixed key in the hidden namespace is rejected with an `IllegalArgumentException` rather
+than being silently accepted or ignored. A hidden key is also filtered out on read, so it never surfaces
+through the standard traversal API even when a graph system has populated it. Only a leading "~" marks a key
+as hidden, so a "~" appearing elsewhere in a key is treated as an ordinary character.
+
+[source,text]
+----
+gremlin> g.V(1).property('~metadata','secret')
+Property key can not be a hidden key: ~metadata
+gremlin> g.V(1).values('~metadata')
+gremlin>
+----
