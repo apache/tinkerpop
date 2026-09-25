@@ -3183,11 +3183,11 @@ anchor:gremlin-net-limitations[]
 [[gremlin-dotnet-limitations]]
 === Limitations
 
-Several Gremlin types have a wider domain than their closest C# counterparts. When the server returns a value
-that falls outside the C# range, the outcome depends on the type. In most cases Gremlin.Net raises an exception
-as it deserializes the response, so the error surfaces on the client at the point the result is read. The one
-exception is a character outside the Basic Multilingual Plane, which is reconstructed incorrectly without any
-error.
+Several Gremlin types have a wider domain or finer precision than their closest C# counterparts. When the server
+returns a value that falls outside the C# range, the outcome depends on the type. In most cases Gremlin.Net raises
+an exception as it deserializes the response, so the error surfaces on the client at the point the result is read.
+In a few cases the value is instead altered without any error. A character outside the Basic Multilingual Plane is
+reconstructed incorrectly, and a fractional second finer than the C# tick is silently truncated.
 
 * The `subgraph()`-step returns a detached `Graph` data container exposing
 `Vertices: IDictionary<object, Vertex>` and `Edges: IDictionary<object, Edge>`. The result is not a live `Graph`
@@ -3199,11 +3199,19 @@ Gremlin's `OffsetDateTime` permits offsets up to `+18:00`/`-18:00` and a much wi
 or year of the returned value lies outside the C# range, the `DateTimeOffset` constructor rejects it and
 Gremlin.Net raises an `ArgumentOutOfRangeException` while reading the result. The offset bound is the more common
 trigger, since a value such as `datetime('2018-03-22T00:35:44.741+18:00')` is a valid `OffsetDateTime` that
-cannot be represented as a `DateTimeOffset`.
+cannot be represented as a `DateTimeOffset`. A second offset restriction concerns granularity rather than
+magnitude. `DateTimeOffset` records its UTC offset in whole minutes, whereas Java and GraphBinary express the
+offset in seconds, so an offset that carries a sub-minute component cannot be represented and Gremlin.Net raises
+an `ArgumentException` while reading the result. Precision is likewise a separate consideration from range.
+Gremlin represents time with nanosecond precision, while `DateTimeOffset` measures time in 100-nanosecond ticks,
+so a fractional second finer than one tick is silently truncated on deserialization without any error, and a
+value such as `00.123456789` is read back as `00.1234567`.
 * Gremlin's `Duration` type has a much larger range than C#'s `TimeSpan`, so a duration whose magnitude exceeds
 `TimeSpan.MaxValue` or `TimeSpan.MinValue` cannot be constructed and Gremlin.Net raises an `OverflowException`
 while reading the result. This affects only extreme values such as `Duration.FOREVER`. Durations within the
-`TimeSpan` range are unaffected.
+`TimeSpan` range are unaffected. As with `DateTimeOffset`, precision is a separate consideration from range.
+Gremlin represents a duration with nanosecond precision, while `TimeSpan` measures time in 100-nanosecond ticks,
+so a fractional-second component finer than one tick is silently truncated on deserialization without any error.
 * Gremlin's `BigDecimal` supports up to 33 digits of precision while C#'s `decimal` type is limited to 28-29
 significant digits. When the returned value exceeds the `decimal` range, the conversion overflows and
 Gremlin.Net raises an `OverflowException` while reading the result.
