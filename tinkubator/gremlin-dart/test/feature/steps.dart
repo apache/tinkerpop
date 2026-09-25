@@ -54,7 +54,6 @@ class FeatureSteps {
     world.resetScenario(scenario.tags);
     world.scenarioName = scenario.name;
     world.scenarioKey = scenarioKey;
-    world.ignore = scenario.tags.any(skipTags.contains);
     for (final step in scenario.steps) {
       await runStep(step);
     }

@@ -23,6 +23,11 @@ import org.apache.tinkerpop.gremlin.language.translator.GremlinTranslator
 
 import java.nio.file.Files
 import java.nio.file.Paths
+
+/** Escapes a string for embedding as a single-quoted Dart string literal. */
+static String dartLiteral(String value) {
+    return "'" + value.replace('\\', '\\\\').replace("'", "\\'").replace('\$', '\\\$') + "'"
+}
 import java.nio.file.StandardCopyOption
 
 final File dartGremlinFile = new File("${projectBaseDir}/tinkubator/gremlin-dart/test/feature/gremlin.dart")
@@ -81,7 +86,7 @@ temporaryDartGremlinFile.toFile().withWriter('UTF-8') { Writer writer ->
             // Every function in a scenario declares the same named parameters so the runner can pass them all.
             final String signature = parameters.isEmpty() ? '' :
                     ', {' + parameters.collect { "dynamic ${it}" }.join(', ') + '}'
-            writer.writeLine("  '${scenarioKey}': <Function>[")
+            writer.writeLine("  ${dartLiteral(scenarioKey)}: <Function>[")
             translatedScripts.each { String translated ->
                 writer.writeLine("    (GraphTraversalSource g${signature}) => " + translated + ',')
             }
@@ -96,7 +101,7 @@ temporaryDartGremlinFile.toFile().withWriter('UTF-8') { Writer writer ->
     writer.writeLine('\nfinal Map<String, Set<String>> generatedTraversalParameters = <String, Set<String>>{')
     generatedParameters.each { String scenarioKey, Set<String> parameters ->
         final String names = parameters.collect { "'${it}'" }.join(', ')
-        writer.writeLine("  '${scenarioKey}': <String>{${names}},")
+        writer.writeLine("  ${dartLiteral(scenarioKey)}: <String>{${names}},")
     }
     writer.writeLine('};')
 

@@ -50,6 +50,16 @@ abstract class TraversalStrategy {
 
 /// Resolves a strategy instance, class literal, or explicit name to the
 /// server-side strategy name without relying on [Type.toString()].
+/// Unwraps a [GInt]/[GLong] value type to a plain Dart int, leaving any
+/// other value (including a plain int, or null) unchanged. Generated code
+/// wraps integer literals in these types to preserve their Gremlin width;
+/// driver-side config such as OptionsStrategy needs a plain int.
+dynamic asPlainInt(dynamic value) {
+  if (value is GInt) return value.value;
+  if (value is GLong) return value.value;
+  return value;
+}
+
 String strategyNameOf(dynamic strategy) {
   if (strategy is String) return strategy;
   if (strategy is TraversalStrategy) return strategy.strategyName;
@@ -171,7 +181,7 @@ class SeedStrategy extends TraversalStrategy {
   SeedStrategy({required dynamic seed})
       : super(
             strategyName: 'SeedStrategy',
-            configuration: {'seed': seed is GInt ? seed.value : seed});
+            configuration: {'seed': asPlainInt(seed)});
 }
 
 class ReadOnlyStrategy extends TraversalStrategy {

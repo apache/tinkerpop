@@ -276,6 +276,16 @@ void main() {
       expect(_g().withoutStrategies('').gremlinLang.getGremlin(), 'g');
     });
 
+    test('asPlainInt unwraps GInt/GLong for driver-side option values', () {
+      // OptionsStrategy(evaluationTimeout: GInt(500)) used to throw a TypeError
+      // when DriverRemoteConnection/Cluster cast the config value straight to
+      // int; the same GInt literal a real user or generated scenario would use.
+      expect(asPlainInt(GInt(500)), 500);
+      expect(asPlainInt(GLong(500)), 500);
+      expect(asPlainInt(500), 500);
+      expect(asPlainInt(null), isNull);
+    });
+
     test('strategyNameOf is stable and rejects unknown types', () {
       expect(strategyNameOf(ReadOnlyStrategy), 'ReadOnlyStrategy');
       expect(strategyNameOf(ReadOnlyStrategy()), 'ReadOnlyStrategy');

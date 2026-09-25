@@ -180,7 +180,9 @@ public class DartTranslateVisitor extends AbstractTranslateVisitor {
     public Void visitCharacterLiteral(final GremlinParser.CharacterLiteralContext ctx) {
         final String text = ctx.getText();
         final String literal = removeFirstAndLastCharacters(text.substring(0, text.length() - 1));
-        sb.append("GChar('").append(literal.replace("'", "\\'")).append("'.runes.single)");
+        sb.append("GChar('");
+        appendDartEscaped(sb, decodeGremlinEscapes(literal));
+        sb.append("'.runes.single)");
         return null;
     }
 
@@ -328,7 +330,105 @@ public class DartTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     protected void handleStringLiteralText(final String text) {
-        // '$' starts interpolation in a Dart string literal, so it must be escaped as well as the quote
-        sb.append("'").append(text.replace("'", "\\'").replace("$", "\\$")).append("'");
+        sb.append("'");
+        appendDartEscaped(sb, decodeGremlinEscapes(text));
+        sb.append("'");
+    }
+
+    /**
+     * Decodes Gremlin's string/character escape sequences (single-char escapes, octal, unicode, and
+     * the line-join escape) into the actual characters they represent. The raw ANTLR token text still
+     * holds these escapes unevaluated, so this must run before re-escaping for Dart: Gremlin's escapes
+     * and Dart's are not byte-for-byte identical (Dart has no octal escape, and '$' needs escaping in
+     * Dart but is not a Gremlin escape character at all).
+     */
+    private static String decodeGremlinEscapes(final String text) {
+        final StringBuilder decoded = new StringBuilder();
+        final int len = text.length();
+        int i = 0;
+        while (i < len) {
+            final char c = text.charAt(i);
+            if (c != '\\') {
+                decoded.append(c);
+                i++;
+                continue;
+            }
+
+            // A backslash always starts a recognized escape in grammar-valid input.
+            if (i + 1 >= len) {
+                decoded.append(c);
+                i++;
+                continue;
+            }
+            final char next = text.charAt(i + 1);
+
+            // Line-join escape ('\' '\r'? '\n'): contributes nothing to the string's content.
+            if (next == '\r' || next == '\n') {
+                int j2 = i + 1;
+                if (text.charAt(j2) == '\r' && j2 + 1 < len && text.charAt(j2 + 1) == '\n') j2++;
+                i = j2 + 1;
+                continue;
+            }
+
+            switch (next) {
+                case 'b': decoded.append('\b'); i += 2; continue;
+                case 't': decoded.append('\t'); i += 2; continue;
+                case 'n': decoded.append('\n'); i += 2; continue;
+                case 'f': decoded.append('\f'); i += 2; continue;
+                case 'r': decoded.append('\r'); i += 2; continue;
+                case '"': decoded.append('"'); i += 2; continue;
+                case '\'': decoded.append('\''); i += 2; continue;
+                case '\\': decoded.append('\\'); i += 2; continue;
+                default: break;
+            }
+
+            if (next == 'u') {
+                // backslash, one or more 'u', then exactly four hex digits
+                int j2 = i + 1;
+                while (j2 < len && text.charAt(j2) == 'u') j2++;
+                final String hex = text.substring(j2, Math.min(j2 + 4, len));
+                decoded.append((char) Integer.parseInt(hex, 16));
+                i = j2 + 4;
+                continue;
+            }
+
+            if (next >= '0' && next <= '7') {
+                // Octal escape: up to 3 digits (only when the first is 0-3), else up to 2.
+                final int maxDigits = (next <= '3') ? 3 : 2;
+                int j2 = i + 1;
+                int end = j2 + 1;
+                while (end < len && end < j2 + maxDigits && isOctalDigit(text.charAt(end))) end++;
+                decoded.appendCodePoint(Integer.parseInt(text.substring(j2, end), 8));
+                i = end;
+                continue;
+            }
+
+            // Not reachable for grammar-valid input; pass the backslash through defensively.
+            decoded.append(c);
+            i++;
+        }
+        return decoded.toString();
+    }
+
+    /** Appends {@code decoded} to {@code target} as a Dart string body (no surrounding quotes). */
+    private static void appendDartEscaped(final StringBuilder target, final String decoded) {
+        for (int i = 0; i < decoded.length(); i++) {
+            final char c = decoded.charAt(i);
+            switch (c) {
+                case '\\': target.append("\\\\"); break;
+                case '\'': target.append("\\'"); break;
+                case '$': target.append("\\$"); break;
+                case '\n': target.append("\\n"); break;
+                case '\r': target.append("\\r"); break;
+                case '\t': target.append("\\t"); break;
+                case '\b': target.append("\\b"); break;
+                case '\f': target.append("\\f"); break;
+                default: target.append(c);
+            }
+        }
+    }
+
+    private static boolean isOctalDigit(final char c) {
+        return c >= '0' && c <= '7';
     }
 }
