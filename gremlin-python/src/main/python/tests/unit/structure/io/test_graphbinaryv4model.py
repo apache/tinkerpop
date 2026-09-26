@@ -118,9 +118,9 @@ def test_sign_boundary_pos_biginteger():
     run_writeread("sign-boundary-pos-biginteger")
 
 def test_sign_boundary_neg_biginteger():
-    # gremlin-python can't serialize -129 because BigIntIO computes a byte length
-    # that is too small for signed two's-complement encoding.
-    run_read("sign-boundary-neg-biginteger")
+    # -129 round-trips by value; use run_writeread rather than byte-exact run()
+    # because reading narrows the bigint to a plain int (re-serialized via IntIO).
+    run_writeread("sign-boundary-neg-biginteger")
 
 def test_uint8_primitive_pdt():
     run("uint8-primitive-pdt")
