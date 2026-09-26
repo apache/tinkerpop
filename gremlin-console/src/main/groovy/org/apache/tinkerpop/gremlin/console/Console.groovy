@@ -407,44 +407,6 @@ class Console {
         return null
     }
 
-    private def writeTraverserToErrorLines(Traverser t, List errorLines) {
-        // every traverser has an object so toString() that. pad with spaces to cover "side-effects" width
-        errorLines << "Traverser> $t"
-
-        def optGenerator = t.asAdmin().generator
-        if (optGenerator.isPresent()) {
-            def width = "Traverser".length()
-            def generator = optGenerator.get()
-            if (generator.providedRequirements.contains(TraverserRequirement.BULK)) {
-                errorLines << "  Bulk".padRight(width) + "> " + t.bulk()
-            }
-
-            if (generator.providedRequirements.contains(TraverserRequirement.SACK)) {
-                errorLines << "  Sack".padRight(width) + "> " + t.sack()
-            }
-
-            if (generator.providedRequirements.contains(TraverserRequirement.PATH)) {
-                errorLines << "  Path".padRight(width) + "> " + t.path()
-            }
-
-            if (generator.providedRequirements.contains(TraverserRequirement.SINGLE_LOOP) ||
-                    generator.providedRequirements.contains(TraverserRequirement.NESTED_LOOP)) {
-                // flatten loops/names if present
-                def loopNames = t.asAdmin().loopNames
-                def loopsLine = loopNames.isEmpty() ? t.loops() : loopNames.collect { [(it): t.loops(it)]}
-                errorLines << "  Loops".padRight(width) + "> " + loopsLine
-            }
-
-            if (generator.providedRequirements.contains(TraverserRequirement.SIDE_EFFECTS)) {
-                // convert side-effects to a map
-                def sideEffects = t.asAdmin().sideEffects
-                def keys = sideEffects.keys()
-                errorLines << "  S/E".padRight(width) + "> " + keys.collectEntries { [(it): sideEffects.get(it)]}
-            }
-
-        }
-    }
-
     private static String buildResultPrompt() {
         final String groovyshellProperty = System.getProperty("gremlin.prompt")
         if (groovyshellProperty != null)

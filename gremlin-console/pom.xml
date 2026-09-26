@@ -160,6 +160,14 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- Isolate console preference tests in an in-memory java.util.prefs store so they never
+                         touch the developer's real per-user preferences. Resolved at fork startup, before
+                         Preferences.STORE binds. Merges with the inherited argLine configuration. -->
+                    <systemPropertyVariables>
+                        <java.util.prefs.PreferencesFactory>org.apache.tinkerpop.gremlin.console.InMemoryPreferencesFactory</java.util.prefs.PreferencesFactory>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

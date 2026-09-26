@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.junit.Assert;
@@ -95,6 +96,9 @@ public class TraversalPredicateVisitorTest {
                 {"TextP.regex('(?i)gfg')", TextP.regex("(?i)gfg")},
                 {"TextP.notRegex('^h')", TextP.notRegex("^h")},
                 {"TextP.regex('^h').negate()", TextP.regex("^h").negate()},
+                {"typeOf(GType.int)", P.typeOf(GType.INT)},
+                {"typeOf(int)", P.typeOf(GType.INT)},
+                {"P.typeOf(GType.string)", P.typeOf(GType.STRING)},
         });
     }
 
