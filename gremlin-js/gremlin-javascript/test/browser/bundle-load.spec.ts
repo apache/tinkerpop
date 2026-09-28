@@ -65,7 +65,7 @@ test('DriverRemoteConnection uses the browser dispatcher, not the Node/undici on
   expect(message).toContain("managed by the browser's HTTP stack");
 });
 
-test('sigv4 auth throws a clear browser-specific error instead of pulling in the AWS SDK', async ({ page }) => {
+test('sigv4 auth requires a credentialsProvider (no default chain in the browser)', async ({ page }) => {
   await page.goto('/');
 
   const message = await page.evaluate(() => {
@@ -78,7 +78,51 @@ test('sigv4 auth throws a clear browser-specific error instead of pulling in the
     }
   });
 
-  expect(message).toContain('not supported in the browser');
+  expect(message).toContain('requires a credentialsProvider');
+});
+
+test('sigv4 auth signs a request using SubtleCrypto, matching the Node build byte-for-byte', async ({ page }) => {
+  await page.goto('/');
+
+  const authHeader = await page.evaluate(async () => {
+    const { gremlin, Buffer } = (window as any).__gremlinBrowserSmoke;
+
+    const RealDate = Date;
+    class FixedDate extends RealDate {
+      constructor(...args: []) {
+        if (args.length === 0) {
+          super('2024-01-01T00:00:00Z');
+        } else {
+          super(...args);
+        }
+      }
+      static now() {
+        return new RealDate('2024-01-01T00:00:00Z').getTime();
+      }
+    }
+    (window as any).Date = FixedDate;
+
+    const request = new gremlin.driver.HttpRequest(
+      'POST',
+      'https://example.neptune.amazonaws.com/gremlin',
+      {},
+      Buffer.from('{"gremlin":"g.V()"}'),
+    );
+    const interceptor = gremlin.driver.auth.sigv4('us-east-1', 'neptune-db', () => ({
+      accessKeyId: 'MOCK_ACCESS_KEY',
+      secretAccessKey: 'MOCK_SECRET_KEY',
+    }));
+    await interceptor(request);
+    return request.headers['authorization'];
+  });
+
+  // Computed independently via lib/driver/auth.ts (the Node build, @smithy/hash-node) for the same
+  // fixed date/credentials/body - see test/unit/auth-browser-test.js for that derivation.
+  expect(authHeader).toBe(
+    'AWS4-HMAC-SHA256 Credential=MOCK_ACCESS_KEY/20240101/us-east-1/neptune-db/aws4_request, ' +
+    'SignedHeaders=host;x-amz-content-sha256;x-amz-date, ' +
+    'Signature=08b4bbdacdbc6603946dbdcc8465e1a87caa517f38fe21f14cb7cfaaf64dd824',
+  );
 });
 
 test('the language translator subpath works standalone in the browser', async ({ page }) => {
