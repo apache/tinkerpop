@@ -59,6 +59,7 @@
     "undici": "6.28.0"
   },
   "optionalDependencies": {
+    "@aws-crypto/sha256-browser": "^5.2.0",
     "@aws-sdk/credential-providers": "^3.967.0",
     "@smithy/hash-node": "^4.2.12",
     "@smithy/signature-v4": "^5.3.12"
