@@ -27,6 +27,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -142,5 +143,91 @@ public class ByteBufQueueInputStreamTest {
 
         assertEquals(0, buf1.refCnt());
         assertEquals(0, buf2.refCnt());
+    }
+
+    @Test
+    public void shouldReleaseLateBufferOfferedAfterClose() throws Exception {
+        // A chunk that arrives after the stream is closed must be released immediately so it does not leak, and
+        // must not be enqueued for reading.
+        final ByteBufQueueInputStream stream = new ByteBufQueueInputStream();
+        stream.close();
+
+        final ByteBuf late = ByteBufAllocator.DEFAULT.buffer(2);
+        late.writeBytes(new byte[]{1, 2});
+        assertEquals(1, late.refCnt());
+
+        stream.offer(late);
+
+        assertEquals("late buffer should have been released", 0, late.refCnt());
+        assertEquals("stream is closed so nothing is readable", -1, stream.read());
+    }
+
+    @Test
+    public void shouldIgnoreAlreadyReleasedBufferOfferedAfterClose() throws Exception {
+        // Offering an already-released buffer after close must not attempt a double-release.
+        final ByteBufQueueInputStream stream = new ByteBufQueueInputStream();
+        stream.close();
+
+        final ByteBuf released = ByteBufAllocator.DEFAULT.buffer(1);
+        released.release();
+        assertEquals(0, released.refCnt());
+
+        stream.offer(released); // refCnt == 0 branch: the guard skips the release so no double-release is attempted
+        // Assert real behavior instead of the tautological refCnt == 0: the buffer was not enqueued, so a closed
+        // stream still reports end-of-stream. The double-release guard is verified implicitly - removing it would
+        // make offer() call release() on an already-released buffer and throw IllegalReferenceCountException.
+        assertEquals(-1, stream.read());
+    }
+
+    @Test(timeout = 5000)
+    public void shouldReturnZeroForZeroLengthRead() throws Exception {
+        // Nothing is ever offered, so the queue is empty. A zero-length read must short-circuit via
+        // "if (len == 0) return 0;" and return immediately. If that short-circuit were removed, the read would
+        // block waiting on the empty queue and the timeout would fail the test.
+        final ByteBufQueueInputStream stream = new ByteBufQueueInputStream();
+
+        assertEquals(0, stream.read(new byte[4], 0, 0));
+    }
+
+    @Test
+    public void shouldReturnMinusOneOnReadsAfterEndOfStream() throws Exception {
+        final ByteBufQueueInputStream stream = new ByteBufQueueInputStream();
+        stream.offer(Unpooled.wrappedBuffer(new byte[]{5}));
+        stream.signalEndOfStream();
+
+        assertEquals(5, stream.read());
+        assertEquals(-1, stream.read()); // reaches END_OF_STREAM, sets eof
+        // subsequent reads short-circuit on the eof guard
+        assertEquals(-1, stream.read());
+        assertEquals(-1, stream.read(new byte[4], 0, 4));
+    }
+
+    @Test(timeout = 10000)
+    public void shouldThrowIOExceptionAndPreserveInterruptWhenReaderInterrupted() throws Exception {
+        final ByteBufQueueInputStream stream = new ByteBufQueueInputStream(0L);
+        final AtomicReference<Throwable> failure = new AtomicReference<>();
+        final AtomicBoolean interruptPreserved = new AtomicBoolean(false);
+        final CountDownLatch started = new CountDownLatch(1);
+
+        final Thread reader = new Thread(() -> {
+            started.countDown();
+            try {
+                stream.read();
+            } catch (Throwable t) {
+                failure.set(t);
+                interruptPreserved.set(Thread.currentThread().isInterrupted());
+            }
+        });
+        reader.start();
+
+        assertTrue(started.await(1, TimeUnit.SECONDS));
+        Thread.sleep(200); // let the reader block in queue.take()
+        reader.interrupt();
+        reader.join(5000);
+
+        assertFalse("reader should have unblocked after interrupt", reader.isAlive());
+        assertTrue("expected an IOException", failure.get() instanceof IOException);
+        assertEquals("Interrupted while waiting for data", failure.get().getMessage());
+        assertTrue("interrupt status should be restored", interruptPreserved.get());
     }
 }
