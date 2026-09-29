@@ -2629,6 +2629,11 @@ from gremlin_python.statics import SingleChar   # Java char type
 from gremlin_python.statics import GremlinType  # Java Class
 ----
 
+Python has a single arbitrary precision `int`, so the serializer picks the Java type from the value:
+an `int` that fits the Java `int` range is sent as an `int` and anything wider is sent as a `long`.
+Values beyond the Java `long` range have to be wrapped in `bigint`. Use `long` when a graph needs the
+wider type for a value that would otherwise fit in an `int`.
+
 anchor:python-configuration[]
 [[gremlin-python-configuration]]
 === Configuration

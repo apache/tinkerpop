@@ -277,6 +277,19 @@ class IntIO(LongIO):
     byte_format_unpack = int32_unpack
 
     @classmethod
+    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
+        # Python has one arbitrary precision int type, so every plain int arrives here
+        # regardless of magnitude. Anything outside the Java int range is written as a Long
+        # instead of reaching int32_pack, which fails with a bare struct.error. GraphSON
+        # coerces the same way (TINKERPOP-2360), and statics.long and statics.bigint stay
+        # available as explicit overrides. Promotion needs a type code in front of the
+        # value, so a value-only write keeps the fixed int32 layout.
+        if not as_value and not (-2147483648 <= obj <= 2147483647):
+            return LongIO.dictify(obj, writer, to_extend, as_value, nullable)
+
+        return super().dictify(obj, writer, to_extend, as_value, nullable)
+
+    @classmethod
     def objectify(cls, buff, reader, nullable=True):
         return cls.is_null(buff, reader, lambda b, r: cls.read_int(b), nullable)
 
