@@ -261,6 +261,16 @@ export default class GoTranslateVisitor extends TranslateVisitor {
         const text: string = ctx.getText();
         const withoutSuffix = text.substring(0, text.length - 1);
         let inner = withoutSuffix.substring(1, withoutSuffix.length - 1);
+
+        const octal = /^\\([0-7]{1,3})$/.exec(inner);
+        if (octal) {
+            this.sb.push(GO_PACKAGE_NAME);
+            this.sb.push('Char(0o');
+            this.sb.push(parseInt(octal[1], 8).toString(8));
+            this.sb.push(')');
+            return;
+        }
+
         inner = inner.replace(/\\([\s\S])|'/g, (m: string, esc?: string) => {
             if (esc === undefined) return "\\'"; // bare '  -> \'
             if (esc === '"') return '"';         // \"      -> "

@@ -229,8 +229,16 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
         const text: string = ctx.getText();
         const withoutSuffix = text.substring(0, text.length - 1);
         const inner = TranslateVisitor.removeFirstAndLastCharacters(withoutSuffix);
+        let csChar: string;
+        if (inner === "'") {
+            csChar = "\\'";
+        } else if (/^\\[0-7]{1,3}$/.test(inner)) {
+            csChar = '\\u' + parseInt(inner.substring(1), 8).toString(16).toUpperCase().padStart(4, '0');
+        } else {
+            csChar = inner;
+        }
         this.sb.push("'");
-        this.sb.push(inner);
+        this.sb.push(csChar);
         this.sb.push("'");
     }
 

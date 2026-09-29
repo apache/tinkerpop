@@ -198,6 +198,12 @@ describe('PythonTranslateVisitor', function () {
       ['g.inject({1,2,3})', 'g.inject({1, 2, 3})'],
       // Character literal
       ['g.inject("a"c)', "g.inject(SingleChar('a'))"],
+      ['g.inject("\\""c)', "g.inject(SingleChar('\\\"'))"],
+      ['g.inject("\\\\"c)', "g.inject(SingleChar('\\\\'))"],
+      ["g.inject(\"'\"c)", "g.inject(SingleChar('\\''))"],
+      ["g.inject('\\''c)", "g.inject(SingleChar('\\''))"],
+      ['g.inject("\\7"c)', "g.inject(SingleChar('\\7'))"],
+      ['g.inject("\\07"c)', "g.inject(SingleChar('\\07'))"],
       // Duration literal
       ['g.inject(Duration(9000,0))', 'g.inject(timedelta(seconds=9000))'],
       // Binary literal
@@ -291,8 +297,8 @@ describe('GoTranslateVisitor', function () {
       ['g.inject("\\\\"c)', "g.Inject(gremlingo.Char('\\\\'))"],
       ["g.inject(\"'\"c)", "g.Inject(gremlingo.Char('\\''))"],
       ["g.inject('\\''c)", "g.Inject(gremlingo.Char('\\''))"],
-      ['g.inject("\\7"c)', "g.Inject(gremlingo.Char('\\7'))"],
-      ['g.inject("\\07"c)', "g.Inject(gremlingo.Char('\\07'))"],
+      ['g.inject("\\7"c)', 'g.Inject(gremlingo.Char(0o7))'],
+      ['g.inject("\\07"c)', 'g.Inject(gremlingo.Char(0o7))'],
       // null → nil
       ['g.V().has("name", null)', 'g.V().Has("name", nil)'],
       // terminal steps — PascalCase
@@ -373,6 +379,12 @@ describe('DotNetTranslateVisitor', function () {
       ['g.inject({1,2,3})', 'g.Inject<object>(new HashSet<object> { 1, 2, 3 })'],
       // Character literal
       ['g.inject("a"c)', "g.Inject<object>('a')"],
+      ['g.inject("\\""c)', "g.Inject<object>('\\\"')"],
+      ['g.inject("\\\\"c)', "g.Inject<object>('\\\\')"],
+      ["g.inject(\"'\"c)", "g.Inject<object>('\\'')"],
+      ["g.inject('\\''c)", "g.Inject<object>('\\'')"],
+      ['g.inject("\\7"c)', "g.Inject<object>('\\u0007')"],
+      ['g.inject("\\07"c)', "g.Inject<object>('\\u0007')"],
       // Duration literal
       ['g.inject(Duration(9000,0))', 'g.Inject<object>(TimeSpan.FromTicks(90000000000L))'],
       // Binary literal
@@ -464,6 +476,12 @@ describe('JavaTranslateVisitor', function () {
       ['g.inject({1,2,3})', 'g.inject(new HashSet<Object>() {{ add(1); add(2); add(3); }})'],
       // Character literal
       ['g.inject("a"c)', "g.inject('a')"],
+      ['g.inject("\\""c)', "g.inject('\\\"')"],
+      ['g.inject("\\\\"c)', "g.inject('\\\\')"],
+      ["g.inject(\"'\"c)", "g.inject('\\'')"],
+      ["g.inject('\\''c)", "g.inject('\\'')"],
+      ['g.inject("\\7"c)', "g.inject('\\7')"],
+      ['g.inject("\\07"c)', "g.inject('\\07')"],
       // Duration literal
       ['g.inject(Duration(9000,0))', 'g.inject(Duration.ofSeconds(9000, 0))'],
       // Binary literal
@@ -548,6 +566,12 @@ describe('GroovyTranslateVisitor', function () {
       ['g.inject({1,2,3})', 'g.inject([1, 2, 3] as Set)'],
       // Character literal
       ['g.inject("a"c)', "g.inject('a' as char)"],
+      ['g.inject("\\""c)', "g.inject('\\\"' as char)"],
+      ['g.inject("\\\\"c)', "g.inject('\\\\' as char)"],
+      ["g.inject(\"'\"c)", "g.inject('\\'' as char)"],
+      ["g.inject('\\''c)", "g.inject('\\'' as char)"],
+      ['g.inject("\\7"c)', "g.inject('\\7' as char)"],
+      ['g.inject("\\07"c)', "g.inject('\\07' as char)"],
       // Duration literal
       ['g.inject(Duration(9000,0))', 'g.inject(Duration.ofSeconds(9000, 0))'],
       // Binary literal
