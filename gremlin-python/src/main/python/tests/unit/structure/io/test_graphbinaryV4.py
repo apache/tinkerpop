@@ -19,6 +19,7 @@ under the License.
 
 import uuid
 import math
+import pytest
 from collections import OrderedDict
 
 from datetime import datetime, timedelta, timezone
@@ -41,6 +42,44 @@ class TestGraphBinaryV4(object):
         x = 100
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
+
+    def test_int_out_of_int32_range_promotes_to_long(self):
+        # Python has one arbitrary precision int type, so a plain int beyond the Java int
+        # range used to reach int32_pack and fail with a bare struct.error (TINKERPOP-2363).
+        for x in [2 ** 31, -2 ** 31 - 1, 3000000000, 2 ** 63 - 1, -2 ** 63]:
+            output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+            assert x == output
+
+    def test_int_wire_bytes_at_int32_boundary(self):
+        # The type code stays Int (0x01) inside the Java int range and becomes Long (0x02)
+        # immediately outside it, so promotion never widens a value that already fits.
+        cases = {
+            2 ** 31 - 1: b'\x01\x00\x7f\xff\xff\xff',
+            -2 ** 31: b'\x01\x00\x80\x00\x00\x00',
+            2 ** 31: b'\x02\x00\x00\x00\x00\x00\x80\x00\x00\x00',
+            -2 ** 31 - 1: b'\x02\x00\xff\xff\xff\xff\x7f\xff\xff\xff',
+        }
+        for value, expected in cases.items():
+            assert bytes(self.graphbinary_writer.write_object(value)) == expected
+
+    def test_int_out_of_int64_range_still_raises(self):
+        # Promotion stops at Long. bigint stays an explicit choice.
+        for x in [2 ** 63, -2 ** 63 - 1]:
+            with pytest.raises(Exception, match='Value too big'):
+                self.graphbinary_writer.write_object(x)
+
+    def test_int_out_of_int32_range_nested(self):
+        # The reported failure arrived as server-assigned ids inside nested bindings.
+        for x in [[[3000000000, 5000000000]], {'id': 3000000000}]:
+            output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+            assert x == output
+
+    def test_bool_is_not_affected_by_int_promotion(self):
+        # bool subclasses int, so it must keep resolving to the Boolean serializer.
+        for x in [True, False]:
+            output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+            assert x == output
+            assert isinstance(output, bool)
 
     def test_long(self):
         x = long(100)
