@@ -257,8 +257,30 @@ export default class GoTranslateVisitor extends TranslateVisitor {
         this.sb.push(')');
     }
 
-    visitCharacterLiteral(_ctx: any): void {
-        throw new TranslatorException('Character literals are not supported in Go');
+    visitCharacterLiteral(ctx: any): void {
+        const text: string = ctx.getText();
+        const withoutSuffix = text.substring(0, text.length - 1);
+        let inner = withoutSuffix.substring(1, withoutSuffix.length - 1);
+
+        const octal = /^\\([0-7]{1,3})$/.exec(inner);
+        if (octal) {
+            this.sb.push(GO_PACKAGE_NAME);
+            this.sb.push('Char(0o');
+            this.sb.push(parseInt(octal[1], 8).toString(8));
+            this.sb.push(')');
+            return;
+        }
+
+        inner = inner.replace(/\\([\s\S])|'/g, (m: string, esc?: string) => {
+            if (esc === undefined) return "\\'"; // bare '  -> \'
+            if (esc === '"') return '"';         // \"      -> "
+            if (esc === "'") return "\\'";       // \'      -> \'
+            return m;                            // \n, \\, \uXXXX, ... unchanged
+        });
+        this.sb.push(GO_PACKAGE_NAME);
+        this.sb.push("Char('");
+        this.sb.push(inner);
+        this.sb.push("')");
     }
 
     visitDurationLiteral(ctx: any): void {
