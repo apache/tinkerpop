@@ -23,8 +23,8 @@ import { Long, Int, Float, Double, Short, Byte, INT32_MIN, INT32_MAX } from '../
 import { Vertex, CompositePDT, PrimitivePDT } from '../structure/graph.js';
 import { PDTRegistry } from '../structure/PDTRegistry.js';
 import { GValue } from './gvalue.js';
-import { isDeepStrictEqual } from 'node:util';
 import { Buffer } from 'buffer';
+import deepEqual from 'deep-equal';
 
 const PARAM_NAME_PATTERN = /^[\p{L}_$][\p{L}\p{Nd}_$]*$/u;
 
@@ -130,7 +130,7 @@ export default class GremlinLang {
         throw new Error(`Invalid parameter name [${key}].`);
       }
       if (this.parameters.has(key)) {
-        if (!isDeepStrictEqual(this.parameters.get(key), arg.value)) {
+        if (!deepEqual(this.parameters.get(key), arg.value, { strict: true })) {
           throw new Error(`Parameter with name ${key} already exists.`);
         }
       } else {

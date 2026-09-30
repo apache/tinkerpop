@@ -7,3 +7,6 @@ doc/
 build/
 lib/language/grammar/
 **/.duel-cache/
+test/browser/.generated/
+test-results/
+playwright-report/
