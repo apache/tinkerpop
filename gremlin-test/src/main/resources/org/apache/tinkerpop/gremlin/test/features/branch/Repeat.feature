@@ -399,6 +399,18 @@ Feature: Step - repeat()
     When iterated to list
     Then the traversal will raise an error with message containing text of "The repeat()-traversal was not defined"
 
+  Scenario: g_VX1X_repeatXloopsX_timesX100000X
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).repeat(__.loops()).times(100000)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[99999].i |
+
   Scenario: g_V_haxXperson_name_markoX_repeatXoutXcreatedXX_timesX1X_name
     Given the modern graph
     And the traversal of
