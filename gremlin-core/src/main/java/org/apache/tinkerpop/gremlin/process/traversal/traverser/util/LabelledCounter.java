@@ -27,13 +27,13 @@ import java.io.Serializable;
 public class LabelledCounter implements Serializable, Cloneable {
 
     private final String label;
-    private short count = 0;
+    private int count = 0;
 
     protected LabelledCounter() {
         label = "";
     }
 
-    public LabelledCounter(final String label, final short initialCount) {
+    public LabelledCounter(final String label, final int initialCount) {
         if (label == null) {
             throw new NullPointerException("Label is null");
         }
@@ -50,6 +50,8 @@ public class LabelledCounter implements Serializable, Cloneable {
     }
 
     public void increment() {
+        if (this.count == Integer.MAX_VALUE)
+            throw new IllegalStateException("Loop counter for label '" + this.label + "' has exceeded the maximum supported value of " + Integer.MAX_VALUE);
         this.count++;
     }
 
@@ -60,7 +62,7 @@ public class LabelledCounter implements Serializable, Cloneable {
 
     @Override
     public String toString(){
-        return "Step Label: " + this.label + " Counter: " + Short.toString(this.count);
+        return "Step Label: " + this.label + " Counter: " + Integer.toString(this.count);
     }
 
     @Override
@@ -77,7 +79,7 @@ public class LabelledCounter implements Serializable, Cloneable {
     @Override
     public int hashCode() {
         int result = label != null ? label.hashCode() : 0;
-        result = 31 * result + (int) count;
+        result = 31 * result + count;
         return result;
     }
 }

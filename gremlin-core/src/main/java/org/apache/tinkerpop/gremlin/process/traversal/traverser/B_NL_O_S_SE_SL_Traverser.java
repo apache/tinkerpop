@@ -59,7 +59,7 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     @Override
     public void initialiseLoops(final String stepLabel, final String loopName) {
         if (this.nestedLoops.empty() || !this.nestedLoops.peek().hasLabel(stepLabel)) {
-            final LabelledCounter lc = new LabelledCounter(stepLabel, (short) 0);
+            final LabelledCounter lc = new LabelledCounter(stepLabel, 0);
             this.nestedLoops.push(lc);
             if (loopName != null)
                 this.loopNames.put(loopName, lc);
