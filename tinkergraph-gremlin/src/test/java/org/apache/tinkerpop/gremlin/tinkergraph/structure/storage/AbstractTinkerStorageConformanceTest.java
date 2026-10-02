@@ -36,6 +36,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -57,6 +58,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Engine-agnostic conformance suite ("TCK") for pluggable {@link TinkerStorage} engines. A concrete engine is tested
@@ -642,5 +644,43 @@ public abstract class AbstractTinkerStorageConformanceTest {
         assertEquals("marko", marko.value("name"));
         assertFalse("the uncommitted property must not survive", marko.properties("age").hasNext());
         graph.close();
+    }
+
+    @Test
+    public void shouldRejectCommitAfterClose() {
+        TinkerStorageGraph graph = open();
+        graph.addVertex(T.id, 1, "name", "marko");
+        graph.tx().commit();
+        graph.close();
+
+        // the storage is closed and its directory lock released, so a further commit must neither succeed nor
+        // touch any file another graph could now own
+        final Map<String, Long> filesAtClose = directoryContents();
+        graph.addVertex(T.id, 2, "name", "vadas");
+        try {
+            graph.tx().commit();
+            fail("a commit on a closed durable graph should fail");
+        } catch (IllegalStateException expected) {
+            // expected
+        }
+        assertFalse("the rejected commit must not be visible", graph.vertices(2).hasNext());
+        graph.tx().rollback();
+        assertEquals("a rejected commit must not change the storage directory", filesAtClose, directoryContents());
+
+        graph = open();
+        assertEquals(1, countOf(graph.vertices()));
+        assertEquals("marko", graph.vertices(1).next().value("name"));
+        graph.close();
+    }
+
+    private Map<String, Long> directoryContents() {
+        final Map<String, Long> contents = new LinkedHashMap<>();
+        final File[] files = new File(location).listFiles();
+        if (files != null) {
+            Arrays.sort(files);
+            for (final File f : files)
+                contents.put(f.getName(), f.length());
+        }
+        return contents;
     }
 }

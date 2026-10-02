@@ -495,7 +495,8 @@ the same rule that already governs interchange formats.
 
 A storage location may be opened by only one graph at a time. `TinkerStorageGraph` takes an exclusive lock on the
 storage directory when it opens, so a second attempt to open the same location, whether from the same JVM or another
-process, fails rather than corrupting the data. The lock is released when the graph is closed. A store also records
+process, fails rather than corrupting the data. The lock is released when the graph is closed, and from then on any
+commit against that graph instance fails, since the location may already belong to another graph. A store also records
 the storage format version it was written with. Opening a store written in a format this version cannot read fails
 with a clear error rather than misreading the data. There is no in-place format migration. To move a graph across an
 incompatible storage format, export it with the `io()` step before upgrading and read it back afterward.
