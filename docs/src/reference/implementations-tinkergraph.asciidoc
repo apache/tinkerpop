@@ -454,8 +454,15 @@ g.V().count()
 ----
 
 The graph remains the authoritative in-memory copy and is mirrored to disk, so a persisted graph must still fit in
-memory. The write to the storage log happens before the in-memory commit is applied, so a failure to persist aborts the
-transaction and leaves the on-disk data and the in-memory graph consistent.
+memory. The write to the storage log happens before the in-memory commit is applied, so a commit that fails to persist
+is rolled back and none of its changes become visible in the graph.
+
+A failure to write to or flush the storage log stops the storage engine from accepting further commits, and each
+subsequent commit fails until the graph is closed and opened again. Reopening rebuilds the graph from what actually
+reached disk. The outcome of the commit that failed is unknown, because its record may have been fully written before
+the error was reported, so after a reopen that transaction may or may not be present. A failure to compact does not
+affect the commit that preceded it, since compaction leaves the existing snapshot and log intact and is attempted again
+after later commits.
 
 The durability of each commit is governed by the `gremlin.tinkergraph.storage.sync` setting. Under the default
 `commit` mode every committed transaction is forced to disk, so an acknowledged commit survives an operating system
