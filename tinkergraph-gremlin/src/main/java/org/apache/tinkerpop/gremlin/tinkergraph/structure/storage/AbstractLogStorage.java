@@ -209,6 +209,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     public void persist(final long txVersion,
                         final Collection<TinkerStorageMutation<TinkerVertex>> changedVertices,
                         final Collection<TinkerStorageMutation<TinkerEdge>> changedEdges) {
+        checkNotClosed();
         checkNotFailed();
         ensureLogOpen();
         final byte[] frame;
@@ -434,6 +435,9 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     private void ensureLogOpen() {
+        // never reopen the log of a closed engine: its directory lock is released, so the files may now belong to
+        // another graph
+        checkNotClosed();
         if (logOut == null) {
             try {
                 final boolean freshFile = !logFile.exists() || logFile.length() == 0;
@@ -492,6 +496,17 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         if (failure == null)
             failure = cause;
         return new UncheckedIOException(message + "; no further commits are accepted until the graph is reopened", cause);
+    }
+
+    /**
+     * Refuse a commit once the engine is closed. The graph sets {@code closed} under its storage commit lock, the same
+     * lock {@link #persist} runs under, so a commit that was waiting on {@code close()} fails here instead of writing
+     * to a log that is no longer this graph's to write.
+     */
+    private void checkNotClosed() {
+        if (closed)
+            throw new IllegalStateException(String.format(
+                    "Storage at %s is closed and accepts no further commits; open the graph again", directory));
     }
 
     private void checkNotFailed() {
