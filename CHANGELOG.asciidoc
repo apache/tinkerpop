@@ -31,6 +31,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Renamed `TinkerTransactionGraph` to `TinkerStorageGraph`.
 * Added a pluggable storage layer to `TinkerStorageGraph` that durably persists each committed transaction to disk.
 * Removed automatic persistence from `TinkerMemoryGraph`, which is now purely in-memory and ignores `gremlin.tinkergraph.graphLocation`/`graphFormat`. Use `TinkerStorageGraph` for durability or `g.io()` for interchange.
+* Fixed a `NullPointerException` when rolling back a transaction on a `TinkerStorageGraph` that has a vertex index but no edge index.
 
 [[release-4-0-0-beta-3]]
 === TinkerPop 4.0.0-beta.3 (July 20, 2026)

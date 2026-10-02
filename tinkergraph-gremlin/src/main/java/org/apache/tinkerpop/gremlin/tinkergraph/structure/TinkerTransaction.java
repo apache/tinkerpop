@@ -288,7 +288,7 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
         final TinkerTransactionalIndex vertexIndex = (TinkerTransactionalIndex) graph.vertexIndex;
         if (vertexIndex != null) vertexIndex.rollback();
         final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
-        if (vertexIndex != null) edgeIndex.rollback();
+        if (edgeIndex != null) edgeIndex.rollback();
 
         // cleanup unused containers
         if (null != changedVertices)
