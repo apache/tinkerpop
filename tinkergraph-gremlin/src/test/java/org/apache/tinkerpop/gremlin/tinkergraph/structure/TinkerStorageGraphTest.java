@@ -82,6 +82,17 @@ public class TinkerStorageGraphTest {
     }
 
     @Test
+    public void shouldRollbackWithVertexIndexButNoEdgeIndex() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex("name", Vertex.class);
+        g.addVertex("name", "marko");
+        g.tx().rollback();
+
+        assertEquals(0L, (long) g.traversal().V().has("name", "marko").count().next());
+        g.tx().rollback();
+    }
+
+    @Test
     public void shouldReturnSameVertexInstanceInsideTransaction() {
         final TinkerStorageGraph g = TinkerStorageGraph.open();
 
