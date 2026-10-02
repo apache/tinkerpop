@@ -113,6 +113,15 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     private long logBytesSinceCompaction = 0;
     private boolean closed = false;
 
+    /**
+     * The first failure to write or flush the log, or {@code null} while the log is sound. Once set, the engine
+     * fail-stops: no further commit is accepted, nothing still buffered is written, and only a reopen (which replays
+     * what actually reached disk) recovers. After a failed write or fsync, neither the buffered bytes nor the
+     * operating system's view of the file can be trusted, so carrying on could make a failed transaction durable.
+     * Accessed only under the graph's storage commit lock.
+     */
+    private IOException failure;
+
     // ----------------------------------------------------------------------------------------- codec hooks
 
     /**
@@ -200,19 +209,26 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     public void persist(final long txVersion,
                         final Collection<TinkerStorageMutation<TinkerVertex>> changedVertices,
                         final Collection<TinkerStorageMutation<TinkerEdge>> changedEdges) {
+        checkNotFailed();
         ensureLogOpen();
+        final byte[] frame;
         try {
-            final byte[] frame = encodeCommit(txVersion, changedVertices, changedEdges);
-            writeFrame(logOut, frame);
-            logBytesSinceCompaction += 2L * Integer.BYTES + frame.length; // length + crc prefixes + payload
+            frame = encodeCommit(txVersion, changedVertices, changedEdges);
         } catch (IOException ex) {
-            throw new UncheckedIOException("Could not append transaction to storage log", ex);
+            // nothing has been written yet, so the log is still sound and only this transaction fails
+            throw new UncheckedIOException("Could not encode transaction for storage log", ex);
         }
+        try {
+            writeFrame(logOut, frame);
+        } catch (IOException ex) {
+            throw fail("Could not append transaction to storage log", ex);
+        }
+        logBytesSinceCompaction += 2L * Integer.BYTES + frame.length; // length + crc prefixes + payload
     }
 
     @Override
     public void flush() {
-        if (closed)
+        if (closed || failure != null)
             return;
         if (logOut != null) {
             try {
@@ -223,14 +239,16 @@ public abstract class AbstractLogStorage implements TinkerStorage {
                 if (syncMode == SyncMode.COMMIT)
                     logFos.getFD().sync();
             } catch (IOException ex) {
-                throw new UncheckedIOException("Could not flush storage log", ex);
+                throw fail("Could not flush storage log", ex);
             }
         }
     }
 
     @Override
     public void compact(final AbstractTinkerGraph graph) {
-        if (closed)
+        // after a write failure the disk is suspect and the log's buffered tail must not be written, so leave the
+        // files as they are for the next open to replay
+        if (closed || failure != null)
             return;
         // Write a fresh snapshot of the current committed state, then truncate the log. This must be crash-safe: at
         // no point may a crash leave the store without a readable snapshot-or-log covering the committed state.
@@ -280,8 +298,17 @@ public abstract class AbstractLogStorage implements TinkerStorage {
 
     @Override
     public void close() {
-        closeLog();
-        closed = true;
+        try {
+            if (failure != null) {
+                logger.warn("Closing storage at {} after an earlier write failure; anything not yet written is " +
+                        "discarded and the next open recovers from what is on disk", directory);
+                discardLog();
+            } else {
+                closeLog();
+            }
+        } finally {
+            closed = true;
+        }
     }
 
     // ----------------------------------------------------------------------------------------- version marker
@@ -411,7 +438,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             try {
                 final boolean freshFile = !logFile.exists() || logFile.length() == 0;
                 // retain the FileOutputStream so flush() can reach its FileDescriptor for fsync
-                logFos = new FileOutputStream(logFile, true);
+                logFos = openLogForAppend(logFile);
                 logOut = new DataOutputStream(new BufferedOutputStream(logFos));
                 if (freshFile)
                     writeHeader(logOut);
@@ -421,18 +448,57 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         }
     }
 
+    /**
+     * Open the log for appending. Exists so tests can substitute a stream that fails on demand.
+     */
+    protected FileOutputStream openLogForAppend(final File file) throws IOException {
+        return new FileOutputStream(file, true);
+    }
+
     private void closeLog() {
-        if (logOut != null) {
+        if (logOut == null)
+            return;
+        try {
+            logOut.flush();
+            logOut.close();
+        } catch (IOException ex) {
+            discardLog();
+            throw fail("Could not close storage log", ex);
+        }
+        logOut = null;
+        logFos = null;
+    }
+
+    /**
+     * Close the log file without writing anything still buffered for it.
+     */
+    private void discardLog() {
+        if (logFos != null) {
             try {
-                logOut.flush();
-                logOut.close();
-            } catch (IOException ex) {
-                throw new UncheckedIOException("Could not close storage log", ex);
-            } finally {
-                logOut = null;
-                logFos = null;
+                logFos.close();
+            } catch (IOException ignored) {
+                // best effort: the log already failed and the next open recovers from what is on disk
             }
         }
+        logOut = null;
+        logFos = null;
+    }
+
+    /**
+     * Record the first log write failure, putting the engine into its fail-stop state, and return the exception to
+     * throw for this one.
+     */
+    private UncheckedIOException fail(final String message, final IOException cause) {
+        if (failure == null)
+            failure = cause;
+        return new UncheckedIOException(message + "; no further commits are accepted until the graph is reopened", cause);
+    }
+
+    private void checkNotFailed() {
+        if (failure != null)
+            throw new UncheckedIOException(new IOException(String.format(
+                    "Storage at %s failed an earlier write and accepts no further commits; close and reopen the graph",
+                    directory), failure));
     }
 
     /**

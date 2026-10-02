@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.util.AbstractThreadLocalTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorageMutation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +36,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * Implementation of {@link AbstractThreadLocalTransaction} for {@link TinkerStorageGraph}
  */
 final class TinkerTransaction extends AbstractThreadLocalTransaction {
+
+    private static final Logger logger = LoggerFactory.getLogger(TinkerTransaction.class);
 
     private static final String TX_CONFLICT = "Conflict: element modified in another transaction";
 
@@ -133,7 +137,7 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
      * 4. one more time verify elements versions
      * 5. update indices
      * 6. commit all changes
-     * On {@link TransactionException}:
+     * On {@link TransactionException} or any other failure before the changes are applied (such as a storage write):
      *  rollback all changes
      * Lastly:
      *  cleanup transaction intermediate variables.
@@ -177,10 +181,13 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
             final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
             if (edgeIndex != null) edgeIndex.commit(changedEdges);
 
-            // write-ahead: durably persist the changeset before applying the in-memory commit, so a failure here
-            // aborts the commit (via the catch below) and leaves memory and disk consistent. Skipped while the graph
-            // is replaying its storage log on open. Serialized by storageCommitLock because commits of disjoint
-            // elements otherwise reach the engine's single append log concurrently and interleave its records.
+            // write-ahead: durably persist the changeset before applying the in-memory commit. A failure here aborts
+            // the commit and the catch below rolls back memory and the indices. If the failure was in writing or
+            // flushing the log, the engine also stops accepting commits until the graph is reopened, because what
+            // reached disk is then unknown: the failed transaction may or may not be in the log, and reopening
+            // replays only what is actually there. Skipped while the graph is replaying its storage log on open.
+            // Serialized by storageCommitLock because commits of disjoint elements otherwise reach the engine's single
+            // append log concurrently and interleave its records.
             //
             // The in-memory apply is held inside that same lock. Compaction builds its snapshot by reading the graph
             // and then discards the log, which is only sound while the graph reflects everything the log holds. That
@@ -203,11 +210,20 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
                 // bound log growth for a long-running graph that is never explicitly closed; no-op unless the
                 // engine's accumulated log has crossed its threshold. Runs after the apply so the snapshot it may
                 // write includes this transaction rather than omitting it and then truncating the log that held it.
-                if (durable) graph.storage.maybeCompact(graph);
+                // The transaction is already applied and durable by now, so a failed compaction must not fail it.
+                // Compaction is crash-safe (the old snapshot and log stay intact) and is tried again after later
+                // commits.
+                if (durable) {
+                    try {
+                        graph.storage.maybeCompact(graph);
+                    } catch (RuntimeException ex) {
+                        logger.warn("Storage compaction failed after a successful commit; it will be retried", ex);
+                    }
+                }
             } finally {
                 if (durable) graph.storageCommitLock.unlock();
             }
-        } catch (TransactionException ex) {
+        } catch (RuntimeException | Error ex) {
             // rollback on error
             changedVertices.forEach(v -> v.rollback());
             changedEdges.forEach(e -> e.rollback());
