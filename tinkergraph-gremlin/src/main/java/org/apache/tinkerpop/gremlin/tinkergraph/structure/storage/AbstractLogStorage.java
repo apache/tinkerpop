@@ -26,6 +26,8 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -63,6 +65,8 @@ import java.util.zip.CRC32;
  * The in-memory graph remains authoritative (write-through); this machinery does not support graphs larger than memory.
  */
 public abstract class AbstractLogStorage implements TinkerStorage {
+
+    private static final Logger logger = LoggerFactory.getLogger(AbstractLogStorage.class);
 
     /**
      * Magic bytes ("TGSB" — TinkerGraph Storage Binary) at the start of every storage file, so a file can be
@@ -174,10 +178,11 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         final Map<Object, DetachedVertex> vertices = new LinkedHashMap<>();
         final Map<Object, DetachedEdge> edges = new LinkedHashMap<>();
 
+        // the snapshot is only ever replaced by an atomic rename, so only the log can end in an interrupted append
         if (snapshotFile.exists())
-            foldRecords(snapshotFile, vertices, edges);
+            foldRecords(snapshotFile, vertices, edges, false);
         if (logFile.exists())
-            foldRecords(logFile, vertices, edges);
+            truncateTornLogTail(foldRecords(logFile, vertices, edges, true));
 
         if (vertices.isEmpty() && edges.isEmpty())
             return;
@@ -334,19 +339,55 @@ public abstract class AbstractLogStorage implements TinkerStorage {
 
     // ----------------------------------------------------------------------------------------- fold / framing
 
-    private void foldRecords(final File file, final Map<Object, DetachedVertex> vertices, final Map<Object, DetachedEdge> edges) {
+    /**
+     * Fold every complete frame of {@code file} into the given maps, returning the byte offset at which the last
+     * complete frame ends. Anything past that offset is an interrupted trailing append. When {@code allowTornHeader}
+     * is set, a file shorter than its header whose bytes are a prefix of {@link #MAGIC} is likewise an interrupted
+     * first append and yields an offset of {@code 0}.
+     */
+    private long foldRecords(final File file, final Map<Object, DetachedVertex> vertices,
+                             final Map<Object, DetachedEdge> edges, final boolean allowTornHeader) {
         final long fileLength = file.length();
         try (final DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+            if (allowTornHeader && fileLength > 0 && fileLength < HEADER_SIZE) {
+                final byte[] present = new byte[(int) fileLength];
+                readFully(in, present);
+                if (Arrays.equals(present, Arrays.copyOf(MAGIC, present.length)))
+                    return 0;
+            }
             long remaining = readAndVerifyHeader(in, file, fileLength);
+            long completeEnd = fileLength - remaining;
             while (true) {
                 final byte[] record = readFrame(in, remaining);
                 if (record == null)
                     break;
-                remaining -= 2L * Integer.BYTES + record.length;
+                final long frameLength = 2L * Integer.BYTES + record.length;
+                remaining -= frameLength;
+                completeEnd += frameLength;
                 decodeFrame(record, vertices, edges);
             }
+            return completeEnd;
         } catch (IOException ex) {
             throw new UncheckedIOException(String.format("Could not read storage file %s", file), ex);
+        }
+    }
+
+    /**
+     * Cut the log back to {@code completeEnd}, the end of its last complete frame, so that the next append starts on
+     * a frame boundary. Without this, new commits would be written after the torn bytes and a later replay would stop
+     * at the old torn frame (dropping them) or read into them (failing the CRC check). Only bytes that never formed a
+     * complete frame are removed, and no acknowledged commit is ever an incomplete frame.
+     */
+    private void truncateTornLogTail(final long completeEnd) {
+        final long length = logFile.length();
+        if (length <= completeEnd)
+            return;
+        logger.warn("Storage log {} ends in an interrupted append; discarding its last {} bytes", logFile, length - completeEnd);
+        try (final FileChannel channel = FileChannel.open(logFile.toPath(), StandardOpenOption.WRITE)) {
+            channel.truncate(completeEnd);
+            channel.force(true);
+        } catch (IOException ex) {
+            throw new UncheckedIOException(String.format("Could not truncate interrupted append from storage log %s", logFile), ex);
         }
     }
 

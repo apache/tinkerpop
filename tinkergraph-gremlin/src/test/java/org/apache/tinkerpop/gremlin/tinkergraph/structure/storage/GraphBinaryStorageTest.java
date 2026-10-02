@@ -38,6 +38,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -316,6 +317,127 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         assertEquals(Integer.valueOf(1), graph.vertices(1).next().value("value"));
         assertEquals(Integer.valueOf(2), graph.vertices(2).next().value("value"));
         graph.close();
+    }
+
+    @Test
+    public void shouldKeepCommitsWrittenAfterRecoveringFromTornFrameShorterThanClaimed() throws Exception {
+        // the torn frame promises far more bytes than the later commit adds, so without truncation a second replay
+        // still sees "not enough bytes" at the torn frame and silently drops the later commit
+        assertCommitsSurviveSecondCrashAfterTornFrame(100_000);
+    }
+
+    @Test
+    public void shouldKeepCommitsWrittenAfterRecoveringFromTornFrameLongerThanClaimed() throws Exception {
+        // the torn frame promises only a few bytes, so without truncation a second replay reads into the later
+        // commit as if it were the torn frame's payload, fails the CRC check and refuses to open
+        assertCommitsSurviveSecondCrashAfterTornFrame(4);
+    }
+
+    @Test
+    public void shouldTreatLogTornInsideItsHeaderAsEmpty() throws Exception {
+        TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        graph.addVertex(T.id, 1, "value", 1);
+        graph.tx().commit();
+        graph.close();
+
+        // close() compacted vertex 1 into the snapshot and removed the log. Leave a log holding only part of its
+        // header, as a crash during the first append after that compaction would.
+        final File logFile = new File(location, GraphBinaryStorage.LOG_FILE);
+        Files.write(logFile.toPath(), Arrays.copyOf(AbstractLogStorage.MAGIC, 2));
+
+        graph = open();
+        assertEquals(1, countOf(graph.vertices()));
+        graph.addVertex(T.id, 2, "value", 2);
+        graph.tx().commit();
+        final Map<String, byte[]> crashed = captureStorageFiles(location);
+        graph.close();
+        restoreStorageFiles(location, crashed);
+
+        graph = open();
+        assertEquals(2, countOf(graph.vertices()));
+        assertEquals(Integer.valueOf(2), graph.vertices(2).next().value("value"));
+        graph.close();
+    }
+
+    @Test
+    public void shouldRejectShortLogThatIsNotAHeaderPrefix() throws Exception {
+        TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        graph.addVertex(T.id, 1, "value", 1);
+        graph.tx().commit();
+        graph.close();
+
+        // two bytes that cannot be the start of the header are corruption, not an interrupted append
+        final File logFile = new File(location, GraphBinaryStorage.LOG_FILE);
+        Files.write(logFile.toPath(), new byte[]{ 'X', 'Y' });
+        try {
+            open();
+            fail("a short log that is not a prefix of the header should not open");
+        } catch (Exception expected) {
+            // expected
+        }
+        assertEquals(2, logFile.length());
+    }
+
+    /**
+     * Crash with a torn trailing frame, reopen, commit more, crash again without a clean close, then reopen and
+     * check that every acknowledged commit is still there.
+     */
+    private void assertCommitsSurviveSecondCrashAfterTornFrame(final int tornFrameClaimedLength) throws Exception {
+        TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        graph.addVertex(T.id, 1, "value", 1);
+        graph.tx().commit();
+        graph.addVertex(T.id, 2, "value", 2);
+        graph.tx().commit();
+        final Map<String, byte[]> firstCrash = captureStorageFiles(location);
+        graph.close();
+        restoreStorageFiles(location, firstCrash);
+
+        // the first crash interrupted a third append, leaving a length prefix and a couple of payload bytes
+        final File logFile = new File(location, GraphBinaryStorage.LOG_FILE);
+        try (final RandomAccessFile raf = new RandomAccessFile(logFile, "rw")) {
+            raf.seek(raf.length());
+            raf.writeInt(tornFrameClaimedLength);
+            raf.write(new byte[]{ 0x01, 0x02 });
+        }
+
+        graph = open();
+        assertEquals(2, countOf(graph.vertices()));
+        graph.addVertex(T.id, 3, "value", 3);
+        graph.tx().commit();
+        final Map<String, byte[]> secondCrash = captureStorageFiles(location);
+        graph.close();
+        restoreStorageFiles(location, secondCrash);
+
+        graph = open();
+        assertEquals(3, countOf(graph.vertices()));
+        assertEquals(Integer.valueOf(3), graph.vertices(3).next().value("value"));
+        graph.close();
+    }
+
+    /**
+     * Copy the snapshot and log as they are on disk while the graph is still open, so that restoring them after
+     * close() reproduces the state a crash at this point would leave (close() would otherwise compact them away).
+     */
+    private static Map<String, byte[]> captureStorageFiles(final String location) throws IOException {
+        final Map<String, byte[]> files = new HashMap<>();
+        for (final String name : new String[]{ GraphBinaryStorage.SNAPSHOT_FILE, GraphBinaryStorage.LOG_FILE }) {
+            final File f = new File(location, name);
+            files.put(name, f.exists() ? Files.readAllBytes(f.toPath()) : null);
+        }
+        return files;
+    }
+
+    private static void restoreStorageFiles(final String location, final Map<String, byte[]> files) throws IOException {
+        for (final Map.Entry<String, byte[]> entry : files.entrySet()) {
+            final File f = new File(location, entry.getKey());
+            if (entry.getValue() == null)
+                Files.deleteIfExists(f.toPath());
+            else
+                Files.write(f.toPath(), entry.getValue());
+        }
     }
 
     @Test
