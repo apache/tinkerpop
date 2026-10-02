@@ -46,7 +46,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
     private static final ComputerVerificationStrategy INSTANCE = new ComputerVerificationStrategy();
     private static final Set<Class<?>> UNSUPPORTED_STEPS = new HashSet<>(Arrays.asList(
-            InjectStep.class, Mutating.class, SubgraphStep.class, ComputerResultStep.class, IoStep.class, ElementStep.class
+            InjectStep.class, Mutating.class, SubgraphStep.class, IoStep.class, ElementStep.class
     ));
 
     // Some operators output an indeterministic result when executed in GraphComputer.
