@@ -1,4 +1,4 @@
-'''
+////
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
 distributed with this work for additional information
@@ -15,17 +15,10 @@ software distributed under the License is distributed on an
 KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
-'''
-import codecs
-import os
-import sys
-import time
-from setuptools import setup
+////
+== TinkerPop 3.8.3
 
-# Test dependencies are installed in the test image and the suite is run with
-# pytest directly (see src/test/python/docker/Dockerfile). The deprecated
-# setup.py test / pytest-runner mechanism was removed as it is incompatible with
-# modern setuptools.
-setup(
-    name='gremlinconsoletest'
-)
+*Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.8.3/CHANGELOG.asciidoc#release-3-8-3[changelog] for a
+complete list of all the modifications that are part of this release.

@@ -36,10 +36,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class GoTranslateVisitor extends AbstractTranslateVisitor {
     private final static String GO_PACKAGE_NAME = "gremlingo.";
+    private final static Pattern OCTAL_ESCAPE = Pattern.compile("\\\\([0-7]{1,3})");
     private final static List<String> STRATEGY_WITH_MAP_OPTS = Collections.unmodifiableList(Arrays.asList(
             "OptionsStrategy",
             "ReferenceElementStrategy", "ComputerFinalizationStrategy", "ProfileStrategy",
@@ -362,7 +365,25 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitCharacterLiteral(final GremlinParser.CharacterLiteralContext ctx) {
-        throw new TranslatorException("Character literals are not supported in Go");
+        final String text = ctx.getText();
+        final String withoutSuffix = text.substring(0, text.length() - 1);
+        final String inner = removeFirstAndLastCharacters(withoutSuffix);
+        final Matcher octal = OCTAL_ESCAPE.matcher(inner);
+        if (octal.matches()) {
+            sb.append(GO_PACKAGE_NAME).append("Char(0o")
+                    .append(Integer.toOctalString(Integer.parseInt(octal.group(1), 8))).append(")");
+            return null;
+        }
+
+        final String goRune;
+        if (inner.equals("'"))
+            goRune = "\\'";
+        else if (inner.equals("\\\""))
+            goRune = "\"";
+        else
+            goRune = inner;
+        sb.append(GO_PACKAGE_NAME).append("Char('").append(goRune).append("')");
+        return null;
     }
 
     @Override

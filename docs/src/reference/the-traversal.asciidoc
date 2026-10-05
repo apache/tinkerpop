@@ -1249,6 +1249,14 @@ g.call().with('verbose').with('service', 'xyz-service') <3>
 <2> Produce a Map of detailed service information by name
 <3> Produce the detailed service information for the 'xyz-service'
 
+NOTE: The result of `call()` is entirely dependent on the graph provider in use, since each provider decides which
+services (if any) it exposes. The default TinkerGraph used by the Gremlin Console registers no callable services out
+of the box, so the directory-service examples above return an empty result rather than an error. TinkerGraph does ship
+two example services - `tinker.search` and `tinker.degree.centrality` - which can be registered with the
+`gremlin.tinkergraph.service` configuration option to see `call()` produce real output; consult your graph provider's
+documentation for the services it exposes. The `xyz-service` used in the examples below is a fictional placeholder and
+is not callable on any graph.
+
 The first argument to `call()` is always the name of the service call. Additionally, service calls can accept both
 static and dynamically produced parameters. Static parameters can be passed as a `Map` to the `call()` as the second
 argument. Individual static parameters can also be added using the `.with()` modulator. Dynamic parameters can be
@@ -1908,6 +1916,15 @@ g.V().choose(T.label).
         option("bleep", __.out("created").values("name")).
         option(none, discard())
 ----
+
+In the example above, `none` refers to `Pick.none`, a built-in constant that matches traversers satisfying no other
+`option()` and therefore acts as the default branch. The Gremlin Console resolves the bare `none` token to this
+constant automatically, while other environments use the qualified `Pick.none` form. The `"bleep"` label is
+intentionally fictional and matches no vertex in the "modern" graph, whose vertices carry only the "person" and
+"software" labels. The "software" vertices therefore match neither `"person"` nor `"bleep"`, fall through to
+`option(none, discard())`, and are silently removed, while "marko", the only vertex with outgoing "knows" edges, emits
+"vadas" and "josh". The <<choose-step>> and <<branch-step>> sections describe the full semantics of `option()` and the
+`Pick` tokens.
 
 It is also useful for traversals that are executed remotely where returning results is not useful and the traversal is
 only meant to generate side-effects. Choosing not to return results saves in serialization and network costs as the
@@ -2937,6 +2954,9 @@ The `key()`-step (*map*) takes a `Property` and extracts the key from it.
 g.V(1).properties().key()
 g.V(1).properties().properties().key()
 ----
+
+NOTE: Because `key()` operates on a `Property`, it must be preceded by a `Property`-emitting step such as
+<<properties-step,`properties()`>>. Applying `key()` directly to a `Vertex` or `Edge` raises an error.
 
 *Additional References*
 
@@ -4303,7 +4323,7 @@ supports `GraphComputer` (OLAP).
 [gremlin-groovy,modern]
 ----
 g = traversal().with(graph).withComputer()
-g.V().pageRank().with(PageRank.propertyName, 'friendRank').values('pageRank')
+g.V().pageRank().with(PageRank.propertyName, 'friendRank').values('friendRank')
 g.V().hasLabel('person').
   pageRank().
     with(PageRank.edges, __.outE('knows')).
@@ -4313,7 +4333,10 @@ g.V().hasLabel('person').
 ----
 
 Note the use of the `with()` modulating step which provides configuration options to the algorithm. It takes
-configuration keys from the `PageRank` and is automatically imported to the Gremlin Console.
+configuration keys from the `PageRank` and is automatically imported to the Gremlin Console. When `PageRank.propertyName`
+is used, the computed scores are stored under that property, so the key passed to `values()` (or referenced later in the
+traversal) must match the configured name. Reading a different key returns nothing. If `PageRank.propertyName` is not
+specified, the scores are stored under the default property `gremlin.pageRankVertexProgram.pageRank`.
 
 The <<explain-step,`explain()`>>-step can be used to understand how the traversal is compiled into multiple
 `GraphComputer` jobs.
@@ -6632,8 +6655,8 @@ a native `Map.Entry` concept that can be used. The most universal data structure
 received on the client-side. In other words, if a step was to follow `unfold()` in the prior example, it would be
 dealing with `Map.Entry` and not a `Map`, so Gremlin semantics should remain consistent on the server side.
 
-The second issues to consider with steps that return a `Map` is that access keys on a `Map` is not always as consistent
-as expected. The issue is best demonstrated in some examples:
+The second issue to consider with steps that return a `Map` is that accessing keys on a `Map` is not always as
+consistent as expected. The issue is best demonstrated in some examples:
 
 [source,text]
 ----
@@ -6646,10 +6669,10 @@ TokenTraversal support of java.util.LinkedHashMap does not allow selection by id
 Type ':help' or ':h' for help.
 Display stack trace? [yN]
 
-// note that select() can't be used if the key is a non-string
+// note that select() can't be used to retrieve a Map value by a non-string key - passing an
+// integer key is not rejected outright but instead produces a runtime error
 gremlin> g.V().hasLabel('person').both().group().by('age').select(32)
-No signature of method: org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal.select() is applicable for argument types: (Integer) values: [32]
-Possible solutions: reset(), collect(), sleep(long), collect(groovy.lang.Closure), inject(groovy.lang.Closure), split(groovy.lang.Closure)
+class java.util.HashMap cannot be cast to class org.apache.tinkerpop.gremlin.structure.Element (java.util.HashMap is in module java.base of loader 'bootstrap'; org.apache.tinkerpop.gremlin.structure.Element is in unnamed module of loader 'app')
 Type ':help' or ':h' for help.
 Display stack trace? [yN]
 ----
@@ -6716,18 +6739,41 @@ g.V().has('name','marko').out('knows').fold().count(global) <4>
 <3> A list of Marko's friends is created and a `local`-count yields the number of objects in that list.
 <4> `count(global)` is the same as `count()` as the default behavior for most scoped steps is `global`.
 
-The steps that support scoping are:
+The steps that accept a `Scope` fall into two groups. The reducing and collection steps interpret
+`Scope.local` over the objects of the collection at the current step and `Scope.global` over the entire
+stream of objects up to that step:
 
 * <<count-step,`count()`>>: count the local collection or global stream.
-* <<dedup-step, `dedup()`>>: dedup the local collection of global stream.
+* <<dedup-step, `dedup()`>>: dedup the local collection or global stream.
 * <<max-step, `max()`>>: get the max value in the local collection or global stream.
 * <<mean-step, `mean()`>>: get the mean value in the local collection or global stream.
 * <<min-step, `min()`>>: get the min value in the local collection or global stream.
+* <<sum-step, `sum()`>>: sum the numbers in the local collection or global stream.
 * <<order-step,`order()`>>: order the objects in the local collection or global stream.
 * <<range-step, `range()`>>: clip the local collection or global stream.
 * <<limit-step, `limit()`>>: clip the local collection or global stream.
+* <<skip-step, `skip()`>>: skip objects in the local collection or global stream.
 * <<sample-step, `sample()`>>: sample objects from the local collection or global stream.
 * <<tail-step, `tail()`>>: get the tail of the objects in the local collection or global stream.
+
+The string steps form the second group. For these, `Scope.local` applies the transformation to each string
+element within an incoming list and returns a list, while `Scope.global` operates on the single incoming
+object as one string:
+
+* <<asString-step, `asString()`>>: render each object as its string representation.
+* <<length-step, `length()`>>: get the length of each string.
+* <<lTrim-step, `lTrim()`>>: remove leading whitespace from each string.
+* <<rTrim-step, `rTrim()`>>: remove trailing whitespace from each string.
+* <<trim-step, `trim()`>>: remove leading and trailing whitespace from each string.
+* <<toLower-step, `toLower()`>>: convert each string to lowercase.
+* <<toUpper-step, `toUpper()`>>: convert each string to uppercase.
+* <<replace-step, `replace()`>>: replace a substring within each string.
+* <<split-step, `split()`>>: split each string into a list.
+* <<substring-step, `substring()`>>: extract a portion of each string.
+
+Together these two groups are the complete set of steps that accept a `Scope`. As scoping is applied per
+step, each step's own section is the authoritative description of how that step interprets `Scope.local` and
+`Scope.global`.
 
 A few more examples of the use of `Scope` are provided below:
 
@@ -7254,8 +7300,8 @@ to merge those multiple graphs (i.e. join partitions).
 [[readonlystrategy]]
 === ReadOnlyStrategy
 
-`ReadOnlyStrategy` is largely self-explanatory.  A `Traversal` that has this strategy applied will throw an
-`IllegalStateException` if the `Traversal` has any mutating steps within it.
+`ReadOnlyStrategy` is largely self-explanatory.  A `Traversal` that has this strategy applied will throw a
+`VerificationException` (a subclass of `IllegalStateException`) if the `Traversal` has any mutating steps within it.
 
 [source,java,tab]
 ----
@@ -7275,12 +7321,12 @@ g.WithStrategies(new ReadOnlyStrategy()).addV("person").Iterate();
 ----
 [source,javascript]
 ----
-// results in Error
+// results in ResponseError
 g.withStrategies(new ReadOnlyStrategy()).addV("person").iterate();
 ----
 [source,python]
 ----
-// results in Error
+// results in GremlinServerError
 g.withStrategies(ReadOnlyStrategy).addV("person").iterate()
 ----
 

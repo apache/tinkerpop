@@ -53,15 +53,14 @@ Key resources:
 
 ## Building and Testing
 
+Building TinkerPop is supported on Linux and macOS.
+
 TinkerPop uses [Maven](https://maven.apache.org/) and requires Java 11/17 for proper building and proper operations. To 
 build, execute unit tests and package Gremlin Console/Server run:
 
 ```bash
 mvn clean install
 ```
-
-Please see the [Building on Windows](docs/src/dev/developer/development-environment.asciidoc#building-on-windows) 
-section for Windows-specific build instructions.
 
 The zip distributions can be found in the following directories:
 

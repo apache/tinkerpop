@@ -1425,7 +1425,15 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final String withoutSuffix = text.substring(0, text.length() - 1);
         // C# char literals use single quotes
         final String inner = removeFirstAndLastCharacters(withoutSuffix);
-        sb.append("'").append(inner).append("'");
+        final String csChar;
+        if (inner.equals("'")) {
+            csChar = "\\'";
+        } else if (inner.matches("\\\\[0-7]{1,3}")) {
+            csChar = String.format("\\u%04X", Integer.parseInt(inner.substring(1), 8));
+        } else {
+            csChar = inner;
+        }
+        sb.append("'").append(csChar).append("'");
         return null;
     }
 
