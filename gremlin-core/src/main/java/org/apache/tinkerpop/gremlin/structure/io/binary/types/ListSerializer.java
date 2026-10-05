@@ -42,11 +42,14 @@ public class ListSerializer extends SimpleTypeSerializer<List> {
                 return null;
             }
             if ((valueFlag & 2) == 2) {
-                final int length = buffer.readInt();
-                final ArrayList result = new ArrayList(length);
+                final int length = readElementCount(buffer);
+                final ArrayList result = new ArrayList(cappedInitialCapacity(length));
                 for (int i = 0; i < length; i++) {
                     Object item = context.read(buffer);
                     long bulk = buffer.readLong();
+                    if (bulk < 0) {
+                        throw new IOException(String.format("Invalid GraphBinary bulked list bulk: %d", bulk));
+                    }
                     for (int j = 0; j < bulk; j++) {
                         result.add(item);
                     }

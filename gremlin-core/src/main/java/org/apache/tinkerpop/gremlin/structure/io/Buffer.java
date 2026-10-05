@@ -29,8 +29,19 @@ public interface Buffer {
 
     /**
      * Returns the number of readable bytes.
+     *
+     * @throws UnsupportedOperationException if {@link #hasKnownRemainingLength()} is {@code false}.
      */
     int readableBytes();
+
+    /**
+     * Returns {@code true} if this buffer is backed by a complete, in-memory representation of all the bytes
+     * available to read, so that {@link #readableBytes()} can be called safely. Returns {@code false} for a
+     * buffer backed by a streaming source where more bytes may still arrive.
+     */
+    default boolean hasKnownRemainingLength() {
+        return true;
+    }
 
     /**
      * Returns the reader index of this buffer.
