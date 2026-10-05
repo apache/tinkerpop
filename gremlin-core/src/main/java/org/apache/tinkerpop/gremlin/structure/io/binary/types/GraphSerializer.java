@@ -67,8 +67,8 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
         try {
             // Parse vertices into temporary buffer before creating the graph, to determine if
             // multilabel is required on the graph.
-            final int vertexCount = context.readValue(buffer, Integer.class, false);
-            final List<DetachedVertex> parsedVertices = new ArrayList<>(vertexCount);
+            final int vertexCount = readElementCount(buffer);
+            final List<DetachedVertex> parsedVertices = new ArrayList<>(cappedInitialCapacity(vertexCount));
             boolean requiresMultiLabelCardinality = false;
             for (int ix = 0; ix < vertexCount; ix++) {
                 final Object vertexId = context.read(buffer);
@@ -84,7 +84,7 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
                         vertexBuilder.setLabels(new LinkedHashSet<>(labelList));
                 }
 
-                final int vertexPropertyCount = context.readValue(buffer, Integer.class, false);
+                final int vertexPropertyCount = readElementCount(buffer);
                 for (int iy = 0; iy < vertexPropertyCount; iy++) {
                     final Object id = context.read(buffer);
                     // reading single string value for now according to GraphBinaryV4
@@ -110,7 +110,7 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
                 parsedVertex.attach(Attachable.Method.getOrCreate(graph));
             }
 
-            final int edgeCount = context.readValue(buffer, Integer.class, false);
+            final int edgeCount = readElementCount(buffer);
             for (int ix = 0; ix < edgeCount; ix++) {
                 final Object id = context.read(buffer);
                 // reading single string value for now according to GraphBinaryV4
