@@ -682,6 +682,15 @@ Because Go does not support method overloading, the batched form of `next(n)` av
 distinct method `NextN(n)` on `Traversal`. `Next()` returns a single `*Result`, while `NextN(n)` returns up to `n`
 results as `[]*Result`.
 
+Go rune literals are interpreted as `Integer` values rather than `Character` literals by default.
+To use the Gremlin `Character` type, wrap the rune in `gremlingo.Char()`. For example:
+
+[source,go]
+----
+g.Inject('a')                       // interpreted as integer 97 (the Unicode code point)
+g.Inject(gremlingo.Char('a'))       // properly translated to a Gremlin character literal
+----
+
 [[gremlin-go-aliases]]
 === Aliases
 To make the code more readable and close to the Gremlin query language), you can use aliases. These aliases can be named with capital letters to be consistent with non-aliased steps but will result in exported variables which could be problematic if not being used in a top-level program (i.e. not a redistributable package).
@@ -737,8 +746,6 @@ each is supplied as a property value:
 [[gremlin-go-limitations]]
 === Limitations
 
-* The Gremlin `Character` type is not supported by Gremlin-Go.
-
 * There is no default `set` type in Go. A set type code from the server is deserialized into a
 `*gremlingo.SimpleSet`, which implements the `gremlingo.Set` interface, rather than into a slice. To read its
 elements, the result should be type-asserted to `gremlingo.Set` and its `ToSlice()` method called. To input a set
@@ -748,8 +755,6 @@ fulfill the `gremlingo.Set` interface if desired.
 
 * Go does not support ordered maps natively as the built-in `map` type does not guarantee iteration order. Traversal
 results which contain maps may not preserve original ordering when deserialized into Go's native map types.
-
-* GraphBinary `Char` values are not supported.
 
 * GraphBinary permits map keys of any supported type, including composite values such as lists. Go's native `map`
 type only supports comparable keys, so GraphBinary maps with non-comparable keys are deserialized lossily rather than
