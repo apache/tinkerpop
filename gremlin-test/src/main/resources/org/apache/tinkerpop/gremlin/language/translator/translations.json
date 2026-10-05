@@ -1622,6 +1622,23 @@
         ]
     },
     {
+        "scenario": "g_VX1X_repeatXloopsX_timesX100000X",
+        "traversals": [
+            {
+                "original": "g.V(vid1).repeat(__.loops()).times(100000)",
+                "language": "g.V(vid1).repeat(__.loops()).times(100000)",
+                "canonical": "g.V(vid1).repeat(__.loops()).times(100000)",
+                "anonymized": "g.V(vid1).repeat(__.loops()).times(number0)",
+                "dotnet": "g.V(vid1).Repeat(__.Loops()).Times(100000)",
+                "go": "g.V(vid1).Repeat(gremlingo.T__.Loops()).Times(100000)",
+                "groovy": "g.V(vid1).repeat(__.loops()).times(100000)",
+                "java": "g.V(vid1).repeat(__.loops()).times(100000)",
+                "javascript": "g.V(vid1).repeat(__.loops()).times(100000)",
+                "python": "g.V(vid1).repeat(__.loops()).times(100000)"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_hasXperson_name_markoX_repeatXoutXcreatedXX_timesX1X_name",
         "traversals": [
             {
@@ -3433,6 +3450,7 @@
                 "canonical": "g.inject(\"a\"c)",
                 "anonymized": "g.inject(character0)",
                 "dotnet": "g.Inject<object>('a')",
+                "go": "g.Inject(gremlingo.Char('a'))",
                 "groovy": "g.inject('a' as char)",
                 "java": "g.inject('a')",
                 "python": "g.inject(SingleChar('a'))"
@@ -3448,6 +3466,7 @@
                 "canonical": "g.inject(\"\\\"\"c)",
                 "anonymized": "g.inject(character0)",
                 "dotnet": "g.Inject<object>('\\\"')",
+                "go": "g.Inject(gremlingo.Char('\"'))",
                 "groovy": "g.inject('\\\"' as char)",
                 "java": "g.inject('\\\"')",
                 "python": "g.inject(SingleChar('\\\"'))"
@@ -3463,6 +3482,7 @@
                 "canonical": "g.inject(\"\\u00E9\"c)",
                 "anonymized": "g.inject(character0)",
                 "dotnet": "g.Inject<object>('\\u00E9')",
+                "go": "g.Inject(gremlingo.Char('\\u00E9'))",
                 "groovy": "g.inject('\\u00E9' as char)",
                 "java": "g.inject('\\u00E9')",
                 "python": "g.inject(SingleChar('\\u00E9'))"
@@ -3478,6 +3498,7 @@
                 "canonical": "g.addV(\"data\").property(\"initial\", \"a\"c)",
                 "anonymized": "g.addV(string0).property(string1, character0)",
                 "dotnet": "g.AddV((string) \"data\").Property(\"initial\", 'a')",
+                "go": "g.AddV(\"data\").Property(\"initial\", gremlingo.Char('a'))",
                 "groovy": "g.addV(\"data\").property(\"initial\", 'a' as char)",
                 "java": "g.addV(\"data\").property(\"initial\", 'a')",
                 "python": "g.add_v('data').property('initial', SingleChar('a'))"
@@ -3505,6 +3526,7 @@
                 "canonical": "g.inject(\"a\"c).is(P.eq(\"a\"c))",
                 "anonymized": "g.inject(character0).is(P.eq(character0))",
                 "dotnet": "g.Inject<object>('a').Is(P.Eq('a'))",
+                "go": "g.Inject(gremlingo.Char('a')).Is(gremlingo.P.Eq(gremlingo.Char('a')))",
                 "groovy": "g.inject('a' as char).is(P.eq('a' as char))",
                 "java": "g.inject('a').is(P.eq('a'))",
                 "python": "g.inject(SingleChar('a')).is_(P.eq(SingleChar('a')))"

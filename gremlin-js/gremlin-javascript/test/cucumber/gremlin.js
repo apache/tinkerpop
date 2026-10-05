@@ -158,6 +158,7 @@ const gremlins = {
     g_V_emit: [function({g}) { return g.V().emit() }], 
     g_V_untilXidentityX: [function({g}) { return g.V().until(__.identity()) }], 
     g_V_timesX5X: [function({g}) { return g.V().times(5) }], 
+    g_VX1X_repeatXloopsX_timesX100000X: [function({g, vid1}) { return g.V(vid1).repeat(__.loops()).times(100000) }], 
     g_V_hasXperson_name_markoX_repeatXoutXcreatedXX_timesX1X_name: [function({g}) { return g.V().has("person", "name", "marko").repeat(__.out("created")).times(1).values("name") }], 
     g_V_hasXperson_name_markoX_repeatXoutXcreatedXX_timesX0X_name: [function({g}) { return g.V().has("person", "name", "marko").repeat(__.out("created")).times(0).values("name") }], 
     g_V_hasXperson_name_markoX_timesX1X_repeatXoutXcreatedXX_name: [function({g}) { return g.V().has("person", "name", "marko").times(1).repeat(__.out("created")).values("name") }], 

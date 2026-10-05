@@ -3136,6 +3136,9 @@ traversal (see <<or-step,`or()`>>). Because the traversal declares neither `time
 terminates on its own once `out()` produces no further traversers (i.e. when a sink vertex with no outgoing edges is
 reached).
 
+WARNING: The loop counter is limited to 2,147,483,647 iterations. A `repeat()` construct that loops
+beyond that limit throws an `IllegalStateException`.
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#loops()++[`loops()`],

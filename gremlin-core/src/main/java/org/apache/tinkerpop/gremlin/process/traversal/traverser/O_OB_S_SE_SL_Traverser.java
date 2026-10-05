@@ -30,7 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 public class O_OB_S_SE_SL_Traverser<T> extends O_Traverser<T> implements NL_SL_Traverser<T> {
 
     protected Object sack = null;
-    protected short loops = 0;  // an optimization hack to use a short internally to save bits :)
+    protected int loops = 0;
     protected String loopName = null;
     protected String stepLabel;
     protected transient TraversalSideEffects sideEffects;
@@ -48,12 +48,12 @@ public class O_OB_S_SE_SL_Traverser<T> extends O_Traverser<T> implements NL_SL_T
     }
 
     @Override
-    public short getSingleLoopCount() {
+    public int getSingleLoopCount() {
         return this.loops;
     }
 
     @Override
-    public void setSingleLoopCount(short loops) {
+    public void setSingleLoopCount(final int loops) {
         this.loops = loops;
     }
 
