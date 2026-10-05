@@ -2689,6 +2689,9 @@ The `loops()`-step (*map*) extracts the number of times the `Traverser` has gone
 g.V().emit(__.has("name", "marko").or().loops().is(2)).repeat(__.out()).values("name")
 ----
 
+WARNING: The loop counter is limited to 2,147,483,647 iterations. A `repeat()` construct that loops
+beyond that limit throws an `IllegalStateException`.
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#loops()++[`loops()`],

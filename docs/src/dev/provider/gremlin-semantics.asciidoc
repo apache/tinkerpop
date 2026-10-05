@@ -2214,6 +2214,8 @@ the repeat traversal operate across all traversers collectively rather than in i
 after the body finishes), not before. Therefore, `loops()` reflects the number of completed iterations.
   - `loops()` without arguments returns the counter for the closest (innermost) `repeat()`. `loops("name")` returns the
 counter for the named loop.
+  - The loop counter is bounded to `Integer.MAX_VALUE` (2,147,483,647) iterations. Exceeding this bound raises an error
+(see Exceptions).
 - Re-queuing for the next iteration:
   - After each iteration, if `until` is not satisfied at the post-check, the traverser is sent back into the loop body
 for another iteration. If it is satisfied, the traverser exits the loop and proceeds downstream.
@@ -2233,6 +2235,8 @@ message containing: `The repeat()-traversal was not defined`.
 
 * Using `emit()`, `until()`, or `times()` without a matching `repeat()` will raise an `IllegalStateException` at runtime
   when the step is initialized during iteration with the message containing: `The repeat()-traversal was not defined`.
+* Incrementing a loop counter past `Integer.MAX_VALUE` (2,147,483,647) will raise an `IllegalStateException` with a
+  message containing: `has exceeded the maximum supported value`.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/branch/RepeatStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#repeat-step[reference],

@@ -154,6 +154,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_V_emit", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Emit()}}, 
                {"g_V_untilXidentityX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Until(__.Identity())}}, 
                {"g_V_timesX5X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Times(5)}}, 
+               {"g_VX1X_repeatXloopsX_timesX100000X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).Repeat(__.Loops()).Times(100000)}}, 
                {"g_V_hasXperson_name_markoX_repeatXoutXcreatedXX_timesX1X_name", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("person", "name", "marko").Repeat(__.Out("created")).Times(1).Values<object>("name")}}, 
                {"g_V_hasXperson_name_markoX_repeatXoutXcreatedXX_timesX0X_name", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("person", "name", "marko").Repeat(__.Out("created")).Times(0).Values<object>("name")}}, 
                {"g_V_hasXperson_name_markoX_timesX1X_repeatXoutXcreatedXX_name", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Has("person", "name", "marko").Times(1).Repeat(__.Out("created")).Values<object>("name")}}, 

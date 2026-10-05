@@ -127,6 +127,7 @@ world.gremlins = {
     'g_V_emit': [(lambda g:g.V().emit())], 
     'g_V_untilXidentityX': [(lambda g:g.V().until(__.identity()))], 
     'g_V_timesX5X': [(lambda g:g.V().times(5))], 
+    'g_VX1X_repeatXloopsX_timesX100000X': [(lambda g, vid1=None:g.V(vid1).repeat(__.loops()).times(100000))], 
     'g_V_hasXperson_name_markoX_repeatXoutXcreatedXX_timesX1X_name': [(lambda g:g.V().has('person', 'name', 'marko').repeat(__.out('created')).times(1).values('name'))], 
     'g_V_hasXperson_name_markoX_repeatXoutXcreatedXX_timesX0X_name': [(lambda g:g.V().has('person', 'name', 'marko').repeat(__.out('created')).times(0).values('name'))], 
     'g_V_hasXperson_name_markoX_timesX1X_repeatXoutXcreatedXX_name': [(lambda g:g.V().has('person', 'name', 'marko').times(1).repeat(__.out('created')).values('name'))], 

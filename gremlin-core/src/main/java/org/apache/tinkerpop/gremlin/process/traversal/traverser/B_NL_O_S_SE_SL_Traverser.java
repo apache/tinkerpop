@@ -47,7 +47,7 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> implem
     public ReferenceMap getNestedLoopNames() {
         return loopNames;
     }
-    
+
     @Override
     public TraverserRequirement getLoopRequirement() {
         return TraverserRequirement.NESTED_LOOP;
