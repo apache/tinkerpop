@@ -32,7 +32,7 @@ import java.util.Set;
 public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
 
     protected Object sack = null;
-    protected short loops = 0;  // an optimization hack to use a short internally to save bits :)
+    protected int loops = 0;
     protected String loopName = null;
     protected transient TraversalSideEffects sideEffects;
 
@@ -85,6 +85,8 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
 
     @Override
     public void incrLoops() {
+        if (this.loops == Integer.MAX_VALUE)
+            throw new IllegalStateException("Loop counter has exceeded the maximum supported value of " + Integer.MAX_VALUE);
         this.loops++;
     }
 

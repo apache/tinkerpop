@@ -90,6 +90,7 @@ var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[
     "g_V_emit": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Emit()}}, 
     "g_V_untilXidentityX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Until(gremlingo.T__.Identity())}}, 
     "g_V_timesX5X": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Times(5)}}, 
+    "g_VX1X_repeatXloopsX_timesX100000X": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V(p["vid1"]).Repeat(gremlingo.T__.Loops()).Times(100000)}}, 
     "g_V_haxXperson_name_markoX_repeatXoutXcreatedXX_timesX1X_name": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Has("person", "name", "marko").Repeat(gremlingo.T__.Out("created")).Times(1).Values("name")}}, 
     "g_V_haxXperson_name_markoX_repeatXoutXcreatedXX_timesX0X_name": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Has("person", "name", "marko").Repeat(gremlingo.T__.Out("created")).Times(0).Values("name")}}, 
     "g_V_haxXperson_name_markoX_timesX1X_repeatXoutXcreatedXX_name": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Has("person", "name", "marko").Times(1).Repeat(gremlingo.T__.Out("created")).Values("name")}}, 
