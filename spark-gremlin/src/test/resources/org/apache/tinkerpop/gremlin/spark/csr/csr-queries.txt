@@ -1,0 +1,81 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Queries for CsrMemoryRun over CsrBenchmarkDataGenerator output.
+#
+#   <id> | <small|large> | <systems or *> | <gremlin-lang text using g> [| ordered]
+#
+# small/large tags the size of the result the client receives. systems is a comma list from tinkergraph, csr-native,
+# csr-facade, tinkergraph-computer, spark, or *. A trailing "ordered" field makes the result hash order-sensitive.
+#
+# Schema: vertex labels person, software, device, location; edge labels knows, created, uses, locatedIn. Vertex ids are
+# longs 0..2^scale-1. Each vertex has stringLowCardinality (64 values), stringHighCardinality (unique) and mixedNumber,
+# plus one of byteValue, shortValue, intValue, longValue, floatValue, doubleValue, bigIntegerValue, bigDecimalValue
+# chosen by id modulo 8 (so intValue and longValue exist on one vertex in eight). Edges have a float weight.
+# Sums and means avoid the floating point columns, which hold NaN and infinities and sum in an order that differs
+# between systems.
+
+# scan and filter
+scan-count          | small | * | g.V().count()
+scan-edge-count     | small | * | g.E().count()
+filter-label-gt     | small | * | g.V().hasLabel('person').has('longValue', gt(0L)).count()
+
+# navigation
+nav-out2-count      | small | * | g.V().out().out().count()
+nav-out-in-dedup    | small | * | g.V().hasLabel('person').has('stringLowCardinality', 'category-7').out('knows').in('knows').dedup().count()
+
+# reach and dedup
+reach-both2-dedup   | small | * | g.V().both().both().dedup().count()
+reach-dedup-by      | small | * | g.V().dedup().by('stringLowCardinality').count()
+reach-out-dedup-ids | large | * | g.V().out().dedup().id()
+
+# aggregation
+agg-groupcount-label | small | * | g.V().groupCount().by(label)
+agg-groupcount-high  | large | * | g.V().groupCount().by('stringHighCardinality')
+agg-group-mean       | small | * | g.V().group().by('stringLowCardinality').by(values('intValue').mean())
+agg-sum              | small | * | g.V().values('intValue').sum()
+
+# sorting
+sort-topk           | small | * | g.V().order().by('stringHighCardinality').limit(10).id() | ordered
+sort-full-count     | small | * | g.V().order().by('stringHighCardinality').values('stringHighCardinality').count()
+sort-full-ids       | large | * | g.V().order().by('stringHighCardinality').id() | ordered
+
+# iteration
+iter-repeat-out-dedup | small | * | g.V(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L).repeat(out().dedup()).times(3).count()
+iter-repeat-both-emit | small | * | g.V(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L).repeat(both().dedup()).emit().times(5).count()
+
+# branches and filters
+br-where-out        | small | * | g.V().where(out('knows')).count()
+br-not-ine          | small | * | g.V().not(inE()).count()
+br-filter-degree    | small | tinkergraph,csr-native,csr-facade | g.V().filter(outE().count().is(gt(16))).count()
+br-union-dedup      | small | * | g.V().union(out(), in()).dedup().count()
+br-coalesce         | small | * | g.V().coalesce(out('created'), out('knows')).count()
+br-choose           | small | * | g.V().choose(hasLabel('person'), out('knows'), in('created')).count()
+
+# result shaping
+shape-project       | large | * | g.V().project('l', 'p').by(label).by('stringLowCardinality')
+shape-valuemap      | large | * | g.V().valueMap()
+shape-elementmap    | large | * | g.V().elementMap()
+
+# side effects
+se-aggregate-count  | small | * | g.V().aggregate('x').count()
+se-groupcount-cap   | large | * | g.V().groupCount('x').by('stringHighCardinality').cap('x')
+
+# facade-only (not compiled by the native strategy)
+facade-path         | small | * | g.V(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L).out().out().path()
+facade-simplepath   | small | * | g.V().out().simplePath().out().simplePath().count()
+facade-select       | small | * | g.V().as('a').out('knows').as('b').select('a', 'b').count()

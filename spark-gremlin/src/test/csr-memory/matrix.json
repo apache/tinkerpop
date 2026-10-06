@@ -1,0 +1,194 @@
+{
+  "java": "java",
+  "classpathFile": "/data/csrbench/classpath.txt",
+  "jvmArgs": [
+    "-Xmx48g"
+  ],
+  "timeoutSeconds": 7200,
+  "workDir": "/data/csrbench/work",
+  "resultsDir": "/data/csrbench/results",
+  "dropCaches": true,
+  "cgroup": true,
+  "sampleIntervalSeconds": 1,
+  "smapsIntervalSeconds": 10,
+  "runs": [
+    {
+      "mode": "build",
+      "dataset": "/data/csrbench/gryo/powerlaw-16.kryo",
+      "snapshot": "/data/csrbench/snap/powerlaw-16-streaming",
+      "builder": "streaming",
+      "source": "gryo",
+      "builderBudget": 38654705664
+    },
+    {
+      "mode": "build",
+      "dataset": "/data/csrbench/gryo/powerlaw-18.kryo",
+      "snapshot": "/data/csrbench/snap/powerlaw-18-streaming",
+      "builder": "streaming",
+      "source": "gryo",
+      "builderBudget": 38654705664
+    },
+    {
+      "mode": "build",
+      "dataset": "/data/csrbench/gryo/powerlaw-22-ef24.kryo",
+      "snapshot": "/data/csrbench/snap/powerlaw-22-ef24-streaming",
+      "builder": "streaming",
+      "source": "gryo",
+      "builderBudget": 38654705664
+    },
+    {
+      "mode": "build",
+      "dataset": "/data/csrbench/gryo/powerlaw-18.kryo",
+      "snapshot": "/data/csrbench/snap/powerlaw-18-heap",
+      "builder": "heap",
+      "source": "gryo",
+      "builderBudget": 38654705664
+    },
+    {
+      "mode": "open",
+      "system": "csr",
+      "snapshot": "/data/csrbench/snap/powerlaw-18-streaming",
+      "cold": true
+    },
+    {
+      "mode": "open",
+      "system": "csr",
+      "snapshot": "/data/csrbench/snap/powerlaw-18-streaming",
+      "cold": false
+    },
+    {
+      "mode": "open",
+      "system": "csr",
+      "snapshot": "/data/csrbench/snap/powerlaw-22-ef24-streaming",
+      "cold": true
+    },
+    {
+      "mode": "open",
+      "system": "csr",
+      "snapshot": "/data/csrbench/snap/powerlaw-22-ef24-streaming",
+      "cold": false
+    },
+    {
+      "mode": "open",
+      "system": "tinkergraph",
+      "dataset": "/data/csrbench/gryo/powerlaw-16.kryo",
+      "cold": true
+    },
+    {
+      "mode": "open",
+      "system": "tinkergraph",
+      "dataset": "/data/csrbench/gryo/powerlaw-18.kryo",
+      "cold": true
+    },
+    {
+      "mode": "query",
+      "systems": [
+        "tinkergraph",
+        "csr-native",
+        "tinkergraph-computer",
+        "spark"
+      ],
+      "dataset": "/data/csrbench/gryo/powerlaw-16.kryo",
+      "snapshot": "/data/csrbench/snap/powerlaw-16-streaming",
+      "queries": [
+        "scan-count",
+        "filter-label-gt",
+        "nav-out2-count",
+        "reach-both2-dedup",
+        "reach-dedup-by",
+        "agg-group-mean",
+        "agg-groupcount-high",
+        "sort-topk",
+        "sort-full-count",
+        "iter-repeat-both-emit",
+        "br-union-dedup",
+        "shape-elementmap",
+        "se-aggregate-count",
+        "facade-path"
+      ],
+      "csrBudget": 38654705664
+    },
+    {
+      "mode": "query",
+      "systems": [
+        "csr-facade"
+      ],
+      "dataset": "/data/csrbench/gryo/powerlaw-16.kryo",
+      "snapshot": "/data/csrbench/snap/powerlaw-16-streaming",
+      "queries": [
+        "reach-both2-dedup",
+        "agg-groupcount-high",
+        "sort-full-count",
+        "iter-repeat-both-emit"
+      ],
+      "csrBudget": 38654705664
+    },
+    {
+      "mode": "query",
+      "systems": [
+        "tinkergraph",
+        "csr-native",
+        "tinkergraph-computer",
+        "spark"
+      ],
+      "dataset": "/data/csrbench/gryo/powerlaw-18.kryo",
+      "snapshot": "/data/csrbench/snap/powerlaw-18-streaming",
+      "queries": [
+        "scan-count",
+        "filter-label-gt",
+        "nav-out2-count",
+        "reach-both2-dedup",
+        "reach-dedup-by",
+        "agg-group-mean",
+        "agg-groupcount-high",
+        "sort-topk",
+        "sort-full-count",
+        "iter-repeat-both-emit",
+        "br-union-dedup",
+        "shape-elementmap",
+        "se-aggregate-count",
+        "facade-path"
+      ],
+      "csrBudget": 38654705664
+    },
+    {
+      "mode": "query",
+      "systems": [
+        "csr-facade"
+      ],
+      "dataset": "/data/csrbench/gryo/powerlaw-18.kryo",
+      "snapshot": "/data/csrbench/snap/powerlaw-18-streaming",
+      "queries": [
+        "reach-both2-dedup",
+        "agg-groupcount-high",
+        "sort-full-count",
+        "iter-repeat-both-emit"
+      ],
+      "csrBudget": 38654705664
+    },
+    {
+      "mode": "query",
+      "systems": [
+        "csr-native"
+      ],
+      "snapshot": "/data/csrbench/snap/powerlaw-22-ef24-streaming",
+      "queries": [
+        "scan-count",
+        "filter-label-gt",
+        "nav-out2-count",
+        "reach-both2-dedup",
+        "reach-dedup-by",
+        "agg-group-mean",
+        "agg-groupcount-high",
+        "sort-topk",
+        "sort-full-count",
+        "iter-repeat-both-emit",
+        "br-union-dedup",
+        "shape-elementmap",
+        "se-aggregate-count",
+        "facade-path"
+      ],
+      "csrBudget": 38654705664
+    }
+  ]
+}

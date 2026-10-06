@@ -142,6 +142,15 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
+import org.apache.tinkerpop.gremlin.structure.snapshot.CsrSnapshot;
+import org.apache.tinkerpop.gremlin.structure.snapshot.build.BuildOptions;
+import org.apache.tinkerpop.gremlin.structure.snapshot.build.HeapSnapshotBuilder;
+import org.apache.tinkerpop.gremlin.structure.snapshot.build.StreamingSnapshotBuilder;
+import org.apache.tinkerpop.gremlin.structure.snapshot.format.SnapshotLayout;
+import org.apache.tinkerpop.gremlin.structure.snapshot.graph.CsrGraph;
+import org.apache.tinkerpop.gremlin.structure.snapshot.process.CsrNative;
+import org.apache.tinkerpop.gremlin.structure.snapshot.process.exec.CsrMemoryBudgetException;
+import org.apache.tinkerpop.gremlin.structure.snapshot.process.strategy.CsrNativeStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -217,6 +226,16 @@ public final class CoreImports {
         // remote
         CLASS_IMPORTS.add(RemoteConnection.class);
         CLASS_IMPORTS.add(EmptyGraph.class);
+        // snapshot
+        CLASS_IMPORTS.add(CsrGraph.class);
+        CLASS_IMPORTS.add(CsrSnapshot.class);
+        CLASS_IMPORTS.add(StreamingSnapshotBuilder.class);
+        CLASS_IMPORTS.add(HeapSnapshotBuilder.class);
+        CLASS_IMPORTS.add(BuildOptions.class);
+        CLASS_IMPORTS.add(SnapshotLayout.class);
+        CLASS_IMPORTS.add(CsrNative.class);
+        CLASS_IMPORTS.add(CsrNativeStrategy.class);
+        CLASS_IMPORTS.add(CsrMemoryBudgetException.class);
         // io
         CLASS_IMPORTS.add(GraphReader.class);
         CLASS_IMPORTS.add(GraphWriter.class);

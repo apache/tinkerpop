@@ -1,0 +1,64 @@
+{
+  "java": "java",
+  "classpathFile": "/data/csrbench/classpath.txt",
+  "jvmArgs": ["-Xmx4g"],
+  "timeoutSeconds": 900,
+  "workDir": "/data/csrbench-smoke/work",
+  "resultsDir": "/data/csrbench-smoke/results",
+  "dropCaches": true,
+  "cgroup": true,
+  "sampleIntervalSeconds": 1,
+  "smapsIntervalSeconds": 10,
+  "runs": [
+    {
+      "mode": "build",
+      "dataset": "/data/csrbench-smoke/gryo/powerlaw-12.kryo",
+      "snapshot": "/data/csrbench-smoke/snap/powerlaw-12-streaming",
+      "builder": "streaming",
+      "source": "gryo",
+      "builderBudget": 1073741824
+    },
+    {
+      "mode": "build",
+      "dataset": "/data/csrbench-smoke/gryo/powerlaw-12.kryo",
+      "snapshot": "/data/csrbench-smoke/snap/powerlaw-12-heap",
+      "builder": "heap",
+      "source": "gryo",
+      "builderBudget": 1073741824
+    },
+    {
+      "mode": "open",
+      "system": "csr",
+      "snapshot": "/data/csrbench-smoke/snap/powerlaw-12-streaming",
+      "cold": true
+    },
+    {
+      "mode": "open",
+      "system": "csr",
+      "snapshot": "/data/csrbench-smoke/snap/powerlaw-12-streaming",
+      "cold": false
+    },
+    {
+      "mode": "open",
+      "system": "tinkergraph",
+      "dataset": "/data/csrbench-smoke/gryo/powerlaw-12.kryo",
+      "cold": true
+    },
+    {
+      "mode": "query",
+      "systems": ["tinkergraph", "csr-native", "tinkergraph-computer", "spark"],
+      "dataset": "/data/csrbench-smoke/gryo/powerlaw-12.kryo",
+      "snapshot": "/data/csrbench-smoke/snap/powerlaw-12-streaming",
+      "queries": ["scan-count", "agg-group-mean", "agg-groupcount-high", "iter-repeat-both-emit", "facade-path"],
+      "csrBudget": 1073741824
+    },
+    {
+      "mode": "query",
+      "systems": ["csr-facade"],
+      "dataset": "/data/csrbench-smoke/gryo/powerlaw-12.kryo",
+      "snapshot": "/data/csrbench-smoke/snap/powerlaw-12-streaming",
+      "queries": ["reach-both2-dedup"],
+      "csrBudget": 1073741824
+    }
+  ]
+}
