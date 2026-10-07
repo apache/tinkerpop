@@ -45,10 +45,16 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.CRC32;
 
 /**
@@ -122,6 +128,13 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      */
     private IOException failure;
 
+    /**
+     * Whether the store was opened with {@code gremlin.tinkergraph.storage.recover}. Replay then recovers what it can
+     * from a damaged snapshot or log instead of failing, and the engine stays read-only so that nothing on disk
+     * changes: commits are refused, nothing is compacted or truncated, and no version marker is written.
+     */
+    private boolean recovering = false;
+
     // ----------------------------------------------------------------------------------------- codec hooks
 
     /**
@@ -163,6 +176,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         this.snapshotFile = new File(directory, SNAPSHOT_FILE);
         this.logFile = new File(directory, LOG_FILE);
         this.versionFile = new File(directory, VERSION_FILE);
+        this.recovering = config.getBoolean(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER, false);
         this.syncMode = SyncMode.fromConfigValue(config.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_SYNC, null));
         this.compactThresholdBytes = config.getLong(
                 TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, DEFAULT_COMPACT_THRESHOLD_BYTES);
@@ -186,12 +200,32 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         // Fold snapshot then log into final state: last write per id wins, deletes remove.
         final Map<Object, DetachedVertex> vertices = new LinkedHashMap<>();
         final Map<Object, DetachedEdge> edges = new LinkedHashMap<>();
+        final Recovery recovery = recovering ? new Recovery() : null;
 
         // the snapshot is only ever replaced by an atomic rename, so only the log can end in an interrupted append
         if (snapshotFile.exists())
-            foldRecords(snapshotFile, vertices, edges, false);
-        if (logFile.exists())
-            truncateTornLogTail(foldRecords(logFile, vertices, edges, true));
+            foldRecords(snapshotFile, vertices, edges, false, recovery);
+        if (logFile.exists()) {
+            final long completeEnd = foldRecords(logFile, vertices, edges, true, recovery);
+            // a recovery open never changes the files, so a torn tail is left in place
+            if (recovery == null)
+                truncateTornLogTail(completeEnd);
+            else if (logFile.length() > completeEnd && recovery.logStoppedAt < 0)
+                recovery.logStopped(completeEnd, logFile.length(), "the log ends in an interrupted append");
+        }
+
+        if (recovery != null) {
+            // getOrCreate would invent a bare vertex for a missing endpoint, so drop edges that lost one instead
+            final Iterator<DetachedEdge> it = edges.values().iterator();
+            while (it.hasNext()) {
+                final DetachedEdge e = it.next();
+                if (!vertices.containsKey(e.outVertex().id()) || !vertices.containsKey(e.inVertex().id())) {
+                    it.remove();
+                    recovery.danglingEdges++;
+                }
+            }
+            recovery.report(directory);
+        }
 
         if (vertices.isEmpty() && edges.isEmpty())
             return;
@@ -210,6 +244,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
                         final Collection<TinkerStorageMutation<TinkerVertex>> changedVertices,
                         final Collection<TinkerStorageMutation<TinkerEdge>> changedEdges) {
         checkNotClosed();
+        checkNotRecovering();
         checkNotFailed();
         ensureLogOpen();
         final byte[] frame;
@@ -229,7 +264,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
 
     @Override
     public void flush() {
-        if (closed || failure != null)
+        if (closed || recovering || failure != null)
             return;
         if (logOut != null) {
             try {
@@ -249,7 +284,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     public void compact(final AbstractTinkerGraph graph) {
         // after a write failure the disk is suspect and the log's buffered tail must not be written, so leave the
         // files as they are for the next open to replay
-        if (closed || failure != null)
+        if (closed || recovering || failure != null)
             return;
         // Write a fresh snapshot of the current committed state, then truncate the log. This must be crash-safe: at
         // no point may a crash leave the store without a readable snapshot-or-log covering the committed state.
@@ -298,6 +333,11 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     @Override
+    public boolean isReadOnly() {
+        return recovering;
+    }
+
+    @Override
     public void close() {
         try {
             if (failure != null) {
@@ -326,7 +366,8 @@ public abstract class AbstractLogStorage implements TinkerStorage {
                 throw new IllegalStateException(String.format(
                         "Storage location %s has data but no version marker; cannot confirm it is format version %d",
                         directory, FORMAT_VERSION));
-            writeStoreVersion();
+            if (!recovering)
+                writeStoreVersion();
             return;
         }
         try (final DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(versionFile)))) {
@@ -337,7 +378,8 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             final byte version = in.readByte();
             if (version != FORMAT_VERSION)
                 throw new IOException(String.format(
-                        "Unsupported storage format version %d at %s (this build writes %d); export via g.io() before upgrading",
+                        "Unsupported storage format version %d at %s (this build writes %d); open it with the TinkerPop " +
+                                "version that wrote it and export it with g.io()",
                         version, directory, FORMAT_VERSION));
         } catch (IOException ex) {
             throw new UncheckedIOException(String.format("Could not read storage version marker %s", versionFile), ex);
@@ -369,34 +411,126 @@ public abstract class AbstractLogStorage implements TinkerStorage {
 
     /**
      * Fold every complete frame of {@code file} into the given maps, returning the byte offset at which the last
-     * complete frame ends. Anything past that offset is an interrupted trailing append. When {@code allowTornHeader}
-     * is set, a file shorter than its header whose bytes are a prefix of {@link #MAGIC} is likewise an interrupted
+     * complete frame ends. Anything past that offset is an interrupted trailing append. For the log ({@code log}
+     * set), a file shorter than its header whose bytes are a prefix of {@link #MAGIC} is likewise an interrupted
      * first append and yields an offset of {@code 0}.
+     * <p/>
+     * With a {@code recovery} in progress, damage that would otherwise fail the open is tolerated where that is safe.
+     * In the log, each frame is one transaction, so replay stops at the first frame that can't be read or decoded and
+     * keeps the consistent prefix before it. In the snapshot, element frames are independent, so an unreadable one is
+     * skipped. The snapshot's header and its first frame, the dictionary every other frame depends on, still fail.
      */
     private long foldRecords(final File file, final Map<Object, DetachedVertex> vertices,
-                             final Map<Object, DetachedEdge> edges, final boolean allowTornHeader) {
+                             final Map<Object, DetachedEdge> edges, final boolean log, final Recovery recovery) {
         final long fileLength = file.length();
         try (final DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
-            if (allowTornHeader && fileLength > 0 && fileLength < HEADER_SIZE) {
+            if (log && fileLength > 0 && fileLength < HEADER_SIZE) {
                 final byte[] present = new byte[(int) fileLength];
                 readFully(in, present);
                 if (Arrays.equals(present, Arrays.copyOf(MAGIC, present.length)))
                     return 0;
+                if (recovery != null) {
+                    recovery.logStopped(0, fileLength, "the log is shorter than its header");
+                    return 0;
+                }
             }
-            long remaining = readAndVerifyHeader(in, file, fileLength);
+            long remaining;
+            try {
+                remaining = readAndVerifyHeader(in, file, fileLength);
+            } catch (IOException ex) {
+                if (recovery == null || !log)
+                    throw ex;
+                recovery.logStopped(0, fileLength, ex.getMessage());
+                return 0;
+            }
             long completeEnd = fileLength - remaining;
+            int frameIndex = 0;
             while (true) {
-                final byte[] record = readFrame(in, remaining);
-                if (record == null)
+                final byte[] record;
+                try {
+                    record = readFrame(in, remaining);
+                } catch (CorruptFrameException ex) {
+                    // the frame's bytes were all present and consumed, so a skippable snapshot frame can be passed over
+                    if (recovery == null || log || frameIndex == 0)
+                        throw recoveryStops(recovery, log, ex, completeEnd, fileLength);
+                    final long frameLength = 2L * Integer.BYTES + ex.payloadLength;
+                    remaining -= frameLength;
+                    completeEnd += frameLength;
+                    frameIndex++;
+                    recovery.skippedSnapshotFrames++;
+                    continue;
+                } catch (IOException ex) {
+                    // a frame header that can't be trusted (such as a negative length) leaves no way to find the next
+                    if (recovery == null || (!log && frameIndex == 0))
+                        throw ex;
+                    if (log)
+                        recovery.logStopped(completeEnd, fileLength, ex.getMessage());
+                    else
+                        recovery.snapshotStopped(completeEnd, fileLength, ex.getMessage());
                     break;
+                }
+                if (record == null) {
+                    // a snapshot is only ever replaced whole by an atomic rename, so bytes it can't read are damage
+                    // rather than an interrupted append
+                    if (!log && remaining > 0) {
+                        final String reason = String.format("%d trailing bytes do not form a complete record", remaining);
+                        if (recovery == null || frameIndex == 0)
+                            throw new IOException(String.format("Corrupt storage file %s: %s", file, reason));
+                        recovery.snapshotStopped(completeEnd, fileLength, reason);
+                    }
+                    break;
+                }
                 final long frameLength = 2L * Integer.BYTES + record.length;
+                if (recovery == null) {
+                    decodeFrame(record, vertices, edges);
+                } else {
+                    try {
+                        decodeFrameAtomically(record, vertices, edges);
+                    } catch (IOException ex) {
+                        if (log || frameIndex == 0)
+                            throw recoveryStops(recovery, log, ex, completeEnd, fileLength);
+                        recovery.skippedSnapshotFrames++;
+                    }
+                }
                 remaining -= frameLength;
                 completeEnd += frameLength;
-                decodeFrame(record, vertices, edges);
+                frameIndex++;
             }
             return completeEnd;
+        } catch (RecoveryStop stop) {
+            return stop.completeEnd;
         } catch (IOException ex) {
             throw new UncheckedIOException(String.format("Could not read storage file %s", file), ex);
+        }
+    }
+
+    /**
+     * Decide what a damaged frame means under recovery. In the log, replay stops there (signalled by the returned
+     * {@link RecoveryStop}). In the snapshot's dictionary frame, or with no recovery at all, the damage is rethrown.
+     */
+    private static IOException recoveryStops(final Recovery recovery, final boolean log, final IOException damage,
+                                             final long completeEnd, final long fileLength) {
+        if (recovery == null || !log)
+            return damage;
+        recovery.logStopped(completeEnd, fileLength, damage.getMessage());
+        return new RecoveryStop(completeEnd);
+    }
+
+    /**
+     * Decode a frame so that it is applied entirely or not at all. {@link #decodeFrame} applies a frame's entries one
+     * by one, so a frame that fails partway would otherwise leave its first entries behind. That doesn't matter when
+     * any damage fails the open, but recovery keeps going and must not keep half of a transaction.
+     */
+    private void decodeFrameAtomically(final byte[] record, final Map<Object, DetachedVertex> vertices,
+                                       final Map<Object, DetachedEdge> edges) throws IOException {
+        final JournaledMap<Object, DetachedVertex> v = new JournaledMap<>(vertices);
+        final JournaledMap<Object, DetachedEdge> e = new JournaledMap<>(edges);
+        try {
+            decodeFrame(record, v, e);
+        } catch (IOException | RuntimeException ex) {
+            e.undo();
+            v.undo();
+            throw ex instanceof IOException ? (IOException) ex : new IOException(ex.toString(), ex);
         }
     }
 
@@ -509,6 +643,13 @@ public abstract class AbstractLogStorage implements TinkerStorage {
                     "Storage at %s is closed and accepts no further commits; open the graph again", directory));
     }
 
+    private void checkNotRecovering() {
+        if (recovering)
+            throw new IllegalStateException(String.format(
+                    "Storage at %s was opened with %s and is read-only; export the graph with g.io() into a new " +
+                            "storage directory", directory, TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
+    }
+
     private void checkNotFailed() {
         if (failure != null)
             throw new UncheckedIOException(new IOException(String.format(
@@ -564,9 +705,9 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         final CRC32 crc = new CRC32();
         crc.update(payload);
         if ((int) crc.getValue() != storedCrc)
-            throw new IOException(String.format(
+            throw new CorruptFrameException(String.format(
                     "Corrupt storage frame: CRC mismatch (stored %08x, computed %08x) in a fully-present %d-byte record",
-                    storedCrc, (int) crc.getValue(), length));
+                    storedCrc, (int) crc.getValue(), length), length);
         return payload;
     }
 
@@ -602,6 +743,129 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         } catch (IOException ex) {
             // some platforms (notably Windows) cannot open a directory as a channel; the atomic rename is the
             // durability guarantee there, so treat inability to sync the directory as non-fatal
+        }
+    }
+
+    /**
+     * A fully-present frame whose checksum does not match. Its bytes have been consumed, so a reader that can afford to
+     * lose the frame may continue with the next one.
+     */
+    private static final class CorruptFrameException extends IOException {
+        private final int payloadLength;
+
+        private CorruptFrameException(final String message, final int payloadLength) {
+            super(message);
+            this.payloadLength = payloadLength;
+        }
+    }
+
+    /**
+     * Ends a recovery fold of the log at the last frame that was applied.
+     */
+    private static final class RecoveryStop extends IOException {
+        private final long completeEnd;
+
+        private RecoveryStop(final long completeEnd) {
+            super("recovery stopped replaying the log at byte " + completeEnd);
+            this.completeEnd = completeEnd;
+        }
+    }
+
+    /**
+     * What a recovery open had to leave behind, reported once replay is done.
+     */
+    private static final class Recovery {
+        private int skippedSnapshotFrames = 0;
+        private int danglingEdges = 0;
+        private long logStoppedAt = -1;
+        private long logLength = 0;
+        private String logStopReason;
+        private long snapshotStoppedAt = -1;
+        private long snapshotLength = 0;
+        private String snapshotStopReason;
+
+        private void snapshotStopped(final long offset, final long length, final String reason) {
+            this.snapshotStoppedAt = offset;
+            this.snapshotLength = length;
+            this.snapshotStopReason = reason;
+        }
+
+        private void logStopped(final long offset, final long length, final String reason) {
+            this.logStoppedAt = offset;
+            this.logLength = length;
+            this.logStopReason = reason;
+        }
+
+        private void report(final File directory) {
+            final StringBuilder sb = new StringBuilder(String.format(
+                    "Opened storage at %s with %s; the graph is read-only.", directory,
+                    TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
+            if (skippedSnapshotFrames == 0 && danglingEdges == 0 && logStoppedAt < 0 && snapshotStoppedAt < 0)
+                sb.append(" No damage was found.");
+            if (skippedSnapshotFrames > 0)
+                sb.append(String.format(" Skipped %d unreadable element record(s) in the snapshot.", skippedSnapshotFrames));
+            if (snapshotStoppedAt >= 0)
+                sb.append(String.format(" Stopped reading the snapshot at byte %d of %d (%s), so any elements after " +
+                        "that point are not included.", snapshotStoppedAt, snapshotLength, snapshotStopReason));
+            if (logStoppedAt >= 0)
+                sb.append(String.format(" Stopped replaying the log at byte %d of %d (%s), so any transactions after " +
+                        "that point are not included.", logStoppedAt, logLength, logStopReason));
+            if (danglingEdges > 0)
+                sb.append(String.format(" Dropped %d edge(s) whose endpoint vertex was lost.", danglingEdges));
+            sb.append(" Export the graph with g.io() into a new storage directory.");
+            logger.warn(sb.toString());
+        }
+    }
+
+    /**
+     * A map view that records each change it makes to its backing map so that the changes can be undone.
+     */
+    private static final class JournaledMap<K, V> extends AbstractMap<K, V> {
+        private final Map<K, V> backing;
+        private final List<Object[]> journal = new ArrayList<>();
+
+        private JournaledMap(final Map<K, V> backing) {
+            this.backing = backing;
+        }
+
+        @Override
+        public V put(final K key, final V value) {
+            journal.add(new Object[]{ key, backing.containsKey(key), backing.get(key) });
+            return backing.put(key, value);
+        }
+
+        @Override
+        public V remove(final Object key) {
+            if (backing.containsKey(key))
+                journal.add(new Object[]{ key, true, backing.get(key) });
+            return backing.remove(key);
+        }
+
+        @Override
+        public V get(final Object key) {
+            return backing.get(key);
+        }
+
+        @Override
+        public boolean containsKey(final Object key) {
+            return backing.containsKey(key);
+        }
+
+        @Override
+        public Set<Entry<K, V>> entrySet() {
+            return Collections.unmodifiableMap(backing).entrySet();
+        }
+
+        @SuppressWarnings("unchecked")
+        private void undo() {
+            for (int i = journal.size() - 1; i >= 0; i--) {
+                final Object[] change = journal.get(i);
+                if ((Boolean) change[1])
+                    backing.put((K) change[0], (V) change[2]);
+                else
+                    backing.remove(change[0]);
+            }
+            journal.clear();
         }
     }
 }
