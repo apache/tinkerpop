@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -1866,6 +1867,32 @@ public class TinkerTransactionGraphTest {
         } else {
             assertNull(unmodified.properties);
         }
+    }
+
+    @Test
+    public void shouldFindIndexedVertexAfterAddingEdgeToItInSameTransaction() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        g.createIndex(PROPERTY_NAME, Vertex.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV().property(PROPERTY_NAME, "hub").iterate();
+        gtx.tx().commit();
+
+        gtx.addV().addE(EDGE_LABEL).to(__.V().has(PROPERTY_NAME, "hub")).iterate();
+
+        assertEquals(1, (long) gtx.V().has(PROPERTY_NAME, "hub").count().next());
+    }
+
+    @Test
+    public void shouldRollbackWithVertexIndexAndNoEdgeIndex() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        g.createIndex(PROPERTY_NAME, Vertex.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV().property(PROPERTY_NAME, "a").iterate();
+
+        gtx.tx().rollback();
+
+        assertFalse(gtx.tx().isOpen());
+        assertEquals(0, (long) gtx.V().count().next());
     }
 
     private void verifyCommittedSingleVertex(final TinkerTransactionGraph g) {
