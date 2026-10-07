@@ -65,8 +65,10 @@ graph for demonstration purposes:
 
 image:betweeness-example.png[width=600]
 
-[gremlin-groovy ]
+[gremlin-groovy]
 ----
+graph = TinkerGraph.open()
+g = traversal().with(graph)
 g.addV().property(id,'A').as('a').
   addV().property(id,'B').as('b').
   addV().property(id,'C').as('c').

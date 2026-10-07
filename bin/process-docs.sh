@@ -160,7 +160,16 @@ if [ -z "${CONSOLE_DIR}" ] || [ ! -d "${CONSOLE_DIR}" ]; then
   echo "Build it first: mvn clean install -pl :gremlin-console -am -DskipTests"
   exit 1
 fi
-CONSOLE_HOME="$(cd "${CONSOLE_DIR}" && pwd)"
+# Install docs plugins into a throwaway copy, not the real standalone: distribution.xml packages
+# the console zip from that directory's ext/, so mutating it here would leak the docs-only
+# plugins into the release artifact. The copy is left in target/ after the run for inspection and
+# wiped at the start of the next run (line below); it is excluded from all distributions.
+CONSOLE_SRC="$(cd "${CONSOLE_DIR}" && pwd)"
+CONSOLE_HOME="${TP_HOME}/target/docs-console/$(basename "${CONSOLE_DIR}")"
+echo "Preparing docs-only console copy at ${CONSOLE_HOME}..."
+rm -rf "${CONSOLE_HOME}"
+mkdir -p "$(dirname "${CONSOLE_HOME}")"
+cp -Rp "${CONSOLE_SRC}" "${CONSOLE_HOME}"
 
 # 2. Validate server distribution
 SERVER_DIR=$(ls -d gremlin-server/target/apache-tinkerpop-gremlin-server-*-standalone 2>/dev/null | head -n1)

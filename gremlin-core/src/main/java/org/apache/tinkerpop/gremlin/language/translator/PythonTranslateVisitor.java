@@ -294,7 +294,7 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
         final String text = ctx.getText();
         final String withoutSuffix = text.substring(0, text.length() - 1);
         final String inner = removeFirstAndLastCharacters(withoutSuffix);
-        sb.append("SingleChar('").append(inner).append("')");
+        sb.append("SingleChar('").append(inner.equals("'") ? "\\'" : inner).append("')");
         return null;
     }
 

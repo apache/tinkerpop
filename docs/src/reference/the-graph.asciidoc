@@ -76,10 +76,18 @@ graph = TinkerGraph.open()
 graph.features()
 ----
 
-A common pattern for using features is to check their support prior to performing an operation:
+The printed output groups the supported capabilities by the element they describe: graph features (which
+include a nested set of variable features), vertex features (with their vertex property features), and edge
+features (with their edge property features). Each group lists the individual capabilities of that element
+type as boolean flags, where a value of `true` indicates that the `Graph` supports the associated operation.
+
+A common pattern for using features is to check their support prior to performing an operation. The example
+below creates a traversal source `g` from the `graph` and guards a transaction commit behind the relevant
+feature check, so that the commit is only attempted when the `Graph` actually supports transactions:
 
 [gremlin-groovy]
 ----
+g = traversal().with(graph);[]
 graph.features().graph().supportsTransactions()
 graph.features().graph().supportsTransactions() ? g.tx().commit() : "no tx"
 ----

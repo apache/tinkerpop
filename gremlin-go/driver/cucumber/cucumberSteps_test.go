@@ -55,6 +55,7 @@ func init() {
 		regexp.MustCompile(`^uuid\[(.*)]$`):       toUuid,
 		regexp.MustCompile(`^dur\[(.*)]$`):        toDuration,
 		regexp.MustCompile(`^bin\[(.*)]$`):        toBinary,
+		regexp.MustCompile(`^char\[(.*)]$`):       toChar,
 		regexp.MustCompile(`^d\[(.*)]\.[bslfd]$`): toNumeric,
 		regexp.MustCompile(`^d\[(.*)]\.[m]$`):     toBigDecimal,
 		regexp.MustCompile(`^d\[(.*)]\.[n]$`):     toBigInt,
@@ -167,6 +168,15 @@ func toBinary(stringVal, graphName string) interface{} {
 		return nil
 	}
 	return &gremlingo.ByteBuffer{Data: data}
+}
+
+// Parse a Character value.
+func toChar(stringVal, graphName string) interface{} {
+	r := []rune(stringVal)
+	if len(r) == 0 {
+		return nil
+	}
+	return gremlingo.Char(r[0])
 }
 
 // Parse numeric.
@@ -1282,7 +1292,7 @@ func TestCucumberFeatures(t *testing.T) {
 		TestSuiteInitializer: InitializeTestSuite,
 		ScenarioInitializer:  InitializeScenario,
 		Options: &godog.Options{
-			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepWrite && ~@DataChar && ~@MultiLabelDefault",
+			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepWrite && ~@MultiLabelDefault",
 			Format:   "pretty",
 			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features")},
 			TestingT: t, // Testing instance that will run subtests.

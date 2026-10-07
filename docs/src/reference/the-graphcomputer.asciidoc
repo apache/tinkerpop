@@ -374,7 +374,10 @@ g = traversal().with(result.graph())
 g.V().elementMap()
 ----
 
-Note that `GraphTraversal` provides a <<pagerank-step,`pageRank()`>>-step.
+Note that `GraphTraversal` provides a <<pagerank-step,`pageRank()`>>-step. The `PageRank` class supplies the
+configuration tokens (`PageRank.propertyName`, `PageRank.times`) used to parameterize the `pageRank()`-step, and
+these correspond respectively to the property name and `maxIterations` settings of the `PageRankVertexProgram`
+described above.
 
 [gremlin-groovy,modern]
 ----
@@ -387,6 +390,11 @@ g.V().pageRank().
     by('pageRank').
   elementMap()
 ----
+
+`PageRank.times` sets the number of PageRank iterations to run, equivalent to the `maxIterations` setting of
+`PageRankVertexProgram` (which defaults to `20`). The `with(PageRank.times, 5)` above therefore runs only five
+iterations, yielding an approximate result that has not necessarily converged, rather than the twenty iterations
+used by default.
 
 [[peerpressurevertexprogram]]
 === PeerPressureVertexProgram
@@ -418,7 +426,36 @@ g.V().peerPressure().
 === ConnectedComponentVertexProgram
 
 The `ConnectedComponentVertexProgram` identifies link:https://en.wikipedia.org/wiki/Connected_component_(graph_theory)[Connected Component]
-instances in a graph. See <<connectedcomponent-step,`connectedComponent()`>>-step for more information.
+instances in a graph. Each vertex is assigned a component identifier, which is the lexicographically smallest string form of a
+vertex id among all vertices that are reachable from it. Vertices that share the same identifier belong to the same connected
+component. By default the identifier is stored on each vertex under the `gremlin.connectedComponentVertexProgram.component` property,
+which is also exposed as the `ConnectedComponentVertexProgram.COMPONENT` constant.
+
+[gremlin-groovy,modern]
+----
+ccvp = ConnectedComponentVertexProgram.build().create() <1>
+result = graph.compute().program(ccvp).submit().get() <2>
+g = traversal().with(result.graph()) <3>
+g.V().valueMap('name', ConnectedComponentVertexProgram.COMPONENT) <4>
+g.V().groupCount().by(ConnectedComponentVertexProgram.COMPONENT) <5>
+----
+
+<1> Create a `ConnectedComponentVertexProgram` with its default configuration.
+<2> Execute the `ConnectedComponentVertexProgram`.
+<3> Create a traversal source over the resulting graph, which now carries the component assignments.
+<4> Read the component identifier assigned to each vertex. Every vertex in the "modern" graph is reachable from every other, so they all share a single component.
+<5> Count the vertices in each component, confirming that the "modern" graph forms one connected component.
+
+The `ConnectedComponentVertexProgram.Builder` provides the following configuration methods:
+
+[width="100%",cols="3,15,5",options="header"]
+|=========================================================
+| Method | Description | Default
+| `property(String)` | Sets the vertex property that stores the component identifier. | `gremlin.connectedComponentVertexProgram.component`
+| `edges(Traversal)` | Sets a traversal that emits the edges to traverse when determining connectivity. | `__.bothE()`
+|=========================================================
+
+Note that `GraphTraversal` provides a <<connectedcomponent-step,`connectedComponent()`>>-step.
 
 [[shortestpathvertexprogram]]
 === ShortestPathVertexProgram
@@ -486,7 +523,32 @@ any graph `InputFormat` to any graph `OutputFormat`. TinkerPop provides the foll
 ** `GryoInputFormat`
 ** `ScriptInputFormat`).
 
-An <<clonevertexprogramusingspark,example>> is provided in the SparkGraphComputer section.
+The `CloneVertexProgram` itself resides in `gremlin-core`
+(`org.apache.tinkerpop.gremlin.process.computer.clone.CloneVertexProgram`), while the `InputFormat` and
+`OutputFormat` implementations listed above are provided by `hadoop-gremlin` under the
+`org.apache.tinkerpop.gremlin.hadoop.structure.io` package. A clone is configured on a `HadoopGraph` by
+declaring the reader and writer formats together with their input and output locations, after which the
+program is submitted through a `GraphComputer`. The following illustrates a copy of a graph read with
+`GryoInputFormat` and written as GraphSON with `GraphSONOutputFormat`:
+
+[source,groovy]
+----
+graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')                     <1>
+graph.configuration().setProperty('gremlin.hadoop.graphReader',
+    'org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat')        <2>
+graph.configuration().setProperty('gremlin.hadoop.graphWriter',
+    'org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONOutputFormat')
+graph.compute(SparkGraphComputer).
+    program(CloneVertexProgram.build().create()).submit().get()                     <3>
+----
+
+<1> Open a `HadoopGraph` from a configuration that defines the `gremlin.hadoop.inputLocation` and
+`gremlin.hadoop.outputLocation` properties.
+<2> The `gremlin.hadoop.graphReader` and `gremlin.hadoop.graphWriter` properties name the `InputFormat` and
+`OutputFormat` classes to copy between.
+<3> Any `GraphComputer` implementation may execute the program. `SparkGraphComputer` is used here.
+
+An <<clonevertexprogramusingspark,example>> that runs end to end is provided in the SparkGraphComputer section.
 
 Graph Providers should consider writing their own `OutputFormat` and `InputFormat` which would allow bulk loading and
 export capabilities through this `VertexProgram`. This topic is discussed further in the

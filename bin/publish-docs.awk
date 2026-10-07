@@ -22,10 +22,10 @@
   print "U " gensub("^[^/]*/[^/]*/", "", "g", $2)
 }
 
-/^Only in (java)?docs/ {
-  print "D " gensub(/:$/, "", "g", gensub("^[^/]*/[^/]*/", "", "g", $3)) "/" $4
+/^Only in (dotnet|js|java)?docs/ {
+  print "D " gensub(/:$/, "", "g", gensub("^[^/]*/[^/]*/?", "", "g", $3)) "/" $4
 }
 
 /^Only in \.\./ {
-  print "A " gensub(/:$/, "", "g", gensub("^[^/]*/[^/]*/[^/]*/", "", "g", $3)) "/" $4
+  print "A " gensub(/:$/, "", "g", gensub("^[^/]*/[^/]*/[^/]*/?", "", "g", $3)) "/" $4
 }

@@ -126,6 +126,10 @@ categories rather than to Java exception class names, since the categories are l
 category onto its language's idiomatic error type, and remote responses surface the server message text (which
 providers may localize while preserving the category).
 
+The `Example message` column gives a general, illustrative message that is representative of each category. It is not
+the exact, verbatim text a caller will encounter at runtime, as the precise wording can differ across versions and
+providers.
+
 [width="100%",cols="2,6,3,4",options="header"]
 |=========================================================
 |Category |Description |Java reference exception |Example message
@@ -545,7 +549,8 @@ pattern from a neighboring entry rather than introducing a new structure.
 
 The `addE()` step can be used as both a start step and a mid-traversal step. When used as a start step, both `from()`
 and `to()` must be specified. When used as a mid-traversal step, the current traverser becomes the source vertex and
-only `to()` needs to be specified.
+only `to()` needs to be specified. An edge label is not mandatory. Unlike `addV()`, the `addE()` step does not treat a
+missing or `null` edge label as an error. In either case the default edge label for the graph is used.
 
 The gremlin-lang grammar only permits `Traversal` and `STRING` (alias for `__.select(String)`) arguments in `from()` and
 `to()`. The `Traversal` must either produce a `Vertex` which is attachable to the graph, or it must produce the id of an
@@ -555,7 +560,8 @@ existing `Vertex` in the graph. `GraphTraversal` implementations in GLVs may opt
 
 *Exceptions:*
 
-* If the edge label is null, an `Argument Error` is raised.
+* If a `from()` or `to()` value does not resolve to a `Vertex`, or to the id of a `Vertex` present in the graph, a
+`State Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddEdgeStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddEdgeStartStep.java[source (start)],
@@ -894,14 +900,14 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asBool-step[reference]
 [[asDate-step]]
 === asDate()
 
-*Description:* Parse the value of incoming traverser as date. Supported ISO-8601 strings and Unix time numbers.
+*Description:* Parse the value of the incoming traverser as a `DATETIME`. ISO-8601 strings and numeric Unix-time values are supported.
 
 *Syntax:* `asDate()`
 
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`any` |`any`
+|N |Y |N |`STRING`/`NUMBER`/`DATETIME` |`DATETIME`
 |=========================================================
 
 *Arguments:*
@@ -914,7 +920,7 @@ None
 
 *Considerations:*
 
-Incoming date remains unchanged.
+A `DATETIME` input passes through unchanged. A `STRING` input is parsed as an ISO-8601 datetime, and a numeric input is interpreted as the count of milliseconds since the Unix epoch.
 
 *Exceptions:*
 
@@ -947,13 +953,9 @@ None
 
 *Considerations:*
 
-*Modulation:*
-
-None
-
-*Considerations:*
-
 If no type token is provided, the incoming number remains unchanged. A `DATE` input is converted to milliseconds since epoch. A `null` input passes through as `null`.
+
+When no type token is provided and the incoming traverser is a `STRING`, the string is parsed according to its numeric value. A string that represents an integer value is parsed to the smallest of `INT`, `LONG`, or `BIGINT` that can represent it. A string containing a decimal point or an exponent is parsed to `FLOAT` when the value is representable as such, and otherwise to a wider floating-point type (`DOUBLE`, then `BIGDECIMAL`).
 
 *Exceptions:*
 
@@ -992,7 +994,35 @@ None
 
 *Considerations:*
 
-Each value is converted to its canonical String representation.
+Under the `global` scope the incoming value is rendered to its canonical String representation. That representation is
+defined per type as follows:
+
+[width="100%",options="header"]
+|=========================================================
+|Type |Rendering |Example
+|`INT`, `LONG` |The decimal value with no type suffix. |`123`, `5`
+|`FLOAT`, `DOUBLE`, `BIGDECIMAL` |The decimal value with no type suffix. The three types render identically and are
+indistinguishable once converted. |`1.5`
+|`BOOLEAN` |The literal `true` or `false`. |`true`
+|`DATETIME` |An ISO-8601 timestamp with trailing zero-valued components elided. |`2023-08-02T00:00Z`
+|`Vertex` |The vertex identifier wrapped as `v[<id>]`. |`v[1]`
+|=========================================================
+
+A `LIST` under the `global` scope is rendered as a whole, producing a single `STRING` in which the elements appear
+bracketed and comma-separated:
+
+[source,text]
+----
+[1, 2, 3] -> "[1, 2, 3]"
+----
+
+Under `Scope.local` the incoming value is a `LIST` and each element is rendered individually. The list structure is
+preserved, yielding a `LIST` of `STRING` rather than a single `STRING`:
+
+[source,text]
+----
+[1, 2, 3] -> ["1", "2", "3"]
+----
 
 *Exceptions:*
 
@@ -1496,11 +1526,14 @@ None
 *Considerations:*
 
 The step computes a duration from `dateToken` and `value` at step construction time and adds that duration to
-the incoming date.
+the incoming date. `DT` is a closed enumeration whose only members are `second`, `minute`, `hour`, and `day`, and
+`dateToken` must name one of them. The `value` is bounded by the `INT` type, so the duration is derived without
+numeric overflow even for large magnitudes.
 
 *Exceptions:*
 
 * If the incoming traverser is a non-`DATETIME` value then an `Argument Error` is raised.
+* If `dateToken` is not one of the supported `DT` members (`second`, `minute`, `hour`, `day`) then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/DateAddStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#dateAdd-step[reference]
@@ -1640,9 +1673,22 @@ None
 
 *Considerations:*
 
-Set difference (`A-B`) is an ordered operation. The incoming traverser is treated as `A` and the provided argument is
-treated as `B`. A set is returned after the difference operation is applied so there won't be duplicates. This step only
-applies to list types which means that non-iterable types (including null) will cause exceptions to be thrown.
+Set difference (`A-B`) is a directional operation. The incoming traverser is treated as `A` and the provided argument
+as `B`, so `A-B` and `B-A` generally yield different results. This directionality is the only sense in which the
+operation is ordered. The result is a `SET`, so it contains no duplicates, and its iteration order is unspecified. In
+particular the result does not preserve the order of the incoming list, so a traversal that depends on a particular
+member order orders the result explicitly.
+
+Membership of the result is decided by comparing each member of `A` against the members of `B` by value and by type.
+Numerically equal values of different numeric types, such as an `INT` and a `LONG` of the same magnitude, are treated
+as distinct members, so a value from `A` is removed only when `B` contains a member of the same type and value. A
+`NULL` is a legal member of either list and is compared in the same way, so a `NULL` in `A` is removed only when `B`
+also contains a `NULL`.
+
+This step only applies to lists. An error is raised when the incoming traverser or the argument is itself `NULL` or is
+not iterable, while a `NULL` that appears as an element of an otherwise iterable list is permitted and behaves as
+described above. When the argument is supplied as a `Traversal`, that traversal produces the comparison list as a
+single result rather than as a stream of separate results.
 
 *Exceptions:*
 
@@ -1656,7 +1702,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#difference-step[referenc
 [[discard-step]]
 === discard()
 
-*Description:* Filters all traversers out of the traversal stream. Formerly named `none()` prior to 3.8.0.
+*Description:* Filters all traversers out of the traversal stream.
 
 *Syntax:* `discard()`
 
@@ -1679,6 +1725,11 @@ None
 The `discard()` step is a filter step that removes every traverser, always producing an empty result. It is commonly
 used to consume a traversal purely for its side effects (for example after an `aggregate()` or a mutation) without
 returning any objects.
+
+This step was named `none()` prior to 3.8.0. The name `none()` has since been reassigned to an unrelated list filter
+step that tests each item of a list against a supplied predicate and therefore requires a predicate argument. A bare
+`none()` no longer discards traversers and raises an error, so `discard()` is the step to use for that behavior. See the
+<<none-step,`none()`>> step for its current semantics.
 
 *Exceptions*
 
@@ -2285,7 +2336,18 @@ None
 
 The `local()` step enforces object-local execution. As a branching step with local children, it implements strict lazy
 evaluation by passing a single traverser at a time to the local traversal (bulk of exactly one, if bulking is supported)
-and resetting the traversal to clean state between executions.
+and resetting the traversal to clean state between executions. Each incoming object is therefore processed independently,
+as illustrated by counting the outgoing edges of every vertex in isolation.
+
+[gremlin-groovy,modern]
+----
+g.V().local(outE().count())
+----
+
+The clean state that is reset between executions is the local computational state of the local traversal, such as its
+per-object barriers, ordering, and path history. It does not extend to global side effects. A side-effect step such as
+`aggregate()` or `store()` writes to a side-effect that is shared across the whole traversal, so its contents are not
+reset for each incoming object and instead accumulate across every traverser that passes through `local()`.
 
 *Exceptions:*
 
@@ -2739,13 +2801,21 @@ None
 
 *Considerations:*
 
-A list of lists is returned after the product operation is applied with the inner list being a result pair. This step only
-applies to list types which means that non-iterable types (including null) will cause exceptions to be thrown.
+A list of lists is returned after the product operation is applied with the inner list being a result pair. Given an incoming
+list and an argument list, the result contains one pair for every combination of an element of the incoming list with an
+element of the argument list, so its size is the product of the two list sizes. The pairs are produced by taking each element
+of the incoming list in turn and pairing it with every element of the argument list in order. This is a true cartesian product,
+so no de-duplication is performed and repeated elements in either list yield repeated pairs. When either list is empty the step
+produces a single empty list rather than no result or an error, as there are no pairs to form.
+
+This step only applies to list types. A non-iterable incoming traverser or resolved argument, including `null` supplied in place
+of a list, causes an error to be raised. That restriction is on the incoming traverser and the argument as whole values. A `null`
+that appears as a member of an otherwise valid list is a legal element and is paired like any other value.
 
 *Exceptions:*
 
-* If the incoming traverser isn't a list then an `Argument Error` is raised.
-* If the argument doesn't resolve to a list then an `Argument Error` is raised.
+* If the incoming traverser isn't a list, including when it is `null`, then an `Argument Error` is raised.
+* If the argument doesn't resolve to a list, including when it is `null`, then an `Argument Error` is raised.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ProductStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
@@ -2771,8 +2841,9 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
 
 *Modulation:*
 
-* `by()` - Determines how to transform the current object for each key in the resulting map. The number of `by()`
-modulations should match the number of keys provided.
+* `by()` - Determines how to transform the current object for each key in the resulting map. The `by()` modulations
+are matched to the keys in the order both are provided. A mismatch between the number of `by()` modulations and the
+number of keys does not raise an error and is resolved as described in the considerations below.
 
 *Considerations:*
 
@@ -2780,6 +2851,12 @@ The `project()` step is similar to `select()` but instead of retrieving historic
 current state of the traverser. Each key in the resulting map corresponds to a `by()` modulation in the order they are
 provided. If a `by()` modulation doesn't produce a value for a particular key (not productive), that key will be omitted
 from the resulting `MAP`.
+
+The number of `by()` modulations need not equal the number of keys, and any mismatch is resolved without raising an
+error. When fewer `by()` modulations than keys are provided, the modulations are reused cyclically across the keys in
+round-robin order, so a single `by()` is applied to every key. When more `by()` modulations than keys are provided, the
+surplus modulations are never consumed and are silently ignored. When no `by()` modulation is provided, every key maps
+to the current object unchanged.
 
 *Exceptions:*
 
@@ -2889,6 +2966,8 @@ the repeat traversal operate across all traversers collectively rather than in i
 after the body finishes), not before. Therefore, `loops()` reflects the number of completed iterations.
   - `loops()` without arguments returns the counter for the closest (innermost) `repeat()`. `loops("name")` returns the
 counter for the named loop.
+  - The loop counter is bounded to `Integer.MAX_VALUE` (2,147,483,647) iterations. Exceeding this bound raises an error
+(see Exceptions).
 - Re-queuing for the next iteration:
   - After each iteration, if `until` is not satisfied at the post-check, the traverser is sent back into the loop body
 for another iteration. If it is satisfied, the traverser exits the loop and proceeds downstream.
@@ -2908,6 +2987,8 @@ message containing: `The repeat()-traversal was not defined`.
 
 * Using `emit()`, `until()`, or `times()` without a matching `repeat()` raises a `State Error` at runtime
   when the step is initialized during iteration with the message containing: `The repeat()-traversal was not defined`.
+* Incrementing a loop counter past `Integer.MAX_VALUE` (2,147,483,647) will raise an `IllegalStateException` with a
+  message containing: `has exceeded the maximum supported value`.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/branch/RepeatStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#repeat-step[reference]

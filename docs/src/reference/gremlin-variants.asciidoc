@@ -682,6 +682,15 @@ Because Go does not support method overloading, the batched form of `next(n)` av
 distinct method `NextN(n)` on `Traversal`. `Next()` returns a single `*Result`, while `NextN(n)` returns up to `n`
 results as `[]*Result`.
 
+Go rune literals are interpreted as `Integer` values rather than `Character` literals by default.
+To use the Gremlin `Character` type, wrap the rune in `gremlingo.Char()`. For example:
+
+[source,go]
+----
+g.Inject('a')                       // interpreted as integer 97 (the Unicode code point)
+g.Inject(gremlingo.Char('a'))       // properly translated to a Gremlin character literal
+----
+
 [[gremlin-go-aliases]]
 === Aliases
 To make the code more readable and close to the Gremlin query language), you can use aliases. These aliases can be named with capital letters to be consistent with non-aliased steps but will result in exported variables which could be problematic if not being used in a top-level program (i.e. not a redistributable package).
@@ -722,27 +731,36 @@ To make the code more readable and close to the Gremlin query language), you can
 	var order = gremlingo.Order
 ----
 
-Finally, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java,
-therefore cardinality functions that take a value like `list()`, `set()`, and `single()` are referenced from a
-`CardinalityValue` class rather than `Cardinality` itself.
+Finally, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java.
+Cardinality functions that take a value are therefore referenced from `CardinalityValue` rather than from
+`Cardinality` itself, and they follow the same Pascal-case convention as the step names described above:
+`CardinalityValue.List(v)`, `CardinalityValue.Set(v)`, and `CardinalityValue.Single(v)`. Qualified with the
+package name, these forms are `gremlingo.CardinalityValue.List(v)` and its `Set` and `Single` counterparts, and
+each is supplied as a property value:
+
+[source,go]
+----
+	g.V().Has("name", "foo").Property(map[interface{}]interface{}{"name": gremlingo.CardinalityValue.Set("bar"), "age": 43})
+----
 
 [[gremlin-go-limitations]]
 === Limitations
 
-* The Gremlin `Character` type is not supported by Gremlin-Go.
-
-* There is no default `set` type in Go. Any set type code from server will be deserialized into slices with the list
-type implementation. To input a set into Gremlin-Go, a custom struct which implements the `gremlingo.Set` interface
-will be serialized as a set. `gremlingo.NewSimpleSet` is a basic implementation of a set that is provided by Gremlin-Go
-that can be used to fulfill the `gremlingo.Set` interface if desired.
+* There is no default `set` type in Go. A set type code from the server is deserialized into a
+`*gremlingo.SimpleSet`, which implements the `gremlingo.Set` interface, rather than into a slice. To read its
+elements, the result should be type-asserted to `gremlingo.Set` and its `ToSlice()` method called. To input a set
+into Gremlin-Go, a custom struct which implements the `gremlingo.Set` interface will be serialized as a set.
+`gremlingo.NewSimpleSet` is a basic implementation of a set that is provided by Gremlin-Go that can be used to
+fulfill the `gremlingo.Set` interface if desired.
 
 * Go does not support ordered maps natively as the built-in `map` type does not guarantee iteration order. Traversal
 results which contain maps may not preserve original ordering when deserialized into Go's native map types.
 
-* GraphBinary `Char` values are not supported.
-
-* GraphBinary permits map keys of any supported type, including composite values such as lists. Go's native `map` type
-only supports comparable keys, so GraphBinary maps with non-comparable keys are not supported.
+* GraphBinary permits map keys of any supported type, including composite values such as lists. Go's native `map`
+type only supports comparable keys, so GraphBinary maps with non-comparable keys are deserialized lossily rather than
+rejected. A list key is converted to its string form through `fmt.Sprint`, so a key such as `[marko 29]` is stored as
+the string `"[marko 29]"`, while a map key is stored under a pointer to the key value. In both cases the original
+key's type and identity are lost, so such keys cannot be reconstructed or looked up by their original value.
 
 * The `subgraph()`-step returns a detached `*Graph` data container exposing
 `Vertices map[interface{}]*Vertex` and `Edges map[interface{}]*Edge`. The result is not a live `Graph` instance:
@@ -1062,7 +1080,7 @@ GraphTraversalSource g = traversal().with(conf);
 List<Vertex> vertices = g.with(Tokens.TIMEOUT_MILLIS, 500L).V().out("knows").toList()
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`,
 `materializeProperties` and `timeoutMillis`. Use of `Tokens` to reference these options is preferred.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
@@ -1502,6 +1520,7 @@ For an example of a simple `RequestInterceptor` that only modifies the header of
 link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-driver/src/main/java/org/apache/tinkerpop/gremlin/driver/auth/Basic.java[basic authentication].
 
 [[gremlin-java-dsl]]
+[llms-summary="Creating a Domain Specific Language (DSL) in Java with the @GremlinDsl annotation from the gremlin-annotations module: defining the DSL interface, customizing the TraversalSource with additional start steps, and the traversal classes generated by the annotation processor."]
 === Domain Specific Languages
 
 Creating a <<dsl,Domain Specific Language>> (DSL) in Java requires the `@GremlinDsl` Java annotation in the
@@ -1524,20 +1543,25 @@ public interface SocialTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
 }
 ----
 
-IMPORTANT: The name of the DSL interface should be suffixed with "TraversalDSL". All characters in the interface name
+IMPORTANT: The name of the DSL interface should be suffixed with "TraversalDsl". All characters in the interface name
 before that become the "name" of the DSL.
 
 In this interface, define the methods that the DSL will be composed of:
 
 [source,java]
 ----
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.GremlinDsl;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 @GremlinDsl
 public interface SocialTraversalDsl<S, E> extends GraphTraversal.Admin<S, E> {
     public default GraphTraversal<S, Vertex> knows(String personName) {
         return out("knows").hasLabel("person").has("name", personName);
     }
 
-    public default <E2 extends Number> GraphTraversal<S, E2> youngestFriendsAge() {
+    public default <E2 extends Comparable> GraphTraversal<S, E2> youngestFriendsAge() {
         return out("knows").hasLabel("person").values("age").min();
     }
 
@@ -1588,6 +1612,16 @@ any custom methods required by the DSL:
 
 [source,java]
 ----
+import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 public class SocialTraversalSourceDsl extends GraphTraversalSource {
 
     public SocialTraversalSourceDsl(Graph graph, TraversalStrategies traversalStrategies) {
@@ -1607,7 +1641,7 @@ public class SocialTraversalSourceDsl extends GraphTraversalSource {
 
         // Manually add a "start" step for the traversal in this case the equivalent of V(). GraphStep is marked
         // as a "start" step by passing "true" in the constructor.
-        clone.getBytecode().addStep(GraphTraversal.Symbols.V);
+        clone.getGremlinLang().addStep(GraphTraversal.Symbols.V);
         GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         traversal.asAdmin().addStep(new GraphStep<>(traversal.asAdmin(), Vertex.class, true));
 
@@ -3117,7 +3151,7 @@ would become the following in C#:
 ----
 g.V().Has("Person","name","marko").
   Out("knows").
-  ElementMap().ToList();
+  ElementMap<object>().ToList();
 ----
 
 In addition to the uppercase change, also note the conversion of the single quotes to double quotes as is expected for
@@ -3150,10 +3184,6 @@ g.V().GroupCount<object>().By("age")
 
 where "age" is not a valid key for all vertices in a way that will remove the need for a `null` to be returned.
 
-Finally, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java,
-therefore cardinality functions that take a value like `list()`, `set()`, and `single()` are referenced from a
-`CardinalityValue` class rather than `Cardinality` itself.
-
 [source,csharp]
 ----
 g.V().Has("age").GroupCount<object>().By("age")
@@ -3162,6 +3192,15 @@ g.V().HasLabel("person").GroupCount<object>().By("age")
 
 Either of the above two options accomplishes the desired goal as both prevent `groupCount()` from having to process
 the possibility of `null`.
+
+Finally, the enum construct for `Cardinality` cannot have functions attached to it the way it can be done in Java,
+therefore cardinality functions that take a value like `CardinalityValue.List(value)`, `CardinalityValue.Set(value)`,
+and `CardinalityValue.Single(value)` are referenced from a `CardinalityValue` class rather than `Cardinality` itself.
+
+[source,csharp]
+----
+g.AddV("person").Property("nicknames", CardinalityValue.List("okram"));
+----
 
 anchor:gremlin-net-limitations[]
 [[gremlin-dotnet-limitations]]
@@ -3514,6 +3553,11 @@ from gremlin_python.statics import SingleByte   # Java byte type
 from gremlin_python.statics import SingleChar   # Java char type
 from gremlin_python.statics import GremlinType  # Java Class
 ----
+
+Python has a single arbitrary precision `int`, so the serializer picks the Java type from the value:
+an `int` that fits the Java `int` range is sent as an `int` and anything wider is sent as a `long`.
+Values beyond the Java `long` range have to be wrapped in `bigint`. Use `long` when a graph needs the
+wider type for a value that would otherwise fit in an `int`.
 
 anchor:python-configuration[]
 [[gremlin-python-configuration]]
