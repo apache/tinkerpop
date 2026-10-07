@@ -83,6 +83,14 @@ public interface TinkerGraph extends Graph {
      * meaningful when {@link #GREMLIN_TINKERGRAPH_STORAGE} is set.
      */
     String GREMLIN_TINKERGRAPH_STORAGE_PRESERVE_VP_IDS = "gremlin.tinkergraph.storage.preserveVertexPropertyIds";
+
+    /**
+     * Whether a {@link TinkerStorageGraph} opens a damaged store by recovering what it can rather than failing.
+     * Defaults to {@code false}. When enabled, damaged records are skipped where that is safe, the graph is read-only,
+     * and nothing in the storage directory is changed, so the recovered graph can be exported with {@code g.io()} into
+     * a new storage directory. Only meaningful when {@link #GREMLIN_TINKERGRAPH_STORAGE} is set.
+     */
+    String GREMLIN_TINKERGRAPH_STORAGE_RECOVER = "gremlin.tinkergraph.storage.recover";
     String GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES = "gremlin.tinkergraph.allowNullPropertyValues";
     String GREMLIN_TINKERGRAPH_SERVICE = "gremlin.tinkergraph.service";
     String GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY = "gremlin.tinkergraph.vertexLabelCardinality";

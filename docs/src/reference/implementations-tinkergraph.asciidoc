@@ -192,6 +192,10 @@ explicitly closed. Defaults to `67108864` (64 MB). A value of `0` disables autom
 auto-generated vertex-property ids so they are stable across a close and reopen. Defaults to `false`, which
 regenerates those ids on load and keeps the store smaller. Element and edge ids are always preserved regardless. Only
 meaningful when `gremlin.tinkergraph.storage` is set.
+|gremlin.tinkergraph.storage.recover |Whether a `TinkerStorageGraph` opens a damaged store by recovering what remains
+readable rather than failing. Defaults to `false`. A graph opened this way is read-only and leaves the storage
+directory unchanged. See <<tinkergraph-gremlin-persistence,Persistence>>. Only meaningful when
+`gremlin.tinkergraph.storage` is set.
 |=========================================================
 
 NOTE: To use <<tinkergraph-gremlin-tx, transactions>> and <<tinkergraph-gremlin-persistence, persistence>>, configure
@@ -500,6 +504,15 @@ commit against that graph instance fails, since the location may already belong 
 the storage format version it was written with. Opening a store written in a format this version cannot read fails
 with a clear error rather than misreading the data. There is no in-place format migration. To move a graph across an
 incompatible storage format, export it with the `io()` step before upgrading and read it back afterward.
+
+A store that has been damaged, for example by a failing disk, normally fails to open rather than load data it cannot
+trust. Setting `gremlin.tinkergraph.storage.recover` to `true` opens such a store with everything that remains
+readable. Each commit in the log is one transaction, so replay of the log stops at the first record that cannot be
+read and keeps every transaction before it. An unreadable element in the snapshot is skipped, along with any edge that
+loses an endpoint as a result. Damage to the start of the snapshot, which holds the dictionary that every other record
+depends on, still fails the open. A warning in the log reports what was left out. The recovered graph is read-only. It
+refuses commits and never compacts, so the damaged files stay exactly as they were. The intended use is to export the
+recovered graph with the `io()` step and read it into a graph opened on a new storage directory.
 
 Gremlin Server persists a graph the same way. A graph in the server's `graphs` configuration is pointed at a
 properties file that sets the storage keys, and the server opens that graph at startup, commits to it as clients

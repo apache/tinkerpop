@@ -103,6 +103,14 @@ public interface TinkerStorage extends AutoCloseable {
     }
 
     /**
+     * Whether this engine accepts no writes at all, such as when a damaged store was opened for recovery. The graph
+     * then also leaves its other files in the storage directory, such as index definitions, unchanged.
+     */
+    default boolean isReadOnly() {
+        return false;
+    }
+
+    /**
      * {@inheritDoc}
      * <p/>
      * Flush and release resources. Does not delete persisted data.
