@@ -19,12 +19,15 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -73,8 +76,18 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
             return new ArrayList<>();
 
         return set.stream().
-                filter(e -> !e.isChanged() && e.get() != null).
+                filter(e -> e.get() != null && (!e.isChanged() || hasValue(e.get(), key, value))).
                 map(e -> e.get()).collect(Collectors.toList());
+    }
+
+    private boolean hasValue(final T element, final String key, final Object value) {
+        final Object indexableValue = indexable(value);
+        final Iterator<? extends Property<Object>> properties = element.properties(key);
+        while (properties.hasNext()) {
+            if (Objects.equals(indexableValue, indexable(properties.next().value())))
+                return true;
+        }
+        return false;
     }
 
     private Set<T> getModifiedElements(final String key, final Object value) {
