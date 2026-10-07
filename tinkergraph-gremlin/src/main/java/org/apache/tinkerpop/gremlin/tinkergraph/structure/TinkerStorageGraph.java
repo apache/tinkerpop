@@ -692,7 +692,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
      * storage engine keeps everything in memory and writes nothing.
      */
     private void recordIndexes() {
-        if (null == storage || restoringIndexes)
+        if (null == storage || restoringIndexes || storage.isReadOnly())
             return;
         new IndexDefinitions(getIndexedKeys(Vertex.class), getIndexedKeys(Edge.class))
                 .write(new File(storageDirectory));
