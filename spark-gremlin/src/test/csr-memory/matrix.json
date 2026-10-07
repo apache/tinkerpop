@@ -2,7 +2,7 @@
   "java": "java",
   "classpathFile": "/data/csrbench/classpath.txt",
   "jvmArgs": [
-    "-Xmx48g"
+    "-Xmx96g"
   ],
   "timeoutSeconds": 7200,
   "workDir": "/data/csrbench/work",
@@ -18,7 +18,7 @@
       "snapshot": "/data/csrbench/snap/powerlaw-16-streaming",
       "builder": "streaming",
       "source": "gryo",
-      "builderBudget": 38654705664
+      "builderBudget": 77309411328
     },
     {
       "mode": "build",
@@ -26,7 +26,7 @@
       "snapshot": "/data/csrbench/snap/powerlaw-18-streaming",
       "builder": "streaming",
       "source": "gryo",
-      "builderBudget": 38654705664
+      "builderBudget": 77309411328
     },
     {
       "mode": "build",
@@ -34,7 +34,7 @@
       "snapshot": "/data/csrbench/snap/powerlaw-22-ef24-streaming",
       "builder": "streaming",
       "source": "gryo",
-      "builderBudget": 38654705664
+      "builderBudget": 77309411328
     },
     {
       "mode": "build",
@@ -42,7 +42,7 @@
       "snapshot": "/data/csrbench/snap/powerlaw-18-heap",
       "builder": "heap",
       "source": "gryo",
-      "builderBudget": 38654705664
+      "builderBudget": 77309411328
     },
     {
       "mode": "open",
@@ -106,7 +106,7 @@
         "se-aggregate-count",
         "facade-path"
       ],
-      "csrBudget": 38654705664
+      "csrBudget": 77309411328
     },
     {
       "mode": "query",
@@ -121,7 +121,7 @@
         "sort-full-count",
         "iter-repeat-both-emit"
       ],
-      "csrBudget": 38654705664
+      "csrBudget": 77309411328
     },
     {
       "mode": "query",
@@ -149,7 +149,7 @@
         "se-aggregate-count",
         "facade-path"
       ],
-      "csrBudget": 38654705664
+      "csrBudget": 77309411328
     },
     {
       "mode": "query",
@@ -164,7 +164,7 @@
         "sort-full-count",
         "iter-repeat-both-emit"
       ],
-      "csrBudget": 38654705664
+      "csrBudget": 77309411328
     },
     {
       "mode": "query",
@@ -188,7 +188,7 @@
         "se-aggregate-count",
         "facade-path"
       ],
-      "csrBudget": 38654705664
+      "csrBudget": 77309411328
     }
   ]
 }

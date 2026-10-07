@@ -145,6 +145,7 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.structure.snapshot.CsrSnapshot;
 import org.apache.tinkerpop.gremlin.structure.snapshot.build.BuildOptions;
 import org.apache.tinkerpop.gremlin.structure.snapshot.build.HeapSnapshotBuilder;
+import org.apache.tinkerpop.gremlin.structure.snapshot.build.HybridSnapshotBuilder;
 import org.apache.tinkerpop.gremlin.structure.snapshot.build.StreamingSnapshotBuilder;
 import org.apache.tinkerpop.gremlin.structure.snapshot.format.SnapshotLayout;
 import org.apache.tinkerpop.gremlin.structure.snapshot.graph.CsrGraph;
@@ -231,6 +232,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(CsrSnapshot.class);
         CLASS_IMPORTS.add(StreamingSnapshotBuilder.class);
         CLASS_IMPORTS.add(HeapSnapshotBuilder.class);
+        CLASS_IMPORTS.add(HybridSnapshotBuilder.class);
         CLASS_IMPORTS.add(BuildOptions.class);
         CLASS_IMPORTS.add(SnapshotLayout.class);
         CLASS_IMPORTS.add(CsrNative.class);

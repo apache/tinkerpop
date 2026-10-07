@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.snapshot.build;
 
+import com.carrotsearch.hppc.LongIntHashMap;
 import org.apache.tinkerpop.gremlin.structure.snapshot.format.BuildDirectory;
 import org.apache.tinkerpop.gremlin.structure.snapshot.format.ColumnEncoding;
 import org.apache.tinkerpop.gremlin.structure.snapshot.format.ColumnReader;
@@ -108,6 +109,11 @@ import java.util.function.Function;
  * </ul>
  * Count-hint mismatches, order violations of a grouped scan and edges with unknown endpoints fail with
  * {@link IllegalStateException}. Unsupported data fails with {@link UnsupportedSnapshotDataException}.
+ * <p/>
+ * A builder created by {@link HybridSnapshotBuilder} runs the same steps with a storage policy: a byte-accounted
+ * budget of {@link BuildOptions#memoryBudgetBytes()} decides which structures stay in heap (the spools, the identifier
+ * lookup map, the sort of the index keys, the degree and fill arrays) and which live in scratch files as described
+ * above. When a reservation does not fit, the largest spool in heap is moved to its file first. The output is the same.
  */
 public final class StreamingSnapshotBuilder implements SnapshotBuilder {
 
@@ -117,13 +123,23 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
     private static final String SPOOL_DIR = "spool/";
     private static final String DEGREE_DIR = "degree/";
 
+    private final boolean hybrid;
+
+    public StreamingSnapshotBuilder() {
+        this(false);
+    }
+
+    StreamingSnapshotBuilder(final boolean hybrid) {
+        this.hybrid = hybrid;
+    }
+
     @Override
     public BuildStats build(final SnapshotSource source, final Path target, final BuildOptions options) {
         Objects.requireNonNull(source);
         Objects.requireNonNull(target);
         Objects.requireNonNull(options);
         try (BuildDirectory dir = BuildDirectory.create(target, options.scratchDirectory().orElse(null))) {
-            return new Build(source, dir, options).run();
+            return new Build(source, dir, options, hybrid).run();
         }
     }
 
@@ -167,6 +183,7 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
      * The state of one build.
      */
     private static final class Build {
+        private final boolean hybrid;
         private final SnapshotSource source;
         private final BuildDirectory dir;
         private final SnapshotLayout layout;
@@ -181,7 +198,9 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
         private final long budget;
         private final int ioBuffer;
         private final int spoolBuffer;
-        private final ExternalIndexSorter sorter;
+        private final BuildBudget account;
+        private final ExternalIndexSorter streamingSorter;
+        private final Map<String, Long> timers = new LinkedHashMap<>();
 
         private final List<BuildStats.Phase> phases = new ArrayList<>();
         private final List<Manifest.SegmentInfo> segments = new ArrayList<>();
@@ -195,36 +214,47 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
         private final LabelCounts edgeLabelHistogram = new LabelCounts();
         private final LabelDictionary vertexKeys = new LabelDictionary();
         private final List<KeyColumn> vertexColumns = new ArrayList<>();
-        private SegmentWriter vertexLabelSpool;
-        private SegmentWriter vertexLabelCountSpool;
+        private FixedSpool vertexLabelSpool;
+        private FixedSpool vertexLabelCountSpool;
         private boolean multiLabels;
         private final LabelDictionary metaKeys = new LabelDictionary();
         private PropertySpool vertexIdSpool;
         private final ColumnStats vertexIdStats = new ColumnStats();
-        private SegmentWriter vertexKeySpool;
+        private FixedSpool vertexKeySpool;
         private boolean vertexKeysSorted = true;
         private long lastVertexKey;
 
         // vertex index
         private Manifest.ColumnInfo vertexIdInfo;
         private IdentifierIndex vertexIndex;
+        private long mapBytes;
+        // hybrid: the lookup in heap, from index key to the first ordinal with it, chained through vertexNext for keys
+        // that more than one identifier shares (non-integral identifiers and mixed integral types)
+        private LongIntHashMap vertexMap;
+        private int[] vertexNext;
+        private ValueType vertexExact;
+        private ColumnReader vertexIds;
 
         // edge scan
         private int edgeCount;
         private final LabelDictionary edgeLabels = new LabelDictionary();
         private final LabelDictionary edgeKeys = new LabelDictionary();
         private final List<KeyColumn> edgeColumns = new ArrayList<>();
-        private SegmentWriter edgeLabelSpool;
+        private FixedSpool edgeLabelSpool;
         private PropertySpool edgeIdSpool;
         private final ColumnStats edgeIdStats = new ColumnStats();
-        private SegmentWriter edgeKeySpool;
+        private FixedSpool edgeKeySpool;
         private boolean edgeKeysSorted = true;
         private long lastEdgeKey;
         private SegmentWriter outVertices;
         private SegmentWriter inVertices;
         private SegmentWriter fastOutNeighbors;
-        private MappedSegment outCursors;
-        private MappedSegment inCursors;
+        private IntTable outCursors;
+        private IntTable inCursors;
+        private long sourceNanos;
+        private long callbackNanos;
+        private long resolveNanos;
+        private long lastExitNanos;
         private boolean haveLastOut;
         private int lastOutOrdinal;
         private ValueType lastOutType;
@@ -242,7 +272,8 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
         private final VertexProperties vertexProperties = new VertexProperties();
         private final EdgeProperties edgeProperties = new EdgeProperties();
 
-        Build(final SnapshotSource source, final BuildDirectory dir, final BuildOptions options) {
+        Build(final SnapshotSource source, final BuildDirectory dir, final BuildOptions options, final boolean hybrid) {
+            this.hybrid = hybrid;
             this.source = source;
             this.dir = dir;
             this.layout = options.layout();
@@ -254,7 +285,14 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
             this.budget = options.memoryBudgetBytes();
             this.ioBuffer = (int) Math.max(64, Math.min(SegmentWriter.DEFAULT_BUFFER_BYTES, budget / 64));
             this.spoolBuffer = (int) Math.max(256, Math.min(32 * 1024, budget / 256));
-            this.sorter = new ExternalIndexSorter(dir::scratchPath, budget);
+            this.account = hybrid ? new BuildBudget(budget) : BuildBudget.none();
+            this.streamingSorter = hybrid ? null : new ExternalIndexSorter(dir::scratchPath, budget);
+        }
+
+        // the streaming sorter is sized from the whole budget; in hybrid mode it gets what is left when it is needed
+        private ExternalIndexSorter sorter() {
+            if (!hybrid) return streamingSorter;
+            return new ExternalIndexSorter(dir::scratchPath, Math.max(account.available(), budget / 4));
         }
 
         BuildStats run() {
@@ -294,7 +332,7 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
                 dir.publish(manifest);
                 phases.add(new BuildStats.Phase("publish", System.nanoTime() - start, diskBytes));
 
-                return new BuildStats(phases, segmentBytes(manifest));
+                return new BuildStats(phases, segmentBytes(manifest), timers, account.peak());
             } finally {
                 closeAll();
             }
@@ -341,11 +379,6 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
             if (published) segments.add(writer.info(relativePath));
         }
 
-        private void publish(final MappedSegment segment, final String relativePath) {
-            segment.finish();
-            segments.add(segment.info(relativePath));
-        }
-
         private static void checkCount(final String kind, final OptionalLong hint, final long actual) {
             if (hint.isPresent() && hint.getAsLong() != actual) {
                 throw new IllegalStateException("The source announced " + hint.getAsLong() + " " + kind
@@ -353,11 +386,19 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
             }
         }
 
-        private static KeyColumn column(final List<KeyColumn> columns, final int code, final Path path,
-                                        final int bufferBytes) {
+        private FixedSpool fixed(final String relativePath, final int width) {
+            return track(new FixedSpool(dir.scratchPath(relativePath), width, ioBuffer, account));
+        }
+
+        private PropertySpool propertySpool(final String relativePath, final int bufferBytes, final boolean keepOpen) {
+            return new PropertySpool(dir.scratchPath(relativePath), bufferBytes, keepOpen, account);
+        }
+
+        private KeyColumn column(final List<KeyColumn> columns, final int code, final String relativePath,
+                                 final int bufferBytes) {
             if (code < columns.size()) return columns.get(code);
             if (code != columns.size()) throw new IllegalStateException("Property-key code " + code + " skipped");
-            final KeyColumn column = new KeyColumn(new PropertySpool(path, bufferBytes, false));
+            final KeyColumn column = new KeyColumn(propertySpool(relativePath, bufferBytes, false));
             columns.add(column);
             return column;
         }
@@ -366,12 +407,18 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
 
         private void scanVertices() {
             if (withIdentity) {
-                vertexLabelSpool = writer(false, SPOOL_DIR + "vertex-labels.bin", 4);
-                vertexLabelCountSpool = writer(false, SPOOL_DIR + "vertex-label-counts.bin", 4);
+                vertexLabelSpool = fixed(SPOOL_DIR + "vertex-labels.bin", 4);
+                vertexLabelCountSpool = fixed(SPOOL_DIR + "vertex-label-counts.bin", 4);
             }
-            vertexIdSpool = track(new PropertySpool(dir.scratchPath(SPOOL_DIR + "vertex-ids.bin"), ioBuffer, true));
-            vertexKeySpool = writer(false, SPOOL_DIR + "vertex-index-keys.bin", 8);
+            vertexIdSpool = track(propertySpool(SPOOL_DIR + "vertex-ids.bin", ioBuffer, true));
+            vertexKeySpool = fixed(SPOOL_DIR + "vertex-index-keys.bin", 8);
+            lastExitNanos = System.nanoTime();
             source.scanVertices(this::onVertex);
+            sourceNanos += System.nanoTime() - lastExitNanos;
+            timers.put("vertex-scan.source", sourceNanos);
+            timers.put("vertex-scan.callback", callbackNanos);
+            sourceNanos = 0;
+            callbackNanos = 0;
             checkCount("vertices", source.vertexCount(), vertexCount);
             if (withIdentity) {
                 vertexLabelSpool.finish();
@@ -386,6 +433,14 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
         }
 
         private void onVertex(final Object id, final List<String> labels, final VertexPropertySource properties) {
+            final long enter = System.nanoTime();
+            sourceNanos += enter - lastExitNanos;
+            addVertex(id, labels, properties);
+            lastExitNanos = System.nanoTime();
+            callbackNanos += lastExitNanos - enter;
+        }
+
+        private void addVertex(final Object id, final List<String> labels, final VertexPropertySource properties) {
             if (vertexCount >= MAX_ELEMENTS) {
                 throw new UnsupportedSnapshotDataException("More than " + MAX_ELEMENTS + " vertices are not supported");
             }
@@ -427,8 +482,8 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
                 final int code = vertexKeys.codeOf(key);
                 final ValueType idType = ValueCodec.requireIdentifierType(id, "vertex property identifier", key);
                 final ValueType type = value == null ? null : ValueCodec.requireType(value, "vertex property", key);
-                final KeyColumn column = column(vertexColumns, code,
-                        dir.scratchPath(SPOOL_DIR + "vertex-property-" + code + ".bin"), spoolBuffer);
+                final KeyColumn column = column(vertexColumns, code, SPOOL_DIR + "vertex-property-" + code + ".bin",
+                        spoolBuffer);
                 if (column.lastOrdinal == ordinal) {
                     column.multi = true;
                 } else {
@@ -475,8 +530,8 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
                         : ValueCodec.requireType(value, "meta-property of '" + key + "'", metaKey);
                 MetaColumn meta = column.metas.get(metaCode);
                 if (meta == null) {
-                    meta = new MetaColumn(new PropertySpool(dir.scratchPath(SPOOL_DIR + "vertex-meta-" + code + "-"
-                            + metaCode + ".bin"), spoolBuffer, false));
+                    meta = new MetaColumn(propertySpool(SPOOL_DIR + "vertex-meta-" + code + "-" + metaCode + ".bin",
+                            spoolBuffer, false));
                     column.metas.put(metaCode, meta);
                 }
                 if (meta.lastIndex == index) {
@@ -504,11 +559,55 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
             vertexIdInfo = compactIds(SegmentPaths.VERTEX_IDS_DIR, vertexIdSpool, vertexCount, vertexIdStats);
             final ValueType exact = IdentifierIndex.exactType(vertexIdInfo);
             final ColumnReader ids = exact == null ? openIds(SegmentPaths.VERTEX_IDS_DIR, vertexCount, vertexIdInfo) : null;
-            writeIndex("vertex", vertexKeySpool.path(), vertexKeysSorted, vertexCount, vertexIdInfo, ids, withIdentity,
-                    SegmentPaths.VERTEX_ID_INDEX_KEYS, SegmentPaths.VERTEX_ID_INDEX_ORDINALS, "vertex");
-            final Function<String, MappedSegment> opener = opener(withIdentity);
-            vertexIndex = IdentifierIndex.of(opener.apply(SegmentPaths.VERTEX_ID_INDEX_KEYS),
-                    opener.apply(SegmentPaths.VERTEX_ID_INDEX_ORDINALS), exact, ids);
+            final ExternalIndexSorter.EntrySink tap = hybrid ? reserveLookupMap(exact, ids) : null;
+            writeIndex("vertex", vertexKeySpool, vertexKeysSorted, vertexCount, vertexIdInfo, ids, withIdentity,
+                    SegmentPaths.VERTEX_ID_INDEX_KEYS, SegmentPaths.VERTEX_ID_INDEX_ORDINALS, "vertex", tap);
+            vertexKeySpool.release();
+            if (vertexMap == null) {
+                final Function<String, MappedSegment> opener = opener(withIdentity);
+                vertexIndex = IdentifierIndex.of(opener.apply(SegmentPaths.VERTEX_ID_INDEX_KEYS),
+                        opener.apply(SegmentPaths.VERTEX_ID_INDEX_ORDINALS), exact, ids);
+            }
+        }
+
+        /**
+         * Hybrid mode: reserves the heap for the lookup map and returns the sink that fills it from the sorted index
+         * entries, or null when the map does not fit and the mapped index serves the lookups. Integral identifiers are
+         * keyed by value. Other identifiers are keyed by the 64-bit key hash and chained, and a candidate is checked
+         * against the encoded identifier in the identifier column.
+         */
+        private ExternalIndexSorter.EntrySink reserveLookupMap(final ValueType exact, final ColumnReader ids) {
+            final long n = vertexCount;
+            // hppc sizes its arrays to the next power of two of n / loadFactor, plus a sentinel slot
+            final long capacity = Long.highestOneBit(Math.max(4, (long) Math.ceil(n / 0.75)) - 1) << 1;
+            if (capacity > (1L << 30)) return null;
+            final long bytes = (capacity + 1) * (Long.BYTES + Integer.BYTES) + (exact == null ? n * Integer.BYTES : 0);
+            if (!account.reserve(bytes)) return null;
+            mapBytes = bytes;
+            vertexExact = exact;
+            vertexIds = ids;
+            vertexMap = new LongIntHashMap((int) n);
+            if (exact != null) return (key, ordinal) -> vertexMap.put(key, ordinal);
+            vertexNext = new int[(int) n];
+            return (key, ordinal) -> {
+                vertexNext[ordinal] = vertexMap.getOrDefault(key, -1);
+                vertexMap.put(key, ordinal);
+            };
+        }
+
+        private int lookupVertex(final Object id) {
+            if (vertexMap == null) return vertexIndex.lookup(id);
+            final ValueType type = ValueCodec.typeOf(id);
+            if (type == null) return -1;
+            if (vertexExact != null) {
+                return type != vertexExact ? -1 : vertexMap.getOrDefault(((Number) id).longValue(), -1);
+            }
+            final byte[] encoded = ValueCodec.encode(type, id);
+            final long key = IdentifierIndex.keyOf(type, encoded, 0, encoded.length);
+            for (int ordinal = vertexMap.getOrDefault(key, -1); ordinal >= 0; ordinal = vertexNext[ordinal]) {
+                if (vertexIds.matches(ordinal, type, encoded)) return ordinal;
+            }
+            return -1;
         }
 
         /**
@@ -518,7 +617,7 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
                                                final ColumnStats stats) {
             final Manifest.ColumnInfo info = stats.toInfo(count);
             try (ColumnWriter writer = ColumnWriter.create(resolver(withIdentity), columnDir, count, info);
-                 PropertySpoolReader in = new PropertySpoolReader(spool.path(), ioBuffer)) {
+                 PropertySpoolReader in = spool.reader(ioBuffer)) {
                 final PropertySpoolReader.Payload payload = new PropertySpoolReader.Payload();
                 for (long ordinal = 0; ordinal < count; ordinal++) {
                     final ValueType type = in.readType();
@@ -528,6 +627,7 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
                 final List<Manifest.SegmentInfo> written = writer.finish();
                 if (withIdentity) segments.addAll(written);
             }
+            spool.release();
             return info;
         }
 
@@ -539,18 +639,43 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
          * Writes an identifier index from the key spool, whose entry positions are the ordinals, either by copying the
          * spool when it is already in index order or by an external sort. The index is published only when asked.
          */
-        private void writeIndex(final String kind, final Path keySpool, final boolean sorted, final long count,
+        private void writeIndex(final String kind, final FixedSpool keySpool, final boolean sorted, final long count,
                                 final Manifest.ColumnInfo idInfo, final ColumnReader ids, final boolean published,
-                                final String keysPath, final String ordinalsPath, final String sortName) {
+                                final String keysPath, final String ordinalsPath, final String sortName,
+                                final ExternalIndexSorter.EntrySink tap) {
             final Function<String, Path> resolver = resolver(published);
             try (IdentifierIndexWriter writer = IdentifierIndexWriter.create(resolver.apply(keysPath),
                     resolver.apply(ordinalsPath), kind, count, IdentifierIndex.exactType(idInfo), ids)) {
+                // the entries reach the sink in index order, the writer first so that a duplicate fails before the tap
+                final ExternalIndexSorter.EntrySink sink = tap == null ? writer::add : (key, ordinal) -> {
+                    writer.add(key, ordinal);
+                    tap.accept(key, ordinal);
+                };
+                // the key, the ordinal and the two copies that the stable in-heap sort needs
+                final long sortBytes = 24L * count;
                 if (sorted) {
-                    try (SegmentReader in = SegmentReader.open(keySpool, ioBuffer)) {
-                        for (long ordinal = 0; ordinal < count; ordinal++) writer.add(in.readLong(), (int) ordinal);
+                    try (FixedSpool.Reader in = keySpool.reader(ioBuffer)) {
+                        for (long ordinal = 0; ordinal < count; ordinal++) sink.accept(in.readLong(), (int) ordinal);
+                    }
+                } else if (hybrid && count <= MAX_ELEMENTS && account.reserve(sortBytes)) {
+                    try {
+                        final int n = (int) count;
+                        final long[] keys = new long[n];
+                        final int[] ordinals = new int[n];
+                        try (FixedSpool.Reader in = keySpool.reader(ioBuffer)) {
+                            for (int i = 0; i < n; i++) {
+                                keys[i] = in.readLong();
+                                ordinals[i] = i;
+                            }
+                        }
+                        keySpool.release();
+                        IdentifierIndex.sortEntries(keys, ordinals, n);
+                        for (int i = 0; i < n; i++) sink.accept(keys[i], ordinals[i]);
+                    } finally {
+                        account.release(sortBytes);
                     }
                 } else {
-                    sorter.sort(keySpool, sortName, writer::add);
+                    sorter().sort(keySpool.materialize(), sortName, sink);
                 }
                 final List<Manifest.SegmentInfo> written = writer.finish(keysPath, ordinalsPath);
                 if (published) segments.addAll(written);
@@ -561,17 +686,28 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
 
         private void scanEdges() {
             if (withIdentity) {
-                edgeLabelSpool = writer(false, SPOOL_DIR + "edge-labels.bin", 4);
-                edgeIdSpool = track(new PropertySpool(dir.scratchPath(SPOOL_DIR + "edge-ids.bin"), ioBuffer, true));
+                edgeLabelSpool = fixed(SPOOL_DIR + "edge-labels.bin", 4);
+                edgeIdSpool = track(propertySpool(SPOOL_DIR + "edge-ids.bin", ioBuffer, true));
             }
-            if (edgeIndex) edgeKeySpool = writer(false, SPOOL_DIR + "edge-index-keys.bin", 8);
+            if (edgeIndex) edgeKeySpool = fixed(SPOOL_DIR + "edge-index-keys.bin", 8);
             outVertices = writer(withIdentity, SegmentPaths.EDGE_OUT_VERTICES, 4);
             inVertices = writer(withIdentity, SegmentPaths.EDGE_IN_VERTICES, 4);
             if (fastPath) fastOutNeighbors = writer(true, SegmentPaths.OUT_NEIGHBORS, 4);
-            outCursors = track(MappedSegment.create(dir.scratchPath(DEGREE_DIR + "out.bin"), 4, vertexCount));
-            inCursors = track(MappedSegment.create(dir.scratchPath(DEGREE_DIR + "in.bin"), 4, vertexCount));
+            outCursors = track(IntTable.allocate(account, vertexCount, dir.scratchPath(DEGREE_DIR + "out.bin")));
+            inCursors = track(IntTable.allocate(account, vertexCount, dir.scratchPath(DEGREE_DIR + "in.bin")));
 
+            lastExitNanos = System.nanoTime();
             source.scanEdges(this::onEdge);
+            sourceNanos += System.nanoTime() - lastExitNanos;
+            timers.put("edge-scan.source", sourceNanos);
+            timers.put("edge-scan.callback", callbackNanos);
+            timers.put("edge-scan.resolve", resolveNanos);
+            if (vertexMap != null) {
+                // the endpoints are resolved; the map is not needed again
+                vertexMap = null;
+                vertexNext = null;
+                account.release(mapBytes);
+            }
             checkCount("edges", source.edgeCount(), edgeCount);
             if (withProperties) source.scanVariables(this::onVariable);
 
@@ -588,6 +724,15 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
 
         private void onEdge(final Object id, final String label, final Object outId, final Object inId,
                             final PropertySource properties) {
+            final long enter = System.nanoTime();
+            sourceNanos += enter - lastExitNanos;
+            addEdge(id, label, outId, inId, properties);
+            lastExitNanos = System.nanoTime();
+            callbackNanos += lastExitNanos - enter;
+        }
+
+        private void addEdge(final Object id, final String label, final Object outId, final Object inId,
+                             final PropertySource properties) {
             if (edgeCount >= MAX_ELEMENTS) {
                 throw new UnsupportedSnapshotDataException("More than " + MAX_ELEMENTS + " edges are not supported");
             }
@@ -609,6 +754,7 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
                 }
             }
 
+            final long resolveStart = System.nanoTime();
             final int out = resolveOut(outId, ordinal);
             if (grouped) {
                 if (out < lastGroupOrdinal) {
@@ -617,15 +763,16 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
                 }
                 lastGroupOrdinal = out;
             }
-            final int in = vertexIndex.lookup(inId);
+            final int in = lookupVertex(inId);
+            resolveNanos += System.nanoTime() - resolveStart;
             if (in < 0) {
                 throw new IllegalStateException("Edge " + ordinal + " refers to unknown in-vertex " + inId);
             }
 
             outVertices.writeInt(out);
             inVertices.writeInt(in);
-            outCursors.putInt(out, outCursors.getInt(out) + 1);
-            inCursors.putInt(in, inCursors.getInt(in) + 1);
+            outCursors.put(out, outCursors.get(out) + 1);
+            inCursors.put(in, inCursors.get(in) + 1);
             if (fastPath) fastOutNeighbors.writeInt(in);
 
             if (withProperties) {
@@ -662,7 +809,7 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
                         : id.equals(lastOutId);
                 if (same) return lastOutOrdinal;
             }
-            final int ordinal = vertexIndex.lookup(id);
+            final int ordinal = lookupVertex(id);
             if (ordinal < 0) {
                 throw new IllegalStateException("Edge " + edgeOrdinal + " refers to unknown out-vertex " + id);
             }
@@ -685,8 +832,8 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
             public void property(final String key, final Object value) {
                 final int code = edgeKeys.codeOf(key);
                 final ValueType type = value == null ? null : ValueCodec.requireType(value, "edge property", key);
-                final KeyColumn column = column(edgeColumns, code,
-                        dir.scratchPath(SPOOL_DIR + "edge-property-" + code + ".bin"), spoolBuffer);
+                final KeyColumn column = column(edgeColumns, code, SPOOL_DIR + "edge-property-" + code + ".bin",
+                        spoolBuffer);
                 if (column.lastOrdinal == ordinal) {
                     throw new UnsupportedSnapshotDataException("Edge " + ordinal + " has more than one value for key '"
                             + key + "'");
@@ -719,10 +866,10 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
             for (int v = 0; v < vertexCount; v++) {
                 outOffsets.writeLong(outRunning);
                 inOffsets.writeLong(inRunning);
-                final int outDegree = outCursors.getInt(v);
-                final int inDegree = inCursors.getInt(v);
-                outCursors.putInt(v, (int) outRunning);
-                inCursors.putInt(v, (int) inRunning);
+                final int outDegree = outCursors.get(v);
+                final int inDegree = inCursors.get(v);
+                outCursors.put(v, (int) outRunning);
+                inCursors.put(v, (int) inRunning);
                 outRunning += outDegree;
                 inRunning += inDegree;
             }
@@ -740,14 +887,10 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
 
         private void replay() {
             final boolean outEdges = withIdentity && !grouped;
-            final MappedSegment inNeighbors = track(MappedSegment.create(dir.segmentPath(SegmentPaths.IN_NEIGHBORS), 4,
-                    edgeCount));
-            final MappedSegment inEdges = withIdentity
-                    ? track(MappedSegment.create(dir.segmentPath(SegmentPaths.IN_EDGES), 4, edgeCount)) : null;
-            final MappedSegment outNeighbors = fastPath ? null
-                    : track(MappedSegment.create(dir.segmentPath(SegmentPaths.OUT_NEIGHBORS), 4, edgeCount));
-            final MappedSegment outEdgeSegment = !fastPath && outEdges
-                    ? track(MappedSegment.create(dir.segmentPath(SegmentPaths.OUT_EDGES), 4, edgeCount)) : null;
+            final IntTable inNeighbors = fill(SegmentPaths.IN_NEIGHBORS);
+            final IntTable inEdges = withIdentity ? fill(SegmentPaths.IN_EDGES) : null;
+            final IntTable outNeighbors = fastPath ? null : fill(SegmentPaths.OUT_NEIGHBORS);
+            final IntTable outEdgeSegment = !fastPath && outEdges ? fill(SegmentPaths.OUT_EDGES) : null;
 
             try (SegmentReader outReader = SegmentReader.open(resolver(withIdentity).apply(SegmentPaths.EDGE_OUT_VERTICES),
                     ioBuffer);
@@ -756,23 +899,36 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
                 for (int edge = 0; edge < edgeCount; edge++) {
                     final int out = outReader.readInt();
                     final int in = inReader.readInt();
-                    final int inPosition = inCursors.getInt(in);
-                    inCursors.putInt(in, inPosition + 1);
-                    inNeighbors.putInt(inPosition, out);
-                    if (inEdges != null) inEdges.putInt(inPosition, edge);
+                    final int inPosition = inCursors.get(in);
+                    inCursors.put(in, inPosition + 1);
+                    inNeighbors.put(inPosition, out);
+                    if (inEdges != null) inEdges.put(inPosition, edge);
                     if (!fastPath) {
-                        final int outPosition = outCursors.getInt(out);
-                        outCursors.putInt(out, outPosition + 1);
-                        outNeighbors.putInt(outPosition, in);
-                        if (outEdgeSegment != null) outEdgeSegment.putInt(outPosition, edge);
+                        final int outPosition = outCursors.get(out);
+                        outCursors.put(out, outPosition + 1);
+                        outNeighbors.put(outPosition, in);
+                        if (outEdgeSegment != null) outEdgeSegment.put(outPosition, edge);
                     }
                 }
             }
 
+            // the cursors are spent
+            outCursors.close();
+            inCursors.close();
             publish(inNeighbors, SegmentPaths.IN_NEIGHBORS);
             if (inEdges != null) publish(inEdges, SegmentPaths.IN_EDGES);
             if (outNeighbors != null) publish(outNeighbors, SegmentPaths.OUT_NEIGHBORS);
             if (outEdgeSegment != null) publish(outEdgeSegment, SegmentPaths.OUT_EDGES);
+        }
+
+        // an adjacency array of the edge count: in heap while the budget allows, else the mapped output segment
+        private IntTable fill(final String relativePath) {
+            return track(IntTable.allocate(account, edgeCount, dir.segmentPath(relativePath)));
+        }
+
+        private void publish(final IntTable table, final String relativePath) {
+            segments.add(table.publish(dir.segmentPath(relativePath), relativePath, ioBuffer));
+            table.close();
         }
 
         // ------------------------------------------------------------ step 6: compaction
@@ -790,11 +946,12 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
                     final ValueType exact = IdentifierIndex.exactType(edgeIdInfo);
                     final ColumnReader ids = exact == null
                             ? openIds(SegmentPaths.EDGE_IDS_DIR, edgeCount, edgeIdInfo) : null;
-                    writeIndex("edge", edgeKeySpool.path(), edgeKeysSorted, edgeCount, edgeIdInfo, ids, true,
-                            SegmentPaths.EDGE_ID_INDEX_KEYS, SegmentPaths.EDGE_ID_INDEX_ORDINALS, "edge");
+                    writeIndex("edge", edgeKeySpool, edgeKeysSorted, edgeCount, edgeIdInfo, ids, true,
+                            SegmentPaths.EDGE_ID_INDEX_KEYS, SegmentPaths.EDGE_ID_INDEX_ORDINALS, "edge", null);
+                    edgeKeySpool.release();
                 }
-                segments.add(LabelDictionary.narrow(edgeLabelSpool.path(), dir.segmentPath(SegmentPaths.EDGE_LABELS),
-                        SegmentPaths.EDGE_LABELS, edgeLabels.size()));
+                segments.add(narrow(edgeLabelSpool, SegmentPaths.EDGE_LABELS, edgeLabels.size()));
+                edgeLabelSpool.release();
             }
             if (withProperties) {
                 compactVertexProperties();
@@ -809,19 +966,43 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
          */
         private void compactVertexLabels() {
             if (!multiLabels) {
-                segments.add(LabelDictionary.narrow(vertexLabelSpool.path(),
-                        dir.segmentPath(SegmentPaths.VERTEX_LABELS), SegmentPaths.VERTEX_LABELS, vertexLabels.size()));
+                segments.add(narrow(vertexLabelSpool, SegmentPaths.VERTEX_LABELS, vertexLabels.size()));
+                vertexLabelSpool.release();
+                vertexLabelCountSpool.release();
                 return;
             }
             try (LabelListWriter writer = LabelListWriter.create(dir::segmentPath, vertexLabels.size());
-                 SegmentReader codes = SegmentReader.open(vertexLabelSpool.path(), ioBuffer);
-                 SegmentReader counts = SegmentReader.open(vertexLabelCountSpool.path(), ioBuffer)) {
+                 FixedSpool.Reader codes = vertexLabelSpool.reader(ioBuffer);
+                 FixedSpool.Reader counts = vertexLabelCountSpool.reader(ioBuffer)) {
                 for (int v = 0; v < vertexCount; v++) {
                     final int count = counts.readInt();
                     for (int i = 0; i < count; i++) writer.add(codes.readInt());
                     writer.endVertex();
                 }
                 segments.addAll(writer.finish(vertexCount));
+            }
+            vertexLabelSpool.release();
+            vertexLabelCountSpool.release();
+        }
+
+        /**
+         * Converts a spool of int32 label codes into a {@code labels.bin} of the narrowest width for the final
+         * dictionary, as {@link LabelDictionary#narrow}, reading from heap when the spool is there.
+         */
+        private Manifest.SegmentInfo narrow(final FixedSpool spool, final String relativePath, final int labelCount) {
+            try (FixedSpool.Reader in = spool.reader(ioBuffer);
+                 SegmentWriter out = LabelDictionary.createCodeWriter(dir.segmentPath(relativePath), labelCount)) {
+                final long n = spool.count();
+                for (long i = 0; i < n; i++) {
+                    final int code = in.readInt();
+                    if (code < 0 || code >= labelCount) {
+                        throw new IllegalStateException("Label code " + code + " at index " + i + " of " + relativePath
+                                + " is outside the dictionary of " + labelCount + " labels");
+                    }
+                    LabelDictionary.writeCode(out, code);
+                }
+                out.finish();
+                return out.info(relativePath);
             }
         }
 
@@ -839,7 +1020,7 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
                         elementCount, valueInfo, idInfo);
                      OwnerWriter owners = multi ? OwnerWriter.create(dir::segmentPath, code, vertexCount,
                              column.ownerCount) : null;
-                     PropertySpoolReader in = new PropertySpoolReader(column.spool.path(), ioBuffer)) {
+                     PropertySpoolReader in = column.spool.reader(ioBuffer)) {
                     long index = 0;
                     int owner = -1;
                     long ownerProperties = 0;
@@ -870,6 +1051,7 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
                         segments.addAll(owners.finish(column.propertyCount));
                     }
                 }
+                column.spool.release();
                 vertexValueInfos.add(valueInfo);
                 vertexIdColumnInfos.add(idInfo);
 
@@ -896,7 +1078,7 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
             final Manifest.ColumnInfo info = meta.values.toInfo(elementCount);
             try (ColumnWriter writer = ColumnWriter.create(dir::segmentPath,
                     SegmentPaths.vertexPropertyMetaDir(keyCode, metaCode), elementCount, info);
-                 PropertySpoolReader in = new PropertySpoolReader(meta.spool.path(), ioBuffer)) {
+                 PropertySpoolReader in = meta.spool.reader(ioBuffer)) {
                 while (in.hasRemaining()) {
                     final long index = in.readLong();
                     final int ordinal = in.readInt();
@@ -911,6 +1093,7 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
                 }
                 segments.addAll(writer.finish());
             }
+            meta.spool.release();
             return info;
         }
 
@@ -921,7 +1104,7 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
                 final Manifest.ColumnInfo info = column.values.toInfo(edgeCount);
                 try (ColumnWriter writer = ColumnWriter.create(dir::segmentPath, SegmentPaths.edgePropertyDir(code),
                         edgeCount, info);
-                     PropertySpoolReader in = new PropertySpoolReader(column.spool.path(), ioBuffer)) {
+                     PropertySpoolReader in = column.spool.reader(ioBuffer)) {
                     while (in.hasRemaining()) {
                         final int ordinal = in.readInt();
                         final ValueType type = in.readType();
@@ -934,6 +1117,7 @@ public final class StreamingSnapshotBuilder implements SnapshotBuilder {
                     }
                     segments.addAll(writer.finish());
                 }
+                column.spool.release();
                 edgeValueInfos.add(info);
             }
         }

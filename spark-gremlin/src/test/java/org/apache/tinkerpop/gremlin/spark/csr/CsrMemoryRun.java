@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.snapshot.build.BuildOptions;
 import org.apache.tinkerpop.gremlin.structure.snapshot.build.BuildStats;
 import org.apache.tinkerpop.gremlin.structure.snapshot.build.HeapSnapshotBuilder;
+import org.apache.tinkerpop.gremlin.structure.snapshot.build.HybridSnapshotBuilder;
 import org.apache.tinkerpop.gremlin.structure.snapshot.build.SnapshotBuilder;
 import org.apache.tinkerpop.gremlin.structure.snapshot.build.StreamingSnapshotBuilder;
 import org.apache.tinkerpop.gremlin.structure.snapshot.graph.CsrGraph;
@@ -85,7 +86,7 @@ import java.util.Set;
  *   --warm &lt;n&gt;                           warm runs after the cold run, default 3
  *   --timeout-seconds &lt;n&gt;                soft timeout for the whole run, outcome TIMEOUT
  *   --csr-budget &lt;bytes&gt;                 csrMemoryBudget of csr-native, default 1073741824
- *   --builder heap|streaming              (build) default streaming
+ *   --builder heap|streaming|hybrid       (build) default streaming
  *   --source gryo|tinkergraph             (build) default gryo
  *   --builder-budget &lt;bytes&gt;             (build) default 268435456
  *   --verify-checksums true|false         (open, csr) default false
@@ -123,7 +124,9 @@ import java.util.Set;
  * <p/>
  * <b>Build and open.</b> Build mode loads the TinkerGraph first when {@code --source tinkergraph} (timed separately as
  * {@code loadMillis}) and then times the build; {@code build.phases} are the {@link BuildStats} phases, and
- * {@code peakScratchBytes} is {@link BuildStats#peakDiskBytes()}. Open mode times {@link CsrGraph#open} (or the Gryo
+ * {@code peakScratchBytes} is {@link BuildStats#peakDiskBytes()}, {@code build.timers} are the
+ * {@link BuildStats#timers()} in milliseconds (the edge-scan split) and {@code build.peakBudgetBytes} is
+ * {@link BuildStats#peakBudgetBytes()}. Open mode times {@link CsrGraph#open} (or the Gryo
  * load for tinkergraph), records the heap after a full GC in {@code extra.retainedHeapBytes}, and then runs
  * {@code g.V().count()} and {@code g.V().out().count()} cold ({@code coldMillis} is the count; the one-hop times are in
  * {@code extra}) and once warm.
@@ -153,7 +156,7 @@ public final class CsrMemoryRun {
             "Usage: CsrMemoryRun --mode build|open|query [options]",
             "  --system tinkergraph|csr-native|csr-facade|tinkergraph-computer|spark   (open: tinkergraph|csr)",
             "  --dataset <.kryo>   --snapshot <dir>   --query-file <file> --query <id>   --warm <n> (3)",
-            "  --timeout-seconds <n>   --csr-budget <bytes> (1073741824)   --builder heap|streaming (streaming)",
+            "  --timeout-seconds <n>   --csr-budget <bytes> (1073741824)   --builder heap|streaming|hybrid (streaming)",
             "  --source gryo|tinkergraph (gryo)   --builder-budget <bytes> (268435456)",
             "  --verify-checksums true|false (false)   --spark-master <url> (local[*])   --spark-conf k=v (repeatable)",
             "  --work-dir <dir>   --sample-interval-ms <n> (1000)   --series-out <file>   --out <file>   --help",
@@ -516,7 +519,8 @@ public final class CsrMemoryRun {
         final boolean fromGryo = "gryo".equals(config.source);
         if (!fromGryo) loadTinkerGraph();
 
-        final SnapshotBuilder builder = "heap".equals(config.builder) ? new HeapSnapshotBuilder() : new StreamingSnapshotBuilder();
+        final SnapshotBuilder builder = "heap".equals(config.builder) ? new HeapSnapshotBuilder()
+                : "hybrid".equals(config.builder) ? new HybridSnapshotBuilder() : new StreamingSnapshotBuilder();
         final BuildOptions options = BuildOptions.builder()
                 .memoryBudgetBytes(config.builderBudget)
                 .scratchDirectory(scratchDir("build-scratch"))
@@ -544,6 +548,10 @@ public final class CsrMemoryRun {
         buildInfo.put("phases", phases);
         buildInfo.put("publishedBytes", stats.totalSegmentBytes());
         buildInfo.put("peakScratchBytes", stats.peakDiskBytes());
+        final Map<String, Object> timers = new LinkedHashMap<>();
+        for (final Map.Entry<String, Long> t : stats.timers().entrySet()) timers.put(t.getKey(), t.getValue() / 1_000_000L);
+        buildInfo.put("timers", timers);
+        buildInfo.put("peakBudgetBytes", stats.peakBudgetBytes());
         extra.put("builder", config.builder);
         extra.put("source", config.source);
         extra.put("builderBudget", config.builderBudget);
@@ -659,6 +667,25 @@ public final class CsrMemoryRun {
 
     // ---------------------------------------------------------------- result
 
+    /**
+     * The process's I/O counters from {@code /proc/self/io}, read when the result is written so that the last writes
+     * are counted. {@code read_bytes} and {@code write_bytes} are storage-level (pages read from disk, pages dirtied,
+     * including through memory maps); {@code rchar} and {@code wchar} are bytes passed to read and write system calls.
+     * Null where the file does not exist.
+     */
+    private static Map<String, Object> readProcIo() {
+        try {
+            final Map<String, Object> io = new LinkedHashMap<>();
+            for (final String line : Files.readAllLines(Paths.get("/proc/self/io"), StandardCharsets.US_ASCII)) {
+                final int colon = line.indexOf(':');
+                if (colon > 0) io.put(line.substring(0, colon).trim(), Long.parseLong(line.substring(colon + 1).trim()));
+            }
+            return io;
+        } catch (IOException | RuntimeException e) {
+            return null;
+        }
+    }
+
     private synchronized void writeResult() {
         if (written) return;
         written = true;
@@ -704,6 +731,7 @@ public final class CsrMemoryRun {
             result.put("csr", null);
         }
         result.put("build", buildInfo);
+        result.put("io", readProcIo());
 
         final Map<String, Object> jvm = new LinkedHashMap<>();
         jvm.put("version", System.getProperty("java.version"));
@@ -1174,7 +1202,7 @@ public final class CsrMemoryRun {
             if (c.system != null && !SYSTEMS.contains(c.system) && !c.system.equals("csr")) {
                 throw new UsageException("unknown system " + c.system, false);
             }
-            if (!Set.of("heap", "streaming").contains(c.builder)) throw new UsageException("unknown builder " + c.builder, false);
+            if (!Set.of("heap", "streaming", "hybrid").contains(c.builder)) throw new UsageException("unknown builder " + c.builder, false);
             if (!Set.of("gryo", "tinkergraph").contains(c.source)) throw new UsageException("unknown source " + c.source, false);
             return c;
         }

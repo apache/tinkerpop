@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.snapshot.CsrSnapshot;
 import org.apache.tinkerpop.gremlin.structure.snapshot.build.BuildOptions;
 import org.apache.tinkerpop.gremlin.structure.snapshot.build.BuildStats;
 import org.apache.tinkerpop.gremlin.structure.snapshot.build.HeapSnapshotBuilder;
+import org.apache.tinkerpop.gremlin.structure.snapshot.build.HybridSnapshotBuilder;
 import org.apache.tinkerpop.gremlin.structure.snapshot.build.SnapshotBuilder;
 import org.apache.tinkerpop.gremlin.structure.snapshot.build.StreamingSnapshotBuilder;
 import org.apache.tinkerpop.gremlin.structure.snapshot.format.ColumnReader;
@@ -60,9 +61,9 @@ import java.util.stream.Stream;
  * <p/>
  * This is a manually invoked spike utility, not a test. It loads the Gryo file into a {@link TinkerGraph} (or, with
  * {@code --source gryo}, streams it through {@link GryoSnapshotSource} and loads the graph only for {@code --verify}), builds a
- * snapshot with the materializing ({@code heap}) builder, the {@code streaming} builder or both, and reports phase
- * times, peak on-disk bytes, peak heap and published bytes. {@code --verify} checks each snapshot against the graph and
- * {@code --compare} checks that the two builders produce identical bundles. Run it with no arguments for usage.
+ * snapshot with the materializing ({@code heap}) builder, the {@code streaming} builder, the {@code hybrid} builder or
+ * several of them, and reports phase times, peak on-disk bytes, peak heap and published bytes. {@code --verify} checks
+ * each snapshot against the graph and {@code --compare} checks that the bundles of the builders are identical. Run it with no arguments for usage.
  */
 public final class CsrSnapshotBuildBenchmark {
 
@@ -73,11 +74,13 @@ public final class CsrSnapshotBuildBenchmark {
             "  --source <tinkergraph|gryo> build from the TinkerGraph loaded from the input or stream the Gryo",
             "                              file directly; gryo loads the TinkerGraph only for --verify",
             "                              (default tinkergraph)",
-            "  --builder <heap|streaming|both>",
-            "                              builder(s) to run (default heap; --compare implies both)",
+            "  --builder <heap|streaming|hybrid|both|all|list>",
+            "                              builder(s) to run: one name, a comma-separated list such as heap,hybrid,",
+            "                              both (heap and streaming) or all (default heap; --compare without --builder",
+            "                              implies both)",
             "  --layout <topology|identity|full>",
             "                              layout to publish (default full)",
-            "  --memory-budget <bytes>     streaming builder memory budget; k, m or g suffix allowed (default 256m)",
+            "  --memory-budget <bytes>     streaming and hybrid builder memory budget; k, m or g suffix allowed (default 256m)",
             "  --grouped-fast-path <true|false>",
             "                              let builders use the grouped-by-out-vertex path (default true)",
             "  --edge-id-index <true|false>",
@@ -86,7 +89,8 @@ public final class CsrSnapshotBuildBenchmark {
             "                              contain them (default: a new directory under java.io.tmpdir)",
             "  --scratch-dir <dir>         scratch directory for the builders (default: the build directory)",
             "  --verify                    check each snapshot against the TinkerGraph",
-            "  --compare                   build with both builders and report the first differing file");
+            "  --compare                   compare the bundle of the first builder with each of the others and report the",
+            "                              first differing file");
 
     private static final int MAX_FAILURES = 20;
     private static final long SAMPLE_INTERVAL_MILLIS = 10;
@@ -151,14 +155,18 @@ public final class CsrSnapshotBuildBenchmark {
         try (SnapshotSource source = config.source == Source.GRYO
                 ? new GryoSnapshotSource(config.input) : new TinkerGraphSnapshotSource(graph)) {
             for (final String name : config.builders) {
-                final SnapshotBuilder builder = "heap".equals(name) ? new HeapSnapshotBuilder() : new StreamingSnapshotBuilder();
+                final SnapshotBuilder builder = "heap".equals(name) ? new HeapSnapshotBuilder()
+                        : "hybrid".equals(name) ? new HybridSnapshotBuilder() : new StreamingSnapshotBuilder();
                 final Path target = outputDir.resolve(name);
                 ok &= buildAndReport(graph, source, name, builder, target, options, config);
                 built.put(name, target);
             }
 
             if (config.compare) {
-                ok &= compare(built.get("heap"), built.get("streaming"));
+                final String first = config.builders.get(0);
+                for (final String other : config.builders.subList(1, config.builders.size())) {
+                    ok &= compare(first, built.get(first), other, built.get(other));
+                }
             }
         } finally {
             if (graph != null) graph.close();
@@ -192,7 +200,15 @@ public final class CsrSnapshotBuildBenchmark {
         for (final BuildStats.Phase phase : stats.phases()) {
             System.out.printf(Locale.ROOT, "  %-24s %12s %18s%n", phase.name(), millis(phase.elapsedNanos()), bytes(phase.diskBytes()));
         }
+        if (!stats.timers().isEmpty()) {
+            for (final Map.Entry<String, Long> timer : stats.timers().entrySet()) {
+                System.out.printf(Locale.ROOT, "  %-24s %12s%n", "  " + timer.getKey(), millis(timer.getValue()));
+            }
+        }
         System.out.printf(Locale.ROOT, "  total build time:    %s%n", millis(elapsed));
+        if (stats.peakBudgetBytes() > 0) {
+            System.out.printf(Locale.ROOT, "  peak budgeted heap:  %s%n", bytes(stats.peakBudgetBytes()));
+        }
         System.out.printf(Locale.ROOT, "  peak on-disk bytes:  %s%n", bytes(stats.peakDiskBytes()));
         System.out.printf(Locale.ROOT, "  peak heap:           %s (used heap after GC before build: %s, sampled every %d ms)%n",
                 bytes(sampler.peak.get()), bytes(baseline), SAMPLE_INTERVAL_MILLIS);
@@ -281,27 +297,28 @@ public final class CsrSnapshotBuildBenchmark {
      * Reports the first file, in ascending relative path order, that exists in only one bundle or differs in content,
      * along with the byte offset of the difference.
      */
-    private static boolean compare(final Path heap, final Path streaming) throws IOException {
-        System.out.printf("%n== compare heap vs streaming%n");
+    private static boolean compare(final String nameA, final Path first, final String nameB, final Path second)
+            throws IOException {
+        System.out.printf("%n== compare %s vs %s%n", nameA, nameB);
         final TreeSet<String> paths = new TreeSet<>();
-        paths.addAll(listFiles(heap));
-        paths.addAll(listFiles(streaming));
+        paths.addAll(listFiles(first));
+        paths.addAll(listFiles(second));
 
         for (final String path : paths) {
-            final Path a = heap.resolve(path);
-            final Path b = streaming.resolve(path);
+            final Path a = first.resolve(path);
+            final Path b = second.resolve(path);
             if (!Files.exists(a)) {
-                System.out.println("  DIFFERENT: " + path + " exists only in the streaming bundle");
+                System.out.println("  DIFFERENT: " + path + " exists only in the " + nameB + " bundle");
                 return false;
             }
             if (!Files.exists(b)) {
-                System.out.println("  DIFFERENT: " + path + " exists only in the heap bundle");
+                System.out.println("  DIFFERENT: " + path + " exists only in the " + nameA + " bundle");
                 return false;
             }
             final long offset = firstDifference(a, b);
             if (offset >= 0) {
-                System.out.printf(Locale.ROOT, "  DIFFERENT: %s at byte offset %,d (heap size %,d, streaming size %,d)%n",
-                        path, offset, Files.size(a), Files.size(b));
+                System.out.printf(Locale.ROOT, "  DIFFERENT: %s at byte offset %,d (%s size %,d, %s size %,d)%n",
+                        path, offset, nameA, Files.size(a), nameB, Files.size(b));
                 return false;
             }
         }
@@ -699,19 +716,7 @@ public final class CsrSnapshotBuildBenchmark {
                                 break;
                             case "--builder":
                                 builderGiven = true;
-                                switch (value.toLowerCase(Locale.ROOT)) {
-                                    case "heap":
-                                        config.builders = List.of("heap");
-                                        break;
-                                    case "streaming":
-                                        config.builders = List.of("streaming");
-                                        break;
-                                    case "both":
-                                        config.builders = List.of("heap", "streaming");
-                                        break;
-                                    default:
-                                        throw new UsageException("Unknown builder: " + value);
-                                }
+                                config.builders = parseBuilders(value);
                                 break;
                             case "--layout":
                                 try {
@@ -744,11 +749,38 @@ public final class CsrSnapshotBuildBenchmark {
             if (config.input == null) throw new UsageException("--input is required");
             if (!Files.isRegularFile(config.input)) throw new UsageException("Input file does not exist: " + config.input);
             if (config.compare) {
-                if (builderGiven && config.builders.size() != 2)
-                    throw new UsageException("--compare needs both builders; drop --builder or use --builder both");
-                config.builders = List.of("heap", "streaming");
+                if (!builderGiven) config.builders = List.of("heap", "streaming");
+                if (config.builders.size() < 2)
+                    throw new UsageException("--compare needs at least two builders; drop --builder or use --builder both");
             }
             return config;
+        }
+
+        private static List<String> parseBuilders(final String value) {
+            final List<String> names = new ArrayList<>();
+            for (final String part : value.toLowerCase(Locale.ROOT).split(",")) {
+                final List<String> expanded;
+                switch (part.trim()) {
+                    case "heap":
+                    case "streaming":
+                    case "hybrid":
+                        expanded = List.of(part.trim());
+                        break;
+                    case "both":
+                        expanded = List.of("heap", "streaming");
+                        break;
+                    case "all":
+                        expanded = List.of("heap", "streaming", "hybrid");
+                        break;
+                    default:
+                        throw new UsageException("Unknown builder: " + part);
+                }
+                for (final String name : expanded) {
+                    if (names.contains(name)) throw new UsageException("Builder given twice: " + name);
+                    names.add(name);
+                }
+            }
+            return names;
         }
 
         private static boolean parseBoolean(final String option, final String value) {

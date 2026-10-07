@@ -39,14 +39,31 @@ public final class BuildStats {
 
     private final List<Phase> phases;
     private final Map<String, Long> segmentBytes;
+    private final Map<String, Long> timers;
+    private final long peakBudgetBytes;
 
     /**
      * @param phases       phases in execution order
      * @param segmentBytes published size in bytes of each segment, keyed by relative path, in ascending path order
      */
     public BuildStats(final List<Phase> phases, final Map<String, Long> segmentBytes) {
+        this(phases, segmentBytes, java.util.Map.of(), 0);
+    }
+
+    /**
+     * As above, with sub-timers inside phases and the builder's peak budgeted heap.
+     *
+     * @param timers          nanoseconds spent in parts of a phase, keyed by a name such as {@code edge-scan.resolve}, in
+     *                        the order given; they overlap the phases and each other as their names document
+     * @param peakBudgetBytes the most heap the builder reserved from its memory budget at one time, 0 when it does not
+     *                        account for heap
+     */
+    public BuildStats(final List<Phase> phases, final Map<String, Long> segmentBytes, final Map<String, Long> timers,
+                      final long peakBudgetBytes) {
         this.phases = List.copyOf(phases);
         this.segmentBytes = java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(segmentBytes));
+        this.timers = java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(timers));
+        this.peakBudgetBytes = peakBudgetBytes;
     }
 
     public List<Phase> phases() {
@@ -55,6 +72,23 @@ public final class BuildStats {
 
     public Map<String, Long> segmentBytes() {
         return segmentBytes;
+    }
+
+    /**
+     * Nanoseconds spent in parts of a phase, for builders that measure them: {@code edge-scan.source} is the time spent in
+     * the source between edges, {@code edge-scan.callback} the time in the builder's per-edge work, and
+     * {@code edge-scan.resolve} the part of that spent resolving endpoints to ordinals. Empty if none were measured.
+     */
+    public Map<String, Long> timers() {
+        return timers;
+    }
+
+    /**
+     * The most heap the builder reserved from its memory budget at one time, or 0 when the builder does not account for
+     * heap.
+     */
+    public long peakBudgetBytes() {
+        return peakBudgetBytes;
     }
 
     /**

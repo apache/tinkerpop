@@ -26,6 +26,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Reads back the records of a finished {@link PropertySpool} sequentially. The caller knows the record layout, which is
@@ -44,24 +45,77 @@ final class PropertySpoolReader implements AutoCloseable {
         int length;
     }
 
+    // a file spool is read through the segment reader; a spool held in heap is read from its chunks
     private final SegmentReader reader;
+    private final List<byte[]> chunks;
+    private final int chunkBytes;
+    private final long length;
+    private long position;
     private final byte[] scratch = new byte[8];
 
     PropertySpoolReader(final Path path, final int bufferBytes) {
         this.reader = SegmentReader.open(path, bufferBytes);
+        this.chunks = null;
+        this.chunkBytes = 0;
+        this.length = 0;
+    }
+
+    private PropertySpoolReader(final List<byte[]> chunks, final int chunkBytes, final long length) {
+        this.reader = null;
+        this.chunks = chunks;
+        this.chunkBytes = chunkBytes;
+        this.length = length;
+    }
+
+    /**
+     * A reader over the records of a spool that is held in heap.
+     *
+     * @param chunks     the chunks in order, all but the last full
+     * @param chunkBytes the size of a chunk
+     * @param length     the number of bytes written
+     */
+    static PropertySpoolReader ofMemory(final List<byte[]> chunks, final int chunkBytes, final long length) {
+        return new PropertySpoolReader(chunks, chunkBytes, length);
     }
 
     boolean hasRemaining() {
-        return reader.hasRemaining();
+        return reader != null ? reader.hasRemaining() : position < length;
+    }
+
+    private byte nextByte() {
+        if (reader != null) return reader.readByte();
+        if (position >= length) throw new IllegalStateException("Corrupt spool: read past the end");
+        final byte b = chunks.get((int) (position / chunkBytes))[(int) (position % chunkBytes)];
+        position++;
+        return b;
+    }
+
+    private void nextBytes(final byte[] dst, final int offset, final int count) {
+        if (reader != null) {
+            reader.readBytes(dst, offset, count);
+            return;
+        }
+        if (length - position < count) throw new IllegalStateException("Corrupt spool: read past the end");
+        int off = offset;
+        int remaining = count;
+        while (remaining > 0) {
+            final byte[] chunk = chunks.get((int) (position / chunkBytes));
+            final int within = (int) (position % chunkBytes);
+            final int n = Math.min(remaining, chunkBytes - within);
+            System.arraycopy(chunk, within, dst, off, n);
+            position += n;
+            off += n;
+            remaining -= n;
+        }
     }
 
     int readInt() {
-        reader.readBytes(scratch, 0, 4);
+        nextBytes(scratch, 0, 4);
         return (int) INT.get(scratch, 0);
     }
 
     long readLong() {
-        reader.readBytes(scratch, 0, 8);
+        nextBytes(scratch, 0, 8);
         return (long) LONG.get(scratch, 0);
     }
 
@@ -70,8 +124,8 @@ final class PropertySpoolReader implements AutoCloseable {
      * caller must not call {@link #readPayload} for it.
      */
     ValueType readType() {
-        final ValueType type = ValueCodec.typeOfCode(reader.readByte());
-        if (type == null) throw new IllegalStateException("Corrupt spool " + reader.path() + ": invalid type code");
+        final ValueType type = ValueCodec.typeOfCode(nextByte());
+        if (type == null) throw new IllegalStateException("Corrupt spool " + describe() + ": invalid type code");
         return type;
     }
 
@@ -80,14 +134,18 @@ final class PropertySpoolReader implements AutoCloseable {
      */
     void readPayload(final ValueType type, final Payload into) {
         final int length = type.isFixedWidth() ? type.width() : readInt();
-        if (length < 0) throw new IllegalStateException("Corrupt spool " + reader.path() + ": negative length");
+        if (length < 0) throw new IllegalStateException("Corrupt spool " + describe() + ": negative length");
         if (into.bytes.length < length) into.bytes = new byte[Math.max(length, into.bytes.length * 2)];
-        reader.readBytes(into.bytes, 0, length);
+        nextBytes(into.bytes, 0, length);
         into.length = length;
+    }
+
+    private String describe() {
+        return reader != null ? String.valueOf(reader.path()) : "(in heap)";
     }
 
     @Override
     public void close() {
-        reader.close();
+        if (reader != null) reader.close();
     }
 }

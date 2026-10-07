@@ -26,6 +26,7 @@ library only.  See README.md in this directory.
 
 import argparse
 import csv
+import filecmp
 import datetime
 import json
 import os
@@ -161,9 +162,15 @@ def expand_matrix(matrix, only=None):
         if mode == "build":
             builder = e.get("builder", "streaming")
             source = e.get("source", "gryo")
-            budget = int(e.get("builderBudget", 256 * MB))
-            r = dict(base, system=builder, query="b%s-%s" % (human_bytes(budget), source),
-                     params={"builder": builder, "source": source, "builderBudget": budget})
+            # budgetOfPeak: a fraction of the peak budget use of the latest unconstrained hybrid build of the same
+            # dataset, resolved when the run starts (see resolve_relative_budget)
+            of_peak = e.get("budgetOfPeak")
+            budget = None if of_peak is not None else int(e.get("builderBudget", 256 * MB))
+            label = "%dpct" % round(float(of_peak) * 100) if of_peak is not None else human_bytes(budget)
+            query = "b%s-%s" % (label, source) + ("-" + e["tag"] if e.get("tag") else "")
+            r = dict(base, system=builder, query=query,
+                     params={"builder": builder, "source": source, "builderBudget": budget,
+                             "budgetOfPeak": of_peak, "tag": e.get("tag")})
             runs.append(r)
         elif mode == "open":
             systems = e.get("systems") or [e["system"]]
@@ -225,7 +232,8 @@ def build_command(run, matrix, run_dir, work_dir, classpath, cgroup_dir):
     if mode == "build":
         a += ["--dataset", run["dataset"], "--snapshot", run["snapshot"],
               "--builder", run["params"]["builder"], "--source", run["params"]["source"],
-              "--builder-budget", str(run["params"]["builderBudget"])]
+              "--builder-budget", str(run["params"]["builderBudget"])
+              if run["params"]["builderBudget"] is not None else "<budgetOfPeak>"]
     else:
         a += ["--system", system]
         if system in CSR_SYSTEMS:
@@ -638,8 +646,54 @@ def unsafe_to_delete(snapshot, run, matrix):
     return False
 
 
+def compare_trees(reference, other):
+    """Byte-for-byte comparison of two snapshot directories: identical when both hold the same relative file paths
+    with the same contents."""
+    out = {"reference": reference, "identical": False, "missing": [], "extra": [], "differing": [], "files": 0}
+    if not os.path.isdir(reference) or not os.path.isdir(other):
+        out["error"] = "not a directory: %s" % (reference if not os.path.isdir(reference) else other)
+        return out
+
+    def files(root):
+        found = set()
+        for d, _dirs, names in os.walk(root):
+            for n in names:
+                found.add(os.path.relpath(os.path.join(d, n), root))
+        return found
+
+    a, b = files(reference), files(other)
+    out["missing"] = sorted(a - b)
+    out["extra"] = sorted(b - a)
+    for rel in sorted(a & b):
+        if not filecmp.cmp(os.path.join(reference, rel), os.path.join(other, rel), shallow=False):
+            out["differing"].append(rel)
+    out["files"] = len(a & b)
+    out["identical"] = not (out["missing"] or out["extra"] or out["differing"])
+    return out
+
+
+def resolve_relative_budget(run, results_dir):
+    """Sets the builder budget of a budgetOfPeak build from the reference build's build.peakBudgetBytes: the latest
+    completed hybrid build of the same dataset with an absolute budget."""
+    ref = None
+    for r in load_results(results_dir):  # sorted by run id, so later timestamps win
+        p = r.get("params") or {}
+        if (r.get("mode") == "build" and p.get("builder") == "hybrid" and p.get("budgetOfPeak") is None
+                and r.get("datasetName") == run["datasetName"] and r.get("outcome") == "COMPLETED"
+                and dig(r, "build.peakBudgetBytes")):
+            ref = r
+    if ref is None:
+        raise RuntimeError("budgetOfPeak: no completed unconstrained hybrid build of %s in %s; run it first"
+                           % (run["datasetName"], results_dir))
+    peak = int(dig(ref, "build.peakBudgetBytes"))
+    run["params"]["builderBudget"] = max(1, int(peak * float(run["params"]["budgetOfPeak"])))
+    run["params"]["budgetReference"] = {"runId": ref["runId"], "peakBudgetBytes": peak}
+
+
 def run_one(run, matrix, classpath, cgm, run_id, results_dir):
     e = run["entry"]
+    if run["mode"] == "build" and run["params"].get("budgetOfPeak") is not None:
+        resolve_relative_budget(run, results_dir)
     run_dir = os.path.join(results_dir, run_id)
     os.makedirs(run_dir, exist_ok=True)
     work_dir = os.path.join(matrix.get("workDir", os.path.join(results_dir, "work")), run_id)
@@ -760,8 +814,10 @@ def run_one(run, matrix, classpath, cgm, run_id, results_dir):
         except ValueError:
             result = None
     oom_killed = (exit_code in (-9, 137) and not timed_out) or bool(cgroup.get("oomKill"))
+    # Spark's uncaught-exception handler exits with 52 (SparkExitCode.OOM) on an OutOfMemoryError in its threads
+    spark_oom = exit_code == 52 and run["system"] == "spark"
     if result is None:
-        outcome = "TIMEOUT" if timed_out else ("OOM-KILLED" if oom_killed else "ERROR")
+        outcome = "TIMEOUT" if timed_out else ("OOM-KILLED" if oom_killed else ("OOM" if spark_oom else "ERROR"))
         result = {"mode": run["mode"], "system": run["system"], "dataset": run["dataset"], "query": run["query"],
                   "outcome": outcome,
                   "error": "no result from CsrMemoryRun (exit code %s)" % exit_code, "heap": None}
@@ -782,6 +838,9 @@ def run_one(run, matrix, classpath, cgm, run_id, results_dir):
     result["params"] = run["params"]
     result["datasetName"] = run["datasetName"]
     result["cold"] = run["cold"]
+    # the JVM leaves system and query empty for builds and opens; the summary keys on the matrix's values
+    result["system"] = result.get("system") or run["system"]
+    result["query"] = result.get("query") or run["query"]
     result["driver"] = {
         "startedAt": datetime.datetime.fromtimestamp(started, datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "wallMillis": wall_millis, "exitCode": exit_code, "timedOut": timed_out, "oomKilled": oom_killed,
@@ -790,6 +849,8 @@ def run_one(run, matrix, classpath, cgm, run_id, results_dir):
         "gc": parse_gc_log(os.path.join(run_dir, "gc.log"), wall_millis), "nmt": nmt,
         "phases": phases.events,
     }
+    if run["mode"] == "build" and e.get("compareTo") and result.get("outcome") == "COMPLETED":
+        result["identity"] = compare_trees(e["compareTo"], run["snapshot"])
     with open(os.path.join(run_dir, "result.json"), "w") as f:
         json.dump(result, f, indent=2)
     if not matrix.get("keepWorkDir", False):
@@ -834,6 +895,15 @@ RUN_COLUMNS = [
     ("cgroupOomKill", "driver.cgroup.oomKill"),
     ("csrPeakBytes", "csr.peakBytes"), ("csrScratchBytes", "csr.scratchBytes"),
     ("buildPeakScratchBytes", "build.peakScratchBytes"), ("publishedBytes", "build.publishedBytes"),
+    ("peakBudgetBytes", "build.peakBudgetBytes"), ("budgetOfPeak", "params.budgetOfPeak"), ("tag", "params.tag"),
+    ("vertexScanSourceMillis", "buildTimers.vertex-scan_source"),
+    ("vertexScanCallbackMillis", "buildTimers.vertex-scan_callback"),
+    ("edgeScanSourceMillis", "buildTimers.edge-scan_source"),
+    ("edgeScanCallbackMillis", "buildTimers.edge-scan_callback"),
+    ("edgeScanResolveMillis", "buildTimers.edge-scan_resolve"),
+    ("ioReadBytes", "io.read_bytes"), ("ioWriteBytes", "io.write_bytes"),
+    ("ioCancelledWriteBytes", "io.cancelled_write_bytes"), ("ioRchar", "io.rchar"), ("ioWchar", "io.wchar"),
+    ("identical", "identity.identical"), ("identityReference", "identity.reference"),
     ("nmtTotalCommitted", "driver.nmt.totalCommitted"),
 ]
 
@@ -852,6 +922,17 @@ def load_results(results_dir):
             r.setdefault("runId", name)
             if not r.get("datasetName"):
                 r["datasetName"] = dataset_name(r.get("dataset"), None) if r.get("dataset") else "none"
+            # build timer names contain dots, which dig() treats as path separators
+            timers = dig(r, "build.timers") or {}
+            r["buildTimers"] = dict((k.replace(".", "_"), v) for k, v in timers.items())
+            # results written before the driver filled in system and query for builds and opens
+            params = r.get("params") or {}
+            if r.get("mode") == "build" and not r.get("system"):
+                r["system"] = params.get("builder")
+                if params.get("builderBudget") is not None:
+                    r["query"] = "b%s-%s" % (human_bytes(params["builderBudget"]), params.get("source"))
+            elif r.get("mode") == "open" and not r.get("query"):
+                r["query"] = "cold" if r.get("cold") else "warm"
             out.append(r)
     return out
 
@@ -906,7 +987,8 @@ def summarize(results_dir):
             agree.setdefault((ds, q), {})[system] = (dig(r, "result.count"), dig(r, "result.hash"))
     cols = ["mode", "system", "dataset", "query", "outcome", "peakAfterGc", "peakRss", "peakCgroupMemory",
             "anonAtPeak", "fileAtPeak", "coldMillis", "warmMedianMillis", "scratchBytes", "resultCount",
-            "resultHash", "agreement", "agreementDetail", "runId"]
+            "resultHash", "agreement", "agreementDetail", "buildMillis", "builderBudget", "peakBudgetBytes",
+            "publishedBytes", "ioReadBytes", "ioWriteBytes", "identical", "runId"]
     with open(os.path.join(results_dir, "summary.csv"), "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(cols)
@@ -939,7 +1021,10 @@ def summarize(results_dir):
             w.writerow([fmt(x) for x in [
                 mode, system, ds, q, r.get("outcome"), after, dig(r, "driver.os.peakRss"), cg_peak, anon, fil,
                 dig(r, "timings.coldMillis"), dig(r, "timings.warmMedianMillis"), scratch,
-                dig(r, "result.count"), dig(r, "result.hash"), ag, detail, r.get("runId")]])
+                dig(r, "result.count"), dig(r, "result.hash"), ag, detail, dig(r, "timings.buildMillis"),
+                dig(r, "params.builderBudget"), dig(r, "build.peakBudgetBytes"), dig(r, "build.publishedBytes"),
+                dig(r, "io.read_bytes"), dig(r, "io.write_bytes"), dig(r, "identity.identical"),
+                r.get("runId")]])
     log("wrote %s and %s (%d runs)" % (os.path.join(results_dir, "runs.csv"),
                                        os.path.join(results_dir, "summary.csv"), len(results)))
 
@@ -1028,6 +1113,20 @@ def cmd_run(args):
     return 0
 
 
+def cmd_identical(args):
+    worst = 0
+    for other in args.others:
+        res = compare_trees(args.reference, other)
+        state = "identical" if res["identical"] else "DIFFERENT"
+        log("%s: %s (%d common files)" % (other, state, res["files"]))
+        for k in ("error", "missing", "extra", "differing"):
+            if res.get(k):
+                log("    %s: %s" % (k, res[k]))
+        if not res["identical"]:
+            worst = 1
+    return worst
+
+
 def cmd_summarize(args):
     if args.reparse:
         reparse(args.results_dir)
@@ -1061,6 +1160,11 @@ def main(argv=None):
     p.add_argument("--reparse", action="store_true",
                    help="also re-parse gc.log, NMT output and os-series.csv into result.json")
     p.set_defaults(fn=cmd_summarize)
+
+    p = sub.add_parser("identical", help="compare snapshot directories byte for byte against a reference")
+    p.add_argument("reference")
+    p.add_argument("others", nargs="+")
+    p.set_defaults(fn=cmd_identical)
 
     args = ap.parse_args(argv)
     return args.fn(args)

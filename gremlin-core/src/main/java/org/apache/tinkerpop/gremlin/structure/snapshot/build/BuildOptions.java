@@ -61,7 +61,8 @@ public final class BuildOptions {
     }
 
     /**
-     * Bytes the streaming builder may use for sort chunks and buffers. Defaults to
+     * Bytes the streaming builder may use for sort chunks and buffers, and the heap that the hybrid builder may fill with
+     * spools, lookup maps, sort arrays and adjacency arrays before it spills to scratch. Defaults to
      * {@link #DEFAULT_MEMORY_BUDGET_BYTES}.
      */
     public long memoryBudgetBytes() {

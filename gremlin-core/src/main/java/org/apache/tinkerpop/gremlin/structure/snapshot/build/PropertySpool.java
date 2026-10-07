@@ -26,6 +26,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.CRC32C;
 
 /**
@@ -41,11 +43,21 @@ import java.util.zip.CRC32C;
  * <p/>
  * The spool is not thread-safe. I/O failures are reported as {@link UncheckedIOException}.
  */
-final class PropertySpool implements AutoCloseable {
+final class PropertySpool implements AutoCloseable, BuildBudget.Spillable {
+
+    // the unit in which a spool held in heap reserves budget
+    static final int CHUNK_BYTES = 64 * 1024;
 
     private final Path path;
-    private final byte[] buffer;
+    private final int bufferBytes;
+    private byte[] buffer;
     private final boolean keepOpen;
+    private final BuildBudget budget;
+    // while in heap, the records are in chunks and nothing is written to the file
+    private boolean inMemory;
+    private List<byte[]> chunks;
+    private long memoryBytes;
+    private long heldBytes;
     private final CRC32C crc = new CRC32C();
     private FileChannel channel;
     private int position;
@@ -60,9 +72,112 @@ final class PropertySpool implements AutoCloseable {
      * @param keepOpen    whether to keep the file open until {@link #finish()} instead of for each flush only
      */
     PropertySpool(final Path path, final int bufferBytes, final boolean keepOpen) {
+        this(path, bufferBytes, keepOpen, BuildBudget.none());
+    }
+
+    /**
+     * A spool that stays in heap while the budget grants it chunks and moves to the file for good once it does not, or
+     * when the budget evicts it as the largest holder.
+     *
+     * @param budget the budget to reserve chunks from; with a budget that grants nothing the spool is file-backed from
+     *               the start
+     */
+    PropertySpool(final Path path, final int bufferBytes, final boolean keepOpen, final BuildBudget budget) {
         this.path = path;
-        this.buffer = new byte[bufferBytes];
+        this.bufferBytes = bufferBytes;
         this.keepOpen = keepOpen;
+        this.budget = budget;
+        this.inMemory = budget.total() > 0;
+        if (inMemory) {
+            this.chunks = new ArrayList<>();
+            budget.register(this);
+        } else {
+            this.buffer = new byte[bufferBytes];
+        }
+    }
+
+    /**
+     * Whether the records are held in heap.
+     */
+    boolean isInMemory() {
+        return inMemory;
+    }
+
+    @Override
+    public long heldBytes() {
+        return heldBytes;
+    }
+
+    /**
+     * Writes the records held in heap to the file and continues there.
+     */
+    @Override
+    public void spill() {
+        if (!inMemory) return;
+        inMemory = false;
+        final boolean wasFinished = finished;
+        finished = false;
+        buffer = new byte[bufferBytes];
+        position = 0;
+        final List<byte[]> held = chunks;
+        final long bytes = memoryBytes;
+        chunks = null;
+        memoryBytes = 0;
+        budget.unregister(this);
+        long remaining = bytes;
+        for (final byte[] chunk : held) {
+            final int n = (int) Math.min(CHUNK_BYTES, remaining);
+            if (n > 0) append(chunk, 0, n);
+            remaining -= n;
+        }
+        budget.release(heldBytes);
+        heldBytes = 0;
+        if (wasFinished) finish();
+    }
+
+    /**
+     * Opens the finished spool for reading, from heap when it is there.
+     */
+    PropertySpoolReader reader(final int readBufferBytes) {
+        if (!finished) throw new IllegalStateException("Spool " + path + " is not finished");
+        return inMemory ? PropertySpoolReader.ofMemory(chunks, CHUNK_BYTES, memoryBytes)
+                : new PropertySpoolReader(path, readBufferBytes);
+    }
+
+    /**
+     * Frees the heap the spool holds and returns it to the budget. The spool can no longer be read from heap.
+     */
+    void release() {
+        if (!inMemory) return;
+        inMemory = false;
+        budget.unregister(this);
+        chunks = null;
+        memoryBytes = 0;
+        budget.release(heldBytes);
+        heldBytes = 0;
+    }
+
+    private boolean appendMemory(final byte[] src, final int length) {
+        final long capacity = (long) chunks.size() * CHUNK_BYTES;
+        if (memoryBytes + length > capacity) {
+            final long need = (memoryBytes + length - capacity + CHUNK_BYTES - 1) / CHUNK_BYTES;
+            if (!budget.reserve(need * CHUNK_BYTES, this)) {
+                spill();
+                return false;
+            }
+            heldBytes += need * CHUNK_BYTES;
+            for (long i = 0; i < need; i++) chunks.add(new byte[CHUNK_BYTES]);
+        }
+        int offset = 0;
+        while (offset < length) {
+            final byte[] chunk = chunks.get((int) (memoryBytes / CHUNK_BYTES));
+            final int within = (int) (memoryBytes % CHUNK_BYTES);
+            final int n = Math.min(length - offset, CHUNK_BYTES - within);
+            System.arraycopy(src, offset, chunk, within, n);
+            memoryBytes += n;
+            offset += n;
+        }
+        return true;
     }
 
     Path path() {
@@ -81,6 +196,7 @@ final class PropertySpool implements AutoCloseable {
         final byte[] src = record.bytes();
         final int length = record.length();
         records++;
+        if (inMemory && appendMemory(src, length)) return;
         if (length > buffer.length - position) {
             flush();
             if (length >= buffer.length) {
@@ -133,6 +249,10 @@ final class PropertySpool implements AutoCloseable {
      */
     void finish() {
         if (finished) return;
+        if (inMemory) {
+            finished = true;
+            return;
+        }
         flush();
         try {
             if (!created) {
@@ -159,5 +279,6 @@ final class PropertySpool implements AutoCloseable {
     @Override
     public void close() {
         finish();
+        release();
     }
 }
