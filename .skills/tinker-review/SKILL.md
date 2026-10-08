@@ -245,11 +245,32 @@ produce a complete evidence-with-narrative JSON file. Write it to
   characters; the box truncates anything longer. Name the concern, not the structure:
   the renderer already shows the kind (`implementation`, `test code`, `type hierarchy`,
   `file group`) next to the name. Any community left unnamed renders as "Community N".
-- `guidedWalk` — array of `{ title, badge, badgeText, body }` objects
+- `guidedWalk` — array of `{ title, badge, badgeText, intro, questions, refs }` objects, one
+  per area of the change, that **orient a reviewer who does not know the code**. Write for a
+  first-time reader: say what the area does in plain terms, not as a tour of class and method
+  names.
+  - `intro` — HTML, one or two plain sentences on what this part of the PR does and why.
+  - `questions` — `[{ text, refs }]`, the questions a reviewer should hold while reading this
+    part. Each `text` (HTML) asks something the reviewer can check or judge (*"Can two graphs
+    ever write to the same directory?"*, *"Is keeping index definitions outside the log
+    reasonable?"*) and may cite what you found (a finding, a functional-test label). Invite
+    judgment of trade-offs rather than asserting them.
+  - `refs` on a question — the code that answers it, as `{ file, symbol?, lines?, label? }`:
+    `file` is a repo path or unique suffix (`"TinkerTransaction.java"`); `symbol` a function
+    or type name, or `"Type.member"` for a member (`"TinkerStorageGraph.TinkerStorageGraph"`
+    is the constructor; bare `"TinkerStorageGraph"` the class); `label` the chip text. Name
+    the code — **never write line numbers or URLs**: the renderer resolves each ref against
+    `evidence.codeIndex` and links to the file pinned at the reviewed commit with the
+    symbol's lines highlighted. Two or three
+    refs per question is plenty.
+  - `refs` on the item — optional "Also see" chips for code that belongs to the whole area.
+
+  `render.js` prints any ref it cannot resolve; fix the `file`/`symbol` and re-render. An
+  item with only an HTML `body` still renders (older reports).
 - `findings` — array of `{ title, snippet, body }` objects, ordered most-severe-first (Interpret grades each blocking / high / low)
 - `openQuestions` — array of `{ title, body, meta }` objects
 - `functionalTest` — `{ plan, results: [{name, pass, output}], observations }` (if testing was done).
-  `plan` and `observations` are HTML and surface **themes and insights** — what
+  `plan` is HTML and `observations` is an array of HTML strings (one per insight); both and surface **themes and insights** — what
   families of behavior were exercised and what was learned — not a per-scenario
   list. `results` rows are **theme-level**: each `name` names a theme and the
   scenario labels it spans (e.g. `"Barrier family (A4–A12)"`), so the PASS/FAIL
@@ -263,7 +284,7 @@ produce a complete evidence-with-narrative JSON file. Write it to
   subagent (see step 4); it is the source of truth the Functional Test section
   summarizes by label.
 
-All `body` fields (and `functionalTest.plan`/`observations`, `appendixFunctional.environment`)
+All `body`, `intro` and question `text` fields (and `functionalTest.plan`/`observations`, `appendixFunctional.environment`)
 are HTML — use `<code>`, `<strong>`, `<ul>`, `<p>` as needed. The raw-text fields
 noted above are the exception. The renderer handles all layout, CSS, and structure.
 

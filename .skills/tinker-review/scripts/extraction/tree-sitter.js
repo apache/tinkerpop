@@ -476,6 +476,8 @@ function extractTypesFromTree(tree, filePath, language) {
           language,
           supertypes,
           signature: typeSignature(node, language, kind, visibility, supertypes),
+          linesStart: node.startPosition.row + 1,
+          linesEnd: node.endPosition.row + 1,
           rawHash: rawHash(node),
           normHash: normHash(node),
         });

@@ -103,12 +103,15 @@ interface PopulationSummary {
 //   ExternalsResult      scripts/patterns/classify-externals.js
 //   OrphanResult         scripts/patterns/orphans.js
 //   ArchitectureResult   scripts/patterns/architecture.js
+//   CodeIndex            scripts/extraction/code-index.js
+//   CodeRef              scripts/renderer/code-links.js
 
 // === Evidence (evidence.json — what Phase 1 writes; the fields Interpret cites) ===
 
 interface Evidence {
   meta: {
     pr: number;
+    headSha: string | null;      // PR head commit reviewed; pins report code links
     title: string;
     domains: string[];           // e.g. ["general", "glv", "driver-server"]
     language: string;
@@ -129,6 +132,7 @@ interface Evidence {
   };
   discussions: DiscussionsResult;   // jiras[], devList[], secondary[], proposals[], prComments{}
   changedFiles: string[];
+  codeIndex: CodeIndex;             // changed files → hunks + symbol line ranges (scripts/extraction/code-index.js)
 }
 
 // === ReportPackage (report.json — renderer input; Evidence + agent narrative) ===
@@ -141,11 +145,19 @@ interface ReportPackage extends Evidence {
   communityNames?: { [id: string]: string };
     // content-derived name per community, keyed by checks.communities.communities[].id
     // (0-based; also the stamped `community` vertex property). Unnamed → "Community N".
-  guidedWalk: { title; badge; badgeText; body }[];
+  guidedWalk: {
+    title; badge; badgeText;               // badge: "attention" | "info" | "safe"
+    intro: string;                         // HTML — what this area does, in plain terms
+    questions: { text: string; refs?: CodeRef[] }[];   // text: HTML
+    refs?: CodeRef[];                      // optional item-level "Also see"
+  }[];
+    // CodeRef = { file; symbol?; lines?: [number, number]; label? } — see
+    // scripts/renderer/code-links.js. The renderer resolves it against codeIndex;
+    // the agent never writes line numbers or URLs. Legacy { body } items still render.
   findings: { title; snippet; body }[];
   openQuestions: { title; body; meta }[];
-  functionalTest?: { plan; results: { name; pass; output }[]; observations };
-    // plan/observations: HTML, theme-level. results rows are THEMES, each `name`
+  functionalTest?: { plan; results: { name; pass; output }[]; observations: string[] };
+    // plan: HTML; observations: array of HTML strings; both theme-level. results rows are THEMES, each `name`
     // naming the scenario labels it spans — not one row per scenario.
   appendixFunctional?: { environment; testCode; fullOutput };
     // environment: HTML. testCode/fullOutput: RAW TEXT (renderer wraps in
@@ -311,9 +323,39 @@ export async function coverageGaps(g, params = {}) {}
  * Render an evidence package to a self-contained HTML page.
  *
  * @param {EvidencePackage} evidence - Structured evidence data
+ * @param {object} [options]
+ * @param {string[]} [options.warnings] - receives one entry per Guided Walk code ref that
+ *   could not be resolved (the CLI prints them to stderr)
  * @returns {string} - Complete HTML document as a string
  */
-export function render(evidence) {}
+export function render(evidence, options = {}) {}
+```
+
+### renderer/code-links.js
+
+```javascript
+/**
+ * Resolve a {file, symbol?, lines?, label?} reference against evidence.codeIndex to a
+ * link: the file pinned at meta.headSha with the symbol's lines highlighted (the whole
+ * file when no symbol or lines). Without headSha it falls back to the PR "Files changed"
+ * anchor at the first changed lines, else the file in the diff. url is null (with
+ * the reason in title) when the reference does not resolve.
+ *
+ * @returns {{label, url: string|null, title, target: "diff"|"blob"|"file"|null}}
+ */
+export function resolveRef(ref, { pr, headSha, codeIndex }) {}
+```
+
+### extraction/code-index.js
+
+```javascript
+/**
+ * Build evidence.codeIndex from the extraction and `git diff --unified=0`: for each
+ * changed file, its changed line ranges on the PR head side and the line range of every
+ * function and type in it. Called by Phase 1.
+ */
+export function buildCodeIndex({ changedFiles, extraction, diffText }) {}
+export function parseHunks(diffText) {}
 ```
 
 **Responsibilities:**
