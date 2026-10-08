@@ -38,6 +38,8 @@ import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DefaultStorage;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DirectoryLock;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
@@ -56,6 +58,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Valentyn Kahamlyk
  */
 public abstract class AbstractTinkerGraph implements TinkerGraph {
+
+    private static final Logger logger = LoggerFactory.getLogger(AbstractTinkerGraph.class);
 
     protected AtomicLong currentId = new AtomicLong(-1L);
     protected Map<Object, VertexProperty> vertexProperties = new ConcurrentHashMap<>();
@@ -325,30 +329,43 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
      * Closes the graph, releasing any resources held by its {@link TinkerServiceRegistry}. This method may be called
      * multiple times and is a no-op with respect to graph data for the in-memory implementation. Transactional
      * implementations that are backed by a {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage}
-     * engine flush and close that engine here.
+     * engine flush, compact and close that engine here. A failure to flush or compact is logged rather than thrown,
+     * since the next open replays the log, and the engine and its directory lock are released regardless.
      */
     @Override
     public void close() {
-        if (storage != null) {
-            // serialize against concurrent commit writes: close flushes, compacts, and closes the log, which must not
-            // interleave with a transaction appending to it.
-            storageCommitLock.lock();
-            try {
-                storage.flush();
-                storage.compact(this);
-                storage.close();
-            } finally {
-                storageCommitLock.unlock();
-                // release the exclusive directory lock last, so the location is only reopenable once the engine has
-                // fully released its files
-                if (directoryLock != null) {
-                    directoryLock.close();
-                    directoryLock = null;
+        try {
+            if (storage != null) {
+                // serialize against concurrent commit writes: close flushes, compacts, and closes the log, which must
+                // not interleave with a transaction appending to it.
+                storageCommitLock.lock();
+                try {
+                    try {
+                        storage.flush();
+                        storage.compact(this);
+                    } catch (RuntimeException ex) {
+                        // every acknowledged commit was flushed when it committed and compaction leaves the snapshot
+                        // and log intact, so the next open replays what this one could not fold. The engine must still
+                        // be closed, or a later commit on this graph would reopen a log whose lock is released below.
+                        logger.warn(String.format("Could not flush and compact storage at %s on close; the next open replays its log",
+                                storageDirectory), ex);
+                    } finally {
+                        storage.close();
+                    }
+                } finally {
+                    storageCommitLock.unlock();
+                    // release the exclusive directory lock last, so the location is only reopenable once the engine
+                    // has fully released its files
+                    if (directoryLock != null) {
+                        directoryLock.close();
+                        directoryLock = null;
+                    }
                 }
             }
+        } finally {
+            serviceRegistry.close();
+            GqlDeclarativeMatchStrategy.evict(this);
         }
-        serviceRegistry.close();
-        GqlDeclarativeMatchStrategy.evict(this);
     }
 
     @Override

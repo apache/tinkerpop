@@ -179,6 +179,26 @@ public class StorageFailureTest {
         graph.close();
     }
 
+    @Test
+    public void shouldCloseStorageWhenCompactionFailsOnClose() {
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+
+        // the log still holds every acknowledged commit, so a compaction failure must not keep the graph from closing
+        FaultInjectingStorage.failCompaction = true;
+        graph.close();
+        FaultInjectingStorage.failCompaction = false;
+
+        // the closed graph must not write to a directory whose lock it has released
+        graph.addVertex(T.id, 2);
+        assertCommitFails(graph);
+
+        final TinkerStorageGraph reopened = TinkerStorageGraph.open(conf);
+        assertEquals(Arrays.asList(1), vertexIds(reopened));
+        reopened.close();
+    }
+
     private static void assertCommitFails(final TinkerStorageGraph graph) {
         try {
             graph.tx().commit();
