@@ -115,7 +115,8 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         storageDirectory = configuration.getString(GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, null);
         storage = selectStorage(configuration, GREMLIN_TINKERGRAPH_STORAGE);
 
-        if (storage != null && null == storageDirectory)
+        // a blank directory would otherwise resolve against the working directory and quietly create a store there
+        if (storage != null && (null == storageDirectory || storageDirectory.trim().isEmpty()))
             throw new IllegalStateException(String.format("The %s must be specified when %s is set",
                     GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, GREMLIN_TINKERGRAPH_STORAGE));
 

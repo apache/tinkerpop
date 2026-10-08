@@ -179,7 +179,8 @@ to disk. The value is either a built-in engine name (`graphbinary`) or a fully q
 `TinkerStorage` implementation. When not specified (default), the graph holds data only in memory. This setting is
 only valid on `TinkerStorageGraph` and is ignored by the in-memory `TinkerMemoryGraph`.
 |gremlin.tinkergraph.storage.directory |The directory in which `TinkerStorageGraph` stores its durable data. Required
-when `gremlin.tinkergraph.storage` is set and ignored otherwise.
+when `gremlin.tinkergraph.storage` is set and ignored otherwise. A relative path resolves against the working directory
+of the JVM, so an absolute path is safer for a graph opened by Gremlin Server or the Gremlin Console.
 |gremlin.tinkergraph.storage.sync |The durability applied to each committed transaction by a `TinkerStorageGraph`
 storage engine. `commit` (default) forces each commit to disk so an acknowledged commit survives an operating system
 crash or power loss. `os` only flushes to the operating system, so a commit survives a crash of the JVM process but
@@ -187,7 +188,8 @@ may be lost on an operating system crash or power loss. Only meaningful when `gr
 |gremlin.tinkergraph.storage.compactThreshold |The size in bytes at which a `TinkerStorageGraph` storage engine
 automatically compacts its append log, bounding the log growth and restart time of a long-running graph that is never
 explicitly closed. Defaults to `67108864` (64 MB). A value of `0` disables automatic compaction, leaving it to
-`close()` or an explicit `compact()`. Only meaningful when `gremlin.tinkergraph.storage` is set.
+`close()` or an explicit `compact()`. A negative value fails the open. Only meaningful when
+`gremlin.tinkergraph.storage` is set.
 |gremlin.tinkergraph.storage.preserveVertexPropertyIds |Whether a `TinkerStorageGraph` storage engine persists
 auto-generated vertex-property ids so they are stable across a close and reopen. Defaults to `false`, which
 regenerates those ids on load and keeps the store smaller. Element and edge ids are always preserved regardless. Only
