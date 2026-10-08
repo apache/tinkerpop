@@ -87,9 +87,45 @@ test("the assignments map covers every node so write-back can stamp them all", (
   assert.equal(r.assignments.size, nodes.length, "one community assignment per vertex");
 });
 
+test("assignments carry the reported community id and skip isolated vertices", () => {
+  const nodes = [
+    fn("a", "big.java"), fn("b", "big.java"), fn("c", "big.java"),
+    fn("x", "small.java"), fn("y", "small.java"),
+    fn("orphan", "o.java"),
+  ];
+  const edges = [edge("a", "b"), edge("b", "c"), edge("a", "c"), edge("x", "y")];
+  const r = detectCommunities(nodes, edges, {});
+  for (const c of r.communities) {
+    const stamped = [...r.assignments].filter(([, comm]) => comm === c.id).map(([id]) => id).sort();
+    assert.equal(stamped.length, c.size, `community ${c.id} stamps exactly its members`);
+  }
+  assert.equal(r.assignments.get("a"), 0, "largest community is id 0");
+  assert.ok(!r.assignments.has("orphan"), "isolated vertex is not stamped");
+});
+
+test("key members list changed members first, then the most-connected", () => {
+  const nodes = [
+    { ...fn("hub", "f.java") }, fn("leaf1", "f.java"), fn("leaf2", "f.java"),
+    { ...fn("edited", "f.java"), changed: true },
+    { id: "file", label: "File", name: "f.java", filePath: "f.java" },
+  ];
+  const edges = [
+    // a 4-clique where every hub edge pulls hardest, plus the file defining the hub
+    edge("hub", "leaf1", "EXTRACTED"), edge("hub", "leaf2", "EXTRACTED"), edge("hub", "edited", "EXTRACTED"),
+    edge("leaf1", "leaf2", "AMBIGUOUS"), edge("leaf1", "edited", "AMBIGUOUS"), edge("leaf2", "edited", "AMBIGUOUS"),
+    edge("file", "hub", "EXTRACTED"),
+  ];
+  const r = detectCommunities(nodes, edges, {});
+  assert.equal(r.communityCount, 1);
+  const km = r.communities[0].keyMembers;
+  assert.deepEqual(km.slice(0, 2), ["edited", "hub"], "changed first, then the hub");
+  assert.ok(!km.includes("f.java"), "File vertices are left to the file list");
+  assert.equal(r.communities[0].kind, "implementation");
+});
+
 const testNode = (id, file, changed = false) => ({ id, label: "Test", name: id, filePath: file, changed });
 
-test("an all-test partition reads as test scaffolding, not new functional groupings", () => {
+test("an all-test partition reads as test code, not new functional groupings", () => {
   const nodes = [
     testNode("t1", "AbstractIT.java"), testNode("t2", "AbstractIT.java"), testNode("t3", "AbstractIT.java"),
     testNode("u1", "AuditLogIT.java"), testNode("u2", "AuditLogIT.java"), testNode("u3", "AuditLogIT.java"),
@@ -100,7 +136,7 @@ test("an all-test partition reads as test scaffolding, not new functional groupi
     edge("t3", "u1"),
   ];
   const r = detectCommunities(nodes, edges, {});
-  assert.ok(r.communities.every((c) => c.role.startsWith("test scaffolding")), "each community typed as test scaffolding");
+  assert.ok(r.communities.every((c) => c.kind === "test code" && c.role.startsWith("test code")), "each community typed as test code");
   assert.match(r.interpretation.headline, /modularity/);
   assert.ok(
     r.interpretation.reading.some((line) => /test infrastructure/i.test(line)),
