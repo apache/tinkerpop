@@ -154,7 +154,9 @@ export async function buildAndStart(workDir, opts) {
     await exec("git", ["worktree", "remove", "--force", buildWorktree], { cwd: repoPath }).catch(() => {});
   }
   await exec("git", ["worktree", "prune"], { cwd: repoPath }).catch(() => {});
-  await exec("git", ["worktree", "add", buildWorktree, prBranch], { cwd: repoPath });
+  // Detached: prBranch is already checked out in the src/ worktree, and git
+  // refuses to check out one branch in two worktrees.
+  await exec("git", ["worktree", "add", "--detach", buildWorktree, prBranch], { cwd: repoPath });
 
   // Full-reactor build without tests, so every module reflects the PR.
   await exec(
