@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optim
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DirectoryLock;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.IndexDefinitions;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.StorageSettings;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.File;
@@ -98,6 +99,48 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
      * An empty private constructor that initializes {@link TinkerStorageGraph}.
      */
     private TinkerStorageGraph(final Configuration configuration) {
+        storageDirectory = configuration.getString(GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, null);
+        storage = selectStorage(configuration, GREMLIN_TINKERGRAPH_STORAGE);
+
+        // a blank directory would otherwise resolve against the working directory and quietly create a store there
+        if (storage != null && (null == storageDirectory || storageDirectory.trim().isEmpty()))
+            throw new IllegalStateException(String.format("The %s must be specified when %s is set",
+                    GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, GREMLIN_TINKERGRAPH_STORAGE));
+
+        if (null == storage) {
+            initialize(configuration);
+            return;
+        }
+
+        // take an exclusive lock on the storage directory before anything touches its files, so a second graph on the
+        // same location fails fast rather than corrupting it. The directory must exist to hold the lock.
+        final File dir = new File(storageDirectory);
+        if (!dir.isDirectory() && !dir.mkdirs())
+            throw new IllegalStateException(String.format("Could not create storage directory %s", dir));
+        directoryLock = DirectoryLock.acquire(dir);
+        try {
+            // the settings that shape stored data are fixed when the store is created, so read them before anything
+            // that depends on them is set up
+            initialize(StorageSettings.reconcile(configuration, dir));
+            storage.open(this, this.configuration);
+            loading = true;
+            try {
+                storage.replay(this);
+            } finally {
+                loading = false;
+            }
+            // recreate the recorded indexes now that replay has rebuilt the elements they cover, so
+            // createKeyIndex backfills over the restored data rather than only over writes that follow
+            restoreIndexes(dir);
+        } catch (RuntimeException | Error ex) {
+            // don't leak the lock if the engine fails to open or replay
+            directoryLock.close();
+            directoryLock = null;
+            throw ex;
+        }
+    }
+
+    private void initialize(final Configuration configuration) {
         this.configuration = configuration;
         vertexIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, Vertex.class);
         edgeIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, Edge.class);
@@ -112,43 +155,9 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         defaultVertexLabel = Vertex.DEFAULT_LABEL;
         defaultEdgeLabel = Edge.DEFAULT_LABEL;
 
-        storageDirectory = configuration.getString(GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, null);
-        storage = selectStorage(configuration, GREMLIN_TINKERGRAPH_STORAGE);
-
-        // a blank directory would otherwise resolve against the working directory and quietly create a store there
-        if (storage != null && (null == storageDirectory || storageDirectory.trim().isEmpty()))
-            throw new IllegalStateException(String.format("The %s must be specified when %s is set",
-                    GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, GREMLIN_TINKERGRAPH_STORAGE));
-
         serviceRegistry = new TinkerServiceRegistry(this);
         configuration.getList(String.class, GREMLIN_TINKERGRAPH_SERVICE, Collections.emptyList()).forEach(serviceClass ->
                 serviceRegistry.registerService(instantiate(serviceClass)));
-
-        if (storage != null) {
-            // take an exclusive lock on the storage directory before the engine touches any files, so a second graph
-            // on the same location fails fast rather than corrupting it. The directory must exist to hold the lock.
-            final File dir = new File(storageDirectory);
-            if (!dir.isDirectory() && !dir.mkdirs())
-                throw new IllegalStateException(String.format("Could not create storage directory %s", dir));
-            directoryLock = DirectoryLock.acquire(dir);
-            try {
-                storage.open(this, configuration);
-                loading = true;
-                try {
-                    storage.replay(this);
-                } finally {
-                    loading = false;
-                }
-                // recreate the recorded indexes now that replay has rebuilt the elements they cover, so
-                // createKeyIndex backfills over the restored data rather than only over writes that follow
-                restoreIndexes(dir);
-            } catch (RuntimeException | Error ex) {
-                // don't leak the lock if the engine fails to open or replay
-                directoryLock.close();
-                directoryLock = null;
-                throw ex;
-            }
-        }
     }
 
     /**

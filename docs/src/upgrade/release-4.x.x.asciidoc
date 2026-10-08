@@ -90,7 +90,10 @@ and folds that log into a compact snapshot on close. The storage layer is plugga
 also be the fully-qualified class name of a custom engine, following the same convention as the `IdManager` selection.
 Because it stores values with GraphBinary, the `graphbinary` engine accepts only the types GraphBinary supports. Some
 types that a Gryo file could hold, such as `java.util.Date` or `byte[]`, fail the commit and must be converted first,
-for example to `OffsetDateTime` or `ByteBuffer`.
+for example to `OffsetDateTime` or `ByteBuffer`. The settings that shape stored data, such as the id managers and
+the default vertex property cardinality, are recorded when a store is created and cannot change afterward. A graph
+reopened without them uses the recorded values, and changing one requires exporting the graph and importing it into a
+new store.
 
 [source,groovy]
 ----

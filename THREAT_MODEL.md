@@ -272,7 +272,7 @@ Per-surface trust table:
 | Any string the grammar accepts as an argument (e.g. a `regex` pattern) | Gremlin string | **yes** | a grammatically valid string must not enable DoS (e.g. ReDoS via a pathological pattern), the Q7 super-linear-amplification carve-out (§8) |
 | GLV (client) — server response | serialized bytes from the server | yes if the server is malicious/compromised, or a MITM (TLS off / cert not validated) | response-deserialization robustness; TLS with cert validation |
 | `gremlin-server.yaml`, host, data dir | local | no — operator-trusted | filesystem permissions |
-| `TinkerStorageGraph` storage directory (`snapshot.gbin`, `log.gbin`, `INDEXES`, `VERSION`) | on-disk bytes decoded when the graph opens | no — operator-trusted, a data directory | filesystem permissions. The engine's checks against damaged files (checksums, bounded decoding, the `recover` open) are a reliability property against disk damage, not a security property |
+| `TinkerStorageGraph` storage directory (`snapshot.gbin`, `log.gbin`, `INDEXES`, `VERSION`, `settings.properties`) | on-disk bytes decoded when the graph opens | no — operator-trusted, a data directory | filesystem permissions. The engine's checks against damaged files (checksums, bounded decoding, the `recover` open) are a reliability property against disk damage, not a security property |
 
 - **Pre-auth vs post-auth (ordering note):** "pre-auth" marks what an attacker can reach **without valid
   credentials**, which is what makes a defect there security-critical (§8). Gremlin Server authenticates
