@@ -32,12 +32,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -197,6 +200,59 @@ public class StorageFailureTest {
         final TinkerStorageGraph reopened = TinkerStorageGraph.open(conf);
         assertEquals(Arrays.asList(1), vertexIds(reopened));
         reopened.close();
+    }
+
+    @Test
+    public void shouldNotRetryAFailedCompactionOnEveryCommit() {
+        // a threshold well above one commit's frame, so that backing off by a threshold spans several commits
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, 512);
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        FaultInjectingStorage.failCompaction = true;
+        int id = 0;
+        while (FaultInjectingStorage.compactionAttempts.get() == 0 && id < 1000) {
+            graph.addVertex(T.id, ++id);
+            graph.tx().commit();
+        }
+        assertEquals(1, FaultInjectingStorage.compactionAttempts.get());
+
+        // the log is still over the threshold, but each compaction rewrites the whole graph under the commit lock,
+        // so after a failure the next attempt waits for another threshold's worth of log
+        for (int i = 0; i < 3; i++) {
+            graph.addVertex(T.id, ++id);
+            graph.tx().commit();
+        }
+        assertEquals(1, FaultInjectingStorage.compactionAttempts.get());
+
+        FaultInjectingStorage.failCompaction = false;
+        while (FaultInjectingStorage.compactionAttempts.get() == 1 && id < 2000) {
+            graph.addVertex(T.id, ++id);
+            graph.tx().commit();
+        }
+        assertEquals(2, FaultInjectingStorage.compactionAttempts.get());
+        assertTrue(new File(conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY),
+                AbstractLogStorage.SNAPSHOT_FILE).exists());
+        graph.close();
+    }
+
+    @Test
+    public void shouldRemoveThePartialSnapshotWhenCompactionFails() {
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+
+        FaultInjectingStorage.failSnapshotWrites = true;
+        try {
+            graph.compact();
+            fail("compaction should have failed");
+        } catch (RuntimeException expected) {
+            // expected
+        }
+        FaultInjectingStorage.failSnapshotWrites = false;
+
+        final File directory = new File(conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY));
+        assertFalse("a failed compaction must not leave its partial snapshot behind",
+                new File(directory, AbstractLogStorage.SNAPSHOT_FILE + ".tmp").exists());
+        graph.close();
     }
 
     private static void assertCommitFails(final TinkerStorageGraph graph) {
