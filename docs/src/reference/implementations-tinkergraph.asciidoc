@@ -486,6 +486,17 @@ stored. An index dropped with `dropIndex()` stays dropped. Index definitions are
 because an index only affects how fast a lookup runs and never its result, so a definition lost to a crash costs a
 rebuild rather than any data. If the record of them cannot be read the graph still opens, with no indexes.
 
+A persisted graph can only hold values that its storage engine can write. The `graphbinary` engine stores ids,
+property values and meta-property values with the GraphBinary serializers, so each must be one of the types GraphBinary
+supports: `String`, `Character`, `Boolean`, `Byte`, `Short`, `Integer`, `Long`, `Float`, `Double`, `BigInteger`,
+`BigDecimal`, `UUID`, `OffsetDateTime`, `Duration`, `ByteBuffer` for binary data, and `List`, `Set` and `Map` of those
+types. Other types, including `java.util.Date`, `Instant`, `LocalDate`, `LocalDateTime`, `ZonedDateTime`, arrays such
+as `byte[]`, and custom classes, are rejected when the transaction commits. The commit fails and is rolled back, and
+the error names the property and the type that could not be stored. Convert such values first, for example a date to an
+`OffsetDateTime` and a `byte[]` to a `ByteBuffer`. In the Gremlin Console, note that a Groovy string with an
+interpolated value, such as `"v${i}"`, is a `GString` rather than a `String` and must be converted with `toString()`.
+A graph with no storage engine configured accepts any value.
+
 Element and edge ids are always preserved across a reopen. Auto-generated vertex-property ids are not, by default,
 so a vertex property may receive a different id after a reopen. Setting `gremlin.tinkergraph.storage.preserveVertexPropertyIds`
 to `true` persists those ids as well, at the cost of a larger store.

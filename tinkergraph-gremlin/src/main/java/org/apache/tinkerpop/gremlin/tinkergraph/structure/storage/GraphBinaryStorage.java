@@ -237,7 +237,11 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
     }
 
     private void writeVertexRecord(final TinkerByteBuffer buf, final Vertex v) throws IOException {
-        writeScalar(buf, v.id());
+        try {
+            writeScalar(buf, v.id());
+        } catch (IOException ex) {
+            throw cannotStore("the id of a vertex", v.id(), ex);
+        }
         final Set<String> labels = v.labels();
         writeVarInt(buf, labels.size());
         for (final String label : labels)
@@ -259,22 +263,41 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
             final List<VertexProperty<Object>> values = group.getValue();
             writeVarInt(buf, values.size());
             for (final VertexProperty<Object> vp : values) {
-                writeScalar(buf, vp.value());
-                if (preserveVertexPropertyIds)
-                    writeScalar(buf, vp.id());
+                try {
+                    writeScalar(buf, vp.value());
+                } catch (IOException ex) {
+                    throw cannotStore(String.format("property '%s' of vertex %s", vp.key(), v.id()), vp.value(), ex);
+                }
+                if (preserveVertexPropertyIds) {
+                    try {
+                        writeScalar(buf, vp.id());
+                    } catch (IOException ex) {
+                        throw cannotStore(String.format("the id of property '%s' of vertex %s", vp.key(), v.id()),
+                                vp.id(), ex);
+                    }
+                }
                 final List<Property<Object>> metas = new ArrayList<>();
                 vp.properties().forEachRemaining(metas::add);
                 writeVarInt(buf, metas.size());
                 for (final Property<Object> meta : metas) {
                     writeVarInt(buf, keyToId.get(meta.key()));
-                    writeScalar(buf, meta.value());
+                    try {
+                        writeScalar(buf, meta.value());
+                    } catch (IOException ex) {
+                        throw cannotStore(String.format("meta-property '%s' of property '%s' of vertex %s",
+                                meta.key(), vp.key(), v.id()), meta.value(), ex);
+                    }
                 }
             }
         }
     }
 
     private void writeEdgeRecord(final TinkerByteBuffer buf, final Edge e) throws IOException {
-        writeScalar(buf, e.id());
+        try {
+            writeScalar(buf, e.id());
+        } catch (IOException ex) {
+            throw cannotStore("the id of an edge", e.id(), ex);
+        }
         writeVarInt(buf, keyToId.get(e.label()));
         writeScalar(buf, e.outVertex().id());
         writeScalar(buf, e.inVertex().id());
@@ -283,8 +306,21 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         writeVarInt(buf, props.size());
         for (final Property<Object> p : props) {
             writeVarInt(buf, keyToId.get(p.key()));
-            writeScalar(buf, p.value());
+            try {
+                writeScalar(buf, p.value());
+            } catch (IOException ex) {
+                throw cannotStore(String.format("property '%s' of edge %s", p.key(), e.id()), p.value(), ex);
+            }
         }
+    }
+
+    /**
+     * Describe a value that could not be encoded by what it belongs to and its type, which the serializer's own
+     * message does not say.
+     */
+    private static IOException cannotStore(final String what, final Object value, final IOException cause) {
+        return new IOException(String.format("Could not store %s, a %s: %s",
+                what, value.getClass().getTypeName(), cause.getMessage()), cause);
     }
 
     // --------------------------------------------------------------------------------------------- decode
@@ -404,7 +440,14 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
             buf.writeByte(DataType.UNSPECIFIED_NULL.getCodeByte());
             return;
         }
-        final TypeSerializer serializer = registry.getSerializer(value.getClass());
+        final TypeSerializer serializer;
+        try {
+            serializer = registry.getSerializer(value.getClass());
+        } catch (IOException ex) {
+            throw new IOException(String.format("the graphbinary storage engine has no serializer for %s; see the " +
+                    "TinkerGraph persistence documentation for the types it can store",
+                    value.getClass().getTypeName()), ex);
+        }
         buf.writeByte(serializer.getDataType().getCodeByte());
         serializer.writeValue(value, buf, writer, false);
     }
