@@ -347,7 +347,7 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
                         // every acknowledged commit was flushed when it committed and compaction leaves the snapshot
                         // and log intact, so the next open replays what this one could not fold. The engine must still
                         // be closed, or a later commit on this graph would reopen a log whose lock is released below.
-                        logger.warn(String.format("Could not flush and compact storage at %s on close; the next open replays its log",
+                        logger.warn(String.format("Could not flush and compact storage at %s on close",
                                 storageDirectory), ex);
                     } finally {
                         storage.close();

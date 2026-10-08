@@ -33,6 +33,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -253,6 +255,73 @@ public class StorageFailureTest {
         assertFalse("a failed compaction must not leave its partial snapshot behind",
                 new File(directory, AbstractLogStorage.SNAPSHOT_FILE + ".tmp").exists());
         graph.close();
+    }
+
+    @Test
+    public void shouldStopCommittingWhenTheStorageDirectoryIsRemoved() throws Exception {
+        final File directory = new File(conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY));
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+
+        deleteRecursively(directory);
+
+        // the open log would otherwise keep accepting writes to a file that no longer has a name
+        graph.addVertex(T.id, 2);
+        try {
+            graph.tx().commit();
+            fail("a commit after the storage directory is removed should fail");
+        } catch (RuntimeException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("g.io()"));
+        }
+        graph.addVertex(T.id, 3);
+        assertCommitFails(graph);
+
+        // what was committed before the removal is still readable, so it can be exported
+        assertEquals(Arrays.asList(1), vertexIds(graph));
+        graph.close();
+        assertFalse("close() must not bring the removed directory back", directory.exists());
+    }
+
+    @Test
+    public void shouldNotRecreateARemovedStorageDirectoryOnClose() throws Exception {
+        final File directory = new File(conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY));
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+        graph.compact();
+
+        // no commit runs between the removal and close(), so only close() itself can notice
+        deleteRecursively(directory);
+        graph.close();
+        assertFalse("close() must not bring the removed directory back", directory.exists());
+    }
+
+    @Test
+    public void shouldStopCommittingWhenTheLogIsReplaced() throws Exception {
+        final File directory = new File(conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY));
+        final File log = new File(directory, AbstractLogStorage.LOG_FILE);
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+
+        // a different file now sits at the log's path, so the open log is no longer the store's
+        final File copy = new File(directory, "copy");
+        Files.copy(log.toPath(), copy.toPath());
+        Files.move(copy.toPath(), log.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+        graph.addVertex(T.id, 2);
+        assertCommitFails(graph);
+        graph.close();
+    }
+
+    private static void deleteRecursively(final File file) {
+        final File[] children = file.listFiles();
+        if (children != null) {
+            for (final File child : children)
+                deleteRecursively(child);
+        }
+        assertTrue("could not delete " + file, file.delete());
     }
 
     private static void assertCommitFails(final TinkerStorageGraph graph) {

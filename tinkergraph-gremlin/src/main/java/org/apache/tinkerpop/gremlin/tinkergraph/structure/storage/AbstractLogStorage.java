@@ -44,6 +44,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -133,6 +134,13 @@ public abstract class AbstractLogStorage implements TinkerStorage {
 
     private DataOutputStream logOut;
     private FileOutputStream logFos;
+
+    /**
+     * The identity of the log file the open {@link #logOut} writes to (the inode on POSIX), or {@code null} when the
+     * filesystem does not report one. On POSIX a removed or replaced file stays writable through a stream that already
+     * has it open, so the log is checked against its path after each sync (see {@link #checkStoreInPlace}).
+     */
+    private Object logFileKey;
     private SyncMode syncMode = SyncMode.COMMIT;
     private long compactThresholdBytes = DEFAULT_COMPACT_THRESHOLD_BYTES;
     private long logBytesSinceCompaction = 0;
@@ -329,6 +337,9 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             } catch (IOException ex) {
                 throw fail("Could not flush storage log", ex);
             }
+            // the sync succeeds even on a log that was removed from the directory, so check the commit actually
+            // landed in the store before it is acknowledged
+            checkStoreInPlace();
         }
     }
 
@@ -344,8 +355,10 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         // rename tmp over the snapshot -> fsync dir (the rename is now durable) -> install the empty log the same way.
         // Each file is only ever replaced by an atomic rename, so a crash at any step leaves either the old snapshot
         // and log, the new snapshot with the old log (which open recognizes by its generation), or the new pair.
+        // compaction writes into the directory it was opened on and never recreates it, so a store removed while the
+        // graph is open stays removed (the open log is the store's only file the engine holds, so check it first)
+        checkStoreInPlace();
         closeLog();
-        ensureDirectory();
         final long nextGeneration = generation + 1;
         final File tmp = new File(directory, SNAPSHOT_FILE + ".tmp");
         try (final FileOutputStream fos = new FileOutputStream(tmp);
@@ -411,7 +424,11 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     @Override
     public void close() {
         try {
-            if (failure != null) {
+            if (failure instanceof StoreRemovedException) {
+                logger.error("Closing storage at {}, which was removed or replaced while the graph was open; nothing " +
+                        "more is written to it", directory);
+                discardLog();
+            } else if (failure != null) {
                 logger.warn("Closing storage at {} after an earlier write failure; anything not yet written is " +
                         "discarded and the next open recovers from what is on disk", directory);
                 discardLog();
@@ -755,11 +772,12 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             // open and compaction always leave a log in place, so appending to a missing one would write frames with
             // no header
             if (!logFile.isFile())
-                throw new IllegalStateException(String.format("Storage log %s is missing", logFile));
+                throw removed(String.format("its log %s is missing", logFile));
             try {
                 // retain the FileOutputStream so flush() can reach its FileDescriptor for fsync
                 logFos = openLogForAppend(logFile);
                 logOut = new DataOutputStream(new BufferedOutputStream(logFos));
+                logFileKey = fileKey(logFile);
             } catch (IOException ex) {
                 throw new UncheckedIOException("Could not open storage log for append", ex);
             }
@@ -806,6 +824,46 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      * Record the first log write failure, putting the engine into its fail-stop state, and return the exception to
      * throw for this one.
      */
+    /**
+     * Fail-stop if the store was removed or replaced since the log was opened: the directory or log is gone, or the
+     * log's path now names a different file than the one being written. A commit synced to such a log would be
+     * acknowledged yet lost, and a second graph could create the store again beside this one.
+     */
+    private void checkStoreInPlace() {
+        if (!directory.isDirectory())
+            throw removed(String.format("its directory %s is missing", directory));
+        if (logOut == null)
+            return;
+        final Object current;
+        try {
+            current = logFile.exists() ? fileKey(logFile) : null;
+        } catch (IOException ex) {
+            throw removed(String.format("its log %s cannot be read: %s", logFile, ex.getMessage()));
+        }
+        if (!logFile.exists())
+            throw removed(String.format("its log %s is missing", logFile));
+        if (logFileKey != null && !logFileKey.equals(current))
+            throw removed(String.format("its log %s was replaced by another file", logFile));
+    }
+
+    private static Object fileKey(final File file) throws IOException {
+        return Files.readAttributes(file.toPath(), BasicFileAttributes.class).fileKey();
+    }
+
+    /**
+     * Fail-stop because the store was removed or replaced while the graph was open. Nothing more is written to the
+     * directory, close() included, and the graph's committed data remains readable in memory until it is closed.
+     */
+    private UncheckedIOException removed(final String what) {
+        final StoreRemovedException ex = new StoreRemovedException(String.format(
+                "Storage at %s was removed or replaced while the graph was open (%s), so no further commits are " +
+                        "accepted. The committed data is still readable in memory: export it with g.io() before " +
+                        "closing the graph", directory, what));
+        if (failure == null)
+            failure = ex;
+        return new UncheckedIOException(ex.getMessage(), ex);
+    }
+
     private UncheckedIOException fail(final String message, final IOException cause) {
         if (failure == null)
             failure = cause;
@@ -831,6 +889,8 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     private void checkNotFailed() {
+        if (failure instanceof StoreRemovedException)
+            throw new UncheckedIOException(failure.getMessage(), failure);
         if (failure != null)
             throw new UncheckedIOException(new IOException(String.format(
                     "Storage at %s failed an earlier write and accepts no further commits; close and reopen the graph",
@@ -941,6 +1001,15 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         private CorruptFrameException(final String message, final int payloadLength) {
             super(message);
             this.payloadLength = payloadLength;
+        }
+    }
+
+    /**
+     * The store was removed or replaced while the graph was open.
+     */
+    private static final class StoreRemovedException extends IOException {
+        private StoreRemovedException(final String message) {
+            super(message);
         }
     }
 

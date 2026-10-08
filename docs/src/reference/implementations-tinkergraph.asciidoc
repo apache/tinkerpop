@@ -540,7 +540,10 @@ between opens. A store that has data but no `settings.properties` fails to open,
 A storage location may be opened by only one graph at a time. `TinkerStorageGraph` takes an exclusive lock on the
 storage directory when it opens, so a second attempt to open the same location, whether from the same JVM or another
 process, fails rather than corrupting the data. The lock is released when the graph is closed, and from then on any
-commit against that graph instance fails, since the location may already belong to another graph. A store also records
+commit against that graph instance fails, since the location may already belong to another graph. Likewise, if the
+storage directory or its log is removed or replaced while the graph is open, the graph stops accepting commits and
+writes nothing more to that location, not even when it is closed. Its committed data stays readable in memory until
+then, so it can still be exported with the `io()` step. A store also records
 the storage format version it was written with. Opening a store written in a format this version cannot read fails
 with a clear error rather than misreading the data. There is no in-place format migration. To move a graph across an
 incompatible storage format, export it with the `io()` step before upgrading and read it back afterward.
