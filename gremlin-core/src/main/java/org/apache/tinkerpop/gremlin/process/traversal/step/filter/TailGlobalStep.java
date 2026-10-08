@@ -139,4 +139,8 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements TailG
     public Long getLimit() {
         return limit;
     }
+
+    public Long getLimit() {
+        return limit;
+    }
 }
