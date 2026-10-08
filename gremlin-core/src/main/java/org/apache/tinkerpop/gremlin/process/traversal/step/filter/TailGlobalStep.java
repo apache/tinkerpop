@@ -160,4 +160,8 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
             this.addStart(traverser);
         });
     }
+
+    public Long getLimit() {
+        return limit;
+    }
 }

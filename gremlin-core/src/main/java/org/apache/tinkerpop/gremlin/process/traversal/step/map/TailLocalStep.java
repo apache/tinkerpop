@@ -74,4 +74,8 @@ public final class TailLocalStep<S> extends ScalarMapStep<S, S> {
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
+
+    public Long getLimit() {
+        return limit;
+    }
 }
