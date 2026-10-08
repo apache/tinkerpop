@@ -96,7 +96,7 @@ function notProvided(sectionId, title) {
 }
 
 export function render(evidence) {
-  const { meta, graphStats, checks, discussions, summary, clusters, communityAssessment,
+  const { meta, graphStats, checks, discussions, summary, clusters, communityAssessment, communityNames,
     guidedWalk, functionalTest, findings, openQuestions, appendixFunctional } = evidence;
 
   const parts = [];
@@ -105,12 +105,12 @@ export function render(evidence) {
   parts.push(summary ? renderSummary(summary) : notProvided("summary", "Summary"));
   parts.push(discussions ? renderContext(discussions) : notProvided("context", "Discovered Context"));
   parts.push(renderClusters(clusters, checks && checks.clusters, evidence.architecture));
-  parts.push(renderCommunitySection(checks && checks.communities, communityAssessment));
+  parts.push(renderCommunitySection(checks && checks.communities, communityAssessment, communityNames));
   parts.push(guidedWalk && guidedWalk.length > 0 ? renderGuidedWalk(guidedWalk) : notProvided("guided-walk", "Guided Walk"));
   parts.push(functionalTest ? renderFunctionalTest(functionalTest) : notProvided("functional-test", "Functional Test"));
   parts.push(findings && findings.length > 0 ? renderFindings(findings) : notProvided("findings", "Findings"));
   parts.push(openQuestions && openQuestions.length > 0 ? renderOpenQuestions(openQuestions) : notProvided("open-questions", "Open Questions"));
-  parts.push(renderAppendixStructural(checks, graphStats));
+  parts.push(renderAppendixStructural(checks, graphStats, communityNames));
   parts.push(appendixFunctional ? renderAppendixFunctional(appendixFunctional) : notProvided("appendix-functional", "Appendix: Functional Test Details"));
   parts.push(`<footer>Graph Review &mdash; Apache TinkerPop | PR #${esc(String(meta.pr))} | Generated ${esc(meta.timestamp)}</footer>`);
 
@@ -322,11 +322,25 @@ function renderClusters(clusters, clusterData, architecture) {
 </section>`;
 }
 
-function renderCommunitySection(communityData, assessment) {
+/**
+ * A community's display name: the agent's content-derived name from report.json
+ * `communityNames` (keyed by the community's 0-based `id`), else "Community N".
+ */
+function communityName(c, names) {
+  const named = names && names[c.id];
+  return named ? String(named) : `Community ${c.id + 1}`;
+}
+
+/** Structural kind; older evidence carries it only as the role's first clause. */
+function communityKindOf(c) {
+  return c.kind || c.role.split(",")[0];
+}
+
+function renderCommunitySection(communityData, assessment, names) {
   if (!communityData || !communityData.interpretation) return notProvided("communities", "Thematic Communities");
 
   const interp = communityData.interpretation;
-  const svg = generateCommunitySvg(communityData);
+  const svg = generateCommunitySvg(communityData, names);
 
   // The main section is the analyst's meaning-making (enrichment). Until that runs,
   // fall back to the deterministic reading so the section is never empty.
@@ -348,7 +362,7 @@ function renderCommunitySection(communityData, assessment) {
 </section>`;
 }
 
-function generateCommunitySvg(communityData) {
+function generateCommunitySvg(communityData, names) {
   const communities = (communityData && communityData.communities) || [];
   if (communities.length === 0) return "";
 
@@ -380,11 +394,12 @@ function generateCommunitySvg(communityData) {
     const y = rowY[row];
     const h = rowH[row];
     const cc = modeColor(c);
-    const kind = c.role.split(",")[0];
+    const name = communityName(c, names);
+    const title = name.length > 40 ? `${name.slice(0, 39)}…` : name; // fits the 270px box
     const churnBadge = c.churn ? `−${c.churn.removed}/+${c.churn.added}` : "unchanged context";
     content += `<rect x="${x}" y="${y}" width="${boxW}" height="${h}" rx="8" fill="${cc.fill}" stroke="${cc.stroke}" stroke-width="1.5"/>`;
-    content += `<text x="${x + 12}" y="${y + 19}" font-size="11" font-weight="600" fill="${cc.label}">Community ${c.id + 1} — ${esc(kind)}</text>`;
-    content += `<text x="${x + 12}" y="${y + 33}" font-size="9" fill="#555">${c.size} vertices · ${esc(churnBadge)}</text>`;
+    content += `<text x="${x + 12}" y="${y + 19}" font-size="11" font-weight="600" fill="${cc.label}"><title>${esc(name)}</title>${esc(title)}</text>`;
+    content += `<text x="${x + 12}" y="${y + 33}" font-size="9" fill="#555">${esc(communityKindOf(c))} · ${c.size} vertices · ${esc(churnBadge)}</text>`;
     const files = c.files.slice(0, 4).map((f) => f.split("/").pop());
     for (let j = 0; j < files.length; j++) {
       content += `<text x="${x + 12}" y="${y + 48 + j * 13}" font-size="8" fill="#333">${esc(files[j])}</text>`;
@@ -502,7 +517,7 @@ function renderConfidence(confidence) {
 `;
 }
 
-function renderAppendixStructural(checks, graphStats) {
+function renderAppendixStructural(checks, graphStats, communityNames) {
   const hotspots = checks?.centrality?.hotspots || [];
   const blast = checks?.blastRadius?.functions || [];
   const stats = graphStats || {};
@@ -528,14 +543,15 @@ function renderAppendixStructural(checks, graphStats) {
   const communityRows = communities.map(c => {
     const labels = Object.entries(c.labelCounts || {}).sort((a, b) => b[1] - a[1]).map(([l, n]) => `${l}:${n}`).join(", ");
     const files = c.files.map(f => `<code>${esc(f)}</code>`).join("<br>");
-    return `<tr><td>${c.id + 1}</td><td>${esc(c.role)}</td><td class="num">${c.size}</td><td>${esc(labels)}</td><td>${files}</td></tr>`;
+    const keys = (c.keyMembers || []).map(m => `<code>${esc(m)}</code>`).join(", ");
+    return `<tr><td>${esc(communityName(c, communityNames))}<br><code>community=${c.id}</code></td><td>${esc(c.role)}</td><td class="num">${c.size}</td><td>${esc(labels)}</td><td>${keys}</td><td>${files}</td></tr>`;
   }).join("\n      ");
   const isolated = checks?.communities?.isolatedCount ?? 0;
   const communitiesHtml = communities.length === 0 ? "" : `
   <h3>Community Membership</h3>
-  <p class="section-intro">Louvain communities over the code subgraph, largest first (modularity ${checks?.communities?.modularity}). The reading is in <a href="#communities">Thematic Communities</a>; this is the raw membership. Role carries the change mode and line churn (−removed/+added). ${isolated} vertices have no in-subgraph edge and are omitted; every clustered vertex carries a <code>community</code> property for direct querying.</p>
+  <p class="section-intro">Louvain communities over the code subgraph, largest first (modularity ${checks?.communities?.modularity}). The reading is in <a href="#communities">Thematic Communities</a>; this is the raw membership. Key members are changed first, then most-connected. Role carries the change mode and line churn (−removed/+added). ${isolated} vertices have no in-subgraph edge and are omitted; every clustered vertex carries the <code>community</code> property shown, for direct querying.</p>
   <table class="gap-table">
-    <thead><tr><th>#</th><th>Role</th><th>Vertices</th><th>Label mix</th><th>Files</th></tr></thead>
+    <thead><tr><th>Community</th><th>Role</th><th>Vertices</th><th>Label mix</th><th>Key members</th><th>Files</th></tr></thead>
     <tbody>\n      ${communityRows}\n    </tbody>
   </table>`;
 

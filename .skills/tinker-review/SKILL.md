@@ -237,6 +237,14 @@ produce a complete evidence-with-narrative JSON file. Write it to
   literally (vertices/edges/labels/counts), do NOT re-narrate what Removal References,
   Coverage, or Blast Radius already report, and do NOT pad. The renderer draws the diagram
   and the appendix lists membership; you supply only the judgment.
+- `communityNames` — object mapping each community's `id` (from
+  `checks.communities.communities`) to a short name for what it is about, e.g.
+  `{ "0": "Barrier step reduction", "1": "GraphBinary type IO" }`. Derive each name
+  from the community's `keyMembers` and `files`; if those leave it unclear, query its
+  members with `g.V().has("community", id)`. Aim for 2–5 words and at most 40
+  characters; the box truncates anything longer. Name the concern, not the structure:
+  the renderer already shows the kind (`implementation`, `test code`, `type hierarchy`,
+  `file group`) next to the name. Any community left unnamed renders as "Community N".
 - `guidedWalk` — array of `{ title, badge, badgeText, body }` objects
 - `findings` — array of `{ title, snippet, body }` objects, ordered most-severe-first (Interpret grades each blocking / high / low)
 - `openQuestions` — array of `{ title, body, meta }` objects

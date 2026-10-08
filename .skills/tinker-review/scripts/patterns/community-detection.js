@@ -62,6 +62,9 @@ const WEIGHT = { EXTRACTED: 3, INFERRED: 2, AMBIGUOUS: 1 };
 const NODE_LABELS = ["Function", "Type", "File", "Test"];
 const EDGE_LABELS = ["calls", "defines", "declares", "extends", "implements", "overrides", "tests"];
 
+/** How many member names each community carries for the agent to name it from. */
+const KEY_MEMBER_LIMIT = 8;
+
 /**
  * @typedef {Object} Community
  * @property {number}   id            0-based community index (largest first)
@@ -73,7 +76,10 @@ const EDGE_LABELS = ["calls", "defines", "declares", "extends", "implements", "o
  * @property {string}   dominantLabel most common vertex label
  * @property {number}   testShare     fraction of members living in test files — drives the role
  * @property {?Object}  churn         `{ added, removed, mode }` for the community's files, when churn is supplied
- * @property {string}   role          human descriptor, e.g. "test scaffolding, reduced (−240/+12), spanning 3 files"
+ * @property {string}   kind          structural category: "test code", "type hierarchy", "file group" or "implementation"
+ * @property {string[]} keyMembers    up to KEY_MEMBER_LIMIT member names, changed first then most-connected —
+ *   the material the agent reads to give the community a descriptive name
+ * @property {string}   role          human descriptor, e.g. "test code, reduced (−240/+12), spanning 3 files"
  *
  * @typedef {Object} CommunityResult
  * @property {number}      communityCount  communities with size >= minCommunitySize
@@ -165,21 +171,28 @@ export function detectCommunities(nodes, edges, params = {}) {
     graph.forEachNode((n, _attr) => { communities[n] = graph.nodes().indexOf(n); });
   }
 
-  const { assignments, splitCount } = splitDisconnected(graph, communities);
+  const { assignments: pieces, splitCount } = splitDisconnected(graph, communities);
 
   // Group members by final community id.
   const members = new Map();
-  for (const [id, comm] of assignments) {
+  for (const [id, comm] of pieces) {
     if (!members.has(comm)) members.set(comm, []);
     members.get(comm).push(id);
   }
 
-  const built = [...members.entries()]
-    .map(([, ids]) => rollUp(ids, nodeById, churn))
-    .sort((a, b) => b.size - a.size);
+  const built = [...members.values()]
+    .map((ids) => ({ ids, c: rollUp(ids, nodeById, churn, graph) }))
+    .sort((a, b) => b.c.size - a.c.size);
 
-  const communityList = built.filter((c) => c.size >= minSize).map((c, i) => ({ ...c, id: i }));
-  const isolatedCount = built.filter((c) => c.size < minSize).length;
+  const reported = built.filter(({ c }) => c.size >= minSize);
+  const communityList = reported.map(({ c }, i) => ({ ...c, id: i }));
+  const isolatedCount = built.length - reported.length;
+
+  // Write-back stamps the reported id, so `has("community", n)` returns exactly
+  // the members of the community the report shows as n; vertices below
+  // minCommunitySize stay unstamped.
+  const assignments = new Map();
+  reported.forEach(({ ids }, i) => { for (const id of ids) assignments.set(id, i); });
 
   return {
     communityCount: communityList.length,
@@ -252,16 +265,12 @@ function interpret(communities, modularity, churn) {
 }
 
 /**
- * Describe what a community is: its kind (test scaffolding / call cluster / …),
- * how it changed, and its file span. When churn is known it drives the change
+ * Describe what a community is: its kind (see communityKind), how it changed,
+ * and its file span. When churn is known it drives the change
  * clause (real line counts beat the changed/unchanged vertex-share heuristic);
  * otherwise we fall back to that share.
  */
-function describeRole(label, changedShare, fileCount, testShare, churnSummary) {
-  const kind = testShare >= 0.6 ? "test scaffolding"
-    : label === "Type" ? "type hierarchy"
-      : label === "File" ? "file group"
-        : "call cluster";
+function describeRole(kind, changedShare, fileCount, churnSummary) {
   const change = churnSummary
     ? `${churnSummary.mode} (−${churnSummary.removed}/+${churnSummary.added})`
     : changedShare >= 0.6 ? "mostly changed"
@@ -312,8 +321,44 @@ function splitDisconnected(graph, communities) {
   return { assignments, splitCount };
 }
 
-/** Roll a community's member vertices up to files, label mix, churn, and a role descriptor. */
-function rollUp(ids, nodeById, churn) {
+/**
+ * The structural category of a community, from what its members are. This is
+ * only the coarse kind; the agent names each community by its content during
+ * enrichment (report.json `communityNames`), working from `keyMembers`.
+ */
+function communityKind(label, testShare) {
+  return testShare >= 0.6 ? "test code"
+    : label === "Type" ? "type hierarchy"
+      : label === "File" ? "file group"
+        : "implementation";
+}
+
+/**
+ * The member names most telling of what a community is about: changed members
+ * first (they are why the community matters to the PR), then by weighted degree
+ * within the community (the hubs the rest hang off). File vertices are skipped —
+ * the file list already carries them.
+ */
+function keyMembers(ids, nodeById, graph) {
+  const inComm = new Set(ids);
+  const internalDegree = (id) => {
+    let d = 0;
+    graph.forEachEdge(id, (_e, attr, src, tgt) => {
+      if (inComm.has(src === id ? tgt : src)) d += attr.weight || 1;
+    });
+    return d;
+  };
+  return ids
+    .map((id) => nodeById.get(id))
+    .filter((n) => n && n.name && n.label !== "File")
+    .map((n) => ({ n, degree: internalDegree(n.id) }))
+    .sort((a, b) => (b.n.changed ? 1 : 0) - (a.n.changed ? 1 : 0) || b.degree - a.degree)
+    .slice(0, KEY_MEMBER_LIMIT)
+    .map(({ n }) => n.name);
+}
+
+/** Roll a community's member vertices up to files, label mix, churn, key members, and a role descriptor. */
+function rollUp(ids, nodeById, churn, graph) {
   const fileCounts = new Map();
   const labelCounts = {};
   let changedCount = 0;
@@ -344,6 +389,7 @@ function rollUp(ids, nodeById, churn) {
     if (withChurn > 0) churnSummary = { added, removed, mode: churnMode(added, removed) };
   }
 
+  const kind = communityKind(dominantLabel, testShare);
   return {
     size: ids.length,
     files,
@@ -353,7 +399,9 @@ function rollUp(ids, nodeById, churn) {
     dominantLabel,
     testShare,
     churn: churnSummary,
-    role: describeRole(dominantLabel, ids.length ? changedCount / ids.length : 0, files.length, testShare, churnSummary),
+    kind,
+    keyMembers: keyMembers(ids, nodeById, graph),
+    role: describeRole(kind, ids.length ? changedCount / ids.length : 0, files.length, churnSummary),
   };
 }
 
