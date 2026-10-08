@@ -132,6 +132,14 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     private SyncMode syncMode = SyncMode.COMMIT;
     private long compactThresholdBytes = DEFAULT_COMPACT_THRESHOLD_BYTES;
     private long logBytesSinceCompaction = 0;
+
+    /**
+     * After an automatic compaction fails, the log size it must reach before the next attempt. Each attempt rewrites
+     * the whole graph while every commit waits on the commit lock, so a compaction that keeps failing (a full disk, say)
+     * is retried after another threshold's worth of log rather than on every commit. Reset by a compaction that
+     * succeeds.
+     */
+    private long compactionDeferredUntil = 0;
     private boolean closed = false;
 
     /**
@@ -319,12 +327,18 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             // force the snapshot's bytes to the device before it is renamed into place
             fos.getFD().sync();
         } catch (IOException ex) {
+            deleteQuietly(tmp);
             throw new UncheckedIOException("Could not write storage snapshot", ex);
         }
 
         try {
             // atomically replace the snapshot; no delete-then-rename window where the snapshot is briefly absent
-            atomicMove(tmp, snapshotFile);
+            try {
+                atomicMove(tmp, snapshotFile);
+            } catch (IOException ex) {
+                deleteQuietly(tmp);
+                throw ex;
+            }
             // fsync the directory so the rename survives a crash before we touch the log
             syncDirectory();
 
@@ -339,14 +353,21 @@ public abstract class AbstractLogStorage implements TinkerStorage {
 
         // the log is now empty; the accumulated state lives in the snapshot
         logBytesSinceCompaction = 0;
+        compactionDeferredUntil = 0;
     }
 
     @Override
     public void maybeCompact(final AbstractTinkerGraph graph) {
         if (closed || compactThresholdBytes <= 0)
             return;
-        if (logBytesSinceCompaction >= compactThresholdBytes)
+        if (logBytesSinceCompaction < compactThresholdBytes || logBytesSinceCompaction < compactionDeferredUntil)
+            return;
+        try {
             compact(graph);
+        } catch (RuntimeException ex) {
+            compactionDeferredUntil = logBytesSinceCompaction + compactThresholdBytes;
+            throw ex;
+        }
     }
 
     @Override
@@ -764,6 +785,14 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             if (read < 0)
                 throw new EOFException();
             off += read;
+        }
+    }
+
+    private static void deleteQuietly(final File file) {
+        try {
+            Files.deleteIfExists(file.toPath());
+        } catch (IOException ignored) {
+            // best effort: the next compaction overwrites the temporary file anyway
         }
     }
 

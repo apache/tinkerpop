@@ -32,12 +32,15 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A {@link TinkerStorage} test double that writes the real {@code graphbinary} format but can be told to fail. While
  * {@link #failLogWrites} is set, every write that reaches the log file throws, as a failing disk would. Small frames
  * are buffered, so for them the failure surfaces at flush; a frame larger than the buffer fails during the append
- * itself. While {@link #failCompaction} is set, compaction throws before touching any file. Selected by
+ * itself. While {@link #failCompaction} is set, compaction throws before touching any file, and while
+ * {@link #failSnapshotWrites} is set it fails partway through writing the new snapshot. {@link #compactionAttempts}
+ * counts every compaction started, whether or not it fails. Selected by
  * fully-qualified class name via {@code gremlin.tinkergraph.storage}. The switches are static because the engine is
  * instantiated reflectively.
  */
@@ -45,10 +48,14 @@ public final class FaultInjectingStorage extends AbstractLogStorage {
 
     static volatile boolean failLogWrites = false;
     static volatile boolean failCompaction = false;
+    static volatile boolean failSnapshotWrites = false;
+    static final AtomicInteger compactionAttempts = new AtomicInteger();
 
     static void reset() {
         failLogWrites = false;
         failCompaction = false;
+        failSnapshotWrites = false;
+        compactionAttempts.set(0);
     }
 
     private final GraphBinaryStorage codec = new GraphBinaryStorage();
@@ -77,6 +84,7 @@ public final class FaultInjectingStorage extends AbstractLogStorage {
 
     @Override
     public void compact(final AbstractTinkerGraph graph) {
+        compactionAttempts.incrementAndGet();
         if (failCompaction)
             throw new UncheckedIOException(new IOException("injected compaction failure"));
         super.compact(graph);
@@ -108,6 +116,10 @@ public final class FaultInjectingStorage extends AbstractLogStorage {
 
     @Override
     protected void writeSnapshot(final AbstractTinkerGraph graph, final DataOutputStream out) throws IOException {
+        if (failSnapshotWrites) {
+            out.write(new byte[]{ 0x01, 0x02, 0x03 });
+            throw new IOException("injected snapshot write failure");
+        }
         codec.writeSnapshot(graph, out);
     }
 }

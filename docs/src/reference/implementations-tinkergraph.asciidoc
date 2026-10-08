@@ -466,7 +466,7 @@ subsequent commit fails until the graph is closed and opened again. Reopening re
 reached disk. The outcome of the commit that failed is unknown, because its record may have been fully written before
 the error was reported, so after a reopen that transaction may or may not be present. A failure to compact does not
 affect the commit that preceded it, since compaction leaves the existing snapshot and log intact and is attempted again
-after later commits. A compaction that fails when the graph is closed is likewise logged, and the graph still closes and
+once the log has grown by another `gremlin.tinkergraph.storage.compactThreshold` bytes. A compaction that fails when the graph is closed is likewise logged, and the graph still closes and
 releases its storage directory.
 
 The durability of each commit is governed by the `gremlin.tinkergraph.storage.sync` setting. Under the default
