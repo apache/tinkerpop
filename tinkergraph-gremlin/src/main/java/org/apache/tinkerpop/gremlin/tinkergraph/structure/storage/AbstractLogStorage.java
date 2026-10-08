@@ -302,7 +302,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             frame = encodeCommit(txVersion, changedVertices, changedEdges);
         } catch (IOException ex) {
             // nothing has been written yet, so the log is still sound and only this transaction fails
-            throw new UncheckedIOException("Could not encode transaction for storage log", ex);
+            throw new UncheckedIOException("Could not encode transaction for storage log: " + ex.getMessage(), ex);
         }
         try {
             writeLogFrame(logOut, frame);
