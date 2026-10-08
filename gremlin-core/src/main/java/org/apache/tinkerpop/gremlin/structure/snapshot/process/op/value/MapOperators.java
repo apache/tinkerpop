@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.snapshot.process.op.value;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -25,14 +27,20 @@ import org.apache.tinkerpop.gremlin.structure.snapshot.CsrSnapshot;
 import org.apache.tinkerpop.gremlin.structure.snapshot.graph.CsrGraph;
 import org.apache.tinkerpop.gremlin.structure.snapshot.process.exec.Batch;
 import org.apache.tinkerpop.gremlin.structure.snapshot.process.exec.Lane;
+import org.apache.tinkerpop.gremlin.structure.snapshot.process.exec.Materializer;
 import org.apache.tinkerpop.gremlin.structure.snapshot.process.exec.OperatorSpec;
 import org.apache.tinkerpop.gremlin.structure.snapshot.process.op.Keys;
 import org.apache.tinkerpop.gremlin.structure.snapshot.process.op.nav.EntryStreamOperator;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.max;
 
 /**
  * The operators behind {@link MapOps}. Each builds one {@code LinkedHashMap} per input entry from the owner ranges and
@@ -255,6 +263,58 @@ final class MapOperators {
                 if (reader != null) reader.close();
             }
             readers = null;
+        }
+    }
+
+    static final class SelectColumnOperator extends EntryStreamOperator {
+        private final MapOps.SelectColumn node;
+
+        SelectColumnOperator(final MapOps.SelectColumn node, final OperatorSpec spec) {
+            super(spec);
+            this.node = node;
+        }
+
+        @Override
+        protected boolean process(final Batch in, final int i, final Batch out) {
+            out.addValue(node.column().apply(Materializer.value(ctx, in, i)), in.bulk[i]);
+            return true;
+        }
+    }
+
+    static final class CountLocalOperator extends EntryStreamOperator {
+
+        CountLocalOperator(final OperatorSpec spec) {
+            super(spec);
+        }
+
+        @Override
+        protected boolean process(final Batch in, final int i, final Batch out) {
+            final Object item = Materializer.materialize(ctx, in, i);
+            final long count = item instanceof Tree ? ((Tree) item).nodeCount()
+                    : item instanceof Collection ? ((Collection<?>) item).size()
+                    : item instanceof Map ? ((Map<?, ?>) item).size()
+                    : item instanceof Path ? ((Path) item).size()
+                    : IteratorUtils.count(IteratorUtils.asIterator(item));
+            out.addValue(count, in.bulk[i]);
+            return true;
+        }
+    }
+
+    static final class MaxLocalOperator extends EntryStreamOperator {
+
+        MaxLocalOperator(final OperatorSpec spec) {
+            super(spec);
+        }
+
+        @Override
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        protected boolean process(final Batch in, final int i, final Batch out) {
+            final Iterator<?> iterator = IteratorUtils.asIterator(Materializer.materialize(ctx, in, i));
+            if (!iterator.hasNext()) return true;
+            Comparable result = (Comparable) iterator.next();
+            while (iterator.hasNext()) result = max((Comparable) iterator.next(), result);
+            out.addValue(result, in.bulk[i]);
+            return true;
         }
     }
 }

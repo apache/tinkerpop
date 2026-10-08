@@ -183,8 +183,11 @@ sid-groupcount-id    | small | * | g.V().groupCount().by(id).count(local)
 # ---------------------------------------------------------------------------------------------------------------------
 # Graph algorithms (alg-*), on the standard power-law graphs. Each algorithm has a recipe written in plain Gremlin
 # (docs/src/recipes), which runs on every system, and where TinkerPop has one a vertex-program step (pageRank(),
-# connectedComponent(), shortestPath()), which only the graph computers can run: the -vp queries list
-# tinkergraph-computer and spark, and the other systems report UNSUPPORTED. Both forms end in the same summary (a
+# peerPressure(), connectedComponent(), shortestPath()), which only the graph computers can run: the -vp queries list
+# tinkergraph-computer, spark and csr-computer (CsrGraphComputer), and the other systems report UNSUPPORTED.
+# matrix-algorithms.json runs only the four vertex programs (pagerank, peerpressure, cc, sp) on the three graph
+# computers; the recipes and the other -vp variants stay here for matrix-algorithms-recipes.json, which is kept for
+# reference and not run. Both forms end in the same summary (a
 # count, a min, a list of counts, the ids of a path), so that recipe and vertex program can be compared by result hash; the exception is
 # alg-eigen-pagerank-vp, a different centrality whose top ten is compared with alg-eigen-walks by eye
 # (extra.resultSample).
@@ -212,7 +215,12 @@ alg-degree-top10      | small | * | g.V().project('v', 'd').by(id).by(bothE().co
 # alg: eigenvector centrality. The recipe counts out-walks of length 0-4 that end at each vertex; barrier() bulks the
 # traversers at each step, without it the walks are enumerated one by one. pageRank() is the vertex-program reference.
 alg-eigen-walks       | small | * | g.V().repeat(groupCount('m').by(id).out().barrier()).times(5).cap('m').order(local).by(values, desc).limit(local, 10)
-alg-eigen-pagerank-vp | small | tinkergraph-computer,spark | g.V().pageRank().with(PageRank.propertyName, 'pageRank').with(PageRank.times, 20).order().by('pageRank', desc).by(id).limit(10).id() | ordered
+alg-eigen-pagerank-vp | small | tinkergraph-computer,spark,csr-computer | g.V().pageRank().with(PageRank.propertyName, 'pageRank').with(PageRank.times, 20).order().by('pageRank', desc).by(id).limit(10).id() | ordered
+
+# alg: label propagation clustering (peerPressure(), 20 iterations), summarized as cluster count and largest cluster
+# size. It has no recipe. Ties in the vote go to the smaller cluster id by string order, so the result is
+# deterministic, but vote sums are floating point and a different summation order can still change a close vote.
+alg-peerpressure-vp   | small | tinkergraph-computer,spark,csr-computer | g.V().peerPressure().with(PeerPressure.propertyName, 'cluster').with(PeerPressure.times, 20).groupCount().by('cluster').select(values).project('clusters', 'largest').by(count(local)).by(max(local))
 
 # alg: connected components (weak), summarized as component count and largest component size. alg-cc-recipe runs a
 # dedup() breadth-first search per vertex not yet seen, inside local(); the graph computers reject local() beyond the
@@ -221,37 +229,37 @@ alg-eigen-pagerank-vp | small | tinkergraph-computer,spark | g.V().pageRank().wi
 # alg-cc-vp reads the default component key, because gremlin-lang does not implement ConnectedComponent.propertyName.
 alg-cc-recipe         | small | * | g.V().local(where(without('a')).union(identity(), repeat(both().dedup()).emit()).dedup().aggregate('a').count()).is(gt(0)).fold().project('components', 'largest').by(count(local)).by(max(local))
 alg-cc-recipe-doc     | small | * | g.V().emit(or(cyclicPath(), not(both()))).repeat(where(without('a')).local(aggregate('a')).both()).until(cyclicPath()).group().by(path().unfold().limit(1)).by(path().unfold().dedup().fold()).select(values).unfold().count(local).fold().project('components', 'largest').by(count(local)).by(max(local))
-alg-cc-vp             | small | tinkergraph-computer,spark | g.V().connectedComponent().groupCount().by('gremlin.connectedComponentVertexProgram.component').select(values).project('components', 'largest').by(count(local)).by(max(local))
+alg-cc-vp             | small | tinkergraph-computer,spark,csr-computer | g.V().connectedComponent().groupCount().by('gremlin.connectedComponentVertexProgram.component').select(values).project('components', 'largest').by(count(local)).by(max(local))
 
 # alg: unweighted shortest path src -> sink over out(), as the vertex count of the shortest path; the recipe is bounded
 # at 3 hops and shortestPath() at maxDistance 3
 alg-sp-recipe-p12     | small | * | g.V(3440L).repeat(out().simplePath()).until(or(hasId(2166L), loops().is(3))).hasId(2166L).path().count(local).min()
-alg-sp-vp-p12         | small | tinkergraph-computer,spark | g.V(3440L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.target, hasId(2166L)).with(ShortestPath.maxDistance, 3).count(local).min()
+alg-sp-vp-p12         | small | tinkergraph-computer,spark,csr-computer | g.V(3440L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.target, hasId(2166L)).with(ShortestPath.maxDistance, 3).count(local).min()
 alg-sp-recipe-p16     | small | * | g.V(57232L).repeat(out().simplePath()).until(or(hasId(10358L), loops().is(3))).hasId(10358L).path().count(local).min()
-alg-sp-vp-p16         | small | tinkergraph-computer,spark | g.V(57232L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.target, hasId(10358L)).with(ShortestPath.maxDistance, 3).count(local).min()
+alg-sp-vp-p16         | small | tinkergraph-computer,spark,csr-computer | g.V(57232L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.target, hasId(10358L)).with(ShortestPath.maxDistance, 3).count(local).min()
 alg-sp-recipe-p18     | small | * | g.V(97549L).repeat(out().simplePath()).until(or(hasId(10358L), loops().is(3))).hasId(10358L).path().count(local).min()
-alg-sp-vp-p18         | small | tinkergraph-computer,spark | g.V(97549L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.target, hasId(10358L)).with(ShortestPath.maxDistance, 3).count(local).min()
+alg-sp-vp-p18         | small | tinkergraph-computer,spark,csr-computer | g.V(97549L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.target, hasId(10358L)).with(ShortestPath.maxDistance, 3).count(local).min()
 
 # alg: weighted shortest path wsrc -> sink over out() by the edge weight, as the vertex and edge ids of the lightest
 # path; the recipe is bounded at 3 hops, shortestPath() is not (maxDistance only bounds hop counts). The distance itself
 # cannot be compared: shortestPath() returns paths of reference elements, whose weight cannot be read back on a graph
 # computer. CsrAlgorithmSources prints the distance.
 alg-wsp-recipe-p12    | small | * | g.withSack(0.0d).V(3440L).repeat(outE().sack(sum).by('weight').inV().simplePath()).until(or(hasId(2166L), loops().is(3))).hasId(2166L).order().by(sack()).limit(1).path().map(unfold().id().fold())
-alg-wsp-vp-p12        | small | tinkergraph-computer,spark | g.V(3440L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.distance, 'weight').with(ShortestPath.target, hasId(2166L)).with(ShortestPath.includeEdges, true).limit(1).map(unfold().id().fold())
+alg-wsp-vp-p12        | small | tinkergraph-computer,spark,csr-computer | g.V(3440L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.distance, 'weight').with(ShortestPath.target, hasId(2166L)).with(ShortestPath.includeEdges, true).limit(1).map(unfold().id().fold())
 alg-wsp-recipe-p16    | small | * | g.withSack(0.0d).V(525L).repeat(outE().sack(sum).by('weight').inV().simplePath()).until(or(hasId(10358L), loops().is(3))).hasId(10358L).order().by(sack()).limit(1).path().map(unfold().id().fold())
-alg-wsp-vp-p16        | small | tinkergraph-computer,spark | g.V(525L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.distance, 'weight').with(ShortestPath.target, hasId(10358L)).with(ShortestPath.includeEdges, true).limit(1).map(unfold().id().fold())
+alg-wsp-vp-p16        | small | tinkergraph-computer,spark,csr-computer | g.V(525L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.distance, 'weight').with(ShortestPath.target, hasId(10358L)).with(ShortestPath.includeEdges, true).limit(1).map(unfold().id().fold())
 alg-wsp-recipe-p18    | small | * | g.withSack(0.0d).V(33986L).repeat(outE().sack(sum).by('weight').inV().simplePath()).until(or(hasId(10358L), loops().is(3))).hasId(10358L).order().by(sack()).limit(1).path().map(unfold().id().fold())
-alg-wsp-vp-p18        | small | tinkergraph-computer,spark | g.V(33986L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.distance, 'weight').with(ShortestPath.target, hasId(10358L)).with(ShortestPath.includeEdges, true).limit(1).map(unfold().id().fold())
+alg-wsp-vp-p18        | small | tinkergraph-computer,spark,csr-computer | g.V(33986L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.distance, 'weight').with(ShortestPath.target, hasId(10358L)).with(ShortestPath.includeEdges, true).limit(1).map(unfold().id().fold())
 
 # alg: single-source both() distances from bsrc, as the vertex counts at distance 1..k in distance order. The
 # recipe groups by loops() inside the repeat (dedup() keeps the first, shortest, visit); shortestPath() keeps one path
 # per end vertex and groups by path length.
 alg-bfs-recipe-p12    | small | * | g.V(1759L).repeat(both().not(hasId(1759L)).dedup().groupCount('m').by(loops())).times(3).cap('m').order(local).by(keys).select(values)
-alg-bfs-vp-p12        | small | tinkergraph-computer,spark | g.V(1759L).shortestPath().with(ShortestPath.maxDistance, 3).dedup().by(tail(local, 1)).filter(count(local).is(gt(1))).groupCount().by(count(local)).order(local).by(keys).select(values)
+alg-bfs-vp-p12        | small | tinkergraph-computer,spark,csr-computer | g.V(1759L).shortestPath().with(ShortestPath.maxDistance, 3).dedup().by(tail(local, 1)).filter(count(local).is(gt(1))).groupCount().by(count(local)).order(local).by(keys).select(values)
 alg-bfs-recipe-p16    | small | * | g.V(1764L).repeat(both().not(hasId(1764L)).dedup().groupCount('m').by(loops())).times(3).cap('m').order(local).by(keys).select(values)
-alg-bfs-vp-p16        | small | tinkergraph-computer,spark | g.V(1764L).shortestPath().with(ShortestPath.maxDistance, 3).dedup().by(tail(local, 1)).filter(count(local).is(gt(1))).groupCount().by(count(local)).order(local).by(keys).select(values)
+alg-bfs-vp-p16        | small | tinkergraph-computer,spark,csr-computer | g.V(1764L).shortestPath().with(ShortestPath.maxDistance, 3).dedup().by(tail(local, 1)).filter(count(local).is(gt(1))).groupCount().by(count(local)).order(local).by(keys).select(values)
 alg-bfs-recipe-p18    | small | * | g.V(1660L).repeat(both().not(hasId(1660L)).dedup().groupCount('m').by(loops())).times(3).cap('m').order(local).by(keys).select(values)
-alg-bfs-vp-p18        | small | tinkergraph-computer,spark | g.V(1660L).shortestPath().with(ShortestPath.maxDistance, 3).dedup().by(tail(local, 1)).filter(count(local).is(gt(1))).groupCount().by(count(local)).order(local).by(keys).select(values)
+alg-bfs-vp-p18        | small | tinkergraph-computer,spark,csr-computer | g.V(1660L).shortestPath().with(ShortestPath.maxDistance, 3).dedup().by(tail(local, 1)).filter(count(local).is(gt(1))).groupCount().by(count(local)).order(local).by(keys).select(values)
 
 # alg: directed three-cycles, small graph (powerlaw-12) only. The first counts closed out-walks of length three
 # (parallel edges and self-loops included); the second is the cycle-detection recipe and counts distinct triangles.

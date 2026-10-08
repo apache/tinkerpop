@@ -49,6 +49,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.PureTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalInterruptedException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -63,6 +64,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -111,12 +113,6 @@ public final class CsrGraphComputer implements GraphComputer {
     private static final String SHORTEST_DISTANCE = "gremlin.shortestPathVertexProgram.distanceTraversal";
     private static final String SHORTEST_MAX_DISTANCE = "gremlin.shortestPathVertexProgram.maxDistance";
     private static final String SHORTEST_INCLUDE_EDGES = "gremlin.shortestPathVertexProgram.includeEdges";
-    private static final String TRAVERSAL_VOTE_TO_HALT = "gremlin.traversalVertexProgram.voteToHalt";
-    private static final String TRAVERSAL_MUTATED_MEMORY_KEYS =
-            "gremlin.traversalVertexProgram.mutatedMemoryKeys";
-    private static final String TRAVERSAL_COMPLETED_BARRIERS =
-            "gremlin.traversalVertexProgram.completedBarriers";
-
     private final CsrGraph graph;
     private final ExecutorService computerService = Executors.newSingleThreadExecutor(r -> {
         final Thread thread = new Thread(r, CsrGraphComputer.class.getSimpleName() + "-boss");
@@ -192,9 +188,8 @@ public final class CsrGraphComputer implements GraphComputer {
         }
 
         GraphComputerHelper.validateProgramOnComputer(this, vertexProgram);
-        if (!vertexProgram.getMapReducers().isEmpty())
+        if (!(vertexProgram instanceof TraversalVertexProgram) && !vertexProgram.getMapReducers().isEmpty())
             throw new UnsupportedOperationException("CsrGraphComputer does not support VertexProgram MapReduce jobs");
-        if (vertexProgram instanceof TraversalVertexProgram) validateTraversalContinuation(vertexProgram);
 
         resultGraph = GraphComputerHelper.getResultGraphState(Optional.of(vertexProgram),
                 Optional.ofNullable(resultGraph));
@@ -303,20 +298,6 @@ public final class CsrGraphComputer implements GraphComputer {
         return program instanceof PageRankVertexProgram || program instanceof PeerPressureVertexProgram
                 || program instanceof ConnectedComponentVertexProgram || program instanceof ShortestPathVertexProgram
                 || program instanceof TraversalVertexProgram;
-    }
-
-    private static void validateTraversalContinuation(final VertexProgram<?> program) {
-        program.getMemoryComputeKeys().forEach(key -> {
-            final String name = key.getKey();
-            if (!name.equals(TraversalVertexProgram.HALTED_TRAVERSERS)
-                    && !name.equals(TraversalVertexProgram.ACTIVE_TRAVERSERS)
-                    && !name.equals(TRAVERSAL_VOTE_TO_HALT)
-                    && !name.equals(TRAVERSAL_MUTATED_MEMORY_KEYS)
-                    && !name.equals(TRAVERSAL_COMPLETED_BARRIERS)) {
-                throw new UnsupportedOperationException("CsrGraphComputer does not support traversal memory side "
-                        + "effects in TraversalVertexProgram: " + name);
-            }
-        });
     }
 
     @Override
@@ -768,6 +749,7 @@ public final class CsrGraphComputer implements GraphComputer {
             final Traversal.Admin<Object, Object> traversal =
                     (Traversal.Admin<Object, Object>) program.getTraversal().getPure();
             traversal.setGraph(graph);
+            restoreGraphScans(traversal);
             final boolean returnHaltedTraversers = returnsHaltedTraversers(traversal);
             if (!returnHaltedTraversers && !retainByVertex)
                 throw new UnsupportedOperationException("A chained TraversalVertexProgram requires persisted vertex "
@@ -819,6 +801,16 @@ public final class CsrGraphComputer implements GraphComputer {
                 }
             }
             return new TraversalResult(halted, haltedByVertex == null ? null : new ObjectColumn(haltedByVertex));
+        }
+
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        private void restoreGraphScans(final Traversal.Admin<?, ?> traversal) {
+            for (final GraphStep graphStep :
+                    TraversalHelper.getStepsOfAssignableClassRecursively(GraphStep.class, traversal)) {
+                graphStep.setIteratorSupplier(() -> (Iterator) (graphStep.returnsVertex()
+                        ? graph.vertices(graphStep.getIds())
+                        : graph.edges(graphStep.getIds())));
+            }
         }
 
         private boolean returnsHaltedTraversers(final Traversal.Admin<?, ?> traversal) {

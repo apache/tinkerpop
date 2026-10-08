@@ -30,8 +30,9 @@ import org.apache.tinkerpop.gremlin.structure.snapshot.process.op.Ops;
  * <ul>
  *     <li>{@code Props}, {@code PropKey}, {@code PropValue}, {@code Id}, {@code Label}, {@code Labels},
  *     {@code Element} and {@code Constant} from the shared IR;</li>
- *     <li>{@link MapOps.ValueMap}, {@link MapOps.PropertyMap}, {@link MapOps.ElementMap} and {@link MapOps.Project},
- *     nodes that live in this package.</li>
+ *     <li>{@link MapOps.ValueMap}, {@link MapOps.PropertyMap}, {@link MapOps.ElementMap}, {@link MapOps.Project},
+ *     {@link MapOps.SelectColumn}, {@link MapOps.CountLocal} and {@link MapOps.MaxLocal}, nodes that live in this
+ *     package.</li>
  * </ul>
  */
 public final class ValueOperators implements OperatorRegistrar {
@@ -50,6 +51,11 @@ public final class ValueOperators implements OperatorRegistrar {
         factory.register(MapOps.PropertyMap.class, MapOperators.PropertyMapOperator::new);
         factory.register(MapOps.ElementMap.class, MapOperators.ElementMapOperator::new);
         factory.register(MapOps.Project.class, MapOperators.ProjectOperator::new);
+        factory.register(MapOps.SelectColumn.class, MapOperators.SelectColumnOperator::new);
+        factory.register(MapOps.CountLocal.class,
+                (node, spec) -> new MapOperators.CountLocalOperator(spec));
+        factory.register(MapOps.MaxLocal.class,
+                (node, spec) -> new MapOperators.MaxLocalOperator(spec));
 
         factory.registerEstimator(Ops.Props.class, (node, snapshot, in) -> {
             final double factor = node.keyCodes().length == 0 ? allKeys(snapshot) : node.keyCodes().length;

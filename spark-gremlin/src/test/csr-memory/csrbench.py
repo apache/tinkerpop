@@ -48,7 +48,7 @@ DEFAULT_QUERY_FILE = os.path.join(
 DEFAULT_CLASSPATH_FILE = os.path.join(REPO_ROOT, "spark-gremlin", "target", "csrbench-classpath.txt")
 MB = 1 << 20
 GB = 1 << 30
-CSR_SYSTEMS = ("csr", "csr-native", "csr-facade")
+CSR_SYSTEMS = ("csr", "csr-native", "csr-facade", "csr-computer")
 
 ADD_OPENS = [
     "java.base/java.util.concurrent.atomic", "java.base/java.util", "java.base/java.lang",

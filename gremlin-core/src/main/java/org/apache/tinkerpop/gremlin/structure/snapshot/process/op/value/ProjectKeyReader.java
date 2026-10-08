@@ -144,7 +144,8 @@ final class ProjectKeyReader implements AutoCloseable {
                 final Property<?> p = ((Element) Materializer.facade(ctx, b, i)).property(k.name());
                 return p.isPresent() ? p.value() : absent(k);
             }
-            case VAL: {
+            case VAL:
+            case SCALAR: {
                 final Object v = Materializer.value(ctx, b, i);
                 if (v instanceof Map) return ((Map<?, ?>) v).get(k.name());
                 throw new IllegalStateException(String.format("The by(\"%s\") modulator can only be applied to a "

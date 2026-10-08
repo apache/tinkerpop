@@ -23,10 +23,12 @@ import org.apache.tinkerpop.gremlin.structure.snapshot.process.exec.Lane;
 import java.util.List;
 
 /**
- * A node of the native operator IR, see the grammar in section 2.2 of the spike document:
+ * A node of the native operator IR:
  * <pre>
- * Plan := Source Op* Terminal?
+ * Plan := Source Node*
  * </pre>
+ * A barrier {@link Terminal} consumes its whole input and may either end a plan or feed later nodes. Reducing
+ * terminals emit one {@link Lane#SCALAR} entry; ordering terminals preserve their input lane.
  * Nodes are immutable descriptors built by the strategy; they hold no state and no reference to a graph. The nodes are
  * grouped in {@link Sources}, {@link Ops} and {@link Terminals}, with the key forms in {@link Keys} and the predicate
  * forms in {@link Preds}. Code that executes a node never switches on its class: it is created through the
@@ -101,7 +103,7 @@ public interface CsrOp {
     }
 
     /**
-     * A node that ends a plan: it consumes its whole input and emits a reduced result, or nothing.
+     * A barrier node: it consumes its whole input before emitting results.
      */
     interface Terminal extends CsrOp {
 

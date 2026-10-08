@@ -27,15 +27,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The nodes of a plan under construction, with the lane after the last node. A terminal closes the builder. Copies are
- * cheap, so a composite rule can build on a copy and commit it only when every piece compiled.
+ * The nodes of a plan under construction, with the lane after the last node. A compatible node may continue from a
+ * terminal's output. Copies are cheap, so a composite rule can build on a copy and commit it only when every piece
+ * compiled.
  */
 final class PlanBuilder {
 
     private final List<CsrOp> nodes = new ArrayList<>();
     private Lane lane;
     private boolean recordsSource;
-    private boolean closed;
+    private boolean hardClosed;
 
     PlanBuilder(final CsrOp.Source source) {
         add(source);
@@ -45,7 +46,7 @@ final class PlanBuilder {
         this.nodes.addAll(other.nodes);
         this.lane = other.lane;
         this.recordsSource = other.recordsSource;
-        this.closed = other.closed;
+        this.hardClosed = other.hardClosed;
     }
 
     PlanBuilder copy() {
@@ -60,16 +61,16 @@ final class PlanBuilder {
         nodes.addAll(copy.nodes);
         lane = copy.lane;
         recordsSource = copy.recordsSource;
-        closed = copy.closed;
+        hardClosed = copy.hardClosed;
     }
 
     /**
      * Appends a node.
      *
-     * @throws Reject if the plan is closed or the node cannot read the current lane
+     * @throws Reject if the plan was explicitly closed or the node cannot read the current lane
      */
     void add(final CsrOp node) {
-        if (closed) throw new Reject("no step may follow the terminal " + nodes.get(nodes.size() - 1).name());
+        if (hardClosed) throw new Reject("the plan cannot continue after a side-effect writer");
         try {
             lane = node.outputLane(nodes.isEmpty() ? null : lane);
         } catch (final IllegalArgumentException e) {
@@ -77,7 +78,6 @@ final class PlanBuilder {
         }
         recordsSource = lane == Lane.E && node.outputRecordsSource(recordsSource);
         nodes.add(node);
-        if (node instanceof CsrOp.Terminal) closed = true;
     }
 
     /**
@@ -86,7 +86,7 @@ final class PlanBuilder {
     void replace(final int index, final CsrOp node) {
         final List<CsrOp> old = new ArrayList<>(nodes);
         nodes.clear();
-        closed = false;
+        hardClosed = false;
         for (int i = 0; i < old.size(); i++) add(i == index ? node : old.get(i));
     }
 
@@ -110,11 +110,11 @@ final class PlanBuilder {
      * Ends the plan after the last node without a terminal.
      */
     void close() {
-        closed = true;
+        hardClosed = true;
     }
 
-    boolean isClosed() {
-        return closed;
+    boolean endsInTerminal() {
+        return nodes.get(nodes.size() - 1) instanceof CsrOp.Terminal;
     }
 
     boolean hasOps() {

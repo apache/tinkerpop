@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.snapshot.process.op.value;
 
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.snapshot.process.exec.Lane;
 import org.apache.tinkerpop.gremlin.structure.snapshot.process.op.CsrOp;
 import org.apache.tinkerpop.gremlin.structure.snapshot.process.op.CsrPlan;
@@ -31,10 +32,10 @@ import java.util.Objects;
 
 /**
  * The IR nodes of the native map emission, which the shared IR in {@code Ops} has no form for: {@code valueMap()},
- * {@code propertyMap()}, {@code elementMap()} and {@code project()}. Each node turns an entry into one map and emits it
- * on the {@code VAL} lane with the entry's bulk; the maps are built directly from owner ranges and columns. Key codes
- * are vertex or edge key codes by the input lane; an empty array means every key in key-code order, and negative codes
- * (keys the snapshot does not have) are skipped. The planner must only emit a node after checking
+ * {@code propertyMap()}, {@code elementMap()}, {@code project()} and local maps over decoded values. Each node emits
+ * on the {@code VAL} lane with the entry's bulk. Element maps are built directly from owner ranges and columns. Key
+ * codes are vertex or edge key codes by the input lane; an empty array means every key in key-code order, and negative
+ * codes (keys the snapshot does not have) are skipped. The planner must only emit a node after checking
  * {@code CsrOperatorFactory#isImplemented}.
  */
 public final class MapOps {
@@ -141,7 +142,7 @@ public final class MapOps {
 
         @Override
         public Lane outputLane(final Lane input) {
-            requireLane(this, input, Lane.V, Lane.E, Lane.VP, Lane.EP, Lane.MP, Lane.VAL);
+            requireLane(this, input, Lane.V, Lane.E, Lane.VP, Lane.EP, Lane.MP, Lane.VAL, Lane.SCALAR);
             for (final Keys.Key key : keys) {
                 for (final CsrPlan child : key.children()) {
                     if (child.inputLane() != input) {
@@ -163,6 +164,47 @@ public final class MapOps {
         @Override
         public String toString() {
             return "Project(" + names + "," + keys + ")";
+        }
+    }
+
+    /**
+     * {@code select(keys)} or {@code select(values)} over a decoded {@link java.util.Map},
+     * {@link java.util.Map.Entry} or {@link org.apache.tinkerpop.gremlin.process.traversal.Path}. The standard
+     * {@link Column} implementation defines both the accepted inputs and the returned collection/value.
+     */
+    public record SelectColumn(Column column) implements CsrOp {
+        public SelectColumn {
+            Objects.requireNonNull(column);
+        }
+
+        @Override
+        public Lane outputLane(final Lane input) {
+            requireLane(this, input, Lane.VAL, Lane.SCALAR);
+            return Lane.VAL;
+        }
+    }
+
+    /**
+     * {@code count(local)} over a decoded value. The operator follows {@code CountLocalStep}: collections, maps and
+     * paths use their sizes, trees use their recursive node count, and other values are viewed through
+     * {@code IteratorUtils.asIterator}.
+     */
+    public record CountLocal() implements CsrOp {
+        @Override
+        public Lane outputLane(final Lane input) {
+            Objects.requireNonNull(input);
+            return Lane.VAL;
+        }
+    }
+
+    /**
+     * {@code max(local)} over a decoded local value. Empty inputs are unproductive, as in the standard step.
+     */
+    public record MaxLocal() implements CsrOp {
+        @Override
+        public Lane outputLane(final Lane input) {
+            Objects.requireNonNull(input);
+            return Lane.VAL;
         }
     }
 }

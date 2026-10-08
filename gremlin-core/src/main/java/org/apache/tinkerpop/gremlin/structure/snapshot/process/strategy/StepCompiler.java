@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.AbstractLambdaTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ColumnTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
@@ -58,6 +59,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilte
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ElementMapStep;
@@ -71,6 +73,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
@@ -442,6 +445,10 @@ final class StepCompiler {
             b.add(new Terminals.Count());
             return 1;
         }
+        if (s instanceof CountLocalStep) {
+            b.add(new MapOps.CountLocal());
+            return 1;
+        }
         if (s instanceof SumGlobalStep) {
             requireValues(lane, "sum()");
             b.add(new Terminals.Sum());
@@ -455,6 +462,10 @@ final class StepCompiler {
         if (s instanceof MaxGlobalStep) {
             requireValues(lane, "max()");
             b.add(new Terminals.Max());
+            return 1;
+        }
+        if (s instanceof MaxLocalStep) {
+            b.add(new MapOps.MaxLocal());
             return 1;
         }
         if (s instanceof MeanGlobalStep) {
@@ -521,6 +532,10 @@ final class StepCompiler {
 
     private static void requireValues(final Lane lane, final String what) {
         if (lane != Lane.VAL) throw new Reject(what + " needs values, not " + lane);
+    }
+
+    private static void requireDecoded(final Lane lane, final String what) {
+        if (lane != Lane.VAL && lane != Lane.SCALAR) throw new Reject(what + " needs a decoded value, not " + lane);
     }
 
     private static void requireMapLane(final Lane lane) {
@@ -756,9 +771,10 @@ final class StepCompiler {
      * wrapper), constants, or a child plan whose first result is the key.
      */
     private Keys.Key key(final Traversal.Admin<?, ?> by, final Lane lane, final Scope sc) {
-        if (lane == null || lane == Lane.SCALAR) throw new Reject("a key over " + lane);
+        if (lane == null) throw new Reject("a key over " + lane);
         if (by == null || by instanceof IdentityTraversal) return new Keys.Identity();
         if (by instanceof TokenTraversal) {
+            if (lane == Lane.SCALAR) throw new Reject("by(token) over " + lane);
             final T token = ((TokenTraversal<?, ?>) by).getToken();
             final boolean ok;
             if (token == T.id) ok = lane == Lane.V || lane == Lane.E || lane == Lane.VP;
@@ -772,9 +788,10 @@ final class StepCompiler {
             final ValueTraversal<?, ?> vt = (ValueTraversal<?, ?>) by;
             final boolean productive = vt.getBypassTraversal() != null;
             if (productive && !isProductiveBypass(vt)) throw new Reject("an unrecognized by() bypass");
+            final String name = vt.getPropertyKey();
+            if (lane == Lane.VAL || lane == Lane.SCALAR) return new Keys.Value(-1, name, productive);
             if (lane != Lane.V && lane != Lane.E) throw new Reject("by(key) over " + lane);
             requireFull("properties");
-            final String name = vt.getPropertyKey();
             final int code = lane == Lane.V ? graph.vertexKeyCode(name) : graph.edgeKeyCode(name);
             if (code < 0) {
                 if (productive) return new Keys.Const(null);
@@ -843,7 +860,7 @@ final class StepCompiler {
      */
     private CsrPlan child(final Traversal.Admin<?, ?> t, final Lane lane, final Scope sc, final boolean allowTerminal) {
         if (t instanceof AbstractLambdaTraversal) throw new Reject("a lambda traversal child");
-        if (lane == null || lane == Lane.SCALAR) throw new Reject("a child over " + lane);
+        if (lane == null) throw new Reject("a child over " + lane);
         final CsrOp.Source input = new Sources.Input(lane);
         checkImplemented(input);
         final PlanBuilder b = new PlanBuilder(input);
@@ -859,7 +876,7 @@ final class StepCompiler {
             if (analysis.anyReferenced(s.getLabels())) throw new Reject("the label of " + name(s) + " is read");
             i += compile(steps, i, b, inner);
         }
-        if (b.isClosed() && !allowTerminal) throw new Reject("a reducing child");
+        if (b.endsInTerminal() && !allowTerminal) throw new Reject("a reducing child");
         return b.build();
     }
 
@@ -874,6 +891,11 @@ final class StepCompiler {
         if (lt.getBypassTraversal() != null) throw new Reject("a map over a bypass traversal");
         if (lt instanceof IdentityTraversal) return;
         final Lane lane = b.lane();
+        if (lt instanceof ColumnTraversal) {
+            requireDecoded(lane, "select(column)");
+            b.add(new MapOps.SelectColumn(((ColumnTraversal) lt).getColumn()));
+            return;
+        }
         if (lt instanceof TokenTraversal) {
             final T token = ((TokenTraversal<?, ?>) lt).getToken();
             if (token == T.id) {
@@ -926,7 +948,7 @@ final class StepCompiler {
 
     private void project(final ProjectStep<?, ?> p, final PlanBuilder b, final Scope sc) {
         final Lane lane = b.lane();
-        if (lane == null || lane == Lane.SCALAR) throw new Reject("project() of " + lane);
+        if (lane == null) throw new Reject("project() of " + lane);
         final List<String> names = p.getProjectKeys();
         final List<? extends Traversal.Admin<?, ?>> ring = p.getTraversalRing().getTraversals();
         final List<Keys.Key> keys = new ArrayList<>(names.size());
@@ -1055,7 +1077,7 @@ final class StepCompiler {
             if (analysis.anyReferenced(s.getLabels())) throw new Reject("the label of " + name(s) + " is read");
             i += compile(steps, i, b, inner);
         }
-        if (b.isClosed()) throw new Reject("a reducing loop child");
+        if (b.endsInTerminal()) throw new Reject("a reducing loop child");
         return b.build();
     }
 

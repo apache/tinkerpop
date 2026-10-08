@@ -27,10 +27,10 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * The nodes that end a plan: {@code Terminal := Count | Sum | Min | Max | Mean | GroupCount(key) | Group(key, Reducer) |
- * TopK(keys[], orders[], n, lo) | Sort(keys[], orders[]) | Fold | Drain}. A terminal consumes its whole input. Those
- * that emit one result emit it as a single {@code SCALAR} entry of bulk 1, and emit nothing for an empty input where
- * the standard step does (sum, min, max, mean).
+ * The barrier nodes: {@code Terminal := Count | Sum | Min | Max | Mean | GroupCount(key) | Group(key, Reducer) |
+ * TopK(keys[], orders[], n, lo) | Sort(keys[], orders[]) | Fold | Drain}. A terminal consumes its whole input before
+ * emitting results and may feed another node. Reducers emit one {@code SCALAR} entry of bulk 1, and emit nothing for
+ * an empty input where the standard step does (sum, min, max, mean).
  */
 public final class Terminals {
 
@@ -156,8 +156,9 @@ public final class Terminals {
         public Group {
             Objects.requireNonNull(key);
             Objects.requireNonNull(reducer);
-            if (reducer.inputLane() == null || !reducer.isReducing()) {
-                throw new IllegalArgumentException("A group reducer must start with Input and end in a terminal");
+            if (reducer.inputLane() == null || !reducer.isGroupReducer()) {
+                throw new IllegalArgumentException("A group reducer must start with Input and end in count, fold, "
+                        + "sum, min, max or mean");
             }
         }
 

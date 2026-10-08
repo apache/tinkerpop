@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.structure.snapshot.build.HybridSnapshotBuild
 import org.apache.tinkerpop.gremlin.structure.snapshot.build.SnapshotBuilder;
 import org.apache.tinkerpop.gremlin.structure.snapshot.build.StreamingSnapshotBuilder;
 import org.apache.tinkerpop.gremlin.structure.snapshot.graph.CsrGraph;
+import org.apache.tinkerpop.gremlin.structure.snapshot.graph.CsrGraphComputer;
 import org.apache.tinkerpop.gremlin.structure.snapshot.process.CsrNative;
 import org.apache.tinkerpop.gremlin.structure.snapshot.process.CsrSuperStep;
 import org.apache.tinkerpop.gremlin.structure.snapshot.process.exec.CsrMemoryBudgetException;
@@ -82,7 +83,7 @@ import java.util.Set;
  * <pre>
  * java [jvm flags] org.apache.tinkerpop.gremlin.spark.csr.CsrMemoryRun
  *   --mode build|open|query
- *   --system tinkergraph|csr-native|csr-facade|tinkergraph-computer|spark   (query mode; open mode: tinkergraph|csr)
+ *   --system tinkergraph|csr-native|csr-facade|tinkergraph-computer|spark|csr-computer   (query mode; open mode: tinkergraph|csr)
  *   --dataset &lt;.kryo file&gt;               (required for tinkergraph*, spark, and build)
  *   --snapshot &lt;snapshot dir&gt;            (csr-* and open csr; build writes here and it must not exist)
  *   --query-file &lt;file&gt; --query &lt;id&gt;     (query mode; the file is described below)
@@ -111,7 +112,9 @@ import java.util.Set;
  * uses) and runs OLTP. {@code tinkergraph-computer} is the same graph with
  * {@code g.withComputer()}. {@code csr-native} opens the snapshot and runs with {@code csrMemoryBudget} set from
  * {@code --csr-budget} and {@code csrScratchDirectory} under the work directory; {@code csr-facade} adds
- * {@code withoutStrategies(CsrNativeStrategy)}. {@code spark} runs {@code g.withComputer(SparkGraphComputer)} over a
+ * {@code withoutStrategies(CsrNativeStrategy)}. {@code csr-computer} opens the snapshot and runs with
+ * {@code withComputer(CsrGraphComputer)}, which executes the vertex-program steps below directly over the snapshot.
+ * {@code spark} runs {@code g.withComputer(SparkGraphComputer)} over a
  * {@link HadoopGraph} that reads the Gryo file with {@code GryoInputFormat} in one JVM ({@code spark.master}
  * {@code local[*]} by default, the Kryo serializer with {@code GryoRegistrator}, graph and persist storage levels
  * {@code MEMORY_AND_DISK}, {@code spark.local.dir} and the Gremlin output location under the work directory, the Spark
@@ -132,8 +135,9 @@ import java.util.Set;
  * <p/>
  * <b>Vertex-program steps.</b> {@code pageRank()}, {@code connectedComponent()} and {@code shortestPath()}, with their
  * {@code PageRank}, {@code ConnectedComponent} and {@code ShortestPath} {@code with()} options, are part of
- * gremlin-lang, so such queries are ordinary lines that list only {@code tinkergraph-computer} and {@code spark}
- * (CSR has no graph computer, and OLTP TinkerGraph rejects the steps); the other systems report UNSUPPORTED. The
+ * gremlin-lang, and so is {@code peerPressure()} with its {@code PeerPressure} options. Such queries are ordinary
+ * lines that list the graph computers {@code tinkergraph-computer}, {@code spark} and {@code csr-computer}; OLTP
+ * TinkerGraph and the OLTP CSR systems reject the steps and report UNSUPPORTED. The
  * query reads what the program wrote ({@code values('pageRank')}, {@code by('component')}, the paths) in the same
  * traversal, so count and hash cover it. On Spark the steps chain jobs through the Gryo graph writer and output
  * location configured below.
@@ -170,11 +174,12 @@ public final class CsrMemoryRun {
     private static final int SAMPLE_RESULTS = 10;
     private static final int SAMPLE_CHARS = 2000;
 
-    private static final Set<String> SYSTEMS = Set.of("tinkergraph", "csr-native", "csr-facade", "tinkergraph-computer", "spark");
+    private static final Set<String> SYSTEMS = Set.of("tinkergraph", "csr-native", "csr-facade", "tinkergraph-computer", "spark",
+            "csr-computer");
 
     private static final String USAGE = String.join(System.lineSeparator(),
             "Usage: CsrMemoryRun --mode build|open|query [options]",
-            "  --system tinkergraph|csr-native|csr-facade|tinkergraph-computer|spark   (open: tinkergraph|csr)",
+            "  --system tinkergraph|csr-native|csr-facade|tinkergraph-computer|spark|csr-computer   (open: tinkergraph|csr)",
             "  --dataset <.kryo>   --snapshot <dir>   --query-file <file> --query <id>   --warm <n> (3)",
             "  --timeout-seconds <n>   --csr-budget <bytes> (1073741824)   --builder heap|streaming|hybrid (streaming)",
             "  --source gryo|tinkergraph (gryo)   --builder-budget <bytes> (268435456)",
@@ -417,6 +422,10 @@ public final class CsrMemoryRun {
             case "csr-facade":
                 openCsr(false);
                 g = csrGraph.traversal().withoutStrategies(CsrNativeStrategy.class);
+                break;
+            case "csr-computer":
+                openCsr(false);
+                g = csrGraph.traversal().withComputer(CsrGraphComputer.class);
                 break;
             case "spark":
                 require(config.dataset, "--dataset");

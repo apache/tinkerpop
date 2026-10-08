@@ -912,8 +912,9 @@ public final class Ops {
             Objects.requireNonNull(sideEffectKey);
             Objects.requireNonNull(key);
             Objects.requireNonNull(reducer);
-            if (reducer.inputLane() == null || !reducer.isReducing()) {
-                throw new IllegalArgumentException("A group reducer must start with Input and end in a terminal");
+            if (reducer.inputLane() == null || !reducer.isGroupReducer()) {
+                throw new IllegalArgumentException("A group reducer must start with Input and end in count, fold, "
+                        + "sum, min, max or mean");
             }
         }
 
@@ -956,6 +957,6 @@ public final class Ops {
         for (final CsrOp op : plan.ops()) {
             if (!op.isBulkLinear()) return false;
         }
-        return !plan.isReducing();
+        return plan.terminal() == null;
     }
 }

@@ -210,7 +210,7 @@ final class Planner {
                     }
                 }
                 j += used;
-                if (close || b.isClosed()) break;
+                if (close) break;
             } catch (final Reject r) {
                 b.commit(saved);
                 note(steps.get(j), j, r.getMessage());

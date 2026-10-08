@@ -26,9 +26,10 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * An immutable operator plan: a {@link CsrOp.Source}, then any number of ordinary nodes, then an optional
- * {@link CsrOp.Terminal}. Lanes are checked on construction by threading {@link CsrOp#outputLane(Lane)} through the
- * nodes, so a plan that exists is lane-consistent. A plan that starts with {@link Sources.Input} reads upstream
+ * An immutable operator plan: a {@link CsrOp.Source}, then any number of nodes. A {@link CsrOp.Terminal} may be
+ * followed by ordinary nodes; a reducer's single {@link Lane#SCALAR} result or an ordering terminal's original lane
+ * becomes the next node's input. Lanes are checked on construction by threading {@link CsrOp#outputLane(Lane)} through
+ * the nodes, so a plan that exists is lane-consistent. A plan that starts with {@link Sources.Input} reads upstream
  * traversers (at the top level) or its parent's current batch (as a child).
  */
 public final class CsrPlan {
@@ -38,7 +39,7 @@ public final class CsrPlan {
     private final List<Boolean> sources;
 
     /**
-     * @param nodes the source, the middle nodes and optionally the terminal, in order
+     * @param nodes the source and following nodes, in order
      * @throws IllegalArgumentException if the shape or the lanes are inconsistent
      */
     public CsrPlan(final List<? extends CsrOp> nodes) {
@@ -56,9 +57,6 @@ public final class CsrPlan {
             final CsrOp node = this.nodes.get(i);
             if (i > 0 && node instanceof CsrOp.Source && !(node instanceof Sources.MidScan)) {
                 throw new IllegalArgumentException(node.name() + " can only start a plan");
-            }
-            if (node instanceof CsrOp.Terminal && i != this.nodes.size() - 1) {
-                throw new IllegalArgumentException(node.name() + " can only end a plan");
             }
             if (node instanceof Ops.OtherV && !source) {
                 throw new IllegalArgumentException("OtherV needs edges that recorded their source vertex");
@@ -88,14 +86,15 @@ public final class CsrPlan {
     }
 
     /**
-     * The nodes between the source and the terminal.
+     * Every node after the source except an ending terminal. A terminal followed by another node is included.
      */
     public List<CsrOp> ops() {
         return nodes.subList(1, terminal() == null ? nodes.size() : nodes.size() - 1);
     }
 
     /**
-     * The terminal, or null if the plan has none.
+     * The ending terminal, or null when the last node is not a terminal. Intermediate terminals are available through
+     * {@link #ops()}.
      */
     public CsrOp.Terminal terminal() {
         final CsrOp last = nodes.get(nodes.size() - 1);
@@ -138,7 +137,18 @@ public final class CsrPlan {
     }
 
     /**
-     * Whether the plan ends in a terminal.
+     * Whether the plan ends in one of the reducers supported as a {@code group().by(valueTraversal)} value.
+     */
+    public boolean isGroupReducer() {
+        final CsrOp.Terminal terminal = terminal();
+        return terminal instanceof Terminals.Count || terminal instanceof Terminals.Fold
+                || terminal instanceof Terminals.Sum || terminal instanceof Terminals.Min
+                || terminal instanceof Terminals.Max || terminal instanceof Terminals.Mean;
+    }
+
+    /**
+     * Whether the plan ends in any terminal/barrier. The historical method name includes ordering terminals and drain,
+     * not only scalar reducers; use {@link #isGroupReducer()} when validating a group value plan.
      */
     public boolean isReducing() {
         return terminal() != null;

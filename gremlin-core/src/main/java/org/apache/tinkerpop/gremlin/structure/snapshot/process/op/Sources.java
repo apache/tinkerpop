@@ -110,7 +110,6 @@ public final class Sources {
     public record Input(Lane lane) implements CsrOp.Source {
         public Input {
             Objects.requireNonNull(lane);
-            if (lane == Lane.SCALAR) throw new IllegalArgumentException("Input cannot read SCALAR");
         }
 
         @Override
