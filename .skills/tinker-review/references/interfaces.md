@@ -137,6 +137,10 @@ interface Evidence {
 interface ReportPackage extends Evidence {
   summary: string;                       // HTML
   clusters: { assessment: string };      // narrative prose — distinct from checks.clusters
+  communityAssessment: string;           // HTML — judgment on checks.communities
+  communityNames?: { [id: string]: string };
+    // content-derived name per community, keyed by checks.communities.communities[].id
+    // (0-based; also the stamped `community` vertex property). Unnamed → "Community N".
   guidedWalk: { title; badge; badgeText; body }[];
   findings: { title; snippet; body }[];
   openQuestions: { title; body; meta }[];
