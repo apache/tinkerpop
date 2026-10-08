@@ -20,6 +20,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveRef } from "./code-links.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATE = readFileSync(join(__dirname, "template.html"), "utf-8");
@@ -83,7 +84,10 @@ function stripCodeWrapper(str) {
  * Input contract — narrative fields (from agent/synthesize.js):
  *   summary: "HTML string"
  *   clusters: { svg: "<svg>...</svg>", assessment: "HTML string" }
- *   guidedWalk: [{ title, badge: "attention|info|safe", badgeText, body: "HTML" }]
+ *   guidedWalk: [{ title, badge: "attention|info|safe", badgeText,
+ *                  intro: "HTML", questions: [{ text: "HTML", refs: [CodeRef] }], refs: [CodeRef] }]
+ *     (CodeRef = { file, symbol?, lines?, label? } — see code-links.js; the renderer resolves it
+ *      against evidence.codeIndex into a link. A legacy item with only body: "HTML" still renders.)
  *   functionalTest: { plan: "HTML", results: [{name, pass, output}], observations: ["HTML"] }
  *     (results rows are THEME-level, each naming the scenario labels it covers)
  *   findings: [{ title, snippet: "code", body: "HTML" }]
@@ -95,7 +99,8 @@ function notProvided(sectionId, title) {
   return `<section id="${sectionId}">\n  <h2>${esc(title)}</h2>\n  <p class="section-intro" style="color: var(--danger);">Section not provided.</p>\n</section>`;
 }
 
-export function render(evidence) {
+export function render(evidence, options = {}) {
+  const warnings = options.warnings || [];
   const { meta, graphStats, checks, discussions, summary, clusters, communityAssessment, communityNames,
     guidedWalk, functionalTest, findings, openQuestions, appendixFunctional } = evidence;
 
@@ -106,7 +111,7 @@ export function render(evidence) {
   parts.push(discussions ? renderContext(discussions) : notProvided("context", "Discovered Context"));
   parts.push(renderClusters(clusters, checks && checks.clusters, evidence.architecture));
   parts.push(renderCommunitySection(checks && checks.communities, communityAssessment, communityNames));
-  parts.push(guidedWalk && guidedWalk.length > 0 ? renderGuidedWalk(guidedWalk) : notProvided("guided-walk", "Guided Walk"));
+  parts.push(guidedWalk && guidedWalk.length > 0 ? renderGuidedWalk(guidedWalk, { pr: meta.pr, headSha: meta.headSha, codeIndex: evidence.codeIndex }, warnings) : notProvided("guided-walk", "Guided Walk"));
   parts.push(functionalTest ? renderFunctionalTest(functionalTest) : notProvided("functional-test", "Functional Test"));
   parts.push(findings && findings.length > 0 ? renderFindings(findings) : notProvided("findings", "Findings"));
   parts.push(openQuestions && openQuestions.length > 0 ? renderOpenQuestions(openQuestions) : notProvided("open-questions", "Open Questions"));
@@ -412,14 +417,36 @@ function generateCommunitySvg(communityData, names) {
 </svg>`;
 }
 
-function renderGuidedWalk(walk) {
+function renderCodeRefs(refs, ctx, warnings, where, cls = "code-refs") {
+  if (!Array.isArray(refs) || refs.length === 0) return "";
+  const chips = refs.map((ref) => {
+    const r = resolveRef(ref, ctx);
+    if (!r.url) {
+      warnings.push(`${where}: ${r.title} (${JSON.stringify(ref)})`);
+      return `<span class="code-ref code-ref-unresolved" title="${esc(r.title)}">${esc(r.label)}</span>`;
+    }
+    return `<a class="code-ref code-ref-${r.target}" href="${esc(r.url)}" target="_blank" rel="noopener" title="${esc(r.title)}">${esc(r.label)}</a>`;
+  }).join(" ");
+  return `<div class="${cls}">${chips}</div>`;
+}
+
+function renderGuidedWalk(walk, ctx, warnings) {
   const steps = walk.map((step, i) => {
     const cls = step.badge === "attention" ? "card-attention" : step.badge === "safe" ? "card-safe" : "card-info";
     const badgeCls = step.badge === "attention" ? "badge-attention" : step.badge === "safe" ? "badge-safe" : "";
     const badge = step.badgeText ? ` <span class="badge ${badgeCls}">${esc(step.badgeText)}</span>` : "";
+    const where = `guidedWalk[${i}]`;
+    const intro = step.intro || step.body || "";
+    const questions = Array.isArray(step.questions) && step.questions.length > 0
+      ? `<ul class="walk-questions">\n      ${step.questions.map((q, j) =>
+          `<li>${q.text}${renderCodeRefs(q.refs, ctx, warnings, `${where}.questions[${j}]`)}</li>`).join("\n      ")}\n    </ul>`
+      : "";
+    const alsoSee = renderCodeRefs(step.refs, ctx, warnings, `${where}.refs`, "code-refs walk-refs");
     return `<div class="card ${cls}">
     <h3><span class="walk-number">${i + 1}</span> ${step.title}${badge}</h3>
-    ${step.body}
+    ${intro}
+    ${questions}
+    ${alsoSee}
   </div>`;
   }).join("\n  ");
   return `<section id="guided-walk">\n  <h2>Guided Walk</h2>\n  ${steps}\n</section>`;
@@ -622,7 +649,9 @@ if (process.argv[1] && basename(process.argv[1]) === "render.js") {
   const outputPath = process.argv[3] || inputPath.replace(/\.json$/, ".html");
   const { readFileSync, writeFileSync } = await import("node:fs");
   const evidence = JSON.parse(readFileSync(inputPath, "utf-8"));
-  const html = render(evidence);
+  const warnings = [];
+  const html = render(evidence, { warnings });
   writeFileSync(outputPath, html, "utf-8");
   console.log(`Report written: ${outputPath}`);
+  for (const w of warnings) console.error(`[render] unresolved code ref — ${w}`);
 }
