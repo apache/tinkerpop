@@ -88,6 +88,9 @@ opened again, so a graph survives a restart of the JVM.
 The reference engine, `graphbinary`, records committed transactions as an append-only log serialized with GraphBinary
 and folds that log into a compact snapshot on close. The storage layer is pluggable: the value of the storage key may
 also be the fully-qualified class name of a custom engine, following the same convention as the `IdManager` selection.
+Because it stores values with GraphBinary, the `graphbinary` engine accepts only the types GraphBinary supports. Some
+types that a Gryo file could hold, such as `java.util.Date` or `byte[]`, fail the commit and must be converted first,
+for example to `OffsetDateTime` or `ByteBuffer`.
 
 [source,groovy]
 ----

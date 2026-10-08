@@ -374,6 +374,32 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     }
 
     @Test
+    public void shouldNameThePropertyAndTypeThatCannotBeStored() throws Exception {
+        final TinkerStorageGraph graph = open();
+        try {
+            graph.addVertex(T.id, 1, "created", new Date());
+            assertCommitFailsWith(graph, "property 'created' of vertex 1, a java.util.Date",
+                    "no serializer for java.util.Date");
+
+            final Vertex a = graph.addVertex(T.id, 2);
+            a.addEdge("knows", a, T.id, 10, "data", new byte[]{ 1, 2 });
+            assertCommitFailsWith(graph, "property 'data' of edge 10, a byte[]", "no serializer for byte[]");
+        } finally {
+            graph.close();
+        }
+    }
+
+    private static void assertCommitFailsWith(final TinkerStorageGraph graph, final String... fragments) {
+        try {
+            graph.tx().commit();
+            fail("a value with no serializer should fail the commit");
+        } catch (RuntimeException expected) {
+            for (final String fragment : fragments)
+                assertTrue(expected.getMessage(), expected.getMessage().contains(fragment));
+        }
+    }
+
+    @Test
     public void shouldReplayCommitsAfterATransactionThatCouldNotBeEncoded() throws Exception {
         TinkerStorageGraph graph = open();
         final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
