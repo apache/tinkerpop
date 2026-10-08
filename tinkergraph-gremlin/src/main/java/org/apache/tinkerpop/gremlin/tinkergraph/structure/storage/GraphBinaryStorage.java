@@ -109,6 +109,21 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
     protected byte[] encodeCommit(final long txVersion,
                                   final Collection<TinkerStorageMutation<TinkerVertex>> changedVertices,
                                   final Collection<TinkerStorageMutation<TinkerEdge>> changedEdges) throws IOException {
+        // the dictionary entries this commit adds only reach disk inside its frame, so if encoding fails they must be
+        // forgotten. Otherwise a later commit would reference them without defining them, or define the next entry
+        // after a gap, and the log could no longer be replayed.
+        final int dictionarySize = idToKey.size();
+        try {
+            return encodeCommitFrame(changedVertices, changedEdges);
+        } catch (IOException | RuntimeException ex) {
+            while (idToKey.size() > dictionarySize)
+                keyToId.remove(idToKey.remove(idToKey.size() - 1));
+            throw ex;
+        }
+    }
+
+    private byte[] encodeCommitFrame(final Collection<TinkerStorageMutation<TinkerVertex>> changedVertices,
+                                     final Collection<TinkerStorageMutation<TinkerEdge>> changedEdges) throws IOException {
         final TinkerByteBuffer buf = new TinkerByteBuffer();
         // register the strings introduced by this commit (deletes carry only an id, no strings)
         final List<String> appends = new ArrayList<>();
