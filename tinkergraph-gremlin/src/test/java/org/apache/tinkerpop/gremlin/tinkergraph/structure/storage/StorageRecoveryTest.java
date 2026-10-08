@@ -102,6 +102,82 @@ public class StorageRecoveryTest {
     }
 
     @Test
+    public void shouldFailWhenTheLogIsMissing() throws Exception {
+        crashAfterCommitOnCompactedStore();
+        Files.delete(logFile().toPath());
+
+        assertNormalOpenFails();
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(recoverConfig());
+        assertEquals("recovery reads the snapshot", Collections.singletonList(1), vertexIds(graph));
+        graph.close();
+        assertTrue("recovery must not recreate the log", !logFile().exists());
+    }
+
+    @Test
+    public void shouldFailWhenTheSnapshotIsMissing() throws Exception {
+        crashAfterCommitOnCompactedStore();
+        Files.delete(snapshotFile().toPath());
+
+        // the log's records refer to the snapshot's dictionary, so not even recovery can read them
+        for (final Configuration conf : Arrays.asList(config(), recoverConfig())) {
+            try {
+                TinkerStorageGraph.open(conf).close();
+                fail("a log whose snapshot is gone should not open");
+            } catch (IllegalStateException expected) {
+                assertTrue(expected.getMessage(), expected.getMessage().contains("snapshot"));
+            }
+        }
+    }
+
+    @Test
+    public void shouldFailWhenTheVersionMarkerIsMissing() throws Exception {
+        crashAfterCommitOnCompactedStore();
+        Files.delete(new File(location, AbstractLogStorage.VERSION_FILE).toPath());
+
+        assertNormalOpenFails();
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(recoverConfig());
+        assertEquals(Arrays.asList(1, 2), vertexIds(graph));
+        graph.close();
+        assertTrue("recovery must not write the marker", !new File(location, AbstractLogStorage.VERSION_FILE).exists());
+    }
+
+    @Test
+    public void shouldFailWhenTheLogBelongsToAnotherSnapshot() throws Exception {
+        crashAfterCommitOnCompactedStore();
+        final byte[] log = Files.readAllBytes(logFile().toPath());
+        ByteBuffer.wrap(log).putLong(AbstractLogStorage.MAGIC.length, 7);
+        Files.write(logFile().toPath(), log);
+
+        assertNormalOpenFails();
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(recoverConfig());
+        assertEquals("recovery reads only the snapshot", Collections.singletonList(1), vertexIds(graph));
+        graph.close();
+    }
+
+    @Test
+    public void shouldCompleteACompactionInterruptedBeforeTheLogWasReplaced() throws Exception {
+        crashAfterCommitOnCompactedStore();
+        final byte[] oldLog = Files.readAllBytes(logFile().toPath());
+
+        // close() compacts, moving the snapshot a generation ahead. Putting back the log it replaced leaves the store as
+        // a crash between the snapshot's rename and the log's would.
+        TinkerStorageGraph graph = TinkerStorageGraph.open(config());
+        graph.close();
+        Files.write(logFile().toPath(), oldLog);
+
+        graph = TinkerStorageGraph.open(config());
+        assertEquals(Arrays.asList(1, 2), vertexIds(graph));
+        assertEquals("the old log is replaced by an empty one", AbstractLogStorage.HEADER_SIZE, logFile().length());
+        graph.addVertex(T.id, 3);
+        graph.tx().commit();
+        graph.close();
+
+        graph = TinkerStorageGraph.open(config());
+        assertEquals(Arrays.asList(1, 2, 3), vertexIds(graph));
+        graph.close();
+    }
+
+    @Test
     public void shouldRecoverTheLogUpToAFrameThatCannotBeDecoded() throws Exception {
         final byte[] log = crashedLogOfThreeCommits();
         // a well-formed frame with a valid checksum whose single entry has an unknown op code
@@ -266,6 +342,25 @@ public class StorageRecoveryTest {
         graph.close();
         assertEquals(3, logFrames(log).size());
         return log;
+    }
+
+    /**
+     * Leave the store as a crash would after one compaction and one more commit: a snapshot holding vertex 1 and a log
+     * of the same generation holding vertex 2.
+     */
+    private void crashAfterCommitOnCompactedStore() throws IOException {
+        TinkerStorageGraph graph = TinkerStorageGraph.open(config());
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+        graph.close();
+
+        graph = TinkerStorageGraph.open(config());
+        graph.addVertex(T.id, 2);
+        graph.tx().commit();
+        final byte[] snapshot = Files.readAllBytes(snapshotFile().toPath());
+        final byte[] log = Files.readAllBytes(logFile().toPath());
+        graph.close();
+        writeStore(snapshot, log);
     }
 
     private void writeStore(final byte[] snapshot, final byte[] log) throws IOException {

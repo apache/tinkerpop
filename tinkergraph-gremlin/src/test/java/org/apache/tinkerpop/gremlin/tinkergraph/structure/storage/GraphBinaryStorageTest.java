@@ -334,30 +334,23 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     }
 
     @Test
-    public void shouldTreatLogTornInsideItsHeaderAsEmpty() throws Exception {
+    public void shouldFailOnLogShorterThanItsHeader() throws Exception {
         TinkerStorageGraph graph = open();
         final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
         graph.addVertex(T.id, 1, "value", 1);
         graph.tx().commit();
         graph.close();
 
-        // close() compacted vertex 1 into the snapshot and removed the log. Leave a log holding only part of its
-        // header, as a crash during the first append after that compaction would.
+        // the log is only ever replaced whole by a rename, so one holding part of its header is damage
         final File logFile = new File(location, GraphBinaryStorage.LOG_FILE);
         Files.write(logFile.toPath(), Arrays.copyOf(AbstractLogStorage.MAGIC, 2));
-
-        graph = open();
-        assertEquals(1, countOf(graph.vertices()));
-        graph.addVertex(T.id, 2, "value", 2);
-        graph.tx().commit();
-        final Map<String, byte[]> crashed = captureStorageFiles(location);
-        graph.close();
-        restoreStorageFiles(location, crashed);
-
-        graph = open();
-        assertEquals(2, countOf(graph.vertices()));
-        assertEquals(Integer.valueOf(2), graph.vertices(2).next().value("value"));
-        graph.close();
+        try {
+            open();
+            fail("a log shorter than its header should not open");
+        } catch (Exception expected) {
+            // expected
+        }
+        assertEquals(2, logFile.length());
     }
 
     @Test
@@ -696,6 +689,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         final ByteBuffer frame = ByteBuffer.allocate(
                 GraphBinaryStorage.HEADER_SIZE + GraphBinaryStorage.LOG_FRAME_HEADER_SIZE + payload.length);
         frame.put(GraphBinaryStorage.MAGIC);
+        frame.putLong(0); // generation: a log with no snapshot
         frame.putInt(payload.length);
         frame.putInt((int) lengthCrc.getValue());
         frame.putInt((int) crc.getValue());

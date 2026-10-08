@@ -64,9 +64,9 @@ import java.util.zip.CRC32;
  * folded {@code snapshot.gbin}; on open the snapshot is read followed by the log, last-write-wins per element id.
  * <p/>
  * This base owns everything that is not the element codec: the on-disk file layout, the single-source-of-truth
- * {@code VERSION} marker, length+CRC frame framing (which tells an interrupted trailing append apart from genuine
- * corruption, with log frames also checksumming their length), the replay fold loop, durability via {@link SyncMode}, and crash-safe atomic compaction with a
- * size threshold. Concrete engines supply only the codec through {@link #encodeCommit}, {@link #decodeFrame},
+ * {@code VERSION} marker, the compaction generation that ties a log to its snapshot, length+CRC frame framing (which
+ * tells an interrupted trailing append apart from genuine corruption, with log frames also checksumming their length),
+ * the replay fold loop, durability via {@link SyncMode}, and crash-safe atomic compaction with a size threshold. Concrete engines supply only the codec through {@link #encodeCommit}, {@link #decodeFrame},
  * {@link #writeSnapshot}, and (optionally) {@link #beginReplay} for per-replay decode state.
  * <p/>
  * The in-memory graph remains authoritative (write-through); this machinery does not support graphs larger than memory.
@@ -95,10 +95,16 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     static final String VERSION_FILE = "VERSION";
 
     /**
-     * Bytes of the per-file header: just {@link #MAGIC}. The format version lives in the store-level
-     * {@link #VERSION_FILE}, not in each file.
+     * Bytes of the per-file header: {@link #MAGIC} followed by the file's 8-byte compaction generation. The format
+     * version lives in the store-level {@link #VERSION_FILE}, not in each file.
+     * <p/>
+     * The generation is what lets an open tell a damaged store from a legitimate one. Each compaction writes a snapshot
+     * of the next generation and then replaces the log with an empty one of that same generation, so a store with data
+     * always has a log, the log's generation always names the snapshot it builds on (or {@code 0} when there is none),
+     * and only the crash window between those two renames leaves the snapshot one generation ahead of the log. Any other
+     * combination, such as a missing log or a log whose snapshot is gone, means files were lost.
      */
-    static final int HEADER_SIZE = MAGIC.length;
+    static final int HEADER_SIZE = MAGIC.length + Long.BYTES;
 
     /**
      * Bytes ahead of each snapshot frame's payload: a 4-byte length and a 4-byte CRC32 of the payload.
@@ -140,6 +146,24 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      * succeeds.
      */
     private long compactionDeferredUntil = 0;
+
+    /**
+     * The compaction generation of the current log, and of the snapshot it builds on when there is one.
+     */
+    private long generation = 0;
+
+    /**
+     * Whether replay should fold the log. Only a recovery open that found the log missing, or not belonging to the
+     * snapshot, leaves it out.
+     */
+    private boolean replayLog = true;
+
+    /**
+     * What a recovery open had to leave behind, or {@code null} for a normal open. Created on open so the checks made
+     * there can add to what replay later reports.
+     */
+    private Recovery recovery;
+
     private boolean closed = false;
 
     /**
@@ -178,7 +202,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
 
     /**
      * Write the entire current committed state of the graph to {@code out} as framed records (via {@link #writeFrame}),
-     * for compaction. The fixed {@link #MAGIC} header has already been written to {@code out}.
+     * for compaction. The file header has already been written to {@code out}.
      */
     protected abstract void writeSnapshot(AbstractTinkerGraph graph, DataOutputStream out) throws IOException;
 
@@ -206,10 +230,12 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         this.compactThresholdBytes = config.getLong(
                 TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, DEFAULT_COMPACT_THRESHOLD_BYTES);
         // seed the counter with any pre-existing log so a graph reopened with a large log still compacts promptly
-        this.logBytesSinceCompaction = logFile.exists() ? logFile.length() : 0;
+        this.logBytesSinceCompaction = logFile.exists() ? Math.max(0, logFile.length() - HEADER_SIZE) : 0;
+        this.recovery = recovering ? new Recovery() : null;
         configureCodec(config);
         ensureDirectory();
         establishStoreVersion();
+        establishGeneration();
     }
 
     /**
@@ -225,12 +251,11 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         // Fold snapshot then log into final state: last write per id wins, deletes remove.
         final Map<Object, DetachedVertex> vertices = new LinkedHashMap<>();
         final Map<Object, DetachedEdge> edges = new LinkedHashMap<>();
-        final Recovery recovery = recovering ? new Recovery() : null;
 
         // the snapshot is only ever replaced by an atomic rename, so only the log can end in an interrupted append
         if (snapshotFile.exists())
             foldRecords(snapshotFile, vertices, edges, false, recovery);
-        if (logFile.exists()) {
+        if (replayLog && logFile.exists()) {
             final long completeEnd = foldRecords(logFile, vertices, edges, true, recovery);
             // a recovery open never changes the files, so a torn tail is left in place
             if (recovery == null)
@@ -311,17 +336,19 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         // files as they are for the next open to replay
         if (closed || recovering || failure != null)
             return;
-        // Write a fresh snapshot of the current committed state, then truncate the log. This must be crash-safe: at
-        // no point may a crash leave the store without a readable snapshot-or-log covering the committed state.
-        // Ordering is write-tmp -> fsync tmp -> atomically rename tmp over the snapshot -> fsync dir (the rename is
-        // now durable) -> delete the log -> fsync dir. The old snapshot is only ever replaced by an atomic rename, so
-        // a crash at any step leaves either the old (snapshot + log) or the new (snapshot) intact — never neither.
+        // Write a fresh snapshot of the current committed state at the next generation, then replace the log with an
+        // empty one of that generation. This must be crash-safe: at no point may a crash leave the store without a
+        // readable snapshot-or-log covering the committed state. Ordering is write-tmp -> fsync tmp -> atomically
+        // rename tmp over the snapshot -> fsync dir (the rename is now durable) -> install the empty log the same way.
+        // Each file is only ever replaced by an atomic rename, so a crash at any step leaves either the old snapshot
+        // and log, the new snapshot with the old log (which open recognizes by its generation), or the new pair.
         closeLog();
         ensureDirectory();
+        final long nextGeneration = generation + 1;
         final File tmp = new File(directory, SNAPSHOT_FILE + ".tmp");
         try (final FileOutputStream fos = new FileOutputStream(tmp);
              final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(fos))) {
-            writeHeader(out);
+            writeHeader(out, nextGeneration);
             writeSnapshot(graph, out);
             out.flush();
             // force the snapshot's bytes to the device before it is renamed into place
@@ -341,15 +368,19 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             }
             // fsync the directory so the rename survives a crash before we touch the log
             syncDirectory();
-
-            // truncate the log now that the snapshot durably reflects the committed state
-            if (logFile.exists() && !logFile.delete())
-                throw new IOException("Could not truncate storage log " + logFile);
-            // fsync the directory again so the log's removal is durable
-            syncDirectory();
         } catch (IOException ex) {
             throw new UncheckedIOException("Could not finalize storage snapshot", ex);
         }
+
+        // empty the log now that the snapshot durably reflects the committed state. Once the snapshot is in place, the
+        // old log may only stay as it is, since open replaces it unread as an interrupted compaction. Appending to it
+        // would put commits there that the next open discards, so a failure here stops further commits instead.
+        try {
+            installEmptyLog(nextGeneration);
+        } catch (IOException ex) {
+            throw fail("Could not replace storage log after writing a new snapshot", ex);
+        }
+        generation = nextGeneration;
 
         // the log is now empty; the accumulated state lives in the snapshot
         logBytesSinceCompaction = 0;
@@ -400,12 +431,17 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     private void establishStoreVersion() {
         final boolean storeHasData = snapshotFile.exists() || logFile.exists();
         if (!versionFile.exists()) {
-            if (storeHasData && FORMAT_VERSION != 1)
-                throw new IllegalStateException(String.format(
-                        "Storage location %s has data but no version marker; cannot confirm it is format version %d",
-                        directory, FORMAT_VERSION));
-            if (!recovering)
+            if (storeHasData) {
+                final String problem = String.format("Storage location %s has data but no %s marker, so its format " +
+                        "version cannot be confirmed", directory, VERSION_FILE);
+                if (!recovering)
+                    throw new IllegalStateException(problem + String.format(
+                            "; open it with %s to read it as format version %d",
+                            TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER, FORMAT_VERSION));
+                recovery.note(problem + String.format("; it was read as format version %d.", FORMAT_VERSION));
+            } else if (!recovering) {
                 writeStoreVersion();
+            }
             return;
         }
         try (final DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(versionFile)))) {
@@ -436,6 +472,121 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         }
     }
 
+    /**
+     * Check that the snapshot and log belong together, using the generation in each header (see {@link #HEADER_SIZE}),
+     * and settle the generation the engine continues from. A new store gets its empty log here. A snapshot one
+     * generation ahead of the log is a compaction interrupted between its two renames: the snapshot already holds
+     * everything the old log does, so the empty log that compaction would have installed is installed now. Any other
+     * mismatch means files were lost and fails the open. A recovery open changes nothing, reports the problem, and
+     * reads what remains, except that a log whose snapshot is gone still fails, since its records refer to the
+     * snapshot's dictionary.
+     */
+    private void establishGeneration() {
+        final boolean hasSnapshot = snapshotFile.exists();
+        final boolean hasLog = logFile.exists();
+        if (!hasSnapshot && !hasLog) {
+            if (!recovering)
+                installNewLog(0);
+            return;
+        }
+
+        final long snapshotGeneration = hasSnapshot ? readGeneration(snapshotFile) : -1;
+        if (!hasLog) {
+            final String problem = String.format("Storage log %s is missing, so any transactions committed after the " +
+                    "last compaction are lost", logFile);
+            if (!recovering)
+                throw new IllegalStateException(problem + String.format(
+                        "; open the store with %s to read its snapshot", TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
+            recovery.note(problem + "; only the snapshot was read.");
+            replayLog = false;
+            return;
+        }
+
+        final long logGeneration;
+        try {
+            logGeneration = readGeneration(logFile);
+        } catch (UncheckedIOException ex) {
+            // a recovery open lets the fold report an unreadable log header and carry on with the snapshot
+            if (!recovering)
+                throw ex;
+            generation = Math.max(0, snapshotGeneration);
+            return;
+        }
+
+        if (!hasSnapshot) {
+            if (logGeneration != 0)
+                throw new IllegalStateException(String.format("Storage snapshot %s is missing: log %s was written " +
+                        "after compaction %d and its records depend on that snapshot", snapshotFile, logFile, logGeneration));
+            generation = 0;
+            return;
+        }
+
+        if (logGeneration == snapshotGeneration) {
+            generation = snapshotGeneration;
+        } else if (logGeneration == snapshotGeneration - 1) {
+            generation = snapshotGeneration;
+            if (!recovering) {
+                logger.warn("Storage at {} was interrupted while compacting; completing it by emptying the log, " +
+                        "whose transactions are all in the new snapshot", directory);
+                installNewLog(snapshotGeneration);
+                logBytesSinceCompaction = 0;
+            }
+        } else {
+            final String problem = String.format("Storage log %s (generation %d) does not belong to snapshot %s " +
+                    "(generation %d)", logFile, logGeneration, snapshotFile, snapshotGeneration);
+            if (!recovering)
+                throw new IllegalStateException(problem + String.format(
+                        "; open the store with %s to read its snapshot", TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
+            recovery.note(problem + "; only the snapshot was read.");
+            generation = snapshotGeneration;
+            replayLog = false;
+        }
+    }
+
+    /**
+     * Read the generation from the header of {@code file}, failing if the header is short or is not one of ours.
+     */
+    private static long readGeneration(final File file) {
+        try (final DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+            readAndVerifyHeader(in, file, file.length());
+            return in.readLong();
+        } catch (IOException ex) {
+            throw new UncheckedIOException(String.format("Could not read storage file %s", file), ex);
+        }
+    }
+
+    private void installNewLog(final long logGeneration) {
+        try {
+            installEmptyLog(logGeneration);
+        } catch (IOException ex) {
+            throw new UncheckedIOException(String.format("Could not create storage log %s", logFile), ex);
+        }
+    }
+
+    /**
+     * Atomically replace the log with one holding only its header at {@code logGeneration}. The log is never deleted,
+     * so its absence is always damage, and never written in place, so it is never shorter than its header.
+     */
+    private void installEmptyLog(final long logGeneration) throws IOException {
+        final File tmp = new File(directory, LOG_FILE + ".tmp");
+        try (final FileOutputStream fos = new FileOutputStream(tmp);
+             final DataOutputStream out = new DataOutputStream(fos)) {
+            writeHeader(out, logGeneration);
+            out.flush();
+            fos.getFD().sync();
+        } catch (IOException ex) {
+            deleteQuietly(tmp);
+            throw ex;
+        }
+        try {
+            atomicMove(tmp, logFile);
+        } catch (IOException ex) {
+            deleteQuietly(tmp);
+            throw ex;
+        }
+        syncDirectory();
+    }
+
     private void ensureDirectory() {
         if (directory.exists()) {
             if (!directory.isDirectory())
@@ -449,9 +600,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
 
     /**
      * Fold every complete frame of {@code file} into the given maps, returning the byte offset at which the last
-     * complete frame ends. Anything past that offset is an interrupted trailing append. For the log ({@code log}
-     * set), a file shorter than its header whose bytes are a prefix of {@link #MAGIC} is likewise an interrupted
-     * first append and yields an offset of {@code 0}.
+     * complete frame ends. Anything past that offset is an interrupted trailing append.
      * <p/>
      * With a {@code recovery} in progress, damage that would otherwise fail the open is tolerated where that is safe.
      * In the log, each frame is one transaction, so replay stops at the first frame that can't be read or decoded and
@@ -462,19 +611,10 @@ public abstract class AbstractLogStorage implements TinkerStorage {
                              final Map<Object, DetachedEdge> edges, final boolean log, final Recovery recovery) {
         final long fileLength = file.length();
         try (final DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
-            if (log && fileLength > 0 && fileLength < HEADER_SIZE) {
-                final byte[] present = new byte[(int) fileLength];
-                readFully(in, present);
-                if (Arrays.equals(present, Arrays.copyOf(MAGIC, present.length)))
-                    return 0;
-                if (recovery != null) {
-                    recovery.logStopped(0, fileLength, "the log is shorter than its header");
-                    return 0;
-                }
-            }
             long remaining;
             try {
                 remaining = readAndVerifyHeader(in, file, fileLength);
+                in.readLong(); // the generation, already checked on open
             } catch (IOException ex) {
                 if (recovery == null || !log)
                     throw ex;
@@ -592,11 +732,10 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     /**
-     * Read and validate the per-file header (magic only), returning the number of record bytes that follow it.
+     * Read and validate the magic at the start of the per-file header, returning the number of bytes that follow the
+     * whole header. The generation that completes the header is left for the caller to read.
      */
-    private long readAndVerifyHeader(final DataInputStream in, final File file, final long fileLength) throws IOException {
-        if (fileLength == 0)
-            return 0;
+    private static long readAndVerifyHeader(final DataInputStream in, final File file, final long fileLength) throws IOException {
         if (fileLength < HEADER_SIZE)
             throw new IOException(String.format("Corrupt storage file %s: shorter than its %d-byte header", file, HEADER_SIZE));
         final byte[] magic = new byte[MAGIC.length];
@@ -611,13 +750,14 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         // another graph
         checkNotClosed();
         if (logOut == null) {
+            // open and compaction always leave a log in place, so appending to a missing one would write frames with
+            // no header
+            if (!logFile.isFile())
+                throw new IllegalStateException(String.format("Storage log %s is missing", logFile));
             try {
-                final boolean freshFile = !logFile.exists() || logFile.length() == 0;
                 // retain the FileOutputStream so flush() can reach its FileDescriptor for fsync
                 logFos = openLogForAppend(logFile);
                 logOut = new DataOutputStream(new BufferedOutputStream(logFos));
-                if (freshFile)
-                    writeHeader(logOut);
             } catch (IOException ex) {
                 throw new UncheckedIOException("Could not open storage log for append", ex);
             }
@@ -696,10 +836,11 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     /**
-     * Write the per-file header ({@link #MAGIC}) at the start of a storage file.
+     * Write the per-file header ({@link #MAGIC} and the file's generation) at the start of a storage file.
      */
-    private static void writeHeader(final DataOutputStream out) throws IOException {
+    private static void writeHeader(final DataOutputStream out, final long fileGeneration) throws IOException {
         out.write(MAGIC);
+        out.writeLong(fileGeneration);
     }
 
     /**
@@ -858,6 +999,11 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         private long snapshotStoppedAt = -1;
         private long snapshotLength = 0;
         private String snapshotStopReason;
+        private final List<String> notes = new ArrayList<>();
+
+        private void note(final String problem) {
+            notes.add(problem);
+        }
 
         private void snapshotStopped(final long offset, final long length, final String reason) {
             this.snapshotStoppedAt = offset;
@@ -875,8 +1021,11 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             final StringBuilder sb = new StringBuilder(String.format(
                     "Opened storage at %s with %s; the graph is read-only.", directory,
                     TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
-            if (skippedSnapshotFrames == 0 && danglingEdges == 0 && logStoppedAt < 0 && snapshotStoppedAt < 0)
+            if (notes.isEmpty() && skippedSnapshotFrames == 0 && danglingEdges == 0 && logStoppedAt < 0 &&
+                    snapshotStoppedAt < 0)
                 sb.append(" No damage was found.");
+            for (final String n : notes)
+                sb.append(' ').append(n);
             if (skippedSnapshotFrames > 0)
                 sb.append(String.format(" Skipped %d unreadable element record(s) in the snapshot.", skippedSnapshotFrames));
             if (snapshotStoppedAt >= 0)
