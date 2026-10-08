@@ -308,8 +308,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         try (final RandomAccessFile raf = new RandomAccessFile(logFile, "rw")) {
             raf.setLength(0);
             raf.write(goodLog);
-            raf.writeInt(100);
-            raf.write(new byte[]{ 0x01, 0x02 });
+            raf.write(tornLogFrame(100));
         }
 
         // reopening must recover the two fully-committed vertices and ignore the torn frame
@@ -432,8 +431,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         final File logFile = new File(location, GraphBinaryStorage.LOG_FILE);
         try (final RandomAccessFile raf = new RandomAccessFile(logFile, "rw")) {
             raf.seek(raf.length());
-            raf.writeInt(tornFrameClaimedLength);
-            raf.write(new byte[]{ 0x01, 0x02 });
+            raf.write(tornLogFrame(tornFrameClaimedLength));
         }
 
         graph = open();
@@ -448,6 +446,21 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         assertEquals(3, countOf(graph.vertices()));
         assertEquals(Integer.valueOf(3), graph.vertices(3).next().value("value"));
         graph.close();
+    }
+
+    /**
+     * The start of a log frame as an interrupted append leaves it: a complete header, whose length passes its checksum,
+     * claiming {@code claimedLength} payload bytes, followed by only two of them.
+     */
+    private static byte[] tornLogFrame(final int claimedLength) {
+        final CRC32 lengthCrc = new CRC32();
+        lengthCrc.update(ByteBuffer.allocate(Integer.BYTES).putInt(claimedLength).array());
+        return ByteBuffer.allocate(GraphBinaryStorage.LOG_FRAME_HEADER_SIZE + 2)
+                .putInt(claimedLength)
+                .putInt((int) lengthCrc.getValue())
+                .putInt(0)
+                .put(new byte[]{ 0x01, 0x02 })
+                .array();
     }
 
     /**
@@ -588,8 +601,8 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         final File logFile = new File(location, GraphBinaryStorage.LOG_FILE);
         final byte[] log = Files.readAllBytes(logFile.toPath());
         graph.close();
-        // header, then first frame's 4-byte length + 4-byte CRC, then payload — flip the first payload byte
-        final int firstPayloadByte = GraphBinaryStorage.HEADER_SIZE + 2 * Integer.BYTES;
+        // header, then the first frame's length, length CRC and payload CRC, then payload — flip the first payload byte
+        final int firstPayloadByte = GraphBinaryStorage.HEADER_SIZE + GraphBinaryStorage.LOG_FRAME_HEADER_SIZE;
         log[firstPayloadByte] ^= 0x01;
         Files.deleteIfExists(new File(location, GraphBinaryStorage.SNAPSHOT_FILE).toPath());
         Files.write(logFile.toPath(), log);
@@ -664,7 +677,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     }
 
     /**
-     * Replace the store's log with a single well-formed frame (correct length prefix and CRC) carrying {@code
+     * Replace the store's log with a single well-formed frame (correct length prefix and checksums) carrying {@code
      * payload}, then reopen. The framing must be valid so that replay reaches the codec rather than stopping at the
      * frame checks, which are covered separately.
      */
@@ -676,11 +689,15 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         graph.tx().close();
         graph.close();
 
+        final CRC32 lengthCrc = new CRC32();
+        lengthCrc.update(ByteBuffer.allocate(Integer.BYTES).putInt(payload.length).array());
         final CRC32 crc = new CRC32();
         crc.update(payload);
-        final ByteBuffer frame = ByteBuffer.allocate(GraphBinaryStorage.HEADER_SIZE + 2 * Integer.BYTES + payload.length);
+        final ByteBuffer frame = ByteBuffer.allocate(
+                GraphBinaryStorage.HEADER_SIZE + GraphBinaryStorage.LOG_FRAME_HEADER_SIZE + payload.length);
         frame.put(GraphBinaryStorage.MAGIC);
         frame.putInt(payload.length);
+        frame.putInt((int) lengthCrc.getValue());
         frame.putInt((int) crc.getValue());
         frame.put(payload);
 
