@@ -139,6 +139,8 @@ public abstract class AbstractLogStorage implements TinkerStorage {
 
     /**
      * Encode a committing transaction's changeset into a single record payload (the framing is added by the caller).
+     * A failed encode fails only its own transaction and later commits are still accepted, so on failure an
+     * implementation must undo any codec state it changed while encoding, such as dictionary entries.
      */
     protected abstract byte[] encodeCommit(long txVersion,
                                            Collection<TinkerStorageMutation<TinkerVertex>> changedVertices,
