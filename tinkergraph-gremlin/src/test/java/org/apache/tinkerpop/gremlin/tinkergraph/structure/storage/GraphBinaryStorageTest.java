@@ -40,6 +40,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -378,6 +379,38 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
             // expected
         }
         assertEquals(2, logFile.length());
+    }
+
+    @Test
+    public void shouldReplayCommitsAfterATransactionThatCouldNotBeEncoded() throws Exception {
+        TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        graph.addVertex(T.id, 1, T.label, "person", "name", "marko");
+        graph.tx().commit();
+
+        // a new label and a new key whose value has no serializer, so the commit fails while it is being encoded
+        graph.addVertex(T.id, 2, T.label, "software", "created", new Date());
+        try {
+            graph.tx().commit();
+            fail("a value with no serializer should fail the commit");
+        } catch (RuntimeException expected) {
+            // expected
+        }
+
+        // reuse the key from the failed commit and add a new one, then crash before close() can compact
+        graph.addVertex(T.id, 3, T.label, "software", "created", 2024, "lang", "java");
+        graph.tx().commit();
+        final Map<String, byte[]> crashed = captureStorageFiles(location);
+        graph.close();
+        restoreStorageFiles(location, crashed);
+
+        graph = open();
+        assertEquals(2, countOf(graph.vertices()));
+        final Vertex v = graph.vertices(3).next();
+        assertEquals("software", v.label());
+        assertEquals(Integer.valueOf(2024), v.value("created"));
+        assertEquals("java", v.value("lang"));
+        graph.close();
     }
 
     /**
