@@ -51,6 +51,12 @@ code { background: var(--bg-alt); padding: 0.1rem 0.4rem; border-radius: 3px; fo
 pre { background: var(--bg-alt); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; overflow-x: auto; font-size: 0.8rem; line-height: 1.5; margin: 0.75rem 0; }
 pre code { background: none; padding: 0; }
 .walk-number { display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; background: var(--primary); color: #fff; font-size: 0.8rem; font-weight: 700; margin-right: 0.5rem; }
+.walk-questions { margin: 0.5rem 0 0.25rem 1.1rem; padding: 0; } .walk-questions li { margin-bottom: 0.6rem; }
+.code-refs { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.3rem; }
+.walk-refs { margin-top: 0.6rem; } .walk-refs::before { content: "Also see"; font-size: 0.75rem; color: var(--text-muted); align-self: center; margin-right: 0.15rem; }
+.code-ref { display: inline-block; padding: 0.1rem 0.5rem; border: 1px solid var(--primary); border-radius: 3px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.75rem; color: var(--primary); text-decoration: none; }
+.code-ref::after { content: " \2197"; } .code-ref:hover { background: var(--primary); color: #fff; }
+.code-ref-unresolved { border-color: var(--border); color: var(--text-muted); } .code-ref-unresolved::after { content: " ?"; }
 .finding { border-left: 3px solid var(--warning); } .finding-title { font-weight: 600; margin-bottom: 0.25rem; }
 .test-pass { color: var(--success); font-weight: 600; } .test-fail { color: var(--danger); font-weight: 600; }
 .test-grid { display: grid; grid-template-columns: auto 1fr auto; gap: 0.25rem 0.75rem; font-size: 0.875rem; align-items: baseline; }

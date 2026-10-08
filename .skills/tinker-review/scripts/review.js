@@ -39,6 +39,7 @@ import { confidenceAudit } from "./patterns/confidence-audit.js";
 import { classifyExternals } from "./patterns/classify-externals.js";
 import { findRemovalRefs } from "./patterns/removal-refs.js";
 import { orphans } from "./patterns/orphans.js";
+import { buildCodeIndex } from "./extraction/code-index.js";
 import { createPrDiscussion } from "./enrichment/api.js";
 import { discoverDiscussions } from "./discovery/discussions.js";
 
@@ -441,9 +442,14 @@ export async function phase1(session) {
   const architectureResult = await architecture(g, { clusterResult, changedOnly: true });
   log(`  architecture: ${architectureResult.nodes.length} nodes, ${architectureResult.edges.length} edges`);
 
+  // pin code links in the report to the exact commit reviewed, so they don't drift when the PR is pushed again
+  const { stdout: headShaOut } = await exec("git", ["rev-parse", prBranch], { cwd: repoPath }).catch(() => ({ stdout: "" }));
+  const codeIndex = buildCodeIndex({ changedFiles, extraction, diffText });
+
   const evidence = {
     meta: {
       pr,
+      headSha: headShaOut.trim() || null,
       title: prTitle.trim(),
       domains,
       language,
@@ -467,6 +473,7 @@ export async function phase1(session) {
     },
     discussions,
     changedFiles,
+    codeIndex,
   };
 
   const jsonPath = join(workDir, "evidence.json");
