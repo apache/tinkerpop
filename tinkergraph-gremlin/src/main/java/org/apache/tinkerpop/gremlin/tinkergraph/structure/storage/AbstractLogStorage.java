@@ -229,6 +229,10 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         this.syncMode = SyncMode.fromConfigValue(config.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_SYNC, null));
         this.compactThresholdBytes = config.getLong(
                 TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, DEFAULT_COMPACT_THRESHOLD_BYTES);
+        if (compactThresholdBytes < 0)
+            throw new IllegalArgumentException(String.format(
+                    "%s must be 0, to disable automatic compaction, or a positive number of bytes, but was %d",
+                    TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, compactThresholdBytes));
         // seed the counter with any pre-existing log so a graph reopened with a large log still compacts promptly
         this.logBytesSinceCompaction = logFile.exists() ? Math.max(0, logFile.length() - HEADER_SIZE) : 0;
         this.recovery = recovering ? new Recovery() : null;

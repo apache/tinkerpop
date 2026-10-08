@@ -374,6 +374,37 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     }
 
     @Test
+    public void shouldRejectBlankStorageDirectory() {
+        final Configuration conf = config();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, "   ");
+        try {
+            TinkerStorageGraph.open(conf).close();
+            fail("a blank storage directory should not open");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(),
+                    expected.getMessage().contains(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY));
+        }
+        assertTrue("no store may be created in the working directory", !new File("   ").exists());
+    }
+
+    @Test
+    public void shouldRejectNegativeCompactThreshold() {
+        final Configuration conf = config();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, -1);
+        try {
+            TinkerStorageGraph.open(conf).close();
+            fail("a negative compaction threshold should not open");
+        } catch (IllegalArgumentException expected) {
+            assertTrue(expected.getMessage(),
+                    expected.getMessage().contains(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD));
+        }
+
+        // the failed open released the directory, so a valid configuration can open it
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, 0);
+        TinkerStorageGraph.open(conf).close();
+    }
+
+    @Test
     public void shouldNameThePropertyAndTypeThatCannotBeStored() throws Exception {
         final TinkerStorageGraph graph = open();
         try {
