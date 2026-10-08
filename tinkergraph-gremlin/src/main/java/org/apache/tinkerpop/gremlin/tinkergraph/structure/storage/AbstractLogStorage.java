@@ -42,9 +42,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -358,20 +356,20 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             // force the snapshot's bytes to the device before it is renamed into place
             fos.getFD().sync();
         } catch (IOException ex) {
-            deleteQuietly(tmp);
+            StorageFiles.deleteQuietly(tmp);
             throw new UncheckedIOException("Could not write storage snapshot", ex);
         }
 
         try {
             // atomically replace the snapshot; no delete-then-rename window where the snapshot is briefly absent
             try {
-                atomicMove(tmp, snapshotFile);
+                StorageFiles.atomicMove(tmp, snapshotFile);
             } catch (IOException ex) {
-                deleteQuietly(tmp);
+                StorageFiles.deleteQuietly(tmp);
                 throw ex;
             }
             // fsync the directory so the rename survives a crash before we touch the log
-            syncDirectory();
+            StorageFiles.syncDirectory(directory);
         } catch (IOException ex) {
             throw new UncheckedIOException("Could not finalize storage snapshot", ex);
         }
@@ -579,16 +577,16 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             out.flush();
             fos.getFD().sync();
         } catch (IOException ex) {
-            deleteQuietly(tmp);
+            StorageFiles.deleteQuietly(tmp);
             throw ex;
         }
         try {
-            atomicMove(tmp, logFile);
+            StorageFiles.atomicMove(tmp, logFile);
         } catch (IOException ex) {
-            deleteQuietly(tmp);
+            StorageFiles.deleteQuietly(tmp);
             throw ex;
         }
-        syncDirectory();
+        StorageFiles.syncDirectory(directory);
     }
 
     private void ensureDirectory() {
@@ -930,39 +928,6 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             if (read < 0)
                 throw new EOFException();
             off += read;
-        }
-    }
-
-    private static void deleteQuietly(final File file) {
-        try {
-            Files.deleteIfExists(file.toPath());
-        } catch (IOException ignored) {
-            // best effort: the next compaction overwrites the temporary file anyway
-        }
-    }
-
-    /**
-     * Atomically move {@code source} onto {@code target}, replacing any existing target. Falls back to a non-atomic
-     * replacing move on filesystems that do not support atomic moves.
-     */
-    private static void atomicMove(final File source, final File target) throws IOException {
-        try {
-            Files.move(source.toPath(), target.toPath(),
-                    StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-        } catch (AtomicMoveNotSupportedException anse) {
-            Files.move(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        }
-    }
-
-    /**
-     * fsync the storage directory so that recent namespace changes (a rename into place, a file deletion) are durable.
-     */
-    private void syncDirectory() {
-        try (final FileChannel dirChannel = FileChannel.open(directory.toPath(), StandardOpenOption.READ)) {
-            dirChannel.force(true);
-        } catch (IOException ex) {
-            // some platforms (notably Windows) cannot open a directory as a channel; the atomic rename is the
-            // durability guarantee there, so treat inability to sync the directory as non-fatal
         }
     }
 
