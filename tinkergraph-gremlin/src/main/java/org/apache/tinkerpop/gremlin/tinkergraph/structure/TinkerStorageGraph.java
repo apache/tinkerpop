@@ -337,7 +337,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     public void compact() {
         if (storage != null) {
             // hold the same lock as the commit write path: compaction closes the log, rewrites the snapshot, and
-            // truncates the log, which must not interleave with a concurrent transaction appending to that log.
+            // empties the log, which must not interleave with a concurrent transaction appending to that log.
             storageCommitLock.lock();
             try {
                 storage.flush();

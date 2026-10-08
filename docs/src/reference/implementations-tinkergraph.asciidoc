@@ -507,8 +507,12 @@ with a clear error rather than misreading the data. There is no in-place format 
 incompatible storage format, export it with the `io()` step before upgrading and read it back afterward.
 
 A store that has been damaged, for example by a failing disk, normally fails to open rather than load data it cannot
-trust. Setting `gremlin.tinkergraph.storage.recover` to `true` opens such a store with everything that remains
-readable. Each commit in the log is one transaction, so replay of the log stops at the first record that cannot be
+trust. That includes a store missing one of its files. The snapshot and log record which compaction they belong to, so a
+deleted log, a log whose snapshot is gone, or data with no `VERSION` marker beside it is reported rather than opened as
+if nothing were missing. Setting `gremlin.tinkergraph.storage.recover` to `true` opens such a store with everything
+that remains readable. A store whose log is missing or belongs to another snapshot recovers from its snapshot alone,
+and one missing its `VERSION` marker is read as the current format. A log whose snapshot is gone cannot be recovered,
+because its records depend on the dictionary held in that snapshot. Each commit in the log is one transaction, so replay of the log stops at the first record that cannot be
 read and keeps every transaction before it. An unreadable element in the snapshot is skipped, along with any edge that
 loses an endpoint as a result. Damage to the start of the snapshot, which holds the dictionary that every other record
 depends on, still fails the open. A warning in the log reports what was left out. The recovered graph is read-only. It
