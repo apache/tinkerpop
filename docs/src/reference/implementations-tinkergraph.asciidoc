@@ -519,10 +519,23 @@ to `true` persists those ids as well, at the cost of a larger store.
 Rebuilding the graph on reopen is subject to `gremlin.tinkergraph.defaultVertexPropertyCardinality`, exactly as
 importing data through the `io()` step is (see <<tinkergraph-configuration>>). TinkerGraph has a single
 graph-wide cardinality rather than a per-key or per-property one. A graph that holds `list` or `set` multi-properties
-must therefore set this default to `list` or `set`. Left at the default `single`, only the last value of each property
+must therefore set this default to `list` or `set` when the store is created. Left at the default `single`, only the last value of each property
 survives the reopen. A single stored value cannot be assumed to be a `list` or `set` of one, and the cardinality a
 property was written with is not recorded, so the graph-wide default is the only cardinality applied on reopen. This is
 the same rule that already governs interchange formats.
+
+The settings that shape the stored data are fixed when a store is created: the vertex, edge and vertex-property id
+managers, `gremlin.tinkergraph.defaultVertexPropertyCardinality`, `gremlin.tinkergraph.vertexLabelCardinality`,
+`gremlin.tinkergraph.allowNullPropertyValues` and the storage engine itself. The store records their values, defaults
+included, in a `settings.properties` file in its storage directory. When the graph is opened again, any of these
+settings left out of the configuration is taken from that record, so a store can be opened with nothing more than
+`gremlin.tinkergraph.storage` and `gremlin.tinkergraph.storage.directory`, and `configuration()` on the opened graph
+reports the recorded values. A setting that is given a different value fails the open. Changing one is a migration:
+export the graph with the `io()` step and import it into a graph opened on a new storage directory with the new
+settings. Settings that only affect how the engine runs, such as `gremlin.tinkergraph.storage.sync`,
+`gremlin.tinkergraph.storage.compactThreshold` and `gremlin.tinkergraph.storage.preserveVertexPropertyIds`, may change
+between opens. A store that has data but no `settings.properties` fails to open, and opening it with
+`gremlin.tinkergraph.storage.recover` reads it with the configured settings.
 
 A storage location may be opened by only one graph at a time. `TinkerStorageGraph` takes an exclusive lock on the
 storage directory when it opens, so a second attempt to open the same location, whether from the same JVM or another
