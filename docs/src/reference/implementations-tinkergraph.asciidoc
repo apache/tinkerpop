@@ -295,9 +295,9 @@ below).
 [[testing-remote-providers]]
 ==== Testing Remote Providers
 
-These transaction semantics described above may not fit use cases for some production scenarios that require strict
-ACID-like transactions. Therefore, it is recommended that `TinkerStorageGraph` be used as a `Graph` for test
-environments where you still require access to a `Graph` that supports transactions. `TinkerStorageGraph` does fully
+These transaction semantics described above may not fit production scenarios that require strict ACID-like
+transactions or many concurrent writers (see <<tinkergraph-gremlin-persistence>>). They do make `TinkerStorageGraph` a
+good `Graph` for test environments where you still require access to a `Graph` that supports transactions. `TinkerStorageGraph` does fully
 support TinkerPop's `Transaction` interface which still makes it a useful `Graph` for exploring the
 <<transactions,Transaction API>>.
 
@@ -479,6 +479,19 @@ committed state. Compaction runs when the graph is closed and can be requested e
 `TinkerStorageGraph.compact()`. So that a long-running graph which is never explicitly closed does not accumulate an
 unbounded log, compaction also runs automatically once the log grows past `gremlin.tinkergraph.storage.compactThreshold`
 bytes. Setting that threshold to `0` disables automatic compaction.
+
+Durability shapes how a persisted graph behaves under concurrent writes. Each commit writes its changes to the log, and
+under the default `commit` sync mode forces them to disk, while holding a single lock for the whole graph. Commits
+therefore complete one at a time, and write throughput is bounded by how quickly the disk completes a forced write.
+The `os` sync mode shortens each commit at the cost of the weaker guarantee described above. A transaction holds the
+locks on the elements it changed until its commit completes, so the forced write also lengthens the window in which
+another transaction touching those elements fails with a `TransactionException` (see "Best Practices" below).
+Automatic compaction runs as part of the commit that crosses the threshold and rewrites the whole graph while holding
+that same lock, so every other commit waits until it finishes. That pause grows with the size of the graph, which can
+be avoided by setting `gremlin.tinkergraph.storage.compactThreshold` to `0` and calling `TinkerStorageGraph.compact()`
+at a quiet time. Reads do not take the commit lock and are not held up by either. A persisted `TinkerStorageGraph` is
+best suited to a single writer, or a few writers that mostly change different elements, with reads free to run
+alongside them.
 
 The property keys a graph indexes are recorded alongside its data and the indexes are rebuilt when the graph is
 opened again, so an index created with `createIndex()` survives a restart and covers the data that was already
