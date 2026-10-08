@@ -102,6 +102,12 @@ public final class CsrVertex implements Vertex, CsrElement {
 
     @Override
     public <V> VertexProperty<V> property(final String key) {
+        final CsrComputePropertyColumn computed = graph.computeProperty(key);
+        if (computed != null) {
+            return computed.isPresent(ordinal)
+                    ? new CsrComputeVertexProperty<>(graph, ordinal, key, computed)
+                    : VertexProperty.empty();
+        }
         final int code = graph.vertexKeyCode(key);
         if (code < 0) return VertexProperty.empty();
         final CsrSnapshot snapshot = graph.snapshot();
@@ -114,6 +120,8 @@ public final class CsrVertex implements Vertex, CsrElement {
 
     @Override
     public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
+        if (!graph.computePropertyKeys().isEmpty())
+            return new OverlayPropertyIterator<>(graph, ordinal, propertyKeys);
         final int[] codes;
         if (propertyKeys.length == 0) {
             codes = null;
@@ -126,6 +134,7 @@ public final class CsrVertex implements Vertex, CsrElement {
 
     @Override
     public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
+        if (!graph.edgesVisible()) return Collections.emptyIterator();
         final int[] labelCodes = labelCodes(edgeLabels);
         if (labelCodes != null && labelCodes.length == 0) return Collections.emptyIterator();
         return new AdjacencyIterator<>(graph, ordinal, direction, labelCodes, true);
@@ -133,6 +142,7 @@ public final class CsrVertex implements Vertex, CsrElement {
 
     @Override
     public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
+        if (!graph.edgesVisible()) return Collections.emptyIterator();
         final int[] labelCodes = labelCodes(edgeLabels);
         if (labelCodes != null && labelCodes.length == 0) return Collections.emptyIterator();
         return new AdjacencyIterator<>(graph, ordinal, direction, labelCodes, false);
@@ -310,6 +320,62 @@ public final class CsrVertex implements Vertex, CsrElement {
         public VertexProperty<V> next() {
             if (!hasNext()) throw new NoSuchElementException();
             return new CsrVertexProperty<>(graph, vertex, code, position++);
+        }
+    }
+
+    private static final class OverlayPropertyIterator<V> implements Iterator<VertexProperty<V>> {
+        private final CsrGraph graph;
+        private final int vertex;
+        private final Iterator<String> computedKeys;
+        private final PropertyIterator<V> base;
+        private VertexProperty<V> next;
+
+        private OverlayPropertyIterator(final CsrGraph graph, final int vertex, final String[] propertyKeys) {
+            this.graph = graph;
+            this.vertex = vertex;
+            final Set<String> requested = propertyKeys.length == 0 ? graph.computePropertyKeys()
+                    : new LinkedHashSet<>(java.util.Arrays.asList(propertyKeys));
+            final Set<String> selected = new LinkedHashSet<>();
+            for (final String key : requested) {
+                if (graph.computeProperty(key) != null) selected.add(key);
+            }
+            this.computedKeys = selected.iterator();
+
+            final java.util.ArrayList<Integer> baseCodes = new java.util.ArrayList<>();
+            if (propertyKeys.length == 0) {
+                for (int code = 0; code < graph.vertexKeyCount(); code++) {
+                    final CsrComputePropertyColumn column = graph.computeProperty(graph.vertexKey(code));
+                    if (column == null) baseCodes.add(code);
+                }
+            } else {
+                for (final String key : propertyKeys) {
+                    final CsrComputePropertyColumn column = graph.computeProperty(key);
+                    if (column == null) baseCodes.add(graph.vertexKeyCode(key));
+                }
+            }
+            final int[] codes = new int[baseCodes.size()];
+            for (int i = 0; i < codes.length; i++) codes[i] = baseCodes.get(i);
+            this.base = new PropertyIterator<>(graph, vertex, codes);
+        }
+
+        @Override
+        public boolean hasNext() {
+            while (next == null && computedKeys.hasNext()) {
+                final String key = computedKeys.next();
+                final CsrComputePropertyColumn column = graph.computeProperty(key);
+                if (column.isPresent(vertex))
+                    next = new CsrComputeVertexProperty<>(graph, vertex, key, column);
+            }
+            return next != null || base.hasNext();
+        }
+
+        @Override
+        public VertexProperty<V> next() {
+            if (!hasNext()) throw new NoSuchElementException();
+            if (next == null) return base.next();
+            final VertexProperty<V> result = next;
+            next = null;
+            return result;
         }
     }
 }

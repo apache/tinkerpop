@@ -67,7 +67,7 @@ public final class CsrFeatures implements Graph.Features {
     private static final class CsrGraphFeatures implements GraphFeatures {
         @Override
         public boolean supportsComputer() {
-            return false;
+            return true;
         }
 
         @Override

@@ -79,3 +79,181 @@ se-groupcount-cap   | large | * | g.V().groupCount('x').by('stringHighCardinalit
 facade-path         | small | * | g.V(0L, 1L, 2L, 3L, 4L, 5L, 6L, 7L).out().out().path()
 facade-simplepath   | small | * | g.V().out().simplePath().out().simplePath().count()
 facade-select       | small | * | g.V().as('a').out('knows').as('b').select('a', 'b').count()
+
+# ---------------------------------------------------------------------------------------------------------------------
+# CSR-unfavorable queries. Three groups, each with its own graph:
+#
+#   fb-*    facade and fallback steps on the standard power-law graphs above (path, as/select, where, match, sack,
+#           aggregate().by(), reducing children, mid-traversal V(), edge-property filters on in-edges). Roots are
+#           chosen by label and property, never by limit() as the root, so that the results agree across systems. The
+#           label and stringLowCardinality both come from the low bits of one hash (label index = category number
+#           modulo 4), so the roots are person with category-4, never person with category-7 (that is a location).
+#   rich-*  data the columnar snapshot handles badly, on a graph from "CsrBenchmarkDataGenerator rich":
+#           vertex labels as above (exactly one each); edge labels as above. Vertex properties: name (unique), mixed
+#           (int, long, double, String and boolean by id modulo 5; numbers in 0..999), tag (0-5 values, list
+#           cardinality, tag-0..tag-15), location (1-3 values, city-0..city-49, meta-properties since and, on about
+#           half, until), uuid, created (OffsetDateTime), elapsed (Duration), amount (BigDecimal), bignum (BigInteger),
+#           blob (byte[]), listval, setval, mapval (List, Set and Map values with nested members), charval, shortval,
+#           floatval, byteval, bio (several hundred characters, common prefix, unique suffix), sparse (int on about 2%),
+#           nullable (null on a quarter, a string on a quarter), age (int 0..99), score (long 0..9999). Edge properties:
+#           weight (double), mixedEdge (mixed types like mixed), since (OffsetDateTime).
+#   sid-*   the same rich graph generated with --string-ids: vertex ids v<n>, edge ids e<n>. Written for a graph of at
+#           least 2^16 vertices and 2^16 * edge factor edges, so that v0..v7 and e0..e7 exist.
+# ---------------------------------------------------------------------------------------------------------------------
+
+# fb: path-dependent steps
+fb-path-count        | small | * | g.V().hasLabel('person').has('stringLowCardinality', 'category-4').out('knows').out().path().count()
+fb-simplepath-both   | small | * | g.V().hasLabel('person').has('stringLowCardinality', 'category-4').both().simplePath().both().simplePath().count()
+fb-cyclicpath-out3   | small | * | g.V().hasLabel('person').has('stringLowCardinality', 'category-4').out('knows').out('knows').out('knows').cyclicPath().count()
+
+# fb: labels, where and match
+fb-select-groupcount | small | * | g.V().hasLabel('person').has('stringLowCardinality', 'category-4').as('a').out('knows').as('b').select('a', 'b').by('stringLowCardinality').groupCount()
+fb-where-by          | small | * | g.V().hasLabel('person').has('stringLowCardinality', 'category-4').as('a').out('knows').as('b').where('a', eq('b')).by('stringLowCardinality').count()
+fb-match             | small | * | g.V().hasLabel('person').has('stringLowCardinality', 'category-4').match(__.as('a').out('knows').as('b'), __.as('b').out('created').as('c')).select('a', 'c').count()
+
+# fb: native, facade, native region splits
+fb-split-where-neq   | small | * | g.V().hasLabel('person').has('stringLowCardinality', 'category-4').out('knows').as('a').out().where(neq('a')).out().count()
+fb-split-simplepath  | small | * | g.V().hasLabel('person').has('stringLowCardinality', 'category-4').out('knows').out('knows').simplePath().out().dedup().count()
+
+# fb: steps without a native node
+fb-sack              | small | * | g.withSack(1).V().hasLabel('person').has('stringLowCardinality', 'category-4').out('knows').sack(sum).by(constant(2)).out().sack(sum).by(constant(3)).sack().sum()
+fb-aggregate-by      | small | * | g.V().aggregate('x').by('stringLowCardinality').cap('x').unfold().dedup().count()
+fb-choose-predicate  | small | * | g.V().choose(out('knows').count().is(gt(8)), constant('hub'), constant('leaf')).groupCount()
+fb-union-reducing    | small | * | g.V().hasLabel('person').union(count(), out().count()).sum()
+fb-tail              | small | * | g.V().hasLabel('person').has('stringLowCardinality', 'category-4').out('knows').order().by('stringHighCardinality').tail(5).values('stringHighCardinality') | ordered
+fb-repeat-local-dedup | small | * | g.V().hasLabel('person').has('stringLowCardinality', 'category-4').repeat(local(out('knows').dedup())).times(2).count()
+fb-repeat-value-lane | small | * | g.V().values('intValue').repeat(math('_ + 1')).times(3).sum()
+
+# fb: mid-traversal V() (rejected by graph computers)
+fb-midv-limit        | small | tinkergraph,csr-native,csr-facade | g.V().limit(10).V().count()
+
+# fb: in() with edge labels and edge-property filters
+fb-ine-weight        | small | * | g.V().inE('knows').has('weight', gt(0.9f)).outV().dedup().count()
+
+# rich: multi-properties
+rich-props-groupcount | small | * | g.V().properties('tag', 'location').groupCount().by(label)
+rich-has-tag         | small | * | g.V().has('tag', 'tag-3').count()
+rich-values-tag-dedup | small | * | g.V().values('tag').dedup()
+rich-valuemap-multi  | large | * | g.V().hasLabel('person').has('age', lt(3)).valueMap('tag', 'location', 'nullable', 'sparse')
+rich-elementmap-multi | large | * | g.V().has('age', lt(3)).elementMap('tag', 'location', 'mapval')
+rich-valuemap-all    | large | * | g.V().has('age', lt(1)).valueMap()
+
+# rich: meta-properties
+rich-meta-has-since  | small | * | g.V().properties('location').has('since', gt(1700000000L)).count()
+rich-meta-hasnot-until | small | * | g.V().properties('location').hasNot('until').count()
+rich-meta-properties | small | * | g.V().properties('location').properties().count()
+rich-meta-max-since  | small | * | g.V().properties('location').values('since').max()
+
+# rich: mixed-type values
+rich-mixed-has-gt    | small | * | g.V().has('mixed', gt(500)).count()
+rich-mixed-order     | small | * | g.V().has('mixed', gt(950)).order().by('mixed').by('name').id() | ordered
+rich-mixed-order-all | small | * | g.V().order().by('mixed').by('name').limit(20).id() | ordered
+rich-mixed-groupcount | small | * | g.V().groupCount().by('mixed')
+rich-edge-mixed-groupcount | small | * | g.E().groupCount().by('mixedEdge')
+
+# rich: rich value types
+rich-order-created   | small | * | g.V().order().by('created').by('name').limit(50).id() | ordered
+rich-order-uuid-full | large | * | g.V().order().by('uuid').by('name').id() | ordered
+rich-sum-bigdecimal  | small | * | g.V().values('amount').sum()
+rich-sum-biginteger  | small | * | g.V().values('bignum').sum()
+rich-min-created     | small | * | g.V().values('created').min()
+rich-has-created-lt  | small | * | g.V().has('created', lt(datetime('2021-01-01T00:00:00Z'))).count()
+rich-edge-since-gt   | small | * | g.E().has('since', gt(datetime('2022-06-01T00:00:00Z'))).count()
+rich-unfold-list     | small | * | g.V().values('listval').unfold().count()
+rich-map-select      | small | * | g.V().values('mapval').select('kind').groupCount()
+
+# rich: long strings
+rich-sort-bio-top    | small | * | g.V().order().by('bio').limit(20).id() | ordered
+rich-groupcount-bio  | small | * | g.V().groupCount().by('bio').count(local)
+
+# rich: sparse and null properties
+rich-has-sparse      | small | * | g.V().has('sparse').count()
+rich-has-nullable    | small | * | g.V().has('nullable').count()
+rich-hasnot-nullable | small | * | g.V().hasNot('nullable').count()
+rich-has-nullable-null | small | * | g.V().has('nullable', null).count()
+
+# sid: string identifiers
+sid-v-lookup         | small | * | g.V('v0', 'v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v-missing').values('name')
+sid-has-id-within    | small | * | g.V().has(id, within('v0', 'v10', 'v100', 'v1000', 'v10000', 'v99999999')).count()
+sid-e-lookup         | small | * | g.E('e0', 'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7').project('l', 'o', 'i').by(label).by(outV().id()).by(inV().id())
+sid-out-in-ids       | large | * | g.V('v0', 'v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7').out().in().dedup().id()
+sid-order-id         | small | * | g.V().order().by(id).limit(10).id() | ordered
+sid-groupcount-id    | small | * | g.V().groupCount().by(id).count(local)
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Graph algorithms (alg-*), on the standard power-law graphs. Each algorithm has a recipe written in plain Gremlin
+# (docs/src/recipes), which runs on every system, and where TinkerPop has one a vertex-program step (pageRank(),
+# connectedComponent(), shortestPath()), which only the graph computers can run: the -vp queries list
+# tinkergraph-computer and spark, and the other systems report UNSUPPORTED. Both forms end in the same summary (a
+# count, a min, a list of counts, the ids of a path), so that recipe and vertex program can be compared by result hash; the exception is
+# alg-eigen-pagerank-vp, a different centrality whose top ten is compared with alg-eigen-walks by eye
+# (extra.resultSample).
+#
+# Queries with a -p12, -p16 or -p18 suffix hard-code vertex ids of powerlaw-12 (scale 12), powerlaw-16 and
+# powerlaw-18 (edge factor 16, default seed). The ids were chosen with CsrAlgorithmSources (tinkergraph-gremlin test
+# sources; README "Graph algorithms" says how to rerun it), which also prints the expected values:
+#   bsrc  degree-1 vertex (among the first 200 by id) whose three-hop both() reach is at least a quarter of the graph,
+#         with the fewest messages sent by shortestPath() (it sends every shortest path it extends to every neighbor;
+#         from the largest hub that is 0.2 billion paths within two hops on p16 and 1.6 billion on p18)
+#   sink  largest in-degree, the target of the path queries (generator hubs are out-only or in-mostly)
+#   src   at directed distance 3 from the sink, with the fewest out-walks of length 1-3 (unweighted pair)
+#   wsrc  directed distance 2 or more, weighted distance to the sink reached within 3 hops, fewest out-walks of length
+#         1-3 (weighted pair, so the 3-hop-bounded recipe and the unbounded shortestPath() agree)
+#           bsrc  sink   src    wsrc   expected: sp (path vertices), wsp distance, bfs (counts at distance 1..3)
+#   p12     1759  2166   3440   3440   4, 1.21521, [1,11,1105]; components 921, largest 3176; 1438 closed 3-walks
+#   p16     1764  10358  57232  525    4, 1.01989, [1,59,18606]; components 19081, largest 46452
+#   p18     1660  10358  97549  33986  4, 1.41942, [1,486,87293]; components 84051, largest 178067
+# shortestPath() from bsrc sends about 0.2M (p12), 10M (p16) and 160M (p18) path messages within three hops.
+# ---------------------------------------------------------------------------------------------------------------------
+
+# alg: degree centrality (top ten by bothE() count, ties by id)
+alg-degree-top10      | small | * | g.V().project('v', 'd').by(id).by(bothE().count()).order().by(select('d'), desc).by(select('v')).limit(10) | ordered
+
+# alg: eigenvector centrality. The recipe counts out-walks of length 0-4 that end at each vertex; barrier() bulks the
+# traversers at each step, without it the walks are enumerated one by one. pageRank() is the vertex-program reference.
+alg-eigen-walks       | small | * | g.V().repeat(groupCount('m').by(id).out().barrier()).times(5).cap('m').order(local).by(values, desc).limit(local, 10)
+alg-eigen-pagerank-vp | small | tinkergraph-computer,spark | g.V().pageRank().with(PageRank.propertyName, 'pageRank').with(PageRank.times, 20).order().by('pageRank', desc).by(id).limit(10).id() | ordered
+
+# alg: connected components (weak), summarized as component count and largest component size. alg-cc-recipe runs a
+# dedup() breadth-first search per vertex not yet seen, inside local(); the graph computers reject local() beyond the
+# star graph. alg-cc-recipe-doc is the recipe of connected-components.asciidoc verbatim: since repeat() became a global
+# parent (TINKERPOP-3200) it returns only the isolated vertices, so it is kept for reference and not in the matrix.
+# alg-cc-vp reads the default component key, because gremlin-lang does not implement ConnectedComponent.propertyName.
+alg-cc-recipe         | small | * | g.V().local(where(without('a')).union(identity(), repeat(both().dedup()).emit()).dedup().aggregate('a').count()).is(gt(0)).fold().project('components', 'largest').by(count(local)).by(max(local))
+alg-cc-recipe-doc     | small | * | g.V().emit(or(cyclicPath(), not(both()))).repeat(where(without('a')).local(aggregate('a')).both()).until(cyclicPath()).group().by(path().unfold().limit(1)).by(path().unfold().dedup().fold()).select(values).unfold().count(local).fold().project('components', 'largest').by(count(local)).by(max(local))
+alg-cc-vp             | small | tinkergraph-computer,spark | g.V().connectedComponent().groupCount().by('gremlin.connectedComponentVertexProgram.component').select(values).project('components', 'largest').by(count(local)).by(max(local))
+
+# alg: unweighted shortest path src -> sink over out(), as the vertex count of the shortest path; the recipe is bounded
+# at 3 hops and shortestPath() at maxDistance 3
+alg-sp-recipe-p12     | small | * | g.V(3440L).repeat(out().simplePath()).until(or(hasId(2166L), loops().is(3))).hasId(2166L).path().count(local).min()
+alg-sp-vp-p12         | small | tinkergraph-computer,spark | g.V(3440L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.target, hasId(2166L)).with(ShortestPath.maxDistance, 3).count(local).min()
+alg-sp-recipe-p16     | small | * | g.V(57232L).repeat(out().simplePath()).until(or(hasId(10358L), loops().is(3))).hasId(10358L).path().count(local).min()
+alg-sp-vp-p16         | small | tinkergraph-computer,spark | g.V(57232L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.target, hasId(10358L)).with(ShortestPath.maxDistance, 3).count(local).min()
+alg-sp-recipe-p18     | small | * | g.V(97549L).repeat(out().simplePath()).until(or(hasId(10358L), loops().is(3))).hasId(10358L).path().count(local).min()
+alg-sp-vp-p18         | small | tinkergraph-computer,spark | g.V(97549L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.target, hasId(10358L)).with(ShortestPath.maxDistance, 3).count(local).min()
+
+# alg: weighted shortest path wsrc -> sink over out() by the edge weight, as the vertex and edge ids of the lightest
+# path; the recipe is bounded at 3 hops, shortestPath() is not (maxDistance only bounds hop counts). The distance itself
+# cannot be compared: shortestPath() returns paths of reference elements, whose weight cannot be read back on a graph
+# computer. CsrAlgorithmSources prints the distance.
+alg-wsp-recipe-p12    | small | * | g.withSack(0.0d).V(3440L).repeat(outE().sack(sum).by('weight').inV().simplePath()).until(or(hasId(2166L), loops().is(3))).hasId(2166L).order().by(sack()).limit(1).path().map(unfold().id().fold())
+alg-wsp-vp-p12        | small | tinkergraph-computer,spark | g.V(3440L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.distance, 'weight').with(ShortestPath.target, hasId(2166L)).with(ShortestPath.includeEdges, true).limit(1).map(unfold().id().fold())
+alg-wsp-recipe-p16    | small | * | g.withSack(0.0d).V(525L).repeat(outE().sack(sum).by('weight').inV().simplePath()).until(or(hasId(10358L), loops().is(3))).hasId(10358L).order().by(sack()).limit(1).path().map(unfold().id().fold())
+alg-wsp-vp-p16        | small | tinkergraph-computer,spark | g.V(525L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.distance, 'weight').with(ShortestPath.target, hasId(10358L)).with(ShortestPath.includeEdges, true).limit(1).map(unfold().id().fold())
+alg-wsp-recipe-p18    | small | * | g.withSack(0.0d).V(33986L).repeat(outE().sack(sum).by('weight').inV().simplePath()).until(or(hasId(10358L), loops().is(3))).hasId(10358L).order().by(sack()).limit(1).path().map(unfold().id().fold())
+alg-wsp-vp-p18        | small | tinkergraph-computer,spark | g.V(33986L).shortestPath().with(ShortestPath.edges, Direction.OUT).with(ShortestPath.distance, 'weight').with(ShortestPath.target, hasId(10358L)).with(ShortestPath.includeEdges, true).limit(1).map(unfold().id().fold())
+
+# alg: single-source both() distances from bsrc, as the vertex counts at distance 1..k in distance order. The
+# recipe groups by loops() inside the repeat (dedup() keeps the first, shortest, visit); shortestPath() keeps one path
+# per end vertex and groups by path length.
+alg-bfs-recipe-p12    | small | * | g.V(1759L).repeat(both().not(hasId(1759L)).dedup().groupCount('m').by(loops())).times(3).cap('m').order(local).by(keys).select(values)
+alg-bfs-vp-p12        | small | tinkergraph-computer,spark | g.V(1759L).shortestPath().with(ShortestPath.maxDistance, 3).dedup().by(tail(local, 1)).filter(count(local).is(gt(1))).groupCount().by(count(local)).order(local).by(keys).select(values)
+alg-bfs-recipe-p16    | small | * | g.V(1764L).repeat(both().not(hasId(1764L)).dedup().groupCount('m').by(loops())).times(3).cap('m').order(local).by(keys).select(values)
+alg-bfs-vp-p16        | small | tinkergraph-computer,spark | g.V(1764L).shortestPath().with(ShortestPath.maxDistance, 3).dedup().by(tail(local, 1)).filter(count(local).is(gt(1))).groupCount().by(count(local)).order(local).by(keys).select(values)
+alg-bfs-recipe-p18    | small | * | g.V(1660L).repeat(both().not(hasId(1660L)).dedup().groupCount('m').by(loops())).times(3).cap('m').order(local).by(keys).select(values)
+alg-bfs-vp-p18        | small | tinkergraph-computer,spark | g.V(1660L).shortestPath().with(ShortestPath.maxDistance, 3).dedup().by(tail(local, 1)).filter(count(local).is(gt(1))).groupCount().by(count(local)).order(local).by(keys).select(values)
+
+# alg: directed three-cycles, small graph (powerlaw-12) only. The first counts closed out-walks of length three
+# (parallel edges and self-loops included); the second is the cycle-detection recipe and counts distinct triangles.
+alg-cycle3-count      | small | * | g.V().as('a').out().out().out().where(eq('a')).count()
+alg-cycle3-simplepath | small | * | g.V().as('a').repeat(out().simplePath()).times(2).where(out().as('a')).path().dedup().by(unfold().order().by(id).dedup().fold()).count()

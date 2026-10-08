@@ -126,6 +126,7 @@ public final class CsrSnapshotBuildBenchmark {
             // list cardinality, so that multi-properties in the file survive the load and match what the Gryo source emits
             final Configuration configuration = new BaseConfiguration();
             configuration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, "list");
+            configuration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, true);
             graph = (AbstractTinkerGraph) TinkerGraph.open(configuration);
             try (GraphTraversalSource g = graph.traversal()) {
                 g.io(config.input.toString()).read().iterate();
@@ -488,7 +489,7 @@ public final class CsrSnapshotBuildBenchmark {
                     for (int i = 0; i < expected.size(); i++) {
                         final VertexProperty<Object> vp = expected.get(i);
                         final Object value = snapshot.vertexPropertyValue(keyCode, start + i);
-                        if (!Objects.equals(vp.value(), value))
+                        if (!Objects.deepEquals(vp.value(), value))
                             failures.add("vertex [" + vertex.id() + "] property '" + vp.key() + "' is " + describe(value)
                                     + ", expected " + describe(vp.value()));
                         final Object id = snapshot.vertexPropertyIdentifier(keyCode, start + i);
@@ -616,7 +617,7 @@ public final class CsrSnapshotBuildBenchmark {
                 continue;
             }
             final Object value = column.get(e);
-            if (!Objects.equals(p.value(), value))
+            if (!Objects.deepEquals(p.value(), value))
                 failures.add("edge [" + edge.id() + "] property '" + p.key() + "' is " + describe(value) + ", expected " + describe(p.value()));
         }
         return propertyCount;

@@ -28,6 +28,8 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinLangScriptEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoRegistrator;
@@ -40,6 +42,7 @@ import org.apache.tinkerpop.gremlin.structure.snapshot.build.SnapshotBuilder;
 import org.apache.tinkerpop.gremlin.structure.snapshot.build.StreamingSnapshotBuilder;
 import org.apache.tinkerpop.gremlin.structure.snapshot.graph.CsrGraph;
 import org.apache.tinkerpop.gremlin.structure.snapshot.process.CsrNative;
+import org.apache.tinkerpop.gremlin.structure.snapshot.process.CsrSuperStep;
 import org.apache.tinkerpop.gremlin.structure.snapshot.process.exec.CsrMemoryBudgetException;
 import org.apache.tinkerpop.gremlin.structure.snapshot.process.strategy.CsrNativeStrategy;
 import org.apache.tinkerpop.gremlin.structure.snapshot.spi.SnapshotSource;
@@ -102,8 +105,10 @@ import java.util.Set;
  * UNSUPPORTED, ERROR). 1 is a usage error. Phase markers {@code CSRBENCH-PHASE <epochMillis> <phase> <begin|end>} are
  * printed on stdout for the phases load, open, build, cold, warm-1, warm-2 and so on.
  * <p/>
- * <b>Systems.</b> {@code tinkergraph} loads the Gryo file into a TinkerGraph (list vertex property cardinality, like
- * {@code CsrSnapshotBuildBenchmark}) and runs OLTP. {@code tinkergraph-computer} is the same graph with
+ * <b>Systems.</b> {@code tinkergraph} loads the Gryo file into a TinkerGraph (list vertex property cardinality and null
+ * property values allowed, like {@code CsrSnapshotBuildBenchmark}; the JVM property
+ * {@code -Dcsrbench.tinkergraph.cardinality=single} switches to single cardinality, which the graph-algorithm matrix
+ * uses) and runs OLTP. {@code tinkergraph-computer} is the same graph with
  * {@code g.withComputer()}. {@code csr-native} opens the snapshot and runs with {@code csrMemoryBudget} set from
  * {@code --csr-budget} and {@code csrScratchDirectory} under the work directory; {@code csr-facade} adds
  * {@code withoutStrategies(CsrNativeStrategy)}. {@code spark} runs {@code g.withComputer(SparkGraphComputer)} over a
@@ -120,7 +125,18 @@ import java.util.Set;
  * iterating the results. The count is the number of results; the hash is a sum of per-result hashes (order-insensitive)
  * or, for an {@code ordered} query, a sequence hash. The hash is taken over a canonical text of each result in which
  * map entries and set elements are sorted, so the same result hashes the same across systems. It comes from the cold
- * run; {@code extra.warmConsistent} says whether the warm runs agreed.
+ * run; {@code extra.warmConsistent} says whether the warm runs agreed. {@code extra.resultSample} holds the canonical
+ * text of the first few results of the cold run, so that small summaries can be compared by eye, and on
+ * {@code csr-native} {@code extra.csrSuperSteps} and {@code extra.csrPlan} give the number of native super steps and
+ * the compiled step list, which show whether the query fused.
+ * <p/>
+ * <b>Vertex-program steps.</b> {@code pageRank()}, {@code connectedComponent()} and {@code shortestPath()}, with their
+ * {@code PageRank}, {@code ConnectedComponent} and {@code ShortestPath} {@code with()} options, are part of
+ * gremlin-lang, so such queries are ordinary lines that list only {@code tinkergraph-computer} and {@code spark}
+ * (CSR has no graph computer, and OLTP TinkerGraph rejects the steps); the other systems report UNSUPPORTED. The
+ * query reads what the program wrote ({@code values('pageRank')}, {@code by('component')}, the paths) in the same
+ * traversal, so count and hash cover it. On Spark the steps chain jobs through the Gryo graph writer and output
+ * location configured below.
  * <p/>
  * <b>Build and open.</b> Build mode loads the TinkerGraph first when {@code --source tinkergraph} (timed separately as
  * {@code loadMillis}) and then times the build; {@code build.phases} are the {@link BuildStats} phases, and
@@ -149,6 +165,10 @@ public final class CsrMemoryRun {
     private static final String PHASE_PREFIX = "CSRBENCH-PHASE ";
     private static final long TIMEOUT_GRACE_MILLIS = 30_000L;
     private static final int RESERVE_BYTES = 8 * 1024 * 1024;
+    private static final String CARDINALITY_PROPERTY = "csrbench.tinkergraph.cardinality";
+    private static final int PLAN_CHARS = 4000;
+    private static final int SAMPLE_RESULTS = 10;
+    private static final int SAMPLE_CHARS = 2000;
 
     private static final Set<String> SYSTEMS = Set.of("tinkergraph", "csr-native", "csr-facade", "tinkergraph-computer", "spark");
 
@@ -301,6 +321,7 @@ public final class CsrMemoryRun {
             resultCount = digest.count;
             resultHash = digest.hex();
             coldMillis = millisSince(coldStart);
+            extra.put("resultSample", digest.sample());
         } catch (Throwable t) {
             coldMillis = millisSince(coldStart);
             throw t;
@@ -356,6 +377,17 @@ public final class CsrMemoryRun {
 
     private void recordCsr(final Traversal<?, ?> traversal) {
         if (traversal == null || !"csr-native".equals(config.system)) return;
+        if (!extra.containsKey("csrPlan")) {
+            // the compiled plan, once: which steps the native strategy replaced (CsrSuperStep) and which stayed
+            try {
+                extra.put("csrSuperSteps", TraversalHelper.getStepsOfAssignableClassRecursively(
+                        CsrSuperStep.class, traversal.asAdmin()).size());
+                final String plan = String.valueOf(traversal.asAdmin().getSteps());
+                extra.put("csrPlan", plan.length() > PLAN_CHARS ? plan.substring(0, PLAN_CHARS) + "..." : plan);
+            } catch (RuntimeException ignored) {
+                // the traversal may not have been compiled
+            }
+        }
         try {
             final long peak = CsrNative.lastPeakBytes(traversal);
             final long scratch = CsrNative.lastScratchBytes(traversal);
@@ -435,9 +467,15 @@ public final class CsrMemoryRun {
         phase("load", true);
         final long start = System.nanoTime();
         try {
-            // list cardinality so that multi-properties in the file survive, as in CsrSnapshotBuildBenchmark
+            // list cardinality and null values, so that multi-properties and nulls in the file (the rich generator mode writes
+            // both) survive, as in CsrSnapshotBuildBenchmark. -Dcsrbench.tinkergraph.cardinality=single overrides the
+            // cardinality for single-valued data: TraversalVertexProgram writes its compute keys with the default
+            // cardinality, so on a list graph a traverser that stays at a vertex (a barrier() inside repeat()) fails
+            final String cardinality = System.getProperty(CARDINALITY_PROPERTY, "list");
+            extra.put("tinkergraphCardinality", cardinality);
             final Configuration conf = new BaseConfiguration();
-            conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, "list");
+            conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, cardinality);
+            conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, true);
             tinkerGraph = TinkerGraph.open(conf);
             try (GraphTraversalSource loader = tinkerGraph.traversal()) {
                 loader.io(config.dataset).read().iterate();
@@ -801,11 +839,29 @@ public final class CsrMemoryRun {
             this.ordered = ordered;
         }
 
+        private final List<String> sample = new ArrayList<>();
+        private int sampleChars;
+
         void add(final Object result) {
-            final long h = hash(canonical(result));
+            final String text = canonical(result);
+            final long h = hash(text);
             count++;
             if (ordered) accumulator = mix(accumulator * 31 + h);
             else accumulator += mix(h);
+            if (sample.size() < SAMPLE_RESULTS && sampleChars < SAMPLE_CHARS) {
+                final String kept = text.length() > SAMPLE_CHARS - sampleChars
+                        ? text.substring(0, SAMPLE_CHARS - sampleChars) + "..." : text;
+                sample.add(kept);
+                sampleChars += kept.length();
+            }
+        }
+
+        /**
+         * The canonical text of the first results, at most {@link #SAMPLE_RESULTS} of them and about
+         * {@link #SAMPLE_CHARS} characters, so that small results (algorithm summaries) can be read from the record.
+         */
+        List<Object> sample() {
+            return new ArrayList<>(sample);
         }
 
         String hex() {
@@ -836,6 +892,16 @@ public final class CsrMemoryRun {
                 Collections.sort(entries);
                 return "{" + String.join(",", entries) + "}";
             }
+            if (o instanceof Tree) {
+                // a Tree is not a Map and iterates in hash order
+                final Tree<?> tree = (Tree<?>) o;
+                final List<String> entries = new ArrayList<>();
+                for (final Object key : tree.rootNodes()) {
+                    entries.add(canonical(key) + "=" + canonical(((Tree<Object>) tree).childAt(key)));
+                }
+                Collections.sort(entries);
+                return "{" + String.join(",", entries) + "}";
+            }
             if (o instanceof Set) {
                 final List<String> items = new ArrayList<>();
                 for (final Object item : (Set<?>) o) items.add(canonical(item));
@@ -855,6 +921,15 @@ public final class CsrMemoryRun {
             if (o instanceof Map.Entry) {
                 final Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
                 return canonical(e.getKey()) + "=" + canonical(e.getValue());
+            }
+            if (o != null && o.getClass().isArray()) {
+                // arrays (a byte[] property value) would otherwise print as their identity
+                final StringBuilder sb = new StringBuilder("[");
+                for (int i = 0; i < java.lang.reflect.Array.getLength(o); i++) {
+                    if (i > 0) sb.append(',');
+                    sb.append(canonical(java.lang.reflect.Array.get(o, i)));
+                }
+                return sb.append(']').toString();
             }
             return String.valueOf(o);
         }

@@ -646,6 +646,16 @@ def unsafe_to_delete(snapshot, run, matrix):
     return False
 
 
+def manifests_differ_only_in_source(path_a, path_b):
+    try:
+        a, b = json.loads(read_text(path_a)), json.loads(read_text(path_b))
+    except (OSError, ValueError):
+        return False
+    a.pop("sourceId", None)
+    b.pop("sourceId", None)
+    return a == b
+
+
 def compare_trees(reference, other):
     """Byte-for-byte comparison of two snapshot directories: identical when both hold the same relative file paths
     with the same contents."""
@@ -666,6 +676,11 @@ def compare_trees(reference, other):
     out["extra"] = sorted(b - a)
     for rel in sorted(a & b):
         if not filecmp.cmp(os.path.join(reference, rel), os.path.join(other, rel), shallow=False):
+            if rel == "manifest.json" and manifests_differ_only_in_source(os.path.join(reference, rel),
+                                                                          os.path.join(other, rel)):
+                # a TinkerGraph source has a random identifier per graph instance, so each run records another one
+                out["sourceIdDiffers"] = True
+                continue
             out["differing"].append(rel)
     out["files"] = len(a & b)
     out["identical"] = not (out["missing"] or out["extra"] or out["differing"])

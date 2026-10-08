@@ -42,10 +42,13 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A read-only {@link Graph} over a {@code FULL} {@link CsrSnapshot}. Elements are flyweight facades over ordinals that
- * are created on demand and never cached. The graph does not support mutation, transactions or graph computers, and its variables are read-only. Facades must not be used after {@link #close()}.
+ * are created on demand and never cached. The graph does not support mutation or transactions, and its variables are
+ * read-only. Facades must not be used after {@link #close()}.
  */
 public final class CsrGraph implements Graph {
 
@@ -66,9 +69,13 @@ public final class CsrGraph implements Graph {
     public static final String GREMLIN_CSR_VERIFY_CHECKSUMS = "gremlin.csr.verifyChecksums";
 
     private final CsrSnapshot snapshot;
+    private final SharedSnapshot sharedSnapshot;
     private final Configuration configuration;
     private final Features features;
     private final Variables variables;
+    private final Map<String, CsrComputePropertyColumn> computeProperties;
+    private final boolean edgesVisible;
+    private final AtomicBoolean closed = new AtomicBoolean();
 
     private final String[] vertexKeys;
     private final String[] edgeKeys;
@@ -77,10 +84,18 @@ public final class CsrGraph implements Graph {
     private final ColumnReader[] edgeColumns;
 
     private CsrGraph(final CsrSnapshot snapshot, final Configuration configuration) {
-        this.snapshot = snapshot;
+        this(new SharedSnapshot(snapshot), configuration, java.util.Collections.emptyMap(), true);
+    }
+
+    private CsrGraph(final SharedSnapshot sharedSnapshot, final Configuration configuration,
+                     final Map<String, CsrComputePropertyColumn> computeProperties, final boolean edgesVisible) {
+        this.sharedSnapshot = sharedSnapshot;
+        this.snapshot = sharedSnapshot.snapshot();
         this.configuration = configuration;
         this.features = new CsrFeatures(snapshot);
         this.variables = new CsrVariables(snapshot.variables());
+        this.computeProperties = java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(computeProperties));
+        this.edgesVisible = edgesVisible;
 
         final List<String> vKeys = snapshot.vertexPropertyKeys();
         this.vertexKeys = vKeys.toArray(new String[0]);
@@ -135,7 +150,12 @@ public final class CsrGraph implements Graph {
             throw new IllegalArgumentException("CsrGraph requires a FULL snapshot but " + directory + " has layout "
                     + layout);
         }
-        return new CsrGraph(snapshot, configuration);
+        try {
+            return new CsrGraph(snapshot, configuration);
+        } catch (final RuntimeException | Error e) {
+            snapshot.close();
+            throw e;
+        }
     }
 
     /**
@@ -224,6 +244,40 @@ public final class CsrGraph implements Graph {
         return edgeColumns[code];
     }
 
+    CsrComputePropertyColumn computeProperty(final String key) {
+        return computeProperties.get(key);
+    }
+
+    Set<String> computePropertyKeys() {
+        return computeProperties.keySet();
+    }
+
+    Map<String, CsrComputePropertyColumn> computeProperties() {
+        return computeProperties;
+    }
+
+    boolean edgesVisible() {
+        return edgesVisible;
+    }
+
+    CsrGraph resultView(final Map<String, CsrComputePropertyColumn> properties, final boolean includeEdges) {
+        sharedSnapshot.retain();
+        try {
+            return new CsrGraph(sharedSnapshot, configuration, properties, includeEdges);
+        } catch (final RuntimeException | Error e) {
+            sharedSnapshot.release();
+            throw e;
+        }
+    }
+
+    void retainSnapshot() {
+        sharedSnapshot.retain();
+    }
+
+    void releaseSnapshot() {
+        sharedSnapshot.release();
+    }
+
     // ---------------------------------------------------------------- Graph
 
     @Override
@@ -232,13 +286,16 @@ public final class CsrGraph implements Graph {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) throws IllegalArgumentException {
-        throw Graph.Exceptions.graphComputerNotSupported();
+        if (!graphComputerClass.equals(CsrGraphComputer.class))
+            throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
+        return (C) new CsrGraphComputer(this);
     }
 
     @Override
     public GraphComputer compute() throws IllegalArgumentException {
-        throw Graph.Exceptions.graphComputerNotSupported();
+        return new CsrGraphComputer(this);
     }
 
     @Override
@@ -256,6 +313,7 @@ public final class CsrGraph implements Graph {
 
     @Override
     public Iterator<Edge> edges(final Object... edgeIds) {
+        if (!edgesVisible) return java.util.Collections.emptyIterator();
         if (edgeIds.length == 0) return new EdgeScan();
         final int[] ordinals = new int[edgeIds.length];
         int n = 0;
@@ -289,7 +347,7 @@ public final class CsrGraph implements Graph {
 
     @Override
     public void close() {
-        snapshot.close();
+        if (closed.compareAndSet(false, true)) sharedSnapshot.release();
     }
 
     @Override
@@ -418,6 +476,43 @@ public final class CsrGraph implements Graph {
         @Override
         public String toString() {
             return StringFactory.graphVariablesString(this);
+        }
+    }
+
+    /**
+     * Keeps the mapped snapshot alive while source, result and in-flight computer views share it.
+     */
+    private static final class SharedSnapshot {
+        private final CsrSnapshot snapshot;
+        private final AtomicInteger references = new AtomicInteger(1);
+
+        private SharedSnapshot(final CsrSnapshot snapshot) {
+            this.snapshot = snapshot;
+        }
+
+        private CsrSnapshot snapshot() {
+            return snapshot;
+        }
+
+        private SharedSnapshot retain() {
+            while (true) {
+                final int current = references.get();
+                if (current == 0)
+                    throw new IllegalStateException("The CsrGraph snapshot is already closed");
+                if (current == Integer.MAX_VALUE)
+                    throw new IllegalStateException("Too many CsrGraph snapshot references");
+                if (references.compareAndSet(current, current + 1)) return this;
+            }
+        }
+
+        private void release() {
+            final int remaining = references.decrementAndGet();
+            if (remaining == 0) {
+                snapshot.close();
+            } else if (remaining < 0) {
+                references.incrementAndGet();
+                throw new IllegalStateException("The CsrGraph snapshot was released too many times");
+            }
         }
     }
 }
