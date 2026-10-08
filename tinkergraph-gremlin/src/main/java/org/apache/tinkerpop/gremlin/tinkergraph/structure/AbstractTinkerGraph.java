@@ -608,7 +608,7 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
             return DefaultStorage.valueOf(storageConfigValue.toUpperCase()).get();
         } catch (IllegalArgumentException iae) {
             try {
-                return (TinkerStorage) Class.forName(storageConfigValue).newInstance();
+                return (TinkerStorage) Class.forName(storageConfigValue).getDeclaredConstructor().newInstance();
             } catch (Exception ex) {
                 throw new IllegalStateException(String.format("Could not configure TinkerGraph storage engine with %s", storageConfigValue), ex);
             }

@@ -27,11 +27,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.nio.channels.FileChannel;
-import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -123,7 +119,7 @@ public final class IndexDefinitions {
         if (isEmpty()) {
             try {
                 Files.deleteIfExists(file.toPath());
-                syncDirectory(directory);
+                StorageFiles.syncDirectory(directory);
             } catch (IOException ex) {
                 logger.warn("Could not remove index definitions file {}", file, ex);
             }
@@ -142,8 +138,8 @@ public final class IndexDefinitions {
                 out.flush();
                 fos.getFD().sync();
             }
-            atomicMove(tmp, file);
-            syncDirectory(directory);
+            StorageFiles.atomicMove(tmp, file);
+            StorageFiles.syncDirectory(directory);
         } catch (IOException ex) {
             logger.warn("Could not record index definitions in {}; they will not survive a reopen", file, ex);
         }
@@ -183,23 +179,5 @@ public final class IndexDefinitions {
             }
         }
         return sb.toString();
-    }
-
-    private static void atomicMove(final File source, final File target) throws IOException {
-        try {
-            Files.move(source.toPath(), target.toPath(),
-                    StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-        } catch (AtomicMoveNotSupportedException anse) {
-            Files.move(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        }
-    }
-
-    private static void syncDirectory(final File directory) {
-        try (final FileChannel dirChannel = FileChannel.open(directory.toPath(), StandardOpenOption.READ)) {
-            dirChannel.force(true);
-        } catch (IOException ex) {
-            // some platforms (notably Windows) cannot open a directory as a channel; the atomic rename is the
-            // durability guarantee there, so treat inability to sync the directory as non-fatal
-        }
     }
 }
