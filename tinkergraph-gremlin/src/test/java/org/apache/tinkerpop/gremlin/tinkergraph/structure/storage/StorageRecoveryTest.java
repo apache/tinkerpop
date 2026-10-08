@@ -67,8 +67,8 @@ public class StorageRecoveryTest {
     @Test
     public void shouldRecoverTheLogUpToAFrameWithABadChecksum() throws Exception {
         final byte[] log = crashedLogOfThreeCommits();
-        final List<int[]> frames = frames(log);
-        log[frames.get(1)[0] + 2 * Integer.BYTES] ^= 0x01; // flip a payload byte of the second commit
+        final List<int[]> frames = logFrames(log);
+        log[frames.get(1)[2]] ^= 0x01; // flip a payload byte of the second commit
         writeStore(null, log);
 
         assertNormalOpenFails();
@@ -85,10 +85,27 @@ public class StorageRecoveryTest {
     }
 
     @Test
+    public void shouldNotTruncateTheLogAtACorruptedFrameLength() throws Exception {
+        final byte[] log = crashedLogOfThreeCommits();
+        // a flipped high bit makes the second commit's length claim far more bytes than remain, which without a
+        // checksum on the length would read as an interrupted append and cut the second and third commits off
+        log[logFrames(log).get(1)[0]] ^= 0x40;
+        writeStore(null, log);
+
+        final Map<String, String> before = directoryContents();
+        assertNormalOpenFails();
+        assertEquals("a failed open must not change the store", before, directoryContents());
+
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(recoverConfig());
+        assertEquals(Collections.singletonList(1), vertexIds(graph));
+        graph.close();
+    }
+
+    @Test
     public void shouldRecoverTheLogUpToAFrameThatCannotBeDecoded() throws Exception {
         final byte[] log = crashedLogOfThreeCommits();
         // a well-formed frame with a valid checksum whose single entry has an unknown op code
-        writeStore(null, replacePayload(log, frames(log).get(1), new byte[]{ 1, 99 }));
+        writeStore(null, replacePayload(log, logFrames(log).get(1), new byte[]{ 1, 99 }));
 
         assertNormalOpenFails();
         final TinkerStorageGraph graph = TinkerStorageGraph.open(recoverConfig());
@@ -108,8 +125,8 @@ public class StorageRecoveryTest {
         graph.close();
 
         // drop the last byte of the second commit's payload, so its first vertex decodes and its second does not
-        final int[] second = frames(log).get(1);
-        final byte[] payload = Arrays.copyOfRange(log, second[0] + 2 * Integer.BYTES, second[0] + 2 * Integer.BYTES + second[1] - 1);
+        final int[] second = logFrames(log).get(1);
+        final byte[] payload = Arrays.copyOfRange(log, second[2], second[2] + second[1] - 1);
         writeStore(null, replacePayload(log, second, payload));
 
         graph = TinkerStorageGraph.open(recoverConfig());
@@ -144,7 +161,7 @@ public class StorageRecoveryTest {
 
         // frame 0 is the dictionary, frames 1 to 3 are the vertices (in no guaranteed order), then the edges
         final byte[] snapshot = Files.readAllBytes(snapshotFile().toPath());
-        snapshot[frames(snapshot).get(2)[0] + 2 * Integer.BYTES] ^= 0x01;
+        snapshot[snapshotFrames(snapshot).get(2)[2]] ^= 0x01;
         writeStore(snapshot, null);
 
         assertNormalOpenFails();
@@ -168,7 +185,7 @@ public class StorageRecoveryTest {
         graph.close();
 
         final byte[] snapshot = Files.readAllBytes(snapshotFile().toPath());
-        snapshot[frames(snapshot).get(0)[0] + 2 * Integer.BYTES] ^= 0x01;
+        snapshot[snapshotFrames(snapshot).get(0)[2]] ^= 0x01;
         writeStore(snapshot, null);
 
         try {
@@ -200,7 +217,7 @@ public class StorageRecoveryTest {
     @Test
     public void shouldExportARecoveredGraphWithIo() throws Exception {
         final byte[] log = crashedLogOfThreeCommits();
-        log[frames(log).get(2)[0] + 2 * Integer.BYTES] ^= 0x01;
+        log[logFrames(log).get(2)[2]] ^= 0x01;
         writeStore(null, log);
 
         final String export = new File(tempFolder.getRoot(), "export.json").getAbsolutePath();
@@ -247,7 +264,7 @@ public class StorageRecoveryTest {
         graph.tx().commit();
         final byte[] log = Files.readAllBytes(logFile().toPath());
         graph.close();
-        assertEquals(3, frames(log).size());
+        assertEquals(3, logFrames(log).size());
         return log;
     }
 
@@ -281,36 +298,48 @@ public class StorageRecoveryTest {
         graph.tx().rollback();
     }
 
+    private static List<int[]> logFrames(final byte[] log) {
+        return frames(log, AbstractLogStorage.LOG_FRAME_HEADER_SIZE);
+    }
+
+    private static List<int[]> snapshotFrames(final byte[] snapshot) {
+        return frames(snapshot, AbstractLogStorage.FRAME_HEADER_SIZE);
+    }
+
     /**
-     * The start offset and payload length of each complete frame after the file header.
+     * The start offset, payload length and payload offset of each complete frame after the file header.
      */
-    private static List<int[]> frames(final byte[] file) {
+    private static List<int[]> frames(final byte[] file, final int frameHeaderSize) {
         final List<int[]> frames = new ArrayList<>();
         final ByteBuffer buf = ByteBuffer.wrap(file);
         int offset = AbstractLogStorage.HEADER_SIZE;
-        while (offset + 2 * Integer.BYTES <= file.length) {
+        while (offset + frameHeaderSize <= file.length) {
             final int length = buf.getInt(offset);
-            if (length < 0 || offset + 2 * Integer.BYTES + length > file.length)
+            if (length < 0 || offset + frameHeaderSize + length > file.length)
                 break;
-            frames.add(new int[]{ offset, length });
-            offset += 2 * Integer.BYTES + length;
+            frames.add(new int[]{ offset, length, offset + frameHeaderSize });
+            offset += frameHeaderSize + length;
         }
         return frames;
     }
 
     /**
-     * Rebuild {@code file} with {@code frame}'s payload replaced, giving it a matching length prefix and checksum.
+     * Rebuild {@code log} with {@code frame}'s payload replaced, giving it a matching length, length checksum and
+     * payload checksum.
      */
-    private static byte[] replacePayload(final byte[] file, final int[] frame, final byte[] payload) {
-        final int frameEnd = frame[0] + 2 * Integer.BYTES + frame[1];
+    private static byte[] replacePayload(final byte[] log, final int[] frame, final byte[] payload) {
+        final int frameEnd = frame[2] + frame[1];
+        final CRC32 lengthCrc = new CRC32();
+        lengthCrc.update(ByteBuffer.allocate(Integer.BYTES).putInt(payload.length).array());
         final CRC32 crc = new CRC32();
         crc.update(payload);
-        final ByteBuffer out = ByteBuffer.allocate(file.length - frame[1] + payload.length);
-        out.put(file, 0, frame[0]);
+        final ByteBuffer out = ByteBuffer.allocate(log.length - frame[1] + payload.length);
+        out.put(log, 0, frame[0]);
         out.putInt(payload.length);
+        out.putInt((int) lengthCrc.getValue());
         out.putInt((int) crc.getValue());
         out.put(payload);
-        out.put(file, frameEnd, file.length - frameEnd);
+        out.put(log, frameEnd, log.length - frameEnd);
         return out.array();
     }
 

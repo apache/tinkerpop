@@ -40,6 +40,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
@@ -64,7 +65,7 @@ import java.util.zip.CRC32;
  * <p/>
  * This base owns everything that is not the element codec: the on-disk file layout, the single-source-of-truth
  * {@code VERSION} marker, length+CRC frame framing (which tells an interrupted trailing append apart from genuine
- * corruption), the replay fold loop, durability via {@link SyncMode}, and crash-safe atomic compaction with a
+ * corruption, with log frames also checksumming their length), the replay fold loop, durability via {@link SyncMode}, and crash-safe atomic compaction with a
  * size threshold. Concrete engines supply only the codec through {@link #encodeCommit}, {@link #decodeFrame},
  * {@link #writeSnapshot}, and (optionally) {@link #beginReplay} for per-replay decode state.
  * <p/>
@@ -98,6 +99,20 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      * {@link #VERSION_FILE}, not in each file.
      */
     static final int HEADER_SIZE = MAGIC.length;
+
+    /**
+     * Bytes ahead of each snapshot frame's payload: a 4-byte length and a 4-byte CRC32 of the payload.
+     */
+    static final int FRAME_HEADER_SIZE = 2 * Integer.BYTES;
+
+    /**
+     * Bytes ahead of each log frame's payload: a 4-byte length, a 4-byte CRC32 of that length, and a 4-byte CRC32 of
+     * the payload. The log is the only file whose tail is ever cut back, and a length that claims more bytes than
+     * remain is what marks a torn tail, so the length must be verifiable on its own. Without that, one corrupted length
+     * in the middle of the log would read as a torn tail and every commit after it would be cut off. The snapshot is
+     * only ever replaced whole, so its frames do without the extra check.
+     */
+    static final int LOG_FRAME_HEADER_SIZE = 3 * Integer.BYTES;
 
     static final String SNAPSHOT_FILE = "snapshot.gbin";
     static final String LOG_FILE = "log.gbin";
@@ -257,11 +272,11 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             throw new UncheckedIOException("Could not encode transaction for storage log", ex);
         }
         try {
-            writeFrame(logOut, frame);
+            writeLogFrame(logOut, frame);
         } catch (IOException ex) {
             throw fail("Could not append transaction to storage log", ex);
         }
-        logBytesSinceCompaction += 2L * Integer.BYTES + frame.length; // length + crc prefixes + payload
+        logBytesSinceCompaction += LOG_FRAME_HEADER_SIZE + frame.length;
     }
 
     @Override
@@ -450,12 +465,12 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             while (true) {
                 final byte[] record;
                 try {
-                    record = readFrame(in, remaining);
+                    record = readFrame(in, remaining, log);
                 } catch (CorruptFrameException ex) {
                     // the frame's bytes were all present and consumed, so a skippable snapshot frame can be passed over
                     if (recovery == null || log || frameIndex == 0)
                         throw recoveryStops(recovery, log, ex, completeEnd, fileLength);
-                    final long frameLength = 2L * Integer.BYTES + ex.payloadLength;
+                    final long frameLength = (long) FRAME_HEADER_SIZE + ex.payloadLength;
                     remaining -= frameLength;
                     completeEnd += frameLength;
                     frameIndex++;
@@ -482,7 +497,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
                     }
                     break;
                 }
-                final long frameLength = 2L * Integer.BYTES + record.length;
+                final long frameLength = (long) (log ? LOG_FRAME_HEADER_SIZE : FRAME_HEADER_SIZE) + record.length;
                 if (recovery == null) {
                     decodeFrame(record, vertices, edges);
                 } else {
@@ -667,9 +682,9 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     /**
-     * Write a framed record: a 4-byte big-endian payload length, a 4-byte CRC32 of the payload, then the payload.
-     * The checksum lets a reader tell a bit-flip inside a complete frame (corruption) from a short final frame left
-     * by an interrupted append (truncation). Available to codec subclasses writing per-element snapshot frames.
+     * Write a snapshot frame: a 4-byte big-endian payload length, a 4-byte CRC32 of the payload, then the payload.
+     * The checksum lets a reader tell a bit-flip inside a complete frame from an incomplete one. Available to codec
+     * subclasses writing per-element snapshot frames; log frames are written by {@link #writeLogFrame}.
      */
     protected static void writeFrame(final DataOutputStream out, final byte[] payload) throws IOException {
         final CRC32 crc = new CRC32();
@@ -680,21 +695,50 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     /**
+     * Write a log frame: a 4-byte big-endian payload length, a 4-byte CRC32 of that length, a 4-byte CRC32 of the
+     * payload, then the payload. See {@link #LOG_FRAME_HEADER_SIZE} for why the length carries its own checksum.
+     */
+    private static void writeLogFrame(final DataOutputStream out, final byte[] payload) throws IOException {
+        final CRC32 crc = new CRC32();
+        crc.update(payload);
+        out.writeInt(payload.length);
+        out.writeInt(lengthCrc(payload.length));
+        out.writeInt((int) crc.getValue());
+        out.write(payload);
+    }
+
+    private static int lengthCrc(final int length) {
+        final CRC32 crc = new CRC32();
+        crc.update(ByteBuffer.allocate(Integer.BYTES).putInt(length).array());
+        return (int) crc.getValue();
+    }
+
+    /**
      * Read a framed record, or return {@code null} at end of the readable log. A frame only partially present is
      * treated as an interrupted trailing append (truncation) and ends reading; a fully-present frame whose stored CRC
-     * does not match is genuine corruption and is raised.
+     * does not match is genuine corruption and is raised. In the log ({@code log} set), a length that fails its own
+     * checksum is likewise corruption, so only a verified length that claims more bytes than remain reads as a torn
+     * tail.
      */
-    private static byte[] readFrame(final DataInputStream in, final long remaining) throws IOException {
+    private static byte[] readFrame(final DataInputStream in, final long remaining, final boolean log) throws IOException {
+        final int headerSize = log ? LOG_FRAME_HEADER_SIZE : FRAME_HEADER_SIZE;
         if (remaining == 0)
             return null; // clean end of file, exactly on a frame boundary
-        if (remaining < 2L * Integer.BYTES)
+        if (remaining < headerSize)
             return null; // not even a full header left — interrupted append
 
         final int length = in.readInt();
+        if (log) {
+            final int storedLengthCrc = in.readInt();
+            if (storedLengthCrc != lengthCrc(length))
+                throw new IOException(String.format(
+                        "Corrupt storage frame: length %d fails its checksum (stored %08x, computed %08x)",
+                        length, storedLengthCrc, lengthCrc(length)));
+        }
         final int storedCrc = in.readInt();
         if (length < 0)
             throw new IOException("Corrupt storage frame: negative payload length " + length);
-        if ((long) length > remaining - 2L * Integer.BYTES)
+        if ((long) length > remaining - headerSize)
             return null; // frame claims more bytes than remain — truncated trailing append
 
         final byte[] payload = new byte[length];
