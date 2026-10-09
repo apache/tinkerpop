@@ -57,6 +57,14 @@ pre code { background: none; padding: 0; }
 .code-ref { display: inline-block; padding: 0.1rem 0.5rem; border: 1px solid var(--primary); border-radius: 3px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.75rem; color: var(--primary); text-decoration: none; }
 .code-ref::after { content: " \2197"; } .code-ref:hover { background: var(--primary); color: #fff; }
 .code-ref-unresolved { border-color: var(--border); color: var(--text-muted); } .code-ref-unresolved::after { content: " ?"; }
+.bead-ref { border-color: #6f42c1; color: #6f42c1; } .bead-ref::after { content: " \2193"; } .bead-ref:hover { background: #6f42c1; color: #fff; }
+.bead-list { margin: 0.4rem 0 0.4rem 1.2rem; padding: 0; font-size: 0.875rem; } .bead-list li { margin-bottom: 0.45rem; }
+.bead-alternatives { margin: 0.3rem 0 0 1.2rem; padding: 0; list-style: none; border-left: 2px solid var(--border); padding-left: 0.6rem; }
+.bead-design { font-size: 0.8rem; color: var(--text-muted); white-space: pre-wrap; margin-top: 0.15rem; }
+.bead-rejected { color: var(--danger); font-weight: 600; } .bead-superseded { font-size: 0.75rem; color: var(--text-muted); font-style: italic; }
+.bead-status { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); }
+.bead-decisions summary, .card details summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; margin-top: 0.4rem; }
+.bead-role-primary { background: var(--primary); color: #fff; } .bead-role-owner { background: #adb5bd; color: #000; } .bead-role-shared { background: var(--warning); color: #000; }
 .finding { border-left: 3px solid var(--warning); } .finding-title { font-weight: 600; margin-bottom: 0.25rem; }
 .test-pass { color: var(--success); font-weight: 600; } .test-fail { color: var(--danger); font-weight: 600; }
 .test-grid { display: grid; grid-template-columns: auto 1fr auto; gap: 0.25rem 0.75rem; font-size: 0.875rem; align-items: baseline; }

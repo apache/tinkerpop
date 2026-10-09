@@ -159,3 +159,19 @@ test("the guided walk renders questions with chips and reports unresolved refs",
   assert.equal(warnings.length, 1);
   assert.match(warnings[0], /guidedWalk\[0\]\.questions\[0\]: unresolved: no symbol "ghost"/);
 });
+
+test("a Type.field ref resolves to the field declaration", () => {
+  const index = buildCodeIndex({
+    changedFiles: [TX],
+    extraction: {
+      types: [{ name: "TinkerTransaction", filePath: TX, linesStart: 30, linesEnd: 400 }],
+      functions: [],
+      fields: [{ name: "storageCommitLock", filePath: TX, linesStart: 42, linesEnd: 42 }],
+    },
+    diffText: DIFF,
+  });
+  const ctx = { pr: 3639, headSha: "abc123", codeIndex: index };
+  const r = resolveRef({ file: TX, symbol: "TinkerTransaction.storageCommitLock" }, ctx);
+  assert.match(r.url, /#L42-L42$/);
+  assert.match(resolveRef({ file: TX, symbol: "storageCommitLock" }, ctx).url, /#L42-L42$/, "bare field name");
+});

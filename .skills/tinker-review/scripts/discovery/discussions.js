@@ -18,6 +18,8 @@
  */
 
 import { get } from "node:https";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { readdir, readFile } from "node:fs/promises";
 import { join, basename } from "node:path";
 
@@ -27,11 +29,13 @@ const TINKERPOP_JIRA_PATTERN = /TINKERPOP-(\d+)/g;
 const DEV_LIST_LINK_PATTERN = /https?:\/\/lists\.apache\.org\/[^\s)\]>"[]*/g;
 const PROPOSAL_DIR = "docs/src/dev/future";
 
-function httpGet(url) {
+// GitHub rejects any request without a User-Agent (403), so every request
+// carries one.
+function httpGet(url, headers = {}) {
   return new Promise((resolve, reject) => {
-    get(url, (res) => {
+    get(url, { headers: { "User-Agent": "tinker-review", ...headers } }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return httpGet(res.headers.location).then(resolve, reject);
+        return httpGet(res.headers.location, headers).then(resolve, reject);
       }
       let data = "";
       res.on("data", (chunk) => { data += chunk; });
@@ -70,35 +74,45 @@ async function fetchJira(ticketId) {
   }
 }
 
+// GitHub API headers. A token (GITHUB_TOKEN, GH_TOKEN, or the gh CLI's login)
+// lifts the 60-requests-an-hour limit on unauthenticated calls; without one the
+// calls still work, just rate-limited.
+let githubHeadersPromise;
+function githubHeaders() {
+  githubHeadersPromise ||= (async () => {
+    const headers = { Accept: "application/vnd.github+json" };
+    let token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+    if (!token) {
+      token = await promisify(execFile)("gh", ["auth", "token"])
+        .then((r) => r.stdout.trim())
+        .catch(() => "");
+    }
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return headers;
+  })();
+  return githubHeadersPromise;
+}
+
+// Throws on failure, so a failed fetch is reported rather than read as "no comments".
 async function fetchPrComments(prNumber) {
-  try {
-    const url = `https://api.github.com/repos/apache/tinkerpop/issues/${prNumber}/comments?per_page=50`;
-    const data = JSON.parse(await httpGet(url));
-    if (!Array.isArray(data)) return [];
-    return data.map((c) => ({
-      author: c.user?.login || "unknown",
-      body: (c.body || "").slice(0, 1000),
-      timestamp: c.created_at,
-    }));
-  } catch {
-    return [];
-  }
+  const url = `https://api.github.com/repos/apache/tinkerpop/issues/${prNumber}/comments?per_page=100`;
+  const data = JSON.parse(await httpGet(url, await githubHeaders()));
+  return data.map((c) => ({
+    author: c.user?.login || "unknown",
+    body: (c.body || "").slice(0, 1000),
+    timestamp: c.created_at,
+  }));
 }
 
 async function fetchPrReviewComments(prNumber) {
-  try {
-    const url = `https://api.github.com/repos/apache/tinkerpop/pulls/${prNumber}/comments?per_page=50`;
-    const data = JSON.parse(await httpGet(url));
-    if (!Array.isArray(data)) return [];
-    return data.map((c) => ({
-      author: c.user?.login || "unknown",
-      body: (c.body || "").slice(0, 1000),
-      path: c.path || "",
-      timestamp: c.created_at,
-    }));
-  } catch {
-    return [];
-  }
+  const url = `https://api.github.com/repos/apache/tinkerpop/pulls/${prNumber}/comments?per_page=100`;
+  const data = JSON.parse(await httpGet(url, await githubHeaders()));
+  return data.map((c) => ({
+    author: c.user?.login || "unknown",
+    body: (c.body || "").slice(0, 1000),
+    path: c.path || "",
+    timestamp: c.created_at,
+  }));
 }
 
 async function searchDevList(keywords) {
@@ -215,6 +229,26 @@ async function resolveExplicitProposals(repoPath, proposalPaths) {
   return out;
 }
 
+// An explicitly linked dev@ thread arrives as a bare URL. Fill in its subject
+// and opening message from the archive's thread API, so the agent has something
+// to read; on failure the placeholder title stays.
+async function fetchDevThread(thread) {
+  const id = thread.url.match(/\/thread\/([^/?#]+)/)?.[1];
+  if (!id) return thread;
+  try {
+    const data = JSON.parse(await httpGet(`https://lists.apache.org/api/thread.lua?id=${encodeURIComponent(id)}`));
+    const t = data.thread || {};
+    return {
+      ...thread,
+      title: t.subject || thread.title,
+      body: (t.body || "").slice(0, 1000),
+      date: t.epoch ? new Date(t.epoch * 1000).toISOString().slice(0, 10) : undefined,
+    };
+  } catch {
+    return thread;
+  }
+}
+
 function extractLinksFromText(text) {
   const jiraRefs = [...new Set([...text.matchAll(TINKERPOP_JIRA_PATTERN)].map((m) => m[0]))];
   const devListRefs = [...new Set([...text.matchAll(DEV_LIST_LINK_PATTERN)].map((m) => m[0]))];
@@ -243,14 +277,14 @@ async function followLinks(discussions) {
 
     for (const url of devListRefs) {
       if (discussions.some((d) => d.url === url)) continue;
-      secondary.push({
+      secondary.push(await fetchDevThread({
         url,
         source: "devlist",
         title: "(referenced thread)",
         body: "",
         found_in: `${disc.source}_body`,
         found_via: disc.id || disc.url,
-      });
+      }));
     }
   }
 
@@ -282,8 +316,10 @@ export async function discoverDiscussions(params) {
   const { pr, prTitle = "", prBody = "", diff = "", keywords = [], repoPath = "" } = params;
 
   // Fetch PR comments from GitHub (issue comments + inline review comments)
-  const issueComments = pr ? await fetchPrComments(pr) : [];
-  const reviewComments = pr ? await fetchPrReviewComments(pr) : [];
+  const prCommentErrors = [];
+  const failed = (kind) => (err) => { prCommentErrors.push(`${kind}: ${err.message}`); return []; };
+  const issueComments = pr ? await fetchPrComments(pr).catch(failed("issue comments")) : [];
+  const reviewComments = pr ? await fetchPrReviewComments(pr).catch(failed("review comments")) : [];
   const prCommentBodies = [...issueComments, ...reviewComments].map((c) => c.body);
 
   const allText = [prTitle, prBody, ...prCommentBodies, diff].join("\n");
@@ -295,13 +331,13 @@ export async function discoverDiscussions(params) {
 
   // --- Dev list (direct) ---
   const devListLinks = [...new Set([...allText.matchAll(DEV_LIST_LINK_PATTERN)].map((m) => m[0]))];
-  const explicitDevList = devListLinks.map((url) => ({
+  const explicitDevList = await Promise.all(devListLinks.map((url) => fetchDevThread({
     url,
     source: "devlist",
     title: "(linked thread)",
     body: "",
     found_in: "pr",
-  }));
+  })));
 
   let searchedDevList = [];
   let devListSearchPerformed = false;
@@ -341,6 +377,7 @@ export async function discoverDiscussions(params) {
     secondary: secondaryDiscussions,
 
     prComments: { issue: issueComments, review: reviewComments },
+    prCommentsError: prCommentErrors.length > 0 ? prCommentErrors.join("; ") : null,
 
     proposals,
     proposalLinked: proposalLinks.length > 0,

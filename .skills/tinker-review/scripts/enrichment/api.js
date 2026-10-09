@@ -180,6 +180,73 @@ export async function listExternalRefs(g) {
     });
 }
 
+/**
+ * The beads Phase 1 loaded for this PR — the author's recorded plan, decisions
+ * and the alternatives they turned down — so the reviewer can read the change
+ * against them. Roots come first (primary, then owner, then shared), then each
+ * root's decisions, tasks and records. A decision lists the rejected
+ * alternatives it was chosen over (`related` to a rejected decision) and any
+ * decision that supersedes it; judge the code against the newest decision in a
+ * supersedes chain. `governs` lists code already linked with `linkBead`.
+ * Empty when no record named the PR or its discussions.
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @param {object} [filter]
+ * @param {string} [filter.root] - only this root's subtree
+ * @param {string} [filter.type] - bd type: decision | task | record | ...
+ * @param {string} [filter.status] - e.g. in_progress
+ * @returns {Promise<object[]>}
+ */
+export async function listBeads(g, filter = {}) {
+  let t = g.V().hasLabel("Bead");
+  if (filter.root) t = t.has("root", filter.root);
+  if (filter.type) t = t.has("type", filter.type);
+  if (filter.status) t = t.has("status", filter.status);
+  const rows = await t.project("bead", "alternatives", "supersededBy", "governs")
+    .by(__.valueMap())
+    .by(__.both("related").has("rejected", true).values("beadId").fold())
+    .by(__.in_("supersedes").values("beadId").fold())
+    .by(__.out("governs").coalesce(__.values("path"), __.values("name")).fold())
+    .toList();
+
+  const one = (m, k) => {
+    const v = m.get(k);
+    return Array.isArray(v) ? v[0] : v;
+  };
+  const beads = rows.map((r) => {
+    const m = r.get("bead");
+    const bead = {
+      beadId: one(m, "beadId"),
+      type: one(m, "type"),
+      status: one(m, "status"),
+      title: one(m, "title"),
+      design: one(m, "design") || "",
+      root: one(m, "root"),
+      rootRole: one(m, "rootRole") ?? null,
+      rejected: one(m, "rejected") ?? null,
+      externalRef: one(m, "externalRef") ?? null,
+      labels: one(m, "labels") || "",
+    };
+    if (bead.type === "decision") {
+      if (bead.rejected === false) bead.alternatives = r.get("alternatives");
+      bead.supersededBy = r.get("supersededBy");
+    }
+    const governs = r.get("governs");
+    if (governs.length > 0) bead.governs = governs;
+    return bead;
+  });
+
+  const ROLE = { primary: 0, owner: 1, shared: 2 };
+  const TYPE = { decision: 1, record: 3 };
+  const roleOf = new Map(beads.filter((b) => b.rootRole).map((b) => [b.beadId, ROLE[b.rootRole]]));
+  const rank = (b) => [roleOf.get(b.root) ?? 3, b.root, b.rootRole ? 0 : (TYPE[b.type] ?? 2), b.beadId];
+  return beads.sort((a, b) => {
+    const [x, y] = [rank(a), rank(b)];
+    for (let k = 0; k < x.length; k++) if (x[k] !== y[k]) return x[k] < y[k] ? -1 : 1;
+    return 0;
+  });
+}
+
 // === Write operations ===
 
 /**
@@ -325,6 +392,41 @@ export async function linkDiscussion(g, url, source, title, body, confidence) {
   }
 
   return { linked: `${source}: ${title}`, confidence: conf };
+}
+
+/**
+ * Record that a bead — usually a decision — governs a piece of the changed
+ * code, as a `governs` edge (Bead → Function, Type or File). Draw it when a
+ * decision's design is about that code, so Inspect can check the code against
+ * what the decision chose and ruled out, and the report can cite the decision
+ * beside it. Key a Function or Type by `--name` (plus `--file` when the name
+ * repeats) and a File by `--file`.
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @param {string} beadId - The bead id (e.g. tp-abc.3)
+ * @param {string} entityLabel - Function | Type | File
+ * @param {string} [name] - Function/Type name
+ * @param {string} [filePath] - File path; for a Function/Type, disambiguates the name
+ * @param {string} [confidence] - default INFERRED (the agent's judgment)
+ * @returns {Promise<object>}
+ */
+export async function linkBead(g, beadId, entityLabel, name, filePath, confidence) {
+  const conf = normalizeConfidence(confidence, CONFIDENCE.INFERRED);
+  if (!(await g.V().hasLabel("Bead").has("beadId", beadId).hasNext())) {
+    return { linked: false, reason: `no Bead ${beadId} in the graph` };
+  }
+  const match = (t) => {
+    if (entityLabel === "File") return t.has("path", filePath);
+    return filePath ? t.has("name", name).has("filePath", filePath) : t.has("name", name);
+  };
+  const found = (await match(g.V().hasLabel(entityLabel)).count().next()).value;
+  if (found === 0) return { linked: false, reason: `no ${entityLabel} ${name || filePath} in the graph` };
+  if (found > 1) return { linked: false, reason: `${found} ${entityLabel} vertices match ${name}; pass --file` };
+  await g.V().hasLabel("Bead").has("beadId", beadId)
+    .addE("governs").property("confidence", conf)
+    .to(match(__.V().hasLabel(entityLabel)))
+    .next();
+  return { linked: `${beadId} governs ${entityLabel}(${name || filePath})`, confidence: conf };
 }
 
 /**

@@ -87,8 +87,11 @@ in the report's `openQuestions`, not asserted as fact.
 ### listInferred
 Your **verification worklist**: the name-resolved / agent-mapped edges worth a
 source check, optionally narrowed with `--relation` (start with
-`implements_step`, then `calls`). After reading the source, promote or downgrade
-each with `setEdgeConfidence`. This is how INFERRED becomes EXTRACTED.
+`implements_step`, then `calls`). Pass `--changedOnly` to keep only edges with an
+endpoint the PR changed (behavior or signature): a large PR has tens of
+thousands of INFERRED edges, mostly calls between untouched code, and the
+default 100 of those is an arbitrary sample. After reading the source, promote
+or downgrade each with `setEdgeConfidence`. This is how INFERRED becomes EXTRACTED.
 
 ### listDeleted
 The files the PR deleted (graph stubs marked `deleted: true`), each paired with
@@ -102,6 +105,16 @@ in the changed set. Shows each stub's `origin` (library/project/unresolved) and,
 crucially, **flags any whose name matches a deleted symbol**: a changed file
 still calling a just-removed name is a dangling reference the graph catches on
 its own. Sorted so the dangerous ones surface first.
+
+### listBeads
+The beads Phase 1 loaded for this PR — the roots reached from records naming the
+PR or its discussions, and everything under them — in reading order: the primary
+root (the PR's own record) first, then owner and shared roots, each followed by
+its decisions, tasks and records. A chosen decision lists the rejected
+`alternatives` it beat and any decision it was `supersededBy`; `governs` shows
+code already linked with `linkBead`. Filter with `--root`, `--type` or `--status`
+(`--status in_progress` is the claimed, unfinished work). Empty when no record
+matched — the review then simply proceeds without beads.
 
 ---
 
@@ -136,6 +149,14 @@ Discussion vertex, linked from the PR discussion via `addresses`. Use it when
 enrichment turns up prior context the Phase-1 discovery pass missed, so the
 report can cite where the change was debated. `--source` is `jira | devlist |
 proposal`.
+
+### linkBead
+Records that a bead — usually a decision — governs a piece of the changed code,
+as a `governs` edge (Bead → Function, Type or File). Draw it when a decision's
+design is about that code, so Inspect checks the code against what the decision
+chose and ruled out, and the report can cite the decision beside it. Key a
+Function/Type by `--name` (add `--file` when the name repeats) and a File by
+`--file`. Defaults to `INFERRED`: the link is your judgment, not a bd fact.
 
 ### linkDoc
 Records that a documentation file documents a graph entity, via a `documents`

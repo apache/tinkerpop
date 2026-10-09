@@ -105,12 +105,14 @@ interface PopulationSummary {
 //   ArchitectureResult   scripts/patterns/architecture.js
 //   CodeIndex            scripts/extraction/code-index.js
 //   CodeRef              scripts/renderer/code-links.js
+//   BeadsDiscovery       scripts/discovery/beads.js   (with Bead, BeadRoot)
 
 // === Evidence (evidence.json — what Phase 1 writes; the fields Interpret cites) ===
 
 interface Evidence {
   meta: {
     pr: number;
+    baseBranch: string;          // the branch the PR targets (master, 3.8-dev, 3.7-dev)
     headSha: string | null;      // PR head commit reviewed; pins report code links
     title: string;
     domains: string[];           // e.g. ["general", "glv", "driver-server"]
@@ -119,6 +121,7 @@ interface Evidence {
     timestamp: string;
   };
   graphStats: PopulationSummary;
+  clusters: { assessment: null };   // narrative slot the report fills (ReportPackage.clusters)
   architecture: ArchitectureResult;
   checks: {
     completeness: CompletenessResult[];
@@ -130,7 +133,11 @@ interface Evidence {
     externals:    ExternalsResult;
     orphans:      OrphanResult;
   };
-  discussions: DiscussionsResult;   // jiras[], devList[], secondary[], proposals[], prComments{}
+  discussions: DiscussionsResult & { beads: BeadsDiscovery };
+    // jiras[], devList[], secondary[], proposals[], prComments{}, prCommentsError (null, or
+    // why the GitHub fetch failed — then the empty prComments mean nothing); beads = the roots
+    // reached from record beads naming the PR or those discussions, their subtrees,
+    // and whether bd dolt pull succeeded
   changedFiles: string[];
   codeIndex: CodeIndex;             // changed files → hunks + symbol line ranges (scripts/extraction/code-index.js)
 }
@@ -154,8 +161,10 @@ interface ReportPackage extends Evidence {
     // CodeRef = { file; symbol?; lines?: [number, number]; label? } — see
     // scripts/renderer/code-links.js. The renderer resolves it against codeIndex;
     // the agent never writes line numbers or URLs. Legacy { body } items still render.
-  findings: { title; snippet; body }[];
-  openQuestions: { title; body; meta }[];
+    // A ref may instead be { bead; label? }: a chip linking to that bead in Project
+    // Memory; it must be one of discussions.beads.beads.
+  findings: { title; snippet; body; refs?: CodeRef[] }[];
+  openQuestions: { title; body; meta; refs?: CodeRef[] }[];
   functionalTest?: { plan; results: { name; pass; output }[]; observations: string[] };
     // plan: HTML; observations: array of HTML strings; both theme-level. results rows are THEMES, each `name`
     // naming the scenario labels it spans — not one row per scenario.

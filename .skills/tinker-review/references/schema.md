@@ -1,6 +1,6 @@
 # PR Knowledge Graph Schema
 
-## Vertices (9 labels)
+## Vertices (10 labels)
 
 ### Code structure
 
@@ -109,7 +109,29 @@ The PR itself is a Discussion with `source: "pr"`.
 **Comment** `{ author, body, timestamp }`
 A comment on a Discussion.
 
-## Edges (16 implemented + 1 planned)
+### Project memory
+
+**Bead** `{ beadId, type, status, title, description, design, labels, root, rejected?, parent?, externalRef?, closedAt?, rootRole? }`
+A bead from the reviewer's local beads database (`bd`), loaded because a record
+bead's external ref names one of the PR's artifacts (see `discovery/beads.js`).
+Every bead in the subtree of each root reached that way is loaded. `type` is
+bd's issue type (`epic`, `feature`, `task`, `bug`, `decision`, `record`, …);
+`root` is the id of the root the bead belongs to. `rejected` is set only on
+decisions — `true` marks the road not taken, and `design` then says what the
+option was, why it lost and what settled it. `externalRef` is set only on
+records. `labels` is the comma-joined label list.
+
+`rootRole` is set only on roots: `primary` — the root of this PR's own record
+(`apache/tinkerpop#N`); `owner` — the root a matched JIRA/dev@/proposal record
+belongs to; `shared` — a root that links a matched record with `related`
+(connected work). Query the PR's own work with `.has("rootRole", "primary")`
+and a root's subtree with `.has("root", id)`.
+
+Status reads against the beads workflow: a root stays open until the work
+merges, and decisions are closed as they are written, so at PR time status is
+informative mainly on tasks (`in_progress` = claimed, unfinished).
+
+## Edges (19 implemented, plus bd's dependency types, + 1 planned)
 
 One edge is marked ⚠️ *planned* below (`depends_on`) — documented but intentionally
 not populated.
@@ -182,3 +204,13 @@ renders this as the **Signal Confidence** panel.
 | `matched_in` | `reference`, `title`, `body` | How the proposal was linked: an explicit path reference in the PR (`EXTRACTED`), a keyword in the proposal's title/heading (`INFERRED`), or keywords in its body (`AMBIGUOUS`). |
 | `matched_keywords` | comma-separated terms | The keywords that matched, so the link is self-explanatory. |
 
+### Project memory
+
+All `EXTRACTED` except `governs`: each is a fact in the beads database.
+
+| Edge | From | To | Meaning |
+|------|------|----|---------|
+| `child_of` | Bead | Bead | bd's parent-child tree: the bead belongs to its parent |
+| `records` | Bead (record) | Discussion | The record's external ref names this Discussion (the PR, a JIRA, a dev@ thread, a proposal). Only drawn to Discussions discovery created. |
+| `governs` | Bead | Function, Type or File | The bead — usually a decision — is about this code. Written in Phase 2 by `linkBead`, so it is `INFERRED` by default, unlike the rest of this table. |
+| `blocks`, `caused_by`, `related`, `supersedes`, `discovered_from`, … | Bead | Bead | bd's other dependency types, carried over with `-` written as `_`. `related` pairs a decision with the alternative it was chosen over; `caused_by` runs from a task to the decision that shaped it; `supersedes` from a newer decision to the one it replaces. Drawn only between loaded beads. |

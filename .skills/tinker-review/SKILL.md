@@ -6,7 +6,7 @@ description: >
   playbooks, runs structural analysis, and produces an HTML evidence package.
   Use when asked to review a TinkerPop PR by number.
 license: Apache-2.0
-compatibility: Requires Docker, Node.js 20+, git. Network access for fetching PR refs.
+compatibility: Requires Docker, Node.js 20+, git and beads (bd). Network access for fetching PR refs.
 metadata:
   version: "0.1.0"
   project: Apache TinkerPop
@@ -19,6 +19,9 @@ metadata:
 - Docker running (for Gremlin Server)
 - `upstream` remote pointing to `git@github.com:apache/tinkerpop.git` (fetch only)
 - Node.js 20+ with dependencies installed in `.skills/tinker-review/`
+- Beads (`bd`) installed, with the repo's beads database available (`bin/agent-setup.sh --contributor`).
+  The review stops before fetching the PR when `bd` is missing. It runs `bd dolt pull` first and
+  falls back to local state if the pull fails; it never writes to beads.
 
 
 ## References (load on demand)
@@ -46,16 +49,19 @@ npm install --prefix .skills/tinker-review  # only needed once
 node .skills/tinker-review/scripts/review.js <pr-number> <repo-path>
 ```
 
-This performs: fetch PR → create worktree → start Gremlin Server → extract
-structure via Tree-sitter → populate knowledge graph → discover discussions
-(JIRA, dev list, proposals, PR comments) → run pattern checks (completeness,
+This performs: check for beads and pull it → fetch PR → create worktree → start
+Gremlin Server → extract structure via Tree-sitter → populate knowledge graph →
+discover discussions (JIRA, dev list, proposals, PR comments) → discover the PR's
+beads (records naming the PR or those discussions, their roots and subtrees) →
+run pattern checks (completeness,
 coverage gaps, centrality, blast radius, cluster analysis) → write evidence JSON.
 
 **Output:** `/tmp/pr-review-<pr>/evidence.json`
 **Server:** remains running (the agent needs it for enrichment)
 **Worktree:** available at `/tmp/pr-review-<pr>/src/`
 
-If re-running, the script cleans up stale worktrees/branches automatically.
+If re-running, the script clears the earlier run first (container, functional
+server, worktrees, and the work dir with its old evidence and report).
 
 ### 2. Choose the playbooks
 
@@ -175,10 +181,11 @@ command does and how to drive it.
 - PR title/description (what the change claims to do)
 - Relevant documentation sections
 - Relevant Gherkin test features (for expected behavior reference)
-- The Gremlin Server URL (the `url` from the command above)
+- The Gremlin Server URL (the `url` from the command above), or for Layer 1 the built
+  console's `gremlin.sh`
 
-The subagent does NOT get: source code, the knowledge graph, code review findings,
-or access to the analysis worktree. Brief it as a **minimally experienced
+The subagent does NOT get: source code, the knowledge graph, the PR's beads, code
+review findings, or access to the analysis worktree. Brief it as a **minimally experienced
 TinkerPop user** who has only the docs — it tests blind, and its stumbles are
 signal about how usable the feature is.
 
@@ -189,7 +196,9 @@ applicable playbooks' Verify sections — which languages/layers to exercise and
 what adversarial cases matter for this class of change.
 
 **Layer decision** (the Verify sections say which applies to this PR):
-- **Layer 1 (embedded):** Gremlin Console with TinkerGraph. For core logic changes.
+- **Layer 1 (embedded):** Gremlin Console with TinkerGraph. For core logic changes. Use the
+  console `start` built; [references/functional-testing.md](references/functional-testing.md)
+  gives its path and the script gotchas to pass to the subagent.
 - **Layer 2 (per-GLV wire):** Connect from each GLV to the server. For
   serialization/type changes. Skip if purely computational.
 
@@ -226,6 +235,8 @@ produce a complete evidence-with-narrative JSON file. Write it to
 
 - `summary` — HTML paragraph describing the PR
 - `clusters.assessment` — HTML prose about what the connected-component clusters mean
+  (`evidence.json` carries `clusters: { assessment: null }` for it; the computed result is
+  `checks.clusters`)
 - `communityAssessment` — HTML, **light by default**: usually one or two sentences on
   whether the change is coherent/localized and what its dominant theme is. Expand *only*
   when the community **structure itself** shows something non-obvious that no other section
@@ -256,19 +267,23 @@ produce a complete evidence-with-narrative JSON file. Write it to
     reasonable?"*) and may cite what you found (a finding, a functional-test label). Invite
     judgment of trade-offs rather than asserting them.
   - `refs` on a question — the code that answers it, as `{ file, symbol?, lines?, label? }`:
-    `file` is a repo path or unique suffix (`"TinkerTransaction.java"`); `symbol` a function
-    or type name, or `"Type.member"` for a member (`"TinkerStorageGraph.TinkerStorageGraph"`
-    is the constructor; bare `"TinkerStorageGraph"` the class); `label` the chip text. Name
+    `file` is a repo path or unique suffix (`"TinkerTransaction.java"`); `symbol` a function,
+    type or field name, or `"Type.member"` for a method or field of that type
+    (`"TinkerStorageGraph.TinkerStorageGraph"` is the constructor; bare `"TinkerStorageGraph"`
+    the class); `label` the chip text. Name
     the code — **never write line numbers or URLs**: the renderer resolves each ref against
     `evidence.codeIndex` and links to the file pinned at the reviewed commit with the
     symbol's lines highlighted. Two or three
     refs per question is plenty.
   - `refs` on the item — optional "Also see" chips for code that belongs to the whole area.
+  - A ref can cite a bead instead of code: `{ bead: "tp-abc.3", label? }` links to that bead
+    in the report's Project Memory. Use it where a question or finding rests on a recorded
+    decision or task; it must be a bead in `discussions.beads.beads`.
 
   `render.js` prints any ref it cannot resolve; fix the `file`/`symbol` and re-render. An
   item with only an HTML `body` still renders (older reports).
-- `findings` — array of `{ title, snippet, body }` objects, ordered most-severe-first (Interpret grades each blocking / high / low)
-- `openQuestions` — array of `{ title, body, meta }` objects
+- `findings` — array of `{ title, snippet, body, refs? }` objects, ordered most-severe-first (Interpret grades each blocking / high / low); `refs` take the same code or bead refs as `guidedWalk`
+- `openQuestions` — array of `{ title, body, meta, refs? }` objects
 - `functionalTest` — `{ plan, results: [{name, pass, output}], observations }` (if testing was done).
   `plan` is HTML and `observations` is an array of HTML strings (one per insight); both and surface **themes and insights** — what
   families of behavior were exercised and what was learned — not a per-scenario
@@ -304,23 +319,21 @@ Every section is always present — if you didn't provide a field, it shows
 node -e "import { teardown } from './scripts/review.js'; await teardown('/tmp/pr-review-<pr>');"
 ```
 
-Or simply stop the Docker container and clean up manually:
-```bash
-docker stop $(cat /tmp/pr-review-<pr>/session.json | python3 -c "import json,sys; print(json.load(sys.stdin)['containerId'])")
-rm -rf /tmp/pr-review-<pr>
-git worktree prune
-git branch -D pr-review/<pr>
-```
+This stops the knowledge graph server, removes the `src/` worktree and deletes
+the `pr-review/<pr>` branch. If a functional test ran (step 4), teardown also
+stops that server (via its `pid` in `functional.json`) and removes the `build/`
+worktree. Call this ONLY after all phases are complete.
 
-This stops the knowledge graph server, removes worktrees, deletes the branch.
-If a functional test ran (step 4), teardown also stops that server (via its
-`pid` in `functional.json`) and removes the `build/` worktree. Call this ONLY
-after all phases are complete.
+Teardown **keeps** `/tmp/pr-review-<pr>/`: it holds `report.html`, `report.json`
+and `evidence.json`. Delete it yourself once the report is no longer needed
+(`rm -rf /tmp/pr-review-<pr>`). Re-running the review on the same PR clears it,
+along with anything the earlier run left running.
 
 ## Important Notes
 
 - NEVER push to the `upstream` remote. It is fetch-only.
 - ALL output goes to `/tmp/pr-review-<pr>/` — never write inside the git repo.
 - The Gremlin Server stays alive until teardown. Don't kill it early.
-- If re-running, the script auto-cleans stale state.
+- If re-running, the script clears the earlier run first: its container, functional
+  server, worktrees and the whole work dir, including any old report.
 - The agent populates JSON narrative fields; the renderer produces HTML. No agent writes raw HTML.

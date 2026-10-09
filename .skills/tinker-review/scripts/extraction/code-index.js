@@ -19,8 +19,8 @@
 
 /**
  * @typedef {object} CodeSymbol
- * @property {string} name - function or type name as extracted
- * @property {"function"|"type"} kind
+ * @property {string} name - function, type or field name as extracted
+ * @property {"function"|"type"|"field"} kind
  * @property {number} start - first line (1-based, PR head side)
  * @property {number} end - last line (inclusive)
  */
@@ -71,12 +71,12 @@ export function parseHunks(diffText) {
 /**
  * Build the code index the renderer uses to turn a `{file, symbol}` reference into
  * a link: for every changed file, its changed hunks and the line range of each
- * function and type extracted from it. Files outside `changedFiles` (such as the
+ * function, type and field extracted from it. Files outside `changedFiles` (such as the
  * hierarchy neighborhood parsed for context) are left out.
  *
  * @param {object} params
  * @param {string[]} params.changedFiles
- * @param {{functions: object[], types: object[]}} params.extraction
+ * @param {{functions: object[], types: object[], fields?: object[]}} params.extraction
  * @param {string} params.diffText - `git diff --unified=0` of the PR against its merge base
  * @returns {CodeIndex}
  */
@@ -94,6 +94,7 @@ export function buildCodeIndex({ changedFiles, extraction, diffText }) {
   };
   for (const t of extraction.types || []) add(t, "type");
   for (const f of extraction.functions || []) add(f, "function");
+  for (const f of extraction.fields || []) add(f, "field");
   for (const entry of Object.values(files)) entry.symbols.sort((a, b) => a.start - b.start);
   return { files };
 }
