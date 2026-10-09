@@ -201,7 +201,8 @@ unchanged into 3.8-dev and master, so what is recorded then stays correct.
 
 **Then suggest, confirm, record.** `--suggest` finds the commits from the root's own JIRA and PR
 records, lists what else landed in the same window, and writes nothing. Show what it returns, take the operator's corrections, and only then
-run the recording form. It refuses any sha not reachable from `origin/<branch>`, so a refusal
+run the recording form. It also writes a record for each merged PR GitHub ties to those
+commits, or relates the root to one another root already holds. It refuses any sha not reachable from `origin/<branch>`, so a refusal
 means the work has not actually landed — say so and leave the root open.
 
 **An `epic` root needs `bd close <root> --force`.** The commit record just written is a
@@ -257,10 +258,13 @@ a list, and `bd ready` cannot tell you anything useful about it.
   the **root** (`--parent <root>`), not of any other bead, and pin it. `bin/beads-commits.py`
   finds a root's JIRA and PR records among its children, so a record attached any other way
   is invisible to `--suggest`.
-- **Search first — duplicates are the risk.** `bd search <ref> --status all` matches
-  external refs; `bd query` has no field for them. When a second root needs an artifact that
-  already has a record, add `bd dep add <root> <record> -t related` rather than a duplicate.
-  `--suggest` on that root will not see it, so supply those commits by hand at merge.
+- **Search first — duplicates are the risk.** `bd query` has no field for external refs,
+  and `bd search <ref> --status all` finds a ticket id but not a URL. For any ref,
+  `bd search tp --external-contains <ref> --status all` works — `tp` matches every bead id.
+  The PR record is written at merge (section 4), not by hand. When a second root needs an
+  artifact that already has a record, add `bd dep add <root> <record> -t related` rather than
+  a duplicate. `--suggest` on that root will not see it, so supply those commits by hand at
+  merge.
 - Records are the only link between beads and code; commit messages carry no bead ID. The
   commit record written at merge (section 4) is what makes that link work in reverse —
   `bd query 'notes="<sha>"' --all` returns the record and its `parent`, for any commit in the

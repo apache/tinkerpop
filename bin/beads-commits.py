@@ -32,12 +32,19 @@ Creates one `record` bead per landing, under the root:
                                                     apache/tinkerpop#3578
     notes                  every sha, full length
 
+and, alongside it, a record for each merged pull request GitHub associates with
+those commits -- apache/tinkerpop#3578 -- unless one already exists. A PR is
+usually opened after the root, so nothing earlier in the workflow is reliably
+there to write its record. Recording the landing is the one step every root
+passes through, and by then GitHub knows which PR carried the commits. A PR
+recorded under another root is related to this one rather than duplicated.
+
 The shas go in `notes` because that is the one free-text field bd can query.
-`bd search` indexes title and id only, and `bd query` has no field for comments
-or design, so a sha recorded anywhere else is unreachable except by grepping an
-export. `bd query 'notes=...'` is a substring match, which is why the full
-40-character sha is stored: a short sha pasted from `git log --oneline` is a
-prefix of it, so both forms of the query find the bead. Quote the sha inside the
+`bd search` matches title, id and some external refs but never notes, and
+`bd query` has no field for comments or design, so a sha recorded anywhere else
+is unreachable except by grepping an export. `bd query 'notes=...'` is a
+substring match, which is why the full 40-character sha is stored: a short sha
+pasted from `git log --oneline` is a prefix of it, so both forms of the query find the bead. Quote the sha inside the
 query: most shas begin with a digit, and an unquoted one is lexed as a number and
 fails to parse, the same way an unquoted version label does.
 
@@ -66,7 +73,7 @@ Once the operator confirms, the same command records them:
 
 What this script guarantees is the part that is easy to get wrong: every sha is
 verified reachable from origin/<branch> before anything is written, and a re-run
-finds the existing record rather than creating a second one.
+finds the existing records rather than creating second ones.
 """
 
 import argparse
@@ -139,6 +146,56 @@ def pr_merge_commit(number):
     if proc.returncode != 0:
         return None
     return ((json.loads(proc.stdout).get("mergeCommit") or {}).get("oid")) or None
+
+
+def merged_prs(shas, slug):
+    """Merged pull requests GitHub associates with these commits, by number.
+
+    A failed lookup is reported rather than fatal: the commit record is the part
+    that has to be right, and a missing PR record can be added by hand.
+    """
+    numbers = set()
+    for sha in shas:
+        proc = subprocess.run(
+            ["gh", "api", f"repos/{slug}/commits/{sha}/pulls",
+             "--jq", ".[] | select(.merged_at != null) | .number"],
+            capture_output=True, text=True)
+        if proc.returncode != 0:
+            print(f"gh could not list pull requests for {sha[:10]}: {proc.stderr.strip()}\n"
+                  "add any PR record by hand", file=sys.stderr)
+            continue
+        numbers.update(int(n) for n in proc.stdout.split())
+    return sorted(numbers)
+
+
+def record_pr(root, ref, dry_run):
+    """Make sure the PR record exists, under this root or related to it."""
+    # bd search does not match a ref of this shape reliably, so filter client-side.
+    existing = [bead for bead in as_list(bd("list", "--all", "--limit", "0"))
+                if bead.get("issue_type") == "record" and bead.get("external_ref") == ref]
+    for bead in existing:
+        if bead.get("parent") == root:
+            print(f"{bead['id']} already records {ref} under {root}")
+            return
+    if existing:
+        # PRIME.md section 6: a second root relates to the existing record.
+        bead = existing[0]
+        related = (bd_show(root) or {}).get("dependencies") or []
+        if any(dep.get("id") == bead["id"] for dep in related):
+            print(f"{bead['id']} records {ref} under {bead.get('parent')}; already related to {root}")
+        elif dry_run:
+            print(f"--dry-run: would relate {root} to {bead['id']} ({ref})")
+        else:
+            bd("dep", "add", root, bead["id"], "-t", "related")
+            print(f"related {root} to {bead['id']}, which records {ref} under {bead.get('parent')}")
+        return
+    if dry_run:
+        print(f"--dry-run: would create a record for {ref} under {root} and pin it")
+        return
+    created = as_list(bd("create", "--type=record", f"--parent={root}",
+                         f"--title={ref}", f"--external-ref={ref}"))
+    bd("update", created[0]["id"], "-s", "pinned")
+    print(f"created {created[0]['id']} for {ref} under {root}, pinned")
 
 
 def suggest(root, branch):
@@ -305,7 +362,7 @@ def main():
     source.add_argument("--suggest", action="store_true",
                         help="print the commits that look like this root's; writes nothing")
     parser.add_argument("--fetch", action="store_true",
-                        help="refresh origin/<branch> first; otherwise nothing touches the network")
+                        help="refresh origin/<branch> first; otherwise only gh touches the network")
     parser.add_argument("--dry-run", action="store_true", help="print the record, write nothing")
     args = parser.parse_args()
 
@@ -326,23 +383,27 @@ def main():
     lines += [f"  {sha}  {subject(sha)}" for sha in shas]
     notes = "\n".join(lines)
 
+    # --pr already names the pull request; otherwise ask GitHub which carried these.
+    prs = [args.pr] if args.pr else merged_prs(shas, slug)
+
     found = existing_record(args.root, tip)
     if found:
-        print(f"{found['id']} already records this landing under {args.root}; nothing to do")
-        return
+        print(f"{found['id']} already records this landing under {args.root}")
+    else:
+        print(f"{ref}\n{notes}\n")
+        if args.dry_run:
+            print(f"--dry-run: would create a record under {args.root} and pin it")
+        else:
+            created = as_list(bd("create", "--type=record", f"--parent={args.root}",
+                                 f"--title={ref}", f"--external-ref={ref}", f"--notes={notes}"))
+            record = created[0]["id"]
+            # Records are created pinned (PRIME.md section 6), but `bd create` has no
+            # status flag, so pinning is a second call.
+            bd("update", record, "-s", "pinned")
+            print(f"created {record} under {args.root}, pinned, {len(shas)} commit(s)")
 
-    print(f"{ref}\n{notes}\n")
-    if args.dry_run:
-        print(f"--dry-run: would create a record under {args.root} and pin it")
-        return
-
-    created = as_list(bd("create", "--type=record", f"--parent={args.root}",
-                         f"--title={ref}", f"--external-ref={ref}", f"--notes={notes}"))
-    record = created[0]["id"]
-    # Records are created pinned (PRIME.md section 6), but `bd create` has no
-    # status flag, so pinning is a second call.
-    bd("update", record, "-s", "pinned")
-    print(f"created {record} under {args.root}, pinned, {len(shas)} commit(s)")
+    for number in prs:
+        record_pr(args.root, f"{slug}#{number}", args.dry_run)
 
 
 if __name__ == "__main__":
