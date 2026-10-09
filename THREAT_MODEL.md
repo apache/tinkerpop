@@ -75,7 +75,7 @@ under the License.
 | **Core traversal machine + structure API** (`gremlin-core`) | `GraphTraversal`, strategies, `Vertex`/`Edge` | filesystem (IO formats) | **In** |
 | **Serialization** (`gremlin-core`/`gremlin-util`/`gremlin-shaded`) | GraphSON + GraphBinary wire readers. Gryo (Kryo) is IO-format-only, not on the wire | deserializes untrusted wire bytes. Gryo only reads IO/file bytes | **In** (see §9) |
 | **Gremlin Language Variants** (Java `gremlin-driver`, `gremlin-python`, `-dotnet`, `-go`, `-js`) | deserialize server responses | network (connect) | **In**, response-deserialization robustness + TLS cert validation. Java shares the JVM serializers. The others have own per-language deserializers not covered by hardening the JVM server |
-| **Reference graph** (`tinkergraph-gremlin`) | in-memory graph, the **shipped default graph**, with optional file persistence via the `io()` readers | filesystem (persistence) | **In**, TinkerPop reference code on the default reachable path, so a defect in unmodified TinkerGraph is `VALID` (§3). Loading a persisted graph uses the same GraphSON/Gryo/GraphML readers (§6 IO surface). A custom `graphFormat` reader is provider code (§3) |
+| **Reference graph** (`tinkergraph-gremlin`) | in-memory graph, the **shipped default graph**. `TinkerStorageGraph` optionally persists committed transactions to a storage directory through a pluggable storage engine (the `graphbinary` reference engine) | filesystem (storage directory) | **In**, TinkerPop reference code on the default reachable path, so a defect in unmodified TinkerGraph is `VALID` (§3). The storage directory is operator-trusted like any data directory, so its files are not an attack surface (§6). A custom storage engine is provider code (§3) |
 | **OLAP** (`gremlin-core`/`tinkergraph` computer, `hadoop-gremlin`, `spark-gremlin`) | `GraphComputer`, remote-reachable when the operator configures an OLAP-capable graph | network, filesystem, cluster | **In**, reference code (incl. Hadoop/Spark modules). The third-party Hadoop/Spark runtime + cluster config are out (§3) |
 | **`gremlin-console`** | local Groovy REPL. `:remote console` submits **arbitrary Groovy scripts** to a server and deserializes responses. `:install` loads plugins (credentials/hadoop/spark) via Grape | network (connects) | Local REPL **Out** (operator-trusted). As a remote client, submitting arbitrary Groovy = server-side RCE **by-design** (§9), subject to server auth. Response-deserialization robustness + TLS cert validation **In** (like a GLV). Plugins are operator-installed code in the operator's own JVM, so the install decision, the third-party download channel (Grape), and plugin behavior are **Out** (trusted-input, §3) |
 | **`gremlint`** | client-side Gremlin formatter (parse-and-reprint, no query execution); published as a library for integration into client applications. | none (runs in the caller's browser/process) | **In**, valid surface for security reports since it's a published, user-integrated library |
@@ -267,11 +267,12 @@ Per-surface trust table:
 | Gremlin Server — script request | Gremlin (or, if `gremlin-groovy` is enabled, Groovy) script text | **yes** (pre-auth if auth off) | auth; script restriction / sandbox; who may script; traversal-step allow-list; resource limits |
 | Gremlin Server — transaction id | server-generated UUID, echoed back by the client on follow-up requests | **yes** (a client can present any id) | looked up with no owning-user check, so any client presenting a valid id shares that transaction (see §11b) |
 | Request deserialization (GraphSON / GraphBinary) | serialized bytes | **yes** (pre-auth only when auth is off, see the ordering note below) | robustness of the wire serializers |
-| Graph IO — Gryo/GraphSON/GraphML files (`io()` step, persistence, OLAP) | on-disk / cluster bytes | only if the caller loads untrusted files | GraphSON, the hardened Gryo mappers the IO paths build (`registrationRequired=true` plus `javaSerializationAllowed=false`), and GraphML with the default XML factory owe deserializer integrity. Unlocked Gryo, a Gryo mapper that keeps Java serialization, and a caller-supplied unhardened `XMLInputFactory` (XXE) are the caller's responsibility |
+| Graph IO — Gryo/GraphSON/GraphML files (`io()` step, OLAP) | on-disk / cluster bytes | only if the caller loads untrusted files | GraphSON, the hardened Gryo mappers the IO paths build (`registrationRequired=true` plus `javaSerializationAllowed=false`), and GraphML with the default XML factory owe deserializer integrity. Unlocked Gryo, a Gryo mapper that keeps Java serialization, and a caller-supplied unhardened `XMLInputFactory` (XXE) are the caller's responsibility |
 | Gremlin string parser (`gremlin-language` ANTLR) | Gremlin string | **yes** | parser robustness, no crash/hang/OOM on malformed input and no grammar breakout / step injection (distinct from execution cost, §8/Q7) |
 | Any string the grammar accepts as an argument (e.g. a `regex` pattern) | Gremlin string | **yes** | a grammatically valid string must not enable DoS (e.g. ReDoS via a pathological pattern), the Q7 super-linear-amplification carve-out (§8) |
 | GLV (client) — server response | serialized bytes from the server | yes if the server is malicious/compromised, or a MITM (TLS off / cert not validated) | response-deserialization robustness; TLS with cert validation |
 | `gremlin-server.yaml`, host, data dir | local | no — operator-trusted | filesystem permissions |
+| `TinkerStorageGraph` storage directory (`snapshot.gbin`, `log.gbin`, `INDEXES`, `VERSION`, `settings.properties`) | on-disk bytes decoded when the graph opens | no — operator-trusted, a data directory | filesystem permissions. The engine's checks against damaged files (checksums, bounded decoding, the `recover` open) are a reliability property against disk damage, not a security property |
 
 - **Pre-auth vs post-auth (ordering note):** "pre-auth" marks what an attacker can reach **without valid
   credentials**, which is what makes a defect there security-critical (§8). Gremlin Server authenticates
@@ -442,7 +443,7 @@ Per-surface trust table:
   (`GryoMapper.Builder.javaSerializationAllowed(boolean)` selects the behavior), so a break there is `VALID`. A
   directly built `GryoMapper` and `GryoPool` keep them, as do the `spark-gremlin` and Hadoop object pools that
   additionally run unlocked; those remain the user's responsibility.
-  Gryo is not on the wire, so this is an IO/file-surface concern (`io()` step, persistence, OLAP).
+  Gryo is not on the wire, so this is an IO/file-surface concern (`io()` step, OLAP).
  
 - **A `TraversalStrategy` is not an access-control boundary on its own.** The Gremlin language lets any
   request remove or replace strategies on its traversal source (`withoutStrategies()`,
@@ -517,6 +518,10 @@ Per-surface trust table:
 - "Calling application concatenates untrusted input into a Groovy string (Gremlin-injection)" — the calling
   application's responsibility (§9). A `gremlin-language` parser breakout is the opposite: an in-model
   TinkerPop bug (§8). Disposition: `BY-DESIGN: property-disclaimed`.
+- "A crafted or corrupted `TinkerStorageGraph` store file crashes, hangs, or exhausts memory when the graph opens" —
+  the storage directory is operator-trusted (§5, §6), so writing a malicious file there already requires the
+  operator's access. A store that fails to open, or opens wrongly, after ordinary disk damage is an ordinary
+  reliability bug, not a security report. Disposition: `OUT-OF-MODEL: trusted-input`.
 - Findings in any test-only module, any module containing examples, or build tooling (e.g. `gremlin-test`,
   `gremlin-examples`, `gremlin-tools`) — out of scope (§3). Disposition:
   `OUT-OF-MODEL: unsupported-component`.
