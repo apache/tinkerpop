@@ -46,11 +46,22 @@ confidence pass so the `governs` edges they write go through it:
 - Test helpers without guard clauses (missing else/throw for invalid input)
 
 **Project memory** (only when beads were found; read decisions by `listBeads`):
-- Code against chosen decisions — does the diff do something a decision's design
+- Chosen decisions are claims to verify, not reasoning to accept. A design
+  states facts — a mechanism, an invariant, a measurement, what the choice rules
+  out. Check each against the code, and against the build or the functional test
+  where the claim is about behavior. Does the diff do something the decision
   rules out? Judge against the newest decision in a `supersededBy` chain.
-- Code against rejected alternatives — each one is a "why not X?" already
-  answered; don't raise it again. But if the diff *does* X, check whether the
-  reason X lost still holds in this code.
+- Rejected alternatives — each answers "why not X?" only if the reason X lost
+  is true of this code, so check that reason the same way. If the diff does X
+  anyway, does the reason still hold?
+- Where the beads stop, look harder. Changed code no decision governs (no
+  `governs` edge after `linkBead`), and any part a bead says was built without
+  beads (a decision accepting that earlier commits have none), had its
+  reasoning recorded nowhere. Give that code the closest read, not a note.
+- Trade-offs argued only in the PR thread — read `discussions.prComments` and the
+  JIRA comments for design debates that ended in a choice (concurrency,
+  cardinality, compatibility, ...). Each one with no decision bead under the
+  PR's root is reasoning that lives only in a comment thread.
 - `in_progress` tasks under the PR's root against what the PR says it delivers —
   claimed work that isn't here, or is here half-done.
 - Decisions that record a departure from the JIRA, proposal or dev@ thread —
@@ -110,6 +121,16 @@ author's recorded reasoning is as much inside knowledge as the source code.
 - `discussions.beads` — the root is expected to be open: it closes at merge, so
   an open root is never a finding, and neither is finding no beads or a failed
   sync (the report says which).
+- A chosen decision's claim that doesn't hold in the code or the build — high:
+  the change rests on it. A rejected alternative whose stated reason is false
+  of this code — an open question: the road may have been closed for the wrong
+  reason.
+- A trade-off settled in the PR thread with no decision bead — an open question
+  per trade-off, naming it and citing the comments, so it can be recorded before
+  merge. Raise it only when the PR has beads; without any, the thread is the
+  only record and that is not a finding.
+- Code where the beads stop is not a finding by itself; weigh what the closer
+  read turns up like any other Inspect candidate.
 - Diff does what a rejected alternative ruled out and the reason it lost still
   holds — high. If that reason no longer holds, an open question: was this a
   deliberate reconsideration? Diff contradicts a chosen decision with no newer
