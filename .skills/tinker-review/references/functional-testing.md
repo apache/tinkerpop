@@ -64,6 +64,34 @@ features; it does **not** get source, the graph, or the review findings. See
 SKILL.md step 4 for the full briefing contract and the Verify sections for the
 per-change battery.
 
+## Layer 1 — embedded, through the built console
+
+When the Verify sections call for an embedded exercise (semantics changed, API
+stable), there is no server to start: the subagent drives the PR's own console
+against an in-process TinkerGraph. `start` has already built it — the console
+assembly sits next to the server's in the build worktree:
+
+```bash
+<buildWorktree>/gremlin-console/target/apache-tinkerpop-gremlin-console-*-standalone/bin/gremlin.sh -e scenarios.groovy
+```
+
+`-e` runs the script in execution mode and returns. Hand the subagent the path
+to `gremlin.sh` (with the `*` resolved) in place of a server URL, and these
+gotchas, which otherwise cost it a few failed runs:
+
+- **No top-level `def`.** The console evaluates a script statement by statement,
+  so a `def`-declared variable is local to its statement and gone by the next
+  line. Assign without `def` (`g = TinkerGraph.open().traversal()`), as the reference
+  docs' execution-mode examples do. `def` inside a closure or method is fine.
+- **End with `System.exit(0)`** if the console is still running after the last
+  statement — a non-daemon thread (a remote connection, an executor) keeps the
+  JVM alive.
+- **Print what you assert.** Output is the only record: `println` each result,
+  or use `assert`, which stops the script on the first failure — so label every
+  scenario and print before asserting.
+
+The same scenario labels and complete-code rules below apply to a console script.
+
 ## What the subagent must return (report inputs)
 
 The test code is the source of truth for *what* was tested, so the subagent
@@ -91,6 +119,11 @@ contract is raw text — relying on the guard is a slip, not a plan.
 
 - The `build/` worktree is separate from the enrichment worktree (`src/`) so
   Maven's `target/` output never pollutes the tree the agent reads.
-- Teardown removes the `build/` worktree and stops the JVM. If a run is
-  interrupted, `functional/cli.js stop` (or the next `start`, which prunes a
-  stale worktree first) cleans up.
+- Teardown removes the `build/` worktree and stops the JVM. `start` records the
+  worktree in `functional.json` before it builds, and removes it itself when the
+  build or server start fails, so a failed or interrupted start never leaves it
+  behind for teardown to miss.
+- The build worktree is checked out from the PR, so the server config written
+  into it must suit the PR's branch. It sets only what a review needs; metrics
+  are left out because their setting names differ between branches (master
+  renamed `interval` to `intervalMillis`).

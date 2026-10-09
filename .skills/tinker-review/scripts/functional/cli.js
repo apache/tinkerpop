@@ -66,6 +66,9 @@ async function main() {
   const handlePath = join(workDir, "functional.json");
 
   if (command === "start") {
+    // Record the build worktree before building, so teardown can remove it even
+    // if this process dies mid-build.
+    await writeFile(handlePath, JSON.stringify({ buildWorktree: join(workDir, "build") }, null, 2));
     const handle = await buildAndStart(workDir, {
       pr: session.pr,
       repoPath: session.repoPath,

@@ -82,8 +82,6 @@ serializers:
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3] }}
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4 }
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4, config: { serializeResultToString: true }}
-metrics: {
-  slf4jReporter: {enabled: true, interval: 180000}}
 strictTransactionManagement: false
 `;
 }
@@ -158,6 +156,23 @@ export async function buildAndStart(workDir, opts) {
   // refuses to check out one branch in two worktrees.
   await exec("git", ["worktree", "add", "--detach", buildWorktree, prBranch], { cwd: repoPath });
 
+  // From here on, any failure stops the server (if it started) and removes the
+  // build worktree, so a failed start leaves nothing for teardown to miss.
+  let handle = { buildWorktree };
+  try {
+    handle = await buildAndLaunch(workDir, buildWorktree, opts);
+    await waitForHttp(handle.port, opts.readyTimeoutMs || DEFAULT_READY_TIMEOUT_MS)
+      .catch((err) => { throw new Error(`${err.message} — see ${handle.logFile}`); });
+  } catch (err) {
+    await stop(handle, { repoPath }).catch(() => {});
+    throw err;
+  }
+  return handle;
+}
+
+// Build the reactor in the build worktree, write the server config into the
+// assembly, and launch it. Returns the handle; readiness is the caller's job.
+async function buildAndLaunch(workDir, buildWorktree, opts) {
   // Full-reactor build without tests, so every module reflects the PR.
   await exec(
     "mvn",
@@ -189,16 +204,7 @@ export async function buildAndStart(workDir, opts) {
   );
   child.unref();
 
-  const handle = { port, url: `http://localhost:${port}/gremlin`, pid: child.pid, buildWorktree, assemblyDir, logFile };
-
-  try {
-    await waitForHttp(port, opts.readyTimeoutMs || DEFAULT_READY_TIMEOUT_MS);
-  } catch (err) {
-    await stop(handle).catch(() => {});
-    throw new Error(`${err.message} — see ${logFile}`);
-  }
-
-  return handle;
+  return { port, url: `http://localhost:${port}/gremlin`, pid: child.pid, buildWorktree, assemblyDir, logFile };
 }
 
 /**

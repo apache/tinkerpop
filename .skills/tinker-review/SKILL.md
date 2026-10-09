@@ -180,7 +180,8 @@ command does and how to drive it.
 - PR title/description (what the change claims to do)
 - Relevant documentation sections
 - Relevant Gherkin test features (for expected behavior reference)
-- The Gremlin Server URL (the `url` from the command above)
+- The Gremlin Server URL (the `url` from the command above), or for Layer 1 the built
+  console's `gremlin.sh`
 
 The subagent does NOT get: source code, the knowledge graph, the PR's beads, code
 review findings, or access to the analysis worktree. Brief it as a **minimally experienced
@@ -194,7 +195,9 @@ applicable playbooks' Verify sections — which languages/layers to exercise and
 what adversarial cases matter for this class of change.
 
 **Layer decision** (the Verify sections say which applies to this PR):
-- **Layer 1 (embedded):** Gremlin Console with TinkerGraph. For core logic changes.
+- **Layer 1 (embedded):** Gremlin Console with TinkerGraph. For core logic changes. Use the
+  console `start` built; [references/functional-testing.md](references/functional-testing.md)
+  gives its path and the script gotchas to pass to the subagent.
 - **Layer 2 (per-GLV wire):** Connect from each GLV to the server. For
   serialization/type changes. Skip if purely computational.
 
