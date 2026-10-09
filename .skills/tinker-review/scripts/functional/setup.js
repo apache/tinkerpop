@@ -58,32 +58,90 @@ globals << [g : traversal().withEmbedded(graph)]
 globals << [a : traversal().withEmbedded(graph).withComputer()]
 `;
 
+// The release lines ship different servers: master (4.x) answers HTTP with the
+// V4 serializers, while 3.7-dev and 3.8-dev run the WebSocket server with
+// GraphSON V3 / GraphBinary V1 and op processors. The PR's own source says which
+// line it is on: only 4.x has GraphSONMessageSerializerV4.
+const V4_SERIALIZER = "gremlin-util/src/main/java/org/apache/tinkerpop/gremlin/util/ser/GraphSONMessageSerializerV4.java";
+
 /**
- * Build a self-contained server yaml for the functional test. Based on the
- * project's shipped default (HttpChannelizer + GraphSON V4 / GraphBinary V4)
- * with host/port pinned and the g/a bindings wired via an init script. Written
- * fresh rather than parsed from the assembly so there is no YAML dependency and
- * no textual patching of the shipped file.
+ * Which server the built source runs: `http` (4.x) or `websocket` (3.x).
+ * @param {string} buildWorktree
+ * @returns {"http"|"websocket"}
  */
-function serverYaml(port) {
-  return `host: localhost
+export function serverProtocol(buildWorktree) {
+  return existsSync(join(buildWorktree, V4_SERIALIZER)) ? "http" : "websocket";
+}
+
+const SCRIPT_ENGINES = `scriptEngines: {
+  gremlin-lang: {},
+  gremlin-groovy: {
+    plugins: { org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {},
+               org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin: {classImports: [java.lang.Math], methodImports: [java.lang.Math#*]},
+               org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/review-init.groovy]}}}}`;
+
+/**
+ * Build a self-contained server yaml for the functional test, following the
+ * shipped default of the PR's release line (see serverProtocol) with host/port
+ * pinned and the g/a bindings wired via an init script. Written fresh rather
+ * than parsed from the assembly so there is no YAML dependency and no textual
+ * patching of the shipped file. Only settings a review needs are set: metrics
+ * are left out because their setting names differ between lines.
+ *
+ * @param {number} port
+ * @param {"http"|"websocket"} protocol
+ */
+export function serverYaml(port, protocol) {
+  if (protocol === "http") {
+    return `host: localhost
 port: ${port}
 timeoutMillis: 30000
 channelizer: org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
 graphs: {
   graph: conf/tinkergraph-review.properties}
-scriptEngines: {
-  gremlin-lang: {},
-  gremlin-groovy: {
-    plugins: { org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {},
-               org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin: {classImports: [java.lang.Math], methodImports: [java.lang.Math#*]},
-               org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/review-init.groovy]}}}}
+${SCRIPT_ENGINES}
 serializers:
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3] }}
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4 }
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4, config: { serializeResultToString: true }}
 strictTransactionManagement: false
 `;
+  }
+  return `host: localhost
+port: ${port}
+evaluationTimeout: 30000
+channelizer: org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer
+graphs: {
+  graph: conf/tinkergraph-review.properties}
+${SCRIPT_ENGINES}
+serializers:
+  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3] }}
+  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1 }
+  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1, config: { serializeResultToString: true }}
+processors:
+  - { className: org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor, config: { sessionTimeout: 28800000 }}
+  - { className: org.apache.tinkerpop.gremlin.server.op.traversal.TraversalOpProcessor}
+strictTransactionManagement: false
+`;
+}
+
+/**
+ * Write the review's graph config, init script and server yaml into a built
+ * server assembly. Returns the yaml path to launch `bin/gremlin-server.sh` with.
+ *
+ * @param {string} assemblyDir - a `*-standalone` server directory
+ * @param {number} port
+ * @param {"http"|"websocket"} protocol - from serverProtocol
+ * @returns {Promise<string>}
+ */
+export async function writeServerConfig(assemblyDir, port, protocol) {
+  await mkdir(join(assemblyDir, "conf"), { recursive: true });
+  await mkdir(join(assemblyDir, "scripts"), { recursive: true });
+  await writeFile(join(assemblyDir, "conf", "tinkergraph-review.properties"), GRAPH_PROPERTIES);
+  await writeFile(join(assemblyDir, "scripts", "review-init.groovy"), INIT_GROOVY);
+  const yamlPath = join(assemblyDir, "conf", "gremlin-server-review.yaml");
+  await writeFile(yamlPath, serverYaml(port, protocol));
+  return yamlPath;
 }
 
 /**
@@ -112,7 +170,9 @@ async function findAssembly(buildWorktree) {
 /**
  * @typedef {object} FunctionalHandle
  * @property {number} port        - localhost port the server listens on
- * @property {string} url         - base HTTP endpoint (`http://localhost:<port>/gremlin`)
+ * @property {"http"|"websocket"} protocol - which server the PR's line runs (see serverProtocol)
+ * @property {string} url         - endpoint to hand the subagent: `http://localhost:<port>/gremlin`
+ *   on 4.x, `ws://localhost:<port>/gremlin` on 3.x
  * @property {number} pid         - PID of the server JVM (for teardown)
  * @property {string} buildWorktree - the `<workDir>/build` worktree to remove on teardown
  * @property {string} assemblyDir - the built `*-standalone` directory
@@ -183,13 +243,8 @@ async function buildAndLaunch(workDir, buildWorktree, opts) {
   const assemblyDir = await findAssembly(buildWorktree);
   const port = opts.port || await findAvailablePort();
 
-  // Write config into the assembly's conf/scripts dirs.
-  await mkdir(join(assemblyDir, "conf"), { recursive: true });
-  await mkdir(join(assemblyDir, "scripts"), { recursive: true });
-  await writeFile(join(assemblyDir, "conf", "tinkergraph-review.properties"), GRAPH_PROPERTIES);
-  await writeFile(join(assemblyDir, "scripts", "review-init.groovy"), INIT_GROOVY);
-  const yamlPath = join(assemblyDir, "conf", "gremlin-server-review.yaml");
-  await writeFile(yamlPath, serverYaml(port));
+  const protocol = serverProtocol(buildWorktree);
+  const yamlPath = await writeServerConfig(assemblyDir, port, protocol);
 
   // Launch natively in the foreground ("console" mode reads the yaml arg via the
   // catch-all case) and detach, capturing output to a log for diagnosis.
@@ -204,7 +259,8 @@ async function buildAndLaunch(workDir, buildWorktree, opts) {
   );
   child.unref();
 
-  return { port, url: `http://localhost:${port}/gremlin`, pid: child.pid, buildWorktree, assemblyDir, logFile };
+  const scheme = protocol === "http" ? "http" : "ws";
+  return { port, protocol, url: `${scheme}://localhost:${port}/gremlin`, pid: child.pid, buildWorktree, assemblyDir, logFile };
 }
 
 /**
