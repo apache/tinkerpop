@@ -23,7 +23,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -134,5 +136,33 @@ public class MergeEdgeStepTest {
         final Map onCreateMap = step.onCreateMap(traverser, new LinkedHashMap<>(), mergeMap);
 
         assertEquals(CollectionUtil.asMap("key1", "value1", "key2", "value2"), onCreateMap);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowRepeatedOnCreate() {
+        final MergeEdgeStep<Object> step = new MergeEdgeStep<>(EmptyTraversal.instance(), true);
+        step.addChildOption(Merge.onCreate, new ConstantTraversal<>(Collections.emptyMap()));
+        step.addChildOption(Merge.onCreate, new ConstantTraversal<>(Collections.emptyMap()));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowRepeatedOnMatch() {
+        final MergeEdgeStep<Object> step = new MergeEdgeStep<>(EmptyTraversal.instance(), true);
+        step.addChildOption(Merge.onMatch, new ConstantTraversal<>(Collections.emptyMap()));
+        step.addChildOption(Merge.onMatch, new ConstantTraversal<>(Collections.emptyMap()));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowRepeatedOutV() {
+        final MergeEdgeStep<Object> step = new MergeEdgeStep<>(EmptyTraversal.instance(), true);
+        step.addChildOption(Merge.outV, new ConstantTraversal<>(Collections.emptyMap()));
+        step.addChildOption(Merge.outV, new ConstantTraversal<>(Collections.emptyMap()));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowRepeatedInV() {
+        final MergeEdgeStep<Object> step = new MergeEdgeStep<>(EmptyTraversal.instance(), true);
+        step.addChildOption(Merge.inV, new ConstantTraversal<>(Collections.emptyMap()));
+        step.addChildOption(Merge.inV, new ConstantTraversal<>(Collections.emptyMap()));
     }
 }

@@ -94,8 +94,12 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
     @Override
     public void addChildOption(final Merge token, final Traversal.Admin<S, Object> traversalOption) {
         if (token == Merge.outV) {
+            if (outVTraversal != null)
+                throw new IllegalArgumentException("option(outV) can only be specified once per mergeE step");
             this.outVTraversal = this.integrateChild(traversalOption);
         } else if (token == Merge.inV) {
+            if (inVTraversal != null)
+                throw new IllegalArgumentException("option(inV) can only be specified once per mergeE step");
             this.inVTraversal = this.integrateChild(traversalOption);
         } else {
             super.addChildOption(token, traversalOption);
