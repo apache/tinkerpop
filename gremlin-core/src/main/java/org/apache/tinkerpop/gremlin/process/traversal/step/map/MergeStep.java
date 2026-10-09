@@ -141,10 +141,14 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     @Override
     public void addChildOption(final Merge token, final Traversal.Admin<S, C> traversalOption) {
         if (token == Merge.onCreate) {
+            if (onCreateTraversal != null)
+                throw new IllegalArgumentException("option(onCreate) can only be specified once per merge step");
             // early swipe at validation if both search and create arguments are static
             validateStaticNoOverrides(mergeTraversal, traversalOption);
             this.onCreateTraversal = this.integrateChild(traversalOption);
         } else if (token == Merge.onMatch) {
+            if (onMatchTraversal != null)
+                throw new IllegalArgumentException("option(onMatch) can only be specified once per merge step");
             // add a guard rail to ensure that the incoming object is not an Element. this will prevent
             // a possibly inadvertent mutation of the graph if you did something like g.V().mergeE(). for
             // 3.x we won't allow this behavior at all but in 4.x we will make it consistent like it will
