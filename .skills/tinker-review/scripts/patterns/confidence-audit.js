@@ -19,6 +19,7 @@
 
 import gremlin from "gremlin";
 import { CONFIDENCE } from "../graph/confidence.js";
+import { changedMeaningful } from "../graph/change-levels.js";
 
 const { process: { statics: __ } } = gremlin;
 
@@ -103,14 +104,17 @@ export async function confidenceAudit(g, params = {}) {
  * @param {object} [opts]
  * @param {string} [opts.confidence] - Filter to this confidence value
  * @param {string} [opts.relation] - Filter to this edge label (e.g. implements_step)
+ * @param {boolean} [opts.changedOnly] - Only edges with an endpoint whose behavior or
+ *   signature the PR changed (changeLevel BEHAVIORAL or STRUCTURAL)
  * @param {number} [opts.limit] - Cap the result count (default 100)
  * @returns {Promise<EdgeConfidenceRow[]>}
  */
 export async function listEdgesByConfidence(g, opts = {}) {
-  const { confidence, relation, limit = 100 } = opts;
+  const { confidence, relation, changedOnly, limit = 100 } = opts;
   let t = g.E();
   if (relation) t = t.hasLabel(relation);
   if (confidence) t = t.has("confidence", confidence);
+  if (changedOnly) t = t.where(__.bothV().has("changeLevel", changedMeaningful()));
 
   const rows = await t
     .limit(limit)
@@ -141,7 +145,14 @@ export async function listEdgesByConfidence(g, opts = {}) {
  *
  * @param {object} g - gremlin-js GraphTraversalSource (already connected)
  * @param {object} [params]
+ * A large PR carries tens of thousands of INFERRED edges, mostly name-resolved
+ * calls between code it did not touch, so `changedOnly` is the usable worklist:
+ * the edges with an endpoint the PR changed, which are the ones findings rest on.
+ *
+ * @param {object} g - gremlin-js GraphTraversalSource (already connected)
+ * @param {object} [params]
  * @param {string} [params.relation] - Narrow to one relation (e.g. implements_step)
+ * @param {boolean} [params.changedOnly] - Only edges touching changed code
  * @param {number} [params.limit] - Cap results (default 100)
  * @returns {Promise<EdgeConfidenceRow[]>}
  */
@@ -149,6 +160,7 @@ export async function listInferred(g, params = {}) {
   return listEdgesByConfidence(g, {
     confidence: CONFIDENCE.INFERRED,
     relation: params.relation,
+    changedOnly: params.changedOnly === true,
     limit: params.limit || 100,
   });
 }

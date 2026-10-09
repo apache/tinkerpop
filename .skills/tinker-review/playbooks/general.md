@@ -9,9 +9,10 @@ domain-specific playbook.
 The confidence pass runs on every review; it lives here and every playbook
 inherits it. Run in order:
 - `auditConfidence` — read the edge-confidence distribution and the `AMBIGUOUS` list.
-- `listInferred` — pull the verification worklist (`--relation implements_step`
-  first, then any `calls` edges your findings lean on); read each against the
-  worktree source.
+- `listInferred --changedOnly` — pull the verification worklist: the INFERRED
+  edges touching changed code (`--relation implements_step` first, then the
+  `calls` edges your findings lean on). Read each against the worktree source.
+  Edges between untouched code are not worth verifying.
 - `setEdgeConfidence` — re-grade what you verified: promote a confirmed edge to
   `EXTRACTED`, downgrade a wrong name-resolution to `AMBIGUOUS`.
 - `auditConfidence` again — anything still `AMBIGUOUS` goes to `openQuestions`,

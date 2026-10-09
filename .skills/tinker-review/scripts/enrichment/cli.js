@@ -99,7 +99,7 @@ async function main() {
     console.log("  getCallsFrom    --function <name> --file <path>");
     console.log("  getCanonicalSteps");
     console.log("  auditConfidence [--maxAmbiguous 50]");
-    console.log("  listInferred    [--relation implements_step|calls|...] [--limit 100]");
+    console.log("  listInferred    [--relation implements_step|calls|...] [--changedOnly] [--limit 100]");
     console.log("  listDeleted");
     console.log("  listExternalRefs");
     console.log("  listBeads       [--root <beadId>] [--type decision|task|record] [--status in_progress]");
@@ -169,7 +169,7 @@ async function main() {
         result = await fn(g, { maxAmbiguous: args.maxAmbiguous });
         break;
       case "listInferred":
-        result = await fn(g, { relation: args.relation, limit: args.limit });
+        result = await fn(g, { relation: args.relation, changedOnly: args.changedOnly, limit: args.limit });
         break;
       case "listDeleted":
         result = await fn(g);

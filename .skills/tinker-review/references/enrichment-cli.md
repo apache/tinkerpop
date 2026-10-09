@@ -87,8 +87,11 @@ in the report's `openQuestions`, not asserted as fact.
 ### listInferred
 Your **verification worklist**: the name-resolved / agent-mapped edges worth a
 source check, optionally narrowed with `--relation` (start with
-`implements_step`, then `calls`). After reading the source, promote or downgrade
-each with `setEdgeConfidence`. This is how INFERRED becomes EXTRACTED.
+`implements_step`, then `calls`). Pass `--changedOnly` to keep only edges with an
+endpoint the PR changed (behavior or signature): a large PR has tens of
+thousands of INFERRED edges, mostly calls between untouched code, and the
+default 100 of those is an arbitrary sample. After reading the source, promote
+or downgrade each with `setEdgeConfidence`. This is how INFERRED becomes EXTRACTED.
 
 ### listDeleted
 The files the PR deleted (graph stubs marked `deleted: true`), each paired with
