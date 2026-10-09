@@ -512,6 +512,8 @@ export async function phase1(session) {
       timestamp: new Date().toISOString(),
     },
     graphStats,
+    // Narrative slot for the report (SKILL.md step 5); the computed result is checks.clusters.
+    clusters: { assessment: null },
     architecture: architectureResult,
     checks: {
       completeness: completenessResults,

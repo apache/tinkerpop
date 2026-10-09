@@ -121,6 +121,7 @@ interface Evidence {
     timestamp: string;
   };
   graphStats: PopulationSummary;
+  clusters: { assessment: null };   // narrative slot the report fills (ReportPackage.clusters)
   architecture: ArchitectureResult;
   checks: {
     completeness: CompletenessResult[];

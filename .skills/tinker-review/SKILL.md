@@ -235,6 +235,8 @@ produce a complete evidence-with-narrative JSON file. Write it to
 
 - `summary` — HTML paragraph describing the PR
 - `clusters.assessment` — HTML prose about what the connected-component clusters mean
+  (`evidence.json` carries `clusters: { assessment: null }` for it; the computed result is
+  `checks.clusters`)
 - `communityAssessment` — HTML, **light by default**: usually one or two sentences on
   whether the change is coherent/localized and what its dominant theme is. Expand *only*
   when the community **structure itself** shows something non-obvious that no other section
