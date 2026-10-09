@@ -267,9 +267,10 @@ produce a complete evidence-with-narrative JSON file. Write it to
     reasonable?"*) and may cite what you found (a finding, a functional-test label). Invite
     judgment of trade-offs rather than asserting them.
   - `refs` on a question — the code that answers it, as `{ file, symbol?, lines?, label? }`:
-    `file` is a repo path or unique suffix (`"TinkerTransaction.java"`); `symbol` a function
-    or type name, or `"Type.member"` for a member (`"TinkerStorageGraph.TinkerStorageGraph"`
-    is the constructor; bare `"TinkerStorageGraph"` the class); `label` the chip text. Name
+    `file` is a repo path or unique suffix (`"TinkerTransaction.java"`); `symbol` a function,
+    type or field name, or `"Type.member"` for a method or field of that type
+    (`"TinkerStorageGraph.TinkerStorageGraph"` is the constructor; bare `"TinkerStorageGraph"`
+    the class); `label` the chip text. Name
     the code — **never write line numbers or URLs**: the renderer resolves each ref against
     `evidence.codeIndex` and links to the file pinned at the reviewed commit with the
     symbol's lines highlighted. Two or three

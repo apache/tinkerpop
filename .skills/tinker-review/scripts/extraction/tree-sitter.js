@@ -492,6 +492,51 @@ function extractTypesFromTree(tree, filePath, language) {
   return types;
 }
 
+// Field declarations, so a report ref can name a field (`Type.field`). They feed
+// only the code index; the graph has no Field vertex. A declaration such as
+// `int a, b;` yields one entry per name, each spanning the whole declaration.
+const FIELD_NODES = {
+  java: "field_declaration",
+  csharp: "field_declaration",
+  go: "field_declaration",
+  javascript: "field_definition",
+};
+
+function fieldNames(node) {
+  // Java puts the declarators directly under the declaration, C# one level down.
+  const holder = childByType(node, "variable_declaration") || node;
+  const declarators = childrenByType(holder, "variable_declarator");
+  if (declarators.length > 0) {
+    return declarators
+      .map((d) => (d.childForFieldName("name") || childByType(d, "identifier"))?.text)
+      .filter(Boolean);
+  }
+  // Go struct fields carry field_identifiers; JS class fields a property name.
+  const names = childrenByType(node, "field_identifier").map((n) => n.text);
+  const prop = node.childForFieldName("property") || childByType(node, "property_identifier");
+  if (prop) names.push(prop.text);
+  return names;
+}
+
+function extractFieldsFromTree(tree, filePath, language) {
+  const nodeType = FIELD_NODES[language];
+  if (!nodeType) return [];
+  const fields = [];
+  (function visit(node) {
+    if (node.type === nodeType) {
+      for (const name of fieldNames(node)) {
+        fields.push({
+          name, filePath, language,
+          linesStart: node.startPosition.row + 1,
+          linesEnd: node.endPosition.row + 1,
+        });
+      }
+    }
+    for (let i = 0; i < node.childCount; i++) visit(node.child(i));
+  })(tree.rootNode);
+  return fields;
+}
+
 // Which type declares each function, for `declares` (Type -> Function) edges.
 // Walks the tree carrying the innermost enclosing type so a method maps to the
 // class/interface whose body it sits in (both keyed within the same file).
@@ -778,6 +823,7 @@ function parseSourceFile(parser, file, language, result, baseContents = {}) {
   result.functions.push(...fileFunctions);
   result.types.push(...fileTypes);
   result.declares.push(...extractDeclaresFromTree(tree, file.path, language));
+  result.fields.push(...extractFieldsFromTree(tree, file.path, language));
 
   const fileCalls = extractCallsFromTree(tree, file.path, language, fileFunctions);
   result.calls.push(...fileCalls);
@@ -944,6 +990,7 @@ export async function extract(directory, language, options = {}) {
     imports: [],
     tests: [],
     declares: [],
+    fields: [],
   };
 
   for (const file of sourceFiles) {
@@ -987,7 +1034,7 @@ export async function extract(directory, language, options = {}) {
 export async function extractMulti(directory, languages, options = {}) {
   const merged = {
     languages: [],
-    files: [], functions: [], types: [], calls: [], imports: [], tests: [], declares: [],
+    files: [], functions: [], types: [], calls: [], imports: [], tests: [], declares: [], fields: [],
     hierarchyNeighborhood: { files: 0, truncated: false },
   };
 
@@ -995,7 +1042,7 @@ export async function extractMulti(directory, languages, options = {}) {
     if (!LANGUAGE_EXTENSIONS[language]) continue;
     const one = await extract(directory, language, options);
     merged.languages.push(language);
-    for (const key of ["files", "functions", "types", "calls", "imports", "tests", "declares"]) {
+    for (const key of ["files", "functions", "types", "calls", "imports", "tests", "declares", "fields"]) {
       // Not push(...one[key]): spreading a large array exceeds the call stack.
       for (const item of one[key]) merged[key].push(item);
     }
