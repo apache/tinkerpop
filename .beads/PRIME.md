@@ -102,7 +102,7 @@ Every session works under one **root bead**. Find it before writing code.
 
 ```bash
 bd list --status=all --json      # filter client-side: no parent, open/in_progress
-bd children <root>               # recursive — the whole subtree
+bd children <root>               # recursive — the whole subtree (--json: direct children only)
 ```
 
 - Show the operator open/`in_progress` beads with **no parent**, most recently updated
@@ -335,7 +335,7 @@ release  build
 ## Essential commands
 
 ```bash
-bd children <root>               # the subtree, recursive
+bd children <root>               # the subtree, recursive (--json: direct children only)
 bd ready --parent <root>         # startable now; ALWAYS scope to your root
 bd blocked --parent <root>       # what is waiting, and on what
 bd show <id>                     # one bead with dependencies

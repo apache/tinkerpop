@@ -42,6 +42,8 @@ import { orphans } from "./patterns/orphans.js";
 import { buildCodeIndex } from "./extraction/code-index.js";
 import { createPrDiscussion } from "./enrichment/api.js";
 import { discoverDiscussions } from "./discovery/discussions.js";
+import { requireBeads, syncBeads, bdRunner, beadSeeds, discoverBeads } from "./discovery/beads.js";
+import { populateBeads } from "./graph/populate-beads.js";
 
 const exec = promisify(execFile);
 
@@ -208,14 +210,23 @@ function tokenizeName(name) {
 // words (the human statement of intent) lead so they can't be truncated by the
 // cap, then distinctive tokens from changed-file basenames. Structural names,
 // generic verbs, and repo-ubiquitous tokens are filtered out so we don't search
-// on noise like "NOTICE" or "gremlin-server". Exported for testing.
+// on noise like "NOTICE" or "gremlin-server". So are location words: any token
+// of a changed file's directory path (a module such as tinkergraph-gremlin, a
+// package such as structure/storage) says where the change is, not what it is
+// about, and matches every proposal that mentions the module. Exported for testing.
 export function extractKeywords(changedFiles, prTitle) {
+  const location = new Set();
+  for (const file of changedFiles) {
+    for (const dir of file.split("/").slice(0, -1)) {
+      for (const tok of dir.toLowerCase().split(/[^a-z0-9]+/)) location.add(tok);
+    }
+  }
   const keywords = [];
   const seen = new Set();
   const push = (word) => {
     const k = word.toLowerCase();
     if (k.length < 3 || seen.has(k)) return;
-    if (GENERIC_WORDS.has(k) || UBIQUITOUS_TOKENS.has(k)) return;
+    if (GENERIC_WORDS.has(k) || UBIQUITOUS_TOKENS.has(k) || location.has(k)) return;
     seen.add(k);
     keywords.push(k);
   };
@@ -237,6 +248,27 @@ async function cleanupWorktree(repoPath, worktreePath, prBranch) {
   }
   await exec("git", ["worktree", "prune"], { cwd: repoPath }).catch(() => {});
   await exec("git", ["branch", "-D", prBranch], { cwd: repoPath }).catch(() => {});
+}
+
+// A re-run starts clean: stop whatever an earlier run of this PR left running
+// (its Gremlin container and functional server), remove its worktrees, and
+// delete the old work dir with its evidence and report.
+async function cleanupPreviousRun(repoPath, workDir, worktreePath, prBranch) {
+  if (!existsSync(workDir)) return;
+  const { readFile: rf } = await import("node:fs/promises");
+  const readJson = (name) => rf(join(workDir, name), "utf-8").then(JSON.parse).catch(() => null);
+  const functionalHandle = await readJson("functional.json");
+  if (functionalHandle) {
+    const { stop: stopFunctional } = await import("./functional/setup.js");
+    await stopFunctional(functionalHandle, { repoPath }).catch(() => {});
+  }
+  const previous = await readJson("session.json");
+  if (previous?.containerId) {
+    await exec("docker", ["stop", previous.containerId]).catch(() => {});
+    await exec("docker", ["rm", previous.containerId]).catch(() => {});
+  }
+  await cleanupWorktree(repoPath, worktreePath, prBranch);
+  await rm(workDir, { recursive: true, force: true });
 }
 
 // ============================================================
@@ -278,14 +310,21 @@ async function detectBaseBranch(pr) {
 
 export async function setup(params) {
   const { pr, repoPath, options = {} } = params;
+
+  // Beads is required: fail before fetching anything. Then pull the latest state;
+  // a failed pull leaves the local database as it was, and the report says so.
+  await requireBeads(repoPath);
+  const beadsSync = await syncBeads(repoPath);
+  log(beadsSync.synced ? "Beads synced (bd dolt pull)" : `Beads sync failed — using local state: ${beadsSync.syncError}`);
+
   const remote = options.remote || await detectRemote(repoPath);
   const baseBranch = options.baseBranch || await detectBaseBranch(pr);
   const prBranch = `pr-review/${pr}`;
   const workDir = `/tmp/pr-review-${pr}`;
   const worktreePath = `${workDir}/src`;
 
+  await cleanupPreviousRun(repoPath, workDir, worktreePath, prBranch);
   await mkdir(workDir, { recursive: true });
-  await cleanupWorktree(repoPath, worktreePath, prBranch);
 
   log(`PR #${pr} — targets ${baseBranch}, fetching...`);
   await exec("git", ["fetch", remote, baseBranch], { cwd: repoPath }).catch(() => {});
@@ -293,6 +332,12 @@ export async function setup(params) {
   await exec("git", ["worktree", "add", worktreePath, prBranch], { cwd: repoPath });
 
   const changedFiles = await getChangedFiles(repoPath, prBranch, remote, baseBranch);
+  // No diff against the base usually means the PR has already merged. Extraction
+  // treats an empty change list as "parse the whole repo", so stop here instead.
+  if (changedFiles.length === 0) {
+    await cleanupWorktree(repoPath, worktreePath, prBranch);
+    throw new Error(`PR #${pr} has no changes against ${remote}/${baseBranch}; it has probably already been merged. tinker-review reviews open PRs.`);
+  }
   const languages = detectLanguages(changedFiles);
   const language = languages[0];
   const domains = classifyDomains(changedFiles);
@@ -330,6 +375,7 @@ export async function setup(params) {
     language,
     languages,
     domains,
+    beadsSync,
     handle,
     connection,
     aConnection,
@@ -399,12 +445,19 @@ export async function phase1(session) {
     repoPath,
   });
   log(`  jiras: ${discussions.jiras.length} found${discussions.jiraMissing ? " (none referenced)" : ""}`);
-  log(`  pr comments: ${discussions.prComments.issue.length} issue + ${discussions.prComments.review.length} review`);
+  log(`  pr comments: ${discussions.prComments.issue.length} issue + ${discussions.prComments.review.length} review${discussions.prCommentsError ? ` (FETCH FAILED — ${discussions.prCommentsError})` : ""}`);
   log(`  dev list: ${discussions.devList.length} found${discussions.devListSearchPerformed ? ` (searched: ${prKeywords.join(", ")})` : ""}`);
   log(`  proposals: ${discussions.proposals.length} found`);
 
   log(`Loading discussions into graph...`);
   await populateDiscussions(g, discussions, { pr, prTitle: prTitle.trim(), changedFiles });
+
+  log(`Discovering beads...`);
+  const prRef = `apache/tinkerpop#${pr}`;
+  const beads = await discoverBeads({ seeds: beadSeeds(pr, discussions), prRef, run: bdRunner(repoPath) });
+  discussions.beads = { ...(session.beadsSync || { synced: false, syncError: null }), ...beads };
+  log(`  beads: ${beads.matches.length} records matched, ${beads.roots.length} roots (${beads.roots.map((r) => `${r.id}:${r.role}`).join(", ") || "none"}), ${beads.beads.length} beads`);
+  await populateBeads(g, beads);
 
   log(`Classifying external callees...`);
   const externalsResult = await classifyExternals(g, worktreePath);
@@ -449,6 +502,7 @@ export async function phase1(session) {
   const evidence = {
     meta: {
       pr,
+      baseBranch,
       headSha: headShaOut.trim() || null,
       title: prTitle.trim(),
       domains,
@@ -458,6 +512,8 @@ export async function phase1(session) {
       timestamp: new Date().toISOString(),
     },
     graphStats,
+    // Narrative slot for the report (SKILL.md step 5); the computed result is checks.clusters.
+    clusters: { assessment: null },
     architecture: architectureResult,
     checks: {
       completeness: completenessResults,
@@ -548,7 +604,10 @@ if (process.argv[1] && basename(process.argv[1]) === "review.js") {
   }
   const repoPath = process.argv[3] || process.cwd();
 
-  const session = await setup({ pr, repoPath });
+  const session = await setup({ pr, repoPath }).catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });
   try {
     const { jsonPath } = await phase1(session);
     log(`Server running on port ${session.handle.port} — ready for enrichment.`);

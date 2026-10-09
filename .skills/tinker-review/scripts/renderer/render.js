@@ -87,11 +87,12 @@ function stripCodeWrapper(str) {
  *   guidedWalk: [{ title, badge: "attention|info|safe", badgeText,
  *                  intro: "HTML", questions: [{ text: "HTML", refs: [CodeRef] }], refs: [CodeRef] }]
  *     (CodeRef = { file, symbol?, lines?, label? } — see code-links.js; the renderer resolves it
- *      against evidence.codeIndex into a link. A legacy item with only body: "HTML" still renders.)
+ *      against evidence.codeIndex into a link. A ref may instead be { bead, label? }, which links
+ *      to that bead in Project Memory. A legacy item with only body: "HTML" still renders.)
  *   functionalTest: { plan: "HTML", results: [{name, pass, output}], observations: ["HTML"] }
  *     (results rows are THEME-level, each naming the scenario labels it covers)
- *   findings: [{ title, snippet: "code", body: "HTML" }]
- *   openQuestions: [{ title, body: "HTML", meta: "string" }]
+ *   findings: [{ title, snippet: "code", body: "HTML", refs?: [CodeRef] }]
+ *   openQuestions: [{ title, body: "HTML", meta: "string", refs?: [CodeRef] }]
  *   appendixFunctional: { environment: "HTML", testCode: "raw text", fullOutput: "raw text" }
  *     (testCode = the COMPLETE labeled battery; renderer wraps it in <pre><code>, do NOT pre-wrap)
  */
@@ -104,6 +105,14 @@ export function render(evidence, options = {}) {
   const { meta, graphStats, checks, discussions, summary, clusters, communityAssessment, communityNames,
     guidedWalk, functionalTest, findings, openQuestions, appendixFunctional } = evidence;
 
+  const beads = discussions?.beads;
+  const refCtx = {
+    pr: meta.pr,
+    headSha: meta.headSha,
+    codeIndex: evidence.codeIndex,
+    beadIds: new Set((beads?.beads || []).map((b) => b.id)),
+  };
+
   const parts = [];
   parts.push(renderHeader(meta));
   parts.push(renderNav());
@@ -111,11 +120,11 @@ export function render(evidence, options = {}) {
   parts.push(discussions ? renderContext(discussions) : notProvided("context", "Discovered Context"));
   parts.push(renderClusters(clusters, checks && checks.clusters, evidence.architecture));
   parts.push(renderCommunitySection(checks && checks.communities, communityAssessment, communityNames));
-  parts.push(guidedWalk && guidedWalk.length > 0 ? renderGuidedWalk(guidedWalk, { pr: meta.pr, headSha: meta.headSha, codeIndex: evidence.codeIndex }, warnings) : notProvided("guided-walk", "Guided Walk"));
+  parts.push(guidedWalk && guidedWalk.length > 0 ? renderGuidedWalk(guidedWalk, refCtx, warnings) : notProvided("guided-walk", "Guided Walk"));
   parts.push(functionalTest ? renderFunctionalTest(functionalTest) : notProvided("functional-test", "Functional Test"));
-  parts.push(findings && findings.length > 0 ? renderFindings(findings) : notProvided("findings", "Findings"));
-  parts.push(openQuestions && openQuestions.length > 0 ? renderOpenQuestions(openQuestions) : notProvided("open-questions", "Open Questions"));
-  parts.push(renderAppendixStructural(checks, graphStats, communityNames));
+  parts.push(findings && findings.length > 0 ? renderFindings(findings, refCtx, warnings) : notProvided("findings", "Findings"));
+  parts.push(openQuestions && openQuestions.length > 0 ? renderOpenQuestions(openQuestions, refCtx, warnings) : notProvided("open-questions", "Open Questions"));
+  parts.push(renderAppendixStructural(checks, graphStats, communityNames, beads));
   parts.push(appendixFunctional ? renderAppendixFunctional(appendixFunctional) : notProvided("appendix-functional", "Appendix: Functional Test Details"));
   parts.push(`<footer>Graph Review &mdash; Apache TinkerPop | PR #${esc(String(meta.pr))} | Generated ${esc(meta.timestamp)}</footer>`);
 
@@ -193,7 +202,161 @@ function renderContext(disc) {
     cards.push(`<div class="card">\n    <h3>Proposals</h3>\n    <p>No matching proposal in <code>docs/src/dev/future/</code>.</p>\n  </div>`);
   }
 
+  if (disc.beads) cards.push(renderProjectMemory(disc.beads));
+
   return `<section id="context">\n  <h2>Discovered Context</h2>\n  ${cards.join("\n  ")}\n</section>`;
+}
+
+// ---- Project Memory (beads) -------------------------------------------------
+
+const ROLE_TEXT = {
+  primary: "This PR's work",
+  owner: "Owns a linked record",
+  shared: "Connected work",
+};
+
+// Where an external ref points: a PR, a JIRA, a commit, a URL; null for a path.
+function externalRefUrl(ref) {
+  const pr = ref.match(/^apache\/tinkerpop#(\d+)$/);
+  if (pr) return `https://github.com/apache/tinkerpop/pull/${pr[1]}`;
+  if (/^TINKERPOP-\d+$/.test(ref)) return `https://issues.apache.org/jira/browse/${ref}`;
+  const sha = ref.match(/^apache\/tinkerpop@([0-9a-f]+)$/);
+  if (sha) return `https://github.com/apache/tinkerpop/commit/${sha[1]}`;
+  return /^https?:\/\//.test(ref) ? ref : null;
+}
+
+function externalRefHtml(ref) {
+  const url = externalRefUrl(ref);
+  return url ? `<a href="${esc(url)}">${esc(ref)}</a>` : `<code>${esc(ref)}</code>`;
+}
+
+function beadAnchor(b, text) {
+  return `<span id="bead-${esc(b.id)}"></span>${text}`;
+}
+
+// A short status chip; in_progress is the one that matters at PR time.
+function beadStatus(b) {
+  if (b.status === "in_progress") return `<span class="badge badge-attention">in progress</span>`;
+  return `<span class="bead-status">${esc(b.status)}</span>`;
+}
+
+function beadText(text) {
+  return text ? `<div class="bead-design">${esc(text)}</div>` : "";
+}
+
+function renderDecisions(decisions, beadsById) {
+  if (decisions.length === 0) return "";
+  const supersededBy = new Map();
+  for (const d of decisions) {
+    for (const e of d.edges || []) if (e.type === "supersedes") supersededBy.set(e.to, d.id);
+  }
+  // A chosen decision and its rejected alternatives are joined by `related`, in either direction.
+  const rejectedOf = new Map();
+  const paired = new Set();
+  for (const d of decisions) {
+    for (const e of d.edges || []) {
+      if (e.type !== "related") continue;
+      const other = beadsById.get(e.to);
+      if (!other || other.type !== "decision") continue;
+      const [chosen, alt] = d.rejected === false && other.rejected === true ? [d, other]
+        : d.rejected === true && other.rejected === false ? [other, d] : [null, null];
+      if (!chosen) continue;
+      if (!rejectedOf.has(chosen.id)) rejectedOf.set(chosen.id, []);
+      rejectedOf.get(chosen.id).push(alt);
+      paired.add(alt.id);
+    }
+  }
+  const superseded = (d) => supersededBy.has(d.id)
+    ? ` <span class="bead-superseded">superseded by <a href="#bead-${esc(supersededBy.get(d.id))}">${esc(supersededBy.get(d.id))}</a></span>` : "";
+
+  const items = decisions.filter((d) => d.rejected === false).map((d) => {
+    const alts = (rejectedOf.get(d.id) || []).map((a) =>
+      `<li>${beadAnchor(a, `<span class="bead-rejected">Instead of</span> ${esc(a.title)} <code>${esc(a.id)}</code>${superseded(a)}`)}${beadText(a.design)}</li>`).join("");
+    return `<li>${beadAnchor(d, `<strong>Chose</strong> ${esc(d.title)} <code>${esc(d.id)}</code>${superseded(d)}`)}${beadText(d.design)}${alts ? `<ul class="bead-alternatives">${alts}</ul>` : ""}</li>`;
+  });
+  const unpaired = decisions.filter((d) => d.rejected === true && !paired.has(d.id)).map((d) =>
+    `<li>${beadAnchor(d, `<span class="bead-rejected">Not taken</span> ${esc(d.title)} <code>${esc(d.id)}</code>${superseded(d)}`)}${beadText(d.design)}</li>`);
+  const chosen = decisions.filter((d) => d.rejected === false).length;
+  return `<details class="bead-decisions">
+      <summary>Decisions: ${chosen} chosen, ${decisions.length - chosen} not taken</summary>
+      <ul class="bead-list">${[...items, ...unpaired].join("")}</ul>
+    </details>`;
+}
+
+function renderBeadRoot(root, members, comments, beadsById, role, via) {
+  const records = members.filter((b) => b.type === "record" && b.externalRef);
+  const decisions = members.filter((b) => b.type === "decision");
+  const work = members.filter((b) => b.id !== root.id && !["record", "decision"].includes(b.type));
+  const active = work.filter((b) => b.status === "in_progress");
+  const waiting = work.filter((b) => b.status === "open");
+  const finished = work.filter((b) => b.status !== "in_progress" && b.status !== "open");
+  const human = members.filter((b) => (b.labels || []).includes("human") && !["closed", "pinned"].includes(b.status));
+
+  const recordList = records.length > 0
+    ? `<p><strong>Records:</strong> ${records.map((r) => beadAnchor(r, `${externalRefHtml(r.externalRef)}${via.includes(r.id) ? " <em>(matched)</em>" : ""}`)).join(", ")}</p>` : "";
+  const commentList = (comments[root.id] || []).length > 0
+    ? `<details><summary>Root comments (${comments[root.id].length})</summary><ul class="bead-list">${comments[root.id].map((c) => `<li>${beadText(c.text)}</li>`).join("")}</ul></details>` : "";
+  const humanList = human.length > 0
+    ? `<p><strong>Unanswered questions:</strong></p><ul class="bead-list">${human.map((b) => `<li>${beadAnchor(b, `${esc(b.title)} <code>${esc(b.id)}</code>`)}</li>`).join("")}</ul>` : "";
+  const workItem = (b) => `<li>${beadAnchor(b, `${beadStatus(b)} ${esc(b.title)} <code>${esc(b.id)}</code>`)}</li>`;
+  const plan = work.length > 0
+    ? `<p><strong>Plan:</strong> ${active.length} in progress, ${waiting.length} open, ${finished.length} done.</p>${active.length + waiting.length > 0 ? `<ul class="bead-list">${[...active, ...waiting].map(workItem).join("")}</ul>` : ""}${finished.length > 0 ? `<details><summary>Done (${finished.length})</summary><ul class="bead-list">${finished.map(workItem).join("")}</ul></details>` : ""}` : "";
+
+  return `<div class="card card-context">
+    <h3>${beadAnchor(root, `<span class="badge badge-context">Beads</span> <span class="badge bead-role-${esc(role)}">${esc(ROLE_TEXT[role] || role)}</span> ${esc(root.title)} <code>${esc(root.id)}</code>`)}</h3>
+    <p class="discovery-meta" style="font-style: normal;">${esc(root.type)} · ${esc(root.status)}${(root.labels || []).length ? ` · ${root.labels.map((l) => `<code>${esc(l)}</code>`).join(" ")}` : ""}</p>
+    ${recordList}
+    ${humanList}
+    ${plan}
+    ${renderDecisions(decisions, beadsById)}
+    ${commentList}
+  </div>`;
+}
+
+/**
+ * The Project Memory part of Discovered Context: the beads recorded for this
+ * change, one card per root (the PR's own root first), or a note that none were
+ * found. Says so when bd dolt pull failed and local state was used instead.
+ */
+function renderProjectMemory(beads) {
+  const syncNote = beads.synced === false
+    ? `<p class="discovery-meta">The latest beads data wasn't available (<code>bd dolt pull</code> failed${beads.syncError ? `: ${esc(beads.syncError)}` : ""}); this shows the local beads database as it was.</p>` : "";
+  const roots = beads.roots || [];
+  if (roots.length === 0) {
+    const seeds = (beads.seeds || []).map((s) => `<code>${esc(s)}</code>`).join(", ");
+    return `<div class="card">
+    <h3>Project Memory</h3>
+    <p>The beads data wasn't available for this change: no bead record names this PR or its discussions.</p>
+    ${seeds ? `<p class="discovery-meta">Searched record beads for: ${seeds}</p>` : ""}${syncNote}
+  </div>`;
+  }
+
+  const all = beads.beads || [];
+  const beadsById = new Map(all.map((b) => [b.id, b]));
+  const intro = `<h3>Project Memory</h3>
+  <p class="section-intro">Beads recorded for this change, found through record beads that name the PR or its discussions. Each root is the plan and the decisions behind a body of work: the PR's own root first, then connected work. An open root is expected before merge.</p>${syncNote}`;
+  const cards = roots.map((r) => {
+    const root = beadsById.get(r.id);
+    if (!root) return "";
+    return renderBeadRoot(root, all.filter((b) => b.root === r.id), beads.comments || {}, beadsById, r.role, r.via || []);
+  });
+  return [intro, ...cards].join("\n  ");
+}
+
+function renderBeadsAppendix(beads) {
+  const all = beads?.beads || [];
+  if (all.length === 0) return "";
+  const rows = all.map((b) => {
+    const decision = b.rejected === true ? "not taken" : b.rejected === false ? "chosen" : "";
+    return `<tr><td class="fn-name"><a href="#bead-${esc(b.id)}">${esc(b.id)}</a></td><td>${esc(b.type)}${decision ? ` (${decision})` : ""}</td><td>${esc(b.status)}</td><td><code>${esc(b.root)}</code></td><td>${esc(b.title)}</td></tr>`;
+  }).join("\n      ");
+  return `
+  <h3>Beads</h3>
+  <p class="section-intro">Every bead loaded from the roots in <a href="#context">Project Memory</a>. Each is a <code>Bead</code> vertex in the graph; query a root's subtree with <code>.has("root", id)</code>.</p>
+  <table class="gap-table">
+    <thead><tr><th>Bead</th><th>Type</th><th>Status</th><th>Root</th><th>Title</th></tr></thead>
+    <tbody>\n      ${rows}\n    </tbody>
+  </table>`;
 }
 
 function generateClusterSvg(clusterData, architecture) {
@@ -420,6 +583,14 @@ function generateCommunitySvg(communityData, names) {
 function renderCodeRefs(refs, ctx, warnings, where, cls = "code-refs") {
   if (!Array.isArray(refs) || refs.length === 0) return "";
   const chips = refs.map((ref) => {
+    if (ref.bead) {
+      const label = ref.label || ref.bead;
+      if (!ctx.beadIds || !ctx.beadIds.has(ref.bead)) {
+        warnings.push(`${where}: unresolved: no bead "${ref.bead}" in discussions.beads (${JSON.stringify(ref)})`);
+        return `<span class="code-ref code-ref-unresolved" title="unresolved: no bead ${esc(ref.bead)}">${esc(label)}</span>`;
+      }
+      return `<a class="code-ref bead-ref" href="#bead-${esc(ref.bead)}" title="bead ${esc(ref.bead)} in Project Memory">${esc(label)}</a>`;
+    }
     const r = resolveRef(ref, ctx);
     if (!r.url) {
       warnings.push(`${where}: ${r.title} (${JSON.stringify(ref)})`);
@@ -484,21 +655,22 @@ function renderFunctionalTest(ft) {
 </section>`;
 }
 
-function renderFindings(findings) {
+function renderFindings(findings, ctx, warnings) {
   const cards = findings.map((f, i) => {
     const snippet = f.snippet ? `\n    <pre><code>${esc(f.snippet)}</code></pre>` : "";
     return `<div class="card finding">
     <p class="finding-title">${i + 1}. ${esc(f.title)}</p>${snippet}
-    ${f.body}
+    ${f.body}${renderCodeRefs(f.refs, ctx, warnings, `findings[${i}].refs`)}
   </div>`;
   }).join("\n  ");
   return `<section id="findings">\n  <h2>Findings</h2>\n  ${cards}\n</section>`;
 }
 
-function renderOpenQuestions(questions) {
-  const cards = questions.map(q => {
+function renderOpenQuestions(questions, ctx, warnings) {
+  const cards = questions.map((q, i) => {
     const meta = q.meta ? `\n    <p class="discovery-meta">${esc(q.meta)}</p>` : "";
-    return `<div class="card">\n    <h3>${esc(q.title)}</h3>\n    ${q.body}${meta}\n  </div>`;
+    const refs = renderCodeRefs(q.refs, ctx, warnings, `openQuestions[${i}].refs`);
+    return `<div class="card">\n    <h3>${esc(q.title)}</h3>\n    ${q.body}${refs}${meta}\n  </div>`;
   }).join("\n  ");
   return `<section id="open-questions">\n  <h2>Open Questions</h2>\n  ${cards}\n</section>`;
 }
@@ -544,7 +716,7 @@ function renderConfidence(confidence) {
 `;
 }
 
-function renderAppendixStructural(checks, graphStats, communityNames) {
+function renderAppendixStructural(checks, graphStats, communityNames, beads) {
   const hotspots = checks?.centrality?.hotspots || [];
   const blast = checks?.blastRadius?.functions || [];
   const stats = graphStats || {};
@@ -609,6 +781,7 @@ function renderAppendixStructural(checks, graphStats, communityNames) {
   </table>
 ${hierarchyHtml}
 ${communitiesHtml}
+${renderBeadsAppendix(beads)}
 ${confidenceHtml}
   <h3>Graph Statistics</h3>
   <div class="stats-grid">

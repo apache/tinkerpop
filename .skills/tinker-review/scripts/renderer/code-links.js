@@ -28,7 +28,7 @@ const REPO = "https://github.com/apache/tinkerpop";
  *
  * @typedef {object} CodeRef
  * @property {string} file - repo-relative path, or a unique suffix of one (e.g. "TinkerTransaction.java")
- * @property {string} [symbol] - function or type name; "Type.member" picks a member of that type
+ * @property {string} [symbol] - function, type or field name; "Type.member" picks a method or field of that type
  *   (so "TinkerStorageGraph.TinkerStorageGraph" is the constructor, bare "TinkerStorageGraph" the class)
  * @property {[number, number]} [lines] - explicit line range on the PR head side, used instead of symbol
  * @property {string} [label] - chip text; defaults to the symbol, else the file name
@@ -64,14 +64,17 @@ function findSymbol(entry, symbol) {
     const member = symbol.slice(dot + 1);
     const types = entry.symbols.filter((s) => s.kind === "type" && s.name === owner);
     for (const t of types) {
-      const fn = entry.symbols.find((s) => s.kind === "function" && s.name === member && s.start >= t.start && s.end <= t.end);
-      if (fn) return fn;
+      const inside = (s) => s.name === member && s.start >= t.start && s.end <= t.end;
+      const found = entry.symbols.find((s) => s.kind === "function" && inside(s))
+        || entry.symbols.find((s) => s.kind === "field" && inside(s));
+      if (found) return found;
     }
     return null;
   }
-  // a bare name means the type when one exists (a constructor shares its class's name), else the first function
+  // a bare name means the type when one exists (a constructor shares its class's name), else the first function, else a field
   return entry.symbols.find((s) => s.kind === "type" && s.name === symbol)
     || entry.symbols.find((s) => s.kind === "function" && s.name === symbol)
+    || entry.symbols.find((s) => s.kind === "field" && s.name === symbol)
     || null;
 }
 

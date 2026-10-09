@@ -171,3 +171,18 @@ test("expandHierarchy:false keeps extraction to changed files only", async () =>
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+test("Java fields are extracted per name, spanning their declaration", async () => {
+  await withJavaSources(
+    {
+      "Graph.java":
+        "package x;\npublic class Graph {\n  private final Object storageCommitLock = new Object();\n  int a,\n      b;\n  void run() { int local = 1; }\n}\n",
+    },
+    (r) => {
+      const byName = Object.fromEntries(r.fields.map((f) => [f.name, f]));
+      assert.deepEqual(Object.keys(byName).sort(), ["a", "b", "storageCommitLock"], "locals are not fields");
+      assert.deepEqual([byName.storageCommitLock.linesStart, byName.storageCommitLock.linesEnd], [3, 3]);
+      assert.deepEqual([byName.b.linesStart, byName.b.linesEnd], [4, 5]);
+    },
+  );
+});

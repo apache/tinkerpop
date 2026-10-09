@@ -23,7 +23,7 @@ import { pathToFileURL } from "node:url";
 import gremlin from "gremlin";
 import {
   listFunctions, listTypes, getCallsFrom, getCanonicalSteps,
-  listDeleted, listExternalRefs, addReference,
+  listDeleted, listExternalRefs, listBeads, addReference, linkBead,
   mapStep, setEdgeConfidence, linkDiscussion, linkDoc, addGrammarRule, annotate,
   linkRule, mapCoverage, createPrDiscussion,
 } from "./api.js";
@@ -47,11 +47,13 @@ const COMMANDS = {
   listInferred: { fn: listInferred, needsG: true, facing: "agent" },
   listDeleted: { fn: listDeleted, needsG: true, facing: "agent" },
   listExternalRefs: { fn: listExternalRefs, needsG: true, facing: "agent" },
+  listBeads: { fn: listBeads, needsG: true, facing: "agent" },
   // Agent-facing (Phase 2 enrichment) — write
   addReference: { fn: addReference, needsG: true, facing: "agent" },
   mapStep: { fn: mapStep, needsG: true, facing: "agent" },
   setEdgeConfidence: { fn: setEdgeConfidence, needsG: true, facing: "agent" },
   linkDiscussion: { fn: linkDiscussion, needsG: true, facing: "agent" },
+  linkBead: { fn: linkBead, needsG: true, facing: "agent" },
   linkDoc: { fn: linkDoc, needsG: true, facing: "agent" },
   addGrammarRule: { fn: addGrammarRule, needsG: true, facing: "agent" },
   linkRule: { fn: linkRule, needsG: true, facing: "agent" },
@@ -97,13 +99,15 @@ async function main() {
     console.log("  getCallsFrom    --function <name> --file <path>");
     console.log("  getCanonicalSteps");
     console.log("  auditConfidence [--maxAmbiguous 50]");
-    console.log("  listInferred    [--relation implements_step|calls|...] [--limit 100]");
+    console.log("  listInferred    [--relation implements_step|calls|...] [--changedOnly] [--limit 100]");
     console.log("  listDeleted");
     console.log("  listExternalRefs");
+    console.log("  listBeads       [--root <beadId>] [--type decision|task|record] [--status in_progress]");
     console.log("  addReference    --fromPath <path> --toPath <deletedPath> [--symbol <name>] [--location <L42>] [--confidence ...]");
     console.log("  mapStep         --function <name> --file <path> --step <canonicalName> [--confidence INFERRED|AMBIGUOUS|EXTRACTED]");
     console.log("  setEdgeConfidence --relation <label> --fromName <name> [--fromFile <path>] [--toName <name>] --confidence <EXTRACTED|INFERRED|AMBIGUOUS>");
     console.log("  linkDiscussion  --url <url> --source <jira|devlist|proposal> --title <title> [--body <body>] [--confidence ...]");
+    console.log("  linkBead        --bead <beadId> --entity <Function|Type|File> [--name <name>] [--file <path>] [--confidence ...]");
     console.log("  linkDoc         --entity <label> --name <name> --doc <path> [--section <section>] [--confidence ...]");
     console.log("  addGrammarRule  --name <name> [--production <production>]");
     console.log("  linkRule        --step <canonicalName> --rule <ruleName> [--confidence ...]");
@@ -165,7 +169,7 @@ async function main() {
         result = await fn(g, { maxAmbiguous: args.maxAmbiguous });
         break;
       case "listInferred":
-        result = await fn(g, { relation: args.relation, limit: args.limit });
+        result = await fn(g, { relation: args.relation, changedOnly: args.changedOnly, limit: args.limit });
         break;
       case "listDeleted":
         result = await fn(g);
@@ -197,6 +201,12 @@ async function main() {
           fromLabel: args.fromLabel,
           confidence: args.confidence,
         });
+        break;
+      case "listBeads":
+        result = await fn(g, { root: args.root, type: args.type, status: args.status });
+        break;
+      case "linkBead":
+        result = await fn(g, args.bead, args.entity, args.name, args.file, args.confidence);
         break;
       case "linkDiscussion":
         result = await fn(g, args.url, args.source, args.title, args.body, args.confidence);

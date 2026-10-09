@@ -38,8 +38,9 @@ share state.
 | `start --workDir <dir> [--port <n>]` | Reads `pr`/`repoPath` from `session.json`; adds a `build/` worktree on `pr-review/<pr>`; runs `mvn clean install -DskipTests` over the full reactor; locates the `*-standalone` assembly; writes a TinkerGraph config, an init script (binding `g` and `a`), and a server yaml; launches `bin/gremlin-server.sh` on a free port; polls until ready. Prints the handle as JSON and persists it to `functional.json`. |
 | `stop --workDir <dir>` | Reads `functional.json`, kills the server JVM, and removes the `build/` worktree. Also invoked automatically by `review.js` teardown. |
 
-The handle: `{ port, url, pid, buildWorktree, assemblyDir, logFile }`. `url` is
-the HTTP endpoint (`http://localhost:<port>/gremlin`) to hand the subagent.
+The handle: `{ port, protocol, url, pid, buildWorktree, assemblyDir, logFile }`. `url` is
+the endpoint to hand the subagent: `http://localhost:<port>/gremlin` for a master
+(4.x) PR, `ws://localhost:<port>/gremlin` for a 3.7-dev or 3.8-dev PR.
 
 The build is the slow step (a full reactor build, minutes). If readiness times
 out, the error names `functional-server.log` in the work dir — inspect it for the
@@ -52,8 +53,12 @@ Mirrors the Phase-1 server so a reviewer's queries look the same against either:
 - `g` — a standard traversal source over an empty TinkerGraph
 - `a` — the same graph `withComputer()`, for OLAP steps (`connectedComponent()`, …)
 
-Serializers are the project defaults (GraphSON V4 + GraphBinary V4) over the
-`HttpChannelizer`, so any current GLV client connects normally.
+The server follows the shipped default of the PR's release line, which `start`
+reads from the built source (`protocol` in the handle): on master the
+`HttpChannelizer` with GraphSON V4 and GraphBinary V4; on 3.7-dev and 3.8-dev the
+`WebSocketChannelizer` with GraphSON V3 and GraphBinary V1 and the session and
+traversal op processors. A GLV client from the same line connects normally, so
+brief the subagent with the drivers of that line.
 
 ## Driving it from the subagent
 
@@ -63,6 +68,34 @@ URL, the PR title/description, the relevant docs, and the relevant Gherkin
 features; it does **not** get source, the graph, or the review findings. See
 SKILL.md step 4 for the full briefing contract and the Verify sections for the
 per-change battery.
+
+## Layer 1 — embedded, through the built console
+
+When the Verify sections call for an embedded exercise (semantics changed, API
+stable), there is no server to start: the subagent drives the PR's own console
+against an in-process TinkerGraph. `start` has already built it — the console
+assembly sits next to the server's in the build worktree:
+
+```bash
+<buildWorktree>/gremlin-console/target/apache-tinkerpop-gremlin-console-*-standalone/bin/gremlin.sh -e scenarios.groovy
+```
+
+`-e` runs the script in execution mode and returns. Hand the subagent the path
+to `gremlin.sh` (with the `*` resolved) in place of a server URL, and these
+gotchas, which otherwise cost it a few failed runs:
+
+- **No top-level `def`.** The console evaluates a script statement by statement,
+  so a `def`-declared variable is local to its statement and gone by the next
+  line. Assign without `def` (`g = TinkerGraph.open().traversal()`), as the reference
+  docs' execution-mode examples do. `def` inside a closure or method is fine.
+- **End with `System.exit(0)`** if the console is still running after the last
+  statement — a non-daemon thread (a remote connection, an executor) keeps the
+  JVM alive.
+- **Print what you assert.** Output is the only record: `println` each result,
+  or use `assert`, which stops the script on the first failure — so label every
+  scenario and print before asserting.
+
+The same scenario labels and complete-code rules below apply to a console script.
 
 ## What the subagent must return (report inputs)
 
@@ -91,6 +124,11 @@ contract is raw text — relying on the guard is a slip, not a plan.
 
 - The `build/` worktree is separate from the enrichment worktree (`src/`) so
   Maven's `target/` output never pollutes the tree the agent reads.
-- Teardown removes the `build/` worktree and stops the JVM. If a run is
-  interrupted, `functional/cli.js stop` (or the next `start`, which prunes a
-  stale worktree first) cleans up.
+- Teardown removes the `build/` worktree and stops the JVM. `start` records the
+  worktree in `functional.json` before it builds, and removes it itself when the
+  build or server start fails, so a failed or interrupted start never leaves it
+  behind for teardown to miss.
+- The build worktree is checked out from the PR, so the server config written
+  into it must suit the PR's branch. It sets only what a review needs; metrics
+  are left out because their setting names differ between branches (master
+  renamed `interval` to `intervalMillis`).
