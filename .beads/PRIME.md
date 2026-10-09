@@ -236,9 +236,9 @@ Pinning is what makes a bead permanent — every destructive operation keys on
 
 ```
 root (feature/epic/task)
-  ├─relates-to──▶ record             TINKERPOP-3456
-  ├─relates-to──▶ record             apache/tinkerpop#2891
-  ├─relates-to──▶ record             apache/tinkerpop@374b0c76d0   (written at merge)
+  ├─parent-child─▶ record           TINKERPOP-3456
+  ├─parent-child─▶ record           apache/tinkerpop#2891
+  ├─parent-child─▶ record           apache/tinkerpop@374b0c76d0   (written at merge)
   ├─parent-child─▶ decision  "chose X"            {rejected: false}
   │                  └─related─▶ decision "Y"     {rejected: true}
   ├─parent-child─▶ task A "implement X" ──caused-by──▶ decision "chose X"
@@ -253,8 +253,14 @@ a list, and `bd ready` cannot tell you anything useful about it.
   see section 7.
 - **`record` beads** hold external artifacts — JIRA, PR, dev@ thread, proposal, and the
   commits a landing merged as. The ticket, URL or `owner/repo@sha` goes in `--external-ref`,
-  which identifies the kind as well. Attach them to the **root**, not to every bead. Create
-  them pinned. Search first — duplicates are the risk.
+  which identifies the kind as well, and only a record carries one. Create each as a child of
+  the **root** (`--parent <root>`), not of any other bead, and pin it. `bin/beads-commits.py`
+  finds a root's JIRA and PR records among its children, so a record attached any other way
+  is invisible to `--suggest`.
+- **Search first — duplicates are the risk.** `bd search <ref> --status all` matches
+  external refs; `bd query` has no field for them. When a second root needs an artifact that
+  already has a record, add `bd dep add <root> <record> -t related` rather than a duplicate.
+  `--suggest` on that root will not see it, so supply those commits by hand at merge.
 - Records are the only link between beads and code; commit messages carry no bead ID. The
   commit record written at merge (section 4) is what makes that link work in reverse —
   `bd query 'notes="<sha>"' --all` returns the record and its `parent`, for any commit in the
