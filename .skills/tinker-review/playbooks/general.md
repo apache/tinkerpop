@@ -91,8 +91,12 @@ SKILL.md step 4 for how it is briefed and isolated. It never gets the beads: the
 author's recorded reasoning is as much inside knowledge as the source code.
 
 ## Interpret
-- `checks.coverageGaps` / `checks.orphans` — missing tests on changed code; a
-  test-quality concern, weighed alongside the Inspect smells.
+- `checks.coverageGaps` / `checks.orphans` — a lower bound from the static call
+  graph, not a coverage measurement: code tested through GraphFactory, the graph
+  API, a strategy or the Gherkin suite counts as untested. Never report the count
+  as a finding. Name a gap only after reading the test tree and finding no test
+  that reaches the changed behavior, directly or indirectly; then weigh it as a
+  test-quality concern alongside the Inspect smells.
 - `functionalTest` observations (if testing ran) — a failing or surprising result
   is a finding graded by severity; a documented-but-unusable feature is blocking.
   Adversarial gaps the subagent found (unclear errors, silent wrong answers) are

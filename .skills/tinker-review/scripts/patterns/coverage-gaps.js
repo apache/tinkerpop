@@ -39,6 +39,11 @@ import { changedMeaningful } from "../graph/change-levels.js";
  * @property {number} linesEnd
  *
  * @typedef {Object} CoverageGapResult
+ * A lower bound on test coverage, not a measurement: a `tests` edge exists only
+ * where a test calls the function by name in the static call graph. Code reached
+ * through GraphFactory, the Structure/Traversal API, a strategy or the Gherkin
+ * suite is tested but listed here as uncovered, so a long list for such code is
+ * expected and is never a finding on its own.
  * @property {UncoveredFunction[]} uncovered     changed functions with no incoming `tests` edge
  * @property {number}              totalChanged  changed functions considered
  * @property {number}              totalCovered  changed functions that do have a test

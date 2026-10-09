@@ -43,6 +43,9 @@ import { changedAny } from "../graph/change-levels.js";
  * @property {string} missingEdge  the expected relationship that is absent (e.g. "in:tests")
  *
  * @typedef {Object} OrphanResult
+ * For `expectedEdge: "tests"` this has the same blind spot as CoverageGapResult:
+ * only name-resolved static calls from tests count, so code tested indirectly
+ * (through GraphFactory, the graph API, Gherkin) shows as orphaned.
  * @property {Orphan[]} orphaned       vertices missing the expected relationship
  * @property {number}   totalChecked   vertices examined
  * @property {number}   totalOrphaned  orphaned.length
