@@ -190,7 +190,7 @@ deliverable, and everything belonging to that effort hangs beneath it:
 [source,text]
 ----
 root (feature/epic/task)
-  ├─relates-to──▶ record             TINKERPOP-3456
+  ├─parent-child─▶ record            TINKERPOP-3456
   ├─parent-child─▶ decision "chose X"          {rejected: false}
   │                  └─related─▶ decision "Y"  {rejected: true}
   ├─parent-child─▶ task A "implement X" ──caused-by──▶ decision "chose X"
@@ -201,7 +201,8 @@ root (feature/epic/task)
 Four kinds of bead appear in that graph. A `task` is a unit of work. A `decision` is a choice
 and carries its reasoning. A `record` points at an external artifact such as a JIRA issue, a
 pull request, or the commits that a landing merged as, and is the only link between a bead and
-the code, because commit messages carry no bead identifiers. The root itself is usually a task or an epic.
+the code, because commit messages carry no bead identifiers. A record is a child of the root it
+belongs to, and only a record carries an external reference. The root itself is usually a task or an epic.
 
 The edges carry as much meaning as the beads. A `parent-child` edge establishes membership in
 the effort, while a `blocks` edge establishes order, so a subtree without any `blocks` edges is
