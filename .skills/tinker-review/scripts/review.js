@@ -415,7 +415,7 @@ export async function phase1(session) {
     repoPath,
   });
   log(`  jiras: ${discussions.jiras.length} found${discussions.jiraMissing ? " (none referenced)" : ""}`);
-  log(`  pr comments: ${discussions.prComments.issue.length} issue + ${discussions.prComments.review.length} review`);
+  log(`  pr comments: ${discussions.prComments.issue.length} issue + ${discussions.prComments.review.length} review${discussions.prCommentsError ? ` (FETCH FAILED — ${discussions.prCommentsError})` : ""}`);
   log(`  dev list: ${discussions.devList.length} found${discussions.devListSearchPerformed ? ` (searched: ${prKeywords.join(", ")})` : ""}`);
   log(`  proposals: ${discussions.proposals.length} found`);
 

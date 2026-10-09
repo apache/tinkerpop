@@ -133,7 +133,8 @@ interface Evidence {
     orphans:      OrphanResult;
   };
   discussions: DiscussionsResult & { beads: BeadsDiscovery };
-    // jiras[], devList[], secondary[], proposals[], prComments{}; beads = the roots
+    // jiras[], devList[], secondary[], proposals[], prComments{}, prCommentsError (null, or
+    // why the GitHub fetch failed — then the empty prComments mean nothing); beads = the roots
     // reached from record beads naming the PR or those discussions, their subtrees,
     // and whether bd dolt pull succeeded
   changedFiles: string[];
