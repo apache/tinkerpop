@@ -250,6 +250,27 @@ async function cleanupWorktree(repoPath, worktreePath, prBranch) {
   await exec("git", ["branch", "-D", prBranch], { cwd: repoPath }).catch(() => {});
 }
 
+// A re-run starts clean: stop whatever an earlier run of this PR left running
+// (its Gremlin container and functional server), remove its worktrees, and
+// delete the old work dir with its evidence and report.
+async function cleanupPreviousRun(repoPath, workDir, worktreePath, prBranch) {
+  if (!existsSync(workDir)) return;
+  const { readFile: rf } = await import("node:fs/promises");
+  const readJson = (name) => rf(join(workDir, name), "utf-8").then(JSON.parse).catch(() => null);
+  const functionalHandle = await readJson("functional.json");
+  if (functionalHandle) {
+    const { stop: stopFunctional } = await import("./functional/setup.js");
+    await stopFunctional(functionalHandle, { repoPath }).catch(() => {});
+  }
+  const previous = await readJson("session.json");
+  if (previous?.containerId) {
+    await exec("docker", ["stop", previous.containerId]).catch(() => {});
+    await exec("docker", ["rm", previous.containerId]).catch(() => {});
+  }
+  await cleanupWorktree(repoPath, worktreePath, prBranch);
+  await rm(workDir, { recursive: true, force: true });
+}
+
 // ============================================================
 // SETUP — fetch PR, create worktree, start server
 // Returns a session object the agent uses for all subsequent phases.
@@ -302,8 +323,8 @@ export async function setup(params) {
   const workDir = `/tmp/pr-review-${pr}`;
   const worktreePath = `${workDir}/src`;
 
+  await cleanupPreviousRun(repoPath, workDir, worktreePath, prBranch);
   await mkdir(workDir, { recursive: true });
-  await cleanupWorktree(repoPath, worktreePath, prBranch);
 
   log(`PR #${pr} — targets ${baseBranch}, fetching...`);
   await exec("git", ["fetch", remote, baseBranch], { cwd: repoPath }).catch(() => {});

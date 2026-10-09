@@ -60,7 +60,8 @@ coverage gaps, centrality, blast radius, cluster analysis) → write evidence JS
 **Server:** remains running (the agent needs it for enrichment)
 **Worktree:** available at `/tmp/pr-review-<pr>/src/`
 
-If re-running, the script cleans up stale worktrees/branches automatically.
+If re-running, the script clears the earlier run first (container, functional
+server, worktrees, and the work dir with its old evidence and report).
 
 ### 2. Choose the playbooks
 
@@ -315,23 +316,21 @@ Every section is always present — if you didn't provide a field, it shows
 node -e "import { teardown } from './scripts/review.js'; await teardown('/tmp/pr-review-<pr>');"
 ```
 
-Or simply stop the Docker container and clean up manually:
-```bash
-docker stop $(cat /tmp/pr-review-<pr>/session.json | python3 -c "import json,sys; print(json.load(sys.stdin)['containerId'])")
-rm -rf /tmp/pr-review-<pr>
-git worktree prune
-git branch -D pr-review/<pr>
-```
+This stops the knowledge graph server, removes the `src/` worktree and deletes
+the `pr-review/<pr>` branch. If a functional test ran (step 4), teardown also
+stops that server (via its `pid` in `functional.json`) and removes the `build/`
+worktree. Call this ONLY after all phases are complete.
 
-This stops the knowledge graph server, removes worktrees, deletes the branch.
-If a functional test ran (step 4), teardown also stops that server (via its
-`pid` in `functional.json`) and removes the `build/` worktree. Call this ONLY
-after all phases are complete.
+Teardown **keeps** `/tmp/pr-review-<pr>/`: it holds `report.html`, `report.json`
+and `evidence.json`. Delete it yourself once the report is no longer needed
+(`rm -rf /tmp/pr-review-<pr>`). Re-running the review on the same PR clears it,
+along with anything the earlier run left running.
 
 ## Important Notes
 
 - NEVER push to the `upstream` remote. It is fetch-only.
 - ALL output goes to `/tmp/pr-review-<pr>/` — never write inside the git repo.
 - The Gremlin Server stays alive until teardown. Don't kill it early.
-- If re-running, the script auto-cleans stale state.
+- If re-running, the script clears the earlier run first: its container, functional
+  server, worktrees and the whole work dir, including any old report.
 - The agent populates JSON narrative fields; the renderer produces HTML. No agent writes raw HTML.
