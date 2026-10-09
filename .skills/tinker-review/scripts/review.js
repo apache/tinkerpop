@@ -210,14 +210,23 @@ function tokenizeName(name) {
 // words (the human statement of intent) lead so they can't be truncated by the
 // cap, then distinctive tokens from changed-file basenames. Structural names,
 // generic verbs, and repo-ubiquitous tokens are filtered out so we don't search
-// on noise like "NOTICE" or "gremlin-server". Exported for testing.
+// on noise like "NOTICE" or "gremlin-server". So are location words: any token
+// of a changed file's directory path (a module such as tinkergraph-gremlin, a
+// package such as structure/storage) says where the change is, not what it is
+// about, and matches every proposal that mentions the module. Exported for testing.
 export function extractKeywords(changedFiles, prTitle) {
+  const location = new Set();
+  for (const file of changedFiles) {
+    for (const dir of file.split("/").slice(0, -1)) {
+      for (const tok of dir.toLowerCase().split(/[^a-z0-9]+/)) location.add(tok);
+    }
+  }
   const keywords = [];
   const seen = new Set();
   const push = (word) => {
     const k = word.toLowerCase();
     if (k.length < 3 || seen.has(k)) return;
-    if (GENERIC_WORDS.has(k) || UBIQUITOUS_TOKENS.has(k)) return;
+    if (GENERIC_WORDS.has(k) || UBIQUITOUS_TOKENS.has(k) || location.has(k)) return;
     seen.add(k);
     keywords.push(k);
   };

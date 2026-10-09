@@ -229,6 +229,26 @@ async function resolveExplicitProposals(repoPath, proposalPaths) {
   return out;
 }
 
+// An explicitly linked dev@ thread arrives as a bare URL. Fill in its subject
+// and opening message from the archive's thread API, so the agent has something
+// to read; on failure the placeholder title stays.
+async function fetchDevThread(thread) {
+  const id = thread.url.match(/\/thread\/([^/?#]+)/)?.[1];
+  if (!id) return thread;
+  try {
+    const data = JSON.parse(await httpGet(`https://lists.apache.org/api/thread.lua?id=${encodeURIComponent(id)}`));
+    const t = data.thread || {};
+    return {
+      ...thread,
+      title: t.subject || thread.title,
+      body: (t.body || "").slice(0, 1000),
+      date: t.epoch ? new Date(t.epoch * 1000).toISOString().slice(0, 10) : undefined,
+    };
+  } catch {
+    return thread;
+  }
+}
+
 function extractLinksFromText(text) {
   const jiraRefs = [...new Set([...text.matchAll(TINKERPOP_JIRA_PATTERN)].map((m) => m[0]))];
   const devListRefs = [...new Set([...text.matchAll(DEV_LIST_LINK_PATTERN)].map((m) => m[0]))];
@@ -257,14 +277,14 @@ async function followLinks(discussions) {
 
     for (const url of devListRefs) {
       if (discussions.some((d) => d.url === url)) continue;
-      secondary.push({
+      secondary.push(await fetchDevThread({
         url,
         source: "devlist",
         title: "(referenced thread)",
         body: "",
         found_in: `${disc.source}_body`,
         found_via: disc.id || disc.url,
-      });
+      }));
     }
   }
 
@@ -311,13 +331,13 @@ export async function discoverDiscussions(params) {
 
   // --- Dev list (direct) ---
   const devListLinks = [...new Set([...allText.matchAll(DEV_LIST_LINK_PATTERN)].map((m) => m[0]))];
-  const explicitDevList = devListLinks.map((url) => ({
+  const explicitDevList = await Promise.all(devListLinks.map((url) => fetchDevThread({
     url,
     source: "devlist",
     title: "(linked thread)",
     body: "",
     found_in: "pr",
-  }));
+  })));
 
   let searchedDevList = [];
   let devListSearchPerformed = false;

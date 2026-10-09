@@ -95,3 +95,17 @@ test("a title keyword matches at INFERRED strength; a lone body mention does not
     },
   );
 });
+
+test("extractKeywords drops words that only name where the change is (module and package dirs)", () => {
+  const kws = extractKeywords(
+    [
+      "tinkergraph-gremlin/src/main/java/org/apache/tinkerpop/gremlin/tinkergraph/structure/storage/GraphBinaryStorage.java",
+      "tinkergraph-gremlin/src/main/java/org/apache/tinkerpop/gremlin/tinkergraph/structure/TinkerStorageGraph.java",
+    ],
+    "TINKERPOP-3282 TinkerStorageGraph",
+  );
+  assert.ok(!kws.includes("tinkergraph"), "module name excluded");
+  assert.ok(!kws.includes("storage"), "package name excluded");
+  assert.ok(kws.includes("tinkerstoragegraph"), "title topic kept");
+  assert.ok(kws.includes("binary"), "a basename token that is not a location is kept");
+});
