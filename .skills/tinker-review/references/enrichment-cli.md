@@ -103,6 +103,16 @@ crucially, **flags any whose name matches a deleted symbol**: a changed file
 still calling a just-removed name is a dangling reference the graph catches on
 its own. Sorted so the dangerous ones surface first.
 
+### listBeads
+The beads Phase 1 loaded for this PR — the roots reached from records naming the
+PR or its discussions, and everything under them — in reading order: the primary
+root (the PR's own record) first, then owner and shared roots, each followed by
+its decisions, tasks and records. A chosen decision lists the rejected
+`alternatives` it beat and any decision it was `supersededBy`; `governs` shows
+code already linked with `linkBead`. Filter with `--root`, `--type` or `--status`
+(`--status in_progress` is the claimed, unfinished work). Empty when no record
+matched — the review then simply proceeds without beads.
+
 ---
 
 ## Agent-facing — write
@@ -136,6 +146,14 @@ Discussion vertex, linked from the PR discussion via `addresses`. Use it when
 enrichment turns up prior context the Phase-1 discovery pass missed, so the
 report can cite where the change was debated. `--source` is `jira | devlist |
 proposal`.
+
+### linkBead
+Records that a bead — usually a decision — governs a piece of the changed code,
+as a `governs` edge (Bead → Function, Type or File). Draw it when a decision's
+design is about that code, so Inspect checks the code against what the decision
+chose and ruled out, and the report can cite the decision beside it. Key a
+Function/Type by `--name` (add `--file` when the name repeats) and a File by
+`--file`. Defaults to `INFERRED`: the link is your judgment, not a bd fact.
 
 ### linkDoc
 Records that a documentation file documents a graph entity, via a `documents`

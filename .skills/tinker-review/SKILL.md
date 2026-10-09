@@ -6,7 +6,7 @@ description: >
   playbooks, runs structural analysis, and produces an HTML evidence package.
   Use when asked to review a TinkerPop PR by number.
 license: Apache-2.0
-compatibility: Requires Docker, Node.js 20+, git. Network access for fetching PR refs.
+compatibility: Requires Docker, Node.js 20+, git and beads (bd). Network access for fetching PR refs.
 metadata:
   version: "0.1.0"
   project: Apache TinkerPop
@@ -19,6 +19,9 @@ metadata:
 - Docker running (for Gremlin Server)
 - `upstream` remote pointing to `git@github.com:apache/tinkerpop.git` (fetch only)
 - Node.js 20+ with dependencies installed in `.skills/tinker-review/`
+- Beads (`bd`) installed, with the repo's beads database available (`bin/agent-setup.sh --contributor`).
+  The review stops before fetching the PR when `bd` is missing. It runs `bd dolt pull` first and
+  falls back to local state if the pull fails; it never writes to beads.
 
 
 ## References (load on demand)
@@ -46,9 +49,11 @@ npm install --prefix .skills/tinker-review  # only needed once
 node .skills/tinker-review/scripts/review.js <pr-number> <repo-path>
 ```
 
-This performs: fetch PR → create worktree → start Gremlin Server → extract
-structure via Tree-sitter → populate knowledge graph → discover discussions
-(JIRA, dev list, proposals, PR comments) → run pattern checks (completeness,
+This performs: check for beads and pull it → fetch PR → create worktree → start
+Gremlin Server → extract structure via Tree-sitter → populate knowledge graph →
+discover discussions (JIRA, dev list, proposals, PR comments) → discover the PR's
+beads (records naming the PR or those discussions, their roots and subtrees) →
+run pattern checks (completeness,
 coverage gaps, centrality, blast radius, cluster analysis) → write evidence JSON.
 
 **Output:** `/tmp/pr-review-<pr>/evidence.json`
@@ -177,8 +182,8 @@ command does and how to drive it.
 - Relevant Gherkin test features (for expected behavior reference)
 - The Gremlin Server URL (the `url` from the command above)
 
-The subagent does NOT get: source code, the knowledge graph, code review findings,
-or access to the analysis worktree. Brief it as a **minimally experienced
+The subagent does NOT get: source code, the knowledge graph, the PR's beads, code
+review findings, or access to the analysis worktree. Brief it as a **minimally experienced
 TinkerPop user** who has only the docs — it tests blind, and its stumbles are
 signal about how usable the feature is.
 
@@ -264,11 +269,14 @@ produce a complete evidence-with-narrative JSON file. Write it to
     symbol's lines highlighted. Two or three
     refs per question is plenty.
   - `refs` on the item — optional "Also see" chips for code that belongs to the whole area.
+  - A ref can cite a bead instead of code: `{ bead: "tp-abc.3", label? }` links to that bead
+    in the report's Project Memory. Use it where a question or finding rests on a recorded
+    decision or task; it must be a bead in `discussions.beads.beads`.
 
   `render.js` prints any ref it cannot resolve; fix the `file`/`symbol` and re-render. An
   item with only an HTML `body` still renders (older reports).
-- `findings` — array of `{ title, snippet, body }` objects, ordered most-severe-first (Interpret grades each blocking / high / low)
-- `openQuestions` — array of `{ title, body, meta }` objects
+- `findings` — array of `{ title, snippet, body, refs? }` objects, ordered most-severe-first (Interpret grades each blocking / high / low); `refs` take the same code or bead refs as `guidedWalk`
+- `openQuestions` — array of `{ title, body, meta, refs? }` objects
 - `functionalTest` — `{ plan, results: [{name, pass, output}], observations }` (if testing was done).
   `plan` is HTML and `observations` is an array of HTML strings (one per insight); both and surface **themes and insights** — what
   families of behavior were exercised and what was learned — not a per-scenario

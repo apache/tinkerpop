@@ -17,6 +17,15 @@ inherits it. Run in order:
 - `auditConfidence` again — anything still `AMBIGUOUS` goes to `openQuestions`,
   never asserted as fact.
 
+**Project memory** — the PR's beads, when a record named the PR or its
+discussions (`discussions.beads.roots` is non-empty). Run these before the
+confidence pass so the `governs` edges they write go through it:
+- `listBeads` — read the roots, decisions (each chosen one with the alternatives
+  it beat) and tasks. The `primary` root is the PR's own work; `owner` and
+  `shared` roots are connected work that explains it.
+- `linkBead` — link each decision whose design is about changed code to that
+  Function, Type or File, chosen and rejected alike.
+
 ## Inspect
 **Style:**
 - Wildcard imports in Java (`import foo.*`)
@@ -34,6 +43,19 @@ inherits it. Run in order:
 - Assertions that don't clearly explain what they verify
 - Error/exception paths that aren't tested
 - Test helpers without guard clauses (missing else/throw for invalid input)
+
+**Project memory** (only when beads were found; read decisions by `listBeads`):
+- Code against chosen decisions — does the diff do something a decision's design
+  rules out? Judge against the newest decision in a `supersededBy` chain.
+- Code against rejected alternatives — each one is a "why not X?" already
+  answered; don't raise it again. But if the diff *does* X, check whether the
+  reason X lost still holds in this code.
+- `in_progress` tasks under the PR's root against what the PR says it delivers —
+  claimed work that isn't here, or is here half-done.
+- Decisions that record a departure from the JIRA, proposal or dev@ thread —
+  does the PR description say so too?
+- When several roots were loaded, which one does this PR deliver, and what do
+  the others show about the connected work it depends on or affects?
 
 **Resource safety:**
 - Connections, channels, or streams opened without a clear cleanup path
@@ -65,7 +87,8 @@ mistakes a real user would make:
   boundary values, and the feature used against the grain of the docs.
 
 The blind subagent designs and runs this battery from the docs alone — see
-SKILL.md step 4 for how it is briefed and isolated.
+SKILL.md step 4 for how it is briefed and isolated. It never gets the beads: the
+author's recorded reasoning is as much inside knowledge as the source code.
 
 ## Interpret
 - `checks.coverageGaps` / `checks.orphans` — missing tests on changed code; a
@@ -79,6 +102,20 @@ SKILL.md step 4 for how it is briefed and isolated.
 - Style nits and unused variables — low; note them, don't let them dominate.
 - Formatting mixed with functional changes — high; it makes the PR harder to
   review and should ideally be separate commits.
+- `discussions.beads` — the root is expected to be open: it closes at merge, so
+  an open root is never a finding, and neither is finding no beads or a failed
+  sync (the report says which).
+- Diff does what a rejected alternative ruled out and the reason it lost still
+  holds — high. If that reason no longer holds, an open question: was this a
+  deliberate reconsideration? Diff contradicts a chosen decision with no newer
+  decision superseding it — high.
+- An `in_progress` task under the PR's root that the PR doesn't finish — high
+  when the PR claims to be complete. An open, unclaimed task — an open question
+  only: an epic root spans several PRs, so it may belong to a later one.
+- An open bead labelled `human` under a loaded root — an open question no one
+  has answered; carry it into `openQuestions`.
+- The root's release label doesn't fit `meta.baseBranch` (a `3.7.x` root on a
+  PR to `master`) — an open question about where the work should land.
 - Deprecated API in new code — high. Deprecated API already present in modified
   code — low, unless the PR is specifically a migration away from it.
 

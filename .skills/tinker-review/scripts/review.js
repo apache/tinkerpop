@@ -42,6 +42,8 @@ import { orphans } from "./patterns/orphans.js";
 import { buildCodeIndex } from "./extraction/code-index.js";
 import { createPrDiscussion } from "./enrichment/api.js";
 import { discoverDiscussions } from "./discovery/discussions.js";
+import { requireBeads, syncBeads, bdRunner, beadSeeds, discoverBeads } from "./discovery/beads.js";
+import { populateBeads } from "./graph/populate-beads.js";
 
 const exec = promisify(execFile);
 
@@ -278,6 +280,13 @@ async function detectBaseBranch(pr) {
 
 export async function setup(params) {
   const { pr, repoPath, options = {} } = params;
+
+  // Beads is required: fail before fetching anything. Then pull the latest state;
+  // a failed pull leaves the local database as it was, and the report says so.
+  await requireBeads(repoPath);
+  const beadsSync = await syncBeads(repoPath);
+  log(beadsSync.synced ? "Beads synced (bd dolt pull)" : `Beads sync failed — using local state: ${beadsSync.syncError}`);
+
   const remote = options.remote || await detectRemote(repoPath);
   const baseBranch = options.baseBranch || await detectBaseBranch(pr);
   const prBranch = `pr-review/${pr}`;
@@ -293,6 +302,12 @@ export async function setup(params) {
   await exec("git", ["worktree", "add", worktreePath, prBranch], { cwd: repoPath });
 
   const changedFiles = await getChangedFiles(repoPath, prBranch, remote, baseBranch);
+  // No diff against the base usually means the PR has already merged. Extraction
+  // treats an empty change list as "parse the whole repo", so stop here instead.
+  if (changedFiles.length === 0) {
+    await cleanupWorktree(repoPath, worktreePath, prBranch);
+    throw new Error(`PR #${pr} has no changes against ${remote}/${baseBranch}; it has probably already been merged. tinker-review reviews open PRs.`);
+  }
   const languages = detectLanguages(changedFiles);
   const language = languages[0];
   const domains = classifyDomains(changedFiles);
@@ -330,6 +345,7 @@ export async function setup(params) {
     language,
     languages,
     domains,
+    beadsSync,
     handle,
     connection,
     aConnection,
@@ -406,6 +422,13 @@ export async function phase1(session) {
   log(`Loading discussions into graph...`);
   await populateDiscussions(g, discussions, { pr, prTitle: prTitle.trim(), changedFiles });
 
+  log(`Discovering beads...`);
+  const prRef = `apache/tinkerpop#${pr}`;
+  const beads = await discoverBeads({ seeds: beadSeeds(pr, discussions), prRef, run: bdRunner(repoPath) });
+  discussions.beads = { ...(session.beadsSync || { synced: false, syncError: null }), ...beads };
+  log(`  beads: ${beads.matches.length} records matched, ${beads.roots.length} roots (${beads.roots.map((r) => `${r.id}:${r.role}`).join(", ") || "none"}), ${beads.beads.length} beads`);
+  await populateBeads(g, beads);
+
   log(`Classifying external callees...`);
   const externalsResult = await classifyExternals(g, worktreePath);
   log(`  externals: ${externalsResult.library.length} library / ${externalsResult.project.length} project / ${externalsResult.unresolved.length} unresolved`);
@@ -449,6 +472,7 @@ export async function phase1(session) {
   const evidence = {
     meta: {
       pr,
+      baseBranch,
       headSha: headShaOut.trim() || null,
       title: prTitle.trim(),
       domains,
@@ -548,7 +572,10 @@ if (process.argv[1] && basename(process.argv[1]) === "review.js") {
   }
   const repoPath = process.argv[3] || process.cwd();
 
-  const session = await setup({ pr, repoPath });
+  const session = await setup({ pr, repoPath }).catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });
   try {
     const { jsonPath } = await phase1(session);
     log(`Server running on port ${session.handle.port} — ready for enrichment.`);

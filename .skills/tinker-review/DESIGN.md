@@ -9,8 +9,9 @@ document is only the machinery and its extension points.
 The pipeline is two phases, split by what is mechanical and what needs judgment.
 
 **Phase 1 — deterministic** (`scripts/review.js`) builds the graph and writes
-`evidence.json`: fetch PR → worktree → start Gremlin Server → tree-sitter
-extract → populate → discover discussions → run the structural checks. It exits
+`evidence.json`: beads gate and pull → fetch PR → worktree → start Gremlin
+Server → tree-sitter extract → populate → discover discussions → discover beads
+→ run the structural checks. It exits
 cleanly (a `PHASE1_COMPLETE` sentinel) so a caller can detect completion; the
 Gremlin Server container stays up.
 
@@ -38,6 +39,7 @@ has already exited.
 |------|------|
 | `scripts/review.js` | Phase 1 orchestrator — `setup` / `phase1` / `teardown` |
 | `scripts/extraction/tree-sitter.js` | source → structural extraction |
+| `scripts/discovery/{discussions,beads}.js` | Phase 1 context discovery — JIRA, dev list, proposals and PR comments over HTTP (`discussions.js`); the PR's beads through the local `bd`, read-only (`beads.js`) |
 | `scripts/graph/*.js` | populate the graph; `confidence.js` / `externals.js` / `references.js` hold the data-model vocabularies and shared edge helpers |
 | `scripts/patterns/*.js` | one structural check per file; each defines its own result `@typedef` |
 | `scripts/enrichment/{api,cli}.js` | Phase 2 read/write commands over the live graph |

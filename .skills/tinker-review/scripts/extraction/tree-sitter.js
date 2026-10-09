@@ -996,7 +996,8 @@ export async function extractMulti(directory, languages, options = {}) {
     const one = await extract(directory, language, options);
     merged.languages.push(language);
     for (const key of ["files", "functions", "types", "calls", "imports", "tests", "declares"]) {
-      merged[key].push(...one[key]);
+      // Not push(...one[key]): spreading a large array exceeds the call stack.
+      for (const item of one[key]) merged[key].push(item);
     }
     if (one.hierarchyNeighborhood) {
       merged.hierarchyNeighborhood.files += one.hierarchyNeighborhood.files;
