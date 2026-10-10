@@ -24,7 +24,7 @@ confidence pass so the `governs` edges they write go through it:
 - `listBeads` — read the roots, decisions (each chosen one with the alternatives
   it beat) and tasks. The `primary` root is the PR's own work; `owner` and
   `shared` roots are connected work that explains it.
-- `linkBead` — link each decision whose design is about changed code to that
+- `linkBead` — link each decision whose reasoning is about changed code to that
   Function, Type or File, chosen and rejected alike.
 
 ## Inspect
@@ -46,9 +46,9 @@ confidence pass so the `governs` edges they write go through it:
 - Test helpers without guard clauses (missing else/throw for invalid input)
 
 **Project memory** (only when beads were found; read decisions by `listBeads`):
-- Chosen decisions are claims to verify, not reasoning to accept. A design
-  states facts — a mechanism, an invariant, a measurement, what the choice rules
-  out. Check each against the code, and against the build or the functional test
+- Chosen decisions are claims to verify, not reasoning to accept. A decision's
+  description states facts — a mechanism, an invariant, a measurement, what the
+  choice rules out. Check each against the code, and against the build or the functional test
   where the claim is about behavior. Does the diff do something the decision
   rules out? Judge against the newest decision in a `supersededBy` chain.
 - Rejected alternatives — each answers "why not X?" only if the reason X lost

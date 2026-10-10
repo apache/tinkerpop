@@ -46,9 +46,8 @@ export const BEADS_REQUIRED_MESSAGE =
  *   expected to be open (it closes at merge), and decisions are closed as they are written, so
  *   status means most on tasks: `in_progress` is claimed, unfinished work.
  * @property {string} title
- * @property {string} description
- * @property {string} design - For a decision, the reasoning: why it was chosen, or what the rejected
- *   option was, why it lost and what settled it.
+ * @property {string} description - For a decision, the reasoning: why it was chosen, or what the
+ *   rejected option was, why it lost and what settled it.
  * @property {boolean|null} rejected - On a decision, true marks the road not taken; null on other types.
  * @property {string[]} labels
  * @property {string|null} parent - Parent bead id; null on a root.
@@ -167,7 +166,6 @@ function toBead(raw) {
     status: raw.status,
     title: raw.title || "",
     description: raw.description || "",
-    design: raw.design || "",
     rejected: raw.issue_type === "decision" ? raw.metadata?.rejected === true : null,
     labels: raw.labels || [],
     parent: raw.parent || null,

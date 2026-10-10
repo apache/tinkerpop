@@ -34,7 +34,7 @@ import { render } from "../scripts/renderer/render.js";
 function bead(id, type, { parent = null, ref = null, rejected, deps = [], comments = 0, title = id } = {}) {
   return {
     id, issue_type: type, status: type === "decision" ? "closed" : "open", title,
-    description: "", design: `design of ${id}`, labels: ["gremlin-core"], parent,
+    description: `reasoning of ${id}`, labels: ["gremlin-core"], parent,
     external_ref: ref, closed_at: null, comment_count: comments,
     metadata: rejected === undefined ? null : { rejected },
     dependencies: [
@@ -216,7 +216,7 @@ const meta = { pr: 99, headSha: "abc", title: "t", domains: [], timestamp: "now"
 
 function shaped(id, type, extra = {}) {
   return {
-    id, type, status: "closed", title: `title ${id}`, description: "", design: `why ${id}`,
+    id, type, status: "closed", title: `title ${id}`, description: `why ${id}`,
     rejected: type === "decision" ? false : null, labels: [], parent: null, externalRef: null,
     closedAt: null, root: "tp-a", edges: [], ...extra,
   };
@@ -249,6 +249,7 @@ test("Project Memory shows the root, its records, plan and decisions with altern
   assert.match(html, /Unanswered questions:[\s\S]*tp-a\.7/);
   assert.match(html, /Decisions: 2 chosen, 1 not taken/);
   assert.match(html, /Chose<\/strong> title tp-a\.2[\s\S]*superseded by[\s\S]*bead-alternatives[\s\S]*Instead of<\/span> title tp-a\.3/);
+  assert.match(html, /<div class="bead-reasoning">why tp-a\.2<\/div>[\s\S]*<div class="bead-reasoning">why tp-a\.3<\/div>/, "a decision's description is its reasoning");
   assert.match(html, /a fact on the root/);
   assert.match(html, /<h3>Beads<\/h3>/, "the appendix lists the loaded beads");
   for (const b of found.beads) {
