@@ -220,7 +220,7 @@ export async function listBeads(g, filter = {}) {
       type: one(m, "type"),
       status: one(m, "status"),
       title: one(m, "title"),
-      design: one(m, "design") || "",
+      description: one(m, "description") || "",
       root: one(m, "root"),
       rootRole: one(m, "rootRole") ?? null,
       rejected: one(m, "rejected") ?? null,
@@ -397,7 +397,7 @@ export async function linkDiscussion(g, url, source, title, body, confidence) {
 /**
  * Record that a bead — usually a decision — governs a piece of the changed
  * code, as a `governs` edge (Bead → Function, Type or File). Draw it when a
- * decision's design is about that code, so Inspect can check the code against
+ * decision's reasoning is about that code, so Inspect can check the code against
  * what the decision chose and ruled out, and the report can cite the decision
  * beside it. Key a Function or Type by `--name` (plus `--file` when the name
  * repeats) and a File by `--file`.

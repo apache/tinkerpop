@@ -241,7 +241,7 @@ function beadStatus(b) {
 }
 
 function beadText(text) {
-  return text ? `<div class="bead-design">${esc(text)}</div>` : "";
+  return text ? `<div class="bead-reasoning">${esc(text)}</div>` : "";
 }
 
 function renderDecisions(decisions, beadsById) {
@@ -271,11 +271,11 @@ function renderDecisions(decisions, beadsById) {
 
   const items = decisions.filter((d) => d.rejected === false).map((d) => {
     const alts = (rejectedOf.get(d.id) || []).map((a) =>
-      `<li>${beadAnchor(a, `<span class="bead-rejected">Instead of</span> ${esc(a.title)} <code>${esc(a.id)}</code>${superseded(a)}`)}${beadText(a.design)}</li>`).join("");
-    return `<li>${beadAnchor(d, `<strong>Chose</strong> ${esc(d.title)} <code>${esc(d.id)}</code>${superseded(d)}`)}${beadText(d.design)}${alts ? `<ul class="bead-alternatives">${alts}</ul>` : ""}</li>`;
+      `<li>${beadAnchor(a, `<span class="bead-rejected">Instead of</span> ${esc(a.title)} <code>${esc(a.id)}</code>${superseded(a)}`)}${beadText(a.description)}</li>`).join("");
+    return `<li>${beadAnchor(d, `<strong>Chose</strong> ${esc(d.title)} <code>${esc(d.id)}</code>${superseded(d)}`)}${beadText(d.description)}${alts ? `<ul class="bead-alternatives">${alts}</ul>` : ""}</li>`;
   });
   const unpaired = decisions.filter((d) => d.rejected === true && !paired.has(d.id)).map((d) =>
-    `<li>${beadAnchor(d, `<span class="bead-rejected">Not taken</span> ${esc(d.title)} <code>${esc(d.id)}</code>${superseded(d)}`)}${beadText(d.design)}</li>`);
+    `<li>${beadAnchor(d, `<span class="bead-rejected">Not taken</span> ${esc(d.title)} <code>${esc(d.id)}</code>${superseded(d)}`)}${beadText(d.description)}</li>`);
   const chosen = decisions.filter((d) => d.rejected === false).length;
   return `<details class="bead-decisions">
       <summary>Decisions: ${chosen} chosen, ${decisions.length - chosen} not taken</summary>

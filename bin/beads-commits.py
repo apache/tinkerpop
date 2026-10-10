@@ -39,9 +39,9 @@ there to write its record. Recording the landing is the one step every root
 passes through, and by then GitHub knows which PR carried the commits. A PR
 recorded under another root is related to this one rather than duplicated.
 
-The shas go in `notes` because that is the one free-text field bd can query.
+The shas go in `notes` because that is a free-text field bd can query.
 `bd search` matches title, id and some external refs but never notes, and
-`bd query` has no field for comments or design, so a sha recorded anywhere else
+`bd query` has no field for comments, so a sha recorded in one
 is unreachable except by grepping an export. `bd query 'notes=...'` is a
 substring match, which is why the full 40-character sha is stored: a short sha
 pasted from `git log --oneline` is a prefix of it, so both forms of the query find the bead. Quote the sha inside the

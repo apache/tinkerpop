@@ -56,20 +56,24 @@ OptionsStrategy" describes code and stays a comment.
 ```bash
 # Only when something was actually ruled out. No fork = implementation; the code documents that.
 bd create --type=decision --parent=<root> --title="Chose X" --metadata '{"rejected":false}' \
-          --design="why, and what X rules out"
+          --description="why, and what X rules out"
 # An approach you tried and abandoned is the strongest sibling — someone already walked it.
 bd create --type=decision --parent=<root> --title="Y" --metadata '{"rejected":true}' \
-          --design="what Y concretely was, why it lost, what settled it"
+          --description="what Y concretely was, why it lost, what settled it"
 bd dep add <decision> <alternative> -t related    # never put either of these on a task bead
 bd close <decision> <alternative>   # both: a decision is resolved the moment you write it
 ```
+
+**Reasoning goes in `--description`, never `--design`.** `bd search --desc-contains` and
+`bd query description=` find text in a description; nothing in bd searches design, so
+reasoning written there can be read but never found.
 
 **Close a decision as you create it.** Left `open` it lands in `bd ready`, advertising
 reasoning as startable work, and its `closed_at` ends up stamped with the merge date — dating
 the decision to a day it was not made. It gets pinned with the rest of the subtree at merge
 (section 4).
 
-**A rejected alternative's `--design` names three things: what the option concretely was, why it
+**A rejected alternative's `--description` names three things: what the option concretely was, why it
 lost, and what settled it.** The verdict is already in `rejected`, so the reason is the whole
 value — give it as a mechanism ("it leaves the shared database with a vocabulary no single
 PRIME.md describes"), never a judgment ("rejected as worse"). A mechanism can be checked again
@@ -80,8 +84,8 @@ judgment cannot, so the option stays dead by default. The chosen decision needs 
 reason is indistinguishable from a recorded one, so a guess does not read as a guess three years
 later — it reads as fact and gets trusted. "The operator preferred the other one" is the verdict
 again, not a reason. Ask what the chosen option buys and what the rejected one would have cost,
-and write that answer. Ask while the conversation is live: section 5 forbids editing a design in
-place, so a reason invented now is permanent. Doubt is the trigger — if you are reconstructing
+and write that answer. Ask while the conversation is live: section 5 forbids editing a decision's
+description in place, so a reason invented now is permanent. Doubt is the trigger — if you are reconstructing
 rather than recalling, you are guessing.
 
 **Cite code as `file[sha]`** — `GryoPool.java[bece4a34c7]`, with enough path to be unambiguous
@@ -223,9 +227,9 @@ Pinning is what makes a bead permanent — every destructive operation keys on
 ## 5. Never
 
 - **Never `bd flatten`, `bd compact`, or `bd admin compact`.** They rewrite or discard
-  history irreversibly. `admin compact` destroys `--design` text specifically. `bd gc` only
+  history irreversibly. `bd gc` only
   with `--skip-decay`.
-- **Never edit an existing bead's `--design` in place.** Add a comment, or create a new
+- **Never edit an existing decision's `--description` in place.** Add a comment, or create a new
   decision bead with a `supersedes` edge. Field rewrites are invisible to history and lose
   the reasoning that was there.
 - `bd prune` / `bd purge` / `bd gc` are release-time maintainer operations. Don't run them.
@@ -342,7 +346,7 @@ bd show <id>                     # one bead with dependencies
 bd query "status=open AND type=decision"    # should be empty; an open decision was left unclosed
 bd query "metadata.rejected=true" --all     # roads not taken; --all or closed beads are hidden
 bd comment <id> "..."            # a fact with no fork in it (never on a task bead)
-bd create --type=... --parent=<root> --design=... --labels=...
+bd create --type=... --parent=<root> --description=... --labels=...
 bd dep add <task> <blocker>      # default type is blocks: <task> waits for <blocker>
 bd dep add <a> <b> -t caused-by|related|discovered-from|supersedes
 bd dep cycles                    # a plan with a cycle cannot execute

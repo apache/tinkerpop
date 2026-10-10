@@ -45,7 +45,8 @@ Checks divide into two kinds, and the distinction matters:
               "decisions were not captured", so they are questions for a
               human, never verdicts.
 
-Neither kind can judge whether design text is real reasoning or fluent filler.
+Neither kind can judge whether a decision's description is real reasoning or
+fluent filler.
 Structure is checkable; substance is not.
 """
 
@@ -79,7 +80,7 @@ def as_list(payload):
 
 
 def load_export():
-    """Whole database, one record per line. Carries design and comments."""
+    """Whole database, one record per line. Carries comments."""
     proc = subprocess.run(["bd", "export"], capture_output=True, text=True)
     if proc.returncode != 0:
         sys.exit(f"bd export failed: {proc.stderr.strip()}")
@@ -99,10 +100,7 @@ def load_subtree(root):
 
     `bd children` recurses in its text output but NOT under `--json`, which
     returns direct children only -- so a single call silently truncates the
-    subtree to depth 1. Verified against a four-level tree at bd 1.1.2.
-
-    The records returned carry no `design` field, only comment_count, so
-    rationale-at-risk detection is weaker in this scope than at release scope."""
+    subtree to depth 1. Verified against a four-level tree at bd 1.1.2."""
     beads = {}
     for record in as_list(bd("show", root)):
         beads.setdefault(record["id"], record)
@@ -165,13 +163,11 @@ def main():
         if bead.get("comment_count") or bead.get("comments"):
             n = bead.get("comment_count") or len(bead.get("comments") or [])
             carried.append(f"{n} comment(s)")
-        if (bead.get("design") or "").strip():
-            carried.append("design text")
+        if bead.get("issue_type") == "decision" and (bead.get("description") or "").strip():
+            carried.append("reasoning")
         if carried:
             at_risk.append(f"{bead['id']:18} {', '.join(carried):22} {bead['title'][:44]}")
     report("Rationale on closed beads (lost at next purge -- pin to keep)", at_risk)
-    if scoped:
-        print("  note: subtree scope cannot see `design` text; comment counts only")
 
     # --- HEURISTIC ---------------------------------------------------------
 
