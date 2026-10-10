@@ -72,7 +72,6 @@ export async function populateBeads(g, beads) {
       .property("status", b.status)
       .property("title", b.title)
       .property("description", (b.description || "").slice(0, 4000))
-      .property("design", (b.design || "").slice(0, 4000))
       .property("labels", (b.labels || []).join(", "))
       .property("root", b.root);
     if (b.rejected !== null) t = t.property("rejected", b.rejected);

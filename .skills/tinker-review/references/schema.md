@@ -111,13 +111,13 @@ A comment on a Discussion.
 
 ### Project memory
 
-**Bead** `{ beadId, type, status, title, description, design, labels, root, rejected?, parent?, externalRef?, closedAt?, rootRole? }`
+**Bead** `{ beadId, type, status, title, description, labels, root, rejected?, parent?, externalRef?, closedAt?, rootRole? }`
 A bead from the reviewer's local beads database (`bd`), loaded because a record
 bead's external ref names one of the PR's artifacts (see `discovery/beads.js`).
 Every bead in the subtree of each root reached that way is loaded. `type` is
 bd's issue type (`epic`, `feature`, `task`, `bug`, `decision`, `record`, …);
 `root` is the id of the root the bead belongs to. `rejected` is set only on
-decisions — `true` marks the road not taken, and `design` then says what the
+decisions — `true` marks the road not taken, and `description` then says what the
 option was, why it lost and what settled it. `externalRef` is set only on
 records. `labels` is the comma-joined label list.
 

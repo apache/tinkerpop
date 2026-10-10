@@ -153,7 +153,7 @@ proposal`.
 ### linkBead
 Records that a bead — usually a decision — governs a piece of the changed code,
 as a `governs` edge (Bead → Function, Type or File). Draw it when a decision's
-design is about that code, so Inspect checks the code against what the decision
+reasoning is about that code, so Inspect checks the code against what the decision
 chose and ruled out, and the report can cite the decision beside it. Key a
 Function/Type by `--name` (add `--file` when the name repeats) and a File by
 `--file`. Defaults to `INFERRED`: the link is your judgment, not a bd fact.

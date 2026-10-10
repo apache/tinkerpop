@@ -290,9 +290,8 @@ landed there is refused rather than recorded, because it is precisely the hash t
 squash would invalidate. Running the command a second time finds the existing record and creates
 nothing.
 
-The notes field is what makes the link work in reverse. It is the only free-text field that the
-query language searches, so a hash held in a comment or in design text can be read but never
-found.
+The notes field is what makes the link work in reverse. The query language searches it, so a
+hash held there can be found, while one held in a comment can be read but never found.
 
 [source,text]
 ----
