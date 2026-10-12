@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ConfigurationUtils;
+import org.apache.commons.configuration2.convert.PropertyConverter;
+import org.apache.commons.configuration2.ex.ConversionException;
 import org.apache.tinkerpop.gremlin.structure.LabelCardinality;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -105,8 +107,8 @@ public final class StorageSettings {
                     write(file, fixedSettingsOf(effective));
             } else if (!recovering) {
                 throw new IllegalStateException(String.format(
-                        "Storage at %s has data but no %s recording the settings it was created with; open it with %s " +
-                                "to read it with the configured settings",
+                        "Storage at %s already holds storage files but no %s recording the settings it was created " +
+                                "with; open it with %s to read it with the configured settings",
                         directory, SETTINGS_FILE, TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
             } else {
                 logger.warn("Storage at {} has no {}; reading it with the configured settings",
@@ -122,16 +124,16 @@ public final class StorageSettings {
             if (null == recordedValue)
                 continue;
             if (effective.containsKey(key)) {
-                final String configured = normalize(key, effective.getString(key));
-                if (configured.equals(recordedValue))
+                final String given = effective.getString(key);
+                if (normalize(key, given).equals(recordedValue))
                     continue;
                 if (!recovering)
                     throw new IllegalStateException(String.format(
                             "Storage at %s was created with %s=%s and cannot be opened with %s. To change it, export " +
                                     "the graph with g.io() and import it into a new storage directory",
-                            directory, key, recordedValue, configured));
+                            directory, key, recordedValue, given));
                 logger.warn("Storage at {} was created with {}={}; reading it with that rather than the configured {}",
-                        directory, key, recordedValue, configured);
+                        directory, key, recordedValue, given);
             }
             effective.setProperty(key, recordedValue);
         }
@@ -166,7 +168,13 @@ public final class StorageSettings {
                     return engine.name().toLowerCase();
             }
         } else if (key.equals(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES)) {
-            return Boolean.toString(Boolean.parseBoolean(trimmed));
+            // the spellings Configuration.getBoolean reads as true or false (yes/no, on/off, in any case); anything
+            // else is left as given, so it differs from the record and fails the open rather than being guessed at
+            try {
+                return PropertyConverter.toBoolean(trimmed).toString();
+            } catch (ConversionException ex) {
+                return trimmed;
+            }
         }
         return trimmed;
     }
@@ -177,6 +185,10 @@ public final class StorageSettings {
             properties.load(in);
         } catch (IOException ex) {
             throw new UncheckedIOException(String.format("Could not read storage settings %s", file), ex);
+        } catch (IllegalArgumentException ex) {
+            // Properties.load reports a malformed escape this way, without naming the file
+            throw new IllegalStateException(String.format("Storage settings %s are malformed: %s", file,
+                    ex.getMessage()), ex);
         }
         final Map<String, String> settings = new LinkedHashMap<>();
         for (final String key : properties.stringPropertyNames())
