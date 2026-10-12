@@ -15,7 +15,7 @@ without reading it.
 3. **Claim before editing, close as work finishes** — section 3
 4. **At merge, close the root and pin the whole subtree** — section 4
 5. **Never rewrite or discard history** — section 5
-6. **Records, edge types and bead IDs follow fixed conventions** — section 6
+6. **Records, fields, edge types and bead IDs follow fixed conventions; text goes in `--description`, not `--design`** — section 6
 7. **Never invent a label** — section 7
 
 ---
@@ -64,9 +64,8 @@ bd dep add <decision> <alternative> -t related    # never put either of these on
 bd close <decision> <alternative>   # both: a decision is resolved the moment you write it
 ```
 
-**Reasoning goes in `--description`, never `--design`.** `bd search --desc-contains` and
-`bd query description=` find text in a description; nothing in bd searches design, so
-reasoning written there can be read but never found.
+**Reasoning goes in `--description`, not `--design`** — the rule for every bead's text is in
+section 6.
 
 **Close a decision as you create it.** Left `open` it lands in `bd ready`, advertising
 reasoning as startable work, and its `closed_at` ends up stamped with the merge date — dating
@@ -256,6 +255,13 @@ a list, and `bd ready` cannot tell you anything useful about it.
 
 - `--parent` builds the tree, and copies the parent's labels onto the child once, at birth —
   see section 7.
+- **A bead's text goes in `--description`, not `--design`** — on `bd create` and `bd update`
+  alike, for every type: what a task is, why a decision was taken, what a rejected option was.
+  bd indexes description, so `bd search --desc-contains` and `bd query description=` find it.
+  Nothing in bd searches design: text written there can be read but never found, which for
+  long-term memory is as good as lost. bd's help offers `--design` and `--design-file` beside
+  `--description`; do not reach for them. Use design only for a specific reason description
+  cannot serve, and state that reason in the description.
 - **`record` beads** hold external artifacts — JIRA, PR, dev@ thread, proposal, and the
   commits a landing merged as. The ticket, URL or `owner/repo@sha` goes in `--external-ref`,
   which identifies the kind as well, and only a record carries one. Create each as a child of
