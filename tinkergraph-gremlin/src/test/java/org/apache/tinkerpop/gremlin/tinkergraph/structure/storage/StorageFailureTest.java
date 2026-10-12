@@ -130,6 +130,18 @@ public class StorageFailureTest {
     }
 
     @Test
+    public void shouldRefuseToCompactAClosedGraph() {
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.close();
+        try {
+            graph.compact();
+            fail("a closed graph should refuse to compact");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("closed"));
+        }
+    }
+
+    @Test
     public void shouldRefuseCommitsAfterLogFlushFailsAndRecoverOnReopen() {
         TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
         graph.addVertex(T.id, 1);
