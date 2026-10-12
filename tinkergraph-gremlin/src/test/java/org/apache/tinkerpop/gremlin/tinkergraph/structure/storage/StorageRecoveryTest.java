@@ -442,6 +442,12 @@ public class StorageRecoveryTest {
         }
         assertTrue("the refused commit must not be visible", !graph.vertices(99).hasNext());
         graph.tx().rollback();
+        try {
+            graph.compact();
+            fail("a recovered graph should refuse to compact");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage().contains("read-only"));
+        }
     }
 
     private static List<int[]> logFrames(final byte[] log) {

@@ -353,6 +353,8 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     /**
      * Fold the durable storage log into a compact snapshot of the current committed state, reclaiming space. Has no
      * effect when no storage engine is configured.
+     *
+     * @throws IllegalStateException if the graph is closed, or was opened read-only to recover a damaged store
      */
     public void compact() {
         if (storage != null) {
@@ -360,6 +362,14 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
             // empties the log, which must not interleave with a concurrent transaction appending to that log.
             storageCommitLock.lock();
             try {
+                // an explicit request that cannot run says so, rather than returning as if the store were compacted
+                if (null == directoryLock)
+                    throw new IllegalStateException(String.format("Storage at %s is closed and cannot be compacted",
+                            storageDirectory));
+                if (storage.isReadOnly())
+                    throw new IllegalStateException(String.format(
+                            "Storage at %s was opened with %s and is read-only, so it cannot be compacted",
+                            storageDirectory, GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
                 storage.flush();
                 storage.compact(this);
             } finally {
