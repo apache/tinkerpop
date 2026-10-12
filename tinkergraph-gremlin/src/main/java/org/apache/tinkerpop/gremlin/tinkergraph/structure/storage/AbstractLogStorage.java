@@ -55,6 +55,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.zip.CRC32;
 
 /**
@@ -63,9 +64,10 @@ import java.util.zip.CRC32;
  * folded {@code snapshot.gbin}; on open the snapshot is read followed by the log, last-write-wins per element id.
  * <p/>
  * This base owns everything that is not the element codec: the on-disk file layout, the single-source-of-truth
- * {@code VERSION} marker, the compaction generation that ties a log to its snapshot, length+CRC frame framing (which
- * tells an interrupted trailing append apart from genuine corruption, with log frames also checksumming their length),
- * the replay fold loop, durability via {@link SyncMode}, and crash-safe atomic compaction with a size threshold. Concrete engines supply only the codec through {@link #encodeCommit}, {@link #decodeFrame},
+ * {@code VERSION} marker, the store id and compaction generation that tie a log to its snapshot, length+CRC frame
+ * framing (which tells an interrupted trailing append apart from genuine corruption, with log frames also checksumming
+ * their length), the replay fold loop, durability via {@link SyncMode}, and crash-safe atomic compaction with a size
+ * threshold. Concrete engines supply only the codec through {@link #encodeCommit}, {@link #decodeFrame},
  * {@link #writeSnapshot}, and (optionally) {@link #beginReplay} for per-replay decode state.
  * <p/>
  * The in-memory graph remains authoritative (write-through); this machinery does not support graphs larger than memory.
@@ -89,13 +91,22 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     static final byte FORMAT_VERSION = 1;
 
     /**
-     * Store-level version marker file, holding {@link #MAGIC} followed by the one-byte {@link #FORMAT_VERSION}.
+     * Store-level version marker file, holding {@link #MAGIC}, the one-byte {@link #FORMAT_VERSION} and the store's
+     * {@link #STORE_ID_SIZE}-byte id.
      */
     static final String VERSION_FILE = "VERSION";
 
     /**
-     * Bytes of the per-file header: {@link #MAGIC} followed by the file's 8-byte compaction generation. The format
-     * version lives in the store-level {@link #VERSION_FILE}, not in each file.
+     * Bytes of the random id a store is given when it is created: a UUID, as two 8-byte longs. The id is recorded in
+     * the {@link #VERSION_FILE} and in every snapshot and log header, so a file copied in from another store is
+     * recognized as foreign. The generation alone can't do that, since two stores can be at the same one.
+     */
+    static final int STORE_ID_SIZE = 2 * Long.BYTES;
+
+    /**
+     * Bytes of the per-file header: {@link #MAGIC}, the file's 8-byte compaction generation, then the id of the store
+     * it belongs to (see {@link #STORE_ID_SIZE}). The format version lives in the store-level {@link #VERSION_FILE},
+     * not in each file.
      * <p/>
      * The generation is what lets an open tell a damaged store from a legitimate one. Each compaction writes a snapshot
      * of the next generation and then replaces the log with an empty one of that same generation, so a store with data
@@ -103,7 +114,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      * and only the crash window between those two renames leaves the snapshot one generation ahead of the log. Any other
      * combination, such as a missing log or a log whose snapshot is gone, means files were lost.
      */
-    static final int HEADER_SIZE = MAGIC.length + Long.BYTES;
+    static final int HEADER_SIZE = MAGIC.length + Long.BYTES + STORE_ID_SIZE;
 
     /**
      * Bytes ahead of each snapshot frame's payload: a 4-byte length and a 4-byte CRC32 of the payload.
@@ -157,6 +168,12 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      * The compaction generation of the current log, and of the snapshot it builds on when there is one.
      */
     private long generation = 0;
+
+    /**
+     * The id of this store, read from or written to the {@link #VERSION_FILE} on open, or {@code null} when a recovery
+     * open finds no marker to read it from and so can't check which store the files belong to.
+     */
+    private UUID storeId;
 
     /**
      * Whether replay should fold the log. Only a recovery open that found the log missing, or not belonging to the
@@ -457,8 +474,10 @@ public abstract class AbstractLogStorage implements TinkerStorage {
                     throw new IllegalStateException(problem + String.format(
                             "; open it with %s to read it as format version %d",
                             TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER, FORMAT_VERSION));
-                recovery.note(problem + String.format("; it was read as format version %d.", FORMAT_VERSION));
+                recovery.note(problem + String.format("; it was read as format version %d, without checking that " +
+                        "its files belong to the same store.", FORMAT_VERSION));
             } else if (!recovering) {
+                storeId = UUID.randomUUID();
                 writeStoreVersion();
             }
             return;
@@ -474,6 +493,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
                         "Unsupported storage format version %d at %s (this build writes %d); open it with the TinkerPop " +
                                 "version that wrote it and export it with g.io()",
                         version, directory, FORMAT_VERSION));
+            storeId = new UUID(in.readLong(), in.readLong());
         } catch (IOException ex) {
             throw new UncheckedIOException(String.format("Could not read storage version marker %s", versionFile), ex);
         }
@@ -484,6 +504,8 @@ public abstract class AbstractLogStorage implements TinkerStorage {
              final DataOutputStream out = new DataOutputStream(fos)) {
             out.write(MAGIC);
             out.writeByte(FORMAT_VERSION);
+            out.writeLong(storeId.getMostSignificantBits());
+            out.writeLong(storeId.getLeastSignificantBits());
             out.flush();
             fos.getFD().sync();
         } catch (IOException ex) {
@@ -509,7 +531,11 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             return;
         }
 
-        final long snapshotGeneration = hasSnapshot ? readGeneration(snapshotFile) : -1;
+        final FileHeader snapshotHeader = hasSnapshot ? readHeader(snapshotFile) : null;
+        if (snapshotHeader != null && !snapshotHeader.belongsTo(storeId))
+            throw new IllegalStateException(String.format("Storage snapshot %s belongs to another store (%s, not %s)",
+                    snapshotFile, snapshotHeader.storeId, storeId));
+        final long snapshotGeneration = hasSnapshot ? snapshotHeader.generation : -1;
         if (!hasLog) {
             final String problem = String.format("Storage log %s is missing, so any transactions committed after the " +
                     "last compaction are lost", logFile);
@@ -521,9 +547,9 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             return;
         }
 
-        final long logGeneration;
+        final FileHeader logHeader;
         try {
-            logGeneration = readGeneration(logFile);
+            logHeader = readHeader(logFile);
         } catch (UncheckedIOException ex) {
             // a recovery open lets the fold report an unreadable log header and carry on with the snapshot
             if (!recovering)
@@ -531,6 +557,19 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             generation = Math.max(0, snapshotGeneration);
             return;
         }
+
+        if (!logHeader.belongsTo(storeId)) {
+            final String problem = String.format("Storage log %s belongs to another store (%s, not %s)",
+                    logFile, logHeader.storeId, storeId);
+            if (!recovering)
+                throw new IllegalStateException(problem + String.format("; open the store with %s to read its snapshot",
+                        TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
+            recovery.note(problem + "; only the snapshot was read.");
+            generation = Math.max(0, snapshotGeneration);
+            replayLog = false;
+            return;
+        }
+        final long logGeneration = logHeader.generation;
 
         if (!hasSnapshot) {
             if (logGeneration != 0)
@@ -563,12 +602,14 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     /**
-     * Read the generation from the header of {@code file}, failing if the header is short or is not one of ours.
+     * Read the generation and store id from the header of {@code file}, failing if the header is short or is not one
+     * of ours.
      */
-    private static long readGeneration(final File file) {
+    private static FileHeader readHeader(final File file) {
         try (final DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
             readAndVerifyHeader(in, file, file.length());
-            return in.readLong();
+            final long fileGeneration = in.readLong();
+            return new FileHeader(fileGeneration, new UUID(in.readLong(), in.readLong()));
         } catch (IOException ex) {
             throw new UncheckedIOException(String.format("Could not read storage file %s", file), ex);
         }
@@ -633,7 +674,10 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             long remaining;
             try {
                 remaining = readAndVerifyHeader(in, file, fileLength);
-                in.readLong(); // the generation, already checked on open
+                // the generation and store id, already checked on open
+                in.readLong();
+                in.readLong();
+                in.readLong();
             } catch (IOException ex) {
                 if (recovery == null || !log)
                     throw ex;
@@ -898,11 +942,14 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     /**
-     * Write the per-file header ({@link #MAGIC} and the file's generation) at the start of a storage file.
+     * Write the per-file header ({@link #MAGIC}, the file's generation and the store id) at the start of a storage
+     * file.
      */
-    private static void writeHeader(final DataOutputStream out, final long fileGeneration) throws IOException {
+    private void writeHeader(final DataOutputStream out, final long fileGeneration) throws IOException {
         out.write(MAGIC);
         out.writeLong(fileGeneration);
+        out.writeLong(storeId.getMostSignificantBits());
+        out.writeLong(storeId.getLeastSignificantBits());
     }
 
     /**
@@ -1001,6 +1048,26 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         private CorruptFrameException(final String message, final int payloadLength) {
             super(message);
             this.payloadLength = payloadLength;
+        }
+    }
+
+    /**
+     * The generation and store id read from a storage file's header.
+     */
+    private static final class FileHeader {
+        private final long generation;
+        private final UUID storeId;
+
+        private FileHeader(final long generation, final UUID storeId) {
+            this.generation = generation;
+            this.storeId = storeId;
+        }
+
+        /**
+         * Whether the file belongs to the store with {@code id}. Always true when the store's id is unknown.
+         */
+        private boolean belongsTo(final UUID id) {
+            return null == id || id.equals(storeId);
         }
     }
 

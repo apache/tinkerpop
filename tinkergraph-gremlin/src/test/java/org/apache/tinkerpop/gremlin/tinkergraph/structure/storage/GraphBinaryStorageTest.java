@@ -727,6 +727,16 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     }
 
     /**
+     * The store id recorded in the {@code VERSION} marker at {@code location}, which follows the magic and the version
+     * byte.
+     */
+    private static byte[] storeId(final String location) throws IOException {
+        final byte[] marker = Files.readAllBytes(new File(location, GraphBinaryStorage.VERSION_FILE).toPath());
+        final int start = GraphBinaryStorage.MAGIC.length + 1;
+        return Arrays.copyOfRange(marker, start, start + GraphBinaryStorage.STORE_ID_SIZE);
+    }
+
+    /**
      * Replace the store's log with a single well-formed frame (correct length prefix and checksums) carrying {@code
      * payload}, then reopen. The framing must be valid so that replay reaches the codec rather than stopping at the
      * frame checks, which are covered separately.
@@ -747,6 +757,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
                 GraphBinaryStorage.HEADER_SIZE + GraphBinaryStorage.LOG_FRAME_HEADER_SIZE + payload.length);
         frame.put(GraphBinaryStorage.MAGIC);
         frame.putLong(0); // generation: a log with no snapshot
+        frame.put(storeId(location)); // the log must belong to this store
         frame.putInt(payload.length);
         frame.putInt((int) lengthCrc.getValue());
         frame.putInt((int) crc.getValue());
@@ -794,7 +805,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         // rewrite the store-level version marker to name a future, unsupported format version
         final File versionFile = new File(location, GraphBinaryStorage.VERSION_FILE);
         final byte[] marker = Files.readAllBytes(versionFile.toPath());
-        marker[marker.length - 1] = 99; // version byte follows the magic
+        marker[GraphBinaryStorage.MAGIC.length] = 99; // version byte follows the magic
         Files.write(versionFile.toPath(), marker);
 
         try {
