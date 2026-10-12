@@ -206,40 +206,119 @@ function tokenizeName(name) {
     .filter((t) => t.length >= 3);
 }
 
-// Keywords for discovery search (dev-list + proposals). Topic first: PR-title
-// words (the human statement of intent) lead so they can't be truncated by the
-// cap, then distinctive tokens from changed-file basenames. Structural names,
-// generic verbs, and repo-ubiquitous tokens are filtered out so we don't search
-// on noise like "NOTICE" or "gremlin-server". So are location words: any token
-// of a changed file's directory path (a module such as tinkergraph-gremlin, a
-// package such as structure/storage) says where the change is, not what it is
-// about, and matches every proposal that mentions the module. Exported for testing.
-export function extractKeywords(changedFiles, prTitle) {
+// Every token of a changed file's directory path: a module such as
+// tinkergraph-gremlin or a package such as structure/storage. These say where a
+// change is, not what it is about.
+function locationTokens(changedFiles) {
   const location = new Set();
   for (const file of changedFiles) {
     for (const dir of file.split("/").slice(0, -1)) {
       for (const tok of dir.toLowerCase().split(/[^a-z0-9]+/)) location.add(tok);
     }
   }
+  return location;
+}
+
+// Top-level directories that are not modules.
+const NON_MODULE_TOKENS = new Set(["docs", "bin", "data", "docker", "licenses", "github", "beads", "skills"]);
+
+// The names of the modules changed files belong to, from the top-level directory
+// (tinkergraph-gremlin -> tinkergraph). Package directories below it are left
+// out: gremlin-core's (process, traversal, step, map, graph) are the vocabulary
+// every proposal's headings use.
+function moduleTokens(changedFiles) {
+  const modules = new Set();
+  for (const file of changedFiles) {
+    const parts = file.split("/");
+    if (parts.length < 2) continue;
+    for (const tok of parts[0].toLowerCase().split(/[^a-z0-9]+/)) {
+      if (tok && !NON_MODULE_TOKENS.has(tok)) modules.add(tok);
+    }
+  }
+  return modules;
+}
+
+const usableKeyword = (k) => k.length >= 3 && !GENERIC_WORDS.has(k) && !UBIQUITOUS_TOKENS.has(k);
+const changedBasenames = (changedFiles) => changedFiles
+  .map((file) => file.split("/").pop().replace(/\.\w+$/, ""))
+  .filter((base) => !STRUCTURAL_NAMES.has(base.toLowerCase()));
+
+// Keywords for discovery search (dev-list + proposals). Topic first: PR-title
+// words (the human statement of intent) lead so they can't be truncated by the
+// cap, then distinctive tokens from changed-file basenames. Structural names,
+// generic verbs, and repo-ubiquitous tokens are filtered out so we don't search
+// on noise like "NOTICE" or "gremlin-server". So are location words taken from
+// basenames (see locationTokens); the title is the author's own statement of the
+// topic, so its words are kept even when they also name a directory. Exported
+// for testing.
+export function extractKeywords(changedFiles, prTitle) {
+  const location = locationTokens(changedFiles);
   const keywords = [];
   const seen = new Set();
-  const push = (word) => {
+  const push = (word, isTitle) => {
     const k = word.toLowerCase();
-    if (k.length < 3 || seen.has(k)) return;
-    if (GENERIC_WORDS.has(k) || UBIQUITOUS_TOKENS.has(k) || location.has(k)) return;
+    if (!usableKeyword(k) || seen.has(k)) return;
+    if (!isTitle && location.has(k)) return;
     seen.add(k);
     keywords.push(k);
   };
 
   for (const w of prTitle.split(/[\s\-_:,.()]+/)) {
-    if (!/^\d+$/.test(w)) push(w);
+    if (!/^\d+$/.test(w)) push(w, true);
   }
-  for (const file of changedFiles) {
-    const base = file.split("/").pop().replace(/\.\w+$/, "");
-    if (STRUCTURAL_NAMES.has(base.toLowerCase())) continue;
-    for (const tok of tokenizeName(base)) push(tok);
+  for (const base of changedBasenames(changedFiles)) {
+    for (const tok of tokenizeName(base)) push(tok, false);
   }
   return keywords.slice(0, 8);
+}
+
+// A word whose shape marks it as an identifier: camelCase (TinkerStorageGraph,
+// asNumber) or letters mixed with digits (krb5). Plain words are not.
+const IDENTIFIER_SHAPED = (w) => /[a-z][A-Z]/.test(w) || /[A-Za-z]\d|\d[A-Za-z]/.test(w);
+
+/**
+ * Keywords for proposal matching, graded by how much a hit means.
+ * - strong: identifier-shaped words. These are words in the PR title that are
+ *   camelCase, mix letters and digits, or are written as a step call
+ *   (`select()`), plus whole camelCase basenames of changed files. They are the
+ *   only grade that can make a match on its own.
+ * - weak: plain words from the title and the words a basename splits into
+ *   (THREAT_MODEL -> threat, model). They are ordinary English often enough that
+ *   they only add to a match a strong or location keyword already made.
+ * - location: the names of the modules changed files belong to (tinkergraph).
+ *   They count only on a proposal's title.
+ * Exported for testing.
+ *
+ * @param {string[]} changedFiles
+ * @param {string} prTitle
+ * @returns {{strong: string[], weak: string[], location: string[]}}
+ */
+export function proposalKeywords(changedFiles, prTitle) {
+  const location = locationTokens(changedFiles);
+  const strong = [];
+  const weak = [];
+  const seen = new Set();
+  const add = (list, word) => {
+    const k = word.toLowerCase();
+    if (!usableKeyword(k) || seen.has(k)) return;
+    seen.add(k);
+    list.push(k);
+  };
+
+  const titleWords = [...prTitle.matchAll(/([A-Za-z][A-Za-z0-9]*)(\(\))?/g)]
+    .filter(([w]) => w.toUpperCase() !== "TINKERPOP");
+  for (const [, w, call] of titleWords) if (call || IDENTIFIER_SHAPED(w)) add(strong, w);
+  const bases = changedBasenames(changedFiles);
+  for (const base of bases) if (/^[A-Za-z0-9]+$/.test(base) && IDENTIFIER_SHAPED(base)) add(strong, base);
+  // Module names before weak words: a module named by a plain title word must
+  // still be able to match a proposal's title.
+  const loc = [];
+  for (const tok of moduleTokens(changedFiles)) add(loc, tok);
+  for (const [, w] of titleWords) add(weak, w);
+  for (const base of bases) {
+    for (const tok of tokenizeName(base)) if (!location.has(tok)) add(weak, tok);
+  }
+  return { strong, weak, location: loc };
 }
 
 async function cleanupWorktree(repoPath, worktreePath, prBranch) {
@@ -442,12 +521,13 @@ export async function phase1(session) {
     prBody,
     diff: diffText,
     keywords: prKeywords,
+    proposalKeywords: proposalKeywords(changedFiles, prTitle.trim()),
     repoPath,
   });
   log(`  jiras: ${discussions.jiras.length} found${discussions.jiraMissing ? " (none referenced)" : ""}`);
   log(`  pr comments: ${discussions.prComments.issue.length} issue + ${discussions.prComments.review.length} review${discussions.prCommentsError ? ` (FETCH FAILED — ${discussions.prCommentsError})` : ""}`);
   log(`  dev list: ${discussions.devList.length} found${discussions.devListSearchPerformed ? ` (searched: ${prKeywords.join(", ")})` : ""}`);
-  log(`  proposals: ${discussions.proposals.length} found`);
+  log(`  proposals: ${discussions.proposals.length} found (strong: ${discussions.proposalKeywords.strong.slice(0, 8).join(", ") || "none"})`);
 
   log(`Loading discussions into graph...`);
   await populateDiscussions(g, discussions, { pr, prTitle: prTitle.trim(), changedFiles });
