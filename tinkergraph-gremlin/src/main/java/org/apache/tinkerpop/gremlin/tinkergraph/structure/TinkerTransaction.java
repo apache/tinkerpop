@@ -135,8 +135,9 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
      * 2. verify if any elements already changed, throw {@link TransactionException} if any
      * 3. try to lock all containers to prevent other tx from making changes
      * 4. one more time verify elements versions
-     * 5. update indices
-     * 6. commit all changes
+     * 5. persist the changes when a storage engine is configured
+     * 6. update indices
+     * 7. commit all changes
      * On {@link TransactionException} or any other failure before the changes are applied (such as a storage write):
      *  rollback all changes
      * Lastly:
@@ -175,14 +176,8 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
                     changedEdges.stream().anyMatch(e -> e.updatedOutsideTransaction()))
                 throw new TransactionException(TX_CONFLICT);
 
-            // update indices
-            final TinkerTransactionalIndex vertexIndex = (TinkerTransactionalIndex) graph.vertexIndex;
-            if (vertexIndex != null) vertexIndex.commit(changedVertices);
-            final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
-            if (edgeIndex != null) edgeIndex.commit(changedEdges);
-
             // write-ahead: durably persist the changeset before applying the in-memory commit. A failure here aborts
-            // the commit and the catch below rolls back memory and the indices. If the failure was in writing or
+            // the commit and the catch below rolls back memory. If the failure was in writing or
             // flushing the log, the engine also stops accepting commits until the graph is reopened, because what
             // reached disk is then unknown: the failed transaction may or may not be in the log, and reopening
             // replays only what is actually there. Skipped while the graph is replaying its storage log on open.
@@ -202,6 +197,15 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
                     graph.storage.persist(txVersion, toVertexMutations(changedVertices), toEdgeMutations(changedEdges));
                     graph.storage.flush();
                 }
+
+                // update indices only once the storage write has succeeded. Committing an index changes the shared
+                // index that every transaction reads, and rollback can only discard this transaction's own index
+                // changes, so an index committed ahead of a storage write that then failed would keep the failed
+                // transaction's view until the graph is reopened.
+                final TinkerTransactionalIndex vertexIndex = (TinkerTransactionalIndex) graph.vertexIndex;
+                if (vertexIndex != null) vertexIndex.commit(changedVertices);
+                final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
+                if (edgeIndex != null) edgeIndex.commit(changedEdges);
 
                 // commit all changes
                 changedVertices.forEach(v -> v.commit(txVersion));
