@@ -42,6 +42,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.zip.CRC32;
 
 import static org.junit.Assert.assertEquals;
@@ -152,6 +153,43 @@ public class StorageRecoveryTest {
         final TinkerStorageGraph graph = TinkerStorageGraph.open(recoverConfig());
         assertEquals("recovery reads only the snapshot", Collections.singletonList(1), vertexIds(graph));
         graph.close();
+    }
+
+    @Test
+    public void shouldFailWhenTheLogBelongsToAnotherStore() throws Exception {
+        crashAfterCommitOnCompactedStore();
+        // same generation as the snapshot, but stamped by a different store, as a log copied in from one would be
+        Files.write(logFile().toPath(), withForeignStoreId(Files.readAllBytes(logFile().toPath())));
+
+        final Map<String, String> before = directoryContents();
+        try {
+            TinkerStorageGraph.open(config()).close();
+            fail("a log from another store should not open");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("belongs to another store"));
+        }
+        assertEquals("a failed open must not change the store", before, directoryContents());
+
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(recoverConfig());
+        assertEquals("recovery reads only the snapshot", Collections.singletonList(1), vertexIds(graph));
+        graph.close();
+        assertEquals("recovery must not change the store", before, directoryContents());
+    }
+
+    @Test
+    public void shouldFailWhenTheSnapshotBelongsToAnotherStore() throws Exception {
+        crashAfterCommitOnCompactedStore();
+        Files.write(snapshotFile().toPath(), withForeignStoreId(Files.readAllBytes(snapshotFile().toPath())));
+
+        // none of the snapshot's data is this store's, and the log's records refer to this store's snapshot
+        for (final Configuration conf : Arrays.asList(config(), recoverConfig())) {
+            try {
+                TinkerStorageGraph.open(conf).close();
+                fail("a snapshot from another store should not open");
+            } catch (IllegalStateException expected) {
+                assertTrue(expected.getMessage(), expected.getMessage().contains("belongs to another store"));
+            }
+        }
     }
 
     @Test
@@ -361,6 +399,19 @@ public class StorageRecoveryTest {
         final byte[] log = Files.readAllBytes(logFile().toPath());
         graph.close();
         writeStore(snapshot, log);
+    }
+
+    /**
+     * Copy a storage file with the store id in its header replaced by a random one, leaving its generation and records
+     * as they are.
+     */
+    private static byte[] withForeignStoreId(final byte[] file) {
+        final byte[] copy = Arrays.copyOf(file, file.length);
+        final UUID other = UUID.randomUUID();
+        ByteBuffer.wrap(copy, AbstractLogStorage.MAGIC.length + Long.BYTES, AbstractLogStorage.STORE_ID_SIZE)
+                .putLong(other.getMostSignificantBits())
+                .putLong(other.getLeastSignificantBits());
+        return copy;
     }
 
     private void writeStore(final byte[] snapshot, final byte[] log) throws IOException {
