@@ -26,7 +26,7 @@ import { mkdtemp, writeFile, mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { extractKeywords } from "../scripts/review.js";
+import { extractKeywords, proposalKeywords } from "../scripts/review.js";
 import { findMatchingProposals } from "../scripts/discovery/discussions.js";
 
 const ASF_HEADER = `////
@@ -108,4 +108,101 @@ test("extractKeywords drops words that only name where the change is (module and
   assert.ok(!kws.includes("storage"), "package name excluded");
   assert.ok(kws.includes("tinkerstoragegraph"), "title topic kept");
   assert.ok(kws.includes("binary"), "a basename token that is not a location is kept");
+});
+
+test("extractKeywords keeps a PR-title word even when it also names a changed directory", () => {
+  const kws = extractKeywords(
+    ["tinkergraph-gremlin/src/main/java/org/apache/tinkerpop/gremlin/tinkergraph/structure/TinkerTransaction.java"],
+    "Fix TinkerGraph commit ordering",
+  );
+  assert.ok(kws.includes("tinkergraph"), "the author's own topic word survives the location filter");
+});
+
+// The changed files of PR 3639 that drove its keywords, less TinkerGraph.java so
+// that tinkergraph stays a module name rather than a changed class.
+const PR_3639_FILES = [
+  "THREAT_MODEL.md",
+  "docs/src/reference/implementations-tinkergraph.asciidoc",
+  "docs/src/upgrade/release-4.x.x.asciidoc",
+  "gremlin-server/conf/tinkergraph-credentials.properties",
+  "gremlin-server/src/main/java/org/apache/tinkerpop/gremlin/server/auth/SimpleAuthenticator.java",
+  "tinkergraph-gremlin/src/main/java/org/apache/tinkerpop/gremlin/tinkergraph/structure/TinkerStorageGraph.java",
+  "tinkergraph-gremlin/src/main/java/org/apache/tinkerpop/gremlin/tinkergraph/structure/storage/GraphBinaryStorage.java",
+];
+const PR_3639_TITLE = "TINKERPOP-3282 TinkerStorageGraph";
+
+test("proposalKeywords grades identifiers strong, plain words weak and module names as location", () => {
+  const { strong, weak, location } = proposalKeywords(PR_3639_FILES, PR_3639_TITLE);
+  for (const k of ["tinkerstoragegraph", "simpleauthenticator", "graphbinarystorage"]) assert.ok(strong.includes(k), `${k} is strong`);
+  for (const k of ["threat", "model", "implementations", "simple"]) assert.ok(weak.includes(k), `${k} is weak`);
+  assert.ok(location.includes("tinkergraph"), "the module name is a location keyword");
+  for (const k of ["storage", "structure", "auth", "docs", "reference"]) assert.ok(!location.includes(k), `${k} is not a module name`);
+  assert.ok(!strong.includes("tinkerpop"), "the JIRA prefix is not a keyword");
+});
+
+test("proposalKeywords keeps a module named by a plain title word as a location keyword", () => {
+  const { location, weak } = proposalKeywords(
+    ["tinkergraph-gremlin/src/main/java/org/apache/tinkerpop/gremlin/tinkergraph/structure/TinkerTransaction.java"],
+    "Fix tinkergraph commit ordering",
+  );
+  assert.ok(location.includes("tinkergraph") && !weak.includes("tinkergraph"));
+});
+
+test("proposalKeywords makes a step written as a call in the title strong, and plain title words weak", () => {
+  const { strong, weak } = proposalKeywords([], "Clarify local() side-effect state semantics");
+  assert.deepEqual(strong, ["local"]);
+  assert.ok(weak.includes("semantics") && weak.includes("clarify"));
+});
+
+test("PR 3639: dictionary words split from file names link nothing; the module name finds the transaction proposal", async () => {
+  await withProposals(
+    {
+      // Real proposals start at ==, since they are included into the future index.
+      "proposal-scoping-5.asciidoc": `${ASF_HEADER}== Lazy vs. Eager Evaluation in TP4 ==\n\nA simple model that implementations may follow.\n`,
+      "proposal-type-predicate-8.asciidoc": `${ASF_HEADER}== Type Predicate\n\n=== Motivation\n\nSimple for implementations.\n`,
+      "proposal-transaction-4.asciidoc": `${ASF_HEADER}== TinkerGraph Transaction Support\n\nTransactions for the in-memory graph.\n`,
+      "proposal-equality-1.asciidoc": `${ASF_HEADER}= Equality Semantics\n\n== Implementations\n\nTinkerGraph storage behaves the same.\n`,
+    },
+    async (dir) => {
+      const matched = await findMatchingProposals(dir, proposalKeywords(PR_3639_FILES, PR_3639_TITLE));
+      assert.deepEqual(matched.map((m) => m.file), ["proposal-transaction-4.asciidoc"]);
+      assert.equal(matched[0].matchedIn, "location", "a module-name match is graded AMBIGUOUS");
+      assert.equal(matched[0].title, "TinkerGraph Transaction Support", "a title at == is still the title");
+    },
+  );
+});
+
+test("a body-only match needs two distinct strong keywords, and weak keywords never make one", async () => {
+  await withProposals(
+    {
+      "proposal-two.asciidoc": `${ASF_HEADER}== Two\n\nMentions FooStep and BarStep.\n`,
+      "proposal-one.asciidoc": `${ASF_HEADER}== One\n\nMentions FooStep only.\n`,
+      "proposal-weak.asciidoc": `${ASF_HEADER}== Weak\n\n=== Model\n\nA simple model.\n`,
+    },
+    async (dir) => {
+      const matched = await findMatchingProposals(dir, { strong: ["foostep", "barstep"], weak: ["model", "simple"], location: [] });
+      assert.deepEqual(matched.map((m) => [m.file, m.matchedIn]), [["proposal-two.asciidoc", "body"]]);
+    },
+  );
+});
+
+test("a module name on a section heading, not the title, does not match", async () => {
+  await withProposals(
+    { "proposal-x.asciidoc": `${ASF_HEADER}== Removing Closures\n\n=== The Gremlin Language\n\nText.\n` },
+    async (dir) => {
+      assert.equal((await findMatchingProposals(dir, { strong: [], weak: [], location: ["language"] })).length, 0);
+    },
+  );
+});
+
+test("a proposal starting at == takes that heading as its title and never matches its license header", async () => {
+  await withProposals(
+    { "proposal-scoping.asciidoc": `${ASF_HEADER}== Lazy vs. Eager Evaluation ==\n\nBody.\n` },
+    async (dir) => {
+      const [m] = await findMatchingProposals(dir, ["eager"]);
+      assert.equal(m.title, "Lazy vs. Eager Evaluation");
+      assert.ok(!m.snippet.includes("Licensed"), "the snippet starts at the title");
+      assert.equal((await findMatchingProposals(dir, ["notice"])).length, 0);
+    },
+  );
 });

@@ -148,15 +148,19 @@ function keywordRegex(kw) {
 }
 
 // Split an asciidoc proposal into { title, headings, body }, dropping the ASF
-// license preamble by starting at the first level-1 title (`= Title`). Without
-// this, keyword matching hits the license header ("...the NOTICE file...") that
-// every ASF-licensed doc carries.
+// license preamble by starting at the first heading. Without this, keyword
+// matching hits the license header ("...the NOTICE file...") that every
+// ASF-licensed doc carries. The first heading is the title at whatever level it
+// is: most proposals are included into the future index and start at `==`.
+const HEADING = /^=+\s+\S/;
+const headingText = (line) => line.replace(/^=+\s+/, "").replace(/\s+=+\s*$/, "").trim();
+
 function splitProposal(raw) {
   const lines = raw.split("\n");
-  const titleIdx = lines.findIndex((l) => /^=\s+\S/.test(l));
+  const titleIdx = lines.findIndex((l) => HEADING.test(l));
   const content = titleIdx >= 0 ? lines.slice(titleIdx) : lines;
-  const title = titleIdx >= 0 ? content[0].replace(/^=\s+/, "").trim() : "";
-  const headings = content.filter((l) => /^=+\s+\S/.test(l)).join("\n");
+  const title = titleIdx >= 0 ? headingText(content[0]) : "";
+  const headings = content.filter((l) => HEADING.test(l)).map(headingText).join("\n");
   return { title, headings, body: content.join("\n") };
 }
 
@@ -165,7 +169,25 @@ function splitProposal(raw) {
 // keywords spuriously. Exclude it from proposal discovery.
 const isProposalIndex = (file) => /^index\.(asciidoc|adoc)$/i.test(basename(file));
 
+/**
+ * Find proposals under docs/src/dev/future/ that the PR's keywords point at.
+ * Keywords come graded (see proposalKeywords() in review.js); a plain array is
+ * treated as all strong. A proposal is kept when:
+ * - a strong keyword is in its title or a heading (matchedIn "title", INFERRED);
+ * - otherwise two distinct strong keywords are in its body ("body", AMBIGUOUS).
+ *   One is not enough: a changed class every proposal about its component
+ *   names, such as TinkerGraph, would link them all;
+ * - otherwise a location keyword (a module name) is in its title ("location",
+ *   AMBIGUOUS). Not its headings: section headings use ordinary words that are
+ *   also module names (language, examples).
+ * Weak keywords never keep a proposal; they are reported and scored on one that
+ * is already kept.
+ *
+ * @param {string} repoPath
+ * @param {string[]|{strong: string[], weak?: string[], location?: string[]}} keywords
+ */
 export async function findMatchingProposals(repoPath, keywords) {
+  const { strong = [], weak = [], location = [] } = Array.isArray(keywords) ? { strong: keywords } : keywords;
   const proposalDir = join(repoPath, PROPOSAL_DIR);
   try {
     const files = await readdir(proposalDir);
@@ -176,23 +198,27 @@ export async function findMatchingProposals(repoPath, keywords) {
       if (isProposalIndex(file)) continue;
       const { title, headings, body } = splitProposal(await readFile(join(proposalDir, file), "utf-8"));
 
-      const matches = (text) => keywords.filter((k) => keywordRegex(k).test(text));
-      const titleHits = new Set([...matches(title), ...matches(headings)]);
-      const bodyHits = new Set(matches(body));
-      // Keep a proposal only on real signal: a keyword in its title/heading, or
-      // at least two distinct keywords in the body. A lone body mention is noise.
-      const strong = titleHits.size > 0;
-      if (!strong && bodyHits.size < 2) continue;
+      const top = `${title}\n${headings}`;
+      const hits = (list, text) => list.filter((k) => keywordRegex(k).test(text));
+      const strongTop = hits(strong, top);
+      const strongBody = hits(strong, body);
+      const locationTop = hits(location, title);
+      const matchedIn = strongTop.length > 0 ? "title"
+        : strongBody.length >= 2 ? "body"
+        : locationTop.length > 0 ? "location"
+        : null;
+      if (!matchedIn) continue;
+      const weakHits = hits(weak, body);
 
       proposals.push({
         file,
         path: `${PROPOSAL_DIR}/${file}`,
         source: "proposal",
         title: title || file,
-        matchedKeywords: [...new Set([...titleHits, ...bodyHits])],
-        matchedIn: strong ? "title" : "body",
+        matchedKeywords: [...new Set([...strongTop, ...strongBody, ...locationTop, ...weakHits])],
+        matchedIn,
         found_in: "search",
-        score: titleHits.size * 2 + bodyHits.size,
+        score: strongTop.length * 3 + strongBody.length * 2 + locationTop.length + weakHits.length,
         snippet: body.slice(0, 500),
       });
     }
@@ -309,11 +335,13 @@ async function followLinks(discussions) {
  * @param {string} params.prBody - PR body/description
  * @param {string} params.diff - The full diff text
  * @param {string[]} params.keywords - Keywords for search (class names, step names, etc.)
+ * @param {{strong: string[], weak: string[], location: string[]}} [params.proposalKeywords] - Graded
+ *   keywords for proposal matching (see findMatchingProposals); `keywords` is used when absent.
  * @param {string} params.repoPath - Path to the repo (for proposal discovery)
  * @returns {Promise<DiscoveryResult>}
  */
 export async function discoverDiscussions(params) {
-  const { pr, prTitle = "", prBody = "", diff = "", keywords = [], repoPath = "" } = params;
+  const { pr, prTitle = "", prBody = "", diff = "", keywords = [], proposalKeywords = null, repoPath = "" } = params;
 
   // Fetch PR comments from GitHub (issue comments + inline review comments)
   const prCommentErrors = [];
@@ -360,7 +388,7 @@ export async function discoverDiscussions(params) {
   if (repoPath) {
     const explicit = await resolveExplicitProposals(repoPath, proposalLinks);
     const explicitPaths = new Set(explicit.map((p) => p.path));
-    const keywordMatched = (await findMatchingProposals(repoPath, keywords))
+    const keywordMatched = (await findMatchingProposals(repoPath, proposalKeywords || keywords))
       .filter((p) => !explicitPaths.has(p.path));
     proposals = [...explicit, ...keywordMatched];
   }
@@ -373,6 +401,7 @@ export async function discoverDiscussions(params) {
     devListMissing: explicitDevList.length === 0 && searchedDevList.length === 0,
     devListSearchPerformed,
     devListSearchKeywords: devListSearchPerformed ? keywords : [],
+    proposalKeywords,
 
     secondary: secondaryDiscussions,
 
