@@ -714,7 +714,16 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     private void recordIndexes() {
         if (null == storage || restoringIndexes || storage.isReadOnly())
             return;
-        new IndexDefinitions(getIndexedKeys(Vertex.class), getIndexedKeys(Edge.class))
-                .write(new File(storageDirectory));
+        // serialized with other index changes and with close(), so the file always holds the latest set of keys and is
+        // never written once close() has released the directory, which another graph may then own
+        storageCommitLock.lock();
+        try {
+            if (null == directoryLock)
+                return;
+            new IndexDefinitions(getIndexedKeys(Vertex.class), getIndexedKeys(Edge.class))
+                    .write(new File(storageDirectory));
+        } finally {
+            storageCommitLock.unlock();
+        }
     }
 }

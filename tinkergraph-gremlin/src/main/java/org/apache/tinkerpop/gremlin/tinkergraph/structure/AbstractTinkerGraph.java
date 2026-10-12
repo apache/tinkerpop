@@ -99,7 +99,8 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
 
     /**
      * Exclusive lock on the storage directory, held for the graph's lifetime so no second graph — in this or another
-     * process — can open the same location and corrupt its files. {@code null} when the graph is purely in-memory.
+     * process — can open the same location and corrupt its files. {@code null} when the graph is purely in-memory, and
+     * once it is closed. Released and cleared under {@link #storageCommitLock}.
      */
     protected DirectoryLock directoryLock;
 
@@ -355,16 +356,20 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
                         storage.close();
                     }
                 } finally {
-                    storageCommitLock.unlock();
                     // release the exclusive directory lock last, so the location is only reopenable once the engine
-                    // has fully released its files
-                    if (directoryLock != null) {
-                        // a store opened for recovery is left exactly as it was found, LOCK file included
-                        if (storage.isReadOnly())
-                            directoryLock.closeAndRemoveIfCreated();
-                        else
-                            directoryLock.close();
-                        directoryLock = null;
+                    // has fully released its files. Still under the commit lock, so nothing that writes into the
+                    // directory while holding it, such as recording index definitions, can follow the release.
+                    try {
+                        if (directoryLock != null) {
+                            // a store opened for recovery is left exactly as it was found, LOCK file included
+                            if (storage.isReadOnly())
+                                directoryLock.closeAndRemoveIfCreated();
+                            else
+                                directoryLock.close();
+                            directoryLock = null;
+                        }
+                    } finally {
+                        storageCommitLock.unlock();
                     }
                 }
             }
