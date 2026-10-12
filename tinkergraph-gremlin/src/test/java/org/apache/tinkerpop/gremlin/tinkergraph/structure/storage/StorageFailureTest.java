@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
 
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -89,6 +91,41 @@ public class StorageFailureTest {
         assertEquals(1, IteratorUtils.count(graph.vertices()));
         assertEquals(0L, (long) graph.traversal().V().has("name", "b").count().next());
         graph.tx().rollback();
+        graph.close();
+    }
+
+    @Test
+    public void shouldKeepIndexesUnchangedWhenEncodeFails() {
+        final TinkerStorageGraph graph = openWithIndexedData();
+
+        // an unstorable value fails the encode, which fails only this commit and leaves the engine accepting more
+        changeIndexedValues(graph);
+        graph.vertices(2).next().property("unstorable", new Object());
+        assertCommitFails(graph);
+        graph.tx().rollback();
+
+        assertIndexesHoldCommittedValues(graph);
+
+        // a later successful commit must not expose the failed transaction's index changes either
+        graph.addVertex(T.id, 3, "name", "z");
+        graph.tx().commit();
+        assertIndexesHoldCommittedValues(graph);
+        graph.close();
+    }
+
+    @Test
+    public void shouldKeepIndexesUnchangedWhenLogFlushFails() {
+        final TinkerStorageGraph graph = openWithIndexedData();
+
+        FaultInjectingStorage.failLogWrites = true;
+        changeIndexedValues(graph);
+        assertCommitFails(graph);
+        FaultInjectingStorage.failLogWrites = false;
+        graph.tx().rollback();
+
+        // the engine now refuses commits, but the graph stays readable for export and its indexes must still agree
+        // with the committed data
+        assertIndexesHoldCommittedValues(graph);
         graph.close();
     }
 
@@ -322,6 +359,40 @@ public class StorageFailureTest {
                 deleteRecursively(child);
         }
         assertTrue("could not delete " + file, file.delete());
+    }
+
+    /**
+     * Open a graph with a vertex index on "name" and an edge index on "weight", holding vertex 1 named "a", vertex 2
+     * named "b" and an edge 10 between them with weight 1.
+     */
+    private TinkerStorageGraph openWithIndexedData() {
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.createIndex("name", Vertex.class);
+        graph.createIndex("weight", Edge.class);
+        final Vertex a = graph.addVertex(T.id, 1, "name", "a");
+        final Vertex b = graph.addVertex(T.id, 2, "name", "b");
+        a.addEdge("knows", b, T.id, 10, "weight", 1);
+        graph.tx().commit();
+        return graph;
+    }
+
+    private static void changeIndexedValues(final TinkerStorageGraph graph) {
+        graph.vertices(1).next().property("name", "c");
+        graph.edges(10).next().property("weight", 2);
+    }
+
+    /**
+     * Assert that indexed lookups find exactly the committed values from {@link #openWithIndexedData()}, as a scan of
+     * the graph does, and nothing from a failed change.
+     */
+    private static void assertIndexesHoldCommittedValues(final TinkerStorageGraph graph) {
+        final GraphTraversalSource g = graph.traversal();
+        assertEquals("a", graph.vertices(1).next().value("name"));
+        assertEquals(Integer.valueOf(1), graph.edges(10).next().value("weight"));
+        assertEquals(Collections.singletonList(1), g.V().has("name", "a").id().toList());
+        assertEquals(Collections.emptyList(), g.V().has("name", "c").id().toList());
+        assertEquals(Collections.singletonList(10), g.E().has("weight", 1).id().toList());
+        assertEquals(Collections.emptyList(), g.E().has("weight", 2).id().toList());
     }
 
     private static void assertCommitFails(final TinkerStorageGraph graph) {
