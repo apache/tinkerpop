@@ -32,7 +32,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
@@ -161,6 +164,108 @@ public class StorageSettingsTest {
         assertEquals(1, countOf(graph.vertices()));
         graph.close();
         assertFalse("recovery must not write the record", settingsFile().exists());
+    }
+
+    @Test
+    public void shouldReadAllowNullPropertyValuesAsConfigurationDoes() {
+        final Configuration created = config();
+        created.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, true);
+        TinkerStorageGraph.open(created).close();
+
+        // Configuration.getBoolean reads "yes" as true, so it names the recorded setting
+        final Configuration yes = config();
+        yes.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, "yes");
+        TinkerStorageGraph.open(yes).close();
+
+        final Configuration unreadable = config();
+        unreadable.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, "maybe");
+        try {
+            TinkerStorageGraph.open(unreadable).close();
+            fail("a value that is neither true nor false must not match the record");
+        } catch (IllegalStateException expected) {
+            assertTrue("the error should give the configured value: " + expected.getMessage(),
+                    expected.getMessage().contains("cannot be opened with maybe"));
+        }
+    }
+
+    @Test
+    public void shouldNameTheSettingsFileWhenItIsMalformed() throws Exception {
+        TinkerStorageGraph.open(config()).close();
+        // a truncated unicode escape, which Properties.load rejects
+        Files.write(settingsFile().toPath(),
+                "gremlin.tinkergraph.vertexIdManager=\\u12".getBytes(StandardCharsets.ISO_8859_1));
+        try {
+            TinkerStorageGraph.open(config()).close();
+            fail("a malformed settings record should not open");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains(settingsFile().getPath()));
+        }
+    }
+
+    @Test
+    public void shouldLeaveNoLockFileInADirectoryThatIsNotAStore() throws Exception {
+        final File foreign = new File(location);
+        Files.write(new File(foreign, "notes.txt").toPath(), "not a store".getBytes(StandardCharsets.UTF_8));
+        try {
+            TinkerStorageGraph.open(config()).close();
+            fail("a directory holding other files should not open as a store");
+        } catch (IllegalStateException expected) {
+            // expected
+        }
+        assertEquals(Collections.singletonList("notes.txt"), Arrays.asList(foreign.list()));
+    }
+
+    @Test
+    public void shouldTrimTheStorageEngineName() {
+        final Configuration padded = config();
+        padded.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, " graphbinary ");
+        TinkerStorageGraph.open(padded).close();
+    }
+
+    @Test
+    public void shouldListTheBuiltInEnginesForAnUnknownEngine() {
+        final Configuration unknown = config();
+        unknown.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "rocksdb");
+        try {
+            TinkerStorageGraph.open(unknown).close();
+            fail("an unknown storage engine should not open");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("'rocksdb'"));
+            assertTrue(expected.getMessage(), expected.getMessage().contains("graphbinary"));
+        }
+    }
+
+    @Test
+    public void shouldNotCreateADirectoryToRecover() throws Exception {
+        final File missing = new File(location, "missing");
+        final Configuration recover = config();
+        recover.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, missing.getAbsolutePath());
+        recover.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER, true);
+        try {
+            TinkerStorageGraph.open(recover).close();
+            fail("recovery of a directory that does not exist should fail");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains(missing.getPath()));
+        }
+        assertFalse("recovery must not create the directory", missing.exists());
+    }
+
+    @Test
+    public void shouldNotLeaveALockFileAfterRecovery() throws Exception {
+        TinkerStorageGraph graph = TinkerStorageGraph.open(config());
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+        graph.close();
+        // a store copied without its LOCK file, as a backup might be
+        Files.delete(new File(location, DirectoryLock.LOCK_FILE).toPath());
+
+        final Configuration recover = config();
+        recover.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER, true);
+        graph = TinkerStorageGraph.open(recover);
+        assertEquals(1, countOf(graph.vertices()));
+        graph.close();
+        assertFalse("recovery must leave the directory as it found it",
+                new File(location, DirectoryLock.LOCK_FILE).exists());
     }
 
     private Configuration config() {

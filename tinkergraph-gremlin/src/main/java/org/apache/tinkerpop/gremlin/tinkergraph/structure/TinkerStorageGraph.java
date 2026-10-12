@@ -115,6 +115,11 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         // take an exclusive lock on the storage directory before anything touches its files, so a second graph on the
         // same location fails fast rather than corrupting it. The directory must exist to hold the lock.
         final File dir = new File(storageDirectory);
+        final boolean recovering = configuration.getBoolean(GREMLIN_TINKERGRAPH_STORAGE_RECOVER, false);
+        // a recovery open never changes the storage directory, so it does not create one either
+        if (recovering && !dir.isDirectory())
+            throw new IllegalStateException(String.format("There is no storage directory at %s to open with %s",
+                    dir, GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
         if (!dir.isDirectory() && !dir.mkdirs())
             throw new IllegalStateException(String.format("Could not create storage directory %s", dir));
         directoryLock = DirectoryLock.acquire(dir);
@@ -133,8 +138,13 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
             // createKeyIndex backfills over the restored data rather than only over writes that follow
             restoreIndexes(dir);
         } catch (RuntimeException | Error ex) {
-            // don't leak the lock if the engine fails to open or replay
-            directoryLock.close();
+            // don't leak the lock if the engine fails to open or replay, nor leave a LOCK file behind in a directory
+            // that turned out not to be a store this graph can open
+            try {
+                directoryLock.closeAndRemoveIfCreated();
+            } catch (RuntimeException cleanup) {
+                ex.addSuppressed(cleanup);
+            }
             directoryLock = null;
             throw ex;
         }

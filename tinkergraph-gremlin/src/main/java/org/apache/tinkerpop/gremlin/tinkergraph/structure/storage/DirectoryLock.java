@@ -47,10 +47,17 @@ public final class DirectoryLock implements AutoCloseable {
     private final FileLock lock;
     private final File lockFile;
 
-    private DirectoryLock(final FileChannel channel, final FileLock lock, final File lockFile) {
+    /**
+     * Whether acquiring the lock created the {@code LOCK} file, rather than finding it left by an earlier graph.
+     */
+    private final boolean createdFile;
+
+    private DirectoryLock(final FileChannel channel, final FileLock lock, final File lockFile,
+                          final boolean createdFile) {
         this.channel = channel;
         this.lock = lock;
         this.lockFile = lockFile;
+        this.createdFile = createdFile;
     }
 
     /**
@@ -63,6 +70,7 @@ public final class DirectoryLock implements AutoCloseable {
     public static DirectoryLock acquire(final File directory) {
         final File lockFile = new File(directory, LOCK_FILE);
         FileChannel channel = null;
+        final boolean createdFile = !lockFile.exists();
         try {
             channel = FileChannel.open(lockFile.toPath(),
                     StandardOpenOption.CREATE, StandardOpenOption.WRITE);
@@ -71,7 +79,7 @@ public final class DirectoryLock implements AutoCloseable {
                 channel.close();
                 throw lockedByAnother(directory, null);
             }
-            return new DirectoryLock(channel, lock, lockFile);
+            return new DirectoryLock(channel, lock, lockFile, createdFile);
         } catch (OverlappingFileLockException ofle) {
             // another graph in *this* JVM already holds (or is acquiring) the lock on this file
             closeQuietly(channel);
@@ -96,6 +104,21 @@ public final class DirectoryLock implements AutoCloseable {
                 // best effort on the failure path
             }
         }
+    }
+
+    /**
+     * Release the lock and, if acquiring it created the {@code LOCK} file, delete that file, leaving the directory as
+     * it was found. For a graph that must not change the directory: one whose open failed, or one opened for recovery.
+     */
+    public void closeAndRemoveIfCreated() {
+        // delete while the lock is still held where the platform allows it, so no other graph can take the lock on this
+        // file in between and then have its LOCK file deleted under it. Windows refuses to delete an open file, so
+        // there the file is removed once the lock is released.
+        final boolean deleted = createdFile && lockFile.delete();
+        close();
+        if (createdFile && !deleted && lockFile.exists() && !lockFile.delete())
+            throw new UncheckedIOException(new IOException(String.format("Could not remove storage lock %s",
+                    lockFile)));
     }
 
     /**

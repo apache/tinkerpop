@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -49,6 +50,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 /**
  * Base class for {@link TinkerMemoryGraph} and {@link TinkerStorageGraph}.
@@ -357,7 +359,11 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
                     // release the exclusive directory lock last, so the location is only reopenable once the engine
                     // has fully released its files
                     if (directoryLock != null) {
-                        directoryLock.close();
+                        // a store opened for recovery is left exactly as it was found, LOCK file included
+                        if (storage.isReadOnly())
+                            directoryLock.closeAndRemoveIfCreated();
+                        else
+                            directoryLock.close();
                         directoryLock = null;
                     }
                 }
@@ -601,16 +607,22 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
      * implementation with a public no-argument constructor. Mirrors {@link #selectIdManager}.
      */
     protected static TinkerStorage selectStorage(final Configuration config, final String configKey) {
-        final String storageConfigValue = config.getString(configKey, null);
-        if (null == storageConfigValue)
+        final String configured = config.getString(configKey, null);
+        if (null == configured)
             return null;
+        final String storageConfigValue = configured.trim();
         try {
             return DefaultStorage.valueOf(storageConfigValue.toUpperCase()).get();
         } catch (IllegalArgumentException iae) {
             try {
                 return (TinkerStorage) Class.forName(storageConfigValue).getDeclaredConstructor().newInstance();
             } catch (Exception ex) {
-                throw new IllegalStateException(String.format("Could not configure TinkerGraph storage engine with %s", storageConfigValue), ex);
+                throw new IllegalStateException(String.format(
+                        "Could not configure TinkerGraph storage engine with '%s': it is neither a built-in engine " +
+                                "(%s) nor the class name of a TinkerStorage implementation with a public no-argument " +
+                                "constructor",
+                        storageConfigValue, Arrays.stream(DefaultStorage.values())
+                                .map(e -> e.name().toLowerCase()).collect(Collectors.joining(", "))), ex);
             }
         }
     }
