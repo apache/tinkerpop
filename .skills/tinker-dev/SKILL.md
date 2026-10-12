@@ -141,8 +141,12 @@ ones that are easy to miss:
   use the **tinker-doc** skill. The mechanical minimum: add new content to the right book and update
   its `index.asciidoc`.
 - **Changelog**: for user-visible or API changes, add a concise `CHANGELOG.asciidoc` entry in the
-  correct version section. Do not invent version numbers or release names. See the **tinker-doc**
-  skill for changelog discipline (one entry per user-facing change, not per commit) and voice.
+  correct version section. Do not invent version numbers or release names. Never add the
+  `*(breaking)*` marker to an entry you write: it is applied only at release, to the lines generated
+  from JIRA issues labelled `breaking` (see `docs/src/dev/developer/release.asciidoc`), so a
+  hand-written entry without it is correct. Explain a breaking change in the upgrade docs instead.
+  See the **tinker-doc** skill for changelog discipline (one entry per user-facing change, not per
+  commit) and voice.
 
 Otherwise, match the existing code in neighboring files — explicit imports (no wildcards),
 `final` where practical, SLF4J logging over `println`, Hamcrest matchers, and closing any
