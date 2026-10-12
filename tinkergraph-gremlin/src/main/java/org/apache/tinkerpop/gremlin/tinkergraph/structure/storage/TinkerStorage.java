@@ -35,13 +35,14 @@ import java.util.Collection;
  *     <li>{@link #open(AbstractTinkerGraph, Configuration)} — resolve the backing location and ready the store.</li>
  *     <li>{@link #replay(AbstractTinkerGraph)} — rebuild in-memory state from what was previously persisted.</li>
  *     <li>{@link #persist(long, Collection, Collection)} then {@link #flush()} — called on each transaction commit,
- *     before the in-memory state is committed, so a failure aborts the commit and leaves memory and disk consistent.</li>
+ *     before the indexes and in-memory state are committed, so a failure aborts the commit and leaves the graph as it
+ *     was. Whether a commit that failed in the engine reached disk is up to the engine; one that cannot say should
+ *     refuse further commits until the graph is reopened.</li>
  *     <li>{@link #compact(AbstractTinkerGraph)} — optionally fold accumulated changes into a compact snapshot.</li>
  *     <li>{@link #close()} — release resources.</li>
  * </ol>
- * A new engine can be selected by name (see {@code TinkerStorageGraph.DefaultStorage}) or by fully-qualified class
- * name via the {@code gremlin.tinkergraph.storage} configuration key. Implementations must provide a public no-argument
- * constructor.
+ * A new engine can be selected by name (see {@link DefaultStorage}) or by fully-qualified class name via the
+ * {@code gremlin.tinkergraph.storage} configuration key. Implementations must provide a public no-argument constructor.
  */
 public interface TinkerStorage extends AutoCloseable {
 

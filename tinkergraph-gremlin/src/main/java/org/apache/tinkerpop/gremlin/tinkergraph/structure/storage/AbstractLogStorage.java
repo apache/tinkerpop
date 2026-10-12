@@ -865,10 +865,6 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     /**
-     * Record the first log write failure, putting the engine into its fail-stop state, and return the exception to
-     * throw for this one.
-     */
-    /**
      * Fail-stop if the store was removed or replaced since the log was opened: the directory or log is gone, or the
      * log's path now names a different file than the one being written. A commit synced to such a log would be
      * acknowledged yet lost, and a second graph could create the store again beside this one.
@@ -908,6 +904,10 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         return new UncheckedIOException(ex.getMessage(), ex);
     }
 
+    /**
+     * Record the first log write failure, putting the engine into its fail-stop state, and return the exception to
+     * throw for this one.
+     */
     private UncheckedIOException fail(final String message, final IOException cause) {
         if (failure == null)
             failure = cause;
