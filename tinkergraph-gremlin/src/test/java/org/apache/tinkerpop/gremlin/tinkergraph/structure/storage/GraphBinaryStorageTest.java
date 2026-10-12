@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.CRC32;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -617,6 +618,28 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
             assertEquals(1L, (long) graph.traversal().V().has(awkward, "value").count().next());
         } finally {
             graph.close();
+        }
+    }
+
+    @Test
+    public void shouldNotRecordIndexesAfterClose() throws Exception {
+        final TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        graph.createIndex("name", Vertex.class);
+        graph.close();
+        final File indexFile = new File(location, IndexDefinitions.INDEX_FILE);
+        final byte[] recorded = Files.readAllBytes(indexFile.toPath());
+
+        // close() released the directory, which another graph may now own, so a closed graph must not write to it
+        graph.createIndex("age", Vertex.class);
+        graph.dropIndex("name", Vertex.class);
+        assertArrayEquals(recorded, Files.readAllBytes(indexFile.toPath()));
+
+        final TinkerStorageGraph reopened = open();
+        try {
+            assertEquals(Collections.singleton("name"), reopened.getIndexedKeys(Vertex.class));
+        } finally {
+            reopened.close();
         }
     }
 
