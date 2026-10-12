@@ -89,8 +89,11 @@ rather than recalling, you are guessing.
 
 **Cite code as `file[sha]`** — `GryoPool.java[bece4a34c7]`, with enough path to be unambiguous
 (`pom.xml` is 36 different files). No line numbers, no symbol names: both drift, and the
-sentence around the citation already says what it points at. The sha has to be reachable from a
-published branch, because a local commit can be rebased away before it merges.
+sentence around the citation already says what it points at. The sha has to be on a release
+branch — `3.7-dev`, `3.8-dev` or `master`. A feature branch does not count, even once pushed:
+squash and rebase rewrite it before it merges, and its shas stop existing, just as a local
+commit's do. Code that exists only on the feature branch is cited by file alone —
+`TinkerStorage.java` — and means the file as it is on that work's branch.
 
 **Record what actually happened.** If you cannot point to the moment, do not write the bead.
 When you sense a decision you were not party to, create a bead labelled `human` posing the
