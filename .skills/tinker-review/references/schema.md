@@ -201,8 +201,8 @@ renders this as the **Signal Confidence** panel.
 
 | Property | Values | Meaning |
 |----------|--------|---------|
-| `matched_in` | `reference`, `title`, `body` | How the proposal was linked: an explicit path reference in the PR (`EXTRACTED`), a keyword in the proposal's title/heading (`INFERRED`), or keywords in its body (`AMBIGUOUS`). |
-| `matched_keywords` | comma-separated terms | The keywords that matched, so the link is self-explanatory. |
+| `matched_in` | `reference`, `title`, `body`, `location` | How the proposal was linked: an explicit path reference in the PR (`EXTRACTED`), a strong keyword in the proposal's title or a heading (`INFERRED`), two strong keywords in its body (`AMBIGUOUS`), or the name of a changed module in its title (`AMBIGUOUS`). Strong keywords are identifier-shaped: camelCase, a step written `name()` in the PR title, or letters mixed with digits. |
+| `matched_keywords` | comma-separated terms | The keywords that matched, so the link is self-explanatory. Includes weak keywords (plain words from the PR title or split from file names), which are listed on a proposal another keyword matched but never match one themselves. |
 
 ### Project memory
 

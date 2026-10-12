@@ -262,8 +262,9 @@ export async function populateDiscussions(g, discussions, context) {
   }
 
   // proposed_in: link proposals to the PR Discussion. Confidence tracks how the
-  // link was found: an explicit reference is EXTRACTED, a title/heading keyword
-  // match is INFERRED, a body-only match is AMBIGUOUS (so it surfaces for human
+  // link was found: an explicit reference is EXTRACTED, a strong keyword in the
+  // title or a heading is INFERRED, and a strong keyword only in the body or a
+  // module/package name in a heading is AMBIGUOUS (so it surfaces for human
   // review). The matched terms and location ride on the edge so the link is
   // self-explanatory — mirroring `addresses`' found_in/found_via.
   const confForMatch = (matchedIn) =>
