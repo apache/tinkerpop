@@ -340,7 +340,7 @@ gremlint  gremlator  gremlin-mcp
 
 ```
 breaking-change  deprecation  security  serialization  protocol  performance  
-release  build  
+release  build  environment 
 ```
 
 ---
