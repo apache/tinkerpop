@@ -44,3 +44,74 @@ Feature: Step - CountStrategy
       | v[vadas] |
       | v[lop] |
       | v[ripple]  |
+
+  # a following is() must see the real count, not the value capped by the limit() CountStrategy injects
+  Scenario: g_withStrategiesXCountStrategyX_V_whereXoutE_count_isXgtX1XX_isXltX3XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(CountStrategy).V().where(outE().count().is(gt(1)).is(lt(3)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+
+  # the first is() only passes counts below the limit, so the limit is safe and the count seen downstream is exact
+  Scenario: g_withStrategiesXCountStrategyX_V_whereXoutE_count_isXltX3XX_isXgtX1XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(CountStrategy).V().where(outE().count().is(lt(3)).is(gt(1)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+
+  Scenario: g_withStrategiesXCountStrategyX_V_outE_count_isXgtX2XX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(CountStrategy).V().outE().count().is(gt(2))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].l |
+
+  Scenario: g_withStrategiesXCountStrategyX_V_mapXoutE_count_isXgtX1XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(CountStrategy).V().map(outE().count().is(gt(1)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[3].l |
+      | d[2].l |
+
+  # the lt() bound is a traversal, so the strategy can't know it and must not cap the count
+  Scenario: g_withStrategiesXCountStrategyX_V_filterXoutE_count_isXgtX1X_andXltXconstantX3XXXXX_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(CountStrategy).V().filter(outE().count().is(P.gt(1).and(P.lt(__.constant(3l))))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | josh |
+
+  # the predicate traversal reads the label on count(), so it must see the real count
+  Scenario: g_withStrategiesXCountStrategyX_V_outE_count_asXaX_isXgtX1X_andXlteXselectXaXXXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(CountStrategy).V().outE().count().as("a").is(P.gt(1).and(P.lte(__.select("a"))))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].l |
