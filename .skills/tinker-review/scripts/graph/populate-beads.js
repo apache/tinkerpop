@@ -41,6 +41,8 @@ export function discussionUrlForRef(ref) {
   if (pr) return `https://github.com/apache/tinkerpop/pull/${pr[1]}`;
   if (/^TINKERPOP-\d+$/.test(ref)) return `https://issues.apache.org/jira/browse/${ref}`;
   if (ref.includes("@")) return null;
+  // A proposal record names its file; its Discussion carries the repo path.
+  if (!ref.includes("/")) return `docs/src/dev/future/${ref}`;
   return ref;
 }
 
@@ -49,7 +51,8 @@ const edgeLabel = (type) => type.replace(/-/g, "_");
 
 /**
  * Load the beads found by discoverBeads() into the graph: a Bead vertex per
- * bead, `child_of` for the parent-child tree, bd's other dependencies carried
+ * bead, `child_of` for the parent-child tree (one per parent, so a shared record
+ * has one to each of its roots), bd's other dependencies carried
  * over as edges between loaded beads, and `records` from a record bead to the
  * Discussion its external ref names. Every edge is EXTRACTED: each one is a
  * fact in the beads database.
@@ -94,11 +97,12 @@ export async function populateBeads(g, beads) {
   };
 
   for (const b of beads.beads) {
-    if (b.parent && loaded.has(b.parent)) {
+    for (const parent of b.parents || (b.parent ? [b.parent] : [])) {
+      if (!loaded.has(parent)) continue;
       await push(
         g.V().hasLabel("Bead").has("beadId", b.id)
           .addE("child_of").property("confidence", CONFIDENCE.EXTRACTED)
-          .to(bead(b.parent)),
+          .to(bead(parent)),
         "childOf",
       );
     }

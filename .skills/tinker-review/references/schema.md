@@ -116,16 +116,19 @@ A bead from the reviewer's local beads database (`bd`), loaded because a record
 bead's external ref names one of the PR's artifacts (see `discovery/beads.js`).
 Every bead in the subtree of each root reached that way is loaded. `type` is
 bd's issue type (`epic`, `feature`, `task`, `bug`, `decision`, `record`, …);
-`root` is the id of the root the bead belongs to. `rejected` is set only on
+`root` is the id of the root the bead belongs to — for a record shared by several
+loaded roots, the first of them; the others reach it through `child_of`, since a
+shared record has one `child_of` edge per parent. `parent` is bd's scalar parent,
+which on a shared record names only one parent: use `child_of`. `rejected` is set only on
 decisions — `true` marks the road not taken, and `description` then says what the
 option was, why it lost and what settled it. `externalRef` is set only on
 records. `labels` is the comma-joined label list.
 
-`rootRole` is set only on roots: `primary` — the root of this PR's own record
-(`apache/tinkerpop#N`); `owner` — the root a matched JIRA/dev@/proposal record
-belongs to; `shared` — a root that links a matched record with `relates_to`
+`rootRole` is set only on roots: `primary` — a root of this PR's own record
+(`apache/tinkerpop#N`); `owner` — a root of a matched JIRA/dev@/proposal record
 (connected work). Query the PR's own work with `.has("rootRole", "primary")`
-and a root's subtree with `.has("root", id)`.
+and a root's subtree with `.has("root", id)`, adding
+`.out("child_of").has("beadId", id)` for the records it shares.
 
 Status reads against the beads workflow: a root stays open until the work
 merges, and decisions are closed as they are written, so at PR time status is
@@ -210,7 +213,7 @@ All `EXTRACTED` except `governs`: each is a fact in the beads database.
 
 | Edge | From | To | Meaning |
 |------|------|----|---------|
-| `child_of` | Bead | Bead | bd's parent-child tree: the bead belongs to its parent |
+| `child_of` | Bead | Bead | bd's parent-child tree: the bead belongs to its parent. A shared record has one per parent |
 | `records` | Bead (record) | Discussion | The record's external ref names this Discussion (the PR, a JIRA, a dev@ thread, a proposal). Only drawn to Discussions discovery created. |
 | `governs` | Bead | Function, Type or File | The bead — usually a decision — is about this code. Written in Phase 2 by `linkBead`, so it is `INFERRED` by default, unlike the rest of this table. |
 | `blocks`, `caused_by`, `relates_to`, `supersedes`, `discovered_from`, … | Bead | Bead | bd's other dependency types, carried over with `-` written as `_`. `relates_to` pairs a decision with the alternative it was chosen over; `caused_by` runs from a task to the decision that shaped it; `supersedes` from a newer decision to the one it replaces. Drawn only between loaded beads. |

@@ -211,8 +211,7 @@ function renderContext(disc) {
 
 const ROLE_TEXT = {
   primary: "This PR's work",
-  owner: "Owns a linked record",
-  shared: "Connected work",
+  owner: "Connected work",
 };
 
 // Where an external ref points: a PR, a JIRA, a commit, a URL; null for a path.
@@ -293,7 +292,11 @@ function renderBeadRoot(root, members, comments, beadsById, role, via) {
   const human = members.filter((b) => (b.labels || []).includes("human") && !["closed", "pinned"].includes(b.status));
 
   const recordList = records.length > 0
-    ? `<p><strong>Records:</strong> ${records.map((r) => beadAnchor(r, `${externalRefHtml(r.externalRef)}${via.includes(r.id) ? " <em>(matched)</em>" : ""}`)).join(", ")}</p>` : "";
+    ? `<p><strong>Records:</strong> ${records.map((r) => {
+      const text = `${externalRefHtml(r.externalRef)}${via.includes(r.id) ? " <em>(matched)</em>" : ""}`;
+      // A shared record appears under each of its roots; only the first holds its anchor.
+      return r.root === root.id ? beadAnchor(r, text) : text;
+    }).join(", ")}</p>` : "";
   const commentList = (comments[root.id] || []).length > 0
     ? `<details><summary>Root comments (${comments[root.id].length})</summary><ul class="bead-list">${comments[root.id].map((c) => `<li>${beadText(c.text)}</li>`).join("")}</ul></details>` : "";
   const humanList = human.length > 0
@@ -338,7 +341,7 @@ function renderProjectMemory(beads) {
   const cards = roots.map((r) => {
     const root = beadsById.get(r.id);
     if (!root) return "";
-    return renderBeadRoot(root, all.filter((b) => b.root === r.id), beads.comments || {}, beadsById, r.role, r.via || []);
+    return renderBeadRoot(root, all.filter((b) => (b.roots || [b.root]).includes(r.id)), beads.comments || {}, beadsById, r.role, r.via || []);
   });
   return [intro, ...cards].join("\n  ");
 }
@@ -348,11 +351,11 @@ function renderBeadsAppendix(beads) {
   if (all.length === 0) return "";
   const rows = all.map((b) => {
     const decision = b.rejected === true ? "not taken" : b.rejected === false ? "chosen" : "";
-    return `<tr><td class="fn-name"><a href="#bead-${esc(b.id)}">${esc(b.id)}</a></td><td>${esc(b.type)}${decision ? ` (${decision})` : ""}</td><td>${esc(b.status)}</td><td><code>${esc(b.root)}</code></td><td>${esc(b.title)}</td></tr>`;
+    return `<tr><td class="fn-name"><a href="#bead-${esc(b.id)}">${esc(b.id)}</a></td><td>${esc(b.type)}${decision ? ` (${decision})` : ""}</td><td>${esc(b.status)}</td><td>${(b.roots || [b.root]).map((id) => `<code>${esc(id)}</code>`).join(" ")}</td><td>${esc(b.title)}</td></tr>`;
   }).join("\n      ");
   return `
   <h3>Beads</h3>
-  <p class="section-intro">Every bead loaded from the roots in <a href="#context">Project Memory</a>. Each is a <code>Bead</code> vertex in the graph; query a root's subtree with <code>.has("root", id)</code>.</p>
+  <p class="section-intro">Every bead loaded from the roots in <a href="#context">Project Memory</a>. Each is a <code>Bead</code> vertex in the graph; query a root's subtree with <code>.has("root", id)</code>, plus <code>.out("child_of").has("beadId", id)</code> for the records it shares.</p>
   <table class="gap-table">
     <thead><tr><th>Bead</th><th>Type</th><th>Status</th><th>Root</th><th>Title</th></tr></thead>
     <tbody>\n      ${rows}\n    </tbody>

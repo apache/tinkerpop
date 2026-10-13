@@ -109,7 +109,7 @@ its own. Sorted so the dangerous ones surface first.
 ### listBeads
 The beads Phase 1 loaded for this PR — the roots reached from records naming the
 PR or its discussions, and everything under them — in reading order: the primary
-root (the PR's own record) first, then owner and shared roots, each followed by
+roots (of the PR's own record) first, then owner roots, each followed by
 its decisions, tasks and records. A chosen decision lists the rejected
 `alternatives` it beat and any decision it was `supersededBy`; `governs` shows
 code already linked with `linkBead`. Filter with `--root`, `--type` or `--status`
