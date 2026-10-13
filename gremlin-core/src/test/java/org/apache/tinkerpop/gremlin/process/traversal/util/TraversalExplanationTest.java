@@ -108,7 +108,9 @@ public class TraversalExplanationTest {
         traversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone());
         checkTraversalExplanation(traversal.explain(), List.of(new ExplainExpectation(AdjacentToIncidentStrategy.class, "[VertexStepPlaceholder(IN,edge)")));
         ///
-        traversal = __.outE().inV().group().by(__.inE().outV().groupCount().by(__.both().count().is(P.gt(2)))).asAdmin();
+        // lt(3) so that CountStrategy can safely limit: the count is a by() key, so a predicate that accepts the cap
+        // (e.g. gt(2)) must be left unlimited
+        traversal = __.outE().inV().group().by(__.inE().outV().groupCount().by(__.both().count().is(P.lt(3)))).asAdmin();
         traversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().removeStrategies(ProductiveByStrategy.class));
         checkTraversalExplanation(traversal.explain(), List.of(new ExplainExpectation(IncidentToAdjacentStrategy.class, "[VertexStepPlaceholder(IN,vertex)"),
                 new ExplainExpectation(IncidentToAdjacentStrategy.class, "[VertexStepPlaceholder(OUT,vertex)"),
