@@ -185,7 +185,7 @@ export async function listExternalRefs(g) {
  * and the alternatives they turned down — so the reviewer can read the change
  * against them. Roots come first (primary, then owner, then shared), then each
  * root's decisions, tasks and records. A decision lists the rejected
- * alternatives it was chosen over (`related` to a rejected decision) and any
+ * alternatives it was chosen over (a `relates-to` edge to a rejected decision) and any
  * decision that supersedes it; judge the code against the newest decision in a
  * supersedes chain. `governs` lists code already linked with `linkBead`.
  * Empty when no record named the PR or its discussions.
@@ -204,7 +204,7 @@ export async function listBeads(g, filter = {}) {
   if (filter.status) t = t.has("status", filter.status);
   const rows = await t.project("bead", "alternatives", "supersededBy", "governs")
     .by(__.valueMap())
-    .by(__.both("related").has("rejected", true).values("beadId").fold())
+    .by(__.both("relates_to").has("rejected", true).values("beadId").fold())
     .by(__.in_("supersedes").values("beadId").fold())
     .by(__.out("governs").coalesce(__.values("path"), __.values("name")).fold())
     .toList();

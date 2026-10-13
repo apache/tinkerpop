@@ -48,17 +48,17 @@ const DB = [
   bead("tp-a", "feature", { comments: 2 }),
   bead("tp-a.1", "record", { parent: "tp-a", ref: "TINKERPOP-1234", title: "PR and JIRA" }),
   bead("tp-a.2", "record", { parent: "tp-a", ref: "https://lists.apache.org/thread/abc", title: "dev@ thread: topic" }),
-  bead("tp-a.3", "decision", { parent: "tp-a", rejected: false, deps: [["tp-a.4", "related"]], comments: 1 }),
+  bead("tp-a.3", "decision", { parent: "tp-a", rejected: false, deps: [["tp-a.4", "relates-to"]], comments: 1 }),
   bead("tp-a.4", "decision", { parent: "tp-a", rejected: true }),
   bead("tp-a.5", "task", { parent: "tp-a", deps: [["tp-a.3", "caused-by"]] }),
   bead("tp-a.5.1", "task", { parent: "tp-a.5" }),
   // A second root that shares tp-a's JIRA record instead of duplicating it.
-  bead("tp-b", "epic", { deps: [["tp-a.1", "related"]] }),
+  bead("tp-b", "epic", { deps: [["tp-a.1", "relates-to"]] }),
   bead("tp-b.1", "record", { parent: "tp-b", ref: "apache/tinkerpop#99" }),
   bead("tp-b.2", "decision", { parent: "tp-b", rejected: false }),
   // Unrelated work that relates to a bead inside tp-a: reachable by bd dep tree
   // from tp-a, but not part of tp-a's subtree.
-  bead("tp-c", "task", { deps: [["tp-a.3", "related"]] }),
+  bead("tp-c", "task", { deps: [["tp-a.3", "relates-to"]] }),
   // Substring trap for --external-contains.
   bead("tp-d", "feature"),
   bead("tp-d.1", "record", { parent: "tp-d", ref: "TINKERPOP-12345" }),
@@ -172,7 +172,7 @@ test("beads carry the rejected flag, external ref and non-tree edges", async () 
   assert.equal(get("tp-a.4").rejected, true);
   assert.equal(get("tp-a.5").rejected, null, "only decisions have a rejected flag");
   assert.equal(get("tp-a.1").externalRef, "TINKERPOP-1234");
-  assert.deepEqual(get("tp-a.3").edges, [{ to: "tp-a.4", type: "related" }]);
+  assert.deepEqual(get("tp-a.3").edges, [{ to: "tp-a.4", type: "relates-to" }]);
   assert.deepEqual(get("tp-a.5").edges, [{ to: "tp-a.3", type: "caused-by" }]);
   assert.equal(get("tp-a.5.1").parent, "tp-a.5");
 });
@@ -230,7 +230,7 @@ const found = {
   beads: [
     shaped("tp-a", "feature", { status: "open", labels: ["gremlin-core", "3.7.7"] }),
     shaped("tp-a.1", "record", { parent: "tp-a", externalRef: "apache/tinkerpop#99" }),
-    shaped("tp-a.2", "decision", { parent: "tp-a", edges: [{ to: "tp-a.3", type: "related" }] }),
+    shaped("tp-a.2", "decision", { parent: "tp-a", edges: [{ to: "tp-a.3", type: "relates-to" }] }),
     shaped("tp-a.3", "decision", { parent: "tp-a", rejected: true }),
     shaped("tp-a.4", "decision", { parent: "tp-a", edges: [{ to: "tp-a.2", type: "supersedes" }] }),
     shaped("tp-a.5", "task", { parent: "tp-a", status: "in_progress" }),

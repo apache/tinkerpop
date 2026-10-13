@@ -22,7 +22,7 @@
 // puts every external artifact — JIRA, PR, dev@ thread, proposal — on a `record`
 // bead that is a parent-child child of its root, and only records carry an
 // external ref. A second root that needs the same artifact links to the existing
-// record with a `related` edge. So a record whose ref names one of the PR's
+// record with a `relates-to` edge. So a record whose ref names one of the PR's
 // artifacts leads to the owning root and any sharing roots, and everything
 // reached that way is EXTRACTED.
 //
@@ -56,7 +56,7 @@ export const BEADS_REQUIRED_MESSAGE =
  * @property {string|null} closedAt
  * @property {string} root - Id of the root this bead belongs to.
  * @property {{ to: string, type: string }[]} edges - Outgoing bd dependencies other than
- *   parent-child (`blocks`, `caused-by`, `related`, `supersedes`, `discovered-from`, ...).
+ *   parent-child (`blocks`, `caused-by`, `relates-to`, `supersedes`, `discovered-from`, ...).
  */
 
 /**
@@ -65,7 +65,7 @@ export const BEADS_REQUIRED_MESSAGE =
  * @property {string} id - Root bead id.
  * @property {"primary"|"owner"|"shared"} role - `primary`: the root of this PR's own record
  *   (`apache/tinkerpop#N`), the work the PR delivers. `owner`: the root a matched record belongs
- *   to. `shared`: a root that links a matched record with `related` — connected work elsewhere.
+ *   to. `shared`: a root that links a matched record with `relates-to` — connected work elsewhere.
  * @property {string[]} via - Ids of the matched records that reached this root.
  */
 
@@ -186,7 +186,7 @@ function toBead(raw) {
  *    is also applied, as a title/ID match, so it is the project's ID prefix — which
  *    every bead matches — rather than the ref, which a record's title need not repeat.
  * 2. Each matched record's top-most ancestor is its owner root; every bead that
- *    links the record with `related` leads to a shared root. A PR record's owner
+ *    links the record with `relates-to` leads to a shared root. A PR record's owner
  *    root is primary. Every root reached is loaded — connected work is context.
  * 3. Load each root's subtree. `bd children --json` returns one level only (its
  *    text output is the tree), so the candidates come from
@@ -248,7 +248,7 @@ export async function discoverBeads({ seeds, prRef, run }) {
 
   for (const { seed, record } of result.matches) {
     reach(await topOf(record), seed === prRef ? "primary" : "owner", record);
-    const sharers = (await run(["dep", "list", record, "--direction", "up", "-t", "related"])) || [];
+    const sharers = (await run(["dep", "list", record, "--direction", "up", "-t", "relates-to"])) || [];
     for (const s of sharers) reach(await topOf(s.id), "shared", record);
   }
   result.roots = [...roots.values()].sort((a, b) => RANK[a.role] - RANK[b.role]);
