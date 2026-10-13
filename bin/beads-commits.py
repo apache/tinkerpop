@@ -37,7 +37,9 @@ those commits -- apache/tinkerpop#3578 -- unless one already exists. A PR is
 usually opened after the root, so nothing earlier in the workflow is reliably
 there to write its record. Recording the landing is the one step every root
 passes through, and by then GitHub knows which PR carried the commits. A PR
-recorded under another root is related to this one rather than duplicated.
+recorded under another root is shared rather than duplicated: this root becomes
+another of its parents (PRIME.md section 6). So is a landing, when two roots
+record the same commits.
 
 The shas go in `notes` because that is a free-text field bd can query.
 `bd search` matches title, id and some external refs but never notes, and
@@ -48,7 +50,8 @@ pasted from `git log --oneline` is a prefix of it, so both forms of the query fi
 query: most shas begin with a digit, and an unquoted one is lexed as a number and
 fails to parse, the same way an unquoted version label does.
 
-    bd query 'notes="e1ca7ea3e4"' --all --json   # -> the record, and its parent root
+    bd query 'notes="e1ca7ea3e4"' --all --json   # -> the record
+    bd dep list <record> -t parent-child --json   # -> the roots it landed for
 
 That is the reverse direction, from a line of `git log` back to the reasoning.
 The forward direction is `bd show <record>`.
@@ -138,6 +141,26 @@ def bd_show(bead_id):
     return found[0] if found else None
 
 
+def roots_of(record):
+    """Every root a record belongs to.
+
+    A record may have several parent-child parents, and its scalar `parent` field
+    reports only one of them, so membership is read from the edges.
+    """
+    return {dep["id"] for dep in as_list(bd("dep", "list", record, "-t", "parent-child"))}
+
+
+def share(record, root, what, dry_run):
+    """Make root a parent of a record another root already holds."""
+    if root in roots_of(record):
+        print(f"{record} already records {what} under {root}")
+    elif dry_run:
+        print(f"--dry-run: would add {root} as a parent of {record} ({what})")
+    else:
+        bd("dep", "add", record, root, "-t", "parent-child")
+        print(f"added {root} as a parent of {record}, which already records {what}")
+
+
 def pr_merge_commit(number):
     """The merge commit for a PR, or None when it is unmerged or unreachable."""
     proc = subprocess.run(
@@ -169,25 +192,13 @@ def merged_prs(shas, slug):
 
 
 def record_pr(root, ref, dry_run):
-    """Make sure the PR record exists, under this root or related to it."""
+    """Make sure the PR record exists and this root is one of its parents."""
     # bd search does not match a ref of this shape reliably, so filter client-side.
     existing = [bead for bead in as_list(bd("list", "--all", "--limit", "0"))
                 if bead.get("issue_type") == "record" and bead.get("external_ref") == ref]
-    for bead in existing:
-        if bead.get("parent") == root:
-            print(f"{bead['id']} already records {ref} under {root}")
-            return
     if existing:
-        # PRIME.md section 6: a second root relates to the existing record.
-        bead = existing[0]
-        related = (bd_show(root) or {}).get("dependencies") or []
-        if any(dep.get("id") == bead["id"] for dep in related):
-            print(f"{bead['id']} records {ref} under {bead.get('parent')}; already related to {root}")
-        elif dry_run:
-            print(f"--dry-run: would relate {root} to {bead['id']} ({ref})")
-        else:
-            bd("dep", "add", root, bead["id"], "-t", "relates-to")
-            print(f"related {root} to {bead['id']}, which records {ref} under {bead.get('parent')}")
+        # PRIME.md section 6: one record per artifact, shared by every root that needs it.
+        share(existing[0]["id"], root, ref, dry_run)
         return
     if dry_run:
         print(f"--dry-run: would create a record for {ref} under {root} and pin it")
@@ -339,13 +350,13 @@ def chronological(shas):
     return sorted(shas, key=lambda sha: int(git("log", "-1", "--format=%ct", sha)))
 
 
-def existing_record(root, tip):
-    """The record for this landing, if a previous run already wrote it."""
+def existing_record(tip):
+    """The record for this landing, if a previous run -- for any root -- wrote it."""
     # The value has to be quoted inside the query. A sha that starts with a digit
     # is otherwise lexed as a number and the parse fails -- the same trap
     # release.asciidoc documents for version labels, and most shas start with one.
     for bead in as_list(bd("query", f'notes="{tip}"', "--all")):
-        if bead.get("parent") == root:
+        if bead.get("issue_type") == "record":
             return bead
     return None
 
@@ -386,9 +397,9 @@ def main():
     # --pr already names the pull request; otherwise ask GitHub which carried these.
     prs = [args.pr] if args.pr else merged_prs(shas, slug)
 
-    found = existing_record(args.root, tip)
+    found = existing_record(tip)
     if found:
-        print(f"{found['id']} already records this landing under {args.root}")
+        share(found["id"], args.root, ref, args.dry_run)
     else:
         print(f"{ref}\n{notes}\n")
         if args.dry_run:

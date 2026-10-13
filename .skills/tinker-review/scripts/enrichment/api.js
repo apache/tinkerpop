@@ -183,7 +183,7 @@ export async function listExternalRefs(g) {
 /**
  * The beads Phase 1 loaded for this PR — the author's recorded plan, decisions
  * and the alternatives they turned down — so the reviewer can read the change
- * against them. Roots come first (primary, then owner, then shared), then each
+ * against them. Roots come first (primary, then owner), then each
  * root's decisions, tasks and records. A decision lists the rejected
  * alternatives it was chosen over (a `relates-to` edge to a rejected decision) and any
  * decision that supersedes it; judge the code against the newest decision in a
@@ -199,7 +199,8 @@ export async function listExternalRefs(g) {
  */
 export async function listBeads(g, filter = {}) {
   let t = g.V().hasLabel("Bead");
-  if (filter.root) t = t.has("root", filter.root);
+  // A shared record's `root` names only its first root; the others reach it by child_of.
+  if (filter.root) t = t.or(__.has("root", filter.root), __.out("child_of").has("beadId", filter.root));
   if (filter.type) t = t.has("type", filter.type);
   if (filter.status) t = t.has("status", filter.status);
   const rows = await t.project("bead", "alternatives", "supersededBy", "governs")
@@ -236,7 +237,7 @@ export async function listBeads(g, filter = {}) {
     return bead;
   });
 
-  const ROLE = { primary: 0, owner: 1, shared: 2 };
+  const ROLE = { primary: 0, owner: 1 };
   const TYPE = { decision: 1, record: 3 };
   const roleOf = new Map(beads.filter((b) => b.rootRole).map((b) => [b.beadId, ROLE[b.rootRole]]));
   const rank = (b) => [roleOf.get(b.root) ?? 3, b.root, b.rootRole ? 0 : (TYPE[b.type] ?? 2), b.beadId];

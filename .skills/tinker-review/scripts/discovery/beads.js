@@ -21,10 +21,10 @@
 // load their subtrees. The project's beads schema (.beads/PRIME.md section 6)
 // puts every external artifact — JIRA, PR, dev@ thread, proposal — on a `record`
 // bead that is a parent-child child of its root, and only records carry an
-// external ref. A second root that needs the same artifact links to the existing
-// record with a `relates-to` edge. So a record whose ref names one of the PR's
-// artifacts leads to the owning root and any sharing roots, and everything
-// reached that way is EXTRACTED.
+// external ref. Each artifact has one record, and every root that needs it holds
+// that record as a child, so a record may have several parents. A record whose
+// ref names one of the PR's artifacts leads to every root it belongs to, and
+// everything reached that way is EXTRACTED.
 //
 // The review reads beads and never writes them: every call except the sync
 // passes bd's --readonly flag, which makes bd itself refuse a write.
@@ -50,11 +50,16 @@ export const BEADS_REQUIRED_MESSAGE =
  *   rejected option was, why it lost and what settled it.
  * @property {boolean|null} rejected - On a decision, true marks the road not taken; null on other types.
  * @property {string[]} labels
- * @property {string|null} parent - Parent bead id; null on a root.
+ * @property {string|null} parent - bd's scalar parent; null on a root. On a record with several
+ *   parents it is only one of them, and which one is undefined: read `parents`.
+ * @property {string[]} parents - Every parent-child parent; more than one only on a shared record.
  * @property {string|null} externalRef - The artifact a record names (`TINKERPOP-NNNN`,
- *   `apache/tinkerpop#N`, `apache/tinkerpop@sha`, a dev@ URL); null on non-records.
+ *   `apache/tinkerpop#N`, `apache/tinkerpop@sha`, a dev@ URL, a proposal file name); null on
+ *   non-records.
  * @property {string|null} closedAt
- * @property {string} root - Id of the root this bead belongs to.
+ * @property {string} root - Id of the first root, in `roots` order, this bead belongs to.
+ * @property {string[]} roots - Every loaded root this bead belongs to; more than one only on a
+ *   shared record.
  * @property {{ to: string, type: string }[]} edges - Outgoing bd dependencies other than
  *   parent-child (`blocks`, `caused-by`, `relates-to`, `supersedes`, `discovered-from`, ...).
  */
@@ -63,9 +68,9 @@ export const BEADS_REQUIRED_MESSAGE =
  * @typedef {object} BeadRoot
  * A root reached from a matched record.
  * @property {string} id - Root bead id.
- * @property {"primary"|"owner"|"shared"} role - `primary`: the root of this PR's own record
- *   (`apache/tinkerpop#N`), the work the PR delivers. `owner`: the root a matched record belongs
- *   to. `shared`: a root that links a matched record with `relates-to` — connected work elsewhere.
+ * @property {"primary"|"owner"} role - `primary`: a root of this PR's own record
+ *   (`apache/tinkerpop#N`), the work the PR delivers. `owner`: a root of another matched record —
+ *   connected work.
  * @property {string[]} via - Ids of the matched records that reached this root.
  */
 
@@ -155,8 +160,16 @@ export function beadSeeds(pr, discussions = {}) {
   const seeds = [`apache/tinkerpop#${pr}`];
   for (const j of discussions.jiras || []) seeds.push(j.id);
   for (const d of discussions.devList || []) if (d.found_in === "pr") seeds.push(stripTrailing(d.url));
-  for (const p of discussions.proposals || []) if (p.matchedIn === "reference") seeds.push(p.path);
+  // A proposal record names its file, unique within docs/src/dev/future/ (PRIME.md section 6).
+  for (const p of discussions.proposals || []) if (p.matchedIn === "reference") seeds.push(p.path?.split("/").pop());
   return [...new Set(seeds.filter(Boolean))];
+}
+
+// Every parent-child parent. bd's scalar `parent` names only one of a shared
+// record's parents, so the edges are the truth.
+function parentsOf(raw) {
+  const parents = (raw?.dependencies || []).filter((d) => d.type === "parent-child").map((d) => d.depends_on_id);
+  return parents.length > 0 ? parents : raw?.parent ? [raw.parent] : [];
 }
 
 function toBead(raw) {
@@ -169,9 +182,11 @@ function toBead(raw) {
     rejected: raw.issue_type === "decision" ? raw.metadata?.rejected === true : null,
     labels: raw.labels || [],
     parent: raw.parent || null,
+    parents: parentsOf(raw),
     externalRef: raw.external_ref || null,
     closedAt: raw.closed_at || null,
     root: null,
+    roots: [],
     edges: (raw.dependencies || [])
       .filter((d) => d.type !== "parent-child")
       .map((d) => ({ to: d.depends_on_id, type: d.type })),
@@ -185,16 +200,17 @@ function toBead(raw) {
  *    keeping exact matches (the flag is a substring match). The positional query
  *    is also applied, as a title/ID match, so it is the project's ID prefix — which
  *    every bead matches — rather than the ref, which a record's title need not repeat.
- * 2. Each matched record's top-most ancestor is its owner root; every bead that
- *    links the record with `relates-to` leads to a shared root. A PR record's owner
- *    root is primary. Every root reached is loaded — connected work is context.
+ * 2. Each matched record's parents, followed to their top-most ancestors, are its
+ *    roots. A PR record's roots are primary, every other record's are owners.
+ *    Every root reached is loaded — connected work is context.
  * 3. Load each root's subtree. `bd children --json` returns one level only (its
  *    text output is the tree), so the candidates come from
  *    `bd dep tree <root> --direction up`, which walks every
  *    dependent in one call — including beads outside the subtree that merely
  *    relate to one inside it. One `bd list --id` call then supplies each
- *    candidate's real `parent` and full fields, and only beads whose parent
- *    chain reaches the root are kept. Comments are read for the roots and
+ *    candidate's parent-child edges and full fields, and only beads whose parent
+ *    chain reaches the root are kept. A shared record is kept once, with every
+ *    root it reached in `roots`. Comments are read for the roots and
  *    decisions that have any.
  *
  * @param {object} params
@@ -225,19 +241,17 @@ export async function discoverBeads({ seeds, prRef, run }) {
     const rows = (await run(["list", "--id", missing.join(","), "--all", "-n", "0", "--flat"])) || [];
     for (const r of rows) fetched.set(r.id, r);
   };
-  const topOf = async (id) => {
-    let cur = id;
-    const seen = new Set();
-    for (;;) {
-      await fetch([cur]);
-      const parent = fetched.get(cur)?.parent;
-      if (!parent || seen.has(parent)) return cur;
-      seen.add(cur);
-      cur = parent;
-    }
+  const topsOf = async (id, seen = new Set()) => {
+    seen.add(id);
+    await fetch([id]);
+    const parents = parentsOf(fetched.get(id)).filter((p) => !seen.has(p));
+    if (parents.length === 0) return [id];
+    const tops = [];
+    for (const p of parents) for (const t of await topsOf(p, seen)) if (!tops.includes(t)) tops.push(t);
+    return tops;
   };
 
-  const RANK = { primary: 0, owner: 1, shared: 2 };
+  const RANK = { primary: 0, owner: 1 };
   const roots = new Map();
   const reach = (rootId, role, record) => {
     const r = roots.get(rootId) || { id: rootId, role, via: [] };
@@ -247,14 +261,12 @@ export async function discoverBeads({ seeds, prRef, run }) {
   };
 
   for (const { seed, record } of result.matches) {
-    reach(await topOf(record), seed === prRef ? "primary" : "owner", record);
-    const sharers = (await run(["dep", "list", record, "--direction", "up", "-t", "relates-to"])) || [];
-    for (const s of sharers) reach(await topOf(s.id), "shared", record);
+    for (const top of await topsOf(record)) reach(top, seed === prRef ? "primary" : "owner", record);
   }
   result.roots = [...roots.values()].sort((a, b) => RANK[a.role] - RANK[b.role]);
 
+  const loaded = new Map();
   for (const { id: rootId } of result.roots) {
-    if (result.beads.some((b) => b.root === rootId)) continue;
     const tree = (await run(["dep", "tree", rootId, "--direction", "up"])) || [];
     await fetch(tree.map((t) => t.id));
     const inSubtree = new Set([rootId]);
@@ -262,7 +274,7 @@ export async function discoverBeads({ seeds, prRef, run }) {
     while (grew) {
       grew = false;
       for (const { id } of tree) {
-        if (!inSubtree.has(id) && inSubtree.has(fetched.get(id)?.parent)) {
+        if (!inSubtree.has(id) && parentsOf(fetched.get(id)).some((p) => inSubtree.has(p))) {
           inSubtree.add(id);
           grew = true;
         }
@@ -270,9 +282,12 @@ export async function discoverBeads({ seeds, prRef, run }) {
     }
     for (const id of inSubtree) {
       const raw = fetched.get(id);
-      if (raw) result.beads.push({ ...toBead(raw), root: rootId });
+      if (!raw) continue;
+      if (!loaded.has(id)) loaded.set(id, { ...toBead(raw), root: rootId });
+      loaded.get(id).roots.push(rootId);
     }
   }
+  result.beads = [...loaded.values()];
 
   for (const b of result.beads) {
     if (b.id !== b.root && b.type !== "decision") continue;
