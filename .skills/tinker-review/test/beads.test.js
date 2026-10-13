@@ -31,7 +31,8 @@ import { render } from "../scripts/renderer/render.js";
 
 // A small beads database shaped like PRIME.md section 6. Each entry is the row
 // bd list --json returns; `deps` are outgoing dependencies as [target, type].
-function bead(id, type, { parent = null, ref = null, rejected, deps = [], comments = 0, title = id } = {}) {
+// `also` names further parent-child parents, which bd's scalar `parent` omits.
+function bead(id, type, { parent = null, also = [], ref = null, rejected, deps = [], comments = 0, title = id } = {}) {
   return {
     id, issue_type: type, status: type === "decision" ? "closed" : "open", title,
     description: `reasoning of ${id}`, labels: ["gremlin-core"], parent,
@@ -39,6 +40,7 @@ function bead(id, type, { parent = null, ref = null, rejected, deps = [], commen
     metadata: rejected === undefined ? null : { rejected },
     dependencies: [
       ...(parent ? [{ depends_on_id: parent, type: "parent-child" }] : []),
+      ...also.map((to) => ({ depends_on_id: to, type: "parent-child" })),
       ...deps.map(([to, t]) => ({ depends_on_id: to, type: t })),
     ],
   };
@@ -46,14 +48,15 @@ function bead(id, type, { parent = null, ref = null, rejected, deps = [], commen
 
 const DB = [
   bead("tp-a", "feature", { comments: 2 }),
-  bead("tp-a.1", "record", { parent: "tp-a", ref: "TINKERPOP-1234", title: "PR and JIRA" }),
+  // Shared with tp-b: one record, a child of both roots.
+  bead("tp-a.1", "record", { parent: "tp-a", also: ["tp-b"], ref: "TINKERPOP-1234", title: "PR and JIRA" }),
   bead("tp-a.2", "record", { parent: "tp-a", ref: "https://lists.apache.org/thread/abc", title: "dev@ thread: topic" }),
   bead("tp-a.3", "decision", { parent: "tp-a", rejected: false, deps: [["tp-a.4", "relates-to"]], comments: 1 }),
   bead("tp-a.4", "decision", { parent: "tp-a", rejected: true }),
   bead("tp-a.5", "task", { parent: "tp-a", deps: [["tp-a.3", "caused-by"]] }),
   bead("tp-a.5.1", "task", { parent: "tp-a.5" }),
   // A second root that shares tp-a's JIRA record instead of duplicating it.
-  bead("tp-b", "epic", { deps: [["tp-a.1", "relates-to"]] }),
+  bead("tp-b", "epic"),
   bead("tp-b.1", "record", { parent: "tp-b", ref: "apache/tinkerpop#99" }),
   bead("tp-b.2", "decision", { parent: "tp-b", rejected: false }),
   // Unrelated work that relates to a bead inside tp-a: reachable by bd dep tree
@@ -91,9 +94,6 @@ function fakeBd(calls = []) {
           && (b.external_ref || "").toLowerCase().includes(ext));
       }
       case "dep":
-        if (args[1] === "list") {
-          return dependentsOf(args[2]).filter((b) => b.dependencies.some((d) => d.depends_on_id === args[2] && d.type === opt("-t")));
-        }
         if (args[1] === "tree") {
           const seen = new Set([args[2]]);
           const out = [byId.get(args[2])];
@@ -126,7 +126,7 @@ test("seeds are the PR plus only the artifacts the PR names explicitly", () => {
     "apache/tinkerpop#42",
     "TINKERPOP-1234",
     "https://lists.apache.org/thread/abc",
-    "docs/src/dev/future/proposal-x.asciidoc",
+    "proposal-x.asciidoc",
   ]);
 });
 
@@ -150,19 +150,29 @@ test("the owning root and every sharing root are loaded; the PR's own root is pr
   ]);
 });
 
-test("a shared record leads to the sharing root as shared", async () => {
+test("a shared record leads to every root it is a child of", async () => {
   const r = await discoverBeads({ seeds: ["TINKERPOP-1234"], prRef: "apache/tinkerpop#7", run: fakeBd() });
   assert.deepEqual(r.roots.map(({ id, role }) => ({ id, role })), [
     { id: "tp-a", role: "owner" },
-    { id: "tp-b", role: "shared" },
+    { id: "tp-b", role: "owner" },
   ]);
+});
+
+test("a shared record is loaded once, under every root it reached", async () => {
+  const r = await discoverBeads({ seeds: ["TINKERPOP-1234"], run: fakeBd() });
+  const shared = r.beads.filter((b) => b.id === "tp-a.1");
+  assert.equal(shared.length, 1);
+  assert.deepEqual(shared[0].parents, ["tp-a", "tp-b"]);
+  assert.deepEqual(shared[0].roots, ["tp-a", "tp-b"]);
+  assert.equal(shared[0].root, "tp-a");
+  assert.deepEqual(r.beads.filter((b) => b.roots.includes("tp-b")).map((b) => b.id).sort(), ["tp-a.1", "tp-b", "tp-b.1", "tp-b.2"]);
 });
 
 test("the subtree includes grandchildren and excludes beads that only relate to it", async () => {
   const r = await discoverBeads({ seeds: ["https://lists.apache.org/thread/abc"], run: fakeBd() });
   const ids = r.beads.map((b) => b.id).sort();
   assert.deepEqual(ids, ["tp-a", "tp-a.1", "tp-a.2", "tp-a.3", "tp-a.4", "tp-a.5", "tp-a.5.1"]);
-  assert.ok(r.beads.every((b) => b.root === "tp-a"));
+  assert.ok(r.beads.every((b) => b.root === "tp-a" && b.roots.join() === "tp-a"));
 });
 
 test("beads carry the rejected flag, external ref and non-tree edges", async () => {
@@ -255,6 +265,23 @@ test("Project Memory shows the root, its records, plan and decisions with altern
   for (const b of found.beads) {
     assert.match(html, new RegExp(`id="bead-${b.id.replace(/\./g, "\\.")}"`), `appendix link target for ${b.id}`);
   }
+});
+
+test("Project Memory lists a shared record under each root, anchored once", () => {
+  const shared = {
+    ...found,
+    roots: [{ id: "tp-a", role: "primary", via: ["tp-a.1"] }, { id: "tp-b", role: "primary", via: ["tp-a.1"] }],
+    beads: [
+      shaped("tp-a", "feature", { status: "open" }),
+      shaped("tp-b", "epic", { status: "open", root: "tp-b", roots: ["tp-b"] }),
+      shaped("tp-a.1", "record", { parent: "tp-a", parents: ["tp-a", "tp-b"], roots: ["tp-a", "tp-b"], externalRef: "apache/tinkerpop#99" }),
+    ],
+    comments: {},
+  };
+  const html = render({ meta, discussions: { beads: shared } });
+  assert.equal(html.match(/apache\/tinkerpop#99<\/a> <em>\(matched\)<\/em>/g).length, 2, "listed under both roots");
+  assert.equal(html.match(/<span id="bead-tp-a\.1">/g).length, 1, "one anchor per bead");
+  assert.match(html, /<td><code>tp-a<\/code> <code>tp-b<\/code><\/td>/, "the appendix names both roots");
 });
 
 test("Project Memory says the data wasn't available when nothing matched, and when the sync failed", () => {

@@ -106,13 +106,28 @@ comment.
 
 Every session works under one **root bead**. Find it before writing code.
 
+**When the operator names an artifact** — JIRA, PR, proposal, dev@ thread — its record's
+parents are the candidates (section 6):
+
+```bash
+bd search tp --external-contains <ref> --status all   # the record; keep the exact match
+bd dep list <record> -t parent-child --json           # its roots; keep open/in_progress
+```
+
+- Exactly one: bind to it and say so in one line.
+- Several: list them, most recently updated first, and ask which one.
+- None open: ask whether to reopen one or start a new root.
+
+**With no artifact, or no record for it yet**, list every candidate:
+
 ```bash
 bd list --status=all --json      # filter client-side: no parent, open/in_progress
 bd children <root>               # recursive — the whole subtree (--json: direct children only)
 ```
 
 - Show the operator open/`in_progress` beads with **no parent**, most recently updated
-  first, and ask which one. That is your root for this session.
+  first, and ask which one. That is your root for this session. Ask even when only one is
+  open: it need not be this session's work.
 - **Read `bd children <root>` before resuming work.** It is the only thing that makes you
   notice a bead the work has since outgrown.
 - **If no root is selected, you are starting something new — create the root before writing
@@ -208,14 +223,15 @@ unchanged into 3.8-dev and master, so what is recorded then stays correct.
 **Then suggest, confirm, record.** `--suggest` finds the commits from the root's own JIRA and PR
 records, lists what else landed in the same window, and writes nothing. Show what it returns, take the operator's corrections, and only then
 run the recording form. It also writes a record for each merged PR GitHub ties to those
-commits, or relates the root to one another root already holds. It refuses any sha not reachable from `origin/<branch>`, so a refusal
+commits, or makes the root a parent of one another root already holds. It refuses any sha not reachable from `origin/<branch>`, so a refusal
 means the work has not actually landed — say so and leave the root open.
 
 **An `epic` root needs `bd close <root> --force`.** The commit record just written is a
 child and is pinned, and the gate counts only `closed` children as done, so the record is
 what blocks the close. Do not reorder the two steps to dodge it: the record write is what
 refuses a sha unreachable from `origin/<branch>`, and closing first would resolve the root
-before that check runs. `task` and `feature` roots do not gate.
+before that check runs. `task` and `feature` roots do not gate. An epic that shares a record
+another root has already pinned needs `--force` for the same reason.
 
 **Pin every bead in the subtree** — root, decisions, records, tasks. No judgment about
 which ones matter: the work shipped, so all of it is the project's history. Show the
@@ -266,30 +282,45 @@ a list, and `bd ready` cannot tell you anything useful about it.
   `--description`; do not reach for them. Use design only for a specific reason description
   cannot serve, and state that reason in the description.
 - **`record` beads** hold external artifacts — JIRA, PR, dev@ thread, proposal, and the
-  commits a landing merged as. The ticket, URL or `owner/repo@sha` goes in `--external-ref`,
-  which identifies the kind as well, and only a record carries one. Create each as a child of
-  the **root** (`--parent <root>`), not of any other bead, and pin it. `bin/beads-commits.py`
-  finds a root's JIRA and PR records among its children, so a record attached any other way
-  is invisible to `--suggest`.
+  commits a landing merged as. The artifact goes in `--external-ref`, in exactly this form —
+  lookups match the ref exactly, so any other spelling of the same artifact is never found:
+
+  | Kind | Form |
+  |---|---|
+  | JIRA | `TINKERPOP-NNNN` |
+  | PR | `apache/tinkerpop#N` |
+  | Commit | `apache/tinkerpop@<sha>` |
+  | dev@ thread | URL |
+  | Proposal | file name in `docs/src/dev/future/`, e.g. `proposal-equality-1.asciidoc` |
+
+  The form identifies the kind as well, and only a record carries an external ref. **One artifact, one
+  record:** create it as a child of the **root** (`--parent <root>`), not of any other bead,
+  and pin it. When a second root needs an artifact that already has a record, make the record
+  that root's child too — `bd dep add <record> <root> -t parent-child` — never a duplicate.
+  `bin/beads-commits.py` finds a root's records among its children, so a record attached any
+  other way is invisible to `--suggest`.
+- **A record may have several parents; nothing else may.** Records are leaves — nothing is
+  ever a child of a record. A record's roots are its `parent-child` edges,
+  `bd dep list <record> -t parent-child`. Its `parent` field reports only one of them, and
+  which one is undefined, so never read that field for a record, and never
+  `bd update --parent` one — it replaces only that edge. Every other bead keeps exactly one
+  parent.
 - **Search first — duplicates are the risk.** `bd query` has no field for external refs,
   and `bd search <ref> --status all` finds a ticket id but not a URL. For any ref,
   `bd search tp --external-contains <ref> --status all` works — `tp` matches every bead id.
-  The PR record is written at merge (section 4), not by hand. When a second root needs an
-  artifact that already has a record, add `bd dep add <root> <record> -t relates-to` rather than
-  a duplicate. `--suggest` on that root will not see it, so supply those commits by hand at
-  merge.
+  The PR record is written at merge (section 4), not by hand.
 - Records are the only link between beads and code; commit messages carry no bead ID. The
   commit record written at merge (section 4) is what makes that link work in reverse —
-  `bd query 'notes="<sha>"' --all` returns the record and its `parent`, for any commit in the
-  landing. Quote the sha: an unquoted one starting with a digit is lexed as a number and the
+  `bd query 'notes="<sha>"' --all` returns the record for any commit in the landing, and
+  `bd dep list <record> -t parent-child` the roots it landed for. Quote the sha: an unquoted one starting with a digit is lexed as a number and the
   query fails to parse.
 - **Write `relates-to` with `bd dep add -t relates-to`, never `bd dep relate`** — `relate` writes
   the edge in both directions, and every consumer reads one row per link.
 - Only **one dependency type per pair** — `blocks` and `discovered-from` cannot coexist
   between the same two beads.
 - Never construct a bead ID; use whatever `bd create` returns. Child IDs encode birth
-  position (`<root>.1.2`) but do not update on reparenting — traverse `parent` for truth,
-  treat the ID as a hint.
+  position (`<root>.1.2`) but do not update on reparenting — traverse `parent` (a record's
+  `parent-child` edges) for truth, treat the ID as a hint.
 
 ---
 
@@ -363,7 +394,7 @@ bd dep add <a> <b> -t caused-by|relates-to|discovered-from|supersedes
 bd dep cycles                    # a plan with a cycle cannot execute
 bd update <id> --claim | -s pinned | --external-ref=TINKERPOP-NNNN
 bd search <text>
-bd query 'notes="<sha>"' --all   # which root did this commit come from; quote the sha
+bd query 'notes="<sha>"' --all   # which record holds this commit; quote the sha
 ```
 
 Priority is `0-4` (0 = critical), never "high"/"medium"/"low".
