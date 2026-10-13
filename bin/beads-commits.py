@@ -186,7 +186,7 @@ def record_pr(root, ref, dry_run):
         elif dry_run:
             print(f"--dry-run: would relate {root} to {bead['id']} ({ref})")
         else:
-            bd("dep", "add", root, bead["id"], "-t", "related")
+            bd("dep", "add", root, bead["id"], "-t", "relates-to")
             print(f"related {root} to {bead['id']}, which records {ref} under {bead.get('parent')}")
         return
     if dry_run:
