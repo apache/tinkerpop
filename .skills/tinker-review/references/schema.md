@@ -123,7 +123,7 @@ records. `labels` is the comma-joined label list.
 
 `rootRole` is set only on roots: `primary` — the root of this PR's own record
 (`apache/tinkerpop#N`); `owner` — the root a matched JIRA/dev@/proposal record
-belongs to; `shared` — a root that links a matched record with `related`
+belongs to; `shared` — a root that links a matched record with `relates_to`
 (connected work). Query the PR's own work with `.has("rootRole", "primary")`
 and a root's subtree with `.has("root", id)`.
 
@@ -213,4 +213,4 @@ All `EXTRACTED` except `governs`: each is a fact in the beads database.
 | `child_of` | Bead | Bead | bd's parent-child tree: the bead belongs to its parent |
 | `records` | Bead (record) | Discussion | The record's external ref names this Discussion (the PR, a JIRA, a dev@ thread, a proposal). Only drawn to Discussions discovery created. |
 | `governs` | Bead | Function, Type or File | The bead — usually a decision — is about this code. Written in Phase 2 by `linkBead`, so it is `INFERRED` by default, unlike the rest of this table. |
-| `blocks`, `caused_by`, `related`, `supersedes`, `discovered_from`, … | Bead | Bead | bd's other dependency types, carried over with `-` written as `_`. `related` pairs a decision with the alternative it was chosen over; `caused_by` runs from a task to the decision that shaped it; `supersedes` from a newer decision to the one it replaces. Drawn only between loaded beads. |
+| `blocks`, `caused_by`, `relates_to`, `supersedes`, `discovered_from`, … | Bead | Bead | bd's other dependency types, carried over with `-` written as `_`. `relates_to` pairs a decision with the alternative it was chosen over; `caused_by` runs from a task to the decision that shaped it; `supersedes` from a newer decision to the one it replaces. Drawn only between loaded beads. |

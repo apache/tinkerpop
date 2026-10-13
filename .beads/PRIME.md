@@ -60,7 +60,7 @@ bd create --type=decision --parent=<root> --title="Chose X" --metadata '{"reject
 # An approach you tried and abandoned is the strongest sibling — someone already walked it.
 bd create --type=decision --parent=<root> --title="Y" --metadata '{"rejected":true}' \
           --description="what Y concretely was, why it lost, what settled it"
-bd dep add <decision> <alternative> -t related    # never put either of these on a task bead
+bd dep add <decision> <alternative> -t relates-to # never put either of these on a task bead
 bd close <decision> <alternative>   # both: a decision is resolved the moment you write it
 ```
 
@@ -247,7 +247,7 @@ root (feature/epic/task)
   ├─parent-child─▶ record           apache/tinkerpop#2891
   ├─parent-child─▶ record           apache/tinkerpop@374b0c76d0   (written at merge)
   ├─parent-child─▶ decision  "chose X"            {rejected: false}
-  │                  └─related─▶ decision "Y"     {rejected: true}
+  │                  └─relates-to─▶ decision "Y"  {rejected: true}
   ├─parent-child─▶ task A "implement X" ──caused-by──▶ decision "chose X"
   ├─parent-child─▶ task B ──blocks──▶ task A     (B waits for A)
   └─parent-child─▶ task C                        (no blocker: starts with A)
@@ -275,7 +275,7 @@ a list, and `bd ready` cannot tell you anything useful about it.
   and `bd search <ref> --status all` finds a ticket id but not a URL. For any ref,
   `bd search tp --external-contains <ref> --status all` works — `tp` matches every bead id.
   The PR record is written at merge (section 4), not by hand. When a second root needs an
-  artifact that already has a record, add `bd dep add <root> <record> -t related` rather than
+  artifact that already has a record, add `bd dep add <root> <record> -t relates-to` rather than
   a duplicate. `--suggest` on that root will not see it, so supply those commits by hand at
   merge.
 - Records are the only link between beads and code; commit messages carry no bead ID. The
@@ -283,6 +283,8 @@ a list, and `bd ready` cannot tell you anything useful about it.
   `bd query 'notes="<sha>"' --all` returns the record and its `parent`, for any commit in the
   landing. Quote the sha: an unquoted one starting with a digit is lexed as a number and the
   query fails to parse.
+- **Write `relates-to` with `bd dep add -t relates-to`, never `bd dep relate`** — `relate` writes
+  the edge in both directions, and every consumer reads one row per link.
 - Only **one dependency type per pair** — `blocks` and `discovered-from` cannot coexist
   between the same two beads.
 - Never construct a bead ID; use whatever `bd create` returns. Child IDs encode birth
@@ -357,7 +359,7 @@ bd query "metadata.rejected=true" --all     # roads not taken; --all or closed b
 bd comment <id> "..."            # a fact with no fork in it (never on a task bead)
 bd create --type=... --parent=<root> --description=... --labels=...
 bd dep add <task> <blocker>      # default type is blocks: <task> waits for <blocker>
-bd dep add <a> <b> -t caused-by|related|discovered-from|supersedes
+bd dep add <a> <b> -t caused-by|relates-to|discovered-from|supersedes
 bd dep cycles                    # a plan with a cycle cannot execute
 bd update <id> --claim | -s pinned | --external-ref=TINKERPOP-NNNN
 bd search <text>

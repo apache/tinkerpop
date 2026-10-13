@@ -250,12 +250,12 @@ function renderDecisions(decisions, beadsById) {
   for (const d of decisions) {
     for (const e of d.edges || []) if (e.type === "supersedes") supersededBy.set(e.to, d.id);
   }
-  // A chosen decision and its rejected alternatives are joined by `related`, in either direction.
+  // A chosen decision and its rejected alternatives are joined by `relates-to`, in either direction.
   const rejectedOf = new Map();
   const paired = new Set();
   for (const d of decisions) {
     for (const e of d.edges || []) {
-      if (e.type !== "related") continue;
+      if (e.type !== "relates-to") continue;
       const other = beadsById.get(e.to);
       if (!other || other.type !== "decision") continue;
       const [chosen, alt] = d.rejected === false && other.rejected === true ? [d, other]
