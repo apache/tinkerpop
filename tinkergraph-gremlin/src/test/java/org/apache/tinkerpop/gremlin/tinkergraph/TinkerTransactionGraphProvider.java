@@ -22,6 +22,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.GraphTest;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -69,6 +70,8 @@ public class TinkerTransactionGraphProvider extends AbstractGraphProvider {
             put(TinkerTransactionGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, idMaker);
             if (requiresListCardinalityAsDefault(loadGraphWith, test, testMethodName))
                 put(TinkerTransactionGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
+            if (requiresSetCardinalityAsDefault(test, testMethodName))
+                put(TinkerTransactionGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.set.name());
             if (requiresPersistence(test, testMethodName)) {
                 put(TinkerTransactionGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
                 put(TinkerTransactionGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION,TestHelper.makeTestDataFile(test, "temp", testMethodName + ".kryo"));
@@ -108,7 +111,17 @@ public class TinkerTransactionGraphProvider extends AbstractGraphProvider {
                                                             final Class<?> test, final String testMethodName) {
         return loadGraphWith == LoadGraphWith.GraphData.CREW
                 || (test == StarGraphTest.class && testMethodName.equals("shouldAttachWithCreateMethod"))
-                || (test == DetachedGraphTest.class && testMethodName.equals("testAttachableCreateMethod"));
+                || (test == DetachedGraphTest.class && testMethodName.equals("testAttachableCreateMethod"))
+                || (test == EventStrategyProcessTest.class && testMethodName.equals("shouldNotCaptureOldVertexPropertyWhenAddedWithDefaultListCardinality"));
+    }
+
+    /**
+     * Determines if a test requires set cardinality as the default.
+     */
+    protected static boolean requiresSetCardinalityAsDefault(final Class<?> test, final String testMethodName) {
+        return test == EventStrategyProcessTest.class
+                && (testMethodName.equals("shouldCaptureOldVertexPropertyWhenChangedWithDefaultSetCardinality")
+                || testMethodName.equals("shouldNotCaptureOldVertexPropertyWhenValueIsNewWithDefaultSetCardinality"));
     }
 
     /**
