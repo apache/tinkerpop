@@ -321,9 +321,7 @@ jobs:
         run: npm run browser-test
       # Tier 2: same bundle, pointed at the Gremlin Server started above, to prove the browser
       # transport (a plain `fetch`, no undici) actually round-trips over HTTP from a real browser
-      # engine. See test/browser/live-roundtrip.spec.ts for why this project disables the page's
-      # same-origin checks (the test server sends no CORS headers - a deployment concern, not
-      # something this driver can supply on its own).
+      # engine. Browser security is left on, so this also exercises Gremlin Server's CORS handling.
       - name: Browser smoke test (live round-trip)
         working-directory: ./gremlin-js/gremlin-javascript
         run: npm run browser-test-live
