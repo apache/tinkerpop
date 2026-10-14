@@ -467,7 +467,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
             graph.tx().commit();
             fail("a value with no serializer should fail the commit");
         } catch (RuntimeException expected) {
-            // expected
+            assertTrue(expected.getMessage(), expected.getMessage().contains("no serializer for java.util.Date"));
         }
 
         // reuse the key from the failed commit and add a new one, then crash before close() can compact
