@@ -443,7 +443,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
 
     /**
      * Fold the durable storage log into a compact snapshot of the current committed state, reclaiming space. Has no
-     * effect when no storage engine is configured.
+     * effect when no storage engine is configured, or when nothing was committed since the last compaction.
      *
      * @throws IllegalStateException if the graph is closed, was opened read-only to recover a damaged store, or its
      *                               storage stopped accepting writes after a storage failure

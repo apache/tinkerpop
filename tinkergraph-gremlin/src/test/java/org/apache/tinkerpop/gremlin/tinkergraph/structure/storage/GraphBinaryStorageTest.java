@@ -1115,6 +1115,33 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     }
 
     @Test
+    public void shouldNotRewriteTheSnapshotWhenNothingWasCommitted() throws Exception {
+        TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        final File snapshot = new File(location, GraphBinaryStorage.SNAPSHOT_FILE);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+        graph.close();
+        final byte[] compacted = Files.readAllBytes(snapshot.toPath());
+
+        // a session that only reads, and an explicit compact() with nothing new, leave the snapshot as it was, where a
+        // rewrite would at least have moved its header to the next generation
+        graph = open();
+        assertEquals(1, countOf(graph.vertices()));
+        graph.tx().commit();
+        graph.compact();
+        graph.close();
+        assertArrayEquals(compacted, Files.readAllBytes(snapshot.toPath()));
+
+        graph = open();
+        graph.addVertex(T.id, 2);
+        graph.tx().commit();
+        graph.close();
+        assertFalse("a commit makes the next compaction rewrite it",
+                Arrays.equals(compacted, Files.readAllBytes(snapshot.toPath())));
+    }
+
+    @Test
     public void shouldPreserveVertexPropertyIdsWhenConfigured() {
         final Configuration conf = config();
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_PRESERVE_VP_IDS, true);
