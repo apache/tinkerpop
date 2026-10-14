@@ -40,9 +40,12 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * The settings a storage directory was created with, recorded in {@link #SETTINGS_FILE} beside the engine's own files.
@@ -63,6 +66,12 @@ public final class StorageSettings {
     private static final Logger logger = LoggerFactory.getLogger(StorageSettings.class);
 
     public static final String SETTINGS_FILE = "settings.properties";
+
+    /**
+     * The files the built-in engine and the graph write beside the settings.
+     */
+    private static final Set<String> STORAGE_FILES = new HashSet<>(Arrays.asList(AbstractLogStorage.SNAPSHOT_FILE,
+            AbstractLogStorage.LOG_FILE, AbstractLogStorage.VERSION_FILE, IndexDefinitions.INDEX_FILE));
 
     /**
      * The settings fixed at creation, each with the value TinkerGraph uses when it is not configured.
@@ -106,6 +115,10 @@ public final class StorageSettings {
                 if (!recovering)
                     write(file, fixedSettingsOf(effective));
             } else if (!recovering) {
+                if (!holdsStorageFiles(directory))
+                    throw new IllegalStateException(String.format(
+                            "Storage directory %s is not empty and is not a store, so no new store is created in " +
+                                    "it; use an empty or new directory", directory));
                 throw new IllegalStateException(String.format(
                         "Storage at %s already holds storage files but no %s recording the settings it was created " +
                                 "with; open it with %s to read it with the configured settings",
@@ -121,8 +134,17 @@ public final class StorageSettings {
         for (final Map.Entry<String, String> setting : FIXED.entrySet()) {
             final String key = setting.getKey();
             final String recordedValue = recorded.get(key);
-            if (null == recordedValue)
+            if (null == recordedValue) {
+                // every store records each of these when it is created, so a missing one means the file is damaged;
+                // defaulting it could read the store with the wrong settings and lose data at the next compaction
+                final String problem = String.format("Storage settings %s do not record %s, which every store " +
+                        "records when it is created, so the file is damaged", file, key);
+                if (!recovering)
+                    throw new IllegalStateException(problem + String.format("; open the store with %s to read it " +
+                            "with the configured settings", TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
+                logger.warn("{}; reading the store with the configured setting", problem);
                 continue;
+            }
             if (effective.containsKey(key)) {
                 final String given = effective.getString(key);
                 if (normalize(key, given).equals(recordedValue))
@@ -138,6 +160,37 @@ public final class StorageSettings {
             effective.setProperty(key, recordedValue);
         }
         return effective;
+    }
+
+    /**
+     * Remove the settings file a failed first open recorded, and the version marker if the engine had written one, when
+     * the directory holds nothing else of a store, so that the next open is a first open again and can record the
+     * settings it is given. Call only for an open that found no settings file when it began, which means the store
+     * did not exist before it and the marker, too, is that open's.
+     *
+     * @param directory the storage directory
+     */
+    public static void removeIfOnlySettings(final File directory) {
+        final List<String> removable = Arrays.asList(SETTINGS_FILE, AbstractLogStorage.VERSION_FILE);
+        final String[] names = directory.list();
+        if (null == names || !Arrays.stream(names).allMatch(name -> name.equals(DirectoryLock.LOCK_FILE) ||
+                removable.contains(name) || (name.endsWith(".tmp") &&
+                        removable.contains(name.substring(0, name.length() - 4)))))
+            return;
+        for (final String name : removable) {
+            StorageFiles.deleteQuietly(new File(directory, name));
+            StorageFiles.deleteQuietly(new File(directory, name + ".tmp"));
+        }
+    }
+
+    /**
+     * Whether {@code directory} holds any file an engine writes, as opposed to only files that belong to something
+     * else.
+     */
+    private static boolean holdsStorageFiles(final File directory) {
+        final String[] names = directory.list();
+        return null != names && Arrays.stream(names).anyMatch(name -> STORAGE_FILES.contains(name) ||
+                (name.endsWith(".tmp") && STORAGE_FILES.contains(name.substring(0, name.length() - 4))));
     }
 
     private static boolean isNewStore(final File directory) {

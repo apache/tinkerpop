@@ -181,6 +181,27 @@ public class StorageRecoveryTest {
     }
 
     @Test
+    public void shouldFailWhenTheSnapshotAndLogAreBothMissing() throws Exception {
+        // what a store that lost its log before its first compaction is left with, since until then the log is all
+        // it has
+        crashedLogOfThreeCommits();
+        writeStore(null, null);
+
+        try {
+            TinkerStorageGraph.open(config()).close();
+            fail("a store that lost its only log should not open as an empty graph");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("is missing and there is no snapshot"));
+        }
+        assertTrue("a failed open must not create a log", !logFile().exists());
+
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(recoverConfig());
+        assertEquals(Collections.emptyList(), vertexIds(graph));
+        graph.close();
+        assertTrue("recovery must not create a log", !logFile().exists());
+    }
+
+    @Test
     public void shouldFailWhenTheSnapshotIsMissing() throws Exception {
         crashAfterCommitOnCompactedStore();
         Files.delete(snapshotFile().toPath());
