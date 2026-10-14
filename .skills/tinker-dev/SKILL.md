@@ -7,7 +7,7 @@ description: >
   Covers coding conventions, build recipes, test evaluation, documentation,
   development environment setup, and Gremlin MCP server usage.
 license: Apache-2.0
-compatibility: Requires Java 11+, Maven 3.5.3+, Docker. Individual GLVs may need Python, Node.js, .NET SDK, or Go.
+compatibility: Requires Java 17, 21, or 25, Maven 3.6.3+, Docker. Individual GLVs may need Python, Node.js, .NET SDK, or Go.
 metadata:
   version: 1.0.0
   project: Apache TinkerPop

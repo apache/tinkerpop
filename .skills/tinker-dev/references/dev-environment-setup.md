@@ -7,10 +7,10 @@ The canonical reference is `docs/src/dev/developer/development-environment.ascii
 
 ### Minimum (Java-only build)
 
-- **Java 11 or 17** — OpenJDK recommended. Use [SDKMAN!](https://sdkman.io/) to manage versions.
+- **Java 17, 21, or 25** — Java 17 is the minimum; 21 and 25 are the other supported LTS releases. OpenJDK recommended. Use [SDKMAN!](https://sdkman.io/) to manage versions.
   Note: some deep reflection requires `--add-opens` JVM options, which are already configured
   in the pom files.
-- **Maven 3.5.3+** — also manageable via SDKMAN.
+- **Maven 3.6.3+** — also manageable via SDKMAN.
 
 With just Java and Maven you can build JVM modules and get a clean `mvn clean install`, but
 GLV builds and many integration tests will be skipped.

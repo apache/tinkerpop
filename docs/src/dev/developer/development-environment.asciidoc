@@ -33,7 +33,7 @@ At a minimum, development of TinkerPop requires link:https://openjdk.org/project
 also run on link:https://openjdk.org/projects/jdk/21/[Java 21] and link:https://openjdk.org/projects/jdk/25/[Java 25].
 Note, however, that there are some issues with deep reflection
 so there are `--add-opens` JVM options included in the pom files to enable this to work. Maven (requiring a minimum of
-link:https://maven.apache.org/download.cgi[Maven 3.5.3+]) is used as the common build system, which even
+link:https://maven.apache.org/download.cgi[Maven 3.6.3+]) is used as the common build system, which even
 controls the builds of non-JVM link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[GLVs]
 such as `gremlin-python`. Java and Maven are described as a "minimum" for a development environment, because they
 will only build JVM portions of TinkerPop and many integration tests will not fire with this simple setup. It is
@@ -124,6 +124,9 @@ Gremlin Console subprocess, and renders the console output as tabbed HTML. The o
 `bin/process-docs.sh` wraps this and acts as the entrypoint: it validates the Gremlin Console and Gremlin Server
 distributions, installs the required plugins into the console, starts a Gremlin Server (for the `:remote` examples) and
 a Gephi mock, then invokes Maven to run the extension. Javadocs should be built using Java 17.
+
+NOTE: Documentation generation uses the `asciidoctor-maven-plugin`, which requires link:https://maven.apache.org/download.cgi[Maven 3.8.8+],
+newer than the Maven 3.6.3 minimum for the rest of the build.
 
 The `docs/tinkeradoc-extension` project is a standalone Maven project rather than a module of the root reactor, so a
 `mvn clean install` from the project root does not build it. It must be built and installed into the local repository

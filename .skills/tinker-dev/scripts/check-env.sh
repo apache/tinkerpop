@@ -44,23 +44,25 @@ echo ""
 echo "Core prerequisites:"
 if command -v java &>/dev/null; then
     java_version=$(java -version 2>&1 | head -1 | sed 's/.*"\(.*\)".*/\1/' | cut -d. -f1)
-    if [[ "$java_version" -eq 11 || "$java_version" -eq 17 ]]; then
-        ok "Java $java_version (11 or 17 required)"
-    elif [[ "$java_version" -gt 17 ]]; then
-        bad "Java $java_version found — only Java 11 or 17 are supported (use sdkman.io to switch)"
+    if [[ "$java_version" -eq 17 || "$java_version" -eq 21 || "$java_version" -eq 25 ]]; then
+        ok "Java $java_version (17, 21, or 25 supported)"
+    elif [[ "$java_version" -gt 17 && "$java_version" -lt 26 ]]; then
+        skip "Java $java_version found — the build accepts 17 through 25, but only the LTS releases 17, 21 and 25 are supported"
+    elif [[ "$java_version" -ge 26 ]]; then
+        bad "Java $java_version found — Java 17 through 25 required (use sdkman.io to switch)"
     else
-        bad "Java $java_version found — version 11 or 17 required (use sdkman.io to install)"
+        bad "Java $java_version found — Java 17, 21, or 25 required (use sdkman.io to install)"
     fi
 else
-    bad "Java not found — install Java 11 or 17 (use sdkman.io)"
+    bad "Java not found — install Java 17, 21, or 25 (use sdkman.io)"
 fi
 
 # --- Maven ---
 if command -v mvn &>/dev/null; then
     mvn_version=$(mvn --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
-    ok "Maven $mvn_version (3.5.3+ required)"
+    ok "Maven $mvn_version (3.6.3+ required)"
 else
-    bad "Maven not found — install Maven 3.5.3+ (try sdkman.io)"
+    bad "Maven not found — install Maven 3.6.3+ (try sdkman.io)"
 fi
 
 # --- Docker ---
