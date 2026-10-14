@@ -337,6 +337,50 @@ public class StorageRecoveryTest {
     }
 
     @Test
+    public void shouldFailWhenALogRecordIsRepeated() throws Exception {
+        final byte[] log = crashedLogOfThreeCommits();
+        final int[] first = logFrames(log).get(0);
+        final int firstLength = first[2] + first[1] - first[0];
+
+        // an intact copy of the first commit's record appended after the third: every checksum still passes
+        final byte[] repeated = Arrays.copyOf(log, log.length + firstLength);
+        System.arraycopy(log, first[0], repeated, log.length, firstLength);
+        writeStore(null, repeated);
+
+        try {
+            TinkerStorageGraph.open(config()).close();
+            fail("a repeated log record must fail the open rather than replay");
+        } catch (UncheckedIOException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("record 3 is numbered 0"));
+        }
+
+        // recovery reads up to the record that is out of place
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(recoverConfig());
+        assertEquals(Arrays.asList(1, 2, 3), vertexIds(graph));
+        graph.close();
+    }
+
+    @Test
+    public void shouldFailWhenLogRecordsAreReordered() throws Exception {
+        final byte[] log = crashedLogOfThreeCommits();
+        final int[] second = logFrames(log).get(1);
+        final int[] third = logFrames(log).get(2);
+
+        // swap the last two records, each intact
+        final byte[] reordered = Arrays.copyOf(log, log.length);
+        final int secondLength = second[2] + second[1] - second[0];
+        final int thirdLength = third[2] + third[1] - third[0];
+        System.arraycopy(log, third[0], reordered, second[0], thirdLength);
+        System.arraycopy(log, second[0], reordered, second[0] + thirdLength, secondLength);
+        writeStore(null, reordered);
+
+        assertNormalOpenFails();
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(recoverConfig());
+        assertEquals(Collections.singletonList(1), vertexIds(graph));
+        graph.close();
+    }
+
+    @Test
     public void shouldNotTruncateATornTailWhenRecovering() throws Exception {
         final byte[] log = crashedLogOfThreeCommits();
         final byte[] torn = Arrays.copyOf(log, log.length + 6);
@@ -571,18 +615,21 @@ public class StorageRecoveryTest {
 
     /**
      * Rebuild {@code log} with {@code frame}'s payload replaced, giving it a matching length, length checksum and
-     * payload checksum.
+     * payload checksum, and keeping its sequence number.
      */
     private static byte[] replacePayload(final byte[] log, final int[] frame, final byte[] payload) {
         final int frameEnd = frame[2] + frame[1];
+        final int sequence = ByteBuffer.wrap(log).getInt(frame[0] + 2 * Integer.BYTES);
         final CRC32 lengthCrc = new CRC32();
         lengthCrc.update(ByteBuffer.allocate(Integer.BYTES).putInt(payload.length).array());
         final CRC32 crc = new CRC32();
+        crc.update(ByteBuffer.allocate(Integer.BYTES).putInt(sequence).array());
         crc.update(payload);
         final ByteBuffer out = ByteBuffer.allocate(log.length - frame[1] + payload.length);
         out.put(log, 0, frame[0]);
         out.putInt(payload.length);
         out.putInt((int) lengthCrc.getValue());
+        out.putInt(sequence);
         out.putInt((int) crc.getValue());
         out.put(payload);
         out.put(log, frameEnd, log.length - frameEnd);

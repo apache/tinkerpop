@@ -61,10 +61,14 @@ generation counts compactions and ties a log to the snapshot it follows.
 
 ## Frames
 
-A snapshot frame is a 4-byte payload length, a 4-byte CRC32 of the payload, and the payload. A log frame adds a CRC32
-of the length between the two, so a log frame header is 12 bytes. Checksumming the length lets replay tell a frame
+A snapshot frame is a 4-byte payload length, a 4-byte CRC32 of the payload, and the payload. A log frame is a 4-byte
+payload length, a 4-byte CRC32 of that length, a 4-byte sequence number, a 4-byte CRC32 of the sequence number and
+payload together, and the payload, so a log frame header is 16 bytes. Checksumming the length lets replay tell a frame
 whose length was damaged apart from an append that was cut short: without it, a flipped bit that made a length claim
-more bytes than remain would read as an interrupted append and silently drop every later commit.
+more bytes than remain would read as an interrupted append and silently drop every later commit. The sequence number
+is the frame's position in its log, counting from 0 after every new log is installed. Replay requires it to match, so
+an intact record that was repeated, reordered or copied in from another log fails a normal open, and a recovery open
+stops at it, rather than replaying a transaction out of place.
 
 A payload is a varint entry count followed by that many entries, each an op byte and its body:
 
@@ -181,7 +185,8 @@ Anything else that fails a checksum is damage and fails a normal open. The last 
 damaged final frame whose payload happens to end in a zero byte, so such damage is cut with the same warning. Only the
 final frame is ever affected, and under `sync=commit` an acknowledged commit is lost that way only if the device
 damaged data it had already been forced to hold. A log damaged so that it ends exactly on a frame boundary, such as one
-cut back to its header, reads as a log with fewer commits, and the loss is not detected.
+cut back to its header, reads as a log with fewer commits, and the loss is not detected. The sequence numbers do not
+change that, since what remains is still numbered from 0.
 
 ## Recovery Mode
 

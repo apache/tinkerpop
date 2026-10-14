@@ -123,13 +123,15 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     static final int FRAME_HEADER_SIZE = 2 * Integer.BYTES;
 
     /**
-     * Bytes ahead of each log frame's payload: a 4-byte length, a 4-byte CRC32 of that length, and a 4-byte CRC32 of
-     * the payload. The log is the only file whose tail is ever cut back, and a length that claims more bytes than
-     * remain is what marks a torn tail, so the length must be verifiable on its own. Without that, one corrupted length
-     * in the middle of the log would read as a torn tail and every commit after it would be cut off. The snapshot is
-     * only ever replaced whole, so its frames do without the extra check.
+     * Bytes ahead of each log frame's payload: a 4-byte length, a 4-byte CRC32 of that length, a 4-byte sequence
+     * number, and a 4-byte CRC32 of the sequence number and payload together. The log is the only file whose tail is
+     * ever cut back, and a length that claims more bytes than remain is what marks a torn tail, so the length must be
+     * verifiable on its own. Without that, one corrupted length in the middle of the log would read as a torn tail and
+     * every commit after it would be cut off. The sequence number is the frame's position in its log, counting from 0,
+     * so a record that was repeated, reordered or copied in from another log is caught rather than replayed. The
+     * snapshot is only ever replaced whole, so its frames do without either.
      */
-    static final int LOG_FRAME_HEADER_SIZE = 3 * Integer.BYTES;
+    static final int LOG_FRAME_HEADER_SIZE = 4 * Integer.BYTES;
 
     static final String SNAPSHOT_FILE = "snapshot.gbin";
     static final String LOG_FILE = "log.gbin";
@@ -161,6 +163,12 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      * out nothing, so the path is checked along with the log's after each sync.
      */
     private Object lockFileKey;
+
+    /**
+     * The sequence number the next frame appended to the log carries: the number of frames the log already holds, as
+     * counted by replay or reset when a new log is installed.
+     */
+    private int nextLogSequence = 0;
     private SyncMode syncMode = SyncMode.COMMIT;
     private long compactThresholdBytes = DEFAULT_COMPACT_THRESHOLD_BYTES;
     private long logBytesSinceCompaction = 0;
@@ -359,10 +367,11 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             throw new UncheckedIOException("Could not encode transaction for storage log: " + ex.getMessage(), ex);
         }
         try {
-            writeLogFrame(logOut, frame);
+            writeLogFrame(logOut, nextLogSequence, frame);
         } catch (IOException ex) {
             throw fail("Could not append transaction to storage log", ex);
         }
+        nextLogSequence++;
         logBytesSinceCompaction += LOG_FRAME_HEADER_SIZE + frame.length;
     }
 
@@ -725,6 +734,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             StorageFiles.deleteQuietly(tmp);
             throw ex;
         }
+        nextLogSequence = 0;
         StorageFiles.syncDirectory(directory);
     }
 
@@ -780,7 +790,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             while (true) {
                 final byte[] record;
                 try {
-                    record = readFrame(in, remaining, log);
+                    record = readFrame(in, remaining, log, frameIndex);
                 } catch (CorruptFrameException ex) {
                     // a crash can also leave the last frame's header written but its payload reading back as zeros
                     // where the data never reached the device, which fails the payload's checksum. A final frame that
@@ -845,6 +855,9 @@ public abstract class AbstractLogStorage implements TinkerStorage {
                 completeEnd += frameLength;
                 frameIndex++;
             }
+            // the frames before completeEnd are all the log keeps, since a torn tail is cut back to it
+            if (log)
+                nextLogSequence = frameIndex;
             return completeEnd;
         } catch (RecoveryStop stop) {
             return stop.completeEnd;
@@ -1157,16 +1170,24 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     /**
-     * Write a log frame: a 4-byte big-endian payload length, a 4-byte CRC32 of that length, a 4-byte CRC32 of the
-     * payload, then the payload. See {@link #LOG_FRAME_HEADER_SIZE} for why the length carries its own checksum.
+     * Write a log frame: a 4-byte big-endian payload length, a 4-byte CRC32 of that length, the 4-byte sequence number,
+     * a 4-byte CRC32 of the sequence number and payload, then the payload. See {@link #LOG_FRAME_HEADER_SIZE} for what
+     * the length's own checksum and the sequence number are for.
      */
-    private static void writeLogFrame(final DataOutputStream out, final byte[] payload) throws IOException {
-        final CRC32 crc = new CRC32();
-        crc.update(payload);
+    private static void writeLogFrame(final DataOutputStream out, final int sequence, final byte[] payload)
+            throws IOException {
         out.writeInt(payload.length);
         out.writeInt(lengthCrc(payload.length));
-        out.writeInt((int) crc.getValue());
+        out.writeInt(sequence);
+        out.writeInt(logPayloadCrc(sequence, payload));
         out.write(payload);
+    }
+
+    private static int logPayloadCrc(final int sequence, final byte[] payload) {
+        final CRC32 crc = new CRC32();
+        crc.update(ByteBuffer.allocate(Integer.BYTES).putInt(sequence).array());
+        crc.update(payload);
+        return (int) crc.getValue();
     }
 
     private static int lengthCrc(final int length) {
@@ -1180,9 +1201,11 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      * treated as an interrupted trailing append (truncation) and ends reading; a fully-present frame whose stored CRC
      * does not match is genuine corruption and is raised. In the log ({@code log} set), a length that fails its own
      * checksum is likewise corruption, so only a verified length that claims more bytes than remain reads as a torn
-     * tail.
+     * tail, and an intact frame whose sequence number is not {@code frameIndex} is raised as one that does not belong
+     * where it is.
      */
-    private static byte[] readFrame(final DataInputStream in, final long remaining, final boolean log) throws IOException {
+    private static byte[] readFrame(final DataInputStream in, final long remaining, final boolean log,
+                                    final int frameIndex) throws IOException {
         final int headerSize = log ? LOG_FRAME_HEADER_SIZE : FRAME_HEADER_SIZE;
         if (remaining == 0)
             return null; // clean end of file, exactly on a frame boundary
@@ -1197,6 +1220,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
                         "Corrupt storage frame: length %d fails its checksum (stored %08x, computed %08x)",
                         length, storedLengthCrc, lengthCrc(length)));
         }
+        final int sequence = log ? in.readInt() : 0;
         final int storedCrc = in.readInt();
         if (length < 0)
             throw new IOException("Corrupt storage frame: negative payload length " + length);
@@ -1210,12 +1234,22 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             return null; // partial trailing payload from an interrupted append
         }
 
-        final CRC32 crc = new CRC32();
-        crc.update(payload);
-        if ((int) crc.getValue() != storedCrc)
+        final int computedCrc;
+        if (log) {
+            computedCrc = logPayloadCrc(sequence, payload);
+        } else {
+            final CRC32 crc = new CRC32();
+            crc.update(payload);
+            computedCrc = (int) crc.getValue();
+        }
+        if (computedCrc != storedCrc)
             throw new CorruptFrameException(String.format(
                     "Corrupt storage frame: CRC mismatch (stored %08x, computed %08x) in a fully-present %d-byte record",
-                    storedCrc, (int) crc.getValue(), length), length);
+                    storedCrc, computedCrc, length), length);
+        // an intact frame out of place was put there, since the engine only ever appends the next one
+        if (log && sequence != frameIndex)
+            throw new IOException(String.format("Storage log record %d is numbered %d, so a record was repeated, " +
+                    "reordered or copied in from another log", frameIndex, sequence));
         return payload;
     }
 
