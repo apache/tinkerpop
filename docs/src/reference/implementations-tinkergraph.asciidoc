@@ -528,7 +528,13 @@ Rebuilding the graph on reopen is subject to `gremlin.tinkergraph.defaultVertexP
 importing data through the `io()` step is (see <<tinkergraph-configuration>>). TinkerGraph has a single graph-wide
 cardinality rather than a per-key or per-property one, and the cardinality a property was written with is not
 recorded. A graph that holds `list` or `set` multi-properties must therefore set this default to `list` or `set` when
-the store is created. Left at the default `single`, only the last value of each property survives a reopen.
+the store is created.
+
+WARNING: A store created with the default `single` cardinality keeps only the last value assigned to each property key
+when the graph is reloaded, even where the values were added with `list` or `set` cardinality. The other values are
+discarded on reopen with only a logged warning, and the next compaction removes them from the store for good. The
+default cardinality is one of the settings fixed when the store is created, so a graph that needs multi-properties must
+set `gremlin.tinkergraph.defaultVertexPropertyCardinality` to `list` or `set` when its store is first opened.
 
 The property keys a graph indexes are recorded alongside its data and the indexes are rebuilt when the graph is opened
 again, so an index created with `createIndex()` survives a restart and covers the data that was already stored. An
