@@ -37,9 +37,9 @@ complete list of all the modifications that are part of this release.
 
 `TinkerGraph` is now an interface with two implementations. The in-memory implementation, previously the concrete
 `TinkerGraph` class, is named `TinkerMemoryGraph`. The transactional implementation, previously named
-`TinkerTransactionGraph`, is named `TinkerStorageGraph` in anticipation of it gaining optional disk storage in a
-future release. This structure clarifies the relationship between the two implementations and gives them a shared,
-stable API.
+`TinkerTransactionGraph`, is named `TinkerStorageGraph` because it can now also keep its data on disk, as described
+in "TinkerGraph Disk Storage" below. This structure clarifies the relationship between the two implementations and
+gives them a shared, stable API.
 
 Most code requires no change. `TinkerGraph.open()` still constructs the in-memory graph and the `gremlin.graph`
 configuration key still accepts `org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph`, which resolves to
@@ -136,11 +136,29 @@ call `io().read()` explicitly or switch to `TinkerStorageGraph` with a storage e
 implementation reads either one. They survive only in Gremlin Server's `SimpleAuthenticator`, which uses them to read
 its credential store at startup.
 
+A configuration that still sets the retired keys opens without error and simply ignores them, so check older
+configuration files and code for the following, all removed in this release:
+
+* `gremlin.tinkergraph.graphLocation`. Use `gremlin.tinkergraph.storage.directory` with `gremlin.tinkergraph.storage`
+on a `TinkerStorageGraph` for durable data, or the `io()` step to read or write a file.
+* `gremlin.tinkergraph.graphFormat`. Give the format to the `io()` step instead.
+* The `TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION` and `TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT` constants, so
+code that referenced them no longer compiles.
+* The Gremlin Console sample `conf/tinkergraph-gryo.properties`, replaced by `conf/tinkergraph-storage.properties`,
+which opens a `TinkerStorageGraph` with disk storage.
+
 See: <<tinkergraph-gremlin,TinkerGraph>>
 
 === Upgrading for Providers
 
 ==== Graph System Providers
+
+===== TinkerGraph Persistence Hooks Removed
+
+Code that extends `AbstractTinkerGraph` loses the hooks for the retired whole-graph save described in "TinkerGraph Disk
+Storage" above: the protected `graphLocation` and `graphFormat` fields and the `loadGraph()` and `saveGraph()` methods
+are removed, as is `requiresPersistence()` on the test provider `TinkerMemoryGraphProvider`. Durable storage is now
+the job of a `TinkerStorage` engine on `TinkerStorageGraph`.
 
 ==== Graph Driver Providers
 
