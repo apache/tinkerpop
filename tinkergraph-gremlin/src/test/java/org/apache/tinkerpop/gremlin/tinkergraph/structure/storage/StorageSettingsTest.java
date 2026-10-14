@@ -167,6 +167,75 @@ public class StorageSettingsTest {
     }
 
     @Test
+    public void shouldFailWhenTheSettingsRecordLacksAFixedSetting() throws Exception {
+        final Configuration created = config();
+        created.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, "list");
+        TinkerStorageGraph graph = TinkerStorageGraph.open(created);
+        graph.addVertex(T.id, 1, "a", 1, "a", 2);
+        graph.tx().commit();
+        graph.close();
+
+        // a damaged record that lost a line must not silently fall back to the default cardinality, which would keep
+        // only the last value of each multi-property and write that back at the next compaction
+        final String key = TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY;
+        final StringBuilder kept = new StringBuilder();
+        for (final String line : Files.readAllLines(settingsFile().toPath(), StandardCharsets.ISO_8859_1)) {
+            if (!line.startsWith(key))
+                kept.append(line).append('\n');
+        }
+        Files.write(settingsFile().toPath(), kept.toString().getBytes(StandardCharsets.ISO_8859_1));
+        final byte[] damaged = Files.readAllBytes(settingsFile().toPath());
+
+        try {
+            TinkerStorageGraph.open(config()).close();
+            fail("a settings record missing a fixed setting should not open");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("do not record " + key));
+        }
+
+        final Configuration recover = config();
+        recover.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER, true);
+        recover.setProperty(key, "list");
+        graph = TinkerStorageGraph.open(recover);
+        assertEquals(2, countOf(graph.vertices(1).next().properties("a")));
+        graph.close();
+        assertTrue("recovery must not rewrite the record",
+                Arrays.equals(damaged, Files.readAllBytes(settingsFile().toPath())));
+    }
+
+    @Test
+    public void shouldNotRecordAnUnusableSettingForANewStore() {
+        final Configuration wrong = config();
+        wrong.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, "LIST");
+        try {
+            TinkerStorageGraph.open(wrong).close();
+            fail("an unknown cardinality should not open");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("must be one of"));
+        }
+        assertFalse("a failed first open must not record its settings", settingsFile().exists());
+
+        final Configuration wrongIds = config();
+        wrongIds.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, "long");
+        try {
+            TinkerStorageGraph.open(wrongIds).close();
+            fail("an unknown id manager should not open");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("id manager with long"));
+        }
+        assertFalse("a failed first open must not record its settings", settingsFile().exists());
+
+        // the corrected value then creates the store as a first open
+        final Configuration right = config();
+        right.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, "list");
+        TinkerStorageGraph.open(right).close();
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(config());
+        assertEquals("list", graph.configuration().getString(
+                TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY));
+        graph.close();
+    }
+
+    @Test
     public void shouldReadAllowNullPropertyValuesAsConfigurationDoes() {
         final Configuration created = config();
         created.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, true);
@@ -210,9 +279,24 @@ public class StorageSettingsTest {
             TinkerStorageGraph.open(config()).close();
             fail("a directory holding other files should not open as a store");
         } catch (IllegalStateException expected) {
-            // expected
+            // the directory holds no storage files, so pointing at recovery would mislead
+            assertTrue(expected.getMessage(), expected.getMessage().contains("is not empty and is not a store"));
         }
         assertEquals(Collections.singletonList("notes.txt"), Arrays.asList(foreign.list()));
+    }
+
+    @Test
+    public void shouldSayWhyTheStorageDirectoryCannotBeCreated() throws Exception {
+        final File file = tempFolder.newFile("plain-file");
+        final Configuration conf = config();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, new File(file, "store").getPath());
+        try {
+            TinkerStorageGraph.open(conf).close();
+            fail("a directory under a regular file cannot be created");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("Could not create storage directory"));
+            assertTrue("the cause should say why: " + expected.getMessage(), null != expected.getCause());
+        }
     }
 
     @Test

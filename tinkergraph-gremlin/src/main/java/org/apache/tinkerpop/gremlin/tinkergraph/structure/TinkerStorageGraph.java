@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * The transactional implementation of the {@link TinkerGraph} interface. It provides {@code read committed}
@@ -134,6 +135,9 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         directoryLock = recovering ? DirectoryLock.acquireForRecovery(dir) : DirectoryLock.acquire(dir);
         final boolean settingsRecorded = new File(dir, StorageSettings.SETTINGS_FILE).exists();
         try {
+            // a value the graph cannot use fails here, before a new store records it as a setting it was created
+            // with, which would then refuse the corrected value on the next open
+            validateDataShapingSettings(configuration);
             // the settings that shape stored data are fixed when the store is created, so read them before anything
             // that depends on them is set up
             initialize(StorageSettings.reconcile(configuration, dir));
@@ -151,12 +155,41 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
             // don't leak the lock if the engine fails to open or replay, nor leave a LOCK file behind in a directory
             // that turned out not to be a store this graph can open
             try {
+                // a first open that failed leaves the directory as it found it, without settings it recorded
+                if (!settingsRecorded && !recovering)
+                    StorageSettings.removeIfOnlySettings(dir);
                 directoryLock.closeAndRemoveIfCreated();
             } catch (RuntimeException cleanup) {
                 ex.addSuppressed(cleanup);
             }
             directoryLock = null;
             throw ex;
+        }
+    }
+
+    /**
+     * Check the configured id managers and cardinalities the way {@link #initialize} reads them, without keeping
+     * anything, so an unusable value fails the open before it can be recorded for a new store.
+     */
+    private static void validateDataShapingSettings(final Configuration configuration) {
+        selectIdManager(configuration, GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, Vertex.class);
+        selectIdManager(configuration, GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, Edge.class);
+        selectIdManager(configuration, GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, VertexProperty.class);
+        parseSetting(configuration, GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY,
+                VertexProperty.Cardinality.single.name(), VertexProperty.Cardinality::valueOf,
+                VertexProperty.Cardinality.values());
+        parseSetting(configuration, GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, LabelCardinality.ONE.name(),
+                LabelCardinality::valueOf, LabelCardinality.values());
+    }
+
+    private static void parseSetting(final Configuration configuration, final String key, final String defaultValue,
+                                     final Function<String, ?> parser, final Object[] allowed) {
+        final String value = configuration.getString(key, defaultValue);
+        try {
+            parser.apply(value);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalStateException(String.format("Could not configure TinkerGraph %s with %s; it must be one " +
+                    "of %s", key, value, Arrays.toString(allowed)), ex);
         }
     }
 

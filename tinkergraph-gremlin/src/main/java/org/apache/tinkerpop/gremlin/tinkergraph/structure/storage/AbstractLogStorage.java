@@ -177,6 +177,12 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     private UUID storeId;
 
     /**
+     * Whether the store's version marker was already present when this open began, which means the store was created
+     * by an earlier open and so was given a log then.
+     */
+    private boolean storeExisted;
+
+    /**
      * Whether replay should fold the log. Only a recovery open that found the log missing, or not belonging to the
      * snapshot, leaves it out.
      */
@@ -506,6 +512,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      */
     private void establishStoreVersion() {
         final boolean storeHasData = snapshotFile.exists() || logFile.exists();
+        storeExisted = versionFile.exists();
         if (!versionFile.exists()) {
             if (storeHasData) {
                 final String problem = String.format("Storage location %s has data but no %s marker, so its format " +
@@ -574,6 +581,19 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         final boolean hasSnapshot = snapshotFile.exists();
         final boolean hasLog = logFile.exists();
         if (!hasSnapshot && !hasLog) {
+            // a store is given its log when it is created and keeps one from then on, so a store created by an
+            // earlier open with neither file has lost its log, and with it every transaction committed before its first
+            // compaction. Opening it as a new store would hide that.
+            if (storeExisted) {
+                final String problem = String.format("Storage log %s is missing and there is no snapshot, so every " +
+                        "transaction committed to the store is lost", logFile);
+                if (!recovering)
+                    throw new IllegalStateException(problem + String.format("; open the store with %s to confirm " +
+                            "it is empty, or, if nothing was ever committed to it (its first open was interrupted), " +
+                            "delete the directory to start a new store", TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
+                recovery.note(problem + "; the graph is empty.");
+                return;
+            }
             if (!recovering)
                 installNewLog(0);
             return;
@@ -659,7 +679,8 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             final long fileGeneration = in.readLong();
             return new FileHeader(fileGeneration, new UUID(in.readLong(), in.readLong()));
         } catch (IOException ex) {
-            throw new UncheckedIOException(String.format("Could not read storage file %s", file), ex);
+            // the cause's message says what is wrong, such as a checksum mismatch, so it belongs in this one too
+            throw new UncheckedIOException(String.format("Could not read storage file %s: %s", file, ex.getMessage()), ex);
         }
     }
 
@@ -816,7 +837,8 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         } catch (RecoveryStop stop) {
             return stop.completeEnd;
         } catch (IOException ex) {
-            throw new UncheckedIOException(String.format("Could not read storage file %s", file), ex);
+            // the cause's message says what is wrong, such as a checksum mismatch, so it belongs in this one too
+            throw new UncheckedIOException(String.format("Could not read storage file %s: %s", file, ex.getMessage()), ex);
         }
     }
 
