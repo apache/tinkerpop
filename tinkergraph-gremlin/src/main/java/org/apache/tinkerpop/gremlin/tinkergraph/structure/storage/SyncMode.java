@@ -50,11 +50,10 @@ public enum SyncMode {
     // amortizing fsync cost across commits. It implies fsync (a batched COMMIT), so it slots in as a third
     // mutually-exclusive mode without changing the meaning of COMMIT or OS.
     //
-    // This is coupled to the commit-write lock that serializes concurrent commits (see the persist/flush step in
-    // TinkerTransaction.doCommit): once that lock exists, COMMIT holds it across the fsync, so every commit serializes
-    // on disk-sync latency. INTERVAL is the fix — hold the lock only for the buffer append (fast) and fsync one batch
-    // for many transactions. So INTERVAL should be built on top of that lock, not before it: it is the performance
-    // pass that makes serialized commits cheap, which is why it is deferred until concurrent commits are serialized.
+    // This is coupled to the commit lock that serializes concurrent commits (see the persist/flush step in
+    // TinkerTransaction.doCommit): COMMIT holds it across the fsync, so every commit serializes on disk-sync latency.
+    // INTERVAL is the fix: hold the lock only for the buffer append (fast) and fsync one batch for many transactions,
+    // the performance pass that makes serialized commits cheap.
 
     /**
      * Resolve a configuration value to a {@link SyncMode}, matched case-insensitively, defaulting to {@link #COMMIT}

@@ -194,9 +194,6 @@ final class TinkerElementContainer<T extends TinkerElement> {
     }
 
     /**
-     * Used to understand if elements was changed by other transaction.
-     */
-    /**
      * Mark the element as removed by {@code TinkerGraph.clear()}, so a transaction that still holds this container
      * fails to commit with a conflict instead of bringing the element back.
      */
@@ -204,6 +201,9 @@ final class TinkerElementContainer<T extends TinkerElement> {
         isDeleted = true;
     }
 
+    /**
+     * Used to understand if elements was changed by other transaction.
+     */
     public boolean updatedOutsideTransaction() {
         // todo: do we need to check version on delete?
         final T updatedValue = transactionUpdatedValue.get();
