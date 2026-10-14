@@ -18,7 +18,7 @@ under the License.
 ////
 
 [llms-summary="Upgrade notes for the TinkerPop 3.0.x release line: the initial 3.x releases, their features, and migration guidance."]
-= TinkerPop 3.0.0
+= TinkerPop 3.0.x
 
 image::gremlin-hindu.png[width=225]
 
