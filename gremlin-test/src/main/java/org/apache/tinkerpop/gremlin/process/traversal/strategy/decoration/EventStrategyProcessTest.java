@@ -57,6 +57,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -1045,6 +1046,39 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final GraphTraversalSource gts = create(eventStrategy);
 
         gts.V(v).property(VertexProperty.Cardinality.single, "to-change", "dah").iterate();
+        tryCommit(graph);
+
+        assertEquals(1, IteratorUtils.count(g.V(v).properties()));
+        assertThat(triggered.get(), is(true));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldCaptureOldVertexPropertyWhenChangedWithDefaultCardinality() {
+        assumeTrue(graph.features().vertex().getCardinality("to-change") == VertexProperty.Cardinality.single);
+
+        final AtomicBoolean triggered = new AtomicBoolean(false);
+        final Vertex v = graph.addVertex();
+        v.property("to-change", "blah");
+
+        final MutationListener listener = new AbstractMutationListener() {
+            @Override
+            public void vertexPropertyChanged(final Vertex element, final VertexProperty oldValue, final Object setValue, final Object... vertexPropertyKeyValues) {
+                assertEquals("to-change", oldValue.key());
+                assertEquals("blah", oldValue.value());
+                assertEquals("dah", setValue);
+                triggered.set(true);
+            }
+        };
+        final EventStrategy.Builder builder = EventStrategy.build().addListener(listener);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+        final GraphTraversalSource gts = create(eventStrategy);
+
+        gts.V(v).property("to-change", "dah").iterate();
         tryCommit(graph);
 
         assertEquals(1, IteratorUtils.count(g.V(v).properties()));
