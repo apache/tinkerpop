@@ -50,8 +50,9 @@ import java.util.Set;
 /**
  * The settings a storage directory was created with, recorded in {@link #SETTINGS_FILE} beside the engine's own files.
  * <p/>
- * Some settings shape the data itself: the id managers decide the type of every stored id, and the cardinalities and
- * null handling decide how stored properties read back. A store is only ever read with the settings that wrote it, so
+ * Some settings shape the data itself: the id managers decide the type of every stored id, the cardinalities and
+ * null handling decide how stored properties read back, and whether vertex-property ids are preserved decides whether
+ * the store holds them at all, since every compaction rewrites the store with the setting it was opened with. A store is only ever read with the settings that wrote it, so
  * these are fixed when the store is created. Changing one is a migration: export the graph with {@code g.io()} and
  * import it into a new store. The record is written once, holding the effective value of each such setting (defaults
  * included), and never rewritten.
@@ -88,6 +89,7 @@ public final class StorageSettings {
                 VertexProperty.Cardinality.single.name());
         fixed.put(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, LabelCardinality.ONE.name());
         fixed.put(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, Boolean.FALSE.toString());
+        fixed.put(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_PRESERVE_VP_IDS, Boolean.FALSE.toString());
         FIXED = Collections.unmodifiableMap(fixed);
     }
 
@@ -220,7 +222,8 @@ public final class StorageSettings {
                 if (engine.name().equalsIgnoreCase(trimmed))
                     return engine.name().toLowerCase();
             }
-        } else if (key.equals(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES)) {
+        } else if (key.equals(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES) ||
+                key.equals(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_PRESERVE_VP_IDS)) {
             // the spellings Configuration.getBoolean reads as true or false (yes/no, on/off, in any case); anything
             // else is left as given, so it differs from the record and fails the open rather than being guessed at
             try {
