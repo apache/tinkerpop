@@ -109,7 +109,9 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
      * Serializes the durable write of a committing transaction. TinkerGraph transactions lock only their own changed
      * elements, so two commits touching disjoint elements run their commit paths concurrently; without this lock they
      * would both write to the storage engine's single append log at once and interleave (corrupt) its records. Held
-     * only around the engine's persist/flush, so commits of disjoint elements still proceed in parallel up to that
+     * from the engine's persist/flush through the index commit, the in-memory apply and any automatic compaction, so
+     * a compaction never snapshots a graph missing a transaction the log already holds, and transactions become
+     * visible in the order they were recorded. Commits of disjoint elements still proceed in parallel up to that
      * point. Fair, so committers are served in arrival order and none is starved.
      */
     protected final ReentrantLock storageCommitLock = new ReentrantLock(true);
