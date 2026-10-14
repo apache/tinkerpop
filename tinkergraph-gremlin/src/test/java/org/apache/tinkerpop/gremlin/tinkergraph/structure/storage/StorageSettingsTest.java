@@ -37,6 +37,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Locale;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -169,6 +170,30 @@ public class StorageSettingsTest {
         final Configuration yes = config();
         yes.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_PRESERVE_VP_IDS, "yes");
         TinkerStorageGraph.open(yes).close();
+    }
+
+    @Test
+    public void shouldOpenAStoreRegardlessOfTheDefaultLocale() {
+        // a Turkish default locale upper-cases the "i" of graphbinary to a dotted capital I, which names no engine
+        final Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            TinkerStorageGraph.open(config()).close();
+            TinkerStorageGraph.open(config()).close();
+        } finally {
+            Locale.setDefault(original);
+        }
+    }
+
+    @Test
+    public void shouldReadBackARecordedSettingThatIsNotLatin1() {
+        // the record is written as UTF-8, so it must be read as UTF-8 rather than the ISO-8859-1 Properties assumes
+        final Configuration created = config();
+        created.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, "com.example.\u03a9IdManager");
+        final File directory = new File(location);
+        StorageSettings.reconcile(created, directory);
+        assertEquals("com.example.\u03a9IdManager", StorageSettings.reconcile(created, directory)
+                .getString(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER));
     }
 
     @Test

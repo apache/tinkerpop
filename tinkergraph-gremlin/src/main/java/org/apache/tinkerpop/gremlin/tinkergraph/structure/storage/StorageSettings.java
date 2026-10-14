@@ -33,8 +33,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
@@ -43,6 +44,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -220,7 +222,7 @@ public final class StorageSettings {
         if (key.equals(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE)) {
             for (final DefaultStorage engine : DefaultStorage.values()) {
                 if (engine.name().equalsIgnoreCase(trimmed))
-                    return engine.name().toLowerCase();
+                    return engine.name().toLowerCase(Locale.ROOT);
             }
         } else if (key.equals(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES) ||
                 key.equals(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_PRESERVE_VP_IDS)) {
@@ -237,7 +239,8 @@ public final class StorageSettings {
 
     private static Map<String, String> read(final File file) {
         final Properties properties = new Properties();
-        try (final InputStream in = new FileInputStream(file)) {
+        // read back in the encoding write() stores it in, since Properties.load(InputStream) assumes ISO-8859-1
+        try (final Reader in = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
             properties.load(in);
         } catch (IOException ex) {
             throw new UncheckedIOException(String.format("Could not read storage settings %s", file), ex);

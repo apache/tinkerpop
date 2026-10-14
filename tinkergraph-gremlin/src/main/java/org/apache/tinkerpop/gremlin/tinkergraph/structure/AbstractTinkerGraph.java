@@ -45,6 +45,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -617,7 +618,7 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
             return null;
         final String storageConfigValue = configured.trim();
         try {
-            return DefaultStorage.valueOf(storageConfigValue.toUpperCase()).get();
+            return DefaultStorage.valueOf(storageConfigValue.toUpperCase(Locale.ROOT)).get();
         } catch (IllegalArgumentException iae) {
             try {
                 return (TinkerStorage) Class.forName(storageConfigValue).getDeclaredConstructor().newInstance();
@@ -627,7 +628,7 @@ public abstract class AbstractTinkerGraph implements TinkerGraph {
                                 "(%s) nor the class name of a TinkerStorage implementation with a public no-argument " +
                                 "constructor",
                         storageConfigValue, Arrays.stream(DefaultStorage.values())
-                                .map(e -> e.name().toLowerCase()).collect(Collectors.joining(", "))), ex);
+                                .map(e -> e.name().toLowerCase(Locale.ROOT)).collect(Collectors.joining(", "))), ex);
             }
         }
     }
