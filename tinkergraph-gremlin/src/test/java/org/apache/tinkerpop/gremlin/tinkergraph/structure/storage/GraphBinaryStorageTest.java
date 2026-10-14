@@ -961,6 +961,28 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     }
 
     @Test
+    public void shouldFailOnALabelListLongerThanItsFrame() throws Exception {
+        // a vertex record whose id is itself a vertex value, whose label list declares 0x7FFFFFFF entries. The
+        // vertex serializer reads that list with its type already known, so the size must be checked there too,
+        // otherwise this is an OutOfMemoryError that even a recovery open could not get past.
+        final byte[] payload = new byte[] {
+                0x01,                                     // entry count = 1
+                0x01,                                     // OP_PUT_VERTEX
+                0x11,                                     // id: GraphBinary VERTEX tag
+                0x01, 0x00, 0x00, 0x00, 0x00, 0x2A,       // its id: fully-qualified INT 42
+                0x7F, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF  // its label list's size
+        };
+
+        try {
+            openWithSyntheticFrame(payload);
+            fail("expected reopen to fail on a label list longer than its frame");
+        } catch (Exception expected) {
+            assertTrue("cause should report corruption: " + rootMessage(expected),
+                    rootMessage(expected).contains("LIST value declares a size of 2147483647"));
+        }
+    }
+
+    @Test
     public void shouldFailOnOverLongVarInt() throws Exception {
         // a varint whose continuation bits run past the width of an int. Java masks a shift count to five bits, so
         // without a bound this wraps and yields an arbitrary, possibly negative, value instead of failing.
