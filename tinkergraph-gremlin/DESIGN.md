@@ -141,7 +141,9 @@ store with data always has a log, and a missing log is always damage.
 A crash after the snapshot rename but before the new log is installed leaves a snapshot one generation ahead of its
 log. That log's commits are already in the snapshot, so open completes the compaction by installing the empty log.
 
-Compaction reads committed state only (`getUnmodified`), never a thread's open transaction.
+Compaction reads committed state only (`getUnmodified`), never a thread's open transaction. With nothing logged since
+the last compaction it does nothing, since the snapshot already holds every commit, so a `close()` after a session that
+only read leaves the store untouched.
 
 ## Opening a Store
 
@@ -256,6 +258,6 @@ The storage engine, the three id managers, `defaultVertexPropertyCardinality`, `
 `allowNullPropertyValues` and `preserveVertexPropertyIds` shape what is stored and how it is read back, so they are
 recorded once and enforced on every open. `preserveVertexPropertyIds` is among them even though vertex records say
 whether they carry vertex-property ids: every compaction rewrites the store under the setting it was opened with, and
-`close()` always compacts, so one open with the setting off would strip the ids from a store that kept them. Settings
-that only affect how the engine runs (`sync`, `compactThreshold`, `recover`) may change between opens. Cardinality is
-not recorded per property: replay applies the graph-wide default, as the `io()` step does.
+`close()` compacts after any commit, so one open with the setting off would strip the ids from a store that kept them.
+Settings that only affect how the engine runs (`sync`, `compactThreshold`, `recover`) may change between opens.
+Cardinality is not recorded per property: replay applies the graph-wide default, as the `io()` step does.

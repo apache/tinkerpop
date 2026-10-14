@@ -411,6 +411,10 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         // compaction writes into the directory it was opened on and never recreates it, so a store removed while the
         // graph is open stays removed (the open log is the store's only file the engine holds, so check it first)
         checkStoreInPlace();
+        // with nothing logged since the last compaction the snapshot already holds everything the graph has
+        // committed, so rewriting it would only cost a full write and sync, which close() would pay every time
+        if (logBytesSinceCompaction == 0)
+            return;
         closeLog();
         final long nextGeneration = generation + 1;
         final File tmp = new File(directory, SNAPSHOT_FILE + ".tmp");
