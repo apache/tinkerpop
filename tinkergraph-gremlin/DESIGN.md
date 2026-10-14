@@ -42,7 +42,7 @@ A storage directory holds:
 
 | File | Contents | Written |
 |---|---|---|
-| `LOCK` | nothing; held with a file lock while a graph has the store open | at open |
+| `LOCK` | a random 16-byte token written by the graph that holds it; held with a file lock while a graph has the store open | at open |
 | `VERSION` | magic `TGSB`, format version byte (currently `1`), store id (16-byte UUID) | when the store is created |
 | `settings.properties` | the data-shaping settings the store was created with, as Java properties | when the store is created |
 | `snapshot.gbin` | file header, then a dictionary frame and one frame per element | by compaction |
@@ -204,6 +204,13 @@ while the graph was open, possibly by another graph that has since created a sto
 fail-stops with a `StoreRemovedException`. From then on nothing is written to the directory, not even by `close()`,
 and the committed data stays readable in memory for export. On a platform without file keys only the presence checks
 apply.
+
+The `LOCK` file's identity is recorded at open and checked with the log's, and also before each commit is appended, so
+a graph whose `LOCK` was deleted or replaced, which lets a second graph lock a new file at that path and open the
+store, fail-stops before it writes anything more. Acquiring the lock writes a random token through the locked channel
+and reads it back through the path. A graph whose open fails removes the `LOCK` it created, so without that check a
+graph could hold a lock on a file that has just been unlinked and keep no one out. A recovery open skips the token,
+since it leaves every file as it found it and writes nothing to the store.
 
 A commit that finds the store moved fails and is rolled back in memory, although its frame may already be durable at
 the store's new location, because the check follows the forced write.

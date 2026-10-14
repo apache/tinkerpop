@@ -153,6 +153,14 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      * has it open, so the log is checked against its path after each sync (see {@link #checkStoreInPlace}).
      */
     private Object logFileKey;
+
+    /**
+     * The identity of the directory's {@code LOCK} file when the store was opened, or {@code null} when there is none
+     * (the engine opened on its own, without a graph holding the directory) or the filesystem reports no identity. The
+     * lock held on that file is what keeps a second graph out, and a lock on a file that is no longer at its path keeps
+     * out nothing, so the path is checked along with the log's after each sync.
+     */
+    private Object lockFileKey;
     private SyncMode syncMode = SyncMode.COMMIT;
     private long compactThresholdBytes = DEFAULT_COMPACT_THRESHOLD_BYTES;
     private long logBytesSinceCompaction = 0;
@@ -276,8 +284,10 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         establishGeneration();
         // remember which file the log is from the start, so a store removed or replaced before the first commit is
         // caught too, not only one replaced while the log is open for append
-        if (!recovering)
+        if (!recovering) {
             recordLogIdentity();
+            recordLockIdentity();
+        }
     }
 
     /**
@@ -339,6 +349,8 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         checkNotRecovering();
         checkNotFailed();
         ensureLogOpen();
+        // a graph that has lost its lock may share the directory with another, so it must not add to the log at all
+        checkLockIdentity();
         final byte[] frame;
         try {
             frame = encodeCommit(txVersion, changedVertices, changedEdges);
@@ -1007,6 +1019,34 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         if (!logFile.exists())
             throw removed(String.format("its log %s is missing", logFile));
         checkLogIdentity();
+        checkLockIdentity();
+    }
+
+    private void recordLockIdentity() {
+        final File lockFile = new File(directory, DirectoryLock.LOCK_FILE);
+        try {
+            lockFileKey = lockFile.exists() ? fileKey(lockFile) : null;
+        } catch (IOException ex) {
+            throw new UncheckedIOException(String.format("Could not read storage lock %s", lockFile), ex);
+        }
+    }
+
+    /**
+     * Fail-stop if the {@code LOCK} file the graph holds was removed or replaced, since another graph can then lock a
+     * new file at that path and open the store beside this one.
+     */
+    private void checkLockIdentity() {
+        if (null == lockFileKey)
+            return;
+        final File lockFile = new File(directory, DirectoryLock.LOCK_FILE);
+        final Object current;
+        try {
+            current = fileKey(lockFile);
+        } catch (IOException ex) {
+            throw removed(String.format("its lock %s is missing", lockFile));
+        }
+        if (!lockFileKey.equals(current))
+            throw removed(String.format("its lock %s was replaced by another file", lockFile));
     }
 
     /**
