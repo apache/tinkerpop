@@ -226,6 +226,13 @@ the store's new location, because the check follows the forced write.
 its data readable for export. It refuses commits that change anything, explicit `compact()` and `clear()`, and it
 changes indexes in memory only, without writing `INDEXES`.
 
+The graph also fail-stops the engine through `failStop()` when a commit's changes were persisted and flushed but
+applying them in memory (the index or element commit) then failed. The durable frame is the commit point, as a commit
+record in a database's log is, so the transaction is not reported as rolled back: `doCommit` throws a
+`TransactionException` saying that it was recorded and will be present after a reopen. Memory keeps the state from
+before the transaction, which no longer matches the log, so nothing more may be written from it. A fail-stopped engine
+neither commits nor compacts, `close()` included, and the reopen replays the frame.
+
 ## `clear()`
 
 `clear()` keeps its in-memory meaning: the whole graph is emptied at once, outside any transaction. Under the commit

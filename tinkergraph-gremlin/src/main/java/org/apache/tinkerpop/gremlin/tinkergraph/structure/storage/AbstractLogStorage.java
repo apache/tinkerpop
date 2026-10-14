@@ -506,6 +506,13 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     @Override
+    public void failStop(final Throwable cause) {
+        if (failure == null)
+            failure = new IOException("A transaction recorded in storage could not be applied in memory: " +
+                    cause.getMessage(), cause);
+    }
+
+    @Override
     public void close() {
         try {
             if (failure instanceof StoreRemovedException) {
@@ -1147,7 +1154,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             throw new UncheckedIOException(failure.getMessage(), failure);
         if (failure != null)
             throw new UncheckedIOException(new IOException(String.format(
-                    "Storage at %s failed an earlier write and accepts no further commits; close and reopen the graph",
+                    "Storage at %s stopped accepting commits after an earlier failure; close and reopen the graph",
                     directory), failure));
     }
 

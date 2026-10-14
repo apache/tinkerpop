@@ -135,6 +135,17 @@ public interface TinkerStorage extends AutoCloseable {
     }
 
     /**
+     * Stop accepting writes, as after a storage failure, until the graph is reopened. The graph calls this when a
+     * transaction's changes were persisted and flushed but could not then be applied in memory: the transaction is
+     * durable and returns on the next open, so the graph's memory no longer matches the store, and nothing written
+     * from that memory, by a commit or a compaction, may reach the store. {@link #isFailed()} reports {@code true}
+     * afterwards.
+     *
+     * @param cause why the graph's memory no longer matches the store
+     */
+    void failStop(Throwable cause);
+
+    /**
      * {@inheritDoc}
      * <p/>
      * Flush and release resources. Does not delete persisted data.

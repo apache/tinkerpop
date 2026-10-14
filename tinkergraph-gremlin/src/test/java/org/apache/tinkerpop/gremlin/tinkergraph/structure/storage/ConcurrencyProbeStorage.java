@@ -79,5 +79,8 @@ public final class ConcurrencyProbeStorage implements TinkerStorage {
     public void compact(final AbstractTinkerGraph graph) { }
 
     @Override
+    public void failStop(final Throwable cause) { }
+
+    @Override
     public void close() { }
 }
