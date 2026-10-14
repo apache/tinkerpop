@@ -123,13 +123,52 @@ public class StorageSettingsTest {
         final Configuration changed = config();
         changed.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_SYNC, "os");
         changed.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, 0);
-        changed.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_PRESERVE_VP_IDS, true);
         graph = TinkerStorageGraph.open(changed);
         assertEquals(1, countOf(graph.vertices()));
         graph.close();
 
         assertEquals("the record is written once and never rewritten",
                 new String(recorded), new String(Files.readAllBytes(settingsFile().toPath())));
+    }
+
+    @Test
+    public void shouldKeepPreservedVertexPropertyIdsWhenTheSettingIsLeftOut() {
+        final Configuration created = config();
+        created.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_PRESERVE_VP_IDS, true);
+        TinkerStorageGraph graph = TinkerStorageGraph.open(created);
+        graph.addVertex(T.id, 1).property("name", "marko", T.id, "vp-explicit");
+        graph.tx().commit();
+        graph.close();
+
+        // an open that leaves the setting out adopts the recorded one, so its close-time compaction keeps the ids
+        graph = TinkerStorageGraph.open(config());
+        assertTrue(graph.configuration().getBoolean(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_PRESERVE_VP_IDS));
+        graph.close();
+
+        graph = TinkerStorageGraph.open(config());
+        assertEquals("vp-explicit", graph.vertices(1).next().properties("name").next().id());
+        graph.close();
+    }
+
+    @Test
+    public void shouldFailToOpenWithADifferentPreserveVertexPropertyIdsSetting() {
+        final Configuration created = config();
+        created.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_PRESERVE_VP_IDS, true);
+        TinkerStorageGraph.open(created).close();
+
+        final Configuration changed = config();
+        changed.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_PRESERVE_VP_IDS, false);
+        try {
+            TinkerStorageGraph.open(changed).close();
+            fail("a store that preserves vertex-property ids must not open with the setting turned off");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("preserveVertexPropertyIds=true"));
+        }
+
+        // spellings Configuration.getBoolean reads as true name the recorded setting
+        final Configuration yes = config();
+        yes.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_PRESERVE_VP_IDS, "yes");
+        TinkerStorageGraph.open(yes).close();
     }
 
     @Test

@@ -233,9 +233,10 @@ graph is closed, recovered or fail-stopped.
 
 ## Settings Fixed at Creation
 
-The storage engine, the three id managers, `defaultVertexPropertyCardinality`, `vertexLabelCardinality` and
-`allowNullPropertyValues` shape what is stored and how it is read back, so they are recorded once and enforced on
-every open. Settings that only affect how the engine runs (`sync`, `compactThreshold`, `preserveVertexPropertyIds`,
-`recover`) may change between opens. Vertex records say whether they carry vertex-property ids, so a store written
-with `preserveVertexPropertyIds` reads back correctly with the setting changed. Cardinality is not recorded per
-property: replay applies the graph-wide default, as the `io()` step does.
+The storage engine, the three id managers, `defaultVertexPropertyCardinality`, `vertexLabelCardinality`,
+`allowNullPropertyValues` and `preserveVertexPropertyIds` shape what is stored and how it is read back, so they are
+recorded once and enforced on every open. `preserveVertexPropertyIds` is among them even though vertex records say
+whether they carry vertex-property ids: every compaction rewrites the store under the setting it was opened with, and
+`close()` always compacts, so one open with the setting off would strip the ids from a store that kept them. Settings
+that only affect how the engine runs (`sync`, `compactThreshold`, `recover`) may change between opens. Cardinality is
+not recorded per property: replay applies the graph-wide default, as the `io()` step does.
