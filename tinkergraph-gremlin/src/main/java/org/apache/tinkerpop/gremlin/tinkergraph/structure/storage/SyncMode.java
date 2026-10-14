@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
 
+import java.util.Locale;
+
 /**
  * The durability mode a {@link TinkerStorage} engine applies when flushing a committed transaction to disk, selected
  * with the {@code gremlin.tinkergraph.storage.sync} configuration key. Each value is a complete, mutually-exclusive
@@ -66,7 +68,7 @@ public enum SyncMode {
         if (null == configValue)
             return COMMIT;
         try {
-            return SyncMode.valueOf(configValue.trim().toUpperCase());
+            return SyncMode.valueOf(configValue.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException iae) {
             throw new IllegalArgumentException(String.format(
                     "Unknown storage sync mode '%s'; valid values are 'commit' and 'os'", configValue), iae);

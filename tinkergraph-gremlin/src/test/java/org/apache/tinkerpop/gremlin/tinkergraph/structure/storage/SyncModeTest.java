@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
 
 import org.junit.Test;
 
+import java.util.Locale;
+
 import static org.junit.Assert.assertEquals;
 
 public class SyncModeTest {
@@ -35,6 +37,18 @@ public class SyncModeTest {
         assertEquals(SyncMode.COMMIT, SyncMode.fromConfigValue("COMMIT"));
         assertEquals(SyncMode.OS, SyncMode.fromConfigValue("os"));
         assertEquals(SyncMode.OS, SyncMode.fromConfigValue("  Os  "));
+    }
+
+    @Test
+    public void shouldResolveRegardlessOfTheDefaultLocale() {
+        // a Turkish default locale upper-cases "i" to a dotted capital I, which names no sync mode
+        final Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            assertEquals(SyncMode.COMMIT, SyncMode.fromConfigValue("commit"));
+        } finally {
+            Locale.setDefault(original);
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)
