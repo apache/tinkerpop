@@ -111,6 +111,10 @@ func (t *Traversal) Next() (*Result, error) {
 		return nil, err
 	}
 	if results.IsEmpty() {
+		err = results.GetError()
+		if err != nil {
+			return nil, err
+		}
 		return nil, newError(err0903NextNoResultsLeftError)
 	}
 	result, _, err := results.One()
