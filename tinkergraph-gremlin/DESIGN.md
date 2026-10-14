@@ -108,7 +108,8 @@ never reached disk.
 
 A frame's length is checked against the file before its payload is allocated. Inside a payload every length a value
 declares, for strings, binary values, `BigInteger`, lists, sets and maps, is checked against the bytes left in the
-record before it is allocated, at the top level and inside collections, and a bulked list, which the engine never
+record before it is allocated, at the top level, inside collections and in the parts a serializer reads with their
+type already known, such as the label list of a vertex or edge value, and a bulked list, which the engine never
 writes, is rejected. A value cut off by the end of its record, or one the serializers cannot read, is reported as a
 corrupt frame naming the file rather than surfacing as a runtime exception or exhausting memory.
 

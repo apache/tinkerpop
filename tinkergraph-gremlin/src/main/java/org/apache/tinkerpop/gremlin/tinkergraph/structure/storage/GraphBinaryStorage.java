@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -535,10 +536,33 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
 
         @Override
         public <T> T readValue(final Buffer buffer, final Class<T> type, final boolean nullable) throws IOException {
-            // a BigDecimal reads its unscaled BigInteger this way
-            if (buffer instanceof TinkerByteBuffer && !nullable && type == BigInteger.class)
-                checkDeclaredSize((TinkerByteBuffer) buffer, DataType.BIGINTEGER, buffer.readerIndex());
+            // serializers read some parts of a value with its type already known, such as the unscaled BigInteger of a
+            // BigDecimal or the label list of a vertex or edge, so those sizes are checked here rather than in read()
+            final DataType sized = sizedTypeOf(type);
+            if (buffer instanceof TinkerByteBuffer && sized != null) {
+                final TinkerByteBuffer buf = (TinkerByteBuffer) buffer;
+                int offset = buf.readerIndex();
+                if (nullable) {
+                    if (buf.readableBytes() < 1)
+                        throw new IOException(String.format("Corrupt storage frame: %s value is cut off", sized));
+                    // a null carries no size to check
+                    if ((buf.getByte(offset) & 1) == 1)
+                        return super.readValue(buffer, type, nullable);
+                    offset++;
+                }
+                checkDeclaredSize(buf, sized, offset);
+            }
             return super.readValue(buffer, type, nullable);
+        }
+
+        private static DataType sizedTypeOf(final Class<?> type) {
+            if (type == String.class) return DataType.STRING;
+            if (type == ByteBuffer.class) return DataType.BINARY;
+            if (type == BigInteger.class) return DataType.BIGINTEGER;
+            if (type == List.class) return DataType.LIST;
+            if (type == Set.class) return DataType.SET;
+            if (type == Map.class) return DataType.MAP;
+            return null;
         }
     }
 
