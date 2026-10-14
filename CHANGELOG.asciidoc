@@ -27,7 +27,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Added a `Char` type to `gremlin-go` to represent the Gremlin `Character` type in `GremlinLang`.
 * Fixed `gremlin-go` to report a malformed or truncated GraphBinary response as a deserialization error rather than a bare decoder message.
-* Made `TinkerGraph` an interface and renamed the in-memory implementation to `TinkerMemoryGraph`; `TinkerGraph.open()` and `gremlin.graph=...TinkerGraph` behave as before. *(breaking)*
+* Made `TinkerGraph` an interface and renamed the in-memory implementation to `TinkerMemoryGraph`; `TinkerGraph.open()` and `gremlin.graph=...TinkerGraph` behave as before.
 * Renamed `TinkerTransactionGraph` to `TinkerStorageGraph`.
 * Fixed a `NullPointerException` when rolling back a transaction on a `TinkerStorageGraph` that has a vertex index but no edge index.
 * Added a pluggable storage layer to `TinkerStorageGraph` that durably persists each committed transaction to disk.
