@@ -1895,6 +1895,32 @@ public class TinkerTransactionGraphTest {
         assertEquals(0, (long) gtx.V().count().next());
     }
 
+    @Test
+    public void shouldFindIndexedEdgeAfterChangingAnotherPropertyInSameTransaction() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        g.createIndex(PROPERTY_NAME, Edge.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV().addE(EDGE_LABEL).to(__.addV()).property(PROPERTY_NAME, "link").iterate();
+        gtx.tx().commit();
+
+        gtx.E().has(PROPERTY_NAME, "link").property("weight", 1).iterate();
+
+        assertEquals(1, (long) gtx.E().has(PROPERTY_NAME, "link").count().next());
+    }
+
+    @Test
+    public void shouldRollbackWithEdgeIndexAndNoVertexIndex() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        g.createIndex(PROPERTY_NAME, Edge.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV().addE(EDGE_LABEL).to(__.addV()).property(PROPERTY_NAME, "link").iterate();
+
+        gtx.tx().rollback();
+
+        assertFalse(gtx.tx().isOpen());
+        assertEquals(0, (long) gtx.E().has(PROPERTY_NAME, "link").count().next());
+    }
+
     private void verifyCommittedSingleVertex(final TinkerTransactionGraph g) {
         verifyCommittedSingleVertex(g, null);
     }
