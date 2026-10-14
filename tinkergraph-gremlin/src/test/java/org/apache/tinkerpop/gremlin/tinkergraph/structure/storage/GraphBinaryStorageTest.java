@@ -647,9 +647,17 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         final File indexFile = new File(location, IndexDefinitions.INDEX_FILE);
         final byte[] recorded = Files.readAllBytes(indexFile.toPath());
 
-        // close() released the directory, which another graph may now own, so a closed graph must not write to it
-        graph.createIndex("age", Vertex.class);
-        graph.dropIndex("name", Vertex.class);
+        // close() released the directory, which another graph may now own, so a closed graph must not write to it,
+        // and it refuses the change rather than making one it cannot record
+        for (final Runnable change : Arrays.<Runnable>asList(() -> graph.createIndex("age", Vertex.class),
+                () -> graph.dropIndex("name", Vertex.class))) {
+            try {
+                change.run();
+                fail("a closed graph should refuse an index change");
+            } catch (IllegalStateException expected) {
+                assertTrue(expected.getMessage(), expected.getMessage().contains("closed"));
+            }
+        }
         assertArrayEquals(recorded, Files.readAllBytes(indexFile.toPath()));
 
         final TinkerStorageGraph reopened = open();

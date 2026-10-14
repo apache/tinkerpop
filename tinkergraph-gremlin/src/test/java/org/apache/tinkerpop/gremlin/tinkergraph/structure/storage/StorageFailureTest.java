@@ -41,7 +41,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -142,6 +146,102 @@ public class StorageFailureTest {
     }
 
     @Test
+    public void shouldRejectACommitThatWaitedForClose() throws Exception {
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+
+        // close() holds the commit lock while it compacts; a commit arriving then waits for the lock and, once it
+        // has it, must find the storage closed rather than write to a directory the graph no longer owns
+        FaultInjectingStorage.compactionEntered = new CountDownLatch(1);
+        FaultInjectingStorage.compactionGate = new CountDownLatch(1);
+        final Thread closer = new Thread(graph::close);
+        closer.start();
+        assertTrue(FaultInjectingStorage.compactionEntered.await(10, TimeUnit.SECONDS));
+
+        final AtomicReference<Throwable> failure = new AtomicReference<>();
+        final Thread committer = new Thread(() -> {
+            graph.addVertex(T.id, 2);
+            try {
+                graph.tx().commit();
+            } catch (Throwable t) {
+                failure.set(t);
+                graph.tx().rollback();
+            }
+        });
+        committer.start();
+        final long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+        while (committer.getState() != Thread.State.WAITING && System.nanoTime() < deadline)
+            Thread.sleep(1);
+        assertEquals("the commit should be waiting on the commit lock", Thread.State.WAITING, committer.getState());
+
+        FaultInjectingStorage.compactionGate.countDown();
+        closer.join(10_000);
+        committer.join(10_000);
+        assertTrue(String.valueOf(failure.get()), failure.get() instanceof IllegalStateException);
+        assertTrue(failure.get().getMessage(), failure.get().getMessage().contains("closed"));
+
+        FaultInjectingStorage.reset();
+        final TinkerStorageGraph reopened = TinkerStorageGraph.open(conf);
+        assertEquals(Arrays.asList(1), vertexIds(reopened));
+        reopened.close();
+    }
+
+    @Test
+    public void shouldRefuseToChangeIndexesOnAClosedGraph() {
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.close();
+        for (final Runnable change : Arrays.<Runnable>asList(() -> graph.createIndex("name", Vertex.class),
+                () -> graph.dropIndex("name", Vertex.class))) {
+            try {
+                change.run();
+                fail("a closed graph should refuse an index change it can no longer record");
+            } catch (IllegalStateException expected) {
+                assertTrue(expected.getMessage(), expected.getMessage().contains("closed"));
+            }
+        }
+    }
+
+    @Test
+    public void shouldRefuseToCompactAfterAStorageFailure() {
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        FaultInjectingStorage.failLogWrites = true;
+        graph.addVertex(T.id, 1);
+        assertCommitFails(graph);
+        FaultInjectingStorage.failLogWrites = false;
+
+        try {
+            graph.compact();
+            fail("a graph whose storage failed should refuse to compact rather than return as if it had");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("storage failure"));
+        }
+        graph.close();
+    }
+
+    @Test
+    public void shouldKeepIndexChangesInMemoryAfterAStorageFailure() throws Exception {
+        final File indexes = new File(conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY),
+                IndexDefinitions.INDEX_FILE);
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.createIndex("name", Vertex.class);
+        graph.addVertex(T.id, 1, "name", "a");
+        graph.tx().commit();
+        final byte[] recorded = Files.readAllBytes(indexes.toPath());
+
+        FaultInjectingStorage.failLogWrites = true;
+        graph.addVertex(T.id, 2);
+        assertCommitFails(graph);
+        FaultInjectingStorage.failLogWrites = false;
+
+        // an index still helps the reads an export does, but a failed engine writes nothing more to its directory
+        graph.createIndex("value", Vertex.class);
+        assertTrue(graph.getIndexedKeys(Vertex.class).contains("value"));
+        assertArrayEquals(recorded, Files.readAllBytes(indexes.toPath()));
+        graph.close();
+    }
+
+    @Test
     public void shouldRefuseCommitsAfterLogFlushFailsAndRecoverOnReopen() {
         TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
         graph.addVertex(T.id, 1);
@@ -214,6 +314,52 @@ public class StorageFailureTest {
 
         graph = TinkerStorageGraph.open(conf);
         assertEquals(Arrays.asList(1, 2), vertexIds(graph));
+        graph.close();
+    }
+
+    @Test
+    public void shouldRefuseCommitsWhenClearCannotEmptyTheStore() {
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+
+        FaultInjectingStorage.failCompaction = true;
+        try {
+            graph.clear();
+            fail("clear() should report that the store could not be emptied");
+        } catch (RuntimeException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("Could not clear storage"));
+        }
+        FaultInjectingStorage.failCompaction = false;
+
+        // the cleared data is still on disk, so a commit now would mix it with new data on reopen
+        graph.addVertex(T.id, 2);
+        assertCommitFails(graph);
+        graph.close();
+
+        graph = TinkerStorageGraph.open(conf);
+        assertEquals(Arrays.asList(1), vertexIds(graph));
+        graph.close();
+    }
+
+    @Test
+    public void shouldRefuseToClearAfterAStorageFailure() {
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+
+        FaultInjectingStorage.failLogWrites = true;
+        graph.addVertex(T.id, 2);
+        assertCommitFails(graph);
+        FaultInjectingStorage.failLogWrites = false;
+
+        try {
+            graph.clear();
+            fail("a graph whose storage failed should refuse to clear");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("g.io()"));
+        }
+        assertEquals("the data must stay readable for export", Arrays.asList(1), vertexIds(graph));
         graph.close();
     }
 

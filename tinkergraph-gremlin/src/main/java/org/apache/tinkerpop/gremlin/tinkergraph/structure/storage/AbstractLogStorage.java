@@ -434,8 +434,34 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     @Override
+    public void clear(final AbstractTinkerGraph graph) {
+        checkNotClosed();
+        checkNotRecovering();
+        checkNotFailed();
+        try {
+            compact(graph);
+        } catch (RuntimeException ex) {
+            // compaction is crash-safe, so the store still holds either the old data or nothing; which one is unknown
+            // after a failure, and later commits must not be appended to data the graph no longer has. The graph is
+            // already empty in memory, so unlike other failures there is nothing left to export.
+            final IOException cause = ex.getCause() instanceof IOException ?
+                    (IOException) ex.getCause() : new IOException(ex);
+            if (failure == null)
+                failure = cause;
+            throw new UncheckedIOException(String.format("Could not clear storage at %s after the graph was cleared " +
+                    "in memory, so the cleared data may return when the graph is reopened; no further commits are " +
+                    "accepted until then", directory), cause);
+        }
+    }
+
+    @Override
     public boolean isReadOnly() {
         return recovering;
+    }
+
+    @Override
+    public boolean isFailed() {
+        return failure != null;
     }
 
     @Override

@@ -343,8 +343,56 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         container.markDeleted((TinkerTransaction) tx());
     }
 
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Like the in-memory graph, this clears the whole graph at once, outside any transaction: it needs no commit and
+     * cannot be rolled back. The calling thread's uncommitted changes are discarded with the rest of the graph, and a
+     * transaction still open on another thread fails to commit any element it changed. With storage configured the
+     * store is emptied in the same call, so a reopen finds the graph as {@code clear()} left it. A graph opened with
+     * {@code gremlin.tinkergraph.storage.recover} is cleared in memory only and its store is left unchanged, like any
+     * other change made to it.
+     *
+     * @throws IllegalStateException if the graph's storage is closed, or stopped accepting writes after a storage
+     *                               failure, in which case the graph is not cleared
+     * @throws java.io.UncheckedIOException if the graph was cleared in memory but its store could not be emptied, in
+     *                                      which case the storage accepts no further commits until the graph is
+     *                                      reopened, and the cleared data may return then
+     */
     @Override
     public void clear() {
+        if (null == storage) {
+            clearInMemory();
+            return;
+        }
+        // the same lock as the commit path, so no commit lands between emptying memory and emptying the store
+        storageCommitLock.lock();
+        try {
+            if (null == directoryLock)
+                throw new IllegalStateException(String.format("Storage at %s is closed and cannot be cleared",
+                        storageDirectory));
+            if (storage.isFailed())
+                throw new IllegalStateException(String.format("Storage at %s stopped accepting writes after a " +
+                        "storage failure, so the graph is not cleared; its data remains readable for export with " +
+                        "g.io() until the graph is closed", storageDirectory));
+            clearInMemory();
+            if (storage.isReadOnly())
+                return;
+            storage.clear(this);
+            recordIndexes();
+        } finally {
+            storageCommitLock.unlock();
+        }
+    }
+
+    private void clearInMemory() {
+        // the caller's own uncommitted changes are part of the graph being cleared
+        if (tx().isOpen())
+            tx().rollback();
+        // a transaction on another thread still holds the containers it changed, so mark them removed: its commit
+        // then fails with a conflict rather than writing cleared elements back into the store
+        vertices.values().forEach(TinkerElementContainer::markCleared);
+        edges.values().forEach(TinkerElementContainer::markCleared);
         super.clear();
         this.vertices.clear();
         this.edges.clear();
@@ -354,7 +402,8 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
      * Fold the durable storage log into a compact snapshot of the current committed state, reclaiming space. Has no
      * effect when no storage engine is configured.
      *
-     * @throws IllegalStateException if the graph is closed, or was opened read-only to recover a damaged store
+     * @throws IllegalStateException if the graph is closed, was opened read-only to recover a damaged store, or its
+     *                               storage stopped accepting writes after a storage failure
      */
     public void compact() {
         if (storage != null) {
@@ -370,6 +419,9 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
                     throw new IllegalStateException(String.format(
                             "Storage at %s was opened with %s and is read-only, so it cannot be compacted",
                             storageDirectory, GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
+                if (storage.isFailed())
+                    throw new IllegalStateException(String.format("Storage at %s stopped accepting writes after a " +
+                            "storage failure, so it cannot be compacted; close and reopen the graph", storageDirectory));
                 storage.flush();
                 storage.compact(this);
             } finally {
@@ -667,6 +719,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
      */
     @Override
     public <E extends Element> void createIndex(final String key, final Class<E> elementClass) {
+        checkIndexesCanChange("created");
         if (Vertex.class.isAssignableFrom(elementClass)) {
             if (null == this.vertexIndex) this.vertexIndex = new TinkerTransactionalIndex<>(this, TinkerVertex.class);
             this.vertexIndex.createKeyIndex(key);
@@ -688,6 +741,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
      */
     @Override
     public <E extends Element> void dropIndex(final String key, final Class<E> elementClass) {
+        checkIndexesCanChange("dropped");
         if (Vertex.class.isAssignableFrom(elementClass)) {
             if (null != this.vertexIndex) this.vertexIndex.dropKeyIndex(key);
         } else if (Edge.class.isAssignableFrom(elementClass)) {
@@ -717,18 +771,30 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     /**
+     * Refuse an index change on a closed durable graph, which could no longer record it. An open graph whose storage
+     * is read-only or has failed still changes its indexes in memory, where they speed up the reads an export needs,
+     * without recording them.
+     */
+    private void checkIndexesCanChange(final String change) {
+        if (storage != null && null == directoryLock)
+            throw new IllegalStateException(String.format("Storage at %s is closed, so an index cannot be %s",
+                    storageDirectory, change));
+    }
+
+    /**
      * Record the current set of indexed keys beside the engine's files, so a reopen restores them. Index definitions
      * are not part of the transactional log; see {@link IndexDefinitions} for why that is sound. A graph with no
      * storage engine keeps everything in memory and writes nothing.
      */
     private void recordIndexes() {
-        if (null == storage || restoringIndexes || storage.isReadOnly())
+        // a failed engine writes nothing more to its directory, which may by now belong to another graph
+        if (null == storage || restoringIndexes || storage.isReadOnly() || storage.isFailed())
             return;
         // serialized with other index changes and with close(), so the file always holds the latest set of keys and is
         // never written once close() has released the directory, which another graph may then own
         storageCommitLock.lock();
         try {
-            if (null == directoryLock)
+            if (null == directoryLock || storage.isFailed())
                 return;
             new IndexDefinitions(getIndexedKeys(Vertex.class), getIndexedKeys(Edge.class))
                     .write(new File(storageDirectory));

@@ -227,7 +227,11 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
                     try {
                         graph.storage.maybeCompact(graph);
                     } catch (RuntimeException ex) {
-                        logger.warn("Storage compaction failed after a successful commit; it will be retried", ex);
+                        if (graph.storage.isFailed())
+                            logger.error("Storage compaction failed after a successful commit and the storage now " +
+                                    "accepts no further commits until the graph is reopened", ex);
+                        else
+                            logger.warn("Storage compaction failed after a successful commit; it will be retried", ex);
                     }
                 }
             } finally {
