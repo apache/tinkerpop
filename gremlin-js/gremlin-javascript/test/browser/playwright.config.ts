@@ -42,15 +42,9 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
     {
-      // The Gremlin Server used by the live round-trip test does not send CORS headers (see
-      // live-roundtrip.spec.ts), so this project only exists to relax that for the fixture's own
-      // origin. It is not a statement that gremlin-javascript needs this in production.
       name: 'chromium-live',
       testMatch: 'live-roundtrip.spec.ts',
-      use: {
-        ...devices['Desktop Chrome'],
-        launchOptions: { args: ['--disable-web-security'] },
-      },
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
 });

@@ -19,6 +19,5 @@
 
 import * as gremlin from '../../build/esm/index.js';
 import * as gremlinLanguage from '../../build/esm/language/index.js';
-import { Buffer } from 'buffer';
 
-globalThis.__gremlinBrowserSmoke = { gremlin, gremlinLanguage, Buffer };
+globalThis.__gremlinBrowserSmoke = { gremlin, gremlinLanguage };
