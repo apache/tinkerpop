@@ -304,6 +304,24 @@ public class StorageRecoveryTest {
     }
 
     @Test
+    public void shouldNotReadTheOldLogOfAnInterruptedCompactionWhenRecovering() throws Exception {
+        crashAfterCommitOnCompactedStore();
+        final byte[] oldLog = Files.readAllBytes(logFile().toPath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(config());
+        graph.close();
+
+        // the old log's transactions are all in the new snapshot, so even a damaged copy of it costs nothing
+        oldLog[logFrames(oldLog).get(0)[2]] ^= 0x01;
+        Files.write(logFile().toPath(), oldLog);
+        final Map<String, String> before = directoryContents();
+
+        graph = TinkerStorageGraph.open(recoverConfig());
+        assertEquals(Arrays.asList(1, 2), vertexIds(graph));
+        graph.close();
+        assertEquals("recovery must not change the store", before, directoryContents());
+    }
+
+    @Test
     public void shouldRecoverTheLogUpToAFrameThatCannotBeDecoded() throws Exception {
         final byte[] log = crashedLogOfThreeCommits();
         // a well-formed frame with a valid checksum whose single entry has an unknown op code
