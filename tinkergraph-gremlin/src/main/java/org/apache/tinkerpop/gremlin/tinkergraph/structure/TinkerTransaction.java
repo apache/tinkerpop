@@ -155,6 +155,9 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
         Set<TinkerElementContainer<TinkerEdge>> changedEdges = txChangedEdges.get();
         if (null == changedEdges) changedEdges = Collections.emptySet();
 
+        // set once the changes are durable, after which a failure cannot undo the transaction, only keep it from
+        // being seen until the graph is reopened
+        boolean recorded = false;
         try {
             // Double-checked locking to reduce lock time
             if (changedVertices.stream().anyMatch(v -> v.updatedOutsideTransaction()) ||
@@ -202,6 +205,7 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
                 if (durable) {
                     graph.storage.persist(txVersion, toVertexMutations(changedVertices), toEdgeMutations(changedEdges));
                     graph.storage.flush();
+                    recorded = true;
                 }
 
                 // update indices only once the storage write has succeeded. Committing an index changes the shared
@@ -248,6 +252,15 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
             final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
             if (edgeIndex != null) edgeIndex.rollback();
 
+            // the transaction is committed once it is durable, as a database counts it once its commit record is in
+            // the log, so a failure applying it afterwards is not reported as a rollback. Memory keeps the state from
+            // before the transaction, so the storage must take nothing more from it, and reopening shows the commit.
+            if (recorded) {
+                graph.storage.failStop(ex);
+                throw new TransactionException(String.format("The transaction was recorded durably in storage at %s " +
+                        "but could not be applied in memory, so it will be present when the graph is reopened. No " +
+                        "further commits are accepted until then", graph.storageDirectory), ex);
+            }
             throw ex;
         } finally {
             // remove elements from graph if not used in other tx's

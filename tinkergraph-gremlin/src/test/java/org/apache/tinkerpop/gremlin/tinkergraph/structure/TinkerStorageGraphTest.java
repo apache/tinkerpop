@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,8 +37,12 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -46,8 +51,55 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
 
 public class TinkerStorageGraphTest {
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void shouldReportACommitThatFailsAfterItsStorageWriteAsDurable() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.createIndex("name", Vertex.class);
+        graph.addVertex(T.id, 1, "name", "a");
+        graph.tx().commit();
+
+        // the index commit runs once the transaction is durable, so a failure there comes after the write
+        final TinkerTransactionalIndex<TinkerVertex> index = spy((TinkerTransactionalIndex<TinkerVertex>) graph.vertexIndex);
+        doThrow(new IllegalStateException("index failure")).when(index).commit(any());
+        graph.vertexIndex = index;
+
+        graph.addVertex(T.id, 2, "name", "b");
+        try {
+            graph.tx().commit();
+            fail("the failure applying the transaction should be reported");
+        } catch (TransactionException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("will be present when the graph is reopened"));
+        }
+        assertTrue(graph.storage.isFailed());
+        assertFalse("memory keeps the state from before the transaction", graph.vertices(2).hasNext());
+
+        graph.addVertex(T.id, 3);
+        try {
+            graph.tx().commit();
+            fail("no further commits are accepted until the graph is reopened");
+        } catch (UncheckedIOException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("stopped accepting commits"));
+        }
+        graph.close();
+
+        graph = TinkerStorageGraph.open(conf);
+        assertTrue("the durable transaction is present after the reopen", graph.vertices(2).hasNext());
+        assertFalse(graph.vertices(3).hasNext());
+        graph.close();
+    }
 
     private static final String PROPERTY_NAME = "name";
     private static final String PROPERTY_WEIGHT = "weight";

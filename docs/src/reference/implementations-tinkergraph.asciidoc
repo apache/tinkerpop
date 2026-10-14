@@ -583,13 +583,15 @@ across an incompatible storage format, export it with the `io()` step before upg
 ==== Failures and Recovery
 
 A failure to write to the store while the graph is running, such as a full or failing disk, stops the graph from
-accepting further commits until it is closed and opened again. The commit that hit the failure may or may not be
-present after the reopen, because it may have been written in full before the error was reported. Until then the
-graph's committed data stays readable and can be exported with the `io()` step, while explicit compaction and
-`clear()` are refused and index changes take effect in memory only. Reopening rebuilds the graph from what actually
-reached disk. A failure during compaction is different: it leaves the existing store intact, does not affect the
-commit that preceded it, and is attempted again later. A compaction that fails when the graph is closed is logged, and
-the graph still closes and releases its storage directory.
+accepting further commits until it is closed and opened again. The commit that hit the failure may or may not be present
+after the reopen, because it may have been written in full before the error was reported. A commit whose changes reached
+the store but could not then be applied to the graph in memory reports that it was recorded and is present after the
+reopen, while the graph refuses further commits in the same way. Until then the graph's committed data stays readable
+and can be exported with the `io()` step, while explicit compaction and `clear()` are refused and index changes take
+effect in memory only. Reopening rebuilds the graph from what actually reached disk. A failure during compaction is
+different: it leaves the existing store intact, does not affect the commit that preceded it, and is attempted again
+later. A compaction that fails when the graph is closed is logged, and the graph still closes and releases its storage
+directory.
 
 A store that has been damaged, for example by a failing disk or by one of its files being deleted, edited or copied in
 from another store, normally fails to open rather than load data it cannot trust. The error says what is wrong. One
