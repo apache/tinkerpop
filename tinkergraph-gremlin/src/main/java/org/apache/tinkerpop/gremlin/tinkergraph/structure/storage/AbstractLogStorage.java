@@ -672,11 +672,17 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             generation = snapshotGeneration;
         } else if (logGeneration == snapshotGeneration - 1) {
             generation = snapshotGeneration;
+            // compaction wrote the new snapshot but was interrupted before replacing the log, so the snapshot already
+            // holds every transaction in the log, and replaying the log over it would add nothing
+            replayLog = false;
             if (!recovering) {
                 logger.warn("Storage at {} was interrupted while compacting; completing it by emptying the log, " +
                         "whose transactions are all in the new snapshot", directory);
                 installNewLog(snapshotGeneration);
                 logBytesSinceCompaction = 0;
+            } else {
+                recovery.note(String.format("Compaction was interrupted before log %s was replaced; the snapshot " +
+                        "holds all of its transactions, so the log was not read.", logFile));
             }
         } else {
             final String problem = String.format("Storage log %s (generation %d) does not belong to snapshot %s " +
