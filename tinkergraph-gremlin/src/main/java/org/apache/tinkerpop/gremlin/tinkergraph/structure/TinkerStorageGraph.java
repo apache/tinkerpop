@@ -41,6 +41,8 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.StorageSetting
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -120,9 +122,17 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         if (recovering && !dir.isDirectory())
             throw new IllegalStateException(String.format("There is no storage directory at %s to open with %s",
                     dir, GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
-        if (!dir.isDirectory() && !dir.mkdirs())
-            throw new IllegalStateException(String.format("Could not create storage directory %s", dir));
-        directoryLock = DirectoryLock.acquire(dir);
+        if (!dir.isDirectory()) {
+            try {
+                Files.createDirectories(dir.toPath());
+            } catch (IOException ex) {
+                // the cause names the problem, such as a missing parent or a file where a directory should be
+                throw new IllegalStateException(String.format("Could not create storage directory %s: %s", dir, ex),
+                        ex);
+            }
+        }
+        directoryLock = recovering ? DirectoryLock.acquireForRecovery(dir) : DirectoryLock.acquire(dir);
+        final boolean settingsRecorded = new File(dir, StorageSettings.SETTINGS_FILE).exists();
         try {
             // the settings that shape stored data are fixed when the store is created, so read them before anything
             // that depends on them is set up

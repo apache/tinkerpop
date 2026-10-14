@@ -18,12 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
+import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 
 /**
@@ -40,6 +44,8 @@ import java.nio.file.StandardOpenOption;
  * local filesystems.
  */
 public final class DirectoryLock implements AutoCloseable {
+
+    private static final Logger logger = LoggerFactory.getLogger(DirectoryLock.class);
 
     static final String LOCK_FILE = "LOCK";
 
@@ -90,6 +96,43 @@ public final class DirectoryLock implements AutoCloseable {
         }
     }
 
+    /**
+     * Lock {@code directory} for a recovery open, which only reads it. A writable directory is locked exclusively,
+     * as by {@link #acquire}. A directory the process cannot write, such as a read-only mount or copy of a damaged
+     * store, can hold no new lock file: an existing one is locked shared, which still fails while a writer holds it,
+     * and with none the directory is read unlocked, since recovery writes nothing to it.
+     *
+     * @param directory the storage directory to lock
+     * @return the held lock
+     * @throws IllegalStateException if another graph holds the lock
+     */
+    public static DirectoryLock acquireForRecovery(final File directory) {
+        if (Files.isWritable(directory.toPath()))
+            return acquire(directory);
+        final File lockFile = new File(directory, LOCK_FILE);
+        if (!lockFile.exists()) {
+            logger.warn("Storage directory {} is not writable, so it is read for recovery without a lock; make sure " +
+                    "no other graph writes to it", directory);
+            return new DirectoryLock(null, null, lockFile, false);
+        }
+        FileChannel channel = null;
+        try {
+            channel = FileChannel.open(lockFile.toPath(), StandardOpenOption.READ);
+            final FileLock lock = channel.tryLock(0L, Long.MAX_VALUE, true);
+            if (lock == null) {
+                channel.close();
+                throw lockedByAnother(directory, null);
+            }
+            return new DirectoryLock(channel, lock, lockFile, false);
+        } catch (OverlappingFileLockException ofle) {
+            closeQuietly(channel);
+            throw lockedByAnother(directory, ofle);
+        } catch (IOException ex) {
+            closeQuietly(channel);
+            throw new UncheckedIOException(String.format("Could not acquire storage lock for %s", directory), ex);
+        }
+    }
+
     private static IllegalStateException lockedByAnother(final File directory, final Throwable cause) {
         return new IllegalStateException(String.format(
                 "Storage location %s is already in use by another TinkerStorageGraph (in this or another process); "
@@ -126,6 +169,9 @@ public final class DirectoryLock implements AutoCloseable {
      */
     @Override
     public void close() {
+        // a recovery open of a directory it cannot write holds no lock at all
+        if (null == channel)
+            return;
         try {
             if (lock.isValid())
                 lock.release();

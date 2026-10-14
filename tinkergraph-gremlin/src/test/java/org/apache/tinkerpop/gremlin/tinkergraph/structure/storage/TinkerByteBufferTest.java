@@ -71,6 +71,28 @@ public class TinkerByteBufferTest {
     }
 
     @Test
+    public void shouldRefuseToGrowPastTheMaximumFrameSize() {
+        final TinkerByteBuffer buf = new TinkerByteBuffer();
+        buf.writeInt(1);
+        // asking for more than a frame can hold fails at once, before anything is allocated, rather than doubling the
+        // capacity until it overflows and loops forever
+        try {
+            buf.writerIndex(Integer.MAX_VALUE);
+            fail("a buffer must not grow past the maximum frame size");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("smaller transactions"));
+        }
+        assertEquals("the buffer is unchanged", 4, buf.writerIndex());
+    }
+
+    @Test
+    public void shouldGrowFromAnEmptyArray() {
+        final TinkerByteBuffer buf = new TinkerByteBuffer(new byte[0]);
+        buf.writeLong(42L);
+        assertEquals(42L, buf.readLong());
+    }
+
+    @Test
     public void shouldGrowBeyondInitialCapacity() {
         final TinkerByteBuffer buf = new TinkerByteBuffer(1);
         final byte[] payload = new byte[1000];

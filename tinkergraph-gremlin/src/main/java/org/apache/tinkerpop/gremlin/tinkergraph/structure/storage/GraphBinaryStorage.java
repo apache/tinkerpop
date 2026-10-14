@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
@@ -39,6 +40,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -77,7 +79,7 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
 
     private final TypeSerializerRegistry registry = TypeSerializerRegistry.INSTANCE;
     private final GraphBinaryWriter writer = new GraphBinaryWriter(registry);
-    private final GraphBinaryReader reader = new GraphBinaryReader(registry);
+    private final GraphBinaryReader reader = new BoundedReader(registry);
 
     /**
      * Shared string dictionary for labels, property keys, and meta-property keys. Dense ids assigned by first
@@ -115,7 +117,8 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         final int dictionarySize = idToKey.size();
         try {
             return encodeCommitFrame(changedVertices, changedEdges);
-        } catch (IOException | RuntimeException ex) {
+        } catch (IOException | RuntimeException | Error ex) {
+            // an Error such as OutOfMemoryError counts too: the transaction is rolled back and the graph carries on
             while (idToKey.size() > dictionarySize)
                 keyToId.remove(idToKey.remove(idToKey.size() - 1));
             throw ex;
@@ -461,7 +464,82 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
         if (dataType == DataType.UNSPECIFIED_NULL)
             return null;
         final TypeSerializer serializer = registry.getSerializer(dataType);
-        return serializer.readValue(buf, reader, false);
+        checkDeclaredSize(buf, dataType, buf.readerIndex());
+        try {
+            return serializer.readValue(buf, reader, false);
+        } catch (RuntimeException ex) {
+            // a value that runs past the end of its record, or declares a negative size, is corruption
+            throw new IOException(String.format("Corrupt storage frame: unreadable %s value (%s)", dataType, ex), ex);
+        }
+    }
+
+    /**
+     * Fail if the size the value at {@code offset} declares for itself cannot fit in what remains of the record. The
+     * GraphBinary serializers allocate from that size before reading, so a corrupt record that declares gigabytes in
+     * a frame of a few bytes would otherwise raise {@code OutOfMemoryError} or {@code NegativeArraySizeException}
+     * instead of the {@code IOException} a corrupt frame is contracted to produce. Each element of a collection takes
+     * at least two bytes, its type code and value flag, and each map entry two such elements.
+     */
+    private static void checkDeclaredSize(final TinkerByteBuffer buf, final DataType dataType, final int offset)
+            throws IOException {
+        final int bytesPerItem;
+        switch (dataType) {
+            case STRING:
+            case BINARY:
+            case BIGINTEGER:
+                bytesPerItem = 1;
+                break;
+            case LIST:
+            case SET:
+                bytesPerItem = 2;
+                break;
+            case MAP:
+                bytesPerItem = 4;
+                break;
+            default:
+                return;
+        }
+        final long available = (long) buf.writerIndex() - offset - Integer.BYTES;
+        if (available < 0)
+            throw new IOException(String.format("Corrupt storage frame: %s value is cut off before its size", dataType));
+        final int declared = buf.getInt(offset);
+        if (declared < 0 || (long) declared * bytesPerItem > available)
+            throw new IOException(String.format("Corrupt storage frame: %s value declares a size of %d with only %d " +
+                    "bytes left in the record", dataType, declared, available));
+    }
+
+    /**
+     * Reads nested values, such as the elements of a list, with the same size checks that {@link #readScalar}
+     * applies to a top-level value, and rejects bulked lists, which this engine never writes.
+     */
+    private static final class BoundedReader extends GraphBinaryReader {
+        private BoundedReader(final TypeSerializerRegistry registry) {
+            super(registry);
+        }
+
+        @Override
+        public <T> T read(final Buffer buffer) throws IOException {
+            // fully-qualified: {type_code}{value_flag}{value}
+            if (buffer instanceof TinkerByteBuffer && buffer.readableBytes() >= 2) {
+                final TinkerByteBuffer buf = (TinkerByteBuffer) buffer;
+                final DataType type = DataType.get(Byte.toUnsignedInt(buf.getByte(buf.readerIndex())));
+                final byte valueFlag = buf.getByte(buf.readerIndex() + 1);
+                if (type != null && (valueFlag & 1) == 0) {
+                    if (type == DataType.LIST && (valueFlag & 2) == 2)
+                        throw new IOException("Corrupt storage frame: bulked list, which this engine never writes");
+                    checkDeclaredSize(buf, type, buf.readerIndex() + 2);
+                }
+            }
+            return super.read(buffer);
+        }
+
+        @Override
+        public <T> T readValue(final Buffer buffer, final Class<T> type, final boolean nullable) throws IOException {
+            // a BigDecimal reads its unscaled BigInteger this way
+            if (buffer instanceof TinkerByteBuffer && !nullable && type == BigInteger.class)
+                checkDeclaredSize((TinkerByteBuffer) buffer, DataType.BIGINTEGER, buffer.readerIndex());
+            return super.readValue(buffer, type, nullable);
+        }
     }
 
     private static void writeString(final TinkerByteBuffer buf, final String s) {

@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -38,16 +39,21 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.CRC32;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -555,6 +561,223 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     }
 
     @Test
+    public void shouldCutAZeroFilledTailLikeATornAppend() throws Exception {
+        TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+        graph.addVertex(T.id, 2);
+        graph.tx().commit();
+        final Map<String, byte[]> crash = captureStorageFiles(location);
+        graph.close();
+        restoreStorageFiles(location, crash);
+
+        // a crash during an append can leave the file longer than what was written, reading back as zeros
+        final File logFile = new File(location, GraphBinaryStorage.LOG_FILE);
+        final long complete = logFile.length();
+        try (final RandomAccessFile raf = new RandomAccessFile(logFile, "rw")) {
+            raf.seek(complete);
+            raf.write(new byte[4096]);
+        }
+
+        graph = open();
+        assertEquals(Arrays.asList(1, 2), vertexIds(graph));
+        assertEquals("the zero-filled tail is cut back to the last complete record", complete, logFile.length());
+        graph.addVertex(T.id, 3);
+        graph.tx().commit();
+        graph.close();
+
+        graph = open();
+        assertEquals(Arrays.asList(1, 2, 3), vertexIds(graph));
+        graph.close();
+    }
+
+    @Test
+    public void shouldNotCutATailThatIsNotAllZero() throws Exception {
+        TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+        final Map<String, byte[]> crash = captureStorageFiles(location);
+        graph.close();
+        restoreStorageFiles(location, crash);
+
+        // zeros followed by anything else could be a damaged record, so the open must still refuse it
+        final File logFile = new File(location, GraphBinaryStorage.LOG_FILE);
+        final byte[] tail = new byte[64];
+        tail[40] = 1;
+        try (final RandomAccessFile raf = new RandomAccessFile(logFile, "rw")) {
+            raf.seek(raf.length());
+            raf.write(tail);
+        }
+        try {
+            open().close();
+            fail("a tail that is not all zeros should not be cut");
+        } catch (RuntimeException expected) {
+            assertTrue(rootMessage(expected), rootMessage(expected).contains("fails its checksum"));
+        }
+    }
+
+    @Test
+    public void shouldRemoveTemporaryFilesLeftByAnInterruptedWrite() throws Exception {
+        TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+        graph.close();
+        for (final String name : new String[]{ GraphBinaryStorage.SNAPSHOT_FILE, GraphBinaryStorage.LOG_FILE,
+                GraphBinaryStorage.VERSION_FILE })
+            Files.write(new File(location, name + ".tmp").toPath(), new byte[]{ 1, 2, 3 });
+
+        graph = open();
+        assertEquals(Collections.singletonList(1), vertexIds(graph));
+        for (final String name : new String[]{ GraphBinaryStorage.SNAPSHOT_FILE, GraphBinaryStorage.LOG_FILE,
+                GraphBinaryStorage.VERSION_FILE })
+            assertFalse(name + ".tmp should be removed", new File(location, name + ".tmp").exists());
+        graph.close();
+    }
+
+    @Test
+    public void shouldUndoDictionaryEntriesWhenEncodingFailsWithAnError() throws Exception {
+        TinkerStorageGraph graph = open();
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+
+        // nesting deep enough that encoding the value overflows the stack, an Error rather than an exception, after
+        // the commit has already registered the new key "deep" in the dictionary
+        List<Object> deep = new ArrayList<>();
+        final List<Object> root = deep;
+        for (int i = 0; i < 200_000; i++) {
+            final List<Object> next = new ArrayList<>();
+            deep.add(next);
+            deep = next;
+        }
+        graph.addVertex(T.id, 2, "deep", root);
+        try {
+            graph.tx().commit();
+            fail("encoding the nested value should fail");
+        } catch (StackOverflowError expected) {
+            // expected
+        }
+
+        // a later commit using the same key must define it, or the log could not be replayed
+        graph.addVertex(T.id, 3, "deep", 1);
+        graph.tx().commit();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        final Map<String, byte[]> crash = captureStorageFiles(location);
+        graph.close();
+        restoreStorageFiles(location, crash);
+
+        graph = open();
+        assertEquals(Arrays.asList(1, 3), vertexIds(graph));
+        assertEquals(Integer.valueOf(1), graph.vertices(3).next().value("deep"));
+        graph.close();
+    }
+
+    @Test
+    public void shouldKeepAClearedGraphClearedAfterACrash() throws Exception {
+        TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        graph.createIndex("name", Vertex.class);
+        graph.addVertex(T.id, 1, "name", "a");
+        graph.addVertex(T.id, 2, "name", "b");
+        graph.tx().commit();
+
+        // clear() takes effect at once, with no commit, and a crash right after a later commit must not bring the
+        // cleared vertices back beside the new one
+        graph.clear();
+        assertEquals(0, countOf(graph.vertices()));
+        graph.addVertex(T.id, 3, "name", "c");
+        graph.tx().commit();
+        final Map<String, byte[]> crash = captureStorageFiles(location);
+        graph.close();
+        restoreStorageFiles(location, crash);
+
+        graph = open();
+        assertEquals(Collections.singletonList(3), vertexIds(graph));
+        assertTrue("clear() drops the indexes too", graph.getIndexedKeys(Vertex.class).isEmpty());
+        graph.close();
+    }
+
+    @Test
+    public void shouldKeepAClearedGraphClearedWithoutACommit() {
+        TinkerStorageGraph graph = open();
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+        graph.clear();
+        graph.tx().rollback();
+        graph.close();
+
+        graph = open();
+        assertEquals("clear() cannot be rolled back", 0, countOf(graph.vertices()));
+        graph.close();
+    }
+
+    @Test
+    public void shouldNotPersistChangesThatWereOpenWhenTheGraphWasCleared() throws Exception {
+        TinkerStorageGraph graph = open();
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+
+        // another thread changed an element and has not committed when the graph is cleared
+        final CountDownLatch changed = new CountDownLatch(1);
+        final CountDownLatch cleared = new CountDownLatch(1);
+        final AtomicReference<Throwable> otherCommit = new AtomicReference<>();
+        final TinkerStorageGraph g = graph;
+        final Thread other = new Thread(() -> {
+            g.vertices(1).next().property("name", "late");
+            g.addVertex(T.id, 5);
+            changed.countDown();
+            try {
+                cleared.await();
+                g.tx().commit();
+            } catch (Throwable t) {
+                otherCommit.set(t);
+                g.tx().rollback();
+            }
+        });
+        other.start();
+        changed.await();
+
+        // and so has this thread
+        graph.addVertex(T.id, 2);
+        graph.clear();
+        graph.tx().commit();
+        cleared.countDown();
+        other.join(10_000);
+        assertTrue("the other thread's commit should conflict: " + otherCommit.get(),
+                otherCommit.get() instanceof TransactionException);
+        assertEquals(0, countOf(graph.vertices()));
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        final Map<String, byte[]> crash = captureStorageFiles(location);
+        graph.close();
+        restoreStorageFiles(location, crash);
+
+        graph = open();
+        assertEquals("nothing open at clear() may reach the store", 0, countOf(graph.vertices()));
+        graph.close();
+    }
+
+    @Test
+    public void shouldRefuseToClearAClosedGraph() {
+        final TinkerStorageGraph graph = open();
+        graph.close();
+        try {
+            graph.clear();
+            fail("a closed graph should refuse to clear");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("closed"));
+        }
+    }
+
+    private static List<Integer> vertexIds(final TinkerStorageGraph graph) {
+        final List<Integer> ids = new ArrayList<>();
+        graph.vertices().forEachRemaining(v -> ids.add(((Number) v.id()).intValue()));
+        Collections.sort(ids);
+        return ids;
+    }
+
+    @Test
     public void shouldRestoreIndexDefinitionsOnReopen() throws Exception {
         TinkerStorageGraph graph = open();
         graph.createIndex("name", Vertex.class);
@@ -1036,6 +1259,51 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         final Map<Object, DetachedVertex> vertices = new HashMap<>();
         final Map<Object, DetachedEdge> edges = new HashMap<>();
         codec.decodeFrame(frame, vertices, edges);
+    }
+
+    @Test
+    public void shouldRejectValuesThatDeclareMoreThanTheirRecordHolds() {
+        // each is one OP_PUT_VERTEX whose id is a value declaring a size its few-byte record cannot hold. The
+        // GraphBinary serializers allocate from that size, so unchecked these raise OutOfMemoryError or
+        // NegativeArraySizeException rather than reporting a corrupt frame.
+        final byte[][] payloads = new byte[][] {
+                { 1, 1, 0x03, 0x7F, (byte) 0xFF, (byte) 0xFF, (byte) 0xF0 },             // string of ~2GB
+                { 1, 1, 0x03, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF },      // string of -1 bytes
+                { 1, 1, 0x09, 0x7F, (byte) 0xFF, (byte) 0xFF, (byte) 0xF0 },             // list of ~2G elements
+                { 1, 1, 0x0A, 0x10, 0x00, 0x00, 0x00 },                                  // map of 268M entries
+                { 1, 1, 0x25, 0x7F, (byte) 0xFF, (byte) 0xFF, (byte) 0xF0 },             // binary of ~2GB
+                { 1, 1, 0x09, 0, 0, 0, 1, 0x03, 0x00, 0x7F, (byte) 0xFF, (byte) 0xFF, (byte) 0xF0 } // nested string
+        };
+        for (final byte[] payload : payloads) {
+            try {
+                decode(new GraphBinaryStorage(), payload);
+                fail("expected an IOException for " + Arrays.toString(payload));
+            } catch (final IOException expected) {
+                assertTrue(expected.getMessage(), expected.getMessage().contains("declares a size of"));
+            }
+        }
+    }
+
+    @Test
+    public void shouldRejectABulkedList() {
+        // a list holding one bulked list, a form the engine never writes and whose bulk count drives an unbounded loop
+        try {
+            decode(new GraphBinaryStorage(), new byte[]{ 1, 1, 0x09, 0, 0, 0, 1, 0x09, 0x02, 0, 0, 0, 1 });
+            fail("expected an IOException for a bulked list");
+        } catch (final IOException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("bulked list"));
+        }
+    }
+
+    @Test
+    public void shouldReportAValueCutOffByTheEndOfItsRecordAsCorruption() {
+        // an int id with two of its four bytes
+        try {
+            decode(new GraphBinaryStorage(), new byte[]{ 1, 1, 0x01, 0x00, 0x00 });
+            fail("expected an IOException for a truncated value");
+        } catch (final IOException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("unreadable INT value"));
+        }
     }
 
     @Test
