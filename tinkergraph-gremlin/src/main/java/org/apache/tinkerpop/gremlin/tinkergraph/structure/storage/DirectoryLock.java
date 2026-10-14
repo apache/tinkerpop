@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
 
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +29,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.StandardOpenOption;
@@ -103,6 +105,11 @@ public final class DirectoryLock implements AutoCloseable {
             // another graph in *this* JVM already holds (or is acquiring) the lock on this file
             closeQuietly(channel);
             throw lockedByAnother(directory, ofle);
+        } catch (AccessDeniedException ex) {
+            closeQuietly(channel);
+            throw new UncheckedIOException(String.format("Could not acquire storage lock for %s, which this process " +
+                    "cannot write; a store there can only be opened with %s", directory,
+                    TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER), ex);
         } catch (IOException ex) {
             closeQuietly(channel);
             throw new UncheckedIOException(String.format("Could not acquire storage lock for %s", directory), ex);

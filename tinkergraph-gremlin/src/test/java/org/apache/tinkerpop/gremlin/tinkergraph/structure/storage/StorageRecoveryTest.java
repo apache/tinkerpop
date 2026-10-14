@@ -114,6 +114,24 @@ public class StorageRecoveryTest {
     }
 
     @Test
+    public void shouldPointANormalOpenOfADirectoryItCannotWriteToRecovery() throws Exception {
+        crashedLogOfThreeCommits();
+        final File directory = new File(location);
+        Files.deleteIfExists(new File(directory, DirectoryLock.LOCK_FILE).toPath());
+        assertTrue(directory.setWritable(false));
+        try {
+            Assume.assumeFalse("the process can still write the directory, as root can", directory.canWrite());
+            TinkerStorageGraph.open(config()).close();
+            fail("a store in a directory that cannot be written must not open normally");
+        } catch (UncheckedIOException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains(
+                    TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
+        } finally {
+            assertTrue(directory.setWritable(true));
+        }
+    }
+
+    @Test
     public void shouldCutALastRecordWhosePayloadReadsBackAsZeros() throws Exception {
         final byte[] log = crashedLogOfThreeCommits();
         // the last record's header reached the device but the end of its payload did not, reading back as zeros
