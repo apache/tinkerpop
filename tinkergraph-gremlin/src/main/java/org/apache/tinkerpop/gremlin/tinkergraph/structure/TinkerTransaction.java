@@ -203,6 +203,11 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
             if (durable) graph.storageCommitLock.lock();
             try {
                 if (durable) {
+                    // clear() empties the graph under this lock and marks every element container removed, so a commit
+                    // that passed the checks above while waiting here must look again before it writes anything
+                    if (changedVertices.stream().anyMatch(v -> v.updatedOutsideTransaction()) ||
+                            changedEdges.stream().anyMatch(e -> e.updatedOutsideTransaction()))
+                        throw new TransactionException(TX_CONFLICT);
                     graph.storage.persist(txVersion, toVertexMutations(changedVertices), toEdgeMutations(changedEdges));
                     graph.storage.flush();
                     recorded = true;

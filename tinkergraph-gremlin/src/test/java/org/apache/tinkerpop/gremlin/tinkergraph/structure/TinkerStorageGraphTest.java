@@ -61,6 +61,45 @@ public class TinkerStorageGraphTest {
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Test
+    public void shouldFailACommitThatWaitedOnTheStorageLockWhileTheGraphWasCleared() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+
+        // hold the commit lock so the other thread's commit passes its conflict checks and then waits on it
+        final TinkerStorageGraph g = graph;
+        final AtomicReference<Throwable> otherCommit = new AtomicReference<>();
+        graph.storageCommitLock.lock();
+        final Thread other = new Thread(() -> {
+            g.vertices(1).next().property("name", "late");
+            try {
+                g.tx().commit();
+            } catch (Throwable t) {
+                otherCommit.set(t);
+            }
+        });
+        try {
+            other.start();
+            while (!graph.storageCommitLock.hasQueuedThreads())
+                Thread.sleep(1);
+            graph.clear();
+        } finally {
+            graph.storageCommitLock.unlock();
+        }
+        other.join(10_000);
+
+        assertTrue("the waiting commit should conflict: " + otherCommit.get(),
+                otherCommit.get() instanceof TransactionException);
+        graph.close();
+        graph = TinkerStorageGraph.open(conf);
+        assertFalse(graph.vertices().hasNext());
+        graph.close();
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     public void shouldReportACommitThatFailsAfterItsStorageWriteAsDurable() throws Exception {
         final Configuration conf = new BaseConfiguration();
