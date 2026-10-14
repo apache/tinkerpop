@@ -35,6 +35,7 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -393,7 +394,7 @@ public class StorageRecoveryTest {
             TinkerStorageGraph.open(recoverConfig());
             fail("nothing can be decoded without the dictionary, so recovery should fail");
         } catch (Exception expected) {
-            // expected
+            assertTrue(expected.getMessage(), expected.getMessage().contains(AbstractLogStorage.SNAPSHOT_FILE));
         }
     }
 
@@ -515,7 +516,9 @@ public class StorageRecoveryTest {
             TinkerStorageGraph.open(config()).close();
             fail("a normal open of the damaged store should fail");
         } catch (Exception expected) {
-            // expected
+            // a reported damage, not an unrelated bug such as a NullPointerException
+            assertTrue(expected.toString(), expected instanceof UncheckedIOException ||
+                    expected instanceof IllegalStateException);
         }
     }
 

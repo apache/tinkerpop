@@ -27,7 +27,7 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * A {@link TinkerStorage} test double that deterministically detects whether the commit path serializes writes. It
+ * A {@link TinkerStorage} test double that reliably detects whether the commit path serializes writes. It
  * persists nothing; instead {@link #persist} tracks how many threads are inside it at once and records a violation if
  * ever more than one is. It also sleeps briefly while "inside" to widen the window, so an unserialized commit path
  * trips the detector reliably rather than racily. Selected by fully-qualified class name via
@@ -60,7 +60,8 @@ public final class ConcurrencyProbeStorage implements TinkerStorage {
             maxObserved.accumulateAndGet(concurrent, Math::max);
             if (concurrent > 1)
                 concurrentEntries.incrementAndGet();
-            // widen the window so an unserialized path is caught deterministically, not by luck
+            // widen the window so an unserialized path is caught reliably rather than by luck; it can miss, but a
+            // serialized path never trips it
             try {
                 Thread.sleep(1);
             } catch (InterruptedException ie) {

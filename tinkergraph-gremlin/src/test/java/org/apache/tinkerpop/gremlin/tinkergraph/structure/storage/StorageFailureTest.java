@@ -450,7 +450,7 @@ public class StorageFailureTest {
             graph.compact();
             fail("compaction should have failed");
         } catch (RuntimeException expected) {
-            // expected
+            assertTrue(expected.getMessage(), expected.getMessage().contains("Could not write storage snapshot"));
         }
         FaultInjectingStorage.failSnapshotWrites = false;
 
@@ -462,6 +462,7 @@ public class StorageFailureTest {
 
     @Test
     public void shouldStopCommittingWhenTheStorageDirectoryIsRemoved() throws Exception {
+        assumeNotWindows();
         final File directory = new File(conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY));
         final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
         graph.addVertex(T.id, 1);
@@ -488,6 +489,7 @@ public class StorageFailureTest {
 
     @Test
     public void shouldNotRecreateARemovedStorageDirectoryOnClose() throws Exception {
+        assumeNotWindows();
         final File directory = new File(conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY));
         final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
         graph.addVertex(T.id, 1);
@@ -502,6 +504,7 @@ public class StorageFailureTest {
 
     @Test
     public void shouldStopCommittingWhenTheLogIsReplaced() throws Exception {
+        assumeNotWindows();
         final File directory = new File(conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY));
         final File log = new File(directory, AbstractLogStorage.LOG_FILE);
         final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
@@ -645,7 +648,9 @@ public class StorageFailureTest {
             graph.tx().commit();
             fail("commit should have failed");
         } catch (RuntimeException expected) {
-            // expected
+            // a storage refusal or failure, not an unrelated bug such as a NullPointerException
+            assertTrue(expected.toString(), expected instanceof UncheckedIOException ||
+                    expected instanceof IllegalStateException);
         }
     }
 
