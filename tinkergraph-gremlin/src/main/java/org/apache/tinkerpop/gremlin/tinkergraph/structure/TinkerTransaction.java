@@ -190,7 +190,13 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
             // in that window snapshots without the transaction and then deletes the record that held it, losing an
             // acknowledged commit. Publishing under the lock closes the window, and also makes the order in which
             // transactions become visible match the order they were recorded in.
-            final boolean durable = graph.storage != null && !graph.loading;
+            //
+            // A transaction that changed nothing has nothing to record, so it neither takes the lock nor touches the
+            // engine. Every read opens a transaction that is later committed, so writing for it would make each read
+            // append and sync a frame, and would fail reads on a graph whose storage refuses commits: one opened
+            // to recover a damaged store, or one stopped after a storage failure, whose data must stay exportable.
+            final boolean durable = graph.storage != null && !graph.loading &&
+                    !(changedVertices.isEmpty() && changedEdges.isEmpty());
             if (durable) graph.storageCommitLock.lock();
             try {
                 if (durable) {

@@ -156,6 +156,10 @@ public class StorageFailureTest {
         // transaction's buffered frame and make it durable
         graph.addVertex(T.id, 3);
         assertCommitFails(graph);
+
+        // reads stay possible, including committing the transaction they open, so the data can still be exported
+        assertEquals(Arrays.asList(1), vertexIds(graph));
+        graph.tx().commit();
         graph.close();
 
         graph = TinkerStorageGraph.open(conf);

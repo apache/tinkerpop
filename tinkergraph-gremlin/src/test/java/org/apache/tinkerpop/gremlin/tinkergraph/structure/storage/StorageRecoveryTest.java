@@ -433,6 +433,10 @@ public class StorageRecoveryTest {
     }
 
     private static void assertReadOnly(final TinkerStorageGraph graph) {
+        // reads still work through a transaction that is committed, as Gremlin Server commits after every request
+        graph.vertices().forEachRemaining(v -> v.properties().forEachRemaining(p -> {}));
+        graph.tx().commit();
+
         graph.addVertex(T.id, 99);
         try {
             graph.tx().commit();
