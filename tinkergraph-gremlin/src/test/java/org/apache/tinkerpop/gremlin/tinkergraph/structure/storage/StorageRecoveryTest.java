@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -235,7 +236,7 @@ public class StorageRecoveryTest {
         crashAfterCommitOnCompactedStore();
         final byte[] log = Files.readAllBytes(logFile().toPath());
         ByteBuffer.wrap(log).putLong(AbstractLogStorage.MAGIC.length, 7);
-        Files.write(logFile().toPath(), log);
+        Files.write(logFile().toPath(), resign(log));
 
         assertNormalOpenFails();
         final TinkerStorageGraph graph = TinkerStorageGraph.open(recoverConfig());
@@ -277,6 +278,45 @@ public class StorageRecoveryTest {
             } catch (IllegalStateException expected) {
                 assertTrue(expected.getMessage(), expected.getMessage().contains("belongs to another store"));
             }
+        }
+    }
+
+    @Test
+    public void shouldReportADamagedSnapshotHeaderRatherThanSetTheLogAside() throws Exception {
+        crashAfterCommitOnCompactedStore();
+        final byte[] snapshot = Files.readAllBytes(snapshotFile().toPath());
+        snapshot[AbstractLogStorage.MAGIC.length] ^= 0x01; // a flipped bit in the generation
+        Files.write(snapshotFile().toPath(), snapshot);
+        final Map<String, String> before = directoryContents();
+
+        for (final Configuration conf : Arrays.asList(config(), recoverConfig())) {
+            try {
+                TinkerStorageGraph.open(conf).close();
+                fail("a damaged snapshot header cannot be recovered from and must fail the open");
+            } catch (UncheckedIOException expected) {
+                assertTrue(expected.getMessage(), expected.getMessage().contains("header is damaged"));
+                assertTrue(expected.getMessage(), expected.getMessage().contains(AbstractLogStorage.SNAPSHOT_FILE));
+            }
+        }
+        assertEquals("the intact log is left in place", before, directoryContents());
+    }
+
+    @Test
+    public void shouldNameTheVersionMarkerWhenOnlyItBelongsToAnotherStore() throws Exception {
+        crashAfterCommitOnCompactedStore();
+        final String other = tempFolder.newFolder("other").getAbsolutePath();
+        final Configuration otherConfig = config();
+        otherConfig.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, other);
+        TinkerStorageGraph.open(otherConfig).close();
+        Files.copy(new File(other, AbstractLogStorage.VERSION_FILE).toPath(),
+                new File(location, AbstractLogStorage.VERSION_FILE).toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+        try {
+            TinkerStorageGraph.open(config()).close();
+            fail("a version marker from another store must fail the open");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("version marker"));
+            assertTrue(expected.getMessage(), expected.getMessage().contains("remove it"));
         }
     }
 
@@ -561,7 +601,20 @@ public class StorageRecoveryTest {
         ByteBuffer.wrap(copy, AbstractLogStorage.MAGIC.length + Long.BYTES, AbstractLogStorage.STORE_ID_SIZE)
                 .putLong(other.getMostSignificantBits())
                 .putLong(other.getLeastSignificantBits());
-        return copy;
+        return resign(copy);
+    }
+
+    /**
+     * Recompute the header checksum of a storage file whose header was edited, so that it reads as a genuine file of
+     * the generation and store its header now names rather than as a damaged one.
+     */
+    private static byte[] resign(final byte[] file) {
+        final ByteBuffer buf = ByteBuffer.wrap(file);
+        final long generation = buf.getLong(AbstractLogStorage.MAGIC.length);
+        final UUID id = new UUID(buf.getLong(AbstractLogStorage.MAGIC.length + Long.BYTES),
+                buf.getLong(AbstractLogStorage.MAGIC.length + 2 * Long.BYTES));
+        System.arraycopy(AbstractLogStorage.header(generation, id), 0, file, 0, AbstractLogStorage.HEADER_SIZE);
+        return file;
     }
 
     private void writeStore(final byte[] snapshot, final byte[] log) throws IOException {

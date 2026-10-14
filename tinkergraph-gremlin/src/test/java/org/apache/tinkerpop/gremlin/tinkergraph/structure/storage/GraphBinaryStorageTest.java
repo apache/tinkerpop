@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.CRC32;
@@ -1028,9 +1029,9 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         crc.update(payload);
         final ByteBuffer frame = ByteBuffer.allocate(
                 GraphBinaryStorage.HEADER_SIZE + GraphBinaryStorage.LOG_FRAME_HEADER_SIZE + payload.length);
-        frame.put(GraphBinaryStorage.MAGIC);
-        frame.putLong(0); // generation: a log with no snapshot
-        frame.put(storeId(location)); // the log must belong to this store
+        final ByteBuffer id = ByteBuffer.wrap(storeId(location));
+        // generation 0, a log with no snapshot, in this store
+        frame.put(GraphBinaryStorage.header(0, new UUID(id.getLong(), id.getLong())));
         frame.putInt(payload.length);
         frame.putInt((int) lengthCrc.getValue());
         frame.putInt(0);
