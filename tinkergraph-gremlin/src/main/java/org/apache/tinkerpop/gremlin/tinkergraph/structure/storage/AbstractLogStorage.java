@@ -39,6 +39,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -261,8 +262,16 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         this.recovery = recovering ? new Recovery() : null;
         configureCodec(config);
         ensureDirectory();
+        // temporary files are only ever renamed into place once complete, so any left behind belong to a write that
+        // was interrupted and hold nothing the store needs
+        if (!recovering)
+            removeStaleTemporaryFiles();
         establishStoreVersion();
         establishGeneration();
+        // remember which file the log is from the start, so a store removed or replaced before the first commit is
+        // caught too, not only one replaced while the log is open for append
+        if (!recovering)
+            recordLogIdentity();
     }
 
     /**
@@ -388,6 +397,9 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         } catch (IOException ex) {
             StorageFiles.deleteQuietly(tmp);
             throw new UncheckedIOException("Could not write storage snapshot", ex);
+        } catch (RuntimeException | Error ex) {
+            StorageFiles.deleteQuietly(tmp);
+            throw ex;
         }
 
         try {
@@ -413,6 +425,8 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             throw fail("Could not replace storage log after writing a new snapshot", ex);
         }
         generation = nextGeneration;
+        // the new log is a new file, and from now on it is the one that must still be in place
+        recordLogIdentity();
 
         // the log is now empty; the accumulated state lives in the snapshot
         logBytesSinceCompaction = 0;
@@ -526,15 +540,23 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     private void writeStoreVersion() {
-        try (final FileOutputStream fos = new FileOutputStream(versionFile);
-             final DataOutputStream out = new DataOutputStream(fos)) {
-            out.write(MAGIC);
-            out.writeByte(FORMAT_VERSION);
-            out.writeLong(storeId.getMostSignificantBits());
-            out.writeLong(storeId.getLeastSignificantBits());
-            out.flush();
-            fos.getFD().sync();
+        // written whole through a temporary file and a rename, so a crash leaves either no marker or a complete one,
+        // never a short marker that would fail every later open
+        final File tmp = new File(directory, VERSION_FILE + ".tmp");
+        try {
+            try (final FileOutputStream fos = new FileOutputStream(tmp);
+                 final DataOutputStream out = new DataOutputStream(fos)) {
+                out.write(MAGIC);
+                out.writeByte(FORMAT_VERSION);
+                out.writeLong(storeId.getMostSignificantBits());
+                out.writeLong(storeId.getLeastSignificantBits());
+                out.flush();
+                fos.getFD().sync();
+            }
+            StorageFiles.atomicMove(tmp, versionFile);
+            StorageFiles.syncDirectory(directory);
         } catch (IOException ex) {
+            StorageFiles.deleteQuietly(tmp);
             throw new UncheckedIOException(String.format("Could not write storage version marker %s", versionFile), ex);
         }
     }
@@ -673,6 +695,16 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         StorageFiles.syncDirectory(directory);
     }
 
+    private void removeStaleTemporaryFiles() {
+        for (final String name : new String[]{ SNAPSHOT_FILE, LOG_FILE, VERSION_FILE }) {
+            final File tmp = new File(directory, name + ".tmp");
+            if (tmp.exists()) {
+                logger.warn("Removing {}, left by a storage write that was interrupted", tmp);
+                StorageFiles.deleteQuietly(tmp);
+            }
+        }
+    }
+
     private void ensureDirectory() {
         if (directory.exists()) {
             if (!directory.isDirectory())
@@ -717,6 +749,12 @@ public abstract class AbstractLogStorage implements TinkerStorage {
                 try {
                     record = readFrame(in, remaining, log);
                 } catch (CorruptFrameException ex) {
+                    // a crash can also leave the last frame's header written but its payload reading back as zeros
+                    // where the data never reached the device, which fails the payload's checksum. A final frame that
+                    // ends exactly at the end of the log, in a zero byte, is therefore cut as an interrupted append.
+                    if (log && completeEnd + LOG_FRAME_HEADER_SIZE + ex.payloadLength == fileLength &&
+                            endsInZero(file))
+                        break;
                     // the frame's bytes were all present and consumed, so a skippable snapshot frame can be passed over
                     if (recovery == null || log || frameIndex == 0)
                         throw recoveryStops(recovery, log, ex, completeEnd, fileLength);
@@ -727,6 +765,12 @@ public abstract class AbstractLogStorage implements TinkerStorage {
                     recovery.skippedSnapshotFrames++;
                     continue;
                 } catch (IOException ex) {
+                    // some filesystems leave a log that crashed during an append longer than what was written, the
+                    // extra bytes reading back as zeros. No frame the engine writes starts with a zero header, since
+                    // the checksum of length 0 is not 0, so an all-zero rest of the log is never a frame, let alone a
+                    // corrupted one: it is cut off like any other interrupted append.
+                    if (log && isZeroFrom(file, completeEnd))
+                        break;
                     // a frame header that can't be trusted (such as a negative length) leaves no way to find the next
                     if (recovery == null || (!log && frameIndex == 0))
                         throw ex;
@@ -749,7 +793,12 @@ public abstract class AbstractLogStorage implements TinkerStorage {
                 }
                 final long frameLength = (long) (log ? LOG_FRAME_HEADER_SIZE : FRAME_HEADER_SIZE) + record.length;
                 if (recovery == null) {
-                    decodeFrame(record, vertices, edges);
+                    try {
+                        decodeFrame(record, vertices, edges);
+                    } catch (RuntimeException ex) {
+                        // reported as the damage it is, naming the file, rather than as an unexplained runtime error
+                        throw new IOException(String.format("Corrupt storage frame %d: %s", frameIndex, ex), ex);
+                    }
                 } else {
                     try {
                         decodeFrameAtomically(record, vertices, edges);
@@ -802,10 +851,43 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     /**
+     * Whether the last byte of {@code file} is zero.
+     */
+    private static boolean endsInZero(final File file) throws IOException {
+        try (final RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+            if (raf.length() == 0)
+                return false;
+            raf.seek(raf.length() - 1);
+            return raf.read() == 0;
+        }
+    }
+
+    /**
+     * Whether {@code file} holds at least one byte from {@code offset} on, and every one of them is zero.
+     */
+    private static boolean isZeroFrom(final File file, final long offset) throws IOException {
+        try (final RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+            if (offset >= raf.length())
+                return false;
+            raf.seek(offset);
+            final byte[] chunk = new byte[8192];
+            int read;
+            while ((read = raf.read(chunk)) > 0) {
+                for (int i = 0; i < read; i++) {
+                    if (chunk[i] != 0)
+                        return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    /**
      * Cut the log back to {@code completeEnd}, the end of its last complete frame, so that the next append starts on
      * a frame boundary. Without this, new commits would be written after the torn bytes and a later replay would stop
      * at the old torn frame (dropping them) or read into them (failing the CRC check). Only bytes that never formed a
-     * complete frame are removed, and no acknowledged commit is ever an incomplete frame.
+     * complete frame, or that read as zeros past the last complete frame, are removed, and no acknowledged commit is
+     * ever either.
      */
     private void truncateTornLogTail(final long completeEnd) {
         final long length = logFile.length();
@@ -843,11 +925,12 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             // no header
             if (!logFile.isFile())
                 throw removed(String.format("its log %s is missing", logFile));
+            // the log may have been replaced since open or the last compaction, while it was not held open
+            checkLogIdentity();
             try {
                 // retain the FileOutputStream so flush() can reach its FileDescriptor for fsync
                 logFos = openLogForAppend(logFile);
                 logOut = new DataOutputStream(new BufferedOutputStream(logFos));
-                logFileKey = fileKey(logFile);
             } catch (IOException ex) {
                 throw new UncheckedIOException("Could not open storage log for append", ex);
             }
@@ -898,17 +981,37 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     private void checkStoreInPlace() {
         if (!directory.isDirectory())
             throw removed(String.format("its directory %s is missing", directory));
-        if (logOut == null)
+        // open and compaction always leave a log in place, so a missing one was removed whether or not it is open
+        if (!logFile.exists())
+            throw removed(String.format("its log %s is missing", logFile));
+        checkLogIdentity();
+    }
+
+    /**
+     * Remember the file now at the log's path as the store's log. Platforms whose files have no identity key record
+     * nothing, and the identity checks then pass.
+     */
+    private void recordLogIdentity() {
+        try {
+            logFileKey = logFile.exists() ? fileKey(logFile) : null;
+        } catch (IOException ex) {
+            throw new UncheckedIOException(String.format("Could not read storage log %s", logFile), ex);
+        }
+    }
+
+    /**
+     * Fail-stop if the log's path now names a different file than the one recorded as the store's log.
+     */
+    private void checkLogIdentity() {
+        if (null == logFileKey)
             return;
         final Object current;
         try {
-            current = logFile.exists() ? fileKey(logFile) : null;
+            current = fileKey(logFile);
         } catch (IOException ex) {
             throw removed(String.format("its log %s cannot be read: %s", logFile, ex.getMessage()));
         }
-        if (!logFile.exists())
-            throw removed(String.format("its log %s is missing", logFile));
-        if (logFileKey != null && !logFileKey.equals(current))
+        if (!logFileKey.equals(current))
             throw removed(String.format("its log %s was replaced by another file", logFile));
     }
 

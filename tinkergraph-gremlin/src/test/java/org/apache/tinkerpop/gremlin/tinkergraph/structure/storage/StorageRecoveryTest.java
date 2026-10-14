@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -83,6 +84,71 @@ public class StorageRecoveryTest {
 
         assertEquals("recovery must not change the store", before, directoryContents());
         assertNormalOpenFails();
+    }
+
+    @Test
+    public void shouldRecoverFromADirectoryItCannotWrite() throws Exception {
+        crashedLogOfThreeCommits();
+        final File directory = new File(location);
+        // a read-only copy or mount of a damaged store is a natural place to recover it from
+        for (final boolean keepLockFile : new boolean[]{ true, false }) {
+            final File lockFile = new File(directory, DirectoryLock.LOCK_FILE);
+            if (!keepLockFile)
+                Files.deleteIfExists(lockFile.toPath());
+            else if (!lockFile.exists())
+                Files.createFile(lockFile.toPath());
+            assertTrue(directory.setWritable(false));
+            try {
+                Assume.assumeFalse("the process can still write the directory, as root can", directory.canWrite());
+                final Map<String, String> before = directoryContents();
+                final TinkerStorageGraph graph = TinkerStorageGraph.open(recoverConfig());
+                assertEquals(Arrays.asList(1, 2, 3), vertexIds(graph));
+                graph.close();
+                assertEquals("recovery must not change the store", before, directoryContents());
+            } finally {
+                assertTrue(directory.setWritable(true));
+            }
+        }
+    }
+
+    @Test
+    public void shouldCutALastRecordWhosePayloadReadsBackAsZeros() throws Exception {
+        final byte[] log = crashedLogOfThreeCommits();
+        // the last record's header reached the device but the end of its payload did not, reading back as zeros
+        final int[] last = logFrames(log).get(2);
+        Arrays.fill(log, last[2] + last[1] / 2, log.length, (byte) 0);
+        writeStore(null, log);
+
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(config());
+        assertEquals("the torn last commit was never acknowledged, so it is cut", Arrays.asList(1, 2), vertexIds(graph));
+        graph.close();
+    }
+
+    @Test
+    public void shouldStillFailOnALastRecordThatIsDamagedButDoesNotEndInZero() throws Exception {
+        final byte[] log = crashedLogOfThreeCommits();
+        final int[] last = logFrames(log).get(2);
+        // a flipped byte in the middle of the last record, which still ends as it was written
+        log[last[2] + last[1] / 2] ^= 0x01;
+        log[log.length - 1] = (byte) 0x7F;
+        writeStore(null, log);
+
+        assertNormalOpenFails();
+    }
+
+    @Test
+    public void shouldClearARecoveredGraphInMemoryOnly() throws Exception {
+        final byte[] log = crashedLogOfThreeCommits();
+        log[logFrames(log).get(1)[2]] ^= 0x01;
+        writeStore(null, log);
+        final Map<String, String> before = directoryContents();
+
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(recoverConfig());
+        graph.clear();
+        assertEquals(Collections.emptyList(), vertexIds(graph));
+        graph.close();
+
+        assertEquals("clearing a recovered graph must not change the store", before, directoryContents());
     }
 
     @Test

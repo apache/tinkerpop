@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -31,6 +34,8 @@ import java.nio.file.StandardOpenOption;
  * replaced whole by writing a temporary file and renaming it into place.
  */
 final class StorageFiles {
+
+    private static final Logger logger = LoggerFactory.getLogger(StorageFiles.class);
 
     private StorageFiles() {
     }
@@ -52,11 +57,21 @@ final class StorageFiles {
      * fsync {@code directory} so that recent namespace changes (a rename into place, a file deletion) are durable.
      */
     static void syncDirectory(final File directory) {
-        try (final FileChannel dirChannel = FileChannel.open(directory.toPath(), StandardOpenOption.READ)) {
-            dirChannel.force(true);
+        final FileChannel dirChannel;
+        try {
+            dirChannel = FileChannel.open(directory.toPath(), StandardOpenOption.READ);
         } catch (IOException ex) {
             // some platforms (notably Windows) cannot open a directory as a channel; the atomic rename is the
             // durability guarantee there, so treat inability to sync the directory as non-fatal
+            return;
+        }
+        // some filesystems (certain network and FUSE mounts) open a directory but refuse to force it, so a failure is
+        // reported rather than fatal: the rename has happened, and only its durability against a crash is in doubt
+        try (final FileChannel channel = dirChannel) {
+            channel.force(true);
+        } catch (IOException ex) {
+            logger.warn("Could not force storage directory {} to disk, so a file just renamed into it may not survive " +
+                    "a crash", directory, ex);
         }
     }
 

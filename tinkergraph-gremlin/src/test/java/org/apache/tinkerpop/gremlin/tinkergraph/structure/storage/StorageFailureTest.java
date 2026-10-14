@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
 
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -29,12 +30,15 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -512,6 +516,85 @@ public class StorageFailureTest {
         graph.addVertex(T.id, 2);
         assertCommitFails(graph);
         graph.close();
+    }
+
+    @Test
+    public void shouldStopCommittingWhenTheLogIsReplacedBeforeTheFirstCommit() throws Exception {
+        final File log = new File(conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY),
+                AbstractLogStorage.LOG_FILE);
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+
+        // the log is not held open until the first commit, so this is when only its recorded identity can tell
+        final byte[] replacement = replaceWithCopy(log);
+        graph.addVertex(T.id, 1);
+        assertCommitFailsWith(graph, "was replaced by another file");
+        graph.close();
+        assertArrayEquals("nothing may be appended to the file that replaced the log", replacement,
+                Files.readAllBytes(log.toPath()));
+    }
+
+    @Test
+    public void shouldStopCommittingWhenTheLogIsReplacedAfterACompaction() throws Exception {
+        final File log = new File(conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY),
+                AbstractLogStorage.LOG_FILE);
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+        graph.compact();
+
+        final byte[] replacement = replaceWithCopy(log);
+        graph.addVertex(T.id, 2);
+        assertCommitFailsWith(graph, "was replaced by another file");
+        graph.close();
+        assertArrayEquals("nothing may be appended to the file that replaced the log", replacement,
+                Files.readAllBytes(log.toPath()));
+    }
+
+    @Test
+    public void shouldNotCompactOnCloseAfterTheLogIsRemoved() throws Exception {
+        final File directory = new File(conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY));
+        final File log = new File(directory, AbstractLogStorage.LOG_FILE);
+        final File snapshot = new File(directory, AbstractLogStorage.SNAPSHOT_FILE);
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+        graph.compact();
+        final byte[] snapshotBefore = Files.readAllBytes(snapshot.toPath());
+
+        // no commit runs between the removal and close(), so only close() itself can notice
+        assertTrue(log.delete());
+        graph.close();
+        assertFalse("close() must not recreate a removed log", log.exists());
+        assertArrayEquals("close() must not compact into a store whose log was removed", snapshotBefore,
+                Files.readAllBytes(snapshot.toPath()));
+    }
+
+    /**
+     * Put a different file with the same bytes at {@code file}'s path, as another graph recreating the store or a
+     * restore from backup would, and return those bytes.
+     */
+    private static byte[] replaceWithCopy(final File file) throws IOException {
+        final File copy = new File(file.getParentFile(), "copy");
+        Files.copy(file.toPath(), copy.toPath());
+        Files.move(copy.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        return Files.readAllBytes(file.toPath());
+    }
+
+    private static void assertCommitFailsWith(final TinkerStorageGraph graph, final String fragment) {
+        try {
+            graph.tx().commit();
+            fail("commit should have failed");
+        } catch (RuntimeException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains(fragment));
+        }
+    }
+
+    /**
+     * Windows refuses to delete or replace a file another handle holds open, which these tests do to a store whose
+     * lock and log are open, as an operator could on other platforms.
+     */
+    private static void assumeNotWindows() {
+        Assume.assumeFalse("Windows cannot remove or replace files that are open", SystemUtils.IS_OS_WINDOWS);
     }
 
     private static void deleteRecursively(final File file) {

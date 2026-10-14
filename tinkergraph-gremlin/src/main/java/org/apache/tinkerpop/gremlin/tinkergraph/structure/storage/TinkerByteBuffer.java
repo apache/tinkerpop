@@ -36,6 +36,11 @@ public final class TinkerByteBuffer implements Buffer {
 
     private static final int DEFAULT_CAPACITY = 256;
 
+    /**
+     * The most bytes one buffer, and so one storage frame, can hold: the largest array size JVMs reliably allocate.
+     */
+    static final int MAX_CAPACITY = Integer.MAX_VALUE - 8;
+
     private byte[] array;
     private int readerIndex = 0;
     private int writerIndex = 0;
@@ -73,13 +78,18 @@ public final class TinkerByteBuffer implements Buffer {
     }
 
     private void ensureWritable(final int additional) {
-        final int required = writerIndex + additional;
+        // computed in a long so a buffer nearing the int range neither wraps to a negative size nor doubles forever
+        final long required = (long) writerIndex + additional;
         if (required <= array.length)
             return;
-        int newCapacity = array.length;
+        if (required > MAX_CAPACITY)
+            throw new IllegalStateException(String.format("Storage frame would be %d bytes, more than the %d bytes " +
+                    "one frame can hold: a single transaction, or a single element when compacting, cannot encode " +
+                    "to more than that, so commit the changes in smaller transactions", required, MAX_CAPACITY));
+        long newCapacity = Math.max(array.length, 1);
         while (newCapacity < required)
             newCapacity <<= 1;
-        array = Arrays.copyOf(array, newCapacity);
+        array = Arrays.copyOf(array, (int) Math.min(newCapacity, MAX_CAPACITY));
     }
 
     private void checkReadable(final int length) {
@@ -332,5 +342,30 @@ public final class TinkerByteBuffer implements Buffer {
     public Buffer getBytes(final int index, final byte[] dst) {
         System.arraycopy(array, index, dst, 0, dst.length);
         return this;
+    }
+
+    /**
+     * The byte at {@code index}, without moving the reader index.
+     */
+    byte getByte(final int index) {
+        checkIndex(index, 1);
+        return array[index];
+    }
+
+    /**
+     * The big-endian int at {@code index}, without moving the reader index.
+     */
+    int getInt(final int index) {
+        checkIndex(index, 4);
+        return ((array[index] & 0xFF) << 24) |
+                ((array[index + 1] & 0xFF) << 16) |
+                ((array[index + 2] & 0xFF) << 8) |
+                (array[index + 3] & 0xFF);
+    }
+
+    private void checkIndex(final int index, final int length) {
+        if (index < 0 || (long) index + length > writerIndex)
+            throw new IndexOutOfBoundsException(String.format(
+                    "Not enough written bytes: need %d at index %d but writer index is %d", length, index, writerIndex));
     }
 }
