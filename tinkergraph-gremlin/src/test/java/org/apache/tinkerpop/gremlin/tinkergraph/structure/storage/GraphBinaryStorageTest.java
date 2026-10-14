@@ -82,6 +82,23 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     }
 
     @Test
+    public void shouldNotWriteToTheLogForATransactionThatChangedNothing() {
+        final TinkerStorageGraph graph = open();
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        final File logFile = new File(location, GraphBinaryStorage.LOG_FILE);
+        final long length = logFile.length();
+
+        // a read opens a transaction, and committing it must leave the log alone
+        assertEquals(1, countOf(graph.vertices()));
+        graph.tx().commit();
+        graph.tx().commit();
+        assertEquals("a transaction that changed nothing must not append to the log", length, logFile.length());
+        graph.close();
+    }
+
+    @Test
     public void shouldPersistWithOsSyncMode() {
         // 'os' is a weaker durability mode (no fsync); a graceful close/reopen must still round-trip the data. The
         // OS-crash-loss window that distinguishes it from 'commit' cannot be exercised in a unit test.
