@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -40,7 +42,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * are buffered, so for them the failure surfaces at flush; a frame larger than the buffer fails during the append
  * itself. While {@link #failCompaction} is set, compaction throws before touching any file, and while
  * {@link #failSnapshotWrites} is set it fails partway through writing the new snapshot. {@link #compactionAttempts}
- * counts every compaction started, whether or not it fails. Selected by
+ * counts every compaction started, whether or not it fails. When {@link #compactionGate} is set, compaction counts
+ * down {@link #compactionEntered} and then waits for the gate, holding the graph's commit lock as its caller does, so
+ * a test can make another thread wait on that lock. Selected by
  * fully-qualified class name via {@code gremlin.tinkergraph.storage}. The switches are static because the engine is
  * instantiated reflectively.
  */
@@ -50,12 +54,16 @@ public final class FaultInjectingStorage extends AbstractLogStorage {
     static volatile boolean failCompaction = false;
     static volatile boolean failSnapshotWrites = false;
     static final AtomicInteger compactionAttempts = new AtomicInteger();
+    static volatile CountDownLatch compactionEntered = null;
+    static volatile CountDownLatch compactionGate = null;
 
     static void reset() {
         failLogWrites = false;
         failCompaction = false;
         failSnapshotWrites = false;
         compactionAttempts.set(0);
+        compactionEntered = null;
+        compactionGate = null;
     }
 
     private final GraphBinaryStorage codec = new GraphBinaryStorage();
@@ -85,6 +93,17 @@ public final class FaultInjectingStorage extends AbstractLogStorage {
     @Override
     public void compact(final AbstractTinkerGraph graph) {
         compactionAttempts.incrementAndGet();
+        final CountDownLatch gate = compactionGate;
+        if (gate != null) {
+            compactionEntered.countDown();
+            try {
+                // bounded, so a test that never opens the gate fails instead of hanging the build
+                if (!gate.await(30, TimeUnit.SECONDS))
+                    throw new IllegalStateException("compaction gate was never opened");
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        }
         if (failCompaction)
             throw new UncheckedIOException(new IOException("injected compaction failure"));
         super.compact(graph);

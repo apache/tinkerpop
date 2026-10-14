@@ -104,10 +104,33 @@ public interface TinkerStorage extends AutoCloseable {
     }
 
     /**
+     * Replace everything the engine holds with the graph's current committed state, which the caller has just
+     * emptied, so that the store holds nothing and a reopen finds an empty graph. Called by
+     * {@code TinkerGraph.clear()} under the graph's commit lock, and never on a read-only engine. If the store cannot
+     * be emptied, the engine must refuse further commits until the graph is reopened: appending them to the old data
+     * would bring the cleared elements back on reopen, mixed with the new ones. The default compacts, which is only
+     * correct for an engine whose {@link #compact} throws when it cannot write, rather than returning quietly.
+     *
+     * @param graph the graph, already emptied, whose committed state the store should now hold
+     */
+    default void clear(final AbstractTinkerGraph graph) {
+        compact(graph);
+    }
+
+    /**
      * Whether this engine accepts no writes at all, such as when a damaged store was opened for recovery. The graph
      * then also leaves its other files in the storage directory, such as index definitions, unchanged.
      */
     default boolean isReadOnly() {
+        return false;
+    }
+
+    /**
+     * Whether this engine has stopped accepting writes after a storage failure, such as a failed log write or the
+     * store being removed while the graph was open. It stays so until the graph is reopened. The graph's committed
+     * data remains readable in memory for export, so operations that would discard or rewrite it are refused.
+     */
+    default boolean isFailed() {
         return false;
     }
 
