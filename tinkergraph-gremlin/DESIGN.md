@@ -55,9 +55,14 @@ the new one. A `.tmp` file left behind by an interrupted write holds nothing the
 any stale `snapshot.gbin.tmp`, `log.gbin.tmp` or `VERSION.tmp`. A directory that cannot be synced on some network and
 FUSE mounts is logged as a warning rather than failing the write, since only the rename's durability is in doubt.
 
-The snapshot and the log begin with the same 28-byte file header: the magic, an 8-byte generation and the store id.
-The store id ties the files to one store, so a snapshot or log copied in from another store is detected. The
-generation counts compactions and ties a log to the snapshot it follows.
+The snapshot and the log begin with the same 32-byte file header: the magic, an 8-byte generation, the store id and a
+CRC32 of those bytes. The store id ties the files to one store, so a snapshot or log copied in from another store is
+detected. The generation counts compactions and ties a log to the snapshot it follows. The checksum keeps a damaged
+header from reading as a believable one, since a flipped bit in the generation would otherwise make an intact log look
+as if it belonged to another snapshot. A snapshot whose header is damaged fails the open, recovery included, because
+nothing in it can be trusted to belong to the store. A damaged log header fails a normal open, and recovery reads the
+snapshot alone. When the snapshot and log agree on their store but `VERSION` names another, the error names `VERSION`
+as the file that does not belong.
 
 ## Frames
 
