@@ -532,7 +532,8 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         return ByteBuffer.allocate(GraphBinaryStorage.LOG_FRAME_HEADER_SIZE + 2)
                 .putInt(claimedLength)
                 .putInt((int) lengthCrc.getValue())
-                .putInt(0)
+                .putInt(0) // sequence number
+                .putInt(0) // payload checksum, never reached
                 .put(new byte[]{ 0x01, 0x02 })
                 .array();
     }
@@ -1023,6 +1024,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         final CRC32 lengthCrc = new CRC32();
         lengthCrc.update(ByteBuffer.allocate(Integer.BYTES).putInt(payload.length).array());
         final CRC32 crc = new CRC32();
+        crc.update(ByteBuffer.allocate(Integer.BYTES).putInt(0).array()); // the first frame's sequence number
         crc.update(payload);
         final ByteBuffer frame = ByteBuffer.allocate(
                 GraphBinaryStorage.HEADER_SIZE + GraphBinaryStorage.LOG_FRAME_HEADER_SIZE + payload.length);
@@ -1031,6 +1033,7 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         frame.put(storeId(location)); // the log must belong to this store
         frame.putInt(payload.length);
         frame.putInt((int) lengthCrc.getValue());
+        frame.putInt(0);
         frame.putInt((int) crc.getValue());
         frame.put(payload);
 
