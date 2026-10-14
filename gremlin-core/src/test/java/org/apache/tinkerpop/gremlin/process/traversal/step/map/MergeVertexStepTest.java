@@ -171,4 +171,18 @@ public class MergeVertexStepTest {
                 T.label, "~person");
         MergeVertexStep.validateMapInput(m, false);
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowRepeatedOnCreate() {
+        final MergeVertexStep<Object> step = new MergeVertexStep<>(org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal.instance(), true);
+        step.addChildOption(Merge.onCreate, new org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal<>(Collections.emptyMap()));
+        step.addChildOption(Merge.onCreate, new org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal<>(Collections.emptyMap()));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowRepeatedOnMatch() {
+        final MergeVertexStep<Object> step = new MergeVertexStep<>(org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal.instance(), true);
+        step.addChildOption(Merge.onMatch, new org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal<>(Collections.emptyMap()));
+        step.addChildOption(Merge.onMatch, new org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal<>(Collections.emptyMap()));
+    }
 }
