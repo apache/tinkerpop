@@ -44,6 +44,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -551,6 +552,32 @@ public class StorageFailureTest {
         graph.close();
         assertArrayEquals("nothing may be appended to the file that replaced the log", replacement,
                 Files.readAllBytes(log.toPath()));
+    }
+
+    @Test
+    public void shouldStopCommittingWhenTheLockIsRemovedAndAnotherGraphOpensTheStore() throws Exception {
+        assumeNotWindows();
+        final File lock = new File(conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY),
+                DirectoryLock.LOCK_FILE);
+        final TinkerStorageGraph first = TinkerStorageGraph.open(conf);
+        first.addVertex(T.id, 1);
+        first.tx().commit();
+
+        // with its LOCK file gone, nothing keeps a second graph from locking a new one and opening the store
+        assertTrue(lock.delete());
+        final TinkerStorageGraph second = TinkerStorageGraph.open(conf);
+
+        first.addVertex(T.id, 2);
+        assertCommitFailsWith(first, "its lock");
+        second.addVertex(T.id, 3);
+        second.tx().commit();
+        first.close();
+        second.close();
+
+        final TinkerStorageGraph reopened = TinkerStorageGraph.open(conf);
+        assertEquals("only commits that were acknowledged survive", new HashSet<>(Arrays.asList(1, 3)),
+                reopened.traversal().V().id().toSet());
+        reopened.close();
     }
 
     @Test

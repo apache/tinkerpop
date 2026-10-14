@@ -24,11 +24,15 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
+import java.util.UUID;
 
 /**
  * An exclusive, whole-process lock on a {@code TinkerStorageGraph} storage directory. A persistent, transactional
@@ -74,6 +78,10 @@ public final class DirectoryLock implements AutoCloseable {
      * @throws IllegalStateException if another graph (in this or another process) already holds the lock
      */
     public static DirectoryLock acquire(final File directory) {
+        return acquire(directory, true);
+    }
+
+    private static DirectoryLock acquire(final File directory, final boolean verify) {
         final File lockFile = new File(directory, LOCK_FILE);
         FileChannel channel = null;
         final boolean createdFile = !lockFile.exists();
@@ -82,6 +90,11 @@ public final class DirectoryLock implements AutoCloseable {
                     StandardOpenOption.CREATE, StandardOpenOption.WRITE);
             final FileLock lock = channel.tryLock();
             if (lock == null) {
+                channel.close();
+                throw lockedByAnother(directory, null);
+            }
+            if (verify && !stillAtPath(channel, lockFile)) {
+                lock.release();
                 channel.close();
                 throw lockedByAnother(directory, null);
             }
@@ -107,8 +120,10 @@ public final class DirectoryLock implements AutoCloseable {
      * @throws IllegalStateException if another graph holds the lock
      */
     public static DirectoryLock acquireForRecovery(final File directory) {
+        // recovery leaves every file as it found it, so it does not write the token that verifies the lock, and since
+        // it never writes to the store, a lock it holds on a file that was replaced cannot cost a commit
         if (Files.isWritable(directory.toPath()))
-            return acquire(directory);
+            return acquire(directory, false);
         final File lockFile = new File(directory, LOCK_FILE);
         if (!lockFile.exists()) {
             logger.warn("Storage directory {} is not writable, so it is read for recovery without a lock; make sure " +
@@ -130,6 +145,27 @@ public final class DirectoryLock implements AutoCloseable {
         } catch (IOException ex) {
             closeQuietly(channel);
             throw new UncheckedIOException(String.format("Could not acquire storage lock for %s", directory), ex);
+        }
+    }
+
+    /**
+     * Whether {@code lockFile} still names the file {@code channel} holds. A graph whose open fails removes the LOCK file
+     * it created, so between opening that file and locking it, another graph could have unlinked it and created a new
+     * one at the path, leaving this lock on a file that keeps no one out. A random token written through the channel
+     * and read back through the path tells the two apart, which comparing file keys cannot, since the channel does not
+     * report the key of the file it has open.
+     */
+    private static boolean stillAtPath(final FileChannel channel, final File lockFile) throws IOException {
+        final UUID token = UUID.randomUUID();
+        final byte[] bytes = ByteBuffer.allocate(2 * Long.BYTES)
+                .putLong(token.getMostSignificantBits()).putLong(token.getLeastSignificantBits()).array();
+        channel.truncate(0);
+        channel.write(ByteBuffer.wrap(bytes), 0);
+        channel.force(false);
+        try {
+            return Arrays.equals(bytes, Files.readAllBytes(lockFile.toPath()));
+        } catch (NoSuchFileException ex) {
+            return false;
         }
     }
 
