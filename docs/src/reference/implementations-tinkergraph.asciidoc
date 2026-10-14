@@ -429,15 +429,18 @@ g.V().valueMap()
 === Persistence
 
 `TinkerStorageGraph` can durably persist to disk through a pluggable storage layer built on its transaction support.
-When a storage engine is configured, the changeset of each committed transaction is written to disk, and the graph is
-rebuilt from that data when it is opened again. The in-memory `TinkerMemoryGraph` does not retain data across restarts.
+When a storage engine is configured, each committed transaction is written to disk before it is applied in memory, and
+the graph is rebuilt from that data when it is opened again. The in-memory `TinkerMemoryGraph` does not retain data
+across restarts.
 
 A storage engine is selected with the `gremlin.tinkergraph.storage` configuration key, and
 `gremlin.tinkergraph.storage.directory` names the directory that holds the durable data. The value of the storage key is
 either a built-in engine name or the fully qualified class name of a `TinkerStorage` implementation, following the same
 enum-name-or-class-name convention as the `IdManager` settings. The built-in `graphbinary` engine records committed
-transactions as an append-only log serialized with GraphBinary and folds that log into a compact snapshot when the
-graph is closed.
+transactions in an append-only log serialized with GraphBinary and periodically folds that log into a compact
+snapshot. The design of that engine, including its file formats and how it detects and handles damage, is described in
+the link:https://github.com/apache/tinkerpop/blob/x.y.z/tinkergraph-gremlin/DESIGN.md[TinkerStorageGraph storage design]
+notes.
 
 [source,groovy]
 ----
@@ -459,55 +462,42 @@ g.V().count()
 ==>1
 ----
 
-The graph remains the authoritative in-memory copy and is mirrored to disk, so a persisted graph must still fit in
-memory. The write to the storage log happens before the in-memory commit is applied, so a commit that fails to persist
-is rolled back and none of its changes become visible in the graph.
+The graph remains the authoritative copy in memory and is mirrored to disk, so a persisted graph must still fit in
+memory.
 
-A failure to write to or flush the storage log stops the storage engine from accepting further commits, and each
-subsequent commit fails until the graph is closed and opened again. The graph's committed data stays readable, so it
-can still be exported with the `io()` step. Explicit compaction and `clear()` are refused, and index changes take
-effect in memory only. Reopening rebuilds the graph from what actually
-reached disk. The outcome of the commit that failed is unknown, because its record may have been fully written before
-the error was reported, so after a reopen that transaction may or may not be present. A failure to compact does not
-affect the commit that preceded it, since compaction leaves the existing snapshot and log intact and is attempted again
-once the log has grown by another `gremlin.tinkergraph.storage.compactThreshold` bytes. A compaction that fails when
-the graph is closed is likewise logged, and the graph still closes and releases its storage directory.
+==== Durability
 
-The durability of each commit is governed by the `gremlin.tinkergraph.storage.sync` setting. Under the default
-`commit` mode every committed transaction is forced to disk, so an acknowledged commit survives an operating system
-crash or power loss. The `os` mode instead flushes only to the operating system, which is faster but leaves a commit
-recoverable only across a crash of the JVM process, not an operating system crash or power loss.
+A commit is acknowledged only once it has been written to the store, so a commit that fails to persist is rolled back
+and none of its changes become visible. How far an acknowledged commit is protected is governed by the
+`gremlin.tinkergraph.storage.sync` setting. Under the default `commit` mode every commit is forced to disk, so it
+survives an operating system crash or power loss. The `os` mode only hands the commit to the operating system, which
+is faster but protects it against a crash of the JVM process alone, not an operating system crash or power loss.
 
-A storage engine that appends each commit to a log reclaims space by compacting that log into a fresh snapshot of the
-committed state. Compaction runs when the graph is closed and can be requested explicitly through
-`TinkerStorageGraph.compact()`. So that a long-running graph which is never explicitly closed does not accumulate an
-unbounded log, compaction also runs automatically once the log grows past `gremlin.tinkergraph.storage.compactThreshold`
-bytes. Setting that threshold to `0` disables automatic compaction.
+After a crash, opening the store again restores every acknowledged commit. A commit that was in progress when the
+process stopped was never acknowledged and is not restored. The open repairs what such a crash leaves behind on its
+own and logs a warning saying so.
 
-Durability shapes how a persisted graph behaves under concurrent writes. Each commit writes its changes to the log, and
-under the default `commit` sync mode forces them to disk, while holding a single lock for the whole graph. Commits
-therefore complete one at a time, and write throughput is bounded by how quickly the disk completes a forced write.
-The `os` sync mode shortens each commit at the cost of the weaker guarantee described above. A transaction holds the
-locks on the elements it changed until its commit completes, so the forced write also lengthens the window in which
-another transaction touching those elements fails with a `TransactionException` (see "Best Practices" below).
-Automatic compaction runs as part of the commit that crosses the threshold and rewrites the whole graph while holding
-that same lock, so every other commit waits until it finishes. That pause grows with the size of the graph, which can
-be avoided by setting `gremlin.tinkergraph.storage.compactThreshold` to `0` and calling `TinkerStorageGraph.compact()`
-at a quiet time. Reads do not take the commit lock and are not held up by either. A persisted `TinkerStorageGraph` is
-best suited to a single writer, or a few writers that mostly change different elements, with reads free to run
-alongside them.
+The store grows with each commit until it is compacted, which rewrites the committed state into a fresh snapshot and
+reclaims the space. Compaction runs when the graph is closed, can be requested with `TinkerStorageGraph.compact()`,
+and runs automatically once the log grows past `gremlin.tinkergraph.storage.compactThreshold` bytes, so a long-running
+graph that is never closed does not grow without bound. Setting that threshold to `0` disables automatic compaction.
 
-The property keys a graph indexes are recorded alongside its data and the indexes are rebuilt when the graph is
-opened again, so an index created with `createIndex()` survives a restart and covers the data that was already
-stored. An index dropped with `dropIndex()` stays dropped. Index definitions are held outside the transaction log
-because an index only affects how fast a lookup runs and never its result, so a definition lost to a crash costs a
-rebuild rather than any data. If the record of them cannot be read the graph still opens, with no indexes.
+==== Concurrent Writes
 
-`clear()` empties a persisted graph the same way it empties an in-memory one: at once and outside any transaction, so
-it needs no commit and cannot be rolled back. The calling thread's uncommitted changes are discarded along with the
-rest of the graph, and a transaction still open on another thread fails with a conflict if it commits a change to an
-element that was cleared. The store is emptied in the same call, along with the record of the graph's indexes, so the
-graph is still empty when it is opened again.
+Each commit writes to the store while holding a single lock for the whole graph, and under the default `commit` sync
+mode forces the write to disk before releasing it. Commits therefore complete one at a time, and write throughput is
+bounded by how quickly the disk completes a forced write. The `os` sync mode shortens each commit at the cost of the
+weaker guarantee described above. A transaction holds the locks on the elements it changed until its commit completes,
+so the forced write also lengthens the window in which another transaction touching those elements fails with a
+`TransactionException` (see "Best Practices" below). Automatic compaction runs as part of the commit that crosses the
+threshold and rewrites the whole graph while holding that same lock, so every other commit waits until it finishes.
+That pause grows with the size of the graph, which can be avoided by setting
+`gremlin.tinkergraph.storage.compactThreshold` to `0` and calling `TinkerStorageGraph.compact()` at a quiet time.
+Reads, including the commit of a transaction that only read, do not take the lock and are not held up by either. A
+persisted `TinkerStorageGraph` is best suited to a single writer, or a few writers that mostly change different
+elements, with reads free to run alongside them.
+
+==== What a Store Holds
 
 A persisted graph can only hold values that its storage engine can write. The `graphbinary` engine stores ids,
 property values and meta-property values with the GraphBinary serializers, so each must be one of the types GraphBinary
@@ -520,10 +510,9 @@ the error names the property and the type that could not be stored. Convert such
 interpolated value, such as `"v${i}"`, is a `GString` rather than a `String` and must be converted with `toString()`.
 A graph with no storage engine configured accepts any value.
 
-Each commit is recorded as a single entry in the log, so the changes of one transaction cannot encode to more than
-2,147,483,639 bytes, just under 2 GB, and neither can any one element when the graph is compacted. A transaction that
-exceeds that fails when it commits and is rolled back, and the store is left as it was. Commit very large loads in
-smaller transactions instead.
+The changes of a single transaction cannot add up to more than just under 2 GB once encoded, and neither can any
+single element. A transaction that exceeds that fails when it commits and is rolled back, and the store is left as it
+was. Very large loads should be committed in smaller transactions.
 
 Collection values come back with the contents they were written with but not always as the same class. A `List` keeps
 its order. A `Map` or `Set` is read back as a `HashMap` or `HashSet`, so a `LinkedHashMap`, `TreeMap` or
@@ -536,12 +525,22 @@ generated by the graph or given explicitly with `T.id`, so a vertex property rec
 larger store.
 
 Rebuilding the graph on reopen is subject to `gremlin.tinkergraph.defaultVertexPropertyCardinality`, exactly as
-importing data through the `io()` step is (see <<tinkergraph-configuration>>). TinkerGraph has a single
-graph-wide cardinality rather than a per-key or per-property one. A graph that holds `list` or `set` multi-properties
-must therefore set this default to `list` or `set` when the store is created. Left at the default `single`, only the
-last value of each property survives the reopen. A single stored value cannot be assumed to be a `list` or `set` of one, and the cardinality a
-property was written with is not recorded, so the graph-wide default is the only cardinality applied on reopen. This is
-the same rule that already governs interchange formats.
+importing data through the `io()` step is (see <<tinkergraph-configuration>>). TinkerGraph has a single graph-wide
+cardinality rather than a per-key or per-property one, and the cardinality a property was written with is not
+recorded. A graph that holds `list` or `set` multi-properties must therefore set this default to `list` or `set` when
+the store is created. Left at the default `single`, only the last value of each property survives a reopen.
+
+The property keys a graph indexes are recorded alongside its data and the indexes are rebuilt when the graph is opened
+again, so an index created with `createIndex()` survives a restart and covers the data that was already stored. An
+index dropped with `dropIndex()` stays dropped. An index only affects how fast a lookup runs and never its result, so
+if the record of indexes cannot be read the graph still opens, with no indexes.
+
+`clear()` empties a persisted graph the same way it empties an in-memory one: at once and outside any transaction, so
+it needs no commit and cannot be rolled back. The calling thread's uncommitted changes are discarded along with the
+rest of the graph, and a transaction still open on another thread fails with a conflict if it commits a change to an
+element that was cleared. The store is emptied in the same call, so the graph is still empty when it is opened again.
+
+==== Settings Fixed at Creation
 
 The settings that shape the stored data are fixed when a store is created: the vertex, edge and vertex-property id
 managers, `gremlin.tinkergraph.defaultVertexPropertyCardinality`, `gremlin.tinkergraph.vertexLabelCardinality`,
@@ -553,57 +552,73 @@ reports the recorded values. A setting that is given a different value fails the
 export the graph with the `io()` step and import it into a graph opened on a new storage directory with the new
 settings. Settings that only affect how the engine runs, such as `gremlin.tinkergraph.storage.sync`,
 `gremlin.tinkergraph.storage.compactThreshold` and `gremlin.tinkergraph.storage.preserveVertexPropertyIds`, may change
-between opens. A store that has data but no `settings.properties`, or whose `settings.properties` is missing any of these settings,
-fails to open, and opening it with `gremlin.tinkergraph.storage.recover` reads it with the configured settings.
+between opens. An unusable value for a fixed setting fails the first open before anything is recorded, so the store
+can then be created with the corrected value.
+
+==== One Graph per Directory
 
 A storage location may be opened by only one graph at a time. `TinkerStorageGraph` takes an exclusive lock on the
 storage directory when it opens, so a second attempt to open the same location, whether from the same JVM or another
 process, fails rather than corrupting the data. The lock is released when the graph is closed, and from then on any
-commit against that graph instance fails, since the location may already belong to another graph. Likewise, if the
-storage directory or its log is removed or replaced while the graph is open, the graph stops accepting commits and
-writes nothing more to that location, not even when it is closed. Its committed data stays readable in memory until
-then, so it can still be exported with the `io()` step. The check runs after each commit is forced to disk, so the
-commit that finds a moved store fails and is rolled back in memory even though its record may already be durable in
-the store's new location, much as the outcome of a commit that fails to flush is unknown. A store also records the
-storage format version it was written with. Opening a store written in a format this version cannot read fails
-with a clear error rather than misreading the data. There is no in-place format migration. To move a graph across an
-incompatible storage format, export it with the `io()` step before upgrading and read it back afterward.
+commit against that graph instance fails, since the location may already belong to another graph. A new store is only
+created in an empty directory, so pointing a graph at a directory that holds unrelated files fails rather than mixing
+the store into it.
 
-A store that has been damaged, for example by a failing disk, normally fails to open rather than load data it cannot
-trust. That includes a store missing one of its files. Each store is given an id when it is created, and the snapshot
-and log record both that id and which compaction they belong to. A deleted log, a log whose snapshot is gone, a
-snapshot or log copied in from another store, or data with no `VERSION` marker beside it is therefore reported rather
-than opened as if nothing were wrong.
+If the storage directory or its files are removed or replaced while the graph is open, the graph stops accepting
+commits and writes nothing more to that location, not even when it is closed. Its committed data stays readable in
+memory until then, so it can still be exported with the `io()` step. The commit that discovers the change fails and is
+rolled back in memory, even though it may already have been written to the store's new location.
 
-Two conditions are not damage, and a normal open handles them itself. A log that ends partway through a record is what
-a crash during a commit leaves behind. That commit was never acknowledged, so the incomplete record is removed, a
-warning reports how many bytes were dropped, and the graph opens with every acknowledged commit. On some filesystems
-such a crash instead leaves bytes that were never written reading back as zeros, either after the last complete record
-or at the end of the last record itself. Both are treated the same way: zeros after the last complete record are
-removed, and so is a last record that fails its checksum and ends, at the end of the log, in a zero byte. Any other
-unreadable bytes there are reported as damage. Damage to the last record that happens to leave it ending in a zero
-byte cannot be told apart from such a crash, so that record is removed with the same warning rather than failing the
-open. A snapshot one
-compaction ahead of its log is what a crash during compaction leaves behind. The snapshot already holds everything in
-that log, so the open completes the compaction by replacing the log with an empty one. Damage that leaves a log ending
-exactly on a record boundary, such as a log cut back to its header, cannot be told apart from a log that simply holds
-fewer commits, so any commits cut away that way are lost without a warning.
+A store records the storage format version it was written with, and opening a store in a format this version cannot
+read fails with a clear error rather than misreading the data. There is no in-place format migration. To move a graph
+across an incompatible storage format, export it with the `io()` step before upgrading and read it back afterward.
+
+==== Failures and Recovery
+
+A failure to write to the store while the graph is running, such as a full or failing disk, stops the graph from
+accepting further commits until it is closed and opened again. The commit that hit the failure may or may not be
+present after the reopen, because it may have been written in full before the error was reported. Until then the
+graph's committed data stays readable and can be exported with the `io()` step, while explicit compaction and
+`clear()` are refused and index changes take effect in memory only. Reopening rebuilds the graph from what actually
+reached disk. A failure during compaction is different: it leaves the existing store intact, does not affect the
+commit that preceded it, and is attempted again later. A compaction that fails when the graph is closed is logged, and
+the graph still closes and releases its storage directory.
+
+A store that has been damaged, for example by a failing disk or by one of its files being deleted, edited or copied in
+from another store, normally fails to open rather than load data it cannot trust. The error says what is wrong. One
+kind of damage cannot be detected: a store whose log was cut back to an earlier commit reads as a store that simply
+holds fewer commits, so those commits are lost without a warning.
 
 Setting `gremlin.tinkergraph.storage.recover` to `true` opens a damaged store with everything that remains readable.
 The storage directory must exist, since recovery never creates one, but it need not be writable, so a store can be
-recovered from a read-only copy or mount. A store whose log is missing, or belongs to
-another snapshot or another store, recovers from its snapshot alone, and one missing its `VERSION` marker is read as
-the current format. A log whose snapshot is gone cannot be recovered, because its records depend on the dictionary
-held in that snapshot, and neither can a store whose snapshot came from another store. Each commit in the log is one
-transaction, so replay of the log stops at the first record that cannot be read and keeps every transaction before it. An unreadable element in the snapshot is skipped, along with any edge that
-loses an endpoint as a result. Damage to the start of the snapshot, which holds the dictionary that every other record
-depends on, still fails the open. A warning in the log reports what was left out. The recovered graph is read-only
-with respect to its store. Reads work as usual, including the commit of a transaction that only read. Changes can
-still be made in memory, but they are never recorded: a commit that changed anything is refused and rolled back,
-compaction is refused, and `createIndex()`, `dropIndex()` and `clear()` take effect in memory only. An index created
-this way can speed up the reads an export does. The damaged files therefore stay exactly as they were. The intended
-use is to export the recovered graph with the `io()` step and read it into a graph opened on a new storage
-directory.
+recovered from a read-only copy or mount. Recovery keeps every transaction up to the first one that cannot be read and
+every element of the snapshot that can be read, and a warning reports what was left out. Some damage, such as a
+snapshot from another store or damage to the start of the snapshot, cannot be recovered and still fails the open.
+
+The recovered graph is read-only with respect to its store, so the damaged files stay exactly as they were. Reads work
+as usual. Changes can still be made in memory, but they are never recorded: a commit that changed anything is refused
+and rolled back, compaction is refused, and `createIndex()`, `dropIndex()` and `clear()` take effect in memory only. An
+index created this way can speed up the reads an export does. The intended use is to export the recovered graph with
+the `io()` step and read it into a graph opened on a new storage directory:
+
+[source,groovy]
+----
+conf.setProperty("gremlin.tinkergraph.storage.recover", true)
+damaged = TinkerStorageGraph.open(conf)
+traversal().with(damaged).io("/tmp/recovered.kryo").write().iterate()
+damaged.close()
+
+fresh = new BaseConfiguration()
+fresh.setProperty("gremlin.graph", "org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerStorageGraph")
+fresh.setProperty("gremlin.tinkergraph.storage", "graphbinary")
+fresh.setProperty("gremlin.tinkergraph.storage.directory", "/data/mygraph-recovered")
+graph = TinkerStorageGraph.open(fresh)
+g = traversal().with(graph)
+g.io("/tmp/recovered.kryo").read().iterate()
+g.tx().commit()
+----
+
+==== Gremlin Server
 
 Gremlin Server persists a graph the same way. A graph in the server's `graphs` configuration is pointed at a
 properties file that sets the storage keys, and the server opens that graph at startup, commits to it as clients
