@@ -99,8 +99,9 @@ in order with last write wins per element id, the snapshot first and then the lo
 Labels, property keys and meta-property keys share one dictionary of dense ids assigned in order of first appearance.
 A commit that introduces a string emits its dictionary append inside the same frame, ahead of the entries that use it,
 so a torn frame loses an entry and its users together. Numbering never changes. Compaction writes the whole
-dictionary as the snapshot's first frame and keeps the existing ids, because the log of the previous generation may
-still be replayed against the new snapshot in the compaction crash window described below. If encoding a commit fails,
+dictionary as the snapshot's first frame and keeps the existing ids. No log is replayed against a newer snapshot, since
+the old log left by an interrupted compaction is set aside unread, so the numbering would survive a renumbering too; it
+is kept because doing so costs nothing. If encoding a commit fails,
 for any exception or error, the entries it added are removed again so that a later commit cannot refer to an id that
 never reached disk.
 

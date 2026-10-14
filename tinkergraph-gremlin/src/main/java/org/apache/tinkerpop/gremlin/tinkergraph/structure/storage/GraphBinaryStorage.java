@@ -166,10 +166,11 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
 
     @Override
     protected void writeSnapshot(final AbstractTinkerGraph graph, final DataOutputStream out) throws IOException {
-        // Preserve the existing dictionary numbering rather than renumbering: the compaction crash window can leave
-        // the new snapshot in place with the old log not yet truncated, and that log's refs use the current
-        // numbering. Register any not-yet-seen live strings (this only extends the dictionary, never renumbers), then
-        // emit the whole dictionary as a self-contained header frame so a snapshot-only replay resolves every ref.
+        // Preserve the existing dictionary numbering rather than renumbering. No log is ever replayed against a newer
+        // snapshot, since an open sets aside the old log of an interrupted compaction, so this is not needed for
+        // correctness, but it costs nothing. Register any not-yet-seen live strings (this only extends the
+        // dictionary), then emit the whole dictionary as a self-contained header frame so a snapshot-only replay
+        // resolves every ref.
         // committed*() rather than vertices()/edges(): the snapshot must reflect only committed state, never the
         // calling thread's uncommitted transaction-local mutations, which the transaction-aware iterators would expose.
         final List<String> ignored = new ArrayList<>();
@@ -341,9 +342,8 @@ public final class GraphBinaryStorage extends AbstractLogStorage {
                 case OP_DICT_APPEND: {
                     final int id = readVarInt(buf);
                     final String s = readString(buf);
-                    // idempotent: a snapshot header defines the whole dictionary, and a log surviving the compaction
-                    // crash window may re-append entries the snapshot already established. Re-appending an existing
-                    // id with the same string is a no-op; a mismatch or a gap is corruption.
+                    // idempotent: a snapshot header defines the whole dictionary, and re-appending an existing id with
+                    // the same string is a no-op; a mismatch or a gap is corruption.
                     if (id < idToKey.size()) {
                         if (!idToKey.get(id).equals(s))
                             throw new IOException(String.format("Corrupt storage: dictionary id %d redefined ('%s' vs '%s')", id, idToKey.get(id), s));
