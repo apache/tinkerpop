@@ -29,11 +29,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardOpenOption;
+import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -95,6 +100,37 @@ public class DirectoryLockTest {
         }
 
         // once the simulated holder releases (try-with-resources above), the location opens normally
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(config());
+        graph.close();
+    }
+
+    @Test
+    public void shouldRejectOpenWhileAnotherProcessHoldsTheLock() throws Exception {
+        // a lock held by another JVM is the case the directory lock exists for, and one a second channel in this JVM
+        // cannot stand in for, since the JVM tracks its own locks apart from the operating system's
+        final File dir = new File(location);
+        dir.mkdirs();
+        final String java = new File(new File(System.getProperty("java.home"), "bin"), "java").getAbsolutePath();
+        final Process holder = new ProcessBuilder(java, "-cp", System.getProperty("java.class.path"),
+                DirectoryLockHolder.class.getName(), location).redirectErrorStream(true).start();
+        try {
+            final BufferedReader out = new BufferedReader(
+                    new InputStreamReader(holder.getInputStream(), StandardCharsets.UTF_8));
+            assertEquals("the other process should report holding the lock", "locked", out.readLine());
+            try {
+                TinkerStorageGraph.open(config());
+                fail("expected open to fail while another process holds the storage lock");
+            } catch (IllegalStateException expected) {
+                assertTrue("message should name the location: " + expected.getMessage(),
+                        expected.getMessage().contains(location));
+            }
+        } finally {
+            holder.getOutputStream().close();
+            if (!holder.waitFor(30, TimeUnit.SECONDS))
+                holder.destroyForcibly();
+        }
+
+        // once the other process releases the lock, the location opens normally
         final TinkerStorageGraph graph = TinkerStorageGraph.open(config());
         graph.close();
     }
