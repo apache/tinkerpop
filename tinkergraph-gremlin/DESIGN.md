@@ -133,7 +133,10 @@ transaction's own index changes, not a shared index already committed.
 A commit that cannot be encoded fails on its own and the engine carries on, since nothing was written. A failure to
 write or flush the log stops the engine (fail-stop): what reached disk is unknown, so every later commit is refused
 until the graph is reopened and replays what is actually there. A failed automatic compaction does not fail the commit
-that triggered it. The next attempt waits for another threshold's worth of log.
+that triggered it. The next attempt waits for another threshold's worth of log. An `Error` from it, such as running out
+of memory while writing the snapshot, is not swallowed: `commit()` throws it as it is, and the transaction is committed
+and the engine still accepts commits. A failure of any kind after the new snapshot is renamed into place, while the
+empty log is installed, stops the engine, since the old log can then only stay as it is.
 
 Each frame is held in one buffer, so a single commit, or a single element in a snapshot, is limited to
 `Integer.MAX_VALUE - 8` bytes. A larger one fails during encoding, before anything is written.

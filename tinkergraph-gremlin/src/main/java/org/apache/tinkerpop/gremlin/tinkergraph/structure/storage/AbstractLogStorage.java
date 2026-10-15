@@ -472,6 +472,11 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             installEmptyLog(nextGeneration);
         } catch (IOException ex) {
             throw fail("Could not replace storage log after writing a new snapshot", ex);
+        } catch (RuntimeException | Error ex) {
+            // whatever the failure, the old log can now only stay as it is, so it must take no more commits
+            if (failure == null)
+                failure = new IOException("Could not replace storage log after writing a new snapshot", ex);
+            throw ex;
         }
         generation = nextGeneration;
         // the new log is a new file, and from now on it is the one that must still be in place
@@ -490,7 +495,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
             return;
         try {
             compact(graph);
-        } catch (RuntimeException ex) {
+        } catch (RuntimeException | Error ex) {
             compactionDeferredUntil = logBytesSinceCompaction + compactThresholdBytes;
             throw ex;
         }
