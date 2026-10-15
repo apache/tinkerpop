@@ -1146,10 +1146,13 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
         graph.tx().commit();
         graph.close();
 
-        // rewrite the store-level version marker to name a future, unsupported format version
+        // rewrite the store-level version marker to name a future, unsupported format version, checksummed as the
+        // TinkerPop that wrote it would have
         final File versionFile = new File(location, GraphBinaryStorage.VERSION_FILE);
         final byte[] marker = Files.readAllBytes(versionFile.toPath());
         marker[GraphBinaryStorage.MAGIC.length] = 99; // version byte follows the magic
+        ByteBuffer.wrap(marker).putInt(AbstractLogStorage.VERSION_SIZE - Integer.BYTES,
+                AbstractLogStorage.versionMarkerCrc(marker));
         Files.write(versionFile.toPath(), marker);
 
         try {

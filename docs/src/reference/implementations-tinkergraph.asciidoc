@@ -618,8 +618,10 @@ holds fewer commits, so those commits are lost without a warning.
 Setting `gremlin.tinkergraph.storage.recover` to `true` opens a damaged store with everything that remains readable.
 The storage directory must exist, since recovery never creates one, but it need not be writable, so a store can be
 recovered from a read-only copy or mount. Recovery keeps every transaction up to the first one that cannot be read and
-every element of the snapshot that can be read, and a warning reports what was left out. Some damage, such as a
-snapshot from another store or damage to the start of the snapshot, cannot be recovered and still fails the open.
+every element of the snapshot that can be read, and a warning reports what was left out. A missing or damaged
+`VERSION` file does not stop recovery, which then reads the store in the format of the running version. Some damage,
+such as a snapshot from another store or damage to the start of the snapshot, cannot be recovered and still fails the
+open.
 
 The recovered graph is read-only with respect to its store, so the damaged files stay exactly as they were. Reads work
 as usual. Changes can still be made in memory, but they are never recorded: a commit that changed anything is refused
