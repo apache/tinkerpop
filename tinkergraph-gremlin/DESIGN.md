@@ -187,13 +187,16 @@ and drop them. Replay treats these endings as torn:
 - a header whose length passes its checksum but claims more bytes than remain;
 - every byte after the last complete frame is zero, which some filesystems leave when a crash extends a file before its
   data is written (an all-zero header can never be valid, since the CRC32 of length 0 is `0x2144DF1C`);
-- the last frame fails its payload checksum, ends exactly at the end of the log, and the log's final byte is zero, the
-  state a crash leaves when the header reached the device but the end of the payload did not.
+- the last frame fails its payload checksum, ends exactly at the end of the log, and every byte from the log's last
+  512-byte boundary to its end is zero and part of that frame's payload, the state a crash leaves when the header
+  reached the device but the end of the payload did not. Devices write whole sectors, so data that never reached one
+  reads back as zeros from a sector boundary on.
 
-Anything else that fails a checksum is damage and fails a normal open. The last rule cannot tell a torn frame from a
-damaged final frame whose payload happens to end in a zero byte, so such damage is cut with the same warning. Only the
-final frame is ever affected, and under `sync=commit` an acknowledged commit is lost that way only if the device
-damaged data it had already been forced to hold. A log damaged so that it ends exactly on a frame boundary, such as one
+Anything else that fails a checksum is damage and fails a normal open, including a damaged final frame that merely ends
+in a zero byte, as most vertex and edge records do. The cost is that a payload torn within its last sector, with the
+zeros starting past the boundary or the whole payload shorter than a sector, also fails the open and needs a recover
+open. Only the final frame is ever cut by the last rule, and under `sync=commit` an acknowledged commit is lost that
+way only if the device zeroed the last sector of a record it had already been forced to hold. A log damaged so that it ends exactly on a frame boundary, such as one
 cut back to its header, reads as a log with fewer commits, and the loss is not detected. The sequence numbers do not
 change that, since what remains is still numbered from 0.
 

@@ -135,6 +135,12 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      */
     static final int LOG_FRAME_HEADER_SIZE = 4 * Integer.BYTES;
 
+    /**
+     * The smallest unit a device writes. Data an interrupted append never wrote reads back as zeros in whole sectors,
+     * which is what separates a final frame torn by a crash from one that was damaged.
+     */
+    static final int SECTOR_SIZE = 512;
+
     static final String SNAPSHOT_FILE = "snapshot.gbin";
     static final String LOG_FILE = "log.gbin";
 
@@ -836,9 +842,10 @@ public abstract class AbstractLogStorage implements TinkerStorage {
                 } catch (CorruptFrameException ex) {
                     // a crash can also leave the last frame's header written but its payload reading back as zeros
                     // where the data never reached the device, which fails the payload's checksum. A final frame that
-                    // ends exactly at the end of the log, in a zero byte, is therefore cut as an interrupted append.
+                    // ends exactly at the end of the log in such unwritten sectors is therefore cut as an interrupted
+                    // append.
                     if (log && completeEnd + LOG_FRAME_HEADER_SIZE + ex.payloadLength == fileLength &&
-                            endsInZero(file))
+                            endsInUnwrittenSector(file, completeEnd + LOG_FRAME_HEADER_SIZE, fileLength))
                         break;
                     // the frame's bytes were all present and consumed, so a skippable snapshot frame can be passed over
                     if (recovery == null || log || frameIndex == 0)
@@ -940,15 +947,15 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     }
 
     /**
-     * Whether the last byte of {@code file} is zero.
+     * Whether {@code file} ends as an append the device never finished leaves it: zero from its last
+     * {@link #SECTOR_SIZE}-byte boundary to its end, all within the payload that starts at {@code payloadStart}. Storage
+     * writes whole sectors, so a payload whose end never reached the device reads back as zeros from a sector boundary
+     * on. Damage to a record that was written, even one whose payload ends in a zero byte as most do, does not.
      */
-    private static boolean endsInZero(final File file) throws IOException {
-        try (final RandomAccessFile raf = new RandomAccessFile(file, "r")) {
-            if (raf.length() == 0)
-                return false;
-            raf.seek(raf.length() - 1);
-            return raf.read() == 0;
-        }
+    private static boolean endsInUnwrittenSector(final File file, final long payloadStart, final long fileLength)
+            throws IOException {
+        final long lastSector = (fileLength - 1) / SECTOR_SIZE * SECTOR_SIZE;
+        return lastSector >= payloadStart && isZeroFrom(file, lastSector);
     }
 
     /**
@@ -975,8 +982,9 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      * Cut the log back to {@code completeEnd}, the end of its last complete frame, so that the next append starts on
      * a frame boundary. Without this, new commits would be written after the torn bytes and a later replay would stop
      * at the old torn frame (dropping them) or read into them (failing the CRC check). Only bytes that never formed a
-     * complete frame, or that read as zeros past the last complete frame, are removed, and no acknowledged commit is
-     * ever either.
+     * complete frame, that read as zeros past the last complete frame, or a final frame that ends in unwritten sectors
+     * are removed. Under {@code sync=commit} an acknowledged commit is lost this way only if the device zeroed the last
+     * sector of a record it had already been forced to hold.
      */
     private void truncateTornLogTail(final long completeEnd) {
         final long length = logFile.length();

@@ -133,15 +133,39 @@ public class StorageRecoveryTest {
 
     @Test
     public void shouldCutALastRecordWhosePayloadReadsBackAsZeros() throws Exception {
-        final byte[] log = crashedLogOfThreeCommits();
-        // the last record's header reached the device but the end of its payload did not, reading back as zeros
-        final int[] last = logFrames(log).get(2);
-        Arrays.fill(log, last[2] + last[1] / 2, log.length, (byte) 0);
+        final byte[] log = crashedLogEndingInALargeCommit();
+        // the last record's header reached the device but the sectors at the end of its payload did not, reading back
+        // as zeros from a sector boundary on
+        Arrays.fill(log, lastSectorOf(log), log.length, (byte) 0);
         writeStore(null, log);
 
         final TinkerStorageGraph graph = TinkerStorageGraph.open(config());
         assertEquals("the torn last commit was never acknowledged, so it is cut", Arrays.asList(1, 2), vertexIds(graph));
         graph.close();
+    }
+
+    @Test
+    public void shouldFailOnALastRecordThatEndsInZerosStartingPastASectorBoundary() throws Exception {
+        final byte[] log = crashedLogEndingInALargeCommit();
+        // zeros at the end of the payload that do not reach back to a sector boundary were not left by the device
+        Arrays.fill(log, lastSectorOf(log) + 1, log.length, (byte) 0);
+        log[lastSectorOf(log)] = (byte) 0x7F;
+        writeStore(null, log);
+
+        assertNormalOpenFails();
+    }
+
+    @Test
+    public void shouldFailOnADamagedLastRecordThatEndsInAZeroByte() throws Exception {
+        final byte[] log = crashedLogOfThreeCommits();
+        final int[] last = logFrames(log).get(2);
+        // a vertex whose last property has no meta-properties ends its record in a zero count, so a flipped byte
+        // elsewhere in it leaves a record that fails its checksum and still ends in zero
+        assertEquals("the record ends in a zero byte as written", 0, log[log.length - 1]);
+        log[last[2] + last[1] / 2] ^= 0x01;
+        writeStore(null, log);
+
+        assertNormalOpenFails();
     }
 
     @Test
@@ -576,6 +600,28 @@ public class StorageRecoveryTest {
     /**
      * Three commits, one vertex each, left as a log with no snapshot, as a crash before any compaction would leave.
      */
+    /**
+     * A log of three commits whose last one is large enough that its payload spans whole sectors.
+     */
+    private byte[] crashedLogEndingInALargeCommit() throws IOException {
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(config());
+        graph.addVertex(T.id, 1, "name", "marko");
+        graph.tx().commit();
+        graph.addVertex(T.id, 2, "name", "vadas");
+        graph.tx().commit();
+        graph.addVertex(T.id, 3, "name", String.join("", Collections.nCopies(4 * AbstractLogStorage.SECTOR_SIZE, "x")));
+        graph.tx().commit();
+        final byte[] log = Files.readAllBytes(logFile().toPath());
+        graph.close();
+        final int[] last = logFrames(log).get(2);
+        assertTrue("the last payload must start before the log's last sector", last[2] < lastSectorOf(log));
+        return log;
+    }
+
+    private static int lastSectorOf(final byte[] file) {
+        return (file.length - 1) / AbstractLogStorage.SECTOR_SIZE * AbstractLogStorage.SECTOR_SIZE;
+    }
+
     private byte[] crashedLogOfThreeCommits() throws IOException {
         final TinkerStorageGraph graph = TinkerStorageGraph.open(config());
         graph.addVertex(T.id, 1, "name", "marko");
