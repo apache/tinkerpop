@@ -51,13 +51,14 @@ public interface TinkerGraph extends Graph {
      * {@code org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DefaultStorage} enum name (e.g.
      * {@code graphbinary}) or the fully-qualified class name of a
      * {@code org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage} implementation. When unset, the
-     * graph holds data only in memory. Not valid on {@link TinkerMemoryGraph}.
+     * graph holds data only in memory. Ignored by {@link TinkerMemoryGraph}, which logs a warning when this or any
+     * other {@code gremlin.tinkergraph.storage.*} key is set.
      */
     String GREMLIN_TINKERGRAPH_STORAGE = "gremlin.tinkergraph.storage";
     /**
-     * The filesystem directory that a {@link TinkerStorageGraph} storage engine uses for its durable data. Ignored by
-     * {@link TinkerMemoryGraph}, which is purely in-memory. Only meaningful when {@link #GREMLIN_TINKERGRAPH_STORAGE}
-     * is also set.
+     * The filesystem directory that a {@link TinkerStorageGraph} storage engine uses for its durable data. Ignored, with
+     * a warning, by {@link TinkerMemoryGraph}, which is purely in-memory. Only meaningful when
+     * {@link #GREMLIN_TINKERGRAPH_STORAGE} is also set.
      */
     String GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY = "gremlin.tinkergraph.storage.directory";
     /**

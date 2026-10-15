@@ -177,7 +177,9 @@ TinkerGraph has several settings that can be provided on creation via `Configura
 |gremlin.tinkergraph.storage |The durable storage engine used by `TinkerStorageGraph` to persist committed transactions
 to disk. The value is either a built-in engine name (`graphbinary`) or a fully qualified class name of a
 `TinkerStorage` implementation. When not specified (default), the graph holds data only in memory. This setting is
-only valid on `TinkerStorageGraph` and is ignored by the in-memory `TinkerMemoryGraph`.
+only valid on `TinkerStorageGraph`. The in-memory `TinkerMemoryGraph`, which `TinkerGraph.open()` and
+`gremlin.graph=...TinkerGraph` create, ignores it and every other `gremlin.tinkergraph.storage.*` setting and logs a
+warning when one is set.
 |gremlin.tinkergraph.storage.directory |The directory in which `TinkerStorageGraph` stores its durable data. Required
 when `gremlin.tinkergraph.storage` is set and ignored otherwise. A relative path resolves against the working directory
 of the JVM, so an absolute path is safer for a graph opened by Gremlin Server or the Gremlin Console.

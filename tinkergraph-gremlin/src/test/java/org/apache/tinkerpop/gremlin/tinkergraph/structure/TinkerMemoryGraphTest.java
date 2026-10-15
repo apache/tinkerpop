@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.GraphHelper;
@@ -59,6 +62,7 @@ import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.io.ByteArrayInputStream;
@@ -95,6 +99,33 @@ import static org.junit.Assume.assumeThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class TinkerMemoryGraphTest {
+
+    @Test
+    public void shouldWarnWhenConfiguredWithStorageSettings() {
+        final ch.qos.logback.classic.Logger logger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(TinkerMemoryGraph.class);
+        final ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+        try {
+            TinkerGraph.open().close();
+            assertTrue("no storage settings, no warning", appender.list.isEmpty());
+
+            final Configuration conf = new BaseConfiguration();
+            conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+            conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, "/data/mygraph");
+            TinkerGraph.open(conf).close();
+            assertEquals(1, appender.list.size());
+            final ILoggingEvent warning = appender.list.get(0);
+            assertEquals(Level.WARN, warning.getLevel());
+            assertTrue(warning.getFormattedMessage(),
+                    warning.getFormattedMessage().contains(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY));
+            assertTrue(warning.getFormattedMessage(),
+                    warning.getFormattedMessage().contains(TinkerStorageGraph.class.getName()));
+        } finally {
+            logger.detachAppender(appender);
+        }
+    }
 
     @Test
     public void shouldManageIndices() {
