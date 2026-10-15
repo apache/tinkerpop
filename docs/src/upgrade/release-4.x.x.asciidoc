@@ -147,7 +147,7 @@ code that referenced them no longer compiles.
 * The Gremlin Console sample `conf/tinkergraph-gryo.properties`, replaced by `conf/tinkergraph-storage.properties`,
 which opens a `TinkerStorageGraph` with disk storage.
 
-See: <<tinkergraph-gremlin,TinkerGraph>>
+See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergraph-gremlin-persistence[TinkerGraph Persistence]
 
 === Upgrading for Providers
 
