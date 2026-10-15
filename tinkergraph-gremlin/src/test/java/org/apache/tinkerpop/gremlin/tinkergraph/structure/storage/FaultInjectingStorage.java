@@ -42,7 +42,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * are buffered, so for them the failure surfaces at flush; a frame larger than the buffer fails during the append
  * itself. While {@link #failCompaction} is set, compaction throws before touching any file, and while
  * {@link #failSnapshotWrites} is set it fails partway through writing the new snapshot, or with an {@code Error}
- * while {@link #failSnapshotWritesWithError} is set. {@link #compactionAttempts}
+ * while {@link #failSnapshotWritesWithError} is set. Installing an empty log fails with an {@code IOException} while
+ * {@link #failEmptyLogInstallWithIOException} is set, or throws {@link #failEmptyLogInstall} when that is set. {@link #compactionAttempts}
  * counts every compaction started, whether or not it fails. When {@link #compactionGate} is set, compaction counts
  * down {@link #compactionEntered} and then waits for the gate, holding the graph's commit lock as its caller does, so
  * a test can make another thread wait on that lock. Selected by
@@ -55,6 +56,8 @@ public final class FaultInjectingStorage extends AbstractLogStorage {
     static volatile boolean failCompaction = false;
     static volatile boolean failSnapshotWrites = false;
     static volatile boolean failSnapshotWritesWithError = false;
+    static volatile RuntimeException failEmptyLogInstall = null;
+    static volatile boolean failEmptyLogInstallWithIOException = false;
     static final AtomicInteger compactionAttempts = new AtomicInteger();
     static volatile CountDownLatch compactionEntered = null;
     static volatile CountDownLatch compactionGate = null;
@@ -64,6 +67,8 @@ public final class FaultInjectingStorage extends AbstractLogStorage {
         failCompaction = false;
         failSnapshotWrites = false;
         failSnapshotWritesWithError = false;
+        failEmptyLogInstall = null;
+        failEmptyLogInstallWithIOException = false;
         compactionAttempts.set(0);
         compactionEntered = null;
         compactionGate = null;
@@ -110,6 +115,16 @@ public final class FaultInjectingStorage extends AbstractLogStorage {
         if (failCompaction)
             throw new UncheckedIOException(new IOException("injected compaction failure"));
         super.compact(graph, force);
+    }
+
+    @Override
+    protected FileOutputStream openEmptyLog(final File tmp) throws IOException {
+        if (failEmptyLogInstallWithIOException)
+            throw new IOException("injected empty log install failure");
+        final RuntimeException failure = failEmptyLogInstall;
+        if (failure != null)
+            throw failure;
+        return super.openEmptyLog(tmp);
     }
 
     @Override

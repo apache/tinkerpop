@@ -353,6 +353,51 @@ public class StorageFailureTest {
     }
 
     @Test
+    public void shouldStopCommitsWhenTheEmptyLogCannotBeInstalledAfterTheSnapshot() {
+        FaultInjectingStorage.failEmptyLogInstallWithIOException = true;
+        assertEmptyLogInstallFailureStopsCommits();
+    }
+
+    @Test
+    public void shouldStopCommitsWhenInstallingTheEmptyLogThrowsAfterTheSnapshot() {
+        FaultInjectingStorage.failEmptyLogInstall = new IllegalStateException("injected empty log install failure");
+        assertEmptyLogInstallFailureStopsCommits();
+    }
+
+    /**
+     * Once a compaction's snapshot is renamed into place the old log can only stay as it is, since the next open
+     * replaces it unread, so a failure installing the new empty log must stop commits that would be appended to it.
+     */
+    private void assertEmptyLogInstallFailureStopsCommits() {
+        // armed after the open, which installs the first empty log through the same path
+        final boolean ioFailure = FaultInjectingStorage.failEmptyLogInstallWithIOException;
+        final RuntimeException failure = FaultInjectingStorage.failEmptyLogInstall;
+        FaultInjectingStorage.reset();
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+
+        FaultInjectingStorage.failEmptyLogInstallWithIOException = ioFailure;
+        FaultInjectingStorage.failEmptyLogInstall = failure;
+        try {
+            graph.compact();
+            fail("compaction should fail when its empty log cannot be installed");
+        } catch (RuntimeException expected) {
+            final Throwable injected = null == expected.getCause() ? expected : expected.getCause();
+            assertEquals("injected empty log install failure", injected.getMessage());
+        }
+        FaultInjectingStorage.reset();
+
+        graph.addVertex(T.id, 2);
+        assertCommitFails(graph);
+        graph.close();
+
+        graph = TinkerStorageGraph.open(conf);
+        assertEquals("the snapshot holds every acknowledged commit", Arrays.asList(1), vertexIds(graph));
+        graph.close();
+    }
+
+    @Test
     public void shouldRefuseCommitsWhenClearCannotEmptyTheStore() {
         TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
         graph.addVertex(T.id, 1);

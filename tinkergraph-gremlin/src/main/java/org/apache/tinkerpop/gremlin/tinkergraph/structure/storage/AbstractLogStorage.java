@@ -774,7 +774,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      */
     private void installEmptyLog(final long logGeneration) throws IOException {
         final File tmp = new File(directory, LOG_FILE + ".tmp");
-        try (final FileOutputStream fos = new FileOutputStream(tmp);
+        try (final FileOutputStream fos = openEmptyLog(tmp);
              final DataOutputStream out = new DataOutputStream(fos)) {
             writeHeader(out, logGeneration);
             out.flush();
@@ -1072,6 +1072,14 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      */
     protected FileOutputStream openLogForAppend(final File file) throws IOException {
         return new FileOutputStream(file, true);
+    }
+
+    /**
+     * Open the temporary file an empty log is written to before it replaces the log. A seam for tests that fail
+     * installing a log, as for {@link #openLogForAppend}.
+     */
+    protected FileOutputStream openEmptyLog(final File tmp) throws IOException {
+        return new FileOutputStream(tmp);
     }
 
     private void closeLog() {
