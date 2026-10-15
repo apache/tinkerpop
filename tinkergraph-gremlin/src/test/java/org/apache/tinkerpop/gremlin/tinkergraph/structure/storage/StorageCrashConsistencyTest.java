@@ -111,6 +111,18 @@ public class StorageCrashConsistencyTest {
         Files.deleteIfExists(tmpSnapshotFile.toPath());
     }
 
+    private void assertReopensWithTheOldLogReplacedTo(final int... expectedIds) {
+        final TinkerStorageGraph graph = open();
+        try {
+            assertEquals("the old log is replaced by an empty one", AbstractLogStorage.HEADER_SIZE, logFile.length());
+            assertEquals(expectedIds.length, countOf(graph.vertices()));
+            for (final int id : expectedIds)
+                assertEquals(Integer.valueOf(id), graph.vertices(id).next().value("value"));
+        } finally {
+            graph.close();
+        }
+    }
+
     private void assertReopensTo(final int... expectedIds) {
         final TinkerStorageGraph graph = open();
         try {
@@ -160,23 +172,21 @@ public class StorageCrashConsistencyTest {
     }
 
     @Test
-    public void shouldRecoverFromNewSnapshotWithLogNotYetDeleted() throws Exception {
-        // crash after the rename installed the new snapshot but before the log was truncated: snapshot holds {1,2}
-        // and the stale log still holds {2}. Folding snapshot-then-log is idempotent (last write per id wins), so the
-        // result is exactly {1,2} — never a lost or duplicated element.
+    public void shouldUseTheNewSnapshotAloneWhenACompactionCrashedBeforeReplacingTheLog() throws Exception {
+        // crash after the rename installed the new snapshot but before the log was replaced: snapshot holds {1,2} and
+        // the old log still holds {2}. The snapshot is a generation ahead of the log, so the open completes the
+        // compaction by replacing the old log unread, and the snapshot alone gives exactly {1,2}.
         captureBuildingBlocks();
         Files.write(snapshotFile.toPath(), snapshotV12);
         Files.write(logFile.toPath(), logV2);
-        assertReopensTo(1, 2);
+        assertReopensWithTheOldLogReplacedTo(1, 2);
     }
 
     @Test
-    public void shouldRecoverCrashWindowWithADeadKeyForcingDictionaryDivergence() throws Exception {
-        // Guards the preserve-dictionary-numbering decision. A key ("alpha") is deleted from the live graph after it
-        // is in the dictionary, then a new key ("gamma") is added. Preserving numbering keeps alpha's id forever, so
-        // the surviving log's gamma ref still matches the new snapshot's dictionary. Renumbering on compaction would
-        // instead drop the now-dead alpha and shift gamma to a lower id, so the log's higher-numbered gamma ref would
-        // no longer resolve. A single-key (or no-delete) state cannot tell the two apart.
+    public void shouldUseTheNewSnapshotAloneWhenACompactionWithADeadKeyCrashedBeforeReplacingTheLog() throws Exception {
+        // The same crash window with a snapshot whose dictionary holds a key ("alpha") that no element uses any more,
+        // beside a key ("gamma") added after it. The open replaces the old log unread, so the new snapshot alone must
+        // give back the surviving vertex with both of its keys.
         final TinkerStorageGraph g = open();
         g.addVertex(T.id, 1, "alpha", 1);
         g.tx().commit();
@@ -184,24 +194,22 @@ public class StorageCrashConsistencyTest {
         g.tx().commit();
         g.compact(); // snapshot holds alpha and beta in the dictionary at stable ids
 
-        g.vertices(1).next().remove(); // alpha becomes a dead key: retained only under preserve-numbering
+        g.vertices(1).next().remove(); // alpha becomes a dead key, still in the dictionary
         g.tx().commit();
-        // re-write the surviving vertex: its record now carries a bare reference to the pre-existing key "beta"
-        // (not re-appended) plus a new key "gamma". If compaction renumbered, "beta"'s id would shift and this bare
-        // reference would resolve to the wrong key on replay.
-        g.vertices(2).next().property("gamma", "g");
+        g.vertices(2).next().property("gamma", "g"); // a key added after the dead one
         g.tx().commit();
         final byte[] logNotYetDeleted = Files.readAllBytes(logFile.toPath());
-        g.compact(); // new full-dictionary snapshot (preserved numbering), then log truncated
+        g.compact(); // new snapshot whose dictionary still holds alpha, then the log is replaced
         final byte[] newSnapshot = Files.readAllBytes(snapshotFile.toPath());
         g.close();
 
-        // reconstruct the crash window: new snapshot in place, old log not yet deleted
+        // reconstruct the crash window: new snapshot in place, old log not yet replaced
         Files.write(snapshotFile.toPath(), newSnapshot);
         Files.write(logFile.toPath(), logNotYetDeleted);
 
         final TinkerStorageGraph reopened = open();
         try {
+            assertEquals("the old log is replaced by an empty one", AbstractLogStorage.HEADER_SIZE, logFile.length());
             assertEquals(1, countOf(reopened.vertices())); // only the surviving vertex 2
             assertEquals(0, countOf(reopened.vertices(1))); // alpha's vertex was deleted
             final Vertex v = reopened.vertices(2).next();
