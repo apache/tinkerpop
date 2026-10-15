@@ -486,8 +486,8 @@ process stopped was never acknowledged and is not restored. The open repairs wha
 own and logs a warning saying so.
 
 The store grows with each commit until it is compacted, which rewrites the committed state into a fresh snapshot and
-reclaims the space. Compaction runs when the graph is closed after any commit, can be requested with
-`TinkerStorageGraph.compact()`, and runs automatically once the log grows past
+reclaims the space. Compaction runs when the graph is closed after any commit, can be requested by calling the
+graph's `compact()` method, and runs automatically once the log grows past
 `gremlin.tinkergraph.storage.compactThreshold` bytes, so a long-running graph that is never closed does not grow without
 bound. Setting that threshold to `0` disables automatic compaction.
 
@@ -501,7 +501,7 @@ so the forced write also lengthens the window in which another transaction touch
 `TransactionException` (see "Best Practices" below). Automatic compaction runs as part of the commit that crosses the
 threshold and rewrites the whole graph while holding that same lock, so every other commit waits until it finishes.
 That pause grows with the size of the graph, which can be avoided by setting
-`gremlin.tinkergraph.storage.compactThreshold` to `0` and calling `TinkerStorageGraph.compact()` at a quiet time.
+`gremlin.tinkergraph.storage.compactThreshold` to `0` and calling the graph's `compact()` at a quiet time.
 Reads, including the commit of a transaction that only read, do not take the lock and are not held up by either. A
 persisted `TinkerStorageGraph` is best suited to a single writer, or a few writers that mostly change different
 elements, with reads free to run alongside them.
@@ -553,8 +553,11 @@ set `gremlin.tinkergraph.defaultVertexPropertyCardinality` to `list` or `set` wh
 
 The property keys a graph indexes are recorded alongside its data and the indexes are rebuilt when the graph is opened
 again, so an index created with `createIndex()` survives a restart and covers the data that was already stored. An
-index dropped with `dropIndex()` stays dropped. An index only affects how fast a lookup runs and never its result, so
-if the record of indexes cannot be read the graph still opens, with no indexes.
+index dropped with `dropIndex()` stays dropped. Index changes are recorded when `createIndex()` or `dropIndex()` is
+called, independent of any open transaction, so an index created inside a transaction that is rolled back is still
+recorded. `clear()` removes the recorded indexes along with the data, as it does in memory. An index only affects how
+fast a lookup runs and never its result, so if the record of indexes cannot be read the graph still opens, with no
+indexes.
 
 `clear()` empties a persisted graph the same way it empties an in-memory one: at once and outside any transaction, so
 it needs no commit and cannot be rolled back. The calling thread's uncommitted changes are discarded along with the
@@ -585,7 +588,9 @@ storage directory when it opens, so a second attempt to open the same location, 
 process, fails rather than corrupting the data. The lock is released when the graph is closed, and from then on any
 commit against that graph instance fails, since the location may already belong to another graph. A new store is only
 created in an empty directory, so pointing a graph at a directory that holds unrelated files fails rather than mixing
-the store into it. A recovery open, described below, takes the same lock, so it too fails while another graph has the
+the store into it. Hidden files count, so the root of a mounted volume, which often holds `lost+found`, or a directory
+holding a stray `.DS_Store` is refused, and a store on its own volume belongs in a subdirectory of the mount. A
+recovery open, described below, takes the same lock, so it too fails while another graph has the
 store open. A store in a directory the process cannot write can only be opened for recovery.
 
 If the storage directory or its files are removed or replaced while the graph is open, the graph stops accepting
