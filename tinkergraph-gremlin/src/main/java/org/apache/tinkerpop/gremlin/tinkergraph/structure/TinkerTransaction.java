@@ -268,9 +268,10 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
             }
             throw ex;
         } finally {
-            // remove elements from graph if not used in other tx's
-            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.getVertices().remove(v.getElementId()));
-            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.getEdges().remove(e.getElementId()));
+            // remove elements from graph if not used in other tx's. Only the container itself is removed: after clear()
+            // the id may already belong to a new container, added and committed since this transaction began
+            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.getVertices().remove(v.getElementId(), v));
+            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.getEdges().remove(e.getElementId(), e));
 
             final Set<TinkerElementContainer> readElements = txReadElements.get();
             if (readElements != null)
@@ -338,11 +339,11 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
         final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
         if (edgeIndex != null) edgeIndex.rollback();
 
-        // cleanup unused containers
+        // cleanup unused containers, removing only the container itself, as in doCommit
         if (null != changedVertices)
-            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.getVertices().remove(v.getElementId()));
+            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.getVertices().remove(v.getElementId(), v));
         if (null != changedEdges)
-            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.getEdges().remove(e.getElementId()));
+            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.getEdges().remove(e.getElementId(), e));
 
         final Set<TinkerElementContainer> readElements = txReadElements.get();
         if (readElements != null)
