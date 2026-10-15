@@ -49,4 +49,15 @@ public class MeanLocalStepTest extends StepTest {
         assertEquals(BigDecimal.ONE, __.__((short) 1, BigInteger.ONE).fold().mean(Scope.local).next());
         assertEquals(BigDecimal.ONE, __.__(BigInteger.ONE, (short) 1).fold().mean(Scope.local).next());
     }
+
+    @Test
+    public void shouldReturnIdentityOnNumericSingleScalar() {
+        // mean of a single element is that element divided by 1
+        assertEquals(42d, __.inject(42).mean(Scope.local).next());
+    }
+
+    @Test(expected = ClassCastException.class)
+    public void shouldThrowOnNonNumericSingleScalar() {
+        __.inject("hello").mean(Scope.local).next();
+    }
 }
