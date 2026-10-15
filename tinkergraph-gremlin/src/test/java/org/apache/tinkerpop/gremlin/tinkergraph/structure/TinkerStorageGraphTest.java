@@ -84,8 +84,12 @@ public class TinkerStorageGraphTest {
         });
         try {
             other.start();
-            while (!graph.storageCommitLock.hasQueuedThreads())
+            // bounded, so a thread that fails before it reaches the lock fails the test instead of hanging the build
+            final long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+            while (!graph.storageCommitLock.hasQueuedThreads() && other.isAlive() && System.nanoTime() < deadline)
                 Thread.sleep(1);
+            assertTrue("the other commit should be waiting on the commit lock: " + otherCommit.get(),
+                    graph.storageCommitLock.hasQueuedThreads());
             graph.clear();
         } finally {
             graph.storageCommitLock.unlock();
