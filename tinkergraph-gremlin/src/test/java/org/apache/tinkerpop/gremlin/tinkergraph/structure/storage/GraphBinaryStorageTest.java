@@ -702,6 +702,53 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     }
 
     @Test
+    public void shouldClearAStoreReopenedWithNothingLoggedSinceItsLastCompaction() throws Exception {
+        TinkerStorageGraph graph = open();
+        final String location = graph.configuration().getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY);
+        graph.addVertex(T.id, 1);
+        graph.addVertex(T.id, 2);
+        graph.tx().commit();
+        graph.close(); // compacts, so the reopened store has nothing in its log
+
+        graph = open();
+        graph.clear();
+        graph.close();
+        graph = open();
+        assertEquals("the cleared data must not return", 0, countOf(graph.vertices()));
+
+        // nor return beside what is committed after the clear, should the graph crash before closing
+        graph.addVertex(T.id, 1);
+        graph.addVertex(T.id, 2);
+        graph.tx().commit();
+        graph.close();
+        graph = open();
+        graph.clear();
+        graph.addVertex(T.id, 3);
+        graph.tx().commit();
+        final Map<String, byte[]> crash = captureStorageFiles(location);
+        graph.close();
+        restoreStorageFiles(location, crash);
+
+        graph = open();
+        assertEquals(Collections.singletonList(3), vertexIds(graph));
+        graph.close();
+    }
+
+    @Test
+    public void shouldClearAStoreRightAfterACompaction() {
+        TinkerStorageGraph graph = open();
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+        graph.compact();
+        graph.clear();
+        graph.close();
+
+        graph = open();
+        assertEquals("the cleared data must not return", 0, countOf(graph.vertices()));
+        graph.close();
+    }
+
+    @Test
     public void shouldKeepAClearedGraphClearedWithoutACommit() {
         TinkerStorageGraph graph = open();
         graph.addVertex(T.id, 1);

@@ -400,6 +400,16 @@ public abstract class AbstractLogStorage implements TinkerStorage {
 
     @Override
     public void compact(final AbstractTinkerGraph graph) {
+        compact(graph, false);
+    }
+
+    /**
+     * Every compaction, explicit, automatic or for {@link #clear}, runs through here.
+     *
+     * @param force rewrite the store even when nothing was logged since the last compaction, as {@link #clear} must,
+     *              since the graph it writes then no longer matches the snapshot
+     */
+    protected void compact(final AbstractTinkerGraph graph, final boolean force) {
         // after a write failure the disk is suspect and the log's buffered tail must not be written, so leave the
         // files as they are for the next open to replay
         if (closed || recovering || failure != null)
@@ -415,7 +425,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         checkStoreInPlace();
         // with nothing logged since the last compaction the snapshot already holds everything the graph has
         // committed, so rewriting it would only cost a full write and sync, which close() would pay every time
-        if (logBytesSinceCompaction == 0)
+        if (logBytesSinceCompaction == 0 && !force)
             return;
         closeLog();
         final long nextGeneration = generation + 1;
@@ -486,7 +496,7 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         checkNotRecovering();
         checkNotFailed();
         try {
-            compact(graph);
+            compact(graph, true);
         } catch (RuntimeException ex) {
             // compaction is crash-safe, so the store still holds either the old data or nothing; which one is unknown
             // after a failure, and later commits must not be appended to data the graph no longer has. The graph is
