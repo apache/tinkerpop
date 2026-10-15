@@ -711,7 +711,11 @@ public final class TraversalHelper {
                 return true;
             traversal = traversal.getParent().asStep().getTraversal();
         }
-        return false;
+        if (traversal.getSteps().size() > 0) {
+            return traversal.getSteps().get(0) instanceof TraversalVertexProgramStep;
+        } else {
+            return false;
+        }
     }
 
     public static void removeAllSteps(final Traversal.Admin<?, ?> traversal) {
