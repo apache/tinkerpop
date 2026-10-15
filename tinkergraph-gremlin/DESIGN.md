@@ -43,7 +43,7 @@ A storage directory holds:
 | File | Contents | Written |
 |---|---|---|
 | `LOCK` | a random 16-byte token written by the graph that holds it; held with a file lock while a graph has the store open | at open |
-| `VERSION` | magic `TGSB`, format version byte (currently `1`), store id (16-byte UUID) | when the store is created |
+| `VERSION` | magic `TGSB`, format version byte (currently `1`), store id (16-byte UUID), CRC32 of those bytes | when the store is created |
 | `settings.properties` | the data-shaping settings the store was created with, as Java properties | when the store is created |
 | `snapshot.gbin` | file header, then a dictionary frame and one frame per element | by compaction |
 | `log.gbin` | file header, then one frame per commit since the last compaction | appended by every commit |
@@ -62,7 +62,8 @@ header from reading as a believable one, since a flipped bit in the generation w
 as if it belonged to another snapshot. A snapshot whose header is damaged fails the open, recovery included, because
 nothing in it can be trusted to belong to the store. A damaged log header fails a normal open, and recovery reads the
 snapshot alone. When the snapshot and log agree on their store but `VERSION` names another, the error names `VERSION`
-as the file that does not belong.
+as the file that does not belong. `VERSION` carries a checksum of its own for the same reason, so a damaged marker is
+reported as damaged rather than as one from another store.
 
 ## Frames
 
@@ -210,7 +211,8 @@ compaction, and no commits. Each log frame is applied atomically through a journ
 frame that cannot be read, keeping every transaction before it. An unreadable snapshot frame is skipped, except the
 first, which holds the dictionary every other record depends on, and edges that lose an endpoint as a result are
 dropped. A log that is missing, or belongs to another snapshot or store, is ignored and the snapshot read alone. A
-`VERSION` that is missing is tolerated. What was left out is reported in one warning.
+`VERSION` that is missing or damaged is tolerated: the store is then read as the current format, with the store id of
+its snapshot, so a log from another store is still set aside. What was left out is reported in one warning.
 
 A recovered graph still accepts in-memory changes and refuses them at commit, and `createIndex`, `dropIndex` and
 `clear()` work in memory without being recorded. Reads, and commits of transactions that only read, work as usual.

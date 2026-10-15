@@ -92,8 +92,9 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     static final byte FORMAT_VERSION = 1;
 
     /**
-     * Store-level version marker file, holding {@link #MAGIC}, the one-byte {@link #FORMAT_VERSION} and the store's
-     * {@link #STORE_ID_SIZE}-byte id.
+     * Store-level version marker file, holding {@link #MAGIC}, the one-byte {@link #FORMAT_VERSION}, the store's
+     * {@link #STORE_ID_SIZE}-byte id and a 4-byte CRC32 of those bytes, {@link #VERSION_SIZE} bytes in all. The
+     * checksum lets a damaged marker be reported as damage rather than as a marker from another store.
      */
     static final String VERSION_FILE = "VERSION";
 
@@ -103,6 +104,11 @@ public abstract class AbstractLogStorage implements TinkerStorage {
      * recognized as foreign. The generation alone can't do that, since two stores can be at the same one.
      */
     static final int STORE_ID_SIZE = 2 * Long.BYTES;
+
+    /**
+     * Bytes of the {@link #VERSION_FILE} marker.
+     */
+    static final int VERSION_SIZE = MAGIC.length + 1 + STORE_ID_SIZE + Integer.BYTES;
 
     /**
      * Bytes of the per-file header: {@link #MAGIC}, the file's 8-byte compaction generation, the id of the store it
@@ -576,30 +582,68 @@ public abstract class AbstractLogStorage implements TinkerStorage {
                     throw new IllegalStateException(problem + String.format(
                             "; open it with %s to read it as format version %d",
                             TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER, FORMAT_VERSION));
-                recovery.note(problem + String.format("; it was read as format version %d, without checking that " +
-                        "its files belong to the same store.", FORMAT_VERSION));
+                recovery.note(problem + String.format("; it was read as format version %d, checking its snapshot " +
+                        "and log against each other.", FORMAT_VERSION));
             } else if (!recovering) {
                 storeId = UUID.randomUUID();
                 writeStoreVersion();
             }
             return;
         }
-        try (final DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(versionFile)))) {
-            final byte[] magic = new byte[MAGIC.length];
-            readFully(in, magic);
-            if (!Arrays.equals(magic, MAGIC))
-                throw new IOException(String.format("%s is not a TinkerGraph storage version marker (bad magic)", versionFile));
-            final byte version = in.readByte();
-            if (version != FORMAT_VERSION)
-                throw new IOException(String.format(
-                        "Unsupported storage format version %d at %s (this build writes %d); open it with the TinkerPop " +
-                                "version that wrote it and export it with g.io()",
-                        version, directory, FORMAT_VERSION));
-            storeId = new UUID(in.readLong(), in.readLong());
+        final byte[] marker;
+        try {
+            marker = Files.readAllBytes(versionFile.toPath());
         } catch (IOException ex) {
             throw new UncheckedIOException(String.format("Could not read storage version marker %s: %s", versionFile,
                     ex.getMessage()), ex);
         }
+        final String damage = versionMarkerDamage(marker);
+        if (damage != null) {
+            // the marker holds nothing the snapshot and log headers do not also carry, except the format version, so
+            // a recovery open reads past it, taking the store id the snapshot and log share
+            final String problem = String.format("Storage version marker %s is damaged (%s)", versionFile, damage);
+            if (!recovering)
+                throw new IllegalStateException(problem + String.format("; open the store with %s to read it as " +
+                        "format version %d", TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER, FORMAT_VERSION));
+            recovery.note(problem + String.format("; it was read as format version %d, checking its snapshot and " +
+                    "log against each other.", FORMAT_VERSION));
+            return;
+        }
+        final byte version = marker[MAGIC.length];
+        if (version != FORMAT_VERSION) {
+            final String unsupported = String.format("Unsupported storage format version %d at %s (this build " +
+                    "writes %d); open it with the TinkerPop version that wrote it and export it with g.io()",
+                    version, directory, FORMAT_VERSION);
+            throw new UncheckedIOException(String.format("Could not read storage version marker %s: %s", versionFile,
+                    unsupported), new IOException(unsupported));
+        }
+        final ByteBuffer id = ByteBuffer.wrap(marker, MAGIC.length + 1, STORE_ID_SIZE);
+        storeId = new UUID(id.getLong(), id.getLong());
+    }
+
+    /**
+     * What is wrong with a version marker's bytes, or {@code null} if they are whole. A marker that a later TinkerPop
+     * wrote in another layout reads as damaged too, and the reason then names its format byte.
+     */
+    private static String versionMarkerDamage(final byte[] marker) {
+        if (marker.length < MAGIC.length || !Arrays.equals(Arrays.copyOf(marker, MAGIC.length), MAGIC))
+            return "it does not start with the storage magic";
+        final String newer = marker.length > MAGIC.length && marker[MAGIC.length] != FORMAT_VERSION ?
+                String.format(", or it was written in format version %d", marker[MAGIC.length]) : "";
+        if (marker.length != VERSION_SIZE)
+            return String.format("it is %d bytes rather than %d%s", marker.length, VERSION_SIZE, newer);
+        if (ByteBuffer.wrap(marker).getInt(VERSION_SIZE - Integer.BYTES) != versionMarkerCrc(marker))
+            return "its checksum does not match" + newer;
+        return null;
+    }
+
+    /**
+     * The CRC32 of a version marker's bytes ahead of the checksum itself.
+     */
+    static int versionMarkerCrc(final byte[] marker) {
+        final CRC32 crc = new CRC32();
+        crc.update(marker, 0, VERSION_SIZE - Integer.BYTES);
+        return (int) crc.getValue();
     }
 
     private void writeStoreVersion() {
@@ -607,12 +651,13 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         // never a short marker that would fail every later open
         final File tmp = new File(directory, VERSION_FILE + ".tmp");
         try {
+            final ByteBuffer marker = ByteBuffer.allocate(VERSION_SIZE);
+            marker.put(MAGIC).put(FORMAT_VERSION)
+                    .putLong(storeId.getMostSignificantBits()).putLong(storeId.getLeastSignificantBits());
+            marker.putInt(versionMarkerCrc(marker.array()));
             try (final FileOutputStream fos = new FileOutputStream(tmp);
                  final DataOutputStream out = new DataOutputStream(fos)) {
-                out.write(MAGIC);
-                out.writeByte(FORMAT_VERSION);
-                out.writeLong(storeId.getMostSignificantBits());
-                out.writeLong(storeId.getLeastSignificantBits());
+                out.write(marker.array());
                 out.flush();
                 fos.getFD().sync();
             }
@@ -656,6 +701,10 @@ public abstract class AbstractLogStorage implements TinkerStorage {
         }
 
         final FileHeader snapshotHeader = hasSnapshot ? readHeader(snapshotFile) : null;
+        // with no readable version marker, which only a recovery open gets past, the store is the one its snapshot
+        // belongs to, so a log from another store is still told apart
+        if (null == storeId && snapshotHeader != null)
+            storeId = snapshotHeader.storeId;
         if (snapshotHeader != null && !snapshotHeader.belongsTo(storeId)) {
             // a snapshot and log that agree with each other point at the version marker as the file that is foreign
             final FileHeader otherLog = hasLog ? readHeaderQuietly(logFile) : null;

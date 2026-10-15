@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.zip.CRC32;
+import java.util.function.UnaryOperator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -271,6 +272,78 @@ public class StorageRecoveryTest {
         assertEquals(Arrays.asList(1, 2), vertexIds(graph));
         graph.close();
         assertTrue("recovery must not write the marker", !new File(location, AbstractLogStorage.VERSION_FILE).exists());
+    }
+
+    @Test
+    public void shouldRecoverPastATruncatedVersionMarker() throws Exception {
+        assertRecoversPastADamagedVersionMarker(marker -> Arrays.copyOf(marker, marker.length - 3));
+    }
+
+    @Test
+    public void shouldRecoverPastAVersionMarkerWithAFlippedMagicByte() throws Exception {
+        assertRecoversPastADamagedVersionMarker(marker -> {
+            marker[0] ^= 0x01;
+            return marker;
+        });
+    }
+
+    @Test
+    public void shouldRecoverPastAVersionMarkerWithAFlippedStoreIdByte() throws Exception {
+        assertRecoversPastADamagedVersionMarker(marker -> {
+            marker[AbstractLogStorage.MAGIC.length + 1] ^= 0x01;
+            return marker;
+        });
+    }
+
+    @Test
+    public void shouldRecoverTheLogOfAStoreWithNoSnapshotPastADamagedVersionMarker() throws Exception {
+        // with no snapshot the store id the log carries is all there is, and the log must still be read
+        final byte[] log = crashedLogOfThreeCommits();
+        writeStore(null, log);
+        damageVersionMarker(marker -> {
+            marker[AbstractLogStorage.MAGIC.length + 1] ^= 0x01;
+            return marker;
+        });
+
+        assertNormalOpenFails();
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(recoverConfig());
+        assertEquals(Arrays.asList(1, 2, 3), vertexIds(graph));
+        graph.close();
+    }
+
+    @Test
+    public void shouldNotReadALogFromAnotherStoreWhenTheVersionMarkerIsMissing() throws Exception {
+        crashAfterCommitOnCompactedStore();
+        Files.write(logFile().toPath(), withForeignStoreId(Files.readAllBytes(logFile().toPath())));
+        Files.delete(new File(location, AbstractLogStorage.VERSION_FILE).toPath());
+
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(recoverConfig());
+        assertEquals("the snapshot alone is read", Arrays.asList(1), vertexIds(graph));
+        graph.close();
+    }
+
+    private void assertRecoversPastADamagedVersionMarker(final UnaryOperator<byte[]> damage) throws Exception {
+        crashAfterCommitOnCompactedStore();
+        damageVersionMarker(damage);
+
+        try {
+            TinkerStorageGraph.open(config()).close();
+            fail("a damaged version marker must fail a normal open");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("is damaged"));
+            assertTrue(expected.getMessage(), expected.getMessage().contains(
+                    TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
+        }
+        final Map<String, String> before = directoryContents();
+        final TinkerStorageGraph graph = TinkerStorageGraph.open(recoverConfig());
+        assertEquals(Arrays.asList(1, 2), vertexIds(graph));
+        graph.close();
+        assertEquals("recovery must not change the store", before, directoryContents());
+    }
+
+    private void damageVersionMarker(final UnaryOperator<byte[]> damage) throws IOException {
+        final File versionFile = new File(location, AbstractLogStorage.VERSION_FILE);
+        Files.write(versionFile.toPath(), damage.apply(Files.readAllBytes(versionFile.toPath())));
     }
 
     @Test
