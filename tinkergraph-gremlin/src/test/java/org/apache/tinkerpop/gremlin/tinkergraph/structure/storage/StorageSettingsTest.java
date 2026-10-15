@@ -268,6 +268,56 @@ public class StorageSettingsTest {
     }
 
     @Test
+    public void shouldFailWhenTheSettingsRecordAnInvalidIdManager() throws Exception {
+        assertDamagedRecordedValueFailsTheOpen(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, "LONF");
+    }
+
+    @Test
+    public void shouldFailWhenTheSettingsRecordAnInvalidCardinality() throws Exception {
+        assertDamagedRecordedValueFailsTheOpen(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, "lisu");
+    }
+
+    @Test
+    public void shouldFailWhenTheSettingsRecordAnInvalidBoolean() throws Exception {
+        assertDamagedRecordedValueFailsTheOpen(TinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, "fals");
+    }
+
+    /**
+     * A damaged record whose value for {@code key} became {@code damaged} must fail a normal open naming the settings
+     * file, and a recover open must read the store with the configured value instead.
+     */
+    private void assertDamagedRecordedValueFailsTheOpen(final String key, final String damaged) throws Exception {
+        TinkerStorageGraph graph = TinkerStorageGraph.open(config());
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+        graph.close();
+
+        final StringBuilder edited = new StringBuilder();
+        for (final String line : Files.readAllLines(settingsFile().toPath(), StandardCharsets.ISO_8859_1))
+            edited.append(line.startsWith(key + "=") ? key + "=" + damaged : line).append('\n');
+        Files.write(settingsFile().toPath(), edited.toString().getBytes(StandardCharsets.ISO_8859_1));
+        final byte[] record = Files.readAllBytes(settingsFile().toPath());
+
+        try {
+            TinkerStorageGraph.open(config()).close();
+            fail("a settings record with an unusable value should not open");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains(key + "=" + damaged));
+            assertTrue(expected.getMessage(), expected.getMessage().contains(StorageSettings.SETTINGS_FILE));
+            assertTrue(expected.getMessage(), expected.getMessage().contains(
+                    TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
+        }
+
+        final Configuration recover = config();
+        recover.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER, true);
+        graph = TinkerStorageGraph.open(recover);
+        assertEquals(1, countOf(graph.vertices()));
+        graph.close();
+        assertTrue("recovery must not rewrite the record",
+                Arrays.equals(record, Files.readAllBytes(settingsFile().toPath())));
+    }
+
+    @Test
     public void shouldNotRecordAnUnusableSettingForANewStore() {
         final Configuration wrong = config();
         wrong.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, "LIST");

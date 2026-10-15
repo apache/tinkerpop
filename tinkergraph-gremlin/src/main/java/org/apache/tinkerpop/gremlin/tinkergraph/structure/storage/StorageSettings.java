@@ -138,11 +138,15 @@ public final class StorageSettings {
         for (final Map.Entry<String, String> setting : FIXED.entrySet()) {
             final String key = setting.getKey();
             final String recordedValue = recorded.get(key);
-            if (null == recordedValue) {
-                // every store records each of these when it is created, so a missing one means the file is damaged;
-                // defaulting it could read the store with the wrong settings and lose data at the next compaction
-                final String problem = String.format("Storage settings %s do not record %s, which every store " +
-                        "records when it is created, so the file is damaged", file, key);
+            if (null == recordedValue || !isValid(key, recordedValue)) {
+                // every store records each of these when it is created, and only values it accepted, so a missing or
+                // unusable one means the file is damaged; defaulting it could read the store with the wrong settings
+                // and lose data at the next compaction
+                final String problem = null == recordedValue ?
+                        String.format("Storage settings %s do not record %s, which every store records when it is " +
+                                "created, so the file is damaged", file, key) :
+                        String.format("Storage settings %s record %s=%s, which no store is created with, so the file " +
+                                "is damaged", file, key, recordedValue);
                 if (!recovering)
                     throw new IllegalStateException(problem + String.format("; open the store with %s to read it " +
                             "with the configured settings", TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
@@ -212,6 +216,39 @@ public final class StorageSettings {
                 settings.put(setting.getKey(), value);
         }
         return settings;
+    }
+
+    /**
+     * Whether {@code value} is one a store could have recorded for the fixed setting {@code key}: a built-in name, or
+     * for the id managers and the engine, the name of a class in a package. Damage that leaves a well-formed class name
+     * still fails the open, though only when the graph cannot load the class.
+     */
+    private static boolean isValid(final String key, final String value) {
+        if (key.equals(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE))
+            return Arrays.stream(DefaultStorage.values()).anyMatch(e -> e.name().toLowerCase(Locale.ROOT).equals(value)) ||
+                    isClassName(value);
+        if (key.equals(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER) ||
+                key.equals(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER) ||
+                key.equals(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER))
+            return Arrays.stream(TinkerGraph.DefaultIdManager.values()).anyMatch(m -> m.name().equals(value)) ||
+                    isClassName(value);
+        if (key.equals(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY))
+            return Arrays.stream(VertexProperty.Cardinality.values()).anyMatch(c -> c.name().equals(value));
+        if (key.equals(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY))
+            return Arrays.stream(LabelCardinality.values()).anyMatch(c -> c.name().equals(value));
+        try {
+            PropertyConverter.toBoolean(value);
+            return true;
+        } catch (ConversionException ex) {
+            return false;
+        }
+    }
+
+    private static boolean isClassName(final String name) {
+        final String[] parts = name.split("\\.", -1);
+        return parts.length > 1 && Arrays.stream(parts).allMatch(part -> !part.isEmpty() &&
+                Character.isJavaIdentifierStart(part.codePointAt(0)) &&
+                part.codePoints().allMatch(Character::isJavaIdentifierPart));
     }
 
     /**
