@@ -162,8 +162,9 @@ only read leaves the store untouched.
    lock on an existing `LOCK` file or with no lock at all.
 2. The configured data-shaping settings are validated as the graph will read them, then reconciled with
    `settings.properties`: a new store records them, an existing store fills unset ones from the record and refuses
-   any that differ, and a record missing a fixed key is treated as damaged. A first open that fails removes the
-   settings and `VERSION` it wrote, so the corrected open is again a first open.
+   any that differ, and a record missing a fixed key, or holding a value no store is created with (not a built-in
+   name, or for the id managers and the engine, not a class name), is treated as damaged. A first open that fails
+   removes the settings and `VERSION` it wrote, so the corrected open is again a first open.
 3. `VERSION` is created for a new store, or read and checked. Data without a `VERSION` fails a normal open.
 4. The snapshot and log headers are compared:
 
