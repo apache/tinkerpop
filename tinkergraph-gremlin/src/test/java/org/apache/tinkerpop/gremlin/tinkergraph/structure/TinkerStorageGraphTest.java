@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -96,6 +97,66 @@ public class TinkerStorageGraphTest {
         graph.close();
         graph = TinkerStorageGraph.open(conf);
         assertFalse(graph.vertices().hasNext());
+        graph.close();
+    }
+
+    @Test
+    public void shouldKeepAVertexAddedAfterClearWhenAnOlderTransactionOnItsIdConflicts() throws Exception {
+        assertVertexAddedAfterClearSurvivesTheOlderTransaction(true);
+    }
+
+    @Test
+    public void shouldKeepAVertexAddedAfterClearWhenAnOlderTransactionOnItsIdRollsBack() throws Exception {
+        assertVertexAddedAfterClearSurvivesTheOlderTransaction(false);
+    }
+
+    /**
+     * A transaction on another thread changes vertex 1 and is still open when the graph is cleared and vertex 1 is added
+     * again and committed. Ending that older transaction must leave the new vertex 1 in place, in memory and on disk.
+     */
+    private void assertVertexAddedAfterClearSurvivesTheOlderTransaction(final boolean commit) throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1, "name", "old");
+        graph.tx().commit();
+
+        final TinkerStorageGraph g = graph;
+        final CountDownLatch changed = new CountDownLatch(1);
+        final CountDownLatch end = new CountDownLatch(1);
+        final AtomicReference<Throwable> older = new AtomicReference<>();
+        final Thread other = new Thread(() -> {
+            try {
+                g.vertices(1).next().property("name", "older");
+                changed.countDown();
+                end.await();
+                if (commit)
+                    g.tx().commit();
+                else
+                    g.tx().rollback();
+            } catch (Throwable t) {
+                older.set(t);
+            }
+        });
+        other.start();
+        assertTrue("the other transaction should change vertex 1", changed.await(10, TimeUnit.SECONDS));
+
+        graph.clear();
+        graph.addVertex(T.id, 1, "name", "new");
+        graph.tx().commit();
+        end.countDown();
+        other.join(10_000);
+        assertFalse("the other transaction should have ended", other.isAlive());
+        if (commit)
+            assertTrue("the older commit should conflict: " + older.get(), older.get() instanceof TransactionException);
+        else
+            assertNull(older.get());
+
+        assertEquals("new", graph.vertices(1).next().value("name"));
+        graph.close();
+        graph = TinkerStorageGraph.open(conf);
+        assertEquals("new", graph.vertices(1).next().value("name"));
         graph.close();
     }
 
