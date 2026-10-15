@@ -323,6 +323,36 @@ public class StorageFailureTest {
     }
 
     @Test
+    public void shouldKeepACommitWhenAutomaticCompactionThrowsAnError() {
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, 1024);
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+
+        // the commit is durable and applied before compaction runs, so an Error from compaction is reported as itself
+        // rather than as a commit that could not be applied, and leaves the storage accepting commits
+        FaultInjectingStorage.failSnapshotWritesWithError = true;
+        graph.addVertex(T.id, 1, "name", String.join("", Collections.nCopies(2048, "x")));
+        try {
+            graph.tx().commit();
+            fail("the Error from compaction should reach the caller");
+        } catch (OutOfMemoryError expected) {
+            assertEquals("injected snapshot write error", expected.getMessage());
+        }
+        FaultInjectingStorage.failSnapshotWritesWithError = false;
+        assertEquals(Arrays.asList(1), vertexIds(graph));
+
+        // the failed compaction waits for another threshold's worth of log before it is tried again
+        final int attempts = FaultInjectingStorage.compactionAttempts.get();
+        graph.addVertex(T.id, 2);
+        graph.tx().commit();
+        assertEquals(attempts, FaultInjectingStorage.compactionAttempts.get());
+        graph.close();
+
+        graph = TinkerStorageGraph.open(conf);
+        assertEquals(Arrays.asList(1, 2), vertexIds(graph));
+        graph.close();
+    }
+
+    @Test
     public void shouldRefuseCommitsWhenClearCannotEmptyTheStore() {
         TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
         graph.addVertex(T.id, 1);

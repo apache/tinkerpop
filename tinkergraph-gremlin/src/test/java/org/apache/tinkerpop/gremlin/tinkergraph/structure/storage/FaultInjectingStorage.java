@@ -41,7 +41,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * {@link #failLogWrites} is set, every write that reaches the log file throws, as a failing disk would. Small frames
  * are buffered, so for them the failure surfaces at flush; a frame larger than the buffer fails during the append
  * itself. While {@link #failCompaction} is set, compaction throws before touching any file, and while
- * {@link #failSnapshotWrites} is set it fails partway through writing the new snapshot. {@link #compactionAttempts}
+ * {@link #failSnapshotWrites} is set it fails partway through writing the new snapshot, or with an {@code Error}
+ * while {@link #failSnapshotWritesWithError} is set. {@link #compactionAttempts}
  * counts every compaction started, whether or not it fails. When {@link #compactionGate} is set, compaction counts
  * down {@link #compactionEntered} and then waits for the gate, holding the graph's commit lock as its caller does, so
  * a test can make another thread wait on that lock. Selected by
@@ -53,6 +54,7 @@ public final class FaultInjectingStorage extends AbstractLogStorage {
     static volatile boolean failLogWrites = false;
     static volatile boolean failCompaction = false;
     static volatile boolean failSnapshotWrites = false;
+    static volatile boolean failSnapshotWritesWithError = false;
     static final AtomicInteger compactionAttempts = new AtomicInteger();
     static volatile CountDownLatch compactionEntered = null;
     static volatile CountDownLatch compactionGate = null;
@@ -61,6 +63,7 @@ public final class FaultInjectingStorage extends AbstractLogStorage {
         failLogWrites = false;
         failCompaction = false;
         failSnapshotWrites = false;
+        failSnapshotWritesWithError = false;
         compactionAttempts.set(0);
         compactionEntered = null;
         compactionGate = null;
@@ -139,6 +142,8 @@ public final class FaultInjectingStorage extends AbstractLogStorage {
             out.write(new byte[]{ 0x01, 0x02, 0x03 });
             throw new IOException("injected snapshot write failure");
         }
+        if (failSnapshotWritesWithError)
+            throw new OutOfMemoryError("injected snapshot write error");
         codec.writeSnapshot(graph, out);
     }
 }

@@ -138,8 +138,10 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
      * 5. persist the changes when a storage engine is configured
      * 6. update indices
      * 7. commit all changes
+     * 8. compact the storage when its log has grown past the threshold
      * On {@link TransactionException} or any other failure before the changes are applied (such as a storage write):
      *  rollback all changes
+     * An {@code Error} from the compaction in step 8 is thrown as it is, and the transaction is committed.
      * Lastly:
      *  cleanup transaction intermediate variables.
      *
@@ -158,6 +160,9 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
         // set once the changes are durable, after which a failure cannot undo the transaction, only keep it from
         // being seen until the graph is reopened
         boolean recorded = false;
+        // set once the changes are applied in memory as well, after which the transaction is committed in full and
+        // nothing that fails later may roll it back or report it unapplied
+        boolean applied = false;
         try {
             // Double-checked locking to reduce lock time
             if (changedVertices.stream().anyMatch(v -> v.updatedOutsideTransaction()) ||
@@ -225,13 +230,15 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
                 // commit all changes
                 changedVertices.forEach(v -> v.commit(txVersion));
                 changedEdges.forEach(e -> e.commit(txVersion));
+                applied = true;
 
                 // bound log growth for a long-running graph that is never explicitly closed; no-op unless the
                 // engine's accumulated log has crossed its threshold. Runs after the apply so the snapshot it may
                 // write includes this transaction rather than omitting it and then truncating the log that held it.
                 // The transaction is already applied and durable by now, so a failed compaction must not fail it.
                 // Compaction is crash-safe (the old snapshot and log stay intact) and is tried again after later
-                // commits.
+                // commits. An Error, such as running out of memory while writing the snapshot, is not swallowed: it
+                // reaches the caller as itself, with the transaction committed.
                 if (durable) {
                     try {
                         graph.storage.maybeCompact(graph);
@@ -247,6 +254,13 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
                 if (durable) graph.storageCommitLock.unlock();
             }
         } catch (RuntimeException | Error ex) {
+            // only an Error from compaction gets here once the transaction is applied, and there is nothing to undo
+            if (applied) {
+                logger.error("Storage compaction failed with an error after a successful commit; the transaction is " +
+                        "committed and compaction will be retried", ex);
+                throw ex;
+            }
+
             // rollback on error
             changedVertices.forEach(v -> v.rollback());
             changedEdges.forEach(e -> e.rollback());
