@@ -55,8 +55,22 @@ public final class DirectoryLock implements AutoCloseable {
 
     static final String LOCK_FILE = "LOCK";
 
+    /**
+     * The byte of the {@code LOCK} file that is locked, past the token {@link #stillAtPath} writes at its start. On
+     * Windows a lock keeps every other handle from reading the bytes it covers, even within one process, so locking the
+     * whole file would leave the token unreadable.
+     */
+    private static final long LOCKED_BYTE = 1024;
+
     private final FileChannel channel;
     private final FileLock lock;
+
+    /**
+     * The handle {@link #stillAtPath} read the token back through, held open as long as the lock. Closing any handle on
+     * a file releases every POSIX lock the process holds on it, so closing this one would silently release the lock
+     * while the JVM still reports it held, and a graph in another process could then open the store.
+     */
+    private final FileChannel pathChannel;
     private final File lockFile;
 
     /**
@@ -64,10 +78,11 @@ public final class DirectoryLock implements AutoCloseable {
      */
     private final boolean createdFile;
 
-    private DirectoryLock(final FileChannel channel, final FileLock lock, final File lockFile,
-                          final boolean createdFile) {
+    private DirectoryLock(final FileChannel channel, final FileLock lock, final FileChannel pathChannel,
+                          final File lockFile, final boolean createdFile) {
         this.channel = channel;
         this.lock = lock;
+        this.pathChannel = pathChannel;
         this.lockFile = lockFile;
         this.createdFile = createdFile;
     }
@@ -90,17 +105,18 @@ public final class DirectoryLock implements AutoCloseable {
         try {
             channel = FileChannel.open(lockFile.toPath(),
                     StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-            final FileLock lock = channel.tryLock();
+            final FileLock lock = channel.tryLock(LOCKED_BYTE, 1, false);
             if (lock == null) {
                 channel.close();
                 throw lockedByAnother(directory, null);
             }
-            if (verify && !stillAtPath(channel, lockFile)) {
+            final FileChannel pathChannel = verify ? stillAtPath(channel, lockFile) : null;
+            if (verify && null == pathChannel) {
                 lock.release();
                 channel.close();
                 throw lockedByAnother(directory, null);
             }
-            return new DirectoryLock(channel, lock, lockFile, createdFile);
+            return new DirectoryLock(channel, lock, pathChannel, lockFile, createdFile);
         } catch (OverlappingFileLockException ofle) {
             // another graph in *this* JVM already holds (or is acquiring) the lock on this file
             closeQuietly(channel);
@@ -135,17 +151,17 @@ public final class DirectoryLock implements AutoCloseable {
         if (!lockFile.exists()) {
             logger.warn("Storage directory {} is not writable, so it is read for recovery without a lock; make sure " +
                     "no other graph writes to it", directory);
-            return new DirectoryLock(null, null, lockFile, false);
+            return new DirectoryLock(null, null, null, lockFile, false);
         }
         FileChannel channel = null;
         try {
             channel = FileChannel.open(lockFile.toPath(), StandardOpenOption.READ);
-            final FileLock lock = channel.tryLock(0L, Long.MAX_VALUE, true);
+            final FileLock lock = channel.tryLock(LOCKED_BYTE, 1, true);
             if (lock == null) {
                 channel.close();
                 throw lockedByAnother(directory, null);
             }
-            return new DirectoryLock(channel, lock, lockFile, false);
+            return new DirectoryLock(channel, lock, null, lockFile, false);
         } catch (OverlappingFileLockException ofle) {
             closeQuietly(channel);
             throw lockedByAnother(directory, ofle);
@@ -161,19 +177,32 @@ public final class DirectoryLock implements AutoCloseable {
      * one at the path, leaving this lock on a file that keeps no one out. A random token written through the channel
      * and read back through the path tells the two apart, which comparing file keys cannot, since the channel does not
      * report the key of the file it has open.
+     *
+     * @return the handle the token was read back through, which the caller must keep open as long as it holds the lock
+     * (see {@link #pathChannel}), or {@code null} if the path names another file or none
      */
-    private static boolean stillAtPath(final FileChannel channel, final File lockFile) throws IOException {
+    private static FileChannel stillAtPath(final FileChannel channel, final File lockFile) throws IOException {
         final UUID token = UUID.randomUUID();
         final byte[] bytes = ByteBuffer.allocate(2 * Long.BYTES)
                 .putLong(token.getMostSignificantBits()).putLong(token.getLeastSignificantBits()).array();
         channel.truncate(0);
         channel.write(ByteBuffer.wrap(bytes), 0);
         channel.force(false);
+        final FileChannel pathChannel;
         try {
-            return Arrays.equals(bytes, Files.readAllBytes(lockFile.toPath()));
+            pathChannel = FileChannel.open(lockFile.toPath(), StandardOpenOption.READ);
         } catch (NoSuchFileException ex) {
-            return false;
+            return null;
         }
+        final ByteBuffer read = ByteBuffer.allocate(bytes.length + 1);
+        while (read.hasRemaining() && pathChannel.read(read, read.position()) >= 0) {
+            // read until the buffer is full or the file ends
+        }
+        if (read.position() == bytes.length && Arrays.equals(bytes, Arrays.copyOf(read.array(), bytes.length)))
+            return pathChannel;
+        // the path names another file, so this handle holds nothing of the lock and the open is refused anyway
+        closeQuietly(pathChannel);
+        return null;
     }
 
     private static IllegalStateException lockedByAnother(final File directory, final Throwable cause) {
@@ -221,6 +250,7 @@ public final class DirectoryLock implements AutoCloseable {
         } catch (IOException ex) {
             throw new UncheckedIOException(String.format("Could not release storage lock %s", lockFile), ex);
         } finally {
+            closeQuietly(pathChannel);
             closeQuietly(channel);
         }
     }
