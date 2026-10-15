@@ -75,6 +75,23 @@ See: link:https://lists.apache.org/thread/2zt62kvfssh6xz5vnf2lk1g7cstq9vod[DISCU
 
 ==== Graph System Providers
 
+===== Class Values Must Be Registered
+
+For deserialization, a `Class` value must now name a registered class in GraphSON and Gryo alike. An unregistered name
+is refused on read and the class is never loaded. GraphBinary has no generic `Class` wire type and is unaffected.
+Strategies registered with `TraversalStrategies.GlobalCache.registerStrategy` already resolve, so only an application
+or provider that serializes its own classes needs to act.
+
+[source,java]
+----
+ClassRegistry.register(MyClass.class);
+ClassRegistry.unregister(MyClass.class);
+----
+
+Registration is required in Java for deserialization only, which typically only impacts the server. Without
+registration, read attempts fail with a `Class not recognized` message naming the class, raised as a
+`MismatchedInputException` for GraphSON and a `RuntimeException` for Gryo.
+
 ==== Graph Driver Providers
 
 [llms-summary="Upgrade notes for the TinkerPop 4.0.0-beta.3 release: user-facing changes including declarative pattern matching improvements and other 4.0 features."]
