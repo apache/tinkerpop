@@ -185,6 +185,36 @@ public abstract class AbstractTinkerStorageConformanceTest {
     }
 
     @Test
+    public void shouldKeepOnlyTheLastMultiPropertyValueOnReopenOfASingleCardinalityStore() {
+        // the documented sharp edge kept until TinkerPop has schema: a store created with the default single
+        // cardinality holds list values in memory but rebuilds each key with only its last value on reopen
+        TinkerStorageGraph graph = open();
+        final Vertex v = graph.addVertex(T.id, 1);
+        v.property(VertexProperty.Cardinality.list, "name", "a");
+        v.property(VertexProperty.Cardinality.list, "name", "b");
+        v.property(VertexProperty.Cardinality.list, "name", "c");
+        graph.tx().commit();
+        assertEquals(3, countOf(graph.vertices(1).next().properties("name")));
+        graph.close();
+
+        graph = open();
+        assertEquals(Arrays.asList("c"), valuesOf(graph.vertices(1).next(), "name"));
+        graph.addVertex(T.id, 2);
+        graph.tx().commit();
+        graph.close(); // compacts, so the dropped values are gone from the store as well
+
+        graph = open();
+        assertEquals(Arrays.asList("c"), valuesOf(graph.vertices(1).next(), "name"));
+        graph.close();
+    }
+
+    private static List<Object> valuesOf(final Vertex v, final String key) {
+        final List<Object> values = new ArrayList<>();
+        v.properties(key).forEachRemaining(p -> values.add(p.value()));
+        return values;
+    }
+
+    @Test
     public void shouldPersistMetaPropertiesAndMultiProperties() {
         final Configuration conf = config();
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
