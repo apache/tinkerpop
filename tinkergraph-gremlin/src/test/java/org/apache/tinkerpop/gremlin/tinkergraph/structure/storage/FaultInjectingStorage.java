@@ -91,7 +91,7 @@ public final class FaultInjectingStorage extends AbstractLogStorage {
     }
 
     @Override
-    public void compact(final AbstractTinkerGraph graph) {
+    protected void compact(final AbstractTinkerGraph graph, final boolean force) {
         compactionAttempts.incrementAndGet();
         final CountDownLatch gate = compactionGate;
         if (gate != null) {
@@ -106,7 +106,7 @@ public final class FaultInjectingStorage extends AbstractLogStorage {
         }
         if (failCompaction)
             throw new UncheckedIOException(new IOException("injected compaction failure"));
-        super.compact(graph);
+        super.compact(graph, force);
     }
 
     @Override

@@ -250,7 +250,9 @@ neither commits nor compacts, `close()` included, and the reopen replays the fra
 `clear()` keeps its in-memory meaning: the whole graph is emptied at once, outside any transaction. Under the commit
 lock it rolls back the calling thread's open transaction, marks every element container removed so that a
 transaction on another thread that still holds one fails to commit with a conflict, clears memory, and then calls
-`TinkerStorage.clear`, which for `AbstractLogStorage` compacts the now-empty graph and rewrites `INDEXES`. If emptying
+`TinkerStorage.clear`, which for `AbstractLogStorage` compacts the now-empty graph and rewrites `INDEXES`. That
+compaction runs even with nothing logged since the last one, since the snapshot then still holds the data the graph
+no longer has. If emptying
 the store fails, the engine fail-stops, since the store then holds either the old data or nothing and later commits
 must not be appended to data the graph no longer has. A closed or fail-stopped graph refuses `clear()`, and a
 recovered graph clears memory only.
