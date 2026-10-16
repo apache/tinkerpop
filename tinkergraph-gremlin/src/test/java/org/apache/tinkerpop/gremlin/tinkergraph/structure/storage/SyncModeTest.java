@@ -1,0 +1,58 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.tinkerpop.gremlin.tinkergraph.structure.storage;
+
+import org.junit.Test;
+
+import java.util.Locale;
+
+import static org.junit.Assert.assertEquals;
+
+public class SyncModeTest {
+
+    @Test
+    public void shouldDefaultToCommitWhenUnset() {
+        assertEquals(SyncMode.COMMIT, SyncMode.fromConfigValue(null));
+    }
+
+    @Test
+    public void shouldResolveCaseInsensitivelyAndTrim() {
+        assertEquals(SyncMode.COMMIT, SyncMode.fromConfigValue("commit"));
+        assertEquals(SyncMode.COMMIT, SyncMode.fromConfigValue("COMMIT"));
+        assertEquals(SyncMode.OS, SyncMode.fromConfigValue("os"));
+        assertEquals(SyncMode.OS, SyncMode.fromConfigValue("  Os  "));
+    }
+
+    @Test
+    public void shouldResolveRegardlessOfTheDefaultLocale() {
+        // a Turkish default locale upper-cases "i" to a dotted capital I, which names no sync mode
+        final Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            assertEquals(SyncMode.COMMIT, SyncMode.fromConfigValue("commit"));
+        } finally {
+            Locale.setDefault(original);
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldRejectUnknownValue() {
+        SyncMode.fromConfigValue("interval:1000");
+    }
+}

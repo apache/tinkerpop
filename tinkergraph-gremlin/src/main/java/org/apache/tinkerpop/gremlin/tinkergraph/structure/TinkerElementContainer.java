@@ -38,7 +38,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
     /**
      * Used to separate deleted elements from {@code null} ones.
      */
-    private boolean isDeleted = false;
+    private volatile boolean isDeleted = false;
     /**
      * Value of elements updated in current transaction.
      */
@@ -191,6 +191,14 @@ final class TinkerElementContainer<T extends TinkerElement> {
         }
         transactionUpdatedValue.set(transactionElement);
         tx.markChanged(this);
+    }
+
+    /**
+     * Mark the element as removed by {@code TinkerGraph.clear()}, so a transaction that still holds this container
+     * fails to commit with a conflict instead of bringing the element back.
+     */
+    void markCleared() {
+        isDeleted = true;
     }
 
     /**

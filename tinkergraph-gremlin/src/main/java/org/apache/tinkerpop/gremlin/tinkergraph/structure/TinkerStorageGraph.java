@@ -35,8 +35,14 @@ import org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphCountStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DirectoryLock;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.IndexDefinitions;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.StorageSettings;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -45,11 +51,20 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
- * The transactional implementation of the {@link TinkerGraph} interface, in-memory with optional persistence on
- * calls to {@link #close()}. It is planned that this implementation will optionally support simple storage to disk
- * built on its transaction functionality.
+ * The transactional implementation of the {@link TinkerGraph} interface. It provides {@code read committed}
+ * transaction isolation with optimistic locking and, when a storage engine is configured, durable persistence to
+ * disk. With no storage engine configured it is an in-memory transactional graph that retains nothing across
+ * restarts.
+ * <p/>
+ * Persistence is pluggable through the {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage}
+ * SPI and enabled with the {@code gremlin.tinkergraph.storage} and {@code gremlin.tinkergraph.storage.directory}
+ * configuration keys. Each committed transaction is written through to the storage engine before the in-memory commit
+ * is applied, and reopening the same location replays the persisted commits to rebuild the graph. A storage location
+ * is single-writer: it is guarded by an exclusive {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.DirectoryLock}
+ * so a second open of the same directory fails rather than corrupting the data.
  *
  * @author Valentyn Kahamlyk
  */
@@ -74,6 +89,12 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
 
     private final TinkerTransaction transaction = new TinkerTransaction(this);
 
+    /**
+     * Set while indexes recorded for the store are being recreated on open, so applying them does not rewrite the
+     * file they were just read from.
+     */
+    private boolean restoringIndexes = false;
+
     private final Map<Object, TinkerElementContainer<TinkerVertex>> vertices = new ConcurrentHashMap<>();
     private final Map<Object, TinkerElementContainer<TinkerEdge>> edges = new ConcurrentHashMap<>();
 
@@ -81,6 +102,98 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
      * An empty private constructor that initializes {@link TinkerStorageGraph}.
      */
     private TinkerStorageGraph(final Configuration configuration) {
+        storageDirectory = configuration.getString(GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, null);
+        storage = selectStorage(configuration, GREMLIN_TINKERGRAPH_STORAGE);
+
+        // a blank directory would otherwise resolve against the working directory and quietly create a store there
+        if (storage != null && (null == storageDirectory || storageDirectory.trim().isEmpty()))
+            throw new IllegalStateException(String.format("The %s must be specified when %s is set",
+                    GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, GREMLIN_TINKERGRAPH_STORAGE));
+
+        if (null == storage) {
+            initialize(configuration);
+            return;
+        }
+
+        // take an exclusive lock on the storage directory before anything touches its files, so a second graph on the
+        // same location fails fast rather than corrupting it. The directory must exist to hold the lock.
+        final File dir = new File(storageDirectory);
+        final boolean recovering = configuration.getBoolean(GREMLIN_TINKERGRAPH_STORAGE_RECOVER, false);
+        // a recovery open never changes the storage directory, so it does not create one either
+        if (recovering && !dir.isDirectory())
+            throw new IllegalStateException(String.format("There is no storage directory at %s to open with %s",
+                    dir, GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
+        if (!dir.isDirectory()) {
+            try {
+                Files.createDirectories(dir.toPath());
+            } catch (IOException ex) {
+                // the cause names the problem, such as a missing parent or a file where a directory should be
+                throw new IllegalStateException(String.format("Could not create storage directory %s: %s", dir, ex),
+                        ex);
+            }
+        }
+        directoryLock = recovering ? DirectoryLock.acquireForRecovery(dir) : DirectoryLock.acquire(dir);
+        final boolean settingsRecorded = new File(dir, StorageSettings.SETTINGS_FILE).exists();
+        try {
+            // a value the graph cannot use fails here, before a new store records it as a setting it was created
+            // with, which would then refuse the corrected value on the next open
+            validateDataShapingSettings(configuration);
+            // the settings that shape stored data are fixed when the store is created, so read them before anything
+            // that depends on them is set up
+            initialize(StorageSettings.reconcile(configuration, dir));
+            storage.open(this, this.configuration);
+            loading = true;
+            try {
+                storage.replay(this);
+            } finally {
+                loading = false;
+            }
+            // recreate the recorded indexes now that replay has rebuilt the elements they cover, so
+            // createKeyIndex backfills over the restored data rather than only over writes that follow
+            restoreIndexes(dir);
+        } catch (RuntimeException | Error ex) {
+            // don't leak the lock if the engine fails to open or replay, nor leave a LOCK file behind in a directory
+            // that turned out not to be a store this graph can open
+            try {
+                // a first open that failed leaves the directory as it found it, without settings it recorded
+                if (!settingsRecorded && !recovering)
+                    StorageSettings.removeIfOnlySettings(dir);
+                directoryLock.closeAndRemoveIfCreated();
+            } catch (RuntimeException cleanup) {
+                ex.addSuppressed(cleanup);
+            }
+            directoryLock = null;
+            throw ex;
+        }
+    }
+
+    /**
+     * Check the configured id managers and cardinalities the way {@link #initialize} reads them, without keeping
+     * anything, so an unusable value fails the open before it can be recorded for a new store.
+     */
+    private static void validateDataShapingSettings(final Configuration configuration) {
+        selectIdManager(configuration, GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, Vertex.class);
+        selectIdManager(configuration, GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, Edge.class);
+        selectIdManager(configuration, GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, VertexProperty.class);
+        parseSetting(configuration, GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY,
+                VertexProperty.Cardinality.single.name(), VertexProperty.Cardinality::valueOf,
+                VertexProperty.Cardinality.values());
+        parseSetting(configuration, GREMLIN_TINKERGRAPH_VERTEX_LABEL_CARDINALITY, LabelCardinality.ONE.name(),
+                LabelCardinality::valueOf, LabelCardinality.values());
+    }
+
+    private static void parseSetting(final Configuration configuration, final String key, final String defaultValue,
+                                     final Function<String, ?> parser, final Object[] allowed) {
+        final String value = configuration.getString(key, defaultValue);
+        try {
+            parser.apply(value);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalStateException(String.format("Could not configure TinkerGraph %s with %s; it must be one " +
+                    "of %s", key, value, Arrays.toString(allowed)), ex);
+        }
+    }
+
+    private void initialize(final Configuration configuration) {
         this.configuration = configuration;
         vertexIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, Vertex.class);
         edgeIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, Edge.class);
@@ -94,15 +207,6 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         edgeLabelCardinality = LabelCardinality.ONE;
         defaultVertexLabel = Vertex.DEFAULT_LABEL;
         defaultEdgeLabel = Edge.DEFAULT_LABEL;
-
-        graphLocation = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
-        graphFormat = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_FORMAT, null);
-
-        if ((graphLocation != null && null == graphFormat) || (null == graphLocation && graphFormat != null))
-            throw new IllegalStateException(String.format("The %s and %s must both be specified if either is present",
-                    GREMLIN_TINKERGRAPH_GRAPH_LOCATION, GREMLIN_TINKERGRAPH_GRAPH_FORMAT));
-
-        if (graphLocation != null) loadGraph();
 
         serviceRegistry = new TinkerServiceRegistry(this);
         configuration.getList(String.class, GREMLIN_TINKERGRAPH_SERVICE, Collections.emptyList()).forEach(serviceClass ->
@@ -282,11 +386,91 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         container.markDeleted((TinkerTransaction) tx());
     }
 
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Like the in-memory graph, this clears the whole graph at once, outside any transaction: it needs no commit and
+     * cannot be rolled back. The calling thread's uncommitted changes are discarded with the rest of the graph, and a
+     * transaction still open on another thread fails to commit any element it changed. With storage configured the
+     * store is emptied in the same call, so a reopen finds the graph as {@code clear()} left it. A graph opened with
+     * {@code gremlin.tinkergraph.storage.recover} is cleared in memory only and its store is left unchanged, like any
+     * other change made to it.
+     *
+     * @throws IllegalStateException if the graph's storage is closed, or stopped accepting writes after a storage
+     *                               failure, in which case the graph is not cleared
+     * @throws java.io.UncheckedIOException if the graph was cleared in memory but its store could not be emptied, in
+     *                                      which case the storage accepts no further commits until the graph is
+     *                                      reopened, and the cleared data may return then
+     */
     @Override
     public void clear() {
+        if (null == storage) {
+            clearInMemory();
+            return;
+        }
+        // the same lock as the commit path, so no commit lands between emptying memory and emptying the store
+        storageCommitLock.lock();
+        try {
+            if (null == directoryLock)
+                throw new IllegalStateException(String.format("Storage at %s is closed and cannot be cleared",
+                        storageDirectory));
+            if (storage.isFailed())
+                throw new IllegalStateException(String.format("Storage at %s stopped accepting writes after a " +
+                        "storage failure, so the graph is not cleared; its data remains readable for export with " +
+                        "g.io() until the graph is closed", storageDirectory));
+            clearInMemory();
+            if (storage.isReadOnly())
+                return;
+            storage.clear(this);
+            recordIndexes();
+        } finally {
+            storageCommitLock.unlock();
+        }
+    }
+
+    private void clearInMemory() {
+        // the caller's own uncommitted changes are part of the graph being cleared
+        if (tx().isOpen())
+            tx().rollback();
+        // a transaction on another thread still holds the containers it changed, so mark them removed: its commit
+        // then fails with a conflict rather than writing cleared elements back into the store
+        vertices.values().forEach(TinkerElementContainer::markCleared);
+        edges.values().forEach(TinkerElementContainer::markCleared);
         super.clear();
         this.vertices.clear();
         this.edges.clear();
+    }
+
+    /**
+     * Fold the durable storage log into a compact snapshot of the current committed state, reclaiming space. Has no
+     * effect when no storage engine is configured, or when nothing was committed since the last compaction.
+     *
+     * @throws IllegalStateException if the graph is closed, was opened read-only to recover a damaged store, or its
+     *                               storage stopped accepting writes after a storage failure
+     */
+    public void compact() {
+        if (storage != null) {
+            // hold the same lock as the commit write path: compaction closes the log, rewrites the snapshot, and
+            // empties the log, which must not interleave with a concurrent transaction appending to that log.
+            storageCommitLock.lock();
+            try {
+                // an explicit request that cannot run says so, rather than returning as if the store were compacted
+                if (null == directoryLock)
+                    throw new IllegalStateException(String.format("Storage at %s is closed and cannot be compacted",
+                            storageDirectory));
+                if (storage.isReadOnly())
+                    throw new IllegalStateException(String.format(
+                            "Storage at %s was opened with %s and is read-only, so it cannot be compacted",
+                            storageDirectory, GREMLIN_TINKERGRAPH_STORAGE_RECOVER));
+                if (storage.isFailed())
+                    throw new IllegalStateException(String.format("Storage at %s stopped accepting writes after a " +
+                            "storage failure, so it cannot be compacted; close and reopen the graph", storageDirectory));
+                storage.flush();
+                storage.compact(this);
+            } finally {
+                storageCommitLock.unlock();
+            }
+        }
     }
 
     @Override
@@ -310,6 +494,20 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     Map<Object, TinkerElementContainer<TinkerVertex>> getVertices () { return vertices; }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Reads the committed value of each container ({@link TinkerElementContainer#getUnmodified()}), so a compaction
+     * snapshot reflects only committed state regardless of the calling thread's open transaction. A container whose
+     * committed value is {@code null} (added but not yet committed, or committed and then deleted) is skipped.
+     */
+    @Override
+    public Iterator<Vertex> committedVertices() {
+        return IteratorUtils.map(
+                IteratorUtils.filter(vertices.values().iterator(), c -> c.getUnmodified() != null),
+                c -> (Vertex) c.getUnmodified());
+    }
 
     @Override
     public int getEdgesCount() {
@@ -338,6 +536,19 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
     }
 
     Map<Object, TinkerElementContainer<TinkerEdge>> getEdges () { return edges; }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * The edge counterpart of {@link #committedVertices()}: reads only committed container state and skips containers
+     * whose committed value is {@code null}.
+     */
+    @Override
+    public Iterator<Edge> committedEdges() {
+        return IteratorUtils.map(
+                IteratorUtils.filter(edges.values().iterator(), c -> c.getUnmodified() != null),
+                c -> (Edge) c.getUnmodified());
+    }
 
     @Override
     public TinkerServiceRegistry getServiceRegistry() {
@@ -504,6 +715,12 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         private TinkerGraphGraphFeatures() {
         }
 
+        /**
+         * A persistent {@link TinkerStorageGraph} is a single-writer store: {@code DirectoryLock} permits only one
+         * graph instance to open a given storage directory at a time. This feature denotes multiple connections /
+         * instances sharing the same data — not the intra-instance, multi-thread transaction access that the
+         * thread-local {@link TinkerTransaction} already provides — so it is {@code false}.
+         */
         @Override
         public boolean supportsConcurrentAccess() {
             return false;
@@ -517,6 +734,11 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         @Override
         public boolean supportsTransactions() {
             return true;
+        }
+
+        @Override
+        public boolean supportsPersistence() {
+            return storage != null;
         }
 
         @Override
@@ -540,6 +762,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
      */
     @Override
     public <E extends Element> void createIndex(final String key, final Class<E> elementClass) {
+        checkIndexesCanChange("created");
         if (Vertex.class.isAssignableFrom(elementClass)) {
             if (null == this.vertexIndex) this.vertexIndex = new TinkerTransactionalIndex<>(this, TinkerVertex.class);
             this.vertexIndex.createKeyIndex(key);
@@ -549,6 +772,7 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
+        recordIndexes();
     }
 
     /**
@@ -560,12 +784,65 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
      */
     @Override
     public <E extends Element> void dropIndex(final String key, final Class<E> elementClass) {
+        checkIndexesCanChange("dropped");
         if (Vertex.class.isAssignableFrom(elementClass)) {
             if (null != this.vertexIndex) this.vertexIndex.dropKeyIndex(key);
         } else if (Edge.class.isAssignableFrom(elementClass)) {
             if (null != this.edgeIndex) this.edgeIndex.dropKeyIndex(key);
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
+        }
+        recordIndexes();
+    }
+
+    /**
+     * Recreate the indexes recorded for this store. Runs after replay so that {@code createKeyIndex} backfills over
+     * the elements it has just rebuilt. The definitions are already on disk, so recording is suppressed while they
+     * are applied.
+     */
+    private void restoreIndexes(final File directory) {
+        final IndexDefinitions definitions = IndexDefinitions.read(directory);
+        if (definitions.isEmpty())
+            return;
+        restoringIndexes = true;
+        try {
+            definitions.vertexKeys().forEach(key -> createIndex(key, Vertex.class));
+            definitions.edgeKeys().forEach(key -> createIndex(key, Edge.class));
+        } finally {
+            restoringIndexes = false;
+        }
+    }
+
+    /**
+     * Refuse an index change on a closed durable graph, which could no longer record it. An open graph whose storage
+     * is read-only or has failed still changes its indexes in memory, where they speed up the reads an export needs,
+     * without recording them.
+     */
+    private void checkIndexesCanChange(final String change) {
+        if (storage != null && null == directoryLock)
+            throw new IllegalStateException(String.format("Storage at %s is closed, so an index cannot be %s",
+                    storageDirectory, change));
+    }
+
+    /**
+     * Record the current set of indexed keys beside the engine's files, so a reopen restores them. Index definitions
+     * are not part of the transactional log; see {@link IndexDefinitions} for why that is sound. A graph with no
+     * storage engine keeps everything in memory and writes nothing.
+     */
+    private void recordIndexes() {
+        // a failed engine writes nothing more to its directory, which may by now belong to another graph
+        if (null == storage || restoringIndexes || storage.isReadOnly() || storage.isFailed())
+            return;
+        // serialized with other index changes and with close(), so the file always holds the latest set of keys and is
+        // never written once close() has released the directory, which another graph may then own
+        storageCommitLock.lock();
+        try {
+            if (null == directoryLock || storage.isFailed())
+                return;
+            new IndexDefinitions(getIndexedKeys(Vertex.class), getIndexedKeys(Edge.class))
+                    .write(new File(storageDirectory));
+        } finally {
+            storageCommitLock.unlock();
         }
     }
 }
