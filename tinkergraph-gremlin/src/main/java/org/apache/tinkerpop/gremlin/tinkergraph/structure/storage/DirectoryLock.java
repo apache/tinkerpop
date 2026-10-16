@@ -34,7 +34,9 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * An exclusive, whole-process lock on a {@code TinkerStorageGraph} storage directory. A persistent, transactional
@@ -62,6 +64,14 @@ public final class DirectoryLock implements AutoCloseable {
      */
     private static final long LOCKED_BYTE = 1024;
 
+    /**
+     * The directories a graph in this JVM holds or is acquiring the lock of. A second acquisition of one is refused here,
+     * before any handle on its {@code LOCK} file is opened, because closing that handle afterwards, as a refused
+     * acquisition must, would release every POSIX lock the process holds on the file, the holder's included, while the
+     * JVM goes on reporting the holder's lock held.
+     */
+    private static final Set<String> HELD = ConcurrentHashMap.newKeySet();
+
     private final FileChannel channel;
     private final FileLock lock;
 
@@ -71,6 +81,11 @@ public final class DirectoryLock implements AutoCloseable {
      * while the JVM still reports it held, and a graph in another process could then open the store.
      */
     private final FileChannel pathChannel;
+
+    /**
+     * This lock's entry in {@link #HELD}, removed when the lock is released.
+     */
+    private final String heldKey;
     private final File lockFile;
 
     /**
@@ -79,10 +94,11 @@ public final class DirectoryLock implements AutoCloseable {
     private final boolean createdFile;
 
     private DirectoryLock(final FileChannel channel, final FileLock lock, final FileChannel pathChannel,
-                          final File lockFile, final boolean createdFile) {
+                          final File lockFile, final boolean createdFile, final String heldKey) {
         this.channel = channel;
         this.lock = lock;
         this.pathChannel = pathChannel;
+        this.heldKey = heldKey;
         this.lockFile = lockFile;
         this.createdFile = createdFile;
     }
@@ -99,6 +115,19 @@ public final class DirectoryLock implements AutoCloseable {
     }
 
     private static DirectoryLock acquire(final File directory, final boolean verify) {
+        final String heldKey = hold(directory);
+        boolean acquired = false;
+        try {
+            final DirectoryLock held = acquire(directory, verify, heldKey);
+            acquired = true;
+            return held;
+        } finally {
+            if (!acquired)
+                HELD.remove(heldKey);
+        }
+    }
+
+    private static DirectoryLock acquire(final File directory, final boolean verify, final String heldKey) {
         final File lockFile = new File(directory, LOCK_FILE);
         FileChannel channel = null;
         final boolean createdFile = !lockFile.exists();
@@ -116,7 +145,7 @@ public final class DirectoryLock implements AutoCloseable {
                 channel.close();
                 throw lockedByAnother(directory, null);
             }
-            return new DirectoryLock(channel, lock, pathChannel, lockFile, createdFile);
+            return new DirectoryLock(channel, lock, pathChannel, lockFile, createdFile, heldKey);
         } catch (OverlappingFileLockException ofle) {
             // another graph in *this* JVM already holds (or is acquiring) the lock on this file
             closeQuietly(channel);
@@ -147,11 +176,24 @@ public final class DirectoryLock implements AutoCloseable {
         // it never writes to the store, a lock it holds on a file that was replaced cannot cost a commit
         if (Files.isWritable(directory.toPath()))
             return acquire(directory, false);
+        final String heldKey = hold(directory);
+        boolean acquired = false;
+        try {
+            final DirectoryLock held = acquireShared(directory, heldKey);
+            acquired = true;
+            return held;
+        } finally {
+            if (!acquired)
+                HELD.remove(heldKey);
+        }
+    }
+
+    private static DirectoryLock acquireShared(final File directory, final String heldKey) {
         final File lockFile = new File(directory, LOCK_FILE);
         if (!lockFile.exists()) {
             logger.warn("Storage directory {} is not writable, so it is read for recovery without a lock; make sure " +
                     "no other graph writes to it", directory);
-            return new DirectoryLock(null, null, null, lockFile, false);
+            return new DirectoryLock(null, null, null, lockFile, false, heldKey);
         }
         FileChannel channel = null;
         try {
@@ -161,7 +203,7 @@ public final class DirectoryLock implements AutoCloseable {
                 channel.close();
                 throw lockedByAnother(directory, null);
             }
-            return new DirectoryLock(channel, lock, null, lockFile, false);
+            return new DirectoryLock(channel, lock, null, lockFile, false, heldKey);
         } catch (OverlappingFileLockException ofle) {
             closeQuietly(channel);
             throw lockedByAnother(directory, ofle);
@@ -169,6 +211,22 @@ public final class DirectoryLock implements AutoCloseable {
             closeQuietly(channel);
             throw new UncheckedIOException(String.format("Could not acquire storage lock for %s", directory), ex);
         }
+    }
+
+    /**
+     * Record that this JVM is acquiring the lock of {@code directory}, failing if a graph in it already holds or is
+     * acquiring that lock. The directory is named by its real path, so a symbolic link to it is the same directory.
+     */
+    private static String hold(final File directory) {
+        String key;
+        try {
+            key = directory.toPath().toRealPath().toString();
+        } catch (IOException ex) {
+            key = directory.getAbsoluteFile().toPath().normalize().toString();
+        }
+        if (!HELD.add(key))
+            throw lockedByAnother(directory, null);
+        return key;
     }
 
     /**
@@ -195,8 +253,13 @@ public final class DirectoryLock implements AutoCloseable {
             return null;
         }
         final ByteBuffer read = ByteBuffer.allocate(bytes.length + 1);
-        while (read.hasRemaining() && pathChannel.read(read, read.position()) >= 0) {
-            // read until the buffer is full or the file ends
+        try {
+            while (read.hasRemaining() && pathChannel.read(read, read.position()) >= 0) {
+                // read until the buffer is full or the file ends
+            }
+        } catch (IOException ex) {
+            closeQuietly(pathChannel);
+            throw ex;
         }
         if (read.position() == bytes.length && Arrays.equals(bytes, Arrays.copyOf(read.array(), bytes.length)))
             return pathChannel;
@@ -230,10 +293,15 @@ public final class DirectoryLock implements AutoCloseable {
         // file in between and then have its LOCK file deleted under it. Windows refuses to delete an open file, so
         // there the file is removed once the lock is released.
         final boolean deleted = createdFile && lockFile.delete();
-        close();
-        if (createdFile && !deleted && lockFile.exists() && !lockFile.delete())
-            throw new UncheckedIOException(new IOException(String.format("Could not remove storage lock %s",
-                    lockFile)));
+        try {
+            release();
+            if (createdFile && !deleted && lockFile.exists() && !lockFile.delete())
+                throw new UncheckedIOException(new IOException(String.format("Could not remove storage lock %s",
+                        lockFile)));
+        } finally {
+            // kept until the file is gone, so no graph in this JVM can create one that this then deletes
+            HELD.remove(heldKey);
+        }
     }
 
     /**
@@ -241,6 +309,15 @@ public final class DirectoryLock implements AutoCloseable {
      */
     @Override
     public void close() {
+        try {
+            release();
+        } finally {
+            // only once every handle on the file is closed may another graph in this JVM open one
+            HELD.remove(heldKey);
+        }
+    }
+
+    private void release() {
         // a recovery open of a directory it cannot write holds no lock at all
         if (null == channel)
             return;

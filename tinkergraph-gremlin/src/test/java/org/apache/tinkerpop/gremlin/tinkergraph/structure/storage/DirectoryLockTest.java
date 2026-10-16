@@ -39,6 +39,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -133,5 +135,53 @@ public class DirectoryLockTest {
         // once the other process releases the lock, the location opens normally
         final TinkerStorageGraph graph = TinkerStorageGraph.open(config());
         graph.close();
+    }
+
+    @Test
+    public void shouldKeepTheLockAgainstOtherProcessesAfterARefusedOpenInTheSameJVM() throws Exception {
+        // a refused open must not touch the LOCK file the holder has locked: closing any handle on it would release
+        // the holder's operating system lock, while this JVM still reports it held, and let another process in
+        final TinkerStorageGraph holder = TinkerStorageGraph.open(config());
+        try {
+            try {
+                TinkerStorageGraph.open(config());
+                fail("expected a second open in the same JVM to fail");
+            } catch (IllegalStateException expected) {
+                assertTrue(expected.getMessage(), expected.getMessage().contains(location));
+            }
+            final Configuration recover = config();
+            recover.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_RECOVER, true);
+            try {
+                TinkerStorageGraph.open(recover);
+                fail("expected a recover open in the same JVM to fail");
+            } catch (IllegalStateException expected) {
+                assertTrue(expected.getMessage(), expected.getMessage().contains(location));
+            }
+
+            final String java = new File(new File(System.getProperty("java.home"), "bin"), "java").getAbsolutePath();
+            final Process other = new ProcessBuilder(java, "-cp", System.getProperty("java.class.path"),
+                    DirectoryLockHolder.class.getName(), location).redirectErrorStream(true).start();
+            other.getOutputStream().close();
+            try {
+                assertTrue("the other process should give up rather than wait",
+                        other.waitFor(30, TimeUnit.SECONDS));
+                final String output = new String(readAll(other), StandardCharsets.UTF_8);
+                assertNotEquals("the other process must not get the lock: " + output, 0, other.exitValue());
+                assertFalse(output, output.startsWith("locked"));
+            } finally {
+                other.destroyForcibly().waitFor(30, TimeUnit.SECONDS);
+            }
+        } finally {
+            holder.close();
+        }
+    }
+
+    private static byte[] readAll(final Process process) throws Exception {
+        final java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        final byte[] buffer = new byte[4096];
+        int read;
+        while ((read = process.getInputStream().read(buffer)) != -1)
+            out.write(buffer, 0, read);
+        return out.toByteArray();
     }
 }

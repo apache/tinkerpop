@@ -36,9 +36,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -638,16 +641,26 @@ public class StorageFailureTest {
         first.addVertex(T.id, 1);
         first.tx().commit();
 
-        // with its LOCK file gone, nothing keeps a second graph from locking a new one and opening the store
+        // with its LOCK file gone, nothing keeps a graph in another process from locking a new one and opening the
+        // store; a second graph in this JVM is refused before it reaches the file
         assertTrue(lock.delete());
-        final TinkerStorageGraph second = TinkerStorageGraph.open(conf);
+        final String java = new File(new File(System.getProperty("java.home"), "bin"), "java").getAbsolutePath();
+        final Process second = new ProcessBuilder(java, "-cp", System.getProperty("java.class.path"),
+                StoreWriter.class.getName(), FaultInjectingStorage.class.getName(),
+                conf.getString(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY), "3")
+                .redirectErrorStream(true).start();
+        try {
+            final BufferedReader out = new BufferedReader(
+                    new InputStreamReader(second.getInputStream(), StandardCharsets.UTF_8));
+            assertEquals("the other process should commit to the store", "committed", out.readLine());
 
-        first.addVertex(T.id, 2);
-        assertCommitFailsWith(first, "its lock");
-        second.addVertex(T.id, 3);
-        second.tx().commit();
-        first.close();
-        second.close();
+            first.addVertex(T.id, 2);
+            assertCommitFailsWith(first, "its lock");
+            first.close();
+        } finally {
+            second.getOutputStream().close();
+            assertTrue("the other process should close its graph", second.waitFor(30, TimeUnit.SECONDS));
+        }
 
         final TinkerStorageGraph reopened = TinkerStorageGraph.open(conf);
         assertEquals("only commits that were acknowledged survive", new HashSet<>(Arrays.asList(1, 3)),

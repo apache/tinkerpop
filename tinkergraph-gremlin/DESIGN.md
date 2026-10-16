@@ -236,7 +236,10 @@ graph could hold a lock on a file that has just been unlinked and keep no one ou
 since it leaves every file as it found it and writes nothing to the store. The handle the token is read back through
 stays open as long as the lock is held, because closing any handle on a file releases every POSIX lock the process
 holds on it while the JVM goes on reporting the lock held. The lock covers a single byte past the token rather than
-the whole file, because on Windows a lock keeps every other handle from reading the bytes it covers.
+the whole file, because on Windows a lock keeps every other handle from reading the bytes it covers. For the same
+POSIX reason a second open of a directory a graph in this JVM already holds is refused before any handle on its `LOCK`
+is opened, by a process-wide record of the directories held: a refused open that opened a handle would have to close
+it, releasing the holder's lock.
 
 A commit that finds the store moved fails and is rolled back in memory, although its frame may already be durable at
 the store's new location, because the check follows the forced write.
