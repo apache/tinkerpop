@@ -71,6 +71,41 @@ which affects providers that extended them.
 
 See: link:https://lists.apache.org/thread/2zt62kvfssh6xz5vnf2lk1g7cstq9vod[DISCUSS thread]
 
+==== GraphBinary Length Limits
+
+GraphBinary precedes each variable-size value, such as a string or a collection, with its length or element count.
+Gremlin Server and the Java driver now validate that prefix before reserving memory for the value, so a small malformed
+message can no longer request an allocation far larger than the data it carries. A negative prefix, or one that exceeds
+the bytes remaining in a fully received message, is rejected.
+
+Three settings bound the values that a well-formed message can carry. A single `String`, `BigInteger` or binary value is
+limited to 64MB by `maxGraphBinaryValueLength`, a fixed-size array such as the arguments of a predicate is limited to
+1,048,576 elements by `maxGraphBinaryArrayLength`, and `maxGraphBinaryInitialCapacity` caps the memory reserved up front
+for a collection at 16,384 entries. The last of these does not limit the size of a collection, which still grows as
+elements are read. A single value larger than 64MB was previously accepted and now fails unless
+`maxGraphBinaryValueLength` is raised. Gremlin Server also bounds each request by `maxRequestContentLength`, which
+defaults to 10MB, so the two settings are raised together for requests that carry very large values. The Java driver has
+no other bound on the size of a response value, so raising `maxGraphBinaryValueLength` there also raises how much memory
+a single value may require.
+
+Gremlin Server reads the settings from its YAML configuration file:
+
+[source,yaml]
+----
+maxRequestContentLength: 268435456
+maxGraphBinaryValueLength: 268435456
+----
+
+The Java driver reads the same keys from its cluster configuration, and the `Cluster` builder offers a method of the
+same name for each:
+
+[source,java]
+----
+Cluster cluster = Cluster.build("localhost")
+        .maxGraphBinaryValueLength(268435456)
+        .create();
+----
+
 === Upgrading for Providers
 
 ==== Graph System Providers
