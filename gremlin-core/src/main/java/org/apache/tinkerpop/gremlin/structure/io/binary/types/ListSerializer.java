@@ -43,7 +43,7 @@ public class ListSerializer extends SimpleTypeSerializer<List> {
             }
             if ((valueFlag & 2) == 2) {
                 final int length = readElementCount(buffer);
-                final ArrayList result = new ArrayList(cappedInitialCapacity(length));
+                final ArrayList result = new ArrayList(cappedInitialCapacity(length, context));
                 for (int i = 0; i < length; i++) {
                     Object item = context.read(buffer);
                     long bulk = buffer.readLong();

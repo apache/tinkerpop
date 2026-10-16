@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler
 import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReadLimits;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,6 +147,28 @@ public class Settings {
      * Maximum number of request components that can be aggregated for a message.
      */
     public int maxAccumulationBufferComponents = 1024;
+
+    /**
+     * The maximum length in bytes of a single {@code String}, {@code BigInteger} or binary value in a GraphBinary
+     * request. A value declaring a longer length is rejected. A request is also bounded by
+     * {@link #maxRequestContentLength}, so that setting should be raised together with this one when larger values
+     * are needed. This setting applies only to GraphBinary. The default is 64MB.
+     */
+    public int maxGraphBinaryValueLength = GraphBinaryReadLimits.DEFAULT_MAX_VALUE_LENGTH;
+
+    /**
+     * The maximum number of elements in a fixed-size array read from a GraphBinary request, such as the arguments of
+     * a predicate. An array declaring a larger count is rejected. This setting applies only to GraphBinary. The
+     * default is 1,048,576.
+     */
+    public int maxGraphBinaryArrayLength = GraphBinaryReadLimits.DEFAULT_MAX_ARRAY_LENGTH;
+
+    /**
+     * The maximum capacity reserved up front for a collection or map read from a GraphBinary request. This does not
+     * limit the size of the collection, which grows as elements are read. It only bounds the memory reserved before
+     * they are. This setting applies only to GraphBinary. The default is 16,384.
+     */
+    public int maxGraphBinaryInitialCapacity = GraphBinaryReadLimits.DEFAULT_MAX_INITIAL_CAPACITY;
 
     /**
      * If the number of bytes in the network send buffer exceeds this value then the channel is no longer writeable,

@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReadLimits;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -236,6 +237,11 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         final List<Settings.SerializerSettings> serializerSettings =
                 (null == this.settings.serializers || this.settings.serializers.isEmpty()) ? DEFAULT_SERIALIZERS : settings.serializers;
 
+        // built outside of the stream below so that an invalid value fails the server startup rather than being
+        // logged as a serializer that is silently unavailable
+        final GraphBinaryReadLimits readLimits = GraphBinaryReadLimits.of(settings.maxGraphBinaryValueLength,
+                settings.maxGraphBinaryArrayLength, settings.maxGraphBinaryInitialCapacity);
+
         serializerSettings.stream().map(config -> {
             try {
                 final Class clazz = Class.forName(config.className);
@@ -255,6 +261,9 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
                 if (config.config != null)
                     serializer.configure(config.config, graphsDefinedAtStartup);
+
+                if (serializer instanceof GraphBinaryMessageSerializerV4)
+                    ((GraphBinaryMessageSerializerV4) serializer).setReadLimits(readLimits);
 
                 return Optional.ofNullable(serializer);
             } catch (ClassNotFoundException cnfe) {

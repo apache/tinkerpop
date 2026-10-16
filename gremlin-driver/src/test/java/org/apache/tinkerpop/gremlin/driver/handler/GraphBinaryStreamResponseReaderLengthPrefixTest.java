@@ -20,11 +20,13 @@ package org.apache.tinkerpop.gremlin.driver.handler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.stream.ByteBufQueueInputStream;
 import org.apache.tinkerpop.gremlin.driver.stream.GraphBinaryStreamResponseReader;
 import org.apache.tinkerpop.gremlin.driver.stream.InputStreamBuffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReadLimits;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
@@ -33,10 +35,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -61,17 +66,41 @@ public class GraphBinaryStreamResponseReaderLengthPrefixTest {
         executor.shutdownNow();
     }
 
-    private ResultSet runAgainstRawPayload(final ByteBuf payload) {
+    private ResultSet runAgainstPayloadChunks(final GraphBinaryReader graphBinaryReader, final ByteBuf... chunks) {
         final ResultSet rs = new ResultSet(executor, RequestMessage.build("g.V()").create(), null);
         final AtomicReference<ResultSet> pending = new AtomicReference<>(rs);
 
         final ByteBufQueueInputStream stream = new ByteBufQueueInputStream();
-        stream.offer(payload);
+        for (final ByteBuf chunk : chunks) stream.offer(chunk);
         stream.signalEndOfStream();
 
         final InputStreamBuffer buffer = new InputStreamBuffer(stream);
-        new GraphBinaryStreamResponseReader(buffer, reader, rs, pending).run();
+        new GraphBinaryStreamResponseReader(buffer, graphBinaryReader, rs, pending).run();
         return rs;
+    }
+
+    private ResultSet runAgainstRawPayload(final ByteBuf payload) {
+        return runAgainstPayloadChunks(reader, payload);
+    }
+
+    private static ByteBuf stringResponse(final String value) {
+        final byte[] valueBytes = value.getBytes(StandardCharsets.UTF_8);
+
+        final ByteBuf payload = Unpooled.buffer();
+        payload.writeByte(GraphBinaryWriterVersionByte());
+        payload.writeByte(0);
+        payload.writeByte(DataType.STRING.getCodeByte());
+        payload.writeByte(0);
+        payload.writeInt(valueBytes.length);
+        payload.writeBytes(valueBytes);
+        payload.writeByte(DataType.MARKER.getCodeByte());
+        payload.writeByte(0);
+        payload.writeByte(0);
+
+        payload.writeInt(0);
+        payload.writeByte(1);
+        payload.writeByte(1);
+        return payload;
     }
 
     @Test
@@ -112,45 +141,55 @@ public class GraphBinaryStreamResponseReaderLengthPrefixTest {
 
     @Test
     public void shouldStillReadLegitimateStringAcrossChunksOnStreamingBuffer() throws Exception {
-        final String value = String.join("", java.util.Collections.nCopies(200, "0123456789"));
-        final byte[] valueBytes = value.getBytes(StandardCharsets.UTF_8);
-
-        final ByteBuf fullPayload = Unpooled.buffer();
-        fullPayload.writeByte(GraphBinaryWriterVersionByte());
-        fullPayload.writeByte(0);
-        fullPayload.writeByte(DataType.STRING.getCodeByte());
-        fullPayload.writeByte(0);
-        fullPayload.writeInt(valueBytes.length);
-        fullPayload.writeBytes(valueBytes);
-        fullPayload.writeByte(DataType.MARKER.getCodeByte());
-        fullPayload.writeByte(0);
-        fullPayload.writeByte(0);
-
-        fullPayload.writeInt(0);
-        fullPayload.writeByte(1);
-        fullPayload.writeByte(1);
-
-        final ResultSet rs = new ResultSet(executor, RequestMessage.build("g.V()").create(), null);
-        final AtomicReference<ResultSet> pending = new AtomicReference<>(rs);
+        final String value = String.join("", Collections.nCopies(200, "0123456789"));
+        final ByteBuf fullPayload = stringResponse(value);
 
         final int splitPoint = fullPayload.readableBytes() / 2;
         final ByteBuf chunk1 = fullPayload.readSlice(splitPoint).retain();
         final ByteBuf chunk2 = fullPayload.retain();
 
-        final ByteBufQueueInputStream stream = new ByteBufQueueInputStream();
-        stream.offer(chunk1);
-        stream.offer(chunk2);
-        stream.signalEndOfStream();
-
-        final InputStreamBuffer buffer = new InputStreamBuffer(stream);
-        new GraphBinaryStreamResponseReader(buffer, reader, rs, pending).run();
+        final ResultSet rs = runAgainstPayloadChunks(reader, chunk1, chunk2);
 
         assertTrue(rs.allItemsAvailable());
-        final java.util.List<org.apache.tinkerpop.gremlin.driver.Result> results = rs.all().get();
-        org.junit.Assert.assertEquals(1, results.size());
-        org.junit.Assert.assertEquals(value, results.get(0).getString());
+        final List<Result> results = rs.all().get();
+        assertEquals(1, results.size());
+        assertEquals(value, results.get(0).getString());
 
         fullPayload.release();
+    }
+
+    @Test
+    public void shouldRejectValueAboveConfiguredLimitOnStreamingBuffer() throws Exception {
+        final GraphBinaryReader limited = reader.withLimits(GraphBinaryReadLimits.of(100, 100, 100));
+        final String value = String.join("", Collections.nCopies(200, "x"));
+
+        final ResultSet rs = runAgainstPayloadChunks(limited, stringResponse(value));
+
+        assertTrue(rs.allItemsAvailable());
+        try {
+            rs.all().get();
+            fail("A value above the configured limit on the streaming buffer must be refused");
+        } catch (Exception e) {
+        }
+    }
+
+    @Test
+    public void shouldReadValueAboveDefaultLimitOnStreamingBufferWhenLimitIsRaised() throws Exception {
+        final String value = String.join("", Collections.nCopies(200, "x"));
+        final GraphBinaryReader lowered = reader.withLimits(GraphBinaryReadLimits.of(100, 100, 100));
+        final GraphBinaryReader raised = lowered.withLimits(GraphBinaryReadLimits.of(1000, 100, 100));
+
+        final ResultSet rejected = runAgainstPayloadChunks(lowered, stringResponse(value));
+        assertTrue(rejected.allItemsAvailable());
+        try {
+            rejected.all().get();
+            fail("The lowered limit should have refused the value");
+        } catch (Exception e) {
+        }
+
+        final ResultSet accepted = runAgainstPayloadChunks(raised, stringResponse(value));
+        assertTrue(accepted.allItemsAvailable());
+        assertEquals(value, accepted.all().get().get(0).getString());
     }
 
     private static byte GraphBinaryWriterVersionByte() {

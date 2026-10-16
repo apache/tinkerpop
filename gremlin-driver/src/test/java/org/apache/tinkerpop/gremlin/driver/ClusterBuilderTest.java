@@ -58,7 +58,13 @@ public class ClusterBuilderTest {
                 {"idleTimeoutOne", Cluster.build().idleTimeoutMillis(1), "idleTimeout must be zero or greater than or equal to 1000"},
                 {"idleTimeout999", Cluster.build().idleTimeoutMillis(999), "idleTimeout must be zero or greater than or equal to 1000"},
                 {"workerPoolSize0", Cluster.build().workerPoolSize(0), "workerPoolSize must be greater than zero"},
-                {"workerPoolSizeNeg1", Cluster.build().workerPoolSize(-1), "workerPoolSize must be greater than zero"}});
+                {"workerPoolSizeNeg1", Cluster.build().workerPoolSize(-1), "workerPoolSize must be greater than zero"},
+                {"maxGraphBinaryValueLength0", Cluster.build().maxGraphBinaryValueLength(0), "maxGraphBinaryValueLength must be greater than zero"},
+                {"maxGraphBinaryValueLengthNeg1", Cluster.build().maxGraphBinaryValueLength(-1), "maxGraphBinaryValueLength must be greater than zero"},
+                {"maxGraphBinaryArrayLength0", Cluster.build().maxGraphBinaryArrayLength(0), "maxGraphBinaryArrayLength must be greater than zero"},
+                {"maxGraphBinaryArrayLengthNeg1", Cluster.build().maxGraphBinaryArrayLength(-1), "maxGraphBinaryArrayLength must be greater than zero"},
+                {"maxGraphBinaryInitialCapacity0", Cluster.build().maxGraphBinaryInitialCapacity(0), "maxGraphBinaryInitialCapacity must be greater than zero"},
+                {"maxGraphBinaryInitialCapacityNeg1", Cluster.build().maxGraphBinaryInitialCapacity(-1), "maxGraphBinaryInitialCapacity must be greater than zero"}});
     }
 
     @Parameterized.Parameter(value = 0)

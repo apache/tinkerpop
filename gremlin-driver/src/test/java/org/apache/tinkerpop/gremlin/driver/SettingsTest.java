@@ -27,6 +27,8 @@ import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -109,5 +111,51 @@ public class SettingsTest {
         assertEquals(Compression.DEFLATE, settings.connectionPool.compression);
         assertEquals(1100, settings.connectionPool.batchSize);
         assertEquals("g.inject()", settings.connectionPool.validationRequest);
+    }
+
+    @Test
+    public void shouldDefaultGraphBinaryLimits() {
+        final Settings settings = new Settings();
+
+        assertEquals(64 * 1024 * 1024, settings.maxGraphBinaryValueLength);
+        assertEquals(1_048_576, settings.maxGraphBinaryArrayLength);
+        assertEquals(16_384, settings.maxGraphBinaryInitialCapacity);
+    }
+
+    @Test
+    public void shouldCreateGraphBinaryLimitsFromConfiguration() {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty("maxGraphBinaryValueLength", 134217728);
+        conf.setProperty("maxGraphBinaryArrayLength", 2000000);
+        conf.setProperty("maxGraphBinaryInitialCapacity", 32768);
+
+        final Settings settings = Settings.from(conf);
+
+        assertEquals(134217728, settings.maxGraphBinaryValueLength);
+        assertEquals(2000000, settings.maxGraphBinaryArrayLength);
+        assertEquals(32768, settings.maxGraphBinaryInitialCapacity);
+    }
+
+    @Test
+    public void shouldKeepDefaultGraphBinaryLimitsWhenAbsentFromConfiguration() {
+        final Settings settings = Settings.from(new BaseConfiguration());
+
+        assertEquals(64 * 1024 * 1024, settings.maxGraphBinaryValueLength);
+        assertEquals(1_048_576, settings.maxGraphBinaryArrayLength);
+        assertEquals(16_384, settings.maxGraphBinaryInitialCapacity);
+    }
+
+    @Test
+    public void shouldReadGraphBinaryLimitsFromYaml() {
+        final String yaml = "hosts: [localhost]\n" +
+                "maxGraphBinaryValueLength: 134217728\n" +
+                "maxGraphBinaryArrayLength: 2000000\n" +
+                "maxGraphBinaryInitialCapacity: 32768\n";
+
+        final Settings settings = Settings.read(new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
+
+        assertEquals(134217728, settings.maxGraphBinaryValueLength);
+        assertEquals(2000000, settings.maxGraphBinaryArrayLength);
+        assertEquals(32768, settings.maxGraphBinaryInitialCapacity);
     }
 }

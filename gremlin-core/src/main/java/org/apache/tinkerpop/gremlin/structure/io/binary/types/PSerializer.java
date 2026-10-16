@@ -56,7 +56,7 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
     @Override
     protected T readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
         final String predicateName = context.readValue(buffer, String.class, false);
-        final int length = readFixedArrayCount(buffer);
+        final int length = readFixedArrayCount(buffer, context);
         final Object[] args = new Object[length];
         final Class<?>[] argumentClasses = new Class[length];
         for (int i = 0; i < length; i++) {

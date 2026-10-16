@@ -30,7 +30,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Restricted GraphSON and Gryo `Class` deserialization to classes registered with `ClassRegistry.register()`, `registerStrategy()` or `registerStrategies()`.
 * Added browser smoke tests for `gremlin-javascript`.
 * Fixed `gremlin-javascript` to send the `language` set with `with_("language", ...)` on remote traversals instead of dropping it.
-* Fixed GraphBinary deserialization to reject invalid length and count prefixes with an `IOException` instead of sizing an allocation or array from them, preventing a small malformed message from forcing a large memory allocation.
+* Fixed GraphBinary deserialization to reject invalid or oversized length and count prefixes instead of sizing an allocation from them, and added the `maxGraphBinaryValueLength`, `maxGraphBinaryArrayLength` and `maxGraphBinaryInitialCapacity` settings to Gremlin Server and the Java driver to configure those limits.
 * Fixed `gremlin-go` to report a malformed or truncated GraphBinary response as a deserialization error rather than a bare decoder message.
 * Added a per-request `language` option to the `gremlin-go` `RequestOptionsBuilder`, and honored `With("language", ...)` on traversals.
 * Changed `gremlin-go` per-request options set via `with()` to accept any numeric type holding an integer value an `int` can hold and to ignore other values rather than panicking.

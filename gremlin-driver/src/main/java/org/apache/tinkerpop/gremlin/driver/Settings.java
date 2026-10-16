@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.commons.configuration2.Configuration;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReadLimits;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -97,6 +98,28 @@ public final class Settings {
     public boolean bulkResults = false;
 
     /**
+     * The maximum length in bytes of a single {@code String}, {@code BigInteger} or binary value in a GraphBinary
+     * response. A response declaring a value of a longer length fails. The driver has no other bound on the size of
+     * a response value, so raising this limit also raises how much memory a single value may require. This setting
+     * applies only to GraphBinary. The default is 64MB.
+     */
+    public int maxGraphBinaryValueLength = GraphBinaryReadLimits.DEFAULT_MAX_VALUE_LENGTH;
+
+    /**
+     * The maximum number of elements in a fixed-size array read from a GraphBinary response, such as the arguments
+     * of a predicate. A response declaring a larger count fails. This setting applies only to GraphBinary. The
+     * default is 1,048,576.
+     */
+    public int maxGraphBinaryArrayLength = GraphBinaryReadLimits.DEFAULT_MAX_ARRAY_LENGTH;
+
+    /**
+     * The maximum capacity reserved up front for a collection or map read from a GraphBinary response. This does not
+     * limit the size of the collection, which grows as elements are read. It only bounds the memory reserved before
+     * they are. This setting applies only to GraphBinary. The default is 16,384.
+     */
+    public int maxGraphBinaryInitialCapacity = GraphBinaryReadLimits.DEFAULT_MAX_INITIAL_CAPACITY;
+
+    /**
      * Read configuration from a file into a new {@link Settings} object.
      *
      * @param stream an input stream containing a Gremlin Server YAML configuration
@@ -135,6 +158,15 @@ public final class Settings {
 
         if (conf.containsKey("bulkResults"))
             settings.bulkResults = conf.getBoolean("bulkResults");
+
+        if (conf.containsKey("maxGraphBinaryValueLength"))
+            settings.maxGraphBinaryValueLength = conf.getInt("maxGraphBinaryValueLength");
+
+        if (conf.containsKey("maxGraphBinaryArrayLength"))
+            settings.maxGraphBinaryArrayLength = conf.getInt("maxGraphBinaryArrayLength");
+
+        if (conf.containsKey("maxGraphBinaryInitialCapacity"))
+            settings.maxGraphBinaryInitialCapacity = conf.getInt("maxGraphBinaryInitialCapacity");
 
         if (conf.containsKey("hosts"))
             settings.hosts = conf.getList("hosts").stream().map(Object::toString).collect(Collectors.toList());
