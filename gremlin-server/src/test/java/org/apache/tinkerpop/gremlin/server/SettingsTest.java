@@ -23,9 +23,11 @@ import org.junit.Test;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
@@ -162,5 +164,27 @@ public class SettingsTest {
 
         // Confirms a YAML-provided value overrides the code default (600000); the resource sets it to 480000.
         assertEquals(480000L, settings.maxTransactionLifetimeMillis);
+    }
+
+    @Test
+    public void graphBinaryLimitsDefaultToDocumentedValuesWhenAbsentFromYaml() throws Exception {
+        final Settings settings = Settings.read(getMinimalConfigStream());
+
+        assertEquals(64 * 1024 * 1024, settings.maxGraphBinaryValueLength);
+        assertEquals(1_048_576, settings.maxGraphBinaryArrayLength);
+        assertEquals(16_384, settings.maxGraphBinaryInitialCapacity);
+    }
+
+    @Test
+    public void graphBinaryLimitsParsedFromYaml() {
+        final String yaml = "maxGraphBinaryValueLength: 134217728\n" +
+                "maxGraphBinaryArrayLength: 2000000\n" +
+                "maxGraphBinaryInitialCapacity: 32768\n";
+
+        final Settings settings = Settings.read(new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
+
+        assertEquals(134217728, settings.maxGraphBinaryValueLength);
+        assertEquals(2000000, settings.maxGraphBinaryArrayLength);
+        assertEquals(32768, settings.maxGraphBinaryInitialCapacity);
     }
 }

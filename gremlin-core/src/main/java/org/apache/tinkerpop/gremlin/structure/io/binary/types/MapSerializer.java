@@ -55,7 +55,7 @@ public class MapSerializer extends SimpleTypeSerializer<Map> {
     protected Map readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
         final int length = readElementCount(buffer);
 
-        final Map<Object,Object> result = new LinkedHashMap<>(cappedInitialCapacity(length));
+        final Map<Object,Object> result = new LinkedHashMap<>(cappedInitialCapacity(length, context));
         for (int i = 0; i < length; i++) {
             result.put(context.read(buffer), context.read(buffer));
         }
@@ -66,7 +66,7 @@ public class MapSerializer extends SimpleTypeSerializer<Map> {
     private Map readMap(final Buffer buffer, final GraphBinaryReader context) throws IOException {
         final int length = readElementCount(buffer);
 
-        final Map<Object,Object> result = new HashMap<>(cappedInitialCapacity(length));
+        final Map<Object,Object> result = new HashMap<>(cappedInitialCapacity(length, context));
         for (int i = 0; i < length; i++) {
             result.put(context.read(buffer), context.read(buffer));
         }

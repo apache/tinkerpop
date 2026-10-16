@@ -26,7 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 4.0.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Added a `Char` type to `gremlin-go` to represent the Gremlin `Character` type in `GremlinLang`.
-* Fixed GraphBinary deserialization to reject invalid length and count prefixes with an `IOException` instead of sizing an allocation or array from them, preventing a small malformed message from forcing a large memory allocation.
+* Fixed GraphBinary deserialization to reject invalid or oversized length and count prefixes instead of sizing an allocation from them, and added the `maxGraphBinaryValueLength`, `maxGraphBinaryArrayLength` and `maxGraphBinaryInitialCapacity` settings to Gremlin Server and the Java driver to configure those limits.
 * Fixed `gremlin-go` to report a malformed or truncated GraphBinary response as a deserialization error rather than a bare decoder message.
 * Made `TinkerGraph` an interface and renamed the in-memory implementation to `TinkerMemoryGraph`; `TinkerGraph.open()` and `gremlin.graph=...TinkerGraph` behave as before. *(breaking)*
 * Renamed `TinkerTransactionGraph` to `TinkerStorageGraph`. *(breaking)*

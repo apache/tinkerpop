@@ -19,6 +19,9 @@
 package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReadLimits;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -28,41 +31,67 @@ import java.nio.ByteBuffer;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-/**
- * Exercises the prefix validation helpers in {@link SimpleTypeSerializer} against a buffer that knows its
- * remaining length ({@link Buffer#hasKnownRemainingLength()} is {@code true}) and one that does not
- * ({@code false}, matching a streaming HTTP response buffer).
- */
 public class SimpleTypeSerializerPrefixValidationTest {
+
+    private static final GraphBinaryReader defaultReader = new GraphBinaryReader();
+
+    private static GraphBinaryReader readerWith(final int maxValueLength, final int maxArrayLength, final int maxInitialCapacity) {
+        return new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
+                GraphBinaryReadLimits.of(maxValueLength, maxArrayLength, maxInitialCapacity));
+    }
 
     @Test
     public void readByteLengthShouldRejectNegativeOnKnownLengthBuffer() {
-        assertRejects(() -> SimpleTypeSerializer.readByteLength(knownLengthBuffer(-1, 100)));
+        assertRejects(() -> SimpleTypeSerializer.readByteLength(knownLengthBuffer(-1, 100), defaultReader));
     }
 
     @Test
     public void readByteLengthShouldRejectNegativeOnStreamingBuffer() {
-        assertRejects(() -> SimpleTypeSerializer.readByteLength(streamingBuffer(-1)));
+        assertRejects(() -> SimpleTypeSerializer.readByteLength(streamingBuffer(-1), defaultReader));
     }
 
     @Test
     public void readByteLengthShouldRejectLengthExceedingReadableBytesOnKnownLengthBuffer() {
-        assertRejects(() -> SimpleTypeSerializer.readByteLength(knownLengthBuffer(1000, 10)));
+        assertRejects(() -> SimpleTypeSerializer.readByteLength(knownLengthBuffer(1000, 10), defaultReader));
     }
 
     @Test
     public void readByteLengthShouldRejectImplausibleLengthOnStreamingBufferEvenWithoutReadableBytes() {
-        assertRejects(() -> SimpleTypeSerializer.readByteLength(streamingBuffer(Integer.MAX_VALUE)));
+        assertRejects(() -> SimpleTypeSerializer.readByteLength(streamingBuffer(Integer.MAX_VALUE), defaultReader));
     }
 
     @Test
     public void readByteLengthShouldAcceptValidLengthOnKnownLengthBuffer() throws IOException {
-        assertEquals(10, SimpleTypeSerializer.readByteLength(knownLengthBuffer(10, 100)));
+        assertEquals(10, SimpleTypeSerializer.readByteLength(knownLengthBuffer(10, 100), defaultReader));
     }
 
     @Test
     public void readByteLengthShouldAcceptValidLengthOnStreamingBuffer() throws IOException {
-        assertEquals(10, SimpleTypeSerializer.readByteLength(streamingBuffer(10)));
+        assertEquals(10, SimpleTypeSerializer.readByteLength(streamingBuffer(10), defaultReader));
+    }
+
+    @Test
+    public void readByteLengthShouldRejectLengthAboveConfiguredLimit() throws IOException {
+        final GraphBinaryReader reader = readerWith(100, 100, 100);
+        assertRejects(() -> SimpleTypeSerializer.readByteLength(streamingBuffer(101), reader));
+        assertEquals(100, SimpleTypeSerializer.readByteLength(streamingBuffer(100), reader));
+    }
+
+    @Test
+    public void readByteLengthShouldAcceptLengthAboveDefaultLimitWhenRaised() throws IOException {
+        final int aboveDefault = GraphBinaryReadLimits.DEFAULT_MAX_VALUE_LENGTH + 1;
+        assertRejects(() -> SimpleTypeSerializer.readByteLength(streamingBuffer(aboveDefault), defaultReader));
+        assertRejects(() -> SimpleTypeSerializer.readByteLength(knownLengthBuffer(aboveDefault, Integer.MAX_VALUE), defaultReader));
+
+        final GraphBinaryReader raised = readerWith(Integer.MAX_VALUE, 100, 100);
+        assertEquals(aboveDefault, SimpleTypeSerializer.readByteLength(streamingBuffer(aboveDefault), raised));
+        assertEquals(aboveDefault, SimpleTypeSerializer.readByteLength(knownLengthBuffer(aboveDefault, Integer.MAX_VALUE), raised));
+    }
+
+    @Test
+    public void readByteLengthShouldStillRejectLengthExceedingReadableBytesWhenLimitRaised() {
+        final GraphBinaryReader raised = readerWith(Integer.MAX_VALUE, 100, 100);
+        assertRejects(() -> SimpleTypeSerializer.readByteLength(knownLengthBuffer(1000, 10), raised));
     }
 
     @Test
@@ -92,37 +121,53 @@ public class SimpleTypeSerializerPrefixValidationTest {
 
     @Test
     public void readFixedArrayCountShouldRejectNegativeOnKnownLengthBuffer() {
-        assertRejects(() -> SimpleTypeSerializer.readFixedArrayCount(knownLengthBuffer(-1, 100)));
+        assertRejects(() -> SimpleTypeSerializer.readFixedArrayCount(knownLengthBuffer(-1, 100), defaultReader));
     }
 
     @Test
     public void readFixedArrayCountShouldRejectNegativeOnStreamingBuffer() {
-        assertRejects(() -> SimpleTypeSerializer.readFixedArrayCount(streamingBuffer(-1)));
+        assertRejects(() -> SimpleTypeSerializer.readFixedArrayCount(streamingBuffer(-1), defaultReader));
     }
 
     @Test
     public void readFixedArrayCountShouldRejectCountExceedingReadableBytesOnKnownLengthBuffer() {
-        assertRejects(() -> SimpleTypeSerializer.readFixedArrayCount(knownLengthBuffer(1000, 10)));
+        assertRejects(() -> SimpleTypeSerializer.readFixedArrayCount(knownLengthBuffer(1000, 10), defaultReader));
     }
 
     @Test
     public void readFixedArrayCountShouldRejectImplausibleCountOnStreamingBufferEvenWithoutReadableBytes() {
-        assertRejects(() -> SimpleTypeSerializer.readFixedArrayCount(streamingBuffer(2_000_000)));
+        assertRejects(() -> SimpleTypeSerializer.readFixedArrayCount(streamingBuffer(2_000_000), defaultReader));
     }
 
     @Test
     public void readFixedArrayCountShouldAcceptValidCountOnStreamingBuffer() throws IOException {
-        assertEquals(10, SimpleTypeSerializer.readFixedArrayCount(streamingBuffer(10)));
+        assertEquals(10, SimpleTypeSerializer.readFixedArrayCount(streamingBuffer(10), defaultReader));
+    }
+
+    @Test
+    public void readFixedArrayCountShouldHonorConfiguredLimit() throws IOException {
+        final GraphBinaryReader lowered = readerWith(100, 5, 100);
+        assertRejects(() -> SimpleTypeSerializer.readFixedArrayCount(streamingBuffer(6), lowered));
+        assertEquals(5, SimpleTypeSerializer.readFixedArrayCount(streamingBuffer(5), lowered));
+
+        final GraphBinaryReader raised = readerWith(100, 3_000_000, 100);
+        assertEquals(2_000_000, SimpleTypeSerializer.readFixedArrayCount(streamingBuffer(2_000_000), raised));
     }
 
     @Test
     public void cappedInitialCapacityShouldPassThroughSmallCount() {
-        assertEquals(10, SimpleTypeSerializer.cappedInitialCapacity(10));
+        assertEquals(10, SimpleTypeSerializer.cappedInitialCapacity(10, defaultReader));
+    }
+
+    @Test
+    public void cappedInitialCapacityShouldHonorConfiguredLimit() {
+        assertEquals(50, SimpleTypeSerializer.cappedInitialCapacity(10_000_000, readerWith(100, 100, 50)));
+        assertEquals(10_000_000, SimpleTypeSerializer.cappedInitialCapacity(10_000_000, readerWith(100, 100, 20_000_000)));
     }
 
     @Test
     public void cappedInitialCapacityShouldCapLargeCount() {
-        final int capped = SimpleTypeSerializer.cappedInitialCapacity(10_000_000);
+        final int capped = SimpleTypeSerializer.cappedInitialCapacity(10_000_000, defaultReader);
         if (capped >= 10_000_000) {
             fail("A large declared count must not be used directly as a pre-allocated capacity, was: " + capped);
         }

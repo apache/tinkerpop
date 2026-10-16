@@ -68,7 +68,7 @@ public class GraphSerializer extends SimpleTypeSerializer<Graph> {
             // Parse vertices into temporary buffer before creating the graph, to determine if
             // multilabel is required on the graph.
             final int vertexCount = readElementCount(buffer);
-            final List<DetachedVertex> parsedVertices = new ArrayList<>(cappedInitialCapacity(vertexCount));
+            final List<DetachedVertex> parsedVertices = new ArrayList<>(cappedInitialCapacity(vertexCount, context));
             boolean requiresMultiLabelCardinality = false;
             for (int ix = 0; ix < vertexCount; ix++) {
                 final Object vertexId = context.read(buffer);

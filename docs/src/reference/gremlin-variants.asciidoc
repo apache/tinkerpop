@@ -1151,6 +1151,9 @@ The following table describes the various configuration options for the Gremlin 
 |enableUserAgentOnConnect |Enables sending a user agent to the server during connection requests. More details can be found in provider docs link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|true
 |hosts |The list of hosts that the driver will connect to. |localhost
 |interceptors |A list of `RequestInterceptor` instances that modify the HTTP request before sending. |empty
+|maxGraphBinaryArrayLength |The maximum number of elements in a fixed-size array read from a GraphBinary response, such as the arguments of a predicate. A response declaring a larger count fails. This setting applies only to GraphBinary. |1048576
+|maxGraphBinaryInitialCapacity |The maximum capacity reserved up front for a collection or map read from a GraphBinary response. This does not limit the size of the collection, which grows as elements are read. This setting applies only to GraphBinary. |16384
+|maxGraphBinaryValueLength |The maximum length in bytes of a single `String`, `BigInteger` or binary value in a GraphBinary response. A response declaring a value of a longer length fails. The driver has no other bound on the size of a response value, so raising this limit also raises how much memory a single value may require. This setting applies only to GraphBinary. |67108864
 |nioPoolSize |Size of the pool for handling request/response operations. |available processors
 |password |The password to submit on requests that require authentication. |_none_
 |path |The URL path to the Gremlin Server. |_/gremlin_

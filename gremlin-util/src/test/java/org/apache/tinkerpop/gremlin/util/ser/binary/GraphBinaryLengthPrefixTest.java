@@ -21,25 +21,24 @@ package org.apache.tinkerpop.gremlin.util.ser.binary;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReadLimits;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
+import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-/**
- * Feeds malformed length/count prefixes through {@link GraphBinaryReader} against a fully aggregated buffer and
- * asserts they are refused with an {@link IOException} rather than used to size an allocation.
- * <p>
- * See also {@code GraphBinaryStreamResponseReaderLengthPrefixTest} in {@code gremlin-driver} for the equivalent
- * checks against the driver's streaming response buffer, which cannot report {@code readableBytes()}.
- */
 public class GraphBinaryLengthPrefixTest {
 
     private final GraphBinaryReader reader = new GraphBinaryReader();
@@ -205,6 +204,65 @@ public class GraphBinaryLengthPrefixTest {
             reader.read(buffer);
             fail("read of String with a truncated length prefix must be refused");
         } catch (IOException | IndexOutOfBoundsException expected) {
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test
+    public void shouldRejectWellFormedStringAboveConfiguredLimit() throws IOException {
+        final GraphBinaryReader limited = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
+                GraphBinaryReadLimits.of(10, 10, 10));
+        final Buffer buffer = bufferFactory.create(ByteBufAllocator.DEFAULT.buffer());
+        try {
+            writer.write("01234567890", buffer);
+            limited.read(buffer);
+            fail("a String longer than the configured limit must be refused");
+        } catch (IOException expected) {
+            assertThat(expected.getMessage(), containsString("maxGraphBinaryValueLength"));
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test
+    public void shouldAcceptWellFormedStringAtConfiguredLimit() throws IOException {
+        final GraphBinaryReader limited = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
+                GraphBinaryReadLimits.of(10, 10, 10));
+        final Buffer buffer = bufferFactory.create(ByteBufAllocator.DEFAULT.buffer());
+        try {
+            writer.write("0123456789", buffer);
+            assertEquals("0123456789", limited.read(buffer));
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test
+    public void shouldRejectWellFormedBinaryAboveConfiguredLimit() throws IOException {
+        final GraphBinaryReader limited = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
+                GraphBinaryReadLimits.of(10, 10, 10));
+        final Buffer buffer = bufferFactory.create(ByteBufAllocator.DEFAULT.buffer());
+        try {
+            writer.write(ByteBuffer.wrap(new byte[11]), buffer);
+            limited.read(buffer);
+            fail("a binary value longer than the configured limit must be refused");
+        } catch (IOException expected) {
+            assertThat(expected.getMessage(), containsString("maxGraphBinaryValueLength"));
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test
+    public void shouldReadLargeListWithSmallInitialCapacity() throws IOException {
+        final GraphBinaryReader limited = new GraphBinaryReader(TypeSerializerRegistry.INSTANCE, null,
+                GraphBinaryReadLimits.of(1000, 10, 2));
+        final List<Integer> list = IntStream.range(0, 500).boxed().collect(Collectors.toList());
+        final Buffer buffer = bufferFactory.create(ByteBufAllocator.DEFAULT.buffer());
+        try {
+            writer.write(list, buffer);
+            assertEquals(list, limited.read(buffer));
         } finally {
             buffer.release();
         }

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReadLimits;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializer;
@@ -34,23 +35,6 @@ import java.util.LinkedHashMap;
  */
 public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
     private final DataType dataType;
-
-    /**
-     * Upper bound, in bytes, on a length prefix sizing a fixed byte allocation ({@code byte[]}, {@code ByteBuffer}),
-     * enforced even when {@link Buffer#hasKnownRemainingLength()} is {@code false}.
-     */
-    private static final int MAX_BYTE_LENGTH = 64 * 1024 * 1024;
-
-    /**
-     * Upper bound on a count prefix sizing a fixed-size array ({@code Object[]}, {@code Class[]}), enforced even
-     * when {@link Buffer#hasKnownRemainingLength()} is {@code false}.
-     */
-    private static final int MAX_FIXED_ARRAY_COUNT = 1 << 20;
-
-    /**
-     * Upper bound on the capacity pre-allocated for a growable container from a wire count.
-     */
-    private static final int MAX_PREALLOC_CAPACITY = 16384;
 
     public DataType getDataType() {
         return dataType;
@@ -88,9 +72,6 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
      */
     protected abstract T readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException;
 
-    /**
-     * Reads a raw 4-byte length or count prefix and rejects a negative value.
-     */
     private static int readRawPrefix(final Buffer buffer) throws IOException {
         final int size = buffer.readInt();
         if (size < 0) {
@@ -102,16 +83,18 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
     /**
      * Reads and validates a byte-length prefix sizing a fixed allocation ({@code byte[]} or {@code ByteBuffer})
      * meant to be filled entirely from the wire, e.g. a {@code String}, {@code BigInteger}, or binary value.
-     * Rejects a negative length and any length exceeding {@link #MAX_BYTE_LENGTH}. When
+     * Rejects a negative length and any length exceeding {@link GraphBinaryReadLimits#getMaxValueLength()}. When
      * {@link Buffer#hasKnownRemainingLength()} is {@code true}, also rejects a length exceeding
      * {@link Buffer#readableBytes()}.
      */
-    protected static int readByteLength(final Buffer buffer) throws IOException {
+    protected static int readByteLength(final Buffer buffer, final GraphBinaryReader context) throws IOException {
         final int length = readRawPrefix(buffer);
-        if (length > MAX_BYTE_LENGTH) {
+        final int maxValueLength = context.getLimits().getMaxValueLength();
+        if (length > maxValueLength) {
             throw new IOException(String.format(
-                    "Invalid GraphBinary length prefix: %d exceeds the maximum allowed value size of %d bytes",
-                    length, MAX_BYTE_LENGTH));
+                    "Invalid GraphBinary length prefix: %d exceeds the maximum allowed value size of %d bytes. " +
+                            "The limit can be raised with the maxGraphBinaryValueLength setting.",
+                    length, maxValueLength));
         }
         if (buffer.hasKnownRemainingLength() && length > buffer.readableBytes()) {
             throw new IOException(String.format("Invalid GraphBinary length prefix: %d (readable bytes: %d)",
@@ -124,7 +107,7 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
      * Reads and validates an element-count prefix for a growable container (e.g. {@code List}, {@code Set},
      * {@code Map}, {@code Tree}). Rejects a negative count. When {@link Buffer#hasKnownRemainingLength()} is
      * {@code true}, also rejects a count exceeding {@link Buffer#readableBytes()}. Callers must size any initial
-     * container capacity with {@link #cappedInitialCapacity(int)} rather than the raw count.
+     * container capacity with {@link #cappedInitialCapacity(int, GraphBinaryReader)} rather than the raw count.
      */
     protected static int readElementCount(final Buffer buffer) throws IOException {
         final int count = readRawPrefix(buffer);
@@ -138,15 +121,17 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
     /**
      * Reads and validates a count prefix that directly sizes a fixed-size array ({@code Object[]},
      * {@code Class[]}), e.g. {@code P} predicate arguments. Rejects a negative count and any count exceeding
-     * {@link #MAX_FIXED_ARRAY_COUNT}. When {@link Buffer#hasKnownRemainingLength()} is {@code true}, also rejects
-     * a count exceeding {@link Buffer#readableBytes()}.
+     * {@link GraphBinaryReadLimits#getMaxArrayLength()}. When {@link Buffer#hasKnownRemainingLength()} is
+     * {@code true}, also rejects a count exceeding {@link Buffer#readableBytes()}.
      */
-    protected static int readFixedArrayCount(final Buffer buffer) throws IOException {
+    protected static int readFixedArrayCount(final Buffer buffer, final GraphBinaryReader context) throws IOException {
         final int count = readRawPrefix(buffer);
-        if (count > MAX_FIXED_ARRAY_COUNT) {
+        final int maxArrayLength = context.getLimits().getMaxArrayLength();
+        if (count > maxArrayLength) {
             throw new IOException(String.format(
-                    "Invalid GraphBinary count prefix: %d exceeds the maximum allowed element count of %d",
-                    count, MAX_FIXED_ARRAY_COUNT));
+                    "Invalid GraphBinary count prefix: %d exceeds the maximum allowed element count of %d. " +
+                            "The limit can be raised with the maxGraphBinaryArrayLength setting.",
+                    count, maxArrayLength));
         }
         if (buffer.hasKnownRemainingLength() && count > buffer.readableBytes()) {
             throw new IOException(String.format("Invalid GraphBinary count prefix: %d (readable bytes: %d)",
@@ -157,10 +142,11 @@ public abstract class SimpleTypeSerializer<T> implements TypeSerializer<T> {
 
     /**
      * Caps the initial capacity used to pre-size a growable container ({@code ArrayList}, {@code HashMap}) from a
-     * validated wire count. Not for a fixed-size array or a byte buffer that must hold exactly {@code count} entries.
+     * validated wire count using {@link GraphBinaryReadLimits#getMaxInitialCapacity()}. Not for a fixed-size array or
+     * a byte buffer that must hold exactly {@code count} entries.
      */
-    protected static int cappedInitialCapacity(final int count) {
-        return Math.min(count, MAX_PREALLOC_CAPACITY);
+    protected static int cappedInitialCapacity(final int count, final GraphBinaryReader context) {
+        return Math.min(count, context.getLimits().getMaxInitialCapacity());
     }
 
     @Override

@@ -24,6 +24,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryMapper;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReadLimits;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.Marker;
@@ -49,7 +50,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
     private GraphBinaryReader reader;
     private GraphBinaryWriter writer;
     private RequestMessageSerializer requestSerializer;
-    private final GraphBinaryMapper mapper;
+    private GraphBinaryMapper mapper;
 
     private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHBINARY_V4;
@@ -83,6 +84,16 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
         return mapper;
     }
 
+    /**
+     * Sets the {@link GraphBinaryReadLimits} applied when this serializer reads a length or count prefix. This
+     * replaces the reader and the mapper that holds it, so it should be called when the serializer is set up and
+     * before it is used to deserialize anything.
+     */
+    public void setReadLimits(final GraphBinaryReadLimits limits) {
+        reader = reader.withLimits(limits);
+        mapper = new GraphBinaryMapper(writer, reader);
+    }
+
     @Override
     public void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
         final String builderClassName = (String) config.get(TOKEN_BUILDER);
@@ -101,7 +112,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
         }
 
         final TypeSerializerRegistry registry = builder.create();
-        reader = new GraphBinaryReader(registry, PDTRegistry.create());
+        reader = new GraphBinaryReader(registry, PDTRegistry.create(), reader.getLimits());
         writer = new GraphBinaryWriter(registry, PDTRegistry.create());
 
         requestSerializer = new RequestMessageSerializer();
