@@ -26,9 +26,9 @@ import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
+import java.lang.reflect.Modifier;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -147,8 +147,13 @@ public class ImportGremlinPluginTest {
                 .fieldsImports(Collections.singletonList(Math.class.getCanonicalName() + "#*")).create();
 
         final DefaultImportCustomizer customizer = (DefaultImportCustomizer) module.getCustomizers().get()[0];
-        assertThat(customizer.getFieldImports(), is(new HashSet<>(
-                Arrays.asList(Math.class.getField("PI"), Math.class.getField("E")))));
+        // newer JDKs add public static fields to java.lang.Math (e.g. TAU in Java 19), so assert against the full
+        // set of public static fields reflected from Math rather than a hardcoded {PI, E} to stay JDK-version tolerant
+        final Set<Field> expectedStaticFields = Stream.of(Math.class.getFields())
+                .filter(f -> Modifier.isStatic(f.getModifiers()))
+                .collect(Collectors.toSet());
+        assertThat(customizer.getFieldImports(), is(expectedStaticFields));
+        assertThat(customizer.getFieldImports(), hasItems(Math.class.getField("PI"), Math.class.getField("E")));
     }
 
     @Test
