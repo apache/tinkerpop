@@ -22,8 +22,8 @@ inherits it. Run in order:
 discussions (`discussions.beads.roots` is non-empty). Run these before the
 confidence pass so the `governs` edges they write go through it:
 - `listBeads` — read the roots, decisions (each chosen one with the alternatives
-  it beat) and tasks. The `primary` root is the PR's own work; `owner` and
-  `shared` roots are connected work that explains it.
+  it beat) and tasks. The `primary` root is the PR's own work; `owner`
+  roots are connected work that explains it.
 - `linkBead` — link each decision whose reasoning is about changed code to that
   Function, Type or File, chosen and rejected alike.
 

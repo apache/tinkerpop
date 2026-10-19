@@ -106,7 +106,7 @@ export async function blastRadius(g, params = {}) {
     if (INHERENTLY_CENTRAL.has(name) && !atLeast(changeLevel || "NONE", "BEHAVIORAL")) continue;
 
     const reachable = await g.V(vertexId)
-      .repeat(__.union(__.in_("calls"), __.in_("overrides")).dedup())
+      .repeat(__.in_("calls", "overrides").dedup())
       .times(depth)
       .emit()
       .dedup()
