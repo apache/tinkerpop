@@ -23,6 +23,7 @@ import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -43,7 +44,10 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.service.Service;
+import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorageMutation;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
@@ -169,6 +173,86 @@ public class TinkerStorageGraphTest {
         graph = TinkerStorageGraph.open(conf);
         assertEquals("new", graph.vertices(1).next().value("name"));
         graph.close();
+    }
+
+    @Test
+    public void shouldCloseTheServicesAndTheEngineWhenTheOpenFails() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, ReplayFailingStorage.class.getName());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_SERVICE, CloseRecordingServiceFactory.class.getName());
+        CloseRecordingServiceFactory.closed.set(false);
+        ReplayFailingStorage.closed.set(false);
+        try {
+            TinkerStorageGraph.open(conf).close();
+            fail("the replay failure should fail the open");
+        } catch (IllegalStateException expected) {
+            assertEquals("replay failure", expected.getMessage());
+        }
+        assertTrue("the configured service should be closed", CloseRecordingServiceFactory.closed.get());
+        assertTrue("the storage engine should be closed", ReplayFailingStorage.closed.get());
+    }
+
+    /**
+     * A storage engine whose replay fails, recording whether it is closed. Static because it is instantiated by name.
+     */
+    public static final class ReplayFailingStorage implements TinkerStorage {
+        static final AtomicBoolean closed = new AtomicBoolean();
+
+        @Override
+        public void open(final AbstractTinkerGraph graph, final Configuration config) { }
+
+        @Override
+        public void replay(final AbstractTinkerGraph graph) {
+            throw new IllegalStateException("replay failure");
+        }
+
+        @Override
+        public void persist(final long txVersion, final Collection<TinkerStorageMutation<TinkerVertex>> changedVertices,
+                            final Collection<TinkerStorageMutation<TinkerEdge>> changedEdges) { }
+
+        @Override
+        public void flush() { }
+
+        @Override
+        public void compact(final AbstractTinkerGraph graph) { }
+
+        @Override
+        public void clear(final AbstractTinkerGraph graph) { }
+
+        @Override
+        public void failStop(final Throwable cause) { }
+
+        @Override
+        public void close() {
+            closed.set(true);
+        }
+    }
+
+    /**
+     * A service factory that records whether it is closed. Static because it is instantiated by name.
+     */
+    public static final class CloseRecordingServiceFactory extends TinkerServiceRegistry.TinkerServiceFactory<Object, Object> {
+        static final AtomicBoolean closed = new AtomicBoolean();
+
+        public CloseRecordingServiceFactory(final AbstractTinkerGraph graph) {
+            super(graph, "close.recording");
+        }
+
+        @Override
+        public Set<Service.Type> getSupportedTypes() {
+            return Collections.singleton(Service.Type.Start);
+        }
+
+        @Override
+        public Service<Object, Object> createService(final boolean isStart, final Map params) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void close() {
+            closed.set(true);
+        }
     }
 
     @Test

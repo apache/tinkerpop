@@ -168,6 +168,19 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
                 ex.addSuppressed(cleanup);
             }
             directoryLock = null;
+            // nor the configured services or what the engine holds. Closing the engine only releases it, since the
+            // graph's close() is what compacts, so nothing is written from the partly opened graph.
+            try {
+                if (serviceRegistry != null)
+                    serviceRegistry.close();
+            } catch (RuntimeException cleanup) {
+                ex.addSuppressed(cleanup);
+            }
+            try {
+                storage.close();
+            } catch (RuntimeException cleanup) {
+                ex.addSuppressed(cleanup);
+            }
             throw ex;
         }
     }
