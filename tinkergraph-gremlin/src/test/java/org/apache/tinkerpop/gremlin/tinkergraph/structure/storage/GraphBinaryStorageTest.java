@@ -413,6 +413,20 @@ public class GraphBinaryStorageTest extends AbstractTinkerStorageConformanceTest
     }
 
     @Test
+    public void shouldRejectStorageDirectoryWithoutAnEngine() throws Exception {
+        final File dir = new File(tempFolder.getRoot(), "no-engine");
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, dir.getAbsolutePath());
+        try {
+            TinkerStorageGraph.open(conf).close();
+            fail("a storage directory without a storage engine should not open");
+        } catch (IllegalStateException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE));
+        }
+        assertFalse("no directory may be created", dir.exists());
+    }
+
+    @Test
     public void shouldRejectNegativeCompactThreshold() {
         final Configuration conf = config();
         conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_COMPACT_THRESHOLD, -1);

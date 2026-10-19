@@ -109,6 +109,11 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         if (storage != null && (null == storageDirectory || storageDirectory.trim().isEmpty()))
             throw new IllegalStateException(String.format("The %s must be specified when %s is set",
                     GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, GREMLIN_TINKERGRAPH_STORAGE));
+        // a directory without an engine asks for durability the graph would not provide, so its commits would be lost
+        // on restart without a word
+        if (null == storage && storageDirectory != null && !storageDirectory.trim().isEmpty())
+            throw new IllegalStateException(String.format("The %s must be specified when %s is set",
+                    GREMLIN_TINKERGRAPH_STORAGE, GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY));
 
         if (null == storage) {
             initialize(configuration);

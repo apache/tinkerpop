@@ -181,7 +181,8 @@ only valid on `TinkerStorageGraph`. The in-memory `TinkerMemoryGraph`, which `Ti
 `gremlin.graph=...TinkerGraph` create, ignores it and every other `gremlin.tinkergraph.storage.*` setting and logs a
 warning when one is set.
 |gremlin.tinkergraph.storage.directory |The directory in which `TinkerStorageGraph` stores its durable data. Required
-when `gremlin.tinkergraph.storage` is set and ignored otherwise. A relative path resolves against the working directory
+when `gremlin.tinkergraph.storage` is set, and only valid with it: a `TinkerStorageGraph` given a directory but no
+storage engine fails to open rather than keep its data only in memory. A relative path resolves against the working directory
 of the JVM, so an absolute path is safer for a graph opened by Gremlin Server or the Gremlin Console.
 |gremlin.tinkergraph.storage.sync |The durability applied to each committed transaction by a `TinkerStorageGraph`
 storage engine. `commit` (default) forces each commit to disk so an acknowledged commit survives an operating system
