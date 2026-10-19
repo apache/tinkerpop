@@ -23,6 +23,7 @@ import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -41,6 +42,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
@@ -165,6 +167,43 @@ public class TinkerStorageGraphTest {
         graph.close();
         graph = TinkerStorageGraph.open(conf);
         assertEquals("new", graph.vertices(1).next().value("name"));
+        graph.close();
+    }
+
+    @Test
+    public void shouldStopAcceptingCommitsWhenTheEngineFailsToClearWithoutStoppingItself() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+
+        // an engine whose clear() throws without putting itself into the failed state
+        final TinkerStorage storage = spy(graph.storage);
+        doThrow(new IllegalStateException("clear failure")).when(storage).clear(any());
+        graph.storage = storage;
+        try {
+            graph.clear();
+            fail("the failure emptying the store should be reported");
+        } catch (IllegalStateException expected) {
+            assertEquals("clear failure", expected.getMessage());
+        }
+        assertTrue(graph.storage.isFailed());
+        assertFalse(graph.vertices().hasNext());
+
+        graph.addVertex(T.id, 2);
+        try {
+            graph.tx().commit();
+            fail("a commit after the failed clear should be refused");
+        } catch (UncheckedIOException expected) {
+            // the storage stopped accepting commits
+        }
+        graph.close();
+
+        // the store was never emptied, so the cleared data returns, but nothing was appended to it
+        graph = TinkerStorageGraph.open(conf);
+        assertEquals(Collections.singleton(1), elementIds(graph, false));
         graph.close();
     }
 

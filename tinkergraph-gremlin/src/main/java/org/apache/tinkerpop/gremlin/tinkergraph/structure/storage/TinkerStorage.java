@@ -108,14 +108,14 @@ public interface TinkerStorage extends AutoCloseable {
      * emptied, so that the store holds nothing and a reopen finds an empty graph. Called by
      * {@code TinkerGraph.clear()} under the graph's commit lock, and never on a read-only engine. If the store cannot
      * be emptied, the engine must refuse further commits until the graph is reopened: appending them to the old data
-     * would bring the cleared elements back on reopen, mixed with the new ones. The default compacts, which is only
-     * correct for an engine whose {@link #compact} throws when it cannot write, rather than returning quietly.
+     * would bring the cleared elements back on reopen, mixed with the new ones. The graph fail-stops the engine
+     * through {@link #failStop(Throwable)} when this throws. Rewriting the store from the emptied graph, as a
+     * compaction does, is one way to empty it, but it must then run even when nothing was written since the last
+     * compaction, since the store still holds the data the graph no longer has.
      *
      * @param graph the graph, already emptied, whose committed state the store should now hold
      */
-    default void clear(final AbstractTinkerGraph graph) {
-        compact(graph);
-    }
+    void clear(final AbstractTinkerGraph graph);
 
     /**
      * Whether this engine accepts no writes at all, such as when a damaged store was opened for recovery. The graph
@@ -135,11 +135,11 @@ public interface TinkerStorage extends AutoCloseable {
     }
 
     /**
-     * Stop accepting writes, as after a storage failure, until the graph is reopened. The graph calls this when a
-     * transaction's changes were persisted and flushed but could not then be applied in memory: the transaction is
-     * durable and returns on the next open, so the graph's memory no longer matches the store, and nothing written
-     * from that memory, by a commit or a compaction, may reach the store. {@link #isFailed()} reports {@code true}
-     * afterwards.
+     * Stop accepting writes, as after a storage failure, until the graph is reopened. The graph calls this when its
+     * memory no longer matches the store, so that nothing written from that memory, by a commit or a compaction, may
+     * reach the store: when a transaction's changes were persisted and flushed but could not then be applied in
+     * memory, so the transaction is durable and returns on the next open, and when {@link #clear} fails after the
+     * graph was emptied in memory. {@link #isFailed()} reports {@code true} afterwards.
      *
      * @param cause why the graph's memory no longer matches the store
      */

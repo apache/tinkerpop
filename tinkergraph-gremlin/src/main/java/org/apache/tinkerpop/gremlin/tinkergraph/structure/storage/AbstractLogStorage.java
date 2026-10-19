@@ -541,8 +541,8 @@ public abstract class AbstractLogStorage implements TinkerStorage {
     @Override
     public void failStop(final Throwable cause) {
         if (failure == null)
-            failure = new IOException("A transaction recorded in storage could not be applied in memory: " +
-                    cause.getMessage(), cause);
+            failure = new IOException("The graph's memory no longer matches the storage: " + cause.getMessage(),
+                    cause);
     }
 
     @Override

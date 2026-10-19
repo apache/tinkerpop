@@ -421,7 +421,13 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
             clearInMemory();
             if (storage.isReadOnly())
                 return;
-            storage.clear(this);
+            try {
+                storage.clear(this);
+            } catch (RuntimeException ex) {
+                // memory is already empty, so later commits must not be appended to whatever the store still holds
+                storage.failStop(ex);
+                throw ex;
+            }
             recordIndexes();
         } finally {
             storageCommitLock.unlock();

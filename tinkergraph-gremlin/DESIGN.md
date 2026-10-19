@@ -266,7 +266,9 @@ transaction on another thread that still holds one fails to commit with a confli
 compaction runs even with nothing logged since the last one, since the snapshot then still holds the data the graph
 no longer has. If emptying
 the store fails, the engine fail-stops, since the store then holds either the old data or nothing and later commits
-must not be appended to data the graph no longer has. A closed or fail-stopped graph refuses `clear()`, and a
+must not be appended to data the graph no longer has. The graph calls `failStop()` itself when `TinkerStorage.clear`
+throws, so this holds for an engine that does not stop itself, and the SPI has no default `clear`, so that no engine
+inherits one built on a compaction that skips a store with nothing new in its log. A closed or fail-stopped graph refuses `clear()`, and a
 recovered graph clears memory only.
 
 Adding an element does not take the commit lock, so `clear()` empties memory one container at a time, marking each
