@@ -213,7 +213,7 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
                     if (changedVertices.stream().anyMatch(v -> v.updatedOutsideTransaction()) ||
                             changedEdges.stream().anyMatch(e -> e.updatedOutsideTransaction()))
                         throw new TransactionException(TX_CONFLICT);
-                    graph.storage.persist(txVersion, toVertexMutations(changedVertices), toEdgeMutations(changedEdges));
+                    graph.storage.persist(txVersion, toMutations(changedVertices), toMutations(changedEdges));
                     graph.storage.flush();
                     recorded = true;
                 }
@@ -306,26 +306,13 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
     }
 
     /**
-     * Convert the changed vertex containers into the storage-facing {@link TinkerStorageMutation} view. Called during
+     * Convert the changed element containers into the storage-facing {@link TinkerStorageMutation} view. Called during
      * commit, before {@code commit()} is applied to the containers, so the modified value is still available via
      * {@link TinkerElementContainer#getModified()}.
      */
-    private static List<TinkerStorageMutation<TinkerVertex>> toVertexMutations(final Set<TinkerElementContainer<TinkerVertex>> changed) {
-        final List<TinkerStorageMutation<TinkerVertex>> mutations = new ArrayList<>(changed.size());
-        for (final TinkerElementContainer<TinkerVertex> c : changed) {
-            mutations.add(c.isDeleted()
-                    ? new TinkerStorageMutation<>(c.getElementId(), null)
-                    : new TinkerStorageMutation<>(c.getElementId(), c.getModified()));
-        }
-        return mutations;
-    }
-
-    /**
-     * Convert the changed edge containers into the storage-facing {@link TinkerStorageMutation} view.
-     */
-    private static List<TinkerStorageMutation<TinkerEdge>> toEdgeMutations(final Set<TinkerElementContainer<TinkerEdge>> changed) {
-        final List<TinkerStorageMutation<TinkerEdge>> mutations = new ArrayList<>(changed.size());
-        for (final TinkerElementContainer<TinkerEdge> c : changed) {
+    private static <T extends TinkerElement> List<TinkerStorageMutation<T>> toMutations(final Set<TinkerElementContainer<T>> changed) {
+        final List<TinkerStorageMutation<T>> mutations = new ArrayList<>(changed.size());
+        for (final TinkerElementContainer<T> c : changed) {
             mutations.add(c.isDeleted()
                     ? new TinkerStorageMutation<>(c.getElementId(), null)
                     : new TinkerStorageMutation<>(c.getElementId(), c.getModified()));
