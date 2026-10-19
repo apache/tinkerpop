@@ -232,6 +232,70 @@ class TestDriverRemoteConnectionOptions:
         assert request_options['parameters'] == "['x':42]"
         assert "'g':" not in request_options['parameters']
 
+    def _submit_with_language(self, connection_language=None, source_language=None):
+        from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
+        from gremlin_python.process.strategies import OptionsStrategy
+        with patch('gremlin_python.driver.driver_remote_connection.client.Client') as MockClient:
+            instance = MockClient.return_value
+            instance._url = 'http://localhost:8182/gremlin'
+            instance._traversal_source = 'g'
+            instance.submit.return_value = []
+            kwargs = {} if connection_language is None else {'language': connection_language}
+            connection = DriverRemoteConnection('http://localhost:8182/gremlin', 'g', **kwargs)
+            gremlin_lang = GremlinLang()
+            gremlin_lang.add_step('V')
+            if source_language is not None:
+                gremlin_lang.add_source('withStrategies', OptionsStrategy(language=source_language))
+
+            connection.submit(gremlin_lang)
+
+        return MockClient, instance.submit.call_args.kwargs['request_options']
+
+    def test_language_is_not_forwarded_to_client(self):
+        MockClient, _ = self._submit_with_language(connection_language='gremlin-lang')
+        _, kwargs = MockClient.call_args
+        assert 'language' not in kwargs
+
+    def test_submit_sends_no_language_by_default(self):
+        _, request_options = self._submit_with_language()
+        assert 'language' not in request_options
+
+    def test_submit_sends_connection_language(self):
+        _, request_options = self._submit_with_language(connection_language='my-engine')
+        assert request_options['language'] == 'my-engine'
+
+    def test_submit_sends_language_from_with(self):
+        _, request_options = self._submit_with_language(source_language='my-engine')
+        assert request_options['language'] == 'my-engine'
+
+    def test_with_language_overrides_connection_language(self):
+        _, request_options = self._submit_with_language(connection_language='connection-engine',
+                                                       source_language='source-engine')
+        assert request_options['language'] == 'source-engine'
+
+    def test_extract_request_options_does_not_add_connection_language(self):
+        from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
+        gremlin_lang = GremlinLang()
+        gremlin_lang.add_step('V')
+        assert 'language' not in DriverRemoteConnection.extract_request_options(gremlin_lang)
+
+    def test_submit_async_sends_connection_language(self):
+        from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
+        with patch('gremlin_python.driver.driver_remote_connection.client.Client') as MockClient:
+            instance = MockClient.return_value
+            instance._url = 'http://localhost:8182/gremlin'
+            instance._traversal_source = 'g'
+            result = Future()
+            result.set_result([])
+            instance.submit_async.return_value = result
+            connection = DriverRemoteConnection('http://localhost:8182/gremlin', 'g', language='my-engine')
+            gremlin_lang = GremlinLang()
+            gremlin_lang.add_step('V')
+
+            connection.submit_async(gremlin_lang).result()
+
+        assert instance.submit_async.call_args.kwargs['request_options']['language'] == 'my-engine'
+
     def test_submit_async_does_not_send_traversal_source_as_parameter(self):
         from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
         with patch('gremlin_python.driver.driver_remote_connection.client.Client') as MockClient:

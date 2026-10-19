@@ -85,6 +85,7 @@ export default class DriverRemoteConnection extends RemoteConnection {
         'batchSize',
         'materializeProperties',
         'bulkResults',
+        'language',
       ];
       for (const strategy of strategies) {
         for (const key in strategy.configuration) {
@@ -100,6 +101,9 @@ export default class DriverRemoteConnection extends RemoteConnection {
     }
     if (!('bulkResults' in requestOptions)) {
       requestOptions.bulkResults = true;
+    }
+    if (requestOptions.language === undefined && this.options.language) {
+      requestOptions.language = this.options.language;
     }
 
     const parametersString = gremlinLang.getParametersAsString();

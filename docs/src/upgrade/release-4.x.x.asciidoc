@@ -167,6 +167,54 @@ still forwarded like any other custom `With()` key, but Gremlin Server ignores i
 
 See: link:https://lists.apache.org/thread/clyxxp8t6mg3y7y8nj1z48l19j7pk2v8[\[DISCUSS\] Only Support User Agent in Request Header]
 
+==== Selecting the Script Engine for Traversals
+
+Script engine selection was previously available only for string requests through `RequestOptions`. Traversal-based
+requests sent through `DriverRemoteConnection` can now select a script engine in every GLV, either per traversal
+source with `with("language", ...)` or for the whole connection by passing the language when it is created:
+
+[source,java]
+----
+// per traversal source
+GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster)).with("language", "gremlin-lang");
+
+// per connection
+GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster, "g", "gremlin-lang"));
+List result = g.inject(1).toList();
+----
+
+[source,python]
+----
+g = traversal().with_(DriverRemoteConnection('http://localhost:8182/gremlin', 'g', language='gremlin-lang'))
+----
+
+[source,csharp]
+----
+var g = AnonymousTraversalSource.Traversal().With(new DriverRemoteConnection("localhost", 8182, language: "gremlin-lang"));
+----
+
+[source,go]
+----
+remote, err := gremlingo.NewDriverRemoteConnection("http://localhost:8182/gremlin",
+  func(settings *gremlingo.DriverRemoteConnectionSettings) {
+    settings.RequestLanguage = "gremlin-lang"
+  })
+----
+
+[source,javascript]
+----
+const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin', { language: 'gremlin-lang' }));
+----
+
+A language set with `with()` overrides the connection default. If neither is set, each GLV keeps its previous
+behavior: Java and Python let the server choose its default, while .NET, Go and JavaScript send `gremlin-lang`.
+
+NOTE: In `gremlin-javascript`, `with_("language", ...)` was previously dropped from remote traversals without any
+error. It is now sent to the server.
+
+Transactions started with `g.tx().begin()` do not apply the connection-level default in Java, Python, .NET and Go.
+In JavaScript the transaction-bound connection reuses the connection options, so it does.
+
 === Upgrading for Providers
 
 ==== Graph System Providers

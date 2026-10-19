@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
+using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Remote;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
@@ -85,6 +86,50 @@ public class DriverRemoteConnectionTests
         await driverRemoteConnection.SubmitAsync<object, object>(SomeValidGremlinLang);
 
         logger.VerifyMessageWasLogged(LogLevel.Debug, gremlinLangToLog.ToString());
+    }
+
+    [Fact]
+    public async Task ShouldUseConnectionLanguage()
+    {
+        using var connection = new DriverRemoteConnection(TestHost, TestPort, "gmodern", language: "gremlin-lang");
+        var g = AnonymousTraversalSource.Traversal().With(connection);
+
+        var results = await g.Inject(1).Promise(t => t.ToList());
+
+        Assert.Equal(new[] { 1 }, results);
+    }
+
+    [Fact]
+    public async Task ShouldSendConnectionLanguageToServer()
+    {
+        using var connection = new DriverRemoteConnection(TestHost, TestPort, "gmodern", language: "no-such-engine");
+        var g = AnonymousTraversalSource.Traversal().With(connection);
+
+        var ex = await Assert.ThrowsAsync<ResponseException>(() => g.Inject(1).Promise(t => t.ToList()));
+
+        Assert.Contains("Script engine [no-such-engine] is not available", ex.Message);
+    }
+
+    [Fact]
+    public async Task ShouldSendWithLanguageToServer()
+    {
+        using var connection = new DriverRemoteConnection(TestHost, TestPort, "gmodern");
+        var g = AnonymousTraversalSource.Traversal().With(connection).With("language", "no-such-engine");
+
+        var ex = await Assert.ThrowsAsync<ResponseException>(() => g.Inject(1).Promise(t => t.ToList()));
+
+        Assert.Contains("Script engine [no-such-engine] is not available", ex.Message);
+    }
+
+    [Fact]
+    public async Task ShouldPreferWithLanguageOverConnectionLanguage()
+    {
+        using var connection = new DriverRemoteConnection(TestHost, TestPort, "gmodern", language: "no-such-engine");
+        var g = AnonymousTraversalSource.Traversal().With(connection).With("language", "gremlin-lang");
+
+        var results = await g.Inject(1).Promise(t => t.ToList());
+
+        Assert.Equal(new[] { 1 }, results);
     }
 
     private static GremlinLang SomeValidGremlinLang

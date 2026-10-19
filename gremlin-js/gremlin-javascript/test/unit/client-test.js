@@ -134,6 +134,19 @@ describe('Client', function () {
     customClient.submit(query, null, { bulkResults: false });
   });
 
+  it('should send the per-request language', function () {
+    const connectionMock = {
+      submit: function (requestMessage) {
+        assert.strictEqual(requestMessage.getLanguage(), 'my-engine');
+        return Promise.resolve();
+      }
+    };
+
+    const customClient = new Client('http://localhost:9321', {connectOnStartup: false});
+    customClient._connection = connectionMock;
+    customClient.submit(query, null, { language: 'my-engine' });
+  });
+
   it('should not set bulkResults when neither per-request nor connection-level is set', function () {
     const connectionMock = {
       bulkResults: undefined,
