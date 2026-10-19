@@ -253,8 +253,9 @@ changes indexes in memory only, without writing `INDEXES`.
 The graph also fail-stops the engine through `failStop()` when a commit's changes were persisted and flushed but
 applying them in memory (the index or element commit) then failed. The durable frame is the commit point, as a commit
 record in a database's log is, so the transaction is not reported as rolled back: `doCommit` throws a
-`TransactionException` saying that it was recorded and will be present after a reopen. Memory keeps the state from
-before the transaction, which no longer matches the log, so nothing more may be written from it. A fail-stopped engine
+`TransactionException` saying that it was recorded and will be present after a reopen. What was applied before the
+failure, an index or some of the elements, is not undone, so memory may hold part of the transaction until the
+reopen. It no longer matches the log, so nothing more may be written from it. A fail-stopped engine
 neither commits nor compacts, `close()` included, and the reopen replays the frame.
 
 ## `clear()`

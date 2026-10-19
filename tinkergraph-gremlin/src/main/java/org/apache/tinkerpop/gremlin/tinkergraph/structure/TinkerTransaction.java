@@ -272,13 +272,16 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
             if (edgeIndex != null) edgeIndex.rollback();
 
             // the transaction is committed once it is durable, as a database counts it once its commit record is in
-            // the log, so a failure applying it afterwards is not reported as a rollback. Memory keeps the state from
-            // before the transaction, so the storage must take nothing more from it, and reopening shows the commit.
+            // the log, so a failure applying it afterwards is not reported as a rollback. Whatever was applied before
+            // the failure, an index or some of the elements, cannot be undone, so memory may hold part of the
+            // transaction and no longer matches the log. The storage must take nothing more from it, and reopening
+            // shows the whole commit.
             if (recorded) {
                 graph.storage.failStop(ex);
                 throw new TransactionException(String.format("The transaction was recorded durably in storage at %s " +
-                        "but could not be applied in memory, so it will be present when the graph is reopened. No " +
-                        "further commits are accepted until then", graph.storageDirectory), ex);
+                        "but could not be applied in memory, so it will be present when the graph is reopened. Until " +
+                        "then the graph may show only part of it, and no further commits are accepted",
+                        graph.storageDirectory), ex);
             }
             throw ex;
         } finally {

@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -349,7 +350,7 @@ public class TinkerStorageGraphTest {
             assertTrue(expected.getMessage(), expected.getMessage().contains("will be present when the graph is reopened"));
         }
         assertTrue(graph.storage.isFailed());
-        assertFalse("memory keeps the state from before the transaction", graph.vertices(2).hasNext());
+        assertFalse("the failure came before any of the transaction was applied", graph.vertices(2).hasNext());
 
         graph.addVertex(T.id, 3);
         try {
@@ -363,6 +364,40 @@ public class TinkerStorageGraphTest {
         graph = TinkerStorageGraph.open(conf);
         assertTrue("the durable transaction is present after the reopen", graph.vertices(2).hasNext());
         assertFalse(graph.vertices(3).hasNext());
+        graph.close();
+    }
+
+    @Test
+    public void shouldReportACommitThatFailsPartwayThroughItsApplyAsDurable() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.createIndex("name", Vertex.class);
+        graph.createIndex("weight", Edge.class);
+        graph.addVertex(T.id, 1, "name", "a");
+        graph.tx().commit();
+
+        // the vertex index is committed first, so a failure in the edge index comes after part of the apply
+        final TinkerTransactionalIndex<TinkerEdge> index = spy((TinkerTransactionalIndex<TinkerEdge>) graph.edgeIndex);
+        doThrow(new IllegalStateException("index failure")).when(index).commit(any());
+        graph.edgeIndex = index;
+
+        graph.vertices(1).next().addEdge("knows", graph.addVertex(T.id, 2, "name", "b"), T.id, 10, "weight", 0.5d);
+        try {
+            graph.tx().commit();
+            fail("the failure applying the transaction should be reported");
+        } catch (TransactionException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("will be present when the graph is reopened"));
+            assertTrue(expected.getMessage(), expected.getMessage().contains("may show only part of it"));
+        }
+        assertTrue(graph.storage.isFailed());
+        graph.close();
+
+        graph = TinkerStorageGraph.open(conf);
+        assertEquals(1L, graph.traversal().V().has("name", "b").count().next().longValue());
+        assertEquals(1L, graph.traversal().E().has("weight", 0.5d).count().next().longValue());
+        assertEquals(2, graph.vertices(1).next().edges(Direction.OUT).next().inVertex().id());
         graph.close();
     }
 
