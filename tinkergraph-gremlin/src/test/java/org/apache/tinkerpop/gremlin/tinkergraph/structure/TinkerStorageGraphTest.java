@@ -18,7 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import java.io.File;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Field;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,6 +31,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -162,6 +166,124 @@ public class TinkerStorageGraphTest {
         graph = TinkerStorageGraph.open(conf);
         assertEquals("new", graph.vertices(1).next().value("name"));
         graph.close();
+    }
+
+    @Test
+    public void shouldAgreeInMemoryAndOnDiskAboutAVertexAddedWhileTheGraphIsCleared() throws Exception {
+        assertElementsAddedWhileClearingAgreeInMemoryAndOnDisk(false);
+    }
+
+    @Test
+    public void shouldAgreeInMemoryAndOnDiskAboutAnEdgeAddedWhileTheGraphIsCleared() throws Exception {
+        assertElementsAddedWhileClearingAgreeInMemoryAndOnDisk(true);
+    }
+
+    /**
+     * Another thread adds vertex 5 (and, with {@code withEdge}, vertex 6 and edge 100 between them) while clear() is
+     * emptying the element map, and then commits. Whether that commit conflicts or succeeds, memory, the store as a
+     * crash would leave it, and the store after a clean close must all show the same elements.
+     */
+    private void assertElementsAddedWhileClearingAgreeInMemoryAndOnDisk(final boolean withEdge) throws Exception {
+        final File directory = tempFolder.newFolder();
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, directory.getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        final Vertex v1 = graph.addVertex(T.id, 1);
+        v1.addEdge("knows", graph.addVertex(T.id, 2), T.id, 99);
+        graph.tx().commit();
+
+        // pause clear() inside its pass over the element map, after it has started emptying it
+        final PausingMap<Object> paused = new PausingMap<>();
+        final Field field = TinkerStorageGraph.class.getDeclaredField(withEdge ? "edges" : "vertices");
+        field.setAccessible(true);
+        paused.putAll((Map<Object, Object>) field.get(graph));
+        field.set(graph, paused);
+
+        final TinkerStorageGraph g = graph;
+        final AtomicReference<Throwable> addCommit = new AtomicReference<>();
+        final Thread other = new Thread(() -> {
+            try {
+                if (!paused.paused.await(10, TimeUnit.SECONDS))
+                    throw new AssertionError("clear() did not reach the element map");
+                final Vertex v5 = g.addVertex(T.id, 5);
+                if (withEdge) v5.addEdge("knows", g.addVertex(T.id, 6), T.id, 100);
+                paused.resume.countDown();
+                g.tx().commit();
+            } catch (Throwable t) {
+                addCommit.set(t);
+            } finally {
+                paused.resume.countDown();
+            }
+        });
+        other.start();
+        graph.clear();
+        other.join(10_000);
+        assertFalse("the other thread should have finished", other.isAlive());
+        final Throwable failure = addCommit.get();
+        assertTrue("the commit should succeed or conflict: " + failure,
+                null == failure || failure instanceof TransactionException);
+
+        final Set<Object> inMemory = elementIds(graph, withEdge);
+        if (null == failure)
+            assertTrue(inMemory.contains(withEdge ? 100 : 5));
+        else
+            assertTrue(inMemory.isEmpty());
+
+        // the store as a crash right now would leave it, read from a copy since the graph still holds the directory
+        final File crashed = tempFolder.newFolder();
+        for (final File file : directory.listFiles()) {
+            if (!file.getName().equals("LOCK"))
+                Files.copy(file.toPath(), new File(crashed, file.getName()).toPath());
+        }
+        graph.close();
+        final Configuration crashedConf = new BaseConfiguration();
+        crashedConf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        crashedConf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, crashed.getAbsolutePath());
+        graph = TinkerStorageGraph.open(crashedConf);
+        assertEquals("after a crash", inMemory, elementIds(graph, withEdge));
+        graph.close();
+
+        graph = TinkerStorageGraph.open(conf);
+        assertEquals("after a clean close", inMemory, elementIds(graph, withEdge));
+        graph.close();
+    }
+
+    private static Set<Object> elementIds(final TinkerStorageGraph graph, final boolean edges) {
+        final Set<Object> ids = new HashSet<>();
+        (edges ? graph.edges() : graph.vertices()).forEachRemaining(e -> ids.add(e.id()));
+        return ids;
+    }
+
+    /**
+     * Pauses the first removal from the map, which is how clear() empties it, until another thread lets it go on.
+     */
+    private static class PausingMap<V> extends ConcurrentHashMap<Object, V> {
+        final CountDownLatch paused = new CountDownLatch(1);
+        final CountDownLatch resume = new CountDownLatch(1);
+        private final AtomicBoolean first = new AtomicBoolean(true);
+
+        @Override
+        public boolean remove(final Object key, final Object value) {
+            pauseOnce();
+            return super.remove(key, value);
+        }
+
+        @Override
+        public void clear() {
+            pauseOnce();
+            super.clear();
+        }
+
+        private void pauseOnce() {
+            if (!first.getAndSet(false)) return;
+            paused.countDown();
+            try {
+                resume.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     @Test

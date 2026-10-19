@@ -433,12 +433,19 @@ public final class TinkerStorageGraph extends AbstractTinkerGraph {
         if (tx().isOpen())
             tx().rollback();
         // a transaction on another thread still holds the containers it changed, so mark them removed: its commit
-        // then fails with a conflict rather than writing cleared elements back into the store
-        vertices.values().forEach(TinkerElementContainer::markCleared);
-        edges.values().forEach(TinkerElementContainer::markCleared);
+        // then fails with a conflict rather than writing cleared elements back into the store. Each container is
+        // removed only after it is marked, because adds do not wait for clear(): a container added meanwhile is
+        // either marked and removed here, or missed and kept, and in both cases memory and the store agree.
+        clearContainers(vertices);
+        clearContainers(edges);
         super.clear();
-        this.vertices.clear();
-        this.edges.clear();
+    }
+
+    private static <T extends TinkerElement> void clearContainers(final Map<Object, TinkerElementContainer<T>> elements) {
+        elements.forEach((id, container) -> {
+            container.markCleared();
+            elements.remove(id, container);
+        });
     }
 
     /**
