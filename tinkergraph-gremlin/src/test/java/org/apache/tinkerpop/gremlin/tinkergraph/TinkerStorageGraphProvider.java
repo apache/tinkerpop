@@ -85,21 +85,8 @@ public class TinkerStorageGraphProvider extends AbstractGraphProvider {
         // in the event the graph is persisted we need to clean up the storage directory
         final String storageDirectory = null != configuration ? configuration.getString(TinkerStorageGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, null) : null;
         if (storageDirectory != null) {
-            deleteRecursively(new File(storageDirectory));
+            deleteDirectory(new File(storageDirectory));
         }
-    }
-
-    private static void deleteRecursively(final File file) {
-        if (!file.exists())
-            return;
-        if (file.isDirectory()) {
-            final File[] children = file.listFiles();
-            if (children != null) {
-                for (final File child : children)
-                    deleteRecursively(child);
-            }
-        }
-        file.delete();
     }
 
     @Override
