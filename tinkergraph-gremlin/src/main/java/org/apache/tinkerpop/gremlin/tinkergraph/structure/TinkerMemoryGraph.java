@@ -36,7 +36,10 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optim
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,8 +53,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * The in-memory (with optional persistence on calls to {@link #close()}) implementation of the {@link TinkerGraph}
- * interface and the reference implementation of the property graph interfaces provided by TinkerPop.
+ * The purely in-memory implementation of the {@link TinkerGraph} interface and the reference implementation of the
+ * property graph interfaces provided by TinkerPop. This graph holds no data across JVM restarts; use
+ * {@code g.io(...).write()} / {@code g.io(...).read()} for interchange, or {@link TinkerStorageGraph} for durable
+ * persistence.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -61,6 +66,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_COMPUTER)
 public class TinkerMemoryGraph extends AbstractTinkerGraph {
+
+    private static final Logger logger = LoggerFactory.getLogger(TinkerMemoryGraph.class);
 
     static {
         TraversalStrategies.GlobalCache.registerStrategies(TinkerMemoryGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(
@@ -86,6 +93,7 @@ public class TinkerMemoryGraph extends AbstractTinkerGraph {
      */
     TinkerMemoryGraph(final Configuration configuration) {
         this.configuration = configuration;
+        warnOfStorageConfiguration(configuration);
         vertexIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, Vertex.class);
         edgeIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, Edge.class);
         vertexPropertyIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, VertexProperty.class);
@@ -99,18 +107,21 @@ public class TinkerMemoryGraph extends AbstractTinkerGraph {
         defaultVertexLabel = Vertex.DEFAULT_LABEL;
         defaultEdgeLabel = Edge.DEFAULT_LABEL;
 
-        graphLocation = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
-        graphFormat = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_FORMAT, null);
-
-        if ((graphLocation != null && null == graphFormat) || (null == graphLocation && graphFormat != null))
-            throw new IllegalStateException(String.format("The %s and %s must both be specified if either is present",
-                    GREMLIN_TINKERGRAPH_GRAPH_LOCATION, GREMLIN_TINKERGRAPH_GRAPH_FORMAT));
-
-        if (graphLocation != null) loadGraph();
-
         serviceRegistry = new TinkerServiceRegistry(this);
         configuration.getList(String.class, GREMLIN_TINKERGRAPH_SERVICE, Collections.emptyList()).forEach(serviceClass ->
                 serviceRegistry.registerService(instantiate(serviceClass)));
+    }
+
+    /**
+     * Storage settings are ignored here like any other key the in-memory graph does not use, but they ask for the data
+     * to outlive the graph, which it then silently does not, so a configuration that sets them is warned about.
+     */
+    private static void warnOfStorageConfiguration(final Configuration configuration) {
+        final List<String> keys = new ArrayList<>();
+        configuration.getKeys(GREMLIN_TINKERGRAPH_STORAGE).forEachRemaining(keys::add);
+        if (!keys.isEmpty())
+            logger.warn("{} keeps its data only in memory and ignores the storage configuration {}; use {} to persist " +
+                    "the graph", TinkerMemoryGraph.class.getSimpleName(), keys, TinkerStorageGraph.class.getName());
     }
 
     /**
@@ -444,6 +455,11 @@ public class TinkerMemoryGraph extends AbstractTinkerGraph {
 
         @Override
         public boolean supportsThreadedTransactions() {
+            return false;
+        }
+
+        @Override
+        public boolean supportsPersistence() {
             return false;
         }
 

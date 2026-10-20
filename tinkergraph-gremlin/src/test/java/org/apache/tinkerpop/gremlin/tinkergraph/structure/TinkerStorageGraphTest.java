@@ -18,7 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import java.io.File;
+import java.io.UncheckedIOException;
+import java.lang.reflect.Field;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -26,18 +32,29 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.service.Service;
+import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorage;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorageMutation;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -46,8 +63,427 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
 
 public class TinkerStorageGraphTest {
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
+
+    @Test
+    public void shouldFailACommitThatWaitedOnTheStorageLockWhileTheGraphWasCleared() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+
+        // hold the commit lock so the other thread's commit passes its conflict checks and then waits on it
+        final TinkerStorageGraph g = graph;
+        final AtomicReference<Throwable> otherCommit = new AtomicReference<>();
+        graph.storageCommitLock.lock();
+        final Thread other = new Thread(() -> {
+            g.vertices(1).next().property("name", "late");
+            try {
+                g.tx().commit();
+            } catch (Throwable t) {
+                otherCommit.set(t);
+            }
+        });
+        try {
+            other.start();
+            // bounded, so a thread that fails before it reaches the lock fails the test instead of hanging the build
+            final long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+            while (!graph.storageCommitLock.hasQueuedThreads() && other.isAlive() && System.nanoTime() < deadline)
+                Thread.sleep(1);
+            assertTrue("the other commit should be waiting on the commit lock: " + otherCommit.get(),
+                    graph.storageCommitLock.hasQueuedThreads());
+            graph.clear();
+        } finally {
+            graph.storageCommitLock.unlock();
+        }
+        other.join(10_000);
+
+        assertTrue("the waiting commit should conflict: " + otherCommit.get(),
+                otherCommit.get() instanceof TransactionException);
+        graph.close();
+        graph = TinkerStorageGraph.open(conf);
+        assertFalse(graph.vertices().hasNext());
+        graph.close();
+    }
+
+    @Test
+    public void shouldKeepAVertexAddedAfterClearWhenAnOlderTransactionOnItsIdConflicts() throws Exception {
+        assertVertexAddedAfterClearSurvivesTheOlderTransaction(true);
+    }
+
+    @Test
+    public void shouldKeepAVertexAddedAfterClearWhenAnOlderTransactionOnItsIdRollsBack() throws Exception {
+        assertVertexAddedAfterClearSurvivesTheOlderTransaction(false);
+    }
+
+    /**
+     * A transaction on another thread changes vertex 1 and is still open when the graph is cleared and vertex 1 is added
+     * again and committed. Ending that older transaction must leave the new vertex 1 in place, in memory and on disk.
+     */
+    private void assertVertexAddedAfterClearSurvivesTheOlderTransaction(final boolean commit) throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1, "name", "old");
+        graph.tx().commit();
+
+        final TinkerStorageGraph g = graph;
+        final CountDownLatch changed = new CountDownLatch(1);
+        final CountDownLatch end = new CountDownLatch(1);
+        final AtomicReference<Throwable> older = new AtomicReference<>();
+        final Thread other = new Thread(() -> {
+            try {
+                g.vertices(1).next().property("name", "older");
+                changed.countDown();
+                end.await();
+                if (commit)
+                    g.tx().commit();
+                else
+                    g.tx().rollback();
+            } catch (Throwable t) {
+                older.set(t);
+            }
+        });
+        other.start();
+        assertTrue("the other transaction should change vertex 1", changed.await(10, TimeUnit.SECONDS));
+
+        graph.clear();
+        graph.addVertex(T.id, 1, "name", "new");
+        graph.tx().commit();
+        end.countDown();
+        other.join(10_000);
+        assertFalse("the other transaction should have ended", other.isAlive());
+        if (commit)
+            assertTrue("the older commit should conflict: " + older.get(), older.get() instanceof TransactionException);
+        else
+            assertNull(older.get());
+
+        assertEquals("new", graph.vertices(1).next().value("name"));
+        graph.close();
+        graph = TinkerStorageGraph.open(conf);
+        assertEquals("new", graph.vertices(1).next().value("name"));
+        graph.close();
+    }
+
+    @Test
+    public void shouldCloseTheServicesAndTheEngineWhenTheOpenFails() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, ReplayFailingStorage.class.getName());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_SERVICE, CloseRecordingServiceFactory.class.getName());
+        CloseRecordingServiceFactory.closed.set(false);
+        ReplayFailingStorage.closed.set(false);
+        try {
+            TinkerStorageGraph.open(conf).close();
+            fail("the replay failure should fail the open");
+        } catch (IllegalStateException expected) {
+            assertEquals("replay failure", expected.getMessage());
+        }
+        assertTrue("the configured service should be closed", CloseRecordingServiceFactory.closed.get());
+        assertTrue("the storage engine should be closed", ReplayFailingStorage.closed.get());
+    }
+
+    /**
+     * A storage engine whose replay fails, recording whether it is closed. Static because it is instantiated by name.
+     */
+    public static final class ReplayFailingStorage implements TinkerStorage {
+        static final AtomicBoolean closed = new AtomicBoolean();
+
+        @Override
+        public void open(final AbstractTinkerGraph graph, final Configuration config) { }
+
+        @Override
+        public void replay(final AbstractTinkerGraph graph) {
+            throw new IllegalStateException("replay failure");
+        }
+
+        @Override
+        public void persist(final long txVersion, final Collection<TinkerStorageMutation<TinkerVertex>> changedVertices,
+                            final Collection<TinkerStorageMutation<TinkerEdge>> changedEdges) { }
+
+        @Override
+        public void flush() { }
+
+        @Override
+        public void compact(final AbstractTinkerGraph graph) { }
+
+        @Override
+        public void clear(final AbstractTinkerGraph graph) { }
+
+        @Override
+        public void failStop(final Throwable cause) { }
+
+        @Override
+        public void close() {
+            closed.set(true);
+        }
+    }
+
+    /**
+     * A service factory that records whether it is closed. Static because it is instantiated by name.
+     */
+    public static final class CloseRecordingServiceFactory extends TinkerServiceRegistry.TinkerServiceFactory<Object, Object> {
+        static final AtomicBoolean closed = new AtomicBoolean();
+
+        public CloseRecordingServiceFactory(final AbstractTinkerGraph graph) {
+            super(graph, "close.recording");
+        }
+
+        @Override
+        public Set<Service.Type> getSupportedTypes() {
+            return Collections.singleton(Service.Type.Start);
+        }
+
+        @Override
+        public Service<Object, Object> createService(final boolean isStart, final Map params) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void close() {
+            closed.set(true);
+        }
+    }
+
+    @Test
+    public void shouldStopAcceptingCommitsWhenTheEngineFailsToClearWithoutStoppingItself() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.addVertex(T.id, 1);
+        graph.tx().commit();
+
+        // an engine whose clear() throws without putting itself into the failed state
+        final TinkerStorage storage = spy(graph.storage);
+        doThrow(new IllegalStateException("clear failure")).when(storage).clear(any());
+        graph.storage = storage;
+        try {
+            graph.clear();
+            fail("the failure emptying the store should be reported");
+        } catch (IllegalStateException expected) {
+            assertEquals("clear failure", expected.getMessage());
+        }
+        assertTrue(graph.storage.isFailed());
+        assertFalse(graph.vertices().hasNext());
+
+        graph.addVertex(T.id, 2);
+        try {
+            graph.tx().commit();
+            fail("a commit after the failed clear should be refused");
+        } catch (UncheckedIOException expected) {
+            // the storage stopped accepting commits
+        }
+        graph.close();
+
+        // the store was never emptied, so the cleared data returns, but nothing was appended to it
+        graph = TinkerStorageGraph.open(conf);
+        assertEquals(Collections.singleton(1), elementIds(graph, false));
+        graph.close();
+    }
+
+    @Test
+    public void shouldAgreeInMemoryAndOnDiskAboutAVertexAddedWhileTheGraphIsCleared() throws Exception {
+        assertElementsAddedWhileClearingAgreeInMemoryAndOnDisk(false);
+    }
+
+    @Test
+    public void shouldAgreeInMemoryAndOnDiskAboutAnEdgeAddedWhileTheGraphIsCleared() throws Exception {
+        assertElementsAddedWhileClearingAgreeInMemoryAndOnDisk(true);
+    }
+
+    /**
+     * Another thread adds vertex 5 (and, with {@code withEdge}, vertex 6 and edge 100 between them) while clear() is
+     * emptying the element map, and then commits. Whether that commit conflicts or succeeds, memory, the store as a
+     * crash would leave it, and the store after a clean close must all show the same elements.
+     */
+    private void assertElementsAddedWhileClearingAgreeInMemoryAndOnDisk(final boolean withEdge) throws Exception {
+        final File directory = tempFolder.newFolder();
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, directory.getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        final Vertex v1 = graph.addVertex(T.id, 1);
+        v1.addEdge("knows", graph.addVertex(T.id, 2), T.id, 99);
+        graph.tx().commit();
+
+        // pause clear() inside its pass over the element map, after it has started emptying it
+        final PausingMap<Object> paused = new PausingMap<>();
+        final Field field = TinkerStorageGraph.class.getDeclaredField(withEdge ? "edges" : "vertices");
+        field.setAccessible(true);
+        paused.putAll((Map<Object, Object>) field.get(graph));
+        field.set(graph, paused);
+
+        final TinkerStorageGraph g = graph;
+        final AtomicReference<Throwable> addCommit = new AtomicReference<>();
+        final Thread other = new Thread(() -> {
+            try {
+                if (!paused.paused.await(10, TimeUnit.SECONDS))
+                    throw new AssertionError("clear() did not reach the element map");
+                final Vertex v5 = g.addVertex(T.id, 5);
+                if (withEdge) v5.addEdge("knows", g.addVertex(T.id, 6), T.id, 100);
+                paused.resume.countDown();
+                g.tx().commit();
+            } catch (Throwable t) {
+                addCommit.set(t);
+            } finally {
+                paused.resume.countDown();
+            }
+        });
+        other.start();
+        graph.clear();
+        other.join(10_000);
+        assertFalse("the other thread should have finished", other.isAlive());
+        final Throwable failure = addCommit.get();
+        assertTrue("the commit should succeed or conflict: " + failure,
+                null == failure || failure instanceof TransactionException);
+
+        final Set<Object> inMemory = elementIds(graph, withEdge);
+        if (null == failure)
+            assertTrue(inMemory.contains(withEdge ? 100 : 5));
+        else
+            assertTrue(inMemory.isEmpty());
+
+        // the store as a crash right now would leave it, read from a copy since the graph still holds the directory
+        final File crashed = tempFolder.newFolder();
+        for (final File file : directory.listFiles()) {
+            if (!file.getName().equals("LOCK"))
+                Files.copy(file.toPath(), new File(crashed, file.getName()).toPath());
+        }
+        graph.close();
+        final Configuration crashedConf = new BaseConfiguration();
+        crashedConf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        crashedConf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, crashed.getAbsolutePath());
+        graph = TinkerStorageGraph.open(crashedConf);
+        assertEquals("after a crash", inMemory, elementIds(graph, withEdge));
+        graph.close();
+
+        graph = TinkerStorageGraph.open(conf);
+        assertEquals("after a clean close", inMemory, elementIds(graph, withEdge));
+        graph.close();
+    }
+
+    private static Set<Object> elementIds(final TinkerStorageGraph graph, final boolean edges) {
+        final Set<Object> ids = new HashSet<>();
+        (edges ? graph.edges() : graph.vertices()).forEachRemaining(e -> ids.add(e.id()));
+        return ids;
+    }
+
+    /**
+     * Pauses the first removal from the map, which is how clear() empties it, until another thread lets it go on.
+     */
+    private static class PausingMap<V> extends ConcurrentHashMap<Object, V> {
+        final CountDownLatch paused = new CountDownLatch(1);
+        final CountDownLatch resume = new CountDownLatch(1);
+        private final AtomicBoolean first = new AtomicBoolean(true);
+
+        @Override
+        public boolean remove(final Object key, final Object value) {
+            pauseOnce();
+            return super.remove(key, value);
+        }
+
+        @Override
+        public void clear() {
+            pauseOnce();
+            super.clear();
+        }
+
+        private void pauseOnce() {
+            if (!first.getAndSet(false)) return;
+            paused.countDown();
+            try {
+                resume.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void shouldReportACommitThatFailsAfterItsStorageWriteAsDurable() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.createIndex("name", Vertex.class);
+        graph.addVertex(T.id, 1, "name", "a");
+        graph.tx().commit();
+
+        // the index commit runs once the transaction is durable, so a failure there comes after the write
+        final TinkerTransactionalIndex<TinkerVertex> index = spy((TinkerTransactionalIndex<TinkerVertex>) graph.vertexIndex);
+        doThrow(new IllegalStateException("index failure")).when(index).commit(any());
+        graph.vertexIndex = index;
+
+        graph.addVertex(T.id, 2, "name", "b");
+        try {
+            graph.tx().commit();
+            fail("the failure applying the transaction should be reported");
+        } catch (TransactionException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("will be present when the graph is reopened"));
+        }
+        assertTrue(graph.storage.isFailed());
+        assertFalse("the failure came before any of the transaction was applied", graph.vertices(2).hasNext());
+
+        graph.addVertex(T.id, 3);
+        try {
+            graph.tx().commit();
+            fail("no further commits are accepted until the graph is reopened");
+        } catch (UncheckedIOException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("stopped accepting commits"));
+        }
+        graph.close();
+
+        graph = TinkerStorageGraph.open(conf);
+        assertTrue("the durable transaction is present after the reopen", graph.vertices(2).hasNext());
+        assertFalse(graph.vertices(3).hasNext());
+        graph.close();
+    }
+
+    @Test
+    public void shouldReportACommitThatFailsPartwayThroughItsApplyAsDurable() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, tempFolder.newFolder().getAbsolutePath());
+        TinkerStorageGraph graph = TinkerStorageGraph.open(conf);
+        graph.createIndex("name", Vertex.class);
+        graph.createIndex("weight", Edge.class);
+        graph.addVertex(T.id, 1, "name", "a");
+        graph.tx().commit();
+
+        // the vertex index is committed first, so a failure in the edge index comes after part of the apply
+        final TinkerTransactionalIndex<TinkerEdge> index = spy((TinkerTransactionalIndex<TinkerEdge>) graph.edgeIndex);
+        doThrow(new IllegalStateException("index failure")).when(index).commit(any());
+        graph.edgeIndex = index;
+
+        graph.vertices(1).next().addEdge("knows", graph.addVertex(T.id, 2, "name", "b"), T.id, 10, "weight", 0.5d);
+        try {
+            graph.tx().commit();
+            fail("the failure applying the transaction should be reported");
+        } catch (TransactionException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("will be present when the graph is reopened"));
+            assertTrue(expected.getMessage(), expected.getMessage().contains("may show only part of it"));
+        }
+        assertTrue(graph.storage.isFailed());
+        graph.close();
+
+        graph = TinkerStorageGraph.open(conf);
+        assertEquals(1L, graph.traversal().V().has("name", "b").count().next().longValue());
+        assertEquals(1L, graph.traversal().E().has("weight", 0.5d).count().next().longValue());
+        assertEquals(2, graph.vertices(1).next().edges(Direction.OUT).next().inVertex().id());
+        graph.close();
+    }
 
     private static final String PROPERTY_NAME = "name";
     private static final String PROPERTY_WEIGHT = "weight";
@@ -79,6 +515,17 @@ public class TinkerStorageGraphTest {
 
         assertEquals(1L, g.countVerticesByLabel("person"));
         assertEquals(1L, g.countVerticesByLabel("employee"));
+    }
+
+    @Test
+    public void shouldRollbackWithVertexIndexButNoEdgeIndex() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex("name", Vertex.class);
+        g.addVertex("name", "marko");
+        g.tx().rollback();
+
+        assertEquals(0L, (long) g.traversal().V().has("name", "marko").count().next());
+        g.tx().rollback();
     }
 
     @Test
@@ -1415,14 +1862,16 @@ public class TinkerStorageGraphTest {
 
         try {
             gtx.tx().commit();
-            //fail("should throw TransactionException");
+            fail("should throw TransactionException");
         } catch (TransactionException e) {
 
         }
 
-        // should be only 1 vertex with updated property
+        // tx2 committed first and wins; tx1 conflicted and rolled back, so its meta1 was never persisted
         assertEquals(1L, (long) gtx.V().count().next());
-        assertEquals("tx2", gtx.V(v1.id()).properties("test").values("meta1", "meta2").next());
+        assertEquals(1L, (long) gtx.V(v1.id()).properties("test").properties().count().next());
+        assertEquals("tx2", gtx.V(v1.id()).properties("test").values("meta2").next());
+        assertFalse(gtx.V(v1.id()).properties("test").values("meta1").hasNext());
     }
 
     @Test

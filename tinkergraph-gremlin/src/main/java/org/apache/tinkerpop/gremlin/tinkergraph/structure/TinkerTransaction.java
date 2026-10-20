@@ -21,9 +21,14 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.util.AbstractThreadLocalTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.storage.TinkerStorageMutation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -31,6 +36,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * Implementation of {@link AbstractThreadLocalTransaction} for {@link TinkerStorageGraph}
  */
 final class TinkerTransaction extends AbstractThreadLocalTransaction {
+
+    private static final Logger logger = LoggerFactory.getLogger(TinkerTransaction.class);
 
     private static final String TX_CONFLICT = "Conflict: element modified in another transaction";
 
@@ -128,10 +135,13 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
      * 2. verify if any elements already changed, throw {@link TransactionException} if any
      * 3. try to lock all containers to prevent other tx from making changes
      * 4. one more time verify elements versions
-     * 5. update indices
-     * 6. commit all changes
-     * On {@link TransactionException}:
+     * 5. persist the changes when a storage engine is configured
+     * 6. update indices
+     * 7. commit all changes
+     * 8. compact the storage when its log has grown past the threshold
+     * On {@link TransactionException} or any other failure before the changes are applied (such as a storage write):
      *  rollback all changes
+     * An {@code Error} from the compaction in step 8 is thrown as it is, and the transaction is committed.
      * Lastly:
      *  cleanup transaction intermediate variables.
      *
@@ -147,6 +157,12 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
         Set<TinkerElementContainer<TinkerEdge>> changedEdges = txChangedEdges.get();
         if (null == changedEdges) changedEdges = Collections.emptySet();
 
+        // set once the changes are durable, after which a failure cannot undo the transaction, only keep it from
+        // being seen until the graph is reopened
+        boolean recorded = false;
+        // set once the changes are applied in memory as well, after which the transaction is committed in full and
+        // nothing that fails later may roll it back or report it unapplied
+        boolean applied = false;
         try {
             // Double-checked locking to reduce lock time
             if (changedVertices.stream().anyMatch(v -> v.updatedOutsideTransaction()) ||
@@ -168,16 +184,83 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
                     changedEdges.stream().anyMatch(e -> e.updatedOutsideTransaction()))
                 throw new TransactionException(TX_CONFLICT);
 
-            // update indices
-            final TinkerTransactionalIndex vertexIndex = (TinkerTransactionalIndex) graph.vertexIndex;
-            if (vertexIndex != null) vertexIndex.commit(changedVertices);
-            final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
-            if (edgeIndex != null) edgeIndex.commit(changedEdges);
+            // write-ahead: durably persist the changeset before applying the in-memory commit. A failure here aborts
+            // the commit and the catch below rolls back memory. If the failure was in writing or
+            // flushing the log, the engine also stops accepting commits until the graph is reopened, because what
+            // reached disk is then unknown: the failed transaction may or may not be in the log, and reopening
+            // replays only what is actually there. Skipped while the graph is replaying its storage log on open.
+            // Serialized by storageCommitLock because commits of disjoint elements otherwise reach the engine's single
+            // append log concurrently and interleave its records.
+            //
+            // The in-memory apply is held inside that same lock. Compaction builds its snapshot by reading the graph
+            // and then discards the log, which is only sound while the graph reflects everything the log holds. That
+            // is false for exactly as long as a changeset sits persisted but not yet applied, so a compaction landing
+            // in that window snapshots without the transaction and then deletes the record that held it, losing an
+            // acknowledged commit. Publishing under the lock closes the window, and also makes the order in which
+            // transactions become visible match the order they were recorded in.
+            //
+            // A transaction that changed nothing has nothing to record, so it neither takes the lock nor touches the
+            // engine. Every read opens a transaction that is later committed, so writing for it would make each read
+            // append and sync a frame, and would fail reads on a graph whose storage refuses commits: one opened
+            // to recover a damaged store, or one stopped after a storage failure, whose data must stay exportable.
+            final boolean durable = graph.storage != null && !graph.loading &&
+                    !(changedVertices.isEmpty() && changedEdges.isEmpty());
+            if (durable) graph.storageCommitLock.lock();
+            try {
+                if (durable) {
+                    // clear() empties the graph under this lock and marks every element container removed, so a commit
+                    // that passed the checks above while waiting here must look again before it writes anything
+                    if (changedVertices.stream().anyMatch(v -> v.updatedOutsideTransaction()) ||
+                            changedEdges.stream().anyMatch(e -> e.updatedOutsideTransaction()))
+                        throw new TransactionException(TX_CONFLICT);
+                    graph.storage.persist(txVersion, toMutations(changedVertices), toMutations(changedEdges));
+                    graph.storage.flush();
+                    recorded = true;
+                }
 
-            // commit all changes
-            changedVertices.forEach(v -> v.commit(txVersion));
-            changedEdges.forEach(e -> e.commit(txVersion));
-        } catch (TransactionException ex) {
+                // update indices only once the storage write has succeeded. Committing an index changes the shared
+                // index that every transaction reads, and rollback can only discard this transaction's own index
+                // changes, so an index committed ahead of a storage write that then failed would keep the failed
+                // transaction's view until the graph is reopened.
+                final TinkerTransactionalIndex vertexIndex = (TinkerTransactionalIndex) graph.vertexIndex;
+                if (vertexIndex != null) vertexIndex.commit(changedVertices);
+                final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
+                if (edgeIndex != null) edgeIndex.commit(changedEdges);
+
+                // commit all changes
+                changedVertices.forEach(v -> v.commit(txVersion));
+                changedEdges.forEach(e -> e.commit(txVersion));
+                applied = true;
+
+                // bound log growth for a long-running graph that is never explicitly closed; no-op unless the
+                // engine's accumulated log has crossed its threshold. Runs after the apply so the snapshot it may
+                // write includes this transaction rather than omitting it and then truncating the log that held it.
+                // The transaction is already applied and durable by now, so a failed compaction must not fail it.
+                // Compaction is crash-safe (the old snapshot and log stay intact) and is tried again after later
+                // commits. An Error, such as running out of memory while writing the snapshot, is not swallowed: it
+                // reaches the caller as itself, with the transaction committed.
+                if (durable) {
+                    try {
+                        graph.storage.maybeCompact(graph);
+                    } catch (RuntimeException ex) {
+                        if (graph.storage.isFailed())
+                            logger.error("Storage compaction failed after a successful commit and the storage now " +
+                                    "accepts no further commits until the graph is reopened", ex);
+                        else
+                            logger.warn("Storage compaction failed after a successful commit; it will be retried", ex);
+                    }
+                }
+            } finally {
+                if (durable) graph.storageCommitLock.unlock();
+            }
+        } catch (RuntimeException | Error ex) {
+            // only an Error from compaction gets here once the transaction is applied, and there is nothing to undo
+            if (applied) {
+                logger.error("Storage compaction failed with an error after a successful commit; the transaction is " +
+                        "committed and compaction will be retried", ex);
+                throw ex;
+            }
+
             // rollback on error
             changedVertices.forEach(v -> v.rollback());
             changedEdges.forEach(e -> e.rollback());
@@ -188,11 +271,24 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
             final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
             if (edgeIndex != null) edgeIndex.rollback();
 
+            // the transaction is committed once it is durable, as a database counts it once its commit record is in
+            // the log, so a failure applying it afterwards is not reported as a rollback. Whatever was applied before
+            // the failure, an index or some of the elements, cannot be undone, so memory may hold part of the
+            // transaction and no longer matches the log. The storage must take nothing more from it, and reopening
+            // shows the whole commit.
+            if (recorded) {
+                graph.storage.failStop(ex);
+                throw new TransactionException(String.format("The transaction was recorded durably in storage at %s " +
+                        "but could not be applied in memory, so it will be present when the graph is reopened. Until " +
+                        "then the graph may show only part of it, and no further commits are accepted",
+                        graph.storageDirectory), ex);
+            }
             throw ex;
         } finally {
-            // remove elements from graph if not used in other tx's
-            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.getVertices().remove(v.getElementId()));
-            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.getEdges().remove(e.getElementId()));
+            // remove elements from graph if not used in other tx's. Only the container itself is removed: after clear()
+            // the id may already belong to a new container, added and committed since this transaction began
+            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.getVertices().remove(v.getElementId(), v));
+            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.getEdges().remove(e.getElementId(), e));
 
             final Set<TinkerElementContainer> readElements = txReadElements.get();
             if (readElements != null)
@@ -207,6 +303,21 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
 
             txNumber.set(NOT_STARTED);
         }
+    }
+
+    /**
+     * Convert the changed element containers into the storage-facing {@link TinkerStorageMutation} view. Called during
+     * commit, before {@code commit()} is applied to the containers, so the modified value is still available via
+     * {@link TinkerElementContainer#getModified()}.
+     */
+    private static <T extends TinkerElement> List<TinkerStorageMutation<T>> toMutations(final Set<TinkerElementContainer<T>> changed) {
+        final List<TinkerStorageMutation<T>> mutations = new ArrayList<>(changed.size());
+        for (final TinkerElementContainer<T> c : changed) {
+            mutations.add(c.isDeleted()
+                    ? new TinkerStorageMutation<>(c.getElementId(), null)
+                    : new TinkerStorageMutation<>(c.getElementId(), c.getModified()));
+        }
+        return mutations;
     }
 
     /**
@@ -230,13 +341,13 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
         final TinkerTransactionalIndex vertexIndex = (TinkerTransactionalIndex) graph.vertexIndex;
         if (vertexIndex != null) vertexIndex.rollback();
         final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
-        if (vertexIndex != null) edgeIndex.rollback();
+        if (edgeIndex != null) edgeIndex.rollback();
 
-        // cleanup unused containers
+        // cleanup unused containers, removing only the container itself, as in doCommit
         if (null != changedVertices)
-            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.getVertices().remove(v.getElementId()));
+            changedVertices.stream().filter(v -> v.canBeRemoved()).forEach(v -> graph.getVertices().remove(v.getElementId(), v));
         if (null != changedEdges)
-            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.getEdges().remove(e.getElementId()));
+            changedEdges.stream().filter(e -> e.canBeRemoved()).forEach(e -> graph.getEdges().remove(e.getElementId(), e));
 
         final Set<TinkerElementContainer> readElements = txReadElements.get();
         if (readElements != null)

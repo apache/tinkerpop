@@ -70,8 +70,9 @@ public class TinkerStorageGraphProvider extends AbstractGraphProvider {
             if (requiresListCardinalityAsDefault(loadGraphWith, test, testMethodName))
                 put(TinkerStorageGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
             if (requiresPersistence(test, testMethodName)) {
-                put(TinkerStorageGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
-                put(TinkerStorageGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION,TestHelper.makeTestDataFile(test, "temp", testMethodName + ".kryo"));
+                put(TinkerStorageGraph.GREMLIN_TINKERGRAPH_STORAGE, "graphbinary");
+                put(TinkerStorageGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY,
+                        TestHelper.makeTestDataDirectory(test, "temp", testMethodName));
             }
         }};
     }
@@ -81,11 +82,10 @@ public class TinkerStorageGraphProvider extends AbstractGraphProvider {
         if (graph != null)
             graph.close();
 
-        // in the even the graph is persisted we need to clean up
-        final String graphLocation = null != configuration ? configuration.getString(TinkerStorageGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null) : null;
-        if (graphLocation != null) {
-            final File f = new File(graphLocation);
-            f.delete();
+        // in the event the graph is persisted we need to clean up the storage directory
+        final String storageDirectory = null != configuration ? configuration.getString(TinkerStorageGraph.GREMLIN_TINKERGRAPH_STORAGE_DIRECTORY, null) : null;
+        if (storageDirectory != null) {
+            deleteDirectory(new File(storageDirectory));
         }
     }
 
