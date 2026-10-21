@@ -33,10 +33,11 @@ Creates one `record` bead per landing, under the root:
     notes                  every sha, full length
 
 and, alongside it, a record for each merged pull request GitHub associates with
-those commits -- apache/tinkerpop#3578 -- unless one already exists. A PR is
-usually opened after the root, so nothing earlier in the workflow is reliably
-there to write its record. Recording the landing is the one step every root
-passes through, and by then GitHub knows which PR carried the commits. A PR
+those commits -- apache/tinkerpop#3578 -- unless one already exists. A PR record
+is normally written when the operator names the PR, as for any other artifact.
+This is the backstop for one that never was: a PR is usually opened after the
+root, recording the landing is the one step every root passes through, and by
+then GitHub knows which PR carried the commits. A PR
 recorded under another root is shared rather than duplicated: this root becomes
 another of its parents (PRIME.md section 6). So is a landing, when two roots
 record the same commits.
@@ -253,6 +254,7 @@ def suggest(root, branch):
     # why[sha] collects every record that points at the same commit
     why = {}
     expanded = False
+    searched = []
     for child in as_list(bd("children", root)):
         if child.get("issue_type") != "record":
             continue
@@ -265,6 +267,7 @@ def suggest(root, branch):
             expanded = expanded or len(found) > 1
         else:
             continue
+        searched.append(f"{child['id']} ({external})")
         for sha in found:
             why.setdefault(sha, []).append(f"{child['id']} ({external})")
 
@@ -306,6 +309,11 @@ def suggest(root, branch):
             # it all belongs here. Taken whole, it attributes other work to this root.
             print("\na PR above landed as a merge commit, so every commit it brought in is listed.\n"
                   "review each one and drop any that belong to other work before recording.")
+    elif searched:
+        # A PR is recorded once the operator names it, often while it is still open,
+        # so a record that identifies nothing usually means the work has not landed.
+        print(f"this root's records identify nothing on {ref} yet: {', '.join(searched)}\n"
+              "has the work merged? if it has, fetch first (--fetch).")
     else:
         print("no JIRA or PR record on this root, so nothing identifies its commits directly.")
 
