@@ -37,8 +37,8 @@ import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -162,8 +162,10 @@ public class TestHttpGremlinHandler extends SimpleChannelInboundHandler<FullHttp
         response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
         ctx.write(response);
 
+        // fixed rather than random bytes, so every run fails the same way: 0xFF is neither the GraphBinary version
+        // byte nor a type code, which a random first value byte often was, letting a reader carry on into the garbage
         final byte[] garbage = new byte[64];
-        new Random().nextBytes(garbage);
+        Arrays.fill(garbage, (byte) 0xFF);
         ctx.write(new DefaultHttpContent(ctx.alloc().buffer(64).writeBytes(garbage)));
         ctx.writeAndFlush(new DefaultLastHttpContent());
     }
