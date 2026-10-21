@@ -49,6 +49,10 @@ public final class SumLocalStep<E extends Number, S extends Iterable<E>> extends
             if (iterator.hasNext()) {
                 // forward the iterator to the first non-null or return null
                 E result = untilNonNull(iterator);
+                if (result != null && !(result instanceof Number)) {
+                    throw new ClassCastException(
+                            String.format("%s cannot be cast to %s", result.getClass().getName(), Number.class.getName()));
+                }
                 while (iterator.hasNext()) {
                     final Number n = iterator.next();
                     if (n != null) {

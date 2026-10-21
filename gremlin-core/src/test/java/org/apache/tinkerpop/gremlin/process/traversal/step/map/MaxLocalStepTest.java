@@ -23,8 +23,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -34,5 +39,27 @@ public class MaxLocalStepTest extends StepTest {
     @Override
     protected List<Traversal> getTraversals() {
         return Collections.singletonList(__.max(Scope.local));
+    }
+
+    @Test
+    public void shouldReturnIdentityOnNumericSingleScalar() {
+        assertEquals(7, __.inject(7).max(Scope.local).next());
+    }
+
+    @Test
+    public void shouldReturnIdentityOnStringSingleScalar() {
+        // String is Comparable, so max(local) on a single String is valid (identity)
+        assertEquals("hello", __.inject("hello").max(Scope.local).next());
+    }
+
+    @Test
+    public void shouldFindMaxOfStringList() {
+        // max(local) on Comparable types (Strings) should work via compareTo
+        assertEquals("cherry", __.inject(Arrays.asList("cherry", "apple", "banana")).max(Scope.local).next());
+    }
+
+    @Test
+    public void shouldFindMaxOfNumericList() {
+        assertEquals(3, __.inject(Arrays.asList(3, 1, 2)).max(Scope.local).next());
     }
 }
