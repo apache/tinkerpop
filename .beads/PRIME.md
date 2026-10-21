@@ -221,7 +221,11 @@ rewrite a branch until it lands; after it, TinkerPop's forward merges carry the 
 unchanged into 3.8-dev and master, so what is recorded then stays correct.
 
 **Then suggest, confirm, record.** `--suggest` finds the commits from the root's own JIRA and PR
-records, lists what else landed in the same window, and writes nothing. Show what it returns, take the operator's corrections, and only then
+records, lists what else landed in the same window, and writes nothing. A PR that landed as a
+real merge commit is expanded to every commit in `<merge>^1..<merge>`: those are what `git blame`
+lands on, so all of them belong in the record. The range is whatever rode on the topic branch,
+so walk the operator through it commit by commit and drop any that belong to other work — do
+not take it whole. `--pr` refuses a real merge for the same reason; use `--commits`. Show what it returns, take the operator's corrections, and only then
 run the recording form. It also writes a record for each merged PR GitHub ties to those
 commits, or makes the root a parent of one another root already holds. It refuses any sha not reachable from `origin/<branch>`, so a refusal
 means the work has not actually landed — say so and leave the root open.
