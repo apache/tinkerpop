@@ -75,9 +75,12 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
         if (null == set)
             return new ArrayList<>();
 
+        // hand out the transaction's own copy, as vertices(id) does, never the committed element, so a write
+        // through an indexed lookup stays inside the transaction
+        final TinkerTransaction tx = (TinkerTransaction) graph.tx();
         return set.stream().
                 filter(e -> e.get() != null && (!e.isChanged() || hasValue(e.get(), key, value))).
-                map(e -> e.get()).collect(Collectors.toList());
+                map(e -> e.getWithClone(tx)).collect(Collectors.toList());
     }
 
     private boolean hasValue(final T element, final String key, final Object value) {
