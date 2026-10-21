@@ -64,15 +64,26 @@ the root, for them to confirm or correct:
 
 The root's own record beads are what identify them. A JIRA record gives the
 ticket id that TinkerPop commit subjects carry, and a PR record gives a number
-GitHub can resolve to the commit a squash merge produced. A root with neither
-falls back to the commits on the branch since it was created, which is a list to
-choose from rather than an answer. Nothing is written in this mode.
+GitHub can resolve to the commit its merge produced. A squash merge produces one
+commit that is the whole change. A real merge commit changes next to nothing
+itself, and the work is in the commits it brings in, which are what `git blame`
+and `git log -S` land on, so the merge is expanded to all of them. That range is
+whatever rode on the topic branch, which can include commits that belong to other
+work, so the operator reviews it commit by commit and drops those before
+recording. A root with neither record falls back to the commits on the branch
+since it was created, which is a list to choose from rather than an answer.
+Nothing is written in this mode.
 
 Once the operator confirms, the same command records them:
 
-    bin/beads-commits.py --root tp-abc --branch 3.7-dev --pr 3610
     bin/beads-commits.py --root tp-abc --branch 3.7-dev --commits 374b0c76d0 e1ca7ea3e4
+    bin/beads-commits.py --root tp-abc --branch 3.7-dev --pr 3610
     bin/beads-commits.py --root tp-abc --branch 3.7-dev --range 74fe2a64d0..374b0c76d0
+
+`--pr` records a PR that was squash merged. It refuses one that landed as a real
+merge commit, because recording that whole range unreviewed is what attributes
+another root's commits to this one; `--suggest` lists the range for review and
+`--commits` records what survives it.
 
 What this script guarantees is the part that is easy to get wrong: every sha is
 verified reachable from origin/<branch> before anything is written, and a re-run
@@ -133,6 +144,20 @@ def commits_from_pr(number):
     if not merge_commit.get("oid"):
         sys.exit(f"PR {number} has no merge commit -- is it merged?")
     return [merge_commit["oid"]]
+
+
+def landing(sha):
+    """Every commit a PR's merge brought in, oldest first, the merge commit last.
+
+    A squash merge is a single-parent commit holding the whole change, so it is the
+    landing on its own. A real merge commit brings in <merge>^1..<merge>, and those
+    commits are the ones a blamed line resolves to, so every one of them belongs in
+    the record's notes for `bd query 'notes=...'` to find it.
+    """
+    parents = git("rev-list", "--parents", "-n", "1", sha).split()[1:]
+    if len(parents) < 2:
+        return [sha]
+    return git("rev-list", "--reverse", f"{sha}^1..{sha}").splitlines()
 
 
 def bd_show(bead_id):
@@ -227,6 +252,7 @@ def suggest(root, branch):
 
     # why[sha] collects every record that points at the same commit
     why = {}
+    expanded = False
     for child in as_list(bd("children", root)):
         if child.get("issue_type") != "record":
             continue
@@ -235,7 +261,8 @@ def suggest(root, branch):
             found = git("log", "--format=%H", f"--grep={external}", ref).splitlines()
         elif re.search(r"#(\d+)$", external):
             oid = pr_merge_commit(re.search(r"#(\d+)$", external).group(1))
-            found = [oid] if oid else []
+            found = landing(oid) if oid else []
+            expanded = expanded or len(found) > 1
         else:
             continue
         for sha in found:
@@ -274,6 +301,11 @@ def suggest(root, branch):
         for sha, reasons in why.items():
             print(line(sha))
             print(f"              {', '.join(reasons)}")
+        if expanded:
+            # The range is everything the topic branch carried, not a judgement that
+            # it all belongs here. Taken whole, it attributes other work to this root.
+            print("\na PR above landed as a merge commit, so every commit it brought in is listed.\n"
+                  "review each one and drop any that belong to other work before recording.")
     else:
         print("no JIRA or PR record on this root, so nothing identifies its commits directly.")
 
@@ -367,7 +399,7 @@ def main():
     parser.add_argument("--branch", required=True,
                         help="published branch the work merged to, e.g. 3.7-dev")
     source = parser.add_mutually_exclusive_group(required=True)
-    source.add_argument("--pr", type=int, help="pull request number; asks gh for the merge commit")
+    source.add_argument("--pr", type=int, help="squash-merged pull request number; asks gh for its commit")
     source.add_argument("--commits", nargs="+", metavar="SHA", help="the commits, oldest first")
     source.add_argument("--range", metavar="A..B", help="a git revision range")
     source.add_argument("--suggest", action="store_true",
@@ -385,6 +417,14 @@ def main():
         return
 
     shas = chronological(verify(resolve(args), args.branch))
+    brought_in = len(landing(shas[0])) - 1 if args.pr else 0
+    if brought_in:
+        sys.exit(
+            f"PR {args.pr} landed as a merge commit that brought in {brought_in} commit(s).\n"
+            "Recording the merge alone leaves those commits unfindable, and recording the\n"
+            "whole range unreviewed can attribute other work to this root. List them with\n"
+            f"  bin/beads-commits.py --root {args.root} --branch {args.branch} --suggest\n"
+            "and record the confirmed ones with --commits.")
     tip = shas[-1]
     slug = repo_slug()
     ref = f"{slug}@{tip[:10]}"
