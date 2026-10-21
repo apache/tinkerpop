@@ -227,7 +227,7 @@ lands on, so all of them belong in the record. The range is whatever rode on the
 so walk the operator through it commit by commit and drop any that belong to other work — do
 not take it whole. `--pr` refuses a real merge for the same reason; use `--commits`. Show what it returns, take the operator's corrections, and only then
 run the recording form. It also writes a record for each merged PR GitHub ties to those
-commits, or makes the root a parent of one another root already holds. It refuses any sha not reachable from `origin/<branch>`, so a refusal
+commits that has none yet, or makes the root a parent of one another root already holds. It refuses any sha not reachable from `origin/<branch>`, so a refusal
 means the work has not actually landed — say so and leave the root open.
 
 **An `epic` root needs `bd close <root> --force`.** The commit record just written is a
@@ -312,7 +312,8 @@ a list, and `bd ready` cannot tell you anything useful about it.
 - **Search first — duplicates are the risk.** `bd query` has no field for external refs,
   and `bd search <ref> --status all` finds a ticket id but not a URL. For any ref,
   `bd search tp --external-contains <ref> --status all` works — `tp` matches every bead id.
-  The PR record is written at merge (section 4), not by hand.
+  A PR record is written like any other once the operator names the PR (section 1). At merge,
+  `bin/beads-commits.py` writes it only if it is still missing (section 4).
 - Records are the only link between beads and code; commit messages carry no bead ID. The
   commit record written at merge (section 4) is what makes that link work in reverse —
   `bd query 'notes="<sha>"' --all` returns the record for any commit in the landing, and
