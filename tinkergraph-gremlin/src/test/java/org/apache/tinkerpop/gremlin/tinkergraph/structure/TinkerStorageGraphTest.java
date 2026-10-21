@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -2654,6 +2655,58 @@ public class TinkerStorageGraphTest {
         } else {
             assertNull(unmodified.properties);
         }
+    }
+
+    @Test
+    public void shouldFindIndexedVertexAfterAddingEdgeToItInSameTransaction() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex(PROPERTY_NAME, Vertex.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV().property(PROPERTY_NAME, "hub").iterate();
+        gtx.tx().commit();
+
+        gtx.addV().addE(EDGE_LABEL).to(__.V().has(PROPERTY_NAME, "hub")).iterate();
+
+        assertEquals(1, (long) gtx.V().has(PROPERTY_NAME, "hub").count().next());
+    }
+
+    @Test
+    public void shouldRollbackWithVertexIndexAndNoEdgeIndex() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex(PROPERTY_NAME, Vertex.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV().property(PROPERTY_NAME, "a").iterate();
+
+        gtx.tx().rollback();
+
+        assertFalse(gtx.tx().isOpen());
+        assertEquals(0, (long) gtx.V().count().next());
+    }
+
+    @Test
+    public void shouldFindIndexedEdgeAfterChangingAnotherPropertyInSameTransaction() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex(PROPERTY_NAME, Edge.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV().addE(EDGE_LABEL).to(__.addV()).property(PROPERTY_NAME, "link").iterate();
+        gtx.tx().commit();
+
+        gtx.E().has(PROPERTY_NAME, "link").property("weight", 1).iterate();
+
+        assertEquals(1, (long) gtx.E().has(PROPERTY_NAME, "link").count().next());
+    }
+
+    @Test
+    public void shouldRollbackWithEdgeIndexAndNoVertexIndex() {
+        final TinkerStorageGraph g = TinkerStorageGraph.open();
+        g.createIndex(PROPERTY_NAME, Edge.class);
+        final GraphTraversalSource gtx = g.tx().begin();
+        gtx.addV().addE(EDGE_LABEL).to(__.addV()).property(PROPERTY_NAME, "link").iterate();
+
+        gtx.tx().rollback();
+
+        assertFalse(gtx.tx().isOpen());
+        assertEquals(0, (long) gtx.E().has(PROPERTY_NAME, "link").count().next());
     }
 
     private void verifyCommittedSingleVertex(final TinkerStorageGraph g) {
