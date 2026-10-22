@@ -83,7 +83,6 @@ export default class DriverRemoteConnection extends RemoteConnection {
       const allowedKeys = [
         'timeoutMillis',
         'batchSize',
-        'requestId',
         'materializeProperties',
         'bulkResults',
       ];

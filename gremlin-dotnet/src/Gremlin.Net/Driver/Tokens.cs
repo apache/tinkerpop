@@ -36,11 +36,6 @@ namespace Gremlin.Net.Driver
         public static string GremlinVersion = "4.0.0-SNAPSHOT"; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
         /// <summary>
-        ///     The key for the unique identifier of the request.
-        /// </summary>
-        public const string RequestId = "requestId";
-
-        /// <summary>
         ///     Argument name that allows the definition of the number of items each ResponseMessage should
         ///     contain from a particular result - overrides the resultIterationBatchSize server setting.
         /// </summary>
