@@ -13,7 +13,7 @@ jobs:
   smoke:
     name: smoke
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - name: Set up JDK 11
@@ -27,7 +27,7 @@ jobs:
     name: mvn clean install - jdk17
     timeout-minutes: 45
     needs: smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - name: Set up JDK 17
@@ -41,7 +41,7 @@ jobs:
     name: mvn clean install - jdk21
     timeout-minutes: 45
     needs: smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - name: Set up JDK 21
@@ -74,7 +74,7 @@ jobs:
     name: mvn clean install - jdk11
     timeout-minutes: 45
     needs: smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - name: Set up JDK 11
@@ -92,7 +92,7 @@ jobs:
     name: gremlin-server default
     timeout-minutes: 45
     needs: smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - name: Set up JDK 11
@@ -108,7 +108,7 @@ jobs:
     name: gremlin-server unified
     timeout-minutes: 45
     needs: smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - name: Set up JDK 11
@@ -124,7 +124,7 @@ jobs:
       name: cache gremlin-server docker image
       timeout-minutes: 10
       needs: smoke
-      runs-on: ubuntu-latest
+      runs-on: ubuntu-26.04
       steps:
         - uses: actions/checkout@v7
         - name: Set up JDK 11
@@ -160,7 +160,7 @@ jobs:
 #    name: hadoop standard
 #    timeout-minutes: 45
 #    needs: smoke
-#    runs-on: ubuntu-latest
+#    runs-on: ubuntu-26.04
 #    steps:
 #      - uses: actions/checkout@v7
 #      - name: Set up JDK 11
@@ -176,7 +176,7 @@ jobs:
     name: hadoop feature
     timeout-minutes: 45
     needs: smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - name: Set up JDK 11
@@ -195,7 +195,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-26.04, windows-latest]
     steps:
       - uses: actions/checkout@v7
       - name: Set up JDK 11
@@ -219,7 +219,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-26.04, windows-latest]
     steps:
       - uses: actions/checkout@v7
       - name: Set up JDK 11
@@ -240,7 +240,7 @@ jobs:
     name: gremlin-console
     timeout-minutes: 20
     needs: smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - name: Set up JDK 11
@@ -257,7 +257,7 @@ jobs:
     name: gremlin-driver
     timeout-minutes: 20
     needs: cache-gremlin-server-docker-image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - name: Set up JDK 11
@@ -273,7 +273,7 @@ jobs:
     name: javascript-glv-node${{ matrix.node-version }}
     timeout-minutes: 15
     needs: cache-gremlin-server-docker-image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -305,7 +305,7 @@ jobs:
     name: python-${{ matrix.python-version }}
     timeout-minutes: 20
     needs: cache-gremlin-server-docker-image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -333,7 +333,7 @@ jobs:
     name: .NET
     timeout-minutes: 20
     needs: cache-gremlin-server-docker-image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - name: Set up JDK11
@@ -367,7 +367,7 @@ jobs:
     name: neo4j-gremlin
     timeout-minutes: 20
     needs: smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - name: Set up JDK11
@@ -383,10 +383,15 @@ jobs:
     name: go
     timeout-minutes: 20
     needs: cache-gremlin-server-docker-image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+      - name: Set up JDK 11
+        uses: actions/setup-java@v6
+        with:
+          java-version: '11'
+          distribution: 'temurin'
       - name: Setup Go
         uses: actions/setup-go@v7
         with:

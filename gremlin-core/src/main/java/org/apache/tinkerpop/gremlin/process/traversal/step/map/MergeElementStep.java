@@ -146,9 +146,13 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
     @Override
     public void addChildOption(final Merge token, final Traversal.Admin<S, C> traversalOption) {
         if (token == Merge.onCreate) {
+            if (onCreateTraversal != null)
+                throw new IllegalArgumentException("option(onCreate) can only be specified once per merge step");
             validateStaticNoOverrides(mergeTraversal, traversalOption);
             this.onCreateTraversal = this.integrateChild(traversalOption);
         } else if (token == Merge.onMatch) {
+            if (onMatchTraversal != null)
+                throw new IllegalArgumentException("option(onMatch) can only be specified once per merge step");
             this.onMatchTraversal = this.integrateChild(traversalOption);
         } else {
             throw new UnsupportedOperationException(String.format("Option %s for Merge is not supported", token.name()));

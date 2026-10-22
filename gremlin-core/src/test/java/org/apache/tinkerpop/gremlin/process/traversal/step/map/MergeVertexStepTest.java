@@ -28,6 +28,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTrav
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
@@ -367,5 +369,33 @@ public class MergeVertexStepTest extends GValueStepTest {
         return __.mergeV(GValue.of("mergeMap", NAME_MAP))
                 .option(Merge.onMatch, GValue.of("matchMap", AGE_29_MAP))
                 .option(Merge.onCreate, GValue.of("createMap", AGE_30_MAP)).asAdmin();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowRepeatedOnCreate() {
+        final MergeVertexStep<Object> step = new MergeVertexStep<>(org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal.instance(), true);
+        step.addChildOption(Merge.onCreate, new org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal<>(Collections.emptyMap()));
+        step.addChildOption(Merge.onCreate, new org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal<>(Collections.emptyMap()));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowRepeatedOnMatch() {
+        final MergeVertexStep<Object> step = new MergeVertexStep<>(org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal.instance(), true);
+        step.addChildOption(Merge.onMatch, new org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal<>(Collections.emptyMap()));
+        step.addChildOption(Merge.onMatch, new org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal<>(Collections.emptyMap()));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowRepeatedOnCreateOnPlaceholder() {
+        final MergeVertexStepPlaceholder<Object> step = new MergeVertexStepPlaceholder<>(EmptyTraversal.instance(), true);
+        step.addChildOption(Merge.onCreate, new ConstantTraversal<>(Collections.emptyMap()));
+        step.addChildOption(Merge.onCreate, new ConstantTraversal<>(Collections.emptyMap()));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAllowRepeatedOnMatchOnPlaceholder() {
+        final MergeVertexStepPlaceholder<Object> step = new MergeVertexStepPlaceholder<>(EmptyTraversal.instance(), true);
+        step.addChildOption(Merge.onMatch, new ConstantTraversal<>(Collections.emptyMap()));
+        step.addChildOption(Merge.onMatch, new ConstantTraversal<>(Collections.emptyMap()));
     }
 }

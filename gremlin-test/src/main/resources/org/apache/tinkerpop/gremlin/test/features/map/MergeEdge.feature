@@ -1110,3 +1110,49 @@ Feature: Step - mergeE()
     And the graph should return 2 for count of "g.V()"
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\")"
     And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"weight\")"
+
+  # onCreate cannot be specified more than once
+  Scenario: g_mergeEXxx1X_optionXonCreate_xx2X_optionXonCreate_xx2X_repeated
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\"}]"
+    And using the parameter xx2 defined as "m[{\"created\":\"Y\"}]"
+    And the traversal of
+      """
+      g.mergeE(xx1).option(Merge.onCreate, xx2).option(Merge.onCreate, xx2)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "option(onCreate) can only be specified once"
+
+  # onMatch cannot be specified more than once
+  Scenario: g_mergeEXxx1X_optionXonMatch_xx2X_optionXonMatch_xx2X_repeated
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\"}]"
+    And using the parameter xx2 defined as "m[{\"created\":\"Y\"}]"
+    And the traversal of
+      """
+      g.mergeE(xx1).option(Merge.onMatch, xx2).option(Merge.onMatch, xx2)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "option(onMatch) can only be specified once"
+
+  # outV cannot be specified more than once
+  Scenario: g_mergeEXxx1X_optionXoutV_selectXvXX_optionXoutV_selectXvXX_repeated
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\"}]"
+    And the traversal of
+      """
+      g.mergeE(xx1).option(Merge.outV, select("v")).option(Merge.outV, select("v"))
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "option(outV) can only be specified once"
+
+  # inV cannot be specified more than once
+  Scenario: g_mergeEXxx1X_optionXinV_selectXvXX_optionXinV_selectXvXX_repeated
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\"}]"
+    And the traversal of
+      """
+      g.mergeE(xx1).option(Merge.inV, select("v")).option(Merge.inV, select("v"))
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "option(inV) can only be specified once"
