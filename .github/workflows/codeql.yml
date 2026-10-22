@@ -117,10 +117,10 @@ jobs:
 
       # Pin the JDK before CodeQL init so the build is traced with a TinkerPop-supported version rather than the
       # runner default, which is newer than the build supports.
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         uses: actions/setup-java@v6
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
 
       # Initializes the CodeQL tools for scanning.
