@@ -326,7 +326,6 @@ func applyOptionsConfig(builder *RequestOptionsBuilder, config map[string]interf
 	setterMap := map[string]string{
 		"timeoutMillis":         "SetTimeoutMillis",
 		"batchSize":             "SetBatchSize",
-		"userAgent":             "SetUserAgent",
 		"materializeProperties": "SetMaterializeProperties",
 		"bulkResults":           "SetBulkResults",
 	}

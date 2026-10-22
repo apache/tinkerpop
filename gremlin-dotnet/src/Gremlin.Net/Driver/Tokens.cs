@@ -36,11 +36,6 @@ namespace Gremlin.Net.Driver
         public static string GremlinVersion = "4.0.0-SNAPSHOT"; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
         /// <summary>
-        ///     The key for the unique identifier of the request.
-        /// </summary>
-        public const string RequestId = "requestId";
-
-        /// <summary>
         ///     Argument name that allows the definition of the number of items each ResponseMessage should
         ///     contain from a particular result - overrides the resultIterationBatchSize server setting.
         /// </summary>
@@ -56,12 +51,6 @@ namespace Gremlin.Net.Driver
         ///     Argument name that corresponds to the Gremlin to evaluate.
         /// </summary>
         public const string ArgsGremlin = "gremlin";
-
-        /// <summary>
-        ///     Argument name that allows a value that is a custom string that the user can pass to a server that
-        ///     might accept it for purpose of identifying the kind of client it came from.
-        /// </summary>
-        public const string ArgsUserAgent = "userAgent";
 
         /// <summary>
         ///     Argument name that allows definition of the flavor of Gremlin used (e.g. gremlin-groovy) to process the request.

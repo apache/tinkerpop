@@ -227,7 +227,8 @@ motion that resolves its JIRA issue, the whole subgraph beneath the root is pinn
 [source,text]
 ----
 bd children <root>
-bin/beads-commits.py --root <root> --branch 3.7-dev --pr <n>
+bin/beads-commits.py --root <root> --branch 3.7-dev --suggest
+bin/beads-commits.py --root <root> --branch 3.7-dev --commits <hash>...
 bd close <root>
 bd update <id1> <id2> ... -s pinned
 bd dolt pull && bd dolt push
@@ -270,7 +271,13 @@ bin/beads-commits.py --root tp-abc --branch 3.7-dev --suggest
 The root's own record beads are what identify those commits, which is the practical sense in
 which records are the link between a bead and the code. A JIRA record supplies a ticket
 identifier that TinkerPop commit subjects carry, and a pull request record supplies a number that
-GitHub resolves to the commit a squash merge produced. Commits that landed on the branch since
+GitHub resolves to the commit its merge produced. A squash merge produces a single commit holding
+the whole change. A pull request merged with an ordinary merge commit is expanded to every commit
+that merge brought in, because those commits, rather than the merge itself, are where `git blame`
+and `git log -S` lead, and a hash missing from the record cannot be traced back to its bead. That
+range is whatever the topic branch carried, which can include commits belonging to other work, so
+the committer reviews it commit by commit and drops any that do not belong before recording.
+Commits that landed on the branch since
 the root was created are listed alongside, marking those belonging to the current committer,
 because a follow-up fix or a documentation pass often quotes no ticket and would otherwise go
 unnoticed. That second list is a prompt to check rather than an answer, and a root carrying no
@@ -280,10 +287,14 @@ Once the committer has confirmed the list, the same command records it.
 
 [source,text]
 ----
-bin/beads-commits.py --root tp-abc --branch 3.7-dev --pr 3610
 bin/beads-commits.py --root tp-abc --branch 3.7-dev --commits 374b0c76d0 e1ca7ea3e4
+bin/beads-commits.py --root tp-abc --branch 3.7-dev --pr 3610
 bin/beads-commits.py --root tp-abc --branch 3.7-dev --range 74fe2a64d0..374b0c76d0
 ----
+
+The `--pr` form suits a pull request that was squash merged. It refuses one that landed as an
+ordinary merge commit, since recording that range without review is how another root's commits
+come to be attributed to this one, and points to `--suggest` and `--commits` instead.
 
 Every hash is checked against `origin/<branch>` before anything is written. A hash that has not
 landed there is refused rather than recorded, because it is precisely the hash that a later

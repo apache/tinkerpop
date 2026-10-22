@@ -72,6 +72,7 @@ select the domain playbooks in two passes:
    - `gremlin-dart/`, `gremlin-go/`, `gremlin-python/`, `gremlin-dotnet/`, `gremlin-js/`, `gremlin-javascript/` → `playbooks/glv.md`
    - `gremlin-core/` with new step patterns → `playbooks/new-step.md`
    - `gremlin-driver/`, `gremlin-server/`, `gremlin-util/` → `playbooks/driver-server.md`
+   - `tinkergraph-gremlin/` on a `master` base branch → `playbooks/tinkergraph.md`
    - Small change set with linked issue → `playbooks/bug-fix.md`
    - `gremlin-language/` or `*.g4` → `playbooks/grammar.md`
    - Deletion-heavy change set (removes a feature/module/dependency; `listDeleted` returns entries) → `playbooks/removal.md`

@@ -242,7 +242,7 @@ Some connection options can also be set on individual requests made through the 
 results, err := g.With("timeoutMillis", 500).V().Out("knows").ToList()
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent` and
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults` and
 `timeoutMillis`.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
@@ -531,7 +531,7 @@ options := new(RequestOptionsBuilder).
 resultSet, err := client.SubmitWithOptions("g.V(x).count()", options)
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`,
 `timeoutMillis` and `materializeProperties`.
 `RequestOptions` may also contain a map of query `parameters` to be applied to the supplied
 traversal string.
@@ -2012,8 +2012,8 @@ Some connection options can also be set on individual requests made through the 
 const vertices = await g.with_('timeoutMillis', 500).V().out('knows').toList()
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent`,
-`bulkResults`, `materializeProperties` and `timeoutMillis`.
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`,
+`materializeProperties` and `timeoutMillis`.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
 to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
@@ -2360,8 +2360,8 @@ this feature is to set a per-request override to the `timeoutMillis` so that it 
 const result = await client.submit("g.V().repeat(both()).times(100)", null, { timeoutMillis: 5000 })
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent`,
-`bulkResults`, `materializeProperties` and `timeoutMillis`.
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`,
+`materializeProperties` and `timeoutMillis`.
 
 IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but a script may
 also use `g.with("timeoutMillis", 500)`. Scripts with multiple traversals and multiple
@@ -2764,7 +2764,7 @@ For instance to set request timeout to 500 milliseconds:
 var l = g.With(Tokens.ArgsTimeoutMillis, 500).V().Out("knows").Count().ToList();
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`,
 `materializeProperties`, and `timeoutMillis`. These options are available as constants on the `Gremlin.Net.Driver.Tokens`
 class.
 
@@ -3039,7 +3039,7 @@ feature is to set a per-request override to the `timeoutMillis` so that it only 
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=submittingScriptsWithTimeout]
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`, `materializeProperties`
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `materializeProperties`
 and `timeoutMillis`. These options are available as constants on the `Gremlin.Net.Driver.Tokens` class.
 
 [[gremlin-dotnet-streaming]]
@@ -3473,7 +3473,7 @@ vertices = g.with_('timeoutMillis', 500).V().out('knows').to_list()
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `language`,
-`materializeProperties`, `userAgent`, and `timeoutMillis`.
+`materializeProperties`, and `timeoutMillis`.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `True` per-request
 to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
@@ -3837,7 +3837,7 @@ this feature is to set a per-request override to the `timeoutMillis` so that it 
 result_set = client.submit('g.V().repeat(both()).times(100)', request_options={'timeoutMillis': 5000})
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `requestId`, `userAgent`,
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`,
 `materializeProperties` and `timeoutMillis`.
 
 IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but a script may

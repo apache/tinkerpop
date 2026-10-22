@@ -60,7 +60,6 @@ class TestDriverRemoteConnection(object):
                                                         "test").V(GValue('ids', [1, 2, 3])).count()
         assert remote_connection.extract_request_options(t.gremlin_lang) == {'batchSize': 100,
                                                                              'timeoutMillis': 1000,
-                                                                             'userAgent': 'test',
                                                                              'bulkResults': True,
                                                                              'parameters': "['ids':[1,2,3]]"}
         assert 3 == t.to_list()[0]

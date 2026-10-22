@@ -19,7 +19,6 @@
 import asyncio
 import os
 import threading
-import uuid
 
 import pytest
 from gremlin_python.driver.client import Client
@@ -520,42 +519,6 @@ def test_asyncio(client):
     except RuntimeError:
         assert False
 
-
-# TODO: tests pass because requestID is now generated on HTTP server and this option gets ignored, tests to be removed
-#  or updated depending on if we still want to use requestID or not
-@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
-def test_client_custom_invalid_request_id_graphbinary_script(client):
-    client = Client(test_no_auth_url, 'gmodern')
-    try:
-        client.submit('g.V()', request_options={"requestId": "malformed"}).all().result()
-    except Exception as ex:
-        assert "badly formed hexadecimal UUID string" in str(ex)
-
-
-@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
-def test_client_custom_valid_request_id_script_uuid(client):
-    assert len(client.submit('g.V()', request_options={"requestId": uuid.uuid4()}).all().result()) == 6
-
-
-@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
-def test_client_custom_valid_request_id_script_string(client):
-    assert len(client.submit('g.V()', request_options={"requestId": str(uuid.uuid4())}).all().result()) == 6
-
-
-@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
-def test_client_custom_invalid_request_id_graphbinary_bytecode(client):
-    client = Client(test_no_auth_url, 'gmodern')
-    query = GraphTraversalSource(Graph(), TraversalStrategies()).V().bytecode
-    try:
-        client.submit(query, request_options={"requestId": "malformed"}).all().result()
-    except Exception as ex:
-        assert "badly formed hexadecimal UUID string" in str(ex)
-
-
-@pytest.mark.skip(reason="requestID is generated on server side only, disable for now")
-def test_client_custom_valid_request_id_bytecode(client):
-    query = GraphTraversalSource(Graph(), TraversalStrategies()).V().bytecode
-    assert len(client.submit(query).all().result()) == 6
 
 def test_response_serializer_never_None():
     client = Client('url', 'g', response_serializer=None)
