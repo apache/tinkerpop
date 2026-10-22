@@ -93,9 +93,10 @@ export class GraphTraversalSource {
    * On normal completion of the callback the transaction is committed; on any
    * abnormal exit (a thrown error or a rejected promise) the transaction is
    * rolled back. This is a single-shot operation: there is exactly one attempt
-   * (begin -> run -> commit/rollback) and no retry. A second transaction may not
-   * be opened from inside the callback (calling <code>gtx.tx().begin()</code>
-   * throws via the existing double-begin guard).
+   * (begin -> run -> commit/rollback) and no retry. A second transaction cannot
+   * be opened from inside the callback: <code>gtx.tx()</code> returns the same
+   * transaction, and calling <code>begin()</code> on it again is idempotent and
+   * returns a source bound to that same transaction.
    *
    * The callback may be synchronous or asynchronous; its return value (or the
    * value its promise resolves to) is awaited and returned from

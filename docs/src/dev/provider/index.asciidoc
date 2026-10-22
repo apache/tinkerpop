@@ -1196,8 +1196,9 @@ supports types like GraphBinary.
 ==== HTTP Request
 
 To formulate a request to Gremlin Server, a `RequestMessage` needs to be constructed.  The `RequestMessage` is a
-generalized representation of a request. This message can be serialized in any fashion that is supported by Gremlin
-Server, which by default is GraphBinary. An HTTP request that contains a `RequestMessage` has the following form:
+generalized representation of a request. Drivers send it as JSON (`application/json`), which Gremlin Server always
+accepts. It may instead be serialized with any serializer configured on Gremlin Server, in which case the
+`Content-Type` header names that serializer. An HTTP request that contains a `RequestMessage` has the following form:
 
 [source,text]
 ----
@@ -1212,8 +1213,10 @@ Gremlin-Hints: <hints>
   "parameters": string,
   "g": string,
   "language" : string,
+  "batchSize": number,
   "materializeProperties": string,
-  "bulkResults": boolean
+  "bulkResults": boolean,
+  "transactionId": string
 }
 ----
 
@@ -1224,7 +1227,7 @@ An actual, complete request might look like the following:
 POST /gremlin HTTP/1.1
 content-length: 61
 host: 127.0.0.1
-content-type: application/vnd.gremlin-v4.0+json
+content-type: application/json
 accept-encoding: deflate
 accept: application/vnd.graphbinary-v4.0
 user-agent: NotAvailable Gremlin-Java.4.0.0 11.0.25 Windows_11.10.0 amd64

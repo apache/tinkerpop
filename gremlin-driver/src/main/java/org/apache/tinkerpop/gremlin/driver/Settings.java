@@ -317,7 +317,7 @@ public final class Settings {
 
         /**
          * The amount of time in milliseconds to wait for a new connection before timing out where the default value
-         * is 3000.
+         * is 16000.
          */
         public int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
 

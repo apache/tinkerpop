@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -386,5 +387,34 @@ func TestCompositePDTIntegration(t *testing.T) {
 		assert.Equal(t, "Point", p2.Name)
 		assert.Equal(t, int32(3), p2.Fields["x"])
 		assert.Equal(t, int32(4), p2.Fields["y"])
+	})
+}
+
+// captureRequest returns a client whose interceptor records the outgoing RequestMessage and then aborts the
+// request, so request-shaping can be asserted without a server.
+func captureRequest(t *testing.T) (*Client, *RequestMessage) {
+	captured := &RequestMessage{}
+	client, err := NewClient("http://localhost:1/gremlin", func(settings *ClientSettings) {
+		settings.Interceptors = []RequestInterceptor{func(req *HttpRequest) error {
+			*captured = *req.Body.(*RequestMessage)
+			return errors.New("captured")
+		}}
+	})
+	require.NoError(t, err)
+	t.Cleanup(client.Close)
+	return client, captured
+}
+
+func TestRequestOptionsLanguage(t *testing.T) {
+	t.Run("With(language) reaches the request", func(t *testing.T) {
+		builder := applyOptionsConfig(new(RequestOptionsBuilder),
+			map[string]interface{}{"language": "gremlin-groovy"})
+		assert.Equal(t, "gremlin-groovy", MakeStringRequest("g.V()", "g", builder.Create()).Fields["language"])
+	})
+
+	t.Run("SubmitWithOptions sends the per-request language", func(t *testing.T) {
+		client, captured := captureRequest(t)
+		_, _ = client.SubmitWithOptions("g.V()", new(RequestOptionsBuilder).SetLanguage("gremlin-groovy").Create())
+		assert.Equal(t, "gremlin-groovy", captured.Fields["language"])
 	})
 }

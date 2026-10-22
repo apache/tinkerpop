@@ -328,6 +328,7 @@ func applyOptionsConfig(builder *RequestOptionsBuilder, config map[string]interf
 		"batchSize":             "SetBatchSize",
 		"materializeProperties": "SetMaterializeProperties",
 		"bulkResults":           "SetBulkResults",
+		"language":              "SetLanguage",
 	}
 
 	for key, value := range config {

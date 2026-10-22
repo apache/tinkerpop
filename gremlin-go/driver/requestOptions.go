@@ -26,6 +26,7 @@ type RequestOptions struct {
 	materializeProperties string
 	bulkResults           *bool
 	transactionId         string
+	language              string
 }
 
 type RequestOptionsBuilder struct {
@@ -36,6 +37,7 @@ type RequestOptionsBuilder struct {
 	materializeProperties string
 	bulkResults           *bool
 	transactionId         string
+	language              string
 }
 
 func (builder *RequestOptionsBuilder) SetTimeoutMillis(timeoutMillis int) *RequestOptionsBuilder {
@@ -79,6 +81,12 @@ func (builder *RequestOptionsBuilder) SetTransactionId(transactionId string) *Re
 	return builder
 }
 
+// SetLanguage sets the language (ScriptEngine) used to process the request. Defaults to "gremlin-lang" when unset.
+func (builder *RequestOptionsBuilder) SetLanguage(language string) *RequestOptionsBuilder {
+	builder.language = language
+	return builder
+}
+
 func (builder *RequestOptionsBuilder) AddParameter(key string, parameter interface{}) *RequestOptionsBuilder {
 	if builder.parametersString != "" {
 		panic("cannot mix AddParameter() with SetParametersString()")
@@ -98,6 +106,7 @@ func (builder *RequestOptionsBuilder) Create() RequestOptions {
 	requestOptions.materializeProperties = builder.materializeProperties
 	requestOptions.bulkResults = builder.bulkResults
 	requestOptions.transactionId = builder.transactionId
+	requestOptions.language = builder.language
 
 	// convert map parameters to string at creation time, matching Java's RequestOptions.Builder.create()
 	if builder.parametersString != "" {

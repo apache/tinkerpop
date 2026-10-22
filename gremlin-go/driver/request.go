@@ -47,8 +47,12 @@ type RequestMessage struct {
 //	bytes, _ := httpReq.SerializeBody()
 //	// Send bytes over gRPC, HTTP/2, etc.
 func MakeStringRequest(stringGremlin string, traversalSource string, requestOptions RequestOptions) (req RequestMessage) {
+	language := "gremlin-lang"
+	if requestOptions.language != "" {
+		language = requestOptions.language
+	}
 	newFields := map[string]interface{}{
-		"language": "gremlin-lang",
+		"language": language,
 		"g":        traversalSource,
 	}
 

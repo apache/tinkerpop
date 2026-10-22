@@ -46,6 +46,12 @@ func TestRequest(t *testing.T) {
 		assert.Equal(t, 123, r.Fields["batchSize"])
 	})
 
+	t.Run("Test makeStringRequest() with custom language", func(t *testing.T) {
+		r := MakeStringRequest("g.V()", "g",
+			new(RequestOptionsBuilder).SetLanguage("gremlin-groovy").Create())
+		assert.Equal(t, "gremlin-groovy", r.Fields["language"])
+	})
+
 	t.Run("Test makeStringRequest() with bulkResults", func(t *testing.T) {
 		r := MakeStringRequest("g.V()", "g",
 			new(RequestOptionsBuilder).SetBulkResults(true).Create())
