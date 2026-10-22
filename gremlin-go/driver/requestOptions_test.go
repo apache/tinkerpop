@@ -34,10 +34,6 @@ func TestRequestOptions(t *testing.T) {
 		r := new(RequestOptionsBuilder).SetBatchSize(123).Create()
 		assert.Equal(t, 123, r.batchSize)
 	})
-	t.Run("Test RequestOptionsBuilder with custom userAgent", func(t *testing.T) {
-		r := new(RequestOptionsBuilder).SetUserAgent("TestUserAgent").Create()
-		assert.Equal(t, "TestUserAgent", r.userAgent)
-	})
 	t.Run("Test RequestOptionsBuilder with custom materializeProperties", func(t *testing.T) {
 		r := new(RequestOptionsBuilder).SetMaterializeProperties("TestMaterializeProperties").Create()
 		assert.Equal(t, "TestMaterializeProperties", r.materializeProperties)

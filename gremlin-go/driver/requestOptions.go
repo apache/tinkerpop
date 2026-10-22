@@ -22,7 +22,6 @@ package gremlingo
 type RequestOptions struct {
 	timeoutMillis         int
 	batchSize             int
-	userAgent             string
 	parametersString      string
 	materializeProperties string
 	bulkResults           *bool
@@ -32,7 +31,6 @@ type RequestOptions struct {
 type RequestOptionsBuilder struct {
 	timeoutMillis         int
 	batchSize             int
-	userAgent             string
 	parameters            map[string]interface{}
 	parametersString      string
 	materializeProperties string
@@ -47,11 +45,6 @@ func (builder *RequestOptionsBuilder) SetTimeoutMillis(timeoutMillis int) *Reque
 
 func (builder *RequestOptionsBuilder) SetBatchSize(batchSize int) *RequestOptionsBuilder {
 	builder.batchSize = batchSize
-	return builder
-}
-
-func (builder *RequestOptionsBuilder) SetUserAgent(userAgent string) *RequestOptionsBuilder {
-	builder.userAgent = userAgent
 	return builder
 }
 
@@ -102,7 +95,6 @@ func (builder *RequestOptionsBuilder) Create() RequestOptions {
 
 	requestOptions.timeoutMillis = builder.timeoutMillis
 	requestOptions.batchSize = builder.batchSize
-	requestOptions.userAgent = builder.userAgent
 	requestOptions.materializeProperties = builder.materializeProperties
 	requestOptions.bulkResults = builder.bulkResults
 	requestOptions.transactionId = builder.transactionId

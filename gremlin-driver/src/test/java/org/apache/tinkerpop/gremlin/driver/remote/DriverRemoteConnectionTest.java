@@ -56,7 +56,6 @@ public class DriverRemoteConnectionTest {
                         with("y", 100).
                         with(Tokens.ARGS_BATCH_SIZE, 1000).
                         with(Tokens.TIMEOUT_MILLIS, 100000L).
-                        with(Tokens.ARGS_USER_AGENT, "test").
                         V().asAdmin().getGremlinLang());
         assertEquals(1000, options.getBatchSize().get().intValue());
         assertEquals(100000L, options.getTimeoutMillis().get().longValue());

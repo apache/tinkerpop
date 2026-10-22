@@ -149,6 +149,24 @@ which opens a `TinkerStorageGraph` with disk storage.
 
 See: link:https://tinkerpop.apache.org/docs/4.0.0/reference/#tinkergraph-gremlin-persistence[TinkerGraph Persistence]
 
+==== User Agent Only in the Request Header
+
+The user agent is now sent only as the `User-Agent` HTTP header. Every driver sends that header by default, and the
+connection-level `enableUserAgentOnConnect` option (cased idiomatically per language) turns it on or off. The
+per-request `userAgent` field that some drivers could place in the request body has been removed. Gremlin Server never
+read that field, so requests behave exactly as before.
+
+Code that set the per-request field no longer compiles or no longer has an effect, and the line can simply be deleted:
+
+* Java: the unused `Tokens.ARGS_USER_AGENT` constant is removed.
+* Python: `userAgent` is no longer a recognized `request_options` key or `with_()` option, and is ignored if supplied.
+* .NET: `RequestMessage.Builder.AddUserAgent()` and `Tokens.ArgsUserAgent` are removed. `With("userAgent", ...)` is
+still forwarded like any other custom `With()` key, but Gremlin Server ignores it.
+* Go: `RequestOptionsBuilder.SetUserAgent()` is removed, and `With("userAgent", ...)` is ignored.
+* JavaScript: the `userAgent` field is removed from `RequestOptions`, and `with_('userAgent', ...)` is ignored.
+
+See: link:https://lists.apache.org/thread/clyxxp8t6mg3y7y8nj1z48l19j7pk2v8[\[DISCUSS\] Only Support User Agent in Request Header]
+
 === Upgrading for Providers
 
 ==== Graph System Providers
@@ -161,6 +179,9 @@ are removed, as is `requiresPersistence()` on the test provider `TinkerMemoryGra
 the job of a `TinkerStorage` engine on `TinkerStorageGraph`.
 
 ==== Graph Driver Providers
+
+Drivers should send the user agent only as the `User-Agent` request header, in the format described in the provider
+documentation, and should not add a `userAgent` field to the request body.
 
 [llms-summary="Upgrade notes for the TinkerPop 4.0.0-beta.3 release: user-facing changes including declarative pattern matching improvements and other 4.0 features."]
 == TinkerPop 4.0.0-beta.3

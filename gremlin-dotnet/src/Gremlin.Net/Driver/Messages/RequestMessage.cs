@@ -203,17 +203,6 @@ namespace Gremlin.Net.Driver.Messages
             }
 
             /// <summary>
-            ///     Sets the user agent for this request.
-            /// </summary>
-            /// <param name="userAgent">The user agent string.</param>
-            /// <returns>The <see cref="Builder" />.</returns>
-            public Builder AddUserAgent(string userAgent)
-            {
-                _fields[Tokens.ArgsUserAgent] = userAgent;
-                return this;
-            }
-
-            /// <summary>
             ///     Sets the bulk results option for this request.
             /// </summary>
             /// <param name="bulkResults">The bulk results value.</param>

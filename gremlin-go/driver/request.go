@@ -64,10 +64,6 @@ func MakeStringRequest(stringGremlin string, traversalSource string, requestOpti
 		newFields["batchSize"] = requestOptions.batchSize
 	}
 
-	if requestOptions.userAgent != "" {
-		newFields["userAgent"] = requestOptions.userAgent
-	}
-
 	if requestOptions.materializeProperties != "" {
 		newFields["materializeProperties"] = requestOptions.materializeProperties
 	}
@@ -84,14 +80,4 @@ func MakeStringRequest(stringGremlin string, traversalSource string, requestOpti
 		Gremlin: stringGremlin,
 		Fields:  newFields,
 	}
-}
-
-// allowedReqArgs contains the arguments that will be extracted from the
-// bytecode and sent with the request.
-var allowedReqArgs = map[string]bool{
-	"timeoutMillis":         true,
-	"batchSize":             true,
-	"userAgent":             true,
-	"materializeProperties": true,
-	"bulkResults":           true,
 }

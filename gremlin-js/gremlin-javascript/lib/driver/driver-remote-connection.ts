@@ -84,7 +84,6 @@ export default class DriverRemoteConnection extends RemoteConnection {
         'timeoutMillis',
         'batchSize',
         'requestId',
-        'userAgent',
         'materializeProperties',
         'bulkResults',
       ];

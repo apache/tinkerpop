@@ -27,7 +27,6 @@ export type RequestOptions = {
   accept?: string;
   timeoutMillis?: number;
   batchSize?: number;
-  userAgent?: string;
   materializeProperties?: string;
   bulkResults?: boolean;
   params?: Record<string, any>;
