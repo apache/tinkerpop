@@ -16,7 +16,7 @@ concurrency:
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       actions: read
       contents: read
@@ -71,7 +71,7 @@ jobs:
   # .Net is run as a separate job as the integration tests take far too long to build
   analyze_dotnet:
     name: Analyze .Net
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       actions: read
       contents: read
@@ -105,7 +105,7 @@ jobs:
   # Java is run as a separate job as the autobuild for Java is prone to random timeout failures
   analyze_java:
     name: Analyze Java
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       actions: read
       contents: read
