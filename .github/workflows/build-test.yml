@@ -276,7 +276,7 @@ jobs:
     name: python-${{ matrix.python-version }}
     timeout-minutes: 20
     needs: cache-gremlin-server-docker-image
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
