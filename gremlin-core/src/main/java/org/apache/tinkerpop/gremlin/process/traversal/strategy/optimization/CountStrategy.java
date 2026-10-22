@@ -34,11 +34,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
@@ -46,9 +48,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -64,17 +68,20 @@ import java.util.function.BiPredicate;
  * @example <pre>
  * __.outE().count().is(0)      // is replaced by __.not(outE())
  * __.outE().count().is(lt(3))  // is replaced by __.outE().limit(3).count().is(lt(3))
- * __.outE().count().is(gt(3))  // is replaced by __.outE().limit(4).count().is(gt(3))
+ * __.where(outE().count().is(gt(3)))  // is replaced by __.where(outE().limit(4).count().is(gt(3)))
+ * __.outE().count().is(gt(3))  // is not changed as the real count is returned when it is greater than 3
  * </pre>
  */
 public final class CountStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
+    // the limit for each predicate must be a count from which the predicate gives the same result for every larger
+    // count, so that capping the count at the limit can't change the outcome
     private static final Map<BiPredicate, Long> RANGE_PREDICATES = new HashMap<BiPredicate, Long>() {{
         put(Contains.within, 1L);
-        put(Contains.without, 0L);
+        put(Contains.without, 1L);
     }};
     private static final Set<PBiPredicate> INCREASED_OFFSET_SCALAR_PREDICATES =
-            Set.of(Compare.eq, Compare.neq, Compare.lte, Compare.gt, new NotP.NotPBiPredicate(Compare.eq), new NotP.NotPBiPredicate(Compare.neq), new NotP.NotPBiPredicate(Compare.lt), new NotP.NotPBiPredicate(Compare.gt));
+            Set.of(Compare.eq, Compare.neq, Compare.lte, Compare.gt, new NotP.NotPBiPredicate(Compare.eq), new NotP.NotPBiPredicate(Compare.neq), new NotP.NotPBiPredicate(Compare.lt), new NotP.NotPBiPredicate(Compare.gt), new NotP.NotPBiPredicate(Compare.lte));
 
     private static final CountStrategy INSTANCE = new CountStrategy();
 
@@ -196,13 +203,120 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
                             }
                         }
                     } else {
-                        TraversalHelper.insertBeforeStep(new RangeGlobalStep<>(traversal, 0L, highRange < 0 ? 0 : highRange), curr, traversal);
+                        final long limit = highRange < 0 ? 0 : highRange;
+                        final Long chainLimit;
+                        if (isLimitSafe(traversal, isStep, isStepPredicate, limit)) {
+                            TraversalHelper.insertBeforeStep(new RangeGlobalStep<>(traversal, 0L, limit), curr, traversal);
+                        } else if ((chainLimit = getIsChainLimit(traversal, isStep, limit)) != null) {
+                            TraversalHelper.insertBeforeStep(new RangeGlobalStep<>(traversal, 0L, chainLimit), curr, traversal);
+                        }
                     }
                     i++;
                 }
             }
             prev = curr;
         }
+    }
+
+    /**
+     * Determines if a {@code limit(n)} can be placed in front of {@code count().is(predicate)} without changing the
+     * result. The limit caps the count at {@code n}, which is enough for the {@link IsStep} to decide, but if the
+     * predicate accepts {@code n} then the capped value passes through in place of the real count. That is only
+     * acceptable when nothing downstream observes the count value (e.g. a trailing {@code is()} in
+     * {@code count().is(gt(1)).is(lt(3))}, the root traversal or a {@code map()} child) and the child is only used as
+     * a filter.
+     */
+    private static boolean isLimitSafe(final Traversal.Admin<?, ?> traversal, final IsStepContract isStep,
+                                       final P isStepPredicate, final long limit) {
+        // if the capped count cannot pass the predicate, any count that does pass is exact
+        return !isStepPredicate.test(limit) || !isCountValueObserved(traversal, isStep);
+    }
+
+    /**
+     * Determines if the value emitted by {@code count().is(predicate)} is visible beyond a simple filter decision.
+     */
+    private static boolean isCountValueObserved(final Traversal.Admin<?, ?> traversal, final IsStepContract isStep) {
+        // a later step can access the count value. this includes the WhereEndStep that where() appends when its
+        // child ends with a label, as that compares the value to the path. labels elsewhere in a filter child can't
+        // be read from outside of it, so they don't matter here.
+        if (!(isStep.getNextStep() instanceof EmptyStep))
+            return true;
+
+        // the repeat() body always ends with a RepeatEndStep so it was already handled above, which leaves until()
+        // and emit() where the result is only used as a condition
+        if (traversal.getParent() instanceof RepeatStep) return false;
+
+        final TraversalParent parent = traversal.getParent();
+        // only parents that use the child traversal purely to test for the existence of a result. other FilterStep
+        // or SideEffectStep parents (e.g. dedup().by() or aggregate().by()) consume the value itself.
+        return !(parent instanceof TraversalFilterStep || parent instanceof NotStep
+                || parent instanceof ConnectiveStep || parent instanceof TraversalSideEffectStep);
+    }
+
+    /**
+     * Determines a limit for {@code count().is(a).is(b)...} that takes every {@code is()} in the chain into account.
+     * Each predicate gives the same result for every count of its limit or more, so with the largest of those limits
+     * the capped count passes the whole chain exactly when the real count does. If the chain then rejects the cap, any
+     * count that passes is exact; otherwise the limit is only safe when the count value is not observed afterwards.
+     *
+     * @return the limit to use or {@code null} if the chain can't be limited safely
+     */
+    private static Long getIsChainLimit(final Traversal.Admin<?, ?> traversal, final IsStepContract firstIsStep,
+                                        final long firstLimit) {
+        final List<P> predicates = new ArrayList<>();
+        predicates.add(firstIsStep.getPredicate());
+        final Long firstHighRange = getHighRange(firstIsStep.getPredicate());
+        if (firstHighRange == null) return null;
+        long limit = Math.max(firstLimit, firstHighRange);
+        IsStepContract lastIsStep = firstIsStep;
+        while (lastIsStep.getNextStep() instanceof IsStepContract) {
+            lastIsStep = (IsStepContract) lastIsStep.getNextStep();
+            final P predicate = lastIsStep.getPredicate();
+            if (predicate.hasTraversal()) return null;
+            final Long candidate = getHighRange(predicate);
+            if (candidate == null) return null;
+            limit = Math.max(limit, candidate);
+            predicates.add(predicate);
+        }
+
+        if (predicates.size() == 1) return null;
+
+        final long cap = limit;
+        final boolean capPasses = predicates.stream().allMatch(p -> p.test(cap));
+        return !capPasses || !isCountValueObserved(traversal, lastIsStep) ? cap : null;
+    }
+
+    /**
+     * Gets the smallest count from which {@code predicate} gives the same result for every larger count, or
+     * {@code null} if that can't be determined.
+     */
+    private static Long getHighRange(final P<?> predicate) {
+        try {
+            if (predicate instanceof ConnectiveP) {
+                long highRange = 0L;
+                for (final P<?> p : ((ConnectiveP<?>) predicate).getPredicates()) {
+                    final Long candidate = getHighRange(p);
+                    if (candidate == null) return null;
+                    highRange = Math.max(highRange, candidate);
+                }
+                return highRange;
+            }
+
+            final Object value = predicate.getValue();
+            final BiPredicate biPredicate = predicate.getBiPredicate();
+            if (value instanceof Number) {
+                final long offset = INCREASED_OFFSET_SCALAR_PREDICATES.contains(biPredicate) ? 1L : 0L;
+                return Math.max(0L, (long) Math.ceil(((Number) value).doubleValue()) + offset);
+            }
+            final Long offset = RANGE_PREDICATES.get(biPredicate);
+            if (value instanceof Collection && !((Collection<?>) value).isEmpty() && offset != null) {
+                final Object high = Collections.max((Collection) value);
+                if (high instanceof Number) return Math.max(0L, ((Number) high).longValue() + offset);
+            }
+        } catch (final ClassCastException ex) {
+            // mixed value types in within()/without() can't be compared, so the chain can't be reasoned about
+        }
+        return null;
     }
 
     /**
@@ -227,6 +341,9 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
         final Step parent = step.getTraversal().getParent().asStep();
         return (parent instanceof FilterStep || parent.getLabels().isEmpty()) && // if the parent is labeled, then the count matters
                 !(parent.getNextStep() instanceof MatchStep.MatchEndStep && // if this is in a pattern match, then don't do it.
-                        ((MatchStep.MatchEndStep) parent.getNextStep()).getMatchKey().isPresent());
+                        ((MatchStep.MatchEndStep) parent.getNextStep()).getMatchKey().isPresent()) &&
+                // a traversal in the predicate (e.g. is(lt(__.constant(3))) or is(lte(__.select("a")))) is only
+                // resolved at runtime, so no limit can be derived that is guaranteed not to change the result
+                !((IsStepContract<?>) step.getNextStep()).getPredicate().hasTraversal();
     }
 }

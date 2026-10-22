@@ -14001,6 +14001,142 @@
         ]
     },
     {
+        "scenario": "g_withStrategiesXCountStrategyX_V_whereXoutE_count_isXgtX1XX_isXltX3XXX",
+        "traversals": [
+            {
+                "original": "g.withStrategies(CountStrategy).V().where(outE().count().is(gt(1)).is(lt(3)))",
+                "language": "g.withStrategies(CountStrategy).V().where(__.outE().count().is(P.gt(1)).is(P.lt(3)))",
+                "canonical": "g.withStrategies(CountStrategy).V().where(__.outE().count().is(P.gt(1)).is(P.lt(3)))",
+                "anonymized": "g.withStrategies(CountStrategy).V().where(__.outE().count().is(P.gt(number0)).is(P.lt(number1)))",
+                "dotnet": "g.WithStrategies(new CountStrategy()).V().Where(__.OutE().Count().Is(P.Gt(1)).Is(P.Lt(3)))",
+                "go": "g.WithStrategies(gremlingo.CountStrategy()).V().Where(gremlingo.T__.OutE().Count().Is(gremlingo.P.Gt(1)).Is(gremlingo.P.Lt(3)))",
+                "groovy": "g.withStrategies(CountStrategy).V().where(__.outE().count().is(P.gt(1)).is(P.lt(3)))",
+                "java": "g.withStrategies(CountStrategy.instance()).V().where(__.outE().count().is(P.gt(1)).is(P.lt(3)))",
+                "javascript": "g.withStrategies(new CountStrategy()).V().where(__.outE().count().is(P.gt(1)).is(P.lt(3)))",
+                "python": "g.with_strategies(CountStrategy()).V().where(__.out_e().count().is_(P.gt(1)).is_(P.lt(3)))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withStrategiesXCountStrategyX_V_whereXoutE_count_isXltX3XX_isXgtX1XXX",
+        "traversals": [
+            {
+                "original": "g.withStrategies(CountStrategy).V().where(outE().count().is(lt(3)).is(gt(1)))",
+                "language": "g.withStrategies(CountStrategy).V().where(__.outE().count().is(P.lt(3)).is(P.gt(1)))",
+                "canonical": "g.withStrategies(CountStrategy).V().where(__.outE().count().is(P.lt(3)).is(P.gt(1)))",
+                "anonymized": "g.withStrategies(CountStrategy).V().where(__.outE().count().is(P.lt(number0)).is(P.gt(number1)))",
+                "dotnet": "g.WithStrategies(new CountStrategy()).V().Where(__.OutE().Count().Is(P.Lt(3)).Is(P.Gt(1)))",
+                "go": "g.WithStrategies(gremlingo.CountStrategy()).V().Where(gremlingo.T__.OutE().Count().Is(gremlingo.P.Lt(3)).Is(gremlingo.P.Gt(1)))",
+                "groovy": "g.withStrategies(CountStrategy).V().where(__.outE().count().is(P.lt(3)).is(P.gt(1)))",
+                "java": "g.withStrategies(CountStrategy.instance()).V().where(__.outE().count().is(P.lt(3)).is(P.gt(1)))",
+                "javascript": "g.withStrategies(new CountStrategy()).V().where(__.outE().count().is(P.lt(3)).is(P.gt(1)))",
+                "python": "g.with_strategies(CountStrategy()).V().where(__.out_e().count().is_(P.lt(3)).is_(P.gt(1)))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withStrategiesXCountStrategyX_V_outE_count_isXgtX2XX",
+        "traversals": [
+            {
+                "original": "g.withStrategies(CountStrategy).V().outE().count().is(gt(2))",
+                "language": "g.withStrategies(CountStrategy).V().outE().count().is(P.gt(2))",
+                "canonical": "g.withStrategies(CountStrategy).V().outE().count().is(P.gt(2))",
+                "anonymized": "g.withStrategies(CountStrategy).V().outE().count().is(P.gt(number0))",
+                "dotnet": "g.WithStrategies(new CountStrategy()).V().OutE().Count().Is(P.Gt(2))",
+                "go": "g.WithStrategies(gremlingo.CountStrategy()).V().OutE().Count().Is(gremlingo.P.Gt(2))",
+                "groovy": "g.withStrategies(CountStrategy).V().outE().count().is(P.gt(2))",
+                "java": "g.withStrategies(CountStrategy.instance()).V().outE().count().is(P.gt(2))",
+                "javascript": "g.withStrategies(new CountStrategy()).V().outE().count().is(P.gt(2))",
+                "python": "g.with_strategies(CountStrategy()).V().out_e().count().is_(P.gt(2))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withStrategiesXCountStrategyX_V_mapXoutE_count_isXgtX1XXX",
+        "traversals": [
+            {
+                "original": "g.withStrategies(CountStrategy).V().map(outE().count().is(gt(1)))",
+                "language": "g.withStrategies(CountStrategy).V().map(__.outE().count().is(P.gt(1)))",
+                "canonical": "g.withStrategies(CountStrategy).V().map(__.outE().count().is(P.gt(1)))",
+                "anonymized": "g.withStrategies(CountStrategy).V().map(__.outE().count().is(P.gt(number0)))",
+                "dotnet": "g.WithStrategies(new CountStrategy()).V().Map<object>(__.OutE().Count().Is(P.Gt(1)))",
+                "go": "g.WithStrategies(gremlingo.CountStrategy()).V().Map(gremlingo.T__.OutE().Count().Is(gremlingo.P.Gt(1)))",
+                "groovy": "g.withStrategies(CountStrategy).V().map(__.outE().count().is(P.gt(1)))",
+                "java": "g.withStrategies(CountStrategy.instance()).V().map(__.outE().count().is(P.gt(1)))",
+                "javascript": "g.withStrategies(new CountStrategy()).V().map(__.outE().count().is(P.gt(1)))",
+                "python": "g.with_strategies(CountStrategy()).V().map(__.out_e().count().is_(P.gt(1)))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withStrategiesXCountStrategyX_V_filterXoutE_count_isXgtX1X_andXltXconstantX3XXXXX_name",
+        "traversals": [
+            {
+                "original": "g.withStrategies(CountStrategy).V().filter(outE().count().is(P.gt(1).and(P.lt(__.constant(3l))))).values(\"name\")",
+                "language": "g.withStrategies(CountStrategy).V().filter(__.outE().count().is(P.gt(1).and(P.lt(__.constant(3l))))).values(\"name\")",
+                "canonical": "g.withStrategies(CountStrategy).V().filter(__.outE().count().is(P.gt(1).and(P.lt(__.constant(3l))))).values(\"name\")",
+                "anonymized": "g.withStrategies(CountStrategy).V().filter(__.outE().count().is(P.gt(number0).and(P.lt(__.constant(long0))))).values(string0)",
+                "dotnet": "g.WithStrategies(new CountStrategy()).V().Filter(__.OutE().Count().Is(P.Gt(1).And(P.Lt(__.Constant<object>(3l))))).Values<object>(\"name\")",
+                "go": "g.WithStrategies(gremlingo.CountStrategy()).V().Filter(gremlingo.T__.OutE().Count().Is(gremlingo.P.Gt(1).And(gremlingo.P.Lt(gremlingo.T__.Constant(int64(3)))))).Values(\"name\")",
+                "groovy": "g.withStrategies(CountStrategy).V().filter(__.outE().count().is(P.gt(1).and(P.lt(__.constant(3l))))).values(\"name\")",
+                "java": "g.withStrategies(CountStrategy.instance()).V().filter(__.outE().count().is(P.gt(1).and(P.lt(__.constant(3l))))).values(\"name\")",
+                "javascript": "g.withStrategies(new CountStrategy()).V().filter(__.outE().count().is(P.gt(1).and(P.lt(__.constant(3))))).values(\"name\")",
+                "python": "g.with_strategies(CountStrategy()).V().filter_(__.out_e().count().is_(P.gt(1).and_(P.lt(__.constant(long(3)))))).values('name')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withStrategiesXCountStrategyX_V_outE_count_asXaX_isXgtX1X_andXlteXselectXaXXXX",
+        "traversals": [
+            {
+                "original": "g.withStrategies(CountStrategy).V().outE().count().as(\"a\").is(P.gt(1).and(P.lte(__.select(\"a\"))))",
+                "language": "g.withStrategies(CountStrategy).V().outE().count().as(\"a\").is(P.gt(1).and(P.lte(__.select(\"a\"))))",
+                "canonical": "g.withStrategies(CountStrategy).V().outE().count().as(\"a\").is(P.gt(1).and(P.lte(__.select(\"a\"))))",
+                "anonymized": "g.withStrategies(CountStrategy).V().outE().count().as(string0).is(P.gt(number0).and(P.lte(__.select(string0))))",
+                "dotnet": "g.WithStrategies(new CountStrategy()).V().OutE().Count().As(\"a\").Is(P.Gt(1).And(P.Lte(__.Select<object>(\"a\"))))",
+                "go": "g.WithStrategies(gremlingo.CountStrategy()).V().OutE().Count().As(\"a\").Is(gremlingo.P.Gt(1).And(gremlingo.P.Lte(gremlingo.T__.Select(\"a\"))))",
+                "groovy": "g.withStrategies(CountStrategy).V().outE().count().as(\"a\").is(P.gt(1).and(P.lte(__.select(\"a\"))))",
+                "java": "g.withStrategies(CountStrategy.instance()).V().outE().count().as(\"a\").is(P.gt(1).and(P.lte(__.select(\"a\"))))",
+                "javascript": "g.withStrategies(new CountStrategy()).V().outE().count().as(\"a\").is(P.gt(1).and(P.lte(__.select(\"a\"))))",
+                "python": "g.with_strategies(CountStrategy()).V().out_e().count().as_('a').is_(P.gt(1).and_(P.lte(__.select('a'))))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withStrategiesXCountStrategyX_V_unionXidentity_hasXname_markoXX_count_isXwithoutX2_6_4XX",
+        "traversals": [
+            {
+                "original": "g.withStrategies(CountStrategy).V().union(identity(), has(\"name\", \"marko\")).count().is(P.without(2, 6, 4))",
+                "language": "g.withStrategies(CountStrategy).V().union(__.identity(), __.has(\"name\", \"marko\")).count().is(P.without(2, 6, 4))",
+                "canonical": "g.withStrategies(CountStrategy).V().union(__.identity(), __.has(\"name\", \"marko\")).count().is(P.without(2, 6, 4))",
+                "anonymized": "g.withStrategies(CountStrategy).V().union(__.identity(), __.has(string0, string1)).count().is(P.without(number0, number1, number2))",
+                "dotnet": "g.WithStrategies(new CountStrategy()).V().Union<object>(__.Identity(), __.Has(\"name\", \"marko\")).Count().Is(P.Without(2, 6, 4))",
+                "go": "g.WithStrategies(gremlingo.CountStrategy()).V().Union(gremlingo.T__.Identity(), gremlingo.T__.Has(\"name\", \"marko\")).Count().Is(gremlingo.P.Without(2, 6, 4))",
+                "groovy": "g.withStrategies(CountStrategy).V().union(__.identity(), __.has(\"name\", \"marko\")).count().is(P.without(2, 6, 4))",
+                "java": "g.withStrategies(CountStrategy.instance()).V().union(__.identity(), __.has(\"name\", \"marko\")).count().is(P.without(2, 6, 4))",
+                "javascript": "g.withStrategies(new CountStrategy()).V().union(__.identity(), __.has(\"name\", \"marko\")).count().is(P.without(2, 6, 4))",
+                "python": "g.with_strategies(CountStrategy()).V().union(__.identity(), __.has('name', 'marko')).count().is_(P.without(2, 6, 4))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withStrategiesXCountStrategyX_V_count_isXnotXlteX2XXX",
+        "traversals": [
+            {
+                "original": "g.withStrategies(CountStrategy).V().count().is(P.not(P.lte(2)))",
+                "language": "g.withStrategies(CountStrategy).V().count().is(P.not(P.lte(2)))",
+                "canonical": "g.withStrategies(CountStrategy).V().count().is(P.not(P.lte(2)))",
+                "anonymized": "g.withStrategies(CountStrategy).V().count().is(P.not(P.lte(number0)))",
+                "dotnet": "g.WithStrategies(new CountStrategy()).V().Count().Is(P.Not(P.Lte(2)))",
+                "go": "g.WithStrategies(gremlingo.CountStrategy()).V().Count().Is(gremlingo.P.Not(gremlingo.P.Lte(2)))",
+                "groovy": "g.withStrategies(CountStrategy).V().count().is(P.not(P.lte(2)))",
+                "java": "g.withStrategies(CountStrategy.instance()).V().count().is(P.not(P.lte(2)))",
+                "javascript": "g.withStrategies(new CountStrategy()).V().count().is(P.not(P.lte(2)))",
+                "python": "g.with_strategies(CountStrategy()).V().count().is_(P.not_(P.lte(2)))"
+            }
+        ]
+    },
+    {
         "scenario": "g_withStrategiesXEarlyLimitStrategyX_V_out_order_byXnameX_valueMap_limitX3X_selectXnameX",
         "traversals": [
             {
