@@ -95,7 +95,14 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     )
 
     // some traversals may require a static translation if the translator can't handle them for some reason
-    def staticTranslate = [:]
+    def staticTranslate = [
+            g_mergeVXxx1X_optionXonCreate_xx2X_optionXonCreate_xx2X_repeated: "    g_mergeVXxx1X_optionXonCreate_xx2X_optionXonCreate_xx2X_repeated: [function({g, xx1, xx2}) { return g.mergeV(xx1).option(Merge.onCreate,xx2).option(Merge.onCreate,xx2) }], ",
+            g_mergeVXxx1X_optionXonMatch_xx2X_optionXonMatch_xx2X_repeated: "    g_mergeVXxx1X_optionXonMatch_xx2X_optionXonMatch_xx2X_repeated: [function({g, xx1, xx2}) { return g.mergeV(xx1).option(Merge.onMatch,xx2).option(Merge.onMatch,xx2) }], ",
+            g_mergeEXxx1X_optionXonCreate_xx2X_optionXonCreate_xx2X_repeated: "    g_mergeEXxx1X_optionXonCreate_xx2X_optionXonCreate_xx2X_repeated: [function({g, xx1, xx2}) { return g.mergeE(xx1).option(Merge.onCreate,xx2).option(Merge.onCreate,xx2) }], ",
+            g_mergeEXxx1X_optionXonMatch_xx2X_optionXonMatch_xx2X_repeated: "    g_mergeEXxx1X_optionXonMatch_xx2X_optionXonMatch_xx2X_repeated: [function({g, xx1, xx2}) { return g.mergeE(xx1).option(Merge.onMatch,xx2).option(Merge.onMatch,xx2) }], ",
+            g_mergeEXxx1X_optionXoutV_selectXvXX_optionXoutV_selectXvXX_repeated: "    g_mergeEXxx1X_optionXoutV_selectXvXX_optionXoutV_selectXvXX_repeated: [function({g, xx1}) { return g.mergeE(xx1).option(Merge.outV,__.select(\"v\")).option(Merge.outV,__.select(\"v\")) }], ",
+            g_mergeEXxx1X_optionXinV_selectXvXX_optionXinV_selectXvXX_repeated: "    g_mergeEXxx1X_optionXinV_selectXvXX_optionXinV_selectXvXX_repeated: [function({g, xx1}) { return g.mergeE(xx1).option(Merge.inV,__.select(\"v\")).option(Merge.inV,__.select(\"v\")) }], "
+    ]
     // SAMPLE: g_injectXnull_nullX: "    g_injectXnull_nullX: [function({g}) { return g.inject(null,null) }], ",
 
     writer.writeLine('const gremlins = {')

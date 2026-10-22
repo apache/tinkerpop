@@ -2688,6 +2688,8 @@ with `mergeV` via a `select` operation.
 * `MAP` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
 * Use of `T.label` should always have a value that is a `STRING`.
 * If `T.id`, `T.label`, and/or `Direction.IN/OUT` are specified in `searchCreate`, they cannot be overridden in `onCreate`.
+* Each of `onCreate`, `onMatch`, `outV` and `inV` may be specified with `option()` at most once. A repeated option
+results in exception at traversal construction rather than the later value silently replacing the earlier one.
 * For late binding of the from and to vertices, `Direction.OUT` must be set to `Merge.outV` and `Direction.IN` must
 be set to `Merge.inV`. Other combinations are not allowed and will result in exception.
 
@@ -2762,6 +2764,8 @@ matches an existing `Vertex`.
 * `MAP` arguments are validated for their keys resulting in exception if they do not meet requirements defined above.
 * Use of `T.label` should always have a value that is a `STRING`.
 * If `T.id` and/or `T.label` are specified in `searchCreate`, they cannot be overridden in `onCreate`.
+* Each of `onCreate` and `onMatch` may be specified with `option()` at most once. A repeated option results in
+exception at traversal construction rather than the later value silently replacing the earlier one.
 
 *Considerations:*
 
