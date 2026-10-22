@@ -178,6 +178,23 @@ Storage" above: the protected `graphLocation` and `graphFormat` fields and the `
 are removed, as is `requiresPersistence()` on the test provider `TinkerMemoryGraphProvider`. Durable storage is now
 the job of a `TinkerStorage` engine on `TinkerStorageGraph`.
 
+===== Class Values Must Be Registered
+
+For deserialization, a `Class` value must now name a registered class in GraphSON and Gryo alike. An unregistered name
+is refused on read and the class is never loaded. GraphBinary has no generic `Class` wire type and is unaffected.
+Strategies registered with `TraversalStrategies.GlobalCache.registerStrategy` already resolve, so only an application
+or provider that serializes its own classes needs to act.
+
+[source,java]
+----
+ClassRegistry.register(MyClass.class);
+ClassRegistry.unregister(MyClass.class);
+----
+
+Registration is required in Java for deserialization only, which typically only impacts the server. Without
+registration, read attempts fail with a `Class not recognized` message naming the class, raised as a
+`MismatchedInputException` for GraphSON and a `RuntimeException` for Gryo.
+
 ==== Graph Driver Providers
 
 Drivers should send the user agent only as the `User-Agent` request header, in the format described in the provider
