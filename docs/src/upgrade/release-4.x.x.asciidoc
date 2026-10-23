@@ -1436,9 +1436,6 @@ const connection = new DriverRemoteConnection('https://localhost:8182/gremlin', 
 });
 ----
 
-NOTE: `auth.sigv4()` is only supported in Node.js. It throws an error when called in a browser, where `auth.basic()`
-remains available.
-
 ===== TypeScript and Module Format
 
 The package now sets `"type": "module"` in `package.json` and uses conditional `exports`:
