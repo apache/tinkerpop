@@ -33,6 +33,7 @@ import asyncio
 import unittest
 from unittest.mock import AsyncMock, MagicMock
 
+from gremlin_python.driver import serializer
 from gremlin_python.driver.async_driver_remote_connection import AsyncDriverRemoteConnection
 from gremlin_python.driver.async_graph_traversal import (
     AsyncRemoteTraversal,
@@ -41,10 +42,19 @@ from gremlin_python.driver.async_graph_traversal import (
 from gremlin_python.driver.async_resultset import AsyncResultSet
 from gremlin_python.process.traversal import Bytecode, Traverser
 from gremlin_python.process.strategies import OptionsStrategy
+from gremlin_python.structure.io import graphsonV3d0
 
 
 URL = "ws://localhost:8182/gremlin"
 TRAVERSAL_SOURCE = "g"
+
+
+class _AsyncioTestCase(unittest.IsolatedAsyncioTestCase):
+    def run(self, result=None):
+        try:
+            return super().run(result)
+        finally:
+            asyncio.set_event_loop_policy(None)
 
 
 # ---------------------------------------------------------------------------
@@ -111,12 +121,43 @@ class TestInit(unittest.TestCase):
             1500,
         )
 
+    def test_enable_compression_stored_and_forwarded(self):
+        rc = AsyncDriverRemoteConnection(URL, enable_compression=True)
+        self.assertTrue(rc._enable_compression)
+        transport = rc._async_client._transport_factory()
+        self.assertEqual(transport._aiohttp_kwargs.get("compress"), 15)
+
+    def test_graphson_reader_and_writer_creates_graphson_serializer(self):
+        reader = graphsonV3d0.GraphSONReader()
+        writer = graphsonV3d0.GraphSONWriter()
+        rc = AsyncDriverRemoteConnection(
+            URL,
+            graphson_reader=reader,
+            graphson_writer=writer,
+        )
+        self.assertIsInstance(
+            rc._message_serializer,
+            serializer.GraphSONMessageSerializer,
+        )
+
+    def test_explicit_message_serializer_overrides_graphson_reader_writer(self):
+        reader = graphsonV3d0.GraphSONReader()
+        writer = graphsonV3d0.GraphSONWriter()
+        custom_serializer = serializer.GraphBinarySerializersV1()
+        rc = AsyncDriverRemoteConnection(
+            URL,
+            message_serializer=custom_serializer,
+            graphson_reader=reader,
+            graphson_writer=writer,
+        )
+        self.assertIs(rc._message_serializer, custom_serializer)
+
 
 # ---------------------------------------------------------------------------
 # submit() — called by AsyncRemoteStrategy
 # ---------------------------------------------------------------------------
 
-class TestSubmit(unittest.IsolatedAsyncioTestCase):
+class TestSubmit(_AsyncioTestCase):
     async def test_submit_bytecode_returns_async_remote_traversal(self):
         rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
         _patch_submit(rc, values=[6])
@@ -139,7 +180,7 @@ class TestSubmit(unittest.IsolatedAsyncioTestCase):
 # submit_async() — convenience wrapper
 # ---------------------------------------------------------------------------
 
-class TestSubmitAsync(unittest.IsolatedAsyncioTestCase):
+class TestSubmitAsync(_AsyncioTestCase):
     async def test_returns_list(self):
         rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
         _patch_submit(rc, values=[10])
@@ -175,7 +216,7 @@ class TestSubmitAsync(unittest.IsolatedAsyncioTestCase):
 # submit_stream() — returns AsyncResultSet
 # ---------------------------------------------------------------------------
 
-class TestSubmitStream(unittest.IsolatedAsyncioTestCase):
+class TestSubmitStream(_AsyncioTestCase):
     async def test_returns_async_result_set(self):
         rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
         q = asyncio.Queue()
@@ -210,7 +251,7 @@ class TestSubmitStream(unittest.IsolatedAsyncioTestCase):
 # DSL integration via async_traversal()
 # ---------------------------------------------------------------------------
 
-class TestDSLIntegration(unittest.IsolatedAsyncioTestCase):
+class TestDSLIntegration(_AsyncioTestCase):
     async def test_g_v_to_list(self):
         rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
         _patch_submit(rc, values=[6])
@@ -270,7 +311,7 @@ class TestDSLIntegration(unittest.IsolatedAsyncioTestCase):
 # Lifecycle
 # ---------------------------------------------------------------------------
 
-class TestLifecycle(unittest.IsolatedAsyncioTestCase):
+class TestLifecycle(_AsyncioTestCase):
     async def test_close_delegates_to_client(self):
         rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
         rc._async_client.close = AsyncMock()
@@ -292,12 +333,13 @@ class TestLifecycle(unittest.IsolatedAsyncioTestCase):
                 raise ValueError("boom")
         rc._async_client.close.assert_awaited_once()
 
-    async def test_session_connection_rollback_on_close(self):
+    async def test_session_connection_does_not_rollback_on_close(self):
         rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE, session="sid")
         rc._async_client.close = AsyncMock()
         rc.rollback = AsyncMock()
         await rc.close()
-        rc.rollback.assert_awaited_once()
+        rc.rollback.assert_not_awaited()
+        rc._async_client.close.assert_awaited_once()
 
     async def test_is_closed_reflects_client_state(self):
         rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
@@ -311,7 +353,7 @@ class TestLifecycle(unittest.IsolatedAsyncioTestCase):
 # Transactions
 # ---------------------------------------------------------------------------
 
-class TestTransactions(unittest.IsolatedAsyncioTestCase):
+class TestTransactions(_AsyncioTestCase):
     async def test_commit_calls_client_submit(self):
         rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
         rs = _make_result_set([])
@@ -333,7 +375,7 @@ class TestTransactions(unittest.IsolatedAsyncioTestCase):
 # Session management
 # ---------------------------------------------------------------------------
 
-class TestSessionManagement(unittest.TestCase):
+class TestSessionManagement(_AsyncioTestCase):
     def test_create_session_returns_session_bound_connection(self):
         rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
         session_rc = rc.create_session()
@@ -350,13 +392,36 @@ class TestSessionManagement(unittest.TestCase):
         session_rc = rc.create_session()
         self.assertIsNot(rc, session_rc)
 
-    def test_remove_session_untracks_connection(self):
-        import asyncio
+    def test_create_session_forwards_connection_options(self):
+        rc = AsyncDriverRemoteConnection(
+            URL,
+            TRAVERSAL_SOURCE,
+            username="stephen",
+            password="password",
+            headers={"X-Custom": "val"},
+            enable_user_agent_on_connect=False,
+            enable_compression=True,
+            ping_interval=15,
+            query_timeout=10,
+        )
+        session_rc = rc.create_session()
+        self.assertEqual(session_rc._username, "stephen")
+        self.assertEqual(session_rc._password, "password")
+        self.assertEqual(session_rc._headers, {"X-Custom": "val"})
+        self.assertFalse(session_rc._enable_user_agent_on_connect)
+        self.assertTrue(session_rc._enable_compression)
+        self.assertEqual(session_rc._ping_interval, 15)
+        self.assertEqual(session_rc._query_timeout, 10)
+        self.assertEqual(session_rc._async_client._pool_size, 1)
+
+    async def test_remove_session_untracks_connection(self):
         rc = AsyncDriverRemoteConnection(URL, TRAVERSAL_SOURCE)
         session_rc = rc.create_session()
-        # Patch close so it doesn't try to actually connect
-        session_rc._async_client.close = lambda: asyncio.coroutine(lambda: None)()
+        session_rc._async_client.close = AsyncMock()
         self.assertIn(session_rc, rc._AsyncDriverRemoteConnection__spawned_sessions)
+        await rc.remove_session(session_rc)
+        self.assertNotIn(session_rc, rc._AsyncDriverRemoteConnection__spawned_sessions)
+        session_rc._async_client.close.assert_awaited_once()
 
 
 # ---------------------------------------------------------------------------

@@ -18,9 +18,9 @@
 #
 """Unit tests for the native-async WebSocket driver components.
 
-All tests use :class:`unittest.IsolatedAsyncioTestCase` so no extra
-test dependencies are required.  Network I/O is replaced with
-:mod:`unittest.mock` mocks throughout.
+All tests use unittest.IsolatedAsyncioTestCase so no extra
+test dependencies are required. Network I/O is replaced with
+unittest.mock mocks throughout.
 """
 import asyncio
 import unittest
@@ -34,6 +34,14 @@ from gremlin_python.driver.async_resultset import AsyncResultSet, _EXHAUSTED
 from gremlin_python.driver.async_connection import AsyncConnection
 from gremlin_python.driver.async_client import AsyncClient
 from gremlin_python.driver.protocol import GremlinServerError
+
+
+class _AsyncioTestCase(unittest.IsolatedAsyncioTestCase):
+    def run(self, result=None):
+        try:
+            return super().run(result)
+        finally:
+            asyncio.set_event_loop_policy(None)
 
 
 # ---------------------------------------------------------------------------
@@ -58,7 +66,7 @@ def _make_done_future(result=None, *, loop=None):
 # AsyncAiohttpWSTransport
 # ---------------------------------------------------------------------------
 
-class TestAsyncAiohttpWSTransport(unittest.IsolatedAsyncioTestCase):
+class TestAsyncAiohttpWSTransport(_AsyncioTestCase):
 
     async def _make_transport(self, **kwargs):
         t = AsyncAiohttpWSTransport(**kwargs)
@@ -136,6 +144,10 @@ class TestAsyncAiohttpWSTransport(unittest.IsolatedAsyncioTestCase):
         self.assertIn("ssl", transport._aiohttp_kwargs)
         self.assertNotIn("ssl_options", transport._aiohttp_kwargs)
         self.assertIs(transport._aiohttp_kwargs["ssl"], ssl_ctx)
+
+    async def test_enable_compression_sets_compress_15(self):
+        transport = AsyncAiohttpWSTransport(enable_compression=True)
+        self.assertEqual(transport._aiohttp_kwargs.get("compress"), 15)
 
     # ---- write -------------------------------------------------------------
 
@@ -233,7 +245,7 @@ class TestAsyncAiohttpWSTransport(unittest.IsolatedAsyncioTestCase):
 # AsyncGremlinServerWSProtocol
 # ---------------------------------------------------------------------------
 
-class TestAsyncGremlinServerWSProtocol(unittest.IsolatedAsyncioTestCase):
+class TestAsyncGremlinServerWSProtocol(_AsyncioTestCase):
 
     def _make_protocol(self):
         ser = MagicMock()
@@ -330,7 +342,7 @@ class TestAsyncGremlinServerWSProtocol(unittest.IsolatedAsyncioTestCase):
 # AsyncResultSet
 # ---------------------------------------------------------------------------
 
-class TestAsyncResultSet(unittest.IsolatedAsyncioTestCase):
+class TestAsyncResultSet(_AsyncioTestCase):
 
     def _make_rs(self, items=None, *, done=True):
         q = asyncio.Queue()
@@ -365,6 +377,17 @@ class TestAsyncResultSet(unittest.IsolatedAsyncioTestCase):
         fut.set_result(None)
         rs.future = fut
         self.assertEqual(await rs.all(), [1, 2, 3, 4])
+
+    async def test_one_followed_by_all_includes_cached_items(self):
+        q = asyncio.Queue()
+        q.put_nowait([1, 2, 3])
+        q.put_nowait([4, 5])
+        rs = AsyncResultSet(q, "req-1")
+        fut = asyncio.get_event_loop().create_future()
+        fut.set_result(None)
+        rs.future = fut
+        self.assertEqual(await rs.one(), 1)
+        self.assertEqual(await rs.all(), [2, 3, 4, 5])
 
     async def test_all_empty_stream(self):
         rs = self._make_rs(None)
@@ -407,7 +430,7 @@ class TestAsyncResultSet(unittest.IsolatedAsyncioTestCase):
 # AsyncConnection
 # ---------------------------------------------------------------------------
 
-class TestAsyncConnection(unittest.IsolatedAsyncioTestCase):
+class TestAsyncConnection(_AsyncioTestCase):
 
     def _make_conn(self):
         pool = asyncio.Queue()
@@ -471,6 +494,42 @@ class TestAsyncConnection(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(conn._inited)
         self.assertIsInstance(result_set, AsyncResultSet)
 
+    async def test_write_reconnects_when_transport_closed_before_write(self):
+        conn, transport, protocol, _ = self._make_conn()
+        conn._inited = True
+        transport.closed = True
+
+        msg = MagicMock()
+        msg.args = {}
+        transport.read = AsyncMock(return_value=b"data")
+
+        async def fake_data_received(_data, results):
+            req_id = list(results.keys())[0]
+            rs = results[req_id]
+            fut = asyncio.get_running_loop().create_future()
+            fut.set_result(None)
+            rs.future = fut
+            return 200
+
+        protocol.data_received = fake_data_received
+
+        await conn.write(msg)
+        transport.connect.assert_awaited_once()
+
+    async def test_write_does_not_retry_after_protocol_write_fails(self):
+        conn, _, protocol, pool = self._make_conn()
+        conn._inited = True
+        msg = MagicMock()
+        msg.args = {}
+        protocol.write = AsyncMock(side_effect=RuntimeError("socket drop"))
+
+        with self.assertRaises(RuntimeError):
+            await conn.write(msg)
+
+        protocol.write.assert_awaited_once()
+        self.assertEqual(pool.qsize(), 1)
+        self.assertFalse(conn._inited)
+
     async def test_receive_non_206_returns_conn_to_pool(self):
         conn, transport, protocol, pool = self._make_conn()
         conn._inited = True
@@ -512,7 +571,7 @@ class TestAsyncConnection(unittest.IsolatedAsyncioTestCase):
 # AsyncClient
 # ---------------------------------------------------------------------------
 
-class TestAsyncClient(unittest.IsolatedAsyncioTestCase):
+class TestAsyncClient(_AsyncioTestCase):
 
     def _make_client(self, **kwargs):
         # Patch the transport so no real network calls happen
@@ -596,6 +655,28 @@ class TestAsyncClient(unittest.IsolatedAsyncioTestCase):
         written_msg = mock_conn.write.call_args[0][0]
         self.assertEqual(written_msg.op, "bytecode")
         self.assertEqual(written_msg.processor, "traversal")
+
+    async def test_submit_does_not_retry_on_write_failure(self):
+        client, _ = self._make_client(pool_size=2)
+        conn1 = AsyncMock()
+        conn1.write = AsyncMock(side_effect=RuntimeError("write failed"))
+        conn2 = AsyncMock()
+        conn2.write = AsyncMock()
+        while not client._pool.empty():
+            client._pool.get_nowait()
+        client._pool.put_nowait(conn1)
+        client._pool.put_nowait(conn2)
+
+        with self.assertRaises(RuntimeError):
+            await client.submit("g.addV()")
+
+        conn1.write.assert_awaited_once()
+        conn2.write.assert_not_awaited()
+
+    async def test_enable_compression_passed_to_default_transport(self):
+        client = AsyncClient("ws://localhost:8182/gremlin", "g", enable_compression=True)
+        transport = client._transport_factory()
+        self.assertEqual(transport._aiohttp_kwargs.get("compress"), 15)
 
     async def test_close_drains_and_closes_connections(self):
         client, _ = self._make_client(pool_size=2)

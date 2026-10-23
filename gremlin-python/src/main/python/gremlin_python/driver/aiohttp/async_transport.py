@@ -29,37 +29,42 @@ if sys.version_info >= (3, 11):
 else:
     from async_timeout import timeout as _async_timeout
 
-__author__ = 'Apache TinkerPop (dev@tinkerpop.apache.org)'
-
-
 class AsyncAiohttpWSTransport(AbstractBaseTransport):
     """Native-async WebSocket transport built on aiohttp.
 
-    Unlike :class:`~gremlin_python.driver.aiohttp.transport.AiohttpTransport`,
-    every I/O method is a coroutine.  The transport does **not** create its own
-    event loop; callers must already be running inside one (``async def``
-    contexts, ``asyncio.run()``, etc.).
+    Unlike AiohttpTransport, every I/O method is a coroutine.  The transport
+    does not create its own event loop; callers must already be running inside
+    one (async def contexts, asyncio.run(), etc.).
 
     Parameters
     ----------
     read_timeout:
-        Maximum seconds to wait for a WebSocket frame.  ``None`` disables the
+        Maximum seconds to wait for a WebSocket frame.  None disables the
         timeout.
     write_timeout:
-        Maximum seconds to wait when sending a frame.  ``None`` disables the
+        Maximum seconds to wait when sending a frame.  None disables the
         timeout.
+    enable_compression:
+        Enable WebSocket per-message deflate compression (compress=15).
     **kwargs:
         Additional keyword arguments forwarded verbatim to
-        :meth:`aiohttp.ClientSession.ws_connect`.  ``max_content_length`` is
-        transparently remapped to ``max_msg_size``; ``ssl_options`` is
-        remapped to ``ssl``.
+        aiohttp.ClientSession.ws_connect.  max_content_length is
+        transparently remapped to max_msg_size; ssl_options is
+        remapped to ssl.
     """
 
-    def __init__(self, read_timeout=None, write_timeout=None, **kwargs):
+    def __init__(
+        self,
+        read_timeout=None,
+        write_timeout=None,
+        enable_compression=False,
+        **kwargs,
+    ):
         self._websocket = None
         self._client_session = None
         self._read_timeout = read_timeout
         self._write_timeout = write_timeout
+        self._enable_compression = enable_compression
         self._aiohttp_kwargs = kwargs
         if "max_content_length" in self._aiohttp_kwargs:
             self._aiohttp_kwargs["max_msg_size"] = self._aiohttp_kwargs.pop(
@@ -67,6 +72,8 @@ class AsyncAiohttpWSTransport(AbstractBaseTransport):
             )
         if "ssl_options" in self._aiohttp_kwargs:
             self._aiohttp_kwargs["ssl"] = self._aiohttp_kwargs.pop("ssl_options")
+        if self._enable_compression and "compress" not in self._aiohttp_kwargs:
+            self._aiohttp_kwargs["compress"] = 15
 
     async def connect(self, url, headers=None):
         """Open the WebSocket connection to *url*.
@@ -74,7 +81,7 @@ class AsyncAiohttpWSTransport(AbstractBaseTransport):
         Parameters
         ----------
         url:
-            WebSocket endpoint, e.g. ``ws://localhost:8182/gremlin``.
+            WebSocket endpoint, e.g. ws://localhost:8182/gremlin.
         headers:
             Optional extra HTTP headers sent during the WebSocket handshake.
         """
@@ -99,7 +106,7 @@ class AsyncAiohttpWSTransport(AbstractBaseTransport):
         """Receive the next WebSocket message and return its payload as bytes.
 
         Text frames are UTF-8 encoded before returning.  Close/error frames
-        raise :class:`RuntimeError`.
+        raise RuntimeError.
         """
         async with _async_timeout(self._read_timeout):
             msg = await self._websocket.receive()

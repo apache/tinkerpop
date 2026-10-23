@@ -3050,6 +3050,60 @@ that makes traversals a bit more concise.
 ['lop', 'lop', 'lop', 'vadas', 'josh', 'josh', 'josh', 'marko', 'marko', 'marko', 'peter', 'ripple']
 ----
 
+[[gremlin-python-async]]
+=== Asynchronous Usage
+
+Applications running inside an `asyncio` event loop can use `AsyncDriverRemoteConnection` and `async_traversal()`
+to execute traversals asynchronously without blocking the event loop:
+
+[source,python]
+----
+import asyncio
+from gremlin_python.driver.async_driver_remote_connection import AsyncDriverRemoteConnection
+from gremlin_python.driver.async_graph_traversal import async_traversal
+
+async def main():
+    async with AsyncDriverRemoteConnection('ws://localhost:8182/gremlin', 'g') as rc:
+        g = async_traversal().with_remote(rc)
+
+        # Terminal steps are coroutines and must be awaited
+        names = await g.V().has_label('person').values('name').to_list()
+        count = await g.V().count().next()
+        await g.add_v('person').property('name', 'saturn').iterate()
+
+        # Async iteration over results
+        async for vertex in g.V().has_label('person'):
+            print(vertex)
+
+        # Concurrent traversals over the shared connection pool
+        people, software = await asyncio.gather(
+            g.V().has_label('person').values('name').to_list(),
+            g.V().has_label('software').values('name').to_list(),
+        )
+
+asyncio.run(main())
+----
+
+Asynchronous transactions can be managed with an `async with` context manager (which commits on clean exit and rolls
+back if an exception is raised) or explicitly via `begin()`, `commit()`, and `rollback()`:
+
+[source,python]
+----
+async with await g.tx() as gtx:
+    await gtx.add_v('person').property('name', 'pluto').iterate()
+----
+
+For submitting Gremlin scripts or bytecode directly, `AsyncClient` provides an asynchronous counterpart to `Client`:
+
+[source,python]
+----
+from gremlin_python.driver.async_client import AsyncClient
+
+async with AsyncClient('ws://localhost:8182/gremlin', 'g') as client:
+    result_set = await client.submit('g.V().count()')
+    results = await result_set.all()
+----
+
 [[gremlin-python-differences]]
 === Differences
 
@@ -3084,15 +3138,17 @@ key.
 * The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
 no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
 `aggregate(local)` and then convert those results to something the client can use locally.
-* Use of the aiohttp library in the default transport requires the use of asyncio's event loop to run the async functions.
-This can be an issue in situations where the application calling Gremlin-Python is already using an event loop.
-Certain types of event loops can be patched using nest-asyncio which allows Gremlin-Python to proceed without an error like
-"Cannot run the event loop while another loop is running". This is the preferred approach to avoiding the issue and can be
+* Use of the aiohttp library in the synchronous `DriverRemoteConnection` default transport requires the use of asyncio's
+event loop to run the async functions. This can be an issue in situations where the application calling synchronous
+Gremlin-Python APIs is already using an event loop. For native `asyncio` applications, prefer
+<<gremlin-python-async,Asynchronous Usage>> (`AsyncDriverRemoteConnection` and `async_traversal()`). When using the
+synchronous API inside an event loop, certain types of event loops can be patched using nest-asyncio which allows
+Gremlin-Python to proceed without an error like "Cannot run the event loop while another loop is running". This can be
 enabled by passing `call_from_event_loop=True` to the `AiohttpTransport` class.
 
 +
-However, in situations where the loop cannot be patched (e.g. uvloop), then the current suggested workaround is to run
-Gremlin-Python in a separate thread. This is not ideal for asynchronous web servers as the number of concurrent connections
+However, in situations where the loop cannot be patched (e.g. uvloop) and the synchronous API must be used, then a
+workaround is to run Gremlin-Python in a separate thread. This is not ideal for asynchronous web servers as the number of concurrent connections
 will be limited by the number of threads the system can handle. The following snippet shows how Gremlin-Python can be called
 from asynchronous code using a thread.
 
@@ -3172,4 +3228,6 @@ Run the examples:
 python connections.py
 python basic_gremlin.py
 python modern_traversals.py
+python async_connections.py
+python async_traversals.py
 ----

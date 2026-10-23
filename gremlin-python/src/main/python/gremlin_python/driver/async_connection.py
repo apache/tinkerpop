@@ -25,48 +25,29 @@ from gremlin_python.driver.connection import Connection
 
 log = logging.getLogger("gremlinpython")
 
-__author__ = 'Apache TinkerPop (dev@tinkerpop.apache.org)'
-
-
-class InvalidatedConnectionError(Exception):
-    """Raised when a connection was reset during a request.
-
-    :class:`~gremlin_python.driver.async_client.AsyncClient` catches this and
-    retries the request on a fresh connection.
-    """
-
-
 class AsyncConnection(Connection):
-    """Native-async WebSocket connection with keepalive and auto-reconnect.
+    """Native-async WebSocket connection with keepalive.
 
-    Features beyond the sync :class:`~gremlin_python.driver.connection.Connection`:
+    Features beyond the synchronous Connection:
 
-    * **Ping keepalive** — a background :class:`asyncio.Task` sends a WebSocket
+    * Ping keepalive: a background asyncio.Task sends a WebSocket
       ping every *ping_interval* seconds to prevent the server or intermediate
       proxies from closing idle connections.
-    * **Auto-reconnect** — a ``ConnectionResetError`` during *write* triggers a
-      single reconnect + retry before giving up.
-    * **Invalidation signal** — a ``ConnectionResetError`` during *read* raises
-      :class:`InvalidatedConnectionError` so the client can transparently retry
-      the request on another connection.
 
     Parameters
     ----------
     url:
         WebSocket endpoint.
     traversal_source:
-        Gremlin traversal source name (e.g. ``"g"``).
+        Gremlin traversal source name (e.g. "g").
     protocol:
-        An :class:`~gremlin_python.driver.async_protocol.AsyncGremlinServerWSProtocol`
-        instance.
+        An AsyncGremlinServerWSProtocol instance.
     transport_factory:
-        Zero-argument callable returning an
-        :class:`~gremlin_python.driver.aiohttp.async_transport.AsyncAiohttpWSTransport`.
+        Zero-argument callable returning an AsyncAiohttpWSTransport.
     executor:
-        Ignored; present for API compatibility with
-        :class:`~gremlin_python.driver.connection.Connection`.
+        Ignored; present for API compatibility with Connection.
     pool:
-        The :class:`asyncio.Queue` that owns this connection.
+        The asyncio.Queue that owns this connection.
     headers:
         Extra HTTP headers sent during the WebSocket handshake.
     enable_user_agent_on_connect:
@@ -137,14 +118,13 @@ class AsyncConnection(Connection):
     # ------------------------------------------------------------------
 
     async def write(self, request_message):
-        """Send *request_message* and return an :class:`~gremlin_python.driver.async_resultset.AsyncResultSet`.
+        """Send *request_message* and return an AsyncResultSet.
 
-        Lazily connects on the first call.  On a ``ConnectionResetError``
-        during write, reconnects and retries once before propagating.
-        Returns as soon as the first response chunk arrives; a background
-        :class:`asyncio.Task` drains any remaining partial (206) chunks.
+        Lazily connects on the first call (or if the transport was closed
+        while idle).  Returns as soon as the first response chunk arrives; a
+        background asyncio.Task drains any remaining partial (206) chunks.
         """
-        if not self._inited:
+        if not self._inited or self._transport is None or self._transport.closed:
             await self.connect()
 
         if request_message.args.get("requestId"):
@@ -158,10 +138,10 @@ class AsyncConnection(Connection):
 
         try:
             await self._protocol.write(request_id, request_message)
-        except ConnectionResetError:
-            log.debug("Write failed on %s — reconnecting and retrying", self._url)
-            await self.connect()
-            await self._protocol.write(request_id, request_message)
+        except Exception:
+            self._inited = False
+            self._pool.put_nowait(self)
+            raise
 
         return await self._receive(result_set)
 
@@ -170,10 +150,6 @@ class AsyncConnection(Connection):
         try:
             data = await self._transport.read()
             status_code = await self._protocol.data_received(data, self._results)
-        except ConnectionResetError as exc:
-            self._inited = False
-            self._pool.put_nowait(self)
-            raise InvalidatedConnectionError(str(exc)) from exc
         except Exception:
             self._inited = False
             self._pool.put_nowait(self)
@@ -188,13 +164,13 @@ class AsyncConnection(Connection):
             async def _consume():
                 try:
                     while True:
-                        try:
-                            chunk = await self._transport.read()
-                            sc = await self._protocol.data_received(chunk, self._results)
-                        except ConnectionResetError as exc:
-                            raise InvalidatedConnectionError(str(exc)) from exc
+                        chunk = await self._transport.read()
+                        sc = await self._protocol.data_received(chunk, self._results)
                         if sc != 206:
                             break
+                except Exception:
+                    self._inited = False
+                    raise
                 finally:
                     self._pool.put_nowait(self)
 
