@@ -105,6 +105,11 @@ type DriverRemoteConnectionSettings struct {
 	// Default: false.
 	BulkResults bool
 
+	// RequestLanguage is the script engine (e.g. "gremlin-lang") requested for every traversal
+	// submitted through this connection. A language set on a traversal source with
+	// With("language", ...) takes precedence. When empty, "gremlin-lang" is sent.
+	RequestLanguage string
+
 	// MaxResponseHeaderBytes limits the number of response header bytes the client will
 	// read. Maps to http.Transport.MaxResponseHeaderBytes.
 	// Default: 0 (use net/http's default).
@@ -245,5 +250,10 @@ func (driver *DriverRemoteConnection) submitGremlinLang(gremlinLang *GremlinLang
 	if driver.isClosed {
 		return nil, newError(err0203SubmitGremlinLangToClosedConnectionError)
 	}
-	return driver.client.submitGremlinLang(gremlinLang)
+	builder := new(RequestOptionsBuilder)
+	if driver.settings.RequestLanguage != "" {
+		// applied first so a language set via With("language", ...) overrides it
+		builder.SetLanguage(driver.settings.RequestLanguage)
+	}
+	return driver.client.submitGremlinLangWithBuilder(gremlinLang, builder)
 }

@@ -44,6 +44,41 @@ class TestDriverRemoteConnection(object):
         bulked_results = g.with_("language", "gremlin-lang").with_("bulkResults", True).inject(1,2,3,2,1).to_list()
         assert 5 == len(bulked_results)
 
+    def test_language_set_on_connection(self, remote_connection):
+        connection = DriverRemoteConnection(remote_connection._url, 'gmodern', language='gremlin-lang')
+        try:
+            assert [1] == traversal().with_(connection).inject(1).to_list()
+        finally:
+            connection.close()
+
+    def test_connection_language_is_sent_to_server(self, remote_connection):
+        connection = DriverRemoteConnection(remote_connection._url, 'gmodern', language='no-such-engine')
+        try:
+            traversal().with_(connection).inject(1).to_list()
+            assert False
+        except GremlinServerError as err:
+            assert err.status_code == 400
+            assert 'Script engine [no-such-engine] is not available' in str(err)
+        finally:
+            connection.close()
+
+    def test_with_language_is_sent_to_server(self, remote_connection):
+        g = traversal().with_(remote_connection)
+        try:
+            g.with_('language', 'no-such-engine').inject(1).to_list()
+            assert False
+        except GremlinServerError as err:
+            assert err.status_code == 400
+            assert 'Script engine [no-such-engine] is not available' in str(err)
+
+    def test_with_language_overrides_connection_language(self, remote_connection):
+        connection = DriverRemoteConnection(remote_connection._url, 'gmodern', language='no-such-engine')
+        try:
+            g = traversal().with_(connection).with_('language', 'gremlin-lang')
+            assert [1] == g.inject(1).to_list()
+        finally:
+            connection.close()
+
     def test_extract_request_options(self, remote_connection):
         g = traversal().with_(remote_connection)
         t = g.with_("timeoutMillis", 1000).with_("batchSize", 100).V().count()

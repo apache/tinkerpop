@@ -35,9 +35,10 @@ class DriverRemoteConnection(RemoteConnection):
                  response_serializer=None, interceptors=None, auth=None,
                  enable_user_agent_on_connect=True,
                  bulk_results=False, pdt_registry=None, batch_size=None,
-                 **transport_kwargs):
+                 language=None, **transport_kwargs):
         log.info("Creating DriverRemoteConnection with url '%s'", str(url))
         self.__url = url
+        self.__language = language
         self.__traversal_source = traversal_source
         self.__max_connections = max_connections
         self.__max_workers = max_workers
@@ -70,14 +71,14 @@ class DriverRemoteConnection(RemoteConnection):
     def submit(self, gremlin_lang):
         log.debug("submit with gremlin lang script '%s'", gremlin_lang.get_gremlin())
         result_set = self._client.submit(gremlin_lang.get_gremlin(),
-                                         request_options=self.extract_request_options(gremlin_lang))
+                                         request_options=self._request_options(gremlin_lang))
         return RemoteTraversal(result_set)
 
     def submit_async(self, gremlin_lang):
         log.debug("submit_async with gremlin lang script '%s'", gremlin_lang.get_gremlin())
         future = Future()
         future_result_set = self._client.submit_async(gremlin_lang.get_gremlin(),
-                                                      request_options=self.extract_request_options(gremlin_lang))
+                                                      request_options=self._request_options(gremlin_lang))
 
         def cb(f):
             try:
@@ -91,6 +92,12 @@ class DriverRemoteConnection(RemoteConnection):
 
     def is_closed(self):
         return self._client.is_closed()
+
+    def _request_options(self, gremlin_lang):
+        request_options = self.extract_request_options(gremlin_lang)
+        if self.__language is not None and 'language' not in request_options:
+            request_options['language'] = self.__language
+        return request_options
 
     @staticmethod
     def extract_request_options(gremlin_lang):

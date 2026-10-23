@@ -219,6 +219,77 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
+        public async Task ShouldSendConnectionLanguage()
+        {
+            RequestMessage? capturedRequest = null;
+            var client = CreateCapturingClient(msg => capturedRequest = msg);
+            var connection = new DriverRemoteConnection(client, "g", language: "my-engine");
+
+            var gl = new GremlinLang();
+            gl.AddStep("V", Array.Empty<object>());
+
+            await connection.SubmitAsync<object, object>(gl);
+
+            Assert.NotNull(capturedRequest);
+            Assert.Equal("my-engine", capturedRequest!.Fields[Tokens.ArgsLanguage]);
+        }
+
+        [Fact]
+        public async Task ShouldSendLanguageFromOptionsStrategy()
+        {
+            RequestMessage? capturedRequest = null;
+            var client = CreateCapturingClient(msg => capturedRequest = msg);
+            var connection = new DriverRemoteConnection(client, "g");
+
+            var gl = new GremlinLang();
+            gl.AddStep("V", Array.Empty<object>());
+            gl.OptionsStrategies.Add(new OptionsStrategy(new Dictionary<string, object>
+            {
+                { Tokens.ArgsLanguage, "my-engine" }
+            }));
+
+            await connection.SubmitAsync<object, object>(gl);
+
+            Assert.NotNull(capturedRequest);
+            Assert.Equal("my-engine", capturedRequest!.Fields[Tokens.ArgsLanguage]);
+        }
+
+        [Fact]
+        public async Task ShouldPreferOptionsStrategyLanguageOverConnectionLanguage()
+        {
+            RequestMessage? capturedRequest = null;
+            var client = CreateCapturingClient(msg => capturedRequest = msg);
+            var connection = new DriverRemoteConnection(client, "g", language: "connection-engine");
+
+            var gl = new GremlinLang();
+            gl.AddStep("V", Array.Empty<object>());
+            gl.OptionsStrategies.Add(new OptionsStrategy(new Dictionary<string, object>
+            {
+                { Tokens.ArgsLanguage, "source-engine" }
+            }));
+
+            await connection.SubmitAsync<object, object>(gl);
+
+            Assert.NotNull(capturedRequest);
+            Assert.Equal("source-engine", capturedRequest!.Fields[Tokens.ArgsLanguage]);
+        }
+
+        [Fact]
+        public async Task ShouldSendLanguageSetWithWithOnTraversalSource()
+        {
+            RequestMessage? capturedRequest = null;
+            var client = CreateCapturingClient(msg => capturedRequest = msg);
+            var connection = new DriverRemoteConnection(client, "g", language: "connection-engine");
+            var g = AnonymousTraversalSource.Traversal().With(connection).With("language", "source-engine");
+
+            await g.V().Promise(t => t.ToList());
+
+            Assert.NotNull(capturedRequest);
+            Assert.Equal("source-engine", capturedRequest!.Fields[Tokens.ArgsLanguage]);
+            Assert.DoesNotContain("language", capturedRequest.Gremlin);
+        }
+
+        [Fact]
         public async Task ShouldYieldRawScalarFromNonBulkedResponse()
         {
             // A raw (non-bulked) scalar must be yielded directly, not cast-failed as a Traverser.

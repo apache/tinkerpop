@@ -42,6 +42,7 @@ namespace Gremlin.Net.Driver.Remote
     {
         private readonly IGremlinClient _client;
         private readonly string _traversalSource;
+        private readonly string? _language;
         private readonly ILogger<DriverRemoteConnection> _logger;
 
         /// <summary>
@@ -65,16 +66,22 @@ namespace Gremlin.Net.Driver.Remote
         ///     <see cref="GremlinClient" />.
         /// </param>
         /// <param name="pdtRegistry">An optional registry for PDT hydration.</param>
+        /// <param name="language">
+        ///     An optional script engine (e.g. "gremlin-lang") to request for every traversal submitted through this
+        ///     connection. A language set on a traversal source with <c>With("language", ...)</c> takes precedence.
+        /// </param>
         /// <exception cref="ArgumentNullException">Thrown when client is null.</exception>
         public DriverRemoteConnection(string host, int port, string traversalSource = "g",
             ILoggerFactory? loggerFactory = null,
             IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null,
-            PDTRegistry? pdtRegistry = null) : this(
+            PDTRegistry? pdtRegistry = null,
+            string? language = null) : this(
             new GremlinClient(new GremlinServer(host, port), loggerFactory: loggerFactory, interceptors: interceptors, pdtRegistry: pdtRegistry),
             traversalSource,
             logger: loggerFactory?.CreateLogger<DriverRemoteConnection>() ?? NullLogger<DriverRemoteConnection>.Instance)
         {
             PdtRegistry = pdtRegistry;
+            _language = language;
         }
 
         /// <summary>
@@ -83,12 +90,17 @@ namespace Gremlin.Net.Driver.Remote
         /// <param name="client">The <see cref="IGremlinClient" /> that will be used for the connection.</param>
         /// <param name="traversalSource">The name of the traversal source on the server to bind to.</param>
         /// <param name="pdtRegistry">An optional registry for PDT hydration.</param>
+        /// <param name="language">
+        ///     An optional script engine (e.g. "gremlin-lang") to request for every traversal submitted through this
+        ///     connection. A language set on a traversal source with <c>With("language", ...)</c> takes precedence.
+        /// </param>
         /// <exception cref="ArgumentNullException">Thrown when client or the traversalSource is null.</exception>
         public DriverRemoteConnection(IGremlinClient client, string traversalSource = "g",
-            PDTRegistry? pdtRegistry = null)
+            PDTRegistry? pdtRegistry = null, string? language = null)
             : this(client, traversalSource, logger: null)
         {
             PdtRegistry = pdtRegistry;
+            _language = language;
         }
 
         private DriverRemoteConnection(IGremlinClient client, string traversalSource,
@@ -140,6 +152,11 @@ namespace Gremlin.Net.Driver.Remote
             if (!requestMsg.HasField(Tokens.ArgsBulkResults))
             {
                 requestMsg.AddField(Tokens.ArgsBulkResults, true);
+            }
+
+            if (_language != null && !requestMsg.HasField(Tokens.ArgsLanguage))
+            {
+                requestMsg.AddLanguage(_language);
             }
 
             var resultSet = await _client.SubmitAsync<object>(requestMsg.Create(), cancellationToken)

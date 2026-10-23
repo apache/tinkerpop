@@ -74,6 +74,11 @@ export type ConnectionOptions = {
   batchSize?: number;
   /** Connection-level default for `bulkResults`, applied to every request unless overridden per-request. Defaults to `false`. */
   bulkResults?: boolean;
+  /**
+   * The script engine (e.g. `'gremlin-lang'`) requested for every traversal submitted through a
+   * `DriverRemoteConnection`. A language set with `with_('language', ...)` takes precedence.
+   */
+  language?: string;
   /** An optional logger (a logger object or a callback). Logging is disabled when unset. */
   logger?: Logger;
   interceptors?: RequestInterceptor | RequestInterceptor[];

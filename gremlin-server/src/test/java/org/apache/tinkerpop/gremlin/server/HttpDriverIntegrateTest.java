@@ -182,6 +182,57 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     }
 
     @Test
+    public void shouldSelectLanguageWithConnectionDefault() {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster, "g", "gremlin-lang"));
+            assertEquals(1, (int) g.inject(1).toList().get(0));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldSendConnectionLanguageToServer() {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster, "g", "no-such-engine"));
+            g.inject(1).toList();
+            fail("Expected exception for unavailable script engine");
+        } catch (Exception ex) {
+            assertThat(ex.getMessage(), containsString("Script engine [no-such-engine] is not available"));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldSendSourceLanguageToServer() {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster)).with("language", "no-such-engine");
+            g.inject(1).toList();
+            fail("Expected exception for unavailable script engine");
+        } catch (Exception ex) {
+            assertThat(ex.getMessage(), containsString("Script engine [no-such-engine] is not available"));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldPreferSourceLanguageOverConnectionDefault() {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster, "g", "no-such-engine")).
+                    with("language", "gremlin-lang");
+            assertEquals(1, (int) g.inject(1).toList().get(0));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
     public void shouldSubmitMultipleQueriesWithSameConnection() throws InterruptedException, ExecutionException {
         final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();

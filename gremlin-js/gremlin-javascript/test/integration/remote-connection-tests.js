@@ -24,7 +24,7 @@
 import assert from 'assert';
 import { Vertex } from '../../lib/structure/graph.js';
 import anon from '../../lib/process/anonymous-traversal.js';
-import { getConnection, getClient } from '../helper.js';
+import { getConnection, getClient, getDriverRemoteConnection, serverUrl } from '../helper.js';
 import {P} from "../../lib/process/traversal.js";
 
 let connection;
@@ -61,6 +61,41 @@ describe('DriverRemoteConnection', function () {
           assert.ok(err.statusCode === 400);
           assert.ok(err.statusException);
         });
+    });
+    describe('language', function () {
+      const notAvailable = err => {
+        assert.strictEqual(err.statusCode, 400);
+        assert.strictEqual(err.statusException, 'InvalidRequestException');
+        assert.match(err.statusMessage, /Script engine \[no-such-engine\] is not available/);
+        return true;
+      };
+
+      async function withLanguageConnection(language, fn) {
+        const conn = getDriverRemoteConnection(serverUrl, { traversalSource: 'gmodern', language });
+        try {
+          return await fn(anon.traversal().with_(conn));
+        } finally {
+          await conn.close();
+        }
+      }
+
+      it('should use the connection-level language', async function () {
+        const list = await withLanguageConnection('gremlin-lang', g => g.inject(1).toList());
+        assert.deepStrictEqual(list, [1]);
+      });
+      it('should send the connection-level language to the server', async function () {
+        await assert.rejects(withLanguageConnection('no-such-engine', g => g.inject(1).toList()), notAvailable);
+      });
+      it('should send the with_() language to the server', async function () {
+        await assert.rejects(
+          withLanguageConnection(undefined, g => g.with_('language', 'no-such-engine').inject(1).toList()),
+          notAvailable);
+      });
+      it('should let with_() override the connection-level language', async function () {
+        const list = await withLanguageConnection('no-such-engine',
+          g => g.with_('language', 'gremlin-lang').inject(1).toList());
+        assert.deepStrictEqual(list, [1]);
+      });
     });
     it('should iterate ordered results', async function () {
       const g = anon.traversal().with_(connection);

@@ -96,6 +96,46 @@ public class DriverRemoteConnectionTest {
         assertFalse(options.getParameters().get().contains("\"g\":"));
     }
 
+    @Test
+    public void shouldBuildRequestOptionsWithLanguageFromWith() {
+        final RequestOptions options = getRequestOptions(
+                g.with(Tokens.ARGS_LANGUAGE, "gremlin-lang").V().asAdmin().getGremlinLang());
+        assertEquals("gremlin-lang", options.getLanguage().get());
+    }
+
+    @Test
+    public void shouldSubmitTraversalWithConnectionLanguage() throws Exception {
+        final Client client = mockClient();
+        final DriverRemoteConnection connection = DriverRemoteConnection.using(client, "mySource", "gremlin-lang");
+
+        connection.submitAsync(g.V().asAdmin().getGremlinLang()).get();
+
+        final RequestOptions options = captureRequestOptions(client, "g.V()");
+        assertEquals("gremlin-lang", options.getLanguage().get());
+        assertTrue(options.getBulkResults().isPresent());
+    }
+
+    @Test
+    public void shouldPreferTraversalLanguageOverConnectionLanguage() throws Exception {
+        final Client client = mockClient();
+        final DriverRemoteConnection connection = DriverRemoteConnection.using(client, "mySource", "gremlin-lang");
+
+        connection.submitAsync(g.with(Tokens.ARGS_LANGUAGE, "gremlin-groovy").V().asAdmin().getGremlinLang()).get();
+
+        final RequestOptions options = captureRequestOptions(client, "g.V()");
+        assertEquals("gremlin-groovy", options.getLanguage().get());
+    }
+
+    @Test
+    public void shouldNotSetLanguageWhenNoneConfigured() throws Exception {
+        final Client client = mockClient();
+        final DriverRemoteConnection connection = DriverRemoteConnection.using(client, "mySource");
+
+        connection.submitAsync(g.V().asAdmin().getGremlinLang()).get();
+
+        assertFalse(captureRequestOptions(client, "g.V()").getLanguage().isPresent());
+    }
+
     private static Client mockClient() {
         final Client client = mock(Client.class);
         final ResultSet resultSet = mock(ResultSet.class);

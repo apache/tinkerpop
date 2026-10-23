@@ -249,6 +249,23 @@ NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults`
 to optimize result transfer. For direct `Client.Submit()` calls, set the connection-level `BulkResults` option to
 apply a default to every request, or set `bulkResults` per-request to override it.
 
+The `language` option selects the script engine that evaluates the traversal on the server. It can be set on the
+`TraversalSource` with `With()` or as a default for every traversal sent through a `DriverRemoteConnection` with the
+`RequestLanguage` setting. A value set with `With()` takes precedence over the connection default, and if neither is
+set `gremlin-lang` is used.
+
+[source,go]
+----
+// for traversals spawned from this TraversalSource
+g := gremlingo.Traversal_().With(remote).With("language", "gremlin-lang")
+
+// for all traversals sent through this connection
+remote, err := gremlingo.NewDriverRemoteConnection("http://localhost:8182/gremlin",
+  func(settings *gremlingo.DriverRemoteConnectionSettings) {
+    settings.RequestLanguage = "gremlin-lang"
+  })
+----
+
 anchor:go-imports[]
 [[gremlin-go-imports]]
 === Common Imports
@@ -295,6 +312,7 @@ can be passed to the `NewClient` or `NewDriverRemoteConnection` functions as con
 |Compression |The wire compression negotiated with the server (`gremlingo.CompressionNone` or `gremlingo.CompressionDeflate`). |gremlingo.CompressionDeflate
 |BatchSize |The connection-level default batch size used when a request does not specify one. |64
 |BulkResults |Connection-level default for `bulkResults`, applied to every request unless overridden per-request. The `DriverRemoteConnection` traversal path defaults to `true` regardless of this setting. |false
+|RequestLanguage |`DriverRemoteConnectionSettings` only. The script engine (e.g. `gremlin-lang`) requested for every traversal sent through the connection. A language set with `With("language", ...)` takes precedence. |`gremlin-lang`
 |MaxResponseHeaderBytes |Limit on the number of response header bytes the client will read. Maps to `http.Transport.MaxResponseHeaderBytes`. |0 (net/http default)
 |Proxy |Function returning the proxy URL to use for a request. When `nil`, uses `http.ProxyFromEnvironment`. |nil
 |EnableUserAgentOnConnect |Enables sending a user agent to the server during connection requests.
@@ -1082,6 +1100,20 @@ List<Vertex> vertices = g.with(Tokens.TIMEOUT_MILLIS, 500L).V().out("knows").toL
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `language`,
 `materializeProperties` and `timeoutMillis`. Use of `Tokens` to reference these options is preferred.
+
+The `language` option selects the script engine that evaluates the traversal on the server. It can be set on the
+`TraversalSource` with `with()` or as a default for every traversal sent through a `DriverRemoteConnection` by
+supplying it when the connection is created. A value set with `with()` takes precedence over the connection default,
+and if neither is set the server default applies.
+
+[source,java]
+----
+// for traversals spawned from this TraversalSource
+GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster)).with(Tokens.ARGS_LANGUAGE, "gremlin-lang");
+
+// for all traversals sent through this connection
+GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster, "g", "gremlin-lang"));
+----
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
 to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
@@ -2013,11 +2045,25 @@ const vertices = await g.with_('timeoutMillis', 500).V().out('knows').toList()
 ----
 
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`,
-`materializeProperties` and `timeoutMillis`.
+`language`, `materializeProperties` and `timeoutMillis`.
 
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
 to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
 set explicitly if desired.
+
+The `language` option selects the script engine that evaluates the traversal on the server. It can be set on the
+`TraversalSource` with `with_()` or as a default for every traversal sent through a `DriverRemoteConnection` with the
+`language` connection option. A value set with `with_()` takes precedence over the connection default, and if neither
+is set `gremlin-lang` is used.
+
+[source,javascript]
+----
+// for traversals spawned from this TraversalSource
+const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin')).with_('language', 'gremlin-lang');
+
+// for all traversals sent through this connection
+const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin', { language: 'gremlin-lang' }));
+----
 
 [[gremlin-javascript-imports]]
 === Common Imports
@@ -2094,6 +2140,7 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options.compression |String |Response compression codec, `'none'` or `'deflate'`. |'deflate'
 |options.batchSize |Number |Connection-level default that fills a request's `batchSize` when it is left unset. |64
 |options.bulkResults |Boolean |Connection-level default for `bulkResults`, applied to every request unless overridden per-request. The `DriverRemoteConnection` traversal path defaults to `true` regardless of this setting. |false
+|options.language |String |`DriverRemoteConnection` only. The script engine (e.g. `'gremlin-lang'`) requested for every traversal sent through the connection. A language set with `with_('language', ...)` takes precedence. |'gremlin-lang'
 |options.logger |Object/Function |A logger object (with `debug`/`info`/`warn`/`error` methods, e.g. `console`) or a `(level, message, ...args)` callback. |none (disabled)
 |options.interceptors |RequestInterceptor/RequestInterceptor[] |One or more functions that can modify the HTTP request before it is sent, run in order. |undefined
 |options.auth |RequestInterceptor |An auth interceptor that is always appended to the end of the interceptor list so it runs last. |undefined
@@ -2771,6 +2818,22 @@ class.
 NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
 to optimize result transfer. This does not apply to direct `GremlinClient.SubmitAsync()` calls, where `bulkResults`
 must be set explicitly if desired.
+
+The `language` option selects the script engine that evaluates the traversal on the server. It can be set on the
+`TraversalSource` with `With()` or as a default for every traversal sent through a `DriverRemoteConnection` by passing
+the `language` argument when it is created. A value set with `With()` takes precedence over the connection default,
+and if neither is set `gremlin-lang` is used.
+
+[source,csharp]
+----
+// for traversals spawned from this TraversalSource
+var g = AnonymousTraversalSource.Traversal().With(new DriverRemoteConnection("localhost", 8182))
+    .With(Tokens.ArgsLanguage, "gremlin-lang");
+
+// for all traversals sent through this connection
+var g = AnonymousTraversalSource.Traversal().With(
+    new DriverRemoteConnection("localhost", 8182, language: "gremlin-lang"));
+----
 
 [[gremlin-dotnet-imports]]
 === Common Imports
@@ -3479,6 +3542,20 @@ NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults`
 to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
 set explicitly if desired.
 
+The `language` option selects the script engine that evaluates the traversal on the server. It can be set on the
+`TraversalSource` with `with_()` or as a default for every traversal sent through a `DriverRemoteConnection` with the
+`language` keyword argument. A value set with `with_()` takes precedence over the connection default, and if neither
+is set the server default applies.
+
+[source,python]
+----
+# for traversals spawned from this TraversalSource
+g = traversal().with_(DriverRemoteConnection('http://localhost:8182/gremlin', 'g')).with_('language', 'gremlin-lang')
+
+# for all traversals sent through this connection
+g = traversal().with_(DriverRemoteConnection('http://localhost:8182/gremlin', 'g', language='gremlin-lang'))
+----
+
 anchor:python-imports[]
 [[gremlin-python-imports]]
 === Common Imports
@@ -3588,6 +3665,7 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|True
 |bulk_results |Enables bulking of results on the server. |False
+|language |`DriverRemoteConnection` only. The script engine (e.g. `'gremlin-lang'`) requested for every traversal sent through the connection. A language set with `with_('language', ...)` takes precedence. |`None`
 |pdt_registry |A `PDTRegistry` for hydrating and dehydrating <<gremlin-python-pdt,Provider Defined Types>>. |`None`
 |=========================================================
 

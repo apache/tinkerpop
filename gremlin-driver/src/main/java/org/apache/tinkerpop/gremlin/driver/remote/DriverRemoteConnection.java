@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.driver.remote;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
@@ -55,6 +56,8 @@ public class DriverRemoteConnection implements RemoteConnection {
     private transient Optional<Configuration> conf = Optional.empty();
 
     private final boolean attachElements;
+
+    private String language = null;
 
     // Default to SPI-discovered adapters so PDT dehydration works with zero configuration.
     // This performs a lightweight ServiceLoader scan; the serializer path does its own independent scan.
@@ -175,6 +178,32 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     /**
+     * Creates a {@link DriverRemoteConnection} from an existing {@link Cluster} instance where all traversals
+     * submitted through it request the specified script engine/language (e.g. {@code gremlin-lang}). A language set
+     * on an individual traversal source with {@code with("language", ...)} takes precedence over this default. When
+     * {@link #close()} is called, the {@link Cluster} is left open for the caller to close.
+     */
+    public static DriverRemoteConnection using(final Cluster cluster, final String remoteTraversalSourceName,
+                                               final String language) {
+        final DriverRemoteConnection connection = using(cluster, remoteTraversalSourceName);
+        connection.language = language;
+        return connection;
+    }
+
+    /**
+     * Creates a {@link DriverRemoteConnection} using an existing {@link Client} where all traversals submitted
+     * through it request the specified script engine/language. A language set on an individual traversal source with
+     * {@code with("language", ...)} takes precedence. The {@link Client} will not be closed on calls to
+     * {@link #close()}.
+     */
+    public static DriverRemoteConnection using(final Client client, final String remoteTraversalSourceName,
+                                               final String language) {
+        final DriverRemoteConnection connection = using(client, remoteTraversalSourceName);
+        connection.language = language;
+        return connection;
+    }
+
+    /**
      * Creates a {@link DriverRemoteConnection} using a new {@link Cluster} instance created from the supplied
      * configuration file. When {@link #close()} is called, this new {@link Cluster} is also closed. By default,
      * this method will bind the {@link RemoteConnection} to a graph on the server named "graph".
@@ -240,7 +269,11 @@ public class DriverRemoteConnection implements RemoteConnection {
         }
 
         try {
-            return client.submitAsync(gremlinLang.getGremlin(), getRequestOptions(gremlinLang))
+            RequestOptions options = getRequestOptions(gremlinLang);
+            if (language != null && !options.getLanguage().isPresent())
+                options = RequestOptions.Builder.from(options).language(language).create();
+
+            return client.submitAsync(gremlinLang.getGremlin(), options)
                     .thenApply(rs -> new DriverRemoteTraversal<>(rs, client, attachElements, conf));
         } catch (Exception ex) {
             throw new RemoteConnectionException(ex);
