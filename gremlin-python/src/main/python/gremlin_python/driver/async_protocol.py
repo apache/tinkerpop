@@ -29,16 +29,13 @@ from gremlin_python.driver.protocol import (
 
 log = logging.getLogger("gremlinpython")
 
-__author__ = 'Apache TinkerPop (dev@tinkerpop.apache.org)'
-
-
 class AsyncGremlinServerWSProtocol(GremlinServerWSProtocol):
-    """Async version of :class:`~gremlin_python.driver.protocol.GremlinServerWSProtocol`.
+    """Async version of GremlinServerWSProtocol.
 
-    Both :meth:`write` and :meth:`data_received` are coroutines that must be
-    awaited.  The transport assigned via :meth:`connection_made` must be an
-    :class:`~gremlin_python.driver.aiohttp.async_transport.AsyncAiohttpWSTransport`
-    (i.e. its ``write`` and ``read`` methods must be coroutines).
+    Both write() and data_received() are coroutines that must be awaited.
+    The transport assigned via connection_made() must be an
+    AsyncAiohttpWSTransport (i.e. its write and read methods must be
+    coroutines).
     """
 
     async def write(self, request_id, request_message):
@@ -55,8 +52,7 @@ class AsyncGremlinServerWSProtocol(GremlinServerWSProtocol):
         loop is not blocked by CPU-bound work.
 
         Returns the Gremlin Server response status code (200, 204, or 206).
-        Raises :class:`~gremlin_python.driver.protocol.GremlinServerError` for
-        error status codes.
+        Raises GremlinServerError for error status codes.
         """
         if message is None:
             log.error("Received empty message from server.")

@@ -58,12 +58,20 @@ _skip_if_no_server = unittest.skipUnless(
 )
 
 
+class _AsyncioTestCase(unittest.IsolatedAsyncioTestCase):
+    def run(self, result=None):
+        try:
+            return super().run(result)
+        finally:
+            asyncio.set_event_loop_policy(None)
+
+
 # ---------------------------------------------------------------------------
 # AsyncClient
 # ---------------------------------------------------------------------------
 
 @_skip_if_no_server
-class TestAsyncClientIntegration(unittest.IsolatedAsyncioTestCase):
+class TestAsyncClientIntegration(_AsyncioTestCase):
 
     async def asyncSetUp(self):
         self.client = AsyncClient(anonymous_url, "gmodern")
@@ -122,7 +130,7 @@ class TestAsyncClientIntegration(unittest.IsolatedAsyncioTestCase):
 # ---------------------------------------------------------------------------
 
 @_skip_if_no_server
-class TestAsyncRemoteConnectionDSL(unittest.IsolatedAsyncioTestCase):
+class TestAsyncRemoteConnectionDSL(_AsyncioTestCase):
 
     async def asyncSetUp(self):
         self.rc = AsyncDriverRemoteConnection(anonymous_url, "gmodern")
@@ -154,6 +162,12 @@ class TestAsyncRemoteConnectionDSL(unittest.IsolatedAsyncioTestCase):
 
     async def test_has_next_false(self):
         self.assertFalse(await self.g.V().has("name", "__nonexistent__").has_next())
+
+    async def test_has_next_does_not_consume_item(self):
+        t = self.g.V().has_label("person").values("name")
+        self.assertTrue(await t.has_next())
+        names = await t.to_list()
+        self.assertEqual(len(names), 4)
 
     async def test_iterate_returns_traversal(self):
         result = await self.g.V().iterate()
@@ -189,7 +203,7 @@ class TestAsyncRemoteConnectionDSL(unittest.IsolatedAsyncioTestCase):
 # ---------------------------------------------------------------------------
 
 @_skip_if_no_server
-class TestAsyncRemoteConnectionSubmit(unittest.IsolatedAsyncioTestCase):
+class TestAsyncRemoteConnectionSubmit(_AsyncioTestCase):
 
     async def asyncSetUp(self):
         self.rc = AsyncDriverRemoteConnection(anonymous_url, "gmodern")
@@ -231,7 +245,7 @@ class TestAsyncRemoteConnectionSubmit(unittest.IsolatedAsyncioTestCase):
 # ---------------------------------------------------------------------------
 
 @_skip_if_no_server
-class TestAsyncConcurrency(unittest.IsolatedAsyncioTestCase):
+class TestAsyncConcurrency(_AsyncioTestCase):
 
     async def asyncSetUp(self):
         self.rc = AsyncDriverRemoteConnection(anonymous_url, "gmodern")
@@ -260,7 +274,7 @@ class TestAsyncConcurrency(unittest.IsolatedAsyncioTestCase):
 # ---------------------------------------------------------------------------
 
 @_skip_if_no_server
-class TestAsyncContextManager(unittest.IsolatedAsyncioTestCase):
+class TestAsyncContextManager(_AsyncioTestCase):
 
     async def test_closes_on_normal_exit(self):
         async with AsyncDriverRemoteConnection(anonymous_url, "gmodern") as rc:
@@ -282,7 +296,7 @@ class TestAsyncContextManager(unittest.IsolatedAsyncioTestCase):
 # ---------------------------------------------------------------------------
 
 @_skip_if_no_server
-class TestAsyncTransaction(unittest.IsolatedAsyncioTestCase):
+class TestAsyncTransaction(_AsyncioTestCase):
 
     async def asyncSetUp(self):
         self.rc = AsyncDriverRemoteConnection(anonymous_url, "gtx")

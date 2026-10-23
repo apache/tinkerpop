@@ -18,7 +18,7 @@
 #
 """Async traversal layer for gremlin-python.
 
-Drop-in async replacement for the standard ``traversal()`` factory::
+Async counterpart for the standard traversal() factory::
 
     async with AsyncDriverRemoteConnection("ws://localhost:8182/gremlin", "g") as rc:
         g = async_traversal().with_remote(rc)
@@ -27,7 +27,7 @@ Drop-in async replacement for the standard ``traversal()`` factory::
         count  = await g.V().count().next()
         await  g.add_v("person").property("name", "saturn").iterate()
 
-        async with g.tx() as gtx:
+        async with await g.tx() as gtx:
             await gtx.add_v("person").property("name", "pluto").iterate()
             # commits on clean exit, rolls back on exception
 """
@@ -42,25 +42,22 @@ from gremlin_python.structure.graph import Graph
 
 log = logging.getLogger("gremlinpython")
 
-__author__ = 'Apache TinkerPop (dev@tinkerpop.apache.org)'
-
 
 # ---------------------------------------------------------------------------
 # Public factory
 # ---------------------------------------------------------------------------
 
 def async_traversal():
-    """Return an :class:`_AsyncAnonymousTraversalSource`.
+    """Return an _AsyncAnonymousTraversalSource.
 
-    Use in place of :func:`~gremlin_python.process.anonymous_traversal.traversal`
-    when working with :class:`~gremlin_python.driver.async_driver_remote_connection.AsyncDriverRemoteConnection`.
+    Use in place of traversal() when working with AsyncDriverRemoteConnection.
     """
     return _AsyncAnonymousTraversalSource()
 
 
 class _AsyncAnonymousTraversalSource:
     def with_remote(self, remote_connection):
-        """Bind *remote_connection* and return an :class:`AsyncGraphTraversalSource`."""
+        """Bind *remote_connection* and return an AsyncGraphTraversalSource."""
         return AsyncGraphTraversalSource(
             Graph(),
             AsyncTraversalStrategies(),
@@ -112,8 +109,8 @@ class AsyncRemoteStrategy(TraversalStrategy):
 class AsyncTraversal(Traversal):
     """Base traversal class that replaces blocking terminal steps with coroutines.
 
-    Concrete subclasses must be used with :class:`AsyncTraversalStrategies` so
-    that ``apply_strategies`` can be awaited inside ``__anext__``.
+    Concrete subclasses must be used with AsyncTraversalStrategies so that
+    apply_strategies() can be awaited inside __anext__().
     """
 
     # Prevent accidental sync iteration.
@@ -147,21 +144,21 @@ class AsyncTraversal(Traversal):
     # ------------------------------------------------------------------
 
     async def to_list(self):
-        """Execute the traversal and return all results as a :class:`list`."""
+        """Execute the traversal and return all results as a list."""
         results = []
         async for item in self:
             results.append(item)
         return results
 
     async def to_set(self):
-        """Execute the traversal and return all results as a :class:`set`."""
+        """Execute the traversal and return all results as a set."""
         return set(await self.to_list())
 
     async def next(self, amount=None):
         """Execute and return the first result, or the first *amount* results.
 
-        Raises :class:`StopAsyncIteration` when *amount* is ``None`` and the
-        result set is empty.
+        Raises StopAsyncIteration when *amount* is None and the result set is
+        empty.
         """
         if amount is None:
             return await self.__anext__()
@@ -176,29 +173,36 @@ class AsyncTraversal(Traversal):
     async def iterate(self):
         """Execute the traversal, discarding all results.
 
-        Use for write operations (``add_v``, ``add_e``, ``property``, …)
-        where no return value is needed.
-
-        Results are drained on the client side for compatibility with servers
-        that predate the ``discard()`` step (e.g. Neptune, TinkerPop < 3.8.0).
+        Use for write operations (add_v, add_e, property, ...) where no return
+        value is needed.
         """
-        async for _ in self:
-            pass
-        return self
+        self.bytecode.add_step("discard")
+        while True:
+            try:
+                await self.next_traverser()
+            except StopAsyncIteration:
+                return self
 
     async def has_next(self):
-        """Return ``True`` if the traversal produces at least one result."""
-        try:
-            await self.__anext__()
-            return True
-        except StopAsyncIteration:
-            return False
-
-    async def next_traverser(self):
-        """Return the next raw :class:`~gremlin_python.process.traversal.Traverser`."""
+        """Return True if the traversal produces at least one result."""
         if self.traversers is None:
             await self.traversal_strategies.apply_strategies(self)
-        return await self.traversers.__anext__()
+        if self.last_traverser is None:
+            try:
+                self.last_traverser = await self.traversers.__anext__()
+            except StopAsyncIteration:
+                return False
+        return self.last_traverser is not None and self.last_traverser.bulk > 0
+
+    async def next_traverser(self):
+        """Return the next raw Traverser."""
+        if self.traversers is None:
+            await self.traversal_strategies.apply_strategies(self)
+        if self.last_traverser is None:
+            return await self.traversers.__anext__()
+        temp = self.last_traverser
+        self.last_traverser = None
+        return temp
 
 
 # ---------------------------------------------------------------------------
@@ -208,23 +212,21 @@ class AsyncTraversal(Traversal):
 class AsyncGraphTraversal(GraphTraversal, AsyncTraversal):
     """Async graph traversal.
 
-    Inherits all Gremlin DSL steps from :class:`~gremlin_python.process.graph_traversal.GraphTraversal`
-    and async terminal steps from :class:`AsyncTraversal` via Python's MRO.
+    Inherits all Gremlin DSL steps from GraphTraversal and async terminal
+    steps from AsyncTraversal via Python's MRO.
 
-    MRO: AsyncGraphTraversal → GraphTraversal → AsyncTraversal → Traversal → object
+    MRO: AsyncGraphTraversal -> GraphTraversal -> AsyncTraversal -> Traversal -> object
 
-    Because ``GraphTraversal`` does not define terminal steps directly (it
-    inherits them from ``Traversal``), Python finds ``AsyncTraversal``\'s
-    async versions first in the MRO before reaching ``Traversal``\'s sync
-    versions.
+    Because GraphTraversal does not define terminal steps directly (it
+    inherits them from Traversal), Python finds AsyncTraversal's async
+    versions first in the MRO before reaching Traversal's sync versions.
     """
 
 
 class AsyncRemoteTraversal(AsyncTraversal):
-    """Holds the :class:`~gremlin_python.driver.async_resultset.AsyncResultSet`
-    returned by :meth:`~gremlin_python.driver.async_driver_remote_connection.AsyncDriverRemoteConnection.submit`.
+    """Holds the AsyncResultSet returned by AsyncDriverRemoteConnection.submit().
 
-    ``traversers`` is set directly to the result set; strategies are never
+    traversers is set directly to the result set; strategies are never
     applied (there is nothing to apply on an already-executed traversal).
     """
 
@@ -240,11 +242,11 @@ class AsyncRemoteTraversal(AsyncTraversal):
 class AsyncGraphTraversalSource(GraphTraversalSource):
     """Async traversal source.
 
-    All spawned traversals are :class:`AsyncGraphTraversal` instances.
-    Configuration steps (``with_bulk()``, ``with_path()``, …) return a new
-    :class:`AsyncGraphTraversalSource`.
+    All spawned traversals are AsyncGraphTraversal instances.
+    Configuration steps (with_bulk(), with_path(), ...) return a new
+    AsyncGraphTraversalSource.
 
-    Use :func:`async_traversal` to create one::
+    Use async_traversal() to create one::
 
         g = async_traversal().with_remote(rc)
     """
@@ -268,7 +270,7 @@ class AsyncGraphTraversalSource(GraphTraversalSource):
         )
 
     def get_graph_traversal(self):
-        """Return a fresh :class:`AsyncGraphTraversal` for this source."""
+        """Return a fresh AsyncGraphTraversal for this source."""
         return AsyncGraphTraversal(
             self.graph,
             self.traversal_strategies,
@@ -276,7 +278,7 @@ class AsyncGraphTraversalSource(GraphTraversalSource):
         )
 
     async def tx(self):
-        """Return an :class:`AsyncTransaction` for this connection.
+        """Return an AsyncTransaction for this connection.
 
         Raises if the connection is already session-bound.
         """
@@ -328,6 +330,11 @@ class AsyncTransaction:
 
     @property
     def is_open(self):
+        if (
+            self._session_connection is not None
+            and self._session_connection.is_closed()
+        ) or self._remote_connection.is_closed():
+            self._is_open = False
         return self._is_open
 
     @property
@@ -337,9 +344,9 @@ class AsyncTransaction:
         return self._gtx
 
     async def begin(self):
-        """Open a session and return a session-bound :class:`AsyncGraphTraversalSource`."""
+        """Open a session and return a session-bound AsyncGraphTraversalSource."""
         async with self._mutex:
-            if self._is_open:
+            if self.is_open:
                 raise Exception("Transaction is already open")
             self._session_connection = self._remote_connection.create_session()
             strategies = AsyncTraversalStrategies()
@@ -354,7 +361,7 @@ class AsyncTransaction:
     async def commit(self):
         """Commit the transaction and close the session."""
         async with self._mutex:
-            if not self._is_open:
+            if not self.is_open:
                 raise Exception("Transaction is not open")
             await self._session_connection.commit()
             await self._close_session()
@@ -362,7 +369,7 @@ class AsyncTransaction:
     async def rollback(self):
         """Roll back the transaction and close the session."""
         async with self._mutex:
-            if not self._is_open:
+            if not self.is_open:
                 raise Exception("Transaction is not open")
             await self._session_connection.rollback()
             await self._close_session()
@@ -370,7 +377,7 @@ class AsyncTransaction:
     async def close(self):
         """Close the session without committing or rolling back."""
         async with self._mutex:
-            if self._is_open:
+            if self.is_open:
                 await self._close_session()
 
     async def _close_session(self):
@@ -384,7 +391,7 @@ class AsyncTransaction:
         return await self.begin()
 
     async def __aexit__(self, exc_type, *_):
-        if not self._is_open:
+        if not self.is_open:
             return
         if exc_type is not None:
             await self.rollback()

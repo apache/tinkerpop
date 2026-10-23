@@ -56,6 +56,14 @@ from gremlin_python.process.traversal import Bytecode, Traverser
 URL = "ws://localhost:8182/gremlin"
 
 
+class _AsyncioTestCase(unittest.IsolatedAsyncioTestCase):
+    def run(self, result=None):
+        try:
+            return super().run(result)
+        finally:
+            asyncio.set_event_loop_policy(None)
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -68,7 +76,7 @@ def _make_async_result_set(values):
     """
     q = asyncio.Queue()
     if values:
-        q.put_nowait([Traverser(v) for v in values])
+        q.put_nowait([v if isinstance(v, Traverser) else Traverser(v) for v in values])
     rs = AsyncResultSet(q, "test-id")
     fut = MagicMock()
     fut.done.return_value = True
@@ -181,7 +189,7 @@ class TestMRO(unittest.TestCase):
 # AsyncTraversalStrategies
 # ---------------------------------------------------------------------------
 
-class TestAsyncTraversalStrategies(unittest.IsolatedAsyncioTestCase):
+class TestAsyncTraversalStrategies(_AsyncioTestCase):
     async def test_applies_async_strategy(self):
         called = []
 
@@ -213,7 +221,7 @@ class TestAsyncTraversalStrategies(unittest.IsolatedAsyncioTestCase):
 # AsyncRemoteStrategy
 # ---------------------------------------------------------------------------
 
-class TestAsyncRemoteStrategy(unittest.IsolatedAsyncioTestCase):
+class TestAsyncRemoteStrategy(_AsyncioTestCase):
     async def test_apply_sets_traversers(self):
         rc = _make_rc(values=["marko"])
         strategy = AsyncRemoteStrategy(rc)
@@ -246,7 +254,7 @@ class TestAsyncRemoteStrategy(unittest.IsolatedAsyncioTestCase):
 # Terminal steps — to_list
 # ---------------------------------------------------------------------------
 
-class TestToList(unittest.IsolatedAsyncioTestCase):
+class TestToList(_AsyncioTestCase):
     async def test_to_list_returns_unwrapped_values(self):
         rc = _make_rc(values=["marko", "vadas"])
         g = _make_g(rc)
@@ -278,7 +286,7 @@ class TestToList(unittest.IsolatedAsyncioTestCase):
 # Terminal steps — to_set
 # ---------------------------------------------------------------------------
 
-class TestToSet(unittest.IsolatedAsyncioTestCase):
+class TestToSet(_AsyncioTestCase):
     async def test_to_set_deduplicates(self):
         rc = _make_rc(values=["person", "person", "software"])
         g = _make_g(rc)
@@ -296,7 +304,7 @@ class TestToSet(unittest.IsolatedAsyncioTestCase):
 # Terminal steps — next
 # ---------------------------------------------------------------------------
 
-class TestNext(unittest.IsolatedAsyncioTestCase):
+class TestNext(_AsyncioTestCase):
     async def test_next_returns_first(self):
         rc = _make_rc(values=[42])
         g = _make_g(rc)
@@ -326,20 +334,20 @@ class TestNext(unittest.IsolatedAsyncioTestCase):
 # Terminal steps — iterate
 # ---------------------------------------------------------------------------
 
-class TestIterate(unittest.IsolatedAsyncioTestCase):
+class TestIterate(_AsyncioTestCase):
     async def test_iterate_returns_traversal(self):
         rc = _make_rc(values=[])
         g = _make_g(rc)
         result = await g.add_v("person").property("name", "test").iterate()
         self.assertIsInstance(result, AsyncGraphTraversal)
 
-    async def test_iterate_does_not_add_discard_step(self):
+    async def test_iterate_adds_discard_step(self):
         rc = _make_rc(values=[])
         g = _make_g(rc)
         t = g.add_v("person")
         await t.iterate()
         step_names = [s[0] for s in t.bytecode.step_instructions]
-        self.assertNotIn("discard", step_names)
+        self.assertIn("discard", step_names)
 
     async def test_iterate_calls_submit(self):
         rc = _make_rc(values=[])
@@ -352,7 +360,7 @@ class TestIterate(unittest.IsolatedAsyncioTestCase):
 # Terminal steps — has_next
 # ---------------------------------------------------------------------------
 
-class TestHasNext(unittest.IsolatedAsyncioTestCase):
+class TestHasNext(_AsyncioTestCase):
     async def test_has_next_true(self):
         rc = _make_rc(values=["marko"])
         g = _make_g(rc)
@@ -365,12 +373,37 @@ class TestHasNext(unittest.IsolatedAsyncioTestCase):
         result = await g.V().has("name", "nobody").has_next()
         self.assertFalse(result)
 
+    async def test_has_next_does_not_consume_item(self):
+        rc = _make_rc(values=["marko", "vadas"])
+        g = _make_g(rc)
+        t = g.V().values("name")
+        self.assertTrue(await t.has_next())
+        self.assertEqual(await t.next(), "marko")
+        self.assertTrue(await t.has_next())
+        self.assertEqual(await t.next(), "vadas")
+        self.assertFalse(await t.has_next())
+
+    async def test_has_next_idempotent_before_to_list(self):
+        rc = _make_rc(values=["marko", "vadas"])
+        g = _make_g(rc)
+        t = g.V().values("name")
+        self.assertTrue(await t.has_next())
+        self.assertTrue(await t.has_next())
+        self.assertEqual(await t.to_list(), ["marko", "vadas"])
+
+    async def test_has_next_with_bulk_greater_than_one(self):
+        rc = _make_rc(values=[Traverser("marko", bulk=3)])
+        g = _make_g(rc)
+        t = g.V().values("name")
+        self.assertTrue(await t.has_next())
+        self.assertEqual(await t.to_list(), ["marko", "marko", "marko"])
+
 
 # ---------------------------------------------------------------------------
 # Concurrent usage
 # ---------------------------------------------------------------------------
 
-class TestConcurrent(unittest.IsolatedAsyncioTestCase):
+class TestConcurrent(_AsyncioTestCase):
     async def test_gather_multiple_traversals(self):
         results_queue = [["marko", "vadas"], [6], ["knows", "created"]]
         call_index = 0
@@ -426,7 +459,7 @@ class TestGetGraphTraversalSource(unittest.TestCase):
 # AsyncTransaction
 # ---------------------------------------------------------------------------
 
-class TestAsyncTransaction(unittest.IsolatedAsyncioTestCase):
+class TestAsyncTransaction(_AsyncioTestCase):
     def _make_session_rc(self):
         """A parent RC that returns a session child on create_session()."""
         parent_rc = AsyncDriverRemoteConnection(URL, "g")
@@ -438,9 +471,13 @@ class TestAsyncTransaction(unittest.IsolatedAsyncioTestCase):
             _make_async_result_set([])))
         session_rc.commit = AsyncMock()
         session_rc.rollback = AsyncMock()
+        session_rc._async_client.close = AsyncMock()
 
-        parent_rc.create_session = lambda: session_rc
-        parent_rc.remove_session = AsyncMock()
+        def create_session():
+            parent_rc._AsyncDriverRemoteConnection__spawned_sessions.append(session_rc)
+            return session_rc
+
+        parent_rc.create_session = create_session
         return parent_rc, session_rc
 
     async def test_begin_returns_async_graph_traversal_source(self):
@@ -458,13 +495,15 @@ class TestAsyncTransaction(unittest.IsolatedAsyncioTestCase):
         await tx.begin()
         self.assertTrue(tx.is_open)
 
-    async def test_commit_closes_session(self):
+    async def test_commit_closes_session_without_rollback(self):
         parent_rc, session_rc = self._make_session_rc()
         g = _make_g(parent_rc)
         tx = await g.tx()
         await tx.begin()
         await tx.commit()
         session_rc.commit.assert_awaited_once()
+        session_rc.rollback.assert_not_awaited()
+        session_rc._async_client.close.assert_awaited_once()
         self.assertFalse(tx.is_open)
 
     async def test_rollback_closes_session(self):
@@ -474,6 +513,7 @@ class TestAsyncTransaction(unittest.IsolatedAsyncioTestCase):
         await tx.begin()
         await tx.rollback()
         session_rc.rollback.assert_awaited_once()
+        session_rc._async_client.close.assert_awaited_once()
         self.assertFalse(tx.is_open)
 
     async def test_context_manager_commits_on_success(self):
@@ -482,6 +522,7 @@ class TestAsyncTransaction(unittest.IsolatedAsyncioTestCase):
         async with await g.tx():
             pass
         session_rc.commit.assert_awaited_once()
+        session_rc.rollback.assert_not_awaited()
 
     async def test_context_manager_rolls_back_on_exception(self):
         parent_rc, session_rc = self._make_session_rc()
@@ -498,6 +539,26 @@ class TestAsyncTransaction(unittest.IsolatedAsyncioTestCase):
         await tx.begin()
         with self.assertRaises(Exception, msg="already open"):
             await tx.begin()
+
+    async def test_is_open_false_when_session_connection_closed_externally(self):
+        parent_rc, session_rc = self._make_session_rc()
+        g = _make_g(parent_rc)
+        tx = await g.tx()
+        await tx.begin()
+        self.assertTrue(tx.is_open)
+        session_rc._async_client._closed = True
+        self.assertFalse(tx.is_open)
+        with self.assertRaises(Exception):
+            await tx.commit()
+
+    async def test_is_open_false_when_parent_connection_closed_externally(self):
+        parent_rc, _ = self._make_session_rc()
+        g = _make_g(parent_rc)
+        tx = await g.tx()
+        await tx.begin()
+        self.assertTrue(tx.is_open)
+        parent_rc._async_client._closed = True
+        self.assertFalse(tx.is_open)
 
 
 if __name__ == "__main__":

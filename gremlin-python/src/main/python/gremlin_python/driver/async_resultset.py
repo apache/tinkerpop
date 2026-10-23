@@ -21,23 +21,19 @@ import queue
 
 from gremlin_python.driver.resultset import ResultSet
 
-__author__ = 'Apache TinkerPop (dev@tinkerpop.apache.org)'
-
 # Internal sentinel used to signal that the stream is exhausted.
 _EXHAUSTED = object()
 
 
 class AsyncResultSet(ResultSet):
-    """Result set backed by an :class:`asyncio.Queue` and an
-    :class:`asyncio.Future`.
+    """Result set backed by an asyncio.Queue and an asyncio.Future.
 
-    Consumption methods (:meth:`one`, :meth:`all`) are coroutines.  The class
-    also supports ``async for`` iteration.
+    Consumption methods (one, all) are coroutines.  The class also supports
+    async for iteration.
 
-    The ``future`` attribute **must** be set to a resolved
-    :class:`asyncio.Future` or a running :class:`asyncio.Task` by the owning
-    :class:`~gremlin_python.driver.async_connection.AsyncConnection` before
-    any consumption method is called.
+    The future attribute must be set to a resolved asyncio.Future or a
+    running asyncio.Task by the owning AsyncConnection before any
+    consumption method is called.
     """
 
     def __init__(self, stream, request_id):
@@ -92,11 +88,13 @@ class AsyncResultSet(ResultSet):
     # ------------------------------------------------------------------
 
     async def one(self):
-        """Return the next individual result or the ``_EXHAUSTED`` sentinel.
+        """Return the next individual result or the _EXHAUSTED sentinel.
 
-        Each server response chunk contains a list of items.  ``one()``
-        unpacks those lists so that each call returns exactly one item,
-        caching any extras for subsequent calls.
+        Unlike the synchronous ResultSet.one() which returns a full batch
+        list per server frame, AsyncResultSet.one() unpacks each server frame
+        so that each call (and each iteration of ``async for``) yields a
+        single item, caching any remaining items from the frame for
+        subsequent calls.
         """
         if not self._item_cache.empty():
             return self._item_cache.get_nowait()
@@ -116,7 +114,7 @@ class AsyncResultSet(ResultSet):
         return chunk
 
     async def _one_chunk(self):
-        """Return the next raw chunk (list) from the stream or ``_EXHAUSTED``.
+        """Return the next raw chunk (list) from the stream or _EXHAUSTED.
 
         Polls the stream queue while the background receive task is still
         running, yielding control for up to 100 ms between checks so that
@@ -139,6 +137,8 @@ class AsyncResultSet(ResultSet):
     async def all(self):
         """Collect every result and return them as a flat list."""
         results = []
+        while not self._item_cache.empty():
+            results.append(self._item_cache.get_nowait())
         while True:
             chunk = await self._one_chunk()
             if chunk is _EXHAUSTED:
