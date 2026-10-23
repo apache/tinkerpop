@@ -22,6 +22,7 @@ package gremlingo
 import (
 	"crypto/tls"
 	"errors"
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -406,15 +407,56 @@ func captureRequest(t *testing.T) (*Client, *RequestMessage) {
 }
 
 func TestRequestOptionsLanguage(t *testing.T) {
-	t.Run("With(language) reaches the request", func(t *testing.T) {
-		builder := applyOptionsConfig(new(RequestOptionsBuilder),
-			map[string]interface{}{"language": "gremlin-groovy"})
-		assert.Equal(t, "gremlin-groovy", MakeStringRequest("g.V()", "g", builder.Create()).Fields["language"])
-	})
-
 	t.Run("SubmitWithOptions sends the per-request language", func(t *testing.T) {
 		client, captured := captureRequest(t)
 		_, _ = client.SubmitWithOptions("g.V()", new(RequestOptionsBuilder).SetLanguage("gremlin-groovy").Create())
 		assert.Equal(t, "gremlin-groovy", captured.Fields["language"])
+	})
+}
+
+func TestApplyOptionsConfig(t *testing.T) {
+	t.Run("applies each supported option from a traversal's with()", func(t *testing.T) {
+		opts := applyOptionsConfig(new(RequestOptionsBuilder), map[string]interface{}{
+			"timeoutMillis":         1234,
+			"batchSize":             10,
+			"materializeProperties": "tokens",
+			"bulkResults":           false,
+			"language":              "gremlin-groovy",
+		}).Create()
+		assert.Equal(t, 1234, opts.timeoutMillis)
+		assert.Equal(t, 10, opts.batchSize)
+		assert.Equal(t, "tokens", opts.materializeProperties)
+		assert.Equal(t, false, *opts.bulkResults)
+		assert.Equal(t, "gremlin-groovy", opts.language)
+	})
+
+	t.Run("ignores a value whose type does not match the option", func(t *testing.T) {
+		// a mistyped with() value is dropped rather than panicking; the server applies its own default
+		opts := applyOptionsConfig(new(RequestOptionsBuilder), map[string]interface{}{
+			"timeoutMillis": "not-a-number",
+			"language":      42,
+		}).Create()
+		assert.Equal(t, 0, opts.timeoutMillis)
+		assert.Equal(t, "", opts.language)
+	})
+
+	t.Run("coerces non-int numeric values for numeric options", func(t *testing.T) {
+		// with() carries raw interface{} values, so a numeric option may arrive as int64 or float64;
+		// these are converted to int rather than dropped
+		for _, value := range []interface{}{500, int32(500), int64(500), float64(500)} {
+			opts := applyOptionsConfig(new(RequestOptionsBuilder),
+				map[string]interface{}{"timeoutMillis": value, "batchSize": value}).Create()
+			assert.Equal(t, 500, opts.timeoutMillis)
+			assert.Equal(t, 500, opts.batchSize)
+		}
+	})
+
+	t.Run("ignores numeric values that are not exact integers", func(t *testing.T) {
+		// fractional, non-finite and out-of-range values cannot be represented exactly as an int
+		for _, value := range []interface{}{500.5, math.NaN(), math.Inf(1), uint64(math.MaxUint64)} {
+			opts := applyOptionsConfig(new(RequestOptionsBuilder),
+				map[string]interface{}{"timeoutMillis": value}).Create()
+			assert.Equal(t, 0, opts.timeoutMillis, "value %v", value)
+		}
 	})
 }

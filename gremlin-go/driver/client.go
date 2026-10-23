@@ -21,9 +21,9 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"math"
 	"net/http"
 	"net/url"
-	"reflect"
 	"sync"
 	"time"
 
@@ -317,29 +317,91 @@ func (client *Client) submitGremlinLangWithBuilder(gremlinLang *GremlinLang, bui
 }
 
 func applyOptionsConfig(builder *RequestOptionsBuilder, config map[string]interface{}) *RequestOptionsBuilder {
-	builderValue := reflect.ValueOf(builder)
-
-	// Map configuration keys to setter method names.
-	// "parameters" is intentionally excluded because parameters are handled separately
-	// via SetParametersString in submitGremlinLang, and including it here would
-	// trigger the mutual exclusion panic between SetParameters and SetParametersString.
-	setterMap := map[string]string{
-		"timeoutMillis":         "SetTimeoutMillis",
-		"batchSize":             "SetBatchSize",
-		"materializeProperties": "SetMaterializeProperties",
-		"bulkResults":           "SetBulkResults",
-		"language":              "SetLanguage",
-	}
-
+	// Numeric options accept any numeric type holding an exact integer (see toInt), so an option supplied
+	// as int32, int64 or float64 is converted rather than dropped. A value that cannot be used for its option
+	// is ignored rather than rejected, so a mistyped with() value never panics. Two keys are deliberately not handled here:
+	//   - "parameters" is applied separately via SetParametersString in submitGremlinLangWithBuilder;
+	//     setting it here would trigger the SetParameters/SetParametersString mutual-exclusion panic.
+	//   - "g" is not accepted as a with() override by the HTTP API; the traversal source is set
+	//     through the client's TraversalSource.
 	for key, value := range config {
-		if methodName, exists := setterMap[key]; exists {
-			method := builderValue.MethodByName(methodName)
-			if method.IsValid() {
-				args := []reflect.Value{reflect.ValueOf(value)}
-				method.Call(args)
+		switch key {
+		case "timeoutMillis":
+			if n, ok := toInt(value); ok {
+				builder.SetTimeoutMillis(n)
+			}
+		case "batchSize":
+			if n, ok := toInt(value); ok {
+				builder.SetBatchSize(n)
+			}
+		case "materializeProperties":
+			if s, ok := value.(string); ok {
+				builder.SetMaterializeProperties(s)
+			}
+		case "bulkResults":
+			if b, ok := value.(bool); ok {
+				builder.SetBulkResults(b)
+			}
+		case "language":
+			if s, ok := value.(string); ok {
+				builder.SetLanguage(s)
 			}
 		}
 	}
 
 	return builder
+}
+
+// toInt converts the numeric types that can arrive through with() (values are raw interface{}) into an int, so
+// an option supplied as, for example, an int64 or float64 is accepted rather than dropped. It reports false for
+// non-numeric values and for values that cannot be represented exactly as an int: non-finite or fractional
+// floats and integers outside the int range.
+func toInt(value interface{}) (int, bool) {
+	switch n := value.(type) {
+	case int:
+		return n, true
+	case int8:
+		return int(n), true
+	case int16:
+		return int(n), true
+	case int32:
+		return int(n), true
+	case int64:
+		if n < math.MinInt || n > math.MaxInt {
+			return 0, false
+		}
+		return int(n), true
+	case uint:
+		return uintToInt(uint64(n))
+	case uint8:
+		return int(n), true
+	case uint16:
+		return int(n), true
+	case uint32:
+		return uintToInt(uint64(n))
+	case uint64:
+		return uintToInt(n)
+	case float32:
+		return floatToInt(float64(n))
+	case float64:
+		return floatToInt(n)
+	default:
+		return 0, false
+	}
+}
+
+func uintToInt(n uint64) (int, bool) {
+	if n > uint64(math.MaxInt) {
+		return 0, false
+	}
+	return int(n), true
+}
+
+func floatToInt(f float64) (int, bool) {
+	// -float64(math.MinInt) is 2^63 (2^31 on 32-bit platforms), the first value past the int range
+	if math.IsNaN(f) || math.IsInf(f, 0) || f != math.Trunc(f) ||
+		f < float64(math.MinInt) || f >= -float64(math.MinInt) {
+		return 0, false
+	}
+	return int(f), true
 }
