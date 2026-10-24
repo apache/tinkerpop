@@ -201,17 +201,23 @@ class AsyncClient(Client):
         self._closed = True
 
     async def _close_session(self):
-        message = request.RequestMessage(
-            processor="session",
-            op="close",
-            args={"session": str(self._session)},
-        )
+        if self._pool.empty():
+            return
         conn = await self._pool.get()
         try:
+            if not conn._inited or conn._transport.closed:
+                return
+            message = request.RequestMessage(
+                processor="session",
+                op="close",
+                args={"session": str(self._session)},
+            )
             result_set = await conn.write(message)
             await result_set.all()
-        except protocol.GremlinServerError:
+        except Exception:
             pass
+        finally:
+            await conn.close()
 
     # ------------------------------------------------------------------
     # Context manager
