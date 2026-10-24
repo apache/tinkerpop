@@ -184,6 +184,16 @@ class TestMRO(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             next(g.V())
 
+    def test_clone_returns_async_graph_traversal(self):
+        import inspect
+        g = _make_g(_make_rc())
+        t1 = g.V().has_label("person")
+        t2 = t1.clone()
+        self.assertIsInstance(t2, AsyncGraphTraversal)
+        self.assertIsNot(t1.bytecode, t2.bytecode)
+        self.assertEqual(t1.bytecode, t2.bytecode)
+        self.assertTrue(inspect.iscoroutinefunction(t2.to_list))
+
 
 # ---------------------------------------------------------------------------
 # AsyncTraversalStrategies

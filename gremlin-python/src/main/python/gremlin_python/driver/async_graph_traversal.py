@@ -32,6 +32,7 @@ Async counterpart for the standard traversal() factory::
             # commits on clean exit, rolls back on exception
 """
 import asyncio
+import copy
 import logging
 
 from gremlin_python.process.graph_traversal import GraphTraversal, GraphTraversalSource
@@ -221,6 +222,9 @@ class AsyncGraphTraversal(GraphTraversal, AsyncTraversal):
     inherits them from Traversal), Python finds AsyncTraversal's async
     versions first in the MRO before reaching Traversal's sync versions.
     """
+
+    def clone(self):
+        return AsyncGraphTraversal(self.graph, self.traversal_strategies, copy.deepcopy(self.bytecode))
 
 
 class AsyncRemoteTraversal(AsyncTraversal):
