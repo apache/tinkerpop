@@ -90,10 +90,11 @@ class AsyncConnection(Connection):
         if self._ping_task is not None:
             self._ping_task.cancel()
             self._ping_task = None
-        if self._inited:
+        if self._transport is not None:
             # asyncio.shield protects the close coroutine from cancellation so
             # the underlying transport is always cleanly shut down.
             await asyncio.shield(self._transport.close())
+            self._inited = False
 
     # ------------------------------------------------------------------
     # Keepalive
@@ -125,7 +126,12 @@ class AsyncConnection(Connection):
         background asyncio.Task drains any remaining partial (206) chunks.
         """
         if not self._inited or self._transport is None or self._transport.closed:
-            await self.connect()
+            try:
+                await self.connect()
+            except BaseException:
+                self._inited = False
+                self._pool.put_nowait(self)
+                raise
 
         if request_message.args.get("requestId"):
             request_id = str(request_message.args["requestId"])
@@ -138,7 +144,7 @@ class AsyncConnection(Connection):
 
         try:
             await self._protocol.write(request_id, request_message)
-        except Exception:
+        except BaseException:
             self._inited = False
             self._pool.put_nowait(self)
             raise
@@ -150,7 +156,7 @@ class AsyncConnection(Connection):
         try:
             data = await self._transport.read()
             status_code = await self._protocol.data_received(data, self._results)
-        except Exception:
+        except BaseException:
             self._inited = False
             self._pool.put_nowait(self)
             raise

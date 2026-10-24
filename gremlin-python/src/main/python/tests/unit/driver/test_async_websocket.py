@@ -96,12 +96,14 @@ class TestAsyncAiohttpWSTransport(_AsyncioTestCase):
 
         mock_session = MagicMock()
         mock_session.ws_connect = AsyncMock(side_effect=err)
+        mock_session.close = AsyncMock()
         mock_session.closed = False
 
         with patch("aiohttp.ClientSession", return_value=mock_session):
             with self.assertRaises(Exception) as ctx:
                 await transport.connect("ws://localhost:8182/gremlin")
         self.assertIn("403", str(ctx.exception))
+        mock_session.close.assert_awaited_once()
 
     async def test_connect_non_403_reraises(self):
         transport = await self._make_transport()
@@ -110,11 +112,13 @@ class TestAsyncAiohttpWSTransport(_AsyncioTestCase):
 
         mock_session = MagicMock()
         mock_session.ws_connect = AsyncMock(side_effect=err)
+        mock_session.close = AsyncMock()
         mock_session.closed = False
 
         with patch("aiohttp.ClientSession", return_value=mock_session):
             with self.assertRaises(aiohttp.ClientResponseError):
                 await transport.connect("ws://localhost:8182/gremlin")
+        mock_session.close.assert_awaited_once()
 
     async def test_connect_forwards_extra_kwargs(self):
         transport = await self._make_transport(max_msg_size=1024)
@@ -516,6 +520,19 @@ class TestAsyncConnection(_AsyncioTestCase):
         await conn.write(msg)
         transport.connect.assert_awaited_once()
 
+    async def test_write_returns_conn_to_pool_when_lazy_connect_fails(self):
+        conn, transport, _, pool = self._make_conn()
+        conn._inited = False
+        msg = MagicMock()
+        msg.args = {}
+        transport.connect = AsyncMock(side_effect=ConnectionError("cannot connect"))
+
+        with self.assertRaises(ConnectionError):
+            await conn.write(msg)
+
+        self.assertEqual(pool.qsize(), 1)
+        self.assertFalse(conn._inited)
+
     async def test_write_does_not_retry_after_protocol_write_fails(self):
         conn, _, protocol, pool = self._make_conn()
         conn._inited = True
@@ -713,6 +730,21 @@ class TestAsyncClient(_AsyncioTestCase):
                 "ws://localhost:8182/gremlin", "g",
                 session=uuid.uuid4(), pool_size=2
             )
+
+    async def test_session_close_skips_write_when_conn_not_inited(self):
+        import uuid
+        client, _ = self._make_client(session=uuid.uuid4())
+        conn = client._pool.get_nowait()
+        conn._inited = False
+        conn.write = AsyncMock()
+        conn.close = AsyncMock()
+        client._pool.put_nowait(conn)
+
+        await client.close()
+
+        conn.write.assert_not_awaited()
+        conn.close.assert_awaited_once()
+        self.assertTrue(client.is_closed())
 
 
 if __name__ == "__main__":

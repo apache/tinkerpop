@@ -365,6 +365,21 @@ class TestIterate(_AsyncioTestCase):
         await g.add_v("planet").property("name", "saturn").iterate()
         rc.submit.assert_awaited_once()
 
+    async def test_iterate_retry_after_failure_does_not_duplicate_discard(self):
+        rc = _make_rc(values=[])
+        healthy_traversal = rc.submit.return_value
+        rc.submit.side_effect = [ConnectionError("transient"), healthy_traversal]
+        g = _make_g(rc)
+        t = g.add_v("person")
+        with self.assertRaises(ConnectionError):
+            await t.iterate()
+        self.assertIsNone(t.traversers)
+        await t.iterate()
+        discard_steps = [s[0] for s in t.bytecode.step_instructions if s[0] == "discard"]
+        self.assertEqual(len(discard_steps), 1)
+        self.assertEqual(rc.submit.await_count, 2)
+
+
 
 # ---------------------------------------------------------------------------
 # Terminal steps — has_next

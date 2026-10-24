@@ -129,16 +129,23 @@ class AsyncTraversal(Traversal):
         return self
 
     async def __anext__(self):
-        if self.traversers is None:
-            await self.traversal_strategies.apply_strategies(self)
-        if self.last_traverser is None:
-            # StopAsyncIteration propagates naturally when the result set is exhausted.
-            self.last_traverser = await self.traversers.__anext__()
-        obj = self.last_traverser.object
-        self.last_traverser.bulk -= 1
-        if self.last_traverser.bulk <= 0:
+        try:
+            if self.traversers is None:
+                await self.traversal_strategies.apply_strategies(self)
+            if self.last_traverser is None:
+                # StopAsyncIteration propagates naturally when the result set is exhausted.
+                self.last_traverser = await self.traversers.__anext__()
+            obj = self.last_traverser.object
+            self.last_traverser.bulk -= 1
+            if self.last_traverser.bulk <= 0:
+                self.last_traverser = None
+            return obj
+        except StopAsyncIteration:
+            raise
+        except BaseException:
+            self.traversers = None
             self.last_traverser = None
-        return obj
+            raise
 
     # ------------------------------------------------------------------
     # Async terminal steps
@@ -177,7 +184,11 @@ class AsyncTraversal(Traversal):
         Use for write operations (add_v, add_e, property, ...) where no return
         value is needed.
         """
-        self.bytecode.add_step("discard")
+        if (
+            not self.bytecode.step_instructions
+            or self.bytecode.step_instructions[-1][0] != "discard"
+        ):
+            self.bytecode.add_step("discard")
         while True:
             try:
                 await self.next_traverser()
@@ -186,24 +197,36 @@ class AsyncTraversal(Traversal):
 
     async def has_next(self):
         """Return True if the traversal produces at least one result."""
-        if self.traversers is None:
-            await self.traversal_strategies.apply_strategies(self)
-        if self.last_traverser is None:
-            try:
-                self.last_traverser = await self.traversers.__anext__()
-            except StopAsyncIteration:
-                return False
-        return self.last_traverser is not None and self.last_traverser.bulk > 0
+        try:
+            if self.traversers is None:
+                await self.traversal_strategies.apply_strategies(self)
+            if self.last_traverser is None:
+                try:
+                    self.last_traverser = await self.traversers.__anext__()
+                except StopAsyncIteration:
+                    return False
+            return self.last_traverser is not None and self.last_traverser.bulk > 0
+        except BaseException:
+            self.traversers = None
+            self.last_traverser = None
+            raise
 
     async def next_traverser(self):
         """Return the next raw Traverser."""
-        if self.traversers is None:
-            await self.traversal_strategies.apply_strategies(self)
-        if self.last_traverser is None:
-            return await self.traversers.__anext__()
-        temp = self.last_traverser
-        self.last_traverser = None
-        return temp
+        try:
+            if self.traversers is None:
+                await self.traversal_strategies.apply_strategies(self)
+            if self.last_traverser is None:
+                return await self.traversers.__anext__()
+            temp = self.last_traverser
+            self.last_traverser = None
+            return temp
+        except StopAsyncIteration:
+            raise
+        except BaseException:
+            self.traversers = None
+            self.last_traverser = None
+            raise
 
 
 # ---------------------------------------------------------------------------

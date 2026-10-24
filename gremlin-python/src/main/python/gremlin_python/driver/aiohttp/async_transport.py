@@ -91,10 +91,14 @@ class AsyncAiohttpWSTransport(AbstractBaseTransport):
                 url, headers=headers, **self._aiohttp_kwargs
             )
         except ClientResponseError as err:
+            await self._client_session.close()
             if err.status == 403:
                 raise Exception(
                     "Failed to connect to server: HTTP Error code 403 - Forbidden."
                 )
+            raise
+        except BaseException:
+            await self._client_session.close()
             raise
 
     async def write(self, message):
