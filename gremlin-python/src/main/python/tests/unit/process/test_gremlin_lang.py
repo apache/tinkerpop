@@ -23,7 +23,8 @@ import uuid
 
 from gremlin_python.process.strategies import ReadOnlyStrategy, SubgraphStrategy, OptionsStrategy, PartitionStrategy
 from gremlin_python.process.traversal import within, eq, T, Order, Scope, Column, Operator, P, Pop, Cardinality, \
-    between, inside, WithOptions, ShortestPath, starting_with, ending_with, containing, gt, lte, GValue
+    between, inside, WithOptions, ShortestPath, starting_with, ending_with, containing, gt, lte, GValue, Merge, \
+    CardinalityValue
 from gremlin_python.statics import SingleByte, short, long, bigint, BigDecimal, SingleChar
 from gremlin_python.structure.graph import Graph, Vertex
 from gremlin_python.process.anonymous_traversal import traversal
@@ -482,6 +483,35 @@ class TestGremlinLang(object):
             gremlin_lang = tests[t][0].gremlin_lang.get_gremlin()
             assert gremlin_lang == tests[t][1]
 
+    def test_binary_arg_rendering(self):
+        g = traversal().with_(None)
+
+        # Binary: bytes render as Binary("<base64>") via GremlinLang._arg_as_string
+        assert g.inject(b'\x01\x02').gremlin_lang.get_gremlin() == "g.inject(Binary(\"AQI=\"))"
+        assert g.V().constant(b'hello').gremlin_lang.get_gremlin() == "g.V().constant(Binary(\"aGVsbG8=\"))"
+
+    def test_duration_arg_rendering(self):
+        g = traversal().with_(None)
+
+        # Duration: positive timedelta renders as Duration(seconds,nanos)
+        assert g.V().constant(timedelta(days=1, hours=2, minutes=3, seconds=4)).gremlin_lang.get_gremlin() == \
+               "g.V().constant(Duration(93784,0))"
+        # positive duration with sub-second (microseconds -> nanos) component
+        assert g.V().constant(timedelta(seconds=5, microseconds=500000)).gremlin_lang.get_gremlin() == \
+               "g.V().constant(Duration(5,500000000))"
+        # negative timedelta renders with the 3-arg negative form Duration(seconds,nanos,false)
+        assert g.V().constant(timedelta(hours=-2)).gremlin_lang.get_gremlin() == \
+               "g.V().constant(Duration(7200,0,false))"
+        # mixed-sign timedelta normalizes to an overall negative duration
+        assert g.V().constant(timedelta(days=-1, hours=2)).gremlin_lang.get_gremlin() == \
+               "g.V().constant(Duration(79200,0,false))"
+
+    def test_subgraph_step_rendering(self):
+        g = traversal().with_(None)
+
+        # subgraph side-effect step
+        assert g.E().subgraph('sg').gremlin_lang.get_gremlin() == "g.E().subgraph('sg')"
+
     def test_gvalue_name_cannot_be_null(self):
         try:
             GValue(None, [1, 2, 3])
@@ -708,6 +738,142 @@ class TestGremlinLang(object):
         assert ("g.match('" + query + "')") == g.match(query).gremlin_lang.get_gremlin()
         params = {'name': 'marko'}
         assert ("g.match('" + query + "',['name':'marko'])") == g.match(query, params).gremlin_lang.get_gremlin()
+
+    def test_multi_label_steps(self):
+        g = traversal().with_(None)
+
+        tests = list()
+        # labels() step
+        tests.append([g.V().labels(),
+                      "g.V().labels()"])
+        # addLabel() step - single and multiple labels
+        tests.append([g.V().add_label('a'),
+                      "g.V().addLabel('a')"])
+        tests.append([g.V().add_label('a', 'b'),
+                      "g.V().addLabel('a','b')"])
+        # addLabel() carrying a child traversal argument
+        tests.append([g.V().add_label(__.values('lbl')),
+                      "g.V().addLabel(__.values('lbl'))"])
+        # dropLabel() step - single and multiple labels
+        tests.append([g.V().drop_label('a'),
+                      "g.V().dropLabel('a')"])
+        tests.append([g.V().drop_label('a', 'b'),
+                      "g.V().dropLabel('a','b')"])
+        # dropLabels() step (drops all labels)
+        tests.append([g.V().drop_labels(),
+                      "g.V().dropLabels()"])
+        # with('multilabel') applied together with elementMap()/valueMap()
+        tests.append([g.V().element_map().with_('multilabel'),
+                      "g.V().elementMap().with('multilabel')"])
+        tests.append([g.V().value_map().with_('multilabel'),
+                      "g.V().valueMap().with('multilabel')"])
+        # multi-label addV using label varargs
+        tests.append([g.add_v('a', 'b'),
+                      "g.addV('a','b')"])
+        # multi-label mergeV using a list-valued T.label in the merge map
+        tests.append([g.merge_v({T.label: ['a', 'b']}),
+                      "g.mergeV([(T.label):['a','b']])"])
+
+        for t in range(len(tests)):
+            gremlin_lang = tests[t][0].gremlin_lang.get_gremlin()
+            assert gremlin_lang == tests[t][1]
+
+    def test_child_traversal_arguments(self):
+        g = traversal().with_(None)
+
+        tests = list()
+        # Steps taking a child traversal as an argument
+        tests.append([g.V().has('k', __.out()),
+                      "g.V().has('k',__.out())"])
+        tests.append([g.V().has_label(__.values('x')),
+                      "g.V().hasLabel(__.values('x'))"])
+        tests.append([g.V().is_(__.constant(1)),
+                      "g.V().is(__.constant(1))"])
+        tests.append([g.V().property('k', __.constant(1)),
+                      "g.V().property('k',__.constant(1))"])
+
+        # P predicates carrying a single child traversal argument
+        tests.append([g.V().where(P.eq(__.constant(1))),
+                      "g.V().where(eq(__.constant(1)))"])
+        tests.append([g.V().where(P.neq(__.constant(1))),
+                      "g.V().where(neq(__.constant(1)))"])
+        tests.append([g.V().where(P.gt(__.constant(1))),
+                      "g.V().where(gt(__.constant(1)))"])
+        tests.append([g.V().where(P.lt(__.constant(1))),
+                      "g.V().where(lt(__.constant(1)))"])
+        tests.append([g.V().where(P.gte(__.constant(1))),
+                      "g.V().where(gte(__.constant(1)))"])
+        tests.append([g.V().where(P.lte(__.constant(1))),
+                      "g.V().where(lte(__.constant(1)))"])
+        tests.append([g.V().where(P.within(__.constant(1))),
+                      "g.V().where(within(__.constant(1)))"])
+        tests.append([g.V().where(P.without(__.constant(1))),
+                      "g.V().where(without(__.constant(1)))"])
+
+        # Multi-traversal within()/without() render as comma-separated args (no brackets)
+        tests.append([g.V().where(P.within(__.constant(1), __.constant(2))),
+                      "g.V().where(within(__.constant(1),__.constant(2)))"])
+        tests.append([g.V().where(P.without(__.constant(1), __.constant(2))),
+                      "g.V().where(without(__.constant(1),__.constant(2)))"])
+
+        # TextP predicate carrying a child traversal argument
+        tests.append([g.V().has('k', containing(__.constant('x'))),
+                      "g.V().has('k',containing(__.constant('x')))"])
+
+        # V()/E() as start steps seeded from a child traversal
+        tests.append([g.V(__.V()),
+                      "g.V(__.V())"])
+        tests.append([g.E(__.E()),
+                      "g.E(__.E())"])
+
+        for t in range(len(tests)):
+            gremlin_lang = tests[t][0].gremlin_lang.get_gremlin()
+            assert gremlin_lang == tests[t][1]
+
+    def test_non_trivial_argument_rendering(self):
+        g = traversal().with_(None)
+
+        tests = list()
+        # from_(Vertex)/to(Vertex): GraphTraversal.from_/to detect a Vertex arg and rewrite it to
+        # __.V(<id>) (see graph_traversal.py from_/to), so only the vertex id is emitted inside
+        # an anonymous V() traversal - the label ('person') is dropped.
+        tests.append([g.add_e('route').from_(Vertex(1, 'person')).to(Vertex(2, 'person')),
+                      "g.addE('route').from(__.V(1)).to(__.V(2))"])
+
+        # Merge tokens: enum members with a mid-name underscore render camelCased by
+        # GremlinLang._arg_as_string (on_create -> onCreate, on_match -> onMatch, out_v -> outV,
+        # in_v -> inV).
+        tests.append([g.merge_v({'name': 'marko'}).option(Merge.on_create, {'name': 'stephen'}),
+                      "g.mergeV(['name':'marko']).option(Merge.onCreate,['name':'stephen'])"])
+        # Non-str dict keys (the T and Merge enum tokens) are paren-wrapped by
+        # GremlinLang._process_dict, e.g. (T.label) and (Merge.outV); str keys are not wrapped.
+        tests.append([g.merge_e({T.label: 'knows', Merge.out_v: 1, Merge.in_v: 2}),
+                      "g.mergeE([(T.label):'knows',(Merge.outV):1,(Merge.inV):2])"])
+
+        # CardinalityValue renders via the CardinalityValueTraversal branch of
+        # GremlinLang._add_to_gremlin as Cardinality.<card>(<value>); list_ -> Cardinality.list,
+        # set_ -> Cardinality.set (trailing underscore stripped by the enum handling).
+        tests.append([g.merge_v({'name': 'marko'}).option(Merge.on_match, {'age': CardinalityValue.list_(33)}),
+                      "g.mergeV(['name':'marko']).option(Merge.onMatch,['age':Cardinality.list(33)])"])
+        tests.append([g.V().has('name', 'foo').property({'name': CardinalityValue.set_('bar'), 'age': 43}),
+                      "g.V().has('name','foo').property(['name':Cardinality.set('bar'),'age':43])"])
+
+        # Operator enum forms: mid-name underscore camelCases (add_all -> addAll,
+        # sum_long -> sumLong) while a trailing underscore is stripped (and_ -> and, or_ -> or).
+        tests.append([g.inject(Operator.add_all, Operator.sum_long, Operator.and_, Operator.or_),
+                      "g.inject(Operator.addAll,Operator.sumLong,Operator.and,Operator.or)"])
+
+        for t in range(len(tests)):
+            gremlin_lang = tests[t][0].gremlin_lang.get_gremlin()
+            assert gremlin_lang == tests[t][1]
+
+    def test_source_level_with_multilabel_uses_double_quotes(self):
+        g = traversal().with_(None)
+        # Source-level GraphTraversalSource.with_ special-cases 'multilabel'/'singlelabel' and
+        # emits the option key with DOUBLE quotes: .with("multilabel"). This differs from the
+        # step-level with_ (and every other string arg), which renders via _arg_as_string using
+        # repr() and therefore SINGLE quotes, e.g. .with('...').
+        assert 'g.with("multilabel").V()' == g.with_('multilabel').V().gremlin_lang.get_gremlin()
 
     def test_eq_different_gremlin_steps_not_equal(self):
         # Same (empty) parameters but different gremlin steps must not compare equal.
